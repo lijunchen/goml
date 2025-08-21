@@ -218,31 +218,37 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
             let u = it.u_name();
 
             if l.is_some() {
-                let func = l.unwrap().to_string();
-                let args = it
-                    .arg_list()
-                    .unwrap_or_else(|| panic!("PrimExpr has no args"))
-                    .args()
-                    .flat_map(lower_arg)
-                    .collect();
-                return Some(ast::Expr::ECall {
-                    func: ast::Lident(func),
-                    args,
-                });
+                if let Some(func) = l {
+                    let args = it
+                        .arg_list()
+                        .unwrap_or_else(|| panic!("PrimExpr has no args"))
+                        .args()
+                        .flat_map(lower_arg)
+                        .collect();
+                    return Some(ast::Expr::ECall {
+                        func: ast::Lident(func),
+                        args,
+                    });
+                } else {
+                    panic!("CallExpr has no function name");
+                }
             }
 
             if u.is_some() {
-                let func = u.unwrap().to_string();
-                let args = it
-                    .arg_list()
-                    .unwrap_or_else(|| panic!("PrimExpr has no args"))
-                    .args()
-                    .flat_map(lower_arg)
-                    .collect();
-                return Some(ast::Expr::EConstr {
-                    vcon: ast::Uident::new(&func),
-                    args,
-                });
+                if let Some(func) = u {
+                    let args = it
+                        .arg_list()
+                        .unwrap_or_else(|| panic!("PrimExpr has no args"))
+                        .args()
+                        .flat_map(lower_arg)
+                        .collect();
+                    return Some(ast::Expr::EConstr {
+                        vcon: ast::Uident::new(&func),
+                        args,
+                    });
+                } else {
+                    panic!("CallExpr has no function name");
+                }
             }
 
             unreachable!()
