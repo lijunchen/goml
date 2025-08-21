@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
@@ -21,7 +21,7 @@ impl File {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -62,7 +62,7 @@ impl Fn {
 }
 
 impl Expr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Expr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
 
@@ -207,7 +207,7 @@ impl Expr {
 }
 
 impl Arm {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         self.lhs
             .to_doc(env)
             .append(RcDoc::space())

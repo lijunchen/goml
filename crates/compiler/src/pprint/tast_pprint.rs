@@ -10,7 +10,7 @@ use crate::tast::Pat;
 use crate::tast::Ty;
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
@@ -25,7 +25,7 @@ impl File {
 }
 
 impl Item {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Self::ImplBlock(impl_block) => impl_block.to_doc(env),
             Self::Fn(func) => func.to_doc(env),
@@ -40,7 +40,7 @@ impl Item {
 }
 
 impl ImplBlock {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         let trait_name = RcDoc::text(self.trait_name.0.clone());
         let for_type = self.for_type.to_doc(env);
         let methods = RcDoc::intersperse(
@@ -69,7 +69,7 @@ impl ImplBlock {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -110,7 +110,7 @@ impl Fn {
 }
 
 impl Ty {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         match self {
             Self::TVar(x) => RcDoc::text(format!("{:?}", x)),
             Self::TUnit => RcDoc::text("Unit"),
@@ -175,7 +175,7 @@ impl Ty {
 }
 
 impl Expr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Self::EVar {
                 name,
@@ -299,7 +299,7 @@ impl Expr {
 }
 
 impl Pat {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Pat::PVar {
                 name,
@@ -358,7 +358,7 @@ impl Pat {
 }
 
 impl crate::tast::Arm {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         self.pat
             .to_doc(env)
             .append(RcDoc::space())

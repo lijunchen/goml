@@ -43,7 +43,7 @@ impl<'t> Input<'t> {
     }
 
     #[allow(unused)]
-    fn peek_raw_token(&self) -> &Token {
+    fn peek_raw_token(&self) -> &Token<'_> {
         &self.tokens[self.cursor]
     }
 

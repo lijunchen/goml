@@ -25,7 +25,7 @@ impl Debug for Token<'_> {
     }
 }
 
-pub fn lex(input: &str) -> Vec<Token> {
+pub fn lex(input: &str) -> Vec<Token<'_>> {
     let lexer = Lexer::new(input);
     let toks: Vec<Token> = lexer.collect();
     toks

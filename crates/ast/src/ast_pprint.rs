@@ -4,7 +4,7 @@ use crate::ast::{
 use pretty::RcDoc;
 
 impl Ty {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Self::TUnit => RcDoc::text("Unit"),
             Self::TBool => RcDoc::text("Bool"),
@@ -67,7 +67,7 @@ impl Ty {
 }
 
 impl Expr {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Self::EVar { name, astptr: _ } => RcDoc::text(name.0.clone()),
 
@@ -171,7 +171,7 @@ impl Expr {
 }
 
 impl Pat {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Pat::PVar { name, astptr: _ } => RcDoc::text(name.0.clone()),
             Pat::PUnit => RcDoc::text("()"),
@@ -219,7 +219,7 @@ impl Pat {
 }
 
 impl Arm {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         self.pat
             .to_doc()
             .append(RcDoc::space())
@@ -239,7 +239,7 @@ impl Arm {
 }
 
 impl EnumDef {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("enum")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0));
@@ -283,7 +283,7 @@ impl EnumDef {
 }
 
 impl TraitDef {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("trait")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0));
@@ -309,7 +309,7 @@ impl TraitDef {
 }
 
 impl TraitMethodSignature {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0))
@@ -335,7 +335,7 @@ impl TraitMethodSignature {
 }
 
 impl ImplBlock {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("impl")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.trait_name.0))
@@ -362,7 +362,7 @@ impl ImplBlock {
 }
 
 impl Fn {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name.0))
@@ -403,7 +403,7 @@ impl Fn {
 }
 
 impl File {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         RcDoc::concat(self.toplevels.iter().map(|item| {
             item.to_doc()
                 .append(RcDoc::hardline())
@@ -419,7 +419,7 @@ impl File {
 }
 
 impl Item {
-    pub fn to_doc(&self) -> RcDoc<()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Item::EnumDef(def) => def.to_doc(),
             Item::TraitDef(def) => def.to_doc(),

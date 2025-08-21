@@ -6,7 +6,7 @@ use crate::{
 };
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
@@ -21,7 +21,7 @@ impl File {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -62,7 +62,7 @@ impl Fn {
 }
 
 impl AExpr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             AExpr::ACExpr { expr } => expr.to_doc(env),
             AExpr::ALet {
@@ -93,7 +93,7 @@ impl AExpr {
 }
 
 impl CExpr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             CExpr::CImm { imm } => imm.to_doc(env),
             CExpr::EConstr { index, args, ty } => {
@@ -223,7 +223,7 @@ impl CExpr {
 }
 
 impl ImmExpr {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::ImmVar { name, ty: _ } => RcDoc::text(name.clone()),
             ImmExpr::ImmUnit { ty: _ } => RcDoc::text("()"),
@@ -247,7 +247,7 @@ impl ImmExpr {
 }
 
 impl Arm {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         self.lhs
             .to_doc(env)
             .append(RcDoc::space())
