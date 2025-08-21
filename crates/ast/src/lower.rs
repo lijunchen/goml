@@ -185,12 +185,12 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 .value()
                 .unwrap_or_else(|| panic!("BoolExpr has no value"))
                 .to_string();
-            let value = match value.as_str() {
+
+            match value.as_str() {
                 "true" => Some(ast::Expr::EBool { value: true }),
                 "false" => Some(ast::Expr::EBool { value: false }),
                 _ => unreachable!(),
-            };
-            value
+            }
         }
         cst::Expr::IntExpr(it) => {
             let value = it
@@ -332,12 +332,12 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
         cst::Pattern::UnitPat(_) => Some(ast::Pat::PUnit),
         cst::Pattern::BoolPat(it) => {
             let value = it.value()?.to_string();
-            let value = match value.as_str() {
+
+            match value.as_str() {
                 "true" => Some(ast::Pat::PBool { value: true }),
                 "false" => Some(ast::Pat::PBool { value: false }),
                 _ => unreachable!(),
-            };
-            value
+            }
         }
         cst::Pattern::ConstrPat(it) => {
             let name = it.uident().unwrap().to_string();

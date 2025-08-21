@@ -11,12 +11,10 @@ use crate::tast::Ty;
 
 impl File {
     pub fn to_doc(&self, env: &Env) -> RcDoc<()> {
-        let items = RcDoc::intersperse(
+        RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
-        );
-
-        items
+        )
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
