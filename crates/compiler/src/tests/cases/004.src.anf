@@ -1,0 +1,50 @@
+fn main() -> Unit {
+  let t3 = Constr_2 in
+  let t4 = Constr_2 in
+  let a/0 = (t3, t4) in
+  let x0 = a/0.0 in
+  let x1 = a/0.1 in
+  match x1 {
+    Constr_0 => {
+      match x0 {
+        Constr_0 => {
+          true
+        },
+        Constr_1 => {
+          false
+        },
+        Constr_2 => {
+          false
+        },
+      }
+    },
+    Constr_1 => {
+      match x0 {
+        Constr_0 => {
+          true
+        },
+        Constr_1 => {
+          false
+        },
+        Constr_2 => {
+          false
+        },
+      }
+    },
+    Constr_2 => {
+      match x0 {
+        Constr_0 => {
+          false
+        },
+        Constr_1 => {
+          false
+        },
+        Constr_2 => {
+          let t5 = bool_to_string(true) in
+          let mtmp2 = print(t5) in
+          false
+        },
+      }
+    },
+  }
+}

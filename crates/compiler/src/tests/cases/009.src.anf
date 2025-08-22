@@ -1,0 +1,52 @@
+fn test(t/0: T) -> Unit {
+  match t/0 {
+    Constr_0 => {
+      let t6 = int_to_string(1) in
+      print(t6)
+    },
+    Constr_1 => {
+      let x0 = t/0.constr.1.0 in
+      let x1 = t/0.constr.1.1 in
+      let x0 = t/0.constr.1.0 in
+      let x1 = t/0.constr.1.1 in
+      match x1 {
+        true => {
+          match x0 {
+            true => {
+              let t7 = int_to_string(4) in
+              print(t7)
+            },
+            false => {
+              let t8 = int_to_string(3) in
+              print(t8)
+            },
+          }
+        },
+        false => {
+          match x0 {
+            true => {
+              let t9 = int_to_string(4) in
+              print(t9)
+            },
+            false => {
+              let t10 = int_to_string(2) in
+              print(t10)
+            },
+          }
+        },
+      }
+    },
+  }
+}
+
+fn main() -> Unit {
+  let t11 = T::B(true, true) in
+  let mtmp2 = test(t11) in
+  let t12 = T::B(false, true) in
+  let mtmp3 = test(t12) in
+  let t13 = T::B(false, false) in
+  let mtmp4 = test(t13) in
+  let t14 = Constr_0 in
+  let mtmp5 = test(t14) in
+  ()
+}
