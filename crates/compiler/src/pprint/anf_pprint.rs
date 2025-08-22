@@ -236,6 +236,7 @@ impl ImmExpr {
             }
             ImmExpr::ImmInt { value, ty: _ } => RcDoc::text(value.to_string()),
             ImmExpr::ImmString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
+            ImmExpr::ImmConstr { index, ty: _ } => RcDoc::text(format!("Constr_{}", index)),
         }
     }
 

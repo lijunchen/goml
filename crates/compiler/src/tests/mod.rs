@@ -31,6 +31,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let ast_filename = p.with_file_name(format!("{}.ast", filename));
             let tast_filename = p.with_file_name(format!("{}.tast", filename));
             let core_filename = p.with_file_name(format!("{}.core", filename));
+            let anf_filename = p.with_file_name(format!("{}.anf", filename));
             let result_filename = p.with_file_name(format!("{}.out", filename));
 
             let input = std::fs::read_to_string(entry.path())?;
@@ -50,11 +51,16 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             expect_test::expect_file![tast_filename].assert_eq(&tast.to_pretty(&env, 120));
             let core = crate::compile_match::compile_file(&env, &tast);
             expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
+
+
             let mut buf = String::new();
-            let env = im::HashMap::new();
-            let result = crate::interpreter::eval_file(&env, &mut buf, &core);
+            let eval_env = im::HashMap::new();
+            let result = crate::interpreter::eval_file(&eval_env, &mut buf, &core);
             expect_test::expect_file![result_filename]
                 .assert_eq(&format!("{:?}\n====\n{}", result, buf));
+
+            let anf = crate::anf::anf_file(&env, core);
+            expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
         }
     }
     Ok(())

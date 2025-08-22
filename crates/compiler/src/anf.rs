@@ -21,6 +21,7 @@ pub enum ImmExpr {
     ImmBool { value: bool, ty: Ty },
     ImmInt { value: i32, ty: Ty },
     ImmString { value: String, ty: Ty },
+    ImmConstr { index: usize, ty: Ty },
 }
 
 #[derive(Debug, Clone)]
@@ -96,12 +97,138 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
         core::Expr::EBool { value, ty } => ImmExpr::ImmBool { value, ty },
         core::Expr::EInt { value, ty } => ImmExpr::ImmInt { value, ty },
         core::Expr::EString { value, ty } => ImmExpr::ImmString { value, ty },
+        core::Expr::EConstr { index, args, ty } if args.is_empty() => ImmExpr::ImmConstr { index, ty },
         // Other core::Expr variants are not immediate and should not appear as match arm LHS patterns.
         _ => panic!(
             "Expected an immediate expression for match arm LHS, found {:?}",
             core_imm
         ),
     }
+}
+
+// Helper function to compile match arms with complex patterns to immediate patterns
+fn compile_match_arms_to_anf<'a>(
+    env: &'a Env,
+    scrutinee: ImmExpr,
+    arms: Vec<core::Arm>,
+    default: Option<Box<core::Expr>>,
+    match_ty: Ty,
+    k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
+) -> AExpr {
+    let mut anf_arms = Vec::new();
+    let mut complex_arms = Vec::new();
+    
+    // Separate immediate patterns from complex patterns
+    for arm in arms {
+        match &arm.lhs {
+            core::Expr::EVar { .. } |
+            core::Expr::EUnit { .. } |
+            core::Expr::EBool { .. } |
+            core::Expr::EInt { .. } |
+            core::Expr::EString { .. } => {
+                // Immediate patterns can be converted directly
+                let anf_lhs = core_imm_to_anf_imm(arm.lhs);
+                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                anf_arms.push(Arm {
+                    lhs: anf_lhs,
+                    body: anf_body,
+                });
+            }
+            core::Expr::EConstr { index, args, ty } if args.is_empty() => {
+                // Nullary constructors are immediate
+                let anf_lhs = ImmExpr::ImmConstr { index: *index, ty: ty.clone() };
+                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                anf_arms.push(Arm {
+                    lhs: anf_lhs,
+                    body: anf_body,
+                });
+            }
+            core::Expr::EConstr { .. } => {
+                // Complex constructor patterns need compilation
+                complex_arms.push(arm);
+            }
+            _ => {
+                panic!("Unexpected pattern in match arm: {:?}", arm.lhs);
+            }
+        }
+    }
+    
+    // If we have complex arms, we need to compile them into nested matches
+    if !complex_arms.is_empty() {
+        // For complex constructor patterns, we need to transform them into:
+        // 1. A match on the constructor tag (immediate)
+        // 2. Variable bindings for the arguments
+        // 3. The original body with arguments substituted
+        
+        // Group arms by constructor index
+        let mut constructor_arms: std::collections::HashMap<usize, Vec<core::Arm>> = std::collections::HashMap::new();
+        for arm in complex_arms {
+            if let core::Expr::EConstr { index, .. } = &arm.lhs {
+                constructor_arms.entry(*index).or_insert_with(Vec::new).push(arm);
+            }
+        }
+        
+        // For each constructor, create an arm that matches the constructor tag
+        // and then extracts the arguments
+        for (index, arms_for_constructor) in constructor_arms {
+            if arms_for_constructor.len() != 1 {
+                panic!("Multiple arms for same constructor not yet supported");
+            }
+            let arm = &arms_for_constructor[0];
+            
+            if let core::Expr::EConstr { index: _, args, ty } = &arm.lhs {
+                if args.len() >= 1 {
+                    // Handle constructors with any number of arguments
+                    // Create an immediate pattern for the constructor tag
+                    let anf_lhs = ImmExpr::ImmConstr { index, ty: ty.clone() };
+                    
+                    // Build a chain of let bindings to extract all arguments
+                    let mut body = anf(env, arm.body.clone(), Box::new(|c| AExpr::ACExpr { expr: c }));
+                    
+                    // Extract arguments in reverse order to build the let chain correctly
+                    for (field_index, arg) in args.iter().enumerate().rev() {
+                        if let core::Expr::EVar { name, ty: arg_ty } = arg {
+                            body = AExpr::ALet {
+                                name: name.clone(),
+                                value: Box::new(CExpr::EConstrGet {
+                                    expr: Box::new(match &scrutinee {
+                                        ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar { name: name.clone(), ty: ty.clone() },
+                                        other => other.clone(),
+                                    }),
+                                    variant_index: index,
+                                    field_index,
+                                    ty: arg_ty.clone(),
+                                }),
+                                body: Box::new(body),
+                                ty: match_ty.clone(),
+                            };
+                        } else {
+                            panic!("Complex argument patterns not supported: {:?}", arg);
+                        }
+                    }
+                    
+                    anf_arms.push(Arm {
+                        lhs: anf_lhs,
+                        body,
+                    });
+                } else {
+                    panic!("Constructor with no arguments should be handled as immediate pattern");
+                }
+            }
+        }
+    }
+    
+    // Convert default case
+    let anf_default = default.map(|def_body| {
+        Box::new(anf(env, *def_body, Box::new(|c| AExpr::ACExpr { expr: c })))
+    });
+
+    k(CExpr::EMatch {
+        expr: Box::new(scrutinee),
+        arms: anf_arms,
+        default: anf_default,
+        ty: match_ty,
+    })
 }
 
 fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>) -> AExpr {
@@ -123,17 +250,27 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
             imm: ImmExpr::ImmString { value, ty },
         }),
 
-        core::Expr::EConstr { index, args, ty: _ } => anf_list(
-            env,
-            &args,
-            Box::new(move |args| {
-                k(CExpr::EConstr {
-                    index,
-                    args,
-                    ty: e_ty,
+        core::Expr::EConstr { index, args, ty: _ } => {
+            if args.is_empty() {
+                // Nullary constructors are immediate
+                k(CExpr::CImm {
+                    imm: ImmExpr::ImmConstr { index, ty: e_ty },
                 })
-            }),
-        ),
+            } else {
+                // Non-nullary constructors need ANF transformation of their arguments
+                anf_list(
+                    env,
+                    &args,
+                    Box::new(move |args| {
+                        k(CExpr::EConstr {
+                            index,
+                            args,
+                            ty: e_ty,
+                        })
+                    }),
+                )
+            }
+        }
         core::Expr::ETuple { items, ty: _ } => anf_list(
             env,
             &items,
@@ -164,33 +301,7 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
                 env,
                 *expr,
                 Box::new(move |imm_expr| {
-                    // Convert arms
-                    let anf_arms = arms
-                        .into_iter()
-                        .map(|core_arm| {
-                            // Assuming core::Arm has fields lhs: core::Expr, body: core::Expr
-                            // and lhs is guaranteed to be an immediate expression.
-                            let anf_lhs = core_imm_to_anf_imm(core_arm.lhs);
-                            let anf_body =
-                                anf(env, core_arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
-                            Arm {
-                                lhs: anf_lhs,
-                                body: anf_body,
-                            }
-                        })
-                        .collect();
-
-                    // Convert default case
-                    let anf_default = default.map(|def_body| {
-                        Box::new(anf(env, *def_body, Box::new(|c| AExpr::ACExpr { expr: c })))
-                    });
-
-                    k(CExpr::EMatch {
-                        expr: Box::new(imm_expr),
-                        arms: anf_arms,
-                        default: anf_default,
-                        ty: e_ty, // Use the type of the original match expression
-                    })
+                    compile_match_arms_to_anf(env, imm_expr, arms, default, e_ty, k)
                 }),
             )
         }
