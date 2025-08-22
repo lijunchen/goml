@@ -21,7 +21,7 @@ pub enum ImmExpr {
     ImmBool { value: bool, ty: Ty },
     ImmInt { value: i32, ty: Ty },
     ImmString { value: String, ty: Ty },
-    ImmConstr { index: usize, ty: Ty },
+    ImmTag { index: usize, ty: Ty },
 }
 
 #[derive(Debug, Clone)]
@@ -97,7 +97,7 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
         core::Expr::EBool { value, ty } => ImmExpr::ImmBool { value, ty },
         core::Expr::EInt { value, ty } => ImmExpr::ImmInt { value, ty },
         core::Expr::EString { value, ty } => ImmExpr::ImmString { value, ty },
-        core::Expr::EConstr { index, args, ty } if args.is_empty() => ImmExpr::ImmConstr { index, ty },
+        core::Expr::EConstr { index, args, ty } if args.is_empty() => ImmExpr::ImmTag { index, ty },
         // Other core::Expr variants are not immediate and should not appear as match arm LHS patterns.
         _ => panic!(
             "Expected an immediate expression for match arm LHS, found {:?}",
@@ -135,7 +135,7 @@ fn compile_match_arms_to_anf<'a>(
             }
             core::Expr::EConstr { index, args, ty } if args.is_empty() => {
                 // Nullary constructors are immediate
-                let anf_lhs = ImmExpr::ImmConstr { index: *index, ty: ty.clone() };
+                let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
@@ -147,7 +147,7 @@ fn compile_match_arms_to_anf<'a>(
                 if !args.is_empty(){
                     // Handle constructors with any number of arguments
                     // Create an immediate pattern for the constructor tag
-                    let anf_lhs = ImmExpr::ImmConstr { index: *index, ty: ty.clone() };
+                    let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
                     
                     // Build a chain of let bindings to extract all arguments
                     let mut body = anf(env, arm.body.clone(), Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -224,7 +224,7 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
             if args.is_empty() {
                 // Nullary constructors are immediate
                 k(CExpr::CImm {
-                    imm: ImmExpr::ImmConstr { index, ty: e_ty },
+                    imm: ImmExpr::ImmTag { index, ty: e_ty },
                 })
             } else {
                 // Non-nullary constructors need ANF transformation of their arguments
