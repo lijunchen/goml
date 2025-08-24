@@ -144,43 +144,39 @@ fn compile_match_arms_to_anf<'a>(
             }
             core::Expr::EConstr { index, args, ty } => {
                 // Complex constructor patterns need compilation
-                if !args.is_empty(){
-                    // Handle constructors with any number of arguments
-                    // Create an immediate pattern for the constructor tag
-                    let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
-                    
-                    // Build a chain of let bindings to extract all arguments
-                    let mut body = anf(env, arm.body.clone(), Box::new(|c| AExpr::ACExpr { expr: c }));
-                    
-                    // Extract arguments in reverse order to build the let chain correctly
-                    for (field_index, arg) in args.iter().enumerate().rev() {
-                        if let core::Expr::EVar { name, ty: arg_ty } = arg {
-                            body = AExpr::ALet {
-                                name: name.clone(),
-                                value: Box::new(CExpr::EConstrGet {
-                                    expr: Box::new(match &scrutinee {
-                                        ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar { name: name.clone(), ty: ty.clone() },
-                                        other => other.clone(),
-                                    }),
-                                    variant_index: *index,
-                                    field_index,
-                                    ty: arg_ty.clone(),
+                // Handle constructors with any number of arguments
+                // Create an immediate pattern for the constructor tag
+                let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
+                
+                // Build a chain of let bindings to extract all arguments
+                let mut body = anf(env, arm.body.clone(), Box::new(|c| AExpr::ACExpr { expr: c }));
+                
+                // Extract arguments in reverse order to build the let chain correctly
+                for (field_index, arg) in args.iter().enumerate().rev() {
+                    if let core::Expr::EVar { name, ty: arg_ty } = arg {
+                        body = AExpr::ALet {
+                            name: name.clone(),
+                            value: Box::new(CExpr::EConstrGet {
+                                expr: Box::new(match &scrutinee {
+                                    ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar { name: name.clone(), ty: ty.clone() },
+                                    other => other.clone(),
                                 }),
-                                body: Box::new(body),
-                                ty: match_ty.clone(),
-                            };
-                        } else {
-                            panic!("Complex argument patterns not supported: {:?}", arg);
-                        }
+                                variant_index: *index,
+                                field_index,
+                                ty: arg_ty.clone(),
+                            }),
+                            body: Box::new(body),
+                            ty: match_ty.clone(),
+                        };
+                    } else {
+                        panic!("Complex argument patterns not supported: {:?}", arg);
                     }
-                    
-                    anf_arms.push(Arm {
-                        lhs: anf_lhs,
-                        body,
-                    });
-                } else {
-                    panic!("Constructor with no arguments should be handled as immediate pattern");
                 }
+                
+                anf_arms.push(Arm {
+                    lhs: anf_lhs,
+                    body,
+                });
             }
             _ => {
                 panic!("Unexpected pattern in match arm: {:?}", arm.lhs);
