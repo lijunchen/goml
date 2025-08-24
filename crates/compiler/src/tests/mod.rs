@@ -52,7 +52,6 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let core = crate::compile_match::compile_file(&env, &tast);
             expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
 
-
             let mut buf = String::new();
             let eval_env = im::HashMap::new();
             let result = crate::interpreter::eval_file(&eval_env, &mut buf, &core);

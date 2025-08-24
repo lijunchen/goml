@@ -6,16 +6,12 @@ use crate::{env::Env, tast};
 pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
     let root = MySyntaxNode::new_root(result.green_node);
-    let cst = cst::cst::File::cast(root).unwrap_or_else(|| {
-        panic!("failed to cast syntax tree")
-    });
+    let cst = cst::cst::File::cast(root).unwrap_or_else(|| panic!("failed to cast syntax tree"));
 
     let line_index = line_index::LineIndex::new(src);
     let offset = line_index
         .offset(line_index::LineCol { line, col })
-        .unwrap_or_else(|| {
-            panic!("failed to get offset from line and column")
-        });
+        .unwrap_or_else(|| panic!("failed to get offset from line and column"));
     let node = cst.syntax().token_at_offset(offset);
     let range = match node {
         rowan::TokenAtOffset::None => None,
@@ -37,9 +33,7 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
         }
     }?;
 
-    let ast = ast::lower::lower(cst).unwrap_or_else(|| {
-        panic!("failed to lower CST to AST")
-    });
+    let ast = ast::lower::lower(cst).unwrap_or_else(|| panic!("failed to lower CST to AST"));
     let (tast, env) = crate::typer::check_file(ast);
 
     let ty = find_type(&env, &tast, &range);

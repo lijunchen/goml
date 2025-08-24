@@ -116,15 +116,15 @@ fn compile_match_arms_to_anf<'a>(
     k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
 ) -> AExpr {
     let mut anf_arms = Vec::new();
-    
+
     // Process arms in original order to maintain sequence
     for arm in arms {
         match &arm.lhs {
-            core::Expr::EVar { .. } |
-            core::Expr::EUnit { .. } |
-            core::Expr::EBool { .. } |
-            core::Expr::EInt { .. } |
-            core::Expr::EString { .. } => {
+            core::Expr::EVar { .. }
+            | core::Expr::EUnit { .. }
+            | core::Expr::EBool { .. }
+            | core::Expr::EInt { .. }
+            | core::Expr::EString { .. } => {
                 // Immediate patterns can be converted directly
                 let anf_lhs = core_imm_to_anf_imm(arm.lhs);
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -135,7 +135,10 @@ fn compile_match_arms_to_anf<'a>(
             }
             core::Expr::EConstr { index, args, ty } if args.is_empty() => {
                 // Nullary constructors are immediate
-                let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
+                let anf_lhs = ImmExpr::ImmTag {
+                    index: *index,
+                    ty: ty.clone(),
+                };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
@@ -146,11 +149,18 @@ fn compile_match_arms_to_anf<'a>(
                 // Complex constructor patterns need compilation
                 // Handle constructors with any number of arguments
                 // Create an immediate pattern for the constructor tag
-                let anf_lhs = ImmExpr::ImmTag { index: *index, ty: ty.clone() };
-                
+                let anf_lhs = ImmExpr::ImmTag {
+                    index: *index,
+                    ty: ty.clone(),
+                };
+
                 // Build a chain of let bindings to extract all arguments
-                let mut body = anf(env, arm.body.clone(), Box::new(|c| AExpr::ACExpr { expr: c }));
-                
+                let mut body = anf(
+                    env,
+                    arm.body.clone(),
+                    Box::new(|c| AExpr::ACExpr { expr: c }),
+                );
+
                 // Extract arguments in reverse order to build the let chain correctly
                 for (field_index, arg) in args.iter().enumerate().rev() {
                     if let core::Expr::EVar { name, ty: arg_ty } = arg {
@@ -158,7 +168,10 @@ fn compile_match_arms_to_anf<'a>(
                             name: name.clone(),
                             value: Box::new(CExpr::EConstrGet {
                                 expr: Box::new(match &scrutinee {
-                                    ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar { name: name.clone(), ty: ty.clone() },
+                                    ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar {
+                                        name: name.clone(),
+                                        ty: ty.clone(),
+                                    },
                                     other => other.clone(),
                                 }),
                                 variant_index: *index,
@@ -172,22 +185,18 @@ fn compile_match_arms_to_anf<'a>(
                         panic!("Complex argument patterns not supported: {:?}", arg);
                     }
                 }
-                
-                anf_arms.push(Arm {
-                    lhs: anf_lhs,
-                    body,
-                });
+
+                anf_arms.push(Arm { lhs: anf_lhs, body });
             }
             _ => {
                 panic!("Unexpected pattern in match arm: {:?}", arm.lhs);
             }
         }
     }
-    
+
     // Convert default case
-    let anf_default = default.map(|def_body| {
-        Box::new(anf(env, *def_body, Box::new(|c| AExpr::ACExpr { expr: c })))
-    });
+    let anf_default = default
+        .map(|def_body| Box::new(anf(env, *def_body, Box::new(|c| AExpr::ACExpr { expr: c }))));
 
     k(CExpr::EMatch {
         expr: Box::new(scrutinee),
@@ -262,15 +271,13 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
             arms,
             default,
             ty: _,
-        } => {
-            anf_imm(
-                env,
-                *expr,
-                Box::new(move |imm_expr| {
-                    compile_match_arms_to_anf(env, imm_expr, arms, default, e_ty, k)
-                }),
-            )
-        }
+        } => anf_imm(
+            env,
+            *expr,
+            Box::new(move |imm_expr| {
+                compile_match_arms_to_anf(env, imm_expr, arms, default, e_ty, k)
+            }),
+        ),
         core::Expr::EConstrGet {
             expr,
             variant_index,
