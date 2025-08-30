@@ -2,7 +2,9 @@ use pretty::RcDoc;
 
 use crate::{
     env::Env,
-    go::{Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Stmt, Struct},
+    go::{
+        Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt, Struct,
+    },
 };
 
 impl File {
@@ -24,108 +26,130 @@ impl Item {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Item::Interface(interface) => interface.to_doc(env),
-            Item::Struct(struct_) => struct_.to_doc(env),
-            Item::Fn(fn_) => fn_.to_doc(env),
+            Item::Struct(struct_def) => struct_def.to_doc(env),
+            Item::Fn(func) => func.to_doc(env),
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
 impl Interface {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let methods_doc = if self.methods.is_empty() {
+        let name = RcDoc::text(&self.name);
+        let methods = if self.methods.is_empty() {
             RcDoc::nil()
         } else {
-            RcDoc::intersperse(
-                self.methods.iter().map(|method| method.to_doc(env)),
-                RcDoc::hardline(),
-            )
-            .nest(4)
+            RcDoc::hardline()
+                .append(RcDoc::intersperse(
+                    self.methods.iter().map(|method| method.to_doc(env)),
+                    RcDoc::hardline(),
+                ))
+                .append(RcDoc::hardline())
+                .nest(4)
         };
 
         RcDoc::text("type")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name))
+            .append(name)
             .append(RcDoc::space())
             .append(RcDoc::text("interface"))
             .append(RcDoc::space())
             .append(RcDoc::text("{"))
-            .append(if self.methods.is_empty() {
-                RcDoc::nil()
-            } else {
-                RcDoc::hardline()
-                    .append(methods_doc)
-                    .append(RcDoc::hardline())
-            })
+            .append(methods)
             .append(RcDoc::text("}"))
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
 impl MethodElem {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let params_doc = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name)
-                    .append(RcDoc::space())
-                    .append(ty.to_doc(env))
-            }),
-            RcDoc::text(", "),
-        );
+        let name = RcDoc::text(&self.name);
+        let params = if self.params.is_empty() {
+            RcDoc::nil()
+        } else {
+            RcDoc::intersperse(
+                self.params.iter().map(|(param_name, param_ty)| {
+                    RcDoc::text(param_name)
+                        .append(RcDoc::space())
+                        .append(param_ty.to_doc(env))
+                }),
+                RcDoc::text(", "),
+            )
+        };
 
-        let ret_doc = if let Some(ret_ty) = &self.ret {
+        let ret_type = if let Some(ret_ty) = &self.ret {
             RcDoc::space().append(ret_ty.to_doc(env))
         } else {
             RcDoc::nil()
         };
 
-        RcDoc::text(&self.name)
-            .append(RcDoc::text("("))
-            .append(params_doc)
+        name.append(RcDoc::text("("))
+            .append(params)
             .append(RcDoc::text(")"))
-            .append(ret_doc)
+            .append(ret_type)
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
 impl Struct {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let fields_doc = if self.fields.is_empty() {
+        let name = RcDoc::text(&self.name);
+        let fields = if self.fields.is_empty() {
             RcDoc::nil()
         } else {
-            RcDoc::intersperse(
-                self.fields.iter().map(|field| field.to_doc(env)),
-                RcDoc::hardline(),
-            )
-            .nest(4)
+            RcDoc::hardline()
+                .append(RcDoc::intersperse(
+                    self.fields.iter().map(|field| field.to_doc(env)),
+                    RcDoc::hardline(),
+                ))
+                .append(RcDoc::hardline())
+                .nest(4)
         };
 
-        let struct_doc = RcDoc::text("type")
+        let struct_def = RcDoc::text("type")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name))
+            .append(name)
             .append(RcDoc::space())
             .append(RcDoc::text("struct"))
             .append(RcDoc::space())
             .append(RcDoc::text("{"))
-            .append(if self.fields.is_empty() {
-                RcDoc::space()
-            } else {
-                RcDoc::hardline()
-                    .append(fields_doc)
-                    .append(RcDoc::hardline())
-            })
+            .append(fields)
             .append(RcDoc::text("}"));
 
         if self.methods.is_empty() {
-            struct_doc
+            struct_def
         } else {
-            let methods_doc = RcDoc::intersperse(
+            let methods = RcDoc::intersperse(
                 self.methods.iter().map(|method| method.to_doc(env)),
                 RcDoc::hardline().append(RcDoc::hardline()),
             );
 
-            struct_doc
+            struct_def
                 .append(RcDoc::hardline())
                 .append(RcDoc::hardline())
-                .append(methods_doc)
+                .append(methods)
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
@@ -135,53 +159,100 @@ impl Field {
             .append(RcDoc::space())
             .append(self.ty.to_doc(env))
     }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
 }
 
 impl Fn {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let params_doc = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name)
-                    .append(RcDoc::space())
-                    .append(ty.to_doc(env))
-            }),
-            RcDoc::text(", "),
-        );
+        let name = RcDoc::text(&self.name);
+        let params = if self.params.is_empty() {
+            RcDoc::nil()
+        } else {
+            RcDoc::intersperse(
+                self.params.iter().map(|(param_name, param_ty)| {
+                    RcDoc::text(param_name)
+                        .append(RcDoc::space())
+                        .append(param_ty.to_doc(env))
+                }),
+                RcDoc::text(", "),
+            )
+        };
+
+        let body = self.body.to_doc(env);
 
         RcDoc::text("func")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name))
+            .append(name)
             .append(RcDoc::text("("))
-            .append(params_doc)
+            .append(params)
             .append(RcDoc::text(")"))
             .append(RcDoc::space())
-            .append(self.body.to_doc(env))
+            .append(body)
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
 impl Method {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let params_doc = RcDoc::intersperse(
-            self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name)
-                    .append(RcDoc::space())
-                    .append(ty.to_doc(env))
-            }),
-            RcDoc::text(", "),
-        );
+        let receiver = self.receiver.to_doc(env);
+        let name = RcDoc::text(&self.name);
+        let params = if self.params.is_empty() {
+            RcDoc::nil()
+        } else {
+            RcDoc::intersperse(
+                self.params.iter().map(|(param_name, param_ty)| {
+                    RcDoc::text(param_name)
+                        .append(RcDoc::space())
+                        .append(param_ty.to_doc(env))
+                }),
+                RcDoc::text(", "),
+            )
+        };
+
+        let body = self.body.to_doc(env);
 
         RcDoc::text("func")
             .append(RcDoc::space())
+            .append(receiver)
+            .append(RcDoc::space())
+            .append(name)
             .append(RcDoc::text("("))
-            .append(RcDoc::text(&self.receiver))
+            .append(params)
             .append(RcDoc::text(")"))
             .append(RcDoc::space())
+            .append(body)
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl Receiver {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+        RcDoc::text("(")
             .append(RcDoc::text(&self.name))
-            .append(RcDoc::text("("))
-            .append(params_doc)
-            .append(RcDoc::text(")"))
             .append(RcDoc::space())
-            .append(self.body.to_doc(env))
+            .append(self.ty.to_doc(env))
+            .append(RcDoc::text(")"))
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
@@ -190,16 +261,22 @@ impl Block {
         if self.stmts.is_empty() {
             RcDoc::text("{}")
         } else {
-            let stmts_doc = RcDoc::intersperse(
+            let stmts = RcDoc::intersperse(
                 self.stmts.iter().map(|stmt| stmt.to_doc(env)),
                 RcDoc::hardline(),
             );
 
             RcDoc::text("{")
-                .append(RcDoc::hardline().append(stmts_doc).nest(4))
+                .append(RcDoc::hardline().append(stmts).nest(4))
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
@@ -208,23 +285,25 @@ impl Stmt {
         match self {
             Stmt::Expr(expr) => expr.to_doc(env),
             Stmt::VarDecl { name, ty, value } => {
-                let mut doc = RcDoc::text("var")
+                let var_decl = RcDoc::text("var")
                     .append(RcDoc::space())
                     .append(RcDoc::text(name));
 
-                if let Some(ty) = ty {
-                    doc = doc.append(RcDoc::space()).append(ty.to_doc(env));
-                }
+                let with_type = if let Some(ty) = ty {
+                    var_decl.append(RcDoc::space()).append(ty.to_doc(env))
+                } else {
+                    var_decl
+                };
 
                 if let Some(value) = value {
-                    doc = doc
+                    with_type
                         .append(RcDoc::space())
                         .append(RcDoc::text("="))
                         .append(RcDoc::space())
-                        .append(value.to_doc(env));
+                        .append(value.to_doc(env))
+                } else {
+                    with_type
                 }
-
-                doc
             }
             Stmt::Assignment { name, value } => RcDoc::text(name)
                 .append(RcDoc::space())
@@ -232,30 +311,37 @@ impl Stmt {
                 .append(RcDoc::space())
                 .append(value.to_doc(env)),
             Stmt::Return { expr } => {
-                let mut doc = RcDoc::text("return");
+                let return_stmt = RcDoc::text("return");
                 if let Some(expr) = expr {
-                    doc = doc.append(RcDoc::space()).append(expr.to_doc(env));
+                    return_stmt.append(RcDoc::space()).append(expr.to_doc(env))
+                } else {
+                    return_stmt
                 }
-                doc
             }
             Stmt::If { cond, then, else_ } => {
-                let mut doc = RcDoc::text("if")
+                let if_part = RcDoc::text("if")
                     .append(RcDoc::space())
                     .append(cond.to_doc(env))
                     .append(RcDoc::space())
                     .append(then.to_doc(env));
 
                 if let Some(else_block) = else_ {
-                    doc = doc
+                    if_part
                         .append(RcDoc::space())
                         .append(RcDoc::text("else"))
                         .append(RcDoc::space())
-                        .append(else_block.to_doc(env));
+                        .append(else_block.to_doc(env))
+                } else {
+                    if_part
                 }
-
-                doc
             }
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }
 
@@ -265,8 +351,11 @@ impl Expr {
             Expr::Var { name } => RcDoc::text(name),
             Expr::Literal { value } => RcDoc::text(value),
             Expr::Call { func, args } => {
-                let args_doc =
-                    RcDoc::intersperse(args.iter().map(|arg| arg.to_doc(env)), RcDoc::text(", "));
+                let args_doc = if args.is_empty() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::intersperse(args.iter().map(|arg| arg.to_doc(env)), RcDoc::text(", "))
+                };
 
                 RcDoc::text(func)
                     .append(RcDoc::text("("))
@@ -283,37 +372,50 @@ impl Expr {
                 .append(ty.to_doc(env))
                 .append(RcDoc::text(")")),
             Expr::StructLiteral { ty, fields } => {
-                let fields_doc = RcDoc::intersperse(
-                    fields.iter().map(|(name, expr)| {
-                        RcDoc::text(name)
-                            .append(RcDoc::text(": "))
-                            .append(expr.to_doc(env))
-                    }),
-                    RcDoc::text(", "),
-                );
+                let fields_doc = if fields.is_empty() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::hardline()
+                        .append(RcDoc::intersperse(
+                            fields.iter().map(|(field_name, field_expr)| {
+                                RcDoc::text(field_name)
+                                    .append(RcDoc::text(":"))
+                                    .append(RcDoc::space())
+                                    .append(field_expr.to_doc(env))
+                                    .append(RcDoc::text(","))
+                            }),
+                            RcDoc::hardline(),
+                        ))
+                        .append(RcDoc::hardline())
+                        .nest(4)
+                };
 
                 RcDoc::text(ty)
                     .append(RcDoc::text("{"))
                     .append(fields_doc)
                     .append(RcDoc::text("}"))
             }
-            Expr::If { cond, then, else_ } => RcDoc::text("if")
-                .append(RcDoc::space())
-                .append(cond.to_doc(env))
-                .append(RcDoc::space())
-                .append(RcDoc::text("{"))
-                .append(RcDoc::space())
-                .append(then.to_doc(env))
-                .append(RcDoc::space())
-                .append(RcDoc::text("}"))
-                .append(RcDoc::space())
-                .append(RcDoc::text("else"))
-                .append(RcDoc::space())
-                .append(RcDoc::text("{"))
-                .append(RcDoc::space())
-                .append(else_.to_doc(env))
-                .append(RcDoc::space())
-                .append(RcDoc::text("}")),
+            Expr::If { cond, then, else_ } => RcDoc::text("(")
+                .append(
+                    RcDoc::text("if")
+                        .append(RcDoc::space())
+                        .append(cond.to_doc(env))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{"))
+                        .append(RcDoc::space())
+                        .append(then.to_doc(env))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("}"))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("else"))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{"))
+                        .append(RcDoc::space())
+                        .append(else_.to_doc(env))
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("}")),
+                )
+                .append(RcDoc::text(")")),
             Expr::Block { stmts, expr } => {
                 let stmts_doc = if stmts.is_empty() {
                     RcDoc::nil()
@@ -332,11 +434,24 @@ impl Expr {
                     RcDoc::nil()
                 };
 
-                RcDoc::text("{")
-                    .append(RcDoc::hardline().append(stmts_doc).append(expr_doc).nest(4))
-                    .append(RcDoc::hardline())
-                    .append(RcDoc::text("}"))
+                let content = if stmts.is_empty() && expr.is_none() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::hardline()
+                        .append(stmts_doc)
+                        .append(expr_doc)
+                        .append(RcDoc::hardline())
+                        .nest(4)
+                };
+
+                RcDoc::text("{").append(content).append(RcDoc::text("}"))
             }
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
     }
 }

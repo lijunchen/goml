@@ -48,8 +48,14 @@ pub struct Fn {
 }
 
 #[derive(Debug)]
+pub struct Receiver {
+    pub name: String,
+    pub ty: tast::Ty,
+}
+
+#[derive(Debug)]
 pub struct Method {
-    pub receiver: String,
+    pub receiver: Receiver,
     pub name: String,
     pub params: Vec<(String, tast::Ty)>,
     pub body: Block,
@@ -145,7 +151,13 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
             }
 
             let methods = vec![Method {
-                receiver: variant_name.clone(),
+                receiver: Receiver {
+                    name: "_".to_string(),
+                    ty: tast::Ty::TApp {
+                        name: Uident::new(&variant_name),
+                        args: vec![],
+                    },
+                },
                 name: type_identifier_method.clone(),
                 params: vec![],
                 body: Block { stmts: vec![] },
@@ -164,7 +176,8 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
 #[test]
 fn test_type_gen() {
     use crate::env::EnumDef;
-    use expect_test::{Expect, expect};
+    use crate::pprint::go_pprint::*;
+    use expect_test::expect;
 
     let mut env = Env::new();
     env.enums.insert(
@@ -196,24 +209,24 @@ fn test_type_gen() {
     let dummy_file = File { toplevels: item };
     expect![[r#"
         type Tree interface {
-        isTree()
+            isTree()
         }
 
-        type Empty struct { }
+        type Empty struct {}
 
-        func (Empty) isTree() {}
+        func (_ Empty) isTree() {}
 
         type Leaf struct {
-        _0 Int
+            _0 Int
         }
 
-        func (Leaf) isTree() {}
+        func (_ Leaf) isTree() {}
 
         type Node struct {
-        _0 Tree
+            _0 Tree
             _1 Tree
         }
 
-        func (Node) isTree() {}"#]]
+        func (_ Node) isTree() {}"#]]
     .assert_eq(&dummy_file.to_pretty(&env, 120));
 }
