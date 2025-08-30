@@ -123,10 +123,11 @@ pub enum Stmt {
     },
 }
 
-pub fn go_file(env: &Env, file: anf::File) -> File {
+pub fn go_file(_env: &Env, _file: anf::File) -> File {
     todo!()
 }
 
+#[allow(unused)]
 fn gen_type_definition(env: &Env) -> Vec<Item> {
     let mut defs = Vec::new();
     for (name, def) in env.enums.iter() {
@@ -176,7 +177,6 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
 #[test]
 fn test_type_gen() {
     use crate::env::EnumDef;
-    use crate::pprint::go_pprint::*;
     use expect_test::expect;
 
     let mut env = Env::new();
