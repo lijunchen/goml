@@ -352,7 +352,9 @@ impl Expr {
             Expr::Var { name } => RcDoc::text(name),
             Expr::Bool { value } => RcDoc::text(if *value { "true" } else { "false" }),
             Expr::Int { value } => RcDoc::as_string(value),
-            Expr::Literal { value } => RcDoc::text(value),
+            Expr::String { value } => RcDoc::text("\"")
+                .append(RcDoc::text(value))
+                .append(RcDoc::text("\"")),
             Expr::Call { func, args } => {
                 let args_doc = if args.is_empty() {
                     RcDoc::nil()

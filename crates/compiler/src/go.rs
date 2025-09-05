@@ -82,7 +82,7 @@ pub enum Expr {
     Int {
         value: i32,
     },
-    Literal {
+    String {
         value: String,
     },
     Call {
@@ -140,7 +140,7 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> Expr {
         anf::ImmExpr::ImmUnit { ty: _ } => Expr::Nil,
         anf::ImmExpr::ImmBool { value, ty: _ } => Expr::Bool { value: *value },
         anf::ImmExpr::ImmInt { value, ty: _ } => Expr::Int { value: *value },
-        anf::ImmExpr::ImmString { value, ty: _ } => Expr::Literal {
+        anf::ImmExpr::ImmString { value, ty: _ } => Expr::String {
             value: value.clone(),
         },
         anf::ImmExpr::ImmTag { index, ty } => {
