@@ -215,13 +215,38 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
         }
         anf::CExpr::ETuple { items: _, ty: _ } => todo!(),
         anf::CExpr::EMatch {
-            expr: _,
-            arms: _,
-            default: _,
-            ty: _,
-        } => {
-            todo!()
-        }
+            expr,
+            arms,
+            default,
+            ty,
+        } => match ty {
+            tast::Ty::TBool => {
+                // compile to if else statement
+                let cond = compile_imm(env, expr);
+                if arms.len() == 2 {
+                    let then = compile_aexpr_as_expr(env, Box::new(arms[0].body.clone()));
+                    let else_ = compile_aexpr_as_expr(env, Box::new(arms[1].body.clone()));
+                    Expr::If {
+                        cond: Box::new(cond),
+                        then: Box::new(then),
+                        else_: Box::new(else_),
+                    }
+                } else if arms.len() == 1 && default.is_some() {
+                    let then = compile_aexpr_as_expr(env, Box::new(arms[0].body.clone()));
+                    let else_ = compile_aexpr_as_expr(env, default.as_ref().unwrap().clone());
+                    Expr::If {
+                        cond: Box::new(cond),
+                        then: Box::new(then),
+                        else_: Box::new(else_),
+                    }
+                } else {
+                    panic!("match to bool must have 2 arms or 1 arm + default");
+                }
+            }
+            _ => {
+                panic!("not imp yet")
+            }
+        },
         anf::CExpr::EIf {
             cond,
             then,
