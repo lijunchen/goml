@@ -23,7 +23,9 @@ fn main() {
     let result = compiler::interpreter::eval_file(&im::HashMap::new(), &mut buffer, &core);
 
     let anf = compiler::anf::anf_file(&env, core);
-    println!("{}", anf.to_pretty(&env, 120));
+    // println!("{}", anf.to_pretty(&env, 120));
+    let go = compiler::go::go_file(&env, anf);
+    println!("{}", go.to_pretty(&env, 120));
 
     println!("stdout: {}", buffer);
     println!("return: {:?}", result);

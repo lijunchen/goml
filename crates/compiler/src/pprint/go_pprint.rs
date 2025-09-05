@@ -348,7 +348,10 @@ impl Stmt {
 impl Expr {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
+            Expr::Nil => RcDoc::text("nil"),
             Expr::Var { name } => RcDoc::text(name),
+            Expr::Bool { value } => RcDoc::text(if *value { "true" } else { "false" }),
+            Expr::Int { value } => RcDoc::as_string(value),
             Expr::Literal { value } => RcDoc::text(value),
             Expr::Call { func, args } => {
                 let args_doc = if args.is_empty() {
