@@ -1,0 +1,66 @@
+type T interface {
+    isT()
+}
+
+type A struct {}
+
+func (_ A) isT() {}
+
+type B struct {
+    _0 bool
+    _1 bool
+}
+
+func (_ B) isT() {}
+
+func test(t/0 T) {
+    switch _ := t__0.(type) {
+    case A:
+        var t6 string = int_to_string(1)
+        return print(t6)
+    case B:
+        var x0 bool = t__0.(B)._0
+        var x1 bool = t__0.(B)._1
+        switch x1 {
+        case true:
+            switch x0 {
+            case true:
+                var t7 string = int_to_string(4)
+                return print(t7)
+            case false:
+                var t8 string = int_to_string(3)
+                return print(t8)
+            }
+        case false:
+            switch x0 {
+            case true:
+                var t9 string = int_to_string(4)
+                return print(t9)
+            case false:
+                var t10 string = int_to_string(2)
+                return print(t10)
+            }
+        }
+    }
+}
+
+func main() {
+    var t11 T = B{
+        _0: true,
+        _1: true,
+    }
+    var mtmp2 Unit = test(t11)
+    var t12 T = B{
+        _0: false,
+        _1: true,
+    }
+    var mtmp3 Unit = test(t12)
+    var t13 T = B{
+        _0: false,
+        _1: false,
+    }
+    var mtmp4 Unit = test(t13)
+    var t14 T = A{}
+    var mtmp5 Unit = test(t14)
+    return nil
+}

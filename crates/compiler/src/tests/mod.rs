@@ -32,7 +32,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let tast_filename = p.with_file_name(format!("{}.tast", filename));
             let core_filename = p.with_file_name(format!("{}.core", filename));
             let anf_filename = p.with_file_name(format!("{}.anf", filename));
-            let go_filename = p.with_file_name(format!("{}.zgo", filename));
+            let go_filename = p.with_file_name(format!("{}.gom", filename));
             let result_filename = p.with_file_name(format!("{}.out", filename));
 
             let input = std::fs::read_to_string(entry.path())?;

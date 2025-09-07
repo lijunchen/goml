@@ -1,0 +1,69 @@
+type Tuple2_Color_Color struct {
+    _0 Color
+    _1 Color
+}
+
+type Color interface {
+    isColor()
+}
+
+type Red struct {}
+
+func (_ Red) isColor() {}
+
+type Green struct {}
+
+func (_ Green) isColor() {}
+
+type Blue struct {}
+
+func (_ Blue) isColor() {}
+
+func main() {
+    var t2 Color = Blue{}
+    var t3 Color = Red{}
+    var a__0 = Tuple2_Color_Color{
+        _0: t2,
+        _1: t3,
+    }
+    var x0 Color = a__0._0
+    var x1 Color = a__0._1
+    switch _ := x1.(type) {
+    case Red:
+        switch _ := x0.(type) {
+        case Red:
+            var t4 string = int_to_string(1)
+            return print(t4)
+        case Green:
+            var t5 string = int_to_string(3)
+            return print(t5)
+        case Blue:
+            var t6 string = int_to_string(3)
+            return print(t6)
+        }
+    case Green:
+        switch _ := x0.(type) {
+        case Red:
+            var t7 string = int_to_string(0)
+            return print(t7)
+        case Green:
+            var t8 string = int_to_string(3)
+            return print(t8)
+        case Blue:
+            var t9 string = int_to_string(3)
+            return print(t9)
+        }
+    case Blue:
+        switch _ := x0.(type) {
+        case Red:
+            var t10 string = int_to_string(3)
+            return print(t10)
+        case Green:
+            var t11 string = int_to_string(3)
+            return print(t11)
+        case Blue:
+            var t12 string = int_to_string(2)
+            return print(t12)
+        }
+    }
+}

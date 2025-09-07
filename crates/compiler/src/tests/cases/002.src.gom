@@ -1,0 +1,79 @@
+type Tuple2_bool_bool struct {
+    _0 bool
+    _1 bool
+}
+
+func main() {
+    var a__0 = Tuple2_bool_bool{
+        _0: true,
+        _1: false,
+    }
+    var x0 bool = a__0._0
+    var x1 bool = a__0._1
+    var b__1
+    switch x1 {
+    case true:
+        switch x0 {
+        case true:
+            b__1 = Tuple2_bool_bool{
+                _0: false,
+                _1: false,
+            }
+        case false:
+            b__1 = Tuple2_bool_bool{
+                _0: true,
+                _1: false,
+            }
+        }
+    case false:
+        switch x0 {
+        case true:
+            b__1 = Tuple2_bool_bool{
+                _0: false,
+                _1: true,
+            }
+        case false:
+            b__1 = Tuple2_bool_bool{
+                _0: true,
+                _1: true,
+            }
+        }
+    }
+    var x2 bool = b__1._0
+    var x3 bool = b__1._1
+    var w__2 bool = x3
+    var b_1__3 bool = w__2
+    var mtmp4 = Tuple2_bool_bool{
+        _0: true,
+        _1: b_1__3,
+    }
+    var x5 bool = mtmp4._0
+    var x6 bool = mtmp4._1
+    var c__4
+    switch x6 {
+    case true:
+        switch x5 {
+        case true:
+            var t7
+            t7 = int_to_string(3)
+            c__4 = print(t7)
+        case false:
+            var t8
+            t8 = int_to_string(1)
+            c__4 = print(t8)
+        }
+    case false:
+        switch x5 {
+        case true:
+            var t9
+            t9 = int_to_string(2)
+            c__4 = print(t9)
+        case false:
+            var t10
+            t10 = int_to_string(0)
+            c__4 = print(t10)
+        }
+    }
+    var t11 string = unit_to_string(c__4)
+    return print(t11)
+}

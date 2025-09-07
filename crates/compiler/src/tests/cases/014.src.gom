@@ -1,0 +1,96 @@
+type Tuple2_bool_bool struct {
+    _0 bool
+    _1 bool
+}
+
+func test_nested_match(x/0 Tuple2_bool_bool, y/1 Tuple2_bool_bool) {
+    var x0 bool = x__0._0
+    var x1 bool = x__0._1
+    switch x1 {
+    case true:
+        var x2 bool = y__1._0
+        var x3 bool = y__1._1
+        switch x3 {
+        case true:
+            switch x2 {
+            case true:
+                return println("case4")
+            case false:
+                return println("case3")
+            }
+        case false:
+            return println("case4")
+        }
+    case false:
+        switch x0 {
+        case true:
+            var x4 bool = y__1._0
+            var x5 bool = y__1._1
+            switch x5 {
+            case true:
+                switch x4 {
+                case true:
+                    return println("case2")
+                case false:
+                    return println("case1")
+                }
+            case false:
+                return println("case2")
+            }
+        case false:
+            var x6 bool = y__1._0
+            var x7 bool = y__1._1
+            switch x7 {
+            case true:
+                switch x6 {
+                case true:
+                    return println("case4")
+                case false:
+                    return println("case3")
+                }
+            case false:
+                return println("case4")
+            }
+        }
+    }
+}
+
+func main() {
+    var t12 = Tuple2_bool_bool{
+        _0: true,
+        _1: false,
+    }
+    var t13 = Tuple2_bool_bool{
+        _0: false,
+        _1: true,
+    }
+    var mtmp8 Unit = test_nested_match(t12, t13)
+    var t14 = Tuple2_bool_bool{
+        _0: true,
+        _1: false,
+    }
+    var t15 = Tuple2_bool_bool{
+        _0: true,
+        _1: false,
+    }
+    var mtmp9 Unit = test_nested_match(t14, t15)
+    var t16 = Tuple2_bool_bool{
+        _0: false,
+        _1: true,
+    }
+    var t17 = Tuple2_bool_bool{
+        _0: false,
+        _1: true,
+    }
+    var mtmp10 Unit = test_nested_match(t16, t17)
+    var t18 = Tuple2_bool_bool{
+        _0: false,
+        _1: true,
+    }
+    var t19 = Tuple2_bool_bool{
+        _0: true,
+        _1: false,
+    }
+    var mtmp11 Unit = test_nested_match(t18, t19)
+    return nil
+}
