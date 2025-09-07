@@ -99,7 +99,7 @@ impl Interface {
 }
 
 impl MethodElem {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         let name = RcDoc::text(&self.name);
         let params = if self.params.is_empty() {
             RcDoc::nil()
@@ -181,7 +181,7 @@ impl Struct {
 }
 
 impl Field {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         RcDoc::text(&self.name)
             .append(RcDoc::space())
             .append(go_type_doc(&self.ty))
@@ -268,7 +268,7 @@ impl Method {
 }
 
 impl Receiver {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         RcDoc::text("(")
             .append(RcDoc::text(&self.name))
             .append(RcDoc::space())

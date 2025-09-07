@@ -239,9 +239,9 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             }
         },
         anf::CExpr::EIf {
-            cond,
-            then,
-            else_,
+            cond: _,
+            then: _,
+            else_: _,
             ty: _,
         } => panic!("EIf should be lowered to Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
@@ -416,6 +416,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
     }
 }
 
+#[allow(unused)]
 fn compile_aexpr_as_expr(env: &Env, e: Box<anf::AExpr>) -> Expr {
     match *e {
         AExpr::ACExpr { expr } => compile_cexpr(env, &expr),
