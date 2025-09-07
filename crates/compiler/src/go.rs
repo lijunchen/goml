@@ -340,7 +340,9 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
     let mut stmts = Vec::new();
     match e {
         AExpr::ACExpr { expr } => {
-            stmts.push(Stmt::Expr(compile_cexpr(env, &expr)));
+            stmts.push(Stmt::Return {
+                expr: Some(compile_cexpr(env, &expr)),
+            });
         }
         AExpr::ALet {
             name,

@@ -400,25 +400,21 @@ impl Expr {
                     .append(fields_doc)
                     .append(RcDoc::text("}"))
             }
-            Expr::If { cond, then, else_ } => RcDoc::text("(")
-                .append(
-                    RcDoc::text("if")
-                        .append(RcDoc::space())
-                        .append(cond.to_doc(env))
-                        .append(RcDoc::space())
-                        .append(RcDoc::text("{"))
-                        .append(RcDoc::hardline().append(then.to_doc(env)).nest(2))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}"))
-                        .append(RcDoc::space())
-                        .append(RcDoc::text("else"))
-                        .append(RcDoc::space())
-                        .append(RcDoc::text("{"))
-                        .append(RcDoc::hardline().append(else_.to_doc(env)).nest(2))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}")),
-                )
-                .append(RcDoc::text(")")),
+            Expr::If { cond, then, else_ } => RcDoc::text("if")
+                .append(RcDoc::space())
+                .append(cond.to_doc(env))
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(RcDoc::hardline().append(then.to_doc(env)).nest(2))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .append(RcDoc::space())
+                .append(RcDoc::text("else"))
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(RcDoc::hardline().append(else_.to_doc(env)).nest(2))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
             Expr::Block { stmts, expr } => {
                 let stmts_doc = if stmts.is_empty() {
                     RcDoc::nil()
