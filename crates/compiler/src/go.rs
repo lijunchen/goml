@@ -248,10 +248,12 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             expr,
             variant_index,
             field_index,
-            ty,
+            ty: _,
         } => {
             let obj = compile_imm(env, expr);
-            let vty = variant_ty_by_index(env, ty, *variant_index);
+            // Determine variant cast type from the scrutinee's enum type, not the field type
+            let enum_ty = imm_ty(expr);
+            let vty = variant_ty_by_index(env, &enum_ty, *variant_index);
             Expr::FieldAccess {
                 obj: Box::new(Expr::Cast {
                     expr: Box::new(obj),
@@ -311,6 +313,16 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                 default,
                 ty: _,
             } => match imm_ty(&expr) {
+                tast::Ty::TUnit => {
+                    // Only one possible value of unit: run the first arm or default
+                    if let Some(first) = arms.first() {
+                        compile_aexpr_assign(env, target, first.body.clone())
+                    } else if let Some(def) = default {
+                        compile_aexpr_assign(env, target, *def)
+                    } else {
+                        vec![]
+                    }
+                }
                 tast::Ty::TBool => {
                     // Expression switch on boolean scrutinee
                     let mut cases = Vec::new();
@@ -474,6 +486,13 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 default,
                 ty: _,
             } => match imm_ty(&expr) {
+                tast::Ty::TUnit => {
+                    if let Some(first) = arms.first() {
+                        stmts.extend(compile_aexpr(env, first.body.clone()));
+                    } else if let Some(def) = default {
+                        stmts.extend(compile_aexpr(env, *def));
+                    }
+                }
                 tast::Ty::TBool => {
                     let mut cases = Vec::new();
                     for arm in arms {

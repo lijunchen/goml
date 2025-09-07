@@ -185,9 +185,9 @@ impl Expr {
                 expr,
                 variant_index,
                 field_index,
-                ty,
+                ty: _,
             } => {
-                let enum_name = ty.get_constr_name_unsafe();
+                let enum_name = expr.get_ty().get_constr_name_unsafe();
                 RcDoc::text(enum_name)
                     .append(RcDoc::text("_"))
                     .append(RcDoc::text(variant_index.to_string()))

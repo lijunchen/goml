@@ -217,7 +217,7 @@ fn compile_enum_case(
                     expr: Box::new(bvar.to_core()),
                     variant_index: tag,
                     field_index: field,
-                    ty: bvar.ty.clone(),
+                    ty: var.ty.clone(),
                 }),
                 body: Box::new(result),
                 ty: ty.clone(),
