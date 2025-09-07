@@ -101,11 +101,6 @@ pub enum Expr {
         ty: String,
         fields: Vec<(String, Expr)>,
     },
-    If {
-        cond: Box<Expr>,
-        then: Box<Expr>,
-        else_: Box<Expr>,
-    },
     Block {
         stmts: Vec<Stmt>,
         expr: Option<Box<Expr>>,
@@ -214,35 +209,9 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             }
         }
         anf::CExpr::ETuple { items: _, ty: _ } => todo!(),
-        anf::CExpr::EMatch {
-            expr,
-            arms,
-            default,
-            ty,
-        } => match ty {
-            tast::Ty::TBool => {
-                // compile to if else statement
-                let cond = compile_imm(env, expr);
-                if arms.len() == 2 {
-                    let then = compile_aexpr_as_expr(env, Box::new(arms[0].body.clone()));
-                    let else_ = compile_aexpr_as_expr(env, Box::new(arms[1].body.clone()));
-                    Expr::If {
-                        cond: Box::new(cond),
-                        then: Box::new(then),
-                        else_: Box::new(else_),
-                    }
-                } else if arms.len() == 1 && default.is_some() {
-                    let then = compile_aexpr_as_expr(env, Box::new(arms[0].body.clone()));
-                    let else_ = compile_aexpr_as_expr(env, default.as_ref().unwrap().clone());
-                    Expr::If {
-                        cond: Box::new(cond),
-                        then: Box::new(then),
-                        else_: Box::new(else_),
-                    }
-                } else {
-                    panic!("match to bool must have 2 arms or 1 arm + default");
-                }
-            }
+        anf::CExpr::EMatch { ty, .. } => match ty {
+            // Boolean matches are handled as statements (not expressions) in Go.
+            tast::Ty::TBool => panic!("boolean match should be lowered to Stmt::If in compile_aexpr"),
             _ => {
                 panic!("not imp yet")
             }
@@ -252,16 +221,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             then,
             else_,
             ty: _,
-        } => {
-            let cond_e = compile_imm(env, cond);
-            let then_e = compile_aexpr_as_expr(env, then.clone());
-            let else_e = compile_aexpr_as_expr(env, else_.clone());
-            Expr::If {
-                cond: Box::new(cond_e),
-                then: Box::new(then_e),
-                else_: Box::new(else_e),
-            }
-        }
+        } => panic!("EIf should be lowered to Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
             expr,
             variant_index,
@@ -290,6 +250,80 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             index: _,
             ty: _,
         } => todo!(),
+    }
+}
+
+fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
+    match e {
+        AExpr::ACExpr { expr } => match expr {
+            anf::CExpr::CImm { .. }
+            | anf::CExpr::EConstr { .. }
+            | anf::CExpr::EConstrGet { .. }
+            | anf::CExpr::ECall { .. }
+            | anf::CExpr::EProj { .. }
+            | anf::CExpr::ETuple { .. } => vec![Stmt::Assignment {
+                name: target.to_string(),
+                value: compile_cexpr(env, &expr),
+            }],
+            anf::CExpr::EIf { cond, then, else_, .. } => {
+                let cond_e = compile_imm(env, &cond);
+                let then_stmts = compile_aexpr_assign(env, target, *then);
+                let else_stmts = compile_aexpr_assign(env, target, *else_);
+                vec![Stmt::If {
+                    cond: cond_e,
+                    then: Block { stmts: then_stmts },
+                    else_: Some(Block { stmts: else_stmts }),
+                }]
+            }
+            anf::CExpr::EMatch { expr, arms, default, ty } => match ty {
+                tast::Ty::TBool => {
+                    let cond_e = compile_imm(env, &expr);
+                    if arms.len() == 2 {
+                        let then_stmts = compile_aexpr_assign(env, target, arms[0].body.clone());
+                        let else_stmts = compile_aexpr_assign(env, target, arms[1].body.clone());
+                        vec![Stmt::If {
+                            cond: cond_e,
+                            then: Block { stmts: then_stmts },
+                            else_: Some(Block { stmts: else_stmts }),
+                        }]
+                    } else if arms.len() == 1 && default.is_some() {
+                        let then_stmts = compile_aexpr_assign(env, target, arms[0].body.clone());
+                        let else_stmts = compile_aexpr_assign(env, target, *default.unwrap());
+                        vec![Stmt::If {
+                            cond: cond_e,
+                            then: Block { stmts: then_stmts },
+                            else_: Some(Block { stmts: else_stmts }),
+                        }]
+                    } else {
+                        panic!("match to bool must have 2 arms or 1 arm + default");
+                    }
+                }
+                _ => panic!("not imp yet"),
+            },
+        },
+        AExpr::ALet { name, value, body, ty } => {
+            let mut out = Vec::new();
+            // Declare the inner variable first
+            out.push(Stmt::VarDecl {
+                name: name.clone(),
+                ty: Some(ty.clone()),
+                value: None,
+            });
+
+            // Initialize it (may itself require if-lowering)
+            match &*value {
+                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
+                    out.extend(compile_aexpr_assign(env, &name, AExpr::ACExpr { expr: *value.clone() }));
+                }
+                _ => {
+                    out.push(Stmt::Assignment { name: name.clone(), value: compile_cexpr(env, &*value) });
+                }
+            }
+
+            // Continue with body to finally assign into the target
+            out.extend(compile_aexpr_assign(env, target, *body));
+            out
+        }
     }
 }
 
@@ -339,22 +373,55 @@ fn compile_aexpr_as_expr(env: &Env, e: Box<anf::AExpr>) -> Expr {
 fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
     let mut stmts = Vec::new();
     match e {
-        AExpr::ACExpr { expr } => {
-            stmts.push(Stmt::Return {
-                expr: Some(compile_cexpr(env, &expr)),
-            });
-        }
+        AExpr::ACExpr { expr } => match expr {
+            // Lower conditional expressions to if-statements with returns in branches
+            anf::CExpr::EIf { cond, then, else_, .. } => {
+                let cond_e = compile_imm(env, &cond);
+                let then_block = Block { stmts: compile_aexpr(env, *then) };
+                let else_block = Block { stmts: compile_aexpr(env, *else_) };
+                stmts.push(Stmt::If { cond: cond_e, then: then_block, else_: Some(else_block) });
+            }
+            anf::CExpr::EMatch { expr, arms, default, ty } => match ty {
+                tast::Ty::TBool => {
+                    let cond_e = compile_imm(env, &expr);
+                    if arms.len() == 2 {
+                        let then_block = Block { stmts: compile_aexpr(env, arms[0].body.clone()) };
+                        let else_block = Block { stmts: compile_aexpr(env, arms[1].body.clone()) };
+                        stmts.push(Stmt::If { cond: cond_e, then: then_block, else_: Some(else_block) });
+                    } else if arms.len() == 1 && default.is_some() {
+                        let then_block = Block { stmts: compile_aexpr(env, arms[0].body.clone()) };
+                        let else_block = Block { stmts: compile_aexpr(env, *default.unwrap()) };
+                        stmts.push(Stmt::If { cond: cond_e, then: then_block, else_: Some(else_block) });
+                    } else {
+                        panic!("match to bool must have 2 arms or 1 arm + default");
+                    }
+                }
+                _ => panic!("not imp yet"),
+            },
+            _ => {
+                stmts.push(Stmt::Return { expr: Some(compile_cexpr(env, &expr)) });
+            }
+        },
         AExpr::ALet {
             name,
             value,
             body,
             ty,
         } => {
-            stmts.push(Stmt::VarDecl {
-                name: name.clone(),
-                ty: Some(ty.clone()),
-                value: Some(compile_cexpr(env, &value)),
-            });
+            match &*value {
+                // If RHS needs statements, declare then fill via if-lowering
+                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
+                    stmts.push(Stmt::VarDecl { name: name.clone(), ty: Some(ty.clone()), value: None });
+                    stmts.extend(compile_aexpr_assign(env, &name, AExpr::ACExpr { expr: *value.clone() }));
+                }
+                _ => {
+                    stmts.push(Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: Some(ty.clone()),
+                        value: Some(compile_cexpr(env, &*value)),
+                    });
+                }
+            }
             stmts.extend(compile_aexpr(env, *body));
         }
     }
