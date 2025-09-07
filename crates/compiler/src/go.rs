@@ -780,7 +780,7 @@ fn test_type_gen() {
         func (_ Empty) isTree() {}
 
         type Leaf struct {
-            _0 Int
+            _0 int
         }
 
         func (_ Leaf) isTree() {}
