@@ -32,6 +32,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let tast_filename = p.with_file_name(format!("{}.tast", filename));
             let core_filename = p.with_file_name(format!("{}.core", filename));
             let anf_filename = p.with_file_name(format!("{}.anf", filename));
+            let go_filename = p.with_file_name(format!("{}.zgo", filename));
             let result_filename = p.with_file_name(format!("{}.out", filename));
 
             let input = std::fs::read_to_string(entry.path())?;
@@ -60,6 +61,9 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
 
             let anf = crate::anf::anf_file(&env, core);
             expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
+
+            let go = crate::go::go_file(&env, anf);
+            expect_test::expect_file![go_filename].assert_eq(&go.to_pretty(&env, 120));
         }
     }
     Ok(())
