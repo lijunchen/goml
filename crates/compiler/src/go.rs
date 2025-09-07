@@ -183,11 +183,11 @@ fn cexpr_ty(e: &anf::CExpr) -> tast::Ty {
 }
 
 fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
-    if let tast::Ty::TApp { name, .. } = ty {
-        if let Some(def) = env.enums.get(name) {
-            let (vname, _fields) = &def.variants[index];
-            return vname.0.clone();
-        }
+    if let tast::Ty::TApp { name, .. } = ty
+        && let Some(def) = env.enums.get(name)
+    {
+        let (vname, _fields) = &def.variants[index];
+        return vname.0.clone();
     }
     panic!(
         "Cannot resolve variant name for ty {:?} index {}",
@@ -229,7 +229,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                 fields,
             }
         }
-        anf::CExpr::EMatch { expr, .. } => match imm_ty(&expr) {
+        anf::CExpr::EMatch { expr, .. } => match imm_ty(expr) {
             // Boolean matches are handled as statements (not expressions) in Go.
             tast::Ty::TBool => {
                 panic!("boolean match should be lowered to Stmt::If in compile_aexpr")
@@ -404,7 +404,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                 _ => {
                     out.push(Stmt::Assignment {
                         name: name.clone(),
-                        value: compile_cexpr(env, &*value),
+                        value: compile_cexpr(env, &value),
                     });
                 }
             }
@@ -412,50 +412,6 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
             // Continue with body to finally assign into the target
             out.extend(compile_aexpr_assign(env, target, *body));
             out
-        }
-    }
-}
-
-#[allow(unused)]
-fn compile_aexpr_as_expr(env: &Env, e: Box<anf::AExpr>) -> Expr {
-    match *e {
-        AExpr::ACExpr { expr } => compile_cexpr(env, &expr),
-        AExpr::ALet {
-            name,
-            value,
-            body,
-            ty: _,
-        } => {
-            let init_expr = compile_cexpr(env, &value);
-            let var_ty = cexpr_ty(&value);
-            let mut stmts = vec![Stmt::VarDecl {
-                name,
-                ty: Some(var_ty),
-                value: Some(init_expr),
-            }];
-
-            let inner = compile_aexpr_as_expr(env, body);
-            Expr::Block {
-                stmts: {
-                    if let Expr::Block {
-                        stmts: inner_stmts,
-                        expr,
-                    } = inner
-                    {
-                        stmts.extend(inner_stmts);
-                        if let Some(expr) = expr.map(|b| *b) {
-                            return Expr::Block {
-                                stmts,
-                                expr: Some(Box::new(expr)),
-                            };
-                        } else {
-                            return Expr::Block { stmts, expr: None };
-                        }
-                    }
-                    stmts
-                },
-                expr: Some(Box::new(inner)),
-            }
         }
     }
 }
@@ -576,14 +532,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                     stmts.push(Stmt::VarDecl {
                         name: name.clone(),
                         ty: None,
-                        value: Some(compile_cexpr(env, &*value)),
+                        value: Some(compile_cexpr(env, &value)),
                     });
                 }
                 _ => {
                     stmts.push(Stmt::VarDecl {
                         name: name.clone(),
-                        ty: Some(cexpr_ty(&*value)),
-                        value: Some(compile_cexpr(env, &*value)),
+                        ty: Some(cexpr_ty(&value)),
+                        value: Some(compile_cexpr(env, &value)),
                     });
                 }
             }
@@ -602,7 +558,7 @@ fn compile_fn(env: &Env, f: anf::Fn) -> Fn {
     Fn {
         name: f.name,
         params,
-        body: Block { stmts: stmts },
+        body: Block { stmts },
     }
 }
 

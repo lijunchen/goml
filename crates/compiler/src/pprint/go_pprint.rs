@@ -35,11 +35,10 @@ fn go_type_doc(ty: &tast::Ty) -> RcDoc<'_, ()> {
 
 impl File {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        let items_doc = RcDoc::intersperse(
+        RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
-        );
-        items_doc
+        )
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
