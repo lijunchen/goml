@@ -145,48 +145,21 @@ fn compile_match_arms_to_anf<'a>(
                     body: anf_body,
                 });
             }
-            core::Expr::EConstr { index, args, ty } => {
-                // Complex constructor patterns need compilation
-                // Handle constructors with any number of arguments
-                // Create an immediate pattern for the constructor tag
+            core::Expr::EConstr {
+                index,
+                args: _args,
+                ty,
+            } => {
+                // Patterns were already simplified in compile_match.rs. Do not duplicate field extraction here.
                 let anf_lhs = ImmExpr::ImmTag {
                     index: *index,
                     ty: ty.clone(),
                 };
-
-                // Build a chain of let bindings to extract all arguments
-                let mut body = anf(
-                    env,
-                    arm.body.clone(),
-                    Box::new(|c| AExpr::ACExpr { expr: c }),
-                );
-
-                // Extract arguments in reverse order to build the let chain correctly
-                for (field_index, arg) in args.iter().enumerate().rev() {
-                    if let core::Expr::EVar { name, ty: arg_ty } = arg {
-                        body = AExpr::ALet {
-                            name: name.clone(),
-                            value: Box::new(CExpr::EConstrGet {
-                                expr: Box::new(match &scrutinee {
-                                    ImmExpr::ImmVar { name, ty } => ImmExpr::ImmVar {
-                                        name: name.clone(),
-                                        ty: ty.clone(),
-                                    },
-                                    other => other.clone(),
-                                }),
-                                variant_index: *index,
-                                field_index,
-                                ty: arg_ty.clone(),
-                            }),
-                            body: Box::new(body),
-                            ty: match_ty.clone(),
-                        };
-                    } else {
-                        panic!("Complex argument patterns not supported: {:?}", arg);
-                    }
-                }
-
-                anf_arms.push(Arm { lhs: anf_lhs, body });
+                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                anf_arms.push(Arm {
+                    lhs: anf_lhs,
+                    body: anf_body,
+                });
             }
             _ => {
                 panic!("Unexpected pattern in match arm: {:?}", arm.lhs);

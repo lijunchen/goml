@@ -362,6 +362,122 @@ impl Stmt {
                     if_part
                 }
             }
+            Stmt::SwitchExpr {
+                expr,
+                cases,
+                default,
+            } => {
+                let cases_doc = RcDoc::intersperse(
+                    cases.iter().map(|(val, blk)| {
+                        let body = if blk.stmts.is_empty() {
+                            RcDoc::nil()
+                        } else {
+                            RcDoc::hardline()
+                                .append(RcDoc::intersperse(
+                                    blk.stmts.iter().map(|s| s.to_doc(env)),
+                                    RcDoc::hardline(),
+                                ))
+                                .nest(4)
+                        };
+                        RcDoc::text("case")
+                            .append(RcDoc::space())
+                            .append(val.to_doc(env))
+                            .append(RcDoc::text(":"))
+                            .append(body)
+                    }),
+                    RcDoc::hardline(),
+                );
+
+                let default_doc = if let Some(blk) = default {
+                    let body = if blk.stmts.is_empty() {
+                        RcDoc::nil()
+                    } else {
+                        RcDoc::hardline()
+                            .append(RcDoc::intersperse(
+                                blk.stmts.iter().map(|s| s.to_doc(env)),
+                                RcDoc::hardline(),
+                            ))
+                            .nest(4)
+                    };
+                    RcDoc::hardline()
+                        .append(RcDoc::text("default:"))
+                        .append(body)
+                } else {
+                    RcDoc::nil()
+                };
+
+                RcDoc::text("switch")
+                    .append(RcDoc::space())
+                    .append(expr.to_doc(env))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(RcDoc::hardline())
+                    .append(cases_doc)
+                    .append(default_doc)
+                    .append(RcDoc::hardline())
+                    .append(RcDoc::text("}"))
+            }
+            Stmt::SwitchType {
+                bind,
+                expr,
+                cases,
+                default,
+            } => {
+                let cases_doc = RcDoc::intersperse(
+                    cases.iter().map(|(ty, blk)| {
+                        let body = if blk.stmts.is_empty() {
+                            RcDoc::nil()
+                        } else {
+                            RcDoc::hardline()
+                                .append(RcDoc::intersperse(
+                                    blk.stmts.iter().map(|s| s.to_doc(env)),
+                                    RcDoc::hardline(),
+                                ))
+                                .nest(4)
+                        };
+                        RcDoc::text("case")
+                            .append(RcDoc::space())
+                            .append(go_type_doc(ty))
+                            .append(RcDoc::text(":"))
+                            .append(body)
+                    }),
+                    RcDoc::hardline(),
+                );
+
+                let default_doc = if let Some(blk) = default {
+                    let body = if blk.stmts.is_empty() {
+                        RcDoc::nil()
+                    } else {
+                        RcDoc::hardline()
+                            .append(RcDoc::intersperse(
+                                blk.stmts.iter().map(|s| s.to_doc(env)),
+                                RcDoc::hardline(),
+                            ))
+                            .nest(4)
+                    };
+                    RcDoc::hardline()
+                        .append(RcDoc::text("default:"))
+                        .append(body)
+                } else {
+                    RcDoc::nil()
+                };
+
+                RcDoc::text("switch")
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(bind))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(":="))
+                    .append(RcDoc::space())
+                    .append(expr.to_doc(env))
+                    .append(RcDoc::text(".(type)"))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(RcDoc::hardline())
+                    .append(cases_doc)
+                    .append(default_doc)
+                    .append(RcDoc::hardline())
+                    .append(RcDoc::text("}"))
+            }
         }
     }
 

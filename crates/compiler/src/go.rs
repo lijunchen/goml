@@ -127,6 +127,19 @@ pub enum Stmt {
         then: Block,
         else_: Option<Block>,
     },
+    // switch <expr> { case <value>: ...; default: ... }
+    SwitchExpr {
+        expr: Expr,
+        cases: Vec<(Expr, Block)>,
+        default: Option<Block>,
+    },
+    // switch _ := <expr>.(type) { case <Type>: ...; default: ... }
+    SwitchType {
+        bind: String,
+        expr: Expr,
+        cases: Vec<(tast::Ty, Block)>,
+        default: Option<Block>,
+    },
 }
 
 fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> Expr {
@@ -216,13 +229,13 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                 fields,
             }
         }
-        anf::CExpr::EMatch { ty, .. } => match ty {
+        anf::CExpr::EMatch { expr, .. } => match imm_ty(&expr) {
             // Boolean matches are handled as statements (not expressions) in Go.
             tast::Ty::TBool => {
                 panic!("boolean match should be lowered to Stmt::If in compile_aexpr")
             }
             _ => {
-                panic!("not imp yet")
+                panic!("EMatch should be lowered in compile_aexpr/compile_aexpr_assign")
             }
         },
         anf::CExpr::EIf {
@@ -296,31 +309,59 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                 expr,
                 arms,
                 default,
-                ty,
-            } => match ty {
+                ty: _,
+            } => match imm_ty(&expr) {
                 tast::Ty::TBool => {
-                    let cond_e = compile_imm(env, &expr);
-                    if arms.len() == 2 {
-                        let then_stmts = compile_aexpr_assign(env, target, arms[0].body.clone());
-                        let else_stmts = compile_aexpr_assign(env, target, arms[1].body.clone());
-                        vec![Stmt::If {
-                            cond: cond_e,
-                            then: Block { stmts: then_stmts },
-                            else_: Some(Block { stmts: else_stmts }),
-                        }]
-                    } else if arms.len() == 1 && default.is_some() {
-                        let then_stmts = compile_aexpr_assign(env, target, arms[0].body.clone());
-                        let else_stmts = compile_aexpr_assign(env, target, *default.unwrap());
-                        vec![Stmt::If {
-                            cond: cond_e,
-                            then: Block { stmts: then_stmts },
-                            else_: Some(Block { stmts: else_stmts }),
-                        }]
-                    } else {
-                        panic!("match to bool must have 2 arms or 1 arm + default");
+                    // Expression switch on boolean scrutinee
+                    let mut cases = Vec::new();
+                    for arm in arms {
+                        if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
+                            cases.push((
+                                Expr::Bool { value },
+                                Block {
+                                    stmts: compile_aexpr_assign(env, target, arm.body),
+                                },
+                            ));
+                        } else {
+                            panic!("expected ImmBool in boolean match arm");
+                        }
                     }
+                    let def_block = default.map(|d| Block {
+                        stmts: compile_aexpr_assign(env, target, *d),
+                    });
+                    vec![Stmt::SwitchExpr {
+                        expr: compile_imm(env, &expr),
+                        cases,
+                        default: def_block,
+                    }]
                 }
-                _ => panic!("not imp yet"),
+                tast::Ty::TApp { .. } => {
+                    // Type switch on enum ADT
+                    let mut cases = Vec::new();
+                    for arm in arms {
+                        if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
+                            let vty = variant_ty_by_index(env, &ty, index);
+                            cases.push((
+                                vty,
+                                Block {
+                                    stmts: compile_aexpr_assign(env, target, arm.body),
+                                },
+                            ));
+                        } else {
+                            panic!("expected ImmTag in enum match arm");
+                        }
+                    }
+                    let def_block = default.map(|d| Block {
+                        stmts: compile_aexpr_assign(env, target, *d),
+                    });
+                    vec![Stmt::SwitchType {
+                        bind: "_".to_string(),
+                        expr: compile_imm(env, &expr),
+                        cases,
+                        default: def_block,
+                    }]
+                }
+                _ => panic!("unsupported scrutinee type for match in Go backend"),
             },
         },
         AExpr::ALet {
@@ -431,39 +472,57 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 expr,
                 arms,
                 default,
-                ty,
-            } => match ty {
+                ty: _,
+            } => match imm_ty(&expr) {
                 tast::Ty::TBool => {
-                    let cond_e = compile_imm(env, &expr);
-                    if arms.len() == 2 {
-                        let then_block = Block {
-                            stmts: compile_aexpr(env, arms[0].body.clone()),
-                        };
-                        let else_block = Block {
-                            stmts: compile_aexpr(env, arms[1].body.clone()),
-                        };
-                        stmts.push(Stmt::If {
-                            cond: cond_e,
-                            then: then_block,
-                            else_: Some(else_block),
-                        });
-                    } else if arms.len() == 1 && default.is_some() {
-                        let then_block = Block {
-                            stmts: compile_aexpr(env, arms[0].body.clone()),
-                        };
-                        let else_block = Block {
-                            stmts: compile_aexpr(env, *default.unwrap()),
-                        };
-                        stmts.push(Stmt::If {
-                            cond: cond_e,
-                            then: then_block,
-                            else_: Some(else_block),
-                        });
-                    } else {
-                        panic!("match to bool must have 2 arms or 1 arm + default");
+                    let mut cases = Vec::new();
+                    for arm in arms {
+                        if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
+                            cases.push((
+                                Expr::Bool { value },
+                                Block {
+                                    stmts: compile_aexpr(env, arm.body),
+                                },
+                            ));
+                        } else {
+                            panic!("expected ImmBool in boolean match arm");
+                        }
                     }
+                    let def_block = default.map(|d| Block {
+                        stmts: compile_aexpr(env, *d),
+                    });
+                    stmts.push(Stmt::SwitchExpr {
+                        expr: compile_imm(env, &expr),
+                        cases,
+                        default: def_block,
+                    });
                 }
-                _ => panic!("not imp yet"),
+                tast::Ty::TApp { .. } => {
+                    let mut cases = Vec::new();
+                    for arm in arms {
+                        if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
+                            let vty = variant_ty_by_index(env, &ty, index);
+                            cases.push((
+                                vty,
+                                Block {
+                                    stmts: compile_aexpr(env, arm.body),
+                                },
+                            ));
+                        } else {
+                            panic!("expected ImmTag in enum match arm");
+                        }
+                    }
+                    let def_block = default.map(|d| Block {
+                        stmts: compile_aexpr(env, *d),
+                    });
+                    stmts.push(Stmt::SwitchType {
+                        bind: "_".to_string(),
+                        expr: compile_imm(env, &expr),
+                        cases,
+                        default: def_block,
+                    });
+                }
+                _ => panic!("unsupported scrutinee type for match in Go backend"),
             },
             _ => {
                 stmts.push(Stmt::Return {
@@ -793,6 +852,43 @@ fn collect_tuple_types(items: &Vec<Item>) -> Vec<Vec<tast::Ty>> {
                 }
                 if let Some(b) = else_ {
                     for s in &b.stmts {
+                        collect_from_stmt(s, out);
+                    }
+                }
+            }
+            Stmt::SwitchExpr {
+                expr,
+                cases,
+                default,
+            } => {
+                collect_from_expr(expr, out);
+                for (val, blk) in cases {
+                    collect_from_expr(val, out);
+                    for s in &blk.stmts {
+                        collect_from_stmt(s, out);
+                    }
+                }
+                if let Some(blk) = default {
+                    for s in &blk.stmts {
+                        collect_from_stmt(s, out);
+                    }
+                }
+            }
+            Stmt::SwitchType {
+                expr,
+                cases,
+                default,
+                ..
+            } => {
+                collect_from_expr(expr, out);
+                for (ty, blk) in cases {
+                    collect_from_ty(ty, out);
+                    for s in &blk.stmts {
+                        collect_from_stmt(s, out);
+                    }
+                }
+                if let Some(blk) = default {
+                    for s in &blk.stmts {
                         collect_from_stmt(s, out);
                     }
                 }
