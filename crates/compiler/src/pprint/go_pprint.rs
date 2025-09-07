@@ -7,12 +7,39 @@ use crate::{
     },
 };
 
+use crate::tast;
+
+fn go_type_name(ty: &tast::Ty) -> String {
+    match ty {
+        tast::Ty::TUnit => "Unit".to_string(),
+        tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt => "int".to_string(),
+        tast::Ty::TString => "string".to_string(),
+        tast::Ty::TApp { name, .. } => name.0.clone(),
+        tast::Ty::TTuple { typs } => {
+            let mut s = format!("Tuple{}", typs.len());
+            for t in typs {
+                s.push('_');
+                s.push_str(&go_type_name(t).replace(['{', '}', ' ', '[', ']', ','], "_"));
+            }
+            s
+        }
+        // Fallback textual for unsupported forms
+        tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),
+    }
+}
+
+fn go_type_doc(ty: &tast::Ty) -> RcDoc<'_, ()> {
+    RcDoc::text(go_type_name(ty))
+}
+
 impl File {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        RcDoc::intersperse(
+        let items_doc = RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
-        )
+        );
+        items_doc
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
@@ -81,14 +108,14 @@ impl MethodElem {
                 self.params.iter().map(|(param_name, param_ty)| {
                     RcDoc::text(param_name)
                         .append(RcDoc::space())
-                        .append(param_ty.to_doc(env))
+                        .append(go_type_doc(param_ty))
                 }),
                 RcDoc::text(", "),
             )
         };
 
         let ret_type = if let Some(ret_ty) = &self.ret {
-            RcDoc::space().append(ret_ty.to_doc(env))
+            RcDoc::space().append(go_type_doc(ret_ty))
         } else {
             RcDoc::nil()
         };
@@ -157,7 +184,7 @@ impl Field {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         RcDoc::text(&self.name)
             .append(RcDoc::space())
-            .append(self.ty.to_doc(env))
+            .append(go_type_doc(&self.ty))
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
@@ -177,7 +204,7 @@ impl Fn {
                 self.params.iter().map(|(param_name, param_ty)| {
                     RcDoc::text(param_name)
                         .append(RcDoc::space())
-                        .append(param_ty.to_doc(env))
+                        .append(go_type_doc(param_ty))
                 }),
                 RcDoc::text(", "),
             )
@@ -245,7 +272,7 @@ impl Receiver {
         RcDoc::text("(")
             .append(RcDoc::text(&self.name))
             .append(RcDoc::space())
-            .append(self.ty.to_doc(env))
+            .append(go_type_doc(&self.ty))
             .append(RcDoc::text(")"))
     }
 
@@ -290,7 +317,7 @@ impl Stmt {
                     .append(RcDoc::text(name));
 
                 let with_type = if let Some(ty) = ty {
-                    var_decl.append(RcDoc::space()).append(ty.to_doc(env))
+                    var_decl.append(RcDoc::space()).append(go_type_doc(ty))
                 } else {
                     var_decl
                 };
@@ -374,7 +401,7 @@ impl Expr {
             Expr::Cast { expr, ty } => expr
                 .to_doc(env)
                 .append(RcDoc::text(".("))
-                .append(ty.to_doc(env))
+                .append(go_type_doc(ty))
                 .append(RcDoc::text(")")),
             Expr::StructLiteral { ty, fields } => {
                 let fields_doc = if fields.is_empty() {
@@ -395,7 +422,7 @@ impl Expr {
                         .nest(4)
                 };
 
-                RcDoc::text(ty)
+                RcDoc::text(go_type_name(ty))
                     .append(RcDoc::text("{"))
                     .append(fields_doc)
                     .append(RcDoc::text("}"))
