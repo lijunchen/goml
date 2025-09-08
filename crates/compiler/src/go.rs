@@ -574,7 +574,11 @@ mod anf_renamer {
     fn rename_fn(f: anf::Fn) -> anf::Fn {
         anf::Fn {
             name: f.name,
-            params: f.params,
+            params: f
+                .params
+                .into_iter()
+                .map(|(n, t)| (n.replace("/", "__"), t))
+                .collect(),
             ret_ty: f.ret_ty,
             body: rename_aexpr(f.body),
         }
