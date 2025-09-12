@@ -2,7 +2,7 @@ use pretty::RcDoc;
 
 use crate::{
     env::Env,
-    go::{
+    go::lib::{
         Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt, Struct,
     },
 };

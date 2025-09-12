@@ -24,7 +24,7 @@ fn main() {
 
     let anf = compiler::anf::anf_file(&env, core);
     // println!("{}", anf.to_pretty(&env, 120));
-    let go = compiler::go::go_file(&env, anf);
+    let go = compiler::go::lib::go_file(&env, anf);
     println!("{}", go.to_pretty(&env, 120));
 
     println!("stdout: {}", buffer);
