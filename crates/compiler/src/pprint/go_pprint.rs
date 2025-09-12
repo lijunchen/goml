@@ -2,35 +2,46 @@ use pretty::RcDoc;
 
 use crate::{
     env::Env,
-    go::lib::{
-        Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt, Struct,
+    go::{
+        goty::GoType,
+        lib::{
+            Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt,
+            Struct,
+        },
     },
 };
 
-use crate::tast;
-
-fn go_type_name(ty: &tast::Ty) -> String {
+fn go_type_name(ty: &GoType) -> String {
     match ty {
-        tast::Ty::TUnit => "Unit".to_string(),
-        tast::Ty::TBool => "bool".to_string(),
-        tast::Ty::TInt => "int".to_string(),
-        tast::Ty::TString => "string".to_string(),
-        tast::Ty::TApp { name, .. } => name.0.clone(),
-        tast::Ty::TTuple { typs } => {
-            let mut s = format!("Tuple{}", typs.len());
-            for t in typs {
-                s.push('_');
-                s.push_str(&go_type_name(t).replace(['{', '}', ' ', '[', ']', ','], "_"));
-            }
-            s
-        }
-        // Fallback textual for unsupported forms
-        tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),
+        GoType::TVoid => "Unit".to_string(),
+        GoType::TBool => "bool".to_string(),
+        GoType::TInt => "int".to_string(),
+        GoType::TString => "string".to_string(),
+        GoType::TStruct { name, .. } => name.clone(),
+        GoType::TName { name } => name.clone(),
+        GoType::TFunc { .. } => "func".to_string(),
     }
 }
 
-fn go_type_doc(ty: &tast::Ty) -> RcDoc<'_, ()> {
-    RcDoc::text(go_type_name(ty))
+fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
+    match ty {
+        GoType::TFunc { params, ret_ty } => {
+            let params_doc = if params.is_empty() {
+                RcDoc::nil()
+            } else {
+                RcDoc::intersperse(params.iter().map(go_type_doc), RcDoc::text(", "))
+            };
+            let ret_doc = match &**ret_ty {
+                GoType::TVoid => RcDoc::nil(),
+                other => RcDoc::space().append(go_type_doc(other)),
+            };
+            RcDoc::text("func(")
+                .append(params_doc)
+                .append(RcDoc::text(")"))
+                .append(ret_doc)
+        }
+        other => RcDoc::text(go_type_name(other)),
+    }
 }
 
 impl File {
@@ -239,7 +250,7 @@ impl Method {
                 self.params.iter().map(|(param_name, param_ty)| {
                     RcDoc::text(param_name)
                         .append(RcDoc::space())
-                        .append(param_ty.to_doc(env))
+                        .append(go_type_doc(param_ty))
                 }),
                 RcDoc::text(", "),
             )

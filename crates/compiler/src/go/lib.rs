@@ -167,7 +167,14 @@ fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                     .collect(),
             }
         }
-        tast::Ty::TApp { name, args } => todo!(),
+        tast::Ty::TApp { name, args } => {
+            if !args.is_empty() {
+                unreachable!("generic types not supported in Go backend");
+            }
+            goty::GoType::TName {
+                name: name.0.clone(),
+            }
+        }
         tast::Ty::TParam { name } => {
             panic!("unresolved type parameter {}", name)
         }
