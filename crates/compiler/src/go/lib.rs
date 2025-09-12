@@ -1,10 +1,14 @@
 use ast::ast::Uident;
+use std::collections::HashMap;
 
 use crate::{
     anf::{self, AExpr},
     env::Env,
+    go::goty::GoType,
     tast,
 };
+
+use super::goty;
 
 #[derive(Debug)]
 pub struct File {
@@ -34,34 +38,34 @@ pub struct Interface {
 #[derive(Debug)]
 pub struct MethodElem {
     pub name: String,
-    pub params: Vec<(String, tast::Ty)>,
-    pub ret: Option<tast::Ty>,
+    pub params: Vec<(String, goty::GoType)>,
+    pub ret: Option<goty::GoType>,
 }
 
 #[derive(Debug)]
 pub struct Field {
     pub name: String,
-    pub ty: tast::Ty,
+    pub ty: goty::GoType,
 }
 
 #[derive(Debug)]
 pub struct Fn {
     pub name: String,
-    pub params: Vec<(String, tast::Ty)>,
+    pub params: Vec<(String, goty::GoType)>,
     pub body: Block,
 }
 
 #[derive(Debug)]
 pub struct Receiver {
     pub name: String,
-    pub ty: tast::Ty,
+    pub ty: goty::GoType,
 }
 
 #[derive(Debug)]
 pub struct Method {
     pub receiver: Receiver,
     pub name: String,
-    pub params: Vec<(String, tast::Ty)>,
+    pub params: Vec<(String, goty::GoType)>,
     pub body: Block,
 }
 
@@ -95,10 +99,10 @@ pub enum Expr {
     },
     Cast {
         expr: Box<Expr>,
-        ty: tast::Ty,
+        ty: goty::GoType,
     },
     StructLiteral {
-        ty: tast::Ty,
+        ty: goty::GoType,
         fields: Vec<(String, Expr)>,
     },
     Block {
@@ -112,7 +116,7 @@ pub enum Stmt {
     Expr(Expr),
     VarDecl {
         name: String,
-        ty: Option<tast::Ty>,
+        ty: Option<goty::GoType>,
         value: Option<Expr>,
     },
     Assignment {
@@ -137,9 +141,38 @@ pub enum Stmt {
     SwitchType {
         bind: String,
         expr: Expr,
-        cases: Vec<(tast::Ty, Block)>,
+        cases: Vec<(goty::GoType, Block)>,
         default: Option<Block>,
     },
+}
+
+fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
+    match ty {
+        tast::Ty::TVar { .. } => {
+            panic!("unresolved type variable ")
+        }
+        tast::Ty::TUnit => goty::GoType::TVoid,
+        tast::Ty::TBool => goty::GoType::TBool,
+        tast::Ty::TInt => goty::GoType::TInt,
+        tast::Ty::TString => goty::GoType::TString,
+        tast::Ty::TTuple { typs } => {
+            // compile to struct with field _0, _1, ...
+            let name = go_type_name_for(ty);
+            goty::GoType::TStruct {
+                name,
+                fields: typs
+                    .iter()
+                    .enumerate()
+                    .map(|(i, t)| (format!("_{}", i), tast_ty_to_go_type(t)))
+                    .collect(),
+            }
+        }
+        tast::Ty::TApp { name, args } => todo!(),
+        tast::Ty::TParam { name } => {
+            panic!("unresolved type parameter {}", name)
+        }
+        tast::Ty::TFunc { params, ret_ty } => todo!(),
+    }
 }
 
 fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> Expr {
@@ -169,8 +202,8 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     }
 }
 
-fn cexpr_ty(e: &anf::CExpr) -> tast::Ty {
-    match e {
+fn cexpr_ty(e: &anf::CExpr) -> goty::GoType {
+    let t = match e {
         anf::CExpr::CImm { imm } => imm_ty(imm),
         anf::CExpr::EConstr { ty, .. }
         | anf::CExpr::ETuple { ty, .. }
@@ -179,7 +212,8 @@ fn cexpr_ty(e: &anf::CExpr) -> tast::Ty {
         | anf::CExpr::EConstrGet { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
-    }
+    };
+    tast_ty_to_go_type(&t)
 }
 
 fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
@@ -195,11 +229,28 @@ fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
     );
 }
 
-fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> tast::Ty {
+fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
     let vname = lookup_variant_name(env, ty, index);
-    tast::Ty::TApp {
+    let ty = tast::Ty::TApp {
         name: Uident::new(&vname),
         args: vec![],
+    };
+    tast_ty_to_go_type(&ty)
+}
+
+fn tuple_to_go_struct_type(env: &Env, ty: &tast::Ty) -> goty::GoType {
+    if let tast::Ty::TTuple { typs } = ty {
+        let name = go_type_name_for(ty);
+        goty::GoType::TStruct {
+            name,
+            fields: typs
+                .iter()
+                .enumerate()
+                .map(|(i, t)| (format!("_{}", i), tast_ty_to_go_type(t)))
+                .collect(),
+        }
+    } else {
+        panic!("expected tuple type, got {:?}", ty);
     }
 }
 
@@ -225,7 +276,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                 .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
                 .collect();
             Expr::StructLiteral {
-                ty: ty.clone(),
+                ty: tuple_to_go_struct_type(env, ty),
                 fields,
             }
         }
@@ -552,7 +603,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
 fn compile_fn(env: &Env, f: anf::Fn) -> Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
-        params.push((name, ty));
+        params.push((name, tast_ty_to_go_type(&ty)));
     }
     let stmts = compile_aexpr(env, f.body);
     Fn {
@@ -684,32 +735,182 @@ mod anf_renamer {
     }
 }
 
+fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
+    let mut env = HashMap::new();
+    for item in file.toplevels.iter() {
+        go_item(&mut env, item);
+    }
+    return env;
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    fn go_item(env: &mut HashMap<String, GoType>, item: &anf::Fn) {
+        go_aexpr(env, &item.body);
+    }
+
+    fn go_aexpr(env: &mut HashMap<String, GoType>, aexpr: &anf::AExpr) {
+        match aexpr {
+            AExpr::ACExpr { expr } => {
+                go_cexpr(env, expr);
+            }
+            AExpr::ALet {
+                name,
+                value,
+                body,
+                ty,
+            } => {
+                go_cexpr(env, value);
+                go_aexpr(env, &body);
+                go_type(env, ty)
+            }
+        }
+    }
+
+    fn go_cexpr(env: &mut HashMap<String, GoType>, cexpr: &anf::CExpr) {
+        match cexpr {
+            anf::CExpr::CImm { imm } => go_immexpr(env, imm),
+            anf::CExpr::EConstr { index: _, args, ty } => {
+                for a in args {
+                    go_immexpr(env, a);
+                }
+                go_type(env, ty);
+            }
+            anf::CExpr::ETuple { items, ty } => {
+                for i in items {
+                    go_immexpr(env, i);
+                }
+                go_type(env, ty);
+            }
+            anf::CExpr::EMatch {
+                expr,
+                arms,
+                default,
+                ty,
+            } => {
+                go_immexpr(env, expr);
+                for arm in arms {
+                    go_immexpr(env, &arm.lhs);
+                    go_aexpr(env, &arm.body);
+                }
+                if let Some(d) = default {
+                    go_aexpr(env, d);
+                }
+                go_type(env, ty);
+            }
+            anf::CExpr::EIf {
+                cond,
+                then,
+                else_,
+                ty,
+            } => {
+                go_immexpr(env, cond);
+                go_aexpr(env, then);
+                go_aexpr(env, else_);
+                go_type(env, ty);
+            }
+            anf::CExpr::EConstrGet {
+                expr,
+                variant_index,
+                field_index,
+                ty,
+            } => {
+                go_immexpr(env, expr);
+                go_type(env, ty)
+            }
+            anf::CExpr::ECall { func, args, ty } => {
+                for a in args {
+                    go_immexpr(env, a);
+                }
+                go_type(env, ty)
+            }
+            anf::CExpr::EProj { tuple, index, ty } => {
+                go_immexpr(env, tuple);
+                go_type(env, ty)
+            }
+        }
+    }
+
+    fn go_immexpr(env: &mut HashMap<String, GoType>, imm: &anf::ImmExpr) {
+        match imm {
+            anf::ImmExpr::ImmVar { name: _, ty } => go_type(env, ty),
+            anf::ImmExpr::ImmUnit { ty } => go_type(env, ty),
+            anf::ImmExpr::ImmBool { value: _, ty } => go_type(env, ty),
+            anf::ImmExpr::ImmInt { value: _, ty } => go_type(env, ty),
+            anf::ImmExpr::ImmString { value: _, ty } => go_type(env, ty),
+            anf::ImmExpr::ImmTag { index: _, ty } => go_type(env, ty),
+        }
+    }
+
+    fn go_type(env: &mut HashMap<String, GoType>, ty: &tast::Ty) {
+        match ty {
+            tast::Ty::TVar(_) => {}
+            tast::Ty::TUnit => {}
+            tast::Ty::TBool => {}
+            tast::Ty::TInt => {}
+            tast::Ty::TString => {}
+            tast::Ty::TTuple { typs } => {
+                // gen go struct type
+                let name = go_type_name_for(ty);
+                for t in typs.iter() {
+                    go_type(env, t)
+                }
+                if !env.contains_key(&name) {
+                    let mut fields = Vec::new();
+                    for t in typs.iter().enumerate() {
+                        fields.push((format!("_{}", t.0), tast_ty_to_go_type(t.1)))
+                    }
+                    env.insert(name.clone(), GoType::TStruct { name, fields });
+                    for t in typs {
+                        go_type(env, t);
+                    }
+                } else {
+                    return;
+                }
+            }
+            tast::Ty::TApp { name: _, args } => {
+                for t in args {
+                    go_type(env, t);
+                }
+            }
+            tast::Ty::TParam { name: _ } => {}
+            tast::Ty::TFunc { params, ret_ty } => {
+                for t in params {
+                    go_type(env, t);
+                }
+                go_type(env, ret_ty);
+            }
+        }
+    }
+}
+
 pub fn go_file(env: &Env, file: anf::File) -> File {
+    let mut all = Vec::new();
+
+    let tuple_types = collect_tuple_types(&file);
+
+    for tt in tuple_types {
+        all.push(Item::Struct(Struct {
+            name: tt.0,
+            fields: match tt.1 {
+                goty::GoType::TStruct { name: _, fields } => {
+                    let fields = fields.iter().map(|(n, t)| Field {
+                        name: n.clone(),
+                        ty: t.clone(),
+                    });
+                    fields.collect()
+                }
+                _ => panic!("expected struct type"),
+            },
+            methods: vec![],
+        }));
+    }
+
     let file = anf_renamer::rename(file);
 
     let mut toplevels = gen_type_definition(env);
     for item in file.toplevels {
         let gof = compile_fn(env, item);
         toplevels.push(Item::Fn(gof));
-    }
-    // Collect tuple types used in the Go AST and emit lifted struct defs first
-    let tuple_defs = collect_tuple_types(&toplevels);
-    let mut all = Vec::new();
-    for typs in tuple_defs {
-        let name = go_type_name_for(&tast::Ty::TTuple { typs: typs.clone() });
-        let fields: Vec<Field> = typs
-            .iter()
-            .enumerate()
-            .map(|(i, t)| Field {
-                name: format!("_{}", i),
-                ty: t.clone(),
-            })
-            .collect();
-        all.push(Item::Struct(Struct {
-            name,
-            fields,
-            methods: vec![],
-        }));
     }
     all.extend(toplevels);
     File { toplevels: all }
@@ -735,16 +936,15 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
             for (i, field) in variant_fields.iter().enumerate() {
                 fields.push(Field {
                     name: format!("_{}", i),
-                    ty: field.clone(),
+                    ty: tast_ty_to_go_type(field),
                 });
             }
 
             let methods = vec![Method {
                 receiver: Receiver {
                     name: "_".to_string(),
-                    ty: tast::Ty::TApp {
-                        name: Uident::new(&variant_name),
-                        args: vec![],
+                    ty: goty::GoType::TName {
+                        name: variant_name.clone(),
                     },
                 },
                 name: type_identifier_method.clone(),
@@ -760,157 +960,6 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
         }
     }
     defs
-}
-
-fn collect_tuple_types(items: &Vec<Item>) -> Vec<Vec<tast::Ty>> {
-    use std::collections::HashSet;
-
-    fn collect_from_ty(ty: &tast::Ty, out: &mut Vec<tast::Ty>) {
-        if let tast::Ty::TTuple { typs } = ty {
-            out.push(ty.clone());
-            for t in typs {
-                collect_from_ty(t, out);
-            }
-        }
-    }
-
-    fn collect_from_expr(e: &Expr, out: &mut Vec<tast::Ty>) {
-        match e {
-            Expr::Nil
-            | Expr::Var { .. }
-            | Expr::Bool { .. }
-            | Expr::Int { .. }
-            | Expr::String { .. } => {}
-            Expr::Call { args, .. } => {
-                for a in args {
-                    collect_from_expr(a, out);
-                }
-            }
-            Expr::FieldAccess { obj, .. } => collect_from_expr(obj, out),
-            Expr::Cast { expr, ty } => {
-                collect_from_expr(expr, out);
-                collect_from_ty(ty, out);
-            }
-            Expr::StructLiteral { ty, fields } => {
-                collect_from_ty(ty, out);
-                for (_, fe) in fields {
-                    collect_from_expr(fe, out);
-                }
-            }
-            Expr::Block { stmts, expr } => {
-                for s in stmts {
-                    collect_from_stmt(s, out);
-                }
-                if let Some(e) = expr {
-                    collect_from_expr(e, out);
-                }
-            }
-        }
-    }
-
-    fn collect_from_stmt(s: &Stmt, out: &mut Vec<tast::Ty>) {
-        match s {
-            Stmt::Expr(e) => collect_from_expr(e, out),
-            Stmt::VarDecl { ty, value, .. } => {
-                if let Some(t) = ty {
-                    collect_from_ty(t, out);
-                }
-                if let Some(v) = value {
-                    collect_from_expr(v, out);
-                }
-            }
-            Stmt::Assignment { value, .. } => collect_from_expr(value, out),
-            Stmt::Return { expr } => {
-                if let Some(e) = expr {
-                    collect_from_expr(e, out);
-                }
-            }
-            Stmt::If { cond, then, else_ } => {
-                collect_from_expr(cond, out);
-                for s in &then.stmts {
-                    collect_from_stmt(s, out);
-                }
-                if let Some(b) = else_ {
-                    for s in &b.stmts {
-                        collect_from_stmt(s, out);
-                    }
-                }
-            }
-            Stmt::SwitchExpr {
-                expr,
-                cases,
-                default,
-            } => {
-                collect_from_expr(expr, out);
-                for (val, blk) in cases {
-                    collect_from_expr(val, out);
-                    for s in &blk.stmts {
-                        collect_from_stmt(s, out);
-                    }
-                }
-                if let Some(blk) = default {
-                    for s in &blk.stmts {
-                        collect_from_stmt(s, out);
-                    }
-                }
-            }
-            Stmt::SwitchType {
-                expr,
-                cases,
-                default,
-                ..
-            } => {
-                collect_from_expr(expr, out);
-                for (ty, blk) in cases {
-                    collect_from_ty(ty, out);
-                    for s in &blk.stmts {
-                        collect_from_stmt(s, out);
-                    }
-                }
-                if let Some(blk) = default {
-                    for s in &blk.stmts {
-                        collect_from_stmt(s, out);
-                    }
-                }
-            }
-        }
-    }
-
-    let mut acc: Vec<tast::Ty> = Vec::new();
-    for item in items {
-        match item {
-            Item::Interface(_) => {}
-            Item::Struct(s) => {
-                for f in &s.fields {
-                    collect_from_ty(&f.ty, &mut acc);
-                }
-            }
-            Item::Fn(f) => {
-                for (_, t) in &f.params {
-                    collect_from_ty(t, &mut acc);
-                }
-                for s in &f.body.stmts {
-                    collect_from_stmt(s, &mut acc);
-                }
-            }
-        }
-    }
-
-    // Dedup using HashSet, but return deterministically ordered list by Debug string
-    let mut set: HashSet<tast::Ty> = HashSet::new();
-    for t in acc {
-        if let tast::Ty::TTuple { .. } = t {
-            set.insert(t);
-        }
-    }
-    let mut vec: Vec<tast::Ty> = set.into_iter().collect();
-    vec.sort_by(|a, b| format!("{:?}", a).cmp(&format!("{:?}", b)));
-    vec.into_iter()
-        .map(|t| match t {
-            tast::Ty::TTuple { typs } => typs,
-            _ => unreachable!(),
-        })
-        .collect()
 }
 
 fn go_type_name_for(ty: &tast::Ty) -> String {
