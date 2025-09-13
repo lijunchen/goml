@@ -1,5 +1,5 @@
 use ast::ast::Uident;
-use std::collections::HashMap;
+use indexmap::IndexMap;
 
 use crate::{
     anf::{self, AExpr},
@@ -818,8 +818,8 @@ mod anf_renamer {
     }
 }
 
-fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
-    let mut env = HashMap::new();
+fn collect_tuple_types(file: &anf::File) -> IndexMap<String, goty::GoType> {
+    let mut env = IndexMap::new();
     for item in file.toplevels.iter() {
         go_item(&mut env, item);
     }
@@ -827,11 +827,11 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
 
     ///////////////////////////////////////////////////////////////////////////
 
-    fn go_item(env: &mut HashMap<String, GoType>, item: &anf::Fn) {
+    fn go_item(env: &mut IndexMap<String, GoType>, item: &anf::Fn) {
         go_aexpr(env, &item.body);
     }
 
-    fn go_aexpr(env: &mut HashMap<String, GoType>, aexpr: &anf::AExpr) {
+    fn go_aexpr(env: &mut IndexMap<String, GoType>, aexpr: &anf::AExpr) {
         match aexpr {
             AExpr::ACExpr { expr } => {
                 go_cexpr(env, expr);
@@ -849,7 +849,7 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
         }
     }
 
-    fn go_cexpr(env: &mut HashMap<String, GoType>, cexpr: &anf::CExpr) {
+    fn go_cexpr(env: &mut IndexMap<String, GoType>, cexpr: &anf::CExpr) {
         match cexpr {
             anf::CExpr::CImm { imm } => go_immexpr(env, imm),
             anf::CExpr::EConstr { index: _, args, ty } => {
@@ -917,7 +917,7 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
         }
     }
 
-    fn go_immexpr(env: &mut HashMap<String, GoType>, imm: &anf::ImmExpr) {
+    fn go_immexpr(env: &mut IndexMap<String, GoType>, imm: &anf::ImmExpr) {
         match imm {
             anf::ImmExpr::ImmVar { name: _, ty } => go_type(env, ty),
             anf::ImmExpr::ImmUnit { ty } => go_type(env, ty),
@@ -928,7 +928,7 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
         }
     }
 
-    fn go_type(env: &mut HashMap<String, GoType>, ty: &tast::Ty) {
+    fn go_type(env: &mut IndexMap<String, GoType>, ty: &tast::Ty) {
         match ty {
             tast::Ty::TVar(_) => {}
             tast::Ty::TUnit => {}
