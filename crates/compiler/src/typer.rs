@@ -943,9 +943,9 @@ impl TypeInference {
                             ty: tast::Ty::TBool,
                         }
                     }
-                    "print" | "println" => {
+                    "string_print" | "string_println" => {
                         if args.len() != 1 {
-                            panic!("print/println takes exactly one argument");
+                            panic!("string_print/string_println takes exactly one argument");
                         }
                         let arg0_tast = self.check(env, vars, &args[0], &tast::Ty::TString);
                         tast::Expr::ECall {

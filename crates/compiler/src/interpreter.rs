@@ -240,7 +240,7 @@ fn eval(env: &im::HashMap<String, Value>, stdout: &mut String, e: &core::Expr) -
                     _ => unreachable!(),
                 }
             }
-            "print" => {
+            "string_print" => {
                 let arg = eval(env, stdout, &args[0]);
                 match arg {
                     Value::VString(s) => {
@@ -250,7 +250,7 @@ fn eval(env: &im::HashMap<String, Value>, stdout: &mut String, e: &core::Expr) -
                     _ => unreachable!(),
                 }
             }
-            "println" => {
+            "string_println" => {
                 let arg = eval(env, stdout, &args[0]);
                 match arg {
                     Value::VString(s) => {

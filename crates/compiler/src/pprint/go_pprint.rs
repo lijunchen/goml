@@ -13,7 +13,8 @@ use crate::{
 
 fn go_type_name(ty: &GoType) -> String {
     match ty {
-        GoType::TVoid => "Unit".to_string(),
+        GoType::TVoid => "void".to_string(),
+        GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
         GoType::TInt => "int".to_string(),
         GoType::TString => "string".to_string(),
@@ -50,6 +51,7 @@ impl File {
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
         )
+        .append(RcDoc::hardline())
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
@@ -65,6 +67,7 @@ impl Item {
             Item::Interface(interface) => interface.to_doc(env),
             Item::Struct(struct_def) => struct_def.to_doc(env),
             Item::Fn(func) => func.to_doc(env),
+            Item::EmbededRawString(s) => RcDoc::text(&s.value),
         }
     }
 
@@ -229,6 +232,11 @@ impl Fn {
             .append(params)
             .append(RcDoc::text(")"))
             .append(RcDoc::space())
+            .append(if let Some(ret_ty) = &self.ret_ty {
+                go_type_doc(ret_ty).append(RcDoc::space())
+            } else {
+                RcDoc::nil()
+            })
             .append(body)
     }
 
@@ -501,14 +509,16 @@ impl Stmt {
 impl Expr {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
-            Expr::Nil => RcDoc::text("nil"),
-            Expr::Var { name } => RcDoc::text(name),
-            Expr::Bool { value } => RcDoc::text(if *value { "true" } else { "false" }),
-            Expr::Int { value } => RcDoc::as_string(value),
-            Expr::String { value } => RcDoc::text("\"")
+            Expr::Nil { ty: _ } => RcDoc::text("nil"),
+            Expr::Void { ty: _ } => RcDoc::text(""),
+            Expr::Unit { ty: _ } => RcDoc::text("struct{}{}"),
+            Expr::Var { name, ty: _ } => RcDoc::text(name),
+            Expr::Bool { value, ty: _ } => RcDoc::text(if *value { "true" } else { "false" }),
+            Expr::Int { value, ty: _ } => RcDoc::as_string(value),
+            Expr::String { value, ty: _ } => RcDoc::text("\"")
                 .append(RcDoc::text(value))
                 .append(RcDoc::text("\"")),
-            Expr::Call { func, args } => {
+            Expr::Call { func, args, ty: _ } => {
                 let args_doc = if args.is_empty() {
                     RcDoc::nil()
                 } else {
@@ -520,7 +530,7 @@ impl Expr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
-            Expr::FieldAccess { obj, field } => obj
+            Expr::FieldAccess { obj, field, ty: _ } => obj
                 .to_doc(env)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field)),
@@ -553,7 +563,7 @@ impl Expr {
                     .append(fields_doc)
                     .append(RcDoc::text("}"))
             }
-            Expr::Block { stmts, expr } => {
+            Expr::Block { stmts, expr, ty: _ } => {
                 let stmts_doc = if stmts.is_empty() {
                     RcDoc::nil()
                 } else {

@@ -1,6 +1,7 @@
 #[derive(Debug, Clone)]
 pub enum GoType {
     TVoid,
+    TUnit, // struct{}, it has only one value: struct{}{}
     TBool,
     TInt,
     TString,

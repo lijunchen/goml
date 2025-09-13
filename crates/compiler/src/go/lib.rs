@@ -9,6 +9,7 @@ use crate::{
 };
 
 use super::goty;
+use super::runtime;
 
 #[derive(Debug)]
 pub struct File {
@@ -20,6 +21,7 @@ pub enum Item {
     Interface(Interface),
     Struct(Struct),
     Fn(Fn),
+    EmbededRawString(EmbededRawString),
 }
 
 #[derive(Debug)]
@@ -52,7 +54,13 @@ pub struct Field {
 pub struct Fn {
     pub name: String,
     pub params: Vec<(String, goty::GoType)>,
+    pub ret_ty: Option<goty::GoType>,
     pub body: Block,
+}
+
+#[derive(Debug)]
+pub struct EmbededRawString {
+    pub value: String,
 }
 
 #[derive(Debug)]
@@ -76,39 +84,73 @@ pub struct Block {
 
 #[derive(Debug)]
 pub enum Expr {
-    Nil,
+    Nil {
+        ty: goty::GoType,
+    },
+    Void {
+        ty: goty::GoType,
+    },
+    Unit {
+        ty: goty::GoType,
+    },
     Var {
         name: String,
+        ty: goty::GoType,
     },
     Bool {
         value: bool,
+        ty: goty::GoType,
     },
     Int {
         value: i32,
+        ty: goty::GoType,
     },
     String {
         value: String,
+        ty: goty::GoType,
     },
     Call {
         func: String,
         args: Vec<Expr>,
+        ty: goty::GoType,
     },
     FieldAccess {
         obj: Box<Expr>,
         field: String,
+        ty: goty::GoType,
     },
     Cast {
         expr: Box<Expr>,
         ty: goty::GoType,
     },
     StructLiteral {
-        ty: goty::GoType,
         fields: Vec<(String, Expr)>,
+        ty: goty::GoType,
     },
     Block {
         stmts: Vec<Stmt>,
         expr: Option<Box<Expr>>,
+        ty: goty::GoType,
     },
+}
+
+impl Expr {
+    pub fn get_ty(&self) -> &goty::GoType {
+        match self {
+            Expr::Nil { ty }
+            | Expr::Void { ty }
+            | Expr::Unit { ty }
+            | Expr::Var { ty, .. }
+            | Expr::Bool { ty, .. }
+            | Expr::Int { ty, .. }
+            | Expr::String { ty, .. }
+            | Expr::Call { ty, .. }
+            | Expr::FieldAccess { ty, .. }
+            | Expr::Cast { ty, .. }
+            | Expr::StructLiteral { ty, .. }
+            | Expr::Block { ty, .. } => ty,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -151,7 +193,7 @@ fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TVar { .. } => {
             panic!("unresolved type variable ")
         }
-        tast::Ty::TUnit => goty::GoType::TVoid,
+        tast::Ty::TUnit => goty::GoType::TUnit,
         tast::Ty::TBool => goty::GoType::TBool,
         tast::Ty::TInt => goty::GoType::TInt,
         tast::Ty::TString => goty::GoType::TString,
@@ -178,22 +220,41 @@ fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TParam { name } => {
             panic!("unresolved type parameter {}", name)
         }
-        tast::Ty::TFunc { params, ret_ty } => todo!(),
+        tast::Ty::TFunc { params, ret_ty } => {
+            let param_tys = params.iter().map(tast_ty_to_go_type).collect();
+            let ret_ty = Box::new(tast_ty_to_go_type(ret_ty));
+            goty::GoType::TFunc {
+                params: param_tys,
+                ret_ty,
+            }
+        }
     }
 }
 
 fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> Expr {
     match imm {
-        anf::ImmExpr::ImmVar { name, ty: _ } => Expr::Var { name: name.clone() },
-        anf::ImmExpr::ImmUnit { ty: _ } => Expr::Nil,
-        anf::ImmExpr::ImmBool { value, ty: _ } => Expr::Bool { value: *value },
-        anf::ImmExpr::ImmInt { value, ty: _ } => Expr::Int { value: *value },
+        anf::ImmExpr::ImmVar { name, ty: _ } => Expr::Var {
+            name: name.clone(),
+            ty: tast_ty_to_go_type(&imm_ty(imm)),
+        },
+        anf::ImmExpr::ImmUnit { ty: _ } => Expr::Unit {
+            ty: goty::GoType::TUnit,
+        },
+        anf::ImmExpr::ImmBool { value, ty: _ } => Expr::Bool {
+            value: *value,
+            ty: goty::GoType::TBool,
+        },
+        anf::ImmExpr::ImmInt { value, ty: _ } => Expr::Int {
+            value: *value,
+            ty: goty::GoType::TInt,
+        },
         anf::ImmExpr::ImmString { value, ty: _ } => Expr::String {
             value: value.clone(),
+            ty: goty::GoType::TString,
         },
         anf::ImmExpr::ImmTag { index, ty } => Expr::StructLiteral {
-            ty: variant_ty_by_index(env, ty, *index),
             fields: vec![],
+            ty: variant_ty_by_index(env, ty, *index),
         },
     }
 }
@@ -245,7 +306,7 @@ fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
     tast_ty_to_go_type(&ty)
 }
 
-fn tuple_to_go_struct_type(env: &Env, ty: &tast::Ty) -> goty::GoType {
+fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
     if let tast::Ty::TTuple { typs } = ty {
         let name = go_type_name_for(ty);
         goty::GoType::TStruct {
@@ -318,24 +379,23 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                     ty: vty,
                 }),
                 field: format!("_{}", field_index),
+                ty: tast_ty_to_go_type(&enum_ty),
             }
         }
-        anf::CExpr::ECall { func, args, ty: _ } => {
+        anf::CExpr::ECall { func, args, ty } => {
             let args = args.iter().map(|arg| compile_imm(env, arg)).collect();
             Expr::Call {
                 func: func.clone(),
                 args,
+                ty: tast_ty_to_go_type(ty),
             }
         }
-        anf::CExpr::EProj {
-            tuple,
-            index,
-            ty: _,
-        } => {
+        anf::CExpr::EProj { tuple, index, ty } => {
             let obj = compile_imm(env, tuple);
             Expr::FieldAccess {
                 obj: Box::new(obj),
                 field: format!("_{}", index),
+                ty: tast_ty_to_go_type(ty),
             }
         }
     }
@@ -387,7 +447,10 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                     for arm in arms {
                         if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
                             cases.push((
-                                Expr::Bool { value },
+                                Expr::Bool {
+                                    value,
+                                    ty: goty::GoType::TBool,
+                                },
                                 Block {
                                     stmts: compile_aexpr_assign(env, target, arm.body),
                                 },
@@ -513,7 +576,10 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                     for arm in arms {
                         if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
                             cases.push((
-                                Expr::Bool { value },
+                                Expr::Bool {
+                                    value,
+                                    ty: goty::GoType::TBool,
+                                },
                                 Block {
                                     stmts: compile_aexpr(env, arm.body),
                                 },
@@ -559,9 +625,13 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 _ => panic!("unsupported scrutinee type for match in Go backend"),
             },
             _ => {
-                stmts.push(Stmt::Return {
-                    expr: Some(compile_cexpr(env, &expr)),
-                });
+                let e = compile_cexpr(env, &expr);
+                match e.get_ty() {
+                    goty::GoType::TVoid => {}
+                    _ => {
+                        stmts.push(Stmt::Return { expr: Some(e) });
+                    }
+                }
             }
         },
         AExpr::ALet {
@@ -613,9 +683,15 @@ fn compile_fn(env: &Env, f: anf::Fn) -> Fn {
         params.push((name, tast_ty_to_go_type(&ty)));
     }
     let stmts = compile_aexpr(env, f.body);
+    let patched_name = if f.name == "main" {
+        "main0".to_string()
+    } else {
+        f.name.clone()
+    };
     Fn {
-        name: f.name,
+        name: patched_name,
         params,
+        ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
         body: Block { stmts },
     }
 }
@@ -761,13 +837,13 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
                 go_cexpr(env, expr);
             }
             AExpr::ALet {
-                name,
+                name: _,
                 value,
                 body,
                 ty,
             } => {
                 go_cexpr(env, value);
-                go_aexpr(env, &body);
+                go_aexpr(env, body);
                 go_type(env, ty)
             }
         }
@@ -817,20 +893,24 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
             }
             anf::CExpr::EConstrGet {
                 expr,
-                variant_index,
-                field_index,
+                variant_index: _,
+                field_index: _,
                 ty,
             } => {
                 go_immexpr(env, expr);
                 go_type(env, ty)
             }
-            anf::CExpr::ECall { func, args, ty } => {
+            anf::CExpr::ECall { func: _, args, ty } => {
                 for a in args {
                     go_immexpr(env, a);
                 }
                 go_type(env, ty)
             }
-            anf::CExpr::EProj { tuple, index, ty } => {
+            anf::CExpr::EProj {
+                tuple,
+                index: _,
+                ty,
+            } => {
                 go_immexpr(env, tuple);
                 go_type(env, ty)
             }
@@ -870,8 +950,6 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
                     for t in typs {
                         go_type(env, t);
                     }
-                } else {
-                    return;
                 }
             }
             tast::Ty::TApp { name: _, args } => {
@@ -892,6 +970,8 @@ fn collect_tuple_types(file: &anf::File) -> HashMap<String, goty::GoType> {
 
 pub fn go_file(env: &Env, file: anf::File) -> File {
     let mut all = Vec::new();
+
+    all.extend(runtime::make_runtime());
 
     let tuple_types = collect_tuple_types(&file);
 
@@ -920,6 +1000,18 @@ pub fn go_file(env: &Env, file: anf::File) -> File {
         toplevels.push(Item::Fn(gof));
     }
     all.extend(toplevels);
+    all.push(Item::Fn(Fn {
+        name: "main".to_string(),
+        params: vec![],
+        ret_ty: None,
+        body: Block {
+            stmts: vec![Stmt::Expr(Expr::Call {
+                func: "main0".to_string(),
+                args: vec![],
+                ty: goty::GoType::TVoid,
+            })],
+        },
+    }));
     File { toplevels: all }
 }
 
@@ -1042,6 +1134,7 @@ fn test_type_gen() {
             _1 Tree
         }
 
-        func (_ Node) isTree() {}"#]]
+        func (_ Node) isTree() {}
+    "#]]
     .assert_eq(&dummy_file.to_pretty(&env, 120));
 }
