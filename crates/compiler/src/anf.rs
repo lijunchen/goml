@@ -112,7 +112,7 @@ fn compile_match_arms_to_anf<'a>(
     scrutinee: ImmExpr,
     arms: Vec<core::Arm>,
     default: Option<Box<core::Expr>>,
-    match_ty: Ty,
+    body_ty: Ty,
     k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
 ) -> AExpr {
     let mut anf_arms = Vec::new();
@@ -175,7 +175,7 @@ fn compile_match_arms_to_anf<'a>(
         expr: Box::new(scrutinee),
         arms: anf_arms,
         default: anf_default,
-        ty: match_ty,
+        ty: body_ty,
     })
 }
 

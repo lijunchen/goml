@@ -21,10 +21,12 @@ fn main() {
     let core = compiler::compile_match::compile_file(&env, &tast);
     let mut buffer = String::new();
     let result = compiler::interpreter::eval_file(&im::HashMap::new(), &mut buffer, &core);
-
+    // dbg!(&core);
     let anf = compiler::anf::anf_file(&env, core);
+    // dbg!(&anf);
     // println!("{}", anf.to_pretty(&env, 120));
     let go = compiler::go::lib::go_file(&env, anf);
+    // dbg!(&go);
     println!("{}", go.to_pretty(&env, 120));
 
     println!("stdout: {}", buffer);

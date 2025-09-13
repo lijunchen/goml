@@ -638,7 +638,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
             name,
             value,
             body,
-            ty,
+            ty: _,
         } => {
             match &*value {
                 // If RHS needs statements, declare then fill via if-lowering

@@ -38,6 +38,10 @@ impl Row {
         }
         None
     }
+
+    fn get_ty(&self) -> Ty {
+        self.body.get_ty()
+    }
 }
 
 fn make_rows(name: &str, arms: &[Arm]) -> Vec<Row> {
@@ -187,6 +191,7 @@ fn compile_enum_case(
     name: &Uident,
 ) -> core::Expr {
     let tydef = &env.enums[name];
+    let body_ty = rows.iter().next().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let cases: Vec<ConstructorCase> = tydef
         .variants
@@ -239,7 +244,7 @@ fn compile_enum_case(
         expr: Box::new(bvar.to_core()),
         arms: new_arms,
         default: None,
-        ty: ty.clone(),
+        ty: body_ty,
     }
 }
 
@@ -305,6 +310,7 @@ fn compile_tuple_case(
 }
 
 fn compile_unit_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+    let body_ty = rows.iter().next().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
     let mut new_rows = vec![];
     for mut r in rows {
         #[allow(clippy::redundant_pattern_matching)]
@@ -314,6 +320,7 @@ fn compile_unit_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
             new_rows.push(r);
         }
     }
+
     core::Expr::EMatch {
         expr: Box::new(bvar.to_core()),
         arms: vec![core::Arm {
@@ -321,11 +328,13 @@ fn compile_unit_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
             body: compile_rows(env, new_rows, &bvar.ty),
         }],
         default: None,
-        ty: bvar.ty.clone(),
+        ty: body_ty,
     }
 }
 
 fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+    let body_ty = rows.iter().next().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
+
     let mut true_rows = vec![];
     let mut false_rows = vec![];
     for mut r in rows {
@@ -355,7 +364,7 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
             },
         ],
         default: None,
-        ty: bvar.ty.clone(),
+        ty: body_ty,
     }
 }
 
