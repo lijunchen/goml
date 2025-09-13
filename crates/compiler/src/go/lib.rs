@@ -158,7 +158,7 @@ pub enum Stmt {
     Expr(Expr),
     VarDecl {
         name: String,
-        ty: Option<goty::GoType>,
+        ty: goty::GoType,
         value: Option<Expr>,
     },
     Assignment {
@@ -507,7 +507,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
             // Declare the inner variable first
             out.push(Stmt::VarDecl {
                 name: name.clone(),
-                ty: None,
+                ty: cexpr_ty(&value),
                 value: None,
             });
 
@@ -638,14 +638,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
             name,
             value,
             body,
-            ty: _,
+            ty,
         } => {
             match &*value {
                 // If RHS needs statements, declare then fill via if-lowering
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
                     stmts.push(Stmt::VarDecl {
                         name: name.clone(),
-                        ty: None,
+                        ty: cexpr_ty(&value),
                         value: None,
                     });
                     stmts.extend(compile_aexpr_assign(
@@ -659,14 +659,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 anf::CExpr::ETuple { .. } => {
                     stmts.push(Stmt::VarDecl {
                         name: name.clone(),
-                        ty: None,
+                        ty: cexpr_ty(&value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }
                 _ => {
                     stmts.push(Stmt::VarDecl {
                         name: name.clone(),
-                        ty: Some(cexpr_ty(&value)),
+                        ty: cexpr_ty(&value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }

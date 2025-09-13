@@ -332,22 +332,18 @@ impl Stmt {
             Stmt::VarDecl { name, ty, value } => {
                 let var_decl = RcDoc::text("var")
                     .append(RcDoc::space())
-                    .append(RcDoc::text(name));
-
-                let with_type = if let Some(ty) = ty {
-                    var_decl.append(RcDoc::space()).append(go_type_doc(ty))
-                } else {
-                    var_decl
-                };
+                    .append(RcDoc::text(name))
+                    .append(RcDoc::space())
+                    .append(go_type_doc(ty));
 
                 if let Some(value) = value {
-                    with_type
+                    var_decl
                         .append(RcDoc::space())
                         .append(RcDoc::text("="))
                         .append(RcDoc::space())
                         .append(value.to_doc(env))
                 } else {
-                    with_type
+                    var_decl
                 }
             }
             Stmt::Assignment { name, value } => RcDoc::text(name)
