@@ -695,7 +695,9 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
             })],
         },
     }));
-    goast::File { toplevels: all }
+    // Run a simple DCE pass to drop unused local variables for Go
+    let file = goast::File { toplevels: all };
+    crate::go::dce::eliminate_dead_vars(file)
 }
 
 #[allow(unused)]
