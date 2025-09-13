@@ -63,7 +63,7 @@ type Cons struct {
 func (_ Cons) isIntList() {}
 
 func print_int_list(xs__0 IntList) struct{} {
-    switch _ := xs__0.(type) {
+    switch xs__0.(type) {
     case Nil:
         return string_print("Nil")
     case Cons:
@@ -83,7 +83,7 @@ func print_int_list(xs__0 IntList) struct{} {
 }
 
 func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
-    switch _ := xs__3.(type) {
+    switch xs__3.(type) {
     case Nil:
         return acc__4
     case Cons:
@@ -105,7 +105,7 @@ func int_list_rev(xs__7 IntList) IntList {
 }
 
 func int_list_length(xs__8 IntList) int {
-    switch _ := xs__8.(type) {
+    switch xs__8.(type) {
     case Nil:
         return 0
     case Cons:
