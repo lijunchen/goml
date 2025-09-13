@@ -69,6 +69,7 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func main0() bool {
+    var ret6 bool
     var t3 Color = Blue{}
     var t4 Color = Blue{}
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
@@ -81,33 +82,34 @@ func main0() bool {
     case Red:
         switch x0.(type) {
         case Red:
-            return true
+            ret6 = true
         case Green:
-            return false
+            ret6 = false
         case Blue:
-            return false
+            ret6 = false
         }
     case Green:
         switch x0.(type) {
         case Red:
-            return true
+            ret6 = true
         case Green:
-            return false
+            ret6 = false
         case Blue:
-            return false
+            ret6 = false
         }
     case Blue:
         switch x0.(type) {
         case Red:
-            return false
+            ret6 = false
         case Green:
-            return false
+            ret6 = false
         case Blue:
             var t5 string = bool_to_string(true)
             var mtmp2 struct{} = string_print(t5)
-            return false
+            ret6 = false
         }
     }
+    return ret6
 }
 
 func main() {

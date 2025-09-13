@@ -53,6 +53,7 @@ type Tuple2_bool_bool struct {
 }
 
 func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
+    var ret20 struct{}
     var x0 bool = x__0._0
     var x1 bool = x__0._1
     switch x1 {
@@ -63,12 +64,12 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
         case true:
             switch x2 {
             case true:
-                return string_println("case4")
+                ret20 = string_println("case4")
             case false:
-                return string_println("case3")
+                ret20 = string_println("case3")
             }
         case false:
-            return string_println("case4")
+            ret20 = string_println("case4")
         }
     case false:
         switch x0 {
@@ -79,12 +80,12 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
             case true:
                 switch x4 {
                 case true:
-                    return string_println("case2")
+                    ret20 = string_println("case2")
                 case false:
-                    return string_println("case1")
+                    ret20 = string_println("case1")
                 }
             case false:
-                return string_println("case2")
+                ret20 = string_println("case2")
             }
         case false:
             var x6 bool = y__1._0
@@ -93,18 +94,20 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
             case true:
                 switch x6 {
                 case true:
-                    return string_println("case4")
+                    ret20 = string_println("case4")
                 case false:
-                    return string_println("case3")
+                    ret20 = string_println("case3")
                 }
             case false:
-                return string_println("case4")
+                ret20 = string_println("case4")
             }
         }
     }
+    return ret20
 }
 
 func main0() struct{} {
+    var ret21 struct{}
     var t12 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: false,
@@ -141,7 +144,8 @@ func main0() struct{} {
         _1: false,
     }
     var mtmp11 struct{} = test_nested_match(t18, t19)
-    return struct{}{}
+    ret21 = struct{}{}
+    return ret21
 }
 
 func main() {

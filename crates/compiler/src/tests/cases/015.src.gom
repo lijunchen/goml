@@ -63,9 +63,10 @@ type Cons struct {
 func (_ Cons) isIntList() {}
 
 func print_int_list(xs__0 IntList) struct{} {
+    var ret35 struct{}
     switch xs__0.(type) {
     case Nil:
-        return string_print("Nil")
+        ret35 = string_print("Nil")
     case Cons:
         var x0 int = xs__0.(Cons)._0
         var x1 IntList = xs__0.(Cons)._1
@@ -78,14 +79,16 @@ func print_int_list(xs__0 IntList) struct{} {
         var mtmp5 struct{} = string_print(", ")
         var mtmp6 struct{} = print_int_list(xs__2)
         var mtmp7 struct{} = string_print(")")
-        return struct{}{}
+        ret35 = struct{}{}
     }
+    return ret35
 }
 
 func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
+    var ret36 IntList
     switch xs__3.(type) {
     case Nil:
-        return acc__4
+        ret36 = acc__4
     case Cons:
         var x8 int = xs__3.(Cons)._0
         var x9 IntList = xs__3.(Cons)._1
@@ -95,37 +98,45 @@ func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
             _0: head__5,
             _1: acc__4,
         }
-        return int_list_rev_aux(tail__6, t26)
+        ret36 = int_list_rev_aux(tail__6, t26)
     }
+    return ret36
 }
 
 func int_list_rev(xs__7 IntList) IntList {
+    var ret37 IntList
     var t27 IntList = Nil{}
-    return int_list_rev_aux(xs__7, t27)
+    ret37 = int_list_rev_aux(xs__7, t27)
+    return ret37
 }
 
 func int_list_length(xs__8 IntList) int {
+    var ret38 int
     switch xs__8.(type) {
     case Nil:
-        return 0
+        ret38 = 0
     case Cons:
         var x10 int = xs__8.(Cons)._0
         var x11 IntList = xs__8.(Cons)._1
         var xs__9 IntList = x11
         var t28 int = int_list_length(xs__9)
-        return int_add(1, t28)
+        ret38 = int_add(1, t28)
     }
+    return ret38
 }
 
 func print_int_list_length(xs__10 IntList) struct{} {
+    var ret39 struct{}
     var mtmp12 struct{} = string_print("Length: ")
     var t30 int = int_list_length(xs__10)
     var t29 string = int_to_string(t30)
     var mtmp13 struct{} = string_println(t29)
-    return struct{}{}
+    ret39 = struct{}{}
+    return ret39
 }
 
 func main0() struct{} {
+    var ret40 struct{}
     var x__11 IntList = Nil{}
     var mtmp14 struct{} = print_int_list(x__11)
     var mtmp15 struct{} = string_println("")
@@ -157,7 +168,8 @@ func main0() struct{} {
     var y__14 IntList = int_list_rev(x__13)
     var mtmp23 struct{} = print_int_list(y__14)
     var mtmp24 struct{} = string_println("")
-    return struct{}{}
+    ret40 = struct{}{}
+    return ret40
 }
 
 func main() {

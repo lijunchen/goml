@@ -63,10 +63,11 @@ type B struct {
 func (_ B) isT() {}
 
 func test(t__0 T) struct{} {
+    var ret15 struct{}
     switch t__0.(type) {
     case A:
         var t6 string = int_to_string(1)
-        return string_print(t6)
+        ret15 = string_print(t6)
     case B:
         var x0 bool = t__0.(B)._0
         var x1 bool = t__0.(B)._1
@@ -75,25 +76,27 @@ func test(t__0 T) struct{} {
             switch x0 {
             case true:
                 var t7 string = int_to_string(4)
-                return string_print(t7)
+                ret15 = string_print(t7)
             case false:
                 var t8 string = int_to_string(3)
-                return string_print(t8)
+                ret15 = string_print(t8)
             }
         case false:
             switch x0 {
             case true:
                 var t9 string = int_to_string(4)
-                return string_print(t9)
+                ret15 = string_print(t9)
             case false:
                 var t10 string = int_to_string(2)
-                return string_print(t10)
+                ret15 = string_print(t10)
             }
         }
     }
+    return ret15
 }
 
 func main0() struct{} {
+    var ret16 struct{}
     var t11 T = B{
         _0: true,
         _1: true,
@@ -111,7 +114,8 @@ func main0() struct{} {
     var mtmp4 struct{} = test(t13)
     var t14 T = A{}
     var mtmp5 struct{} = test(t14)
-    return struct{}{}
+    ret16 = struct{}{}
+    return ret16
 }
 
 func main() {
