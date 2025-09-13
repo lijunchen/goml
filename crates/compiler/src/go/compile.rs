@@ -287,14 +287,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             ty: _,
         } => {
             let mut out = Vec::new();
-            // Declare the inner variable first
-            out.push(goast::Stmt::VarDecl {
-                name: name.clone(),
-                ty: cexpr_ty(&value),
-                value: None,
-            });
 
-            // Initialize it (may itself require if-lowering)
             match &*value {
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
                     out.extend(compile_aexpr_assign(
@@ -306,9 +299,10 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
                     ));
                 }
                 _ => {
-                    out.push(goast::Stmt::Assignment {
+                    out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        value: compile_cexpr(env, &value),
+                        ty: cexpr_ty(&value),
+                        value: Some(compile_cexpr(env, &value)),
                     });
                 }
             }
@@ -465,17 +459,45 @@ fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
     for (name, ty) in f.params {
         params.push((name, tast_ty_to_go_type(&ty)));
     }
-    let stmts = compile_aexpr(env, f.body);
+
+    let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
+
     let patched_name = if f.name == "main" {
         "main0".to_string()
     } else {
         f.name.clone()
     };
+
+    let (ret_ty, body_stmts) = match go_ret_ty {
+        goty::GoType::TVoid => (None, compile_aexpr(env, f.body)),
+        _ => {
+            let ret_name = env.gensym("ret");
+            let mut stmts = Vec::new();
+
+            stmts.push(goast::Stmt::VarDecl {
+                name: ret_name.clone(),
+                ty: go_ret_ty.clone(),
+                value: None,
+            });
+
+            stmts.extend(compile_aexpr_assign(env, &ret_name, f.body));
+
+            stmts.push(goast::Stmt::Return {
+                expr: Some(goast::Expr::Var {
+                    name: ret_name,
+                    ty: go_ret_ty.clone(),
+                }),
+            });
+
+            (Some(go_ret_ty), stmts)
+        }
+    };
+
     goast::Fn {
         name: patched_name,
         params,
-        ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
-        body: goast::Block { stmts },
+        ret_ty,
+        body: goast::Block { stmts: body_stmts },
     }
 }
 
