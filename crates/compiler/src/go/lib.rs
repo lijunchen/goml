@@ -4,255 +4,38 @@ use indexmap::IndexMap;
 use crate::{
     anf::{self, AExpr},
     env::Env,
-    go::goty::GoType,
+    go::{
+        goast::{self, go_type_name_for, tast_ty_to_go_type},
+        goty::GoType,
+    },
     tast,
 };
 
 use super::goty;
 use super::runtime;
 
-#[derive(Debug)]
-pub struct File {
-    pub toplevels: Vec<Item>,
-}
-
-#[derive(Debug)]
-pub enum Item {
-    Interface(Interface),
-    Struct(Struct),
-    Fn(Fn),
-    EmbededRawString(EmbededRawString),
-}
-
-#[derive(Debug)]
-pub struct Struct {
-    pub name: String,
-    pub fields: Vec<Field>,
-    pub methods: Vec<Method>,
-}
-
-#[derive(Debug)]
-pub struct Interface {
-    pub name: String,
-    pub methods: Vec<MethodElem>,
-}
-
-#[derive(Debug)]
-pub struct MethodElem {
-    pub name: String,
-    pub params: Vec<(String, goty::GoType)>,
-    pub ret: Option<goty::GoType>,
-}
-
-#[derive(Debug)]
-pub struct Field {
-    pub name: String,
-    pub ty: goty::GoType,
-}
-
-#[derive(Debug)]
-pub struct Fn {
-    pub name: String,
-    pub params: Vec<(String, goty::GoType)>,
-    pub ret_ty: Option<goty::GoType>,
-    pub body: Block,
-}
-
-#[derive(Debug)]
-pub struct EmbededRawString {
-    pub value: String,
-}
-
-#[derive(Debug)]
-pub struct Receiver {
-    pub name: String,
-    pub ty: goty::GoType,
-}
-
-#[derive(Debug)]
-pub struct Method {
-    pub receiver: Receiver,
-    pub name: String,
-    pub params: Vec<(String, goty::GoType)>,
-    pub body: Block,
-}
-
-#[derive(Debug)]
-pub struct Block {
-    pub stmts: Vec<Stmt>,
-}
-
-#[derive(Debug)]
-pub enum Expr {
-    Nil {
-        ty: goty::GoType,
-    },
-    Void {
-        ty: goty::GoType,
-    },
-    Unit {
-        ty: goty::GoType,
-    },
-    Var {
-        name: String,
-        ty: goty::GoType,
-    },
-    Bool {
-        value: bool,
-        ty: goty::GoType,
-    },
-    Int {
-        value: i32,
-        ty: goty::GoType,
-    },
-    String {
-        value: String,
-        ty: goty::GoType,
-    },
-    Call {
-        func: String,
-        args: Vec<Expr>,
-        ty: goty::GoType,
-    },
-    FieldAccess {
-        obj: Box<Expr>,
-        field: String,
-        ty: goty::GoType,
-    },
-    Cast {
-        expr: Box<Expr>,
-        ty: goty::GoType,
-    },
-    StructLiteral {
-        fields: Vec<(String, Expr)>,
-        ty: goty::GoType,
-    },
-    Block {
-        stmts: Vec<Stmt>,
-        expr: Option<Box<Expr>>,
-        ty: goty::GoType,
-    },
-}
-
-impl Expr {
-    pub fn get_ty(&self) -> &goty::GoType {
-        match self {
-            Expr::Nil { ty }
-            | Expr::Void { ty }
-            | Expr::Unit { ty }
-            | Expr::Var { ty, .. }
-            | Expr::Bool { ty, .. }
-            | Expr::Int { ty, .. }
-            | Expr::String { ty, .. }
-            | Expr::Call { ty, .. }
-            | Expr::FieldAccess { ty, .. }
-            | Expr::Cast { ty, .. }
-            | Expr::StructLiteral { ty, .. }
-            | Expr::Block { ty, .. } => ty,
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum Stmt {
-    Expr(Expr),
-    VarDecl {
-        name: String,
-        ty: goty::GoType,
-        value: Option<Expr>,
-    },
-    Assignment {
-        name: String,
-        value: Expr,
-    },
-    Return {
-        expr: Option<Expr>,
-    },
-    If {
-        cond: Expr,
-        then: Block,
-        else_: Option<Block>,
-    },
-    // switch <expr> { case <value>: ...; default: ... }
-    SwitchExpr {
-        expr: Expr,
-        cases: Vec<(Expr, Block)>,
-        default: Option<Block>,
-    },
-    // switch _ := <expr>.(type) { case <Type>: ...; default: ... }
-    SwitchType {
-        bind: String,
-        expr: Expr,
-        cases: Vec<(goty::GoType, Block)>,
-        default: Option<Block>,
-    },
-}
-
-fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
-    match ty {
-        tast::Ty::TVar { .. } => {
-            panic!("unresolved type variable ")
-        }
-        tast::Ty::TUnit => goty::GoType::TUnit,
-        tast::Ty::TBool => goty::GoType::TBool,
-        tast::Ty::TInt => goty::GoType::TInt,
-        tast::Ty::TString => goty::GoType::TString,
-        tast::Ty::TTuple { typs } => {
-            // compile to struct with field _0, _1, ...
-            let name = go_type_name_for(ty);
-            goty::GoType::TStruct {
-                name,
-                fields: typs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, t)| (format!("_{}", i), tast_ty_to_go_type(t)))
-                    .collect(),
-            }
-        }
-        tast::Ty::TApp { name, args } => {
-            if !args.is_empty() {
-                unreachable!("generic types not supported in Go backend");
-            }
-            goty::GoType::TName {
-                name: name.0.clone(),
-            }
-        }
-        tast::Ty::TParam { name } => {
-            panic!("unresolved type parameter {}", name)
-        }
-        tast::Ty::TFunc { params, ret_ty } => {
-            let param_tys = params.iter().map(tast_ty_to_go_type).collect();
-            let ret_ty = Box::new(tast_ty_to_go_type(ret_ty));
-            goty::GoType::TFunc {
-                params: param_tys,
-                ret_ty,
-            }
-        }
-    }
-}
-
-fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> Expr {
+fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
-        anf::ImmExpr::ImmVar { name, ty: _ } => Expr::Var {
+        anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
             name: name.clone(),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
-        anf::ImmExpr::ImmUnit { ty: _ } => Expr::Unit {
+        anf::ImmExpr::ImmUnit { ty: _ } => goast::Expr::Unit {
             ty: goty::GoType::TUnit,
         },
-        anf::ImmExpr::ImmBool { value, ty: _ } => Expr::Bool {
+        anf::ImmExpr::ImmBool { value, ty: _ } => goast::Expr::Bool {
             value: *value,
             ty: goty::GoType::TBool,
         },
-        anf::ImmExpr::ImmInt { value, ty: _ } => Expr::Int {
+        anf::ImmExpr::ImmInt { value, ty: _ } => goast::Expr::Int {
             value: *value,
             ty: goty::GoType::TInt,
         },
-        anf::ImmExpr::ImmString { value, ty: _ } => Expr::String {
+        anf::ImmExpr::ImmString { value, ty: _ } => goast::Expr::String {
             value: value.clone(),
             ty: goty::GoType::TString,
         },
-        anf::ImmExpr::ImmTag { index, ty } => Expr::StructLiteral {
+        anf::ImmExpr::ImmTag { index, ty } => goast::Expr::StructLiteral {
             fields: vec![],
             ty: variant_ty_by_index(env, ty, *index),
         },
@@ -322,7 +105,7 @@ fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
     }
 }
 
-fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
+fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
     match e {
         anf::CExpr::CImm { imm } => compile_imm(env, imm),
         anf::CExpr::EConstr { index, args, ty } => {
@@ -332,7 +115,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                 .enumerate()
                 .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
                 .collect();
-            Expr::StructLiteral {
+            goast::Expr::StructLiteral {
                 ty: variant_ty,
                 fields,
             }
@@ -343,7 +126,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
                 .enumerate()
                 .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
                 .collect();
-            Expr::StructLiteral {
+            goast::Expr::StructLiteral {
                 ty: tuple_to_go_struct_type(env, ty),
                 fields,
             }
@@ -351,7 +134,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
         anf::CExpr::EMatch { expr, .. } => match imm_ty(expr) {
             // Boolean matches are handled as statements (not expressions) in Go.
             tast::Ty::TBool => {
-                panic!("boolean match should be lowered to Stmt::If in compile_aexpr")
+                panic!("boolean match should be lowered to  goast::Stmt::If in compile_aexpr")
             }
             _ => {
                 panic!("EMatch should be lowered in compile_aexpr/compile_aexpr_assign")
@@ -362,7 +145,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             then: _,
             else_: _,
             ty: _,
-        } => panic!("EIf should be lowered to Stmt::If in compile_aexpr"),
+        } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
             expr,
             variant_index,
@@ -373,8 +156,8 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
             // Determine variant cast type from the scrutinee's enum type, not the field type
             let enum_ty = imm_ty(expr);
             let vty = variant_ty_by_index(env, &enum_ty, *variant_index);
-            Expr::FieldAccess {
-                obj: Box::new(Expr::Cast {
+            goast::Expr::FieldAccess {
+                obj: Box::new(goast::Expr::Cast {
                     expr: Box::new(obj),
                     ty: vty,
                 }),
@@ -384,7 +167,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
         }
         anf::CExpr::ECall { func, args, ty } => {
             let args = args.iter().map(|arg| compile_imm(env, arg)).collect();
-            Expr::Call {
+            goast::Expr::Call {
                 func: func.clone(),
                 args,
                 ty: tast_ty_to_go_type(ty),
@@ -392,7 +175,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
         }
         anf::CExpr::EProj { tuple, index, ty } => {
             let obj = compile_imm(env, tuple);
-            Expr::FieldAccess {
+            goast::Expr::FieldAccess {
                 obj: Box::new(obj),
                 field: format!("_{}", index),
                 ty: tast_ty_to_go_type(ty),
@@ -401,7 +184,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> Expr {
     }
 }
 
-fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
+fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::CImm { .. }
@@ -409,7 +192,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
             | anf::CExpr::EConstrGet { .. }
             | anf::CExpr::ECall { .. }
             | anf::CExpr::EProj { .. }
-            | anf::CExpr::ETuple { .. } => vec![Stmt::Assignment {
+            | anf::CExpr::ETuple { .. } => vec![goast::Stmt::Assignment {
                 name: target.to_string(),
                 value: compile_cexpr(env, &expr),
             }],
@@ -419,10 +202,10 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                 let cond_e = compile_imm(env, &cond);
                 let then_stmts = compile_aexpr_assign(env, target, *then);
                 let else_stmts = compile_aexpr_assign(env, target, *else_);
-                vec![Stmt::If {
+                vec![goast::Stmt::If {
                     cond: cond_e,
-                    then: Block { stmts: then_stmts },
-                    else_: Some(Block { stmts: else_stmts }),
+                    then: goast::Block { stmts: then_stmts },
+                    else_: Some(goast::Block { stmts: else_stmts }),
                 }]
             }
             anf::CExpr::EMatch {
@@ -447,11 +230,11 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                     for arm in arms {
                         if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
                             cases.push((
-                                Expr::Bool {
+                                goast::Expr::Bool {
                                     value,
                                     ty: goty::GoType::TBool,
                                 },
-                                Block {
+                                goast::Block {
                                     stmts: compile_aexpr_assign(env, target, arm.body),
                                 },
                             ));
@@ -459,10 +242,10 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                             panic!("expected ImmBool in boolean match arm");
                         }
                     }
-                    let def_block = default.map(|d| Block {
+                    let def_block = default.map(|d| goast::Block {
                         stmts: compile_aexpr_assign(env, target, *d),
                     });
-                    vec![Stmt::SwitchExpr {
+                    vec![goast::Stmt::SwitchExpr {
                         expr: compile_imm(env, &expr),
                         cases,
                         default: def_block,
@@ -476,7 +259,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                             let vty = variant_ty_by_index(env, &ty, index);
                             cases.push((
                                 vty,
-                                Block {
+                                goast::Block {
                                     stmts: compile_aexpr_assign(env, target, arm.body),
                                 },
                             ));
@@ -484,10 +267,10 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                             panic!("expected ImmTag in enum match arm");
                         }
                     }
-                    let def_block = default.map(|d| Block {
+                    let def_block = default.map(|d| goast::Block {
                         stmts: compile_aexpr_assign(env, target, *d),
                     });
-                    vec![Stmt::SwitchType {
+                    vec![goast::Stmt::SwitchType {
                         bind: "_".to_string(),
                         expr: compile_imm(env, &expr),
                         cases,
@@ -505,7 +288,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
         } => {
             let mut out = Vec::new();
             // Declare the inner variable first
-            out.push(Stmt::VarDecl {
+            out.push(goast::Stmt::VarDecl {
                 name: name.clone(),
                 ty: cexpr_ty(&value),
                 value: None,
@@ -523,7 +306,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
                     ));
                 }
                 _ => {
-                    out.push(Stmt::Assignment {
+                    out.push(goast::Stmt::Assignment {
                         name: name.clone(),
                         value: compile_cexpr(env, &value),
                     });
@@ -537,7 +320,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<Stmt> {
     }
 }
 
-fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
+fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -546,13 +329,13 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 cond, then, else_, ..
             } => {
                 let cond_e = compile_imm(env, &cond);
-                let then_block = Block {
+                let then_block = goast::Block {
                     stmts: compile_aexpr(env, *then),
                 };
-                let else_block = Block {
+                let else_block = goast::Block {
                     stmts: compile_aexpr(env, *else_),
                 };
-                stmts.push(Stmt::If {
+                stmts.push(goast::Stmt::If {
                     cond: cond_e,
                     then: then_block,
                     else_: Some(else_block),
@@ -576,11 +359,11 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                     for arm in arms {
                         if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
                             cases.push((
-                                Expr::Bool {
+                                goast::Expr::Bool {
                                     value,
                                     ty: goty::GoType::TBool,
                                 },
-                                Block {
+                                goast::Block {
                                     stmts: compile_aexpr(env, arm.body),
                                 },
                             ));
@@ -588,10 +371,10 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                             panic!("expected ImmBool in boolean match arm");
                         }
                     }
-                    let def_block = default.map(|d| Block {
+                    let def_block = default.map(|d| goast::Block {
                         stmts: compile_aexpr(env, *d),
                     });
-                    stmts.push(Stmt::SwitchExpr {
+                    stmts.push(goast::Stmt::SwitchExpr {
                         expr: compile_imm(env, &expr),
                         cases,
                         default: def_block,
@@ -604,7 +387,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                             let vty = variant_ty_by_index(env, &ty, index);
                             cases.push((
                                 vty,
-                                Block {
+                                goast::Block {
                                     stmts: compile_aexpr(env, arm.body),
                                 },
                             ));
@@ -612,10 +395,10 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                             panic!("expected ImmTag in enum match arm");
                         }
                     }
-                    let def_block = default.map(|d| Block {
+                    let def_block = default.map(|d| goast::Block {
                         stmts: compile_aexpr(env, *d),
                     });
-                    stmts.push(Stmt::SwitchType {
+                    stmts.push(goast::Stmt::SwitchType {
                         bind: "_".to_string(),
                         expr: compile_imm(env, &expr),
                         cases,
@@ -629,7 +412,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                 match e.get_ty() {
                     goty::GoType::TVoid => {}
                     _ => {
-                        stmts.push(Stmt::Return { expr: Some(e) });
+                        stmts.push(goast::Stmt::Return { expr: Some(e) });
                     }
                 }
             }
@@ -643,7 +426,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
             match &*value {
                 // If RHS needs statements, declare then fill via if-lowering
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
-                    stmts.push(Stmt::VarDecl {
+                    stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
                         ty: cexpr_ty(&value),
                         value: None,
@@ -657,14 +440,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
                     ));
                 }
                 anf::CExpr::ETuple { .. } => {
-                    stmts.push(Stmt::VarDecl {
+                    stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
                         ty: cexpr_ty(&value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }
                 _ => {
-                    stmts.push(Stmt::VarDecl {
+                    stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
                         ty: cexpr_ty(&value),
                         value: Some(compile_cexpr(env, &value)),
@@ -677,7 +460,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<Stmt> {
     stmts
 }
 
-fn compile_fn(env: &Env, f: anf::Fn) -> Fn {
+fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
         params.push((name, tast_ty_to_go_type(&ty)));
@@ -688,133 +471,11 @@ fn compile_fn(env: &Env, f: anf::Fn) -> Fn {
     } else {
         f.name.clone()
     };
-    Fn {
+    goast::Fn {
         name: patched_name,
         params,
         ret_ty: Some(tast_ty_to_go_type(&f.ret_ty)),
-        body: Block { stmts },
-    }
-}
-
-mod anf_renamer {
-    use crate::anf;
-
-    pub fn rename(file: anf::File) -> anf::File {
-        anf::File {
-            toplevels: file.toplevels.into_iter().map(rename_fn).collect(),
-        }
-    }
-
-    fn rename_fn(f: anf::Fn) -> anf::Fn {
-        anf::Fn {
-            name: f.name,
-            params: f
-                .params
-                .into_iter()
-                .map(|(n, t)| (n.replace("/", "__"), t))
-                .collect(),
-            ret_ty: f.ret_ty,
-            body: rename_aexpr(f.body),
-        }
-    }
-
-    fn rename_imm(imm: anf::ImmExpr) -> anf::ImmExpr {
-        match imm {
-            anf::ImmExpr::ImmVar { name, ty } => anf::ImmExpr::ImmVar {
-                name: name.replace("/", "__"),
-                ty,
-            },
-            anf::ImmExpr::ImmUnit { ty } => anf::ImmExpr::ImmUnit { ty },
-            anf::ImmExpr::ImmBool { value, ty } => anf::ImmExpr::ImmBool { value, ty },
-            anf::ImmExpr::ImmInt { value, ty } => anf::ImmExpr::ImmInt { value, ty },
-            anf::ImmExpr::ImmString { value, ty } => anf::ImmExpr::ImmString { value, ty },
-            anf::ImmExpr::ImmTag { index, ty } => anf::ImmExpr::ImmTag { index, ty },
-        }
-    }
-
-    fn rename_cexpr(e: anf::CExpr) -> anf::CExpr {
-        match e {
-            anf::CExpr::CImm { imm } => anf::CExpr::CImm {
-                imm: rename_imm(imm),
-            },
-            anf::CExpr::EConstr { index, args, ty } => anf::CExpr::EConstr {
-                index,
-                args: args.into_iter().map(rename_imm).collect(),
-                ty,
-            },
-            anf::CExpr::ETuple { items, ty } => anf::CExpr::ETuple {
-                items: items.into_iter().map(rename_imm).collect(),
-                ty,
-            },
-            anf::CExpr::EMatch {
-                expr,
-                arms,
-                default,
-                ty,
-            } => anf::CExpr::EMatch {
-                expr: Box::new(rename_imm(*expr)),
-                arms: arms
-                    .into_iter()
-                    .map(|arm| anf::Arm {
-                        lhs: rename_imm(arm.lhs),
-                        body: rename_aexpr(arm.body),
-                    })
-                    .collect(),
-                default: default.map(|d| Box::new(rename_aexpr(*d))),
-                ty,
-            },
-            anf::CExpr::EIf {
-                cond,
-                then,
-                else_,
-                ty,
-            } => anf::CExpr::EIf {
-                cond: Box::new(rename_imm(*cond)),
-                then: Box::new(rename_aexpr(*then)),
-                else_: Box::new(rename_aexpr(*else_)),
-                ty,
-            },
-            anf::CExpr::EConstrGet {
-                expr,
-                variant_index,
-                field_index,
-                ty,
-            } => anf::CExpr::EConstrGet {
-                expr: Box::new(rename_imm(*expr)),
-                variant_index,
-                field_index,
-                ty,
-            },
-            anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
-                func: func.replace("/", "__"),
-                args: args.into_iter().map(rename_imm).collect(),
-                ty,
-            },
-            anf::CExpr::EProj { tuple, index, ty } => anf::CExpr::EProj {
-                tuple: Box::new(rename_imm(*tuple)),
-                index,
-                ty,
-            },
-        }
-    }
-
-    fn rename_aexpr(e: anf::AExpr) -> anf::AExpr {
-        match e {
-            anf::AExpr::ACExpr { expr } => anf::AExpr::ACExpr {
-                expr: rename_cexpr(expr),
-            },
-            anf::AExpr::ALet {
-                name,
-                value,
-                body,
-                ty,
-            } => anf::AExpr::ALet {
-                name: name.replace("/", "__"),
-                value: Box::new(rename_cexpr(*value)),
-                body: Box::new(rename_aexpr(*body)),
-                ty,
-            },
-        }
+        body: goast::Block { stmts },
     }
 }
 
@@ -968,7 +629,7 @@ fn collect_tuple_types(file: &anf::File) -> IndexMap<String, goty::GoType> {
     }
 }
 
-pub fn go_file(env: &Env, file: anf::File) -> File {
+pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
@@ -976,11 +637,11 @@ pub fn go_file(env: &Env, file: anf::File) -> File {
     let tuple_types = collect_tuple_types(&file);
 
     for tt in tuple_types {
-        all.push(Item::Struct(Struct {
+        all.push(goast::Item::Struct(goast::Struct {
             name: tt.0,
             fields: match tt.1 {
                 goty::GoType::TStruct { name: _, fields } => {
-                    let fields = fields.iter().map(|(n, t)| Field {
+                    let fields = fields.iter().map(|(n, t)| goast::Field {
                         name: n.clone(),
                         ty: t.clone(),
                     });
@@ -992,38 +653,38 @@ pub fn go_file(env: &Env, file: anf::File) -> File {
         }));
     }
 
-    let file = anf_renamer::rename(file);
+    let file = anf::anf_renamer::rename(file);
 
     let mut toplevels = gen_type_definition(env);
     for item in file.toplevels {
         let gof = compile_fn(env, item);
-        toplevels.push(Item::Fn(gof));
+        toplevels.push(goast::Item::Fn(gof));
     }
     all.extend(toplevels);
-    all.push(Item::Fn(Fn {
+    all.push(goast::Item::Fn(goast::Fn {
         name: "main".to_string(),
         params: vec![],
         ret_ty: None,
-        body: Block {
-            stmts: vec![Stmt::Expr(Expr::Call {
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
                 func: "main0".to_string(),
                 args: vec![],
                 ty: goty::GoType::TVoid,
             })],
         },
     }));
-    File { toplevels: all }
+    goast::File { toplevels: all }
 }
 
 #[allow(unused)]
-fn gen_type_definition(env: &Env) -> Vec<Item> {
+fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in env.enums.iter() {
         let type_identifier_method = format!("is{}", name.0);
 
-        defs.push(Item::Interface(Interface {
+        defs.push(goast::Item::Interface(goast::Interface {
             name: name.0.clone(),
-            methods: vec![MethodElem {
+            methods: vec![goast::MethodElem {
                 name: type_identifier_method.clone(),
                 params: vec![],
                 ret: None,
@@ -1033,14 +694,14 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
             let variant_name = variant_name.0.clone();
             let mut fields = Vec::new();
             for (i, field) in variant_fields.iter().enumerate() {
-                fields.push(Field {
+                fields.push(goast::Field {
                     name: format!("_{}", i),
                     ty: tast_ty_to_go_type(field),
                 });
             }
 
-            let methods = vec![Method {
-                receiver: Receiver {
+            let methods = vec![goast::Method {
+                receiver: goast::Receiver {
                     name: "_".to_string(),
                     ty: goty::GoType::TName {
                         name: variant_name.clone(),
@@ -1048,10 +709,10 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
                 },
                 name: type_identifier_method.clone(),
                 params: vec![],
-                body: Block { stmts: vec![] },
+                body: goast::Block { stmts: vec![] },
             }];
 
-            defs.push(Item::Struct(Struct {
+            defs.push(goast::Item::Struct(goast::Struct {
                 name: variant_name,
                 fields,
                 methods,
@@ -1059,26 +720,6 @@ fn gen_type_definition(env: &Env) -> Vec<Item> {
         }
     }
     defs
-}
-
-fn go_type_name_for(ty: &tast::Ty) -> String {
-    match ty {
-        tast::Ty::TUnit => "Unit".to_string(),
-        tast::Ty::TBool => "bool".to_string(),
-        tast::Ty::TInt => "int".to_string(),
-        tast::Ty::TString => "string".to_string(),
-        tast::Ty::TApp { name, .. } => name.0.clone(),
-        tast::Ty::TTuple { typs } => {
-            let mut s = format!("Tuple{}", typs.len());
-            for t in typs {
-                s.push('_');
-                s.push_str(&go_type_name_for(t).replace(['{', '}', ' ', '[', ']', ','], "_"));
-            }
-            s
-        }
-        // Fallback textual
-        tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),
-    }
 }
 
 #[test]
@@ -1113,7 +754,7 @@ fn test_type_gen() {
     );
 
     let item = gen_type_definition(&env);
-    let dummy_file = File { toplevels: item };
+    let dummy_file = goast::File { toplevels: item };
     expect![[r#"
         type Tree interface {
             isTree()

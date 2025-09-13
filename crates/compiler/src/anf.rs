@@ -367,3 +367,125 @@ pub fn anf_file(env: &Env, file: core::File) -> File {
     }
     File { toplevels }
 }
+
+pub mod anf_renamer {
+    use crate::anf;
+
+    pub fn rename(file: anf::File) -> anf::File {
+        anf::File {
+            toplevels: file.toplevels.into_iter().map(rename_fn).collect(),
+        }
+    }
+
+    fn rename_fn(f: anf::Fn) -> anf::Fn {
+        anf::Fn {
+            name: f.name,
+            params: f
+                .params
+                .into_iter()
+                .map(|(n, t)| (n.replace("/", "__"), t))
+                .collect(),
+            ret_ty: f.ret_ty,
+            body: rename_aexpr(f.body),
+        }
+    }
+
+    fn rename_imm(imm: anf::ImmExpr) -> anf::ImmExpr {
+        match imm {
+            anf::ImmExpr::ImmVar { name, ty } => anf::ImmExpr::ImmVar {
+                name: name.replace("/", "__"),
+                ty,
+            },
+            anf::ImmExpr::ImmUnit { ty } => anf::ImmExpr::ImmUnit { ty },
+            anf::ImmExpr::ImmBool { value, ty } => anf::ImmExpr::ImmBool { value, ty },
+            anf::ImmExpr::ImmInt { value, ty } => anf::ImmExpr::ImmInt { value, ty },
+            anf::ImmExpr::ImmString { value, ty } => anf::ImmExpr::ImmString { value, ty },
+            anf::ImmExpr::ImmTag { index, ty } => anf::ImmExpr::ImmTag { index, ty },
+        }
+    }
+
+    fn rename_cexpr(e: anf::CExpr) -> anf::CExpr {
+        match e {
+            anf::CExpr::CImm { imm } => anf::CExpr::CImm {
+                imm: rename_imm(imm),
+            },
+            anf::CExpr::EConstr { index, args, ty } => anf::CExpr::EConstr {
+                index,
+                args: args.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::ETuple { items, ty } => anf::CExpr::ETuple {
+                items: items.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EMatch {
+                expr,
+                arms,
+                default,
+                ty,
+            } => anf::CExpr::EMatch {
+                expr: Box::new(rename_imm(*expr)),
+                arms: arms
+                    .into_iter()
+                    .map(|arm| anf::Arm {
+                        lhs: rename_imm(arm.lhs),
+                        body: rename_aexpr(arm.body),
+                    })
+                    .collect(),
+                default: default.map(|d| Box::new(rename_aexpr(*d))),
+                ty,
+            },
+            anf::CExpr::EIf {
+                cond,
+                then,
+                else_,
+                ty,
+            } => anf::CExpr::EIf {
+                cond: Box::new(rename_imm(*cond)),
+                then: Box::new(rename_aexpr(*then)),
+                else_: Box::new(rename_aexpr(*else_)),
+                ty,
+            },
+            anf::CExpr::EConstrGet {
+                expr,
+                variant_index,
+                field_index,
+                ty,
+            } => anf::CExpr::EConstrGet {
+                expr: Box::new(rename_imm(*expr)),
+                variant_index,
+                field_index,
+                ty,
+            },
+            anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
+                func: func.replace("/", "__"),
+                args: args.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EProj { tuple, index, ty } => anf::CExpr::EProj {
+                tuple: Box::new(rename_imm(*tuple)),
+                index,
+                ty,
+            },
+        }
+    }
+
+    fn rename_aexpr(e: anf::AExpr) -> anf::AExpr {
+        match e {
+            anf::AExpr::ACExpr { expr } => anf::AExpr::ACExpr {
+                expr: rename_cexpr(expr),
+            },
+            anf::AExpr::ALet {
+                name,
+                value,
+                body,
+                ty,
+            } => anf::AExpr::ALet {
+                name: name.replace("/", "__"),
+                value: Box::new(rename_cexpr(*value)),
+                body: Box::new(rename_aexpr(*body)),
+                ty,
+            },
+        }
+    }
+}

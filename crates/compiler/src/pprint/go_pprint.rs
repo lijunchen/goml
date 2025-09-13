@@ -3,14 +3,13 @@ use pretty::RcDoc;
 use crate::{
     env::Env,
     go::{
-        goty::GoType,
-        lib::{
+        goast::{
             Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt,
             Struct,
         },
+        goty::GoType,
     },
 };
-
 fn go_type_name(ty: &GoType) -> String {
     match ty {
         GoType::TVoid => "void".to_string(),

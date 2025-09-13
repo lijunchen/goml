@@ -1,5 +1,4 @@
-use crate::go::lib;
-use crate::go::lib::EmbededRawString;
+use crate::go::goast::{self, EmbededRawString};
 
 // unit_to_string(x : struct{}) string
 // bool_to_string(x : bool) string
@@ -10,8 +9,8 @@ use crate::go::lib::EmbededRawString;
 // print(s : string) struct{}
 // println(s : string) struct{}
 // missing(s : string) struct{}
-pub fn make_runtime() -> Vec<lib::Item> {
-    let rt = vec![lib::Item::EmbededRawString(EmbededRawString {
+pub fn make_runtime() -> Vec<goast::Item> {
+    let rt = vec![goast::Item::EmbededRawString(EmbededRawString {
         value: r#"package main
 
 import (
