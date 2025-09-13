@@ -1,7 +1,50 @@
-type Tuple3_bool_bool_Tuple2_bool_bool struct {
-    _0 bool
-    _1 bool
-    _2 Tuple2_bool_bool
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
 }
 
 type Tuple2_bool_bool struct {
@@ -9,8 +52,14 @@ type Tuple2_bool_bool struct {
     _1 bool
 }
 
-func main() {
-    var mtmp0 Unit = nil
+type Tuple3_bool_bool_Tuple2_bool_bool struct {
+    _0 bool
+    _1 bool
+    _2 Tuple2_bool_bool
+}
+
+func main0() struct{} {
+    var mtmp0 struct{} = struct{}{}
     var t7 = Tuple2_bool_bool{
         _0: true,
         _1: false,
@@ -31,6 +80,10 @@ func main() {
     var x__1 bool = x1
     var b__5 bool = w__4
     var t8 string = bool_to_string(b__5)
-    var mtmp6 Unit = print(t8)
-    return nil
+    var mtmp6 struct{} = string_print(t8)
+    return struct{}{}
+}
+
+func main() {
+    main0()
 }

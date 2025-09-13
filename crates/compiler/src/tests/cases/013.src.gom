@@ -1,6 +1,59 @@
-func main() {
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+func main0() struct{} {
     var s__0 string = "abcde"
-    var mtmp0 Unit = println(s__0)
-    var mtmp1 Unit = print(s__0)
-    return nil
+    var mtmp0 struct{} = string_println(s__0)
+    var mtmp1 struct{} = string_print(s__0)
+    return struct{}{}
+}
+
+func main() {
+    main0()
 }

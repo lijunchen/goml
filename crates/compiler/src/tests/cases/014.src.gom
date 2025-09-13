@@ -1,9 +1,58 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
 type Tuple2_bool_bool struct {
     _0 bool
     _1 bool
 }
 
-func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) {
+func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
     var x0 bool = x__0._0
     var x1 bool = x__0._1
     switch x1 {
@@ -14,12 +63,12 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) {
         case true:
             switch x2 {
             case true:
-                return println("case4")
+                return string_println("case4")
             case false:
-                return println("case3")
+                return string_println("case3")
             }
         case false:
-            return println("case4")
+            return string_println("case4")
         }
     case false:
         switch x0 {
@@ -30,12 +79,12 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) {
             case true:
                 switch x4 {
                 case true:
-                    return println("case2")
+                    return string_println("case2")
                 case false:
-                    return println("case1")
+                    return string_println("case1")
                 }
             case false:
-                return println("case2")
+                return string_println("case2")
             }
         case false:
             var x6 bool = y__1._0
@@ -44,18 +93,18 @@ func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) {
             case true:
                 switch x6 {
                 case true:
-                    return println("case4")
+                    return string_println("case4")
                 case false:
-                    return println("case3")
+                    return string_println("case3")
                 }
             case false:
-                return println("case4")
+                return string_println("case4")
             }
         }
     }
 }
 
-func main() {
+func main0() struct{} {
     var t12 = Tuple2_bool_bool{
         _0: true,
         _1: false,
@@ -64,7 +113,7 @@ func main() {
         _0: false,
         _1: true,
     }
-    var mtmp8 Unit = test_nested_match(t12, t13)
+    var mtmp8 struct{} = test_nested_match(t12, t13)
     var t14 = Tuple2_bool_bool{
         _0: true,
         _1: false,
@@ -73,7 +122,7 @@ func main() {
         _0: true,
         _1: false,
     }
-    var mtmp9 Unit = test_nested_match(t14, t15)
+    var mtmp9 struct{} = test_nested_match(t14, t15)
     var t16 = Tuple2_bool_bool{
         _0: false,
         _1: true,
@@ -82,7 +131,7 @@ func main() {
         _0: false,
         _1: true,
     }
-    var mtmp10 Unit = test_nested_match(t16, t17)
+    var mtmp10 struct{} = test_nested_match(t16, t17)
     var t18 = Tuple2_bool_bool{
         _0: false,
         _1: true,
@@ -91,6 +140,10 @@ func main() {
         _0: true,
         _1: false,
     }
-    var mtmp11 Unit = test_nested_match(t18, t19)
-    return nil
+    var mtmp11 struct{} = test_nested_match(t18, t19)
+    return struct{}{}
+}
+
+func main() {
+    main0()
 }

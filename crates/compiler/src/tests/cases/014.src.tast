@@ -1,12 +1,12 @@
 fn test_nested_match(x/0: (Bool, Bool), y/1: (Bool, Bool)) -> Unit {
   match (x/0 : (Bool, Bool)) {
       (true, false) => match (y/1 : (Bool, Bool)) {
-            (false, true) => println("case1"),
-            _ : (Bool, Bool) => println("case2"),
+            (false, true) => string_println("case1"),
+            _ : (Bool, Bool) => string_println("case2"),
         },
       _ : (Bool, Bool) => match (y/1 : (Bool, Bool)) {
-            (false, true) => println("case3"),
-            _ : (Bool, Bool) => println("case4"),
+            (false, true) => string_println("case3"),
+            _ : (Bool, Bool) => string_println("case4"),
         },
   }
 }

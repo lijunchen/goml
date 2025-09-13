@@ -1,3 +1,52 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
 type T interface {
     isT()
 }
@@ -8,30 +57,34 @@ func (_ A) isT() {}
 
 type B struct {
     _0 bool
-    _1 Unit
+    _1 struct{}
 }
 
 func (_ B) isT() {}
 
-func main() {
+func main0() struct{} {
     var t__0 T = B{
         _0: true,
-        _1: nil,
+        _1: struct{}{},
     }
     switch _ := t__0.(type) {
     case A:
         var t2 string = int_to_string(1)
-        return print(t2)
+        return string_print(t2)
     case B:
         var x0 bool = t__0.(B)._0
-        var x1 Unit = t__0.(B)._1
+        var x1 struct{} = t__0.(B)._1
         switch x0 {
         case true:
             var t3 string = int_to_string(2)
-            return print(t3)
+            return string_print(t3)
         case false:
             var t4 string = int_to_string(3)
-            return print(t4)
+            return string_print(t4)
         }
     }
+}
+
+func main() {
+    main0()
 }

@@ -1,9 +1,58 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
 type Tuple2_bool_bool struct {
     _0 bool
     _1 bool
 }
 
-func main() {
+func main0() struct{} {
     var a__0 = Tuple2_bool_bool{
         _0: true,
         _1: true,
@@ -15,19 +64,23 @@ func main() {
         switch x0 {
         case true:
             var t2 string = int_to_string(789)
-            return print(t2)
+            return string_print(t2)
         case false:
             var t3 string = int_to_string(456)
-            return print(t3)
+            return string_print(t3)
         }
     case false:
         switch x0 {
         case true:
             var t4 string = int_to_string(123)
-            return print(t4)
+            return string_print(t4)
         case false:
             var t5 string = int_to_string(789)
-            return print(t5)
+            return string_print(t5)
         }
     }
+}
+
+func main() {
+    main0()
 }

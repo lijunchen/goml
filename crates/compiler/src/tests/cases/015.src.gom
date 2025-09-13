@@ -1,3 +1,52 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
 type IntList interface {
     isIntList()
 }
@@ -13,27 +62,27 @@ type Cons struct {
 
 func (_ Cons) isIntList() {}
 
-func print_int_list(xs__0 IntList) {
+func print_int_list(xs__0 IntList) struct{} {
     switch _ := xs__0.(type) {
     case Nil:
-        return print("Nil")
+        return string_print("Nil")
     case Cons:
         var x0 int = xs__0.(Cons)._0
         var x1 IntList = xs__0.(Cons)._1
         var xs__2 IntList = x1
         var x__1 int = x0
-        var mtmp2 Unit = print("Cons")
-        var mtmp3 Unit = print("(")
+        var mtmp2 struct{} = string_print("Cons")
+        var mtmp3 struct{} = string_print("(")
         var t25 string = int_to_string(x__1)
-        var mtmp4 Unit = print(t25)
-        var mtmp5 Unit = print(", ")
-        var mtmp6 Unit = print_int_list(xs__2)
-        var mtmp7 Unit = print(")")
-        return nil
+        var mtmp4 struct{} = string_print(t25)
+        var mtmp5 struct{} = string_print(", ")
+        var mtmp6 struct{} = print_int_list(xs__2)
+        var mtmp7 struct{} = string_print(")")
+        return struct{}{}
     }
 }
 
-func int_list_rev_aux(xs__3 IntList, acc__4 IntList) {
+func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
     switch _ := xs__3.(type) {
     case Nil:
         return acc__4
@@ -50,12 +99,12 @@ func int_list_rev_aux(xs__3 IntList, acc__4 IntList) {
     }
 }
 
-func int_list_rev(xs__7 IntList) {
+func int_list_rev(xs__7 IntList) IntList {
     var t27 IntList = Nil{}
     return int_list_rev_aux(xs__7, t27)
 }
 
-func int_list_length(xs__8 IntList) {
+func int_list_length(xs__8 IntList) int {
     switch _ := xs__8.(type) {
     case Nil:
         return 0
@@ -68,27 +117,27 @@ func int_list_length(xs__8 IntList) {
     }
 }
 
-func print_int_list_length(xs__10 IntList) {
-    var mtmp12 Unit = print("Length: ")
+func print_int_list_length(xs__10 IntList) struct{} {
+    var mtmp12 struct{} = string_print("Length: ")
     var t30 int = int_list_length(xs__10)
     var t29 string = int_to_string(t30)
-    var mtmp13 Unit = println(t29)
-    return nil
+    var mtmp13 struct{} = string_println(t29)
+    return struct{}{}
 }
 
-func main() {
+func main0() struct{} {
     var x__11 IntList = Nil{}
-    var mtmp14 Unit = print_int_list(x__11)
-    var mtmp15 Unit = println("")
-    var mtmp16 Unit = print_int_list_length(x__11)
+    var mtmp14 struct{} = print_int_list(x__11)
+    var mtmp15 struct{} = string_println("")
+    var mtmp16 struct{} = print_int_list_length(x__11)
     var t31 IntList = Nil{}
     var x__12 IntList = Cons{
         _0: 1,
         _1: t31,
     }
-    var mtmp17 Unit = print_int_list(x__12)
-    var mtmp18 Unit = println("")
-    var mtmp19 Unit = print_int_list_length(x__12)
+    var mtmp17 struct{} = print_int_list(x__12)
+    var mtmp18 struct{} = string_println("")
+    var mtmp19 struct{} = print_int_list_length(x__12)
     var t34 IntList = Nil{}
     var t33 IntList = Cons{
         _0: 3,
@@ -102,11 +151,15 @@ func main() {
         _0: 1,
         _1: t32,
     }
-    var mtmp20 Unit = print_int_list(x__13)
-    var mtmp21 Unit = println("")
-    var mtmp22 Unit = print_int_list_length(x__13)
+    var mtmp20 struct{} = print_int_list(x__13)
+    var mtmp21 struct{} = string_println("")
+    var mtmp22 struct{} = print_int_list_length(x__13)
     var y__14 IntList = int_list_rev(x__13)
-    var mtmp23 Unit = print_int_list(y__14)
-    var mtmp24 Unit = println("")
-    return nil
+    var mtmp23 struct{} = print_int_list(y__14)
+    var mtmp24 struct{} = string_println("")
+    return struct{}{}
+}
+
+func main() {
+    main0()
 }

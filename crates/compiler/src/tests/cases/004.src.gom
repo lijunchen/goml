@@ -1,3 +1,52 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
 type Tuple2_Color_Color struct {
     _0 Color
     _1 Color
@@ -19,7 +68,7 @@ type Blue struct {}
 
 func (_ Blue) isColor() {}
 
-func main() {
+func main0() struct{} {
     var t3 Color = Blue{}
     var t4 Color = Blue{}
     var a__0 = Tuple2_Color_Color{
@@ -55,8 +104,12 @@ func main() {
             return false
         case Blue:
             var t5 string = bool_to_string(true)
-            var mtmp2 Unit = print(t5)
+            var mtmp2 struct{} = string_print(t5)
             return false
         }
     }
+}
+
+func main() {
+    main0()
 }
