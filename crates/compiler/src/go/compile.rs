@@ -271,7 +271,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
                         stmts: compile_aexpr_assign(env, target, *d),
                     });
                     vec![goast::Stmt::SwitchType {
-                        bind: "_".to_string(),
+                        bind: None,
                         expr: compile_imm(env, &expr),
                         cases,
                         default: def_block,
@@ -399,7 +399,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                         stmts: compile_aexpr(env, *d),
                     });
                     stmts.push(goast::Stmt::SwitchType {
-                        bind: "_".to_string(),
+                        bind: None,
                         expr: compile_imm(env, &expr),
                         cases,
                         default: def_block,

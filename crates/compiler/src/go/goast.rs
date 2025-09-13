@@ -170,7 +170,7 @@ pub enum Stmt {
     },
     // switch _ := <expr>.(type) { case <Type>: ...; default: ... }
     SwitchType {
-        bind: String,
+        bind: Option<String>,
         expr: Expr,
         cases: Vec<(goty::GoType, Block)>,
         default: Option<Block>,

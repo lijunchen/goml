@@ -477,10 +477,13 @@ impl Stmt {
 
                 RcDoc::text("switch")
                     .append(RcDoc::space())
-                    .append(RcDoc::text(bind))
-                    .append(RcDoc::space())
-                    .append(RcDoc::text(":="))
-                    .append(RcDoc::space())
+                    .append(if let Some(b) = bind {
+                        RcDoc::text(b)
+                            .append(RcDoc::space())
+                            .append(RcDoc::text(":="))
+                    } else {
+                        RcDoc::nil()
+                    })
                     .append(expr.to_doc(env))
                     .append(RcDoc::text(".(type)"))
                     .append(RcDoc::space())
