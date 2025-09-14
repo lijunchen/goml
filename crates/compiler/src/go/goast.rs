@@ -206,9 +206,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                 name: name.0.clone(),
             }
         }
-        tast::Ty::TParam { name } => {
-            panic!("unresolved type parameter {}", name)
-        }
+        tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => {
             let param_tys = params.iter().map(tast_ty_to_go_type).collect();
             let ret_ty = Box::new(tast_ty_to_go_type(ret_ty));

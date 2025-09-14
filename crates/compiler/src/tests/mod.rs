@@ -38,7 +38,7 @@ fn execute_single_go_file(input: &Path) -> anyhow::Result<String> {
 
     // copy go_file into tempdir, and rename extension name to .go
     let main_go_file = dir.path().join("main.go");
-    std::fs::copy(&input, &main_go_file).with_context(|| {
+    std::fs::copy(input, &main_go_file).with_context(|| {
         format!(
             "Failed to copy go file from {} to {}",
             input.display(),
@@ -56,12 +56,8 @@ fn execute_single_go_file(input: &Path) -> anyhow::Result<String> {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    {
-        let stdin = child.stdin.as_mut().unwrap();
-        stdin
-            .write_all(b"")
-            .with_context(|| "Failed to write to stdin of Go program")?;
-    }
+    let stdin = child.stdin.as_mut().unwrap();
+    stdin.write_all(b"").unwrap();
     let output = child.wait_with_output()?;
     if !output.status.success() {
         Ok(String::from_utf8_lossy(&output.stderr).to_string())
@@ -79,14 +75,11 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let p = entry.path();
             println!("Testing file: {}", p.display());
             let filename = p.file_name().unwrap().to_str().unwrap();
-            if filename == "016.src" || filename == "018.src" || filename == "002_overloading.src" {
-                println!("Skip {}, monomorphization not implemented yet", filename);
-                continue;
-            }
             let cst_filename = p.with_file_name(format!("{}.cst", filename));
             let ast_filename = p.with_file_name(format!("{}.ast", filename));
             let tast_filename = p.with_file_name(format!("{}.tast", filename));
             let core_filename = p.with_file_name(format!("{}.core", filename));
+            let mono_filename = p.with_file_name(format!("{}.mono", filename));
             let anf_filename = p.with_file_name(format!("{}.anf", filename));
             let go_filename = p.with_file_name(format!("{}.gom", filename));
             let result_filename = p.with_file_name(format!("{}.out", filename));
@@ -104,16 +97,19 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let ast = ast::lower::lower(cst).unwrap();
 
             expect_test::expect_file![ast_filename].assert_eq(&ast.to_pretty(120));
-            let (tast, env) = crate::typer::check_file(ast);
+            let (tast, mut env) = crate::typer::check_file(ast);
             expect_test::expect_file![tast_filename].assert_eq(&tast.to_pretty(&env, 120));
             let core = crate::compile_match::compile_file(&env, &tast);
             expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
 
+            let mono = crate::mono::mono(&mut env, core);
+            expect_test::expect_file![mono_filename].assert_eq(&mono.to_pretty(&env, 120));
+
             let mut buf = String::new();
             let eval_env = im::HashMap::new();
-            let interpreter_result = crate::interpreter::eval_file(&eval_env, &mut buf, &core);
+            let interpreter_result = crate::interpreter::eval_file(&eval_env, &mut buf, &mono);
 
-            let anf = crate::anf::anf_file(&env, core);
+            let anf = crate::anf::anf_file(&env, mono);
             expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
 
             let go = crate::go::compile::go_file(&env, anf);

@@ -1,7 +1,8 @@
 use ast::ast::{Lident, Uident};
+use indexmap::IndexMap;
 
 use crate::tast;
-use std::{cell::Cell, collections::HashMap};
+use std::cell::Cell;
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
@@ -62,11 +63,11 @@ pub enum Constraint {
 #[allow(unused)]
 pub struct Env {
     counter: Cell<i32>,
-    pub enums: HashMap<Uident, EnumDef>,
-    pub trait_defs: HashMap<String, tast::Ty>,
-    pub overloaded_funcs_to_trait_name: HashMap<String, Uident>,
-    pub trait_impls: HashMap<(String, tast::Ty, Lident), tast::Ty>,
-    pub funcs: HashMap<String, tast::Ty>,
+    pub enums: IndexMap<Uident, EnumDef>,
+    pub trait_defs: IndexMap<String, tast::Ty>,
+    pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
+    pub trait_impls: IndexMap<(String, tast::Ty, Lident), tast::Ty>,
+    pub funcs: IndexMap<String, tast::Ty>,
     pub constraints: Vec<Constraint>,
 }
 
@@ -80,11 +81,11 @@ impl Env {
     pub fn new() -> Self {
         Self {
             counter: Cell::new(0),
-            enums: HashMap::new(),
-            funcs: HashMap::new(),
-            trait_defs: HashMap::new(),
-            overloaded_funcs_to_trait_name: HashMap::new(),
-            trait_impls: HashMap::new(),
+            enums: IndexMap::new(),
+            funcs: IndexMap::new(),
+            trait_defs: IndexMap::new(),
+            overloaded_funcs_to_trait_name: IndexMap::new(),
+            trait_impls: IndexMap::new(),
             constraints: Vec::new(),
         }
     }

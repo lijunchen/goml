@@ -16,9 +16,10 @@ fn main() {
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
 
-    let (tast, env) = compiler::typer::check_file(ast);
+    let (tast, mut env) = compiler::typer::check_file(ast);
     // dbg!(&tast);
     let core = compiler::compile_match::compile_file(&env, &tast);
+    let core = compiler::mono::mono(&mut env, core);
     let mut buffer = String::new();
     let result = compiler::interpreter::eval_file(&im::HashMap::new(), &mut buffer, &core);
     // dbg!(&core);
