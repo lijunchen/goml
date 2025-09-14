@@ -53,18 +53,52 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     }
 }
 
-fn cexpr_ty(e: &anf::CExpr) -> goty::GoType {
+fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
     let t = match e {
         anf::CExpr::CImm { imm } => imm_ty(imm),
         anf::CExpr::EConstr { ty, .. }
         | anf::CExpr::ETuple { ty, .. }
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
-        | anf::CExpr::EConstrGet { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
+        // For EConstrGet, compute field type from the scrutinee's enum instance
+        anf::CExpr::EConstrGet {
+            expr,
+            variant_index,
+            field_index,
+            ty: _,
+        } => match imm_ty(expr) {
+            tast::Ty::TApp { name, .. } => {
+                let def = env.enums.get(&name).expect("unknown enum in EConstrGet");
+                def.variants[*variant_index].1[*field_index].clone()
+            }
+            _ => panic!("EConstrGet on non-enum type"),
+        },
     };
     tast_ty_to_go_type(&t)
+}
+
+fn variant_struct_name(env: &Env, enum_name: &str, variant_name: &str) -> String {
+    // Count how many enums define a variant with this name.
+    let mut count = 0;
+    for (_ename, edef) in env.enums.iter() {
+        if edef
+            .variants
+            .iter()
+            .any(|(v, _)| v.0.as_str() == variant_name)
+        {
+            count += 1;
+            if count > 1 {
+                break;
+            }
+        }
+    }
+    if count > 1 {
+        format!("{}_{}", enum_name, variant_name)
+    } else {
+        variant_name.to_string()
+    }
 }
 
 fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
@@ -72,7 +106,7 @@ fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
         && let Some(def) = env.enums.get(name)
     {
         let (vname, _fields) = &def.variants[index];
-        return vname.0.clone();
+        return variant_struct_name(env, &name.0, &vname.0);
     }
     panic!(
         "Cannot resolve variant name for ty {:?} index {}",
@@ -148,17 +182,24 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
             expr,
-            variant_index: _,
+            variant_index,
             field_index,
             ty: _,
         } => {
             let obj = compile_imm(env, expr);
-            // Determine variant cast type from the scrutinee's enum type, not the field type
+            // Determine field type from the scrutinee's enum instance
             let enum_ty = imm_ty(expr);
+            let field_ty = match enum_ty {
+                tast::Ty::TApp { name, .. } => {
+                    let def = env.enums.get(&name).expect("unknown enum in EConstrGet");
+                    def.variants[*variant_index].1[*field_index].clone()
+                }
+                _ => panic!("EConstrGet on non-enum type"),
+            };
             goast::Expr::FieldAccess {
                 obj: Box::new(obj),
                 field: format!("_{}", field_index),
-                ty: tast_ty_to_go_type(&enum_ty),
+                ty: tast_ty_to_go_type(&field_ty),
             }
         }
         anf::CExpr::ECall { func, args, ty } => {
@@ -298,7 +339,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(&value),
+                        ty: cexpr_ty(env, &value),
                         value: None,
                     });
                     out.extend(compile_aexpr_assign(
@@ -312,7 +353,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
                 _ => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(&value),
+                        ty: cexpr_ty(env, &value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }
@@ -441,7 +482,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(&value),
+                        ty: cexpr_ty(env, &value),
                         value: None,
                     });
                     stmts.extend(compile_aexpr_assign(
@@ -455,14 +496,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                 anf::CExpr::ETuple { .. } => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(&value),
+                        ty: cexpr_ty(env, &value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }
                 _ => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(&value),
+                        ty: cexpr_ty(env, &value),
                         value: Some(compile_cexpr(env, &value)),
                     });
                 }
@@ -719,10 +760,17 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     crate::go::dce::eliminate_dead_vars(file)
 }
 
-#[allow(unused)]
 fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in env.enums.iter() {
+        // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
+        let has_type_param = def
+            .variants
+            .iter()
+            .any(|(_, fields)| fields.iter().any(|f| matches!(f, tast::Ty::TParam { .. })));
+        if has_type_param {
+            continue;
+        }
         let type_identifier_method = format!("is{}", name.0);
 
         defs.push(goast::Item::Interface(goast::Interface {
@@ -734,7 +782,7 @@ fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
             }],
         }));
         for (variant_name, variant_fields) in def.variants.iter() {
-            let variant_name = variant_name.0.clone();
+            let variant_name = variant_struct_name(env, &name.0, &variant_name.0);
             let mut fields = Vec::new();
             for (i, field) in variant_fields.iter().enumerate() {
                 fields.push(goast::Field {
