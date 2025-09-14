@@ -1,0 +1,77 @@
+fn int_list_length(xs/2: List__Int) -> Int {
+  match xs/2 {
+    List__Int::Nil => {
+      0
+    },
+    List__Int::Cons(x2, x3) => {
+      let x2 = List__Int_1_0(xs/2) in
+      let x3 = List__Int_1_1(xs/2) in
+      let tail/3 = x3 in
+      int_add(1, int_list_length(tail/3))
+    },
+  }
+}
+
+fn main() -> Unit {
+  let x/4 = List__Int::Cons(1, List__Int::Nil) in
+  let length/5 = list_length__T_Int(x/4) in
+  let mtmp4 = string_println(int_to_string(length/5)) in
+  let x/6 = List__Int::Cons(1, List__Int::Cons(2, List__Int::Nil)) in
+  let length/7 = list_length__T_Int(x/6) in
+  let mtmp5 = string_println(int_to_string(length/7)) in
+  let x/8 = List__Int::Cons(0, List__Int::Cons(1, List__Int::Cons(2, List__Int::Nil))) in
+  let length/9 = int_list_length(x/8) in
+  let mtmp6 = string_println(int_to_string(length/9)) in
+  let x/10 = List__Unit::Cons((), List__Unit::Nil) in
+  let length/11 = list_length__T_Unit(x/10) in
+  let mtmp7 = string_println(int_to_string(length/11)) in
+  let x/12 = List__Unit::Cons((), List__Unit::Cons((), List__Unit::Nil)) in
+  let length/13 = list_length__T_Unit(x/12) in
+  let mtmp8 = string_println(int_to_string(length/13)) in
+  let x/14 = List__Bool::Cons(true, List__Bool::Cons(false, List__Bool::Nil)) in
+  let length/15 = list_length__T_Bool(x/14) in
+  let mtmp9 = string_println(int_to_string(length/15)) in
+  ()
+}
+
+fn list_length__T_Int(xs/0: List__Int) -> Int {
+  match xs/0 {
+    List__Int::Nil => {
+      0
+    },
+    List__Int::Cons(x0, x1) => {
+      let x0 = List__Int_1_0(xs/0) in
+      let x1 = List__Int_1_1(xs/0) in
+      let tail/1 = x1 in
+      int_add(1, list_length__T_Int(tail/1))
+    },
+  }
+}
+
+fn list_length__T_Unit(xs/0: List__Unit) -> Int {
+  match xs/0 {
+    List__Unit::Nil => {
+      0
+    },
+    List__Unit::Cons(x0, x1) => {
+      let x0 = List__Unit_1_0(xs/0) in
+      let x1 = List__Unit_1_1(xs/0) in
+      let tail/1 = x1 in
+      int_add(1, list_length__T_Unit(tail/1))
+    },
+  }
+}
+
+fn list_length__T_Bool(xs/0: List__Bool) -> Int {
+  match xs/0 {
+    List__Bool::Nil => {
+      0
+    },
+    List__Bool::Cons(x0, x1) => {
+      let x0 = List__Bool_1_0(xs/0) in
+      let x1 = List__Bool_1_1(xs/0) in
+      let tail/1 = x1 in
+      int_add(1, list_length__T_Bool(tail/1))
+    },
+  }
+}

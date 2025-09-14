@@ -1,0 +1,21 @@
+fn impl_ToString_Int_to_string(self/0: Int) -> String {
+  int_to_string(self/0)
+}
+
+fn impl_ToString_Bool_to_string(self/1: Bool) -> String {
+  bool_to_string(self/1)
+}
+
+fn impl_ToString_Tuple_TInt_TInt_to_string(self/2: (Int, Int)) -> String {
+  "(?, ?)"
+}
+
+fn main() -> Unit {
+  let x/3 = 123 in
+  let mtmp0 = string_println(impl_ToString_Int_to_string(x/3)) in
+  let x/4 = true in
+  let mtmp1 = string_println(impl_ToString_Bool_to_string(x/4)) in
+  let x/5 = (3, 4) in
+  let mtmp2 = string_println(impl_ToString_Tuple_TInt_TInt_to_string(x/5)) in
+  ()
+}

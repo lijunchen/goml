@@ -1,41 +1,110 @@
-func impl_Arith_Int_add(self__0 int, other__1 int) {
-    return int_add(self__0, other__1)
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
 }
 
-func impl_Arith_Int_less(self__2 int, other__3 int) {
-    return int_less(self__2, other__3)
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
 }
 
-func impl_ToString_Int_to_string(self__4 int) {
-    return int_to_string(self__4)
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
 }
 
-func impl_ToString_Bool_to_string(self__5 bool) {
-    return bool_to_string(self__5)
+func int_add(x int, y int) int {
+    return x + y
 }
 
-func impl_Output_Int_output(self__6 int) {
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+func impl_Arith_Int_add(self__0 int, other__1 int) int {
+    var ret4 int
+    ret4 = int_add(self__0, other__1)
+    return ret4
+}
+
+func impl_Arith_Int_less(self__2 int, other__3 int) bool {
+    var ret5 bool
+    ret5 = int_less(self__2, other__3)
+    return ret5
+}
+
+func impl_ToString_Int_to_string(self__4 int) string {
+    var ret6 string
+    ret6 = int_to_string(self__4)
+    return ret6
+}
+
+func impl_ToString_Bool_to_string(self__5 bool) string {
+    var ret7 string
+    ret7 = bool_to_string(self__5)
+    return ret7
+}
+
+func impl_Output_Int_output(self__6 int) struct{} {
+    var ret8 struct{}
     var t2 string = impl_ToString_Int_to_string(self__6)
-    return println(t2)
+    ret8 = string_println(t2)
+    return ret8
 }
 
-func impl_Output_Bool_output(self__7 bool) {
+func impl_Output_Bool_output(self__7 bool) struct{} {
+    var ret9 struct{}
     var t3 string = impl_ToString_Bool_to_string(self__7)
-    return println(t3)
+    ret9 = string_println(t3)
+    return ret9
 }
 
-func id(x__8 TParam(T)) {
-    return x__8
+func main0() struct{} {
+    var ret10 struct{}
+    var a__9 int = id__T_Int(1)
+    var b__10 int = id__T_Int(2)
+    var c__11 int = impl_Arith_Int_add(a__9, b__10)
+    impl_Output_Int_output(c__11)
+    var a__12 int = id__T_Int(3)
+    var b__13 int = id__T_Int(4)
+    var c__14 bool = impl_Arith_Int_less(a__12, b__13)
+    impl_Output_Bool_output(c__14)
+    ret10 = struct{}{}
+    return ret10
+}
+
+func id__T_Int(x__8 int) int {
+    var ret11 int
+    ret11 = x__8
+    return ret11
 }
 
 func main() {
-    var a__9 int = id(1)
-    var b__10 int = id(2)
-    var c__11 int = impl_Arith_Int_add(a__9, b__10)
-    var mtmp0 Unit = impl_Output_Int_output(c__11)
-    var a__12 int = id(3)
-    var b__13 int = id(4)
-    var c__14 bool = impl_Arith_Int_less(a__12, b__13)
-    var mtmp1 Unit = impl_Output_Bool_output(c__14)
-    return nil
+    main0()
 }

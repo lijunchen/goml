@@ -1,0 +1,57 @@
+fn main() -> Unit {
+  let a/0 = (true, false) in
+  let b/1 = let x0 = a/0.0 in
+  let x1 = a/0.1 in
+  match x1 {
+    true => {
+      match x0 {
+        true => {
+          (false, false)
+        },
+        false => {
+          (true, false)
+        },
+      }
+    },
+    false => {
+      match x0 {
+        true => {
+          (false, true)
+        },
+        false => {
+          (true, true)
+        },
+      }
+    },
+  } in
+  let b_1/3 = let x2 = b/1.0 in
+  let x3 = b/1.1 in
+  let w/2 = x3 in
+  w/2 in
+  let c/4 = let mtmp4 = (true, b_1/3) in
+  let x5 = mtmp4.0 in
+  let x6 = mtmp4.1 in
+  match x6 {
+    true => {
+      match x5 {
+        true => {
+          string_print(int_to_string(3))
+        },
+        false => {
+          string_print(int_to_string(1))
+        },
+      }
+    },
+    false => {
+      match x5 {
+        true => {
+          string_print(int_to_string(2))
+        },
+        false => {
+          string_print(int_to_string(0))
+        },
+      }
+    },
+  } in
+  string_print(unit_to_string(c/4))
+}

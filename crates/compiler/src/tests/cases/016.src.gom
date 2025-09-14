@@ -1,112 +1,242 @@
-type List interface {
-    isList()
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+type List__Int interface {
+    isList__Int()
 }
 
 type Nil struct {}
 
-func (_ Nil) isList() {}
+func (_ Nil) isList__Int() {}
 
 type Cons struct {
-    _0 TParam(T)
-    _1 List
+    _0 int
+    _1 List__Int
 }
 
-func (_ Cons) isList() {}
+func (_ Cons) isList__Int() {}
 
-func list_length(xs__0 List) {
-    switch _ := xs__0.(type) {
-    case Nil:
-        return 0
-    case Cons:
-        var x0 TParam(T) = xs__0.(Cons)._0
-        var x1 List = xs__0.(Cons)._1
-        var tail__1 List = x1
-        var t10 int = list_length(tail__1)
-        return int_add(1, t10)
-    }
+type List__TParam_T interface {
+    isList__TParam_T()
 }
 
-func int_list_length(xs__2 List) {
-    switch _ := xs__2.(type) {
+type Nil struct {}
+
+func (_ Nil) isList__TParam_T() {}
+
+type Cons struct {
+    _0 T
+    _1 List__TParam_T
+}
+
+func (_ Cons) isList__TParam_T() {}
+
+type List__Unit interface {
+    isList__Unit()
+}
+
+type Nil struct {}
+
+func (_ Nil) isList__Unit() {}
+
+type Cons struct {
+    _0 struct{}
+    _1 List__Unit
+}
+
+func (_ Cons) isList__Unit() {}
+
+type List__Bool interface {
+    isList__Bool()
+}
+
+type Nil struct {}
+
+func (_ Nil) isList__Bool() {}
+
+type Cons struct {
+    _0 bool
+    _1 List__Bool
+}
+
+func (_ Cons) isList__Bool() {}
+
+func int_list_length(xs__2 List__Int) int {
+    var ret31 int
+    switch xs__2 := xs__2.(type) {
     case Nil:
-        return 0
+        ret31 = 0
     case Cons:
-        var x2 TParam(T) = xs__2.(Cons)._0
-        var x3 List = xs__2.(Cons)._1
-        var tail__3 List = x3
-        var t11 int = int_list_length(tail__3)
-        return int_add(1, t11)
+        var x3 List__TParam_T = xs__2._1
+        var tail__3 List__Int = x3
+        var t10 int = int_list_length(tail__3)
+        ret31 = int_add(1, t10)
     }
+    return ret31
+}
+
+func main0() struct{} {
+    var ret32 struct{}
+    var t11 List__Int = Nil{}
+    var x__4 List__Int = Cons{
+        _0: 1,
+        _1: t11,
+    }
+    var length__5 int = list_length__T_Int(x__4)
+    var t12 string = int_to_string(length__5)
+    string_println(t12)
+    var t14 List__Int = Nil{}
+    var t13 List__Int = Cons{
+        _0: 2,
+        _1: t14,
+    }
+    var x__6 List__Int = Cons{
+        _0: 1,
+        _1: t13,
+    }
+    var length__7 int = list_length__T_Int(x__6)
+    var t15 string = int_to_string(length__7)
+    string_println(t15)
+    var t18 List__Int = Nil{}
+    var t17 List__Int = Cons{
+        _0: 2,
+        _1: t18,
+    }
+    var t16 List__Int = Cons{
+        _0: 1,
+        _1: t17,
+    }
+    var x__8 List__Int = Cons{
+        _0: 0,
+        _1: t16,
+    }
+    var length__9 int = int_list_length(x__8)
+    var t19 string = int_to_string(length__9)
+    string_println(t19)
+    var t20 List__Unit = Nil{}
+    var x__10 List__Unit = Cons{
+        _0: struct{}{},
+        _1: t20,
+    }
+    var length__11 int = list_length__T_Unit(x__10)
+    var t21 string = int_to_string(length__11)
+    string_println(t21)
+    var t23 List__Unit = Nil{}
+    var t22 List__Unit = Cons{
+        _0: struct{}{},
+        _1: t23,
+    }
+    var x__12 List__Unit = Cons{
+        _0: struct{}{},
+        _1: t22,
+    }
+    var length__13 int = list_length__T_Unit(x__12)
+    var t24 string = int_to_string(length__13)
+    string_println(t24)
+    var t26 List__Bool = Nil{}
+    var t25 List__Bool = Cons{
+        _0: false,
+        _1: t26,
+    }
+    var x__14 List__Bool = Cons{
+        _0: true,
+        _1: t25,
+    }
+    var length__15 int = list_length__T_Bool(x__14)
+    var t27 string = int_to_string(length__15)
+    string_println(t27)
+    ret32 = struct{}{}
+    return ret32
+}
+
+func list_length__T_Int(xs__0 List__Int) int {
+    var ret33 int
+    switch xs__0 := xs__0.(type) {
+    case Nil:
+        ret33 = 0
+    case Cons:
+        var x1 List__Int = xs__0._1
+        var tail__1 List__Int = x1
+        var t28 int = list_length__T_Int(tail__1)
+        ret33 = int_add(1, t28)
+    }
+    return ret33
+}
+
+func list_length__T_Unit(xs__0 List__Unit) int {
+    var ret34 int
+    switch xs__0 := xs__0.(type) {
+    case Nil:
+        ret34 = 0
+    case Cons:
+        var x1 List__Unit = xs__0._1
+        var tail__1 List__Unit = x1
+        var t29 int = list_length__T_Unit(tail__1)
+        ret34 = int_add(1, t29)
+    }
+    return ret34
+}
+
+func list_length__T_Bool(xs__0 List__Bool) int {
+    var ret35 int
+    switch xs__0 := xs__0.(type) {
+    case Nil:
+        ret35 = 0
+    case Cons:
+        var x1 List__Bool = xs__0._1
+        var tail__1 List__Bool = x1
+        var t30 int = list_length__T_Bool(tail__1)
+        ret35 = int_add(1, t30)
+    }
+    return ret35
 }
 
 func main() {
-    var t12 List = Nil{}
-    var x__4 List = Cons{
-        _0: 1,
-        _1: t12,
-    }
-    var length__5 int = list_length(x__4)
-    var t13 string = int_to_string(length__5)
-    var mtmp4 Unit = println(t13)
-    var t15 List = Nil{}
-    var t14 List = Cons{
-        _0: 2,
-        _1: t15,
-    }
-    var x__6 List = Cons{
-        _0: 1,
-        _1: t14,
-    }
-    var length__7 int = list_length(x__6)
-    var t16 string = int_to_string(length__7)
-    var mtmp5 Unit = println(t16)
-    var t19 List = Nil{}
-    var t18 List = Cons{
-        _0: 2,
-        _1: t19,
-    }
-    var t17 List = Cons{
-        _0: 1,
-        _1: t18,
-    }
-    var x__8 List = Cons{
-        _0: 0,
-        _1: t17,
-    }
-    var length__9 int = int_list_length(x__8)
-    var t20 string = int_to_string(length__9)
-    var mtmp6 Unit = println(t20)
-    var t21 List = Nil{}
-    var x__10 List = Cons{
-        _0: nil,
-        _1: t21,
-    }
-    var length__11 int = list_length(x__10)
-    var t22 string = int_to_string(length__11)
-    var mtmp7 Unit = println(t22)
-    var t24 List = Nil{}
-    var t23 List = Cons{
-        _0: nil,
-        _1: t24,
-    }
-    var x__12 List = Cons{
-        _0: nil,
-        _1: t23,
-    }
-    var length__13 int = list_length(x__12)
-    var t25 string = int_to_string(length__13)
-    var mtmp8 Unit = println(t25)
-    var t27 List = Nil{}
-    var t26 List = Cons{
-        _0: false,
-        _1: t27,
-    }
-    var x__14 List = Cons{
-        _0: true,
-        _1: t26,
-    }
-    var length__15 int = list_length(x__14)
-    var t28 string = int_to_string(length__15)
-    var mtmp9 Unit = println(t28)
-    return nil
+    main0()
 }

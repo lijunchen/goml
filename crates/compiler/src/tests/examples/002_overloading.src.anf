@@ -16,26 +16,26 @@ fn impl_ToString_Bool_to_string(self/5: Bool) -> String {
 
 fn impl_Output_Int_output(self/6: Int) -> Unit {
   let t2 = impl_ToString_Int_to_string(self/6) in
-  println(t2)
+  string_println(t2)
 }
 
 fn impl_Output_Bool_output(self/7: Bool) -> Unit {
   let t3 = impl_ToString_Bool_to_string(self/7) in
-  println(t3)
-}
-
-fn id(x/8: T) -> T {
-  x/8
+  string_println(t3)
 }
 
 fn main() -> Unit {
-  let a/9 = id(1) in
-  let b/10 = id(2) in
+  let a/9 = id__T_Int(1) in
+  let b/10 = id__T_Int(2) in
   let c/11 = impl_Arith_Int_add(a/9, b/10) in
   let mtmp0 = impl_Output_Int_output(c/11) in
-  let a/12 = id(3) in
-  let b/13 = id(4) in
+  let a/12 = id__T_Int(3) in
+  let b/13 = id__T_Int(4) in
   let c/14 = impl_Arith_Int_less(a/12, b/13) in
   let mtmp1 = impl_Output_Bool_output(c/14) in
   ()
+}
+
+fn id__T_Int(x/8: Int) -> Int {
+  x/8
 }

@@ -1,0 +1,47 @@
+fn main() -> Bool {
+  let a/0 = (Color::Blue, Color::Blue) in
+  let x0 = a/0.0 in
+  let x1 = a/0.1 in
+  match x1 {
+    Color::Red => {
+      match x0 {
+        Color::Red => {
+          true
+        },
+        Color::Green => {
+          false
+        },
+        Color::Blue => {
+          false
+        },
+      }
+    },
+    Color::Green => {
+      match x0 {
+        Color::Red => {
+          true
+        },
+        Color::Green => {
+          false
+        },
+        Color::Blue => {
+          false
+        },
+      }
+    },
+    Color::Blue => {
+      match x0 {
+        Color::Red => {
+          false
+        },
+        Color::Green => {
+          false
+        },
+        Color::Blue => {
+          let mtmp2 = string_print(bool_to_string(true)) in
+          false
+        },
+      }
+    },
+  }
+}

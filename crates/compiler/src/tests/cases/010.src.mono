@@ -1,0 +1,27 @@
+fn main() -> Unit {
+  let a/0 = (true, true) in
+  let x0 = a/0.0 in
+  let x1 = a/0.1 in
+  match x1 {
+    true => {
+      match x0 {
+        true => {
+          string_print(int_to_string(789))
+        },
+        false => {
+          string_print(int_to_string(456))
+        },
+      }
+    },
+    false => {
+      match x0 {
+        true => {
+          string_print(int_to_string(123))
+        },
+        false => {
+          string_print(int_to_string(789))
+        },
+      }
+    },
+  }
+}

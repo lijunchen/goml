@@ -1,0 +1,46 @@
+fn main() -> Unit {
+  let a/0 = (Color::Blue, Color::Red) in
+  let x0 = a/0.0 in
+  let x1 = a/0.1 in
+  match x1 {
+    Color::Red => {
+      match x0 {
+        Color::Red => {
+          string_print(int_to_string(1))
+        },
+        Color::Green => {
+          string_print(int_to_string(3))
+        },
+        Color::Blue => {
+          string_print(int_to_string(3))
+        },
+      }
+    },
+    Color::Green => {
+      match x0 {
+        Color::Red => {
+          string_print(int_to_string(0))
+        },
+        Color::Green => {
+          string_print(int_to_string(3))
+        },
+        Color::Blue => {
+          string_print(int_to_string(3))
+        },
+      }
+    },
+    Color::Blue => {
+      match x0 {
+        Color::Red => {
+          string_print(int_to_string(3))
+        },
+        Color::Green => {
+          string_print(int_to_string(3))
+        },
+        Color::Blue => {
+          string_print(int_to_string(2))
+        },
+      }
+    },
+  }
+}
