@@ -481,6 +481,7 @@ impl Stmt {
                         RcDoc::text(b)
                             .append(RcDoc::space())
                             .append(RcDoc::text(":="))
+                            .append(RcDoc::space())
                     } else {
                         RcDoc::nil()
                     })

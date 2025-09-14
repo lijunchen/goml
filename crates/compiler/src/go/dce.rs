@@ -22,7 +22,10 @@ fn dce_item(item: ast::Item) -> ast::Item {
     }
 }
 
-fn dce_block_with_live(block: ast::Block, live_out: &HashSet<String>) -> (ast::Block, HashSet<String>) {
+fn dce_block_with_live(
+    block: ast::Block,
+    live_out: &HashSet<String>,
+) -> (ast::Block, HashSet<String>) {
     let mut live: HashSet<String> = live_out.clone();
     // Track variables that appear on the LHS of an assignment we keep,
     // so that we don't drop their prior declaration even if its value isn't used.
@@ -61,21 +64,29 @@ fn dce_block_with_live(block: ast::Block, live_out: &HashSet<String>) -> (ast::B
                             out.push(ast::Stmt::Expr(v));
                         }
                         // Keep declaration without initializer
-                        out.push(ast::Stmt::VarDecl { name: name.clone(), ty, value: None });
+                        out.push(ast::Stmt::VarDecl {
+                            name: name.clone(),
+                            ty,
+                            value: None,
+                        });
                     } else {
-                        out.push(ast::Stmt::VarDecl { name: name.clone(), ty, value: None });
+                        out.push(ast::Stmt::VarDecl {
+                            name: name.clone(),
+                            ty,
+                            value: None,
+                        });
                     }
                     // Declaration satisfied; further outer scopes don't need it
                     needs_decl.remove(&name);
                 } else {
                     // Not needed. Preserve side-effects of RHS if any, then drop
-                    if let Some(v) = value {
-                        if expr_has_side_effects(&v) {
-                            for u in &used_rhs {
-                                live.insert(u.clone());
-                            }
-                            out.push(ast::Stmt::Expr(v));
+                    if let Some(v) = value
+                        && expr_has_side_effects(&v)
+                    {
+                        for u in &used_rhs {
+                            live.insert(u.clone());
                         }
+                        out.push(ast::Stmt::Expr(v));
                     }
                 }
             }
@@ -124,7 +135,11 @@ fn dce_block_with_live(block: ast::Block, live_out: &HashSet<String>) -> (ast::B
                 if let Some(ref eb) = else_b_opt {
                     needs_decl.extend(assigned_vars_in_block(eb));
                 }
-                out.push(ast::Stmt::If { cond, then: then_b, else_: else_b_opt });
+                out.push(ast::Stmt::If {
+                    cond,
+                    then: then_b,
+                    else_: else_b_opt,
+                });
             }
             ast::Stmt::SwitchExpr {
                 expr,
@@ -152,7 +167,11 @@ fn dce_block_with_live(block: ast::Block, live_out: &HashSet<String>) -> (ast::B
                 add_uses_expr(&mut live, &expr);
                 live.extend(cases_live_in);
                 live.extend(default_live_in);
-                out.push(ast::Stmt::SwitchExpr { expr, cases: new_cases, default: default_b });
+                out.push(ast::Stmt::SwitchExpr {
+                    expr,
+                    cases: new_cases,
+                    default: default_b,
+                });
             }
             ast::Stmt::SwitchType {
                 bind,
@@ -177,10 +196,20 @@ fn dce_block_with_live(block: ast::Block, live_out: &HashSet<String>) -> (ast::B
                 } else {
                     (None, HashSet::new())
                 };
+                // If the type-switch binding variable is not used in any case/default
+                // blocks, drop the binding (switch x := e.(type) -> switch e.(type)).
+                let bind = bind.filter(|bname| {
+                    !(!cases_live_in.contains(bname) && !default_live_in.contains(bname))
+                });
                 add_uses_expr(&mut live, &expr);
                 live.extend(cases_live_in);
                 live.extend(default_live_in);
-                out.push(ast::Stmt::SwitchType { bind, expr, cases: new_cases, default: default_b });
+                out.push(ast::Stmt::SwitchType {
+                    bind,
+                    expr,
+                    cases: new_cases,
+                    default: default_b,
+                });
             }
         }
     }

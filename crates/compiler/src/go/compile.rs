@@ -2,7 +2,7 @@ use ast::ast::Uident;
 use indexmap::IndexMap;
 
 use crate::{
-    anf::{self, AExpr},
+    anf::{self, AExpr, ImmExpr},
     env::Env,
     go::{
         goast::{self, go_type_name_for, tast_ty_to_go_type},
@@ -148,19 +148,15 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
             expr,
-            variant_index,
+            variant_index: _,
             field_index,
             ty: _,
         } => {
             let obj = compile_imm(env, expr);
             // Determine variant cast type from the scrutinee's enum type, not the field type
             let enum_ty = imm_ty(expr);
-            let vty = variant_ty_by_index(env, &enum_ty, *variant_index);
             goast::Expr::FieldAccess {
-                obj: Box::new(goast::Expr::Cast {
-                    expr: Box::new(obj),
-                    ty: vty,
-                }),
+                obj: Box::new(obj),
                 field: format!("_{}", field_index),
                 ty: tast_ty_to_go_type(&enum_ty),
             }
@@ -213,72 +209,80 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
                 arms,
                 default,
                 ty: _,
-            } => match imm_ty(&expr) {
-                tast::Ty::TUnit => {
-                    // Only one possible value of unit: run the first arm or default
-                    if let Some(first) = arms.first() {
-                        compile_aexpr_assign(env, target, first.body.clone())
-                    } else if let Some(def) = default {
-                        compile_aexpr_assign(env, target, *def)
-                    } else {
-                        vec![]
+            } => {
+                let scrutinee_name = match &*expr {
+                    ImmExpr::ImmVar { name, ty: _ } => name.clone(),
+                    _ => {
+                        unreachable!("expected scrutinee to be a variable after ANF lowering")
                     }
-                }
-                tast::Ty::TBool => {
-                    // Expression switch on boolean scrutinee
-                    let mut cases = Vec::new();
-                    for arm in arms {
-                        if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
-                            cases.push((
-                                goast::Expr::Bool {
-                                    value,
-                                    ty: goty::GoType::TBool,
-                                },
-                                goast::Block {
-                                    stmts: compile_aexpr_assign(env, target, arm.body),
-                                },
-                            ));
+                };
+                match imm_ty(&expr) {
+                    tast::Ty::TUnit => {
+                        // Only one possible value of unit: run the first arm or default
+                        if let Some(first) = arms.first() {
+                            compile_aexpr_assign(env, target, first.body.clone())
+                        } else if let Some(def) = default {
+                            compile_aexpr_assign(env, target, *def)
                         } else {
-                            panic!("expected ImmBool in boolean match arm");
+                            vec![]
                         }
                     }
-                    let def_block = default.map(|d| goast::Block {
-                        stmts: compile_aexpr_assign(env, target, *d),
-                    });
-                    vec![goast::Stmt::SwitchExpr {
-                        expr: compile_imm(env, &expr),
-                        cases,
-                        default: def_block,
-                    }]
-                }
-                tast::Ty::TApp { .. } => {
-                    // Type switch on enum ADT
-                    let mut cases = Vec::new();
-                    for arm in arms {
-                        if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
-                            let vty = variant_ty_by_index(env, &ty, index);
-                            cases.push((
-                                vty,
-                                goast::Block {
-                                    stmts: compile_aexpr_assign(env, target, arm.body),
-                                },
-                            ));
-                        } else {
-                            panic!("expected ImmTag in enum match arm");
+                    tast::Ty::TBool => {
+                        // Expression switch on boolean scrutinee
+                        let mut cases = Vec::new();
+                        for arm in arms {
+                            if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
+                                cases.push((
+                                    goast::Expr::Bool {
+                                        value,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Block {
+                                        stmts: compile_aexpr_assign(env, target, arm.body),
+                                    },
+                                ));
+                            } else {
+                                panic!("expected ImmBool in boolean match arm");
+                            }
                         }
+                        let def_block = default.map(|d| goast::Block {
+                            stmts: compile_aexpr_assign(env, target, *d),
+                        });
+                        vec![goast::Stmt::SwitchExpr {
+                            expr: compile_imm(env, &expr),
+                            cases,
+                            default: def_block,
+                        }]
                     }
-                    let def_block = default.map(|d| goast::Block {
-                        stmts: compile_aexpr_assign(env, target, *d),
-                    });
-                    vec![goast::Stmt::SwitchType {
-                        bind: None,
-                        expr: compile_imm(env, &expr),
-                        cases,
-                        default: def_block,
-                    }]
+                    tast::Ty::TApp { .. } => {
+                        // Type switch on enum ADT
+                        let mut cases = Vec::new();
+                        for arm in arms {
+                            if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
+                                let vty = variant_ty_by_index(env, &ty, index);
+                                cases.push((
+                                    vty,
+                                    goast::Block {
+                                        stmts: compile_aexpr_assign(env, target, arm.body),
+                                    },
+                                ));
+                            } else {
+                                panic!("expected ImmTag in enum match arm");
+                            }
+                        }
+                        let def_block = default.map(|d| goast::Block {
+                            stmts: compile_aexpr_assign(env, target, *d),
+                        });
+                        vec![goast::Stmt::SwitchType {
+                            bind: Some(scrutinee_name),
+                            expr: compile_imm(env, &expr),
+                            cases,
+                            default: def_block,
+                        }]
+                    }
+                    _ => panic!("unsupported scrutinee type for match in Go backend"),
                 }
-                _ => panic!("unsupported scrutinee type for match in Go backend"),
-            },
+            }
         },
         AExpr::ALet {
             name,
@@ -340,67 +344,75 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                 arms,
                 default,
                 ty: _,
-            } => match imm_ty(&expr) {
-                tast::Ty::TUnit => {
-                    if let Some(first) = arms.first() {
-                        stmts.extend(compile_aexpr(env, first.body.clone()));
-                    } else if let Some(def) = default {
-                        stmts.extend(compile_aexpr(env, *def));
+            } => {
+                let scrutinee_name = match &*expr {
+                    ImmExpr::ImmVar { name, ty: _ } => name.clone(),
+                    _ => {
+                        unreachable!("expected scrutinee to be a variable after ANF lowering")
                     }
-                }
-                tast::Ty::TBool => {
-                    let mut cases = Vec::new();
-                    for arm in arms {
-                        if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
-                            cases.push((
-                                goast::Expr::Bool {
-                                    value,
-                                    ty: goty::GoType::TBool,
-                                },
-                                goast::Block {
-                                    stmts: compile_aexpr(env, arm.body),
-                                },
-                            ));
-                        } else {
-                            panic!("expected ImmBool in boolean match arm");
+                };
+                match imm_ty(&expr) {
+                    tast::Ty::TUnit => {
+                        if let Some(first) = arms.first() {
+                            stmts.extend(compile_aexpr(env, first.body.clone()));
+                        } else if let Some(def) = default {
+                            stmts.extend(compile_aexpr(env, *def));
                         }
                     }
-                    let def_block = default.map(|d| goast::Block {
-                        stmts: compile_aexpr(env, *d),
-                    });
-                    stmts.push(goast::Stmt::SwitchExpr {
-                        expr: compile_imm(env, &expr),
-                        cases,
-                        default: def_block,
-                    });
-                }
-                tast::Ty::TApp { .. } => {
-                    let mut cases = Vec::new();
-                    for arm in arms {
-                        if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
-                            let vty = variant_ty_by_index(env, &ty, index);
-                            cases.push((
-                                vty,
-                                goast::Block {
-                                    stmts: compile_aexpr(env, arm.body),
-                                },
-                            ));
-                        } else {
-                            panic!("expected ImmTag in enum match arm");
+                    tast::Ty::TBool => {
+                        let mut cases = Vec::new();
+                        for arm in arms {
+                            if let anf::ImmExpr::ImmBool { value, .. } = arm.lhs {
+                                cases.push((
+                                    goast::Expr::Bool {
+                                        value,
+                                        ty: goty::GoType::TBool,
+                                    },
+                                    goast::Block {
+                                        stmts: compile_aexpr(env, arm.body),
+                                    },
+                                ));
+                            } else {
+                                panic!("expected ImmBool in boolean match arm");
+                            }
                         }
+                        let def_block = default.map(|d| goast::Block {
+                            stmts: compile_aexpr(env, *d),
+                        });
+                        stmts.push(goast::Stmt::SwitchExpr {
+                            expr: compile_imm(env, &expr),
+                            cases,
+                            default: def_block,
+                        });
                     }
-                    let def_block = default.map(|d| goast::Block {
-                        stmts: compile_aexpr(env, *d),
-                    });
-                    stmts.push(goast::Stmt::SwitchType {
-                        bind: None,
-                        expr: compile_imm(env, &expr),
-                        cases,
-                        default: def_block,
-                    });
+                    tast::Ty::TApp { .. } => {
+                        let mut cases = Vec::new();
+                        for arm in arms {
+                            if let anf::ImmExpr::ImmTag { index, ty } = arm.lhs.clone() {
+                                let vty = variant_ty_by_index(env, &ty, index);
+                                cases.push((
+                                    vty,
+                                    goast::Block {
+                                        stmts: compile_aexpr(env, arm.body),
+                                    },
+                                ));
+                            } else {
+                                panic!("expected ImmTag in enum match arm");
+                            }
+                        }
+                        let def_block = default.map(|d| goast::Block {
+                            stmts: compile_aexpr(env, *d),
+                        });
+                        stmts.push(goast::Stmt::SwitchType {
+                            bind: Some(scrutinee_name),
+                            expr: compile_imm(env, &expr),
+                            cases,
+                            default: def_block,
+                        });
+                    }
+                    _ => panic!("unsupported scrutinee type for match in Go backend"),
                 }
-                _ => panic!("unsupported scrutinee type for match in Go backend"),
-            },
+            }
             _ => {
                 let e = compile_cexpr(env, &expr);
                 match e.get_ty() {
