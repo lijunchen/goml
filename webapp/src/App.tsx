@@ -1,6 +1,6 @@
 import Editor, { useMonaco } from '@monaco-editor/react';
 import { useEffect, useState } from 'react';
-import { execute, compile_to_core, compile_to_anf, hover, get_cst, get_ast, get_tast } from 'wasm-app';
+import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast } from 'wasm-app';
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 const demos: Record<string, string> = {};
@@ -19,7 +19,7 @@ function App() {
   const [result, setResult] = useState("");
   const [core, setCore] = useState("");
   const [selectedDemo, setSelectedDemo] = useState("");
-  const [viewMode, setViewMode] = useState("core");
+  const [viewMode, setViewMode] = useState("go");
 
   useEffect(() => {
     loadDemos().then(() => {
@@ -66,7 +66,7 @@ function App() {
 
       monaco.languages.registerHoverProvider('simple', {
         provideHover: async (
-          model: monacoEditor.editor.ITextModel, 
+          model: monacoEditor.editor.ITextModel,
           position: monacoEditor.Position
         ): Promise<monacoEditor.languages.Hover | null> => {
           const line = position.lineNumber - 1;
@@ -93,7 +93,9 @@ function App() {
       else if (viewMode === "cst") setCore(get_cst(code));
       else if (viewMode === "ast") setCore(get_ast(code));
       else if (viewMode === "tast") setCore(get_tast(code));
+      else if (viewMode === "mono") setCore(compile_to_mono(code));
       else if (viewMode === "anf") setCore(compile_to_anf(code));
+      else if (viewMode === "go") setCore(compile_to_go(code));
       setResult(execute(code));
     } catch (error) {
       console.error(error);
@@ -113,7 +115,9 @@ function App() {
       else if (e.target.value === "ast") setCore(get_ast(code));
       else if (e.target.value === "tast") setCore(get_tast(code));
       else if (e.target.value === "core") setCore(compile_to_core(code));
+      else if (e.target.value === "mono") setCore(compile_to_mono(code));
       else if (e.target.value === "anf") setCore(compile_to_anf(code));
+      else if (e.target.value === "go") setCore(compile_to_go(code));
       else setCore(compile_to_core(code));
     } catch (error) {
       console.error(error);
@@ -124,7 +128,7 @@ function App() {
     <div className="h-screen flex flex-col">
       <div className="bg-gray-100 p-2 flex items-center">
         <label className="mr-2 font-medium">Select Demo:</label>
-        <select 
+        <select
           value={selectedDemo}
           onChange={handleDemoChange}
           className="border rounded p-1 mr-4"
@@ -136,7 +140,7 @@ function App() {
           ))}
         </select>
         <label className="mr-2 font-medium">View Mode:</label>
-        <select 
+        <select
           value={viewMode}
           onChange={handleViewModeChange}
           className="border rounded p-1"
@@ -145,10 +149,12 @@ function App() {
           <option value="ast">AST</option>
           <option value="tast">TAST</option>
           <option value="core">Core</option>
+          <option value="mono">Mono</option>
           <option value="anf">ANF</option>
+          <option value="go">Go</option>
         </select>
       </div>
-      
+
       <div className="flex flex-1">
         <div className="w-1/2 border-r border-gray-300 flex flex-col">
           <Editor
@@ -157,10 +163,10 @@ function App() {
             theme="simpleTheme"
             value={code}
             onChange={(value) => setCode(value || "")}
-            options={{ 
-              fontSize: 14, 
-              minimap: { enabled: false }, 
-              automaticLayout: true, 
+            options={{
+              fontSize: 14,
+              minimap: { enabled: false },
+              automaticLayout: true,
               stickyScroll: {
                 enabled: false
               }
@@ -175,10 +181,10 @@ function App() {
               height="100%"
               language="plaintext"
               value={core}
-              options={{ 
-                fontSize: 14, 
-                minimap: { enabled: false }, 
-                readOnly: true, 
+              options={{
+                fontSize: 14,
+                minimap: { enabled: false },
+                readOnly: true,
                 stickyScroll: {
                   enabled: false
                 }
