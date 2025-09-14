@@ -64,12 +64,12 @@ func (_ Cons) isIntList() {}
 
 func print_int_list(xs__0 IntList) struct{} {
     var ret35 struct{}
-    switch xs__0.(type) {
+    switch xs__0 := xs__0.(type) {
     case Nil:
         ret35 = string_print("Nil")
     case Cons:
-        var x0 int = xs__0.(Cons)._0
-        var x1 IntList = xs__0.(Cons)._1
+        var x0 int = xs__0._0
+        var x1 IntList = xs__0._1
         var xs__2 IntList = x1
         var x__1 int = x0
         string_print("Cons")
@@ -86,12 +86,12 @@ func print_int_list(xs__0 IntList) struct{} {
 
 func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
     var ret36 IntList
-    switch xs__3.(type) {
+    switch xs__3 := xs__3.(type) {
     case Nil:
         ret36 = acc__4
     case Cons:
-        var x8 int = xs__3.(Cons)._0
-        var x9 IntList = xs__3.(Cons)._1
+        var x8 int = xs__3._0
+        var x9 IntList = xs__3._1
         var tail__6 IntList = x9
         var head__5 int = x8
         var t26 IntList = Cons{
@@ -112,11 +112,11 @@ func int_list_rev(xs__7 IntList) IntList {
 
 func int_list_length(xs__8 IntList) int {
     var ret38 int
-    switch xs__8.(type) {
+    switch xs__8 := xs__8.(type) {
     case Nil:
         ret38 = 0
     case Cons:
-        var x11 IntList = xs__8.(Cons)._1
+        var x11 IntList = xs__8._1
         var xs__9 IntList = x11
         var t28 int = int_list_length(xs__9)
         ret38 = int_add(1, t28)
