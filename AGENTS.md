@@ -8,7 +8,7 @@
 
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
-- Rust tests: `cargo test` or `cargo test -p compiler`.
+- Rust tests: `cargo test`
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
@@ -22,7 +22,9 @@
 - Keep modules small and focused; avoid cross‑crate leakage—public APIs live in each crate’s `lib.rs`.
 
 ## Testing Guidelines
-- Rust: place unit tests alongside code (`mod tests { ... }`) or under `crates/*/src/tests`. Use `expect-test` where appropriate. Example: `cargo test -p lexer`.
+- We use expect-test, there are two basic commands:
+  - `cargo test` run test to match golden snapshots
+  - `env UPDATE_EXPECT=1 cargo test` to update snapshots
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures in `crates/compiler/src/tests/examples/` when relevant.
 - You can pick some cases in crates/compiler/src/tests/cases, and use cargo run to quick check a test case, such as: cargo run -- crates/compiler/src/tests/cases/001.src
 
