@@ -20,8 +20,6 @@ fn main() {
     // dbg!(&tast);
     let core = compiler::compile_match::compile_file(&env, &tast);
     let core = compiler::mono::mono(&mut env, core);
-    let mut buffer = String::new();
-    let result = compiler::interpreter::eval_file(&im::HashMap::new(), &mut buffer, &core);
     // dbg!(&core);
     let anf = compiler::anf::anf_file(&env, core);
     // dbg!(&anf);
@@ -29,7 +27,4 @@ fn main() {
     let go = compiler::go::compile::go_file(&env, anf);
     // dbg!(&go);
     println!("{}", go.to_pretty(&env, 120));
-
-    println!("stdout: {}", buffer);
-    println!("return: {:?}", result);
 }

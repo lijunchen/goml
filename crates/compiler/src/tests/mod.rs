@@ -105,10 +105,6 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let mono = crate::mono::mono(&mut env, core);
             expect_test::expect_file![mono_filename].assert_eq(&mono.to_pretty(&env, 120));
 
-            let mut buf = String::new();
-            let eval_env = im::HashMap::new();
-            let interpreter_result = crate::interpreter::eval_file(&eval_env, &mut buf, &mono);
-
             let anf = crate::anf::anf_file(&env, mono);
             expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
 
@@ -117,10 +113,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
 
             let go_output = execute_single_go_file(&go_filename).unwrap();
 
-            expect_test::expect_file![result_filename].assert_eq(&format!(
-                "{:?}\n====\n{}\n====\n{}",
-                interpreter_result, buf, go_output
-            ));
+            expect_test::expect_file![result_filename].assert_eq(&format!("{}", go_output));
         }
     }
     Ok(())

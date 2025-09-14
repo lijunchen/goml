@@ -11,9 +11,8 @@ pub fn execute(src: &str) -> String {
 
     let (tast, env) = compiler::typer::check_file(ast);
     let core = compiler::compile_match::compile_file(&env, &tast);
-    let mut buffer = String::new();
-    let _result = compiler::interpreter::eval_file(&im::HashMap::new(), &mut buffer, &core);
-    buffer
+    let _ = core;
+    return "not support for now".into();
 }
 
 #[wasm_bindgen]
