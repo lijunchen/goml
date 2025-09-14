@@ -293,7 +293,14 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             let mut out = Vec::new();
 
             match &*value {
+                // If RHS needs statements (if/match), first declare the variable,
+                // then lower the RHS into assignments targeting that variable.
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(&value),
+                        value: None,
+                    });
                     out.extend(compile_aexpr_assign(
                         env,
                         &name,
