@@ -12,7 +12,7 @@ pub fn execute(src: &str) -> String {
     let (tast, env) = compiler::typer::check_file(ast);
     let core = compiler::compile_match::compile_file(&env, &tast);
     let _ = core;
-    return "not support for now".into();
+    "not support for now".into()
 }
 
 #[wasm_bindgen]

@@ -113,7 +113,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
 
             let go_output = execute_single_go_file(&go_filename).unwrap();
 
-            expect_test::expect_file![result_filename].assert_eq(&format!("{}", go_output));
+            expect_test::expect_file![result_filename].assert_eq(&go_output);
         }
     }
     Ok(())

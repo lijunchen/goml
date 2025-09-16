@@ -253,13 +253,12 @@ impl Env {
             fn collect_type(&mut self, ty: &tast::Ty) {
                 match ty {
                     tast::Ty::TTuple { .. } => {
-                        if self.seen.insert(ty.clone()) {
-                            if let tast::Ty::TTuple { typs } = ty {
+                        if self.seen.insert(ty.clone())
+                            && let tast::Ty::TTuple { typs } = ty {
                                 for inner in typs {
                                     self.collect_type(inner);
                                 }
                             }
-                        }
                     }
                     tast::Ty::TApp { args, .. } => {
                         for arg in args {
