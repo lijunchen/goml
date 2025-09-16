@@ -1,5 +1,10 @@
 # Repository Guidelines
 
+## Project Snapshot
+- Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → typed AST → Core → Mono → ANF` before emitting Go (`crates/compiler/src/go`).
+- The CLI driver in `crates/compiler/src/main.rs` prints generated Go; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
+- The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
+
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:
   - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings).
@@ -26,7 +31,7 @@
   - `cargo test` run test to match golden snapshots
   - `env UPDATE_EXPECT=1 cargo test` to update snapshots
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures in `crates/compiler/src/tests/examples/` when relevant.
-- You can pick some cases in crates/compiler/src/tests/cases, and use cargo run to quick check a test case, such as: cargo run -- crates/compiler/src/tests/cases/001.src
+- You can pick some cases in crates/compiler/src/tests/cases, and use cargo run to quick check a test case, such as: `cargo run -- crates/compiler/src/tests/cases/001.src`.
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
