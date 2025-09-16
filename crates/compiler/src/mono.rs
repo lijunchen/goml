@@ -585,5 +585,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
     // Drop all generic enum defs to avoid Go backend panics
     m.env.enums.retain(|_n, def| def.generics.is_empty());
 
-    core::File { toplevels: new_fns }
+    let result = core::File { toplevels: new_fns };
+    m.env.record_tuple_types_from_core(&result);
+    result
 }

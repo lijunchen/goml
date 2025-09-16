@@ -1,7 +1,7 @@
 use ast::ast::{Lident, Uident};
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 
-use crate::tast;
+use crate::{core, tast};
 use std::cell::Cell;
 
 #[derive(Debug, Clone)]
@@ -69,6 +69,7 @@ pub struct Env {
     pub trait_impls: IndexMap<(String, tast::Ty, Lident), tast::Ty>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub constraints: Vec<Constraint>,
+    pub tuple_types: IndexSet<tast::Ty>,
 }
 
 impl Default for Env {
@@ -87,6 +88,7 @@ impl Env {
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
             constraints: Vec::new(),
+            tuple_types: IndexSet::new(),
         }
     }
 
@@ -160,5 +162,122 @@ impl Env {
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
         self.funcs.get(func).cloned()
+    }
+
+    pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
+        struct TupleTypeCollector {
+            seen: IndexSet<tast::Ty>,
+        }
+
+        impl TupleTypeCollector {
+            fn new() -> Self {
+                Self {
+                    seen: IndexSet::new(),
+                }
+            }
+
+            fn finish(mut self, file: &core::File) -> IndexSet<tast::Ty> {
+                for item in &file.toplevels {
+                    self.collect_fn(item);
+                }
+                self.seen
+            }
+
+            fn collect_fn(&mut self, item: &core::Fn) {
+                for (_, ty) in &item.params {
+                    self.collect_type(ty);
+                }
+                self.collect_type(&item.ret_ty);
+                self.collect_expr(&item.body);
+            }
+
+            fn collect_expr(&mut self, expr: &core::Expr) {
+                match expr {
+                    core::Expr::EVar { ty, .. }
+                    | core::Expr::EUnit { ty }
+                    | core::Expr::EBool { ty, .. }
+                    | core::Expr::EInt { ty, .. }
+                    | core::Expr::EString { ty, .. } => {
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EConstr { args, ty, .. } => {
+                        for arg in args {
+                            self.collect_expr(arg);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ETuple { items, ty } => {
+                        for item in items {
+                            self.collect_expr(item);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ELet { value, body, ty, .. } => {
+                        self.collect_expr(value);
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EMatch {
+                        expr,
+                        arms,
+                        default,
+                        ty,
+                    } => {
+                        self.collect_expr(expr);
+                        for arm in arms {
+                            self.collect_expr(&arm.lhs);
+                            self.collect_expr(&arm.body);
+                        }
+                        if let Some(default) = default {
+                            self.collect_expr(default);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EConstrGet { expr, ty, .. } => {
+                        self.collect_expr(expr);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ECall { args, ty, .. } => {
+                        for arg in args {
+                            self.collect_expr(arg);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EProj { tuple, ty, .. } => {
+                        self.collect_expr(tuple);
+                        self.collect_type(ty);
+                    }
+                }
+            }
+
+            fn collect_type(&mut self, ty: &tast::Ty) {
+                match ty {
+                    tast::Ty::TTuple { .. } => {
+                        if self.seen.insert(ty.clone()) {
+                            if let tast::Ty::TTuple { typs } = ty {
+                                for inner in typs {
+                                    self.collect_type(inner);
+                                }
+                            }
+                        }
+                    }
+                    tast::Ty::TApp { args, .. } => {
+                        for arg in args {
+                            self.collect_type(arg);
+                        }
+                    }
+                    tast::Ty::TFunc { params, ret_ty } => {
+                        for param in params {
+                            self.collect_type(param);
+                        }
+                        self.collect_type(ret_ty);
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        let seen = TupleTypeCollector::new().finish(file);
+        self.tuple_types = seen;
     }
 }

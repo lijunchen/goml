@@ -1,5 +1,4 @@
 use ast::ast::Uident;
-use indexmap::IndexMap;
 
 use crate::{
     anf::{self, AExpr},
@@ -508,176 +507,29 @@ fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
     }
 }
 
-fn collect_tuple_types(file: &anf::File) -> IndexMap<String, goty::GoType> {
-    struct TupleTypeCollector {
-        seen: IndexMap<String, goty::GoType>,
-    }
-
-    impl TupleTypeCollector {
-        fn new() -> Self {
-            Self {
-                seen: IndexMap::new(),
-            }
-        }
-
-        fn finish(mut self, file: &anf::File) -> IndexMap<String, goty::GoType> {
-            for item in &file.toplevels {
-                self.collect_fn(item);
-            }
-            self.seen
-        }
-
-        fn collect_fn(&mut self, item: &anf::Fn) {
-            self.collect_aexpr(&item.body);
-        }
-
-        fn collect_aexpr(&mut self, expr: &anf::AExpr) {
-            match expr {
-                AExpr::ACExpr { expr } => self.collect_cexpr(expr),
-                AExpr::ALet {
-                    value, body, ty, ..
-                } => {
-                    self.collect_cexpr(value);
-                    self.collect_aexpr(body);
-                    self.collect_type(ty);
-                }
-            }
-        }
-
-        fn collect_cexpr(&mut self, expr: &anf::CExpr) {
-            match expr {
-                anf::CExpr::CImm { imm } => self.collect_imm(imm),
-                anf::CExpr::EConstr { args, ty, .. } => {
-                    for arg in args {
-                        self.collect_imm(arg);
-                    }
-                    self.collect_type(ty);
-                }
-                anf::CExpr::ETuple { items, ty } => {
-                    for item in items {
-                        self.collect_imm(item);
-                    }
-                    self.collect_type(ty);
-                }
-                anf::CExpr::EMatch {
-                    expr,
-                    arms,
-                    default,
-                    ty,
-                } => {
-                    self.collect_imm(expr);
-                    for arm in arms {
-                        self.collect_imm(&arm.lhs);
-                        self.collect_aexpr(&arm.body);
-                    }
-                    if let Some(default) = default {
-                        self.collect_aexpr(default);
-                    }
-                    self.collect_type(ty);
-                }
-                anf::CExpr::EIf {
-                    cond,
-                    then,
-                    else_,
-                    ty,
-                } => {
-                    self.collect_imm(cond);
-                    self.collect_aexpr(then);
-                    self.collect_aexpr(else_);
-                    self.collect_type(ty);
-                }
-                anf::CExpr::EConstrGet { expr, ty, .. } => {
-                    self.collect_imm(expr);
-                    self.collect_type(ty);
-                }
-                anf::CExpr::ECall { args, ty, .. } => {
-                    for arg in args {
-                        self.collect_imm(arg);
-                    }
-                    self.collect_type(ty);
-                }
-                anf::CExpr::EProj { tuple, ty, .. } => {
-                    self.collect_imm(tuple);
-                    self.collect_type(ty);
-                }
-            }
-        }
-
-        fn collect_imm(&mut self, imm: &anf::ImmExpr) {
-            let ty = match imm {
-                anf::ImmExpr::ImmVar { ty, .. }
-                | anf::ImmExpr::ImmUnit { ty }
-                | anf::ImmExpr::ImmBool { ty, .. }
-                | anf::ImmExpr::ImmInt { ty, .. }
-                | anf::ImmExpr::ImmString { ty, .. }
-                | anf::ImmExpr::ImmTag { ty, .. } => ty,
-            };
-            self.collect_type(ty);
-        }
-
-        fn collect_type(&mut self, ty: &tast::Ty) {
-            match ty {
-                tast::Ty::TTuple { typs } => {
-                    let name = go_type_name_for(ty);
-                    if !self.seen.contains_key(&name) {
-                        let fields = typs
-                            .iter()
-                            .enumerate()
-                            .map(|(i, t)| (format!("_{}", i), tast_ty_to_go_type(t)))
-                            .collect();
-                        self.seen
-                            .insert(name.clone(), goty::GoType::TStruct { name, fields });
-                    }
-                    for inner in typs {
-                        self.collect_type(inner);
-                    }
-                }
-                tast::Ty::TApp { args, .. } => {
-                    for arg in args {
-                        self.collect_type(arg);
-                    }
-                }
-                tast::Ty::TFunc { params, ret_ty } => {
-                    for param in params {
-                        self.collect_type(param);
-                    }
-                    self.collect_type(ret_ty);
-                }
-                tast::Ty::TVar(_)
-                | tast::Ty::TUnit
-                | tast::Ty::TBool
-                | tast::Ty::TInt
-                | tast::Ty::TString
-                | tast::Ty::TParam { .. } => {}
-            }
-        }
-    }
-
-    TupleTypeCollector::new().finish(file)
-}
-
 pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
 
-    let tuple_types = collect_tuple_types(&file);
-
-    for tt in tuple_types {
-        all.push(goast::Item::Struct(goast::Struct {
-            name: tt.0,
-            fields: match tt.1 {
-                goty::GoType::TStruct { name: _, fields } => {
-                    let fields = fields.iter().map(|(n, t)| goast::Field {
-                        name: n.clone(),
-                        ty: t.clone(),
-                    });
-                    fields.collect()
-                }
-                _ => panic!("expected struct type"),
-            },
-            methods: vec![],
-        }));
+    for ty in env.tuple_types.iter() {
+        match tuple_to_go_struct_type(env, ty) {
+            goty::GoType::TStruct { name, fields } => {
+                let fields = fields
+                    .into_iter()
+                    .map(|(field_name, field_ty)| goast::Field {
+                        name: field_name,
+                        ty: field_ty,
+                    })
+                    .collect();
+                all.push(goast::Item::Struct(goast::Struct {
+                    name,
+                    fields,
+                    methods: vec![],
+                }));
+            }
+            other => panic!("expected struct type, got {:?}", other),
+        }
     }
 
     let file = anf::anf_renamer::rename(file);
