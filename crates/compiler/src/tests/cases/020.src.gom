@@ -1,0 +1,155 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+type Point struct {
+    x int
+    y int
+}
+
+type Wrapper__Int struct {
+    value int
+}
+
+type Wrapper__Unit struct {
+    value struct{}
+}
+
+type Shape__Int interface {
+    isShape__Int()
+}
+
+type Shape__Int_Dot struct {
+    _0 Point
+}
+
+func (_ Shape__Int_Dot) isShape__Int() {}
+
+type Shape__Int_Wrapped struct {
+    _0 Wrapper__Int
+}
+
+func (_ Shape__Int_Wrapped) isShape__Int() {}
+
+type Shape__Int_Origin struct {}
+
+func (_ Shape__Int_Origin) isShape__Int() {}
+
+type Shape__Unit interface {
+    isShape__Unit()
+}
+
+type Shape__Unit_Dot struct {
+    _0 Point
+}
+
+func (_ Shape__Unit_Dot) isShape__Unit() {}
+
+type Shape__Unit_Wrapped struct {
+    _0 Wrapper__Unit
+}
+
+func (_ Shape__Unit_Wrapped) isShape__Unit() {}
+
+type Shape__Unit_Origin struct {}
+
+func (_ Shape__Unit_Origin) isShape__Unit() {}
+
+func bounce_int(shape__0 Shape__Int) Shape__Int {
+    var ret4 Shape__Int
+    switch shape__0 := shape__0.(type) {
+    case Shape__Int_Dot:
+        var x0 Point = shape__0._0
+        var point__1 Point = x0
+        ret4 = Shape__Int_Dot{
+            _0: point__1,
+        }
+    case Shape__Int_Wrapped:
+        var x1 Wrapper__Int = shape__0._0
+        var inner__2 Wrapper__Int = x1
+        ret4 = Shape__Int_Wrapped{
+            _0: inner__2,
+        }
+    case Shape__Int_Origin:
+        ret4 = Shape__Int_Origin{}
+    }
+    return ret4
+}
+
+func wrap_unit(value__3 Wrapper__Unit) Shape__Unit {
+    var ret5 Shape__Unit
+    ret5 = Shape__Unit_Wrapped{
+        _0: value__3,
+    }
+    return ret5
+}
+
+func pick(flag__4 bool, point__5 Point, wrapper__6 Wrapper__Int) Shape__Int {
+    var ret6 Shape__Int
+    switch flag__4 {
+    case true:
+        ret6 = Shape__Int_Dot{
+            _0: point__5,
+        }
+    case false:
+        ret6 = Shape__Int_Wrapped{
+            _0: wrapper__6,
+        }
+    }
+    return ret6
+}
+
+func main0() struct{} {
+    var ret7 struct{}
+    ret7 = string_println("struct enums!")
+    return ret7
+}
+
+func main() {
+    main0()
+}
