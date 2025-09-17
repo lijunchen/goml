@@ -32,5 +32,23 @@ fn pick(flag/4: Bool, point/5: Point, wrapper/6: Wrapper__Int) -> Shape__Int {
 }
 
 fn main() -> Unit {
+  let shape/8 = bounce_int(Shape__Int::Origin) in
+  let mtmp4 = describe__T_Int(shape/8) in
   string_println("struct enums!")
+}
+
+fn describe__T_Int(shape/7: Shape__Int) -> Int {
+  match shape/7 {
+    Shape__Int::Dot(x2) => {
+      let x2 = Shape__Int_0_0(shape/7) in
+      1
+    },
+    Shape__Int::Wrapped(x3) => {
+      let x3 = Shape__Int_1_0(shape/7) in
+      2
+    },
+    Shape__Int::Origin => {
+      0
+    },
+  }
 }

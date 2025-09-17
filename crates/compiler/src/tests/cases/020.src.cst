@@ -1,4 +1,4 @@
-FILE@0..750
+FILE@0..819
   STRUCT@0..42
     StructKeyword@0..6 "struct"
     Whitespace@6..7 " "
@@ -409,7 +409,7 @@ FILE@0..750
           Whitespace@696..697 "\n"
       RBrace@697..698 "}"
       Whitespace@698..700 "\n\n"
-  FN@700..750
+  FN@700..819
     FnKeyword@700..702 "fn"
     Whitespace@702..703 " "
     Lident@703..707 "main"
@@ -417,18 +417,62 @@ FILE@0..750
       LParen@707..708 "("
       RParen@708..709 ")"
       Whitespace@709..710 " "
-    BLOCK@710..750
+    BLOCK@710..819
       LBrace@710..711 "{"
       Whitespace@711..716 "\n    "
-      EXPR_CALL@716..748
-        EXPR_LIDENT@716..730
-          Lident@716..730 "string_println"
-        ARG_LIST@730..748
-          LParen@730..731 "("
-          ARG@731..746
-            EXPR_STR@731..746
-              Str@731..746 "\"struct enums!\""
-          RParen@746..747 ")"
-          Whitespace@747..748 "\n"
-      RBrace@748..749 "}"
-      Whitespace@749..750 "\n"
+      EXPR_LET@716..817
+        LetKeyword@716..719 "let"
+        Whitespace@719..720 " "
+        PATTERN_VARIABLE@720..726
+          Lident@720..725 "shape"
+          Whitespace@725..726 " "
+        Eq@726..727 "="
+        Whitespace@727..728 " "
+        EXPR_LET_VALUE@728..747
+          EXPR_CALL@728..747
+            EXPR_LIDENT@728..738
+              Lident@728..738 "bounce_int"
+            ARG_LIST@738..747
+              LParen@738..739 "("
+              ARG@739..745
+                EXPR_UIDENT@739..745
+                  Uident@739..745 "Origin"
+              RParen@745..746 ")"
+              Whitespace@746..747 " "
+        InKeyword@747..749 "in"
+        Whitespace@749..754 "\n    "
+        EXPR_LET_BODY@754..817
+          EXPR_LET@754..817
+            LetKeyword@754..757 "let"
+            Whitespace@757..758 " "
+            PATTERN_WILDCARD@758..760
+              WildcardKeyword@758..759 "_"
+              Whitespace@759..760 " "
+            Eq@760..761 "="
+            Whitespace@761..762 " "
+            EXPR_LET_VALUE@762..778
+              EXPR_CALL@762..778
+                EXPR_LIDENT@762..770
+                  Lident@762..770 "describe"
+                ARG_LIST@770..778
+                  LParen@770..771 "("
+                  ARG@771..776
+                    EXPR_LIDENT@771..776
+                      Lident@771..776 "shape"
+                  RParen@776..777 ")"
+                  Whitespace@777..778 " "
+            InKeyword@778..780 "in"
+            Whitespace@780..785 "\n    "
+            EXPR_LET_BODY@785..817
+              EXPR_CALL@785..817
+                EXPR_LIDENT@785..799
+                  Lident@785..799 "string_println"
+                ARG_LIST@799..817
+                  LParen@799..800 "("
+                  ARG@800..815
+                    EXPR_STR@800..815
+                      Str@800..815 "\"struct enums!\""
+                  RParen@815..816 ")"
+                  Whitespace@816..817 "\n"
+      RBrace@817..818 "}"
+      Whitespace@818..819 "\n"

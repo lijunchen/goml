@@ -101,53 +101,69 @@ type Shape__Unit_Origin struct {}
 func (_ Shape__Unit_Origin) isShape__Unit() {}
 
 func bounce_int(shape__0 Shape__Int) Shape__Int {
-    var ret4 Shape__Int
+    var ret6 Shape__Int
     switch shape__0 := shape__0.(type) {
     case Shape__Int_Dot:
         var x0 Point = shape__0._0
         var point__1 Point = x0
-        ret4 = Shape__Int_Dot{
+        ret6 = Shape__Int_Dot{
             _0: point__1,
         }
     case Shape__Int_Wrapped:
         var x1 Wrapper__Int = shape__0._0
         var inner__2 Wrapper__Int = x1
-        ret4 = Shape__Int_Wrapped{
+        ret6 = Shape__Int_Wrapped{
             _0: inner__2,
         }
     case Shape__Int_Origin:
-        ret4 = Shape__Int_Origin{}
-    }
-    return ret4
-}
-
-func wrap_unit(value__3 Wrapper__Unit) Shape__Unit {
-    var ret5 Shape__Unit
-    ret5 = Shape__Unit_Wrapped{
-        _0: value__3,
-    }
-    return ret5
-}
-
-func pick(flag__4 bool, point__5 Point, wrapper__6 Wrapper__Int) Shape__Int {
-    var ret6 Shape__Int
-    switch flag__4 {
-    case true:
-        ret6 = Shape__Int_Dot{
-            _0: point__5,
-        }
-    case false:
-        ret6 = Shape__Int_Wrapped{
-            _0: wrapper__6,
-        }
+        ret6 = Shape__Int_Origin{}
     }
     return ret6
 }
 
-func main0() struct{} {
-    var ret7 struct{}
-    ret7 = string_println("struct enums!")
+func wrap_unit(value__3 Wrapper__Unit) Shape__Unit {
+    var ret7 Shape__Unit
+    ret7 = Shape__Unit_Wrapped{
+        _0: value__3,
+    }
     return ret7
+}
+
+func pick(flag__4 bool, point__5 Point, wrapper__6 Wrapper__Int) Shape__Int {
+    var ret8 Shape__Int
+    switch flag__4 {
+    case true:
+        ret8 = Shape__Int_Dot{
+            _0: point__5,
+        }
+    case false:
+        ret8 = Shape__Int_Wrapped{
+            _0: wrapper__6,
+        }
+    }
+    return ret8
+}
+
+func main0() struct{} {
+    var ret9 struct{}
+    var t5 Shape__Int = Shape__Int_Origin{}
+    var shape__8 Shape__Int = bounce_int(t5)
+    describe__T_Int(shape__8)
+    ret9 = string_println("struct enums!")
+    return ret9
+}
+
+func describe__T_Int(shape__7 Shape__Int) int {
+    var ret10 int
+    switch shape__7.(type) {
+    case Shape__Int_Dot:
+        ret10 = 1
+    case Shape__Int_Wrapped:
+        ret10 = 2
+    case Shape__Int_Origin:
+        ret10 = 0
+    }
+    return ret10
 }
 
 func main() {
