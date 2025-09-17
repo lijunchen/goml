@@ -45,6 +45,10 @@ func int_less(x int, y int) bool {
     return x < y
 }
 
+func string_add(a string, b string) string {
+    return a + b
+}
+
 func string_print(s string) struct{} {
     fmt.Print(s)
     return struct{}{}

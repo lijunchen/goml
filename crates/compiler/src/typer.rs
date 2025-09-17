@@ -1070,6 +1070,18 @@ impl TypeInference {
                             ty: tast::Ty::TBool,
                         }
                     }
+                    "string_add" => {
+                        if args.len() != 2 {
+                            panic!("string_add takes exactly two arguments");
+                        }
+                        let arg0_tast = self.check(env, vars, &args[0], &tast::Ty::TString);
+                        let arg1_tast = self.check(env, vars, &args[1], &tast::Ty::TString);
+                        tast::Expr::ECall {
+                            func: func.0.clone(),
+                            args: vec![arg0_tast, arg1_tast],
+                            ty: tast::Ty::TString,
+                        }
+                    }
                     "string_print" | "string_println" => {
                         if args.len() != 1 {
                             panic!("string_print/string_println takes exactly one argument");
