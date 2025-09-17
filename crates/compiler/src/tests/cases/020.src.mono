@@ -31,9 +31,59 @@ fn pick(flag/4: Bool, point/5: Point, wrapper/6: Wrapper__Int) -> Shape__Int {
   }
 }
 
+fn point_to_string() -> String {
+  "Point { x: Int, y: Int }"
+}
+
+fn wrapper_int_to_string() -> String {
+  "Wrapper[Int]"
+}
+
+fn wrapper_unit_to_string() -> String {
+  "Wrapper[Unit]"
+}
+
+fn shape_int_to_string(shape/8: Shape__Int) -> String {
+  match shape/8 {
+    Shape__Int::Dot(x4) => {
+      let x4 = Shape__Int_0_0(shape/8) in
+      "Shape::Dot"
+    },
+    Shape__Int::Wrapped(x5) => {
+      let x5 = Shape__Int_1_0(shape/8) in
+      "Shape::Wrapped"
+    },
+    Shape__Int::Origin => {
+      "Shape::Origin"
+    },
+  }
+}
+
+fn shape_unit_to_string(shape/9: Shape__Unit) -> String {
+  match shape/9 {
+    Shape__Unit::Dot(x6) => {
+      let x6 = Shape__Unit_0_0(shape/9) in
+      "Shape::Dot"
+    },
+    Shape__Unit::Wrapped(x7) => {
+      let x7 = Shape__Unit_1_0(shape/9) in
+      "Shape::Wrapped"
+    },
+    Shape__Unit::Origin => {
+      "Shape::Origin"
+    },
+  }
+}
+
 fn main() -> Unit {
-  let shape/8 = bounce_int(Shape__Int::Origin) in
-  let mtmp4 = describe__T_Int(shape/8) in
+  let mtmp8 = string_println(point_to_string()) in
+  let mtmp9 = string_println(wrapper_int_to_string()) in
+  let mtmp10 = string_println(wrapper_unit_to_string()) in
+  let bounced_origin/10 = bounce_int(Shape__Int::Origin) in
+  let mtmp11 = string_println(shape_int_to_string(bounced_origin/10)) in
+  let mtmp12 = string_println(shape_int_to_string(Shape__Int::Origin)) in
+  let mtmp13 = string_println(shape_unit_to_string(Shape__Unit::Origin)) in
+  let mtmp14 = describe__T_Int(bounce_int(Shape__Int::Origin)) in
   string_println("struct enums!")
 }
 

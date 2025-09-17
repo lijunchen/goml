@@ -31,10 +31,70 @@ fn pick(flag/4: Bool, point/5: Point, wrapper/6: Wrapper__Int) -> Shape__Int {
   }
 }
 
+fn point_to_string() -> String {
+  "Point { x: Int, y: Int }"
+}
+
+fn wrapper_int_to_string() -> String {
+  "Wrapper[Int]"
+}
+
+fn wrapper_unit_to_string() -> String {
+  "Wrapper[Unit]"
+}
+
+fn shape_int_to_string(shape/8: Shape__Int) -> String {
+  match shape/8 {
+    Tag_0 => {
+      let x4 = shape/8.constr.0.0 in
+      "Shape::Dot"
+    },
+    Tag_1 => {
+      let x5 = shape/8.constr.1.0 in
+      "Shape::Wrapped"
+    },
+    Tag_2 => {
+      "Shape::Origin"
+    },
+  }
+}
+
+fn shape_unit_to_string(shape/9: Shape__Unit) -> String {
+  match shape/9 {
+    Tag_0 => {
+      let x6 = shape/9.constr.0.0 in
+      "Shape::Dot"
+    },
+    Tag_1 => {
+      let x7 = shape/9.constr.1.0 in
+      "Shape::Wrapped"
+    },
+    Tag_2 => {
+      "Shape::Origin"
+    },
+  }
+}
+
 fn main() -> Unit {
-  let t5 = Tag_2 in
-  let shape/8 = bounce_int(t5) in
-  let mtmp4 = describe__T_Int(shape/8) in
+  let t15 = point_to_string() in
+  let mtmp8 = string_println(t15) in
+  let t16 = wrapper_int_to_string() in
+  let mtmp9 = string_println(t16) in
+  let t17 = wrapper_unit_to_string() in
+  let mtmp10 = string_println(t17) in
+  let t18 = Tag_2 in
+  let bounced_origin/10 = bounce_int(t18) in
+  let t19 = shape_int_to_string(bounced_origin/10) in
+  let mtmp11 = string_println(t19) in
+  let t21 = Tag_2 in
+  let t20 = shape_int_to_string(t21) in
+  let mtmp12 = string_println(t20) in
+  let t23 = Tag_2 in
+  let t22 = shape_unit_to_string(t23) in
+  let mtmp13 = string_println(t22) in
+  let t25 = Tag_2 in
+  let t24 = bounce_int(t25) in
+  let mtmp14 = describe__T_Int(t24) in
   string_println("struct enums!")
 }
 
