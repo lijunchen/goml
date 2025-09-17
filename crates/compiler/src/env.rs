@@ -11,6 +11,13 @@ pub struct EnumDef {
     pub variants: Vec<(Uident, Vec<tast::Ty>)>,
 }
 
+#[derive(Debug, Clone)]
+pub struct StructDef {
+    pub name: Uident,
+    pub generics: Vec<Uident>,
+    pub fields: Vec<(Lident, tast::Ty)>,
+}
+
 pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
     let trait_name = trait_name.0.clone();
     let type_name = type_name.clone();
@@ -64,6 +71,7 @@ pub enum Constraint {
 pub struct Env {
     counter: Cell<i32>,
     pub enums: IndexMap<Uident, EnumDef>,
+    pub structs: IndexMap<Uident, StructDef>,
     pub trait_defs: IndexMap<String, tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
     pub trait_impls: IndexMap<(String, tast::Ty, Lident), tast::Ty>,
@@ -83,6 +91,7 @@ impl Env {
         Self {
             counter: Cell::new(0),
             enums: IndexMap::new(),
+            structs: IndexMap::new(),
             funcs: IndexMap::new(),
             trait_defs: IndexMap::new(),
             overloaded_funcs_to_trait_name: IndexMap::new(),

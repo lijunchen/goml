@@ -1,5 +1,6 @@
 use crate::ast::{
-    Arm, EnumDef, Expr, File, Fn, ImplBlock, Item, Pat, TraitDef, TraitMethodSignature, Ty,
+    Arm, EnumDef, Expr, File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature,
+    Ty,
 };
 use pretty::RcDoc;
 
@@ -282,6 +283,37 @@ impl EnumDef {
     }
 }
 
+impl StructDef {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let header = RcDoc::text("struct")
+            .append(RcDoc::space())
+            .append(RcDoc::text(&self.name.0));
+
+        let fields_doc = RcDoc::concat(self.fields.iter().map(|(name, ty)| {
+            RcDoc::hardline()
+                .append(RcDoc::text(&name.0))
+                .append(RcDoc::text(":"))
+                .append(RcDoc::space())
+                .append(ty.to_doc())
+                .append(RcDoc::text(","))
+        }));
+
+        header
+            .append(RcDoc::space())
+            .append(RcDoc::text("{"))
+            .append(fields_doc.nest(4))
+            .append(RcDoc::hardline())
+            .append(RcDoc::text("}"))
+            .group()
+    }
+
+    pub fn to_pretty(&self, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc().render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
 impl TraitDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("trait")
@@ -422,6 +454,7 @@ impl Item {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Item::EnumDef(def) => def.to_doc(),
+            Item::StructDef(def) => def.to_doc(),
             Item::TraitDef(def) => def.to_doc(),
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
