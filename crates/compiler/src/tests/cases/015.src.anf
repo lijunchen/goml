@@ -4,8 +4,8 @@ fn print_int_list(xs/0: IntList) -> Unit {
       string_print("Nil")
     },
     Tag_1 => {
-      let x0 = xs/0.constr.1.0 in
-      let x1 = xs/0.constr.1.1 in
+      let x0 = IntList::Cons._0(xs/0) in
+      let x1 = IntList::Cons._1(xs/0) in
       let xs/2 = x1 in
       let x/1 = x0 in
       let mtmp2 = string_print("Cons") in
@@ -26,8 +26,8 @@ fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
       acc/4
     },
     Tag_1 => {
-      let x8 = xs/3.constr.1.0 in
-      let x9 = xs/3.constr.1.1 in
+      let x8 = IntList::Cons._0(xs/3) in
+      let x9 = IntList::Cons._1(xs/3) in
       let tail/6 = x9 in
       let head/5 = x8 in
       let t26 = IntList::Cons(head/5, acc/4) in
@@ -47,8 +47,8 @@ fn int_list_length(xs/8: IntList) -> Int {
       0
     },
     Tag_1 => {
-      let x10 = xs/8.constr.1.0 in
-      let x11 = xs/8.constr.1.1 in
+      let x10 = IntList::Cons._0(xs/8) in
+      let x11 = IntList::Cons._1(xs/8) in
       let xs/9 = x11 in
       let t28 = int_list_length(xs/9) in
       int_add(1, t28)

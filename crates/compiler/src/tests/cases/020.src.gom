@@ -32,6 +32,10 @@ func int_less(x int, y int) bool {
     return x < y
 }
 
+func string_add(a string, b string) string {
+    return a + b
+}
+
 func string_print(s string) struct{} {
     fmt.Print(s)
     return struct{}{}
@@ -101,129 +105,206 @@ type Shape__Unit_Origin struct {}
 func (_ Shape__Unit_Origin) isShape__Unit() {}
 
 func bounce_int(shape__0 Shape__Int) Shape__Int {
-    var ret26 Shape__Int
+    var ret57 Shape__Int
     switch shape__0 := shape__0.(type) {
     case Shape__Int_Dot:
         var x0 Point = shape__0._0
         var point__1 Point = x0
-        ret26 = Shape__Int_Dot{
+        ret57 = Shape__Int_Dot{
             _0: point__1,
         }
     case Shape__Int_Wrapped:
         var x1 Wrapper__Int = shape__0._0
         var inner__2 Wrapper__Int = x1
-        ret26 = Shape__Int_Wrapped{
+        ret57 = Shape__Int_Wrapped{
             _0: inner__2,
         }
     case Shape__Int_Origin:
-        ret26 = Shape__Int_Origin{}
+        ret57 = Shape__Int_Origin{}
     }
-    return ret26
+    return ret57
 }
 
 func wrap_unit(value__3 Wrapper__Unit) Shape__Unit {
-    var ret27 Shape__Unit
-    ret27 = Shape__Unit_Wrapped{
+    var ret58 Shape__Unit
+    ret58 = Shape__Unit_Wrapped{
         _0: value__3,
     }
-    return ret27
+    return ret58
 }
 
 func pick(flag__4 bool, point__5 Point, wrapper__6 Wrapper__Int) Shape__Int {
-    var ret28 Shape__Int
+    var ret59 Shape__Int
     switch flag__4 {
     case true:
-        ret28 = Shape__Int_Dot{
+        ret59 = Shape__Int_Dot{
             _0: point__5,
         }
     case false:
-        ret28 = Shape__Int_Wrapped{
+        ret59 = Shape__Int_Wrapped{
             _0: wrapper__6,
         }
     }
-    return ret28
+    return ret59
 }
 
-func point_to_string() string {
-    var ret29 string
-    ret29 = "Point { x: Int, y: Int }"
-    return ret29
+func point_to_string(point__8 Point) string {
+    var ret60 string
+    var mtmp4 Point = point__8
+    var x5 int = mtmp4.x
+    var x6 int = mtmp4.y
+    var y__10 int = x6
+    var x__9 int = x5
+    var t25 string = int_to_string(x__9)
+    var with_x__11 string = string_add("Point { x: ", t25)
+    var with_y_label__12 string = string_add(with_x__11, ", y: ")
+    var t26 string = int_to_string(y__10)
+    var with_y__13 string = string_add(with_y_label__12, t26)
+    ret60 = string_add(with_y__13, " }")
+    return ret60
 }
 
-func wrapper_int_to_string() string {
-    var ret30 string
-    ret30 = "Wrapper[Int]"
-    return ret30
+func wrapper_int_to_string(wrapper__14 Wrapper__Int) string {
+    var ret61 string
+    var mtmp7 Wrapper__Int = wrapper__14
+    var x8 int = mtmp7.value
+    var value__15 int = x8
+    var t27 string = int_to_string(value__15)
+    var prefix__16 string = string_add("Wrapper[Int] { value: ", t27)
+    ret61 = string_add(prefix__16, " }")
+    return ret61
 }
 
-func wrapper_unit_to_string() string {
-    var ret31 string
-    ret31 = "Wrapper[Unit]"
-    return ret31
+func wrapper_unit_to_string(wrapper__17 Wrapper__Unit) string {
+    var ret62 string
+    var mtmp9 Wrapper__Unit = wrapper__17
+    var x10 struct{} = mtmp9.value
+    var value__18 struct{} = x10
+    var t28 string = unit_to_string(value__18)
+    var prefix__19 string = string_add("Wrapper[Unit] { value: ", t28)
+    ret62 = string_add(prefix__19, " }")
+    return ret62
 }
 
-func shape_int_to_string(shape__8 Shape__Int) string {
-    var ret32 string
-    switch shape__8.(type) {
+func shape_int_to_string(shape__20 Shape__Int) string {
+    var ret63 string
+    switch shape__20 := shape__20.(type) {
     case Shape__Int_Dot:
-        ret32 = "Shape::Dot"
+        var x11 Point = shape__20._0
+        var point__21 Point = x11
+        var t29 string = point_to_string(point__21)
+        var prefix__22 string = string_add("Shape::Dot(", t29)
+        ret63 = string_add(prefix__22, ")")
     case Shape__Int_Wrapped:
-        ret32 = "Shape::Wrapped"
+        var x12 Wrapper__Int = shape__20._0
+        var wrapper__23 Wrapper__Int = x12
+        var t30 string = wrapper_int_to_string(wrapper__23)
+        var prefix__24 string = string_add("Shape::Wrapped(", t30)
+        ret63 = string_add(prefix__24, ")")
     case Shape__Int_Origin:
-        ret32 = "Shape::Origin"
+        ret63 = "Shape::Origin"
     }
-    return ret32
+    return ret63
 }
 
-func shape_unit_to_string(shape__9 Shape__Unit) string {
-    var ret33 string
-    switch shape__9.(type) {
+func shape_unit_to_string(shape__25 Shape__Unit) string {
+    var ret64 string
+    switch shape__25 := shape__25.(type) {
     case Shape__Unit_Dot:
-        ret33 = "Shape::Dot"
+        var x13 Point = shape__25._0
+        var point__26 Point = x13
+        var t31 string = point_to_string(point__26)
+        var prefix__27 string = string_add("Shape::Dot(", t31)
+        ret64 = string_add(prefix__27, ")")
     case Shape__Unit_Wrapped:
-        ret33 = "Shape::Wrapped"
+        var x14 Wrapper__Unit = shape__25._0
+        var wrapper__28 Wrapper__Unit = x14
+        var t32 string = wrapper_unit_to_string(wrapper__28)
+        var prefix__29 string = string_add("Shape::Wrapped(", t32)
+        ret64 = string_add(prefix__29, ")")
     case Shape__Unit_Origin:
-        ret33 = "Shape::Origin"
+        ret64 = "Shape::Origin"
     }
-    return ret33
+    return ret64
 }
 
 func main0() struct{} {
-    var ret34 struct{}
-    var t15 string = point_to_string()
-    string_println(t15)
-    var t16 string = wrapper_int_to_string()
-    string_println(t16)
-    var t17 string = wrapper_unit_to_string()
-    string_println(t17)
-    var t18 Shape__Int = Shape__Int_Origin{}
-    var bounced_origin__10 Shape__Int = bounce_int(t18)
-    var t19 string = shape_int_to_string(bounced_origin__10)
-    string_println(t19)
-    var t21 Shape__Int = Shape__Int_Origin{}
-    var t20 string = shape_int_to_string(t21)
-    string_println(t20)
-    var t23 Shape__Unit = Shape__Unit_Origin{}
-    var t22 string = shape_unit_to_string(t23)
-    string_println(t22)
-    var t25 Shape__Int = Shape__Int_Origin{}
-    var t24 Shape__Int = bounce_int(t25)
-    describe__T_Int(t24)
-    ret34 = string_println("struct enums!")
-    return ret34
+    var ret65 struct{}
+    var t34 Point = Point{
+        x: 3,
+        y: 4,
+    }
+    var t33 string = point_to_string(t34)
+    string_println(t33)
+    var t36 Wrapper__Int = Wrapper__Int{
+        value: 7,
+    }
+    var t35 string = wrapper_int_to_string(t36)
+    string_println(t35)
+    var t38 Wrapper__Unit = Wrapper__Unit{
+        value: struct{}{},
+    }
+    var t37 string = wrapper_unit_to_string(t38)
+    string_println(t37)
+    var t39 Shape__Int = Shape__Int_Origin{}
+    var bounced_origin__30 Shape__Int = bounce_int(t39)
+    var t42 Point = Point{
+        x: 3,
+        y: 4,
+    }
+    var t41 Shape__Int = Shape__Int_Dot{
+        _0: t42,
+    }
+    var t40 string = shape_int_to_string(t41)
+    string_println(t40)
+    var t45 Wrapper__Int = Wrapper__Int{
+        value: 7,
+    }
+    var t44 Shape__Int = Shape__Int_Wrapped{
+        _0: t45,
+    }
+    var t43 string = shape_int_to_string(t44)
+    string_println(t43)
+    var t46 string = shape_int_to_string(bounced_origin__30)
+    string_println(t46)
+    var t49 Point = Point{
+        x: 3,
+        y: 4,
+    }
+    var t48 Shape__Unit = Shape__Unit_Dot{
+        _0: t49,
+    }
+    var t47 string = shape_unit_to_string(t48)
+    string_println(t47)
+    var t52 Wrapper__Unit = Wrapper__Unit{
+        value: struct{}{},
+    }
+    var t51 Shape__Unit = Shape__Unit_Wrapped{
+        _0: t52,
+    }
+    var t50 string = shape_unit_to_string(t51)
+    string_println(t50)
+    var t54 Shape__Unit = Shape__Unit_Origin{}
+    var t53 string = shape_unit_to_string(t54)
+    string_println(t53)
+    var t56 Shape__Int = Shape__Int_Origin{}
+    var t55 Shape__Int = bounce_int(t56)
+    describe__T_Int(t55)
+    ret65 = string_println("struct enums!")
+    return ret65
 }
 
 func describe__T_Int(shape__7 Shape__Int) int {
-    var ret35 int
+    var ret66 int
     switch shape__7.(type) {
     case Shape__Int_Dot:
-        ret35 = 1
+        ret66 = 1
     case Shape__Int_Wrapped:
-        ret35 = 2
+        ret66 = 2
     case Shape__Int_Origin:
-        ret35 = 0
+        ret66 = 0
     }
-    return ret35
+    return ret66
 }
 
 func main() {
