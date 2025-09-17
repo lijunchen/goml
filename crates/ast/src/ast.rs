@@ -31,6 +31,7 @@ pub struct File {
 #[derive(Debug, Clone)]
 pub enum Item {
     EnumDef(EnumDef),
+    StructDef(StructDef),
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
@@ -50,6 +51,13 @@ pub struct EnumDef {
     pub name: Uident,
     pub generics: Vec<Uident>,
     pub variants: Vec<(Uident, Vec<Ty>)>,
+}
+
+#[derive(Debug, Clone)]
+pub struct StructDef {
+    pub name: Uident,
+    pub generics: Vec<Uident>,
+    pub fields: Vec<(Lident, Ty)>,
 }
 
 #[derive(Debug, Clone)]

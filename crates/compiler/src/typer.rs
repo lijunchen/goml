@@ -1,6 +1,6 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use ::ast::ast::{ImplBlock, Lident, TraitDef, TraitMethodSignature};
+use ::ast::ast::{ImplBlock, Lident, StructDef, TraitDef, TraitMethodSignature};
 use ast::ast;
 use ena::unify::InPlaceUnificationTable;
 
@@ -19,6 +19,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(..) => (),
+            ast::Item::StructDef(..) => (),
             ast::Item::TraitDef(..) => (),
             ast::Item::ImplBlock(impl_blcok) => {
                 let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_blcok.for_type, &[]);
@@ -106,12 +107,92 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
     )
 }
 
+fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
+    tparams.iter().map(|param| param.0.clone()).collect()
+}
+
+fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
+    match ty {
+        tast::Ty::TVar(_) => {}
+        tast::Ty::TUnit | tast::Ty::TBool | tast::Ty::TInt | tast::Ty::TString => {}
+        tast::Ty::TTuple { typs } => {
+            for ty in typs.iter() {
+                validate_ty(env, ty, tparams);
+            }
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            for param in params.iter() {
+                validate_ty(env, param, tparams);
+            }
+            validate_ty(env, ret_ty.as_ref(), tparams);
+        }
+        tast::Ty::TParam { name } => {
+            if !tparams.contains(name) {
+                panic!("Unbound type parameter {}", name);
+            }
+        }
+        tast::Ty::TApp { name, args } => {
+            for arg in args.iter() {
+                validate_ty(env, arg, tparams);
+            }
+
+            if let Some(enum_def) = env.enums.get(name) {
+                let expected = enum_def.generics.len();
+                let actual = args.len();
+                if expected != actual {
+                    panic!(
+                        "Type {} expects {} type arguments, but got {}",
+                        name.0, expected, actual
+                    );
+                }
+            } else if let Some(struct_def) = env.structs.get(name) {
+                let expected = struct_def.generics.len();
+                let actual = args.len();
+                if expected != actual {
+                    panic!(
+                        "Type {} expects {} type arguments, but got {}",
+                        name.0, expected, actual
+                    );
+                }
+            } else {
+                panic!("Unknown type constructor {}", name.0);
+            }
+        }
+    }
+}
+
 fn collect_typedefs(env: &mut Env, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(enum_def) => {
-                let name = enum_def.name.clone();
+                env.enums
+                    .entry(enum_def.name.clone())
+                    .or_insert_with(|| env::EnumDef {
+                        name: enum_def.name.clone(),
+                        generics: enum_def.generics.clone(),
+                        variants: Vec::new(),
+                    });
+            }
+            ast::Item::StructDef(StructDef { name, generics, .. }) => {
+                env.structs
+                    .entry(name.clone())
+                    .or_insert_with(|| env::StructDef {
+                        name: name.clone(),
+                        generics: generics.clone(),
+                        fields: Vec::new(),
+                    });
+            }
+            _ => {}
+        }
+    }
+
+    let empty_tparams = HashSet::new();
+
+    for item in ast.toplevels.iter() {
+        match item {
+            ast::Item::EnumDef(enum_def) => {
                 let params_env = &enum_def.generics;
+                let tparam_names = type_param_name_set(params_env);
 
                 let variants = enum_def
                     .variants
@@ -120,16 +201,43 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                         let typs = typs
                             .iter()
                             .map(|ast_ty| ast_ty_to_tast_ty_with_tparams_env(ast_ty, params_env))
-                            .collect();
+                            .collect::<Vec<_>>();
+                        for ty in typs.iter() {
+                            validate_ty(env, ty, &tparam_names);
+                        }
                         (vcon.clone(), typs)
                     })
                     .collect();
                 env.enums.insert(
-                    name.clone(),
+                    enum_def.name.clone(),
                     env::EnumDef {
-                        name,
+                        name: enum_def.name.clone(),
                         generics: enum_def.generics.clone(),
                         variants,
+                    },
+                );
+            }
+            ast::Item::StructDef(StructDef {
+                name,
+                generics,
+                fields,
+            }) => {
+                let tparam_names = type_param_name_set(generics);
+                let fields = fields
+                    .iter()
+                    .map(|(fname, ast_ty)| {
+                        let ty = ast_ty_to_tast_ty_with_tparams_env(ast_ty, generics);
+                        validate_ty(env, &ty, &tparam_names);
+                        (fname.clone(), ty)
+                    })
+                    .collect();
+
+                env.structs.insert(
+                    name.clone(),
+                    env::StructDef {
+                        name: name.clone(),
+                        generics: generics.clone(),
+                        fields,
                     },
                 );
             }
@@ -153,15 +261,25 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                 methods,
             }) => {
                 let for_ty = ast_ty_to_tast_ty_with_tparams_env(for_type, &[]);
+                validate_ty(env, &for_ty, &empty_tparams);
                 for m in methods.iter() {
                     let name = m.name.clone();
+                    let tparam_names = type_param_name_set(&m.generics);
                     let params = m
                         .params
                         .iter()
-                        .map(|(_, ty)| ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics))
-                        .collect();
+                        .map(|(_, ty)| {
+                            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics);
+                            validate_ty(env, &ty, &tparam_names);
+                            ty
+                        })
+                        .collect::<Vec<_>>();
                     let ret = match &m.ret_ty {
-                        Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics),
+                        Some(ty) => {
+                            let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics);
+                            validate_ty(env, &ret, &tparam_names);
+                            ret
+                        }
                         None => tast::Ty::TUnit,
                     };
                     env.trait_impls.insert(
@@ -175,13 +293,22 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
             }
             ast::Item::Fn(func) => {
                 let name = func.name.clone();
+                let tparam_names = type_param_name_set(&func.generics);
                 let params = func
                     .params
                     .iter()
-                    .map(|(_, ty)| ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics))
-                    .collect();
+                    .map(|(_, ty)| {
+                        let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics);
+                        validate_ty(env, &ty, &tparam_names);
+                        ty
+                    })
+                    .collect::<Vec<_>>();
                 let ret = match &func.ret_ty {
-                    Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics),
+                    Some(ty) => {
+                        let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics);
+                        validate_ty(env, &ret, &tparam_names);
+                        ret
+                    }
                     None => tast::Ty::TUnit,
                 };
                 env.funcs.insert(

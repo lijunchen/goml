@@ -13,7 +13,7 @@ pub fn lower(node: cst::File) -> Option<ast::File> {
 fn lower_item(node: cst::Item) -> Option<ast::Item> {
     match node {
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(it)?)),
-        cst::Item::Struct(_it) => todo!("struct lowering not implemented"),
+        cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(it)?)),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(it)?)),
         cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(it)?)),
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(it)?)),
@@ -44,6 +44,38 @@ fn lower_enum(node: cst::Enum) -> Option<ast::EnumDef> {
         generics,
         variants,
     })
+}
+
+fn lower_struct(node: cst::Struct) -> Option<ast::StructDef> {
+    let name = node.uident()?.to_string();
+    let generics: Vec<ast::Uident> = node
+        .generic_list()
+        .map(|list| {
+            list.generics()
+                .flat_map(|generic| {
+                    let name = generic.uident()?.to_string();
+                    Some(ast::Uident::new(&name))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
+    let fields = node
+        .field_list()
+        .map(|list| list.fields().flat_map(lower_struct_field).collect())
+        .unwrap_or_default();
+
+    Some(ast::StructDef {
+        name: ast::Uident::new(&name),
+        generics,
+        fields,
+    })
+}
+
+fn lower_struct_field(node: cst::StructField) -> Option<(ast::Lident, ast::Ty)> {
+    let name = node.lident()?.to_string();
+    let ty = node.ty().and_then(lower_ty)?;
+    Some((ast::Lident(name), ty))
 }
 
 fn lower_trait(node: cst::Trait) -> Option<ast::TraitDef> {
