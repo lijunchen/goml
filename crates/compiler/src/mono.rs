@@ -1,6 +1,6 @@
 use super::core;
 use crate::env::{EnumDef, Env, StructDef};
-use crate::tast::Ty;
+use crate::tast::{Constructor, ConstructorKind, Ty};
 use ast::ast::Uident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -23,6 +23,25 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TTuple { typs } => typs.iter().any(has_tparam),
             Ty::TApp { args, .. } => args.iter().any(has_tparam),
             Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
+        }
+    }
+
+    fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
+        match (&constructor.kind, new_ty) {
+            (ConstructorKind::Enum { index, .. }, Ty::TApp { name, .. }) => Constructor {
+                name: constructor.name.clone(),
+                kind: ConstructorKind::Enum {
+                    type_name: name.clone(),
+                    index: *index,
+                },
+            },
+            (ConstructorKind::Struct { .. }, Ty::TApp { name, .. }) => Constructor {
+                name: name.clone(),
+                kind: ConstructorKind::Struct {
+                    type_name: name.clone(),
+                },
+            },
+            _ => constructor.clone(),
         }
     }
 
@@ -227,11 +246,19 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 value,
                 ty: subst_ty(&ty, s),
             },
-            core::Expr::EConstr { index, args, ty } => core::Expr::EConstr {
-                index,
-                args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
-                ty: subst_ty(&ty, s),
-            },
+            core::Expr::EConstr {
+                constructor,
+                args,
+                ty,
+            } => {
+                let new_ty = subst_ty(&ty, s);
+                let new_constructor = update_constructor_type(&constructor, &new_ty);
+                core::Expr::EConstr {
+                    constructor: new_constructor,
+                    args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
+                    ty: new_ty,
+                }
+            }
             core::Expr::ETuple { items, ty } => core::Expr::ETuple {
                 items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                 ty: subst_ty(&ty, s),
@@ -266,15 +293,20 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             },
             core::Expr::EConstrGet {
                 expr,
-                variant_index,
+                constructor,
                 field_index,
                 ty,
-            } => core::Expr::EConstrGet {
-                expr: Box::new(mono_expr(ctx, &expr, s)),
-                variant_index,
-                field_index,
-                ty: subst_ty(&ty, s),
-            },
+            } => {
+                let new_expr = mono_expr(ctx, &expr, s);
+                let scrut_ty = subst_ty(&expr.get_ty(), s);
+                let new_constructor = update_constructor_type(&constructor, &scrut_ty);
+                core::Expr::EConstrGet {
+                    expr: Box::new(new_expr),
+                    constructor: new_constructor,
+                    field_index,
+                    ty: subst_ty(&ty, s),
+                }
+            }
             core::Expr::ECall { func, args, ty } => {
                 let new_args: Vec<core::Expr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
                 let new_ty = subst_ty(&ty, s);
@@ -535,11 +567,19 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 value,
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EConstr { index, args, ty } => core::Expr::EConstr {
-                index,
-                args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
-                ty: m.collapse_type_apps(&ty),
-            },
+            core::Expr::EConstr {
+                constructor,
+                args,
+                ty,
+            } => {
+                let new_ty = m.collapse_type_apps(&ty);
+                let new_constructor = update_constructor_type(&constructor, &new_ty);
+                core::Expr::EConstr {
+                    constructor: new_constructor,
+                    args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
+                    ty: new_ty,
+                }
+            }
             core::Expr::ETuple { items, ty } => core::Expr::ETuple {
                 items: items
                     .into_iter()
@@ -577,15 +617,20 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             },
             core::Expr::EConstrGet {
                 expr,
-                variant_index,
+                constructor,
                 field_index,
                 ty,
-            } => core::Expr::EConstrGet {
-                expr: Box::new(rewrite_expr_types(*expr, m)),
-                variant_index,
-                field_index,
-                ty: m.collapse_type_apps(&ty),
-            },
+            } => {
+                let new_expr = rewrite_expr_types(*expr, m);
+                let scrut_ty = new_expr.get_ty();
+                let new_constructor = update_constructor_type(&constructor, &scrut_ty);
+                core::Expr::EConstrGet {
+                    expr: Box::new(new_expr),
+                    constructor: new_constructor,
+                    field_index,
+                    ty: m.collapse_type_apps(&ty),
+                }
+            }
             core::Expr::ECall { func, args, ty } => core::Expr::ECall {
                 func,
                 args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),

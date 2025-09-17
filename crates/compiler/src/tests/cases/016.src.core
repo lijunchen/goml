@@ -4,8 +4,8 @@ fn list_length(xs/0: List[T]) -> Int {
       0
     },
     List::Cons(x0, x1) => {
-      let x0 = List_1_0(xs/0) in
-      let x1 = List_1_1(xs/0) in
+      let x0 = List::Cons._0(xs/0) in
+      let x1 = List::Cons._1(xs/0) in
       let tail/1 = x1 in
       int_add(1, list_length(tail/1))
     },
@@ -18,8 +18,8 @@ fn int_list_length(xs/2: List[Int]) -> Int {
       0
     },
     List::Cons(x2, x3) => {
-      let x2 = List_1_0(xs/2) in
-      let x3 = List_1_1(xs/2) in
+      let x2 = List::Cons._0(xs/2) in
+      let x3 = List::Cons._1(xs/2) in
       let tail/3 = x3 in
       int_add(1, int_list_length(tail/3))
     },

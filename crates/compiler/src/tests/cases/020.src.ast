@@ -40,9 +40,58 @@ fn describe(shape: Shape[T]) -> Int {
     }
 }
 
+fn point_to_string(point: Point) -> String {
+    let Point(x, y) = point in
+    let with_x = string_add("Point { x: ", int_to_string(x)) in
+    let with_y_label = string_add(with_x, ", y: ") in
+    let with_y = string_add(with_y_label, int_to_string(y)) in
+    string_add(with_y, " }")
+}
+
+fn wrapper_int_to_string(wrapper: Wrapper[Int]) -> String {
+    let Wrapper(value) = wrapper in
+    let prefix = string_add("Wrapper[Int] { value: ", int_to_string(value)) in
+    string_add(prefix, " }")
+}
+
+fn wrapper_unit_to_string(wrapper: Wrapper[Unit]) -> String {
+    let Wrapper(value) = wrapper in
+    let prefix = string_add("Wrapper[Unit] { value: ", unit_to_string(value)) in
+    string_add(prefix, " }")
+}
+
+fn shape_int_to_string(shape: Shape[Int]) -> String {
+    match shape {
+        Dot(point) => let prefix = string_add("Shape::Dot(", point_to_string(point)) in
+          string_add(prefix, ")"),
+        Wrapped(wrapper) => let prefix = string_add("Shape::Wrapped(", wrapper_int_to_string(wrapper)) in
+          string_add(prefix, ")"),
+        Origin => "Shape::Origin",
+    }
+}
+
+fn shape_unit_to_string(shape: Shape[Unit]) -> String {
+    match shape {
+        Dot(point) => let prefix = string_add("Shape::Dot(", point_to_string(point)) in
+          string_add(prefix, ")"),
+        Wrapped(wrapper) => let prefix = string_add("Shape::Wrapped(", wrapper_unit_to_string(wrapper)) in
+          string_add(prefix, ")"),
+        Origin => "Shape::Origin",
+    }
+}
+
 fn main() {
-    let shape = bounce_int(Origin) in
-    let _ = describe(shape) in
+    let _ = string_println(point_to_string(Point(3, 4))) in
+    let _ = string_println(wrapper_int_to_string(Wrapper(7))) in
+    let _ = string_println(wrapper_unit_to_string(Wrapper(()))) in
+    let bounced_origin = bounce_int(Origin) in
+    let _ = string_println(shape_int_to_string(Dot(Point(3, 4)))) in
+    let _ = string_println(shape_int_to_string(Wrapped(Wrapper(7)))) in
+    let _ = string_println(shape_int_to_string(bounced_origin)) in
+    let _ = string_println(shape_unit_to_string(Dot(Point(3, 4)))) in
+    let _ = string_println(shape_unit_to_string(Wrapped(Wrapper(())))) in
+    let _ = string_println(shape_unit_to_string(Origin)) in
+    let _ = describe(bounce_int(Origin)) in
     string_println("struct enums!")
 }
 

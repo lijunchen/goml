@@ -3,6 +3,7 @@ use pretty::RcDoc;
 use crate::{
     core::{Arm, Expr, File, Fn},
     env::Env,
+    tast::ConstructorKind,
 };
 
 impl File {
@@ -77,19 +78,27 @@ impl Expr {
             }
             Expr::EInt { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
-            Expr::EConstr { index, args, ty } => {
-                let prefix =
-                    RcDoc::text(env.get_variant_name(&ty.get_constr_name_unsafe(), *index as i32));
+            Expr::EConstr {
+                constructor,
+                args,
+                ty: _,
+            } => {
+                let name_doc = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, .. } => {
+                        RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0))
+                    }
+                    ConstructorKind::Struct { .. } => RcDoc::text(constructor.name.0.clone()),
+                };
 
                 if args.is_empty() {
-                    prefix
+                    name_doc
                 } else {
                     let args_doc = RcDoc::intersperse(
                         args.iter().map(|arg| arg.to_doc(env)),
                         RcDoc::text(", "),
                     );
 
-                    prefix
+                    name_doc
                         .append(RcDoc::text("("))
                         .append(args_doc)
                         .append(RcDoc::text(")"))
@@ -183,18 +192,30 @@ impl Expr {
                 .append(RcDoc::text(index.to_string())),
             Expr::EConstrGet {
                 expr,
-                variant_index,
+                constructor,
                 field_index,
                 ty: _,
             } => {
-                let enum_name = expr.get_ty().get_constr_name_unsafe();
-                RcDoc::text(enum_name)
-                    .append(RcDoc::text("_"))
-                    .append(RcDoc::text(variant_index.to_string()))
-                    .append(RcDoc::text("_").append(RcDoc::text(field_index.to_string())))
-                    .append("(")
+                let accessor = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, .. } => RcDoc::text(format!(
+                        "{}::{}._{}",
+                        type_name.0, constructor.name.0, field_index
+                    )),
+                    ConstructorKind::Struct { type_name } => {
+                        let field_name = env
+                            .structs
+                            .get(type_name)
+                            .and_then(|def| def.fields.get(*field_index))
+                            .map(|(fname, _)| fname.0.clone())
+                            .unwrap_or_else(|| format!("_{}", field_index));
+                        RcDoc::text(format!("{}.{field}", type_name.0, field = field_name))
+                    }
+                };
+
+                accessor
+                    .append(RcDoc::text("("))
                     .append(expr.to_doc(env))
-                    .append(")")
+                    .append(RcDoc::text(")"))
             }
         }
     }

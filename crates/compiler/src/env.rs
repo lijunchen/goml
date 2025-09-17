@@ -1,7 +1,10 @@
 use ast::ast::{Lident, Uident};
 use indexmap::{IndexMap, IndexSet};
 
-use crate::{core, tast};
+use crate::{
+    core,
+    tast::{self, Constructor, ConstructorKind},
+};
 use std::cell::Cell;
 
 #[derive(Debug, Clone)]
@@ -129,11 +132,11 @@ impl Env {
         self.counter.set(0);
     }
 
-    pub fn get_type_of_constructor(&self, constr: &str) -> Option<tast::Ty> {
+    pub fn lookup_constructor(&self, constr: &Uident) -> Option<(Constructor, tast::Ty)> {
         for (enum_name, enum_def) in self.enums.iter() {
-            for variant in enum_def.variants.iter() {
-                if variant.0.0 == constr {
-                    let return_ty = tast::Ty::TApp {
+            for (index, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
+                if variant_name == constr {
+                    let ret_ty = tast::Ty::TApp {
                         name: enum_name.clone(),
                         args: enum_def
                             .generics
@@ -142,20 +145,62 @@ impl Env {
                             .collect(),
                     };
 
-                    let params_ty = variant.1.clone();
+                    let ctor_ty = if fields.is_empty() {
+                        ret_ty.clone()
+                    } else {
+                        tast::Ty::TFunc {
+                            params: fields.clone(),
+                            ret_ty: Box::new(ret_ty.clone()),
+                        }
+                    };
 
-                    if params_ty.is_empty() {
-                        return Some(return_ty);
-                    }
-
-                    return Some(tast::Ty::TFunc {
-                        params: params_ty,
-                        ret_ty: Box::new(return_ty),
-                    });
+                    let constructor = Constructor {
+                        name: variant_name.clone(),
+                        kind: ConstructorKind::Enum {
+                            type_name: enum_name.clone(),
+                            index,
+                        },
+                    };
+                    return Some((constructor, ctor_ty));
                 }
             }
         }
+
+        if let Some(struct_def) = self.structs.get(constr) {
+            let ret_ty = tast::Ty::TApp {
+                name: struct_def.name.clone(),
+                args: struct_def
+                    .generics
+                    .iter()
+                    .map(|g| tast::Ty::TParam { name: g.0.clone() })
+                    .collect(),
+            };
+            let params: Vec<tast::Ty> =
+                struct_def.fields.iter().map(|(_, ty)| ty.clone()).collect();
+            let ctor_ty = if params.is_empty() {
+                ret_ty.clone()
+            } else {
+                tast::Ty::TFunc {
+                    params,
+                    ret_ty: Box::new(ret_ty.clone()),
+                }
+            };
+
+            let constructor = Constructor {
+                name: struct_def.name.clone(),
+                kind: ConstructorKind::Struct {
+                    type_name: struct_def.name.clone(),
+                },
+            };
+            return Some((constructor, ctor_ty));
+        }
+
         None
+    }
+
+    pub fn get_type_of_constructor(&self, constr: &str) -> Option<tast::Ty> {
+        let uident = Uident::new(constr);
+        self.lookup_constructor(&uident).map(|(_, ty)| ty)
     }
 
     pub fn get_index_of_constructor(&self, constr: &str) -> Option<i32> {
@@ -209,7 +254,11 @@ impl Env {
                     | core::Expr::EString { ty, .. } => {
                         self.collect_type(ty);
                     }
-                    core::Expr::EConstr { args, ty, .. } => {
+                    core::Expr::EConstr {
+                        constructor: _,
+                        args,
+                        ty,
+                    } => {
                         for arg in args {
                             self.collect_expr(arg);
                         }
@@ -244,7 +293,12 @@ impl Env {
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::EConstrGet { expr, ty, .. } => {
+                    core::Expr::EConstrGet {
+                        expr,
+                        constructor: _,
+                        ty,
+                        ..
+                    } => {
                         self.collect_expr(expr);
                         self.collect_type(ty);
                     }
