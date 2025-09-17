@@ -1,0 +1,47 @@
+struct Point {
+    x: Int,
+    y: Int,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+enum Shape[T] {
+    Dot(Point),
+    Wrapped(Wrapper[T]),
+    Origin,
+}
+
+fn bounce_int(shape: Shape[Int]) -> Shape[Int] {
+    match shape {
+        Dot(point) => Dot(point),
+        Wrapped(inner) => Wrapped(inner),
+        Origin => Origin,
+    }
+}
+
+fn wrap_unit(value: Wrapper[Unit]) -> Shape[Unit] {
+    Wrapped(value)
+}
+
+fn pick(flag: Bool, point: Point, wrapper: Wrapper[Int]) -> Shape[Int] {
+    match flag {
+        true => Dot(point),
+        false => Wrapped(wrapper),
+    }
+}
+
+fn describe[T](shape: Shape[T]) -> Int {
+    match shape {
+        Dot(_) => 1,
+        Wrapped(_) => 2,
+        Origin => 0,
+    }
+}
+
+fn main() {
+    let shape = bounce_int(Origin) in
+    let _ = describe(shape) in
+    string_println("struct enums!")
+}

@@ -1,0 +1,32 @@
+fn bounce_int(shape/0: Shape[Int]) -> Shape[Int] {
+  match (shape/0 : Shape[Int]) {
+      Shape::Dot(point/1: Point) => Shape::Dot((point/1 : Point)),
+      Shape::Wrapped(inner/2: Wrapper[Int]) => Shape::Wrapped((inner/2 : Wrapper[Int])),
+      Shape::Origin => Shape::Origin,
+  }
+}
+
+fn wrap_unit(value/3: Wrapper[Unit]) -> Shape[Unit] {
+  Shape::Wrapped((value/3 : Wrapper[Unit]))
+}
+
+fn pick(flag/4: Bool, point/5: Point, wrapper/6: Wrapper[Int]) -> Shape[Int] {
+  match (flag/4 : Bool) {
+      true => Shape::Dot((point/5 : Point)),
+      false => Shape::Wrapped((wrapper/6 : Wrapper[Int])),
+  }
+}
+
+fn describe(shape/7: Shape[T]) -> Int {
+  match (shape/7 : Shape[T]) {
+      Shape::Dot(_ : Point) => 1,
+      Shape::Wrapped(_ : Wrapper[T]) => 2,
+      Shape::Origin => 0,
+  }
+}
+
+fn main() -> Unit {
+  let shape/8: Shape[Int] = bounce_int(Shape::Origin) in
+  let _ : Int = describe((shape/8 : Shape[Int])) in
+  string_println("struct enums!")
+}
