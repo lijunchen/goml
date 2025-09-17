@@ -13,6 +13,7 @@ pub fn lower(node: cst::File) -> Option<ast::File> {
 fn lower_item(node: cst::Item) -> Option<ast::Item> {
     match node {
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(it)?)),
+        cst::Item::Struct(_it) => todo!("struct lowering not implemented"),
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(it)?)),
         cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(it)?)),
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(it)?)),

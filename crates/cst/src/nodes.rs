@@ -61,6 +61,7 @@ impl_display_via_syntax!(File);
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Item {
     Enum(Enum),
+    Struct(Struct),
     Trait(Trait),
     Impl(Impl),
     Fn(Fn),
@@ -70,12 +71,17 @@ impl CstNode for Item {
     fn can_cast(kind: MySyntaxKind) -> bool {
         matches!(
             kind,
-            MySyntaxKind::ENUM | MySyntaxKind::TRAIT | MySyntaxKind::IMPL | MySyntaxKind::FN
+            MySyntaxKind::ENUM
+                | MySyntaxKind::STRUCT
+                | MySyntaxKind::TRAIT
+                | MySyntaxKind::IMPL
+                | MySyntaxKind::FN
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             ENUM => Item::Enum(Enum { syntax }),
+            STRUCT => Item::Struct(Struct { syntax }),
             TRAIT => Item::Trait(Trait { syntax }),
             IMPL => Item::Impl(Impl { syntax }),
             FN => Item::Fn(Fn { syntax }),
@@ -86,6 +92,7 @@ impl CstNode for Item {
     fn syntax(&self) -> &MySyntaxNode {
         match self {
             Item::Enum(it) => &it.syntax,
+            Item::Struct(it) => &it.syntax,
             Item::Trait(it) => &it.syntax,
             Item::Impl(it) => &it.syntax,
             Item::Fn(it) => &it.syntax,
@@ -118,6 +125,30 @@ impl Enum {
 
 impl_cst_node_simple!(Enum, MySyntaxKind::ENUM);
 impl_display_via_syntax!(Enum);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Struct {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Struct {
+    pub fn uident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Uident)
+    }
+
+    pub fn generic_list(&self) -> Option<GenericList> {
+        support::child(&self.syntax)
+    }
+
+    pub fn field_list(&self) -> Option<StructFieldList> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(Struct, MySyntaxKind::STRUCT);
+impl_display_via_syntax!(Struct);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -284,6 +315,42 @@ impl VariantList {
 
 impl_cst_node_simple!(VariantList, MySyntaxKind::VARIANT_LIST);
 impl_display_via_syntax!(VariantList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructFieldList {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructFieldList {
+    pub fn fields(&self) -> CstChildren<StructField> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(StructFieldList, MySyntaxKind::STRUCT_FIELD_LIST);
+impl_display_via_syntax!(StructFieldList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructField {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructField {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Lident)
+    }
+
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(StructField, MySyntaxKind::STRUCT_FIELD);
+impl_display_via_syntax!(StructField);
 
 ////////////////////////////////////////////////////////////////////////////////
 

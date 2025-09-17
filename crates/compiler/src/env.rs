@@ -212,7 +212,9 @@ impl Env {
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::ELet { value, body, ty, .. } => {
+                    core::Expr::ELet {
+                        value, body, ty, ..
+                    } => {
                         self.collect_expr(value);
                         self.collect_expr(body);
                         self.collect_type(ty);
@@ -254,11 +256,12 @@ impl Env {
                 match ty {
                     tast::Ty::TTuple { .. } => {
                         if self.seen.insert(ty.clone())
-                            && let tast::Ty::TTuple { typs } = ty {
-                                for inner in typs {
-                                    self.collect_type(inner);
-                                }
+                            && let tast::Ty::TTuple { typs } = ty
+                        {
+                            for inner in typs {
+                                self.collect_type(inner);
                             }
+                        }
                     }
                     tast::Ty::TApp { args, .. } => {
                         for arg in args {

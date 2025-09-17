@@ -13,6 +13,8 @@ pub fn file(p: &mut Parser) {
             func(p)
         } else if p.at(T![enum]) {
             enum_def(p)
+        } else if p.at(T![struct]) {
+            struct_def(p)
         } else if p.at(T![trait]) {
             trait_def(p)
         } else if p.at(T![impl]) {
@@ -130,6 +132,20 @@ fn enum_def(p: &mut Parser) {
     p.close(m, MySyntaxKind::ENUM);
 }
 
+fn struct_def(p: &mut Parser) {
+    assert!(p.at(T![struct]));
+    let m = p.open();
+    p.expect(T![struct]);
+    p.expect(T![uident]);
+    if p.at(T!['[']) {
+        generic_list(p);
+    }
+    if p.at(T!['{']) {
+        struct_field_list(p);
+    }
+    p.close(m, MySyntaxKind::STRUCT);
+}
+
 fn variant_list(p: &mut Parser) {
     assert!(p.at(T!['{']));
     p.expect(T!['{']);
@@ -144,6 +160,31 @@ fn variant_list(p: &mut Parser) {
     }
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::VARIANT_LIST);
+}
+
+fn struct_field_list(p: &mut Parser) {
+    assert!(p.at(T!['{']));
+    p.expect(T!['{']);
+    let m = p.open();
+    while !p.at(T!['}']) && !p.eof() {
+        if p.at(T![lident]) {
+            struct_field(p);
+            p.eat(T![,]);
+        } else {
+            p.advance_with_error("expected a field");
+        }
+    }
+    p.expect(T!['}']);
+    p.close(m, MySyntaxKind::STRUCT_FIELD_LIST);
+}
+
+fn struct_field(p: &mut Parser) {
+    assert!(p.at(T![lident]));
+    let m = p.open();
+    p.expect(T![lident]);
+    p.expect(T![:]);
+    type_expr(p);
+    p.close(m, MySyntaxKind::STRUCT_FIELD);
 }
 
 fn variant(p: &mut Parser) {
