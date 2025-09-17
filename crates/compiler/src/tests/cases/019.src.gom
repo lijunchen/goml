@@ -1,0 +1,90 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+type Point struct {
+    x int
+    y int
+}
+
+type Wrapper__Int struct {
+    value int
+}
+
+type Wrapper__Unit struct {
+    value struct{}
+}
+
+func takes_point(p__0 Point) int {
+    var ret1 int
+    ret1 = 0
+    return ret1
+}
+
+func id_wrapper_int(value__1 Wrapper__Int) Wrapper__Int {
+    var ret2 Wrapper__Int
+    ret2 = value__1
+    return ret2
+}
+
+func takes_wrapper_unit(value__2 Wrapper__Unit) struct{} {
+    var ret3 struct{}
+    ret3 = struct{}{}
+    return ret3
+}
+
+func main0() struct{} {
+    var ret4 struct{}
+    string_println("structs!")
+    ret4 = struct{}{}
+    return ret4
+}
+
+func main() {
+    main0()
+}
