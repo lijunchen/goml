@@ -81,11 +81,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
         tast::Expr::EBool { value: _, ty: _ } => None,
         tast::Expr::EInt { value: _, ty: _ } => None,
         tast::Expr::EString { value: _, ty: _ } => None,
-        tast::Expr::EConstr {
-            index: _,
-            args: _,
-            ty: _,
-        } => None,
+        tast::Expr::EConstr { .. } => None,
         tast::Expr::ETuple { items, ty: _ } => {
             for item in items {
                 if let Some(expr) = find_type_expr(env, item, range) {
@@ -161,11 +157,7 @@ fn find_type_pat(env: &Env, tast: &tast::Pat, range: &rowan::TextRange) -> Optio
         }
         tast::Pat::PUnit { ty: _ } => None,
         tast::Pat::PBool { value: _, ty: _ } => None,
-        tast::Pat::PConstr {
-            index: _,
-            args,
-            ty: _,
-        } => {
+        tast::Pat::PConstr { args, .. } => {
             for arg in args {
                 if let Some(expr) = find_type_pat(env, arg, range) {
                     return Some(expr);

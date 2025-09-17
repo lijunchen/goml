@@ -7,7 +7,7 @@ use ena::unify::InPlaceUnificationTable;
 use crate::{
     env::{self, Constraint, Env},
     rename,
-    tast::{self, TypeVar},
+    tast::{self, ConstructorKind, TypeVar},
 };
 
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
@@ -737,14 +737,18 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
-            tast::Pat::PConstr { index, args, ty } => {
+            tast::Pat::PConstr {
+                constructor,
+                args,
+                ty,
+            } => {
                 let ty = self.subst_ty(&ty);
                 let args = args
                     .into_iter()
                     .map(|arg| self.subst_pat(arg))
                     .collect::<Vec<_>>();
                 tast::Pat::PConstr {
-                    index,
+                    constructor,
                     args,
                     ty: ty.clone(),
                 }
@@ -802,13 +806,21 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
-            tast::Expr::EConstr { index, args, ty } => {
+            tast::Expr::EConstr {
+                constructor,
+                args,
+                ty,
+            } => {
                 let ty = self.subst_ty(&ty);
                 let args = args
                     .into_iter()
                     .map(|arg| self.subst(arg))
                     .collect::<Vec<_>>();
-                tast::Expr::EConstr { index, args, ty }
+                tast::Expr::EConstr {
+                    constructor,
+                    args,
+                    ty,
+                }
             }
             tast::Expr::ETuple { items, ty } => {
                 let ty = self.subst_ty(&ty);
@@ -911,12 +923,43 @@ impl TypeInference {
                 ty: tast::Ty::TString,
             },
             ast::Expr::EConstr { vcon, args } => {
-                let constr_ty = env
-                    .get_type_of_constructor(&vcon.0)
+                let (constructor, constr_ty) = env
+                    .lookup_constructor(vcon)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
-                let inst_constr_ty = self.inst_ty(&constr_ty);
 
-                let index = env.get_index_of_constructor(&vcon.0).unwrap();
+                let expected_arity = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, index } => env
+                        .enums
+                        .get(type_name)
+                        .map(|def| def.variants[*index].1.len())
+                        .unwrap_or_else(|| {
+                            panic!(
+                                "Enum {} not found when checking constructor {}",
+                                type_name.0, constructor.name.0
+                            )
+                        }),
+                    ConstructorKind::Struct { type_name } => env
+                        .structs
+                        .get(type_name)
+                        .map(|def| def.fields.len())
+                        .unwrap_or_else(|| {
+                            panic!(
+                                "Struct {} not found when checking constructor {}",
+                                type_name.0, constructor.name.0
+                            )
+                        }),
+                };
+
+                if expected_arity != args.len() {
+                    panic!(
+                        "Constructor {} expects {} arguments, but got {}",
+                        constructor.name.0,
+                        expected_arity,
+                        args.len()
+                    );
+                }
+
+                let inst_constr_ty = self.inst_ty(&constr_ty);
 
                 let ret_ty = self.fresh_ty_var();
                 let mut args_tast = Vec::new();
@@ -925,7 +968,7 @@ impl TypeInference {
                     args_tast.push(arg_tast.clone());
                 }
 
-                if !args.is_empty() {
+                if !args_tast.is_empty() {
                     let actual_ty = tast::Ty::TFunc {
                         params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
                         ret_ty: Box::new(ret_ty.clone()),
@@ -938,7 +981,7 @@ impl TypeInference {
                 }
 
                 tast::Expr::EConstr {
-                    index: index as usize,
+                    constructor,
                     args: args_tast,
                     ty: ret_ty,
                 }
@@ -1312,31 +1355,60 @@ impl TypeInference {
                 }
             }
             ast::Pat::PConstr { vcon, args } => {
-                let constr_ty = env
-                    .get_type_of_constructor(&vcon.0)
+                let (constructor, constr_ty) = env
+                    .lookup_constructor(vcon)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
-                let inst_constr_ty = self.inst_ty(&constr_ty);
 
-                let index = env.get_index_of_constructor(&vcon.0).unwrap();
+                let expected_arity = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, index } => env
+                        .enums
+                        .get(type_name)
+                        .map(|def| def.variants[*index].1.len())
+                        .unwrap_or_else(|| {
+                            panic!(
+                                "Enum {} not found when checking constructor {}",
+                                type_name.0, constructor.name.0
+                            )
+                        }),
+                    ConstructorKind::Struct { type_name } => env
+                        .structs
+                        .get(type_name)
+                        .map(|def| def.fields.len())
+                        .unwrap_or_else(|| {
+                            panic!(
+                                "Struct {} not found when checking constructor {}",
+                                type_name.0, constructor.name.0
+                            )
+                        }),
+                };
+
+                if expected_arity != args.len() {
+                    panic!(
+                        "Constructor {} expects {} arguments, but got {}",
+                        constructor.name.0,
+                        expected_arity,
+                        args.len()
+                    );
+                }
+
+                let inst_constr_ty = self.inst_ty(&constr_ty);
 
                 let ret_ty = self.fresh_ty_var();
                 let mut args_tast = Vec::new();
                 let mut args_ty = Vec::new();
                 for arg in args.iter() {
                     let arg_tast = self.infer_pat(env, vars, arg);
-                    args_tast.push(arg_tast.clone());
                     args_ty.push(arg_tast.get_ty());
+                    args_tast.push(arg_tast);
                 }
 
-                if !args.is_empty() {
+                if !args_ty.is_empty() {
                     let actual_ty = tast::Ty::TFunc {
                         params: args_ty,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    env.constraints.push(Constraint::TypeEqual(
-                        inst_constr_ty.clone(),
-                        actual_ty.clone(),
-                    ));
+                    env.constraints
+                        .push(Constraint::TypeEqual(inst_constr_ty.clone(), actual_ty));
                 } else {
                     env.constraints.push(Constraint::TypeEqual(
                         inst_constr_ty.clone(),
@@ -1345,7 +1417,7 @@ impl TypeInference {
                 }
 
                 tast::Pat::PConstr {
-                    index: index as usize,
+                    constructor,
                     args: args_tast,
                     ty: ret_ty,
                 }

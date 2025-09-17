@@ -1,9 +1,11 @@
 use ast::ast::Uident;
 
 use crate::core;
-use crate::env::Env;
+use crate::env::{Env, StructDef};
 use crate::mangle::mangle_impl_name;
 use crate::tast::Arm;
+use crate::tast::Constructor;
+use crate::tast::ConstructorKind;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
@@ -130,8 +132,60 @@ fn branch_variable(rows: &[Row]) -> Variable {
     }
 }
 
+fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
+    match ty {
+        Ty::TVar(_) | Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TString => ty.clone(),
+        Ty::TTuple { typs } => Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        Ty::TApp { name, args } => Ty::TApp {
+            name: name.clone(),
+            args: args
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| Ty::TParam { name: name.clone() }),
+        Ty::TFunc { params, ret_ty } => Ty::TFunc {
+            params: params
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
+    }
+}
+
+fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(String, Ty)> {
+    if struct_def.generics.len() != type_args.len() {
+        panic!(
+            "Struct {} expects {} type arguments, but got {}",
+            struct_def.name.0,
+            struct_def.generics.len(),
+            type_args.len()
+        );
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(type_args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    struct_def
+        .fields
+        .iter()
+        .map(|(fname, fty)| (fname.0.clone(), substitute_ty_params(fty, &subst)))
+        .collect()
+}
+
 struct ConstructorCase {
-    index: usize,
+    constructor: Constructor,
     vars: Vec<Variable>,
     rows: Vec<Row>,
 }
@@ -145,15 +199,24 @@ fn compile_constructor_cases(
 ) -> Vec<core::Arm> {
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
-            if let Pat::PConstr { index, args, ty: _ } = col.pat {
+            if let Pat::PConstr {
+                constructor,
+                args,
+                ty: _,
+            } = col.pat
+            {
+                let idx = constructor
+                    .kind
+                    .enum_index()
+                    .expect("expected enum constructor in compile_constructor_cases");
                 let mut cols = row.columns;
-                for (var, pat) in cases[index].vars.iter().zip(args.into_iter()) {
+                for (var, pat) in cases[idx].vars.iter().zip(args.into_iter()) {
                     cols.push(Column {
                         var: var.name.clone(),
                         pat,
                     })
                 }
-                cases[index].rows.push(Row {
+                cases[idx].rows.push(Row {
                     columns: cols,
                     body: row.body,
                 })
@@ -172,7 +235,7 @@ fn compile_constructor_cases(
         let args = case.vars.into_iter().map(|var| var.to_core()).collect();
         let arm = core::Arm {
             lhs: core::Expr::EConstr {
-                index: case.index,
+                constructor: case.constructor,
                 args,
                 ty: bvar.ty.clone(),
             },
@@ -197,8 +260,14 @@ fn compile_enum_case(
         .variants
         .iter()
         .enumerate()
-        .map(|(index, (_variant, args))| ConstructorCase {
-            index,
+        .map(|(index, (variant, args))| ConstructorCase {
+            constructor: Constructor {
+                name: variant.clone(),
+                kind: ConstructorKind::Enum {
+                    type_name: name.clone(),
+                    index,
+                },
+            },
             vars: args
                 .iter()
                 .map(|arg_ty| Variable {
@@ -212,7 +281,7 @@ fn compile_enum_case(
 
     let mut results = Vec::new();
 
-    for (tag, case) in cases.iter().enumerate().take(tydef.variants.len()) {
+    for case in cases.iter().take(tydef.variants.len()) {
         let hole = core::eunit();
         let mut result = hole;
         for (field, var) in case.vars.iter().enumerate().rev() {
@@ -220,7 +289,7 @@ fn compile_enum_case(
                 name: var.name.clone(),
                 value: Box::new(core::Expr::EConstrGet {
                     expr: Box::new(bvar.to_core()),
-                    variant_index: tag,
+                    constructor: case.constructor.clone(),
                     field_index: field,
                     ty: var.ty.clone(),
                 }),
@@ -246,6 +315,95 @@ fn compile_enum_case(
         default: None,
         ty: body_ty,
     }
+}
+
+fn compile_struct_case(
+    env: &Env,
+    rows: Vec<Row>,
+    bvar: &Variable,
+    ty: &Ty,
+    name: &Uident,
+    type_args: &[Ty],
+) -> core::Expr {
+    let struct_def = env
+        .structs
+        .get(name)
+        .unwrap_or_else(|| panic!("Unknown struct {}", name.0));
+
+    let inst_fields = if struct_def.generics.is_empty() {
+        struct_def
+            .fields
+            .iter()
+            .map(|(fname, fty)| (fname.0.clone(), fty.clone()))
+            .collect::<Vec<_>>()
+    } else {
+        instantiate_struct_fields(struct_def, type_args)
+    };
+
+    let field_vars: Vec<Variable> = inst_fields
+        .iter()
+        .map(|(_, fty)| Variable {
+            name: env.gensym("x"),
+            ty: fty.clone(),
+        })
+        .collect();
+
+    let constructor = Constructor {
+        name: name.clone(),
+        kind: ConstructorKind::Struct {
+            type_name: name.clone(),
+        },
+    };
+
+    let hole = core::eunit();
+    let mut result = hole;
+    for (field_index, var) in field_vars.iter().enumerate().rev() {
+        result = core::Expr::ELet {
+            name: var.name.clone(),
+            value: Box::new(core::Expr::EConstrGet {
+                expr: Box::new(bvar.to_core()),
+                constructor: constructor.clone(),
+                field_index,
+                ty: var.ty.clone(),
+            }),
+            body: Box::new(result),
+            ty: ty.clone(),
+        };
+    }
+
+    let mut new_rows = vec![];
+    for row in rows {
+        let mut cols = vec![];
+        for Column { var, pat } in row.columns {
+            if var == bvar.name {
+                match pat {
+                    Pat::PConstr {
+                        constructor,
+                        args,
+                        ty: _,
+                    } if constructor.kind.is_struct() => {
+                        for (var, arg_pat) in field_vars.iter().zip(args.into_iter()) {
+                            cols.push(Column {
+                                var: var.name.clone(),
+                                pat: arg_pat,
+                            });
+                        }
+                    }
+                    _ => unreachable!("expected struct pattern"),
+                }
+            } else {
+                cols.push(Column { var, pat });
+            }
+        }
+        new_rows.push(Row {
+            columns: cols,
+            body: row.body,
+        });
+    }
+
+    let inner = compile_rows(env, new_rows, ty);
+    replace_default_expr(&mut result, inner);
+    result
 }
 
 fn compile_tuple_case(
@@ -392,7 +550,15 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TString => {
             todo!()
         }
-        Ty::TApp { name, args: _ } => compile_enum_case(env, rows, &bvar, ty, name),
+        Ty::TApp { name, args } => {
+            if env.enums.contains_key(name) {
+                compile_enum_case(env, rows, &bvar, ty, name)
+            } else if env.structs.contains_key(name) {
+                compile_struct_case(env, rows, &bvar, ty, name, args)
+            } else {
+                panic!("Unknown type constructor {} in match", name.0)
+            }
+        }
         Ty::TTuple { typs } => compile_tuple_case(env, rows, &bvar, typs, ty),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
@@ -480,10 +646,14 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 ty: ty.clone(),
             }
         }
-        EConstr { index, args, ty } => {
+        EConstr {
+            constructor,
+            args,
+            ty,
+        } => {
             let args = args.iter().map(|arg| compile_expr(arg, env)).collect();
             core::Expr::EConstr {
-                index: *index,
+                constructor: constructor.clone(),
                 args,
                 ty: ty.clone(),
             }

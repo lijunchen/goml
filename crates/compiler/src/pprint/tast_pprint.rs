@@ -1,6 +1,7 @@
 use pretty::RcDoc;
 
 use crate::env::Env;
+use crate::tast::ConstructorKind;
 use crate::tast::Expr;
 use crate::tast::File;
 use crate::tast::Fn;
@@ -198,19 +199,27 @@ impl Expr {
             }
             Self::EInt { value, ty: _ } => RcDoc::text(value.to_string()),
             Self::EString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
-            Expr::EConstr { index, args, ty } => {
-                let prefix =
-                    RcDoc::text(env.get_variant_name(&ty.get_constr_name_unsafe(), *index as i32));
+            Expr::EConstr {
+                constructor,
+                args,
+                ty: _,
+            } => {
+                let name_doc = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, .. } => {
+                        RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0))
+                    }
+                    ConstructorKind::Struct { .. } => RcDoc::text(constructor.name.0.clone()),
+                };
 
                 if args.is_empty() {
-                    prefix
+                    name_doc
                 } else {
                     let args_doc = RcDoc::intersperse(
                         args.iter().map(|arg| arg.to_doc(env)),
                         RcDoc::text(", "),
                     );
 
-                    prefix
+                    name_doc
                         .append(RcDoc::text("("))
                         .append(args_doc)
                         .append(RcDoc::text(")"))
@@ -317,18 +326,26 @@ impl Pat {
                     RcDoc::text("false")
                 }
             }
-            Pat::PConstr { index, args, ty } => {
-                let prefix =
-                    RcDoc::text(env.get_variant_name(&ty.get_constr_name_unsafe(), *index as i32));
+            Pat::PConstr {
+                constructor,
+                args,
+                ty: _,
+            } => {
+                let name_doc = match &constructor.kind {
+                    ConstructorKind::Enum { type_name, .. } => {
+                        RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0))
+                    }
+                    ConstructorKind::Struct { .. } => RcDoc::text(constructor.name.0.clone()),
+                };
 
                 if args.is_empty() {
-                    prefix
+                    name_doc
                 } else {
                     let args_doc = RcDoc::intersperse(
                         args.iter().map(|arg| arg.to_doc(env)),
                         RcDoc::text(", "),
                     );
-                    prefix
+                    name_doc
                         .append(RcDoc::text("("))
                         .append(args_doc)
                         .append(RcDoc::text(")"))

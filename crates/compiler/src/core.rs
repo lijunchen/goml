@@ -1,4 +1,5 @@
 pub type Ty = crate::tast::Ty;
+use crate::tast::Constructor;
 
 #[derive(Debug)]
 pub struct File {
@@ -35,7 +36,7 @@ pub enum Expr {
         ty: Ty,
     },
     EConstr {
-        index: usize,
+        constructor: Constructor,
         args: Vec<Expr>,
         ty: Ty,
     },
@@ -57,7 +58,7 @@ pub enum Expr {
     },
     EConstrGet {
         expr: Box<Expr>,
-        variant_index: usize,
+        constructor: Constructor,
         field_index: usize,
         ty: Ty,
     },

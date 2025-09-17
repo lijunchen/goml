@@ -5,7 +5,10 @@ use crate::{
     env::Env,
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast,
+    tast::ConstructorKind,
 };
+
+use std::collections::HashMap;
 
 use super::goty;
 use super::runtime;
@@ -58,18 +61,39 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EIf { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
-        // For EConstrGet, compute field type from the scrutinee's enum instance
+        // For EConstrGet, compute field type from the scrutinee's data constructor
         anf::CExpr::EConstrGet {
             expr,
-            variant_index,
+            constructor,
             field_index,
             ty: _,
-        } => match imm_ty(expr) {
-            tast::Ty::TApp { name, .. } => {
-                let def = env.enums.get(&name).expect("unknown enum in EConstrGet");
-                def.variants[*variant_index].1[*field_index].clone()
+        } => match &constructor.kind {
+            ConstructorKind::Enum { type_name, index } => {
+                let def = env
+                    .enums
+                    .get(type_name)
+                    .expect("unknown enum in EConstrGet");
+                def.variants[*index].1[*field_index].clone()
             }
-            _ => panic!("EConstrGet on non-enum type"),
+            ConstructorKind::Struct { type_name } => {
+                let scrut_ty = imm_ty(expr);
+                let type_args = match scrut_ty {
+                    tast::Ty::TApp { name, args } => {
+                        assert_eq!(
+                            &name, type_name,
+                            "struct constructor type mismatch: expected {}, got {}",
+                            type_name.0, name.0
+                        );
+                        args
+                    }
+                    other => panic!(
+                        "EConstrGet on non-struct type {:?} for constructor {}",
+                        other, type_name.0
+                    ),
+                };
+                let fields = instantiate_struct_fields(env, type_name, &type_args);
+                fields[*field_index].1.clone()
+            }
         },
     };
     tast_ty_to_go_type(&t)
@@ -119,6 +143,71 @@ fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
     tast_ty_to_go_type(&ty)
 }
 
+fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt
+        | tast::Ty::TString => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        tast::Ty::TApp { name, args } => tast::Ty::TApp {
+            name: name.clone(),
+            args: args
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        tast::Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
+    }
+}
+
+fn instantiate_struct_fields(
+    env: &Env,
+    type_name: &Uident,
+    type_args: &[tast::Ty],
+) -> Vec<(String, tast::Ty)> {
+    let struct_def = env
+        .structs
+        .get(type_name)
+        .unwrap_or_else(|| panic!("Unknown struct {}", type_name.0));
+
+    if struct_def.generics.len() != type_args.len() {
+        panic!(
+            "Struct {} expects {} type arguments, but got {}",
+            struct_def.name.0,
+            struct_def.generics.len(),
+            type_args.len()
+        );
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(type_args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    struct_def
+        .fields
+        .iter()
+        .map(|(fname, fty)| (fname.0.clone(), substitute_ty_params(fty, &subst)))
+        .collect()
+}
+
 fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
     if let tast::Ty::TTuple { typs } = ty {
         let name = go_type_name_for(ty);
@@ -138,18 +227,46 @@ fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
 fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
     match e {
         anf::CExpr::CImm { imm } => compile_imm(env, imm),
-        anf::CExpr::EConstr { index, args, ty } => {
-            let variant_ty = variant_ty_by_index(env, ty, *index);
-            let fields = args
-                .iter()
-                .enumerate()
-                .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
-                .collect();
-            goast::Expr::StructLiteral {
-                ty: variant_ty,
-                fields,
+        anf::CExpr::EConstr {
+            constructor,
+            args,
+            ty,
+        } => match &constructor.kind {
+            ConstructorKind::Enum { index, .. } => {
+                let variant_ty = variant_ty_by_index(env, ty, *index);
+                let fields = args
+                    .iter()
+                    .enumerate()
+                    .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
+                    .collect();
+                goast::Expr::StructLiteral {
+                    ty: variant_ty,
+                    fields,
+                }
             }
-        }
+            ConstructorKind::Struct { type_name } => {
+                let go_ty = tast_ty_to_go_type(ty);
+                let struct_def = env
+                    .structs
+                    .get(type_name)
+                    .unwrap_or_else(|| panic!("unknown struct {}", type_name.0));
+                if struct_def.fields.len() != args.len() {
+                    panic!(
+                        "struct constructor {} expects {} args, got {}",
+                        constructor.name.0,
+                        struct_def.fields.len(),
+                        args.len()
+                    );
+                }
+                let fields = struct_def
+                    .fields
+                    .iter()
+                    .zip(args.iter())
+                    .map(|((fname, _), arg)| (fname.0.clone(), compile_imm(env, arg)))
+                    .collect();
+                goast::Expr::StructLiteral { ty: go_ty, fields }
+            }
+        },
         anf::CExpr::ETuple { items, ty } => {
             let fields = items
                 .iter()
@@ -178,24 +295,48 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
         anf::CExpr::EConstrGet {
             expr,
-            variant_index,
+            constructor,
             field_index,
             ty: _,
         } => {
             let obj = compile_imm(env, expr);
-            // Determine field type from the scrutinee's enum instance
-            let enum_ty = imm_ty(expr);
-            let field_ty = match enum_ty {
-                tast::Ty::TApp { name, .. } => {
-                    let def = env.enums.get(&name).expect("unknown enum in EConstrGet");
-                    def.variants[*variant_index].1[*field_index].clone()
+            match &constructor.kind {
+                ConstructorKind::Enum { type_name, index } => {
+                    let def = env
+                        .enums
+                        .get(type_name)
+                        .expect("unknown enum in EConstrGet");
+                    let field_ty = def.variants[*index].1[*field_index].clone();
+                    goast::Expr::FieldAccess {
+                        obj: Box::new(obj),
+                        field: format!("_{}", field_index),
+                        ty: tast_ty_to_go_type(&field_ty),
+                    }
                 }
-                _ => panic!("EConstrGet on non-enum type"),
-            };
-            goast::Expr::FieldAccess {
-                obj: Box::new(obj),
-                field: format!("_{}", field_index),
-                ty: tast_ty_to_go_type(&field_ty),
+                ConstructorKind::Struct { type_name } => {
+                    let scrut_ty = imm_ty(expr);
+                    let type_args = match scrut_ty {
+                        tast::Ty::TApp { name, args } => {
+                            assert_eq!(
+                                &name, type_name,
+                                "struct constructor type mismatch: expected {}, got {}",
+                                type_name.0, name.0
+                            );
+                            args
+                        }
+                        other => panic!(
+                            "EConstrGet on non-struct type {:?} for constructor {}",
+                            other, type_name.0
+                        ),
+                    };
+                    let fields = instantiate_struct_fields(env, type_name, &type_args);
+                    let (field_name, field_ty) = &fields[*field_index];
+                    goast::Expr::FieldAccess {
+                        obj: Box::new(obj),
+                        field: field_name.clone(),
+                        ty: tast_ty_to_go_type(field_ty),
+                    }
+                }
             }
         }
         anf::CExpr::ECall { func, args, ty } => {

@@ -28,6 +28,39 @@ pub struct Fn {
     pub body: Expr,
 }
 
+#[derive(Debug, Clone)]
+pub enum ConstructorKind {
+    Enum { type_name: Uident, index: usize },
+    Struct { type_name: Uident },
+}
+
+impl ConstructorKind {
+    pub fn type_name(&self) -> &Uident {
+        match self {
+            ConstructorKind::Enum { type_name, .. } | ConstructorKind::Struct { type_name } => {
+                type_name
+            }
+        }
+    }
+
+    pub fn enum_index(&self) -> Option<usize> {
+        match self {
+            ConstructorKind::Enum { index, .. } => Some(*index),
+            ConstructorKind::Struct { .. } => None,
+        }
+    }
+
+    pub fn is_struct(&self) -> bool {
+        matches!(self, ConstructorKind::Struct { .. })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Constructor {
+    pub name: Uident,
+    pub kind: ConstructorKind,
+}
+
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub enum Ty {
     TVar(TypeVar),
@@ -112,7 +145,7 @@ pub enum Expr {
         ty: Ty,
     },
     EConstr {
-        index: usize,
+        constructor: Constructor,
         args: Vec<Expr>,
         ty: Ty,
     },
@@ -182,7 +215,7 @@ pub enum Pat {
         ty: Ty,
     },
     PConstr {
-        index: usize,
+        constructor: Constructor,
         args: Vec<Pat>,
         ty: Ty,
     },
