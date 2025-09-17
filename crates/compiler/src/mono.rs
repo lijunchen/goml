@@ -1,5 +1,5 @@
 use super::core;
-use crate::env::{EnumDef, Env};
+use crate::env::{EnumDef, Env, StructDef};
 use crate::tast::Ty;
 use ast::ast::Uident;
 use indexmap::{IndexMap, IndexSet};
@@ -379,21 +379,24 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
     }
 
     // Phase 2: monomorphize enum type applications in types and update env
-    struct EnumMono<'a> {
+    struct TypeMono<'a> {
         env: &'a mut Env,
         // map generic (name, args) to new concrete Uident
         map: IndexMap<(String, Vec<Ty>), Uident>,
         // snapshot of original generic enum defs
-        base: IndexMap<Uident, EnumDef>,
+        enum_base: IndexMap<Uident, EnumDef>,
+        struct_base: IndexMap<Uident, StructDef>,
     }
 
-    impl<'a> EnumMono<'a> {
+    impl<'a> TypeMono<'a> {
         fn new(env: &'a mut Env) -> Self {
-            let base = env.enums.clone();
+            let enum_base = env.enums.clone();
+            let struct_base = env.structs.clone();
             Self {
                 env,
                 map: IndexMap::new(),
-                base,
+                enum_base,
+                struct_base,
             }
         }
 
@@ -414,102 +417,135 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             let new_name = Uident::new(&format!("{}{}", name.0, suffix));
             self.map.insert(key.clone(), new_name.clone());
 
-            // Build concrete enum def by substituting generics
-            let Some(generic_def) = self.base.get(name) else {
-                // If not a known enum, just return the new name (treat as nominal with no def)
-                return new_name;
-            };
-
-            // Build substitution from generics to args
-            let mut subst: IndexMap<String, Ty> = IndexMap::new();
-            if generic_def.generics.len() != args.len() {
-                panic!(
-                    "enum generic argument length mismatch for {}: expected {}, got {}",
-                    name.0,
-                    generic_def.generics.len(),
-                    args.len()
-                );
-            }
-            for (g, a) in generic_def.generics.iter().zip(args.iter()) {
-                subst.insert(g.0.clone(), a.clone());
-            }
-
-            // Substitute variant field types and also collapse nested enum apps
-            let mut new_variants: Vec<(Uident, Vec<Ty>)> = Vec::new();
-            // Clone needed data to limit immutable borrow scope
-            let variants = generic_def.variants.clone();
-            for (vname, vfields) in variants.into_iter() {
-                let mut fields2 = Vec::new();
-                for t in vfields.into_iter() {
-                    let t1 = subst_ty(&t, &subst);
-                    let t2 = self.collapse_enum_apps(&t1);
-                    fields2.push(t2);
+            if let Some(generic_def) = self.enum_base.get(name) {
+                // Build substitution from generics to args
+                let mut subst: IndexMap<String, Ty> = IndexMap::new();
+                if generic_def.generics.len() != args.len() {
+                    panic!(
+                        "enum generic argument length mismatch for {}: expected {}, got {}",
+                        name.0,
+                        generic_def.generics.len(),
+                        args.len()
+                    );
                 }
-                new_variants.push((vname.clone(), fields2));
-            }
+                for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+                    subst.insert(g.0.clone(), a.clone());
+                }
 
-            let new_def = EnumDef {
-                name: new_name.clone(),
-                generics: vec![],
-                variants: new_variants,
-            };
-            self.env.enums.insert(new_name.clone(), new_def);
+                // Substitute variant field types and also collapse nested enum/struct apps
+                let mut new_variants: Vec<(Uident, Vec<Ty>)> = Vec::new();
+                // Clone needed data to limit immutable borrow scope
+                let variants = generic_def.variants.clone();
+                for (vname, vfields) in variants.into_iter() {
+                    let mut fields2 = Vec::new();
+                    for t in vfields.into_iter() {
+                        let t1 = subst_ty(&t, &subst);
+                        let t2 = self.collapse_type_apps(&t1);
+                        fields2.push(t2);
+                    }
+                    new_variants.push((vname.clone(), fields2));
+                }
+
+                let new_def = EnumDef {
+                    name: new_name.clone(),
+                    generics: vec![],
+                    variants: new_variants,
+                };
+                self.env.enums.insert(new_name.clone(), new_def);
+            } else if let Some(generic_def) = self.struct_base.get(name) {
+                let mut subst: IndexMap<String, Ty> = IndexMap::new();
+                if generic_def.generics.len() != args.len() {
+                    panic!(
+                        "struct generic argument length mismatch for {}: expected {}, got {}",
+                        name.0,
+                        generic_def.generics.len(),
+                        args.len()
+                    );
+                }
+                for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+                    subst.insert(g.0.clone(), a.clone());
+                }
+
+                let mut new_fields = Vec::new();
+                let fields = generic_def.fields.clone();
+                for (fname, fty) in fields.into_iter() {
+                    let ty1 = subst_ty(&fty, &subst);
+                    let ty2 = self.collapse_type_apps(&ty1);
+                    new_fields.push((fname.clone(), ty2));
+                }
+
+                let new_def = StructDef {
+                    name: new_name.clone(),
+                    generics: vec![],
+                    fields: new_fields,
+                };
+                self.env.structs.insert(new_name.clone(), new_def);
+            } else {
+                // Unknown type constructor; just return synthesized name without registering a def
+            }
             new_name
         }
 
-        fn collapse_enum_apps(&mut self, ty: &Ty) -> Ty {
+        fn collapse_type_apps(&mut self, ty: &Ty) -> Ty {
             match ty {
                 Ty::TApp { name, args } if !args.is_empty() => {
-                    let new_u = self.ensure_instance(name, args);
-                    Ty::TApp {
-                        name: new_u,
-                        args: vec![],
+                    if self.enum_base.contains_key(name) || self.struct_base.contains_key(name) {
+                        let new_u = self.ensure_instance(name, args);
+                        Ty::TApp {
+                            name: new_u,
+                            args: vec![],
+                        }
+                    } else {
+                        Ty::TApp {
+                            name: name.clone(),
+                            args: args.iter().map(|t| self.collapse_type_apps(t)).collect(),
+                        }
                     }
                 }
                 Ty::TTuple { typs } => Ty::TTuple {
-                    typs: typs.iter().map(|t| self.collapse_enum_apps(t)).collect(),
+                    typs: typs.iter().map(|t| self.collapse_type_apps(t)).collect(),
                 },
                 Ty::TFunc { params, ret_ty } => Ty::TFunc {
-                    params: params.iter().map(|t| self.collapse_enum_apps(t)).collect(),
-                    ret_ty: Box::new(self.collapse_enum_apps(ret_ty)),
+                    params: params.iter().map(|t| self.collapse_type_apps(t)).collect(),
+                    ret_ty: Box::new(self.collapse_type_apps(ret_ty)),
                 },
                 _ => ty.clone(),
             }
         }
     }
 
-    fn rewrite_expr_enums<'a>(e: core::Expr, m: &mut EnumMono<'a>) -> core::Expr {
+    fn rewrite_expr_types<'a>(e: core::Expr, m: &mut TypeMono<'a>) -> core::Expr {
         match e {
             core::Expr::EVar { name, ty } => core::Expr::EVar {
                 name,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EUnit { ty } => core::Expr::EUnit {
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EBool { value, ty } => core::Expr::EBool {
                 value,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EInt { value, ty } => core::Expr::EInt {
                 value,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EString { value, ty } => core::Expr::EString {
                 value,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EConstr { index, args, ty } => core::Expr::EConstr {
                 index,
-                args: args.into_iter().map(|a| rewrite_expr_enums(a, m)).collect(),
-                ty: m.collapse_enum_apps(&ty),
+                args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::ETuple { items, ty } => core::Expr::ETuple {
                 items: items
                     .into_iter()
-                    .map(|a| rewrite_expr_enums(a, m))
+                    .map(|a| rewrite_expr_types(a, m))
                     .collect(),
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::ELet {
                 name,
@@ -518,9 +554,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 ty,
             } => core::Expr::ELet {
                 name,
-                value: Box::new(rewrite_expr_enums(*value, m)),
-                body: Box::new(rewrite_expr_enums(*body, m)),
-                ty: m.collapse_enum_apps(&ty),
+                value: Box::new(rewrite_expr_types(*value, m)),
+                body: Box::new(rewrite_expr_types(*body, m)),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EMatch {
                 expr,
@@ -528,16 +564,16 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 default,
                 ty,
             } => core::Expr::EMatch {
-                expr: Box::new(rewrite_expr_enums(*expr, m)),
+                expr: Box::new(rewrite_expr_types(*expr, m)),
                 arms: arms
                     .into_iter()
                     .map(|arm| core::Arm {
-                        lhs: rewrite_expr_enums(arm.lhs, m),
-                        body: rewrite_expr_enums(arm.body, m),
+                        lhs: rewrite_expr_types(arm.lhs, m),
+                        body: rewrite_expr_types(arm.body, m),
                     })
                     .collect(),
-                default: default.map(|d| Box::new(rewrite_expr_enums(*d, m))),
-                ty: m.collapse_enum_apps(&ty),
+                default: default.map(|d| Box::new(rewrite_expr_types(*d, m))),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EConstrGet {
                 expr,
@@ -545,35 +581,35 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 field_index,
                 ty,
             } => core::Expr::EConstrGet {
-                expr: Box::new(rewrite_expr_enums(*expr, m)),
+                expr: Box::new(rewrite_expr_types(*expr, m)),
                 variant_index,
                 field_index,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::ECall { func, args, ty } => core::Expr::ECall {
                 func,
-                args: args.into_iter().map(|a| rewrite_expr_enums(a, m)).collect(),
-                ty: m.collapse_enum_apps(&ty),
+                args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
+                ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
-                tuple: Box::new(rewrite_expr_enums(*tuple, m)),
+                tuple: Box::new(rewrite_expr_types(*tuple, m)),
                 index,
-                ty: m.collapse_enum_apps(&ty),
+                ty: m.collapse_type_apps(&ty),
             },
         }
     }
 
     // Rewrite function signatures and bodies
-    let mut m = EnumMono::new(env);
+    let mut m = TypeMono::new(env);
     let mut new_fns = Vec::new();
     for f in ctx.out.into_iter() {
         let params = f
             .params
             .into_iter()
-            .map(|(n, t)| (n, m.collapse_enum_apps(&t)))
+            .map(|(n, t)| (n, m.collapse_type_apps(&t)))
             .collect();
-        let ret_ty = m.collapse_enum_apps(&f.ret_ty);
-        let body = rewrite_expr_enums(f.body, &mut m);
+        let ret_ty = m.collapse_type_apps(&f.ret_ty);
+        let body = rewrite_expr_types(f.body, &mut m);
         new_fns.push(core::Fn {
             name: f.name,
             params,
@@ -584,6 +620,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
 
     // Drop all generic enum defs to avoid Go backend panics
     m.env.enums.retain(|_n, def| def.generics.is_empty());
+    m.env.structs.retain(|_n, def| def.generics.is_empty());
 
     let result = core::File { toplevels: new_fns };
     m.env.record_tuple_types_from_core(&result);
