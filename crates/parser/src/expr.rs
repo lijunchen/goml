@@ -45,8 +45,13 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
         T![uident] => {
             let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_UIDENT)
+            p.expect(T![uident]);
+            if p.at(T!['{']) {
+                struct_literal_field_list(p);
+                p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
+            } else {
+                p.close(m, MySyntaxKind::EXPR_UIDENT)
+            }
         }
         // ExprParen = '( Expr ')'
         T!['('] => {
@@ -114,6 +119,35 @@ fn match_arm(p: &mut Parser) {
         expr(p);
     }
     p.close(m, MySyntaxKind::MATCH_ARM);
+}
+
+fn struct_literal_field_list(p: &mut Parser) {
+    assert!(p.at(T!['{']));
+    let m = p.open();
+    p.expect(T!['{']);
+    while !p.eof() && !p.at(T!['}']) {
+        if p.at(T![lident]) {
+            struct_literal_field(p);
+            p.eat(T![,]);
+        } else {
+            p.advance_with_error("expected a struct field");
+        }
+    }
+    p.expect(T!['}']);
+    p.close(m, MySyntaxKind::STRUCT_LITERAL_FIELD_LIST);
+}
+
+fn struct_literal_field(p: &mut Parser) {
+    assert!(p.at(T![lident]));
+    let m = p.open();
+    p.expect(T![lident]);
+    p.expect(T![:]);
+    if p.at_any(EXPR_FIRST) {
+        expr(p);
+    } else {
+        p.advance_with_error("expected an expression");
+    }
+    p.close(m, MySyntaxKind::STRUCT_LITERAL_FIELD);
 }
 
 fn prefix_binding_power(_op: TokenKind) -> Option<((), u8)> {

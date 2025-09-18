@@ -101,6 +101,35 @@ impl Expr {
                 }
             }
 
+            Self::EStructLiteral { name, fields } => {
+                if fields.is_empty() {
+                    RcDoc::text(name.0.clone())
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{}"))
+                } else {
+                    let fields_doc =
+                        RcDoc::concat(fields.iter().enumerate().map(|(i, (fname, expr))| {
+                            let prefix = if i == 0 {
+                                RcDoc::hardline()
+                            } else {
+                                RcDoc::text(",").append(RcDoc::hardline())
+                            };
+                            prefix
+                                .append(RcDoc::text(&fname.0))
+                                .append(RcDoc::text(": "))
+                                .append(expr.to_doc())
+                        }));
+
+                    RcDoc::text(name.0.clone())
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{"))
+                        .append(fields_doc.nest(4))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                        .group()
+                }
+            }
+
             Self::ETuple { items } => {
                 if items.is_empty() {
                     RcDoc::text("()")

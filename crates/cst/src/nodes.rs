@@ -445,6 +445,7 @@ pub enum Expr {
     IntExpr(IntExpr),
     StrExpr(StrExpr),
     CallExpr(CallExpr),
+    StructLiteralExpr(StructLiteralExpr),
     MatchExpr(MatchExpr),
     UidentExpr(UidentExpr),
     LidentExpr(LidentExpr),
@@ -462,6 +463,7 @@ impl CstNode for Expr {
                 | EXPR_INT
                 | EXPR_STR
                 | EXPR_CALL
+                | EXPR_STRUCT_LITERAL
                 | EXPR_MATCH
                 | EXPR_UIDENT
                 | EXPR_LIDENT
@@ -477,6 +479,7 @@ impl CstNode for Expr {
             EXPR_INT => Expr::IntExpr(IntExpr { syntax }),
             EXPR_STR => Expr::StrExpr(StrExpr { syntax }),
             EXPR_CALL => Expr::CallExpr(CallExpr { syntax }),
+            EXPR_STRUCT_LITERAL => Expr::StructLiteralExpr(StructLiteralExpr { syntax }),
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_UIDENT => Expr::UidentExpr(UidentExpr { syntax }),
             EXPR_LIDENT => Expr::LidentExpr(LidentExpr { syntax }),
@@ -494,6 +497,7 @@ impl CstNode for Expr {
             Self::IntExpr(it) => &it.syntax,
             Self::StrExpr(it) => &it.syntax,
             Self::CallExpr(it) => &it.syntax,
+            Self::StructLiteralExpr(it) => &it.syntax,
             Self::MatchExpr(it) => &it.syntax,
             Self::UidentExpr(it) => &it.syntax,
             Self::LidentExpr(it) => &it.syntax,
@@ -559,6 +563,65 @@ impl StrExpr {
 
 impl_cst_node_simple!(StrExpr, MySyntaxKind::EXPR_STR);
 impl_display_via_syntax!(StrExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructLiteralExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructLiteralExpr {
+    pub fn uident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Uident)
+    }
+
+    pub fn field_list(&self) -> Option<StructLiteralFieldList> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(StructLiteralExpr, MySyntaxKind::EXPR_STRUCT_LITERAL);
+impl_display_via_syntax!(StructLiteralExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructLiteralFieldList {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructLiteralFieldList {
+    pub fn fields(&self) -> CstChildren<StructLiteralField> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(
+    StructLiteralFieldList,
+    MySyntaxKind::STRUCT_LITERAL_FIELD_LIST
+);
+impl_display_via_syntax!(StructLiteralFieldList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructLiteralField {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructLiteralField {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Lident)
+    }
+
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(StructLiteralField, MySyntaxKind::STRUCT_LITERAL_FIELD);
+impl_display_via_syntax!(StructLiteralField);
 
 ////////////////////////////////////////////////////////////////////////////////
 

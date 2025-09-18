@@ -1000,6 +1000,85 @@ impl TypeInference {
                     ty: ret_ty,
                 }
             }
+            ast::Expr::EStructLiteral { name, fields } => {
+                let (constructor, constr_ty) = env
+                    .lookup_constructor(name)
+                    .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
+
+                let struct_fields = match &constructor.kind {
+                    ConstructorKind::Struct { type_name } => {
+                        let struct_def = env.structs.get(type_name).unwrap_or_else(|| {
+                            panic!(
+                                "Struct {} not found when checking literal {}",
+                                type_name.0, name.0
+                            )
+                        });
+                        struct_def.fields.clone()
+                    }
+                    ConstructorKind::Enum { .. } => {
+                        panic!(
+                            "Constructor {} refers to an enum, but a struct literal was used",
+                            name.0
+                        )
+                    }
+                };
+
+                let mut field_positions: HashMap<Lident, usize> = HashMap::new();
+                for (idx, (fname, _)) in struct_fields.iter().enumerate() {
+                    field_positions.insert(fname.clone(), idx);
+                }
+
+                let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
+                for (field_name, expr) in fields.iter() {
+                    let idx = field_positions.get(field_name).unwrap_or_else(|| {
+                        panic!(
+                            "Unknown field {} on struct literal {}",
+                            field_name.0, name.0
+                        )
+                    });
+                    if ordered_args[*idx].is_some() {
+                        panic!(
+                            "Duplicate field {} in struct literal {}",
+                            field_name.0, name.0
+                        );
+                    }
+                    let field_expr = self.infer(env, vars, expr);
+                    ordered_args[*idx] = Some(field_expr);
+                }
+
+                for (idx, slot) in ordered_args.iter().enumerate() {
+                    if slot.is_none() {
+                        let missing = &struct_fields[idx].0;
+                        panic!("Missing field {} in struct literal {}", missing.0, name.0);
+                    }
+                }
+
+                let args_tast: Vec<tast::Expr> = ordered_args
+                    .into_iter()
+                    .map(|arg| arg.expect("field checked to exist"))
+                    .collect();
+
+                let inst_constr_ty = self.inst_ty(&constr_ty);
+                let ret_ty = self.fresh_ty_var();
+
+                if !args_tast.is_empty() {
+                    let actual_ty = tast::Ty::TFunc {
+                        params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints
+                        .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+                } else {
+                    env.constraints
+                        .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+                }
+
+                tast::Expr::EConstr {
+                    constructor,
+                    args: args_tast,
+                    ty: ret_ty,
+                }
+            }
             ast::Expr::ETuple { items } => {
                 let mut typs = Vec::new();
                 let mut items_tast = Vec::new();
@@ -1260,6 +1339,12 @@ impl TypeInference {
                 tast
             }
             ast::Expr::EConstr { .. } => {
+                let tast = self.infer(env, vars, e);
+                env.constraints
+                    .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
+                tast
+            }
+            ast::Expr::EStructLiteral { .. } => {
                 let tast = self.infer(env, vars, e);
                 env.constraints
                     .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));

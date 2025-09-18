@@ -100,15 +100,15 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
 }
 
 fn main() -> unit {
-  let mtmp15 = string_println(point_to_string(Point(3, 4))) in
-  let mtmp16 = string_println(wrapper_int_to_string(Wrapper__int(7))) in
-  let mtmp17 = string_println(wrapper_unit_to_string(Wrapper__unit(()))) in
+  let mtmp15 = string_println(point_to_string(Point { x: 3, y: 4 })) in
+  let mtmp16 = string_println(wrapper_int_to_string(Wrapper__int { value: 7 })) in
+  let mtmp17 = string_println(wrapper_unit_to_string(Wrapper__unit { value: () })) in
   let bounced_origin/30 = bounce_int(Shape__int::Origin) in
-  let mtmp18 = string_println(shape_int_to_string(Shape__int::Dot(Point(3, 4)))) in
-  let mtmp19 = string_println(shape_int_to_string(Shape__int::Wrapped(Wrapper__int(7)))) in
+  let mtmp18 = string_println(shape_int_to_string(Shape__int::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp19 = string_println(shape_int_to_string(Shape__int::Wrapped(Wrapper__int { value: 7 }))) in
   let mtmp20 = string_println(shape_int_to_string(bounced_origin/30)) in
-  let mtmp21 = string_println(shape_unit_to_string(Shape__unit::Dot(Point(3, 4)))) in
-  let mtmp22 = string_println(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit(())))) in
+  let mtmp21 = string_println(shape_unit_to_string(Shape__unit::Dot(Point { x: 3, y: 4 }))) in
+  let mtmp22 = string_println(shape_unit_to_string(Shape__unit::Wrapped(Wrapper__unit { value: () }))) in
   let mtmp23 = string_println(shape_unit_to_string(Shape__unit::Origin)) in
   let mtmp24 = describe__T_int(bounce_int(Shape__int::Origin)) in
   string_println("struct enums!")
