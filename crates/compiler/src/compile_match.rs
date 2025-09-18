@@ -588,6 +588,67 @@ fn compile_int_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core
     }
 }
 
+fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
+    let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
+
+    let mut value_rows: IndexMap<String, Vec<Row>> = IndexMap::new();
+    let mut fallback_rows: Vec<Row> = Vec::new();
+    let mut default_rows: Vec<Row> = Vec::new();
+
+    for mut row in rows {
+        if let Some(col) = row.remove_column(&bvar.name) {
+            match col.pat {
+                Pat::PString { value, ty: _ } => {
+                    let entry = value_rows
+                        .entry(value)
+                        .or_insert_with(|| fallback_rows.iter().cloned().collect());
+                    entry.push(row);
+                }
+                Pat::PWild { .. } => {
+                    let row_clone = row.clone();
+                    for rows in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
+                _ => unreachable!("expected string pattern"),
+            }
+        } else {
+            let row_clone = row.clone();
+            for rows in value_rows.values_mut() {
+                rows.push(row_clone.clone());
+            }
+            fallback_rows.push(row_clone.clone());
+            default_rows.push(row);
+        }
+    }
+
+    let arms = value_rows
+        .into_iter()
+        .map(|(value, rows)| core::Arm {
+            lhs: core::Expr::EString {
+                value,
+                ty: Ty::TString,
+            },
+            body: compile_rows(env, rows, ty),
+        })
+        .collect();
+
+    let default = if default_rows.is_empty() {
+        None
+    } else {
+        Some(Box::new(compile_rows(env, default_rows, ty)))
+    };
+
+    core::Expr::EMatch {
+        expr: Box::new(bvar.to_core()),
+        arms,
+        default,
+        ty: body_ty,
+    }
+}
+
 fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
@@ -607,9 +668,7 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TUnit => compile_unit_case(env, rows, &bvar),
         Ty::TBool => compile_bool_case(env, rows, &bvar),
         Ty::TInt => compile_int_case(env, rows, &bvar, ty),
-        Ty::TString => {
-            todo!()
-        }
+        Ty::TString => compile_string_case(env, rows, &bvar, ty),
         Ty::TApp { name, args } => {
             if env.enums.contains_key(name) {
                 compile_enum_case(env, rows, &bvar, ty, name)

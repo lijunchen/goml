@@ -13,6 +13,7 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T!['('],
     T![_],
     T![int],
+    T![str],
 ];
 
 pub fn pattern(p: &mut Parser) {
@@ -35,6 +36,11 @@ fn simple_pattern(p: &mut Parser) -> MarkerClosed {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_INT)
+        }
+        T![str] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::PATTERN_STRING)
         }
         T![_] => {
             let m = p.open();
