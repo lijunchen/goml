@@ -1,0 +1,109 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+func match_string(s__0 string) int {
+    var ret17 int
+    switch s__0 {
+    case "hello":
+        ret17 = 1
+    case "world":
+        ret17 = 2
+    default:
+        ret17 = 3
+    }
+    return ret17
+}
+
+func wildcard_position(s__1 string) int {
+    var ret18 int
+    ret18 = 4
+    return ret18
+}
+
+func repeated_string(s__2 string) int {
+    var ret19 int
+    switch s__2 {
+    case "hello":
+        ret19 = 6
+    default:
+        ret19 = 8
+    }
+    return ret19
+}
+
+func main0() struct{} {
+    var ret20 struct{}
+    var t6 int = match_string("hello")
+    var t5 string = int_to_string(t6)
+    string_println(t5)
+    var t8 int = match_string("planet")
+    var t7 string = int_to_string(t8)
+    string_println(t7)
+    var t10 int = wildcard_position("world")
+    var t9 string = int_to_string(t10)
+    string_println(t9)
+    var t12 int = wildcard_position("sun")
+    var t11 string = int_to_string(t12)
+    string_println(t11)
+    var t14 int = repeated_string("hello")
+    var t13 string = int_to_string(t14)
+    string_println(t13)
+    var t16 int = repeated_string("mars")
+    var t15 string = int_to_string(t16)
+    ret20 = string_println(t15)
+    return ret20
+}
+
+func main() {
+    main0()
+}

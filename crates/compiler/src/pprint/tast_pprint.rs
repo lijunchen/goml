@@ -327,6 +327,7 @@ impl Pat {
                 }
             }
             Pat::PInt { value, ty: _ } => RcDoc::text(value.to_string()),
+            Pat::PString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
             Pat::PConstr {
                 constructor,
                 args,

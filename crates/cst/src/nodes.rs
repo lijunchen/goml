@@ -811,6 +811,7 @@ pub enum Pattern {
     VarPat(VarPat),
     UnitPat(UnitPat),
     BoolPat(BoolPat),
+    StringPat(StringPat),
     IntPat(IntPat),
     ConstrPat(ConstrPat),
     TuplePat(TuplePat),
@@ -824,6 +825,7 @@ impl CstNode for Pattern {
             PATTERN_VARIABLE
                 | PATTERN_UNIT
                 | PATTERN_BOOL
+                | PATTERN_STRING
                 | PATTERN_INT
                 | PATTERN_CONSTR
                 | PATTERN_TUPLE
@@ -835,6 +837,7 @@ impl CstNode for Pattern {
             PATTERN_VARIABLE => Pattern::VarPat(VarPat { syntax }),
             PATTERN_UNIT => Pattern::UnitPat(UnitPat { syntax }),
             PATTERN_BOOL => Pattern::BoolPat(BoolPat { syntax }),
+            PATTERN_STRING => Pattern::StringPat(StringPat { syntax }),
             PATTERN_INT => Pattern::IntPat(IntPat { syntax }),
             PATTERN_CONSTR => Pattern::ConstrPat(ConstrPat { syntax }),
             PATTERN_TUPLE => Pattern::TuplePat(TuplePat { syntax }),
@@ -848,6 +851,7 @@ impl CstNode for Pattern {
             Self::VarPat(it) => &it.syntax,
             Self::UnitPat(it) => &it.syntax,
             Self::BoolPat(it) => &it.syntax,
+            Self::StringPat(it) => &it.syntax,
             Self::IntPat(it) => &it.syntax,
             Self::ConstrPat(it) => &it.syntax,
             Self::TuplePat(it) => &it.syntax,
@@ -897,6 +901,22 @@ impl BoolPat {
 
 impl_cst_node_simple!(BoolPat, MySyntaxKind::PATTERN_BOOL);
 impl_display_via_syntax!(BoolPat);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StringPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StringPat {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Str)
+    }
+}
+
+impl_cst_node_simple!(StringPat, MySyntaxKind::PATTERN_STRING);
+impl_display_via_syntax!(StringPat);
 
 ////////////////////////////////////////////////////////////////////////////////
 

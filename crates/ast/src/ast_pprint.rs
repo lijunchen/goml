@@ -184,6 +184,7 @@ impl Pat {
                 }
             }
             Pat::PInt { value } => RcDoc::text(value.to_string()),
+            Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
             Pat::PConstr { vcon, args } => {
                 let prefix = RcDoc::text(vcon.0.clone());
 

@@ -91,6 +91,7 @@ pub enum MySyntaxKind {
     PATTERN,
     PATTERN_UNIT,
     PATTERN_BOOL,
+    PATTERN_STRING,
     PATTERN_INT,
     PATTERN_TUPLE,
     PATTERN_CONSTR,

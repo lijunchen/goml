@@ -1,0 +1,33 @@
+fn match_string(s/0: String) -> Int {
+  match s/0 {
+    "hello" => {
+      1
+    },
+    "world" => {
+      2
+    },
+    _ => 3,
+  }
+}
+
+fn wildcard_position(s/1: String) -> Int {
+  4
+}
+
+fn repeated_string(s/2: String) -> Int {
+  match s/2 {
+    "hello" => {
+      6
+    },
+    _ => 8,
+  }
+}
+
+fn main() -> Unit {
+  let mtmp0 = string_println(int_to_string(match_string("hello"))) in
+  let mtmp1 = string_println(int_to_string(match_string("planet"))) in
+  let mtmp2 = string_println(int_to_string(wildcard_position("world"))) in
+  let mtmp3 = string_println(int_to_string(wildcard_position("sun"))) in
+  let mtmp4 = string_println(int_to_string(repeated_string("hello"))) in
+  string_println(int_to_string(repeated_string("mars")))
+}

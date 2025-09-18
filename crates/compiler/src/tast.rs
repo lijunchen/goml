@@ -218,6 +218,10 @@ pub enum Pat {
         value: i32,
         ty: Ty,
     },
+    PString {
+        value: String,
+        ty: Ty,
+    },
     PConstr {
         constructor: Constructor,
         args: Vec<Pat>,
@@ -239,6 +243,7 @@ impl Pat {
             Self::PUnit { ty, .. } => ty.clone(),
             Self::PBool { ty, .. } => ty.clone(),
             Self::PInt { ty, .. } => ty.clone(),
+            Self::PString { ty, .. } => ty.clone(),
             Self::PConstr { ty, .. } => ty.clone(),
             Self::PTuple { ty, .. } => ty.clone(),
             Self::PWild { ty, .. } => ty.clone(),

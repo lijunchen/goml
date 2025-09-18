@@ -430,6 +430,32 @@ where
                 default: default_block,
             }]
         }
+        tast::Ty::TString => {
+            let mut cases = Vec::new();
+            for arm in arms {
+                if let anf::ImmExpr::ImmString { value, .. } = &arm.lhs {
+                    cases.push((
+                        goast::Expr::String {
+                            value: value.clone(),
+                            ty: goty::GoType::TString,
+                        },
+                        goast::Block {
+                            stmts: build_branch(arm.body.clone()),
+                        },
+                    ));
+                } else {
+                    panic!("expected ImmString in string match arm");
+                }
+            }
+            let default_block = default.as_ref().map(|d| goast::Block {
+                stmts: build_branch((**d).clone()),
+            });
+            vec![goast::Stmt::SwitchExpr {
+                expr: compile_imm(env, scrutinee),
+                cases,
+                default: default_block,
+            }]
+        }
         tast::Ty::TApp { .. } => {
             let scrutinee_name = match scrutinee {
                 anf::ImmExpr::ImmVar { name, .. } => name.clone(),

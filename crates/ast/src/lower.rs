@@ -383,6 +383,15 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
             let value = value.parse::<i32>().ok()?;
             Some(ast::Pat::PInt { value })
         }
+        cst::Pattern::StringPat(it) => {
+            let value = it.value()?.to_string();
+            let value = value
+                .strip_prefix('"')
+                .and_then(|s| s.strip_suffix('"'))
+                .unwrap_or_else(|| panic!("StringPat has no value"))
+                .to_string();
+            Some(ast::Pat::PString { value })
+        }
         cst::Pattern::ConstrPat(it) => {
             let name = it.uident().unwrap().to_string();
             let pats = it.patterns().flat_map(lower_pat).collect();

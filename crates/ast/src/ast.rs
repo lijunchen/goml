@@ -137,6 +137,9 @@ pub enum Pat {
     PInt {
         value: i32,
     },
+    PString {
+        value: String,
+    },
     PConstr {
         vcon: Uident,
         args: Vec<Pat>,
