@@ -1012,6 +1012,10 @@ impl ConstrPat {
     pub fn patterns(&self) -> CstChildren<Pattern> {
         support::children(&self.syntax)
     }
+
+    pub fn field_list(&self) -> Option<StructPatternFieldList> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(ConstrPat, MySyntaxKind::PATTERN_CONSTR);
@@ -1032,6 +1036,45 @@ impl TuplePat {
 
 impl_cst_node_simple!(TuplePat, MySyntaxKind::PATTERN_TUPLE);
 impl_display_via_syntax!(TuplePat);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructPatternFieldList {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructPatternFieldList {
+    pub fn fields(&self) -> CstChildren<StructPatternField> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(
+    StructPatternFieldList,
+    MySyntaxKind::STRUCT_PATTERN_FIELD_LIST
+);
+impl_display_via_syntax!(StructPatternFieldList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct StructPatternField {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl StructPatternField {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Lident)
+    }
+
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(StructPatternField, MySyntaxKind::STRUCT_PATTERN_FIELD);
+impl_display_via_syntax!(StructPatternField);
 
 ////////////////////////////////////////////////////////////////////////////////
 

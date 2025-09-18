@@ -414,11 +414,30 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::ConstrPat(it) => {
             let name = it.uident().unwrap().to_string();
-            let pats = it.patterns().flat_map(lower_pat).collect();
-            Some(ast::Pat::PConstr {
-                vcon: ast::Uident::new(&name),
-                args: pats,
-            })
+            if let Some(field_list) = it.field_list() {
+                let mut fields = Vec::new();
+                for field in field_list.fields() {
+                    let fname = field
+                        .lident()
+                        .unwrap_or_else(|| panic!("Struct pattern field missing name"))
+                        .to_string();
+                    let pat = field
+                        .pattern()
+                        .and_then(lower_pat)
+                        .unwrap_or_else(|| panic!("Struct pattern field missing pattern"));
+                    fields.push((ast::Lident(fname), pat));
+                }
+                Some(ast::Pat::PStruct {
+                    name: ast::Uident::new(&name),
+                    fields,
+                })
+            } else {
+                let pats = it.patterns().flat_map(lower_pat).collect();
+                Some(ast::Pat::PConstr {
+                    vcon: ast::Uident::new(&name),
+                    args: pats,
+                })
+            }
         }
         cst::Pattern::TuplePat(it) => {
             let items = it.patterns().flat_map(lower_pat).collect();
