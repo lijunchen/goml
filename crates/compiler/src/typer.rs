@@ -247,12 +247,25 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
             }) => {
                 for TraitMethodSignature {
                     name: method_name,
-                    params: _,
-                    ret_ty: _,
+                    params,
+                    ret_ty,
                 } in methods.iter()
                 {
                     env.overloaded_funcs_to_trait_name
                         .insert(method_name.0.clone(), trait_name.clone());
+
+                    let param_tys = params
+                        .iter()
+                        .map(|ast_ty| ast_ty_to_tast_ty_with_tparams_env(ast_ty, &[]))
+                        .collect::<Vec<_>>();
+                    let ret_ty = ast_ty_to_tast_ty_with_tparams_env(ret_ty, &[]);
+                    let fn_ty = tast::Ty::TFunc {
+                        params: param_tys,
+                        ret_ty: Box::new(ret_ty),
+                    };
+
+                    env.trait_defs
+                        .insert((trait_name.0.clone(), method_name.0.clone()), fn_ty);
                 }
             }
             ast::Item::ImplBlock(ImplBlock {
@@ -262,8 +275,51 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
             }) => {
                 let for_ty = ast_ty_to_tast_ty_with_tparams_env(for_type, &[]);
                 validate_ty(env, &for_ty, &empty_tparams);
+                let trait_name_str = trait_name.0.clone();
+                let trait_method_names: HashSet<String> = env
+                    .trait_defs
+                    .keys()
+                    .filter_map(|(t_name, method_name)| {
+                        if t_name == &trait_name_str {
+                            Some(method_name.clone())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+
+                if trait_method_names.is_empty() {
+                    panic!(
+                        "Trait {} is not defined, cannot implement it for {:?}",
+                        trait_name_str, for_ty
+                    );
+                }
+
+                let mut implemented_methods: HashSet<String> = HashSet::new();
+
                 for m in methods.iter() {
-                    let name = m.name.clone();
+                    let method_name = m.name.clone();
+                    let method_name_str = method_name.0.clone();
+
+                    if !trait_method_names.contains(&method_name_str) {
+                        panic!(
+                            "Method {} is not declared in trait {}",
+                            method_name_str, trait_name_str
+                        );
+                    }
+
+                    if !implemented_methods.insert(method_name_str.clone()) {
+                        panic!(
+                            "Method {} implemented multiple times in impl of trait {}",
+                            method_name_str, trait_name_str
+                        );
+                    }
+
+                    let trait_sig = env
+                        .trait_defs
+                        .get(&(trait_name_str.clone(), method_name_str.clone()))
+                        .expect("trait method signature to exist");
+
                     let tparam_names = type_param_name_set(&m.generics);
                     let params = m
                         .params
@@ -282,13 +338,72 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                         }
                         None => tast::Ty::TUnit,
                     };
+
+                    let impl_method_ty = tast::Ty::TFunc {
+                        params: params.clone(),
+                        ret_ty: Box::new(ret.clone()),
+                    };
+
+                    let expected_method_ty = instantiate_trait_method_ty(trait_sig, &for_ty);
+
+                    match (&expected_method_ty, &impl_method_ty) {
+                        (
+                            tast::Ty::TFunc {
+                                params: expected_params,
+                                ret_ty: expected_ret,
+                            },
+                            tast::Ty::TFunc {
+                                params: impl_params,
+                                ret_ty: impl_ret,
+                            },
+                        ) => {
+                            if expected_params.len() != impl_params.len() {
+                                panic!(
+                                    "Trait {}::{} expects {} parameters but impl has {}",
+                                    trait_name_str,
+                                    method_name_str,
+                                    expected_params.len(),
+                                    impl_params.len()
+                                );
+                            }
+
+                            for (idx, (expected, actual)) in
+                                expected_params.iter().zip(impl_params.iter()).enumerate()
+                            {
+                                if expected != actual {
+                                    panic!(
+                                        "Trait {}::{} parameter {} expected type {:?} but found {:?}",
+                                        trait_name_str, method_name_str, idx, expected, actual
+                                    );
+                                }
+                            }
+
+                            if **expected_ret != **impl_ret {
+                                panic!(
+                                    "Trait {}::{} expected return type {:?} but found {:?}",
+                                    trait_name_str, method_name_str, expected_ret, impl_ret
+                                );
+                            }
+                        }
+                        _ => panic!(
+                            "Trait {}::{} does not have a function type signature",
+                            trait_name_str, method_name_str
+                        ),
+                    }
+
                     env.trait_impls.insert(
-                        (trait_name.0.clone(), for_ty.clone(), name.clone()),
-                        tast::Ty::TFunc {
-                            params,
-                            ret_ty: Box::new(ret),
-                        },
+                        (trait_name_str.clone(), for_ty.clone(), method_name),
+                        impl_method_ty,
                     );
+                }
+
+                for method_name in trait_method_names.iter() {
+                    if !implemented_methods.contains(method_name) {
+                        panic!(
+                            "Trait {} implementation for {:?} is missing method {}",
+                            trait_name_str, for_ty, method_name
+                        );
+                    }
                 }
             }
             ast::Item::Fn(func) => {
@@ -320,6 +435,43 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                 );
             }
         }
+    }
+}
+
+fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
+        tast::Ty::TUnit => tast::Ty::TUnit,
+        tast::Ty::TBool => tast::Ty::TBool,
+        tast::Ty::TInt => tast::Ty::TInt,
+        tast::Ty::TString => tast::Ty::TString,
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|ty| instantiate_trait_method_ty(ty, self_ty))
+                .collect(),
+        },
+        tast::Ty::TApp { name, args } => {
+            if name.0 == "Self" && args.is_empty() {
+                self_ty.clone()
+            } else {
+                tast::Ty::TApp {
+                    name: name.clone(),
+                    args: args
+                        .iter()
+                        .map(|ty| instantiate_trait_method_ty(ty, self_ty))
+                        .collect(),
+                }
+            }
+        }
+        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|param| instantiate_trait_method_ty(param, self_ty))
+                .collect(),
+            ret_ty: Box::new(instantiate_trait_method_ty(ret_ty, self_ty)),
+        },
     }
 }
 

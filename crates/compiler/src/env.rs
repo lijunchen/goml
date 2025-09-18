@@ -75,7 +75,7 @@ pub struct Env {
     counter: Cell<i32>,
     pub enums: IndexMap<Uident, EnumDef>,
     pub structs: IndexMap<Uident, StructDef>,
-    pub trait_defs: IndexMap<String, tast::Ty>,
+    pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
     pub trait_impls: IndexMap<(String, tast::Ty, Lident), tast::Ty>,
     pub funcs: IndexMap<String, tast::Ty>,
