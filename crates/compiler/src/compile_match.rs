@@ -206,8 +206,9 @@ fn compile_constructor_cases(
             } = col.pat
             {
                 let idx = constructor
-                    .enum_index()
-                    .expect("expected enum constructor in compile_constructor_cases");
+                    .as_enum()
+                    .expect("expected enum constructor in compile_constructor_cases")
+                    .enum_index();
                 let mut cols = row.columns;
                 for (var, pat) in cases[idx].vars.iter().zip(args.into_iter()) {
                     cols.push(Column {

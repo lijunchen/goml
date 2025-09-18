@@ -35,6 +35,12 @@ pub struct EnumConstructor {
     pub index: usize,
 }
 
+impl EnumConstructor {
+    pub fn enum_index(&self) -> usize {
+        self.index
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct StructConstructor {
     pub type_name: Uident,
@@ -58,13 +64,6 @@ impl Constructor {
         match self {
             Constructor::Enum(constructor) => &constructor.type_name,
             Constructor::Struct(constructor) => &constructor.type_name,
-        }
-    }
-
-    pub fn enum_index(&self) -> Option<usize> {
-        match self {
-            Constructor::Enum(constructor) => Some(constructor.index),
-            Constructor::Struct(_) => None,
         }
     }
 
