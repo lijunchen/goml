@@ -197,7 +197,7 @@ fn variant(p: &mut Parser) {
     p.close(m, MySyntaxKind::VARIANT);
 }
 
-const TYPE_FIRST: &[TokenKind] = &[T![Unit], T![Bool], T![Int], T!['('], T![uident]];
+const TYPE_FIRST: &[TokenKind] = &[T![Unit], T![Bool], T![Int], T![String], T!['('], T![uident]];
 
 fn type_list(p: &mut Parser) {
     assert!(p.at(T!['(']));

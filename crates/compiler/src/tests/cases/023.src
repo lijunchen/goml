@@ -1,0 +1,44 @@
+fn match_mixed_pair(pair: (Int, String)) -> Int {
+  match pair {
+    (0, "zero") => 1,
+    (0, _) => 2,
+    (1, "one") => 3,
+    (_, "zero") => 4,
+    _ => 5,
+  }
+}
+
+enum Mixed {
+  OnlyInt(Int),
+  OnlyStr(String),
+  Both(Int, String),
+}
+
+fn match_mixed_enum(value: Mixed) -> Int {
+  match value {
+    OnlyInt(0) => 6,
+    OnlyInt(_) => 7,
+    OnlyStr("zero") => 8,
+    OnlyStr(_) => 9,
+    Both(0, "zero") => 10,
+    Both(0, _) => 11,
+    Both(_, "zero") => 12,
+    Both(_, _) => 13,
+  }
+}
+
+fn main() {
+    let _ = string_println(int_to_string(match_mixed_pair((0, "zero")))) in
+    let _ = string_println(int_to_string(match_mixed_pair((0, "other")))) in
+    let _ = string_println(int_to_string(match_mixed_pair((1, "one")))) in
+    let _ = string_println(int_to_string(match_mixed_pair((2, "zero")))) in
+    let _ = string_println(int_to_string(match_mixed_pair((2, "two")))) in
+    let _ = string_println(int_to_string(match_mixed_enum(OnlyInt(0)))) in
+    let _ = string_println(int_to_string(match_mixed_enum(OnlyInt(5)))) in
+    let _ = string_println(int_to_string(match_mixed_enum(OnlyStr("zero")))) in
+    let _ = string_println(int_to_string(match_mixed_enum(OnlyStr("hello")))) in
+    let _ = string_println(int_to_string(match_mixed_enum(Both(0, "zero")))) in
+    let _ = string_println(int_to_string(match_mixed_enum(Both(0, "hello")))) in
+    let _ = string_println(int_to_string(match_mixed_enum(Both(2, "zero")))) in
+    string_println(int_to_string(match_mixed_enum(Both(3, "three"))))
+}
