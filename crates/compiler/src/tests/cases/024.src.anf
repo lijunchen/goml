@@ -1,0 +1,28 @@
+fn make_point() -> Point {
+  Point(0, 0)
+}
+
+fn flip(point/0: Point) -> Point {
+  let mtmp0 = point/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  Point(y/2, x/1)
+}
+
+fn wrap_int(x/3: int) -> Wrapper__int {
+  Wrapper__int(x/3)
+}
+
+fn main() -> unit {
+  let start/4 = make_point() in
+  let t6 = Point(1, 2) in
+  let swapped/5 = flip(t6) in
+  let boxed/6 = wrap_int(3) in
+  let point_box/7 = Wrapper__Point(swapped/5) in
+  let mtmp3 = start/4 in
+  let mtmp4 = boxed/6 in
+  let mtmp5 = point_box/7 in
+  ()
+}

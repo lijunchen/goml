@@ -100,6 +100,10 @@ pub enum Expr {
         vcon: Uident,
         args: Vec<Expr>,
     },
+    EStructLiteral {
+        name: Uident,
+        fields: Vec<(Lident, Expr)>,
+    },
     ETuple {
         items: Vec<Expr>,
     },

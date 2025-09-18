@@ -109,6 +109,13 @@ impl Rename {
                 vcon: vcon.clone(),
                 args: args.iter().map(|arg| self.rename_expr(arg, env)).collect(),
             },
+            ast::Expr::EStructLiteral { name, fields } => ast::Expr::EStructLiteral {
+                name: name.clone(),
+                fields: fields
+                    .iter()
+                    .map(|(field_name, expr)| (field_name.clone(), self.rename_expr(expr, env)))
+                    .collect(),
+            },
             ast::Expr::ETuple { items } => ast::Expr::ETuple {
                 items: items
                     .iter()

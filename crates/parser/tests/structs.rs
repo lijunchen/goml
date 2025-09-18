@@ -81,3 +81,34 @@ fn struct_with_generics() {
                   Whitespace@35..36 "\n""#]],
     );
 }
+
+#[test]
+fn struct_literal_expr() {
+    check(
+        "Point { x: 1, y: 2 }",
+        expect![[r#"
+            FILE@0..20
+              EXPR_STRUCT_LITERAL@0..20
+                Uident@0..5 "Point"
+                Whitespace@5..6 " "
+                STRUCT_LITERAL_FIELD_LIST@6..20
+                  LBrace@6..7 "{"
+                  Whitespace@7..8 " "
+                  STRUCT_LITERAL_FIELD@8..12
+                    Lident@8..9 "x"
+                    Colon@9..10 ":"
+                    Whitespace@10..11 " "
+                    EXPR_INT@11..12
+                      Int@11..12 "1"
+                  Comma@12..13 ","
+                  Whitespace@13..14 " "
+                  STRUCT_LITERAL_FIELD@14..19
+                    Lident@14..15 "y"
+                    Colon@15..16 ":"
+                    Whitespace@16..17 " "
+                    EXPR_INT@17..19
+                      Int@17..18 "2"
+                      Whitespace@18..19 " "
+                  RBrace@19..20 "}""#]],
+    );
+}

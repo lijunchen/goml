@@ -302,6 +302,26 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 arms,
             })
         }
+        cst::Expr::StructLiteralExpr(it) => {
+            let name = it.uident()?.to_string();
+            let fields = it
+                .field_list()
+                .map(|list| {
+                    list.fields()
+                        .flat_map(|field| {
+                            let fname = field.lident()?.to_string();
+                            let expr = field.expr().and_then(lower_expr)?;
+                            Some((ast::Lident(fname), expr))
+                        })
+                        .collect()
+                })
+                .unwrap_or_default();
+
+            Some(ast::Expr::EStructLiteral {
+                name: ast::Uident::new(&name),
+                fields,
+            })
+        }
         cst::Expr::UidentExpr(it) => {
             let name = it.uident().unwrap().to_string();
             Some(ast::Expr::EConstr {
