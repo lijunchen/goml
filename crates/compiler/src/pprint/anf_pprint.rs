@@ -101,28 +101,75 @@ impl CExpr {
                 constructor,
                 args,
                 ty: _,
-            } => {
-                let name_doc = match &constructor.kind {
-                    ConstructorKind::Enum { type_name, .. } => {
-                        RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0))
+            } => match &constructor.kind {
+                ConstructorKind::Enum { type_name, .. } => {
+                    let name_doc = RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0));
+
+                    if args.is_empty() {
+                        name_doc
+                    } else {
+                        let args_doc = RcDoc::intersperse(
+                            args.iter().map(|arg| arg.to_doc(env)),
+                            RcDoc::text(", "),
+                        );
+
+                        name_doc
+                            .append(RcDoc::text("("))
+                            .append(args_doc)
+                            .append(RcDoc::text(")"))
                     }
-                    ConstructorKind::Struct { .. } => RcDoc::text(constructor.name.0.clone()),
-                };
-
-                if args.is_empty() {
-                    name_doc
-                } else {
-                    let args_doc = RcDoc::intersperse(
-                        args.iter().map(|arg| arg.to_doc(env)),
-                        RcDoc::text(", "),
-                    );
-
-                    name_doc
-                        .append(RcDoc::text("("))
-                        .append(args_doc)
-                        .append(RcDoc::text(")"))
                 }
-            }
+                ConstructorKind::Struct { type_name } => {
+                    let name_doc = RcDoc::text(constructor.name.0.clone());
+
+                    if let Some(struct_def) = env.structs.get(type_name) {
+                        if struct_def.fields.is_empty() {
+                            name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
+                        } else if struct_def.fields.len() == args.len() {
+                            let fields_doc = RcDoc::intersperse(
+                                struct_def.fields.iter().zip(args.iter()).map(
+                                    |((fname, _), arg)| {
+                                        RcDoc::text(fname.0.clone())
+                                            .append(RcDoc::text(": "))
+                                            .append(arg.to_doc(env))
+                                    },
+                                ),
+                                RcDoc::text(", "),
+                            );
+
+                            name_doc
+                                .append(RcDoc::space())
+                                .append(RcDoc::text("{ "))
+                                .append(fields_doc)
+                                .append(RcDoc::text(" }"))
+                        } else if args.is_empty() {
+                            name_doc
+                        } else {
+                            let args_doc = RcDoc::intersperse(
+                                args.iter().map(|arg| arg.to_doc(env)),
+                                RcDoc::text(", "),
+                            );
+
+                            name_doc
+                                .append(RcDoc::text("("))
+                                .append(args_doc)
+                                .append(RcDoc::text(")"))
+                        }
+                    } else if args.is_empty() {
+                        name_doc
+                    } else {
+                        let args_doc = RcDoc::intersperse(
+                            args.iter().map(|arg| arg.to_doc(env)),
+                            RcDoc::text(", "),
+                        );
+
+                        name_doc
+                            .append(RcDoc::text("("))
+                            .append(args_doc)
+                            .append(RcDoc::text(")"))
+                    }
+                }
+            },
             CExpr::ETuple { items, ty: _ } => {
                 if items.is_empty() {
                     RcDoc::text("()")
