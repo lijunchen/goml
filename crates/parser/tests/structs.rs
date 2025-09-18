@@ -12,8 +12,8 @@ fn check(input: &str, expect: Expect) {
 fn struct_with_fields() {
     check(
         r#"struct Point {
-    x: Int,
-    y: Int,
+    x: int,
+    y: int,
 }
 "#,
         expect![[r#"
@@ -31,7 +31,7 @@ fn struct_with_fields() {
                     Colon@20..21 ":"
                     Whitespace@21..22 " "
                     TYPE_INT@22..25
-                      IntKeyword@22..25 "Int"
+                      IntKeyword@22..25 "int"
                   Comma@25..26 ","
                   Whitespace@26..31 "\n    "
                   STRUCT_FIELD@31..37
@@ -39,7 +39,7 @@ fn struct_with_fields() {
                     Colon@32..33 ":"
                     Whitespace@33..34 " "
                     TYPE_INT@34..37
-                      IntKeyword@34..37 "Int"
+                      IntKeyword@34..37 "int"
                   Comma@37..38 ","
                   Whitespace@38..39 "\n"
                   RBrace@39..40 "}"

@@ -1,11 +1,11 @@
-fn int_list_length(xs/2: List__Int) -> Int {
+fn int_list_length(xs/2: List__int) -> int {
   match xs/2 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x2 = List__Int::Cons._0(xs/2) in
-      let x3 = List__Int::Cons._1(xs/2) in
+      let x2 = List__int::Cons._0(xs/2) in
+      let x3 = List__int::Cons._1(xs/2) in
       let tail/3 = x3 in
       let t10 = int_list_length(tail/3) in
       int_add(1, t10)
@@ -13,85 +13,85 @@ fn int_list_length(xs/2: List__Int) -> Int {
   }
 }
 
-fn main() -> Unit {
+fn main() -> unit {
   let t11 = Tag_0 in
-  let x/4 = List__Int::Cons(1, t11) in
-  let length/5 = list_length__T_Int(x/4) in
+  let x/4 = List__int::Cons(1, t11) in
+  let length/5 = list_length__T_int(x/4) in
   let t12 = int_to_string(length/5) in
   let mtmp4 = string_println(t12) in
   let t14 = Tag_0 in
-  let t13 = List__Int::Cons(2, t14) in
-  let x/6 = List__Int::Cons(1, t13) in
-  let length/7 = list_length__T_Int(x/6) in
+  let t13 = List__int::Cons(2, t14) in
+  let x/6 = List__int::Cons(1, t13) in
+  let length/7 = list_length__T_int(x/6) in
   let t15 = int_to_string(length/7) in
   let mtmp5 = string_println(t15) in
   let t18 = Tag_0 in
-  let t17 = List__Int::Cons(2, t18) in
-  let t16 = List__Int::Cons(1, t17) in
-  let x/8 = List__Int::Cons(0, t16) in
+  let t17 = List__int::Cons(2, t18) in
+  let t16 = List__int::Cons(1, t17) in
+  let x/8 = List__int::Cons(0, t16) in
   let length/9 = int_list_length(x/8) in
   let t19 = int_to_string(length/9) in
   let mtmp6 = string_println(t19) in
   let t20 = Tag_0 in
-  let x/10 = List__Unit::Cons((), t20) in
-  let length/11 = list_length__T_Unit(x/10) in
+  let x/10 = List__unit::Cons((), t20) in
+  let length/11 = list_length__T_unit(x/10) in
   let t21 = int_to_string(length/11) in
   let mtmp7 = string_println(t21) in
   let t23 = Tag_0 in
-  let t22 = List__Unit::Cons((), t23) in
-  let x/12 = List__Unit::Cons((), t22) in
-  let length/13 = list_length__T_Unit(x/12) in
+  let t22 = List__unit::Cons((), t23) in
+  let x/12 = List__unit::Cons((), t22) in
+  let length/13 = list_length__T_unit(x/12) in
   let t24 = int_to_string(length/13) in
   let mtmp8 = string_println(t24) in
   let t26 = Tag_0 in
-  let t25 = List__Bool::Cons(false, t26) in
-  let x/14 = List__Bool::Cons(true, t25) in
-  let length/15 = list_length__T_Bool(x/14) in
+  let t25 = List__bool::Cons(false, t26) in
+  let x/14 = List__bool::Cons(true, t25) in
+  let length/15 = list_length__T_bool(x/14) in
   let t27 = int_to_string(length/15) in
   let mtmp9 = string_println(t27) in
   ()
 }
 
-fn list_length__T_Int(xs/0: List__Int) -> Int {
+fn list_length__T_int(xs/0: List__int) -> int {
   match xs/0 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x0 = List__Int::Cons._0(xs/0) in
-      let x1 = List__Int::Cons._1(xs/0) in
+      let x0 = List__int::Cons._0(xs/0) in
+      let x1 = List__int::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t28 = list_length__T_Int(tail/1) in
+      let t28 = list_length__T_int(tail/1) in
       int_add(1, t28)
     },
   }
 }
 
-fn list_length__T_Unit(xs/0: List__Unit) -> Int {
+fn list_length__T_unit(xs/0: List__unit) -> int {
   match xs/0 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x0 = List__Unit::Cons._0(xs/0) in
-      let x1 = List__Unit::Cons._1(xs/0) in
+      let x0 = List__unit::Cons._0(xs/0) in
+      let x1 = List__unit::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t29 = list_length__T_Unit(tail/1) in
+      let t29 = list_length__T_unit(tail/1) in
       int_add(1, t29)
     },
   }
 }
 
-fn list_length__T_Bool(xs/0: List__Bool) -> Int {
+fn list_length__T_bool(xs/0: List__bool) -> int {
   match xs/0 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x0 = List__Bool::Cons._0(xs/0) in
-      let x1 = List__Bool::Cons._1(xs/0) in
+      let x0 = List__bool::Cons._0(xs/0) in
+      let x1 = List__bool::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t30 = list_length__T_Bool(tail/1) in
+      let t30 = list_length__T_bool(tail/1) in
       int_add(1, t30)
     },
   }

@@ -21,17 +21,17 @@ fn main() {
 "#;
 
     check(src, 3, 8,expect![[r#"
-        "Int"
+        "int"
     "#]],);
     check(src, 3, 9,expect![[r#"
-        "Int"
+        "int"
     "#]],);
     check(src, 3, 10,expect![[r#"
         "<None>"
     "#]],);
 
     check(src, 4, 8, expect![[r#"
-        "(Bool, Int)"
+        "(bool, int)"
     "#]]);
 
     check(src, 5, 8, expect![[r#"

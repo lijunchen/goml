@@ -51,59 +51,59 @@ func missing(s string) struct{} {
     return struct{}{}
 }
 
-type List__Int interface {
-    isList__Int()
+type List__int interface {
+    isList__int()
 }
 
-type List__Int_Nil struct {}
+type List__int_Nil struct {}
 
-func (_ List__Int_Nil) isList__Int() {}
+func (_ List__int_Nil) isList__int() {}
 
-type List__Int_Cons struct {
+type List__int_Cons struct {
     _0 int
-    _1 List__Int
+    _1 List__int
 }
 
-func (_ List__Int_Cons) isList__Int() {}
+func (_ List__int_Cons) isList__int() {}
 
-type List__Unit interface {
-    isList__Unit()
+type List__unit interface {
+    isList__unit()
 }
 
-type List__Unit_Nil struct {}
+type List__unit_Nil struct {}
 
-func (_ List__Unit_Nil) isList__Unit() {}
+func (_ List__unit_Nil) isList__unit() {}
 
-type List__Unit_Cons struct {
+type List__unit_Cons struct {
     _0 struct{}
-    _1 List__Unit
+    _1 List__unit
 }
 
-func (_ List__Unit_Cons) isList__Unit() {}
+func (_ List__unit_Cons) isList__unit() {}
 
-type List__Bool interface {
-    isList__Bool()
+type List__bool interface {
+    isList__bool()
 }
 
-type List__Bool_Nil struct {}
+type List__bool_Nil struct {}
 
-func (_ List__Bool_Nil) isList__Bool() {}
+func (_ List__bool_Nil) isList__bool() {}
 
-type List__Bool_Cons struct {
+type List__bool_Cons struct {
     _0 bool
-    _1 List__Bool
+    _1 List__bool
 }
 
-func (_ List__Bool_Cons) isList__Bool() {}
+func (_ List__bool_Cons) isList__bool() {}
 
-func int_list_length(xs__2 List__Int) int {
+func int_list_length(xs__2 List__int) int {
     var ret31 int
     switch xs__2 := xs__2.(type) {
-    case List__Int_Nil:
+    case List__int_Nil:
         ret31 = 0
-    case List__Int_Cons:
-        var x3 List__Int = xs__2._1
-        var tail__3 List__Int = x3
+    case List__int_Cons:
+        var x3 List__int = xs__2._1
+        var tail__3 List__int = x3
         var t10 int = int_list_length(tail__3)
         ret31 = int_add(1, t10)
     }
@@ -112,115 +112,115 @@ func int_list_length(xs__2 List__Int) int {
 
 func main0() struct{} {
     var ret32 struct{}
-    var t11 List__Int = List__Int_Nil{}
-    var x__4 List__Int = List__Int_Cons{
+    var t11 List__int = List__int_Nil{}
+    var x__4 List__int = List__int_Cons{
         _0: 1,
         _1: t11,
     }
-    var length__5 int = list_length__T_Int(x__4)
+    var length__5 int = list_length__T_int(x__4)
     var t12 string = int_to_string(length__5)
     string_println(t12)
-    var t14 List__Int = List__Int_Nil{}
-    var t13 List__Int = List__Int_Cons{
+    var t14 List__int = List__int_Nil{}
+    var t13 List__int = List__int_Cons{
         _0: 2,
         _1: t14,
     }
-    var x__6 List__Int = List__Int_Cons{
+    var x__6 List__int = List__int_Cons{
         _0: 1,
         _1: t13,
     }
-    var length__7 int = list_length__T_Int(x__6)
+    var length__7 int = list_length__T_int(x__6)
     var t15 string = int_to_string(length__7)
     string_println(t15)
-    var t18 List__Int = List__Int_Nil{}
-    var t17 List__Int = List__Int_Cons{
+    var t18 List__int = List__int_Nil{}
+    var t17 List__int = List__int_Cons{
         _0: 2,
         _1: t18,
     }
-    var t16 List__Int = List__Int_Cons{
+    var t16 List__int = List__int_Cons{
         _0: 1,
         _1: t17,
     }
-    var x__8 List__Int = List__Int_Cons{
+    var x__8 List__int = List__int_Cons{
         _0: 0,
         _1: t16,
     }
     var length__9 int = int_list_length(x__8)
     var t19 string = int_to_string(length__9)
     string_println(t19)
-    var t20 List__Unit = List__Unit_Nil{}
-    var x__10 List__Unit = List__Unit_Cons{
+    var t20 List__unit = List__unit_Nil{}
+    var x__10 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: t20,
     }
-    var length__11 int = list_length__T_Unit(x__10)
+    var length__11 int = list_length__T_unit(x__10)
     var t21 string = int_to_string(length__11)
     string_println(t21)
-    var t23 List__Unit = List__Unit_Nil{}
-    var t22 List__Unit = List__Unit_Cons{
+    var t23 List__unit = List__unit_Nil{}
+    var t22 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: t23,
     }
-    var x__12 List__Unit = List__Unit_Cons{
+    var x__12 List__unit = List__unit_Cons{
         _0: struct{}{},
         _1: t22,
     }
-    var length__13 int = list_length__T_Unit(x__12)
+    var length__13 int = list_length__T_unit(x__12)
     var t24 string = int_to_string(length__13)
     string_println(t24)
-    var t26 List__Bool = List__Bool_Nil{}
-    var t25 List__Bool = List__Bool_Cons{
+    var t26 List__bool = List__bool_Nil{}
+    var t25 List__bool = List__bool_Cons{
         _0: false,
         _1: t26,
     }
-    var x__14 List__Bool = List__Bool_Cons{
+    var x__14 List__bool = List__bool_Cons{
         _0: true,
         _1: t25,
     }
-    var length__15 int = list_length__T_Bool(x__14)
+    var length__15 int = list_length__T_bool(x__14)
     var t27 string = int_to_string(length__15)
     string_println(t27)
     ret32 = struct{}{}
     return ret32
 }
 
-func list_length__T_Int(xs__0 List__Int) int {
+func list_length__T_int(xs__0 List__int) int {
     var ret33 int
     switch xs__0 := xs__0.(type) {
-    case List__Int_Nil:
+    case List__int_Nil:
         ret33 = 0
-    case List__Int_Cons:
-        var x1 List__Int = xs__0._1
-        var tail__1 List__Int = x1
-        var t28 int = list_length__T_Int(tail__1)
+    case List__int_Cons:
+        var x1 List__int = xs__0._1
+        var tail__1 List__int = x1
+        var t28 int = list_length__T_int(tail__1)
         ret33 = int_add(1, t28)
     }
     return ret33
 }
 
-func list_length__T_Unit(xs__0 List__Unit) int {
+func list_length__T_unit(xs__0 List__unit) int {
     var ret34 int
     switch xs__0 := xs__0.(type) {
-    case List__Unit_Nil:
+    case List__unit_Nil:
         ret34 = 0
-    case List__Unit_Cons:
-        var x1 List__Unit = xs__0._1
-        var tail__1 List__Unit = x1
-        var t29 int = list_length__T_Unit(tail__1)
+    case List__unit_Cons:
+        var x1 List__unit = xs__0._1
+        var tail__1 List__unit = x1
+        var t29 int = list_length__T_unit(tail__1)
         ret34 = int_add(1, t29)
     }
     return ret34
 }
 
-func list_length__T_Bool(xs__0 List__Bool) int {
+func list_length__T_bool(xs__0 List__bool) int {
     var ret35 int
     switch xs__0 := xs__0.(type) {
-    case List__Bool_Nil:
+    case List__bool_Nil:
         ret35 = 0
-    case List__Bool_Cons:
-        var x1 List__Bool = xs__0._1
-        var tail__1 List__Bool = x1
-        var t30 int = list_length__T_Bool(tail__1)
+    case List__bool_Cons:
+        var x1 List__bool = xs__0._1
+        var tail__1 List__bool = x1
+        var t30 int = list_length__T_bool(tail__1)
         ret35 = int_add(1, t30)
     }
     return ret35

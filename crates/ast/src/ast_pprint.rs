@@ -7,10 +7,10 @@ use pretty::RcDoc;
 impl Ty {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
-            Self::TUnit => RcDoc::text("Unit"),
-            Self::TBool => RcDoc::text("Bool"),
-            Self::TInt => RcDoc::text("Int"),
-            Self::TString => RcDoc::text("String"),
+            Self::TUnit => RcDoc::text("unit"),
+            Self::TBool => RcDoc::text("bool"),
+            Self::TInt => RcDoc::text("int"),
+            Self::TString => RcDoc::text("string"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");
 

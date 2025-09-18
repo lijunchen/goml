@@ -72,10 +72,10 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
 
     fn encode_ty(ty: &Ty) -> String {
         match ty {
-            Ty::TUnit => "Unit".to_string(),
-            Ty::TBool => "Bool".to_string(),
-            Ty::TInt => "Int".to_string(),
-            Ty::TString => "String".to_string(),
+            Ty::TUnit => "unit".to_string(),
+            Ty::TBool => "bool".to_string(),
+            Ty::TInt => "int".to_string(),
+            Ty::TString => "string".to_string(),
             Ty::TVar(_v) => "Var".to_string(),
             Ty::TParam { name } => format!("TParam_{}", name),
             Ty::TTuple { typs } => {
