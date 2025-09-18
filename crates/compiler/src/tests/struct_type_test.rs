@@ -19,17 +19,17 @@ fn typecheck(src: &str) -> (tast::File, Env) {
 fn collects_struct_definitions() {
     let src = r#"
 struct Point {
-    x: Int,
-    y: Int,
+    x: int,
+    y: int,
 }
 
 struct Wrapper[T] {
     value: T,
 }
 
-fn consume_point(p: Point) -> Unit { () }
+fn consume_point(p: Point) -> unit { () }
 
-fn consume_wrapper[T](value: Wrapper[T]) -> Unit { () }
+fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 "#;
 
     let (_tast, env) = typecheck(src);
@@ -83,8 +83,8 @@ fn consume_wrapper[T](value: Wrapper[T]) -> Unit { () }
 fn enum_variants_record_struct_types() {
     let src = r#"
 struct Point {
-    x: Int,
-    y: Int,
+    x: int,
+    y: int,
 }
 
 struct Wrapper[U] {
@@ -141,7 +141,7 @@ enum Shape[T] {
 fn structs_and_enums_can_reference_each_other() {
     let src = r#"
 struct Node {
-    value: Int,
+    value: int,
     next: List,
 }
 
@@ -192,7 +192,7 @@ struct Wrapper[T] {
     value: T,
 }
 
-fn bad(value: Wrapper[Int, Int]) -> Unit { () }
+fn bad(value: Wrapper[int, int]) -> unit { () }
 "#;
 
     let _ = typecheck(src);
@@ -202,7 +202,7 @@ fn bad(value: Wrapper[Int, Int]) -> Unit { () }
 #[should_panic(expected = "Unknown type constructor Undefined")]
 fn unknown_type_constructor_panics() {
     let src = r#"
-fn bad(p: Undefined) -> Unit { () }
+fn bad(p: Undefined) -> unit { () }
 "#;
 
     let _ = typecheck(src);
@@ -216,7 +216,7 @@ struct Wrapper[T] {
     value: T,
 }
 
-fn bad[T](value: Wrapper[U]) -> Unit { () }
+fn bad[T](value: Wrapper[U]) -> unit { () }
 "#;
 
     let _ = typecheck(src);
@@ -231,7 +231,7 @@ struct Wrapper[T] {
 }
 
 enum Problem {
-    Bad(Wrapper[Int, Int]),
+    Bad(Wrapper[int, int]),
 }
 "#;
 

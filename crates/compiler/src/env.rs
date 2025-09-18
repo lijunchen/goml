@@ -24,16 +24,16 @@ pub struct StructDef {
 pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
     let trait_name = trait_name.0.clone();
     let type_name = type_name.clone();
-    // impl ToString for Int
-    // __ToString%Int
+    // impl ToString for int
+    // __ToString%int
     format!(
         "__{}%{}",
         trait_name,
         match type_name {
-            tast::Ty::TUnit => "Unit".to_string(),
-            tast::Ty::TInt => "Int".to_string(),
-            tast::Ty::TBool => "Bool".to_string(),
-            tast::Ty::TString => "String".to_string(),
+            tast::Ty::TUnit => "unit".to_string(),
+            tast::Ty::TInt => "int".to_string(),
+            tast::Ty::TBool => "bool".to_string(),
+            tast::Ty::TString => "string".to_string(),
             _ => {
                 todo!()
             }
@@ -48,10 +48,10 @@ pub fn decode_trait_impl(impl_name: &str) -> (Uident, tast::Ty) {
     }
     let trait_name = Uident::new(parts[0].trim_start_matches("__"));
     let type_name = match parts[1] {
-        "Unit" => tast::Ty::TUnit,
-        "Bool" => tast::Ty::TBool,
-        "Int" => tast::Ty::TInt,
-        "String" => tast::Ty::TString,
+        "unit" => tast::Ty::TUnit,
+        "bool" => tast::Ty::TBool,
+        "int" => tast::Ty::TInt,
+        "string" => tast::Ty::TString,
         _ => {
             todo!()
         }

@@ -1,33 +1,33 @@
-impl Arith for Int{
-  fn add(self/0: Int, other/1: Int) -> Int {
-    int_add((self/0 : Int), (other/1 : Int))
+impl Arith for int{
+  fn add(self/0: int, other/1: int) -> int {
+    int_add((self/0 : int), (other/1 : int))
   }
-  fn less(self/2: Int, other/3: Int) -> Bool {
-    int_less((self/2 : Int), (other/3 : Int))
-  }
-}
-
-impl ToString for Int{
-  fn to_string(self/4: Int) -> String {
-    int_to_string((self/4 : Int))
+  fn less(self/2: int, other/3: int) -> bool {
+    int_less((self/2 : int), (other/3 : int))
   }
 }
 
-impl ToString for Bool{
-  fn to_string(self/5: Bool) -> String {
-    bool_to_string((self/5 : Bool))
+impl ToString for int{
+  fn to_string(self/4: int) -> string {
+    int_to_string((self/4 : int))
   }
 }
 
-impl Output for Int{
-  fn output(self/6: Int) -> Unit {
-    string_println(to_string((self/6 : Int)))
+impl ToString for bool{
+  fn to_string(self/5: bool) -> string {
+    bool_to_string((self/5 : bool))
   }
 }
 
-impl Output for Bool{
-  fn output(self/7: Bool) -> Unit {
-    string_println(to_string((self/7 : Bool)))
+impl Output for int{
+  fn output(self/6: int) -> unit {
+    string_println(to_string((self/6 : int)))
+  }
+}
+
+impl Output for bool{
+  fn output(self/7: bool) -> unit {
+    string_println(to_string((self/7 : bool)))
   }
 }
 
@@ -35,14 +35,14 @@ fn id(x/8: T) -> T {
   (x/8 : T)
 }
 
-fn main() -> Unit {
-  let a/9: Int = id(1) in
-  let b/10: Int = id(2) in
-  let c/11: Int = add((a/9 : Int), (b/10 : Int)) in
-  let _ : Unit = output((c/11 : Int)) in
-  let a/12: Int = id(3) in
-  let b/13: Int = id(4) in
-  let c/14: Bool = less((a/12 : Int), (b/13 : Int)) in
-  let _ : Unit = output((c/14 : Bool)) in
+fn main() -> unit {
+  let a/9: int = id(1) in
+  let b/10: int = id(2) in
+  let c/11: int = add((a/9 : int), (b/10 : int)) in
+  let _ : unit = output((c/11 : int)) in
+  let a/12: int = id(3) in
+  let b/13: int = id(4) in
+  let c/14: bool = less((a/12 : int), (b/13 : int)) in
+  let _ : unit = output((c/14 : bool)) in
   ()
 }

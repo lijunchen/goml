@@ -1,4 +1,4 @@
-fn print_int_list(xs/0: IntList) -> Unit {
+fn print_int_list(xs/0: IntList) -> unit {
   match xs/0 {
     IntList::Nil => {
       string_print("Nil")
@@ -38,7 +38,7 @@ fn int_list_rev(xs/7: IntList) -> IntList {
   int_list_rev_aux(xs/7, IntList::Nil)
 }
 
-fn int_list_length(xs/8: IntList) -> Int {
+fn int_list_length(xs/8: IntList) -> int {
   match xs/8 {
     IntList::Nil => {
       0
@@ -52,13 +52,13 @@ fn int_list_length(xs/8: IntList) -> Int {
   }
 }
 
-fn print_int_list_length(xs/10: IntList) -> Unit {
+fn print_int_list_length(xs/10: IntList) -> unit {
   let mtmp12 = string_print("Length: ") in
   let mtmp13 = string_println(int_to_string(int_list_length(xs/10))) in
   ()
 }
 
-fn main() -> Unit {
+fn main() -> unit {
   let x/11 = IntList::Nil in
   let mtmp14 = print_int_list(x/11) in
   let mtmp15 = string_println("") in

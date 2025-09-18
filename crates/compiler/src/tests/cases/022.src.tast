@@ -1,31 +1,31 @@
-fn match_string(s/0: String) -> Int {
-  match (s/0 : String) {
+fn match_string(s/0: string) -> int {
+  match (s/0 : string) {
       "hello" => 1,
       "world" => 2,
-      _ : String => 3,
+      _ : string => 3,
   }
 }
 
-fn wildcard_position(s/1: String) -> Int {
-  match (s/1 : String) {
-      _ : String => 4,
+fn wildcard_position(s/1: string) -> int {
+  match (s/1 : string) {
+      _ : string => 4,
       "world" => 5,
   }
 }
 
-fn repeated_string(s/2: String) -> Int {
-  match (s/2 : String) {
+fn repeated_string(s/2: string) -> int {
+  match (s/2 : string) {
       "hello" => 6,
       "hello" => 7,
-      _ : String => 8,
+      _ : string => 8,
   }
 }
 
-fn main() -> Unit {
-  let _ : Unit = string_println(int_to_string(match_string("hello"))) in
-  let _ : Unit = string_println(int_to_string(match_string("planet"))) in
-  let _ : Unit = string_println(int_to_string(wildcard_position("world"))) in
-  let _ : Unit = string_println(int_to_string(wildcard_position("sun"))) in
-  let _ : Unit = string_println(int_to_string(repeated_string("hello"))) in
+fn main() -> unit {
+  let _ : unit = string_println(int_to_string(match_string("hello"))) in
+  let _ : unit = string_println(int_to_string(match_string("planet"))) in
+  let _ : unit = string_println(int_to_string(wildcard_position("world"))) in
+  let _ : unit = string_println(int_to_string(wildcard_position("sun"))) in
+  let _ : unit = string_println(int_to_string(repeated_string("hello"))) in
   string_println(int_to_string(repeated_string("mars")))
 }

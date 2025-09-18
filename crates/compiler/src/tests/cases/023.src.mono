@@ -1,4 +1,4 @@
-fn match_mixed_pair(pair/0: (Int, String)) -> Int {
+fn match_mixed_pair(pair/0: (int, string)) -> int {
   let x0 = pair/0.0 in
   let x1 = pair/0.1 in
   match x1 {
@@ -30,7 +30,7 @@ fn match_mixed_pair(pair/0: (Int, String)) -> Int {
   }
 }
 
-fn match_mixed_enum(value/1: Mixed) -> Int {
+fn match_mixed_enum(value/1: Mixed) -> int {
   match value/1 {
     Mixed::OnlyInt(x2) => {
       let x2 = Mixed::OnlyInt._0(value/1) in
@@ -73,7 +73,7 @@ fn match_mixed_enum(value/1: Mixed) -> Int {
   }
 }
 
-fn main() -> Unit {
+fn main() -> unit {
   let mtmp6 = string_println(int_to_string(match_mixed_pair((0, "zero")))) in
   let mtmp7 = string_println(int_to_string(match_mixed_pair((0, "other")))) in
   let mtmp8 = string_println(int_to_string(match_mixed_pair((1, "one")))) in

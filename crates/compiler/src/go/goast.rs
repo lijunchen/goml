@@ -220,7 +220,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
 
 pub fn go_type_name_for(ty: &tast::Ty) -> String {
     match ty {
-        tast::Ty::TUnit => "Unit".to_string(),
+        tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt => "int".to_string(),
         tast::Ty::TString => "string".to_string(),

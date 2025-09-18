@@ -1,46 +1,46 @@
 trait Arith {
-    fn add(Self, Self) -> Int;
-    fn less(Self, Self) -> Bool;
+    fn add(Self, Self) -> int;
+    fn less(Self, Self) -> bool;
 }
 
-impl Arith for Int {
-    fn add(self: Int, other: Int) -> Int {
+impl Arith for int {
+    fn add(self: int, other: int) -> int {
         int_add(self, other)
     }
 
-    fn less(self: Int, other: Int) -> Bool {
+    fn less(self: int, other: int) -> bool {
         int_less(self, other)
     }
 }
 
 trait ToString {
-    fn to_string(Self) -> String;
+    fn to_string(Self) -> string;
 }
 
-impl ToString for Int {
-    fn to_string(self: Int) -> String {
+impl ToString for int {
+    fn to_string(self: int) -> string {
         int_to_string(self)
     }
 }
 
-impl ToString for Bool {
-    fn to_string(self: Bool) -> String {
+impl ToString for bool {
+    fn to_string(self: bool) -> string {
         bool_to_string(self)
     }
 }
 
 trait Output {
-    fn output(Self) -> Unit;
+    fn output(Self) -> unit;
 }
 
-impl Output for Int {
-    fn output(self: Int) -> Unit {
+impl Output for int {
+    fn output(self: int) -> unit {
         string_println(to_string(self))
     }
 }
 
-impl Output for Bool {
-    fn output(self: Bool) -> Unit {
+impl Output for bool {
+    fn output(self: bool) -> unit {
         string_println(to_string(self))
     }
 }

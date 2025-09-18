@@ -84,8 +84,8 @@ fn trait_def(p: &mut Parser) {
 }
 
 // {
-//   fn foo(x: Int) -> Int;
-//   fn bar(x: Int) -> Int;
+//   fn foo(x: int) -> int;
+//   fn bar(x: int) -> int;
 // }
 
 fn trait_method_list(p: &mut Parser) {
