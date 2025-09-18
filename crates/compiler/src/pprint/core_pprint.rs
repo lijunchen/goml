@@ -3,7 +3,7 @@ use pretty::RcDoc;
 use crate::{
     core::{Arm, Expr, File, Fn},
     env::Env,
-    tast::ConstructorKind,
+    tast::Constructor,
 };
 
 impl File {
@@ -82,9 +82,12 @@ impl Expr {
                 constructor,
                 args,
                 ty: _,
-            } => match &constructor.kind {
-                ConstructorKind::Enum { type_name, .. } => {
-                    let name_doc = RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0));
+            } => match constructor {
+                Constructor::Enum(enum_constructor) => {
+                    let name_doc = RcDoc::text(format!(
+                        "{}::{}",
+                        enum_constructor.type_name.0, enum_constructor.variant.0
+                    ));
 
                     if args.is_empty() {
                         name_doc
@@ -100,10 +103,10 @@ impl Expr {
                             .append(RcDoc::text(")"))
                     }
                 }
-                ConstructorKind::Struct { type_name } => {
-                    let name_doc = RcDoc::text(constructor.name.0.clone());
+                Constructor::Struct(struct_constructor) => {
+                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = env.structs.get(type_name) {
+                    if let Some(struct_def) = env.structs.get(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
@@ -243,19 +246,23 @@ impl Expr {
                 field_index,
                 ty: _,
             } => {
-                let accessor = match &constructor.kind {
-                    ConstructorKind::Enum { type_name, .. } => RcDoc::text(format!(
+                let accessor = match constructor {
+                    Constructor::Enum(enum_constructor) => RcDoc::text(format!(
                         "{}::{}._{}",
-                        type_name.0, constructor.name.0, field_index
+                        enum_constructor.type_name.0, enum_constructor.variant.0, field_index
                     )),
-                    ConstructorKind::Struct { type_name } => {
+                    Constructor::Struct(struct_constructor) => {
                         let field_name = env
                             .structs
-                            .get(type_name)
+                            .get(&struct_constructor.type_name)
                             .and_then(|def| def.fields.get(*field_index))
                             .map(|(fname, _)| fname.0.clone())
                             .unwrap_or_else(|| format!("_{}", field_index));
-                        RcDoc::text(format!("{}.{field}", type_name.0, field = field_name))
+                        RcDoc::text(format!(
+                            "{}.{field}",
+                            struct_constructor.type_name.0,
+                            field = field_name
+                        ))
                     }
                 };
 

@@ -1,6 +1,6 @@
 use super::core;
 use crate::env::{EnumDef, Env, StructDef};
-use crate::tast::{Constructor, ConstructorKind, Ty};
+use crate::tast::{self, Constructor, Ty};
 use ast::ast::Uident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -27,20 +27,19 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
     }
 
     fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
-        match (&constructor.kind, new_ty) {
-            (ConstructorKind::Enum { index, .. }, Ty::TApp { name, .. }) => Constructor {
-                name: constructor.name.clone(),
-                kind: ConstructorKind::Enum {
+        match (constructor, new_ty) {
+            (Constructor::Enum(enum_constructor), Ty::TApp { name, .. }) => {
+                Constructor::Enum(tast::EnumConstructor {
                     type_name: name.clone(),
-                    index: *index,
-                },
-            },
-            (ConstructorKind::Struct { .. }, Ty::TApp { name, .. }) => Constructor {
-                name: name.clone(),
-                kind: ConstructorKind::Struct {
+                    variant: enum_constructor.variant.clone(),
+                    index: enum_constructor.index,
+                })
+            }
+            (Constructor::Struct(_), Ty::TApp { name, .. }) => {
+                Constructor::Struct(tast::StructConstructor {
                     type_name: name.clone(),
-                },
-            },
+                })
+            }
             _ => constructor.clone(),
         }
     }

@@ -5,7 +5,6 @@ use crate::env::{Env, StructDef};
 use crate::mangle::mangle_impl_name;
 use crate::tast::Arm;
 use crate::tast::Constructor;
-use crate::tast::ConstructorKind;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
@@ -207,9 +206,9 @@ fn compile_constructor_cases(
             } = col.pat
             {
                 let idx = constructor
-                    .kind
-                    .enum_index()
-                    .expect("expected enum constructor in compile_constructor_cases");
+                    .as_enum()
+                    .expect("expected enum constructor in compile_constructor_cases")
+                    .enum_index();
                 let mut cols = row.columns;
                 for (var, pat) in cases[idx].vars.iter().zip(args.into_iter()) {
                     cols.push(Column {
@@ -262,13 +261,11 @@ fn compile_enum_case(
         .iter()
         .enumerate()
         .map(|(index, (variant, args))| ConstructorCase {
-            constructor: Constructor {
-                name: variant.clone(),
-                kind: ConstructorKind::Enum {
-                    type_name: name.clone(),
-                    index,
-                },
-            },
+            constructor: Constructor::Enum(tast::EnumConstructor {
+                type_name: name.clone(),
+                variant: variant.clone(),
+                index,
+            }),
             vars: args
                 .iter()
                 .map(|arg_ty| Variable {
@@ -349,12 +346,9 @@ fn compile_struct_case(
         })
         .collect();
 
-    let constructor = Constructor {
-        name: name.clone(),
-        kind: ConstructorKind::Struct {
-            type_name: name.clone(),
-        },
-    };
+    let constructor = Constructor::Struct(tast::StructConstructor {
+        type_name: name.clone(),
+    });
 
     let hole = core::eunit();
     let mut result = hole;
@@ -382,7 +376,7 @@ fn compile_struct_case(
                         constructor,
                         args,
                         ty: _,
-                    } if constructor.kind.is_struct() => {
+                    } if constructor.is_struct() => {
                         for (var, arg_pat) in field_vars.iter().zip(args.into_iter()) {
                             cols.push(Column {
                                 var: var.name.clone(),

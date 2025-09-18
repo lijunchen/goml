@@ -99,11 +99,11 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
         core::Expr::EInt { value, ty } => ImmExpr::ImmInt { value, ty },
         core::Expr::EString { value, ty } => ImmExpr::ImmString { value, ty },
         core::Expr::EConstr {
-            constructor,
+            constructor: Constructor::Enum(enum_constructor),
             args,
             ty,
-        } if constructor.kind.enum_index().is_some() && args.is_empty() => ImmExpr::ImmTag {
-            index: constructor.kind.enum_index().unwrap(),
+        } if args.is_empty() => ImmExpr::ImmTag {
+            index: enum_constructor.enum_index(),
             ty,
         },
         // Other core::Expr variants are not immediate and should not appear as match arm LHS patterns.
@@ -142,13 +142,13 @@ fn compile_match_arms_to_anf<'a>(
                 });
             }
             core::Expr::EConstr {
-                constructor,
+                constructor: Constructor::Enum(enum_constructor),
                 args,
                 ty,
-            } if constructor.kind.enum_index().is_some() && args.is_empty() => {
+            } if args.is_empty() => {
                 // Nullary constructors are immediate
                 let anf_lhs = ImmExpr::ImmTag {
-                    index: constructor.kind.enum_index().unwrap(),
+                    index: enum_constructor.enum_index(),
                     ty: ty.clone(),
                 };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -158,13 +158,13 @@ fn compile_match_arms_to_anf<'a>(
                 });
             }
             core::Expr::EConstr {
-                constructor,
+                constructor: Constructor::Enum(enum_constructor),
                 args: _args,
                 ty,
-            } if constructor.kind.enum_index().is_some() => {
+            } => {
                 // Patterns were already simplified in compile_match.rs. Do not duplicate field extraction here.
                 let anf_lhs = ImmExpr::ImmTag {
-                    index: constructor.kind.enum_index().unwrap(),
+                    index: enum_constructor.enum_index(),
                     ty: ty.clone(),
                 };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -211,33 +211,36 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
         }),
 
         core::Expr::EConstr {
+            constructor: Constructor::Enum(enum_constructor),
+            args,
+            ty: _,
+        } if args.is_empty() => {
+            // Nullary enum constructors are immediate tags
+            k(CExpr::CImm {
+                imm: ImmExpr::ImmTag {
+                    index: enum_constructor.enum_index(),
+                    ty: e_ty,
+                },
+            })
+        }
+        core::Expr::EConstr {
             constructor,
             args,
             ty: _,
         } => {
-            if args.is_empty() && constructor.kind.enum_index().is_some() {
-                // Nullary enum constructors are immediate tags
-                k(CExpr::CImm {
-                    imm: ImmExpr::ImmTag {
-                        index: constructor.kind.enum_index().unwrap(),
-                        ty: e_ty,
-                    },
-                })
-            } else {
-                let constructor = constructor.clone();
-                let ty_clone = e_ty.clone();
-                anf_list(
-                    env,
-                    &args,
-                    Box::new(move |args| {
-                        k(CExpr::EConstr {
-                            constructor: constructor.clone(),
-                            args,
-                            ty: ty_clone.clone(),
-                        })
-                    }),
-                )
-            }
+            let constructor = constructor.clone();
+            let ty_clone = e_ty.clone();
+            anf_list(
+                env,
+                &args,
+                Box::new(move |args| {
+                    k(CExpr::EConstr {
+                        constructor: constructor.clone(),
+                        args,
+                        ty: ty_clone.clone(),
+                    })
+                }),
+            )
         }
         core::Expr::ETuple { items, ty: _ } => anf_list(
             env,

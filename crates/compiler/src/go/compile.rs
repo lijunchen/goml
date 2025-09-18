@@ -5,7 +5,7 @@ use crate::{
     env::Env,
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast,
-    tast::ConstructorKind,
+    tast::Constructor,
 };
 
 use std::collections::HashMap;
@@ -67,31 +67,32 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
             constructor,
             field_index,
             ty: _,
-        } => match &constructor.kind {
-            ConstructorKind::Enum { type_name, index } => {
+        } => match constructor {
+            Constructor::Enum(enum_constructor) => {
                 let def = env
                     .enums
-                    .get(type_name)
+                    .get(&enum_constructor.type_name)
                     .expect("unknown enum in EConstrGet");
-                def.variants[*index].1[*field_index].clone()
+                def.variants[enum_constructor.index].1[*field_index].clone()
             }
-            ConstructorKind::Struct { type_name } => {
+            Constructor::Struct(struct_constructor) => {
                 let scrut_ty = imm_ty(expr);
                 let type_args = match scrut_ty {
                     tast::Ty::TApp { name, args } => {
                         assert_eq!(
-                            &name, type_name,
+                            &name, &struct_constructor.type_name,
                             "struct constructor type mismatch: expected {}, got {}",
-                            type_name.0, name.0
+                            struct_constructor.type_name.0, name.0
                         );
                         args
                     }
                     other => panic!(
                         "EConstrGet on non-struct type {:?} for constructor {}",
-                        other, type_name.0
+                        other, struct_constructor.type_name.0
                     ),
                 };
-                let fields = instantiate_struct_fields(env, type_name, &type_args);
+                let fields =
+                    instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
                 fields[*field_index].1.clone()
             }
         },
@@ -231,9 +232,9 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             constructor,
             args,
             ty,
-        } => match &constructor.kind {
-            ConstructorKind::Enum { index, .. } => {
-                let variant_ty = variant_ty_by_index(env, ty, *index);
+        } => match constructor {
+            Constructor::Enum(enum_constructor) => {
+                let variant_ty = variant_ty_by_index(env, ty, enum_constructor.index);
                 let fields = args
                     .iter()
                     .enumerate()
@@ -244,16 +245,16 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
                     fields,
                 }
             }
-            ConstructorKind::Struct { type_name } => {
+            Constructor::Struct(struct_constructor) => {
                 let go_ty = tast_ty_to_go_type(ty);
                 let struct_def = env
                     .structs
-                    .get(type_name)
-                    .unwrap_or_else(|| panic!("unknown struct {}", type_name.0));
+                    .get(&struct_constructor.type_name)
+                    .unwrap_or_else(|| panic!("unknown struct {}", struct_constructor.type_name.0));
                 if struct_def.fields.len() != args.len() {
                     panic!(
                         "struct constructor {} expects {} args, got {}",
-                        constructor.name.0,
+                        struct_constructor.type_name.0,
                         struct_def.fields.len(),
                         args.len()
                     );
@@ -300,36 +301,37 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             ty: _,
         } => {
             let obj = compile_imm(env, expr);
-            match &constructor.kind {
-                ConstructorKind::Enum { type_name, index } => {
+            match constructor {
+                Constructor::Enum(enum_constructor) => {
                     let def = env
                         .enums
-                        .get(type_name)
+                        .get(&enum_constructor.type_name)
                         .expect("unknown enum in EConstrGet");
-                    let field_ty = def.variants[*index].1[*field_index].clone();
+                    let field_ty = def.variants[enum_constructor.index].1[*field_index].clone();
                     goast::Expr::FieldAccess {
                         obj: Box::new(obj),
                         field: format!("_{}", field_index),
                         ty: tast_ty_to_go_type(&field_ty),
                     }
                 }
-                ConstructorKind::Struct { type_name } => {
+                Constructor::Struct(struct_constructor) => {
                     let scrut_ty = imm_ty(expr);
                     let type_args = match scrut_ty {
                         tast::Ty::TApp { name, args } => {
                             assert_eq!(
-                                &name, type_name,
+                                &name, &struct_constructor.type_name,
                                 "struct constructor type mismatch: expected {}, got {}",
-                                type_name.0, name.0
+                                struct_constructor.type_name.0, name.0
                             );
                             args
                         }
                         other => panic!(
                             "EConstrGet on non-struct type {:?} for constructor {}",
-                            other, type_name.0
+                            other, struct_constructor.type_name.0
                         ),
                     };
-                    let fields = instantiate_struct_fields(env, type_name, &type_args);
+                    let fields =
+                        instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
                     let (field_name, field_ty) = &fields[*field_index];
                     goast::Expr::FieldAccess {
                         obj: Box::new(obj),
