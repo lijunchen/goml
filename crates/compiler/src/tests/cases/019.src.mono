@@ -1,16 +1,66 @@
-fn takes_point(p/0: Point) -> int {
-  0
+fn make_point() -> Point {
+  Point { x: 0, y: 0 }
 }
 
-fn id_wrapper_int(value/1: Wrapper__int) -> Wrapper__int {
-  value/1
+fn flip(point/0: Point) -> Point {
+  let mtmp0 = point/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  Point { x: y/2, y: x/1 }
 }
 
-fn takes_wrapper_unit(value/2: Wrapper__unit) -> unit {
-  ()
+fn wrap_int(x/3: int) -> Wrapper__int {
+  Wrapper__int { value: x/3 }
+}
+
+fn x_add_1(p/4: Point) -> Point {
+  let mtmp3 = p/4 in
+  let x4 = Point.x(mtmp3) in
+  let x5 = Point.y(mtmp3) in
+  let y/6 = x5 in
+  let x/5 = x4 in
+  Point { x: int_add(x/5, 1), y: y/6 }
+}
+
+fn get_x(p/7: Point) -> int {
+  let mtmp6 = p/7 in
+  let x7 = Point.x(mtmp6) in
+  let x8 = Point.y(mtmp6) in
+  let y/9 = x8 in
+  let x/8 = x7 in
+  x/8
+}
+
+fn get_y(p/10: Point) -> int {
+  let mtmp9 = p/10 in
+  let x10 = Point.x(mtmp9) in
+  let x11 = Point.y(mtmp9) in
+  let y/12 = x11 in
+  let x/11 = x10 in
+  y/12
+}
+
+fn point_to_string(p/13: Point) -> string {
+  let mtmp12 = p/13 in
+  let x13 = Point.x(mtmp12) in
+  let x14 = Point.y(mtmp12) in
+  let y/15 = x14 in
+  let x/14 = x13 in
+  string_add(string_add(string_add("Point { x: ", int_to_string(x/14)), string_add(", y: ", int_to_string(y/15))), "}")
 }
 
 fn main() -> unit {
-  let mtmp0 = string_println("structs!") in
+  let start/16 = make_point() in
+  let mtmp15 = string_println(point_to_string(start/16)) in
+  let swapped/17 = flip(Point { x: 1, y: 2 }) in
+  let mtmp16 = string_println(point_to_string(swapped/17)) in
+  let boxed/18 = wrap_int(3) in
+  let point_box/19 = Wrapper__Point { value: swapped/17 } in
+  let a/20 = x_add_1(start/16) in
+  let mtmp17 = string_println(point_to_string(a/20)) in
+  let a/21 = flip(x_add_1(start/16)) in
+  let mtmp18 = string_println(point_to_string(a/21)) in
   ()
 }

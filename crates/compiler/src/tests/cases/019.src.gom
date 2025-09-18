@@ -60,33 +60,112 @@ type Wrapper__int struct {
     value int
 }
 
-type Wrapper__unit struct {
-    value struct{}
+type Wrapper__Point struct {
+    value Point
 }
 
-func takes_point(p__0 Point) int {
-    var ret1 int
-    ret1 = 0
-    return ret1
+func make_point() Point {
+    var ret31 Point
+    ret31 = Point{
+        x: 0,
+        y: 0,
+    }
+    return ret31
 }
 
-func id_wrapper_int(value__1 Wrapper__int) Wrapper__int {
-    var ret2 Wrapper__int
-    ret2 = value__1
-    return ret2
+func flip(point__0 Point) Point {
+    var ret32 Point
+    var mtmp0 Point = point__0
+    var x1 int = mtmp0.x
+    var x2 int = mtmp0.y
+    var y__2 int = x2
+    var x__1 int = x1
+    ret32 = Point{
+        x: y__2,
+        y: x__1,
+    }
+    return ret32
 }
 
-func takes_wrapper_unit(value__2 Wrapper__unit) struct{} {
-    var ret3 struct{}
-    ret3 = struct{}{}
-    return ret3
+func wrap_int(x__3 int) Wrapper__int {
+    var ret33 Wrapper__int
+    ret33 = Wrapper__int{
+        value: x__3,
+    }
+    return ret33
+}
+
+func x_add_1(p__4 Point) Point {
+    var ret34 Point
+    var mtmp3 Point = p__4
+    var x4 int = mtmp3.x
+    var x5 int = mtmp3.y
+    var y__6 int = x5
+    var x__5 int = x4
+    var t19 int = int_add(x__5, 1)
+    ret34 = Point{
+        x: t19,
+        y: y__6,
+    }
+    return ret34
+}
+
+func get_x(p__7 Point) int {
+    var ret35 int
+    var mtmp6 Point = p__7
+    var x7 int = mtmp6.x
+    var x__8 int = x7
+    ret35 = x__8
+    return ret35
+}
+
+func get_y(p__10 Point) int {
+    var ret36 int
+    var mtmp9 Point = p__10
+    var x11 int = mtmp9.y
+    var y__12 int = x11
+    ret36 = y__12
+    return ret36
+}
+
+func point_to_string(p__13 Point) string {
+    var ret37 string
+    var mtmp12 Point = p__13
+    var x13 int = mtmp12.x
+    var x14 int = mtmp12.y
+    var y__15 int = x14
+    var x__14 int = x13
+    var t22 string = int_to_string(x__14)
+    var t21 string = string_add("Point { x: ", t22)
+    var t24 string = int_to_string(y__15)
+    var t23 string = string_add(", y: ", t24)
+    var t20 string = string_add(t21, t23)
+    ret37 = string_add(t20, "}")
+    return ret37
 }
 
 func main0() struct{} {
-    var ret4 struct{}
-    string_println("structs!")
-    ret4 = struct{}{}
-    return ret4
+    var ret38 struct{}
+    var start__16 Point = make_point()
+    var t25 string = point_to_string(start__16)
+    string_println(t25)
+    var t26 Point = Point{
+        x: 1,
+        y: 2,
+    }
+    var swapped__17 Point = flip(t26)
+    var t27 string = point_to_string(swapped__17)
+    string_println(t27)
+    wrap_int(3)
+    var a__20 Point = x_add_1(start__16)
+    var t28 string = point_to_string(a__20)
+    string_println(t28)
+    var t29 Point = x_add_1(start__16)
+    var a__21 Point = flip(t29)
+    var t30 string = point_to_string(a__21)
+    string_println(t30)
+    ret38 = struct{}{}
+    return ret38
 }
 
 func main() {

@@ -7,20 +7,66 @@ struct Wrapper {
     value: T,
 }
 
-fn takes_point(p: Point) -> int {
-    0
+fn make_point() -> Point {
+    Point {
+        x: 0,
+        y: 0
+    }
 }
 
-fn id_wrapper_int(value: Wrapper[int]) -> Wrapper[int] {
-    value
+fn flip(point: Point) -> Point {
+    let Point(x, y) = point in
+    Point {
+        y: x,
+        x: y
+    }
 }
 
-fn takes_wrapper_unit(value: Wrapper[unit]) -> unit {
-    ()
+fn wrap_int(x: int) -> Wrapper[int] {
+    Wrapper {
+        value: x
+    }
+}
+
+fn x_add_1(p: Point) -> Point {
+    let Point(x, y) = p in
+    Point {
+        x: int_add(x, 1),
+        y: y
+    }
+}
+
+fn get_x(p: Point) -> int {
+    let Point(x, y) = p in
+    x
+}
+
+fn get_y(p: Point) -> int {
+    let Point(x, y) = p in
+    y
+}
+
+fn point_to_string(p: Point) -> string {
+    let Point(x, y) = p in
+    string_add(string_add(string_add("Point { x: ", int_to_string(x)), string_add(", y: ", int_to_string(y))), "}")
 }
 
 fn main() {
-    let _ = string_println("structs!") in
+    let start = make_point() in
+    let _ = string_println(point_to_string(start)) in
+    let swapped = flip(Point {
+          y: 2,
+          x: 1
+      }) in
+    let _ = string_println(point_to_string(swapped)) in
+    let boxed = wrap_int(3) in
+    let point_box = Wrapper {
+        value: swapped
+    } in
+    let a = x_add_1(start) in
+    let _ = string_println(point_to_string(a)) in
+    let a = flip(x_add_1(start)) in
+    let _ = string_println(point_to_string(a)) in
     ()
 }
 
