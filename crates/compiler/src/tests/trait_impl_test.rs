@@ -6,7 +6,7 @@ use parser::syntax::MySyntaxNode;
 use crate::{env::Env, tast};
 
 fn typecheck(src: &str) -> (tast::File, Env) {
-    let path = PathBuf::from("trait_impl_test.gom");
+    let path = PathBuf::from("dummy.src");
     let parsed = parser::parse(&path, src);
     let root = MySyntaxNode::new_root(parsed.green_node);
     let cst = cst::cst::File::cast(root).expect("failed to cast syntax tree");
