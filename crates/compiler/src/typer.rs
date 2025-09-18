@@ -7,7 +7,7 @@ use ena::unify::InPlaceUnificationTable;
 use crate::{
     env::{self, Constraint, Env},
     rename,
-    tast::{self, ConstructorKind, TypeVar},
+    tast::{self, TypeVar},
 };
 
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
@@ -1093,25 +1093,27 @@ impl TypeInference {
                     .lookup_constructor(vcon)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
 
-                let expected_arity = match &constructor.kind {
-                    ConstructorKind::Enum { type_name, index } => env
+                let expected_arity = match &constructor {
+                    tast::Constructor::Enum(enum_constructor) => env
                         .enums
-                        .get(type_name)
-                        .map(|def| def.variants[*index].1.len())
+                        .get(&enum_constructor.type_name)
+                        .map(|def| def.variants[enum_constructor.index].1.len())
                         .unwrap_or_else(|| {
                             panic!(
                                 "Enum {} not found when checking constructor {}",
-                                type_name.0, constructor.name.0
+                                enum_constructor.type_name.0,
+                                constructor.name().0
                             )
                         }),
-                    ConstructorKind::Struct { type_name } => env
+                    tast::Constructor::Struct(struct_constructor) => env
                         .structs
-                        .get(type_name)
+                        .get(&struct_constructor.type_name)
                         .map(|def| def.fields.len())
                         .unwrap_or_else(|| {
                             panic!(
                                 "Struct {} not found when checking constructor {}",
-                                type_name.0, constructor.name.0
+                                struct_constructor.type_name.0,
+                                constructor.name().0
                             )
                         }),
                 };
@@ -1119,7 +1121,7 @@ impl TypeInference {
                 if expected_arity != args.len() {
                     panic!(
                         "Constructor {} expects {} arguments, but got {}",
-                        constructor.name.0,
+                        constructor.name().0,
                         expected_arity,
                         args.len()
                     );
@@ -1157,8 +1159,9 @@ impl TypeInference {
                     .lookup_constructor(name)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
 
-                let struct_fields = match &constructor.kind {
-                    ConstructorKind::Struct { type_name } => {
+                let struct_fields = match &constructor {
+                    tast::Constructor::Struct(struct_constructor) => {
+                        let type_name = &struct_constructor.type_name;
                         let struct_def = env.structs.get(type_name).unwrap_or_else(|| {
                             panic!(
                                 "Struct {} not found when checking literal {}",
@@ -1167,7 +1170,7 @@ impl TypeInference {
                         });
                         struct_def.fields.clone()
                     }
-                    ConstructorKind::Enum { .. } => {
+                    tast::Constructor::Enum { .. } => {
                         panic!(
                             "Constructor {} refers to an enum, but a struct literal was used",
                             name.0
@@ -1632,21 +1635,22 @@ impl TypeInference {
                     .lookup_constructor(vcon)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
 
-                let expected_arity = match &constructor.kind {
-                    ConstructorKind::Enum { type_name, index } => env
+                let expected_arity = match &constructor {
+                    tast::Constructor::Enum(enum_constructor) => env
                         .enums
-                        .get(type_name)
-                        .map(|def| def.variants[*index].1.len())
+                        .get(&enum_constructor.type_name)
+                        .map(|def| def.variants[enum_constructor.index].1.len())
                         .unwrap_or_else(|| {
                             panic!(
                                 "Enum {} not found when checking constructor {}",
-                                type_name.0, constructor.name.0
+                                enum_constructor.type_name.0,
+                                constructor.name().0
                             )
                         }),
-                    ConstructorKind::Struct { .. } => {
+                    tast::Constructor::Struct(_) => {
                         panic!(
                             "Struct {} patterns must use field syntax",
-                            constructor.name.0
+                            constructor.name().0
                         )
                     }
                 };
@@ -1654,7 +1658,7 @@ impl TypeInference {
                 if expected_arity != args.len() {
                     panic!(
                         "Constructor {} expects {} arguments, but got {}",
-                        constructor.name.0,
+                        constructor.name().0,
                         expected_arity,
                         args.len()
                     );

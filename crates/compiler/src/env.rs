@@ -3,7 +3,7 @@ use indexmap::{IndexMap, IndexSet};
 
 use crate::{
     core,
-    tast::{self, Constructor, ConstructorKind},
+    tast::{self, Constructor},
 };
 use std::cell::Cell;
 
@@ -154,13 +154,11 @@ impl Env {
                         }
                     };
 
-                    let constructor = Constructor {
-                        name: variant_name.clone(),
-                        kind: ConstructorKind::Enum {
-                            type_name: enum_name.clone(),
-                            index,
-                        },
-                    };
+                    let constructor = Constructor::Enum(tast::EnumConstructor {
+                        type_name: enum_name.clone(),
+                        variant: variant_name.clone(),
+                        index,
+                    });
                     return Some((constructor, ctor_ty));
                 }
             }
@@ -186,12 +184,9 @@ impl Env {
                 }
             };
 
-            let constructor = Constructor {
-                name: struct_def.name.clone(),
-                kind: ConstructorKind::Struct {
-                    type_name: struct_def.name.clone(),
-                },
-            };
+            let constructor = Constructor::Struct(tast::StructConstructor {
+                type_name: struct_def.name.clone(),
+            });
             return Some((constructor, ctor_ty));
         }
 

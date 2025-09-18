@@ -102,8 +102,8 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
             constructor,
             args,
             ty,
-        } if constructor.kind.enum_index().is_some() && args.is_empty() => ImmExpr::ImmTag {
-            index: constructor.kind.enum_index().unwrap(),
+        } if constructor.enum_index().is_some() && args.is_empty() => ImmExpr::ImmTag {
+            index: constructor.enum_index().unwrap(),
             ty,
         },
         // Other core::Expr variants are not immediate and should not appear as match arm LHS patterns.
@@ -145,10 +145,10 @@ fn compile_match_arms_to_anf<'a>(
                 constructor,
                 args,
                 ty,
-            } if constructor.kind.enum_index().is_some() && args.is_empty() => {
+            } if constructor.enum_index().is_some() && args.is_empty() => {
                 // Nullary constructors are immediate
                 let anf_lhs = ImmExpr::ImmTag {
-                    index: constructor.kind.enum_index().unwrap(),
+                    index: constructor.enum_index().unwrap(),
                     ty: ty.clone(),
                 };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -161,10 +161,10 @@ fn compile_match_arms_to_anf<'a>(
                 constructor,
                 args: _args,
                 ty,
-            } if constructor.kind.enum_index().is_some() => {
+            } if constructor.enum_index().is_some() => {
                 // Patterns were already simplified in compile_match.rs. Do not duplicate field extraction here.
                 let anf_lhs = ImmExpr::ImmTag {
-                    index: constructor.kind.enum_index().unwrap(),
+                    index: constructor.enum_index().unwrap(),
                     ty: ty.clone(),
                 };
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -215,11 +215,11 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
             args,
             ty: _,
         } => {
-            if args.is_empty() && constructor.kind.enum_index().is_some() {
+            if args.is_empty() && constructor.enum_index().is_some() {
                 // Nullary enum constructors are immediate tags
                 k(CExpr::CImm {
                     imm: ImmExpr::ImmTag {
-                        index: constructor.kind.enum_index().unwrap(),
+                        index: constructor.enum_index().unwrap(),
                         ty: e_ty,
                     },
                 })

@@ -29,36 +29,64 @@ pub struct Fn {
 }
 
 #[derive(Debug, Clone)]
-pub enum ConstructorKind {
-    Enum { type_name: Uident, index: usize },
-    Struct { type_name: Uident },
+pub struct EnumConstructor {
+    pub type_name: Uident,
+    pub variant: Uident,
+    pub index: usize,
 }
 
-impl ConstructorKind {
+#[derive(Debug, Clone)]
+pub struct StructConstructor {
+    pub type_name: Uident,
+}
+
+#[derive(Debug, Clone)]
+pub enum Constructor {
+    Enum(EnumConstructor),
+    Struct(StructConstructor),
+}
+
+impl Constructor {
+    pub fn name(&self) -> &Uident {
+        match self {
+            Constructor::Enum(constructor) => &constructor.variant,
+            Constructor::Struct(constructor) => &constructor.type_name,
+        }
+    }
+
     pub fn type_name(&self) -> &Uident {
         match self {
-            ConstructorKind::Enum { type_name, .. } | ConstructorKind::Struct { type_name } => {
-                type_name
-            }
+            Constructor::Enum(constructor) => &constructor.type_name,
+            Constructor::Struct(constructor) => &constructor.type_name,
         }
     }
 
     pub fn enum_index(&self) -> Option<usize> {
         match self {
-            ConstructorKind::Enum { index, .. } => Some(*index),
-            ConstructorKind::Struct { .. } => None,
+            Constructor::Enum(constructor) => Some(constructor.index),
+            Constructor::Struct(_) => None,
         }
     }
 
     pub fn is_struct(&self) -> bool {
-        matches!(self, ConstructorKind::Struct { .. })
+        matches!(self, Constructor::Struct(_))
     }
-}
 
-#[derive(Debug, Clone)]
-pub struct Constructor {
-    pub name: Uident,
-    pub kind: ConstructorKind,
+    pub fn as_enum(&self) -> Option<&EnumConstructor> {
+        if let Constructor::Enum(constructor) = self {
+            Some(constructor)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_struct(&self) -> Option<&StructConstructor> {
+        if let Constructor::Struct(constructor) = self {
+            Some(constructor)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, Hash)]

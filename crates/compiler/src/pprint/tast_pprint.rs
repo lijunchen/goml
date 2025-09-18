@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 
 use crate::env::Env;
-use crate::tast::ConstructorKind;
+use crate::tast::Constructor;
 use crate::tast::Expr;
 use crate::tast::File;
 use crate::tast::Fn;
@@ -203,9 +203,12 @@ impl Expr {
                 constructor,
                 args,
                 ty: _,
-            } => match &constructor.kind {
-                ConstructorKind::Enum { type_name, .. } => {
-                    let name_doc = RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0));
+            } => match constructor {
+                Constructor::Enum(enum_constructor) => {
+                    let name_doc = RcDoc::text(format!(
+                        "{}::{}",
+                        enum_constructor.type_name.0, enum_constructor.variant.0
+                    ));
 
                     if args.is_empty() {
                         name_doc
@@ -221,10 +224,10 @@ impl Expr {
                             .append(RcDoc::text(")"))
                     }
                 }
-                ConstructorKind::Struct { type_name } => {
-                    let name_doc = RcDoc::text(constructor.name.0.clone());
+                Constructor::Struct(struct_constructor) => {
+                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = env.structs.get(type_name) {
+                    if let Some(struct_def) = env.structs.get(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
@@ -379,9 +382,12 @@ impl Pat {
                 constructor,
                 args,
                 ty: _,
-            } => match &constructor.kind {
-                ConstructorKind::Enum { type_name, .. } => {
-                    let name_doc = RcDoc::text(format!("{}::{}", type_name.0, constructor.name.0));
+            } => match constructor {
+                Constructor::Enum(enum_constructor) => {
+                    let name_doc = RcDoc::text(format!(
+                        "{}::{}",
+                        enum_constructor.type_name.0, enum_constructor.variant.0
+                    ));
 
                     if args.is_empty() {
                         name_doc
@@ -396,10 +402,10 @@ impl Pat {
                             .append(RcDoc::text(")"))
                     }
                 }
-                ConstructorKind::Struct { type_name } => {
-                    let name_doc = RcDoc::text(constructor.name.0.clone());
+                Constructor::Struct(struct_constructor) => {
+                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = env.structs.get(type_name) {
+                    if let Some(struct_def) = env.structs.get(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
