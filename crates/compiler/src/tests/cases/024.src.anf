@@ -1,0 +1,55 @@
+fn point_to_string(p/0: Point) -> string {
+  let mtmp0 = p/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  let t8 = int_to_string(x/1) in
+  let t11 = int_to_string(y/2) in
+  let t10 = string_add(t11, " }") in
+  let t9 = string_add(", y: ", t10) in
+  let t7 = string_add(t8, t9) in
+  string_add("Point { x: ", t7)
+}
+
+fn color_to_string(c/3: Color) -> string {
+  match c/3 {
+    Tag_0 => {
+      "Red"
+    },
+    Tag_1 => {
+      "Green"
+    },
+    Tag_2 => {
+      "Blue"
+    },
+  }
+}
+
+fn line_to_string(l/4: Line) -> string {
+  let mtmp3 = l/4 in
+  let x4 = Line.from(mtmp3) in
+  let x5 = Line.to(mtmp3) in
+  let x6 = Line.color(mtmp3) in
+  let color/7 = x6 in
+  let to/6 = x5 in
+  let from/5 = x4 in
+  let t13 = point_to_string(from/5) in
+  let t16 = point_to_string(to/6) in
+  let t19 = color_to_string(color/7) in
+  let t18 = string_add(t19, " }") in
+  let t17 = string_add(", color: ", t18) in
+  let t15 = string_add(t16, t17) in
+  let t14 = string_add(", to: ", t15) in
+  let t12 = string_add(t13, t14) in
+  string_add("Line { from: ", t12)
+}
+
+fn main() -> unit {
+  let p0/8 = Point { x: 0, y: 0 } in
+  let p1/9 = Point { x: 10, y: 10 } in
+  let t20 = Tag_0 in
+  let line/10 = Line { from: p0/8, to: p1/9, color: t20 } in
+  let t21 = line_to_string(line/10) in
+  string_println(t21)
+}

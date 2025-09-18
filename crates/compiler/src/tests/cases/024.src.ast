@@ -1,0 +1,52 @@
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn point_to_string(p: Point) -> string {
+    let Point { x: x, y: y } = p in
+    string_add("Point { x: ", string_add(int_to_string(x), string_add(", y: ", string_add(int_to_string(y), " }"))))
+}
+
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+fn color_to_string(c: Color) -> string {
+    match c {
+        Red => "Red",
+        Green => "Green",
+        Blue => "Blue",
+    }
+}
+
+struct Line {
+    from: Point,
+    to: Point,
+    color: Color,
+}
+
+fn line_to_string(l: Line) -> string {
+    let Line { from: from, to: to, color: color } = l in
+    string_add("Line { from: ", string_add(point_to_string(from), string_add(", to: ", string_add(point_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
+}
+
+fn main() {
+    let p0 = Point {
+        x: 0,
+        y: 0
+    } in
+    let p1 = Point {
+        x: 10,
+        y: 10
+    } in
+    let line = Line {
+        from: p0,
+        to: p1,
+        color: Red
+    } in
+    string_println(line_to_string(line))
+}
+

@@ -1,0 +1,24 @@
+fn point_to_string(p/0: Point) -> string {
+  let Point { x: x/1: int, y: y/2: int } = (p/0 : Point) in
+  string_add("Point { x: ", string_add(int_to_string((x/1 : int)), string_add(", y: ", string_add(int_to_string((y/2 : int)), " }"))))
+}
+
+fn color_to_string(c/3: Color) -> string {
+  match (c/3 : Color) {
+      Color::Red => "Red",
+      Color::Green => "Green",
+      Color::Blue => "Blue",
+  }
+}
+
+fn line_to_string(l/4: Line) -> string {
+  let Line { from: from/5: Point, to: to/6: Point, color: color/7: Color } = (l/4 : Line) in
+  string_add("Line { from: ", string_add(point_to_string((from/5 : Point)), string_add(", to: ", string_add(point_to_string((to/6 : Point)), string_add(", color: ", string_add(color_to_string((color/7 : Color)), " }"))))))
+}
+
+fn main() -> unit {
+  let p0/8: Point = Point { x: 0, y: 0 } in
+  let p1/9: Point = Point { x: 10, y: 10 } in
+  let line/10: Line = Line { from: (p0/8 : Point), to: (p1/9 : Point), color: Color::Red } in
+  string_println(line_to_string((line/10 : Line)))
+}
