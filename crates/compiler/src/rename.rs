@@ -170,6 +170,7 @@ impl Rename {
             }
             ast::Pat::PUnit => pat.clone(),
             ast::Pat::PBool { .. } => pat.clone(),
+            ast::Pat::PInt { .. } => pat.clone(),
             ast::Pat::PConstr { vcon, args } => {
                 let new_args = args.iter().map(|arg| self.rename_pat(arg, env)).collect();
                 ast::Pat::PConstr {

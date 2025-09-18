@@ -737,6 +737,13 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Pat::PInt { value, ty } => {
+                let ty = self.subst_ty(&ty);
+                tast::Pat::PInt {
+                    value,
+                    ty: ty.clone(),
+                }
+            }
             tast::Pat::PConstr {
                 constructor,
                 args,
@@ -1301,6 +1308,14 @@ impl TypeInference {
                 value: *value,
                 ty: tast::Ty::TBool,
             },
+            ast::Pat::PInt { value } => {
+                env.constraints
+                    .push(Constraint::TypeEqual(tast::Ty::TInt, ty.clone()));
+                tast::Pat::PInt {
+                    value: *value,
+                    ty: tast::Ty::TInt,
+                }
+            }
             ast::Pat::PConstr { .. } => {
                 let tast = self.infer_pat(env, vars, pat);
                 env.constraints
@@ -1441,6 +1456,10 @@ impl TypeInference {
             ast::Pat::PBool { value } => tast::Pat::PBool {
                 value: *value,
                 ty: tast::Ty::TBool,
+            },
+            ast::Pat::PInt { value } => tast::Pat::PInt {
+                value: *value,
+                ty: tast::Ty::TInt,
             },
             ast::Pat::PWild => {
                 let pat_ty = self.fresh_ty_var();

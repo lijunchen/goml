@@ -11,6 +11,7 @@ use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
 use crate::tast::{self, File};
 
+use indexmap::IndexMap;
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -526,6 +527,67 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     }
 }
 
+fn compile_int_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
+    let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
+
+    let mut value_rows: IndexMap<i32, Vec<Row>> = IndexMap::new();
+    let mut fallback_rows: Vec<Row> = Vec::new();
+    let mut default_rows: Vec<Row> = Vec::new();
+
+    for mut row in rows {
+        if let Some(col) = row.remove_column(&bvar.name) {
+            match col.pat {
+                Pat::PInt { value, ty: _ } => {
+                    let entry = value_rows
+                        .entry(value)
+                        .or_insert_with(|| fallback_rows.iter().cloned().collect::<Vec<_>>());
+                    entry.push(row);
+                }
+                Pat::PWild { .. } => {
+                    let row_clone = row.clone();
+                    for rows in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
+                _ => unreachable!("expected int pattern"),
+            }
+        } else {
+            let row_clone = row.clone();
+            for rows in value_rows.values_mut() {
+                rows.push(row_clone.clone());
+            }
+            fallback_rows.push(row_clone.clone());
+            default_rows.push(row);
+        }
+    }
+
+    let arms = value_rows
+        .into_iter()
+        .map(|(value, rows)| core::Arm {
+            lhs: core::Expr::EInt {
+                value,
+                ty: Ty::TInt,
+            },
+            body: compile_rows(env, rows, ty),
+        })
+        .collect();
+
+    let default = if default_rows.is_empty() {
+        None
+    } else {
+        Some(Box::new(compile_rows(env, default_rows, ty)))
+    };
+
+    core::Expr::EMatch {
+        expr: Box::new(bvar.to_core()),
+        arms,
+        default,
+        ty: body_ty,
+    }
+}
+
 fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
@@ -544,9 +606,7 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TVar(..) => unreachable!(),
         Ty::TUnit => compile_unit_case(env, rows, &bvar),
         Ty::TBool => compile_bool_case(env, rows, &bvar),
-        Ty::TInt => {
-            todo!()
-        }
+        Ty::TInt => compile_int_case(env, rows, &bvar, ty),
         Ty::TString => {
             todo!()
         }
