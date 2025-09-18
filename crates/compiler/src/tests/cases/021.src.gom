@@ -1,0 +1,128 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+func match_int(n__0 int) int {
+    var ret23 int
+    switch n__0 {
+    case 0:
+        ret23 = 10
+    case 1:
+        ret23 = 20
+    default:
+        ret23 = 30
+    }
+    return ret23
+}
+
+func wildcard_first(n__1 int) int {
+    var ret24 int
+    ret24 = 40
+    return ret24
+}
+
+func wildcard_middle(n__2 int) int {
+    var ret25 int
+    switch n__2 {
+    case 2:
+        ret25 = 90
+    case 3:
+        ret25 = 100
+    default:
+        ret25 = 100
+    }
+    return ret25
+}
+
+func repeated(n__3 int) int {
+    var ret26 int
+    switch n__3 {
+    case 1:
+        ret26 = 60
+    default:
+        ret26 = 80
+    }
+    return ret26
+}
+
+func main0() struct{} {
+    var ret27 struct{}
+    var t8 int = match_int(0)
+    var t7 string = int_to_string(t8)
+    string_println(t7)
+    var t10 int = match_int(5)
+    var t9 string = int_to_string(t10)
+    string_println(t9)
+    var t12 int = wildcard_first(0)
+    var t11 string = int_to_string(t12)
+    string_println(t11)
+    var t14 int = wildcard_first(2)
+    var t13 string = int_to_string(t14)
+    string_println(t13)
+    var t16 int = wildcard_middle(2)
+    var t15 string = int_to_string(t16)
+    string_println(t15)
+    var t18 int = wildcard_middle(3)
+    var t17 string = int_to_string(t18)
+    string_println(t17)
+    var t20 int = repeated(1)
+    var t19 string = int_to_string(t20)
+    string_println(t19)
+    var t22 int = repeated(3)
+    var t21 string = int_to_string(t22)
+    ret27 = string_println(t21)
+    return ret27
+}
+
+func main() {
+    main0()
+}

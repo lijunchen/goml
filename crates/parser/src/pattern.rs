@@ -5,8 +5,15 @@ use crate::{
     syntax::MySyntaxKind,
 };
 
-pub const PATTERN_FIRST: &[TokenKind] =
-    &[T![true], T![false], T![uident], T![lident], T!['('], T![_]];
+pub const PATTERN_FIRST: &[TokenKind] = &[
+    T![true],
+    T![false],
+    T![uident],
+    T![lident],
+    T!['('],
+    T![_],
+    T![int],
+];
 
 pub fn pattern(p: &mut Parser) {
     let _ = simple_pattern(p);
@@ -23,6 +30,11 @@ fn simple_pattern(p: &mut Parser) -> MarkerClosed {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_BOOL)
+        }
+        T![int] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::PATTERN_INT)
         }
         T![_] => {
             let m = p.open();

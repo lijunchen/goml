@@ -378,6 +378,11 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
                 _ => unreachable!(),
             }
         }
+        cst::Pattern::IntPat(it) => {
+            let value = it.value()?.to_string();
+            let value = value.parse::<i32>().ok()?;
+            Some(ast::Pat::PInt { value })
+        }
         cst::Pattern::ConstrPat(it) => {
             let name = it.uident().unwrap().to_string();
             let pats = it.patterns().flat_map(lower_pat).collect();

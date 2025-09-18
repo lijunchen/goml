@@ -183,6 +183,7 @@ impl Pat {
                     RcDoc::text("false")
                 }
             }
+            Pat::PInt { value } => RcDoc::text(value.to_string()),
             Pat::PConstr { vcon, args } => {
                 let prefix = RcDoc::text(vcon.0.clone());
 

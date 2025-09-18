@@ -326,6 +326,7 @@ impl Pat {
                     RcDoc::text("false")
                 }
             }
+            Pat::PInt { value, ty: _ } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,
                 args,

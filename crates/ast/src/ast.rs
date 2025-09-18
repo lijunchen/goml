@@ -134,6 +134,9 @@ pub enum Pat {
     PBool {
         value: bool,
     },
+    PInt {
+        value: i32,
+    },
     PConstr {
         vcon: Uident,
         args: Vec<Pat>,
