@@ -228,6 +228,27 @@ impl Pat {
                         .append(RcDoc::text(")"))
                 }
             }
+            Pat::PStruct { name, fields } => {
+                if fields.is_empty() {
+                    RcDoc::text(name.0.clone())
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{}"))
+                } else {
+                    let fields_doc = RcDoc::intersperse(
+                        fields.iter().map(|(fname, pat)| {
+                            RcDoc::text(fname.0.clone())
+                                .append(RcDoc::text(": "))
+                                .append(pat.to_doc())
+                        }),
+                        RcDoc::text(", "),
+                    );
+                    RcDoc::text(name.0.clone())
+                        .append(RcDoc::space())
+                        .append(RcDoc::text("{ "))
+                        .append(fields_doc)
+                        .append(RcDoc::text(" }"))
+                }
+            }
             Pat::PTuple { pats } => {
                 if pats.is_empty() {
                     RcDoc::text("()")

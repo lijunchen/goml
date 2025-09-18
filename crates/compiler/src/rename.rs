@@ -186,6 +186,16 @@ impl Rename {
                     args: new_args,
                 }
             }
+            ast::Pat::PStruct { name, fields } => {
+                let new_fields = fields
+                    .iter()
+                    .map(|(fname, pat)| (fname.clone(), self.rename_pat(pat, env)))
+                    .collect();
+                ast::Pat::PStruct {
+                    name: name.clone(),
+                    fields: new_fields,
+                }
+            }
             ast::Pat::PTuple { pats } => {
                 let new_pats = pats.iter().map(|pat| self.rename_pat(pat, env)).collect();
                 ast::Pat::PTuple { pats: new_pats }

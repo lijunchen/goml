@@ -148,6 +148,10 @@ pub enum Pat {
         vcon: Uident,
         args: Vec<Pat>,
     },
+    PStruct {
+        name: Uident,
+        fields: Vec<(Lident, Pat)>,
+    },
     PTuple {
         pats: Vec<Pat>,
     },

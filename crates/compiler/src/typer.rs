@@ -1574,6 +1574,12 @@ impl TypeInference {
                     .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
                 tast
             }
+            ast::Pat::PStruct { .. } => {
+                let tast = self.infer_pat(env, vars, pat);
+                env.constraints
+                    .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
+                tast
+            }
             ast::Pat::PTuple { pats } => {
                 let mut pats_tast = Vec::new();
                 let mut pat_typs = Vec::new();
@@ -1637,16 +1643,12 @@ impl TypeInference {
                                 type_name.0, constructor.name.0
                             )
                         }),
-                    ConstructorKind::Struct { type_name } => env
-                        .structs
-                        .get(type_name)
-                        .map(|def| def.fields.len())
-                        .unwrap_or_else(|| {
-                            panic!(
-                                "Struct {} not found when checking constructor {}",
-                                type_name.0, constructor.name.0
-                            )
-                        }),
+                    ConstructorKind::Struct { .. } => {
+                        panic!(
+                            "Struct {} patterns must use field syntax",
+                            constructor.name.0
+                        )
+                    }
                 };
 
                 if expected_arity != args.len() {
@@ -1668,6 +1670,74 @@ impl TypeInference {
                     args_ty.push(arg_tast.get_ty());
                     args_tast.push(arg_tast);
                 }
+
+                if !args_ty.is_empty() {
+                    let actual_ty = tast::Ty::TFunc {
+                        params: args_ty,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints
+                        .push(Constraint::TypeEqual(inst_constr_ty.clone(), actual_ty));
+                } else {
+                    env.constraints.push(Constraint::TypeEqual(
+                        inst_constr_ty.clone(),
+                        ret_ty.clone(),
+                    ));
+                }
+
+                tast::Pat::PConstr {
+                    constructor,
+                    args: args_tast,
+                    ty: ret_ty,
+                }
+            }
+            ast::Pat::PStruct { name, fields } => {
+                let struct_fields = {
+                    let struct_def = env.structs.get(name).unwrap_or_else(|| {
+                        panic!("Struct {} not found when checking pattern", name.0)
+                    });
+                    let expected_len = struct_def.fields.len();
+                    if expected_len != fields.len() {
+                        panic!(
+                            "Struct pattern {} expects {} fields, but got {}",
+                            name.0,
+                            expected_len,
+                            fields.len()
+                        );
+                    }
+                    struct_def.fields.clone()
+                };
+
+                let mut field_map: HashMap<String, &ast::Pat> = HashMap::new();
+                for (fname, pat) in fields.iter() {
+                    if field_map.insert(fname.0.clone(), pat).is_some() {
+                        panic!("Struct pattern {} has duplicate field {}", name.0, fname.0);
+                    }
+                }
+
+                let (constructor, constr_ty) = env.lookup_constructor(name).unwrap_or_else(|| {
+                    panic!("Struct {} not found when checking constructor", name.0)
+                });
+
+                let mut args_tast = Vec::new();
+                let mut args_ty = Vec::new();
+
+                for (field_name, _) in struct_fields.iter() {
+                    let pat_ast = field_map.remove(&field_name.0).unwrap_or_else(|| {
+                        panic!("Struct pattern {} missing field {}", name.0, field_name.0)
+                    });
+                    let pat_tast = self.infer_pat(env, vars, pat_ast);
+                    args_ty.push(pat_tast.get_ty());
+                    args_tast.push(pat_tast);
+                }
+
+                if !field_map.is_empty() {
+                    let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
+                    panic!("Struct pattern {} has unknown fields: {}", name.0, extra);
+                }
+
+                let inst_constr_ty = self.inst_ty(&constr_ty);
+                let ret_ty = self.fresh_ty_var();
 
                 if !args_ty.is_empty() {
                     let actual_ty = tast::Ty::TFunc {

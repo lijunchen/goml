@@ -41,7 +41,7 @@ fn describe[T](shape: Shape[T]) -> int {
 }
 
 fn point_to_string(point: Point) -> string {
-    let Point(x, y) = point in
+    let Point { x: x, y: y } = point in
     let with_x = string_add("Point { x: ", int_to_string(x)) in
     let with_y_label = string_add(with_x, ", y: ") in
     let with_y = string_add(with_y_label, int_to_string(y)) in
@@ -49,13 +49,13 @@ fn point_to_string(point: Point) -> string {
 }
 
 fn wrapper_int_to_string(wrapper: Wrapper[int]) -> string {
-    let Wrapper(value) = wrapper in
+    let Wrapper { value: value } = wrapper in
     let prefix = string_add("Wrapper[int] { value: ", int_to_string(value)) in
     string_add(prefix, " }")
 }
 
 fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
-    let Wrapper(value) = wrapper in
+    let Wrapper { value: value } = wrapper in
     let prefix = string_add("Wrapper[unit] { value: ", unit_to_string(value)) in
     string_add(prefix, " }")
 }
