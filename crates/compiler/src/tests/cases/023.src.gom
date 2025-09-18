@@ -1,0 +1,250 @@
+package main
+
+import (
+    "fmt"
+)
+
+func unit_to_string(x struct{}) string {
+    return "()"
+}
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func missing(s string) struct{} {
+    panic("missing: " + s)
+    return struct{}{}
+}
+
+type Tuple2_int_string struct {
+    _0 int
+    _1 string
+}
+
+type Mixed interface {
+    isMixed()
+}
+
+type OnlyInt struct {
+    _0 int
+}
+
+func (_ OnlyInt) isMixed() {}
+
+type OnlyStr struct {
+    _0 string
+}
+
+func (_ OnlyStr) isMixed() {}
+
+type Both struct {
+    _0 int
+    _1 string
+}
+
+func (_ Both) isMixed() {}
+
+func match_mixed_pair(pair__0 Tuple2_int_string) int {
+    var ret57 int
+    var x0 int = pair__0._0
+    var x1 string = pair__0._1
+    switch x1 {
+    case "zero":
+        switch x0 {
+        case 0:
+            ret57 = 1
+        default:
+            ret57 = 4
+        }
+    case "one":
+        switch x0 {
+        case 0:
+            ret57 = 2
+        case 1:
+            ret57 = 3
+        default:
+            ret57 = 5
+        }
+    default:
+        switch x0 {
+        case 0:
+            ret57 = 2
+        default:
+            ret57 = 5
+        }
+    }
+    return ret57
+}
+
+func match_mixed_enum(value__1 Mixed) int {
+    var ret58 int
+    switch value__1 := value__1.(type) {
+    case OnlyInt:
+        var x2 int = value__1._0
+        switch x2 {
+        case 0:
+            ret58 = 6
+        default:
+            ret58 = 7
+        }
+    case OnlyStr:
+        var x3 string = value__1._0
+        switch x3 {
+        case "zero":
+            ret58 = 8
+        default:
+            ret58 = 9
+        }
+    case Both:
+        var x4 int = value__1._0
+        var x5 string = value__1._1
+        switch x5 {
+        case "zero":
+            switch x4 {
+            case 0:
+                ret58 = 10
+            default:
+                ret58 = 12
+            }
+        default:
+            switch x4 {
+            case 0:
+                ret58 = 11
+            default:
+                ret58 = 13
+            }
+        }
+    }
+    return ret58
+}
+
+func main0() struct{} {
+    var ret59 struct{}
+    var t20 Tuple2_int_string = Tuple2_int_string{
+        _0: 0,
+        _1: "zero",
+    }
+    var t19 int = match_mixed_pair(t20)
+    var t18 string = int_to_string(t19)
+    string_println(t18)
+    var t23 Tuple2_int_string = Tuple2_int_string{
+        _0: 0,
+        _1: "other",
+    }
+    var t22 int = match_mixed_pair(t23)
+    var t21 string = int_to_string(t22)
+    string_println(t21)
+    var t26 Tuple2_int_string = Tuple2_int_string{
+        _0: 1,
+        _1: "one",
+    }
+    var t25 int = match_mixed_pair(t26)
+    var t24 string = int_to_string(t25)
+    string_println(t24)
+    var t29 Tuple2_int_string = Tuple2_int_string{
+        _0: 2,
+        _1: "zero",
+    }
+    var t28 int = match_mixed_pair(t29)
+    var t27 string = int_to_string(t28)
+    string_println(t27)
+    var t32 Tuple2_int_string = Tuple2_int_string{
+        _0: 2,
+        _1: "two",
+    }
+    var t31 int = match_mixed_pair(t32)
+    var t30 string = int_to_string(t31)
+    string_println(t30)
+    var t35 Mixed = OnlyInt{
+        _0: 0,
+    }
+    var t34 int = match_mixed_enum(t35)
+    var t33 string = int_to_string(t34)
+    string_println(t33)
+    var t38 Mixed = OnlyInt{
+        _0: 5,
+    }
+    var t37 int = match_mixed_enum(t38)
+    var t36 string = int_to_string(t37)
+    string_println(t36)
+    var t41 Mixed = OnlyStr{
+        _0: "zero",
+    }
+    var t40 int = match_mixed_enum(t41)
+    var t39 string = int_to_string(t40)
+    string_println(t39)
+    var t44 Mixed = OnlyStr{
+        _0: "hello",
+    }
+    var t43 int = match_mixed_enum(t44)
+    var t42 string = int_to_string(t43)
+    string_println(t42)
+    var t47 Mixed = Both{
+        _0: 0,
+        _1: "zero",
+    }
+    var t46 int = match_mixed_enum(t47)
+    var t45 string = int_to_string(t46)
+    string_println(t45)
+    var t50 Mixed = Both{
+        _0: 0,
+        _1: "hello",
+    }
+    var t49 int = match_mixed_enum(t50)
+    var t48 string = int_to_string(t49)
+    string_println(t48)
+    var t53 Mixed = Both{
+        _0: 2,
+        _1: "zero",
+    }
+    var t52 int = match_mixed_enum(t53)
+    var t51 string = int_to_string(t52)
+    string_println(t51)
+    var t56 Mixed = Both{
+        _0: 3,
+        _1: "three",
+    }
+    var t55 int = match_mixed_enum(t56)
+    var t54 string = int_to_string(t55)
+    ret59 = string_println(t54)
+    return ret59
+}
+
+func main() {
+    main0()
+}
