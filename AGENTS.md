@@ -19,7 +19,7 @@
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
 - Webapp dev: `just start` (build Wasm, then `pnpm install` and `pnpm run dev` in `webapp`).
 - Webapp build/preview: `pnpm -C webapp build` and `pnpm -C webapp preview`.
-- CI locally: `just ci` (check, test, fmt, clippy).
+- CI locally: cargo check, test, fmt, clippy.
 
 ## Coding Style & Naming Conventions
 - Rust (edition 2024): format with `rustfmt`; deny clippy warnings. Use snake_case for functions/modules, CamelCase for types, SCREAMING_SNAKE_CASE for consts.
@@ -37,7 +37,7 @@
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
 - PRs: include a clear description, linked issues, and before/after notes or screenshots for web UI changes.
-- Required: run `just ci` and `pnpm -C webapp lint` locally; ensure no clippy or fmt diffs.
+- Required: run cargo check, test, fmt, clippy locally; ensure no clippy or fmt diffs.
 
 ## Environment & Tooling
 - Requirements: Rust toolchain, `wasm-pack`, Node 18+, `pnpm`.
