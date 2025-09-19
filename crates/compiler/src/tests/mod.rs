@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::Context;
+use anyhow::bail;
 use cst::cst::CstNode;
 use parser::{debug_tree, syntax::MySyntaxNode};
 
@@ -20,6 +21,13 @@ fn test_examples() -> anyhow::Result<()> {
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let examples_dir = root_dir.join("src/tests/examples");
     run_test_cases(&examples_dir)
+}
+
+#[test]
+fn test_parse_error_cases() -> anyhow::Result<()> {
+    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let diagnostics_dir = root_dir.join("src/tests/diagnostics");
+    run_parse_error_cases(&diagnostics_dir)
 }
 
 fn go_bin() -> PathBuf {
@@ -122,6 +130,46 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
             let go_output = execute_single_go_file(&go_filename).unwrap();
 
             expect_test::expect_file![result_filename].assert_eq(&go_output);
+        }
+    }
+    Ok(())
+}
+
+fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file()
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+        {
+            let p = entry.path();
+            println!("Testing diagnostics: {}", p.display());
+            let filename = p.file_name().unwrap().to_str().unwrap();
+            let diag_filename = p.with_file_name(format!("{}.diag", filename));
+
+            let input = std::fs::read_to_string(&p)?;
+            let result = parser::parse(&p, &input);
+
+            if !result.has_errors() {
+                bail!(
+                    "Expected parse errors in {}, but none were reported",
+                    p.display()
+                );
+            }
+
+            let diagnostics = result.format_errors(&input);
+            if diagnostics.is_empty() {
+                bail!(
+                    "Parser reported errors but no diagnostics were produced for {}",
+                    p.display()
+                );
+            }
+
+            let mut formatted = diagnostics.join("\n");
+            if !formatted.is_empty() {
+                formatted.push('\n');
+            }
+
+            expect_test::expect_file![diag_filename].assert_eq(&formatted);
         }
     }
     Ok(())
