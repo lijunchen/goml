@@ -18,15 +18,21 @@ fn line_to_string(l/4: Line) -> string {
 
 fn point_type(p/8: Point) -> string {
   match (p/8 : Point) {
+      Point { x: 0, y: 0 } => "origin",
+      Point { x: 0, y: 1 } => "up",
+      Point { x: 1, y: 0 } => "right",
+      Point { x: 0, y: y/9: int } => match int_less(0, (y/9 : int)) {
+            true => "above",
+            false => "below",
+        },
       _ : Point => "unknown",
   }
 }
 
 fn main() -> unit {
-  let p0/9: Point = Point { x: 0, y: 0 } in
-  let Point { x: u/10: int, y: v/11: int } = (p0/9 : Point) in
-  let _ : unit = string_println(point_type((p0/9 : Point))) in
-  let p1/12: Point = Point { x: 10, y: 10 } in
-  let line/13: Line = Line { from: (p0/9 : Point), to: (p1/12 : Point), color: Color::Red } in
-  string_println(line_to_string((line/13 : Line)))
+  let p0/10: Point = Point { x: 0, y: 0 } in
+  let _ : unit = string_println(point_type((p0/10 : Point))) in
+  let p1/11: Point = Point { x: 10, y: 10 } in
+  let line/12: Line = Line { from: (p0/10 : Point), to: (p1/11 : Point), color: Color::Red } in
+  string_println(line_to_string((line/12 : Line)))
 }

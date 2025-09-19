@@ -33,18 +33,45 @@ fn line_to_string(l/4: Line) -> string {
 }
 
 fn point_type(p/8: Point) -> string {
-  "unknown"
+  let x7 = Point.x(p/8) in
+  let x8 = Point.y(p/8) in
+  match x7 {
+    0 => {
+      match x8 {
+        0 => {
+          "origin"
+        },
+        1 => {
+          "up"
+        },
+        _ => let y/9 = x8 in
+        let mtmp9 = int_less(0, y/9) in
+        match mtmp9 {
+          true => {
+            "above"
+          },
+          false => {
+            "below"
+          },
+        },
+      }
+    },
+    1 => {
+      match x8 {
+        0 => {
+          "right"
+        },
+        _ => "unknown",
+      }
+    },
+    _ => "unknown",
+  }
 }
 
 fn main() -> unit {
-  let p0/9 = Point { x: 0, y: 0 } in
-  let mtmp7 = p0/9 in
-  let x8 = Point.x(mtmp7) in
-  let x9 = Point.y(mtmp7) in
-  let v/11 = x9 in
-  let u/10 = x8 in
-  let mtmp10 = string_println(point_type(p0/9)) in
-  let p1/12 = Point { x: 10, y: 10 } in
-  let line/13 = Line { from: p0/9, to: p1/12, color: Color::Red } in
-  string_println(line_to_string(line/13))
+  let p0/10 = Point { x: 0, y: 0 } in
+  let mtmp10 = string_println(point_type(p0/10)) in
+  let p1/11 = Point { x: 10, y: 10 } in
+  let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in
+  string_println(line_to_string(line/12))
 }

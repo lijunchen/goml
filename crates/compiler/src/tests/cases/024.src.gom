@@ -130,29 +130,57 @@ func line_to_string(l__4 Line) string {
 
 func point_type(p__8 Point) string {
     var ret30 string
-    ret30 = "unknown"
+    var x7 int = p__8.x
+    var x8 int = p__8.y
+    switch x7 {
+    case 0:
+        switch x8 {
+        case 0:
+            ret30 = "origin"
+        case 1:
+            ret30 = "up"
+        default:
+            var y__9 int = x8
+            var mtmp9 bool = int_less(0, y__9)
+            switch mtmp9 {
+            case true:
+                ret30 = "above"
+            case false:
+                ret30 = "below"
+            }
+        }
+    case 1:
+        switch x8 {
+        case 0:
+            ret30 = "right"
+        default:
+            ret30 = "unknown"
+        }
+    default:
+        ret30 = "unknown"
+    }
     return ret30
 }
 
 func main0() struct{} {
     var ret31 struct{}
-    var p0__9 Point = Point{
+    var p0__10 Point = Point{
         x: 0,
         y: 0,
     }
-    var t24 string = point_type(p0__9)
+    var t24 string = point_type(p0__10)
     string_println(t24)
-    var p1__12 Point = Point{
+    var p1__11 Point = Point{
         x: 10,
         y: 10,
     }
     var t25 Color = Red{}
-    var line__13 Line = Line{
-        from: p0__9,
-        to: p1__12,
+    var line__12 Line = Line{
+        from: p0__10,
+        to: p1__11,
         color: t25,
     }
-    var t26 string = line_to_string(line__13)
+    var t26 string = line_to_string(line__12)
     ret31 = string_println(t26)
     return ret31
 }
