@@ -1,7 +1,7 @@
 use crate::ast;
 
 use ::cst::cst::CstNode;
-use cst::cst;
+use ::cst::{cst, support};
 use parser::syntax::MySyntaxNodePtr;
 
 pub fn lower(node: cst::File) -> Option<ast::File> {
@@ -375,8 +375,14 @@ fn lower_arg(node: cst::Arg) -> Option<ast::Expr> {
 
 fn lower_arm(node: cst::MatchArm) -> Option<ast::Arm> {
     let pat = node.pattern().and_then(lower_pat)?;
-    let expr = node.expr().and_then(lower_expr)?;
-    Some(ast::Arm { pat, body: expr })
+    let body = if let Some(expr) = node.expr() {
+        lower_expr(expr)
+    } else if let Some(block) = support::child::<cst::Block>(node.syntax()) {
+        lower_block(block)
+    } else {
+        None
+    }?;
+    Some(ast::Arm { pat, body })
 }
 
 fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {

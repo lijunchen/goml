@@ -35,6 +35,13 @@ fn line_to_string(l: Line) -> string {
 
 fn point_type(p: Point) -> string {
     match p {
+        Point { x: 0, y: 0 } => "origin",
+        Point { x: 0, y: 1 } => "up",
+        Point { x: 1, y: 0 } => "right",
+        Point { x: 0, y: y } => match int_less(0, y) {
+              true => "above",
+              false => "below",
+          },
         _ => "unknown",
     }
 }
@@ -44,7 +51,6 @@ fn main() {
         x: 0,
         y: 0
     } in
-    let Point { x: u, y: v } = p0 in
     let _ = string_println(point_type(p0)) in
     let p1 = Point {
         x: 10,
