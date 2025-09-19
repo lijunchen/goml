@@ -111,7 +111,7 @@ pub fn match_arm_list(p: &mut Parser) {
 
 fn match_arm(p: &mut Parser) {
     let m = p.open();
-    super::pattern::pattern(p);
+    let _ = super::pattern::pattern(p);
     p.expect(T![=>]);
     if p.at(T!['{']) {
         block(p);
@@ -186,7 +186,7 @@ fn let_expr(p: &mut Parser) {
     assert!(p.at(T![let]));
     let m = p.open();
     p.expect(T![let]);
-    pattern::pattern(p);
+    let _ = pattern::pattern(p);
     p.expect(T![=]);
     if !p.at_any(EXPR_FIRST) {
         p.advance_with_error("let [_] expected an expression");
