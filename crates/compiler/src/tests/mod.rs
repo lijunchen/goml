@@ -1,4 +1,5 @@
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use anyhow::bail;
@@ -77,61 +78,105 @@ fn execute_single_go_file(input: &Path) -> anyhow::Result<String> {
 }
 
 fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
+    let mut case_paths = Vec::new();
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_file()
             && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
         {
-            let p = entry.path();
-            println!("Testing file: {}", p.display());
-            let filename = p.file_name().unwrap().to_str().unwrap();
-            let cst_filename = p.with_file_name(format!("{}.cst", filename));
-            let ast_filename = p.with_file_name(format!("{}.ast", filename));
-            let tast_filename = p.with_file_name(format!("{}.tast", filename));
-            let core_filename = p.with_file_name(format!("{}.core", filename));
-            let mono_filename = p.with_file_name(format!("{}.mono", filename));
-            let anf_filename = p.with_file_name(format!("{}.anf", filename));
-            let go_filename = p.with_file_name(format!("{}.gom", filename));
-            let result_filename = p.with_file_name(format!("{}.out", filename));
-
-            let input = std::fs::read_to_string(entry.path())?;
-
-            let result = parser::parse(&p, &input);
-            if result.has_errors() {
-                panic!(
-                    "Parse errors in {}:\n{}",
-                    p.display(),
-                    result.format_errors(&input).join("\n")
-                );
-            }
-
-            let cst_debug = debug_tree(&result.green_node);
-            expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
-
-            let root = MySyntaxNode::new_root(result.green_node);
-            let cst = cst::cst::File::cast(root).unwrap();
-            let ast = ast::lower::lower(cst).unwrap();
-
-            expect_test::expect_file![ast_filename].assert_eq(&ast.to_pretty(120));
-            let (tast, mut env) = crate::typer::check_file(ast);
-            expect_test::expect_file![tast_filename].assert_eq(&tast.to_pretty(&env, 120));
-            let core = crate::compile_match::compile_file(&env, &tast);
-            expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
-
-            let mono = crate::mono::mono(&mut env, core);
-            expect_test::expect_file![mono_filename].assert_eq(&mono.to_pretty(&env, 120));
-
-            let anf = crate::anf::anf_file(&env, mono);
-            expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
-
-            let go = crate::go::compile::go_file(&env, anf);
-            expect_test::expect_file![&go_filename].assert_eq(&go.to_pretty(&env, 120));
-
-            let go_output = execute_single_go_file(&go_filename).unwrap();
-
-            expect_test::expect_file![result_filename].assert_eq(&go_output);
+            case_paths.push(entry.path());
         }
     }
+
+    if case_paths.is_empty() {
+        return Ok(());
+    }
+
+    let available = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(1);
+    let worker_count = std::cmp::min(available, case_paths.len());
+    let cases: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(case_paths));
+
+    let mut handles = Vec::with_capacity(worker_count);
+    for _ in 0..worker_count {
+        let cases = Arc::clone(&cases);
+        handles.push(std::thread::spawn(move || -> anyhow::Result<()> {
+            loop {
+                let case = {
+                    let mut cases = cases.lock().unwrap();
+                    cases.pop()
+                };
+
+                match case {
+                    Some(case) => run_single_test_case(case)?,
+                    None => break,
+                }
+            }
+
+            Ok(())
+        }));
+    }
+
+    for handle in handles {
+        match handle.join() {
+            Ok(result) => result?,
+            Err(panic) => std::panic::resume_unwind(panic),
+        }
+    }
+
+    Ok(())
+}
+
+fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
+    println!("Testing file: {}", p.display());
+    let filename = p.file_name().unwrap().to_str().unwrap();
+    let cst_filename = p.with_file_name(format!("{}.cst", filename));
+    let ast_filename = p.with_file_name(format!("{}.ast", filename));
+    let tast_filename = p.with_file_name(format!("{}.tast", filename));
+    let core_filename = p.with_file_name(format!("{}.core", filename));
+    let mono_filename = p.with_file_name(format!("{}.mono", filename));
+    let anf_filename = p.with_file_name(format!("{}.anf", filename));
+    let go_filename = p.with_file_name(format!("{}.gom", filename));
+    let result_filename = p.with_file_name(format!("{}.out", filename));
+
+    let input = std::fs::read_to_string(&p)?;
+
+    let result = parser::parse(&p, &input);
+    if result.has_errors() {
+        panic!(
+            "Parse errors in {}:\n{}",
+            p.display(),
+            result.format_errors(&input).join("\n")
+        );
+    }
+
+    let cst_debug = debug_tree(&result.green_node);
+    expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
+
+    let root = MySyntaxNode::new_root(result.green_node);
+    let cst = cst::cst::File::cast(root).unwrap();
+    let ast = ast::lower::lower(cst).unwrap();
+
+    expect_test::expect_file![ast_filename].assert_eq(&ast.to_pretty(120));
+    let (tast, mut env) = crate::typer::check_file(ast);
+    expect_test::expect_file![tast_filename].assert_eq(&tast.to_pretty(&env, 120));
+    let core = crate::compile_match::compile_file(&env, &tast);
+    expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
+
+    let mono = crate::mono::mono(&mut env, core);
+    expect_test::expect_file![mono_filename].assert_eq(&mono.to_pretty(&env, 120));
+
+    let anf = crate::anf::anf_file(&env, mono);
+    expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
+
+    let go = crate::go::compile::go_file(&env, anf);
+    expect_test::expect_file![&go_filename].assert_eq(&go.to_pretty(&env, 120));
+
+    let go_output = execute_single_go_file(&go_filename)?;
+
+    expect_test::expect_file![result_filename].assert_eq(&go_output);
+
     Ok(())
 }
 
