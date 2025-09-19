@@ -9,6 +9,9 @@ use crate::{env::Env, tast};
 fn typecheck(src: &str) -> (tast::File, Env) {
     let path = PathBuf::from("test_structs.gom");
     let parsed = parser::parse(&path, src);
+    if parsed.has_errors() {
+        panic!("Parse errors:\n{}", parsed.format_errors(src).join("\n"));
+    }
     let root = MySyntaxNode::new_root(parsed.green_node);
     let cst = cst::cst::File::cast(root).expect("failed to cast syntax tree");
     let ast = ast::lower::lower(cst).expect("failed to lower to AST");

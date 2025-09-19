@@ -5,6 +5,12 @@ use std::path::Path;
 fn check(input: &str, expect: Expect) {
     let path = Path::new("test.goml");
     let result = parse(path, input);
+    if result.has_errors() {
+        panic!(
+            "unexpected parse errors:\n{}",
+            result.format_errors(input).join("\n")
+        );
+    }
     expect.assert_eq(&debug_tree(&result.green_node));
 }
 

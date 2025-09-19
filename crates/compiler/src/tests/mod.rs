@@ -88,12 +88,18 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
 
             let input = std::fs::read_to_string(entry.path())?;
 
-            {
-                let result = parser::parse(&p, &input);
-                expect_test::expect_file![cst_filename].assert_eq(&debug_tree(&result.green_node));
+            let result = parser::parse(&p, &input);
+            if result.has_errors() {
+                panic!(
+                    "Parse errors in {}:\n{}",
+                    p.display(),
+                    result.format_errors(&input).join("\n")
+                );
             }
 
-            let result = parser::parse(&p, &input);
+            let cst_debug = debug_tree(&result.green_node);
+            expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
+
             let root = MySyntaxNode::new_root(result.green_node);
             let cst = cst::cst::File::cast(root).unwrap();
             let ast = ast::lower::lower(cst).unwrap();

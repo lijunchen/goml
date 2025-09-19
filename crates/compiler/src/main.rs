@@ -2,16 +2,23 @@ use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
 fn main() {
-    let file_path = std::env::args().nth(1).unwrap_or_else(|| {
+    let file_arg = std::env::args().nth(1).unwrap_or_else(|| {
         eprintln!("Usage: {} <file_path>", std::env::args().next().unwrap());
         std::process::exit(1);
     });
+    let file_path = std::path::PathBuf::from(&file_arg);
     let content = std::fs::read_to_string(&file_path).unwrap_or_else(|_| {
-        eprintln!("Error reading file: {}", file_path);
+        eprintln!("Error reading file: {}", file_path.display());
         std::process::exit(1);
     });
     let src = content;
-    let result = parser::parse(&std::path::PathBuf::from(file_path), &src);
+    let result = parser::parse(&file_path, &src);
+    if result.has_errors() {
+        for error in result.format_errors(&src) {
+            eprintln!("error: {}: {}", file_path.display(), error);
+        }
+        std::process::exit(1);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();

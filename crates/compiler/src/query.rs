@@ -5,6 +5,9 @@ use crate::{env::Env, tast};
 
 pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return None;
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap_or_else(|| panic!("failed to cast syntax tree"));
 

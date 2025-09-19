@@ -21,6 +21,20 @@ pub struct ParseResult {
     pub errors: Vec<ParseError>,
 }
 
+impl ParseResult {
+    pub fn has_errors(&self) -> bool {
+        !self.errors.is_empty()
+    }
+
+    pub fn format_errors(&self, src: &str) -> Vec<String> {
+        let index = line_index::LineIndex::new(src);
+        self.errors
+            .iter()
+            .map(|error| error.format_with_line_index(&index))
+            .collect()
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct MarkerOpened {
     index: usize,
