@@ -16,17 +16,18 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![str],
 ];
 
-pub fn pattern(p: &mut Parser) {
-    let _ = simple_pattern(p);
+pub fn pattern(p: &mut Parser) -> Option<MarkerClosed> {
+    simple_pattern(p)
 }
 
-fn simple_pattern(p: &mut Parser) -> MarkerClosed {
+fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
     if !p.at_any(PATTERN_FIRST) {
-        dbg!(&p.filename);
-        dbg!(&p.peek());
+        let m = p.open();
+        p.error("expected a pattern");
+        p.close(m, MySyntaxKind::ErrorTree);
+        return None;
     }
-    assert!(p.at_any(PATTERN_FIRST));
-    match p.peek() {
+    Some(match p.peek() {
         T![true] | T![false] => {
             let m = p.open();
             p.advance();
@@ -52,16 +53,16 @@ fn simple_pattern(p: &mut Parser) -> MarkerClosed {
             p.advance();
             if p.at(T![')']) {
                 p.expect(T![')']);
-                return p.close(m, MySyntaxKind::PATTERN_UNIT);
-            }
+                p.close(m, MySyntaxKind::PATTERN_UNIT)
+            } else {
+                while p.at_any(PATTERN_FIRST) {
+                    let _ = pattern(p);
+                    p.eat(T![,]);
+                }
 
-            while p.at_any(PATTERN_FIRST) {
-                pattern(p);
-                p.eat(T![,]);
+                p.expect(T![')']);
+                p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
-
-            p.expect(T![')']);
-            p.close(m, MySyntaxKind::PATTERN_TUPLE)
         }
         T![lident] => {
             let m = p.open();
@@ -74,7 +75,7 @@ fn simple_pattern(p: &mut Parser) -> MarkerClosed {
             if p.at(T!['(']) {
                 p.expect(T!['(']);
                 while p.at_any(PATTERN_FIRST) {
-                    pattern(p);
+                    let _ = pattern(p);
                     p.eat(T![,]);
                 }
                 p.expect(T![')']);
@@ -84,7 +85,7 @@ fn simple_pattern(p: &mut Parser) -> MarkerClosed {
             p.close(m, MySyntaxKind::PATTERN_CONSTR)
         }
         _ => unreachable!(),
-    }
+    })
 }
 
 fn struct_pattern_field_list(p: &mut Parser) {
@@ -109,7 +110,7 @@ fn struct_pattern_field(p: &mut Parser) {
     p.expect(T![lident]);
     p.expect(T![:]);
     if p.at_any(PATTERN_FIRST) {
-        pattern(p);
+        let _ = pattern(p);
     } else {
         p.advance_with_error("expected a pattern");
     }
