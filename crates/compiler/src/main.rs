@@ -12,14 +12,16 @@ fn main() {
         std::process::exit(1);
     });
     let src = content;
-    let result = parser::parse(&file_path, &src);
-    if result.has_errors() {
-        for error in result.format_errors(&src) {
+    let parse_result = parser::parse(&file_path, &src);
+    let (green_node, diagnostics) = parse_result.into_parts();
+    if diagnostics.has_errors() {
+        for error in parser::format_parser_diagnostics(&diagnostics, &src) {
             eprintln!("error: {}: {}", file_path.display(), error);
         }
         std::process::exit(1);
     }
-    let root = MySyntaxNode::new_root(result.green_node);
+    // Future compilation stages can extend `diagnostics` with their own errors.
+    let root = MySyntaxNode::new_root(green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
 

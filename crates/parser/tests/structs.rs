@@ -118,3 +118,14 @@ fn struct_literal_expr() {
                   RBrace@19..20 "}""#]],
     );
 }
+
+#[test]
+fn reports_parse_errors_without_panicking() {
+    let path = Path::new("test.goml");
+    let src = "fn foo(";
+    let result = parse(path, src);
+    assert!(result.has_errors());
+    let errors = result.format_errors(src);
+    assert!(!errors.is_empty());
+    assert!(errors[0].contains("expect"));
+}

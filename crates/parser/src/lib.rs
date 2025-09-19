@@ -1,5 +1,8 @@
 use std::path::Path;
 
+pub use diagnostics::{
+    Diagnostic, Diagnostics, Severity as DiagnosticSeverity, Stage as DiagnosticStage,
+};
 use parser::{ParseResult, Parser};
 use syntax::MySyntaxNode;
 
@@ -11,6 +14,8 @@ pub mod input;
 pub mod parser;
 pub mod pattern;
 pub mod syntax;
+
+pub use error::{DiagnosticFormatExt, format_parser_diagnostics};
 
 pub fn parse(filename: &Path, input: &str) -> ParseResult {
     let toks = lexer::lex(input);

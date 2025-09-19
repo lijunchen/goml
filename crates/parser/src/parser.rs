@@ -3,35 +3,46 @@ use std::mem;
 use std::path::{Path, PathBuf};
 
 use crate::syntax::{MySyntaxKind, ToSyntaxKind};
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use lexer::{T, Token, TokenKind};
 use rowan::{GreenNode, GreenNodeBuilder};
 
+use super::event::Event;
 use super::input::Input;
-use super::{error::ParseError, event::Event};
 
 pub struct Parser<'t> {
     pub filename: PathBuf,
     pub input: Input<'t>,
     fuel: Cell<u32>,
     pub events: Vec<Event>,
+    diagnostics: Diagnostics,
+    stuck_reported: Cell<bool>,
 }
 
 pub struct ParseResult {
     pub green_node: GreenNode,
-    pub errors: Vec<ParseError>,
+    pub diagnostics: Diagnostics,
 }
 
 impl ParseResult {
     pub fn has_errors(&self) -> bool {
-        !self.errors.is_empty()
+        self.diagnostics.has_errors()
     }
 
     pub fn format_errors(&self, src: &str) -> Vec<String> {
-        let index = line_index::LineIndex::new(src);
-        self.errors
-            .iter()
-            .map(|error| error.format_with_line_index(&index))
-            .collect()
+        crate::error::format_parser_diagnostics(&self.diagnostics, src)
+    }
+
+    pub fn diagnostics(&self) -> &Diagnostics {
+        &self.diagnostics
+    }
+
+    pub fn into_diagnostics(self) -> Diagnostics {
+        self.diagnostics
+    }
+
+    pub fn into_parts(self) -> (GreenNode, Diagnostics) {
+        (self.green_node, self.diagnostics)
     }
 }
 
@@ -88,10 +99,12 @@ impl MarkerClosed {
 impl<'t> Parser<'t> {
     pub fn new(filename: &Path, tokens: Vec<Token<'t>>) -> Self {
         Self {
+            filename: filename.into(),
             input: Input::new(tokens),
             fuel: Cell::new(256),
             events: Vec::new(),
-            filename: filename.into(),
+            diagnostics: Diagnostics::new(),
+            stuck_reported: Cell::new(false),
         }
     }
 }
@@ -99,7 +112,15 @@ impl<'t> Parser<'t> {
 impl Parser<'_> {
     pub fn peek(&mut self) -> TokenKind {
         if self.fuel.get() == 0 {
-            panic!("parser is suck")
+            if !self.stuck_reported.get() {
+                let message = "parser did not consume input while parsing";
+                let range = self.input.current_range();
+                let diagnostic =
+                    Diagnostic::new(Stage::Parser, Severity::Error, message).with_range(range);
+                self.diagnostics.push(diagnostic);
+                self.stuck_reported.set(true);
+            }
+            return T![eof];
         }
         self.fuel.set(self.fuel.get() - 1);
         self.input.peek()
@@ -145,6 +166,7 @@ impl Parser<'_> {
     pub fn advance(&mut self) {
         self.fuel.set(256);
         self.input.skip();
+        self.stuck_reported.set(false);
         self.events.push(Event::Advance);
     }
 
@@ -188,7 +210,7 @@ impl Parser<'_> {
         let mut cursor = 0;
         let tokens = &self.input.tokens;
         let mut builder = GreenNodeBuilder::new();
-        let mut errors: Vec<ParseError> = Vec::new();
+        let mut diagnostics = self.diagnostics;
 
         for i in 0..self.events.len() {
             match mem::replace(&mut self.events[i], Event::tombstone()) {
@@ -228,15 +250,13 @@ impl Parser<'_> {
                     }
                 }
                 Event::Error(msg) => {
-                    let range = if let Some(token) = tokens.get(cursor) {
-                        token.range
-                    } else {
-                        tokens.last().unwrap().range
-                    };
-                    errors.push(ParseError {
-                        msg: msg.clone(),
-                        range,
-                    });
+                    let range = tokens
+                        .get(cursor)
+                        .map(|token| token.range)
+                        .or_else(|| tokens.last().map(|token| token.range));
+                    let diagnostic =
+                        Diagnostic::new(Stage::Parser, Severity::Error, msg).with_range(range);
+                    diagnostics.push(diagnostic);
                 }
             }
             while let Some(token) = tokens.get(cursor) {
@@ -252,7 +272,7 @@ impl Parser<'_> {
 
         ParseResult {
             green_node: node,
-            errors,
+            diagnostics,
         }
     }
 }
