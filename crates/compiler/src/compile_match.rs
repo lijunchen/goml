@@ -106,7 +106,10 @@ impl Variable {
 fn emissing(ty: &Ty) -> core::Expr {
     core::Expr::ECall {
         func: "missing".to_string(),
-        args: vec![],
+        args: vec![core::Expr::EString {
+            value: "".to_string(),
+            ty: Ty::TString,
+        }],
         ty: ty.clone(),
     }
 }
@@ -810,7 +813,10 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                     }],
                     body: ECall {
                         func: "missing".to_string(),
-                        args: vec![],
+                        args: vec![Expr::EString {
+                            value: "".to_string(),
+                            ty: Ty::TString,
+                        }],
                         ty: body.get_ty(),
                     },
                 },

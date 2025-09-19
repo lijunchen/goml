@@ -60,7 +60,8 @@ func string_println(s string) struct{} {
 }
 
 func missing(s string) struct{} {
-    panic("missing: " + s)
+    println("missing: " + s)
+    panic("")
     return struct{}{}
 }"#
         .to_string(),

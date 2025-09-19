@@ -70,11 +70,12 @@ fn execute_single_go_file(input: &Path) -> anyhow::Result<String> {
     let stdin = child.stdin.as_mut().unwrap();
     stdin.write_all(b"").unwrap();
     let output = child.wait_with_output()?;
-    if !output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stderr).to_string())
+    let ret = if !output.status.success() {
+        String::from_utf8_lossy(&output.stderr).to_string()
     } else {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    }
+        String::from_utf8_lossy(&output.stdout).to_string()
+    };
+    Ok(ret.replace(dir.path().to_str().unwrap(), "${WORKDIR}"))
 }
 
 fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
