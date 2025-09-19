@@ -534,7 +534,7 @@ fn compile_int_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core
                 Pat::PInt { value, ty: _ } => {
                     let entry = value_rows
                         .entry(value)
-                        .or_insert_with(|| fallback_rows.iter().cloned().collect::<Vec<_>>());
+                        .or_insert_with(|| fallback_rows.clone());
                     entry.push(row);
                 }
                 Pat::PWild { .. } => {
@@ -595,7 +595,7 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
                 Pat::PString { value, ty: _ } => {
                     let entry = value_rows
                         .entry(value)
-                        .or_insert_with(|| fallback_rows.iter().cloned().collect());
+                        .or_insert_with(|| fallback_rows.clone());
                     entry.push(row);
                 }
                 Pat::PWild { .. } => {

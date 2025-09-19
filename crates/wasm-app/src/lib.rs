@@ -1,10 +1,13 @@
 use cst::cst::CstNode;
-use parser::syntax::MySyntaxNode;
+use parser::{parser::ParseResult, syntax::MySyntaxNode};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
 pub fn execute(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -18,6 +21,9 @@ pub fn execute(src: &str) -> String {
 #[wasm_bindgen]
 pub fn compile_to_core(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -31,6 +37,9 @@ pub fn compile_to_core(src: &str) -> String {
 #[wasm_bindgen]
 pub fn compile_to_mono(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -45,6 +54,9 @@ pub fn compile_to_mono(src: &str) -> String {
 #[wasm_bindgen]
 pub fn compile_to_anf(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -61,6 +73,9 @@ pub fn compile_to_anf(src: &str) -> String {
 #[wasm_bindgen]
 pub fn compile_to_go(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -79,12 +94,18 @@ pub fn compile_to_go(src: &str) -> String {
 #[wasm_bindgen]
 pub fn get_cst(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     parser::debug_tree(&result.green_node)
 }
 
 #[wasm_bindgen]
 pub fn get_ast(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -94,6 +115,9 @@ pub fn get_ast(src: &str) -> String {
 #[wasm_bindgen]
 pub fn get_tast(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return format_parse_errors(&result, src);
+    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
     let ast = ast::lower::lower(cst).unwrap();
@@ -105,4 +129,13 @@ pub fn get_tast(src: &str) -> String {
 #[wasm_bindgen]
 pub fn hover(src: &str, line: u32, col: u32) -> Option<String> {
     compiler::query::hover_type(src, line, col)
+}
+
+fn format_parse_errors(result: &ParseResult, src: &str) -> String {
+    result
+        .format_errors(src)
+        .into_iter()
+        .map(|err| format!("error: {}", err))
+        .collect::<Vec<_>>()
+        .join("\n")
 }

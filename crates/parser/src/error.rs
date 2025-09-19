@@ -10,6 +10,6 @@ pub struct ParseError {
 impl ParseError {
     pub fn format_with_line_index(&self, index: &line_index::LineIndex) -> String {
         let line_col = index.line_col(self.range.start());
-        format!("{}:{}: {}", line_col.line, line_col.col, self.msg)
+        format!("{}:{}: {}", line_col.line + 1, line_col.col + 1, self.msg)
     }
 }
