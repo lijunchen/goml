@@ -33,8 +33,30 @@ fn line_to_string(l: Line) -> string {
   string_add("Line { from: ", string_add(point_to_string(from), string_add(", to: ", string_add(point_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
 }
 
+fn point_type(p: Point) -> string {
+  match p {
+    Point { x: 0, y : 0} => {
+      "origin"
+    },
+    Point { x: 0, y : 1} => {
+      "up"
+    },
+    Point { x: 1, y : 0} => {
+      "right"
+    },
+    Point { x: 0, y : y} => {
+      match int_less(0, y) {
+        true => "above",
+        false => "below",
+      }
+    },
+    _ => "unknown"
+  }
+}
+
 fn main() {
   let p0 = Point { x: 0, y: 0 } in
+  let _ = string_println(point_type(p0)) in
   let p1 = Point { x: 10, y: 10 } in
   let line = Line { from: p0, to: p1, color: Red } in
   string_println(line_to_string(line))

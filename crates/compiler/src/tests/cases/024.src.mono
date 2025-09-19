@@ -32,9 +32,19 @@ fn line_to_string(l/4: Line) -> string {
   string_add("Line { from: ", string_add(point_to_string(from/5), string_add(", to: ", string_add(point_to_string(to/6), string_add(", color: ", string_add(color_to_string(color/7), " }"))))))
 }
 
+fn point_type(p/8: Point) -> string {
+  "unknown"
+}
+
 fn main() -> unit {
-  let p0/8 = Point { x: 0, y: 0 } in
-  let p1/9 = Point { x: 10, y: 10 } in
-  let line/10 = Line { from: p0/8, to: p1/9, color: Color::Red } in
-  string_println(line_to_string(line/10))
+  let p0/9 = Point { x: 0, y: 0 } in
+  let mtmp7 = p0/9 in
+  let x8 = Point.x(mtmp7) in
+  let x9 = Point.y(mtmp7) in
+  let v/11 = x9 in
+  let u/10 = x8 in
+  let mtmp10 = string_println(point_type(p0/9)) in
+  let p1/12 = Point { x: 10, y: 10 } in
+  let line/13 = Line { from: p0/9, to: p1/12, color: Color::Red } in
+  string_println(line_to_string(line/13))
 }

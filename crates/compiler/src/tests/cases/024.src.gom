@@ -79,36 +79,36 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func point_to_string(p__0 Point) string {
-    var ret22 string
+    var ret27 string
     var mtmp0 Point = p__0
     var x1 int = mtmp0.x
     var x2 int = mtmp0.y
     var y__2 int = x2
     var x__1 int = x1
-    var t8 string = int_to_string(x__1)
-    var t11 string = int_to_string(y__2)
-    var t10 string = string_add(t11, " }")
-    var t9 string = string_add(", y: ", t10)
-    var t7 string = string_add(t8, t9)
-    ret22 = string_add("Point { x: ", t7)
-    return ret22
+    var t12 string = int_to_string(x__1)
+    var t15 string = int_to_string(y__2)
+    var t14 string = string_add(t15, " }")
+    var t13 string = string_add(", y: ", t14)
+    var t11 string = string_add(t12, t13)
+    ret27 = string_add("Point { x: ", t11)
+    return ret27
 }
 
 func color_to_string(c__3 Color) string {
-    var ret23 string
+    var ret28 string
     switch c__3.(type) {
     case Red:
-        ret23 = "Red"
+        ret28 = "Red"
     case Green:
-        ret23 = "Green"
+        ret28 = "Green"
     case Blue:
-        ret23 = "Blue"
+        ret28 = "Blue"
     }
-    return ret23
+    return ret28
 }
 
 func line_to_string(l__4 Line) string {
-    var ret24 string
+    var ret29 string
     var mtmp3 Line = l__4
     var x4 Point = mtmp3.from
     var x5 Point = mtmp3.to
@@ -116,37 +116,45 @@ func line_to_string(l__4 Line) string {
     var color__7 Color = x6
     var to__6 Point = x5
     var from__5 Point = x4
-    var t13 string = point_to_string(from__5)
-    var t16 string = point_to_string(to__6)
-    var t19 string = color_to_string(color__7)
-    var t18 string = string_add(t19, " }")
-    var t17 string = string_add(", color: ", t18)
-    var t15 string = string_add(t16, t17)
-    var t14 string = string_add(", to: ", t15)
-    var t12 string = string_add(t13, t14)
-    ret24 = string_add("Line { from: ", t12)
-    return ret24
+    var t17 string = point_to_string(from__5)
+    var t20 string = point_to_string(to__6)
+    var t23 string = color_to_string(color__7)
+    var t22 string = string_add(t23, " }")
+    var t21 string = string_add(", color: ", t22)
+    var t19 string = string_add(t20, t21)
+    var t18 string = string_add(", to: ", t19)
+    var t16 string = string_add(t17, t18)
+    ret29 = string_add("Line { from: ", t16)
+    return ret29
+}
+
+func point_type(p__8 Point) string {
+    var ret30 string
+    ret30 = "unknown"
+    return ret30
 }
 
 func main0() struct{} {
-    var ret25 struct{}
-    var p0__8 Point = Point{
+    var ret31 struct{}
+    var p0__9 Point = Point{
         x: 0,
         y: 0,
     }
-    var p1__9 Point = Point{
+    var t24 string = point_type(p0__9)
+    string_println(t24)
+    var p1__12 Point = Point{
         x: 10,
         y: 10,
     }
-    var t20 Color = Red{}
-    var line__10 Line = Line{
-        from: p0__8,
-        to: p1__9,
-        color: t20,
+    var t25 Color = Red{}
+    var line__13 Line = Line{
+        from: p0__9,
+        to: p1__12,
+        color: t25,
     }
-    var t21 string = line_to_string(line__10)
-    ret25 = string_println(t21)
-    return ret25
+    var t26 string = line_to_string(line__13)
+    ret31 = string_println(t26)
+    return ret31
 }
 
 func main() {

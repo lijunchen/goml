@@ -33,11 +33,19 @@ fn line_to_string(l: Line) -> string {
     string_add("Line { from: ", string_add(point_to_string(from), string_add(", to: ", string_add(point_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
 }
 
+fn point_type(p: Point) -> string {
+    match p {
+        _ => "unknown",
+    }
+}
+
 fn main() {
     let p0 = Point {
         x: 0,
         y: 0
     } in
+    let Point { x: u, y: v } = p0 in
+    let _ = string_println(point_type(p0)) in
     let p1 = Point {
         x: 10,
         y: 10
