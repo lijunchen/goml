@@ -1,4 +1,5 @@
 use lexer::{T, Token, TokenKind};
+use text_size::TextRange;
 
 pub struct Input<'t> {
     pub tokens: Vec<Token<'t>>,
@@ -49,5 +50,9 @@ impl<'t> Input<'t> {
 
     fn peek_raw_kind(&self) -> TokenKind {
         self.tokens.get(self.cursor).map_or(T![eof], |it| it.kind)
+    }
+
+    pub fn current_range(&self) -> Option<TextRange> {
+        self.tokens.get(self.cursor).map(|token| token.range)
     }
 }
