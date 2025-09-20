@@ -174,22 +174,24 @@ function App() {
           />
         </div>
 
-        <div className="w-1/2 flex flex-col h-full">
-          <div className="flex-grow h-[80%] overflow-auto p-4">
+        <div className="w-1/2 flex flex-col h-full min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden p-4 flex flex-col">
             <h2 className="text-xl font-bold mb-2">{viewMode.toUpperCase()}</h2>
-            <Editor
-              height="100%"
-              language="plaintext"
-              value={core}
-              options={{
-                fontSize: 14,
-                minimap: { enabled: false },
-                readOnly: true,
-                stickyScroll: {
-                  enabled: false
-                }
-              }}
-            />
+            <div className="flex-1 min-h-0">
+              <Editor
+                height="100%"
+                language="plaintext"
+                value={core}
+                options={{
+                  fontSize: 14,
+                  minimap: { enabled: false },
+                  readOnly: true,
+                  stickyScroll: {
+                    enabled: false
+                  }
+                }}
+              />
+            </div>
           </div>
 
           <div className="h-[20%] overflow-auto p-4 border-t border-gray-300">
