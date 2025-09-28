@@ -136,13 +136,21 @@ impl Env {
         for (enum_name, enum_def) in self.enums.iter() {
             for (index, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
                 if variant_name == constr {
-                    let ret_ty = tast::Ty::TApp {
-                        name: enum_name.clone(),
-                        args: enum_def
-                            .generics
-                            .iter()
-                            .map(|g| tast::Ty::TParam { name: g.0.clone() })
-                            .collect(),
+                    let base = tast::Ty::TCon {
+                        name: enum_name.0.clone(),
+                    };
+                    let args: Vec<tast::Ty> = enum_def
+                        .generics
+                        .iter()
+                        .map(|g| tast::Ty::TParam { name: g.0.clone() })
+                        .collect();
+                    let ret_ty = if args.is_empty() {
+                        base.clone()
+                    } else {
+                        tast::Ty::TApp {
+                            ty: Box::new(base.clone()),
+                            args,
+                        }
                     };
 
                     let ctor_ty = if fields.is_empty() {
@@ -165,13 +173,21 @@ impl Env {
         }
 
         if let Some(struct_def) = self.structs.get(constr) {
-            let ret_ty = tast::Ty::TApp {
-                name: struct_def.name.clone(),
-                args: struct_def
-                    .generics
-                    .iter()
-                    .map(|g| tast::Ty::TParam { name: g.0.clone() })
-                    .collect(),
+            let base = tast::Ty::TCon {
+                name: struct_def.name.0.clone(),
+            };
+            let args: Vec<tast::Ty> = struct_def
+                .generics
+                .iter()
+                .map(|g| tast::Ty::TParam { name: g.0.clone() })
+                .collect();
+            let ret_ty = if args.is_empty() {
+                base.clone()
+            } else {
+                tast::Ty::TApp {
+                    ty: Box::new(base.clone()),
+                    args,
+                }
             };
             let params: Vec<tast::Ty> =
                 struct_def.fields.iter().map(|(_, ty)| ty.clone()).collect();
@@ -321,7 +337,9 @@ impl Env {
                             }
                         }
                     }
-                    tast::Ty::TApp { args, .. } => {
+                    tast::Ty::TCon { .. } => {}
+                    tast::Ty::TApp { ty, args } => {
+                        self.collect_type(ty.as_ref());
                         for arg in args {
                             self.collect_type(arg);
                         }

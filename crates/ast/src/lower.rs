@@ -152,10 +152,17 @@ fn lower_ty(node: cst::Type) -> Option<ast::Ty> {
                 .type_param_list()
                 .map(|list| list.types().flat_map(lower_ty).collect())
                 .unwrap_or_default();
-            Some(ast::Ty::TApp {
-                name: ast::Uident::new(&name),
-                args,
-            })
+
+            let base = ast::Ty::TCon { name };
+
+            if args.is_empty() {
+                Some(base)
+            } else {
+                Some(ast::Ty::TApp {
+                    ty: Box::new(base),
+                    args,
+                })
+            }
         }
 
         cst::Type::FuncTy(..) => todo!(),

@@ -131,31 +131,59 @@ fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
                 panic!("Unbound type parameter {}", name);
             }
         }
-        tast::Ty::TApp { name, args } => {
+        tast::Ty::TCon { name } => {
+            if name == "Self" {
+                return;
+            }
+            let ident = ast::Uident::new(name);
+            if let Some(enum_def) = env.enums.get(&ident) {
+                if !enum_def.generics.is_empty() {
+                    panic!(
+                        "Type {} expects {} type arguments, but got 0",
+                        name,
+                        enum_def.generics.len()
+                    );
+                }
+            } else if let Some(struct_def) = env.structs.get(&ident) {
+                if !struct_def.generics.is_empty() {
+                    panic!(
+                        "Type {} expects {} type arguments, but got 0",
+                        name,
+                        struct_def.generics.len()
+                    );
+                }
+            } else {
+                panic!("Unknown type constructor {}", name);
+            }
+        }
+        tast::Ty::TApp { ty, args } => {
             for arg in args.iter() {
                 validate_ty(env, arg, tparams);
             }
 
-            if let Some(enum_def) = env.enums.get(name) {
+            let base_name = ty.get_constr_name_unsafe();
+            let ident = ast::Uident::new(&base_name);
+
+            if let Some(enum_def) = env.enums.get(&ident) {
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
                     panic!(
                         "Type {} expects {} type arguments, but got {}",
-                        name.0, expected, actual
+                        base_name, expected, actual
                     );
                 }
-            } else if let Some(struct_def) = env.structs.get(name) {
+            } else if let Some(struct_def) = env.structs.get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
                     panic!(
                         "Type {} expects {} type arguments, but got {}",
-                        name.0, expected, actual
+                        base_name, expected, actual
                     );
                 }
             } else {
-                panic!("Unknown type constructor {}", name.0);
+                panic!("Unknown type constructor {}", base_name);
             }
         }
     }
@@ -451,19 +479,20 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
                 .map(|ty| instantiate_trait_method_ty(ty, self_ty))
                 .collect(),
         },
-        tast::Ty::TApp { name, args } => {
-            if name.0 == "Self" && args.is_empty() {
+        tast::Ty::TCon { name } => {
+            if name == "Self" {
                 self_ty.clone()
             } else {
-                tast::Ty::TApp {
-                    name: name.clone(),
-                    args: args
-                        .iter()
-                        .map(|ty| instantiate_trait_method_ty(ty, self_ty))
-                        .collect(),
-                }
+                tast::Ty::TCon { name: name.clone() }
             }
         }
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(instantiate_trait_method_ty(ty, self_ty)),
+            args: args
+                .iter()
+                .map(|ty| instantiate_trait_method_ty(ty, self_ty))
+                .collect(),
+        },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
@@ -491,18 +520,22 @@ pub fn ast_ty_to_tast_ty_with_tparams_env(
                 .collect();
             tast::Ty::TTuple { typs }
         }
-        ast::Ty::TApp { name, args } => {
-            if tparams_env.contains(name) {
-                return tast::Ty::TParam {
-                    name: name.0.clone(),
-                };
+        ast::Ty::TCon { name } => {
+            if tparams_env.iter().any(|param| param.0 == *name) {
+                tast::Ty::TParam { name: name.clone() }
+            } else {
+                tast::Ty::TCon { name: name.clone() }
             }
+        }
+        ast::Ty::TApp { ty, args } => {
+            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env);
+            let args = args
+                .iter()
+                .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env))
+                .collect();
             tast::Ty::TApp {
-                name: name.clone(),
-                args: args
-                    .iter()
-                    .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env))
-                    .collect(),
+                ty: Box::new(ty),
+                args,
             }
         }
         ast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
@@ -541,7 +574,13 @@ fn occurs(var: TypeVar, ty: &tast::Ty) {
                 occurs(var, ty);
             }
         }
-        tast::Ty::TApp { .. } => {}
+        tast::Ty::TCon { .. } => {}
+        tast::Ty::TApp { ty, args } => {
+            occurs(var, ty.as_ref());
+            for arg in args.iter() {
+                occurs(var, arg);
+            }
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
                 occurs(var, param);
@@ -566,7 +605,10 @@ impl TypeInference {
                 | tast::Ty::TString
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
-                tast::Ty::TApp { args, .. } => args.iter().all(is_concrete),
+                tast::Ty::TCon { .. } => true,
+                tast::Ty::TApp { ty, args } => {
+                    is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
+                }
                 tast::Ty::TFunc { params, ret_ty } => {
                     params.iter().all(is_concrete) && is_concrete(ret_ty)
                 }
@@ -678,8 +720,9 @@ impl TypeInference {
                 let typs = typs.iter().map(|ty| self.norm(ty)).collect();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TApp { name, args } => tast::Ty::TApp {
-                name: name.clone(),
+            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+                ty: Box::new(self.norm(ty)),
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
             },
             tast::Ty::TFunc { params, ret_ty } => {
@@ -742,25 +785,28 @@ impl TypeInference {
                 }
                 self.unify(ret_ty1, ret_ty2);
             }
+            (tast::Ty::TCon { name: n1 }, tast::Ty::TCon { name: n2 }) => {
+                if n1 != n2 {
+                    panic!("Constructor types are different: {:?} and {:?}", l, r);
+                }
+            }
             (
                 tast::Ty::TApp {
-                    name: name1,
+                    ty: ty1,
                     args: args1,
                 },
                 tast::Ty::TApp {
-                    name: name2,
+                    ty: ty2,
                     args: args2,
                 },
             ) => {
-                if name1 != name2 {
-                    panic!("Constructor types are different: {:?} and {:?}", l, r);
-                }
                 if args1.len() != args2.len() {
                     panic!(
                         "Constructor types have different argument lengths: {:?} and {:?}",
                         l, r
                     );
                 }
+                self.unify(ty1.as_ref(), ty2.as_ref());
                 for (arg1, arg2) in args1.iter().zip(args2.iter()) {
                     self.unify(arg1, arg2);
                 }
@@ -807,13 +853,15 @@ impl TypeInference {
                     .collect::<Vec<_>>();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TApp { name, args } => {
+            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TApp { ty, args } => {
+                let ty = self._go_inst_ty(ty, subst);
                 let args = args
                     .iter()
                     .map(|arg| self._go_inst_ty(arg, subst))
                     .collect::<Vec<_>>();
                 tast::Ty::TApp {
-                    name: name.clone(),
+                    ty: Box::new(ty),
                     args,
                 }
             }
@@ -855,8 +903,9 @@ impl TypeInference {
                 let typs = typs.iter().map(|ty| self.subst_ty(ty)).collect();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TApp { name, args } => tast::Ty::TApp {
-                name: name.clone(),
+            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+                ty: Box::new(self.subst_ty(ty)),
                 args: args.iter().map(|arg| self.subst_ty(arg)).collect(),
             },
             tast::Ty::TFunc { params, ret_ty } => {
