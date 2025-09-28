@@ -71,7 +71,9 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
         assert_eq!(params.len(), 1);
         assert_eq!(**ret_ty, tast::Ty::TUnit);
         let expected_param = tast::Ty::TApp {
-            name: Uident::new("Wrapper"),
+            ty: Box::new(tast::Ty::TCon {
+                name: "Wrapper".to_string(),
+            }),
             args: vec![tast::Ty::TParam {
                 name: "T".to_string(),
             }],
@@ -116,9 +118,8 @@ enum Shape[T] {
     assert_eq!(dot.1.len(), 1);
     assert_eq!(
         dot.1[0],
-        tast::Ty::TApp {
-            name: Uident::new("Point"),
-            args: vec![],
+        tast::Ty::TCon {
+            name: "Point".to_string(),
         }
     );
 
@@ -128,7 +129,9 @@ enum Shape[T] {
     assert_eq!(
         wrapped.1[0],
         tast::Ty::TApp {
-            name: Uident::new("Wrapper"),
+            ty: Box::new(tast::Ty::TCon {
+                name: "Wrapper".to_string(),
+            }),
             args: vec![tast::Ty::TParam {
                 name: "T".to_string(),
             }],
@@ -164,9 +167,8 @@ enum List {
     assert_eq!(node.fields[1].0.0, "next");
     assert_eq!(
         node.fields[1].1,
-        tast::Ty::TApp {
-            name: Uident::new("List"),
-            args: vec![],
+        tast::Ty::TCon {
+            name: "List".to_string(),
         }
     );
 
@@ -180,9 +182,8 @@ enum List {
     assert_eq!(cons.1.len(), 1);
     assert_eq!(
         cons.1[0],
-        tast::Ty::TApp {
-            name: Uident::new("Node"),
-            args: vec![],
+        tast::Ty::TCon {
+            name: "Node".to_string(),
         }
     );
 }

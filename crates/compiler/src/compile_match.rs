@@ -144,8 +144,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
                 .map(|t| substitute_ty_params(t, subst))
                 .collect(),
         },
-        Ty::TApp { name, args } => Ty::TApp {
-            name: name.clone(),
+        Ty::TCon { name } => Ty::TCon { name: name.clone() },
+        Ty::TApp { ty, args } => Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
                 .iter()
                 .map(|t| substitute_ty_params(t, subst))
@@ -666,13 +667,25 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TBool => compile_bool_case(env, rows, &bvar),
         Ty::TInt => compile_int_case(env, rows, &bvar, ty),
         Ty::TString => compile_string_case(env, rows, &bvar, ty),
-        Ty::TApp { name, args } => {
-            if env.enums.contains_key(name) {
-                compile_enum_case(env, rows, &bvar, ty, name)
-            } else if env.structs.contains_key(name) {
-                compile_struct_case(env, rows, &bvar, ty, name, args)
+        Ty::TCon { name } => {
+            let ident = Uident::new(name);
+            if env.enums.contains_key(&ident) {
+                compile_enum_case(env, rows, &bvar, ty, &ident)
+            } else if env.structs.contains_key(&ident) {
+                compile_struct_case(env, rows, &bvar, ty, &ident, &[])
             } else {
-                panic!("Unknown type constructor {} in match", name.0)
+                panic!("Unknown type constructor {} in match", name)
+            }
+        }
+        Ty::TApp { ty: base, args } => {
+            let name = base.get_constr_name_unsafe();
+            let ident = Uident::new(&name);
+            if env.enums.contains_key(&ident) {
+                compile_enum_case(env, rows, &bvar, ty, &ident)
+            } else if env.structs.contains_key(&ident) {
+                compile_struct_case(env, rows, &bvar, ty, &ident, args)
+            } else {
+                panic!("Unknown type constructor {} in match", name)
             }
         }
         Ty::TTuple { typs } => compile_tuple_case(env, rows, &bvar, typs, ty),

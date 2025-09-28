@@ -16,13 +16,15 @@ pub fn mangle_impl_name(trait_name: &ast::Uident, for_ty: &tast::Ty, method_name
                 .join("_");
             format!("Tuple_{}", inner)
         }
-        tast::Ty::TApp { name, args } => {
+        tast::Ty::TCon { name } => format!("Con_{}", name),
+        tast::Ty::TApp { ty, args } => {
+            let base = ty.get_constr_name_unsafe();
             let inner = args
                 .iter()
                 .map(|ty| format!("{:?}", ty))
                 .collect::<Vec<_>>()
                 .join("_");
-            format!("App_{}_{}", name.0, inner)
+            format!("App_{}_{}", base, inner)
         }
         tast::Ty::TParam { .. } => {
             unreachable!()

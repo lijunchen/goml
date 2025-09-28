@@ -198,13 +198,12 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                     .collect(),
             }
         }
-        tast::Ty::TApp { name, args } => {
+        tast::Ty::TCon { name } => goty::GoType::TName { name: name.clone() },
+        tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
                 unreachable!("generic types not supported in Go backend");
             }
-            goty::GoType::TName {
-                name: name.0.clone(),
-            }
+            tast_ty_to_go_type(ty.as_ref())
         }
         tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => {
@@ -224,7 +223,8 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt => "int".to_string(),
         tast::Ty::TString => "string".to_string(),
-        tast::Ty::TApp { name, .. } => name.0.clone(),
+        tast::Ty::TCon { name } => name.clone(),
+        tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),
         tast::Ty::TTuple { typs } => {
             let mut s = format!("Tuple{}", typs.len());
             for t in typs {

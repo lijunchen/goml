@@ -19,7 +19,8 @@ pub enum Ty {
     TInt,
     TString,
     TTuple { typs: Vec<Ty> },
-    TApp { name: Uident, args: Vec<Ty> },
+    TCon { name: String },
+    TApp { ty: Box<Ty>, args: Vec<Ty> },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
 

@@ -26,8 +26,9 @@ impl Ty {
 
                 doc.append(RcDoc::text(")"))
             }
-            Self::TApp { name, args } => {
-                let mut doc = RcDoc::text(name.0.clone());
+            Self::TCon { name } => RcDoc::text(name.clone()),
+            Self::TApp { ty, args } => {
+                let mut doc = ty.to_doc();
                 if !args.is_empty() {
                     let mut iter = args.iter();
                     if let Some(first) = iter.next() {

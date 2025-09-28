@@ -96,7 +96,8 @@ pub enum Ty {
     TInt,
     TString,
     TTuple { typs: Vec<Ty> },
-    TApp { name: Uident, args: Vec<Ty> },
+    TCon { name: String },
+    TApp { ty: Box<Ty>, args: Vec<Ty> },
     TParam { name: String },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
@@ -110,7 +111,8 @@ impl std::fmt::Debug for Ty {
             Self::TInt => write!(f, "TInt"),
             Self::TString => write!(f, "TString"),
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
-            Self::TApp { name, args } => write!(f, "TApp({:?}, {:?})", name, args),
+            Self::TCon { name } => write!(f, "TCon({})", name),
+            Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TParam { name } => write!(f, "TParam({})", name),
             Self::TFunc { params, ret_ty } => write!(f, "TFunc({:?}, {:?})", params, ret_ty),
         }
@@ -120,7 +122,8 @@ impl std::fmt::Debug for Ty {
 impl Ty {
     pub fn get_constr_name_unsafe(&self) -> String {
         match self {
-            Self::TApp { name, .. } => name.0.clone(),
+            Self::TCon { name } => name.clone(),
+            Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
             _ => {
                 panic!("Expected a constructor type, got: {:?}", self)
             }

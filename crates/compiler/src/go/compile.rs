@@ -77,20 +77,23 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
             }
             Constructor::Struct(struct_constructor) => {
                 let scrut_ty = imm_ty(expr);
-                let type_args = match scrut_ty {
-                    tast::Ty::TApp { name, args } => {
-                        assert_eq!(
-                            &name, &struct_constructor.type_name,
-                            "struct constructor type mismatch: expected {}, got {}",
-                            struct_constructor.type_name.0, name.0
-                        );
-                        args
+                let (ty_name, type_args) = match scrut_ty {
+                    tast::Ty::TCon { name } => (name, Vec::new()),
+                    tast::Ty::TApp { ty, args } => {
+                        let base_name = ty.get_constr_name_unsafe();
+                        (base_name, args)
                     }
                     other => panic!(
                         "EConstrGet on non-struct type {:?} for constructor {}",
                         other, struct_constructor.type_name.0
                     ),
                 };
+                let struct_name = &struct_constructor.type_name.0;
+                assert_eq!(
+                    ty_name, *struct_name,
+                    "struct constructor type mismatch: expected {}, got {}",
+                    struct_name, ty_name
+                );
                 let fields =
                     instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
                 fields[*field_index].1.clone()
@@ -123,11 +126,10 @@ fn variant_struct_name(env: &Env, enum_name: &str, variant_name: &str) -> String
 }
 
 fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
-    if let tast::Ty::TApp { name, .. } = ty
-        && let Some(def) = env.enums.get(name)
-    {
+    let name = ty.get_constr_name_unsafe();
+    if let Some(def) = env.enums.get(&Uident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
-        return variant_struct_name(env, &name.0, &vname.0);
+        return variant_struct_name(env, &name, &vname.0);
     }
     panic!(
         "Cannot resolve variant name for ty {:?} index {}",
@@ -137,10 +139,7 @@ fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
 
 fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
     let vname = lookup_variant_name(env, ty, index);
-    let ty = tast::Ty::TApp {
-        name: Uident::new(&vname),
-        args: vec![],
-    };
+    let ty = tast::Ty::TCon { name: vname };
     tast_ty_to_go_type(&ty)
 }
 
@@ -157,8 +156,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
                 .map(|t| substitute_ty_params(t, subst))
                 .collect(),
         },
-        tast::Ty::TApp { name, args } => tast::Ty::TApp {
-            name: name.clone(),
+        tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
                 .iter()
                 .map(|t| substitute_ty_params(t, subst))
@@ -316,20 +316,23 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
                 }
                 Constructor::Struct(struct_constructor) => {
                     let scrut_ty = imm_ty(expr);
-                    let type_args = match scrut_ty {
-                        tast::Ty::TApp { name, args } => {
-                            assert_eq!(
-                                &name, &struct_constructor.type_name,
-                                "struct constructor type mismatch: expected {}, got {}",
-                                struct_constructor.type_name.0, name.0
-                            );
-                            args
+                    let (ty_name, type_args) = match scrut_ty {
+                        tast::Ty::TCon { name } => (name, Vec::new()),
+                        tast::Ty::TApp { ty, args } => {
+                            let base_name = ty.get_constr_name_unsafe();
+                            (base_name, args)
                         }
                         other => panic!(
                             "EConstrGet on non-struct type {:?} for constructor {}",
                             other, struct_constructor.type_name.0
                         ),
                     };
+                    let struct_name = &struct_constructor.type_name.0;
+                    assert_eq!(
+                        ty_name, *struct_name,
+                        "struct constructor type mismatch: expected {}, got {}",
+                        struct_name, ty_name
+                    );
                     let fields =
                         instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
                     let (field_name, field_ty) = &fields[*field_index];
@@ -458,7 +461,14 @@ where
                 default: default_block,
             }]
         }
-        tast::Ty::TApp { .. } => {
+        ty @ (tast::Ty::TCon { .. } | tast::Ty::TApp { .. }) => {
+            let type_name = ty.get_constr_name_unsafe();
+            if !env.enums.contains_key(&Uident::new(&type_name)) {
+                panic!(
+                    "unsupported scrutinee type {:?} for match in Go backend",
+                    ty
+                );
+            }
             let scrutinee_name = match scrutinee {
                 anf::ImmExpr::ImmVar { name, .. } => name.clone(),
                 _ => {
@@ -847,13 +857,11 @@ fn test_type_gen() {
                 (
                     Uident::new("Node"),
                     vec![
-                        tast::Ty::TApp {
-                            name: Uident::new("Tree"),
-                            args: vec![],
+                        tast::Ty::TCon {
+                            name: "Tree".to_string(),
                         },
-                        tast::Ty::TApp {
-                            name: Uident::new("Tree"),
-                            args: vec![],
+                        tast::Ty::TCon {
+                            name: "Tree".to_string(),
                         },
                     ],
                 ),

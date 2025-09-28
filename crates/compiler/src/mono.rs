@@ -21,23 +21,38 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TVar(..) => false,
             Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TString => false,
             Ty::TTuple { typs } => typs.iter().any(has_tparam),
-            Ty::TApp { args, .. } => args.iter().any(has_tparam),
+            Ty::TCon { .. } => false,
+            Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
             Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
         }
     }
 
     fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
         match (constructor, new_ty) {
-            (Constructor::Enum(enum_constructor), Ty::TApp { name, .. }) => {
+            (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
+                let ident = Uident::new(&name);
                 Constructor::Enum(tast::EnumConstructor {
-                    type_name: name.clone(),
+                    type_name: ident,
                     variant: enum_constructor.variant.clone(),
                     index: enum_constructor.index,
                 })
             }
-            (Constructor::Struct(_), Ty::TApp { name, .. }) => {
+            (Constructor::Enum(enum_constructor), Ty::TApp { ty, .. }) => {
+                let base = ty.get_constr_name_unsafe();
+                Constructor::Enum(tast::EnumConstructor {
+                    type_name: Uident::new(&base),
+                    variant: enum_constructor.variant.clone(),
+                    index: enum_constructor.index,
+                })
+            }
+            (Constructor::Struct(_), Ty::TCon { name }) => {
+                let ident = Uident::new(&name);
+                Constructor::Struct(tast::StructConstructor { type_name: ident })
+            }
+            (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
+                let base = ty.get_constr_name_unsafe();
                 Constructor::Struct(tast::StructConstructor {
-                    type_name: name.clone(),
+                    type_name: Uident::new(&base),
                 })
             }
             _ => constructor.clone(),
@@ -58,8 +73,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TTuple { typs } => Ty::TTuple {
                 typs: typs.iter().map(|t| subst_ty(t, s)).collect(),
             },
-            Ty::TApp { name, args } => Ty::TApp {
-                name: name.clone(),
+            Ty::TCon { name } => Ty::TCon { name: name.clone() },
+            Ty::TApp { ty, args } => Ty::TApp {
+                ty: Box::new(subst_ty(ty, s)),
                 args: args.iter().map(|t| subst_ty(t, s)).collect(),
             },
             Ty::TFunc { params, ret_ty } => Ty::TFunc {
@@ -81,12 +97,14 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 let inner = typs.iter().map(encode_ty).collect::<Vec<_>>().join("_");
                 format!("Tuple_{}", inner)
             }
-            Ty::TApp { name, args } => {
+            Ty::TCon { name } => name.clone(),
+            Ty::TApp { ty, args } => {
+                let base = ty.get_constr_name_unsafe();
                 if args.is_empty() {
-                    name.0.clone()
+                    base
                 } else {
                     let inner = args.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-                    format!("{}_{}", name.0, inner)
+                    format!("{}_{}", base, inner)
                 }
             }
             Ty::TFunc { params, ret_ty } => {
@@ -153,10 +171,17 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 }
                 Ok(())
             }
-            (Ty::TApp { name: ln, args: la }, Ty::TApp { name: rn, args: ra }) => {
-                if ln.0 != rn.0 || la.len() != ra.len() {
+            (Ty::TCon { name: ln }, Ty::TCon { name: rn }) => {
+                if ln != rn {
                     return Err("type constructor mismatch".to_string());
                 }
+                Ok(())
+            }
+            (Ty::TApp { ty: lt, args: la }, Ty::TApp { ty: rt, args: ra }) => {
+                if la.len() != ra.len() {
+                    return Err("type constructor mismatch".to_string());
+                }
+                unify(lt, rt, subst)?;
                 for (a, b) in la.iter().zip(ra.iter()) {
                     unify(a, b, subst)?;
                 }
@@ -431,8 +456,8 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             }
         }
 
-        fn ensure_instance(&mut self, name: &Uident, args: &[Ty]) -> Uident {
-            let key = (name.0.clone(), args.to_vec());
+        fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> Uident {
+            let key = (name.to_string(), args.to_vec());
             if let Some(u) = self.map.get(&key) {
                 return u.clone();
             }
@@ -445,16 +470,18 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     args.iter().map(encode_ty).collect::<Vec<_>>().join("__")
                 )
             };
-            let new_name = Uident::new(&format!("{}{}", name.0, suffix));
+            let new_name = Uident::new(&format!("{}{}", name, suffix));
             self.map.insert(key.clone(), new_name.clone());
 
-            if let Some(generic_def) = self.enum_base.get(name) {
+            let ident = Uident::new(name);
+
+            if let Some(generic_def) = self.enum_base.get(&ident) {
                 // Build substitution from generics to args
                 let mut subst: IndexMap<String, Ty> = IndexMap::new();
                 if generic_def.generics.len() != args.len() {
                     panic!(
                         "enum generic argument length mismatch for {}: expected {}, got {}",
-                        name.0,
+                        name,
                         generic_def.generics.len(),
                         args.len()
                     );
@@ -483,12 +510,12 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     variants: new_variants,
                 };
                 self.env.enums.insert(new_name.clone(), new_def);
-            } else if let Some(generic_def) = self.struct_base.get(name) {
+            } else if let Some(generic_def) = self.struct_base.get(&ident) {
                 let mut subst: IndexMap<String, Ty> = IndexMap::new();
                 if generic_def.generics.len() != args.len() {
                     panic!(
                         "struct generic argument length mismatch for {}: expected {}, got {}",
-                        name.0,
+                        name,
                         generic_def.generics.len(),
                         args.len()
                     );
@@ -519,20 +546,26 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
 
         fn collapse_type_apps(&mut self, ty: &Ty) -> Ty {
             match ty {
-                Ty::TApp { name, args } if !args.is_empty() => {
-                    if self.enum_base.contains_key(name) || self.struct_base.contains_key(name) {
-                        let new_u = self.ensure_instance(name, args);
-                        Ty::TApp {
-                            name: new_u,
-                            args: vec![],
+                Ty::TApp { ty: base, args } if !args.is_empty() => {
+                    let base_name = base.get_constr_name_unsafe();
+                    let ident = Uident::new(&base_name);
+                    if self.enum_base.contains_key(&ident) || self.struct_base.contains_key(&ident)
+                    {
+                        let new_u = self.ensure_instance(&base_name, args);
+                        Ty::TCon {
+                            name: new_u.0.clone(),
                         }
                     } else {
                         Ty::TApp {
-                            name: name.clone(),
+                            ty: Box::new(self.collapse_type_apps(base)),
                             args: args.iter().map(|t| self.collapse_type_apps(t)).collect(),
                         }
                     }
                 }
+                Ty::TApp { ty: base, args } => Ty::TApp {
+                    ty: Box::new(self.collapse_type_apps(base)),
+                    args: args.iter().map(|t| self.collapse_type_apps(t)).collect(),
+                },
                 Ty::TTuple { typs } => Ty::TTuple {
                     typs: typs.iter().map(|t| self.collapse_type_apps(t)).collect(),
                 },
@@ -540,6 +573,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     params: params.iter().map(|t| self.collapse_type_apps(t)).collect(),
                     ret_ty: Box::new(self.collapse_type_apps(ret_ty)),
                 },
+                Ty::TCon { name } => Ty::TCon { name: name.clone() },
                 _ => ty.clone(),
             }
         }
