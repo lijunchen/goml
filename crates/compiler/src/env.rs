@@ -70,7 +70,7 @@ pub enum Constraint {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[allow(unused)]
 pub struct Env {
     counter: Cell<i32>,

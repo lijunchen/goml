@@ -5,6 +5,7 @@ pub mod env;
 pub mod go;
 pub mod mangle;
 pub mod mono;
+pub mod pipeline;
 pub mod pprint;
 pub mod query;
 pub mod rename;
