@@ -1,5 +1,7 @@
 use cst::cst::CstNode;
 use parser::{parser::ParseResult, syntax::MySyntaxNode};
+
+use compiler::env::format_typer_diagnostics;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -13,6 +15,14 @@ pub fn execute(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let core = compiler::compile_match::compile_file(&env, &tast);
     let _ = core;
     "not support for now".into()
@@ -29,6 +39,14 @@ pub fn compile_to_core(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let core = compiler::compile_match::compile_file(&env, &tast);
 
     core.to_pretty(&env, 120)
@@ -45,6 +63,14 @@ pub fn compile_to_mono(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, mut env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let core = compiler::compile_match::compile_file(&env, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
@@ -62,6 +88,14 @@ pub fn compile_to_anf(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, mut env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let core = compiler::compile_match::compile_file(&env, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
@@ -81,6 +115,14 @@ pub fn compile_to_go(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, mut env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let core = compiler::compile_match::compile_file(&env, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
@@ -123,6 +165,14 @@ pub fn get_tast(src: &str) -> String {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        return typer_errors
+            .into_iter()
+            .map(|err| format!("error: {}", err))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     tast.to_pretty(&env, 120)
 }
 
