@@ -6,6 +6,8 @@ use anyhow::bail;
 use cst::cst::CstNode;
 use parser::{debug_tree, syntax::MySyntaxNode};
 
+use crate::env::format_typer_diagnostics;
+
 mod query_test;
 mod struct_type_test;
 mod trait_impl_test;
@@ -29,6 +31,13 @@ fn test_parse_error_cases() -> anyhow::Result<()> {
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let diagnostics_dir = root_dir.join("src/tests/diagnostics");
     run_parse_error_cases(&diagnostics_dir)
+}
+
+#[test]
+fn test_typer_error_cases() -> anyhow::Result<()> {
+    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let diagnostics_dir = root_dir.join("src/tests/typer");
+    run_typer_error_cases(&diagnostics_dir)
 }
 
 fn go_bin() -> PathBuf {
@@ -218,5 +227,52 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
             expect_test::expect_file![diag_filename].assert_eq(&formatted);
         }
     }
+    Ok(())
+}
+
+fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file()
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+        {
+            let p = entry.path();
+            println!("Testing typer diagnostics: {}", p.display());
+            let filename = p.file_name().unwrap().to_str().unwrap();
+            let diag_filename = p.with_file_name(format!("{}.diag", filename));
+
+            let input = std::fs::read_to_string(&p)?;
+            let result = parser::parse(&p, &input);
+
+            if result.has_errors() {
+                bail!(
+                    "Expected no parse errors in {}, but parser reported diagnostics: {}",
+                    p.display(),
+                    result.format_errors(&input).join("\n")
+                );
+            }
+
+            let root = MySyntaxNode::new_root(result.green_node);
+            let cst = cst::cst::File::cast(root).unwrap();
+            let ast = ast::lower::lower(cst).unwrap();
+            let (_tast, env) = crate::typer::check_file(ast);
+            let diagnostics = format_typer_diagnostics(&env.diagnostics);
+
+            if diagnostics.is_empty() {
+                bail!(
+                    "Expected typer diagnostics in {}, but none were produced",
+                    p.display()
+                );
+            }
+
+            let mut formatted = diagnostics.join("\n");
+            if !formatted.is_empty() {
+                formatted.push('\n');
+            }
+
+            expect_test::expect_file![diag_filename].assert_eq(&formatted);
+        }
+    }
+
     Ok(())
 }
