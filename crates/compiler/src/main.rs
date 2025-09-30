@@ -1,6 +1,8 @@
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
+use compiler::env::format_typer_diagnostics;
+
 fn main() {
     let file_arg = std::env::args().nth(1).unwrap_or_else(|| {
         eprintln!("Usage: {} <file_path>", std::env::args().next().unwrap());
@@ -26,6 +28,13 @@ fn main() {
     let ast = ast::lower::lower(cst).unwrap();
 
     let (tast, mut env) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    if !typer_errors.is_empty() {
+        for error in typer_errors {
+            eprintln!("error (typer): {}: {}", file_path.display(), error);
+        }
+        std::process::exit(1);
+    }
     // dbg!(&tast);
     let core = compiler::compile_match::compile_file(&env, &tast);
     let core = compiler::mono::mono(&mut env, core);

@@ -1,4 +1,5 @@
 use ast::ast::{Lident, Uident};
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use indexmap::{IndexMap, IndexSet};
 
 use crate::{
@@ -81,6 +82,7 @@ pub struct Env {
     pub funcs: IndexMap<String, tast::Ty>,
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
+    pub diagnostics: Diagnostics,
 }
 
 impl Default for Env {
@@ -101,7 +103,17 @@ impl Env {
             trait_impls: IndexMap::new(),
             constraints: Vec::new(),
             tuple_types: IndexSet::new(),
+            diagnostics: Diagnostics::new(),
         }
+    }
+
+    pub fn report_typer_error(&mut self, message: impl Into<String>) {
+        self.diagnostics
+            .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+    }
+
+    pub fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
+        self.diagnostics.extend(diagnostics);
     }
 
     pub fn get_trait_impl(
@@ -358,4 +370,14 @@ impl Env {
         let seen = TupleTypeCollector::new().finish(file);
         self.tuple_types = seen;
     }
+}
+
+pub fn format_typer_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
+    diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            diagnostic.severity() == Severity::Error && diagnostic.stage() == &Stage::Typer
+        })
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect()
 }
