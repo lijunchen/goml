@@ -3,10 +3,12 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use anyhow::bail;
-use cst::cst::CstNode;
-use parser::{debug_tree, syntax::MySyntaxNode};
+use parser::{debug_tree, format_parser_diagnostics};
 
-use crate::env::format_typer_diagnostics;
+use crate::{
+    env::format_typer_diagnostics,
+    pipeline::{self, CompilationError},
+};
 
 mod query_test;
 mod struct_type_test;
@@ -49,22 +51,15 @@ fn go_bin() -> PathBuf {
     }
 }
 
-fn execute_single_go_file(input: &Path) -> anyhow::Result<String> {
+fn execute_go_source(source: &str) -> anyhow::Result<String> {
     use std::io::Write;
     use std::process::{Command, Stdio};
-    dbg!(&input);
 
     let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
 
-    // copy go_file into tempdir, and rename extension name to .go
     let main_go_file = dir.path().join("main.go");
-    std::fs::copy(input, &main_go_file).with_context(|| {
-        format!(
-            "Failed to copy go file from {} to {}",
-            input.display(),
-            main_go_file.display()
-        )
-    })?;
+    std::fs::write(&main_go_file, source)
+        .with_context(|| format!("Failed to write go source to {}", main_go_file.display()))?;
 
     let go = go_bin();
     let mut child = Command::new(&go)
@@ -152,38 +147,36 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     let input = std::fs::read_to_string(&p)?;
 
-    let result = parser::parse(&p, &input);
-    if result.has_errors() {
-        panic!(
+    let compilation = pipeline::compile(&p, &input).map_err(|err| match err {
+        CompilationError::Parser { diagnostics } => anyhow::anyhow!(
             "Parse errors in {}:\n{}",
             p.display(),
-            result.format_errors(&input).join("\n")
-        );
-    }
+            format_parser_diagnostics(&diagnostics, &input).join("\n")
+        ),
+        CompilationError::Typer { diagnostics } => anyhow::anyhow!(
+            "Typer errors in {}:\n{}",
+            p.display(),
+            format_typer_diagnostics(&diagnostics).join("\n")
+        ),
+    })?;
 
-    let cst_debug = debug_tree(&result.green_node);
+    let cst_debug = debug_tree(&compilation.green_node);
     expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
 
-    let root = MySyntaxNode::new_root(result.green_node);
-    let cst = cst::cst::File::cast(root).unwrap();
-    let ast = ast::lower::lower(cst).unwrap();
+    expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
+    expect_test::expect_file![tast_filename]
+        .assert_eq(&compilation.tast.to_pretty(&compilation.typer_env, 120));
+    expect_test::expect_file![core_filename]
+        .assert_eq(&compilation.core.to_pretty(&compilation.typer_env, 120));
+    expect_test::expect_file![mono_filename]
+        .assert_eq(&compilation.mono.to_pretty(&compilation.env, 120));
+    expect_test::expect_file![anf_filename]
+        .assert_eq(&compilation.anf.to_pretty(&compilation.env, 120));
 
-    expect_test::expect_file![ast_filename].assert_eq(&ast.to_pretty(120));
-    let (tast, mut env) = crate::typer::check_file(ast);
-    expect_test::expect_file![tast_filename].assert_eq(&tast.to_pretty(&env, 120));
-    let core = crate::compile_match::compile_file(&env, &tast);
-    expect_test::expect_file![core_filename].assert_eq(&core.to_pretty(&env, 120));
+    let go_source = compilation.go.to_pretty(&compilation.env, 120);
+    expect_test::expect_file![&go_filename].assert_eq(&go_source);
 
-    let mono = crate::mono::mono(&mut env, core);
-    expect_test::expect_file![mono_filename].assert_eq(&mono.to_pretty(&env, 120));
-
-    let anf = crate::anf::anf_file(&env, mono);
-    expect_test::expect_file![anf_filename].assert_eq(&anf.to_pretty(&env, 120));
-
-    let go = crate::go::compile::go_file(&env, anf);
-    expect_test::expect_file![&go_filename].assert_eq(&go.to_pretty(&env, 120));
-
-    let go_output = execute_single_go_file(&go_filename)?;
+    let go_output = execute_go_source(&go_source)?;
 
     expect_test::expect_file![result_filename].assert_eq(&go_output);
 
@@ -202,29 +195,29 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            let result = parser::parse(&p, &input);
+            match pipeline::compile(&p, &input) {
+                Err(CompilationError::Parser { diagnostics }) => {
+                    let mut formatted = format_parser_diagnostics(&diagnostics, &input).join("\n");
+                    if !formatted.is_empty() {
+                        formatted.push('\n');
+                    }
 
-            if !result.has_errors() {
-                bail!(
-                    "Expected parse errors in {}, but none were reported",
-                    p.display()
-                );
+                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
+                }
+                Err(CompilationError::Typer { diagnostics }) => {
+                    bail!(
+                        "Expected parse errors in {}, but typer reported diagnostics: {}",
+                        p.display(),
+                        format_typer_diagnostics(&diagnostics).join("\n")
+                    );
+                }
+                Ok(_) => {
+                    bail!(
+                        "Expected parse errors in {}, but compilation succeeded",
+                        p.display()
+                    );
+                }
             }
-
-            let diagnostics = result.format_errors(&input);
-            if diagnostics.is_empty() {
-                bail!(
-                    "Parser reported errors but no diagnostics were produced for {}",
-                    p.display()
-                );
-            }
-
-            let mut formatted = diagnostics.join("\n");
-            if !formatted.is_empty() {
-                formatted.push('\n');
-            }
-
-            expect_test::expect_file![diag_filename].assert_eq(&formatted);
         }
     }
     Ok(())
@@ -242,35 +235,29 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            let result = parser::parse(&p, &input);
+            match pipeline::compile(&p, &input) {
+                Err(CompilationError::Typer { diagnostics }) => {
+                    let mut formatted = format_typer_diagnostics(&diagnostics).join("\n");
+                    if !formatted.is_empty() {
+                        formatted.push('\n');
+                    }
 
-            if result.has_errors() {
-                bail!(
-                    "Expected no parse errors in {}, but parser reported diagnostics: {}",
-                    p.display(),
-                    result.format_errors(&input).join("\n")
-                );
+                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
+                }
+                Err(CompilationError::Parser { diagnostics }) => {
+                    bail!(
+                        "Expected typer diagnostics in {}, but parser reported diagnostics: {}",
+                        p.display(),
+                        format_parser_diagnostics(&diagnostics, &input).join("\n")
+                    );
+                }
+                Ok(_) => {
+                    bail!(
+                        "Expected typer diagnostics in {}, but compilation succeeded",
+                        p.display()
+                    );
+                }
             }
-
-            let root = MySyntaxNode::new_root(result.green_node);
-            let cst = cst::cst::File::cast(root).unwrap();
-            let ast = ast::lower::lower(cst).unwrap();
-            let (_tast, env) = crate::typer::check_file(ast);
-            let diagnostics = format_typer_diagnostics(&env.diagnostics);
-
-            if diagnostics.is_empty() {
-                bail!(
-                    "Expected typer diagnostics in {}, but none were produced",
-                    p.display()
-                );
-            }
-
-            let mut formatted = diagnostics.join("\n");
-            if !formatted.is_empty() {
-                formatted.push('\n');
-            }
-
-            expect_test::expect_file![diag_filename].assert_eq(&formatted);
         }
     }
 

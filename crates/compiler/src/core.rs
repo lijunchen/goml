@@ -1,12 +1,12 @@
 pub type Ty = crate::tast::Ty;
 use crate::tast::Constructor;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct File {
     pub toplevels: Vec<Fn>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Fn {
     pub name: String,
     pub params: Vec<(String, Ty)>,

@@ -1,7 +1,7 @@
-use cst::cst::CstNode;
-use parser::syntax::MySyntaxNode;
-
 use compiler::env::format_typer_diagnostics;
+use compiler::pipeline::{CompilationError, compile};
+
+use parser::format_parser_diagnostics;
 
 fn main() {
     let file_arg = std::env::args().nth(1).unwrap_or_else(|| {
@@ -14,35 +14,24 @@ fn main() {
         std::process::exit(1);
     });
     let src = content;
-    let parse_result = parser::parse(&file_path, &src);
-    let (green_node, diagnostics) = parse_result.into_parts();
-    if diagnostics.has_errors() {
-        for error in parser::format_parser_diagnostics(&diagnostics, &src) {
-            eprintln!("error: {}: {}", file_path.display(), error);
+    match compile(&file_path, &src) {
+        Ok(compilation) => {
+            println!("{}", compilation.go.to_pretty(&compilation.env, 120));
         }
-        std::process::exit(1);
-    }
-    // Future compilation stages can extend `diagnostics` with their own errors.
-    let root = MySyntaxNode::new_root(green_node);
-    let cst = cst::cst::File::cast(root).unwrap();
-    let ast = ast::lower::lower(cst).unwrap();
-
-    let (tast, mut env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
-    if !typer_errors.is_empty() {
-        for error in typer_errors {
-            eprintln!("error (typer): {}: {}", file_path.display(), error);
+        Err(err) => {
+            match &err {
+                CompilationError::Parser { diagnostics } => {
+                    for error in format_parser_diagnostics(diagnostics, &src) {
+                        eprintln!("error: {}: {}", file_path.display(), error);
+                    }
+                }
+                CompilationError::Typer { diagnostics } => {
+                    for error in format_typer_diagnostics(diagnostics) {
+                        eprintln!("error (typer): {}: {}", file_path.display(), error);
+                    }
+                }
+            }
+            std::process::exit(1);
         }
-        std::process::exit(1);
     }
-    // dbg!(&tast);
-    let core = compiler::compile_match::compile_file(&env, &tast);
-    let core = compiler::mono::mono(&mut env, core);
-    // dbg!(&core);
-    let anf = compiler::anf::anf_file(&env, core);
-    // dbg!(&anf);
-    // println!("{}", anf.to_pretty(&env, 120));
-    let go = compiler::go::compile::go_file(&env, anf);
-    // dbg!(&go);
-    println!("{}", go.to_pretty(&env, 120));
 }
