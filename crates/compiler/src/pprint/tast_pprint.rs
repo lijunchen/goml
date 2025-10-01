@@ -330,6 +330,19 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty: _,
+                resolution: _,
+            } => lhs
+                .to_doc(env)
+                .append(RcDoc::space())
+                .append(RcDoc::text(op.symbol()))
+                .append(RcDoc::space())
+                .append(rhs.to_doc(env))
+                .group(),
 
             Self::ECall { func, args, ty: _ } => {
                 let args_doc =

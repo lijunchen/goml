@@ -833,7 +833,22 @@ impl BinaryExpr {
     }
 
     pub fn op(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Dot)
+        self.syntax.children_with_tokens().find_map(|element| {
+            element.into_token().and_then(|token| {
+                if matches!(
+                    token.kind(),
+                    MySyntaxKind::Plus
+                        | MySyntaxKind::Minus
+                        | MySyntaxKind::Star
+                        | MySyntaxKind::Slash
+                        | MySyntaxKind::Dot
+                ) {
+                    Some(token)
+                } else {
+                    None
+                }
+            })
+        })
     }
 }
 

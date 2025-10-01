@@ -1,4 +1,4 @@
-use ast::ast::Uident;
+use ast::ast::{BinaryOp, Uident};
 
 use crate::core;
 use crate::env::{Env, StructDef};
@@ -743,6 +743,28 @@ pub fn compile_file(env: &Env, file: &File) -> core::File {
     core::File { toplevels }
 }
 
+fn builtin_function_for(op: BinaryOp, ty: &Ty) -> Option<&'static str> {
+    match op {
+        BinaryOp::Add => match ty {
+            Ty::TInt => Some("int_add"),
+            Ty::TString => Some("string_add"),
+            _ => None,
+        },
+        BinaryOp::Sub => match ty {
+            Ty::TInt => Some("int_sub"),
+            _ => None,
+        },
+        BinaryOp::Mul => match ty {
+            Ty::TInt => Some("int_mul"),
+            _ => None,
+        },
+        BinaryOp::Div => match ty {
+            Ty::TInt => Some("int_div"),
+            _ => None,
+        },
+    }
+}
+
 fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
     match e {
         EVar {
@@ -867,6 +889,40 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 }
             }
         },
+        EBinary {
+            op,
+            lhs,
+            rhs,
+            ty,
+            resolution,
+        } => {
+            let mut args = Vec::with_capacity(2);
+            args.push(compile_expr(lhs, env));
+            args.push(compile_expr(rhs, env));
+
+            match resolution {
+                tast::BinaryResolution::Builtin => {
+                    let func = builtin_function_for(*op, ty).unwrap_or_else(|| {
+                        panic!("Unsupported builtin operator {:?} for type {:?}", op, ty)
+                    });
+                    core::Expr::ECall {
+                        func: func.to_string(),
+                        args,
+                        ty: ty.clone(),
+                    }
+                }
+                tast::BinaryResolution::Overloaded { trait_name } => {
+                    let method = op.method_name();
+                    let self_ty = args[0].get_ty();
+                    let func_name = mangle_impl_name(&trait_name, &self_ty, method);
+                    core::Expr::ECall {
+                        func: func_name,
+                        args,
+                        ty: ty.clone(),
+                    }
+                }
+            }
+        }
         ECall { func, args, ty } => {
             let is_overloaded = env.overloaded_funcs_to_trait_name.contains_key(func);
 

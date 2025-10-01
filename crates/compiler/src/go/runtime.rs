@@ -5,6 +5,8 @@ use crate::go::goast::{self, EmbededRawString};
 // int_to_string(x : int) string
 // int_add(x : int, y : int) int
 // int_sub(x : int, y : int) int
+// int_mul(x : int, y : int) int
+// int_div(x : int, y : int) int
 // int_less(x : int, y : int) bool
 // print(s : string) struct{}
 // println(s : string) struct{}
@@ -39,6 +41,14 @@ func int_add(x int, y int) int {
 
 func int_sub(x int, y int) int {
     return x - y
+}
+
+func int_mul(x int, y int) int {
+    return x * y
+}
+
+func int_div(x int, y int) int {
+    return x / y
 }
 
 func int_less(x int, y int) bool {

@@ -133,6 +133,17 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             None
         }
+        tast::Expr::EBinary {
+            lhs, rhs, ty: _, ..
+        } => {
+            if let Some(expr) = find_type_expr(env, lhs, range) {
+                return Some(expr);
+            }
+            if let Some(expr) = find_type_expr(env, rhs, range) {
+                return Some(expr);
+            }
+            None
+        }
         tast::Expr::EProj {
             tuple,
             index: _,

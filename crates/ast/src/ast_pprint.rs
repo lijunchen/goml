@@ -191,6 +191,16 @@ impl Expr {
                         .group()
                 }
             }
+            Self::EBinary { op, lhs, rhs } => lhs
+                .to_doc()
+                .append(RcDoc::space())
+                .append(RcDoc::text(op.symbol()))
+                .append(RcDoc::space())
+                .append(rhs.to_doc()),
+            Self::EProj { tuple, index } => tuple
+                .to_doc()
+                .append(RcDoc::text("."))
+                .append(RcDoc::text(index.to_string())),
         }
     }
 

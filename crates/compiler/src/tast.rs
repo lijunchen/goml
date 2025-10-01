@@ -1,4 +1,4 @@
-use ast::ast::Uident;
+use ast::ast::{BinaryOp, Uident};
 use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -136,6 +136,12 @@ impl EqUnifyValue for Ty {}
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TypeVar(u32);
 
+#[derive(Debug, Clone)]
+pub enum BinaryResolution {
+    Builtin,
+    Overloaded { trait_name: Uident },
+}
+
 impl UnifyKey for TypeVar {
     type Value = Option<Ty>;
 
@@ -204,6 +210,13 @@ pub enum Expr {
         index: usize,
         ty: Ty,
     },
+    EBinary {
+        op: BinaryOp,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+        ty: Ty,
+        resolution: BinaryResolution,
+    },
 }
 
 impl Expr {
@@ -220,6 +233,7 @@ impl Expr {
             Self::EMatch { ty, .. } => ty.clone(),
             Self::ECall { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),
+            Self::EBinary { ty, .. } => ty.clone(),
         }
     }
 }

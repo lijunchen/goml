@@ -51,6 +51,14 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
     );
     funcs.insert(
+        "int_mul".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+    );
+    funcs.insert(
+        "int_div".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+    );
+    funcs.insert(
         "int_less".to_string(),
         make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TBool),
     );
