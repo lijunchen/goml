@@ -10,6 +10,7 @@ use crate::{
     pipeline::{self, CompilationError},
 };
 
+mod builtin_functions_test;
 mod query_test;
 mod struct_type_test;
 mod trait_impl_test;
