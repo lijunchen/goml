@@ -22,6 +22,57 @@ pub struct StructDef {
     pub fields: Vec<(Lident, tast::Ty)>,
 }
 
+fn builtin_functions() -> IndexMap<String, tast::Ty> {
+    let mut funcs = IndexMap::new();
+
+    let make_fn_ty = |params: Vec<tast::Ty>, ret: tast::Ty| tast::Ty::TFunc {
+        params,
+        ret_ty: Box::new(ret),
+    };
+
+    funcs.insert(
+        "unit_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TUnit], tast::Ty::TString),
+    );
+    funcs.insert(
+        "bool_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TString),
+    );
+    funcs.insert(
+        "int_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt], tast::Ty::TString),
+    );
+    funcs.insert(
+        "int_add".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+    );
+    funcs.insert(
+        "int_sub".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+    );
+    funcs.insert(
+        "int_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "string_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TString, tast::Ty::TString],
+            tast::Ty::TString,
+        ),
+    );
+    funcs.insert(
+        "string_print".to_string(),
+        make_fn_ty(vec![tast::Ty::TString], tast::Ty::TUnit),
+    );
+    funcs.insert(
+        "string_println".to_string(),
+        make_fn_ty(vec![tast::Ty::TString], tast::Ty::TUnit),
+    );
+
+    funcs
+}
+
 pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
     let trait_name = trait_name.0.clone();
     let type_name = type_name.clone();
@@ -97,7 +148,7 @@ impl Env {
             counter: Cell::new(0),
             enums: IndexMap::new(),
             structs: IndexMap::new(),
-            funcs: IndexMap::new(),
+            funcs: builtin_functions(),
             trait_defs: IndexMap::new(),
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
