@@ -40,6 +40,25 @@ impl BinaryOp {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum UnaryOp {
+    Neg,
+}
+
+impl UnaryOp {
+    pub fn symbol(self) -> &'static str {
+        match self {
+            Self::Neg => "-",
+        }
+    }
+
+    pub fn method_name(self) -> &'static str {
+        match self {
+            Self::Neg => "neg",
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Ty {
     TUnit,
@@ -148,6 +167,10 @@ pub enum Expr {
     ECall {
         func: Lident,
         args: Vec<Expr>,
+    },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<Expr>,
     },
     EBinary {
         op: BinaryOp,

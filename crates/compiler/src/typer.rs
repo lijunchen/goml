@@ -1164,6 +1164,21 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EUnary {
+                op,
+                expr,
+                ty,
+                resolution,
+            } => {
+                let ty = self.subst_ty(env, &ty);
+                let expr = Box::new(self.subst(env, *expr));
+                tast::Expr::EUnary {
+                    op,
+                    expr,
+                    ty: ty.clone(),
+                    resolution,
+                }
+            }
             tast::Expr::EBinary {
                 op,
                 lhs,
@@ -1482,6 +1497,45 @@ impl TypeInference {
                     }
                 } else {
                     panic!("Function {} not found in environment", func.0);
+                }
+            }
+            ast::Expr::EUnary { op, expr } => {
+                let expr_tast = self.infer(env, vars, expr);
+                let expr_ty = expr_tast.get_ty();
+                let method_name = op.method_name();
+
+                if let Some(trait_name) =
+                    env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+                {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_type = tast::Ty::TFunc {
+                        params: vec![expr_ty.clone()],
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints.push(Constraint::Overloaded {
+                        op: ast::Lident(method_name.to_string()),
+                        trait_name: trait_name.clone(),
+                        call_site_type,
+                    });
+                    tast::Expr::EUnary {
+                        op: *op,
+                        expr: Box::new(expr_tast),
+                        ty: ret_ty,
+                        resolution: tast::UnaryResolution::Overloaded { trait_name },
+                    }
+                } else {
+                    match op {
+                        ast::UnaryOp::Neg => {
+                            env.constraints
+                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
+                            tast::Expr::EUnary {
+                                op: *op,
+                                expr: Box::new(expr_tast),
+                                ty: tast::Ty::TInt,
+                                resolution: tast::UnaryResolution::Builtin,
+                            }
+                        }
+                    }
                 }
             }
             ast::Expr::EBinary { op, lhs, rhs } => {

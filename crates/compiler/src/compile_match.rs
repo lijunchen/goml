@@ -1,4 +1,4 @@
-use ast::ast::{BinaryOp, Uident};
+use ast::ast::{BinaryOp, Uident, UnaryOp};
 
 use crate::core;
 use crate::env::{Env, StructDef};
@@ -765,6 +765,15 @@ fn builtin_function_for(op: BinaryOp, ty: &Ty) -> Option<&'static str> {
     }
 }
 
+fn builtin_unary_function_for(op: UnaryOp, ty: &Ty) -> Option<&'static str> {
+    match op {
+        UnaryOp::Neg => match ty {
+            Ty::TInt => Some("int_neg"),
+            _ => None,
+        },
+    }
+}
+
 fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
     match e {
         EVar {
@@ -889,6 +898,40 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 }
             }
         },
+        EUnary {
+            op,
+            expr,
+            ty,
+            resolution,
+        } => {
+            let arg = compile_expr(expr, env);
+
+            match resolution {
+                tast::UnaryResolution::Builtin => {
+                    let func = builtin_unary_function_for(*op, ty).unwrap_or_else(|| {
+                        panic!(
+                            "Unsupported builtin unary operator {:?} for type {:?}",
+                            op, ty
+                        )
+                    });
+                    core::Expr::ECall {
+                        func: func.to_string(),
+                        args: vec![arg],
+                        ty: ty.clone(),
+                    }
+                }
+                tast::UnaryResolution::Overloaded { trait_name } => {
+                    let method = op.method_name();
+                    let self_ty = arg.get_ty();
+                    let func_name = mangle_impl_name(&trait_name, &self_ty, method);
+                    core::Expr::ECall {
+                        func: func_name,
+                        args: vec![arg],
+                        ty: ty.clone(),
+                    }
+                }
+            }
+        }
         EBinary {
             op,
             lhs,

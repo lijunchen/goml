@@ -370,6 +370,23 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 body: Box::new(body),
             })
         }
+        cst::Expr::PrefixExpr(it) => {
+            let expr = it
+                .expr()
+                .and_then(lower_expr)
+                .unwrap_or_else(|| panic!("Prefix expression missing operand"));
+            let op_token = it
+                .op()
+                .unwrap_or_else(|| panic!("Prefix expression missing operator"));
+
+            match op_token.kind() {
+                MySyntaxKind::Minus => Some(ast::Expr::EUnary {
+                    op: ast::UnaryOp::Neg,
+                    expr: Box::new(expr),
+                }),
+                kind => panic!("Unsupported prefix operator: {:?}", kind),
+            }
+        }
         cst::Expr::BinaryExpr(it) => {
             let mut exprs = it.exprs();
             let lhs_cst = exprs

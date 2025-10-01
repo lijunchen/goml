@@ -452,6 +452,7 @@ pub enum Expr {
     TupleExpr(TupleExpr),
     LetExpr(LetExpr),
     BinaryExpr(BinaryExpr),
+    PrefixExpr(PrefixExpr),
 }
 
 impl CstNode for Expr {
@@ -486,6 +487,7 @@ impl CstNode for Expr {
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_LET => Expr::LetExpr(LetExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
+            EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             _ => return None,
         };
         Some(res)
@@ -504,6 +506,7 @@ impl CstNode for Expr {
             Self::TupleExpr(it) => &it.syntax,
             Self::LetExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
+            Self::PrefixExpr(it) => &it.syntax,
         }
     }
 }
@@ -854,6 +857,33 @@ impl BinaryExpr {
 
 impl_cst_node_simple!(BinaryExpr, MySyntaxKind::EXPR_BINARY);
 impl_display_via_syntax!(BinaryExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PrefixExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl PrefixExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn op(&self) -> Option<MySyntaxToken> {
+        self.syntax.children_with_tokens().find_map(|element| {
+            element.into_token().and_then(|token| {
+                if matches!(token.kind(), MySyntaxKind::Minus) {
+                    Some(token)
+                } else {
+                    None
+                }
+            })
+        })
+    }
+}
+
+impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
+impl_display_via_syntax!(PrefixExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

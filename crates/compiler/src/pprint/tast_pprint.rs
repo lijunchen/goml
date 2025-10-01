@@ -343,6 +343,12 @@ impl Expr {
                 .append(RcDoc::space())
                 .append(rhs.to_doc(env))
                 .group(),
+            Self::EUnary {
+                op,
+                expr,
+                ty: _,
+                resolution: _,
+            } => RcDoc::text(op.symbol()).append(expr.to_doc(env)).group(),
 
             Self::ECall { func, args, ty: _ } => {
                 let args_doc =

@@ -73,6 +73,7 @@ pub enum MySyntaxKind {
     EXPR_LIDENT,
     EXPR_PAREN,
     EXPR_BINARY,
+    EXPR_PREFIX,
     EXPR_IF,
     EXPR_LET,
     EXPR_LET_VALUE,

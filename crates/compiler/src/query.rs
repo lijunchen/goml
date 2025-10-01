@@ -144,6 +144,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             None
         }
+        tast::Expr::EUnary { expr, ty: _, .. } => find_type_expr(env, expr, range),
         tast::Expr::EProj {
             tuple,
             index: _,

@@ -162,6 +162,10 @@ impl Rename {
                     args: new_args,
                 }
             }
+            ast::Expr::EUnary { op, expr } => ast::Expr::EUnary {
+                op: *op,
+                expr: Box::new(self.rename_expr(expr, env)),
+            },
             ast::Expr::EBinary { op, lhs, rhs } => ast::Expr::EBinary {
                 op: *op,
                 lhs: Box::new(self.rename_expr(lhs, env)),

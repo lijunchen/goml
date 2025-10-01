@@ -191,6 +191,7 @@ impl Expr {
                         .group()
                 }
             }
+            Self::EUnary { op, expr } => RcDoc::text(op.symbol()).append(expr.to_doc()).group(),
             Self::EBinary { op, lhs, rhs } => lhs
                 .to_doc()
                 .append(RcDoc::space())
