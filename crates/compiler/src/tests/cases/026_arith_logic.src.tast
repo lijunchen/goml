@@ -21,7 +21,13 @@ fn main() -> unit {
   let and_result/9: bool = true && false in
   let or_result/10: bool = true || false in
   let not_result/11: bool = !false in
-  let mixed/12: bool = !(and_result/9 : bool) && int_less((sum/5 : int) + (prod/7 : int) * (base/4 : int) - (prod/7 : int) / 2, (diff/6 : int) - (quot/8 : int) + (base/4 : int)) || !int_less((quot/8 : int) + (base/4 : int) / 2, (diff/6 : int) - (sum/5 : int) / 2) in
+  let mixed/12: bool = !(and_result/9 : bool) && match (sum/5 : int) + (prod/7 : int) * (base/4 : int) - (prod/7 : int) / 2 {
+      0 => false,
+      _ : int => true,
+  } || !match (diff/6 : int) - (quot/8 : int) + (base/4 : int) - (sum/5 : int) / 2 {
+      0 => false,
+      _ : int => true,
+  } in
   let _ : unit = show_bool("and=", (and_result/9 : bool)) in
   let _ : unit = show_bool("or=", (or_result/10 : bool)) in
   let _ : unit = show_bool("not=", (not_result/11 : bool)) in

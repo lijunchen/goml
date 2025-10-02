@@ -21,10 +21,22 @@ fn main() -> unit {
   let and_result/9 = bool_and(true, false) in
   let or_result/10 = bool_or(true, false) in
   let not_result/11 = bool_not(false) in
-  let mixed/12 = bool_or(bool_and(bool_not(and_result/9), int_less(int_sub(int_add(sum/5, int_mul(prod/7, base/4)), int_div(prod/7, 2)), int_add(int_sub(diff/6, quot/8), base/4))), bool_not(int_less(int_add(quot/8, int_div(base/4, 2)), int_sub(diff/6, int_div(sum/5, 2))))) in
-  let mtmp6 = show_bool("and=", and_result/9) in
-  let mtmp7 = show_bool("or=", or_result/10) in
-  let mtmp8 = show_bool("not=", not_result/11) in
-  let mtmp9 = show_bool("mixed=", mixed/12) in
+  let mixed/12 = bool_or(bool_and(bool_not(and_result/9), let mtmp6 = int_sub(int_add(sum/5, int_mul(prod/7, base/4)), int_div(prod/7, 2)) in
+  match mtmp6 {
+    0 => {
+      false
+    },
+    _ => true,
+  }), bool_not(let mtmp7 = int_sub(int_add(int_sub(diff/6, quot/8), base/4), int_div(sum/5, 2)) in
+  match mtmp7 {
+    0 => {
+      false
+    },
+    _ => true,
+  })) in
+  let mtmp8 = show_bool("and=", and_result/9) in
+  let mtmp9 = show_bool("or=", or_result/10) in
+  let mtmp10 = show_bool("not=", not_result/11) in
+  let mtmp11 = show_bool("mixed=", mixed/12) in
   ()
 }

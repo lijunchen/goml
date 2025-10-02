@@ -23,8 +23,15 @@ fn main() {
     let and_result = true && false in
     let or_result = true || false in
     let not_result = !false in
-    let mixed = !and_result && int_less(sum + prod * base - prod / 2, diff - quot + base)
-        || !int_less(quot + base / 2, diff - sum / 2) in
+    let mixed = !and_result
+        && match sum + prod * base - prod / 2 {
+            0 => false,
+            _ => true,
+        }
+        || !match diff - quot + base - sum / 2 {
+            0 => false,
+            _ => true,
+        } in
 
     let _ = show_bool("and=", and_result) in
     let _ = show_bool("or=", or_result) in

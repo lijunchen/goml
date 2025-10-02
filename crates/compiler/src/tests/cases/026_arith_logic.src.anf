@@ -1,14 +1,14 @@
 fn show_int(label/0: string, value/1: int) -> unit {
-  let t11 = int_to_string(value/1) in
-  let t10 = string_add(label/0, t11) in
-  let mtmp0 = string_println(t10) in
+  let t13 = int_to_string(value/1) in
+  let t12 = string_add(label/0, t13) in
+  let mtmp0 = string_println(t12) in
   ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let t13 = bool_to_string(value/3) in
-  let t12 = string_add(label/2, t13) in
-  let mtmp1 = string_println(t12) in
+  let t15 = bool_to_string(value/3) in
+  let t14 = string_add(label/2, t15) in
+  let mtmp1 = string_println(t14) in
   ()
 }
 
@@ -25,25 +25,33 @@ fn main() -> unit {
   let and_result/9 = bool_and(true, false) in
   let or_result/10 = bool_or(true, false) in
   let not_result/11 = bool_not(false) in
-  let t15 = bool_not(and_result/9) in
-  let t19 = int_mul(prod/7, base/4) in
-  let t18 = int_add(sum/5, t19) in
-  let t20 = int_div(prod/7, 2) in
-  let t17 = int_sub(t18, t20) in
-  let t22 = int_sub(diff/6, quot/8) in
-  let t21 = int_add(t22, base/4) in
-  let t16 = int_less(t17, t21) in
-  let t14 = bool_and(t15, t16) in
-  let t26 = int_div(base/4, 2) in
-  let t25 = int_add(quot/8, t26) in
-  let t28 = int_div(sum/5, 2) in
-  let t27 = int_sub(diff/6, t28) in
-  let t24 = int_less(t25, t27) in
-  let t23 = bool_not(t24) in
-  let mixed/12 = bool_or(t14, t23) in
-  let mtmp6 = show_bool("and=", and_result/9) in
-  let mtmp7 = show_bool("or=", or_result/10) in
-  let mtmp8 = show_bool("not=", not_result/11) in
-  let mtmp9 = show_bool("mixed=", mixed/12) in
+  let t17 = bool_not(and_result/9) in
+  let t20 = int_mul(prod/7, base/4) in
+  let t19 = int_add(sum/5, t20) in
+  let t21 = int_div(prod/7, 2) in
+  let mtmp6 = int_sub(t19, t21) in
+  let t18 = match mtmp6 {
+    0 => {
+      false
+    },
+    _ => true,
+  } in
+  let t16 = bool_and(t17, t18) in
+  let t25 = int_sub(diff/6, quot/8) in
+  let t24 = int_add(t25, base/4) in
+  let t26 = int_div(sum/5, 2) in
+  let mtmp7 = int_sub(t24, t26) in
+  let t23 = match mtmp7 {
+    0 => {
+      false
+    },
+    _ => true,
+  } in
+  let t22 = bool_not(t23) in
+  let mixed/12 = bool_or(t16, t22) in
+  let mtmp8 = show_bool("and=", and_result/9) in
+  let mtmp9 = show_bool("or=", or_result/10) in
+  let mtmp10 = show_bool("not=", not_result/11) in
+  let mtmp11 = show_bool("mixed=", mixed/12) in
   ()
 }
