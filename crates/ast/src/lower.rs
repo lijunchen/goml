@@ -2,25 +2,108 @@ use crate::ast;
 
 use ::cst::cst::CstNode;
 use ::cst::{cst, support};
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
+use text_size::TextRange;
 
-pub fn lower(node: cst::File) -> Option<ast::File> {
-    let items = node.items().flat_map(lower_item).collect();
-    let ast = ast::File { toplevels: items };
-    Some(ast)
+pub struct LowerResult {
+    ast: Option<ast::File>,
+    diagnostics: Diagnostics,
 }
 
-fn lower_item(node: cst::Item) -> Option<ast::Item> {
-    match node {
-        cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(it)?)),
-        cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(it)?)),
-        cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(it)?)),
-        cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(it)?)),
-        cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(it)?)),
+impl LowerResult {
+    pub fn has_errors(&self) -> bool {
+        self.diagnostics.has_errors()
+    }
+
+    pub fn diagnostics(&self) -> &Diagnostics {
+        &self.diagnostics
+    }
+
+    pub fn into_diagnostics(self) -> Diagnostics {
+        self.diagnostics
+    }
+
+    pub fn ast(&self) -> Option<&ast::File> {
+        self.ast.as_ref()
+    }
+
+    pub fn into_ast(self) -> Option<ast::File> {
+        self.ast
+    }
+
+    pub fn into_parts(self) -> (Option<ast::File>, Diagnostics) {
+        (self.ast, self.diagnostics)
+    }
+
+    pub fn into_result(self) -> Result<ast::File, Diagnostics> {
+        if self.diagnostics.has_errors() {
+            Err(self.diagnostics)
+        } else if let Some(ast) = self.ast {
+            Ok(ast)
+        } else {
+            Err(self.diagnostics)
+        }
     }
 }
 
-fn lower_enum(node: cst::Enum) -> Option<ast::EnumDef> {
+struct LowerCtx {
+    stage: Stage,
+    diagnostics: Diagnostics,
+}
+
+impl LowerCtx {
+    fn new() -> Self {
+        Self {
+            stage: Stage::other("lower"),
+            diagnostics: Diagnostics::new(),
+        }
+    }
+
+    fn push_error(&mut self, range: Option<TextRange>, message: impl Into<String>) {
+        let diagnostic =
+            Diagnostic::new(self.stage.clone(), Severity::Error, message).with_range(range);
+        self.diagnostics.push(diagnostic);
+    }
+
+    fn has_errors(&self) -> bool {
+        self.diagnostics.has_errors()
+    }
+
+    fn into_diagnostics(self) -> Diagnostics {
+        self.diagnostics
+    }
+}
+
+pub fn lower(node: cst::File) -> LowerResult {
+    let mut ctx = LowerCtx::new();
+    let items = node
+        .items()
+        .flat_map(|item| lower_item(&mut ctx, item))
+        .collect();
+    let ast = if ctx.has_errors() {
+        None
+    } else {
+        Some(ast::File { toplevels: items })
+    };
+
+    LowerResult {
+        ast,
+        diagnostics: ctx.into_diagnostics(),
+    }
+}
+
+fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
+    match node {
+        cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
+        cst::Item::Struct(it) => Some(ast::Item::StructDef(lower_struct(ctx, it)?)),
+        cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
+        cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(ctx, it)?)),
+        cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
+    }
+}
+
+fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
     let name = node.uident().unwrap().to_string();
     let generics: Vec<ast::Uident> = node
         .generic_list()
@@ -33,12 +116,17 @@ fn lower_enum(node: cst::Enum) -> Option<ast::EnumDef> {
                 .collect()
         })
         .unwrap_or_default();
-    let variants = node
-        .variant_list()
-        .unwrap_or_else(|| panic!("Enum {} has no variants", name))
-        .variants()
-        .flat_map(lower_variant)
-        .collect();
+    let variants = if let Some(list) = node.variant_list() {
+        list.variants()
+            .flat_map(|variant| lower_variant(ctx, variant))
+            .collect()
+    } else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            format!("Enum {} has no variants", name),
+        );
+        Vec::new()
+    };
     Some(ast::EnumDef {
         name: ast::Uident::new(&name),
         generics,
@@ -46,7 +134,7 @@ fn lower_enum(node: cst::Enum) -> Option<ast::EnumDef> {
     })
 }
 
-fn lower_struct(node: cst::Struct) -> Option<ast::StructDef> {
+fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef> {
     let name = node.uident()?.to_string();
     let generics: Vec<ast::Uident> = node
         .generic_list()
@@ -62,7 +150,11 @@ fn lower_struct(node: cst::Struct) -> Option<ast::StructDef> {
 
     let fields = node
         .field_list()
-        .map(|list| list.fields().flat_map(lower_struct_field).collect())
+        .map(|list| {
+            list.fields()
+                .flat_map(|field| lower_struct_field(ctx, field))
+                .collect()
+        })
         .unwrap_or_default();
 
     Some(ast::StructDef {
@@ -72,39 +164,60 @@ fn lower_struct(node: cst::Struct) -> Option<ast::StructDef> {
     })
 }
 
-fn lower_struct_field(node: cst::StructField) -> Option<(ast::Lident, ast::Ty)> {
+fn lower_struct_field(
+    ctx: &mut LowerCtx,
+    node: cst::StructField,
+) -> Option<(ast::Lident, ast::Ty)> {
     let name = node.lident()?.to_string();
-    let ty = node.ty().and_then(lower_ty)?;
+    let ty = node.ty().and_then(|ty| lower_ty(ctx, ty))?;
     Some((ast::Lident(name), ty))
 }
 
-fn lower_trait(node: cst::Trait) -> Option<ast::TraitDef> {
+fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
     let name = node.uident().unwrap().to_string();
-    let methods = node
-        .trait_method_list()
-        .unwrap_or_else(|| panic!("Trait {} has no methods", name))
-        .methods()
-        .flat_map(lower_trait_method)
-        .collect();
+    let methods = if let Some(list) = node.trait_method_list() {
+        list.methods()
+            .flat_map(|method| lower_trait_method(ctx, method))
+            .collect()
+    } else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            format!("Trait {} has no methods", name),
+        );
+        Vec::new()
+    };
     Some(ast::TraitDef {
         name: ast::Uident::new(&name),
         method_sigs: methods,
     })
 }
 
-fn lower_trait_method(node: cst::TraitMethod) -> Option<ast::TraitMethodSignature> {
+fn lower_trait_method(
+    ctx: &mut LowerCtx,
+    node: cst::TraitMethod,
+) -> Option<ast::TraitMethodSignature> {
     let name = node.lident().unwrap().to_string();
-    let params = node
-        .type_list()
-        .unwrap_or_else(|| panic!("TraitMethod {} has no params", name))
-        .types()
-        .flat_map(lower_ty)
-        .collect();
+    let params = if let Some(list) = node.type_list() {
+        list.types().flat_map(|ty| lower_ty(ctx, ty)).collect()
+    } else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            format!("TraitMethod {} has no params", name),
+        );
+        Vec::new()
+    };
     let ret_ty = match node.return_type() {
         None => ast::Ty::TUnit,
-        Some(it) => {
-            lower_ty(it).unwrap_or_else(|| panic!("TraitMethod {} has no return type", name))
-        }
+        Some(it) => match lower_ty(ctx, it) {
+            Some(ty) => ty,
+            None => {
+                ctx.push_error(
+                    Some(node.syntax().text_range()),
+                    format!("TraitMethod {} has no return type", name),
+                );
+                return None;
+            }
+        },
     };
     Some(ast::TraitMethodSignature {
         name: ast::Lident(name),
@@ -113,13 +226,22 @@ fn lower_trait_method(node: cst::TraitMethod) -> Option<ast::TraitMethodSignatur
     })
 }
 
-fn lower_impl_block(node: cst::Impl) -> Option<ast::ImplBlock> {
+fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
     let trait_name = node.uident().unwrap().to_string();
-    let for_type = node
-        .for_type()
-        .and_then(lower_ty)
-        .unwrap_or_else(|| panic!("ImplBlock {} has no for type", trait_name));
-    let methods: Vec<ast::Fn> = node.functions().flat_map(lower_fn).collect();
+    let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
+        Some(ty) => ty,
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                format!("ImplBlock {} has no for type", trait_name),
+            );
+            return None;
+        }
+    };
+    let methods: Vec<ast::Fn> = node
+        .functions()
+        .flat_map(|function| lower_fn(ctx, function))
+        .collect();
     Some(ast::ImplBlock {
         trait_name: ast::Uident::new(&trait_name),
         for_type,
@@ -127,30 +249,34 @@ fn lower_impl_block(node: cst::Impl) -> Option<ast::ImplBlock> {
     })
 }
 
-fn lower_variant(node: cst::Variant) -> Option<(ast::Uident, Vec<ast::Ty>)> {
+fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<(ast::Uident, Vec<ast::Ty>)> {
     let name = node.uident().unwrap().to_string();
     let typs = match node.type_list() {
         None => vec![],
-        Some(xs) => xs.types().flat_map(lower_ty).collect(),
+        Some(xs) => xs.types().flat_map(|ty| lower_ty(ctx, ty)).collect(),
     };
     Some((ast::Uident::new(&name), typs))
 }
 
-fn lower_ty(node: cst::Type) -> Option<ast::Ty> {
+fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
     match node {
         cst::Type::UnitTy(_) => Some(ast::Ty::TUnit),
         cst::Type::BoolTy(_) => Some(ast::Ty::TBool),
         cst::Type::IntTy(_) => Some(ast::Ty::TInt),
         cst::Type::StringTy(_) => Some(ast::Ty::TString),
         cst::Type::TupleTy(it) => {
-            let typs = it.type_list()?.types().flat_map(lower_ty).collect();
+            let typs = it
+                .type_list()?
+                .types()
+                .flat_map(|ty| lower_ty(ctx, ty))
+                .collect();
             Some(ast::Ty::TTuple { typs })
         }
         cst::Type::TAppTy(it) => {
             let name = it.uident().unwrap().to_string();
             let args: Vec<ast::Ty> = it
                 .type_param_list()
-                .map(|list| list.types().flat_map(lower_ty).collect())
+                .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
                 .unwrap_or_default();
 
             let base = ast::Ty::TCon { name };
@@ -169,7 +295,7 @@ fn lower_ty(node: cst::Type) -> Option<ast::Ty> {
     }
 }
 
-fn lower_fn(node: cst::Fn) -> Option<ast::Fn> {
+fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     let name = node.lident().unwrap().to_string();
     let generics: Vec<ast::Uident> = node
         .generic_list()
@@ -182,17 +308,30 @@ fn lower_fn(node: cst::Fn) -> Option<ast::Fn> {
                 .collect()
         })
         .unwrap_or_default();
-    let params = node
-        .param_list()
-        .unwrap_or_else(|| panic!("Fn {} has no params", name))
-        .params()
-        .flat_map(lower_param)
-        .collect();
-    let ret_ty = node.return_type().and_then(lower_ty);
-    let body = node
-        .block()
-        .and_then(lower_block)
-        .unwrap_or_else(|| panic!("Fn {} has no body", name));
+    let params = match node.param_list() {
+        Some(list) => list
+            .params()
+            .flat_map(|param| lower_param(ctx, param))
+            .collect(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                format!("Fn {} has no params", name),
+            );
+            return None;
+        }
+    };
+    let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
+    let body = match node.block().and_then(|block| lower_block(ctx, block)) {
+        Some(body) => body,
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                format!("Fn {} has no body", name),
+            );
+            return None;
+        }
+    };
     Some(ast::Fn {
         name: ast::Lident(name),
         generics,
@@ -202,88 +341,125 @@ fn lower_fn(node: cst::Fn) -> Option<ast::Fn> {
     })
 }
 
-fn lower_block(node: cst::Block) -> Option<ast::Expr> {
+fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
     let cst_e = node.expr();
 
-    cst_e.and_then(lower_expr)
+    cst_e.and_then(|expr| lower_expr(ctx, expr))
 }
 
-fn lower_param(node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
+fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
     let name = node.lident().unwrap().to_string();
-    let ty = node
-        .ty()
-        .and_then(lower_ty)
-        .unwrap_or_else(|| panic!("Param {} has no type", name));
+    let ty = match node.ty().and_then(|ty| lower_ty(ctx, ty)) {
+        Some(ty) => ty,
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                format!("Param {} has no type", name),
+            );
+            return None;
+        }
+    };
     Some((ast::Lident(name), ty))
 }
 
-fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
-    lower_expr_with_args(node, Vec::new())
+fn lower_expr(ctx: &mut LowerCtx, node: cst::Expr) -> Option<ast::Expr> {
+    lower_expr_with_args(ctx, node, Vec::new())
 }
 
-fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Option<ast::Expr> {
+fn lower_expr_with_args(
+    ctx: &mut LowerCtx,
+    node: cst::Expr,
+    trailing_args: Vec<ast::Expr>,
+) -> Option<ast::Expr> {
+    let node_range = node.syntax().text_range();
     match node {
         cst::Expr::UnitExpr(_) => {
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to unit expression");
+                ctx.push_error(
+                    Some(node_range),
+                    "Cannot apply arguments to unit expression",
+                );
+                return None;
             }
             Some(ast::Expr::EUnit)
         }
         cst::Expr::BoolExpr(it) => {
-            let value = it
-                .value()
-                .unwrap_or_else(|| panic!("BoolExpr has no value"))
-                .to_string();
-
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "BoolExpr has no value");
+                return None;
+            };
+            let value = token.to_string();
             let expr = match value.as_str() {
                 "true" => ast::Expr::EBool { value: true },
                 "false" => ast::Expr::EBool { value: false },
-                _ => unreachable!(),
+                _ => {
+                    ctx.push_error(
+                        Some(token.text_range()),
+                        format!("Invalid boolean literal: {}", value),
+                    );
+                    return None;
+                }
             };
-
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to bool literal");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to bool literal",
+                );
+                return None;
             }
-
             Some(expr)
         }
         cst::Expr::IntExpr(it) => {
-            let value = it
-                .value()
-                .unwrap_or_else(|| panic!("IntExpr has no value"))
-                .to_string();
-            let value = value.parse::<i32>().ok()?;
-
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "IntExpr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = match text.parse::<i32>() {
+                Ok(value) => value,
+                Err(_) => {
+                    ctx.push_error(
+                        Some(token.text_range()),
+                        format!("Invalid integer literal: {}", text),
+                    );
+                    return None;
+                }
+            };
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to int literal");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to int literal",
+                );
+                return None;
             }
-
             Some(ast::Expr::EInt { value })
         }
         cst::Expr::StrExpr(it) => {
-            let value = it
-                .value()
-                .unwrap_or_else(|| panic!("StrExpr has no value"))
-                .to_string();
-            // parse string literal
-            let value = value
-                .strip_prefix('"')
-                .and_then(|s| s.strip_suffix('"'))
-                .unwrap_or_else(|| panic!("StrExpr has no value"))
-                .to_string();
-
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "StrExpr has no value");
+                return None;
+            };
+            let raw = token.to_string();
+            let Some(value) = raw.strip_prefix('"').and_then(|s| s.strip_suffix('"')) else {
+                ctx.push_error(Some(token.text_range()), "StrExpr has no value");
+                return None;
+            };
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to string literal");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to string literal",
+                );
+                return None;
             }
-
-            Some(ast::Expr::EString { value })
+            Some(ast::Expr::EString {
+                value: value.to_string(),
+            })
         }
         cst::Expr::CallExpr(it) => {
             let mut args: Vec<ast::Expr> = it
                 .arg_list()
-                .map(|list| list.args().flat_map(lower_arg).collect())
+                .map(|list| list.args().flat_map(|arg| lower_arg(ctx, arg)).collect())
                 .unwrap_or_default();
-
             if let Some(func) = it.l_name() {
                 args.extend(trailing_args);
                 return Some(ast::Expr::ECall {
@@ -291,7 +467,6 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     args,
                 });
             }
-
             if let Some(func) = it.u_name() {
                 args.extend(trailing_args);
                 return Some(ast::Expr::EConstr {
@@ -299,28 +474,36 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     args,
                 });
             }
-
             if let Some(callee) = support::child::<cst::Expr>(&it.syntax()) {
                 args.extend(trailing_args);
-                return lower_expr_with_args(callee, args);
+                return lower_expr_with_args(ctx, callee, args);
             }
-
-            panic!("CallExpr has no function name");
+            ctx.push_error(
+                Some(it.syntax().text_range()),
+                "CallExpr has no function name",
+            );
+            None
         }
         cst::Expr::MatchExpr(it) => {
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to match expression");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to match expression",
+                );
+                return None;
             }
-
-            let expr = it
-                .expr()
-                .and_then(lower_expr)
-                .unwrap_or_else(|| panic!("MatchExpr has no expr"));
-            let arms = it
-                .match_arm_list()
-                .unwrap_or_else(|| panic!("MatchExpr has no arms"))
+            let Some(scrutinee) = it.expr() else {
+                ctx.push_error(Some(it.syntax().text_range()), "MatchExpr has no expr");
+                return None;
+            };
+            let expr = lower_expr(ctx, scrutinee)?;
+            let Some(arm_list) = it.match_arm_list() else {
+                ctx.push_error(Some(it.syntax().text_range()), "MatchExpr has no arms");
+                return None;
+            };
+            let arms = arm_list
                 .arms()
-                .flat_map(lower_arm)
+                .flat_map(|arm| lower_arm(ctx, arm))
                 .collect();
             Some(ast::Expr::EMatch {
                 expr: Box::new(expr),
@@ -329,9 +512,12 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
         }
         cst::Expr::StructLiteralExpr(it) => {
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to struct literal");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to struct literal",
+                );
+                return None;
             }
-
             let name = it.uident()?.to_string();
             let fields = it
                 .field_list()
@@ -339,13 +525,12 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     list.fields()
                         .flat_map(|field| {
                             let fname = field.lident()?.to_string();
-                            let expr = field.expr().and_then(lower_expr)?;
+                            let expr = field.expr().and_then(|expr| lower_expr(ctx, expr))?;
                             Some((ast::Lident(fname), expr))
                         })
                         .collect()
                 })
                 .unwrap_or_default();
-
             Some(ast::Expr::EStructLiteral {
                 name: ast::Uident::new(&name),
                 fields,
@@ -357,7 +542,7 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                 vcon: ast::Uident::new(&name),
                 args: vec![],
             };
-            Some(apply_trailing_args(expr, trailing_args))
+            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
         }
         cst::Expr::LidentExpr(it) => {
             let name = it.lident_token().unwrap().to_string();
@@ -365,37 +550,60 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                 name: ast::Lident(name),
                 astptr: MySyntaxNodePtr::new(it.syntax()),
             };
-            Some(apply_trailing_args(expr, trailing_args))
+            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
         }
         cst::Expr::TupleExpr(it) => {
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to tuple literal");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to tuple literal",
+                );
+                return None;
             }
-
-            let items = it.exprs().flat_map(lower_expr).collect();
+            let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
             Some(ast::Expr::ETuple { items })
         }
         cst::Expr::LetExpr(it) => {
             if !trailing_args.is_empty() {
-                panic!("Cannot apply arguments to let expression");
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to let expression",
+                );
+                return None;
             }
-
-            let pat = it
-                .pattern()
-                .and_then(lower_pat)
-                .unwrap_or_else(|| panic!("LetExpr has no pattern"));
-            let value = it
-                .value()
-                .unwrap_or_else(|| panic!("LetExpr has no value"))
-                .expr()
-                .and_then(lower_expr)
-                .unwrap_or_else(|| panic!("failed to lower value {:#?}", it.value()));
-            let body = it
-                .body()
-                .unwrap_or_else(|| panic!("LetExpr has no body"))
-                .expr()
-                .and_then(lower_expr)
-                .unwrap_or_else(|| panic!("failed to lower body"));
+            let Some(pattern) = it.pattern() else {
+                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no pattern");
+                return None;
+            };
+            let pat = lower_pat(ctx, pattern)?;
+            let Some(value_node) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no value");
+                return None;
+            };
+            let value = match value_node.expr() {
+                Some(expr) => lower_expr(ctx, expr)?,
+                None => {
+                    ctx.push_error(
+                        Some(value_node.syntax().text_range()),
+                        "LetExpr value missing expr",
+                    );
+                    return None;
+                }
+            };
+            let Some(body_node) = it.body() else {
+                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no body");
+                return None;
+            };
+            let body = match body_node.expr() {
+                Some(expr) => lower_expr(ctx, expr)?,
+                None => {
+                    ctx.push_error(
+                        Some(body_node.syntax().text_range()),
+                        "LetExpr body missing expr",
+                    );
+                    return None;
+                }
+            };
             Some(ast::Expr::ELet {
                 pat,
                 value: Box::new(value),
@@ -403,41 +611,68 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
             })
         }
         cst::Expr::PrefixExpr(it) => {
-            let expr = it
+            let expr = match it
                 .expr()
-                .and_then(|expr| lower_expr_with_args(expr, Vec::new()))
-                .unwrap_or_else(|| panic!("Prefix expression missing operand"));
-            let op_token = it
-                .op()
-                .unwrap_or_else(|| panic!("Prefix expression missing operator"));
-
+                .and_then(|expr| lower_expr_with_args(ctx, expr, Vec::new()))
+            {
+                Some(expr) => expr,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Prefix expression missing operand",
+                    );
+                    return None;
+                }
+            };
+            let Some(op_token) = it.op() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Prefix expression missing operator",
+                );
+                return None;
+            };
             let unary = match op_token.kind() {
                 MySyntaxKind::Minus => ast::Expr::EUnary {
                     op: ast::UnaryOp::Neg,
                     expr: Box::new(expr),
                 },
-                kind => panic!("Unsupported prefix operator: {:?}", kind),
+                kind => {
+                    ctx.push_error(
+                        Some(op_token.text_range()),
+                        format!("Unsupported prefix operator: {:?}", kind),
+                    );
+                    return None;
+                }
             };
-
-            Some(apply_trailing_args(unary, trailing_args))
+            apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
         }
         cst::Expr::BinaryExpr(it) => {
             let mut exprs = it.exprs();
-            let lhs_cst = exprs
-                .next()
-                .unwrap_or_else(|| panic!("Binary expression missing lhs"));
-            let rhs_cst = exprs
-                .next()
-                .unwrap_or_else(|| panic!("Binary expression missing rhs"));
-
-            let lhs = lower_expr_with_args(lhs_cst, Vec::new())?;
-            let op_token = it
-                .op()
-                .unwrap_or_else(|| panic!("Binary expression missing operator"));
-
+            let Some(lhs_cst) = exprs.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Binary expression missing lhs",
+                );
+                return None;
+            };
+            let Some(rhs_cst) = exprs.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Binary expression missing rhs",
+                );
+                return None;
+            };
+            let lhs = lower_expr_with_args(ctx, lhs_cst, Vec::new())?;
+            let Some(op_token) = it.op() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Binary expression missing operator",
+                );
+                return None;
+            };
             match op_token.kind() {
                 MySyntaxKind::Plus => {
-                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Add,
                         lhs: Box::new(lhs),
@@ -445,7 +680,7 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     })
                 }
                 MySyntaxKind::Minus => {
-                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Sub,
                         lhs: Box::new(lhs),
@@ -453,7 +688,7 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     })
                 }
                 MySyntaxKind::Star => {
-                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Mul,
                         lhs: Box::new(lhs),
@@ -461,7 +696,7 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                     })
                 }
                 MySyntaxKind::Slash => {
-                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Div,
                         lhs: Box::new(lhs),
@@ -470,92 +705,132 @@ fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Optio
                 }
                 MySyntaxKind::Dot => {
                     if !trailing_args.is_empty() {
-                        panic!("Cannot apply arguments to field access expression");
+                        ctx.push_error(
+                            Some(it.syntax().text_range()),
+                            "Cannot apply arguments to field access expression",
+                        );
+                        return None;
                     }
                     match rhs_cst {
                         cst::Expr::IntExpr(int_expr) => {
-                            let value = int_expr
-                                .value()
-                                .unwrap_or_else(|| panic!("Tuple projection missing index"))
-                                .to_string();
-                            let index = value
-                                .parse::<usize>()
-                                .unwrap_or_else(|_| panic!("Invalid tuple index: {}", value));
+                            let Some(token) = int_expr.value() else {
+                                ctx.push_error(
+                                    Some(int_expr.syntax().text_range()),
+                                    "Tuple projection missing index",
+                                );
+                                return None;
+                            };
+                            let text = token.to_string();
+                            let index = match text.parse::<usize>() {
+                                Ok(index) => index,
+                                Err(_) => {
+                                    ctx.push_error(
+                                        Some(token.text_range()),
+                                        format!("Invalid tuple index: {}", text),
+                                    );
+                                    return None;
+                                }
+                            };
                             Some(ast::Expr::EProj {
                                 tuple: Box::new(lhs),
                                 index,
                             })
                         }
-                        _ => {
-                            panic!("Unsupported field access expression: {:?}", rhs_cst);
+                        other => {
+                            ctx.push_error(
+                                Some(other.syntax().text_range()),
+                                "Unsupported field access expression",
+                            );
+                            None
                         }
                     }
                 }
                 kind => {
-                    if !trailing_args.is_empty() {
-                        panic!("Unsupported binary operator with trailing args: {:?}", kind);
-                    }
-                    panic!("Unsupported binary operator: {:?}", kind);
+                    let message = if trailing_args.is_empty() {
+                        format!("Unsupported binary operator: {:?}", kind)
+                    } else {
+                        format!("Unsupported binary operator with trailing args: {:?}", kind)
+                    };
+                    ctx.push_error(Some(op_token.text_range()), message);
+                    None
                 }
             }
         }
     }
 }
 
-fn apply_trailing_args(expr: ast::Expr, trailing_args: Vec<ast::Expr>) -> ast::Expr {
+fn apply_trailing_args(
+    ctx: &mut LowerCtx,
+    expr: ast::Expr,
+    trailing_args: Vec<ast::Expr>,
+    range: Option<TextRange>,
+) -> Option<ast::Expr> {
     if trailing_args.is_empty() {
-        return expr;
+        return Some(expr);
     }
 
     match expr {
-        ast::Expr::EVar { name, .. } => ast::Expr::ECall {
+        ast::Expr::EVar { name, .. } => Some(ast::Expr::ECall {
             func: name,
             args: trailing_args,
-        },
+        }),
         ast::Expr::ECall { func, mut args } => {
             args.extend(trailing_args);
-            ast::Expr::ECall { func, args }
+            Some(ast::Expr::ECall { func, args })
         }
         ast::Expr::EConstr { vcon, mut args } => {
             args.extend(trailing_args);
-            ast::Expr::EConstr { vcon, args }
+            Some(ast::Expr::EConstr { vcon, args })
         }
         ast::Expr::EBinary { op, lhs, rhs } => {
-            let rhs = apply_trailing_args(*rhs, trailing_args);
-            ast::Expr::EBinary {
+            let rhs = apply_trailing_args(ctx, *rhs, trailing_args, range)?;
+            Some(ast::Expr::EBinary {
                 op,
                 lhs,
                 rhs: Box::new(rhs),
-            }
+            })
         }
         ast::Expr::EUnary { op, expr } => {
-            let expr = apply_trailing_args(*expr, trailing_args);
-            ast::Expr::EUnary {
+            let expr = apply_trailing_args(ctx, *expr, trailing_args, range)?;
+            Some(ast::Expr::EUnary {
                 op,
                 expr: Box::new(expr),
-            }
+            })
         }
-        other => panic!("Cannot apply arguments to expression {:?}", other),
+        other => {
+            ctx.push_error(
+                range,
+                format!("Cannot apply arguments to expression {:?}", other),
+            );
+            None
+        }
     }
 }
 
-fn lower_arg(node: cst::Arg) -> Option<ast::Expr> {
-    lower_expr(node.expr().unwrap_or_else(|| panic!("Arg has no expr")))
+fn lower_arg(ctx: &mut LowerCtx, node: cst::Arg) -> Option<ast::Expr> {
+    match node.expr() {
+        Some(expr) => lower_expr(ctx, expr),
+        None => {
+            ctx.push_error(Some(node.syntax().text_range()), "Arg has no expr");
+            None
+        }
+    }
 }
 
-fn lower_arm(node: cst::MatchArm) -> Option<ast::Arm> {
-    let pat = node.pattern().and_then(lower_pat)?;
+fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
+    let pat = node.pattern().and_then(|pat| lower_pat(ctx, pat))?;
     let body = if let Some(expr) = node.expr() {
-        lower_expr(expr)
+        lower_expr(ctx, expr)
     } else if let Some(block) = support::child::<cst::Block>(node.syntax()) {
-        lower_block(block)
+        lower_block(ctx, block)
     } else {
+        ctx.push_error(Some(node.syntax().text_range()), "Match arm has no body");
         None
     }?;
     Some(ast::Arm { pat, body })
 }
 
-fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
+fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
     match node {
         cst::Pattern::VarPat(it) => {
             let name = it.lident().unwrap().to_string();
@@ -571,36 +846,68 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
             match value.as_str() {
                 "true" => Some(ast::Pat::PBool { value: true }),
                 "false" => Some(ast::Pat::PBool { value: false }),
-                _ => unreachable!(),
+                _ => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        format!("Invalid boolean pattern: {}", value),
+                    );
+                    None
+                }
             }
         }
         cst::Pattern::IntPat(it) => {
             let value = it.value()?.to_string();
-            let value = value.parse::<i32>().ok()?;
-            Some(ast::Pat::PInt { value })
+            match value.parse::<i32>() {
+                Ok(value) => Some(ast::Pat::PInt { value }),
+                Err(_) => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        format!("Invalid integer pattern: {}", value),
+                    );
+                    None
+                }
+            }
         }
         cst::Pattern::StringPat(it) => {
-            let value = it.value()?.to_string();
-            let value = value
-                .strip_prefix('"')
-                .and_then(|s| s.strip_suffix('"'))
-                .unwrap_or_else(|| panic!("StringPat has no value"))
-                .to_string();
-            Some(ast::Pat::PString { value })
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "StringPat has no value");
+                return None;
+            };
+            let raw = token.to_string();
+            let Some(value) = raw.strip_prefix('"').and_then(|s| s.strip_suffix('"')) else {
+                ctx.push_error(Some(token.text_range()), "StringPat has no value");
+                return None;
+            };
+            Some(ast::Pat::PString {
+                value: value.to_string(),
+            })
         }
         cst::Pattern::ConstrPat(it) => {
             let name = it.uident().unwrap().to_string();
             if let Some(field_list) = it.field_list() {
                 let mut fields = Vec::new();
                 for field in field_list.fields() {
-                    let fname = field
-                        .lident()
-                        .unwrap_or_else(|| panic!("Struct pattern field missing name"))
-                        .to_string();
-                    let pat = field
-                        .pattern()
-                        .and_then(lower_pat)
-                        .unwrap_or_else(|| panic!("Struct pattern field missing pattern"));
+                    let Some(fname_token) = field.lident() else {
+                        ctx.push_error(
+                            Some(field.syntax().text_range()),
+                            "Struct pattern field missing name",
+                        );
+                        return None;
+                    };
+                    let fname = fname_token.to_string();
+                    let pat = match field.pattern() {
+                        Some(pattern) => match lower_pat(ctx, pattern) {
+                            Some(pat) => pat,
+                            None => return None,
+                        },
+                        None => {
+                            ctx.push_error(
+                                Some(field.syntax().text_range()),
+                                "Struct pattern field missing pattern",
+                            );
+                            return None;
+                        }
+                    };
                     fields.push((ast::Lident(fname), pat));
                 }
                 Some(ast::Pat::PStruct {
@@ -608,7 +915,7 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
                     fields,
                 })
             } else {
-                let pats = it.patterns().flat_map(lower_pat).collect();
+                let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
                 Some(ast::Pat::PConstr {
                     vcon: ast::Uident::new(&name),
                     args: pats,
@@ -616,7 +923,7 @@ fn lower_pat(node: cst::Pattern) -> Option<ast::Pat> {
             }
         }
         cst::Pattern::TuplePat(it) => {
-            let items = it.patterns().flat_map(lower_pat).collect();
+            let items = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
             Some(ast::Pat::PTuple { pats: items })
         }
         cst::Pattern::WildPat(_) => Some(ast::Pat::PWild),

@@ -36,7 +36,11 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
         }
     }?;
 
-    let ast = ast::lower::lower(cst).unwrap_or_else(|| panic!("failed to lower CST to AST"));
+    let lower = ast::lower::lower(cst);
+    let ast = match lower.into_result() {
+        Ok(ast) => ast,
+        Err(_) => return None,
+    };
     let (tast, env) = crate::typer::check_file(ast);
 
     let ty = find_type(&env, &tast, &range);
