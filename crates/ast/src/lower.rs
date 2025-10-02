@@ -218,19 +218,34 @@ fn lower_param(node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
 }
 
 fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
+    lower_expr_with_args(node, Vec::new())
+}
+
+fn lower_expr_with_args(node: cst::Expr, trailing_args: Vec<ast::Expr>) -> Option<ast::Expr> {
     match node {
-        cst::Expr::UnitExpr(_) => Some(ast::Expr::EUnit),
+        cst::Expr::UnitExpr(_) => {
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to unit expression");
+            }
+            Some(ast::Expr::EUnit)
+        }
         cst::Expr::BoolExpr(it) => {
             let value = it
                 .value()
                 .unwrap_or_else(|| panic!("BoolExpr has no value"))
                 .to_string();
 
-            match value.as_str() {
-                "true" => Some(ast::Expr::EBool { value: true }),
-                "false" => Some(ast::Expr::EBool { value: false }),
+            let expr = match value.as_str() {
+                "true" => ast::Expr::EBool { value: true },
+                "false" => ast::Expr::EBool { value: false },
                 _ => unreachable!(),
+            };
+
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to bool literal");
             }
+
+            Some(expr)
         }
         cst::Expr::IntExpr(it) => {
             let value = it
@@ -238,6 +253,11 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 .unwrap_or_else(|| panic!("IntExpr has no value"))
                 .to_string();
             let value = value.parse::<i32>().ok()?;
+
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to int literal");
+            }
+
             Some(ast::Expr::EInt { value })
         }
         cst::Expr::StrExpr(it) => {
@@ -251,49 +271,47 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 .and_then(|s| s.strip_suffix('"'))
                 .unwrap_or_else(|| panic!("StrExpr has no value"))
                 .to_string();
+
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to string literal");
+            }
+
             Some(ast::Expr::EString { value })
         }
         cst::Expr::CallExpr(it) => {
-            let l = it.l_name();
-            let u = it.u_name();
+            let mut args: Vec<ast::Expr> = it
+                .arg_list()
+                .map(|list| list.args().flat_map(lower_arg).collect())
+                .unwrap_or_default();
 
-            if l.is_some() {
-                if let Some(func) = l {
-                    let args = it
-                        .arg_list()
-                        .unwrap_or_else(|| panic!("PrimExpr has no args"))
-                        .args()
-                        .flat_map(lower_arg)
-                        .collect();
-                    return Some(ast::Expr::ECall {
-                        func: ast::Lident(func),
-                        args,
-                    });
-                } else {
-                    panic!("CallExpr has no function name");
-                }
+            if let Some(func) = it.l_name() {
+                args.extend(trailing_args);
+                return Some(ast::Expr::ECall {
+                    func: ast::Lident(func),
+                    args,
+                });
             }
 
-            if u.is_some() {
-                if let Some(func) = u {
-                    let args = it
-                        .arg_list()
-                        .unwrap_or_else(|| panic!("PrimExpr has no args"))
-                        .args()
-                        .flat_map(lower_arg)
-                        .collect();
-                    return Some(ast::Expr::EConstr {
-                        vcon: ast::Uident::new(&func),
-                        args,
-                    });
-                } else {
-                    panic!("CallExpr has no function name");
-                }
+            if let Some(func) = it.u_name() {
+                args.extend(trailing_args);
+                return Some(ast::Expr::EConstr {
+                    vcon: ast::Uident::new(&func),
+                    args,
+                });
             }
 
-            unreachable!()
+            if let Some(callee) = support::child::<cst::Expr>(&it.syntax()) {
+                args.extend(trailing_args);
+                return lower_expr_with_args(callee, args);
+            }
+
+            panic!("CallExpr has no function name");
         }
         cst::Expr::MatchExpr(it) => {
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to match expression");
+            }
+
             let expr = it
                 .expr()
                 .and_then(lower_expr)
@@ -310,6 +328,10 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
             })
         }
         cst::Expr::StructLiteralExpr(it) => {
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to struct literal");
+            }
+
             let name = it.uident()?.to_string();
             let fields = it
                 .field_list()
@@ -331,23 +353,33 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
         }
         cst::Expr::UidentExpr(it) => {
             let name = it.uident().unwrap().to_string();
-            Some(ast::Expr::EConstr {
+            let expr = ast::Expr::EConstr {
                 vcon: ast::Uident::new(&name),
                 args: vec![],
-            })
+            };
+            Some(apply_trailing_args(expr, trailing_args))
         }
         cst::Expr::LidentExpr(it) => {
             let name = it.lident_token().unwrap().to_string();
-            Some(ast::Expr::EVar {
+            let expr = ast::Expr::EVar {
                 name: ast::Lident(name),
                 astptr: MySyntaxNodePtr::new(it.syntax()),
-            })
+            };
+            Some(apply_trailing_args(expr, trailing_args))
         }
         cst::Expr::TupleExpr(it) => {
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to tuple literal");
+            }
+
             let items = it.exprs().flat_map(lower_expr).collect();
             Some(ast::Expr::ETuple { items })
         }
         cst::Expr::LetExpr(it) => {
+            if !trailing_args.is_empty() {
+                panic!("Cannot apply arguments to let expression");
+            }
+
             let pat = it
                 .pattern()
                 .and_then(lower_pat)
@@ -373,19 +405,21 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
         cst::Expr::PrefixExpr(it) => {
             let expr = it
                 .expr()
-                .and_then(lower_expr)
+                .and_then(|expr| lower_expr_with_args(expr, Vec::new()))
                 .unwrap_or_else(|| panic!("Prefix expression missing operand"));
             let op_token = it
                 .op()
                 .unwrap_or_else(|| panic!("Prefix expression missing operator"));
 
-            match op_token.kind() {
-                MySyntaxKind::Minus => Some(ast::Expr::EUnary {
+            let unary = match op_token.kind() {
+                MySyntaxKind::Minus => ast::Expr::EUnary {
                     op: ast::UnaryOp::Neg,
                     expr: Box::new(expr),
-                }),
+                },
                 kind => panic!("Unsupported prefix operator: {:?}", kind),
-            }
+            };
+
+            Some(apply_trailing_args(unary, trailing_args))
         }
         cst::Expr::BinaryExpr(it) => {
             let mut exprs = it.exprs();
@@ -396,14 +430,14 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 .next()
                 .unwrap_or_else(|| panic!("Binary expression missing rhs"));
 
-            let lhs = lower_expr(lhs_cst)?;
+            let lhs = lower_expr_with_args(lhs_cst, Vec::new())?;
             let op_token = it
                 .op()
                 .unwrap_or_else(|| panic!("Binary expression missing operator"));
 
             match op_token.kind() {
                 MySyntaxKind::Plus => {
-                    let rhs = lower_expr(rhs_cst)?;
+                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Add,
                         lhs: Box::new(lhs),
@@ -411,7 +445,7 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                     })
                 }
                 MySyntaxKind::Minus => {
-                    let rhs = lower_expr(rhs_cst)?;
+                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Sub,
                         lhs: Box::new(lhs),
@@ -419,7 +453,7 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                     })
                 }
                 MySyntaxKind::Star => {
-                    let rhs = lower_expr(rhs_cst)?;
+                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Mul,
                         lhs: Box::new(lhs),
@@ -427,36 +461,81 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                     })
                 }
                 MySyntaxKind::Slash => {
-                    let rhs = lower_expr(rhs_cst)?;
+                    let rhs = lower_expr_with_args(rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Div,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
                 }
-                MySyntaxKind::Dot => match rhs_cst {
-                    cst::Expr::IntExpr(int_expr) => {
-                        let value = int_expr
-                            .value()
-                            .unwrap_or_else(|| panic!("Tuple projection missing index"))
-                            .to_string();
-                        let index = value
-                            .parse::<usize>()
-                            .unwrap_or_else(|_| panic!("Invalid tuple index: {}", value));
-                        Some(ast::Expr::EProj {
-                            tuple: Box::new(lhs),
-                            index,
-                        })
+                MySyntaxKind::Dot => {
+                    if !trailing_args.is_empty() {
+                        panic!("Cannot apply arguments to field access expression");
                     }
-                    _ => {
-                        panic!("Unsupported field access expression: {:?}", rhs_cst);
+                    match rhs_cst {
+                        cst::Expr::IntExpr(int_expr) => {
+                            let value = int_expr
+                                .value()
+                                .unwrap_or_else(|| panic!("Tuple projection missing index"))
+                                .to_string();
+                            let index = value
+                                .parse::<usize>()
+                                .unwrap_or_else(|_| panic!("Invalid tuple index: {}", value));
+                            Some(ast::Expr::EProj {
+                                tuple: Box::new(lhs),
+                                index,
+                            })
+                        }
+                        _ => {
+                            panic!("Unsupported field access expression: {:?}", rhs_cst);
+                        }
                     }
-                },
+                }
                 kind => {
+                    if !trailing_args.is_empty() {
+                        panic!("Unsupported binary operator with trailing args: {:?}", kind);
+                    }
                     panic!("Unsupported binary operator: {:?}", kind);
                 }
             }
         }
+    }
+}
+
+fn apply_trailing_args(expr: ast::Expr, trailing_args: Vec<ast::Expr>) -> ast::Expr {
+    if trailing_args.is_empty() {
+        return expr;
+    }
+
+    match expr {
+        ast::Expr::EVar { name, .. } => ast::Expr::ECall {
+            func: name,
+            args: trailing_args,
+        },
+        ast::Expr::ECall { func, mut args } => {
+            args.extend(trailing_args);
+            ast::Expr::ECall { func, args }
+        }
+        ast::Expr::EConstr { vcon, mut args } => {
+            args.extend(trailing_args);
+            ast::Expr::EConstr { vcon, args }
+        }
+        ast::Expr::EBinary { op, lhs, rhs } => {
+            let rhs = apply_trailing_args(*rhs, trailing_args);
+            ast::Expr::EBinary {
+                op,
+                lhs,
+                rhs: Box::new(rhs),
+            }
+        }
+        ast::Expr::EUnary { op, expr } => {
+            let expr = apply_trailing_args(*expr, trailing_args);
+            ast::Expr::EUnary {
+                op,
+                expr: Box::new(expr),
+            }
+        }
+        other => panic!("Cannot apply arguments to expression {:?}", other),
     }
 }
 

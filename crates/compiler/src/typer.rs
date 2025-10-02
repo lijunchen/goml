@@ -10,6 +10,18 @@ use crate::{
     tast::{self, TypeVar},
 };
 
+fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    match op {
+        ast::BinaryOp::Add => matches!(
+            (lhs, rhs),
+            (tast::Ty::TInt, tast::Ty::TInt) | (tast::Ty::TString, tast::Ty::TString)
+        ),
+        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+            matches!((lhs, rhs), (tast::Ty::TInt, tast::Ty::TInt))
+        }
+    }
+}
+
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
     let mut env = env::Env::new();
     let ast = rename::Rename::default().rename_file(ast);
@@ -1548,53 +1560,53 @@ impl TypeInference {
                 if let Some(trait_name) =
                     env.overloaded_funcs_to_trait_name.get(method_name).cloned()
                 {
-                    let ret_ty = self.fresh_ty_var();
-                    let call_site_type = tast::Ty::TFunc {
-                        params: vec![lhs_ty.clone(), rhs_ty.clone()],
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints.push(Constraint::Overloaded {
-                        op: ast::Lident(method_name.to_string()),
-                        trait_name: trait_name.clone(),
-                        call_site_type,
-                    });
-                    tast::Expr::EBinary {
-                        op: *op,
-                        lhs: Box::new(lhs_tast),
-                        rhs: Box::new(rhs_tast),
-                        ty: ret_ty,
-                        resolution: tast::BinaryResolution::Overloaded { trait_name },
+                    if !binary_supports_builtin(*op, &lhs_ty, &rhs_ty) {
+                        let ret_ty = self.fresh_ty_var();
+                        let call_site_type = tast::Ty::TFunc {
+                            params: vec![lhs_ty.clone(), rhs_ty.clone()],
+                            ret_ty: Box::new(ret_ty.clone()),
+                        };
+                        env.constraints.push(Constraint::Overloaded {
+                            op: ast::Lident(method_name.to_string()),
+                            trait_name: trait_name.clone(),
+                            call_site_type,
+                        });
+                        return tast::Expr::EBinary {
+                            op: *op,
+                            lhs: Box::new(lhs_tast),
+                            rhs: Box::new(rhs_tast),
+                            ty: ret_ty,
+                            resolution: tast::BinaryResolution::Overloaded { trait_name },
+                        };
                     }
-                } else {
-                    let ret_ty = match op {
-                        ast::BinaryOp::Add => self.fresh_ty_var(),
-                        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-                            tast::Ty::TInt
-                        }
-                    };
+                }
 
-                    match op {
-                        ast::BinaryOp::Add => {
-                            env.constraints
-                                .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                            env.constraints
-                                .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
-                        }
-                        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-                            env.constraints
-                                .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
-                            env.constraints
-                                .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
-                        }
-                    }
+                let ret_ty = match op {
+                    ast::BinaryOp::Add => self.fresh_ty_var(),
+                    ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
+                };
 
-                    tast::Expr::EBinary {
-                        op: *op,
-                        lhs: Box::new(lhs_tast),
-                        rhs: Box::new(rhs_tast),
-                        ty: ret_ty.clone(),
-                        resolution: tast::BinaryResolution::Builtin,
+                match op {
+                    ast::BinaryOp::Add => {
+                        env.constraints
+                            .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
+                        env.constraints
+                            .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
                     }
+                    ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+                        env.constraints
+                            .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
+                        env.constraints
+                            .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
+                    }
+                }
+
+                tast::Expr::EBinary {
+                    op: *op,
+                    lhs: Box::new(lhs_tast),
+                    rhs: Box::new(rhs_tast),
+                    ty: ret_ty.clone(),
+                    resolution: tast::BinaryResolution::Builtin,
                 }
             }
             ast::Expr::EProj { tuple, index } => {
