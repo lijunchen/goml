@@ -175,6 +175,35 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EIf {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
+                let then_doc = RcDoc::hardline()
+                    .append(then_branch.to_doc())
+                    .nest(4)
+                    .append(RcDoc::hardline());
+                let else_doc = RcDoc::hardline()
+                    .append(else_branch.to_doc())
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("if")
+                    .append(RcDoc::space())
+                    .append(cond.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(then_doc)
+                    .append(RcDoc::text("}"))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("else"))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(else_doc)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
 
             Self::ECall { func, args } => {
                 if args.is_empty() {

@@ -1167,6 +1167,23 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ty,
+            } => {
+                let ty = self.subst_ty(env, &ty);
+                let cond = Box::new(self.subst(env, *cond));
+                let then_branch = Box::new(self.subst(env, *then_branch));
+                let else_branch = Box::new(self.subst(env, *else_branch));
+                tast::Expr::EIf {
+                    cond,
+                    then_branch,
+                    else_branch,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ECall { func, args, ty } => {
                 let ty = self.subst_ty(env, &ty);
                 let args = args
@@ -1455,6 +1472,31 @@ impl TypeInference {
                     expr: Box::new(expr_tast),
                     arms: arms_tast,
                     ty: arm_ty,
+                }
+            }
+            ast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
+                let cond_tast = self.infer(env, vars, cond);
+                env.constraints
+                    .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+
+                let then_tast = self.infer(env, vars, then_branch);
+                let else_tast = self.infer(env, vars, else_branch);
+                let result_ty = self.fresh_ty_var();
+
+                env.constraints
+                    .push(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
+                env.constraints
+                    .push(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
+
+                tast::Expr::EIf {
+                    cond: Box::new(cond_tast),
+                    then_branch: Box::new(then_tast),
+                    else_branch: Box::new(else_tast),
+                    ty: result_ty,
                 }
             }
             ast::Expr::ECall { func, args } => {

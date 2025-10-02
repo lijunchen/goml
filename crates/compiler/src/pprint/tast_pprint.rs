@@ -330,6 +330,36 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EIf {
+                cond,
+                then_branch,
+                else_branch,
+                ty: _,
+            } => {
+                let then_block = RcDoc::hardline()
+                    .append(then_branch.to_doc(env))
+                    .nest(4)
+                    .append(RcDoc::hardline());
+                let else_block = RcDoc::hardline()
+                    .append(else_branch.to_doc(env))
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("if")
+                    .append(RcDoc::space())
+                    .append(cond.to_doc(env))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(then_block)
+                    .append(RcDoc::text("}"))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("else"))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(else_block)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
             Self::EBinary {
                 op,
                 lhs,

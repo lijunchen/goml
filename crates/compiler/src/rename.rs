@@ -150,6 +150,15 @@ impl Rename {
                     arms: new_arms,
                 }
             }
+            ast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+            } => ast::Expr::EIf {
+                cond: Box::new(self.rename_expr(cond, env)),
+                then_branch: Box::new(self.rename_expr(then_branch, env)),
+                else_branch: Box::new(self.rename_expr(else_branch, env)),
+            },
             ast::Expr::ECall { func, args } => {
                 let new_func = if let Some(new_name) = env.rfind(func) {
                     new_name.clone()

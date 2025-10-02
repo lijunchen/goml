@@ -447,6 +447,7 @@ pub enum Expr {
     CallExpr(CallExpr),
     StructLiteralExpr(StructLiteralExpr),
     MatchExpr(MatchExpr),
+    IfExpr(IfExpr),
     UidentExpr(UidentExpr),
     LidentExpr(LidentExpr),
     TupleExpr(TupleExpr),
@@ -482,6 +483,7 @@ impl CstNode for Expr {
             EXPR_CALL => Expr::CallExpr(CallExpr { syntax }),
             EXPR_STRUCT_LITERAL => Expr::StructLiteralExpr(StructLiteralExpr { syntax }),
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
+            EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
             EXPR_UIDENT => Expr::UidentExpr(UidentExpr { syntax }),
             EXPR_LIDENT => Expr::LidentExpr(LidentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
@@ -501,6 +503,7 @@ impl CstNode for Expr {
             Self::CallExpr(it) => &it.syntax,
             Self::StructLiteralExpr(it) => &it.syntax,
             Self::MatchExpr(it) => &it.syntax,
+            Self::IfExpr(it) => &it.syntax,
             Self::UidentExpr(it) => &it.syntax,
             Self::LidentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
@@ -625,6 +628,86 @@ impl StructLiteralField {
 
 impl_cst_node_simple!(StructLiteralField, MySyntaxKind::STRUCT_LITERAL_FIELD);
 impl_display_via_syntax!(StructLiteralField);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IfExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IfExpr {
+    pub fn cond(&self) -> Option<IfExprCond> {
+        support::child(&self.syntax)
+    }
+
+    pub fn then_branch(&self) -> Option<IfExprThen> {
+        support::child(&self.syntax)
+    }
+
+    pub fn else_branch(&self) -> Option<IfExprElse> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(IfExpr, MySyntaxKind::EXPR_IF);
+impl_display_via_syntax!(IfExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IfExprCond {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IfExprCond {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(IfExprCond, MySyntaxKind::EXPR_IF_COND);
+impl_display_via_syntax!(IfExprCond);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IfExprThen {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IfExprThen {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn block(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(IfExprThen, MySyntaxKind::EXPR_IF_THEN);
+impl_display_via_syntax!(IfExprThen);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IfExprElse {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IfExprElse {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn block(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(IfExprElse, MySyntaxKind::EXPR_IF_ELSE);
+impl_display_via_syntax!(IfExprElse);
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -173,6 +173,11 @@ pub enum Expr {
         expr: Box<Expr>,
         arms: Vec<Arm>,
     },
+    EIf {
+        cond: Box<Expr>,
+        then_branch: Box<Expr>,
+        else_branch: Box<Expr>,
+    },
     ECall {
         func: Lident,
         args: Vec<Expr>,

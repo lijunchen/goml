@@ -206,6 +206,12 @@ pub enum Expr {
         arms: Vec<Arm>,
         ty: Ty,
     },
+    EIf {
+        cond: Box<Expr>,
+        then_branch: Box<Expr>,
+        else_branch: Box<Expr>,
+        ty: Ty,
+    },
     ECall {
         func: String,
         args: Vec<Expr>,
@@ -243,6 +249,7 @@ impl Expr {
             Self::ETuple { ty, .. } => ty.clone(),
             Self::ELet { ty, .. } => ty.clone(),
             Self::EMatch { ty, .. } => ty.clone(),
+            Self::EIf { ty, .. } => ty.clone(),
             Self::ECall { ty, .. } => ty.clone(),
             Self::EUnary { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),

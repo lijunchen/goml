@@ -1,0 +1,78 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_neg(x int) int {
+    return -x
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func classify(x__0 int) string {
+    var ret12 string
+    var t6 bool = int_less(x__0, 0)
+    if t6 {
+        ret12 = "negative"
+    } else {
+        var t7 bool = int_less(0, x__0)
+        if t7 {
+            ret12 = "positive"
+        } else {
+            ret12 = "zero"
+        }
+    }
+    return ret12
+}
+
+func triangle_type(a__1 int, b__2 int, c__3 int) string {
+    var ret13 string
+    var t8 bool = int_less(a__1, b__2)
+    if t8 {
+        var t9 bool = int_less(b__2, c__3)
+        if t9 {
+            ret13 = "ascending"
+        } else {
+            ret13 = "peak"
+        }
+    } else {
+        var t10 bool = int_less(a__1, c__3)
+        if t10 {
+            ret13 = "valley"
+        } else {
+            ret13 = "flat"
+        }
+    }
+    return ret13
+}
+
+func main0() struct{} {
+    var ret14 struct{}
+    var t11 int = int_neg(42)
+    var first__4 string = classify(t11)
+    var second__5 string = classify(0)
+    var third__6 string = classify(17)
+    var shape1__7 string = triangle_type(1, 2, 3)
+    var shape2__8 string = triangle_type(3, 2, 1)
+    var shape3__9 string = triangle_type(2, 3, 2)
+    string_println(first__4)
+    string_println(second__5)
+    string_println(third__6)
+    string_println(shape1__7)
+    string_println(shape2__8)
+    string_println(shape3__9)
+    ret14 = struct{}{}
+    return ret14
+}
+
+func main() {
+    main0()
+}
