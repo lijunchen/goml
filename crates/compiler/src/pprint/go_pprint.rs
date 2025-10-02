@@ -4,8 +4,8 @@ use crate::{
     env::Env,
     go::{
         goast::{
-            Block, Expr, Field, File, Fn, Interface, Item, Method, MethodElem, Receiver, Stmt,
-            Struct,
+            BinaryOp, Block, Expr, Field, File, Fn, ImportDecl, ImportSpec, Interface, Item,
+            Method, MethodElem, Package, Receiver, Stmt, Struct, UnaryOp,
         },
         goty::GoType,
     },
@@ -63,11 +63,73 @@ impl File {
 impl Item {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
+            Item::Package(package) => package.to_doc(env),
+            Item::Import(import_decl) => import_decl.to_doc(env),
             Item::Interface(interface) => interface.to_doc(env),
             Item::Struct(struct_def) => struct_def.to_doc(env),
             Item::Fn(func) => func.to_doc(env),
-            Item::EmbededRawString(s) => RcDoc::text(&s.value),
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl Package {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+        RcDoc::text("package")
+            .append(RcDoc::space())
+            .append(RcDoc::text(&self.name))
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl ImportDecl {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+        if self.specs.is_empty() {
+            RcDoc::text("import ()")
+        } else {
+            RcDoc::text("import (")
+                .append(
+                    RcDoc::hardline()
+                        .append(RcDoc::intersperse(
+                            self.specs.iter().map(|spec| spec.to_doc(env)),
+                            RcDoc::hardline(),
+                        ))
+                        .nest(4),
+                )
+                .append(RcDoc::hardline())
+                .append(RcDoc::text(")"))
+        }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl ImportSpec {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+        let alias = if let Some(alias) = &self.alias {
+            RcDoc::text(alias).append(RcDoc::space())
+        } else {
+            RcDoc::nil()
+        };
+
+        alias
+            .append(RcDoc::text("\""))
+            .append(RcDoc::text(&self.path))
+            .append(RcDoc::text("\""))
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {
@@ -529,6 +591,18 @@ impl Expr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
+            Expr::UnaryOp { op, expr, ty: _ } => op.to_doc().append(expr.to_doc(env)),
+            Expr::BinaryOp {
+                op,
+                lhs,
+                rhs,
+                ty: _,
+            } => lhs
+                .to_doc(env)
+                .append(RcDoc::space())
+                .append(op.to_doc())
+                .append(RcDoc::space())
+                .append(rhs.to_doc(env)),
             Expr::FieldAccess { obj, field, ty: _ } => obj
                 .to_doc(env)
                 .append(RcDoc::text("."))
@@ -599,5 +673,25 @@ impl Expr {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl UnaryOp {
+    fn to_doc(&self) -> RcDoc<'_, ()> {
+        match self {
+            UnaryOp::Neg => RcDoc::text("-"),
+        }
+    }
+}
+
+impl BinaryOp {
+    fn to_doc(&self) -> RcDoc<'_, ()> {
+        match self {
+            BinaryOp::Add => RcDoc::text("+"),
+            BinaryOp::Sub => RcDoc::text("-"),
+            BinaryOp::Mul => RcDoc::text("*"),
+            BinaryOp::Div => RcDoc::text("/"),
+            BinaryOp::Less => RcDoc::text("<"),
+        }
     }
 }

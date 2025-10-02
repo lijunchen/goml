@@ -4,63 +4,20 @@ import (
     "fmt"
 )
 
-func unit_to_string(x struct{}) string {
-    return "()"
-}
-
-func bool_to_string(x bool) string {
-    if x {
-        return "true"
-    } else {
-        return "false"
-    }
-}
-
 func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
-}
-
-func int_neg(x int) int {
-    return -x
 }
 
 func int_add(x int, y int) int {
     return x + y
 }
 
-func int_sub(x int, y int) int {
-    return x - y
-}
-
-func int_mul(x int, y int) int {
-    return x * y
-}
-
-func int_div(x int, y int) int {
-    return x / y
-}
-
-func int_less(x int, y int) bool {
-    return x < y
-}
-
 func string_add(a string, b string) string {
     return a + b
 }
 
-func string_print(s string) struct{} {
-    fmt.Print(s)
-    return struct{}{}
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
-    return struct{}{}
-}
-
-func missing(s string) struct{} {
-    println("missing: " + s)
-    panic("")
     return struct{}{}
 }
 
@@ -121,24 +78,6 @@ func x_add_1(p__4 Point) Point {
         y: y__6,
     }
     return ret34
-}
-
-func get_x(p__7 Point) int {
-    var ret35 int
-    var mtmp6 Point = p__7
-    var x7 int = mtmp6.x
-    var x__8 int = x7
-    ret35 = x__8
-    return ret35
-}
-
-func get_y(p__10 Point) int {
-    var ret36 int
-    var mtmp9 Point = p__10
-    var x11 int = mtmp9.y
-    var y__12 int = x11
-    ret36 = y__12
-    return ret36
 }
 
 func point_to_string(p__13 Point) string {

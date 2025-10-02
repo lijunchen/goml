@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::go::goast as ast;
 
@@ -6,11 +6,15 @@ use crate::go::goast as ast;
 // preserving side-effecting expressions (primarily calls).
 pub fn eliminate_dead_vars(file: ast::File) -> ast::File {
     let toplevels = file.toplevels.into_iter().map(dce_item).collect();
-    ast::File { toplevels }
+    let file = ast::File { toplevels };
+    let file = prune_dead_functions(file);
+    prune_unused_imports(file)
 }
 
 fn dce_item(item: ast::Item) -> ast::Item {
     match item {
+        ast::Item::Package(pkg) => ast::Item::Package(pkg),
+        ast::Item::Import(imports) => ast::Item::Import(imports),
         ast::Item::Fn(mut f) => {
             let live_out: HashSet<String> = HashSet::new();
             f.body = dce_block_with_live(f.body, &live_out).0;
@@ -18,7 +22,6 @@ fn dce_item(item: ast::Item) -> ast::Item {
         }
         ast::Item::Struct(s) => ast::Item::Struct(s),
         ast::Item::Interface(i) => ast::Item::Interface(i),
-        ast::Item::EmbededRawString(s) => ast::Item::EmbededRawString(s),
     }
 }
 
@@ -233,6 +236,17 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             fields: fields.into_iter().map(|(n, e)| (n, dce_expr(e))).collect(),
             ty,
         },
+        ast::Expr::UnaryOp { op, expr, ty } => ast::Expr::UnaryOp {
+            op,
+            expr: Box::new(dce_expr(*expr)),
+            ty,
+        },
+        ast::Expr::BinaryOp { op, lhs, rhs, ty } => ast::Expr::BinaryOp {
+            op,
+            lhs: Box::new(dce_expr(*lhs)),
+            rhs: Box::new(dce_expr(*rhs)),
+            ty,
+        },
         ast::Expr::Block { stmts, expr, ty } => {
             let live_out: HashSet<String> = HashSet::new();
             let (blk, _live_in) = dce_block_with_live(ast::Block { stmts }, &live_out);
@@ -310,6 +324,13 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         }
         ast::Expr::FieldAccess { obj, .. } => {
             s.extend(vars_used_in_expr(obj));
+        }
+        ast::Expr::UnaryOp { expr, .. } => {
+            s.extend(vars_used_in_expr(expr));
+        }
+        ast::Expr::BinaryOp { lhs, rhs, .. } => {
+            s.extend(vars_used_in_expr(lhs));
+            s.extend(vars_used_in_expr(rhs));
         }
         ast::Expr::Cast { expr, .. } => {
             s.extend(vars_used_in_expr(expr));
@@ -469,6 +490,10 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
                     .unwrap_or(false)
         }
         ast::Expr::FieldAccess { obj, .. } => expr_has_side_effects(obj),
+        ast::Expr::UnaryOp { expr, .. } => expr_has_side_effects(expr),
+        ast::Expr::BinaryOp { lhs, rhs, .. } => {
+            expr_has_side_effects(lhs) || expr_has_side_effects(rhs)
+        }
         ast::Expr::Cast { expr, .. } => expr_has_side_effects(expr),
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
@@ -528,5 +553,342 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
                     .map(|b| b.stmts.iter().any(stmt_has_side_effects))
                     .unwrap_or(false)
         }
+    }
+}
+
+fn prune_dead_functions(file: ast::File) -> ast::File {
+    let mut fn_map: HashMap<String, &ast::Fn> = HashMap::new();
+    for item in &file.toplevels {
+        if let ast::Item::Fn(f) = item {
+            fn_map.insert(f.name.clone(), f);
+        }
+    }
+
+    if fn_map.is_empty() {
+        return file;
+    }
+
+    let mut reachable: HashSet<String> = HashSet::new();
+    let mut stack: Vec<String> = Vec::new();
+    for root in ["main", "main0"] {
+        if fn_map.contains_key(root) {
+            stack.push(root.to_string());
+        }
+    }
+
+    while let Some(name) = stack.pop() {
+        if !reachable.insert(name.clone()) {
+            continue;
+        }
+
+        if let Some(f) = fn_map.get(&name) {
+            for callee in called_functions_in_fn(f) {
+                if fn_map.contains_key(&callee) {
+                    stack.push(callee);
+                }
+            }
+        }
+    }
+
+    let toplevels = file
+        .toplevels
+        .into_iter()
+        .filter(|item| match item {
+            ast::Item::Fn(f) => reachable.contains(&f.name),
+            _ => true,
+        })
+        .collect();
+
+    ast::File { toplevels }
+}
+
+fn called_functions_in_fn(f: &ast::Fn) -> HashSet<String> {
+    let mut calls = HashSet::new();
+    collect_called_in_block(&f.body, &mut calls);
+    calls
+}
+
+fn collect_called_in_block(block: &ast::Block, calls: &mut HashSet<String>) {
+    for stmt in &block.stmts {
+        collect_called_in_stmt(stmt, calls);
+    }
+}
+
+fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
+    match stmt {
+        ast::Stmt::Expr(e) => collect_called_in_expr(e, calls),
+        ast::Stmt::VarDecl { value, .. } => {
+            if let Some(v) = value {
+                collect_called_in_expr(v, calls);
+            }
+        }
+        ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls),
+        ast::Stmt::Return { expr } => {
+            if let Some(e) = expr {
+                collect_called_in_expr(e, calls);
+            }
+        }
+        ast::Stmt::If { cond, then, else_ } => {
+            collect_called_in_expr(cond, calls);
+            collect_called_in_block(then, calls);
+            if let Some(b) = else_ {
+                collect_called_in_block(b, calls);
+            }
+        }
+        ast::Stmt::SwitchExpr {
+            expr,
+            cases,
+            default,
+        } => {
+            collect_called_in_expr(expr, calls);
+            for (e, b) in cases {
+                collect_called_in_expr(e, calls);
+                collect_called_in_block(b, calls);
+            }
+            if let Some(b) = default {
+                collect_called_in_block(b, calls);
+            }
+        }
+        ast::Stmt::SwitchType {
+            expr,
+            cases,
+            default,
+            ..
+        } => {
+            collect_called_in_expr(expr, calls);
+            for (_t, b) in cases {
+                collect_called_in_block(b, calls);
+            }
+            if let Some(b) = default {
+                collect_called_in_block(b, calls);
+            }
+        }
+    }
+}
+
+fn collect_called_in_expr(expr: &ast::Expr, calls: &mut HashSet<String>) {
+    match expr {
+        ast::Expr::Call { func, args, .. } => {
+            calls.insert(func.clone());
+            for arg in args {
+                collect_called_in_expr(arg, calls);
+            }
+        }
+        ast::Expr::FieldAccess { obj, .. } => collect_called_in_expr(obj, calls),
+        ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls),
+        ast::Expr::StructLiteral { fields, .. } => {
+            for (_, e) in fields {
+                collect_called_in_expr(e, calls);
+            }
+        }
+        ast::Expr::Block { stmts, expr, .. } => {
+            for stmt in stmts {
+                collect_called_in_stmt(stmt, calls);
+            }
+            if let Some(e) = expr {
+                collect_called_in_expr(e, calls);
+            }
+        }
+        ast::Expr::UnaryOp { expr, .. } => collect_called_in_expr(expr, calls),
+        ast::Expr::BinaryOp { lhs, rhs, .. } => {
+            collect_called_in_expr(lhs, calls);
+            collect_called_in_expr(rhs, calls);
+        }
+        ast::Expr::Nil { .. }
+        | ast::Expr::Void { .. }
+        | ast::Expr::Unit { .. }
+        | ast::Expr::Var { .. }
+        | ast::Expr::Bool { .. }
+        | ast::Expr::Int { .. }
+        | ast::Expr::String { .. } => {}
+    }
+}
+
+fn prune_unused_imports(file: ast::File) -> ast::File {
+    let import_names = gather_import_names(&file);
+    if import_names.is_empty() {
+        return file;
+    }
+
+    let used_packages = collect_used_packages(&file, &import_names);
+
+    let mut toplevels = Vec::with_capacity(file.toplevels.len());
+    for item in file.toplevels {
+        match item {
+            ast::Item::Import(mut decl) => {
+                decl.specs.retain(|spec| {
+                    let binding = import_spec_binding(spec);
+                    used_packages.contains(&binding)
+                });
+                if !decl.specs.is_empty() {
+                    toplevels.push(ast::Item::Import(decl));
+                }
+            }
+            other => toplevels.push(other),
+        }
+    }
+
+    ast::File { toplevels }
+}
+
+fn gather_import_names(file: &ast::File) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for item in &file.toplevels {
+        if let ast::Item::Import(decl) = item {
+            for spec in &decl.specs {
+                names.insert(import_spec_binding(spec));
+            }
+        }
+    }
+    names
+}
+
+fn collect_used_packages(file: &ast::File, imports: &HashSet<String>) -> HashSet<String> {
+    let mut used = HashSet::new();
+    for item in &file.toplevels {
+        collect_packages_in_item(item, imports, &mut used);
+    }
+    used
+}
+
+fn collect_packages_in_item(
+    item: &ast::Item,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    match item {
+        ast::Item::Fn(f) => collect_packages_in_block(&f.body, imports, used),
+        ast::Item::Struct(s) => {
+            for method in &s.methods {
+                collect_packages_in_block(&method.body, imports, used);
+            }
+        }
+        ast::Item::Package(_) | ast::Item::Import(_) | ast::Item::Interface(_) => {}
+    }
+}
+
+fn collect_packages_in_block(
+    block: &ast::Block,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    for stmt in &block.stmts {
+        collect_packages_in_stmt(stmt, imports, used);
+    }
+}
+
+fn collect_packages_in_stmt(
+    stmt: &ast::Stmt,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    match stmt {
+        ast::Stmt::Expr(e) => collect_packages_in_expr(e, imports, used),
+        ast::Stmt::VarDecl { value, .. } => {
+            if let Some(v) = value {
+                collect_packages_in_expr(v, imports, used);
+            }
+        }
+        ast::Stmt::Assignment { value, .. } => collect_packages_in_expr(value, imports, used),
+        ast::Stmt::Return { expr } => {
+            if let Some(e) = expr {
+                collect_packages_in_expr(e, imports, used);
+            }
+        }
+        ast::Stmt::If { cond, then, else_ } => {
+            collect_packages_in_expr(cond, imports, used);
+            collect_packages_in_block(then, imports, used);
+            if let Some(b) = else_ {
+                collect_packages_in_block(b, imports, used);
+            }
+        }
+        ast::Stmt::SwitchExpr {
+            expr,
+            cases,
+            default,
+        } => {
+            collect_packages_in_expr(expr, imports, used);
+            for (e, b) in cases {
+                collect_packages_in_expr(e, imports, used);
+                collect_packages_in_block(b, imports, used);
+            }
+            if let Some(b) = default {
+                collect_packages_in_block(b, imports, used);
+            }
+        }
+        ast::Stmt::SwitchType {
+            expr,
+            cases,
+            default,
+            ..
+        } => {
+            collect_packages_in_expr(expr, imports, used);
+            for (_t, b) in cases {
+                collect_packages_in_block(b, imports, used);
+            }
+            if let Some(b) = default {
+                collect_packages_in_block(b, imports, used);
+            }
+        }
+    }
+}
+
+fn collect_packages_in_expr(
+    expr: &ast::Expr,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    match expr {
+        ast::Expr::Call { func, args, .. } => {
+            if let Some((pkg, _)) = func.split_once('.') {
+                if imports.contains(pkg) {
+                    used.insert(pkg.to_string());
+                }
+            }
+            for arg in args {
+                collect_packages_in_expr(arg, imports, used);
+            }
+        }
+        ast::Expr::FieldAccess { obj, .. } => {
+            collect_packages_in_expr(obj, imports, used);
+        }
+        ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
+        ast::Expr::StructLiteral { fields, .. } => {
+            for (_, e) in fields {
+                collect_packages_in_expr(e, imports, used);
+            }
+        }
+        ast::Expr::Block { stmts, expr, .. } => {
+            for stmt in stmts {
+                collect_packages_in_stmt(stmt, imports, used);
+            }
+            if let Some(e) = expr {
+                collect_packages_in_expr(e, imports, used);
+            }
+        }
+        ast::Expr::UnaryOp { expr, .. } => collect_packages_in_expr(expr, imports, used),
+        ast::Expr::BinaryOp { lhs, rhs, .. } => {
+            collect_packages_in_expr(lhs, imports, used);
+            collect_packages_in_expr(rhs, imports, used);
+        }
+        ast::Expr::Nil { .. }
+        | ast::Expr::Void { .. }
+        | ast::Expr::Unit { .. }
+        | ast::Expr::Var { .. }
+        | ast::Expr::Bool { .. }
+        | ast::Expr::Int { .. }
+        | ast::Expr::String { .. } => {}
+    }
+}
+
+fn import_spec_binding(spec: &ast::ImportSpec) -> String {
+    if let Some(alias) = &spec.alias {
+        alias.clone()
+    } else {
+        spec.path
+            .rsplit('/')
+            .next()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| spec.path.clone())
     }
 }
