@@ -7,10 +7,27 @@ pub struct File {
 
 #[derive(Debug)]
 pub enum Item {
+    Package(Package),
+    Import(ImportDecl),
     Interface(Interface),
     Struct(Struct),
     Fn(Fn),
-    EmbededRawString(EmbededRawString),
+}
+
+#[derive(Debug)]
+pub struct Package {
+    pub name: String,
+}
+
+#[derive(Debug)]
+pub struct ImportDecl {
+    pub specs: Vec<ImportSpec>,
+}
+
+#[derive(Debug)]
+pub struct ImportSpec {
+    pub alias: Option<String>,
+    pub path: String,
 }
 
 #[derive(Debug)]
@@ -45,11 +62,6 @@ pub struct Fn {
     pub params: Vec<(String, goty::GoType)>,
     pub ret_ty: Option<goty::GoType>,
     pub body: Block,
-}
-
-#[derive(Debug)]
-pub struct EmbededRawString {
-    pub value: String,
 }
 
 #[derive(Debug)]
@@ -103,6 +115,17 @@ pub enum Expr {
         args: Vec<Expr>,
         ty: goty::GoType,
     },
+    UnaryOp {
+        op: UnaryOp,
+        expr: Box<Expr>,
+        ty: goty::GoType,
+    },
+    BinaryOp {
+        op: BinaryOp,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+        ty: goty::GoType,
+    },
     FieldAccess {
         obj: Box<Expr>,
         field: String,
@@ -134,12 +157,28 @@ impl Expr {
             | Expr::Int { ty, .. }
             | Expr::String { ty, .. }
             | Expr::Call { ty, .. }
+            | Expr::UnaryOp { ty, .. }
+            | Expr::BinaryOp { ty, .. }
             | Expr::FieldAccess { ty, .. }
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::Block { ty, .. } => ty,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum UnaryOp {
+    Neg,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+    Less,
 }
 
 #[derive(Debug)]
