@@ -28,4 +28,42 @@ fn env_registers_builtin_function_signatures() {
             other
         ),
     }
+
+    match env.get_type_of_function("bool_not") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 1);
+            assert!(matches!(params[0], tast::Ty::TBool));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TBool));
+        }
+        other => panic!(
+            "expected bool_not to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("bool_and") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TBool));
+            assert!(matches!(params[1], tast::Ty::TBool));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TBool));
+        }
+        other => panic!(
+            "expected bool_and to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("bool_or") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TBool));
+            assert!(matches!(params[1], tast::Ty::TBool));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TBool));
+        }
+        other => panic!(
+            "expected bool_or to have a function type signature, got {:?}",
+            other
+        ),
+    }
 }

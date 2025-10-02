@@ -762,6 +762,14 @@ fn builtin_function_for(op: BinaryOp, ty: &Ty) -> Option<&'static str> {
             Ty::TInt => Some("int_div"),
             _ => None,
         },
+        BinaryOp::And => match ty {
+            Ty::TBool => Some("bool_and"),
+            _ => None,
+        },
+        BinaryOp::Or => match ty {
+            Ty::TBool => Some("bool_or"),
+            _ => None,
+        },
     }
 }
 
@@ -769,6 +777,10 @@ fn builtin_unary_function_for(op: UnaryOp, ty: &Ty) -> Option<&'static str> {
     match op {
         UnaryOp::Neg => match ty {
             Ty::TInt => Some("int_neg"),
+            _ => None,
+        },
+        UnaryOp::Not => match ty {
+            Ty::TBool => Some("bool_not"),
             _ => None,
         },
     }

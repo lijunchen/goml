@@ -121,3 +121,24 @@ fn test_comment() {
         "#]],
     )
 }
+
+#[test]
+fn lexes_logical_operators() {
+    check(
+        "!a && b || c",
+        expect![[r#"
+            [
+                {kind: Bang, text: "!"},
+                {kind: Lident, text: "a"},
+                {kind: Whitespace, text: " "},
+                {kind: AndAnd, text: "&&"},
+                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "b"},
+                {kind: Whitespace, text: " "},
+                {kind: OrOr, text: "||"},
+                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "c"},
+            ]
+        "#]],
+    )
+}

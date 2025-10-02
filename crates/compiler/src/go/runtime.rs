@@ -7,6 +7,9 @@ use crate::go::{
 // bool_to_string(x : bool) string
 // int_to_string(x : int) string
 // int_neg(x : int) int
+// bool_not(x : bool) bool
+// bool_and(x : bool, y : bool) bool
+// bool_or(x : bool, y : bool) bool
 // int_add(x : int, y : int) int
 // int_sub(x : int, y : int) int
 // int_mul(x : int, y : int) int
@@ -30,6 +33,9 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(bool_to_string()),
         Item::Fn(int_to_string()),
         Item::Fn(int_neg()),
+        Item::Fn(bool_not()),
+        Item::Fn(bool_and()),
+        Item::Fn(bool_or()),
         Item::Fn(int_add()),
         Item::Fn(int_sub()),
         Item::Fn(int_mul()),
@@ -130,6 +136,80 @@ fn int_neg() -> goast::Fn {
                         ty: goty::GoType::TInt,
                     }),
                     ty: goty::GoType::TInt,
+                }),
+            }],
+        },
+    }
+}
+
+fn bool_not() -> goast::Fn {
+    goast::Fn {
+        name: "bool_not".to_string(),
+        params: vec![("x".to_string(), goty::GoType::TBool)],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::UnaryOp {
+                    op: UnaryOp::Not,
+                    expr: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: goty::GoType::TBool,
+                    }),
+                    ty: goty::GoType::TBool,
+                }),
+            }],
+        },
+    }
+}
+
+fn bool_and() -> goast::Fn {
+    goast::Fn {
+        name: "bool_and".to_string(),
+        params: vec![
+            ("x".to_string(), goty::GoType::TBool),
+            ("y".to_string(), goty::GoType::TBool),
+        ],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::BinaryOp {
+                    op: BinaryOp::And,
+                    lhs: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: goty::GoType::TBool,
+                    }),
+                    rhs: Box::new(goast::Expr::Var {
+                        name: "y".to_string(),
+                        ty: goty::GoType::TBool,
+                    }),
+                    ty: goty::GoType::TBool,
+                }),
+            }],
+        },
+    }
+}
+
+fn bool_or() -> goast::Fn {
+    goast::Fn {
+        name: "bool_or".to_string(),
+        params: vec![
+            ("x".to_string(), goty::GoType::TBool),
+            ("y".to_string(), goty::GoType::TBool),
+        ],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::BinaryOp {
+                    op: BinaryOp::Or,
+                    lhs: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: goty::GoType::TBool,
+                    }),
+                    rhs: Box::new(goast::Expr::Var {
+                        name: "y".to_string(),
+                        ty: goty::GoType::TBool,
+                    }),
+                    ty: goty::GoType::TBool,
                 }),
             }],
         },

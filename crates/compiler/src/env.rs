@@ -39,6 +39,19 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TString),
     );
     funcs.insert(
+        "bool_not".to_string(),
+        make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "bool_and".to_string(),
+        make_fn_ty(vec![tast::Ty::TBool, tast::Ty::TBool], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "bool_or".to_string(),
+        make_fn_ty(vec![tast::Ty::TBool, tast::Ty::TBool], tast::Ty::TBool),
+    );
+
+    funcs.insert(
         "int_to_string".to_string(),
         make_fn_ty(vec![tast::Ty::TInt], tast::Ty::TString),
     );
