@@ -6,14 +6,14 @@ enum List {
 fn list_length(xs: List[T]) -> int {
     match xs {
         Nil => 0,
-        Cons(_, tail) => int_add(1, list_length(tail)),
+        Cons(_, tail) => 1 + list_length(tail),
     }
 }
 
 fn int_list_length(xs: List[int]) -> int {
     match xs {
         Nil => 0,
-        Cons(_, tail) => int_add(1, int_list_length(tail)),
+        Cons(_, tail) => 1 + int_list_length(tail),
     }
 }
 
