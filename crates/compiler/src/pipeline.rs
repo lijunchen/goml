@@ -30,23 +30,24 @@ pub struct Compilation {
 #[derive(Debug, Clone)]
 pub enum CompilationError {
     Parser { diagnostics: Diagnostics },
+    Lower { diagnostics: Diagnostics },
     Typer { diagnostics: Diagnostics },
 }
 
 impl CompilationError {
     pub fn diagnostics(&self) -> &Diagnostics {
         match self {
-            CompilationError::Parser { diagnostics } | CompilationError::Typer { diagnostics } => {
-                diagnostics
-            }
+            CompilationError::Parser { diagnostics }
+            | CompilationError::Lower { diagnostics }
+            | CompilationError::Typer { diagnostics } => diagnostics,
         }
     }
 
     pub fn into_diagnostics(self) -> Diagnostics {
         match self {
-            CompilationError::Parser { diagnostics } | CompilationError::Typer { diagnostics } => {
-                diagnostics
-            }
+            CompilationError::Parser { diagnostics }
+            | CompilationError::Lower { diagnostics }
+            | CompilationError::Typer { diagnostics } => diagnostics,
         }
     }
 }
@@ -62,7 +63,13 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     let green_node = parse_result.green_node.clone();
     let root = MySyntaxNode::new_root(parse_result.green_node);
     let cst = CstFile::cast(root).expect("failed to cast CST file");
-    let ast = ::ast::lower::lower(cst.clone()).expect("lowering produced no AST");
+    let lower = ::ast::lower::lower(cst.clone());
+    let ast = match lower.into_result() {
+        Ok(ast) => ast,
+        Err(diagnostics) => {
+            return Err(CompilationError::Lower { diagnostics });
+        }
+    };
 
     let (tast, mut env) = typer::check_file(ast.clone());
     if env.diagnostics.has_errors() {

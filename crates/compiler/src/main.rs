@@ -25,6 +25,15 @@ fn main() {
                         eprintln!("error: {}: {}", file_path.display(), error);
                     }
                 }
+                CompilationError::Lower { diagnostics } => {
+                    for diagnostic in diagnostics.iter() {
+                        eprintln!(
+                            "error (lower): {}: {}",
+                            file_path.display(),
+                            diagnostic.message()
+                        );
+                    }
+                }
                 CompilationError::Typer { diagnostics } => {
                     for error in format_typer_diagnostics(diagnostics) {
                         eprintln!("error (typer): {}: {}", file_path.display(), error);

@@ -14,7 +14,9 @@ fn typecheck(src: &str) -> (tast::File, Env) {
     }
     let root = MySyntaxNode::new_root(parsed.green_node);
     let cst = cst::cst::File::cast(root).expect("failed to cast syntax tree");
-    let ast = ast::lower::lower(cst).expect("failed to lower to AST");
+    let ast = ast::lower::lower(cst)
+        .into_result()
+        .expect("failed to lower to AST");
     crate::typer::check_file(ast)
 }
 

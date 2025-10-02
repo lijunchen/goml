@@ -3,6 +3,7 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Context;
 use anyhow::bail;
+use diagnostics::Diagnostics;
 use parser::{debug_tree, format_parser_diagnostics};
 
 use crate::{
@@ -154,6 +155,11 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
             p.display(),
             format_parser_diagnostics(&diagnostics, &input).join("\n")
         ),
+        CompilationError::Lower { diagnostics } => anyhow::anyhow!(
+            "Lowering errors in {}:\n{}",
+            p.display(),
+            format_lower_diagnostics(&diagnostics).join("\n")
+        ),
         CompilationError::Typer { diagnostics } => anyhow::anyhow!(
             "Typer errors in {}:\n{}",
             p.display(),
@@ -205,6 +211,13 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
 
                     expect_test::expect_file![diag_filename].assert_eq(&formatted);
                 }
+                Err(CompilationError::Lower { diagnostics }) => {
+                    bail!(
+                        "Expected parse errors in {}, but lowering reported diagnostics: {}",
+                        p.display(),
+                        format_lower_diagnostics(&diagnostics).join("\n")
+                    );
+                }
                 Err(CompilationError::Typer { diagnostics }) => {
                     bail!(
                         "Expected parse errors in {}, but typer reported diagnostics: {}",
@@ -252,6 +265,13 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
                         format_parser_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
+                Err(CompilationError::Lower { diagnostics }) => {
+                    bail!(
+                        "Expected typer diagnostics in {}, but lowering reported diagnostics: {}",
+                        p.display(),
+                        format_lower_diagnostics(&diagnostics).join("\n")
+                    );
+                }
                 Ok(_) => {
                     bail!(
                         "Expected typer diagnostics in {}, but compilation succeeded",
@@ -263,4 +283,11 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
     }
 
     Ok(())
+}
+
+fn format_lower_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
+    diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect()
 }
