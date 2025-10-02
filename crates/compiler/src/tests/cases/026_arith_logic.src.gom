@@ -1,0 +1,118 @@
+package main
+
+import (
+    "fmt"
+)
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func bool_not(x bool) bool {
+    return !x
+}
+
+func bool_and(x bool, y bool) bool {
+    return x && y
+}
+
+func bool_or(x bool, y bool) bool {
+    return x || y
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+func int_mul(x int, y int) int {
+    return x * y
+}
+
+func int_div(x int, y int) int {
+    return x / y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func show_int(label__0 string, value__1 int) struct{} {
+    var ret29 struct{}
+    var t11 string = int_to_string(value__1)
+    var t10 string = string_add(label__0, t11)
+    string_println(t10)
+    ret29 = struct{}{}
+    return ret29
+}
+
+func show_bool(label__2 string, value__3 bool) struct{} {
+    var ret30 struct{}
+    var t13 string = bool_to_string(value__3)
+    var t12 string = string_add(label__2, t13)
+    string_println(t12)
+    ret30 = struct{}{}
+    return ret30
+}
+
+func main0() struct{} {
+    var ret31 struct{}
+    var base__4 int = 10
+    var sum__5 int = int_add(base__4, 5)
+    var diff__6 int = int_sub(sum__5, 3)
+    var prod__7 int = int_mul(diff__6, 2)
+    var quot__8 int = int_div(prod__7, 4)
+    show_int("sum=", sum__5)
+    show_int("diff=", diff__6)
+    show_int("prod=", prod__7)
+    show_int("quot=", quot__8)
+    var and_result__9 bool = bool_and(true, false)
+    var or_result__10 bool = bool_or(true, false)
+    var not_result__11 bool = bool_not(false)
+    var t15 bool = bool_not(and_result__9)
+    var t19 int = int_mul(prod__7, base__4)
+    var t18 int = int_add(sum__5, t19)
+    var t20 int = int_div(prod__7, 2)
+    var t17 int = int_sub(t18, t20)
+    var t22 int = int_sub(diff__6, quot__8)
+    var t21 int = int_add(t22, base__4)
+    var t16 bool = int_less(t17, t21)
+    var t14 bool = bool_and(t15, t16)
+    var t26 int = int_div(base__4, 2)
+    var t25 int = int_add(quot__8, t26)
+    var t28 int = int_div(sum__5, 2)
+    var t27 int = int_sub(diff__6, t28)
+    var t24 bool = int_less(t25, t27)
+    var t23 bool = bool_not(t24)
+    var mixed__12 bool = bool_or(t14, t23)
+    show_bool("and=", and_result__9)
+    show_bool("or=", or_result__10)
+    show_bool("not=", not_result__11)
+    show_bool("mixed=", mixed__12)
+    ret31 = struct{}{}
+    return ret31
+}
+
+func main() {
+    main0()
+}
