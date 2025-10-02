@@ -79,6 +79,45 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 }
             }
         }
+        T![if] => {
+            let m = p.open();
+            p.expect(T![if]);
+
+            let cond_marker = p.open();
+            if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected an expression after `if`");
+            }
+            p.close(cond_marker, MySyntaxKind::EXPR_IF_COND);
+
+            let then_marker = p.open();
+            if p.at(T!['{']) {
+                block(p);
+            } else if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected a then-branch expression for `if`");
+            }
+            p.close(then_marker, MySyntaxKind::EXPR_IF_THEN);
+
+            if p.at(T![else]) {
+                p.expect(T![else]);
+                let else_marker = p.open();
+                if p.at(T!['{']) {
+                    block(p);
+                } else if p.at_any(EXPR_FIRST) {
+                    expr(p);
+                } else {
+                    p.advance_with_error("expected an else-branch expression for `if`");
+                }
+                p.close(else_marker, MySyntaxKind::EXPR_IF_ELSE);
+            } else {
+                p.advance_with_error("expected `else` in `if` expression");
+            }
+
+            p.close(m, MySyntaxKind::EXPR_IF)
+        }
         T![match] => {
             let m = p.open();
             p.expect(T![match]);

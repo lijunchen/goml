@@ -1,0 +1,46 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func choose(flag__0 bool, x__1 int, y__2 int) int {
+    var ret6 int
+    if flag__0 {
+        ret6 = x__1
+    } else {
+        ret6 = y__2
+    }
+    return ret6
+}
+
+func main0() struct{} {
+    var ret7 struct{}
+    var yes__3 int = choose(true, 10, 99)
+    var no__4 int = choose(false, 10, 99)
+    var t3 string = int_to_string(yes__3)
+    var t2 string = string_add("yes=", t3)
+    string_println(t2)
+    var t5 string = int_to_string(no__4)
+    var t4 string = string_add("no=", t5)
+    string_println(t4)
+    ret7 = struct{}{}
+    return ret7
+}
+
+func main() {
+    main0()
+}

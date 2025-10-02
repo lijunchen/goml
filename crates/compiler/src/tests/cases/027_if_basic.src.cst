@@ -1,0 +1,231 @@
+FILE@0..314
+  FN@0..89
+    FnKeyword@0..2 "fn"
+    Whitespace@2..3 " "
+    Lident@3..9 "choose"
+    PARAM_LIST@9..38
+      LParen@9..10 "("
+      PARAM@10..22
+        Lident@10..14 "flag"
+        Colon@14..15 ":"
+        Whitespace@15..16 " "
+        TYPE_BOOL@16..20
+          BoolKeyword@16..20 "bool"
+        Comma@20..21 ","
+        Whitespace@21..22 " "
+      PARAM@22..30
+        Lident@22..23 "x"
+        Colon@23..24 ":"
+        Whitespace@24..25 " "
+        TYPE_INT@25..28
+          IntKeyword@25..28 "int"
+        Comma@28..29 ","
+        Whitespace@29..30 " "
+      PARAM@30..36
+        Lident@30..31 "y"
+        Colon@31..32 ":"
+        Whitespace@32..33 " "
+        TYPE_INT@33..36
+          IntKeyword@33..36 "int"
+      RParen@36..37 ")"
+      Whitespace@37..38 " "
+    Arrow@38..40 "->"
+    Whitespace@40..41 " "
+    TYPE_INT@41..45
+      IntKeyword@41..44 "int"
+      Whitespace@44..45 " "
+    BLOCK@45..89
+      LBrace@45..46 "{"
+      Whitespace@46..49 "\n  "
+      EXPR_IF@49..86
+        IfKeyword@49..51 "if"
+        Whitespace@51..52 " "
+        EXPR_IF_COND@52..57
+          EXPR_LIDENT@52..57
+            Lident@52..56 "flag"
+            Whitespace@56..57 " "
+        EXPR_IF_THEN@57..69
+          BLOCK@57..69
+            LBrace@57..58 "{"
+            Whitespace@58..63 "\n    "
+            EXPR_LIDENT@63..67
+              Lident@63..64 "x"
+              Whitespace@64..67 "\n  "
+            RBrace@67..68 "}"
+            Whitespace@68..69 " "
+        ElseKeyword@69..73 "else"
+        Whitespace@73..74 " "
+        EXPR_IF_ELSE@74..86
+          BLOCK@74..86
+            LBrace@74..75 "{"
+            Whitespace@75..80 "\n    "
+            EXPR_LIDENT@80..84
+              Lident@80..81 "y"
+              Whitespace@81..84 "\n  "
+            RBrace@84..85 "}"
+            Whitespace@85..86 "\n"
+      RBrace@86..87 "}"
+      Whitespace@87..89 "\n\n"
+  FN@89..314
+    FnKeyword@89..91 "fn"
+    Whitespace@91..92 " "
+    Lident@92..96 "main"
+    PARAM_LIST@96..99
+      LParen@96..97 "("
+      RParen@97..98 ")"
+      Whitespace@98..99 " "
+    BLOCK@99..314
+      LBrace@99..100 "{"
+      Whitespace@100..103 "\n  "
+      EXPR_LET@103..312
+        LetKeyword@103..106 "let"
+        Whitespace@106..107 " "
+        PATTERN_VARIABLE@107..111
+          Lident@107..110 "yes"
+          Whitespace@110..111 " "
+        Eq@111..112 "="
+        Whitespace@112..113 " "
+        EXPR_LET_VALUE@113..134
+          EXPR_CALL@113..134
+            EXPR_LIDENT@113..119
+              Lident@113..119 "choose"
+            ARG_LIST@119..134
+              LParen@119..120 "("
+              ARG@120..126
+                EXPR_BOOL@120..124
+                  TrueKeyword@120..124 "true"
+                Comma@124..125 ","
+                Whitespace@125..126 " "
+              ARG@126..130
+                EXPR_INT@126..128
+                  Int@126..128 "10"
+                Comma@128..129 ","
+                Whitespace@129..130 " "
+              ARG@130..132
+                EXPR_INT@130..132
+                  Int@130..132 "99"
+              RParen@132..133 ")"
+              Whitespace@133..134 " "
+        InKeyword@134..136 "in"
+        Whitespace@136..139 "\n  "
+        EXPR_LET_BODY@139..312
+          EXPR_LET@139..312
+            LetKeyword@139..142 "let"
+            Whitespace@142..143 " "
+            PATTERN_VARIABLE@143..146
+              Lident@143..145 "no"
+              Whitespace@145..146 " "
+            Eq@146..147 "="
+            Whitespace@147..148 " "
+            EXPR_LET_VALUE@148..170
+              EXPR_CALL@148..170
+                EXPR_LIDENT@148..154
+                  Lident@148..154 "choose"
+                ARG_LIST@154..170
+                  LParen@154..155 "("
+                  ARG@155..162
+                    EXPR_BOOL@155..160
+                      FalseKeyword@155..160 "false"
+                    Comma@160..161 ","
+                    Whitespace@161..162 " "
+                  ARG@162..166
+                    EXPR_INT@162..164
+                      Int@162..164 "10"
+                    Comma@164..165 ","
+                    Whitespace@165..166 " "
+                  ARG@166..168
+                    EXPR_INT@166..168
+                      Int@166..168 "99"
+                  RParen@168..169 ")"
+                  Whitespace@169..170 " "
+            InKeyword@170..172 "in"
+            Whitespace@172..175 "\n  "
+            EXPR_LET_BODY@175..312
+              EXPR_LET@175..312
+                LetKeyword@175..178 "let"
+                Whitespace@178..179 " "
+                PATTERN_WILDCARD@179..181
+                  WildcardKeyword@179..180 "_"
+                  Whitespace@180..181 " "
+                Eq@181..182 "="
+                Whitespace@182..183 " "
+                EXPR_LET_VALUE@183..238
+                  EXPR_CALL@183..238
+                    EXPR_LIDENT@183..197
+                      Lident@183..197 "string_println"
+                    ARG_LIST@197..238
+                      LParen@197..198 "("
+                      ARG@198..236
+                        EXPR_CALL@198..236
+                          EXPR_LIDENT@198..208
+                            Lident@198..208 "string_add"
+                          ARG_LIST@208..236
+                            LParen@208..209 "("
+                            ARG@209..217
+                              EXPR_STR@209..215
+                                Str@209..215 "\"yes=\""
+                              Comma@215..216 ","
+                              Whitespace@216..217 " "
+                            ARG@217..235
+                              EXPR_CALL@217..235
+                                EXPR_LIDENT@217..230
+                                  Lident@217..230 "int_to_string"
+                                ARG_LIST@230..235
+                                  LParen@230..231 "("
+                                  ARG@231..234
+                                    EXPR_LIDENT@231..234
+                                      Lident@231..234 "yes"
+                                  RParen@234..235 ")"
+                            RParen@235..236 ")"
+                      RParen@236..237 ")"
+                      Whitespace@237..238 " "
+                InKeyword@238..240 "in"
+                Whitespace@240..243 "\n  "
+                EXPR_LET_BODY@243..312
+                  EXPR_LET@243..312
+                    LetKeyword@243..246 "let"
+                    Whitespace@246..247 " "
+                    PATTERN_WILDCARD@247..249
+                      WildcardKeyword@247..248 "_"
+                      Whitespace@248..249 " "
+                    Eq@249..250 "="
+                    Whitespace@250..251 " "
+                    EXPR_LET_VALUE@251..304
+                      EXPR_CALL@251..304
+                        EXPR_LIDENT@251..265
+                          Lident@251..265 "string_println"
+                        ARG_LIST@265..304
+                          LParen@265..266 "("
+                          ARG@266..302
+                            EXPR_CALL@266..302
+                              EXPR_LIDENT@266..276
+                                Lident@266..276 "string_add"
+                              ARG_LIST@276..302
+                                LParen@276..277 "("
+                                ARG@277..284
+                                  EXPR_STR@277..282
+                                    Str@277..282 "\"no=\""
+                                  Comma@282..283 ","
+                                  Whitespace@283..284 " "
+                                ARG@284..301
+                                  EXPR_CALL@284..301
+                                    EXPR_LIDENT@284..297
+                                      Lident@284..297 "int_to_string"
+                                    ARG_LIST@297..301
+                                      LParen@297..298 "("
+                                      ARG@298..300
+                                        EXPR_LIDENT@298..300
+                                          Lident@298..300 "no"
+                                      RParen@300..301 ")"
+                                RParen@301..302 ")"
+                          RParen@302..303 ")"
+                          Whitespace@303..304 " "
+                    InKeyword@304..306 "in"
+                    Whitespace@306..309 "\n  "
+                    EXPR_LET_BODY@309..312
+                      EXPR_UNIT@309..312
+                        LParen@309..310 "("
+                        RParen@310..311 ")"
+                        Whitespace@311..312 "\n"
+      RBrace@312..313 "}"
+      Whitespace@313..314 "\n"

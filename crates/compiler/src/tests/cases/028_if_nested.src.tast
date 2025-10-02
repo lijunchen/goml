@@ -1,0 +1,43 @@
+fn classify(x/0: int) -> string {
+  if int_less((x/0 : int), 0) {
+      "negative"
+  } else {
+      if int_less(0, (x/0 : int)) {
+          "positive"
+      } else {
+          "zero"
+      }
+  }
+}
+
+fn triangle_type(a/1: int, b/2: int, c/3: int) -> string {
+  if int_less((a/1 : int), (b/2 : int)) {
+      if int_less((b/2 : int), (c/3 : int)) {
+          "ascending"
+      } else {
+          "peak"
+      }
+  } else {
+      if int_less((a/1 : int), (c/3 : int)) {
+          "valley"
+      } else {
+          "flat"
+      }
+  }
+}
+
+fn main() -> unit {
+  let first/4: string = classify(-42) in
+  let second/5: string = classify(0) in
+  let third/6: string = classify(17) in
+  let shape1/7: string = triangle_type(1, 2, 3) in
+  let shape2/8: string = triangle_type(3, 2, 1) in
+  let shape3/9: string = triangle_type(2, 3, 2) in
+  let _ : unit = string_println((first/4 : string)) in
+  let _ : unit = string_println((second/5 : string)) in
+  let _ : unit = string_println((third/6 : string)) in
+  let _ : unit = string_println((shape1/7 : string)) in
+  let _ : unit = string_println((shape2/8 : string)) in
+  let _ : unit = string_println((shape3/9 : string)) in
+  ()
+}

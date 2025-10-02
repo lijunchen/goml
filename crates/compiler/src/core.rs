@@ -56,6 +56,12 @@ pub enum Expr {
         default: Option<Box<Expr>>,
         ty: Ty,
     },
+    EIf {
+        cond: Box<Expr>,
+        then_branch: Box<Expr>,
+        else_branch: Box<Expr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<Expr>,
         constructor: Constructor,
@@ -86,6 +92,7 @@ impl Expr {
             Expr::ETuple { ty, .. } => ty.clone(),
             Expr::ELet { ty, .. } => ty.clone(),
             Expr::EMatch { ty, .. } => ty.clone(),
+            Expr::EIf { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),

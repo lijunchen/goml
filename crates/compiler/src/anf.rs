@@ -262,6 +262,30 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
                 ty: e_ty.clone(),
             }),
         ),
+        core::Expr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ty: _,
+        } => {
+            let then_core = *then_branch;
+            let else_core = *else_branch;
+            let ty_clone = e_ty.clone();
+            anf_imm(
+                env,
+                *cond,
+                Box::new(move |cond_imm| {
+                    let then_a = anf(env, then_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+                    let else_a = anf(env, else_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+                    k(CExpr::EIf {
+                        cond: Box::new(cond_imm),
+                        then: Box::new(then_a),
+                        else_: Box::new(else_a),
+                        ty: ty_clone.clone(),
+                    })
+                }),
+            )
+        }
         core::Expr::EMatch {
             expr,
             arms,

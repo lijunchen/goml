@@ -510,6 +510,83 @@ fn lower_expr_with_args(
                 arms,
             })
         }
+        cst::Expr::IfExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to if expression",
+                );
+                return None;
+            }
+
+            let cond = it
+                .cond()
+                .and_then(|cond| cond.expr())
+                .and_then(|expr| lower_expr(ctx, expr));
+
+            let cond = match cond {
+                Some(cond) => cond,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "If expression missing condition",
+                    );
+                    return None;
+                }
+            };
+
+            let then_branch = match it.then_branch() {
+                Some(branch) => {
+                    if let Some(block) = branch.block() {
+                        lower_block(ctx, block)
+                    } else if let Some(expr) = branch.expr() {
+                        lower_expr(ctx, expr)
+                    } else {
+                        ctx.push_error(
+                            Some(branch.syntax().text_range()),
+                            "If expression then-branch missing body",
+                        );
+                        None
+                    }
+                }
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "If expression missing then branch",
+                    );
+                    None
+                }
+            }?;
+
+            let else_branch = match it.else_branch() {
+                Some(branch) => {
+                    if let Some(block) = branch.block() {
+                        lower_block(ctx, block)
+                    } else if let Some(expr) = branch.expr() {
+                        lower_expr(ctx, expr)
+                    } else {
+                        ctx.push_error(
+                            Some(branch.syntax().text_range()),
+                            "If expression else-branch missing body",
+                        );
+                        None
+                    }
+                }
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "If expression missing else branch",
+                    );
+                    None
+                }
+            }?;
+
+            Some(ast::Expr::EIf {
+                cond: Box::new(cond),
+                then_branch: Box::new(then_branch),
+                else_branch: Box::new(else_branch),
+            })
+        }
         cst::Expr::StructLiteralExpr(it) => {
             if !trailing_args.is_empty() {
                 ctx.push_error(

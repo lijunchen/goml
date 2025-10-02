@@ -392,6 +392,17 @@ impl Env {
                         }
                         self.collect_type(ty);
                     }
+                    core::Expr::EIf {
+                        cond,
+                        then_branch,
+                        else_branch,
+                        ty,
+                    } => {
+                        self.collect_expr(cond);
+                        self.collect_expr(then_branch);
+                        self.collect_expr(else_branch);
+                        self.collect_type(ty);
+                    }
                     core::Expr::EConstrGet {
                         expr,
                         constructor: _,

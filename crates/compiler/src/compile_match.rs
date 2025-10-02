@@ -910,6 +910,17 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 }
             }
         },
+        EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ty,
+        } => core::Expr::EIf {
+            cond: Box::new(compile_expr(cond, env)),
+            then_branch: Box::new(compile_expr(then_branch, env)),
+            else_branch: Box::new(compile_expr(else_branch, env)),
+            ty: ty.clone(),
+        },
         EUnary {
             op,
             expr,
