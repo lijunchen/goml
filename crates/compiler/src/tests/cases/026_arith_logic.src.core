@@ -1,0 +1,42 @@
+fn show_int(label/0: string, value/1: int) -> unit {
+  let mtmp0 = string_println(string_add(label/0, int_to_string(value/1))) in
+  ()
+}
+
+fn show_bool(label/2: string, value/3: bool) -> unit {
+  let mtmp1 = string_println(string_add(label/2, bool_to_string(value/3))) in
+  ()
+}
+
+fn main() -> unit {
+  let base/4 = 10 in
+  let sum/5 = int_add(base/4, 5) in
+  let diff/6 = int_sub(sum/5, 3) in
+  let prod/7 = int_mul(diff/6, 2) in
+  let quot/8 = int_div(prod/7, 4) in
+  let mtmp2 = show_int("sum=", sum/5) in
+  let mtmp3 = show_int("diff=", diff/6) in
+  let mtmp4 = show_int("prod=", prod/7) in
+  let mtmp5 = show_int("quot=", quot/8) in
+  let and_result/9 = bool_and(true, false) in
+  let or_result/10 = bool_or(true, false) in
+  let not_result/11 = bool_not(false) in
+  let mixed/12 = bool_or(bool_and(bool_not(and_result/9), let mtmp6 = int_sub(int_add(sum/5, int_mul(prod/7, base/4)), int_div(prod/7, 2)) in
+  match mtmp6 {
+    0 => {
+      false
+    },
+    _ => true,
+  }), bool_not(let mtmp7 = int_sub(int_add(int_sub(diff/6, quot/8), base/4), int_div(sum/5, 2)) in
+  match mtmp7 {
+    0 => {
+      false
+    },
+    _ => true,
+  })) in
+  let mtmp8 = show_bool("and=", and_result/9) in
+  let mtmp9 = show_bool("or=", or_result/10) in
+  let mtmp10 = show_bool("not=", not_result/11) in
+  let mtmp11 = show_bool("mixed=", mixed/12) in
+  ()
+}
