@@ -12,6 +12,53 @@ impl Uident {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BinaryOp {
+    Add,
+    Sub,
+    Mul,
+    Div,
+}
+
+impl BinaryOp {
+    pub fn symbol(self) -> &'static str {
+        match self {
+            Self::Add => "+",
+            Self::Sub => "-",
+            Self::Mul => "*",
+            Self::Div => "/",
+        }
+    }
+
+    pub fn method_name(self) -> &'static str {
+        match self {
+            Self::Add => "add",
+            Self::Sub => "sub",
+            Self::Mul => "mul",
+            Self::Div => "div",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum UnaryOp {
+    Neg,
+}
+
+impl UnaryOp {
+    pub fn symbol(self) -> &'static str {
+        match self {
+            Self::Neg => "-",
+        }
+    }
+
+    pub fn method_name(self) -> &'static str {
+        match self {
+            Self::Neg => "neg",
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Ty {
     TUnit,
@@ -120,6 +167,19 @@ pub enum Expr {
     ECall {
         func: Lident,
         args: Vec<Expr>,
+    },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<Expr>,
+    },
+    EBinary {
+        op: BinaryOp,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+    },
+    EProj {
+        tuple: Box<Expr>,
+        index: usize,
     },
 }
 

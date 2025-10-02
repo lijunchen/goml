@@ -2,7 +2,7 @@ use crate::ast;
 
 use ::cst::cst::CstNode;
 use ::cst::{cst, support};
-use parser::syntax::MySyntaxNodePtr;
+use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
 
 pub fn lower(node: cst::File) -> Option<ast::File> {
     let items = node.items().flat_map(lower_item).collect();
@@ -370,8 +370,92 @@ fn lower_expr(node: cst::Expr) -> Option<ast::Expr> {
                 body: Box::new(body),
             })
         }
-        cst::Expr::BinaryExpr(_it) => {
-            todo!()
+        cst::Expr::PrefixExpr(it) => {
+            let expr = it
+                .expr()
+                .and_then(lower_expr)
+                .unwrap_or_else(|| panic!("Prefix expression missing operand"));
+            let op_token = it
+                .op()
+                .unwrap_or_else(|| panic!("Prefix expression missing operator"));
+
+            match op_token.kind() {
+                MySyntaxKind::Minus => Some(ast::Expr::EUnary {
+                    op: ast::UnaryOp::Neg,
+                    expr: Box::new(expr),
+                }),
+                kind => panic!("Unsupported prefix operator: {:?}", kind),
+            }
+        }
+        cst::Expr::BinaryExpr(it) => {
+            let mut exprs = it.exprs();
+            let lhs_cst = exprs
+                .next()
+                .unwrap_or_else(|| panic!("Binary expression missing lhs"));
+            let rhs_cst = exprs
+                .next()
+                .unwrap_or_else(|| panic!("Binary expression missing rhs"));
+
+            let lhs = lower_expr(lhs_cst)?;
+            let op_token = it
+                .op()
+                .unwrap_or_else(|| panic!("Binary expression missing operator"));
+
+            match op_token.kind() {
+                MySyntaxKind::Plus => {
+                    let rhs = lower_expr(rhs_cst)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Add,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Minus => {
+                    let rhs = lower_expr(rhs_cst)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Sub,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Star => {
+                    let rhs = lower_expr(rhs_cst)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Mul,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Slash => {
+                    let rhs = lower_expr(rhs_cst)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Div,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Dot => match rhs_cst {
+                    cst::Expr::IntExpr(int_expr) => {
+                        let value = int_expr
+                            .value()
+                            .unwrap_or_else(|| panic!("Tuple projection missing index"))
+                            .to_string();
+                        let index = value
+                            .parse::<usize>()
+                            .unwrap_or_else(|_| panic!("Invalid tuple index: {}", value));
+                        Some(ast::Expr::EProj {
+                            tuple: Box::new(lhs),
+                            index,
+                        })
+                    }
+                    _ => {
+                        panic!("Unsupported field access expression: {:?}", rhs_cst);
+                    }
+                },
+                kind => {
+                    panic!("Unsupported binary operator: {:?}", kind);
+                }
+            }
         }
     }
 }

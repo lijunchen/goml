@@ -3,8 +3,11 @@ use crate::go::goast::{self, EmbededRawString};
 // unit_to_string(x : struct{}) string
 // bool_to_string(x : bool) string
 // int_to_string(x : int) string
+// int_neg(x : int) int
 // int_add(x : int, y : int) int
 // int_sub(x : int, y : int) int
+// int_mul(x : int, y : int) int
+// int_div(x : int, y : int) int
 // int_less(x : int, y : int) bool
 // print(s : string) struct{}
 // println(s : string) struct{}
@@ -33,12 +36,24 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
+func int_neg(x int) int {
+    return -x
+}
+
 func int_add(x int, y int) int {
     return x + y
 }
 
 func int_sub(x int, y int) int {
     return x - y
+}
+
+func int_mul(x int, y int) int {
+    return x * y
+}
+
+func int_div(x int, y int) int {
+    return x / y
 }
 
 func int_less(x int, y int) bool {

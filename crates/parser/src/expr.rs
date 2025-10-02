@@ -14,6 +14,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![uident],
     T![true],
     T![false],
+    T![-],
     T!['('],
     T![if],
     T![let],
@@ -150,13 +151,16 @@ fn struct_literal_field(p: &mut Parser) {
     p.close(m, MySyntaxKind::STRUCT_LITERAL_FIELD);
 }
 
-fn prefix_binding_power(_op: TokenKind) -> Option<((), u8)> {
-    None
-}
-
 fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     match op {
         T!['('] => Some((7, ())),
+        _ => None,
+    }
+}
+
+fn prefix_binding_power(op: TokenKind) -> Option<((), u8)> {
+    match op {
+        T![-] => Some(((), 23)),
         _ => None,
     }
 }
@@ -211,21 +215,17 @@ fn let_expr(p: &mut Parser) {
 }
 
 fn expr_bp(p: &mut Parser, min_bp: u8) {
-    let op = p.peek();
-
-    let lhs = if let Some(((), r_bp)) = prefix_binding_power(op) {
-        let _m = p.open();
+    let mut lhs = if let Some(((), r_bp)) = prefix_binding_power(p.peek()) {
+        let m = p.open();
         p.advance();
         expr_bp(p, r_bp);
-        todo!()
+        p.close(m, MySyntaxKind::EXPR_PREFIX)
     } else {
-        atom(p)
+        match atom(p) {
+            Some(lhs) => lhs,
+            None => return,
+        }
     };
-
-    if lhs.is_none() {
-        return;
-    }
-    let mut lhs = lhs.unwrap();
 
     loop {
         if p.eof() {
@@ -254,13 +254,9 @@ fn expr_bp(p: &mut Parser, min_bp: u8) {
                 break;
             }
             let m = lhs.precede(p);
-            if op == T![:] {
-                todo!()
-            } else {
-                p.advance();
-                expr_bp(p, r_bp);
-                lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
-            }
+            p.advance();
+            expr_bp(p, r_bp);
+            lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
             continue;
         }
         break;

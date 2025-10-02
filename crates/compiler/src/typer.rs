@@ -1164,6 +1164,39 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EUnary {
+                op,
+                expr,
+                ty,
+                resolution,
+            } => {
+                let ty = self.subst_ty(env, &ty);
+                let expr = Box::new(self.subst(env, *expr));
+                tast::Expr::EUnary {
+                    op,
+                    expr,
+                    ty: ty.clone(),
+                    resolution,
+                }
+            }
+            tast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty,
+                resolution,
+            } => {
+                let ty = self.subst_ty(env, &ty);
+                let lhs = Box::new(self.subst(env, *lhs));
+                let rhs = Box::new(self.subst(env, *rhs));
+                tast::Expr::EBinary {
+                    op,
+                    lhs,
+                    rhs,
+                    ty: ty.clone(),
+                    resolution,
+                }
+            }
             tast::Expr::EProj { tuple, index, ty } => {
                 let ty = self.subst_ty(env, &ty);
                 let tuple = Box::new(self.subst(env, *tuple));
@@ -1464,6 +1497,135 @@ impl TypeInference {
                     }
                 } else {
                     panic!("Function {} not found in environment", func.0);
+                }
+            }
+            ast::Expr::EUnary { op, expr } => {
+                let expr_tast = self.infer(env, vars, expr);
+                let expr_ty = expr_tast.get_ty();
+                let method_name = op.method_name();
+
+                if let Some(trait_name) =
+                    env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+                {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_type = tast::Ty::TFunc {
+                        params: vec![expr_ty.clone()],
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints.push(Constraint::Overloaded {
+                        op: ast::Lident(method_name.to_string()),
+                        trait_name: trait_name.clone(),
+                        call_site_type,
+                    });
+                    tast::Expr::EUnary {
+                        op: *op,
+                        expr: Box::new(expr_tast),
+                        ty: ret_ty,
+                        resolution: tast::UnaryResolution::Overloaded { trait_name },
+                    }
+                } else {
+                    match op {
+                        ast::UnaryOp::Neg => {
+                            env.constraints
+                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
+                            tast::Expr::EUnary {
+                                op: *op,
+                                expr: Box::new(expr_tast),
+                                ty: tast::Ty::TInt,
+                                resolution: tast::UnaryResolution::Builtin,
+                            }
+                        }
+                    }
+                }
+            }
+            ast::Expr::EBinary { op, lhs, rhs } => {
+                let lhs_tast = self.infer(env, vars, lhs);
+                let rhs_tast = self.infer(env, vars, rhs);
+                let lhs_ty = lhs_tast.get_ty();
+                let rhs_ty = rhs_tast.get_ty();
+                let method_name = op.method_name();
+
+                if let Some(trait_name) =
+                    env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+                {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_type = tast::Ty::TFunc {
+                        params: vec![lhs_ty.clone(), rhs_ty.clone()],
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints.push(Constraint::Overloaded {
+                        op: ast::Lident(method_name.to_string()),
+                        trait_name: trait_name.clone(),
+                        call_site_type,
+                    });
+                    tast::Expr::EBinary {
+                        op: *op,
+                        lhs: Box::new(lhs_tast),
+                        rhs: Box::new(rhs_tast),
+                        ty: ret_ty,
+                        resolution: tast::BinaryResolution::Overloaded { trait_name },
+                    }
+                } else {
+                    let ret_ty = match op {
+                        ast::BinaryOp::Add => self.fresh_ty_var(),
+                        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+                            tast::Ty::TInt
+                        }
+                    };
+
+                    match op {
+                        ast::BinaryOp::Add => {
+                            env.constraints
+                                .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
+                            env.constraints
+                                .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+                        }
+                        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+                            env.constraints
+                                .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
+                            env.constraints
+                                .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
+                        }
+                    }
+
+                    tast::Expr::EBinary {
+                        op: *op,
+                        lhs: Box::new(lhs_tast),
+                        rhs: Box::new(rhs_tast),
+                        ty: ret_ty.clone(),
+                        resolution: tast::BinaryResolution::Builtin,
+                    }
+                }
+            }
+            ast::Expr::EProj { tuple, index } => {
+                let tuple_tast = self.infer(env, vars, tuple);
+                let tuple_ty = tuple_tast.get_ty();
+                match &tuple_ty {
+                    tast::Ty::TTuple { typs } => {
+                        let field_ty = typs.get(*index).cloned().unwrap_or_else(|| {
+                            panic!(
+                                "Tuple index {} out of bounds for type {:?}",
+                                index, tuple_ty
+                            )
+                        });
+                        tast::Expr::EProj {
+                            tuple: Box::new(tuple_tast),
+                            index: *index,
+                            ty: field_ty,
+                        }
+                    }
+                    _ => {
+                        env.report_typer_error(format!(
+                            "Cannot project field {} on non-tuple type {:?}",
+                            index, tuple_ty
+                        ));
+                        let ret_ty = self.fresh_ty_var();
+                        tast::Expr::EProj {
+                            tuple: Box::new(tuple_tast),
+                            index: *index,
+                            ty: ret_ty,
+                        }
+                    }
                 }
             }
         }
