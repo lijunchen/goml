@@ -170,6 +170,7 @@ impl Expr {
 #[derive(Debug, Clone, Copy)]
 pub enum UnaryOp {
     Neg,
+    Not,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -179,6 +180,8 @@ pub enum BinaryOp {
     Mul,
     Div,
     Less,
+    And,
+    Or,
 }
 
 #[derive(Debug)]

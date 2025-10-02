@@ -636,6 +636,10 @@ fn lower_expr_with_args(
                     op: ast::UnaryOp::Neg,
                     expr: Box::new(expr),
                 },
+                MySyntaxKind::Bang => ast::Expr::EUnary {
+                    op: ast::UnaryOp::Not,
+                    expr: Box::new(expr),
+                },
                 kind => {
                     ctx.push_error(
                         Some(op_token.text_range()),
@@ -699,6 +703,22 @@ fn lower_expr_with_args(
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Div,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::AndAnd => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::And,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::OrOr => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Or,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })

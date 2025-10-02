@@ -19,6 +19,9 @@ fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) ->
         ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
             matches!((lhs, rhs), (tast::Ty::TInt, tast::Ty::TInt))
         }
+        ast::BinaryOp::And | ast::BinaryOp::Or => {
+            matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))
+        }
     }
 }
 
@@ -1547,6 +1550,16 @@ impl TypeInference {
                                 resolution: tast::UnaryResolution::Builtin,
                             }
                         }
+                        ast::UnaryOp::Not => {
+                            env.constraints
+                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                            tast::Expr::EUnary {
+                                op: *op,
+                                expr: Box::new(expr_tast),
+                                ty: tast::Ty::TBool,
+                                resolution: tast::UnaryResolution::Builtin,
+                            }
+                        }
                     }
                 }
             }
@@ -1584,6 +1597,7 @@ impl TypeInference {
                 let ret_ty = match op {
                     ast::BinaryOp::Add => self.fresh_ty_var(),
                     ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
+                    ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
                 };
 
                 match op {
@@ -1598,6 +1612,12 @@ impl TypeInference {
                             .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
                         env.constraints
                             .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
+                    }
+                    ast::BinaryOp::And | ast::BinaryOp::Or => {
+                        env.constraints
+                            .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
+                        env.constraints
+                            .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
                     }
                 }
 

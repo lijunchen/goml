@@ -680,6 +680,7 @@ impl UnaryOp {
     fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             UnaryOp::Neg => RcDoc::text("-"),
+            UnaryOp::Not => RcDoc::text("!"),
         }
     }
 }
@@ -692,6 +693,8 @@ impl BinaryOp {
             BinaryOp::Mul => RcDoc::text("*"),
             BinaryOp::Div => RcDoc::text("/"),
             BinaryOp::Less => RcDoc::text("<"),
+            BinaryOp::And => RcDoc::text("&&"),
+            BinaryOp::Or => RcDoc::text("||"),
         }
     }
 }

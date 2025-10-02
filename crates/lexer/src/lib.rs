@@ -126,6 +126,15 @@ pub enum TokenKind {
     #[token(".")]
     Dot,
 
+    #[token("&&")]
+    AndAnd,
+
+    #[token("||")]
+    OrOr,
+
+    #[token("!")]
+    Bang,
+
     #[token("fn")]
     FnKeyword,
 
@@ -231,6 +240,9 @@ impl std::fmt::Display for TokenKind {
             Self::Star => "*",
             Self::Slash => "/",
             Self::Dot => ".",
+            Self::AndAnd => "&&",
+            Self::OrOr => "||",
+            Self::Bang => "!",
             Self::EnumKeyword => "enum",
             Self::StructKeyword => "struct",
             Self::FnKeyword => "fn",
@@ -281,6 +293,9 @@ macro_rules! T {
     [*] => { $crate::TokenKind::Star };
     [/] => { $crate::TokenKind::Slash };
     [.] => { $crate::TokenKind::Dot };
+    [&&] => { $crate::TokenKind::AndAnd };
+    [||] => { $crate::TokenKind::OrOr };
+    [!] => { $crate::TokenKind::Bang };
     [fn] => { $crate::TokenKind::FnKeyword };
     [trait] => { $crate::TokenKind::TraitKeyword };
     [impl] => { $crate::TokenKind::ImplKeyword };

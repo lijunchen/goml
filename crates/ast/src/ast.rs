@@ -18,6 +18,8 @@ pub enum BinaryOp {
     Sub,
     Mul,
     Div,
+    And,
+    Or,
 }
 
 impl BinaryOp {
@@ -27,6 +29,8 @@ impl BinaryOp {
             Self::Sub => "-",
             Self::Mul => "*",
             Self::Div => "/",
+            Self::And => "&&",
+            Self::Or => "||",
         }
     }
 
@@ -36,6 +40,8 @@ impl BinaryOp {
             Self::Sub => "sub",
             Self::Mul => "mul",
             Self::Div => "div",
+            Self::And => "and",
+            Self::Or => "or",
         }
     }
 }
@@ -43,18 +49,21 @@ impl BinaryOp {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum UnaryOp {
     Neg,
+    Not,
 }
 
 impl UnaryOp {
     pub fn symbol(self) -> &'static str {
         match self {
             Self::Neg => "-",
+            Self::Not => "!",
         }
     }
 
     pub fn method_name(self) -> &'static str {
         match self {
             Self::Neg => "neg",
+            Self::Not => "not",
         }
     }
 }
