@@ -5,6 +5,7 @@ use indexmap::{IndexMap, IndexSet};
 use crate::{
     core,
     tast::{self, Constructor},
+    type_encoding::{decode_ty, encode_ty},
 };
 use std::cell::Cell;
 
@@ -99,41 +100,20 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
 }
 
 pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
-    let trait_name = trait_name.0.clone();
-    let type_name = type_name.clone();
-    // impl ToString for int
-    // __ToString%int
-    format!(
-        "__{}%{}",
-        trait_name,
-        match type_name {
-            tast::Ty::TUnit => "unit".to_string(),
-            tast::Ty::TInt => "int".to_string(),
-            tast::Ty::TBool => "bool".to_string(),
-            tast::Ty::TString => "string".to_string(),
-            _ => {
-                todo!()
-            }
-        }
-    )
+    let trait_name = &trait_name.0;
+    let type_repr = encode_ty(type_name);
+    format!("__{}%{}", trait_name, type_repr)
 }
 
 pub fn decode_trait_impl(impl_name: &str) -> (Uident, tast::Ty) {
-    let parts: Vec<&str> = impl_name.split('%').collect();
-    if parts.len() != 2 {
-        panic!("Invalid trait impl name format");
-    }
-    let trait_name = Uident::new(parts[0].trim_start_matches("__"));
-    let type_name = match parts[1] {
-        "unit" => tast::Ty::TUnit,
-        "bool" => tast::Ty::TBool,
-        "int" => tast::Ty::TInt,
-        "string" => tast::Ty::TString,
-        _ => {
-            todo!()
-        }
-    };
-    (trait_name, type_name)
+    let impl_name = impl_name.strip_prefix("__").unwrap_or(impl_name);
+    let (trait_part, type_part) = impl_name
+        .split_once('%')
+        .expect("Invalid trait impl name format");
+    let trait_name = Uident::new(trait_part);
+    let ty = decode_ty(type_part)
+        .unwrap_or_else(|err| panic!("Failed to decode trait impl type `{}`: {}", type_part, err));
+    (trait_name, ty)
 }
 
 #[derive(Debug, Clone)]
@@ -154,7 +134,7 @@ pub struct Env {
     pub structs: IndexMap<Uident, StructDef>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
-    pub trait_impls: IndexMap<(String, tast::Ty, Lident), tast::Ty>,
+    pub trait_impls: IndexMap<(String, String, Lident), tast::Ty>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
@@ -199,7 +179,11 @@ impl Env {
         func_name: &Lident,
     ) -> Option<tast::Ty> {
         self.trait_impls
-            .get(&(trait_name.0.clone(), type_name.clone(), func_name.clone()))
+            .get(&(
+                trait_name.0.clone(),
+                encode_ty(type_name),
+                func_name.clone(),
+            ))
             .cloned()
     }
 
