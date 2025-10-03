@@ -33,6 +33,7 @@
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures in `crates/compiler/src/tests/examples/` when relevant.
 - You can pick some cases in crates/compiler/src/tests/cases, and use cargo run to quick check a test case, such as: `cargo run -- crates/compiler/src/tests/cases/001.src`.
 - `crates/compiler/src/tests/cases/*.src` is input file. You should NEVER modify other files in crates/compiler/src/tests/cases, the only way to update them is by command: `env UPDATE_EXPECT=1 cargo test`.
+- When I ask you to “add pipeline tests”, create a new `xxx.src` file under `crates/compiler/src/tests/cases`.
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
