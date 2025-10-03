@@ -129,3 +129,48 @@ impl Unknown for int {
 
     expect_single_error(src, "Trait Unknown is not defined");
 }
+
+#[test]
+fn impl_for_struct_reports_missing_method_diagnostic() {
+    let src = r#"
+struct Point { x: int, y: int }
+
+trait Display {
+    fn show(Self) -> string;
+    fn debug(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string { "value" }
+}
+"#;
+
+    expect_single_error(
+        src,
+        "Trait Display implementation for TCon(Point) is missing method debug",
+    );
+}
+
+#[test]
+fn impl_for_generic_type_reports_missing_method_diagnostic() {
+    let src = r#"
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+trait Display {
+    fn show(Self) -> string;
+    fn debug(Self) -> string;
+}
+
+impl Display for Option[int] {
+    fn show(self: Option[int]) -> string { "value" }
+}
+"#;
+
+    expect_single_error(
+        src,
+        "Trait Display implementation for TApp(TCon(Option), [TInt]) is missing method debug",
+    );
+}
