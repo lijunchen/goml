@@ -1,0 +1,36 @@
+struct Point {
+    x: int,
+}
+
+struct Wrapper {
+    value: T,
+}
+
+trait Show {
+  fn show(Self) -> string;
+}
+
+impl Show for Point {
+  fn show(self: Point) -> string {
+      "Point"
+  }
+}
+
+impl Show for Wrapper[int] {
+  fn show(self: Wrapper[int]) -> string {
+      "Wrapper[int]"
+  }
+}
+
+fn main() {
+    let point = Point {
+        x: 5
+    } in
+    let wrapped = Wrapper {
+        value: 42
+    } in
+    let _ = string_println(show(point)) in
+    let _ = string_println(show(wrapped)) in
+    ()
+}
+

@@ -1,6 +1,7 @@
 use super::core;
 use crate::env::{EnumDef, Env, StructDef};
 use crate::tast::{self, Constructor, Ty};
+use crate::ty_codec::encode_ty;
 use ast::ast::Uident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -82,36 +83,6 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 params: params.iter().map(|t| subst_ty(t, s)).collect(),
                 ret_ty: Box::new(subst_ty(ret_ty, s)),
             },
-        }
-    }
-
-    fn encode_ty(ty: &Ty) -> String {
-        match ty {
-            Ty::TUnit => "unit".to_string(),
-            Ty::TBool => "bool".to_string(),
-            Ty::TInt => "int".to_string(),
-            Ty::TString => "string".to_string(),
-            Ty::TVar(_v) => "Var".to_string(),
-            Ty::TParam { name } => format!("TParam_{}", name),
-            Ty::TTuple { typs } => {
-                let inner = typs.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-                format!("Tuple_{}", inner)
-            }
-            Ty::TCon { name } => name.clone(),
-            Ty::TApp { ty, args } => {
-                let base = ty.get_constr_name_unsafe();
-                if args.is_empty() {
-                    base
-                } else {
-                    let inner = args.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-                    format!("{}_{}", base, inner)
-                }
-            }
-            Ty::TFunc { params, ret_ty } => {
-                let p = params.iter().map(encode_ty).collect::<Vec<_>>().join("_");
-                let r = encode_ty(ret_ty);
-                format!("Fn_{}_to_{}", p, r)
-            }
         }
     }
 

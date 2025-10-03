@@ -129,3 +129,37 @@ impl Unknown for int {
 
     expect_single_error(src, "Trait Unknown is not defined");
 }
+
+#[test]
+fn impl_for_struct_reports_param_type_mismatch() {
+    let src = r#"
+struct Point { x: int }
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: int) -> string { "value" }
+}
+"#;
+
+    expect_single_error(src, "Trait Display::show parameter 0 expected type");
+}
+
+#[test]
+fn impl_for_generic_trait_reports_return_mismatch() {
+    let src = r#"
+struct Wrapper[T] { value: T }
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Wrapper[int] {
+    fn show(self: Wrapper[int]) -> int { 0 }
+}
+"#;
+
+    expect_single_error(src, "Trait Display::show expected return type");
+}

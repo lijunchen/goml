@@ -10,6 +10,7 @@ pub mod pprint;
 pub mod query;
 pub mod rename;
 pub mod tast;
+pub mod ty_codec;
 pub mod typer;
 
 #[cfg(test)]

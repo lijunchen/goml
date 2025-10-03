@@ -8,6 +8,7 @@ use crate::{
     env::{self, Constraint, Env},
     rename,
     tast::{self, TypeVar},
+    ty_codec::encode_ty,
 };
 
 fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
@@ -446,7 +447,7 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
 
                     if method_ok {
                         env.trait_impls.insert(
-                            (trait_name_str.clone(), for_ty.clone(), method_name),
+                            (trait_name_str.clone(), encode_ty(&for_ty), method_name),
                             impl_method_ty,
                         );
                     }

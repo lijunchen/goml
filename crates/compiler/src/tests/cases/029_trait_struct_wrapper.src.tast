@@ -1,0 +1,19 @@
+impl Show for Point{
+  fn show(self/0: Point) -> string {
+    "Point"
+  }
+}
+
+impl Show for Wrapper[int]{
+  fn show(self/1: Wrapper[int]) -> string {
+    "Wrapper[int]"
+  }
+}
+
+fn main() -> unit {
+  let point/2: Point = Point { x: 5 } in
+  let wrapped/3: Wrapper[int] = Wrapper { value: 42 } in
+  let _ : unit = string_println(show((point/2 : Point))) in
+  let _ : unit = string_println(show((wrapped/3 : Wrapper[int]))) in
+  ()
+}

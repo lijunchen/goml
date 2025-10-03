@@ -1,0 +1,50 @@
+package main
+
+import (
+    "fmt"
+)
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type Point struct {
+    x int
+}
+
+type Wrapper__int struct {
+    value int
+}
+
+func impl_Show_Con_Point_show(self__0 Point) string {
+    var ret4 string
+    ret4 = "Point"
+    return ret4
+}
+
+func impl_Show_App_Wrapper_TInt_show(self__1 Wrapper__int) string {
+    var ret5 string
+    ret5 = "Wrapper[int]"
+    return ret5
+}
+
+func main0() struct{} {
+    var ret6 struct{}
+    var point__2 Point = Point{
+        x: 5,
+    }
+    var wrapped__3 Wrapper__int = Wrapper__int{
+        value: 42,
+    }
+    var t2 string = impl_Show_Con_Point_show(point__2)
+    string_println(t2)
+    var t3 string = impl_Show_App_Wrapper_TInt_show(wrapped__3)
+    string_println(t3)
+    ret6 = struct{}{}
+    return ret6
+}
+
+func main() {
+    main0()
+}

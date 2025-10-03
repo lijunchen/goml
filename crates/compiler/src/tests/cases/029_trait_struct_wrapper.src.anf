@@ -1,0 +1,17 @@
+fn impl_Show_Con_Point_show(self/0: Point) -> string {
+  "Point"
+}
+
+fn impl_Show_App_Wrapper_TInt_show(self/1: Wrapper__int) -> string {
+  "Wrapper[int]"
+}
+
+fn main() -> unit {
+  let point/2 = Point { x: 5 } in
+  let wrapped/3 = Wrapper__int { value: 42 } in
+  let t2 = impl_Show_Con_Point_show(point/2) in
+  let mtmp0 = string_println(t2) in
+  let t3 = impl_Show_App_Wrapper_TInt_show(wrapped/3) in
+  let mtmp1 = string_println(t3) in
+  ()
+}
