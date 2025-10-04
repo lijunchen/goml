@@ -1,0 +1,32 @@
+impl Display for Point{
+  fn show(self/0: Point) -> string {
+    "Point"
+  }
+}
+
+impl Display for Option[int]{
+  fn show(self/1: Option[int]) -> string {
+    match (self/1 : Option[int]) {
+        Option::Some(value/2: int) => string_add("Some(", string_add(int_to_string((value/2 : int)), ")")),
+        Option::None => "None",
+    }
+  }
+}
+
+fn make_optional(flag/3: bool) -> Option[int] {
+  if (flag/3 : bool) {
+      Option::Some(42)
+  } else {
+      Option::None
+  }
+}
+
+fn main() -> unit {
+  let point/4: Point = Point { x: 1, y: 2 } in
+  let some_number/5: Option[int] = make_optional(true) in
+  let none_number/6: Option[int] = make_optional(false) in
+  let _ : unit = string_println(show((point/4 : Point))) in
+  let _ : unit = string_println(show((some_number/5 : Option[int]))) in
+  let _ : unit = string_println(show((none_number/6 : Option[int]))) in
+  ()
+}

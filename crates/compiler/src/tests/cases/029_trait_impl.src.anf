@@ -1,0 +1,39 @@
+fn impl_Display_Point_show(self/0: Point) -> string {
+  "Point"
+}
+
+fn impl_Display_Option_int_show(self/1: Option__int) -> string {
+  match self/1 {
+    Tag_0 => {
+      let x0 = Option__int::Some._0(self/1) in
+      let value/2 = x0 in
+      let t5 = int_to_string(value/2) in
+      let t4 = string_add(t5, ")") in
+      string_add("Some(", t4)
+    },
+    Tag_1 => {
+      "None"
+    },
+  }
+}
+
+fn make_optional(flag/3: bool) -> Option__int {
+  if flag/3 {
+    Option__int::Some(42)
+  } else {
+    Tag_1
+  }
+}
+
+fn main() -> unit {
+  let point/4 = Point { x: 1, y: 2 } in
+  let some_number/5 = make_optional(true) in
+  let none_number/6 = make_optional(false) in
+  let t6 = impl_Display_Point_show(point/4) in
+  let mtmp1 = string_println(t6) in
+  let t7 = impl_Display_Option_int_show(some_number/5) in
+  let mtmp2 = string_println(t7) in
+  let t8 = impl_Display_Option_int_show(none_number/6) in
+  let mtmp3 = string_println(t8) in
+  ()
+}
