@@ -127,7 +127,7 @@ fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
     tparams.iter().map(|param| param.0.clone()).collect()
 }
 
-fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
+fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit | tast::Ty::TBool | tast::Ty::TInt | tast::Ty::TString => {}
@@ -144,7 +144,7 @@ fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
         }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
-                panic!("Unbound type parameter {}", name);
+                env.report_typer_error(format!("Unbound type parameter {}", name));
             }
         }
         tast::Ty::TCon { name } => {
@@ -154,22 +154,22 @@ fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
             let ident = ast::Uident::new(name);
             if let Some(enum_def) = env.enums.get(&ident) {
                 if !enum_def.generics.is_empty() {
-                    panic!(
+                    env.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
                         name,
                         enum_def.generics.len()
-                    );
+                    ));
                 }
             } else if let Some(struct_def) = env.structs.get(&ident) {
                 if !struct_def.generics.is_empty() {
-                    panic!(
+                    env.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
                         name,
                         struct_def.generics.len()
-                    );
+                    ));
                 }
             } else {
-                panic!("Unknown type constructor {}", name);
+                env.report_typer_error(format!("Unknown type constructor {}", name));
             }
         }
         tast::Ty::TApp { ty, args } => {
@@ -184,22 +184,22 @@ fn validate_ty(env: &Env, ty: &tast::Ty, tparams: &HashSet<String>) {
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    panic!(
+                    env.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got {}",
                         base_name, expected, actual
-                    );
+                    ));
                 }
             } else if let Some(struct_def) = env.structs.get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    panic!(
+                    env.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got {}",
                         base_name, expected, actual
-                    );
+                    ));
                 }
             } else {
-                panic!("Unknown type constructor {}", base_name);
+                env.report_typer_error(format!("Unknown type constructor {}", base_name));
             }
         }
     }
@@ -365,6 +365,7 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                     let trait_sig = env
                         .trait_defs
                         .get(&(trait_name_str.clone(), method_name_str.clone()))
+                        .cloned()
                         .expect("trait method signature to exist");
 
                     let tparam_names = type_param_name_set(&m.generics);
@@ -391,7 +392,7 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                         ret_ty: Box::new(ret.clone()),
                     };
 
-                    let expected_method_ty = instantiate_trait_method_ty(trait_sig, &for_ty);
+                    let expected_method_ty = instantiate_trait_method_ty(&trait_sig, &for_ty);
 
                     let mut method_ok = true;
                     match (&expected_method_ty, &impl_method_ty) {
