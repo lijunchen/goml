@@ -190,9 +190,24 @@ enum List {
     );
 }
 
+fn assert_typer_error(src: &str, expected_message: &str) {
+    let (_tast, env) = typecheck(src);
+    let messages: Vec<String> = env
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect();
+    assert!(
+        messages
+            .iter()
+            .any(|message| message.contains(expected_message)),
+        "expected diagnostics to contain `{expected_message}`, but were: {:?}",
+        messages
+    );
+}
+
 #[test]
-#[should_panic(expected = "Type Wrapper expects 1 type arguments, but got 2")]
-fn struct_type_arity_mismatch_panics() {
+fn struct_type_arity_mismatch_reports_error() {
     let src = r#"
 struct Wrapper[T] {
     value: T,
@@ -201,22 +216,20 @@ struct Wrapper[T] {
 fn bad(value: Wrapper[int, int]) -> unit { () }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Type Wrapper expects 1 type arguments, but got 2");
 }
 
 #[test]
-#[should_panic(expected = "Unknown type constructor Undefined")]
-fn unknown_type_constructor_panics() {
+fn unknown_type_constructor_reports_error() {
     let src = r#"
 fn bad(p: Undefined) -> unit { () }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Unknown type constructor Undefined");
 }
 
 #[test]
-#[should_panic(expected = "Unknown type constructor U")]
-fn unbound_type_parameter_panics() {
+fn unbound_type_parameter_reports_error() {
     let src = r#"
 struct Wrapper[T] {
     value: T,
@@ -225,12 +238,11 @@ struct Wrapper[T] {
 fn bad[T](value: Wrapper[U]) -> unit { () }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Unknown type constructor U");
 }
 
 #[test]
-#[should_panic(expected = "Type Wrapper expects 1 type arguments, but got 2")]
-fn enum_struct_type_arity_mismatch_panics() {
+fn enum_struct_type_arity_mismatch_reports_error() {
     let src = r#"
 struct Wrapper[T] {
     value: T,
@@ -241,24 +253,22 @@ enum Problem {
 }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Type Wrapper expects 1 type arguments, but got 2");
 }
 
 #[test]
-#[should_panic(expected = "Unknown type constructor MissingStruct")]
-fn enum_struct_unknown_type_constructor_panics() {
+fn enum_struct_unknown_type_constructor_reports_error() {
     let src = r#"
 enum Problem {
     Bad(MissingStruct),
 }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Unknown type constructor MissingStruct");
 }
 
 #[test]
-#[should_panic(expected = "Unknown type constructor U")]
-fn enum_struct_unbound_type_parameter_panics() {
+fn enum_struct_unbound_type_parameter_reports_error() {
     let src = r#"
 struct Wrapper[T] {
     value: T,
@@ -269,5 +279,5 @@ enum Problem[T] {
 }
 "#;
 
-    let _ = typecheck(src);
+    assert_typer_error(src, "Unknown type constructor U");
 }
