@@ -1,6 +1,6 @@
 use crate::ast::{
     Arm, EnumDef, Expr, File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature,
-    Ty,
+    Ty, Uident,
 };
 use pretty::RcDoc;
 
@@ -332,11 +332,25 @@ impl Arm {
     }
 }
 
+fn generics_to_doc(generics: &[Uident]) -> RcDoc<'_, ()> {
+    if generics.is_empty() {
+        RcDoc::nil()
+    } else {
+        RcDoc::text("[")
+            .append(RcDoc::intersperse(
+                generics.iter().map(|g| RcDoc::text(g.0.clone())),
+                RcDoc::text(", "),
+            ))
+            .append(RcDoc::text("]"))
+    }
+}
+
 impl EnumDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("enum")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0));
+            .append(RcDoc::text(&self.name.0))
+            .append(generics_to_doc(&self.generics));
 
         let variants_doc =
             RcDoc::concat(self.variants.iter().enumerate().map(|(i, (name, types))| {
@@ -380,7 +394,8 @@ impl StructDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("struct")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0));
+            .append(RcDoc::text(&self.name.0))
+            .append(generics_to_doc(&self.generics));
 
         let fields_doc = RcDoc::concat(self.fields.iter().map(|(name, ty)| {
             RcDoc::hardline()
