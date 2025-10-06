@@ -23,6 +23,13 @@ pub struct StructDef {
     pub fields: Vec<(Lident, tast::Ty)>,
 }
 
+#[derive(Debug, Clone)]
+pub struct ExternFunc {
+    pub package_path: String,
+    pub go_name: String,
+    pub ty: tast::Ty,
+}
+
 fn builtin_functions() -> IndexMap<String, tast::Ty> {
     let mut funcs = IndexMap::new();
 
@@ -136,6 +143,7 @@ pub struct Env {
     pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
     pub trait_impls: IndexMap<(String, String, Lident), tast::Ty>,
     pub funcs: IndexMap<String, tast::Ty>,
+    pub extern_funcs: IndexMap<String, ExternFunc>,
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
     pub diagnostics: Diagnostics,
@@ -154,6 +162,7 @@ impl Env {
             enums: IndexMap::new(),
             structs: IndexMap::new(),
             funcs: builtin_functions(),
+            extern_funcs: IndexMap::new(),
             trait_defs: IndexMap::new(),
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
@@ -161,6 +170,24 @@ impl Env {
             tuple_types: IndexSet::new(),
             diagnostics: Diagnostics::new(),
         }
+    }
+
+    pub fn register_extern_function(
+        &mut self,
+        goml_name: String,
+        package_path: String,
+        go_name: String,
+        ty: tast::Ty,
+    ) {
+        self.funcs.insert(goml_name.clone(), ty.clone());
+        self.extern_funcs.insert(
+            goml_name,
+            ExternFunc {
+                package_path,
+                go_name,
+                ty,
+            },
+        );
     }
 
     pub fn report_typer_error(&mut self, message: impl Into<String>) {

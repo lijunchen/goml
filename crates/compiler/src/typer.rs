@@ -26,6 +26,30 @@ fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) ->
     }
 }
 
+fn go_symbol_name(name: &str) -> String {
+    let mut result = String::new();
+    let mut uppercase_next = true;
+    for ch in name.chars() {
+        if ch == '_' {
+            uppercase_next = true;
+            continue;
+        }
+        if uppercase_next {
+            for upper in ch.to_uppercase() {
+                result.push(upper);
+            }
+            uppercase_next = false;
+        } else {
+            result.push(ch);
+        }
+    }
+    if result.is_empty() {
+        name.to_string()
+    } else {
+        result
+    }
+}
+
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
     let mut env = env::Env::new();
     let ast = rename::Rename::default().rename_file(ast);
@@ -110,6 +134,24 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                     params: new_params,
                     ret_ty,
                     body: typed_body,
+                }));
+            }
+            ast::Item::ExternGo(ext) => {
+                let params = ext
+                    .params
+                    .iter()
+                    .map(|(name, ty)| (name.0.clone(), ast_ty_to_tast_ty_with_tparams_env(ty, &[])))
+                    .collect::<Vec<_>>();
+                let ret_ty = match &ext.ret_ty {
+                    Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &[]),
+                    None => tast::Ty::TUnit,
+                };
+                typed_toplevel_tasts.push(tast::Item::ExternGo(tast::ExternGo {
+                    goml_name: ext.goml_name.0.clone(),
+                    go_name: go_symbol_name(&ext.go_symbol),
+                    package_path: ext.package_path.clone(),
+                    params,
+                    ret_ty,
                 }));
             }
         }
@@ -489,6 +531,37 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                         params,
                         ret_ty: Box::new(ret),
                     },
+                );
+            }
+            ast::Item::ExternGo(ext) => {
+                let params = ext
+                    .params
+                    .iter()
+                    .map(|(_, ty)| {
+                        let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &[]);
+                        validate_ty(env, &ty, &HashSet::new());
+                        ty
+                    })
+                    .collect::<Vec<_>>();
+                let ret = match &ext.ret_ty {
+                    Some(ty) => {
+                        let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &[]);
+                        validate_ty(env, &ret, &HashSet::new());
+                        ret
+                    }
+                    None => tast::Ty::TUnit,
+                };
+
+                let fn_ty = tast::Ty::TFunc {
+                    params: params.clone(),
+                    ret_ty: Box::new(ret.clone()),
+                };
+                let go_name = go_symbol_name(&ext.go_symbol);
+                env.register_extern_function(
+                    ext.goml_name.0.clone(),
+                    ext.package_path.clone(),
+                    go_name,
+                    fn_ty,
                 );
             }
         }

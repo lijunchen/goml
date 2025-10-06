@@ -100,6 +100,7 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
         cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(ctx, it)?)),
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
+        cst::Item::Extern(it) => Some(ast::Item::ExternGo(lower_extern(ctx, it)?)),
     }
 }
 
@@ -338,6 +339,78 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
         params,
         ret_ty,
         body,
+    })
+}
+
+fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> {
+    let lang_token = node.lang();
+    let lang = match lang_token {
+        Some(token) => {
+            let raw = token.to_string();
+            raw.strip_prefix('"')
+                .and_then(|s| s.strip_suffix('"'))
+                .map(|s| s.to_string())
+        }
+        None => None,
+    };
+    let Some(lang) = lang else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Extern declaration is missing language string",
+        );
+        return None;
+    };
+    if lang.as_str() != "go" {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            format!("Unsupported extern language: {}", lang),
+        );
+        return None;
+    }
+
+    let package_token = node.package();
+    let package_path = match package_token {
+        Some(token) => {
+            let raw = token.to_string();
+            raw.strip_prefix('"')
+                .and_then(|s| s.strip_suffix('"'))
+                .map(|s| s.to_string())
+        }
+        None => None,
+    };
+    let Some(package_path) = package_path else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Extern declaration is missing package string",
+        );
+        return None;
+    };
+
+    let Some(name_token) = node.lident() else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Extern declaration is missing function name",
+        );
+        return None;
+    };
+    let name = name_token.to_string();
+
+    let params = node
+        .param_list()
+        .map(|list| {
+            list.params()
+                .flat_map(|param| lower_param(ctx, param))
+                .collect()
+        })
+        .unwrap_or_default();
+    let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
+
+    Some(ast::ExternGo {
+        package_path,
+        go_symbol: name.clone(),
+        goml_name: ast::Lident(name),
+        params,
+        ret_ty,
     })
 }
 

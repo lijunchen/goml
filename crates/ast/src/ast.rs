@@ -92,6 +92,7 @@ pub enum Item {
     TraitDef(TraitDef),
     ImplBlock(ImplBlock),
     Fn(Fn),
+    ExternGo(ExternGo),
 }
 
 #[derive(Debug, Clone)]
@@ -101,6 +102,15 @@ pub struct Fn {
     pub params: Vec<(Lident, Ty)>,
     pub ret_ty: Option<Ty>,
     pub body: Expr,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExternGo {
+    pub package_path: String,
+    pub go_symbol: String,
+    pub goml_name: Lident,
+    pub params: Vec<(Lident, Ty)>,
+    pub ret_ty: Option<Ty>,
 }
 
 #[derive(Debug, Clone)]

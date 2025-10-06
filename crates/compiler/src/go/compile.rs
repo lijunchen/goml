@@ -8,6 +8,7 @@ use crate::{
     tast::Constructor,
 };
 
+use indexmap::IndexSet;
 use std::collections::HashMap;
 
 use super::goty;
@@ -141,6 +142,25 @@ fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
     let vname = lookup_variant_name(env, ty, index);
     let ty = tast::Ty::TCon { name: vname };
     tast_ty_to_go_type(&ty)
+}
+
+fn go_package_alias(package_path: &str) -> String {
+    let last_segment = package_path.rsplit('/').next().unwrap_or(package_path);
+    let mut alias = String::new();
+    for ch in last_segment.chars() {
+        if ch.is_ascii_alphanumeric() {
+            alias.push(ch);
+        } else {
+            alias.push('_');
+        }
+    }
+    if alias.is_empty() {
+        return "pkg".to_string();
+    }
+    if alias.chars().next().map_or(false, |c| c.is_ascii_digit()) {
+        alias.insert(0, '_');
+    }
+    alias
 }
 
 fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
@@ -346,10 +366,19 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         }
         anf::CExpr::ECall { func, args, ty } => {
             let args = args.iter().map(|arg| compile_imm(env, arg)).collect();
-            goast::Expr::Call {
-                func: func.clone(),
-                args,
-                ty: tast_ty_to_go_type(ty),
+            if let Some(extern_fn) = env.extern_funcs.get(func) {
+                let alias = go_package_alias(&extern_fn.package_path);
+                goast::Expr::Call {
+                    func: format!("{}.{}", alias, extern_fn.go_name),
+                    args,
+                    ty: tast_ty_to_go_type(ty),
+                }
+            } else {
+                goast::Expr::Call {
+                    func: func.clone(),
+                    args,
+                    ty: tast_ty_to_go_type(ty),
+                }
             }
         }
         anf::CExpr::EProj { tuple, index, ty } => {
@@ -716,6 +745,49 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
+
+    if !env.extern_funcs.is_empty() {
+        let mut existing_imports: IndexSet<String> = IndexSet::new();
+        for item in &all {
+            if let goast::Item::Import(import_decl) = item {
+                for spec in &import_decl.specs {
+                    existing_imports.insert(spec.path.clone());
+                }
+            }
+        }
+
+        let mut extra_specs = Vec::new();
+        for extern_fn in env.extern_funcs.values() {
+            if existing_imports.insert(extern_fn.package_path.clone()) {
+                extra_specs.push(goast::ImportSpec {
+                    alias: None,
+                    path: extern_fn.package_path.clone(),
+                });
+            }
+        }
+
+        if !extra_specs.is_empty() {
+            if let Some(import_decl) = all.iter_mut().find_map(|item| {
+                if let goast::Item::Import(import_decl) = item {
+                    Some(import_decl)
+                } else {
+                    None
+                }
+            }) {
+                import_decl.specs.extend(extra_specs);
+            } else {
+                let insert_pos = if matches!(all.first(), Some(goast::Item::Package(_))) {
+                    1
+                } else {
+                    0
+                };
+                all.insert(
+                    insert_pos,
+                    goast::Item::Import(goast::ImportDecl { specs: extra_specs }),
+                );
+            }
+        }
+    }
 
     for ty in env.tuple_types.iter() {
         match tuple_to_go_struct_type(env, ty) {

@@ -24,6 +24,7 @@ pub enum MySyntaxKind {
     AndAnd,
     OrOr,
     Bang,
+    ExternKeyword,
     FnKeyword,
     TraitKeyword,
     ImplKeyword,
@@ -54,6 +55,7 @@ pub enum MySyntaxKind {
 
     TombStone,
     ErrorTree,
+    EXTERN,
     FN,
     ENUM,
     TRAIT,

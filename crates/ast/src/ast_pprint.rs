@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, EnumDef, Expr, File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature,
-    Ty, Uident,
+    Arm, EnumDef, Expr, ExternGo, File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef,
+    TraitMethodSignature, Ty, Uident,
 };
 use pretty::RcDoc;
 
@@ -542,6 +542,44 @@ impl Fn {
     }
 }
 
+impl ExternGo {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let params_doc = RcDoc::intersperse(
+            self.params.iter().map(|(name, ty)| {
+                RcDoc::text(name.0.clone())
+                    .append(RcDoc::text(":"))
+                    .append(RcDoc::space())
+                    .append(ty.to_doc())
+            }),
+            RcDoc::text(", "),
+        );
+
+        let ret_ty_doc = if let Some(ret_ty) = &self.ret_ty {
+            RcDoc::text(" -> ").append(ret_ty.to_doc())
+        } else {
+            RcDoc::nil()
+        };
+
+        RcDoc::text("extern")
+            .append(RcDoc::space())
+            .append(RcDoc::text("\"go\""))
+            .append(RcDoc::space())
+            .append(RcDoc::text(format!("\"{}\"", self.package_path)))
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.goml_name.0.clone()))
+            .append(RcDoc::text("("))
+            .append(params_doc)
+            .append(RcDoc::text(")"))
+            .append(ret_ty_doc)
+    }
+
+    pub fn to_pretty(&self, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc().render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
 impl File {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         RcDoc::concat(self.toplevels.iter().map(|item| {
@@ -566,6 +604,7 @@ impl Item {
             Item::TraitDef(def) => def.to_doc(),
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
+            Item::ExternGo(ext) => ext.to_doc(),
         }
     }
 
