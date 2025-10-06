@@ -61,6 +61,7 @@ impl Rename {
                 methods: i.methods.iter().map(|m| self.rename_fn(m)).collect(),
             }),
             ast::Item::Fn(func) => ast::Item::Fn(self.rename_fn(func)),
+            ast::Item::ExternGo(ext) => ast::Item::ExternGo(ext.clone()),
         }
     }
 

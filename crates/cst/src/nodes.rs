@@ -65,6 +65,7 @@ pub enum Item {
     Trait(Trait),
     Impl(Impl),
     Fn(Fn),
+    Extern(Extern),
 }
 
 impl CstNode for Item {
@@ -76,6 +77,7 @@ impl CstNode for Item {
                 | MySyntaxKind::TRAIT
                 | MySyntaxKind::IMPL
                 | MySyntaxKind::FN
+                | MySyntaxKind::EXTERN
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
@@ -85,6 +87,7 @@ impl CstNode for Item {
             TRAIT => Item::Trait(Trait { syntax }),
             IMPL => Item::Impl(Impl { syntax }),
             FN => Item::Fn(Fn { syntax }),
+            EXTERN => Item::Extern(Extern { syntax }),
             _ => return None,
         };
         Some(res)
@@ -96,6 +99,7 @@ impl CstNode for Item {
             Item::Trait(it) => &it.syntax,
             Item::Impl(it) => &it.syntax,
             Item::Fn(it) => &it.syntax,
+            Item::Extern(it) => &it.syntax,
         }
     }
 }
@@ -383,6 +387,49 @@ impl Fn {
 
 impl_cst_node_simple!(Fn, MySyntaxKind::FN);
 impl_display_via_syntax!(Fn);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Extern {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Extern {
+    pub fn lang(&self) -> Option<MySyntaxToken> {
+        let mut strings = self
+            .syntax
+            .children_with_tokens()
+            .filter_map(|it| it.into_token())
+            .filter(|tok| tok.kind() == MySyntaxKind::Str);
+        strings.next()
+    }
+
+    pub fn package(&self) -> Option<MySyntaxToken> {
+        let mut strings = self
+            .syntax
+            .children_with_tokens()
+            .filter_map(|it| it.into_token())
+            .filter(|tok| tok.kind() == MySyntaxKind::Str);
+        strings.next()?;
+        strings.next()
+    }
+
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Lident)
+    }
+
+    pub fn param_list(&self) -> Option<ParamList> {
+        support::child(&self.syntax)
+    }
+
+    pub fn return_type(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(Extern, MySyntaxKind::EXTERN);
+impl_display_via_syntax!(Extern);
 
 ////////////////////////////////////////////////////////////////////////////////
 

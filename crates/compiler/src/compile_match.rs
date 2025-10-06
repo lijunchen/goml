@@ -738,6 +738,7 @@ pub fn compile_file(env: &Env, file: &File) -> core::File {
                     body: compile_expr(&f.body, env),
                 });
             }
+            tast::Item::ExternGo(_) => {}
         }
     }
     core::File { toplevels }

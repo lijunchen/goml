@@ -9,7 +9,9 @@ use crate::{
 pub fn file(p: &mut Parser) {
     let m = p.open();
     while !p.eof() {
-        if p.at(T![fn]) {
+        if p.at(T![extern]) {
+            extern_decl(p)
+        } else if p.at(T![fn]) {
             func(p)
         } else if p.at(T![enum]) {
             enum_def(p)
@@ -26,6 +28,36 @@ pub fn file(p: &mut Parser) {
         }
     }
     p.close(m, MySyntaxKind::FILE);
+}
+
+fn extern_decl(p: &mut Parser) {
+    assert!(p.at(T![extern]));
+    let m = p.open();
+    p.expect(T![extern]);
+    if p.at(T![str]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected a language string");
+    }
+    if p.at(T![str]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected a package string");
+    }
+    if p.at(T![lident]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected a function name");
+    }
+    if p.at(T!['(']) {
+        param_list(p);
+    } else {
+        p.advance_with_error("expected parameter list");
+    }
+    if p.eat(T![->]) {
+        type_expr(p);
+    }
+    p.close(m, MySyntaxKind::EXTERN);
 }
 
 fn func(p: &mut Parser) {

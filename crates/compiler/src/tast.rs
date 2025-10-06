@@ -11,6 +11,7 @@ pub struct File {
 pub enum Item {
     ImplBlock(ImplBlock),
     Fn(Fn),
+    ExternGo(ExternGo),
 }
 
 #[derive(Debug)]
@@ -26,6 +27,15 @@ pub struct Fn {
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: Expr,
+}
+
+#[derive(Debug)]
+pub struct ExternGo {
+    pub goml_name: String,
+    pub go_name: String,
+    pub package_path: String,
+    pub params: Vec<(String, Ty)>,
+    pub ret_ty: Ty,
 }
 
 #[derive(Debug, Clone)]

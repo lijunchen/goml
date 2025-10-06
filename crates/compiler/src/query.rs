@@ -63,6 +63,7 @@ fn find_type(env: &Env, tast: &tast::File, range: &rowan::TextRange) -> Option<S
                     return Some(t.clone());
                 }
             }
+            tast::Item::ExternGo(_) => {}
         }
     }
     None
