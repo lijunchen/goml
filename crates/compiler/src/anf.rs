@@ -40,6 +40,10 @@ pub enum CExpr {
         items: Vec<ImmExpr>,
         ty: Ty,
     },
+    EArray {
+        items: Vec<ImmExpr>,
+        ty: Ty,
+    },
     EMatch {
         expr: Box<ImmExpr>,
         arms: Vec<Arm>,
@@ -245,7 +249,22 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
         core::Expr::ETuple { items, ty: _ } => anf_list(
             env,
             &items,
-            Box::new(move |items| k(CExpr::ETuple { items, ty: e_ty })),
+            Box::new(move |items| {
+                k(CExpr::ETuple {
+                    items,
+                    ty: e_ty.clone(),
+                })
+            }),
+        ),
+        core::Expr::EArray { items, ty: _ } => anf_list(
+            env,
+            &items,
+            Box::new(move |items| {
+                k(CExpr::EArray {
+                    items,
+                    ty: e_ty.clone(),
+                })
+            }),
         ),
         core::Expr::ELet {
             name,
@@ -466,6 +485,10 @@ pub mod anf_renamer {
                 ty,
             },
             anf::CExpr::ETuple { items, ty } => anf::CExpr::ETuple {
+                items: items.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EArray { items, ty } => anf::CExpr::EArray {
                 items: items.into_iter().map(rename_imm).collect(),
                 ty,
             },

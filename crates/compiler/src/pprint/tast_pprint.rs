@@ -334,6 +334,22 @@ impl Expr {
                         .group()
                 }
             }
+            Self::EArray { items, ty: _ } => {
+                if items.is_empty() {
+                    RcDoc::text("[]")
+                } else {
+                    let items_doc = RcDoc::intersperse(
+                        items.iter().map(|item| item.to_doc(env)),
+                        RcDoc::text(", "),
+                    );
+
+                    RcDoc::text("[")
+                        .append(items_doc)
+                        .nest(2)
+                        .append(RcDoc::text("]"))
+                        .group()
+                }
+            }
 
             Self::ELet {
                 pat,

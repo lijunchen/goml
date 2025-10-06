@@ -58,6 +58,7 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
         anf::CExpr::CImm { imm } => imm_ty(imm),
         anf::CExpr::EConstr { ty, .. }
         | anf::CExpr::ETuple { ty, .. }
+        | anf::CExpr::EArray { ty, .. }
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
         | anf::CExpr::ECall { ty, .. }
@@ -301,6 +302,13 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             goast::Expr::StructLiteral {
                 ty: tuple_to_go_struct_type(env, ty),
                 fields,
+            }
+        }
+        anf::CExpr::EArray { items, ty } => {
+            let elems = items.iter().map(|item| compile_imm(env, item)).collect();
+            goast::Expr::ArrayLiteral {
+                elems,
+                ty: tast_ty_to_go_type(ty),
             }
         }
         anf::CExpr::EMatch { expr, .. } => match imm_ty(expr) {
@@ -564,7 +572,8 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             | anf::CExpr::EConstrGet { .. }
             | anf::CExpr::ECall { .. }
             | anf::CExpr::EProj { .. }
-            | anf::CExpr::ETuple { .. }) => vec![goast::Stmt::Assignment {
+            | anf::CExpr::ETuple { .. }
+            | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
                 name: target.to_string(),
                 value: compile_cexpr(env, &other),
             }],

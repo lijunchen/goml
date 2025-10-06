@@ -236,6 +236,10 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             fields: fields.into_iter().map(|(n, e)| (n, dce_expr(e))).collect(),
             ty,
         },
+        ast::Expr::ArrayLiteral { elems, ty } => ast::Expr::ArrayLiteral {
+            elems: elems.into_iter().map(dce_expr).collect(),
+            ty,
+        },
         ast::Expr::UnaryOp { op, expr, ty } => ast::Expr::UnaryOp {
             op,
             expr: Box::new(dce_expr(*expr)),
@@ -337,6 +341,11 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         }
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
+                s.extend(vars_used_in_expr(e));
+            }
+        }
+        ast::Expr::ArrayLiteral { elems, .. } => {
+            for e in elems {
                 s.extend(vars_used_in_expr(e));
             }
         }
@@ -498,6 +507,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
         }
+        ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_side_effects),
         ast::Expr::Var { .. }
         | ast::Expr::Nil { .. }
         | ast::Expr::Void { .. }
@@ -681,6 +691,11 @@ fn collect_called_in_expr(expr: &ast::Expr, calls: &mut HashSet<String>) {
                 collect_called_in_expr(e, calls);
             }
         }
+        ast::Expr::ArrayLiteral { elems, .. } => {
+            for e in elems {
+                collect_called_in_expr(e, calls);
+            }
+        }
         ast::Expr::Block { stmts, expr, .. } => {
             for stmt in stmts {
                 collect_called_in_stmt(stmt, calls);
@@ -855,6 +870,11 @@ fn collect_packages_in_expr(
         ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
+                collect_packages_in_expr(e, imports, used);
+            }
+        }
+        ast::Expr::ArrayLiteral { elems, .. } => {
+            for e in elems {
                 collect_packages_in_expr(e, imports, used);
             }
         }

@@ -1259,6 +1259,17 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EArray { items, ty } => {
+                let ty = self.subst_ty(env, &ty);
+                let items = items
+                    .into_iter()
+                    .map(|item| self.subst(env, item))
+                    .collect::<Vec<_>>();
+                tast::Expr::EArray {
+                    items,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ELet {
                 pat,
                 value,
@@ -1557,8 +1568,24 @@ impl TypeInference {
                     ty: tast::Ty::TTuple { typs },
                 }
             }
-            ast::Expr::EArray { .. } => {
-                panic!("Array literal typing not implemented yet");
+            ast::Expr::EArray { items } => {
+                let len = items.len();
+                let elem_ty = self.fresh_ty_var();
+                let mut items_tast = Vec::with_capacity(len);
+                for item in items.iter() {
+                    let item_tast = self.infer(env, vars, item);
+                    env.constraints
+                        .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
+                    items_tast.push(item_tast);
+                }
+
+                tast::Expr::EArray {
+                    items: items_tast,
+                    ty: tast::Ty::TArray {
+                        len,
+                        elem: Box::new(elem_ty),
+                    },
+                }
             }
             ast::Expr::ELet { pat, value, body } => {
                 let value_tast = self.infer(env, vars, value);

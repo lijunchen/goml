@@ -638,6 +638,25 @@ impl Expr {
                     .append(fields_doc)
                     .append(RcDoc::text("}"))
             }
+            Expr::ArrayLiteral { ty, elems } => {
+                let GoType::TArray { len, elem } = ty else {
+                    panic!("Array literal must have array type, got {:?}", ty);
+                };
+                let elems_doc = if elems.is_empty() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::intersperse(
+                        elems.iter().map(|elem_expr| elem_expr.to_doc(env)),
+                        RcDoc::text(", "),
+                    )
+                };
+
+                RcDoc::text(format!("[{}]", len))
+                    .append(go_type_doc(elem))
+                    .append(RcDoc::text("{"))
+                    .append(elems_doc)
+                    .append(RcDoc::text("}"))
+            }
             Expr::Block { stmts, expr, ty: _ } => {
                 let stmts_doc = if stmts.is_empty() {
                     RcDoc::nil()

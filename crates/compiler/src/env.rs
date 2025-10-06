@@ -374,7 +374,7 @@ impl Env {
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::ETuple { items, ty } => {
+                    core::Expr::ETuple { items, ty } | core::Expr::EArray { items, ty } => {
                         for item in items {
                             self.collect_expr(item);
                         }

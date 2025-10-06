@@ -185,6 +185,18 @@ impl CExpr {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
+            CExpr::EArray { items, ty: _ } => {
+                if items.is_empty() {
+                    RcDoc::text("[]")
+                } else {
+                    let items_doc = RcDoc::intersperse(
+                        items.iter().map(|item| item.to_doc(env)),
+                        RcDoc::text(", "),
+                    );
+
+                    RcDoc::text("[").append(items_doc).append(RcDoc::text("]"))
+                }
+            }
             CExpr::EMatch {
                 expr,
                 arms,

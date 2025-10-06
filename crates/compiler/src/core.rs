@@ -44,6 +44,10 @@ pub enum Expr {
         items: Vec<Expr>,
         ty: Ty,
     },
+    EArray {
+        items: Vec<Expr>,
+        ty: Ty,
+    },
     ELet {
         name: String,
         value: Box<Expr>,
@@ -90,6 +94,7 @@ impl Expr {
             Expr::EString { ty, .. } => ty.clone(),
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),
+            Expr::EArray { ty, .. } => ty.clone(),
             Expr::ELet { ty, .. } => ty.clone(),
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),
