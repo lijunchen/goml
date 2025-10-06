@@ -186,6 +186,11 @@ impl Ty {
 
                 doc
             }
+            Self::TArray { len, elem } => RcDoc::text("[")
+                .append(elem.to_doc(_env))
+                .append(RcDoc::text("; "))
+                .append(RcDoc::as_string(len))
+                .append(RcDoc::text("]")),
             Self::TFunc { params, ret_ty } => {
                 let mut doc = RcDoc::text("(");
 

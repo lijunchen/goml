@@ -244,6 +244,9 @@ fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
                 env.report_typer_error(format!("Unknown type constructor {}", base_name));
             }
         }
+        tast::Ty::TArray { elem, .. } => {
+            validate_ty(env, elem, tparams);
+        }
     }
 }
 
@@ -595,6 +598,10 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
                 .map(|ty| instantiate_trait_method_ty(ty, self_ty))
                 .collect(),
         },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(instantiate_trait_method_ty(elem, self_ty)),
+        },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
@@ -640,6 +647,10 @@ pub fn ast_ty_to_tast_ty_with_tparams_env(
                 args,
             }
         }
+        ast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(ast_ty_to_tast_ty_with_tparams_env(elem, tparams_env)),
+        },
         ast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()
@@ -694,6 +705,11 @@ fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
                 }
             }
         }
+        tast::Ty::TArray { elem, .. } => {
+            if !occurs(env, var, elem) {
+                return false;
+            }
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
                 if !occurs(env, var, param) {
@@ -727,6 +743,7 @@ impl TypeInference {
                 tast::Ty::TApp { ty, args } => {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
+                tast::Ty::TArray { elem, .. } => is_concrete(elem),
                 tast::Ty::TFunc { params, ret_ty } => {
                     params.iter().all(is_concrete) && is_concrete(ret_ty)
                 }
@@ -851,6 +868,10 @@ impl TypeInference {
                 ty: Box::new(self.norm(ty)),
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
             },
+            tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+                len: *len,
+                elem: Box::new(self.norm(elem)),
+            },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params.iter().map(|ty| self.norm(ty)).collect();
                 let ret_ty = Box::new(self.norm(ret_ty));
@@ -902,6 +923,27 @@ impl TypeInference {
                     if !self.unify(env, ty1, ty2) {
                         return false;
                     }
+                }
+            }
+            (
+                tast::Ty::TArray {
+                    len: len1,
+                    elem: elem1,
+                },
+                tast::Ty::TArray {
+                    len: len2,
+                    elem: elem2,
+                },
+            ) => {
+                if len1 != len2 {
+                    env.report_typer_error(format!(
+                        "Array types have different lengths: {:?} and {:?}",
+                        l, r
+                    ));
+                    return false;
+                }
+                if !self.unify(env, elem1, elem2) {
+                    return false;
                 }
             }
             (
@@ -1025,6 +1067,10 @@ impl TypeInference {
                     args,
                 }
             }
+            tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+                len: *len,
+                elem: Box::new(self._go_inst_ty(elem, subst)),
+            },
             tast::Ty::TParam { name } => {
                 if subst.contains_key(name) {
                     let ty = subst.get(name).unwrap();
@@ -1068,6 +1114,10 @@ impl TypeInference {
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.subst_ty(env, ty)),
                 args: args.iter().map(|arg| self.subst_ty(env, arg)).collect(),
+            },
+            tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+                len: *len,
+                elem: Box::new(self.subst_ty(env, elem)),
             },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params.iter().map(|ty| self.subst_ty(env, ty)).collect();
