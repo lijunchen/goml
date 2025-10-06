@@ -722,6 +722,17 @@ fn lower_expr_with_args(
                 fields,
             })
         }
+        cst::Expr::ArrayLiteralExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to array literal",
+                );
+                return None;
+            }
+            let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
+            Some(ast::Expr::EArray { items })
+        }
         cst::Expr::UidentExpr(it) => {
             let name = it.uident().unwrap().to_string();
             let expr = ast::Expr::EConstr {

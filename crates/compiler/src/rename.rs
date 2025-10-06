@@ -123,6 +123,12 @@ impl Rename {
                     .map(|item| self.rename_expr(item, env))
                     .collect(),
             },
+            ast::Expr::EArray { items } => ast::Expr::EArray {
+                items: items
+                    .iter()
+                    .map(|item| self.rename_expr(item, env))
+                    .collect(),
+            },
             ast::Expr::ELet { pat, value, body } => {
                 let new_value = self.rename_expr(value, env);
                 let new_pat = self.rename_pat(pat, env);

@@ -1557,6 +1557,9 @@ impl TypeInference {
                     ty: tast::Ty::TTuple { typs },
                 }
             }
+            ast::Expr::EArray { .. } => {
+                panic!("Array literal typing not implemented yet");
+            }
             ast::Expr::ELet { pat, value, body } => {
                 let value_tast = self.infer(env, vars, value);
                 let value_ty = value_tast.get_ty();
