@@ -493,6 +493,7 @@ pub enum Expr {
     StrExpr(StrExpr),
     CallExpr(CallExpr),
     StructLiteralExpr(StructLiteralExpr),
+    ArrayLiteralExpr(ArrayLiteralExpr),
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
     UidentExpr(UidentExpr),
@@ -513,6 +514,7 @@ impl CstNode for Expr {
                 | EXPR_STR
                 | EXPR_CALL
                 | EXPR_STRUCT_LITERAL
+                | EXPR_ARRAY_LITERAL
                 | EXPR_MATCH
                 | EXPR_UIDENT
                 | EXPR_LIDENT
@@ -537,6 +539,7 @@ impl CstNode for Expr {
             EXPR_LET => Expr::LetExpr(LetExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
+            EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             _ => return None,
         };
         Some(res)
@@ -549,6 +552,7 @@ impl CstNode for Expr {
             Self::StrExpr(it) => &it.syntax,
             Self::CallExpr(it) => &it.syntax,
             Self::StructLiteralExpr(it) => &it.syntax,
+            Self::ArrayLiteralExpr(it) => &it.syntax,
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
             Self::UidentExpr(it) => &it.syntax,
@@ -636,6 +640,22 @@ impl StructLiteralExpr {
 
 impl_cst_node_simple!(StructLiteralExpr, MySyntaxKind::EXPR_STRUCT_LITERAL);
 impl_display_via_syntax!(StructLiteralExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayLiteralExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ArrayLiteralExpr {
+    pub fn exprs(&self) -> CstChildren<Expr> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ArrayLiteralExpr, MySyntaxKind::EXPR_ARRAY_LITERAL);
+impl_display_via_syntax!(ArrayLiteralExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

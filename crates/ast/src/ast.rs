@@ -175,6 +175,9 @@ pub enum Expr {
     ETuple {
         items: Vec<Expr>,
     },
+    EArray {
+        items: Vec<Expr>,
+    },
     ELet {
         pat: Pat,
         value: Box<Expr>,

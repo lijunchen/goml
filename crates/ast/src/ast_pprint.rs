@@ -149,6 +149,19 @@ impl Expr {
                 }
             }
 
+            Self::EArray { items } => {
+                if items.is_empty() {
+                    RcDoc::text("[]")
+                } else {
+                    let items_doc = RcDoc::intersperse(
+                        items.iter().map(|item| item.to_doc()),
+                        RcDoc::text(", "),
+                    );
+
+                    RcDoc::text("[").append(items_doc).append(RcDoc::text("]"))
+                }
+            }
+
             Self::ELet { pat, value, body } => RcDoc::text("let")
                 .append(RcDoc::space())
                 .append(pat.to_doc())

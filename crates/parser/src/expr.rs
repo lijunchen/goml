@@ -17,6 +17,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![-],
     T![!],
     T!['('],
+    T!['['],
     T![if],
     T![let],
     T![match],
@@ -28,6 +29,31 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::EXPR_INT)
+        }
+        T!['['] => {
+            let m = p.open();
+            p.expect(T!['[']);
+            if !p.at(T![']']) && !p.eof() {
+                if p.at_any(EXPR_FIRST) {
+                    expr(p);
+                    while p.at(T![,]) {
+                        p.expect(T![,]);
+                        if p.at(T![']']) {
+                            break;
+                        }
+                        if p.at_any(EXPR_FIRST) {
+                            expr(p);
+                        } else {
+                            p.advance_with_error("expected an expression in array literal");
+                            break;
+                        }
+                    }
+                } else {
+                    p.advance_with_error("expected an expression in array literal");
+                }
+            }
+            p.expect(T![']']);
+            p.close(m, MySyntaxKind::EXPR_ARRAY_LITERAL)
         }
         T![str] => {
             let m = p.open();

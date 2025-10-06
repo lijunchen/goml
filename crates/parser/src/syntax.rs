@@ -93,6 +93,7 @@ pub enum MySyntaxKind {
     EXPR_BOOL,
     EXPR_INT,
     EXPR_STR,
+    EXPR_ARRAY_LITERAL,
     EXPR_TUPLE,
     EXPR_CALL,
     EXPR_STRUCT_LITERAL,
