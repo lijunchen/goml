@@ -51,10 +51,10 @@ fn go_symbol_name(name: &str) -> String {
 }
 
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
-    let ast = rename::Rename::default().rename_file(ast);
     let mut env = env::Env::new();
+    let ast = rename::Rename::default().rename_file(ast);
+    collect_typedefs(&mut env, &ast);
     let mut typer = TypeInference::new();
-    collect_typedefs(&mut env, &mut typer, &ast);
     let mut typed_toplevel_tasts = vec![];
     for item in ast.toplevels.iter() {
         match item {
@@ -105,41 +105,34 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                 typed_toplevel_tasts.push(tast::Item::ImplBlock(trait_impl));
             }
             ast::Item::Fn(f) => {
-                let fn_sig = env
-                    .funcs
-                    .get(&f.name.0)
-                    .cloned()
-                    .expect("function declarations collected before inference");
-                let (param_tys, ret_sig_ty) = match fn_sig {
-                    tast::Ty::TFunc { params, ret_ty } => (params, *ret_ty),
-                    other => panic!("expected function type for {}, found {:?}", f.name.0, other),
-                };
-
                 let mut vars = im::HashMap::<Lident, tast::Ty>::new();
-                for ((name, _), param_ty) in f.params.iter().zip(param_tys.iter()) {
-                    vars.insert(name.clone(), param_ty.clone());
+                for (name, ty) in f.params.iter() {
+                    let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
+                    vars.insert(name.clone(), ty);
                 }
-
-                let typed_body = typer.infer(&mut env, &vars, &f.body);
-                env.constraints.push(Constraint::TypeEqual(
-                    typed_body.get_ty(),
-                    ret_sig_ty.clone(),
-                ));
-                typer.solve(&mut env);
-                let typed_body = typer.subst(&mut env, typed_body);
-
-                let resolved_params = f
+                let new_params = f
                     .params
                     .iter()
-                    .zip(param_tys.iter())
-                    .map(|((name, _), ty)| (name.0.clone(), typer.subst_ty(&mut env, ty)))
+                    .map(|(name, ty)| {
+                        (
+                            name.0.clone(),
+                            ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
+                        )
+                    })
                     .collect::<Vec<_>>();
-                let resolved_ret_ty = typer.subst_ty(&mut env, &ret_sig_ty);
 
+                let ret_ty = match &f.ret_ty {
+                    Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
+                    None => tast::Ty::TUnit,
+                };
+
+                let typed_body = typer.infer(&mut env, &vars, &f.body);
+                typer.solve(&mut env);
+                let typed_body = typer.subst(&mut env, typed_body);
                 typed_toplevel_tasts.push(tast::Item::Fn(tast::Fn {
                     name: f.name.0.clone(),
-                    params: resolved_params,
-                    ret_ty: resolved_ret_ty,
+                    params: new_params,
+                    ret_ty,
                     body: typed_body,
                 }));
             }
@@ -257,7 +250,7 @@ fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     }
 }
 
-fn collect_typedefs(env: &mut Env, typer: &mut TypeInference, ast: &ast::File) {
+fn collect_typedefs(env: &mut Env, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(enum_def) => {
@@ -533,7 +526,7 @@ fn collect_typedefs(env: &mut Env, typer: &mut TypeInference, ast: &ast::File) {
                         validate_ty(env, &ret, &tparam_names);
                         ret
                     }
-                    None => typer.fresh_ty_var(),
+                    None => tast::Ty::TUnit,
                 };
                 env.funcs.insert(
                     name.0.clone(),
