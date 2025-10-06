@@ -19,6 +19,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TString => "string".to_string(),
         GoType::TStruct { name, .. } => name.clone(),
         GoType::TName { name } => name.clone(),
+        GoType::TArray { len, elem } => format!("[{}]{}", len, go_type_name(elem)),
         GoType::TFunc { .. } => "func".to_string(),
     }
 }
@@ -40,6 +41,7 @@ fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
                 .append(RcDoc::text(")"))
                 .append(ret_doc)
         }
+        GoType::TArray { len, elem } => RcDoc::text(format!("[{}]", len)).append(go_type_doc(elem)),
         other => RcDoc::text(go_type_name(other)),
     }
 }

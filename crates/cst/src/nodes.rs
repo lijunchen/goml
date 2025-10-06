@@ -1270,6 +1270,7 @@ pub enum Type {
     StringTy(StringTy),
     TupleTy(TupleTy),
     TAppTy(TAppTy),
+    ArrayTy(ArrayTy),
     FuncTy(FuncTy),
 }
 
@@ -1277,7 +1278,14 @@ impl CstNode for Type {
     fn can_cast(kind: MySyntaxKind) -> bool {
         matches!(
             kind,
-            TYPE_UNIT | TYPE_BOOL | TYPE_INT | TYPE_STRING | TYPE_TUPLE | TYPE_TAPP | TYPE_FUNC
+            TYPE_UNIT
+                | TYPE_BOOL
+                | TYPE_INT
+                | TYPE_STRING
+                | TYPE_TUPLE
+                | TYPE_TAPP
+                | TYPE_ARRAY
+                | TYPE_FUNC
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
@@ -1288,6 +1296,7 @@ impl CstNode for Type {
             TYPE_STRING => Type::StringTy(StringTy { syntax }),
             TYPE_TUPLE => Type::TupleTy(TupleTy { syntax }),
             TYPE_TAPP => Type::TAppTy(TAppTy { syntax }),
+            TYPE_ARRAY => Type::ArrayTy(ArrayTy { syntax }),
             TYPE_FUNC => Type::FuncTy(FuncTy { syntax }),
             _ => return None,
         };
@@ -1301,6 +1310,7 @@ impl CstNode for Type {
             Type::StringTy(it) => &it.syntax,
             Type::TupleTy(it) => &it.syntax,
             Type::TAppTy(it) => &it.syntax,
+            Type::ArrayTy(it) => &it.syntax,
             Type::FuncTy(it) => &it.syntax,
         }
     }
@@ -1389,6 +1399,26 @@ impl TAppTy {
 
 impl_cst_node_simple!(TAppTy, MySyntaxKind::TYPE_TAPP);
 impl_display_via_syntax!(TAppTy);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArrayTy {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ArrayTy {
+    pub fn len(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Int)
+    }
+
+    pub fn elem_type(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ArrayTy, MySyntaxKind::TYPE_ARRAY);
+impl_display_via_syntax!(ArrayTy);
 
 ////////////////////////////////////////////////////////////////////////////////
 

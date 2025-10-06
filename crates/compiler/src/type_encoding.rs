@@ -22,6 +22,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
                 format!("{}_{}", base, inner)
             }
         }
+        tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty(elem)),
         tast::Ty::TFunc { params, ret_ty } => {
             let p = params.iter().map(encode_ty).collect::<Vec<_>>().join("_");
             let r = encode_ty(ret_ty);
@@ -89,6 +90,25 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
             } else {
                 Ok(tast::Ty::TTuple { typs: elems })
             }
+        }
+        "Array" => {
+            if start + 2 > end {
+                return Err("array encoding missing length".to_string());
+            }
+            let len_token = tokens
+                .get(start + 1)
+                .ok_or_else(|| "array encoding missing length".to_string())?;
+            let len = len_token
+                .parse::<usize>()
+                .map_err(|_| format!("invalid array length: {}", len_token))?;
+            if start + 2 >= end {
+                return Err("array encoding missing element".to_string());
+            }
+            let elem = decode_range(tokens, start + 2, end)?;
+            Ok(tast::Ty::TArray {
+                len,
+                elem: Box::new(elem),
+            })
         }
         "Fn" => {
             let mut to_pos = None;

@@ -229,7 +229,15 @@ fn variant(p: &mut Parser) {
     p.close(m, MySyntaxKind::VARIANT);
 }
 
-const TYPE_FIRST: &[TokenKind] = &[T![Unit], T![Bool], T![Int], T![String], T!['('], T![uident]];
+const TYPE_FIRST: &[TokenKind] = &[
+    T![Unit],
+    T![Bool],
+    T![Int],
+    T![String],
+    T!['['],
+    T!['('],
+    T![uident],
+];
 
 fn type_list(p: &mut Parser) {
     assert!(p.at(T!['(']));
@@ -322,6 +330,29 @@ fn type_expr(p: &mut Parser) {
     } else if p.at(T!['(']) {
         type_list(p);
         p.close(m, MySyntaxKind::TYPE_TUPLE);
+    } else if p.at(T!['[']) {
+        p.expect(T!['[']);
+        if p.at_any(TYPE_FIRST) {
+            type_expr(p);
+        } else {
+            p.advance_with_error("expected array element type");
+        }
+        if p.at(T![;]) {
+            p.expect(T![;]);
+        } else {
+            p.advance_with_error("expected ';' after array element type");
+        }
+        if p.at(T![int]) {
+            p.advance();
+        } else {
+            p.advance_with_error("expected array length");
+        }
+        if p.at(T![']']) {
+            p.expect(T![']']);
+        } else {
+            p.advance_with_error("expected closing ']' for array type");
+        }
+        p.close(m, MySyntaxKind::TYPE_ARRAY);
     } else if p.at(T![uident]) {
         p.advance();
         if p.at(T!['[']) {

@@ -24,6 +24,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TTuple { typs } => typs.iter().any(has_tparam),
             Ty::TCon { .. } => false,
             Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
+            Ty::TArray { elem, .. } => has_tparam(elem),
             Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
         }
     }
@@ -78,6 +79,10 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TApp { ty, args } => Ty::TApp {
                 ty: Box::new(subst_ty(ty, s)),
                 args: args.iter().map(|t| subst_ty(t, s)).collect(),
+            },
+            Ty::TArray { len, elem } => Ty::TArray {
+                len: *len,
+                elem: Box::new(subst_ty(elem, s)),
             },
             Ty::TFunc { params, ret_ty } => Ty::TFunc {
                 params: params.iter().map(|t| subst_ty(t, s)).collect(),
@@ -157,6 +162,12 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     unify(a, b, subst)?;
                 }
                 Ok(())
+            }
+            (Ty::TArray { len: ll, elem: le }, Ty::TArray { len: rl, elem: re }) => {
+                if ll != rl {
+                    return Err("array length mismatch".to_string());
+                }
+                unify(le, re, subst)
             }
             (
                 Ty::TFunc {

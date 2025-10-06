@@ -188,6 +188,10 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             .get(name)
             .cloned()
             .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()

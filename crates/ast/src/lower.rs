@@ -291,6 +291,42 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
                 })
             }
         }
+        cst::Type::ArrayTy(it) => {
+            let len_token = match it.len() {
+                Some(token) => token,
+                None => {
+                    ctx.push_error(Some(it.syntax().text_range()), "Array type missing length");
+                    return None;
+                }
+            };
+            let len_text = len_token.text().to_string();
+            let len = match len_text.parse::<usize>() {
+                Ok(value) => value,
+                Err(_) => {
+                    ctx.push_error(
+                        Some(len_token.text_range()),
+                        format!("Invalid array length: {}", len_text),
+                    );
+                    return None;
+                }
+            };
+
+            let elem_ty = match it.elem_type().and_then(|ty| lower_ty(ctx, ty)) {
+                Some(ty) => ty,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Array type missing element type",
+                    );
+                    return None;
+                }
+            };
+
+            Some(ast::Ty::TArray {
+                len,
+                elem: Box::new(elem_ty),
+            })
+        }
 
         cst::Type::FuncTy(..) => todo!(),
     }

@@ -108,6 +108,7 @@ pub enum Ty {
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
+    TArray { len: usize, elem: Box<Ty> },
     TParam { name: String },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
@@ -123,6 +124,7 @@ impl std::fmt::Debug for Ty {
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
             Self::TCon { name } => write!(f, "TCon({})", name),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
+            Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TParam { name } => write!(f, "TParam({})", name),
             Self::TFunc { params, ret_ty } => write!(f, "TFunc({:?}, {:?})", params, ret_ty),
         }

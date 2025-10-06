@@ -77,6 +77,7 @@ pub enum Ty {
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
+    TArray { len: usize, elem: Box<Ty> },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
 

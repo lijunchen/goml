@@ -156,6 +156,10 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
             .get(name)
             .cloned()
             .unwrap_or_else(|| Ty::TParam { name: name.clone() }),
+        Ty::TArray { len, elem } => Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params
                 .iter()
@@ -689,6 +693,7 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
             }
         }
         Ty::TTuple { typs } => compile_tuple_case(env, rows, &bvar, typs, ty),
+        Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
     }

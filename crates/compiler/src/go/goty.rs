@@ -16,4 +16,8 @@ pub enum GoType {
     TName {
         name: String,
     },
+    TArray {
+        len: usize,
+        elem: Box<GoType>,
+    },
 }
