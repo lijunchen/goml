@@ -269,6 +269,10 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                 ty: subst_ty(&ty, s),
             },
+            core::Expr::EArray { items, ty } => core::Expr::EArray {
+                items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
+                ty: subst_ty(&ty, s),
+            },
             core::Expr::ELet {
                 name,
                 value,
@@ -607,6 +611,13 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 }
             }
             core::Expr::ETuple { items, ty } => core::Expr::ETuple {
+                items: items
+                    .into_iter()
+                    .map(|a| rewrite_expr_types(a, m))
+                    .collect(),
+                ty: m.collapse_type_apps(&ty),
+            },
+            core::Expr::EArray { items, ty } => core::Expr::EArray {
                 items: items
                     .into_iter()
                     .map(|a| rewrite_expr_types(a, m))

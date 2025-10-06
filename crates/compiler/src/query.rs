@@ -90,7 +90,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
         tast::Expr::EInt { value: _, ty: _ } => None,
         tast::Expr::EString { value: _, ty: _ } => None,
         tast::Expr::EConstr { .. } => None,
-        tast::Expr::ETuple { items, ty: _ } => {
+        tast::Expr::ETuple { items, ty: _ } | tast::Expr::EArray { items, ty: _ } => {
             for item in items {
                 if let Some(expr) = find_type_expr(env, item, range) {
                     return Some(expr);

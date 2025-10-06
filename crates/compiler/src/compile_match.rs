@@ -824,6 +824,13 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 ty: ty.clone(),
             }
         }
+        EArray { items, ty } => {
+            let items = items.iter().map(|item| compile_expr(item, env)).collect();
+            core::Expr::EArray {
+                items,
+                ty: ty.clone(),
+            }
+        }
         EConstr {
             constructor,
             args,

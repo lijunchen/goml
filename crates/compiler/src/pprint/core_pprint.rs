@@ -167,6 +167,18 @@ impl Expr {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
+            Expr::EArray { items, ty: _ } => {
+                if items.is_empty() {
+                    RcDoc::text("[]")
+                } else {
+                    let items_doc = RcDoc::intersperse(
+                        items.iter().map(|item| item.to_doc(env)),
+                        RcDoc::text(", "),
+                    );
+
+                    RcDoc::text("[").append(items_doc).append(RcDoc::text("]"))
+                }
+            }
 
             Expr::ELet {
                 name,

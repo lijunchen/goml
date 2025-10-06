@@ -51,10 +51,10 @@ fn go_symbol_name(name: &str) -> String {
 }
 
 pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
-    let mut env = env::Env::new();
     let ast = rename::Rename::default().rename_file(ast);
-    collect_typedefs(&mut env, &ast);
+    let mut env = env::Env::new();
     let mut typer = TypeInference::new();
+    collect_typedefs(&mut env, &mut typer, &ast);
     let mut typed_toplevel_tasts = vec![];
     for item in ast.toplevels.iter() {
         match item {
@@ -105,34 +105,41 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                 typed_toplevel_tasts.push(tast::Item::ImplBlock(trait_impl));
             }
             ast::Item::Fn(f) => {
-                let mut vars = im::HashMap::<Lident, tast::Ty>::new();
-                for (name, ty) in f.params.iter() {
-                    let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
-                    vars.insert(name.clone(), ty);
-                }
-                let new_params = f
-                    .params
-                    .iter()
-                    .map(|(name, ty)| {
-                        (
-                            name.0.clone(),
-                            ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
-                        )
-                    })
-                    .collect::<Vec<_>>();
-
-                let ret_ty = match &f.ret_ty {
-                    Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
-                    None => tast::Ty::TUnit,
+                let fn_sig = env
+                    .funcs
+                    .get(&f.name.0)
+                    .cloned()
+                    .expect("function declarations collected before inference");
+                let (param_tys, ret_sig_ty) = match fn_sig {
+                    tast::Ty::TFunc { params, ret_ty } => (params, *ret_ty),
+                    other => panic!("expected function type for {}, found {:?}", f.name.0, other),
                 };
 
+                let mut vars = im::HashMap::<Lident, tast::Ty>::new();
+                for ((name, _), param_ty) in f.params.iter().zip(param_tys.iter()) {
+                    vars.insert(name.clone(), param_ty.clone());
+                }
+
                 let typed_body = typer.infer(&mut env, &vars, &f.body);
+                env.constraints.push(Constraint::TypeEqual(
+                    typed_body.get_ty(),
+                    ret_sig_ty.clone(),
+                ));
                 typer.solve(&mut env);
                 let typed_body = typer.subst(&mut env, typed_body);
+
+                let resolved_params = f
+                    .params
+                    .iter()
+                    .zip(param_tys.iter())
+                    .map(|((name, _), ty)| (name.0.clone(), typer.subst_ty(&mut env, ty)))
+                    .collect::<Vec<_>>();
+                let resolved_ret_ty = typer.subst_ty(&mut env, &ret_sig_ty);
+
                 typed_toplevel_tasts.push(tast::Item::Fn(tast::Fn {
                     name: f.name.0.clone(),
-                    params: new_params,
-                    ret_ty,
+                    params: resolved_params,
+                    ret_ty: resolved_ret_ty,
                     body: typed_body,
                 }));
             }
@@ -250,7 +257,7 @@ fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     }
 }
 
-fn collect_typedefs(env: &mut Env, ast: &ast::File) {
+fn collect_typedefs(env: &mut Env, typer: &mut TypeInference, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(enum_def) => {
@@ -526,7 +533,7 @@ fn collect_typedefs(env: &mut Env, ast: &ast::File) {
                         validate_ty(env, &ret, &tparam_names);
                         ret
                     }
-                    None => tast::Ty::TUnit,
+                    None => typer.fresh_ty_var(),
                 };
                 env.funcs.insert(
                     name.0.clone(),
@@ -1259,6 +1266,17 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EArray { items, ty } => {
+                let ty = self.subst_ty(env, &ty);
+                let items = items
+                    .into_iter()
+                    .map(|item| self.subst(env, item))
+                    .collect::<Vec<_>>();
+                tast::Expr::EArray {
+                    items,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ELet {
                 pat,
                 value,
@@ -1557,8 +1575,24 @@ impl TypeInference {
                     ty: tast::Ty::TTuple { typs },
                 }
             }
-            ast::Expr::EArray { .. } => {
-                panic!("Array literal typing not implemented yet");
+            ast::Expr::EArray { items } => {
+                let len = items.len();
+                let elem_ty = self.fresh_ty_var();
+                let mut items_tast = Vec::with_capacity(len);
+                for item in items.iter() {
+                    let item_tast = self.infer(env, vars, item);
+                    env.constraints
+                        .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
+                    items_tast.push(item_tast);
+                }
+
+                tast::Expr::EArray {
+                    items: items_tast,
+                    ty: tast::Ty::TArray {
+                        len,
+                        elem: Box::new(elem_ty),
+                    },
+                }
             }
             ast::Expr::ELet { pat, value, body } => {
                 let value_tast = self.infer(env, vars, value);

@@ -139,6 +139,10 @@ pub enum Expr {
         fields: Vec<(String, Expr)>,
         ty: goty::GoType,
     },
+    ArrayLiteral {
+        elems: Vec<Expr>,
+        ty: goty::GoType,
+    },
     Block {
         stmts: Vec<Stmt>,
         expr: Option<Box<Expr>>,
@@ -162,6 +166,7 @@ impl Expr {
             | Expr::FieldAccess { ty, .. }
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
+            | Expr::ArrayLiteral { ty, .. }
             | Expr::Block { ty, .. } => ty,
         }
     }

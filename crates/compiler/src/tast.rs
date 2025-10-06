@@ -207,6 +207,10 @@ pub enum Expr {
         items: Vec<Expr>,
         ty: Ty,
     },
+    EArray {
+        items: Vec<Expr>,
+        ty: Ty,
+    },
     ELet {
         pat: Pat,
         value: Box<Expr>,
@@ -259,6 +263,7 @@ impl Expr {
             Self::EString { ty, .. } => ty.clone(),
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),
+            Self::EArray { ty, .. } => ty.clone(),
             Self::ELet { ty, .. } => ty.clone(),
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
