@@ -1,7 +1,13 @@
-use crate::go::{
-    goast::{self, BinaryOp, ImportDecl, ImportSpec, Item, Package, UnaryOp},
-    goty,
+use crate::{
+    go::{
+        goast::{self, BinaryOp, ImportDecl, ImportSpec, Item, Package, UnaryOp},
+        goty,
+    },
+    tast,
+    type_encoding::encode_ty,
 };
+
+use indexmap::IndexSet;
 
 // unit_to_string(x : struct{}) string
 // bool_to_string(x : bool) string
@@ -46,6 +52,90 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_println()),
         Item::Fn(missing()),
     ]
+}
+
+pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
+    format!("{}__{}", prefix, encode_ty(ty))
+}
+
+pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
+    let mut items = Vec::new();
+    for ty in array_types {
+        let tast::Ty::TArray { len, elem } = ty else {
+            continue;
+        };
+        if *len == tast::ARRAY_WILDCARD_LEN {
+            continue;
+        }
+        let arr_go_ty = goty::GoType::TArray {
+            len: *len,
+            elem: Box::new(goast::tast_ty_to_go_type(elem)),
+        };
+        let elem_go_ty = goast::tast_ty_to_go_type(elem);
+
+        let get_fn = goast::Fn {
+            name: array_helper_fn_name("array_get", ty),
+            params: vec![
+                ("arr".to_string(), arr_go_ty.clone()),
+                ("index".to_string(), goty::GoType::TInt),
+            ],
+            ret_ty: Some(elem_go_ty.clone()),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Index {
+                        array: Box::new(goast::Expr::Var {
+                            name: "arr".to_string(),
+                            ty: arr_go_ty.clone(),
+                        }),
+                        index: Box::new(goast::Expr::Var {
+                            name: "index".to_string(),
+                            ty: goty::GoType::TInt,
+                        }),
+                        ty: elem_go_ty.clone(),
+                    }),
+                }],
+            },
+        };
+
+        let set_fn = goast::Fn {
+            name: array_helper_fn_name("array_set", ty),
+            params: vec![
+                ("arr".to_string(), arr_go_ty.clone()),
+                ("index".to_string(), goty::GoType::TInt),
+                ("value".to_string(), elem_go_ty.clone()),
+            ],
+            ret_ty: Some(arr_go_ty.clone()),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::IndexAssign {
+                        array: goast::Expr::Var {
+                            name: "arr".to_string(),
+                            ty: arr_go_ty.clone(),
+                        },
+                        index: goast::Expr::Var {
+                            name: "index".to_string(),
+                            ty: goty::GoType::TInt,
+                        },
+                        value: goast::Expr::Var {
+                            name: "value".to_string(),
+                            ty: elem_go_ty.clone(),
+                        },
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Var {
+                            name: "arr".to_string(),
+                            ty: arr_go_ty.clone(),
+                        }),
+                    },
+                ],
+            },
+        };
+
+        items.push(goast::Item::Fn(get_fn));
+        items.push(goast::Item::Fn(set_fn));
+    }
+
+    items
 }
 
 fn unit_to_string() -> goast::Fn {

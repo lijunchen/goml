@@ -2,6 +2,8 @@ use ast::ast::{BinaryOp, Uident, UnaryOp};
 use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
+pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
+
 #[derive(Debug)]
 pub struct File {
     pub toplevels: Vec<Item>,

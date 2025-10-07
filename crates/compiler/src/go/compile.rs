@@ -377,18 +377,25 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             }
         }
         anf::CExpr::ECall { func, args, ty } => {
-            let args = args.iter().map(|arg| compile_imm(env, arg)).collect();
-            if let Some(extern_fn) = env.extern_funcs.get(func) {
+            let compiled_args: Vec<_> = args.iter().map(|arg| compile_imm(env, arg)).collect();
+            if func == "array_get" || func == "array_set" {
+                let helper = runtime::array_helper_fn_name(func, &imm_ty(&args[0]));
+                goast::Expr::Call {
+                    func: helper,
+                    args: compiled_args,
+                    ty: tast_ty_to_go_type(ty),
+                }
+            } else if let Some(extern_fn) = env.extern_funcs.get(func) {
                 let alias = go_package_alias(&extern_fn.package_path);
                 goast::Expr::Call {
                     func: format!("{}.{}", alias, extern_fn.go_name),
-                    args,
+                    args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
             } else {
                 goast::Expr::Call {
                     func: func.clone(),
-                    args,
+                    args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
             }
@@ -758,6 +765,7 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
+    all.extend(runtime::make_array_runtime(&env.array_types));
 
     if !env.extern_funcs.is_empty() {
         let mut existing_imports: IndexSet<String> = IndexSet::new();

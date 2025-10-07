@@ -935,7 +935,8 @@ impl TypeInference {
                     elem: elem2,
                 },
             ) => {
-                if len1 != len2 {
+                let wildcard = tast::ARRAY_WILDCARD_LEN;
+                if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
                     env.report_typer_error(format!(
                         "Array types have different lengths: {:?} and {:?}",
                         l, r
@@ -1673,6 +1674,13 @@ impl TypeInference {
                             ret_ty: Box::new(ret_ty.clone()),
                         },
                     ));
+
+                    if func.0 == "array_set" {
+                        if let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty()) {
+                            env.constraints
+                                .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
+                        }
+                    }
 
                     tast::Expr::ECall {
                         func: func.0.clone(),
