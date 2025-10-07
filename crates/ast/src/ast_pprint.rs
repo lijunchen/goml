@@ -223,6 +223,42 @@ impl Expr {
                     .group()
             }
 
+            Self::EWhile { cond, body } => {
+                let body_doc = RcDoc::hardline()
+                    .append(body.to_doc())
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("while")
+                    .append(RcDoc::space())
+                    .append(cond.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(body_doc)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
+
+            Self::EFor { pat, iter, body } => {
+                let body_doc = RcDoc::hardline()
+                    .append(body.to_doc())
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("for")
+                    .append(RcDoc::space())
+                    .append(pat.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("in"))
+                    .append(RcDoc::space())
+                    .append(iter.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(body_doc)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
+
             Self::ECall { func, args } => {
                 if args.is_empty() {
                     RcDoc::text(func.0.clone()).append(RcDoc::text("()"))

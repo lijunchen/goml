@@ -149,6 +149,8 @@ pub enum TokenKind {
 
     #[token("for")]
     ForKeyword,
+    #[token("while")]
+    WhileKeyword,
 
     #[token("enum")]
     EnumKeyword,
@@ -256,6 +258,7 @@ impl std::fmt::Display for TokenKind {
             Self::TraitKeyword => "trait",
             Self::ImplKeyword => "impl",
             Self::ForKeyword => "for",
+            Self::WhileKeyword => "while",
             Self::IfKeyword => "if",
             Self::MatchKeyword => "match",
             Self::ElseKeyword => "else",
@@ -309,6 +312,7 @@ macro_rules! T {
     [trait] => { $crate::TokenKind::TraitKeyword };
     [impl] => { $crate::TokenKind::ImplKeyword };
     [for] => { $crate::TokenKind::ForKeyword };
+    [while] => { $crate::TokenKind::WhileKeyword };
     [enum] => { $crate::TokenKind::EnumKeyword };
     [struct] => { $crate::TokenKind::StructKeyword };
     [match] => { $crate::TokenKind::MatchKeyword };

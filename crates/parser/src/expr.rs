@@ -19,6 +19,8 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T!['('],
     T!['['],
     T![if],
+    T![while],
+    T![for],
     T![let],
     T![match],
 ];
@@ -143,6 +145,60 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             }
 
             p.close(m, MySyntaxKind::EXPR_IF)
+        }
+        T![while] => {
+            let m = p.open();
+            p.expect(T![while]);
+
+            let cond_marker = p.open();
+            if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected a condition expression after `while`");
+            }
+            p.close(cond_marker, MySyntaxKind::EXPR_WHILE_COND);
+
+            let body_marker = p.open();
+            if p.at(T!['{']) {
+                block(p);
+            } else {
+                p.advance_with_error("expected a block in `while` expression");
+            }
+            p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
+
+            p.close(m, MySyntaxKind::EXPR_WHILE)
+        }
+        T![for] => {
+            let m = p.open();
+            p.expect(T![for]);
+
+            let bind_marker = p.open();
+            let _ = pattern::pattern(p);
+            p.close(bind_marker, MySyntaxKind::EXPR_FOR_BIND);
+
+            if p.at(T![in]) {
+                p.expect(T![in]);
+            } else {
+                p.advance_with_error("expected `in` after pattern in `for`");
+            }
+
+            let iter_marker = p.open();
+            if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected an iterator expression in `for`");
+            }
+            p.close(iter_marker, MySyntaxKind::EXPR_FOR_IN);
+
+            let body_marker = p.open();
+            if p.at(T!['{']) {
+                block(p);
+            } else {
+                p.advance_with_error("expected a block in `for` expression");
+            }
+            p.close(body_marker, MySyntaxKind::EXPR_FOR_BLOCK);
+
+            p.close(m, MySyntaxKind::EXPR_FOR)
         }
         T![match] => {
             let m = p.open();

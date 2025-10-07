@@ -192,6 +192,15 @@ pub enum Expr {
         then_branch: Box<Expr>,
         else_branch: Box<Expr>,
     },
+    EWhile {
+        cond: Box<Expr>,
+        body: Box<Expr>,
+    },
+    EFor {
+        pat: Pat,
+        iter: Box<Expr>,
+        body: Box<Expr>,
+    },
     ECall {
         func: Lident,
         args: Vec<Expr>,

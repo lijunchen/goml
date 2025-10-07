@@ -451,9 +451,10 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let cst_e = node.expr();
-
-    cst_e.and_then(|expr| lower_expr(ctx, expr))
+    match node.expr() {
+        Some(expr) => lower_expr(ctx, expr),
+        None => Some(ast::Expr::EUnit),
+    }
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
@@ -694,6 +695,126 @@ fn lower_expr_with_args(
                 cond: Box::new(cond),
                 then_branch: Box::new(then_branch),
                 else_branch: Box::new(else_branch),
+            })
+        }
+        cst::Expr::WhileExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to while expression",
+                );
+                return None;
+            }
+
+            let cond = it
+                .cond()
+                .and_then(|cond| cond.expr())
+                .and_then(|expr| lower_expr(ctx, expr));
+
+            let cond = match cond {
+                Some(cond) => cond,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "While expression missing condition",
+                    );
+                    return None;
+                }
+            };
+
+            let body = match it.body() {
+                Some(body) => match body.block() {
+                    Some(block) => lower_block(ctx, block),
+                    None => {
+                        ctx.push_error(
+                            Some(body.syntax().text_range()),
+                            "While expression body missing block",
+                        );
+                        None
+                    }
+                },
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "While expression missing body",
+                    );
+                    None
+                }
+            }?;
+
+            Some(ast::Expr::EWhile {
+                cond: Box::new(cond),
+                body: Box::new(body),
+            })
+        }
+        cst::Expr::ForExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to for expression",
+                );
+                return None;
+            }
+
+            let pat = match it
+                .binding()
+                .and_then(|bind| bind.pattern())
+                .and_then(|pat| lower_pat(ctx, pat))
+            {
+                Some(pat) => pat,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing binding pattern",
+                    );
+                    return None;
+                }
+            };
+
+            let iter_expr = match it.iter() {
+                Some(iter) => match iter.expr() {
+                    Some(expr) => lower_expr(ctx, expr),
+                    None => {
+                        ctx.push_error(
+                            Some(iter.syntax().text_range()),
+                            "For expression iterator missing expr",
+                        );
+                        None
+                    }
+                },
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing iterator",
+                    );
+                    None
+                }
+            }?;
+
+            let body = match it.body() {
+                Some(body) => match body.block() {
+                    Some(block) => lower_block(ctx, block),
+                    None => {
+                        ctx.push_error(
+                            Some(body.syntax().text_range()),
+                            "For expression body missing block",
+                        );
+                        None
+                    }
+                },
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "For expression missing body",
+                    );
+                    None
+                }
+            }?;
+
+            Some(ast::Expr::EFor {
+                pat,
+                iter: Box::new(iter_expr),
+                body: Box::new(body),
             })
         }
         cst::Expr::StructLiteralExpr(it) => {

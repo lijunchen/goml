@@ -496,6 +496,8 @@ pub enum Expr {
     ArrayLiteralExpr(ArrayLiteralExpr),
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
+    WhileExpr(WhileExpr),
+    ForExpr(ForExpr),
     UidentExpr(UidentExpr),
     LidentExpr(LidentExpr),
     TupleExpr(TupleExpr),
@@ -516,6 +518,8 @@ impl CstNode for Expr {
                 | EXPR_STRUCT_LITERAL
                 | EXPR_ARRAY_LITERAL
                 | EXPR_MATCH
+                | EXPR_WHILE
+                | EXPR_FOR
                 | EXPR_UIDENT
                 | EXPR_LIDENT
                 | EXPR_TUPLE
@@ -533,6 +537,8 @@ impl CstNode for Expr {
             EXPR_STRUCT_LITERAL => Expr::StructLiteralExpr(StructLiteralExpr { syntax }),
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
+            EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
+            EXPR_FOR => Expr::ForExpr(ForExpr { syntax }),
             EXPR_UIDENT => Expr::UidentExpr(UidentExpr { syntax }),
             EXPR_LIDENT => Expr::LidentExpr(LidentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
@@ -555,6 +561,8 @@ impl CstNode for Expr {
             Self::ArrayLiteralExpr(it) => &it.syntax,
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
+            Self::WhileExpr(it) => &it.syntax,
+            Self::ForExpr(it) => &it.syntax,
             Self::UidentExpr(it) => &it.syntax,
             Self::LidentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
@@ -775,6 +783,130 @@ impl IfExprElse {
 
 impl_cst_node_simple!(IfExprElse, MySyntaxKind::EXPR_IF_ELSE);
 impl_display_via_syntax!(IfExprElse);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WhileExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WhileExpr {
+    pub fn cond(&self) -> Option<WhileExprCond> {
+        support::child(&self.syntax)
+    }
+
+    pub fn body(&self) -> Option<WhileExprBody> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WhileExpr, MySyntaxKind::EXPR_WHILE);
+impl_display_via_syntax!(WhileExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WhileExprCond {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WhileExprCond {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WhileExprCond, MySyntaxKind::EXPR_WHILE_COND);
+impl_display_via_syntax!(WhileExprCond);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WhileExprBody {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl WhileExprBody {
+    pub fn block(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(WhileExprBody, MySyntaxKind::EXPR_WHILE_BODY);
+impl_display_via_syntax!(WhileExprBody);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExpr {
+    pub fn binding(&self) -> Option<ForExprBind> {
+        support::child(&self.syntax)
+    }
+
+    pub fn iter(&self) -> Option<ForExprIn> {
+        support::child(&self.syntax)
+    }
+
+    pub fn body(&self) -> Option<ForExprBlock> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExpr, MySyntaxKind::EXPR_FOR);
+impl_display_via_syntax!(ForExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExprBind {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExprBind {
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExprBind, MySyntaxKind::EXPR_FOR_BIND);
+impl_display_via_syntax!(ForExprBind);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExprIn {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExprIn {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExprIn, MySyntaxKind::EXPR_FOR_IN);
+impl_display_via_syntax!(ForExprIn);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ForExprBlock {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ForExprBlock {
+    pub fn block(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ForExprBlock, MySyntaxKind::EXPR_FOR_BLOCK);
+impl_display_via_syntax!(ForExprBlock);
 
 ////////////////////////////////////////////////////////////////////////////////
 

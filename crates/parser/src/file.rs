@@ -384,7 +384,9 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
-    expr(p);
+    if p.at_any(EXPR_FIRST) {
+        expr(p);
+    }
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::BLOCK);
 }
