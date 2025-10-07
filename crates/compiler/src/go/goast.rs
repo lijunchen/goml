@@ -131,6 +131,11 @@ pub enum Expr {
         field: String,
         ty: goty::GoType,
     },
+    Index {
+        array: Box<Expr>,
+        index: Box<Expr>,
+        ty: goty::GoType,
+    },
     Cast {
         expr: Box<Expr>,
         ty: goty::GoType,
@@ -164,6 +169,7 @@ impl Expr {
             | Expr::UnaryOp { ty, .. }
             | Expr::BinaryOp { ty, .. }
             | Expr::FieldAccess { ty, .. }
+            | Expr::Index { ty, .. }
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::ArrayLiteral { ty, .. }
@@ -199,6 +205,11 @@ pub enum Stmt {
     },
     Assignment {
         name: String,
+        value: Expr,
+    },
+    IndexAssign {
+        array: Expr,
+        index: Expr,
         value: Expr,
     },
     Return {

@@ -414,6 +414,19 @@ impl Stmt {
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
                 .append(value.to_doc(env)),
+            Stmt::IndexAssign {
+                array,
+                index,
+                value,
+            } => array
+                .to_doc(env)
+                .append(RcDoc::text("["))
+                .append(index.to_doc(env))
+                .append(RcDoc::text("]"))
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc(env)),
             Stmt::Return { expr } => {
                 let return_stmt = RcDoc::text("return");
                 if let Some(expr) = expr {
@@ -609,6 +622,15 @@ impl Expr {
                 .to_doc(env)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field)),
+            Expr::Index {
+                array,
+                index,
+                ty: _,
+            } => array
+                .to_doc(env)
+                .append(RcDoc::text("["))
+                .append(index.to_doc(env))
+                .append(RcDoc::text("]")),
             Expr::Cast { expr, ty } => expr
                 .to_doc(env)
                 .append(RcDoc::text(".("))

@@ -1,0 +1,16 @@
+fn update_array(arr/0: [int; 3]) -> [int; 3] {
+  array_set(arr/0, 1, 42)
+}
+
+fn read_array(arr/1: [int; 3]) -> int {
+  array_get(arr/1, 1)
+}
+
+fn main() -> unit {
+  let arr/2 = [1, 2, 3] in
+  let updated/3 = update_array(arr/2) in
+  let value/4 = read_array(updated/3) in
+  let t1 = int_to_string(value/4) in
+  let mtmp0 = string_println(t1) in
+  ()
+}

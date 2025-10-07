@@ -1,0 +1,15 @@
+fn update_array(arr/0: [int; 3]) -> [int; 3] {
+  array_set((arr/0 : [int; 3]), 1, 42)
+}
+
+fn read_array(arr/1: [int; 3]) -> int {
+  array_get((arr/1 : [int; 3]), 1)
+}
+
+fn main() -> unit {
+  let arr/2: [int; 3] = [1, 2, 3] in
+  let updated/3: [int; 3] = update_array((arr/2 : [int; 3])) in
+  let value/4: int = read_array((updated/3 : [int; 3])) in
+  let _ : unit = string_println(int_to_string((value/4 : int))) in
+  ()
+}

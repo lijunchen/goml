@@ -114,6 +114,23 @@ fn dce_block_with_live(
                     }
                 }
             }
+            ast::Stmt::IndexAssign {
+                array,
+                index,
+                value,
+            } => {
+                let array = dce_expr(array);
+                let index = dce_expr(index);
+                let value = dce_expr(value);
+                add_uses_expr(&mut live, &array);
+                add_uses_expr(&mut live, &index);
+                add_uses_expr(&mut live, &value);
+                out.push(ast::Stmt::IndexAssign {
+                    array,
+                    index,
+                    value,
+                });
+            }
             ast::Stmt::Return { expr } => {
                 let expr = expr.map(dce_expr);
                 if let Some(e) = &expr {
@@ -228,6 +245,11 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             field,
             ty,
         },
+        ast::Expr::Index { array, index, ty } => ast::Expr::Index {
+            array: Box::new(dce_expr(*array)),
+            index: Box::new(dce_expr(*index)),
+            ty,
+        },
         ast::Expr::Cast { expr, ty } => ast::Expr::Cast {
             expr: Box::new(dce_expr(*expr)),
             ty,
@@ -329,6 +351,10 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         ast::Expr::FieldAccess { obj, .. } => {
             s.extend(vars_used_in_expr(obj));
         }
+        ast::Expr::Index { array, index, .. } => {
+            s.extend(vars_used_in_expr(array));
+            s.extend(vars_used_in_expr(index));
+        }
         ast::Expr::UnaryOp { expr, .. } => {
             s.extend(vars_used_in_expr(expr));
         }
@@ -362,6 +388,15 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                         }
                     }
                     ast::Stmt::Assignment { value, .. } => {
+                        used.extend(vars_used_in_expr(value));
+                    }
+                    ast::Stmt::IndexAssign {
+                        array,
+                        index,
+                        value,
+                    } => {
+                        used.extend(vars_used_in_expr(array));
+                        used.extend(vars_used_in_expr(index));
                         used.extend(vars_used_in_expr(value));
                     }
                     ast::Stmt::Return { expr } => {
@@ -441,6 +476,15 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Assignment { value, .. } => {
                 used.extend(vars_used_in_expr(value));
             }
+            ast::Stmt::IndexAssign {
+                array,
+                index,
+                value,
+            } => {
+                used.extend(vars_used_in_expr(array));
+                used.extend(vars_used_in_expr(index));
+                used.extend(vars_used_in_expr(value));
+            }
             ast::Stmt::Return { expr } => {
                 if let Some(e) = expr {
                     used.extend(vars_used_in_expr(e));
@@ -499,6 +543,9 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
                     .unwrap_or(false)
         }
         ast::Expr::FieldAccess { obj, .. } => expr_has_side_effects(obj),
+        ast::Expr::Index { array, index, .. } => {
+            expr_has_side_effects(array) || expr_has_side_effects(index)
+        }
         ast::Expr::UnaryOp { expr, .. } => expr_has_side_effects(expr),
         ast::Expr::BinaryOp { lhs, rhs, .. } => {
             expr_has_side_effects(lhs) || expr_has_side_effects(rhs)
@@ -525,6 +572,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
             value.as_ref().map(expr_has_side_effects).unwrap_or(false)
         }
         ast::Stmt::Assignment { value, .. } => expr_has_side_effects(value),
+        ast::Stmt::IndexAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
@@ -633,6 +681,11 @@ fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls),
+        ast::Stmt::IndexAssign { array, index, value } => {
+            collect_called_in_expr(array, calls);
+            collect_called_in_expr(index, calls);
+            collect_called_in_expr(value, calls);
+        }
         ast::Stmt::Return { expr } => {
             if let Some(e) = expr {
                 collect_called_in_expr(e, calls);
@@ -685,6 +738,10 @@ fn collect_called_in_expr(expr: &ast::Expr, calls: &mut HashSet<String>) {
             }
         }
         ast::Expr::FieldAccess { obj, .. } => collect_called_in_expr(obj, calls),
+        ast::Expr::Index { array, index, .. } => {
+            collect_called_in_expr(array, calls);
+            collect_called_in_expr(index, calls);
+        }
         ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
@@ -805,6 +862,11 @@ fn collect_packages_in_stmt(
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_packages_in_expr(value, imports, used),
+        ast::Stmt::IndexAssign { array, index, value } => {
+            collect_packages_in_expr(array, imports, used);
+            collect_packages_in_expr(index, imports, used);
+            collect_packages_in_expr(value, imports, used);
+        }
         ast::Stmt::Return { expr } => {
             if let Some(e) = expr {
                 collect_packages_in_expr(e, imports, used);
@@ -866,6 +928,10 @@ fn collect_packages_in_expr(
         }
         ast::Expr::FieldAccess { obj, .. } => {
             collect_packages_in_expr(obj, imports, used);
+        }
+        ast::Expr::Index { array, index, .. } => {
+            collect_packages_in_expr(array, imports, used);
+            collect_packages_in_expr(index, imports, used);
         }
         ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
         ast::Expr::StructLiteral { fields, .. } => {

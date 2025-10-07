@@ -103,6 +103,28 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TString], tast::Ty::TUnit),
     );
 
+    let array_elem_param = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    let array_ty = tast::Ty::TArray {
+        len: tast::ARRAY_WILDCARD_LEN,
+        elem: Box::new(array_elem_param.clone()),
+    };
+    funcs.insert(
+        "array_get".to_string(),
+        make_fn_ty(
+            vec![array_ty.clone(), tast::Ty::TInt],
+            array_elem_param.clone(),
+        ),
+    );
+    funcs.insert(
+        "array_set".to_string(),
+        make_fn_ty(
+            vec![array_ty.clone(), tast::Ty::TInt, array_elem_param.clone()],
+            array_ty,
+        ),
+    );
+
     funcs
 }
 
@@ -146,6 +168,7 @@ pub struct Env {
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
+    pub array_types: IndexSet<tast::Ty>,
     pub diagnostics: Diagnostics,
 }
 
@@ -168,6 +191,7 @@ impl Env {
             trait_impls: IndexMap::new(),
             constraints: Vec::new(),
             tuple_types: IndexSet::new(),
+            array_types: IndexSet::new(),
             diagnostics: Diagnostics::new(),
         }
     }
@@ -329,22 +353,24 @@ impl Env {
     }
 
     pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
-        struct TupleTypeCollector {
-            seen: IndexSet<tast::Ty>,
+        struct TypeCollector {
+            tuples: IndexSet<tast::Ty>,
+            arrays: IndexSet<tast::Ty>,
         }
 
-        impl TupleTypeCollector {
+        impl TypeCollector {
             fn new() -> Self {
                 Self {
-                    seen: IndexSet::new(),
+                    tuples: IndexSet::new(),
+                    arrays: IndexSet::new(),
                 }
             }
 
-            fn finish(mut self, file: &core::File) -> IndexSet<tast::Ty> {
+            fn finish(mut self, file: &core::File) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
                 for item in &file.toplevels {
                     self.collect_fn(item);
                 }
-                self.seen
+                (self.tuples, self.arrays)
             }
 
             fn collect_fn(&mut self, item: &core::Fn) {
@@ -438,13 +464,16 @@ impl Env {
 
             fn collect_type(&mut self, ty: &tast::Ty) {
                 match ty {
-                    tast::Ty::TTuple { .. } => {
-                        if self.seen.insert(ty.clone())
-                            && let tast::Ty::TTuple { typs } = ty
-                        {
+                    tast::Ty::TTuple { typs } => {
+                        if self.tuples.insert(ty.clone()) {
                             for inner in typs {
                                 self.collect_type(inner);
                             }
+                        }
+                    }
+                    tast::Ty::TArray { elem, .. } => {
+                        if self.arrays.insert(ty.clone()) {
+                            self.collect_type(elem);
                         }
                     }
                     tast::Ty::TCon { .. } => {}
@@ -465,8 +494,9 @@ impl Env {
             }
         }
 
-        let seen = TupleTypeCollector::new().finish(file);
-        self.tuple_types = seen;
+        let (tuples, arrays) = TypeCollector::new().finish(file);
+        self.tuple_types = tuples;
+        self.array_types = arrays;
     }
 }
 
