@@ -1675,11 +1675,11 @@ impl TypeInference {
                         },
                     ));
 
-                    if func.0 == "array_set" {
-                        if let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty()) {
-                            env.constraints
-                                .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
-                        }
+                    if func.0 == "array_set"
+                        && let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty())
+                    {
+                        env.constraints
+                            .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
                     }
 
                     tast::Expr::ECall {
@@ -1777,26 +1777,25 @@ impl TypeInference {
 
                 if let Some(trait_name) =
                     env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+                    && !binary_supports_builtin(*op, &lhs_ty, &rhs_ty)
                 {
-                    if !binary_supports_builtin(*op, &lhs_ty, &rhs_ty) {
-                        let ret_ty = self.fresh_ty_var();
-                        let call_site_type = tast::Ty::TFunc {
-                            params: vec![lhs_ty.clone(), rhs_ty.clone()],
-                            ret_ty: Box::new(ret_ty.clone()),
-                        };
-                        env.constraints.push(Constraint::Overloaded {
-                            op: ast::Lident(method_name.to_string()),
-                            trait_name: trait_name.clone(),
-                            call_site_type,
-                        });
-                        return tast::Expr::EBinary {
-                            op: *op,
-                            lhs: Box::new(lhs_tast),
-                            rhs: Box::new(rhs_tast),
-                            ty: ret_ty,
-                            resolution: tast::BinaryResolution::Overloaded { trait_name },
-                        };
-                    }
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_type = tast::Ty::TFunc {
+                        params: vec![lhs_ty.clone(), rhs_ty.clone()],
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    env.constraints.push(Constraint::Overloaded {
+                        op: ast::Lident(method_name.to_string()),
+                        trait_name: trait_name.clone(),
+                        call_site_type,
+                    });
+                    return tast::Expr::EBinary {
+                        op: *op,
+                        lhs: Box::new(lhs_tast),
+                        rhs: Box::new(rhs_tast),
+                        ty: ret_ty,
+                        resolution: tast::BinaryResolution::Overloaded { trait_name },
+                    };
                 }
 
                 let ret_ty = match op {

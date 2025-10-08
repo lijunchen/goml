@@ -606,7 +606,7 @@ impl Expr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
-            Expr::UnaryOp { op, expr, ty: _ } => op.to_doc().append(expr.to_doc(env)),
+            Expr::UnaryOp { op, expr, ty: _ } => op.doc().append(expr.to_doc(env)),
             Expr::BinaryOp {
                 op,
                 lhs,
@@ -615,7 +615,7 @@ impl Expr {
             } => lhs
                 .to_doc(env)
                 .append(RcDoc::space())
-                .append(op.to_doc())
+                .append(op.doc())
                 .append(RcDoc::space())
                 .append(rhs.to_doc(env)),
             Expr::FieldAccess { obj, field, ty: _ } => obj
@@ -720,7 +720,7 @@ impl Expr {
 }
 
 impl UnaryOp {
-    fn to_doc(&self) -> RcDoc<'_, ()> {
+    fn doc(&self) -> RcDoc<'_, ()> {
         match self {
             UnaryOp::Neg => RcDoc::text("-"),
             UnaryOp::Not => RcDoc::text("!"),
@@ -729,7 +729,7 @@ impl UnaryOp {
 }
 
 impl BinaryOp {
-    fn to_doc(&self) -> RcDoc<'_, ()> {
+    fn doc(&self) -> RcDoc<'_, ()> {
         match self {
             BinaryOp::Add => RcDoc::text("+"),
             BinaryOp::Sub => RcDoc::text("-"),

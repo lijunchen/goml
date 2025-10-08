@@ -681,7 +681,11 @@ fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls),
-        ast::Stmt::IndexAssign { array, index, value } => {
+        ast::Stmt::IndexAssign {
+            array,
+            index,
+            value,
+        } => {
             collect_called_in_expr(array, calls);
             collect_called_in_expr(index, calls);
             collect_called_in_expr(value, calls);
@@ -862,7 +866,11 @@ fn collect_packages_in_stmt(
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_packages_in_expr(value, imports, used),
-        ast::Stmt::IndexAssign { array, index, value } => {
+        ast::Stmt::IndexAssign {
+            array,
+            index,
+            value,
+        } => {
             collect_packages_in_expr(array, imports, used);
             collect_packages_in_expr(index, imports, used);
             collect_packages_in_expr(value, imports, used);
@@ -917,10 +925,10 @@ fn collect_packages_in_expr(
 ) {
     match expr {
         ast::Expr::Call { func, args, .. } => {
-            if let Some((pkg, _)) = func.split_once('.') {
-                if imports.contains(pkg) {
-                    used.insert(pkg.to_string());
-                }
+            if let Some((pkg, _)) = func.split_once('.')
+                && imports.contains(pkg)
+            {
+                used.insert(pkg.to_string());
             }
             for arg in args {
                 collect_packages_in_expr(arg, imports, used);

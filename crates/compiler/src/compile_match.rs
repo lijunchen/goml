@@ -959,7 +959,7 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 tast::UnaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = arg.get_ty();
-                    let func_name = mangle_impl_name(&trait_name, &self_ty, method);
+                    let func_name = mangle_impl_name(trait_name, &self_ty, method);
                     core::Expr::ECall {
                         func: func_name,
                         args: vec![arg],
@@ -993,7 +993,7 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 tast::BinaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = args[0].get_ty();
-                    let func_name = mangle_impl_name(&trait_name, &self_ty, method);
+                    let func_name = mangle_impl_name(trait_name, &self_ty, method);
                     core::Expr::ECall {
                         func: func_name,
                         args,

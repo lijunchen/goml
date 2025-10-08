@@ -583,7 +583,7 @@ fn lower_expr_with_args(
                     args,
                 });
             }
-            if let Some(callee) = support::child::<cst::Expr>(&it.syntax()) {
+            if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 args.extend(trailing_args);
                 return lower_expr_with_args(ctx, callee, args);
             }
@@ -1113,10 +1113,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     };
                     let fname = fname_token.to_string();
                     let pat = match field.pattern() {
-                        Some(pattern) => match lower_pat(ctx, pattern) {
-                            Some(pat) => pat,
-                            None => return None,
-                        },
+                        Some(pattern) => lower_pat(ctx, pattern)?,
                         None => {
                             ctx.push_error(
                                 Some(field.syntax().text_range()),
