@@ -111,15 +111,11 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
             })
         }
         "Fn" => {
-            let mut to_pos = None;
-            for idx in start + 1..end {
-                if tokens[idx] == "to" {
-                    to_pos = Some(idx);
-                    break;
-                }
-            }
-            let to_pos =
-                to_pos.ok_or_else(|| "function encoding missing to delimiter".to_string())?;
+            let to_pos = tokens[start + 1..end]
+                .iter()
+                .position(|token| *token == "to")
+                .map(|offset| start + 1 + offset)
+                .ok_or_else(|| "function encoding missing to delimiter".to_string())?;
             let params = decode_params(tokens, start + 1, to_pos)?;
             let ret = decode_range(tokens, to_pos + 1, end)?;
             Ok(tast::Ty::TFunc {

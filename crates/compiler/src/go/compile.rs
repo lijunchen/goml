@@ -158,7 +158,7 @@ fn go_package_alias(package_path: &str) -> String {
     if alias.is_empty() {
         return "pkg".to_string();
     }
-    if alias.chars().next().map_or(false, |c| c.is_ascii_digit()) {
+    if alias.chars().next().is_some_and(|c| c.is_ascii_digit()) {
         alias.insert(0, '_');
     }
     alias

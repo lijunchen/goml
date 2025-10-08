@@ -32,7 +32,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
     fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
         match (constructor, new_ty) {
             (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
-                let ident = Uident::new(&name);
+                let ident = Uident::new(name);
                 Constructor::Enum(tast::EnumConstructor {
                     type_name: ident,
                     variant: enum_constructor.variant.clone(),
@@ -48,7 +48,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 })
             }
             (Constructor::Struct(_), Ty::TCon { name }) => {
-                let ident = Uident::new(&name);
+                let ident = Uident::new(name);
                 Constructor::Struct(tast::StructConstructor { type_name: ident })
             }
             (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
