@@ -46,7 +46,7 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
 
 fn go_bin() -> PathBuf {
     if std::env::consts::OS == "linux" {
-        let p = PathBuf::from("/usr/lib/go-1.25/bin/go");
+        let p = PathBuf::from("/usr/lib/go-1.21/bin/go");
         if p.exists() { p } else { PathBuf::from("go") }
     } else {
         PathBuf::from("go")
