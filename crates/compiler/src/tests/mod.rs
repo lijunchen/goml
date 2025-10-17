@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use anyhow::Context;
-use anyhow::bail;
+use anyhow::{anyhow, bail};
 use diagnostics::Diagnostics;
 use parser::{debug_tree, format_parser_diagnostics};
 
@@ -44,6 +44,149 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
     run_typer_error_cases(&diagnostics_dir)
 }
 
+fn execute_go_source(source: &str) -> anyhow::Result<String> {
+    go_executor()?.execute(source)
+}
+
+fn go_executor() -> anyhow::Result<&'static GoExecutor> {
+    static EXECUTOR: OnceLock<GoExecutor> = OnceLock::new();
+    if let Some(executor) = EXECUTOR.get() {
+        return Ok(executor);
+    }
+
+    let executor = initialize_go_executor()?;
+    let _ = EXECUTOR.set(executor);
+    Ok(EXECUTOR.get().expect("go executor must be initialized"))
+}
+
+fn initialize_go_executor() -> anyhow::Result<GoExecutor> {
+    let requested = std::env::var("GOML_GO_EXECUTOR");
+    let requested_value = requested.as_deref().unwrap_or("yaegi");
+    let allow_fallback = requested.is_err();
+
+    match requested_value {
+        "yaegi" => match YaegiExecutor::new() {
+            Ok(executor) => Ok(GoExecutor::Yaegi(executor)),
+            Err(err) if allow_fallback => {
+                eprintln!(
+                    "Falling back to `go run` executor because Yaegi is unavailable: {err:?}"
+                );
+                let fallback = GoRunExecutor::new()?;
+                Ok(GoExecutor::GoRun(fallback))
+            }
+            Err(err) => Err(err),
+        },
+        "go" => {
+            let executor = GoRunExecutor::new()?;
+            Ok(GoExecutor::GoRun(executor))
+        }
+        other => Err(anyhow!("Unknown GOML_GO_EXECUTOR value `{}`", other)),
+    }
+}
+
+enum GoExecutor {
+    GoRun(GoRunExecutor),
+    Yaegi(YaegiExecutor),
+}
+
+impl GoExecutor {
+    fn execute(&self, source: &str) -> anyhow::Result<String> {
+        match self {
+            GoExecutor::GoRun(executor) => executor.execute(source),
+            GoExecutor::Yaegi(executor) => executor.execute(source),
+        }
+    }
+}
+
+struct GoRunExecutor {
+    go_bin: PathBuf,
+}
+
+impl GoRunExecutor {
+    fn new() -> anyhow::Result<Self> {
+        Ok(Self { go_bin: go_bin() })
+    }
+
+    fn execute(&self, source: &str) -> anyhow::Result<String> {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+
+        let (dir, _) = prepare_go_execution(source)?;
+        let mut child = Command::new(&self.go_bin)
+            .arg("run")
+            .arg("main.go")
+            .current_dir(dir.path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .with_context(|| format!("Failed to spawn go binary `{}`", self.go_bin.display()))?;
+        if let Some(stdin) = child.stdin.as_mut() {
+            stdin
+                .write_all(b"")
+                .context("Failed to write to go stdin")?;
+        }
+        let output = child
+            .wait_with_output()
+            .context("Failed to read go run output")?;
+        Ok(format_execution_output(dir.path(), output))
+    }
+}
+
+struct YaegiExecutor {
+    yaegi_bin: PathBuf,
+}
+
+impl YaegiExecutor {
+    fn new() -> anyhow::Result<Self> {
+        use std::process::{Command, Stdio};
+
+        let yaegi_bin = yaegi_bin();
+        Command::new(&yaegi_bin)
+            .arg("-help")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .with_context(|| {
+                format!(
+                    "Failed to spawn Yaegi interpreter `{}`",
+                    yaegi_bin.display()
+                )
+            })?;
+        Ok(Self { yaegi_bin })
+    }
+
+    fn execute(&self, source: &str) -> anyhow::Result<String> {
+        use std::io::Write;
+        use std::process::{Command, Stdio};
+
+        let (dir, _) = prepare_go_execution(source)?;
+        let mut child = Command::new(&self.yaegi_bin)
+            .arg("run")
+            .arg("main.go")
+            .current_dir(dir.path())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .with_context(|| {
+                format!(
+                    "Failed to spawn Yaegi interpreter `{}`",
+                    self.yaegi_bin.display()
+                )
+            })?;
+        if let Some(stdin) = child.stdin.as_mut() {
+            stdin
+                .write_all(b"")
+                .context("Failed to write to Yaegi stdin")?;
+        }
+        let output = child
+            .wait_with_output()
+            .context("Failed to read Yaegi output")?;
+        Ok(format_execution_output(dir.path(), output))
+    }
+}
+
 fn go_bin() -> PathBuf {
     if std::env::consts::OS == "linux" {
         let p = PathBuf::from("/usr/lib/go-1.25/bin/go");
@@ -53,35 +196,31 @@ fn go_bin() -> PathBuf {
     }
 }
 
-fn execute_go_source(source: &str) -> anyhow::Result<String> {
-    use std::io::Write;
-    use std::process::{Command, Stdio};
+fn yaegi_bin() -> PathBuf {
+    std::env::var_os("YAEGI_BIN")
+        .map(PathBuf::from)
+        .unwrap_or_else(|| PathBuf::from("yaegi"))
+}
 
+fn prepare_go_execution(source: &str) -> anyhow::Result<(tempfile::TempDir, PathBuf)> {
     let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
-
     let main_go_file = dir.path().join("main.go");
     std::fs::write(&main_go_file, source)
         .with_context(|| format!("Failed to write go source to {}", main_go_file.display()))?;
+    Ok((dir, main_go_file))
+}
 
-    let go = go_bin();
-    let mut child = Command::new(&go)
-        .arg("run")
-        .arg("main.go")
-        .current_dir(dir.path())
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
-        .spawn()
-        .unwrap();
-    let stdin = child.stdin.as_mut().unwrap();
-    stdin.write_all(b"").unwrap();
-    let output = child.wait_with_output()?;
-    let ret = if !output.status.success() {
-        String::from_utf8_lossy(&output.stderr).to_string()
+fn format_execution_output(dir: &Path, output: std::process::Output) -> String {
+    let raw = if output.status.success() {
+        output.stdout
     } else {
-        String::from_utf8_lossy(&output.stdout).to_string()
+        output.stderr
     };
-    Ok(ret.replace(dir.path().to_str().unwrap(), "${WORKDIR}"))
+    let text = String::from_utf8_lossy(&raw).to_string();
+    match dir.to_str() {
+        Some(path) => text.replace(path, "${WORKDIR}"),
+        None => text,
+    }
 }
 
 fn run_test_cases(dir: &Path) -> anyhow::Result<()> {

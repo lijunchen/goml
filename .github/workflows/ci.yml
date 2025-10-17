@@ -24,6 +24,8 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.25.1'
+      - name: Install Yaegi interpreter
+        run: go install github.com/traefik/yaegi/cmd/yaegi@latest
       - name: Cargo Check
         run: cargo check
       - name: Cargo Test
