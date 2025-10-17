@@ -2,7 +2,7 @@ use lexer::{T, TokenKind};
 
 use crate::{
     expr::{EXPR_FIRST, expr},
-    parser::Parser,
+    parser::{MarkerClosed, Parser},
     syntax::MySyntaxKind,
 };
 
@@ -313,55 +313,110 @@ fn param(p: &mut Parser) {
     p.close(m, MySyntaxKind::PARAM);
 }
 
-fn type_expr(p: &mut Parser) {
-    let m = p.open();
-    if p.at(T![Unit]) {
-        p.advance();
-        p.close(m, MySyntaxKind::TYPE_UNIT);
-    } else if p.at(T![Bool]) {
-        p.advance();
-        p.close(m, MySyntaxKind::TYPE_BOOL);
-    } else if p.at(T![Int]) {
-        p.advance();
-        p.close(m, MySyntaxKind::TYPE_INT);
-    } else if p.at(T![String]) {
-        p.advance();
-        p.close(m, MySyntaxKind::TYPE_STRING);
-    } else if p.at(T!['(']) {
-        type_list(p);
-        p.close(m, MySyntaxKind::TYPE_TUPLE);
-    } else if p.at(T!['[']) {
-        p.expect(T!['[']);
-        if p.at_any(TYPE_FIRST) {
-            type_expr(p);
-        } else {
-            p.advance_with_error("expected array element type");
+pub(crate) fn type_expr(p: &mut Parser) {
+    if type_expr_bp(p, 0).is_none() {
+        if !p.eof() {
+            p.advance_with_error("expected a type");
         }
-        if p.at(T![;]) {
-            p.expect(T![;]);
-        } else {
-            p.advance_with_error("expected ';' after array element type");
-        }
-        if p.at(T![int]) {
-            p.advance();
-        } else {
-            p.advance_with_error("expected array length");
-        }
-        if p.at(T![']']) {
-            p.expect(T![']']);
-        } else {
-            p.advance_with_error("expected closing ']' for array type");
-        }
-        p.close(m, MySyntaxKind::TYPE_ARRAY);
-    } else if p.at(T![uident]) {
-        p.advance();
-        if p.at(T!['[']) {
-            type_param_list(p);
-        }
-        p.close(m, MySyntaxKind::TYPE_TAPP);
-    } else {
-        p.advance_with_error("expected a type");
     }
+}
+
+fn type_expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
+    let mut lhs = type_atom(p)?;
+
+    loop {
+        if p.eof() {
+            break;
+        }
+
+        let op = p.peek();
+        if let Some((l_bp, r_bp)) = type_infix_binding_power(op) {
+            if l_bp < min_bp {
+                break;
+            }
+            let m = lhs.precede(p);
+            p.expect(T![->]);
+            if type_expr_bp(p, r_bp).is_none() {
+                p.error("expected a return type");
+            }
+            lhs = m.completed(p, MySyntaxKind::TYPE_FUNC);
+            continue;
+        }
+        break;
+    }
+
+    Some(lhs)
+}
+
+fn type_infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
+    match op {
+        T![->] => Some((5, 4)),
+        _ => None,
+    }
+}
+
+fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
+    let m = p.open();
+    let result = match p.peek() {
+        T![Unit] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_UNIT)
+        }
+        T![Bool] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_BOOL)
+        }
+        T![Int] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_INT)
+        }
+        T![String] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_STRING)
+        }
+        T!['('] => {
+            type_list(p);
+            p.close(m, MySyntaxKind::TYPE_TUPLE)
+        }
+        T!['['] => {
+            p.expect(T!['[']);
+            if p.at_any(TYPE_FIRST) {
+                if type_expr_bp(p, 0).is_none() {
+                    p.error("expected array element type");
+                }
+            } else {
+                p.advance_with_error("expected array element type");
+            }
+            if p.at(T![;]) {
+                p.expect(T![;]);
+            } else {
+                p.advance_with_error("expected ';' after array element type");
+            }
+            if p.at(T![int]) {
+                p.advance();
+            } else {
+                p.advance_with_error("expected array length");
+            }
+            if p.at(T![']']) {
+                p.expect(T![']']);
+            } else {
+                p.advance_with_error("expected closing ']' for array type");
+            }
+            p.close(m, MySyntaxKind::TYPE_ARRAY)
+        }
+        T![uident] => {
+            p.advance();
+            if p.at(T!['[']) {
+                type_param_list(p);
+            }
+            p.close(m, MySyntaxKind::TYPE_TAPP)
+        }
+        _ => {
+            p.events.pop();
+            return None;
+        }
+    };
+    Some(result)
 }
 
 fn type_param_list(p: &mut Parser) {

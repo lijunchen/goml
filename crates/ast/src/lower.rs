@@ -328,7 +328,36 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
             })
         }
 
-        cst::Type::FuncTy(..) => todo!(),
+        cst::Type::FuncTy(it) => {
+            let mut types = it.types();
+            let Some(param_node) = types.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Function type missing parameter type",
+                );
+                return None;
+            };
+            let Some(ret_node) = types.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Function type missing return type",
+                );
+                return None;
+            };
+
+            let param_ty = lower_ty(ctx, param_node)?;
+            let ret_ty = lower_ty(ctx, ret_node)?;
+
+            let params = match param_ty {
+                ast::Ty::TTuple { typs } => typs,
+                other => vec![other],
+            };
+
+            Some(ast::Ty::TFunc {
+                params,
+                ret_ty: Box::new(ret_ty),
+            })
+        }
     }
 }
 
@@ -469,6 +498,30 @@ fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast
         }
     };
     Some((ast::Lident(name), ty))
+}
+
+fn lower_closure_param(ctx: &mut LowerCtx, node: cst::ClosureParam) -> Option<ast::ClosureParam> {
+    let pat_node = match node.pat() {
+        Some(pat) => pat,
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Closure parameter missing pattern",
+            );
+            return None;
+        }
+    };
+    let pat = match lower_pat(ctx, pat_node) {
+        Some(pat) => pat,
+        None => return None,
+    };
+
+    let ty = match node.ty() {
+        Some(ty_node) => Some(lower_ty(ctx, ty_node)?),
+        None => None,
+    };
+
+    Some(ast::ClosureParam { pat, ty })
 }
 
 fn lower_expr(ctx: &mut LowerCtx, node: cst::Expr) -> Option<ast::Expr> {
@@ -972,6 +1025,51 @@ fn lower_expr_with_args(
                     None
                 }
             }
+        }
+        cst::Expr::ClosureExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to closure expression",
+                );
+                return None;
+            }
+
+            let params = match it.params() {
+                Some(list) => list
+                    .params()
+                    .flat_map(|param| lower_closure_param(ctx, param))
+                    .collect(),
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Closure missing parameter list",
+                    );
+                    Vec::new()
+                }
+            };
+
+            let Some(body_node) = it.body() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Closure missing body");
+                return None;
+            };
+
+            let body = if let Some(block) = body_node.block() {
+                lower_block(ctx, block)?
+            } else if let Some(expr) = body_node.expr() {
+                lower_expr(ctx, expr)?
+            } else {
+                ctx.push_error(
+                    Some(body_node.syntax().text_range()),
+                    "Closure body missing expr",
+                );
+                return None;
+            };
+
+            Some(ast::Expr::EClosure {
+                params,
+                body: Box::new(body),
+            })
         }
     }
 }

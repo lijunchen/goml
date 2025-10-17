@@ -1,5 +1,5 @@
 use crate::{
-    file::block,
+    file::{block, type_expr},
     parser::{MarkerClosed, Parser},
     pattern,
     syntax::MySyntaxKind,
@@ -21,6 +21,8 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![if],
     T![let],
     T![match],
+    T![|],
+    T![||],
 ];
 
 fn atom(p: &mut Parser) -> Option<MarkerClosed> {
@@ -153,6 +155,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             }
             p.close(m, MySyntaxKind::EXPR_MATCH)
         }
+        T![|] | T![||] => closure_expr(p),
         _ => {
             dbg!(&p.peek());
             dbg!(&EXPR_FIRST);
@@ -162,6 +165,64 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
     };
     Some(result)
+}
+
+fn closure_expr(p: &mut Parser) -> MarkerClosed {
+    let m = p.open();
+    closure_param_list(p);
+    closure_body(p);
+    p.close(m, MySyntaxKind::EXPR_CLOSURE)
+}
+
+fn closure_param_list(p: &mut Parser) {
+    let m = p.open();
+    if p.at(T![||]) {
+        p.expect(T![||]);
+        p.close(m, MySyntaxKind::CLOSURE_PARAM_LIST);
+        return;
+    }
+
+    p.expect(T![|]);
+    while !p.at(T![|]) && !p.eof() {
+        closure_param(p);
+        if p.at(T![,]) {
+            p.expect(T![,]);
+        } else if p.at(T![|]) {
+            break;
+        } else {
+            p.advance_with_error("expected `,` or `|` after closure parameter");
+        }
+    }
+    p.expect(T![|]);
+    p.close(m, MySyntaxKind::CLOSURE_PARAM_LIST);
+}
+
+fn closure_param(p: &mut Parser) {
+    let m = p.open();
+    if pattern::pattern(p).is_none() {
+        if !p.at(T![|]) && !p.eof() {
+            p.advance_with_error("expected a pattern in closure parameter");
+        }
+        p.close(m, MySyntaxKind::CLOSURE_PARAM);
+        return;
+    }
+    if p.at(T![:]) {
+        p.expect(T![:]);
+        type_expr(p);
+    }
+    p.close(m, MySyntaxKind::CLOSURE_PARAM);
+}
+
+fn closure_body(p: &mut Parser) {
+    let m = p.open();
+    if p.at(T!['{']) {
+        block(p);
+    } else if p.at_any(EXPR_FIRST) {
+        expr(p);
+    } else {
+        p.advance_with_error("expected a closure body");
+    }
+    p.close(m, MySyntaxKind::EXPR_CLOSURE_BODY);
 }
 
 pub fn match_arm_list(p: &mut Parser) {
