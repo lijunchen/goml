@@ -1,6 +1,8 @@
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
+use std::process::{Command, Stdio};
+
 use anyhow::Context;
 use anyhow::bail;
 use diagnostics::Diagnostics;
@@ -44,43 +46,53 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
     run_typer_error_cases(&diagnostics_dir)
 }
 
-fn go_bin() -> PathBuf {
-    if std::env::consts::OS == "linux" {
-        let p = PathBuf::from("/usr/lib/go-1.21/bin/go");
-        if p.exists() { p } else { PathBuf::from("go") }
-    } else {
-        PathBuf::from("go")
-    }
-}
-
-fn execute_go_source(source: &str) -> anyhow::Result<String> {
-    use std::io::Write;
-    use std::process::{Command, Stdio};
-
-    let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
-
-    let main_go_file = dir.path().join("main.go");
-    std::fs::write(&main_go_file, source)
-        .with_context(|| format!("Failed to write go source to {}", main_go_file.display()))?;
-
-    let go = go_bin();
-    let mut child = Command::new(&go)
+fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
+    let child = Command::new("go")
         .arg("run")
-        .arg("main.go")
-        .current_dir(dir.path())
+        .arg(file)
+        .current_dir(dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
-    let stdin = child.stdin.as_mut().unwrap();
-    stdin.write_all(b"").unwrap();
     let output = child.wait_with_output()?;
     let ret = if !output.status.success() {
         String::from_utf8_lossy(&output.stderr).to_string()
     } else {
         String::from_utf8_lossy(&output.stdout).to_string()
     };
+    Ok(ret.replace(dir.to_str().unwrap(), "${WORKDIR}"))
+}
+
+fn execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<String> {
+    let child = Command::new("yaegi")
+        .arg("run")
+        .arg(file)
+        .current_dir(dir)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let output = child.wait_with_output()?;
+    let ret = if !output.status.success() {
+        return execute_with_go_run(dir, file);
+    } else {
+        String::from_utf8_lossy(&output.stdout).to_string()
+    };
+    Ok(ret.replace(dir.to_str().unwrap(), "${WORKDIR}"))
+}
+
+fn execute_go_source(source: &str) -> anyhow::Result<String> {
+    let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
+
+    let main_go_file = dir.path().join("main.go");
+    std::fs::write(&main_go_file, source)
+        .with_context(|| format!("Failed to write go source to {}", main_go_file.display()))?;
+
+    let ret = execute_with_yaegi(dir.path(), &main_go_file)?;
+
     Ok(ret.replace(dir.path().to_str().unwrap(), "${WORKDIR}"))
 }
 
