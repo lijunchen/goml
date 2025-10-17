@@ -10,7 +10,7 @@ use crate::{
     anf, compile_match,
     env::Env,
     go::{self, goast},
-    mono, tast, typer,
+    lambda_lift, mono, tast, typer,
 };
 
 #[derive(Debug)]
@@ -22,6 +22,7 @@ pub struct Compilation {
     pub typer_env: Env,
     pub env: Env,
     pub core: crate::core::File,
+    pub lambda: crate::core::File,
     pub mono: crate::core::File,
     pub anf: anf::File,
     pub go: goast::File,
@@ -81,7 +82,8 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     let typer_env = env.clone();
 
     let core = compile_match::compile_file(&env, &tast);
-    let mono = mono::mono(&mut env, core.clone());
+    let lifted_core = lambda_lift::lambda_lift(&mut env, core.clone());
+    let mono = mono::mono(&mut env, lifted_core.clone());
     let anf = anf::anf_file(&env, mono.clone());
     let go = go::compile::go_file(&env, anf.clone());
 
@@ -93,6 +95,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         typer_env,
         env,
         core,
+        lambda: lifted_core,
         mono,
         anf,
         go,

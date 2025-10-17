@@ -273,6 +273,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                 ty: subst_ty(&ty, s),
             },
+            core::Expr::EClosure { .. } => {
+                panic!("lambda lift should have removed closures before monomorphization");
+            }
             core::Expr::ELet {
                 name,
                 value,
@@ -624,6 +627,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     .collect(),
                 ty: m.collapse_type_apps(&ty),
             },
+            core::Expr::EClosure { .. } => {
+                panic!("lambda lift should have removed closures before monomorphization");
+            }
             core::Expr::ELet {
                 name,
                 value,

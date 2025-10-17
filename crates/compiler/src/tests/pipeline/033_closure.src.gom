@@ -1,0 +1,80 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_mul(x int, y int) int {
+    return x * y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type ClosureEnv0 struct {
+    base_0_0 int
+}
+
+type ClosureEnv1 struct {}
+
+type ClosureEnv2 struct {
+    result_3_0 int
+}
+
+type ClosureEnv3 struct {}
+
+func main0() struct{} {
+    var ret12 struct{}
+    var base__0 int = 5
+    var add_base__2 ClosureEnv0 = ClosureEnv0{
+        base_0_0: base__0,
+    }
+    var result__3 int = __closure_apply2(add_base__2, 7)
+    var printer__7 ClosureEnv1 = ClosureEnv1{}
+    __closure_apply4(printer__7, "result: ", result__3)
+    var no_capture__11 ClosureEnv3 = ClosureEnv3{}
+    var doubled__12 int = __closure_apply8(no_capture__11, 3)
+    var t10 string = int_to_string(doubled__12)
+    string_println(t10)
+    ret12 = struct{}{}
+    return ret12
+}
+
+func __closure_apply2(env3 ClosureEnv0, x__1 int) int {
+    var ret13 int
+    var base__0 int = env3.base_0_0
+    ret13 = int_add(x__1, base__0)
+    return ret13
+}
+
+func __closure_apply4(env5 ClosureEnv1, prefix__4 string, value__5 int) struct{} {
+    var ret14 struct{}
+    var t11 string = int_to_string(value__5)
+    var message__6 string = string_add(prefix__4, t11)
+    ret14 = string_println(message__6)
+    return ret14
+}
+
+func __closure_apply8(env9 ClosureEnv3, z__10 int) int {
+    var ret16 int
+    ret16 = int_mul(z__10, 2)
+    return ret16
+}
+
+func main() {
+    main0()
+}

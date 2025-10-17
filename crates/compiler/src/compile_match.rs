@@ -843,8 +843,14 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 ty: ty.clone(),
             }
         }
-        EClosure { .. } => {
-            panic!("Closures are not supported in codegen yet");
+        EClosure { params, body, ty } => {
+            let params = params.clone();
+            let body = Box::new(compile_expr(body, env));
+            core::Expr::EClosure {
+                params,
+                body,
+                ty: ty.clone(),
+            }
         }
         ELet {
             pat:

@@ -266,6 +266,9 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
                 })
             }),
         ),
+        core::Expr::EClosure { .. } => {
+            panic!("lambda lift should have removed closures before ANF conversion");
+        }
         core::Expr::ELet {
             name,
             value,

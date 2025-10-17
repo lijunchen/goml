@@ -1,0 +1,13 @@
+fn main() -> unit {
+  let base/0: int = 5 in
+  let add_base/2: (int) -> int = |x/1: int| => (x/1 : int) + (base/0 : int) in
+  let result/3: int = add_base/2(7) in
+  let printer/7: (string, int) -> unit = |prefix/4: string, value/5: int| => let message/6: string = string_add((prefix/4 : string), int_to_string((value/5 : int))) in
+  string_println((message/6 : string)) in
+  let _ : unit = printer/7("result: ", (result/3 : int)) in
+  let unused/9: (int) -> int = |y/8: int| => (y/8 : int) + (result/3 : int) in
+  let no_capture/11: (int) -> int = |z/10: int| => (z/10 : int) * 2 in
+  let doubled/12: int = no_capture/11(3) in
+  let _ : unit = string_println(int_to_string((doubled/12 : int))) in
+  ()
+}
