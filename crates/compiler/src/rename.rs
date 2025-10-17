@@ -129,6 +129,19 @@ impl Rename {
                     .map(|item| self.rename_expr(item, env))
                     .collect(),
             },
+            ast::Expr::EClosure { params, body } => {
+                let mut closure_env = env.enter_scope();
+                let new_params = params
+                    .iter()
+                    .map(|param| self.rename_closure_param(param, &mut closure_env))
+                    .collect();
+                let new_body = self.rename_expr(body, &mut closure_env);
+
+                ast::Expr::EClosure {
+                    params: new_params,
+                    body: Box::new(new_body),
+                }
+            }
             ast::Expr::ELet { pat, value, body } => {
                 let new_value = self.rename_expr(value, env);
                 let new_pat = self.rename_pat(pat, env);
@@ -230,6 +243,16 @@ impl Rename {
                 ast::Pat::PTuple { pats: new_pats }
             }
             ast::Pat::PWild => pat.clone(),
+        }
+    }
+}
+
+impl Rename {
+    fn rename_closure_param(&self, param: &ast::ClosureParam, env: &mut Env) -> ast::ClosureParam {
+        let pat = self.rename_pat(&param.pat, env);
+        ast::ClosureParam {
+            pat,
+            ty: param.ty.clone(),
         }
     }
 }

@@ -1527,7 +1527,11 @@ pub struct FuncTy {
     pub(crate) syntax: MySyntaxNode,
 }
 
-impl FuncTy {}
+impl FuncTy {
+    pub fn types(&self) -> CstChildren<Type> {
+        support::children(&self.syntax)
+    }
+}
 
 impl_cst_node_simple!(FuncTy, MySyntaxKind::TYPE_FUNC);
 impl_display_via_syntax!(FuncTy);

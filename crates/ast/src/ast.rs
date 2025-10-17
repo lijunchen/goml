@@ -82,6 +82,12 @@ pub enum Ty {
 }
 
 #[derive(Debug, Clone)]
+pub struct ClosureParam {
+    pub pat: Pat,
+    pub ty: Option<Ty>,
+}
+
+#[derive(Debug, Clone)]
 pub struct File {
     pub toplevels: Vec<Item>,
 }
@@ -181,6 +187,10 @@ pub enum Expr {
     ELet {
         pat: Pat,
         value: Box<Expr>,
+        body: Box<Expr>,
+    },
+    EClosure {
+        params: Vec<ClosureParam>,
         body: Box<Expr>,
     },
     EMatch {

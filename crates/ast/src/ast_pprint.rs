@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, EnumDef, Expr, ExternGo, File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef,
-    TraitMethodSignature, Ty, Uident,
+    Arm, ClosureParam, EnumDef, Expr, ExternGo, File, Fn, ImplBlock, Item, Pat, StructDef,
+    TraitDef, TraitMethodSignature, Ty, Uident,
 };
 use pretty::RcDoc;
 
@@ -162,6 +162,17 @@ impl Expr {
                 }
             }
 
+            Self::EClosure { params, body } => {
+                let params_doc = RcDoc::intersperse(
+                    params.iter().map(|param| param.to_doc()),
+                    RcDoc::text(", "),
+                );
+
+                RcDoc::text("|")
+                    .append(params_doc)
+                    .append(RcDoc::text("| "))
+                    .append(body.to_doc())
+            }
             Self::ELet { pat, value, body } => RcDoc::text("let")
                 .append(RcDoc::space())
                 .append(pat.to_doc())
@@ -630,5 +641,15 @@ impl Item {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl ClosureParam {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let pat_doc = self.pat.to_doc();
+        match &self.ty {
+            Some(ty) => pat_doc.append(RcDoc::text(": ")).append(ty.to_doc()),
+            None => pat_doc,
+        }
     }
 }

@@ -1588,6 +1588,9 @@ impl TypeInference {
                     },
                 }
             }
+            ast::Expr::EClosure { .. } => {
+                panic!("Closures are not supported in typer yet");
+            }
             ast::Expr::ELet { pat, value, body } => {
                 let value_tast = self.infer(env, vars, value);
                 let value_ty = value_tast.get_ty();
