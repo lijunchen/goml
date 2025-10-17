@@ -1791,6 +1791,29 @@ impl TypeInference {
                         args: args_tast,
                         ty: ret_ty,
                     }
+                } else if let Some(var_ty) = vars.get(func) {
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer(env, vars, arg);
+                        arg_types.push(arg_tast.get_ty());
+                        args_tast.push(arg_tast);
+                    }
+
+                    let ret_ty = self.fresh_ty_var();
+                    env.constraints.push(Constraint::TypeEqual(
+                        var_ty.clone(),
+                        tast::Ty::TFunc {
+                            params: arg_types,
+                            ret_ty: Box::new(ret_ty.clone()),
+                        },
+                    ));
+
+                    tast::Expr::ECall {
+                        func: func.0.clone(),
+                        args: args_tast,
+                        ty: ret_ty,
+                    }
                 } else {
                     panic!("Function {} not found in environment", func.0);
                 }

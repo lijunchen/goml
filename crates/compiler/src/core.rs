@@ -1,5 +1,5 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::Constructor;
+use crate::tast::{self, Constructor};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -46,6 +46,11 @@ pub enum Expr {
     },
     EArray {
         items: Vec<Expr>,
+        ty: Ty,
+    },
+    EClosure {
+        params: Vec<tast::ClosureParam>,
+        body: Box<Expr>,
         ty: Ty,
     },
     ELet {
@@ -95,6 +100,7 @@ impl Expr {
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),
             Expr::EArray { ty, .. } => ty.clone(),
+            Expr::EClosure { ty, .. } => ty.clone(),
             Expr::ELet { ty, .. } => ty.clone(),
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),

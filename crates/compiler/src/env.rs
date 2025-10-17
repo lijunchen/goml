@@ -406,6 +406,13 @@ impl Env {
                         }
                         self.collect_type(ty);
                     }
+                    core::Expr::EClosure { params, body, ty } => {
+                        for param in params {
+                            self.collect_type(&param.get_ty());
+                        }
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
                     core::Expr::ELet {
                         value, body, ty, ..
                     } => {

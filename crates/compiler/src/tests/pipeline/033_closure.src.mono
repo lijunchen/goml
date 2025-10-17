@@ -1,0 +1,31 @@
+fn main() -> unit {
+  let base/0 = 5 in
+  let add_base/2 = ClosureEnv0 { base_0_0: base/0 } in
+  let result/3 = __closure_apply2(add_base/2, 7) in
+  let printer/7 = ClosureEnv1 {} in
+  let mtmp0 = __closure_apply4(printer/7, "result: ", result/3) in
+  let unused/9 = ClosureEnv2 { result_3_0: result/3 } in
+  let no_capture/11 = ClosureEnv3 {} in
+  let doubled/12 = __closure_apply8(no_capture/11, 3) in
+  let mtmp1 = string_println(int_to_string(doubled/12)) in
+  ()
+}
+
+fn __closure_apply2(env3: ClosureEnv0, x/1: int) -> int {
+  let base/0 = ClosureEnv0.base_0_0(env3) in
+  int_add(x/1, base/0)
+}
+
+fn __closure_apply4(env5: ClosureEnv1, prefix/4: string, value/5: int) -> unit {
+  let message/6 = string_add(prefix/4, int_to_string(value/5)) in
+  string_println(message/6)
+}
+
+fn __closure_apply6(env7: ClosureEnv2, y/8: int) -> int {
+  let result/3 = ClosureEnv2.result_3_0(env7) in
+  int_add(y/8, result/3)
+}
+
+fn __closure_apply8(env9: ClosureEnv3, z/10: int) -> int {
+  int_mul(z/10, 2)
+}

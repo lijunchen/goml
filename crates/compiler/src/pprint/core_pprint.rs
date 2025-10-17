@@ -179,6 +179,28 @@ impl Expr {
                     RcDoc::text("[").append(items_doc).append(RcDoc::text("]"))
                 }
             }
+            Expr::EClosure {
+                params,
+                body,
+                ty: _,
+            } => {
+                let params_doc = if params.is_empty() {
+                    RcDoc::text("||")
+                } else {
+                    let list = RcDoc::intersperse(
+                        params.iter().map(|param| param.pat.to_doc(env)),
+                        RcDoc::text(", "),
+                    );
+                    RcDoc::text("|").append(list).append(RcDoc::text("|"))
+                };
+
+                params_doc
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("=>"))
+                    .append(RcDoc::space())
+                    .append(body.to_doc(env))
+                    .group()
+            }
 
             Expr::ELet {
                 name,
