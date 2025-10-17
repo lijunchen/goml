@@ -98,6 +98,18 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             None
         }
+        tast::Expr::EClosure {
+            params,
+            body,
+            ty: _,
+        } => {
+            for param in params {
+                if let Some(expr) = find_type_pat(env, &param.pat, range) {
+                    return Some(expr);
+                }
+            }
+            find_type_expr(env, body, range)
+        }
         tast::Expr::ELet {
             pat,
             value,

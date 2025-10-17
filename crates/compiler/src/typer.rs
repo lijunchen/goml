@@ -86,7 +86,9 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                         None => tast::Ty::TUnit,
                     };
 
-                    let typed_body = typer.infer(&mut env, &vars, &f.body);
+                    let typed_body = typer.with_tparams_env(&f.generics, |typer| {
+                        typer.infer(&mut env, &vars, &f.body)
+                    });
                     typer.solve(&mut env);
                     let typed_body = typer.subst(&mut env, typed_body);
                     typed_methods.push(tast::Fn {
@@ -126,7 +128,8 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                     None => tast::Ty::TUnit,
                 };
 
-                let typed_body = typer.infer(&mut env, &vars, &f.body);
+                let typed_body = typer
+                    .with_tparams_env(&f.generics, |typer| typer.infer(&mut env, &vars, &f.body));
                 typer.solve(&mut env);
                 let typed_body = typer.subst(&mut env, typed_body);
                 typed_toplevel_tasts.push(tast::Item::Fn(tast::Fn {
@@ -663,6 +666,7 @@ pub fn ast_ty_to_tast_ty_with_tparams_env(
 
 pub struct TypeInference {
     pub uni: InPlaceUnificationTable<TypeVar>,
+    tparams_env_stack: Vec<Vec<ast::Uident>>,
 }
 
 impl Default for TypeInference {
@@ -1030,7 +1034,33 @@ impl TypeInference {
     pub fn new() -> Self {
         Self {
             uni: InPlaceUnificationTable::new(),
+            tparams_env_stack: Vec::new(),
         }
+    }
+
+    fn push_tparams_env(&mut self, tparams: &[ast::Uident]) {
+        self.tparams_env_stack.push(tparams.to_vec());
+    }
+
+    fn pop_tparams_env(&mut self) {
+        self.tparams_env_stack.pop();
+    }
+
+    fn current_tparams_env(&self) -> Vec<ast::Uident> {
+        self.tparams_env_stack
+            .iter()
+            .flat_map(|env| env.iter().cloned())
+            .collect()
+    }
+
+    fn with_tparams_env<F, R>(&mut self, tparams: &[ast::Uident], f: F) -> R
+    where
+        F: FnOnce(&mut TypeInference) -> R,
+    {
+        self.push_tparams_env(tparams);
+        let result = f(self);
+        self.pop_tparams_env();
+        result
     }
 
     fn fresh_ty_var(&mut self) -> tast::Ty {
@@ -1271,6 +1301,21 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EClosure { params, body, ty } => {
+                let ty = self.subst_ty(env, &ty);
+                let params = params
+                    .into_iter()
+                    .map(|param| tast::ClosureParam {
+                        pat: self.subst_pat(env, param.pat),
+                    })
+                    .collect();
+                let body = Box::new(self.subst(env, *body));
+                tast::Expr::EClosure {
+                    params,
+                    body,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ELet {
                 pat,
                 value,
@@ -1384,6 +1429,7 @@ impl TypeInference {
         vars: &im::HashMap<Lident, tast::Ty>,
         e: &ast::Expr,
     ) -> tast::Expr {
+        let current_tparams_env = self.current_tparams_env();
         match e {
             ast::Expr::EVar { name, astptr } => {
                 let ty = vars
@@ -1588,8 +1634,35 @@ impl TypeInference {
                     },
                 }
             }
-            ast::Expr::EClosure { .. } => {
-                panic!("Closures are not supported in typer yet");
+            ast::Expr::EClosure { params, body } => {
+                let mut closure_vars = vars.clone();
+                let mut params_tast = Vec::new();
+                let mut param_tys = Vec::new();
+
+                for param in params.iter() {
+                    let expected_ty = match &param.ty {
+                        Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env),
+                        None => self.fresh_ty_var(),
+                    };
+                    let pat_tast = self.check_pat(env, &mut closure_vars, &param.pat, &expected_ty);
+                    let pat_ty = pat_tast.get_ty();
+                    param_tys.push(pat_ty.clone());
+                    params_tast.push(tast::ClosureParam { pat: pat_tast });
+                }
+
+                let body_tast = self.infer(env, &closure_vars, body);
+                let body_ty = body_tast.get_ty();
+
+                let closure_ty = tast::Ty::TFunc {
+                    params: param_tys,
+                    ret_ty: Box::new(body_ty.clone()),
+                };
+
+                tast::Expr::EClosure {
+                    params: params_tast,
+                    body: Box::new(body_tast),
+                    ty: closure_ty,
+                }
             }
             ast::Expr::ELet { pat, value, body } => {
                 let value_tast = self.infer(env, vars, value);

@@ -190,6 +190,97 @@ enum List {
     );
 }
 
+#[test]
+fn closure_infers_param_and_return_types() {
+    let src = r#"
+fn use_closure(x: int) -> int {
+    let add = |y| y + x in
+    x
+}
+"#;
+
+    let (tast, _env) = typecheck(src);
+
+    let func = match &tast.toplevels[0] {
+        tast::Item::Fn(f) => f,
+        _ => panic!("expected function item"),
+    };
+
+    let closure_expr = match &func.body {
+        tast::Expr::ELet { value, .. } => value,
+        _ => panic!("expected let binding in function body"),
+    };
+
+    let tast::Expr::EClosure { params, body, ty } = &**closure_expr else {
+        panic!("expected closure expression");
+    };
+
+    assert_eq!(params.len(), 1);
+    let param_ty = match &params[0].pat {
+        tast::Pat::PVar { ty, .. } => ty.clone(),
+        other => panic!("unexpected parameter pattern: {:?}", other),
+    };
+    assert_eq!(param_ty, tast::Ty::TInt);
+
+    assert!(matches!(**body, tast::Expr::EBinary { .. }));
+
+    let tast::Ty::TFunc {
+        params: func_params,
+        ret_ty,
+    } = ty
+    else {
+        panic!("expected closure type to be a function");
+    };
+    assert_eq!(func_params.as_slice(), &[tast::Ty::TInt]);
+    assert_eq!(**ret_ty, tast::Ty::TInt);
+}
+
+#[test]
+fn closure_parameter_annotations_use_enclosing_generics() {
+    let src = r#"
+fn wrap[T](value: T) -> T {
+    let id = |x: T| x in
+    value
+}
+"#;
+
+    let (tast, _env) = typecheck(src);
+
+    let func = match &tast.toplevels[0] {
+        tast::Item::Fn(f) => f,
+        _ => panic!("expected function item"),
+    };
+
+    let closure_expr = match &func.body {
+        tast::Expr::ELet { value, .. } => value,
+        _ => panic!("expected let binding in function body"),
+    };
+
+    let tast::Expr::EClosure { params, ty, .. } = &**closure_expr else {
+        panic!("expected closure expression");
+    };
+
+    assert_eq!(params.len(), 1);
+    let param_ty = match &params[0].pat {
+        tast::Pat::PVar { ty, .. } => ty.clone(),
+        other => panic!("unexpected parameter pattern: {:?}", other),
+    };
+    let expected = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    assert_eq!(param_ty, expected);
+
+    let tast::Ty::TFunc {
+        params: func_params,
+        ret_ty,
+    } = ty
+    else {
+        panic!("expected closure type to be a function");
+    };
+    assert_eq!(func_params.as_slice(), &[expected.clone()]);
+    assert_eq!(**ret_ty, expected);
+}
+
 fn assert_typer_error(src: &str, expected_message: &str) {
     let (_tast, env) = typecheck(src);
     let messages: Vec<String> = env
