@@ -20,10 +20,12 @@ jobs:
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
           path: ~/.cargo/registry
-      - name: Setup Go 1.25.1
+      - name: Setup Go 1.21
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25.1'
+          go-version: '1.21'
+      - name: Install Yaegi interpreter
+        run: curl -sfL https://raw.githubusercontent.com/traefik/yaegi/master/install.sh | bash -s -- -b "$(go env GOPATH)/bin" v0.16.1
       - name: Cargo Check
         run: cargo check
       - name: Cargo Test
