@@ -502,6 +502,7 @@ pub enum Expr {
     LetExpr(LetExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
+    ClosureExpr(ClosureExpr),
 }
 
 impl CstNode for Expr {
@@ -521,6 +522,7 @@ impl CstNode for Expr {
                 | EXPR_TUPLE
                 | EXPR_LET
                 | EXPR_BINARY
+                | EXPR_CLOSURE
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
@@ -540,6 +542,7 @@ impl CstNode for Expr {
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
+            EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
             _ => return None,
         };
         Some(res)
@@ -561,6 +564,7 @@ impl CstNode for Expr {
             Self::LetExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
+            Self::ClosureExpr(it) => &it.syntax,
         }
     }
 }
@@ -1036,6 +1040,82 @@ impl PrefixExpr {
 
 impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
 impl_display_via_syntax!(PrefixExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ClosureExpr {
+    pub fn params(&self) -> Option<ClosureParamList> {
+        support::child(&self.syntax)
+    }
+
+    pub fn body(&self) -> Option<ClosureBody> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ClosureExpr, MySyntaxKind::EXPR_CLOSURE);
+impl_display_via_syntax!(ClosureExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureParamList {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ClosureParamList {
+    pub fn params(&self) -> CstChildren<ClosureParam> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ClosureParamList, MySyntaxKind::CLOSURE_PARAM_LIST);
+impl_display_via_syntax!(ClosureParamList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureParam {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ClosureParam {
+    pub fn pat(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ClosureParam, MySyntaxKind::CLOSURE_PARAM);
+impl_display_via_syntax!(ClosureParam);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ClosureBody {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ClosureBody {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn block(&self) -> Option<Block> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ClosureBody, MySyntaxKind::EXPR_CLOSURE_BODY);
+impl_display_via_syntax!(ClosureBody);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

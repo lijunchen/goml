@@ -973,6 +973,13 @@ fn lower_expr_with_args(
                 }
             }
         }
+        cst::Expr::ClosureExpr(it) => {
+            ctx.push_error(
+                Some(it.syntax().text_range()),
+                "Closures are not supported in lowering yet",
+            );
+            None
+        }
     }
 }
 

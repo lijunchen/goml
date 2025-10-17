@@ -313,7 +313,7 @@ fn param(p: &mut Parser) {
     p.close(m, MySyntaxKind::PARAM);
 }
 
-fn type_expr(p: &mut Parser) {
+pub(crate) fn type_expr(p: &mut Parser) {
     let m = p.open();
     if p.at(T![Unit]) {
         p.advance();
