@@ -41,6 +41,17 @@ pub struct ExternGo {
 }
 
 #[derive(Debug, Clone)]
+pub struct ClosureParam {
+    pub pat: Pat,
+}
+
+impl ClosureParam {
+    pub fn get_ty(&self) -> Ty {
+        self.pat.get_ty()
+    }
+}
+
+#[derive(Debug, Clone)]
 pub struct EnumConstructor {
     pub type_name: Uident,
     pub variant: Uident,
@@ -213,6 +224,11 @@ pub enum Expr {
         items: Vec<Expr>,
         ty: Ty,
     },
+    EClosure {
+        params: Vec<ClosureParam>,
+        body: Box<Expr>,
+        ty: Ty,
+    },
     ELet {
         pat: Pat,
         value: Box<Expr>,
@@ -266,6 +282,7 @@ impl Expr {
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),
             Self::EArray { ty, .. } => ty.clone(),
+            Self::EClosure { ty, .. } => ty.clone(),
             Self::ELet { ty, .. } => ty.clone(),
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),

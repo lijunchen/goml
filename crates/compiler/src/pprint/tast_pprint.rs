@@ -1,6 +1,7 @@
 use pretty::RcDoc;
 
 use crate::env::Env;
+use crate::tast::ClosureParam;
 use crate::tast::Constructor;
 use crate::tast::Expr;
 use crate::tast::File;
@@ -143,6 +144,12 @@ impl crate::tast::ExternGo {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl ClosureParam {
+    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+        self.pat.to_doc(env)
     }
 }
 
@@ -349,6 +356,28 @@ impl Expr {
                         .append(RcDoc::text("]"))
                         .group()
                 }
+            }
+            Self::EClosure {
+                params,
+                body,
+                ty: _,
+            } => {
+                let params_doc = if params.is_empty() {
+                    RcDoc::text("||")
+                } else {
+                    let list = RcDoc::intersperse(
+                        params.iter().map(|param| param.to_doc(env)),
+                        RcDoc::text(", "),
+                    );
+                    RcDoc::text("|").append(list).append(RcDoc::text("|"))
+                };
+
+                params_doc
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("=>"))
+                    .append(RcDoc::space())
+                    .append(body.to_doc(env))
+                    .group()
             }
 
             Self::ELet {

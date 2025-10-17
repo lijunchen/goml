@@ -843,6 +843,9 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 ty: ty.clone(),
             }
         }
+        EClosure { .. } => {
+            panic!("Closures are not supported in codegen yet");
+        }
         ELet {
             pat:
                 Pat::PVar {
