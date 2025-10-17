@@ -66,6 +66,16 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
 }
 
 fn execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<String> {
+    let status = Command::new("yaegi")
+        .arg("help")
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+
+    if status.is_err() || !status.unwrap().success() {
+        return execute_with_go_run(dir, file);
+    }
+
     let child = Command::new("yaegi")
         .arg("run")
         .arg(file)
