@@ -1,3 +1,15 @@
+fn test() {
+    let y = 3 in
+    let z = 5 in
+    let f = |x: int| x * y * z in
+    let _ = string_println(int_to_string(f(2))) in
+    string_println(int_to_string(f(3)))
+}
+
+fn call_int_id(f: (int) -> int, v: int) -> int {
+    f(v)
+}
+
 fn main() {
     let base = 5 in
     let add_base = |x: int| x + base in
@@ -9,6 +21,7 @@ fn main() {
     let no_capture = |z: int| z * 2 in
     let doubled = no_capture(3) in
     let _ = string_println(int_to_string(doubled)) in
+    let _ = test() in
     ()
 }
 
