@@ -1,0 +1,14 @@
+const n = `fn fib(x: int) -> int {
+  match int_less(x, 2) {
+    false => fib(x - 1) + fib(x - 2),
+    true => 1,
+  }
+}
+
+fn main() {
+    string_print(int_to_string(fib(10)))
+}
+`;
+export {
+  n as default
+};
