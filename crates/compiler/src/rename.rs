@@ -218,18 +218,21 @@ impl Rename {
                 else_branch: Box::new(self.rename_expr(else_branch, env, global_funcs)),
             },
             ast::Expr::ECall { func, args } => {
-                let new_func = if let Some(new_name) = env.rfind(func) {
-                    new_name.clone()
-                } else {
+                let new_func = if let ast::Expr::EVar { name, .. } = func.as_ref()
+                    && env.rfind(name).is_none()
+                    && !global_funcs.contains(&name.0)
+                {
                     func.clone()
+                } else {
+                    Box::new(self.rename_expr(func, env, global_funcs))
                 };
-                let new_args = args
-                    .iter()
-                    .map(|arg| self.rename_expr(arg, env, global_funcs))
-                    .collect();
+
                 ast::Expr::ECall {
                     func: new_func,
-                    args: new_args,
+                    args: args
+                        .iter()
+                        .map(|arg| self.rename_expr(arg, env, global_funcs))
+                        .collect(),
                 }
             }
             ast::Expr::EUnary { op, expr } => ast::Expr::EUnary {

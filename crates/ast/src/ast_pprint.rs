@@ -235,13 +235,14 @@ impl Expr {
             }
 
             Self::ECall { func, args } => {
+                let func_doc = func.to_doc();
                 if args.is_empty() {
-                    RcDoc::text(func.0.clone()).append(RcDoc::text("()"))
+                    func_doc.append(RcDoc::text("()")).group()
                 } else {
                     let args_doc =
                         RcDoc::intersperse(args.iter().map(|arg| arg.to_doc()), RcDoc::text(", "));
 
-                    RcDoc::text(func.0.clone())
+                    func_doc
                         .append(RcDoc::text("("))
                         .append(args_doc)
                         .nest(2)

@@ -1,0 +1,46 @@
+fn double(x/0: int) -> int {
+  int_mul(x/0, 2)
+}
+
+fn increment(x/1: int) -> int {
+  int_add(x/1, 1)
+}
+
+fn make(adder/2: int) -> (int) -> int {
+  ClosureEnv0 { adder_2_0: adder/2 }
+}
+
+fn chooser(flag/4: bool) -> (int) -> int {
+  if flag/4 {
+      double
+  } else {
+      increment
+  }
+}
+
+fn main() -> unit {
+  let result_direct/5 = chooser(true)(3) in
+  let chosen/6 = chooser(false) in
+  let result_from_var/7 = chosen/6(4) in
+  let apply/10 = ClosureEnv1 {} in
+  let closure_call/11 = __closure_apply7(apply/10, make(5), 1) in
+  let composed/12 = make(6)(2) in
+  let generator/13 = make(7) in
+  let from_generator/14 = generator/13(3) in
+  let printer/15 = string_println in
+  let mtmp0 = printer/15(int_to_string(result_direct/5)) in
+  let mtmp1 = printer/15(int_to_string(result_from_var/7)) in
+  let mtmp2 = printer/15(int_to_string(closure_call/11)) in
+  let mtmp3 = printer/15(int_to_string(composed/12)) in
+  let mtmp4 = printer/15(int_to_string(from_generator/14)) in
+  ()
+}
+
+fn __closure_apply5(env6: ClosureEnv0, value/3: int) -> int {
+  let adder/2 = ClosureEnv0.adder_2_0(env6) in
+  int_add(value/3, adder/2)
+}
+
+fn __closure_apply7(env8: ClosureEnv1, f/8: (int) -> int, value/9: int) -> int {
+  f/8(value/9)
+}

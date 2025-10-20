@@ -1746,44 +1746,114 @@ impl TypeInference {
                 }
             }
             ast::Expr::ECall { func, args } => {
-                if let Some(func_ty) = env.get_type_of_function(&func.0) {
-                    let inst_func_ty = self.inst_ty(&func_ty);
-                    let mut args_tast = Vec::new();
-                    let mut arg_types = Vec::new();
-                    for arg in args.iter() {
-                        let arg_tast = self.infer(env, vars, arg);
-                        arg_types.push(arg_tast.get_ty());
-                        args_tast.push(arg_tast);
-                    }
+                if let ast::Expr::EVar { name, .. } = func.as_ref() {
+                    if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                        let inst_func_ty = self.inst_ty(&func_ty);
+                        let mut args_tast = Vec::new();
+                        let mut arg_types = Vec::new();
+                        for arg in args.iter() {
+                            let arg_tast = self.infer(env, vars, arg);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
 
-                    let ret_ty = self.fresh_ty_var();
-                    env.constraints.push(Constraint::TypeEqual(
-                        inst_func_ty.clone(),
-                        tast::Ty::TFunc {
+                        let ret_ty = self.fresh_ty_var();
+                        let func_name_str = name.0.clone();
+                        env.constraints.push(Constraint::TypeEqual(
+                            inst_func_ty.clone(),
+                            tast::Ty::TFunc {
+                                params: arg_types,
+                                ret_ty: Box::new(ret_ty.clone()),
+                            },
+                        ));
+
+                        if func_name_str == "array_set"
+                            && let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty())
+                        {
+                            env.constraints
+                                .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
+                        }
+
+                        tast::Expr::ECall {
+                            func: Box::new(tast::Expr::EVar {
+                                name: func_name_str,
+                                ty: inst_func_ty,
+                                astptr: None,
+                            }),
+                            args: args_tast,
+                            ty: ret_ty,
+                        }
+                    } else if let Some(trait_name) =
+                        env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
+                    {
+                        let mut args_tast = Vec::new();
+                        let mut arg_types = Vec::new();
+                        for arg in args.iter() {
+                            let arg_tast = self.infer(env, vars, arg);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+
+                        let ret_ty = self.fresh_ty_var();
+                        let call_site_func_ty = tast::Ty::TFunc {
                             params: arg_types,
                             ret_ty: Box::new(ret_ty.clone()),
-                        },
-                    ));
+                        };
 
-                    if func.0 == "array_set"
-                        && let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty())
-                    {
-                        env.constraints
-                            .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
-                    }
+                        env.constraints.push(Constraint::Overloaded {
+                            op: name.clone(),
+                            trait_name,
+                            call_site_type: call_site_func_ty.clone(),
+                        });
 
-                    tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: func.0.clone(),
-                            ty: inst_func_ty,
-                            astptr: None,
-                        }),
-                        args: args_tast,
-                        ty: ret_ty,
+                        tast::Expr::ECall {
+                            func: Box::new(tast::Expr::EVar {
+                                name: name.0.clone(),
+                                ty: call_site_func_ty,
+                                astptr: None,
+                            }),
+                            args: args_tast,
+                            ty: ret_ty,
+                        }
+                    } else if let Some(var_ty) = vars.get(name) {
+                        let mut args_tast = Vec::new();
+                        let mut arg_types = Vec::new();
+                        for arg in args.iter() {
+                            let arg_tast = self.infer(env, vars, arg);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+
+                        let ret_ty = self.fresh_ty_var();
+                        env.constraints.push(Constraint::TypeEqual(
+                            var_ty.clone(),
+                            tast::Ty::TFunc {
+                                params: arg_types,
+                                ret_ty: Box::new(ret_ty.clone()),
+                            },
+                        ));
+
+                        tast::Expr::ECall {
+                            func: Box::new(tast::Expr::EVar {
+                                name: name.0.clone(),
+                                ty: var_ty.clone(),
+                                astptr: None,
+                            }),
+                            args: args_tast,
+                            ty: ret_ty,
+                        }
+                    } else {
+                        panic!("Function {} not found in environment", name.0);
                     }
-                } else if let Some(trait_name) =
-                    env.overloaded_funcs_to_trait_name.get(&func.0).cloned()
-                {
+                } else {
+                    let func_tast = self.infer(env, vars, func);
+                    let func_ty = func_tast.get_ty();
+                    let func_name = if let tast::Expr::EVar { name, .. } = &func_tast {
+                        Some(name.clone())
+                    } else {
+                        None
+                    };
+
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
                     for arg in args.iter() {
@@ -1798,50 +1868,33 @@ impl TypeInference {
                         ret_ty: Box::new(ret_ty.clone()),
                     };
 
-                    env.constraints.push(Constraint::Overloaded {
-                        op: func.clone(),
-                        trait_name,
-                        call_site_type: call_site_func_ty.clone(),
-                    });
+                    env.constraints
+                        .push(Constraint::TypeEqual(func_ty, call_site_func_ty.clone()));
+
+                    if let Some(name) = &func_name {
+                        if let Some(trait_name) =
+                            env.overloaded_funcs_to_trait_name.get(name).cloned()
+                        {
+                            env.constraints.push(Constraint::Overloaded {
+                                op: ast::Lident(name.clone()),
+                                trait_name,
+                                call_site_type: call_site_func_ty.clone(),
+                            });
+                        }
+
+                        if name == "array_set" {
+                            if let Some(first_arg_ty) = args_tast.first().map(|arg| arg.get_ty()) {
+                                env.constraints
+                                    .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
+                            }
+                        }
+                    }
 
                     tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: func.0.clone(),
-                            ty: call_site_func_ty,
-                            astptr: None,
-                        }),
+                        func: Box::new(func_tast),
                         args: args_tast,
                         ty: ret_ty,
                     }
-                } else if let Some(var_ty) = vars.get(func) {
-                    let mut args_tast = Vec::new();
-                    let mut arg_types = Vec::new();
-                    for arg in args.iter() {
-                        let arg_tast = self.infer(env, vars, arg);
-                        arg_types.push(arg_tast.get_ty());
-                        args_tast.push(arg_tast);
-                    }
-
-                    let ret_ty = self.fresh_ty_var();
-                    env.constraints.push(Constraint::TypeEqual(
-                        var_ty.clone(),
-                        tast::Ty::TFunc {
-                            params: arg_types,
-                            ret_ty: Box::new(ret_ty.clone()),
-                        },
-                    ));
-
-                    tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: func.0.clone(),
-                            ty: var_ty.clone(),
-                            astptr: None,
-                        }),
-                        args: args_tast,
-                        ty: ret_ty,
-                    }
-                } else {
-                    panic!("Function {} not found in environment", func.0);
                 }
             }
             ast::Expr::EUnary { op, expr } => {

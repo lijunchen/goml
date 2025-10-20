@@ -1,0 +1,37 @@
+fn double(x/0: int) -> int {
+  (x/0 : int) * 2
+}
+
+fn increment(x/1: int) -> int {
+  (x/1 : int) + 1
+}
+
+fn make(adder/2: int) -> (int) -> int {
+  |value/3: int| => (value/3 : int) + (adder/2 : int)
+}
+
+fn chooser(flag/4: bool) -> (int) -> int {
+  if (flag/4 : bool) {
+      (double : (int) -> int)
+  } else {
+      (increment : (int) -> int)
+  }
+}
+
+fn main() -> unit {
+  let result_direct/5: int = (chooser : (bool) -> (int) -> int)(true)(3) in
+  let chosen/6: (int) -> int = (chooser : (bool) -> (int) -> int)(false) in
+  let result_from_var/7: int = (chosen/6 : (int) -> int)(4) in
+  let apply/10: ((int) -> int, int) -> int = |f/8: (int) -> int, value/9: int| => (f/8 : (int) -> int)((value/9 : int)) in
+  let closure_call/11: int = (apply/10 : ((int) -> int, int) -> int)((make : (int) -> (int) -> int)(5), 1) in
+  let composed/12: int = (make : (int) -> (int) -> int)(6)(2) in
+  let generator/13: (int) -> int = (make : (int) -> (int) -> int)(7) in
+  let from_generator/14: int = (generator/13 : (int) -> int)(3) in
+  let printer/15: (string) -> unit = (string_println : (string) -> unit) in
+  let _ : unit = (printer/15 : (string) -> unit)((int_to_string : (int) -> string)((result_direct/5 : int))) in
+  let _ : unit = (printer/15 : (string) -> unit)((int_to_string : (int) -> string)((result_from_var/7 : int))) in
+  let _ : unit = (printer/15 : (string) -> unit)((int_to_string : (int) -> string)((closure_call/11 : int))) in
+  let _ : unit = (printer/15 : (string) -> unit)((int_to_string : (int) -> string)((composed/12 : int))) in
+  let _ : unit = (printer/15 : (string) -> unit)((int_to_string : (int) -> string)((from_generator/14 : int))) in
+  ()
+}
