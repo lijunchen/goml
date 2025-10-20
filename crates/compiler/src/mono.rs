@@ -332,13 +332,25 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 }
             }
             core::Expr::ECall { func, args, ty } => {
+                let new_func = mono_expr(ctx, &func, s);
                 let new_args: Vec<core::Expr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
                 let new_ty = subst_ty(&ty, s);
 
-                // If function is not in current file (runtime/built-in), leave as is
-                let Some(callee) = ctx.orig_fns.get(&func) else {
+                let core::Expr::EVar {
+                    name: func_name, ..
+                } = &new_func
+                else {
                     return core::Expr::ECall {
-                        func,
+                        func: Box::new(new_func),
+                        args: new_args,
+                        ty: new_ty,
+                    };
+                };
+
+                // If function is not in current file (runtime/built-in), leave as is
+                let Some(callee) = ctx.orig_fns.get(func_name) else {
+                    return core::Expr::ECall {
+                        func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
                     };
@@ -346,7 +358,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
 
                 if !fn_is_generic(callee) {
                     return core::Expr::ECall {
-                        func,
+                        func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
                     };
@@ -358,13 +370,16 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 let arg_tys = new_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
                 for (pt, at) in callee_param_tys.iter().zip(arg_tys.iter()) {
                     if let Err(e) = unify(pt, at, &mut call_subst) {
-                        panic!("monomorphization unification failed for {}: {}", func, e);
+                        panic!(
+                            "monomorphization unification failed for {}: {}",
+                            func_name, e
+                        );
                     }
                 }
                 if let Err(e) = unify(&callee.ret_ty, &new_ty, &mut call_subst) {
                     panic!(
                         "monomorphization return type unification failed for {}: {}",
-                        func, e
+                        func_name, e
                     );
                 }
 
@@ -373,15 +388,18 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                     // If we cannot determine concrete types here, keep the call as-is.
                     // This should not happen for reachable instances from monomorphic roots.
                     return core::Expr::ECall {
-                        func,
+                        func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
                     };
                 }
 
-                let spec = ctx.ensure_instance(&func, call_subst);
+                let spec = ctx.ensure_instance(func_name, call_subst);
                 core::Expr::ECall {
-                    func: spec,
+                    func: Box::new(core::Expr::EVar {
+                        name: spec,
+                        ty: new_func.get_ty(),
+                    }),
                     args: new_args,
                     ty: new_ty,
                 }
@@ -686,7 +704,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 }
             }
             core::Expr::ECall { func, args, ty } => core::Expr::ECall {
-                func,
+                func: Box::new(rewrite_expr_types(*func, m)),
                 args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
                 ty: m.collapse_type_apps(&ty),
             },

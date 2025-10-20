@@ -111,7 +111,7 @@ pub enum Expr {
         ty: goty::GoType,
     },
     Call {
-        func: String,
+        func: Box<Expr>,
         args: Vec<Expr>,
         ty: goty::GoType,
     },

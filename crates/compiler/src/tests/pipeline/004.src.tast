@@ -3,7 +3,7 @@ fn main() -> bool {
   match (a/0 : (Color, Color)) {
       (Color::Red, Color::Green) => true,
       (Color::Red, Color::Red) => true,
-      (Color::Blue, Color::Blue) => let _ : unit = string_print(bool_to_string(true)) in
+      (Color::Blue, Color::Blue) => let _ : unit = (string_print : (string) -> unit)((bool_to_string : (bool) -> string)(true)) in
         false,
       _ : (Color, Color) => false,
   }

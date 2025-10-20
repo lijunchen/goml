@@ -128,6 +128,10 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
     funcs
 }
 
+pub fn builtin_function_names() -> Vec<String> {
+    builtin_functions().into_keys().collect()
+}
+
 pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
     let trait_name = &trait_name.0;
     let type_repr = encode_ty(type_name);
@@ -456,7 +460,8 @@ impl Env {
                         self.collect_expr(expr);
                         self.collect_type(ty);
                     }
-                    core::Expr::ECall { args, ty, .. } => {
+                    core::Expr::ECall { func, args, ty } => {
+                        self.collect_expr(func);
                         for arg in args {
                             self.collect_expr(arg);
                         }

@@ -1,0 +1,24 @@
+fn double(x/0: int) -> int {
+  (x/0 : int) * 2
+}
+
+fn increment(x/1: int) -> int {
+  (x/1 : int) + 1
+}
+
+fn apply_once(f/2: (int) -> int, value/3: int) -> int {
+  (f/2 : (int) -> int)((value/3 : int))
+}
+
+fn compose(f/4: (int) -> int, g/5: (int) -> int, value/6: int) -> int {
+  (f/4 : (int) -> int)((g/5 : (int) -> int)((value/6 : int)))
+}
+
+fn main() -> unit {
+  let local/7: (int) -> int = (double : (int) -> int) in
+  let first/8: int = (apply_once : ((int) -> int, int) -> int)((local/7 : (int) -> int), 4) in
+  let composed/9: int = (compose : ((int) -> int, (int) -> int, int) -> int)((double : (int) -> int), (increment : (int) -> int), (first/8 : int)) in
+  let printer/10: (string) -> unit = (string_println : (string) -> unit) in
+  let _ : unit = (printer/10 : (string) -> unit)((int_to_string : (int) -> string)((composed/9 : int))) in
+  ()
+}

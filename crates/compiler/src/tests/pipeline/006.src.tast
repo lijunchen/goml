@@ -1,12 +1,12 @@
 fn main() -> unit {
   let a/0: (bool, bool) = (true, false) in
   let _ : unit = match (a/0 : (bool, bool)) {
-      (true, b/1: bool) => string_print(bool_to_string((b/1 : bool))),
+      (true, b/1: bool) => (string_print : (string) -> unit)((bool_to_string : (bool) -> string)((b/1 : bool))),
       _ : (bool, bool) => (),
   } in
   let c/2: (bool, bool) = (true, true) in
   match (c/2 : (bool, bool)) {
-      (true, d/3: bool) => string_print(bool_to_string((d/3 : bool))),
+      (true, d/3: bool) => (string_print : (string) -> unit)((bool_to_string : (bool) -> string)((d/3 : bool))),
       _ : (bool, bool) => (),
   }
 }

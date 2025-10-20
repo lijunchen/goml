@@ -194,7 +194,13 @@ fn int_to_string() -> goast::Fn {
         body: goast::Block {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
-                    func: "fmt.Sprintf".to_string(),
+                    func: Box::new(goast::Expr::Var {
+                        name: "fmt.Sprintf".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString, goty::GoType::TInt],
+                            ret_ty: Box::new(goty::GoType::TString),
+                        },
+                    }),
                     args: vec![
                         goast::Expr::String {
                             value: "%d".to_string(),
@@ -411,7 +417,13 @@ fn string_print() -> goast::Fn {
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::Expr(goast::Expr::Call {
-                    func: "fmt.Print".to_string(),
+                    func: Box::new(goast::Expr::Var {
+                        name: "fmt.Print".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
                     args: vec![goast::Expr::Var {
                         name: "s".to_string(),
                         ty: goty::GoType::TString,
@@ -436,7 +448,13 @@ fn string_println() -> goast::Fn {
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::Expr(goast::Expr::Call {
-                    func: "fmt.Println".to_string(),
+                    func: Box::new(goast::Expr::Var {
+                        name: "fmt.Println".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
                     args: vec![goast::Expr::Var {
                         name: "s".to_string(),
                         ty: goty::GoType::TString,
@@ -461,7 +479,13 @@ fn missing() -> goast::Fn {
         body: goast::Block {
             stmts: vec![
                 goast::Stmt::Expr(goast::Expr::Call {
-                    func: "println".to_string(),
+                    func: Box::new(goast::Expr::Var {
+                        name: "println".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
                     args: vec![goast::Expr::BinaryOp {
                         op: BinaryOp::Add,
                         lhs: Box::new(goast::Expr::String {
@@ -477,7 +501,13 @@ fn missing() -> goast::Fn {
                     ty: goty::GoType::TVoid,
                 }),
                 goast::Stmt::Expr(goast::Expr::Call {
-                    func: "panic".to_string(),
+                    func: Box::new(goast::Expr::Var {
+                        name: "panic".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(goty::GoType::TVoid),
+                        },
+                    }),
                     args: vec![goast::Expr::String {
                         value: "".to_string(),
                         ty: goty::GoType::TString,

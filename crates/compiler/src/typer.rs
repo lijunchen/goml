@@ -1368,6 +1368,7 @@ impl TypeInference {
             }
             tast::Expr::ECall { func, args, ty } => {
                 let ty = self.subst_ty(env, &ty);
+                let func = Box::new(self.subst(env, *func));
                 let args = args
                     .into_iter()
                     .map(|arg| self.subst(env, arg))
@@ -1432,13 +1433,21 @@ impl TypeInference {
         let current_tparams_env = self.current_tparams_env();
         match e {
             ast::Expr::EVar { name, astptr } => {
-                let ty = vars
-                    .get(name)
-                    .unwrap_or_else(|| panic!("Variable {} not found in environment", name.0));
-                tast::Expr::EVar {
-                    name: name.0.clone(),
-                    ty: ty.clone(),
-                    astptr: Some(*astptr),
+                if let Some(ty) = vars.get(name) {
+                    tast::Expr::EVar {
+                        name: name.0.clone(),
+                        ty: ty.clone(),
+                        astptr: Some(*astptr),
+                    }
+                } else if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                    let inst_ty = self.inst_ty(&func_ty);
+                    tast::Expr::EVar {
+                        name: name.0.clone(),
+                        ty: inst_ty,
+                        astptr: Some(*astptr),
+                    }
+                } else {
+                    panic!("Variable {} not found in environment", name.0);
                 }
             }
             ast::Expr::EUnit => tast::Expr::EUnit {
@@ -1744,7 +1753,7 @@ impl TypeInference {
 
                     let ret_ty = self.fresh_ty_var();
                     env.constraints.push(Constraint::TypeEqual(
-                        inst_func_ty,
+                        inst_func_ty.clone(),
                         tast::Ty::TFunc {
                             params: arg_types,
                             ret_ty: Box::new(ret_ty.clone()),
@@ -1759,7 +1768,11 @@ impl TypeInference {
                     }
 
                     tast::Expr::ECall {
-                        func: func.0.clone(),
+                        func: Box::new(tast::Expr::EVar {
+                            name: func.0.clone(),
+                            ty: inst_func_ty,
+                            astptr: None,
+                        }),
                         args: args_tast,
                         ty: ret_ty,
                     }
@@ -1783,11 +1796,15 @@ impl TypeInference {
                     env.constraints.push(Constraint::Overloaded {
                         op: func.clone(),
                         trait_name,
-                        call_site_type: call_site_func_ty,
+                        call_site_type: call_site_func_ty.clone(),
                     });
 
                     tast::Expr::ECall {
-                        func: func.0.clone(),
+                        func: Box::new(tast::Expr::EVar {
+                            name: func.0.clone(),
+                            ty: call_site_func_ty,
+                            astptr: None,
+                        }),
                         args: args_tast,
                         ty: ret_ty,
                     }
@@ -1810,7 +1827,11 @@ impl TypeInference {
                     ));
 
                     tast::Expr::ECall {
-                        func: func.0.clone(),
+                        func: Box::new(tast::Expr::EVar {
+                            name: func.0.clone(),
+                            ty: var_ty.clone(),
+                            astptr: None,
+                        }),
                         args: args_tast,
                         ty: ret_ty,
                     }

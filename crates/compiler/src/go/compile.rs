@@ -378,23 +378,35 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         }
         anf::CExpr::ECall { func, args, ty } => {
             let compiled_args: Vec<_> = args.iter().map(|arg| compile_imm(env, arg)).collect();
-            if func == "array_get" || func == "array_set" {
-                let helper = runtime::array_helper_fn_name(func, &imm_ty(&args[0]));
+            let func_ty = tast_ty_to_go_type(&imm_ty(&func));
+
+            if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && (*name == "array_get" || *name == "array_set")
+            {
+                let helper = runtime::array_helper_fn_name(name, &imm_ty(&args[0]));
                 goast::Expr::Call {
-                    func: helper,
+                    func: Box::new(goast::Expr::Var {
+                        name: helper,
+                        ty: func_ty,
+                    }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
-            } else if let Some(extern_fn) = env.extern_funcs.get(func) {
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && let Some(extern_fn) = env.extern_funcs.get(name)
+            {
                 let alias = go_package_alias(&extern_fn.package_path);
                 goast::Expr::Call {
-                    func: format!("{}.{}", alias, extern_fn.go_name),
+                    func: Box::new(goast::Expr::Var {
+                        name: format!("{}.{}", alias, extern_fn.go_name),
+                        ty: func_ty,
+                    }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
             } else {
                 goast::Expr::Call {
-                    func: func.clone(),
+                    func: Box::new(compile_imm(env, &func)),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
@@ -844,7 +856,13 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
         ret_ty: None,
         body: goast::Block {
             stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
-                func: "main0".to_string(),
+                func: Box::new(goast::Expr::Var {
+                    name: "main0".to_string(),
+                    ty: goty::GoType::TFunc {
+                        params: vec![],
+                        ret_ty: Box::new(goty::GoType::TVoid),
+                    },
+                }),
                 args: vec![],
                 ty: goty::GoType::TVoid,
             })],

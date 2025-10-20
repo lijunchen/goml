@@ -1,10 +1,10 @@
 fn show_int(label/0: string, value/1: int) -> unit {
-  let _ : unit = string_println(string_add((label/0 : string), int_to_string((value/1 : int)))) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)((label/0 : string), (int_to_string : (int) -> string)((value/1 : int)))) in
   ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let _ : unit = string_println(string_add((label/2 : string), bool_to_string((value/3 : bool)))) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)((label/2 : string), (bool_to_string : (bool) -> string)((value/3 : bool)))) in
   ()
 }
 
@@ -14,10 +14,10 @@ fn main() -> unit {
   let diff/6: int = (sum/5 : int) - 3 in
   let prod/7: int = (diff/6 : int) * 2 in
   let quot/8: int = (prod/7 : int) / 4 in
-  let _ : unit = show_int("sum=", (sum/5 : int)) in
-  let _ : unit = show_int("diff=", (diff/6 : int)) in
-  let _ : unit = show_int("prod=", (prod/7 : int)) in
-  let _ : unit = show_int("quot=", (quot/8 : int)) in
+  let _ : unit = (show_int : (string, int) -> unit)("sum=", (sum/5 : int)) in
+  let _ : unit = (show_int : (string, int) -> unit)("diff=", (diff/6 : int)) in
+  let _ : unit = (show_int : (string, int) -> unit)("prod=", (prod/7 : int)) in
+  let _ : unit = (show_int : (string, int) -> unit)("quot=", (quot/8 : int)) in
   let and_result/9: bool = true && false in
   let or_result/10: bool = true || false in
   let not_result/11: bool = !false in
@@ -28,9 +28,9 @@ fn main() -> unit {
       0 => false,
       _ : int => true,
   } in
-  let _ : unit = show_bool("and=", (and_result/9 : bool)) in
-  let _ : unit = show_bool("or=", (or_result/10 : bool)) in
-  let _ : unit = show_bool("not=", (not_result/11 : bool)) in
-  let _ : unit = show_bool("mixed=", (mixed/12 : bool)) in
+  let _ : unit = (show_bool : (string, bool) -> unit)("and=", (and_result/9 : bool)) in
+  let _ : unit = (show_bool : (string, bool) -> unit)("or=", (or_result/10 : bool)) in
+  let _ : unit = (show_bool : (string, bool) -> unit)("not=", (not_result/11 : bool)) in
+  let _ : unit = (show_bool : (string, bool) -> unit)("mixed=", (mixed/12 : bool)) in
   ()
 }

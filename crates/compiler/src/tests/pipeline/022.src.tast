@@ -22,10 +22,10 @@ fn repeated_string(s/2: string) -> int {
 }
 
 fn main() -> unit {
-  let _ : unit = string_println(int_to_string(match_string("hello"))) in
-  let _ : unit = string_println(int_to_string(match_string("planet"))) in
-  let _ : unit = string_println(int_to_string(wildcard_position("world"))) in
-  let _ : unit = string_println(int_to_string(wildcard_position("sun"))) in
-  let _ : unit = string_println(int_to_string(repeated_string("hello"))) in
-  string_println(int_to_string(repeated_string("mars")))
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_string : (string) -> int)("hello"))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_string : (string) -> int)("planet"))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((wildcard_position : (string) -> int)("world"))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((wildcard_position : (string) -> int)("sun"))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((repeated_string : (string) -> int)("hello"))) in
+  (string_println : (string) -> unit)((int_to_string : (int) -> string)((repeated_string : (string) -> int)("mars")))
 }

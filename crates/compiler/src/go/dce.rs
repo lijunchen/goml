@@ -284,7 +284,7 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             }
         }
         ast::Expr::Call { func, args, ty } => ast::Expr::Call {
-            func,
+            func: Box::new(dce_expr(*func)),
             args: args.into_iter().map(dce_expr).collect(),
             ty,
         },
@@ -375,6 +375,12 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                 s.extend(vars_used_in_expr(e));
             }
         }
+        ast::Expr::Call { func, args, .. } => {
+            s.extend(vars_used_in_expr(func));
+            for arg in args {
+                s.extend(vars_used_in_expr(arg));
+            }
+        }
         ast::Expr::Block { stmts, expr, .. } => {
             // Compute free vars from statements/expr inside block without cloning
             let mut used: HashSet<String> = HashSet::new();
@@ -445,11 +451,6 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
             s.extend(&used - &declared);
             if let Some(e) = expr {
                 s.extend(vars_used_in_expr(e));
-            }
-        }
-        ast::Expr::Call { args, .. } => {
-            for a in args {
-                s.extend(vars_used_in_expr(a));
             }
         }
         ast::Expr::Nil { .. }
@@ -626,6 +627,8 @@ fn prune_dead_functions(file: ast::File) -> ast::File {
         return file;
     }
 
+    let fn_names: HashSet<String> = fn_map.keys().cloned().collect();
+
     let mut reachable: HashSet<String> = HashSet::new();
     let mut stack: Vec<String> = Vec::new();
     for root in ["main", "main0"] {
@@ -640,7 +643,7 @@ fn prune_dead_functions(file: ast::File) -> ast::File {
         }
 
         if let Some(f) = fn_map.get(&name) {
-            for callee in called_functions_in_fn(f) {
+            for callee in called_functions_in_fn(f, &fn_names) {
                 if fn_map.contains_key(&callee) {
                     stack.push(callee);
                 }
@@ -660,46 +663,54 @@ fn prune_dead_functions(file: ast::File) -> ast::File {
     ast::File { toplevels }
 }
 
-fn called_functions_in_fn(f: &ast::Fn) -> HashSet<String> {
+fn called_functions_in_fn(f: &ast::Fn, fn_names: &HashSet<String>) -> HashSet<String> {
     let mut calls = HashSet::new();
-    collect_called_in_block(&f.body, &mut calls);
+    collect_called_in_block(&f.body, &mut calls, fn_names);
     calls
 }
 
-fn collect_called_in_block(block: &ast::Block, calls: &mut HashSet<String>) {
+fn collect_called_in_block(
+    block: &ast::Block,
+    calls: &mut HashSet<String>,
+    fn_names: &HashSet<String>,
+) {
     for stmt in &block.stmts {
-        collect_called_in_stmt(stmt, calls);
+        collect_called_in_stmt(stmt, calls, fn_names);
     }
 }
 
-fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
+fn collect_called_in_stmt(
+    stmt: &ast::Stmt,
+    calls: &mut HashSet<String>,
+    fn_names: &HashSet<String>,
+) {
     match stmt {
-        ast::Stmt::Expr(e) => collect_called_in_expr(e, calls),
+        ast::Stmt::Expr(e) => collect_called_in_expr(e, calls, fn_names),
         ast::Stmt::VarDecl { value, .. } => {
             if let Some(v) = value {
-                collect_called_in_expr(v, calls);
+                collect_called_in_expr(v, calls, fn_names);
             }
         }
-        ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls),
+        ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls, fn_names),
         ast::Stmt::IndexAssign {
             array,
             index,
             value,
         } => {
-            collect_called_in_expr(array, calls);
-            collect_called_in_expr(index, calls);
-            collect_called_in_expr(value, calls);
+            collect_called_in_expr(array, calls, fn_names);
+            collect_called_in_expr(index, calls, fn_names);
+            collect_called_in_expr(value, calls, fn_names);
         }
         ast::Stmt::Return { expr } => {
             if let Some(e) = expr {
-                collect_called_in_expr(e, calls);
+                collect_called_in_expr(e, calls, fn_names);
             }
         }
         ast::Stmt::If { cond, then, else_ } => {
-            collect_called_in_expr(cond, calls);
-            collect_called_in_block(then, calls);
+            collect_called_in_expr(cond, calls, fn_names);
+            collect_called_in_block(then, calls, fn_names);
             if let Some(b) = else_ {
-                collect_called_in_block(b, calls);
+                collect_called_in_block(b, calls, fn_names);
             }
         }
         ast::Stmt::SwitchExpr {
@@ -707,13 +718,13 @@ fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
             cases,
             default,
         } => {
-            collect_called_in_expr(expr, calls);
+            collect_called_in_expr(expr, calls, fn_names);
             for (e, b) in cases {
-                collect_called_in_expr(e, calls);
-                collect_called_in_block(b, calls);
+                collect_called_in_expr(e, calls, fn_names);
+                collect_called_in_block(b, calls, fn_names);
             }
             if let Some(b) = default {
-                collect_called_in_block(b, calls);
+                collect_called_in_block(b, calls, fn_names);
             }
         }
         ast::Stmt::SwitchType {
@@ -722,58 +733,66 @@ fn collect_called_in_stmt(stmt: &ast::Stmt, calls: &mut HashSet<String>) {
             default,
             ..
         } => {
-            collect_called_in_expr(expr, calls);
+            collect_called_in_expr(expr, calls, fn_names);
             for (_t, b) in cases {
-                collect_called_in_block(b, calls);
+                collect_called_in_block(b, calls, fn_names);
             }
             if let Some(b) = default {
-                collect_called_in_block(b, calls);
+                collect_called_in_block(b, calls, fn_names);
             }
         }
     }
 }
 
-fn collect_called_in_expr(expr: &ast::Expr, calls: &mut HashSet<String>) {
+fn collect_called_in_expr(
+    expr: &ast::Expr,
+    calls: &mut HashSet<String>,
+    fn_names: &HashSet<String>,
+) {
     match expr {
         ast::Expr::Call { func, args, .. } => {
-            calls.insert(func.clone());
+            collect_called_in_expr(func, calls, fn_names);
             for arg in args {
-                collect_called_in_expr(arg, calls);
+                collect_called_in_expr(arg, calls, fn_names);
             }
         }
-        ast::Expr::FieldAccess { obj, .. } => collect_called_in_expr(obj, calls),
+        ast::Expr::FieldAccess { obj, .. } => collect_called_in_expr(obj, calls, fn_names),
         ast::Expr::Index { array, index, .. } => {
-            collect_called_in_expr(array, calls);
-            collect_called_in_expr(index, calls);
+            collect_called_in_expr(array, calls, fn_names);
+            collect_called_in_expr(index, calls, fn_names);
         }
-        ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls),
+        ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
-                collect_called_in_expr(e, calls);
+                collect_called_in_expr(e, calls, fn_names);
             }
         }
         ast::Expr::ArrayLiteral { elems, .. } => {
             for e in elems {
-                collect_called_in_expr(e, calls);
+                collect_called_in_expr(e, calls, fn_names);
             }
         }
         ast::Expr::Block { stmts, expr, .. } => {
             for stmt in stmts {
-                collect_called_in_stmt(stmt, calls);
+                collect_called_in_stmt(stmt, calls, fn_names);
             }
             if let Some(e) = expr {
-                collect_called_in_expr(e, calls);
+                collect_called_in_expr(e, calls, fn_names);
             }
         }
-        ast::Expr::UnaryOp { expr, .. } => collect_called_in_expr(expr, calls),
+        ast::Expr::UnaryOp { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
         ast::Expr::BinaryOp { lhs, rhs, .. } => {
-            collect_called_in_expr(lhs, calls);
-            collect_called_in_expr(rhs, calls);
+            collect_called_in_expr(lhs, calls, fn_names);
+            collect_called_in_expr(rhs, calls, fn_names);
+        }
+        ast::Expr::Var { name, .. } => {
+            if fn_names.contains(name) {
+                calls.insert(name.clone());
+            }
         }
         ast::Expr::Nil { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
-        | ast::Expr::Var { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
         | ast::Expr::String { .. } => {}
@@ -925,11 +944,13 @@ fn collect_packages_in_expr(
 ) {
     match expr {
         ast::Expr::Call { func, args, .. } => {
-            if let Some((pkg, _)) = func.split_once('.')
+            if let ast::Expr::Var { name, .. } = func.as_ref()
+                && let Some((pkg, _)) = name.split_once('.')
                 && imports.contains(pkg)
             {
                 used.insert(pkg.to_string());
             }
+            collect_packages_in_expr(func, imports, used);
             for arg in args {
                 collect_packages_in_expr(arg, imports, used);
             }

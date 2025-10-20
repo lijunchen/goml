@@ -1,0 +1,25 @@
+fn double(x: int) -> int {
+    x * 2
+}
+
+fn increment(x: int) -> int {
+    x + 1
+}
+
+fn apply_once(f: (int) -> int, value: int) -> int {
+    f(value)
+}
+
+fn compose(f: (int) -> int, g: (int) -> int, value: int) -> int {
+    f(g(value))
+}
+
+fn main() {
+    let local = double in
+    let first = apply_once(local, 4) in
+    let composed = compose(double, increment, first) in
+    let printer = string_println in
+    let _ = printer(int_to_string(composed)) in
+    ()
+}
+
