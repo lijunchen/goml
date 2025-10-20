@@ -149,7 +149,9 @@ impl crate::tast::ExternGo {
 
 impl ClosureParam {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
-        self.pat.to_doc(env)
+        RcDoc::text(self.name.clone())
+            .append(RcDoc::text(": "))
+            .append(self.ty.to_doc(env))
     }
 }
 

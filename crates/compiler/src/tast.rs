@@ -42,12 +42,14 @@ pub struct ExternGo {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub pat: Pat,
+    pub name: String,
+    pub ty: Ty,
+    pub astptr: Option<MySyntaxNodePtr>,
 }
 
 impl ClosureParam {
     pub fn get_ty(&self) -> Ty {
-        self.pat.get_ty()
+        self.ty.clone()
     }
 }
 

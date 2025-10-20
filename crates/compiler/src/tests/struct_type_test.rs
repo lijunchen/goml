@@ -216,11 +216,7 @@ fn use_closure(x: int) -> int {
     };
 
     assert_eq!(params.len(), 1);
-    let param_ty = match &params[0].pat {
-        tast::Pat::PVar { ty, .. } => ty.clone(),
-        other => panic!("unexpected parameter pattern: {:?}", other),
-    };
-    assert_eq!(param_ty, tast::Ty::TInt);
+    assert_eq!(params[0].ty, tast::Ty::TInt);
 
     assert!(matches!(**body, tast::Expr::EBinary { .. }));
 
@@ -261,14 +257,10 @@ fn wrap[T](value: T) -> T {
     };
 
     assert_eq!(params.len(), 1);
-    let param_ty = match &params[0].pat {
-        tast::Pat::PVar { ty, .. } => ty.clone(),
-        other => panic!("unexpected parameter pattern: {:?}", other),
-    };
     let expected = tast::Ty::TParam {
         name: "T".to_string(),
     };
-    assert_eq!(param_ty, expected);
+    assert_eq!(params[0].ty, expected);
 
     let tast::Ty::TFunc {
         params: func_params,

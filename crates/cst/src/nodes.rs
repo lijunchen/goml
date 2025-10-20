@@ -1085,8 +1085,8 @@ pub struct ClosureParam {
 }
 
 impl ClosureParam {
-    pub fn pat(&self) -> Option<Pattern> {
-        support::child(&self.syntax)
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Lident)
     }
 
     pub fn ty(&self) -> Option<Type> {

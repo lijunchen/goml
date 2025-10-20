@@ -199,9 +199,11 @@ fn closure_param_list(p: &mut Parser) {
 
 fn closure_param(p: &mut Parser) {
     let m = p.open();
-    if pattern::pattern(p).is_none() {
+    if p.at(T![lident]) {
+        p.expect(T![lident]);
+    } else {
         if !p.at(T![|]) && !p.eof() {
-            p.advance_with_error("expected a pattern in closure parameter");
+            p.advance_with_error("expected an identifier in closure parameter");
         }
         p.close(m, MySyntaxKind::CLOSURE_PARAM);
         return;

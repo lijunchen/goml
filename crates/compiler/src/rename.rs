@@ -290,10 +290,12 @@ impl Rename {
 
 impl Rename {
     fn rename_closure_param(&self, param: &ast::ClosureParam, env: &mut Env) -> ast::ClosureParam {
-        let pat = self.rename_pat(&param.pat, env);
+        let new_name = self.fresh_name(&param.name.0);
+        env.add(&param.name, &new_name);
         ast::ClosureParam {
-            pat,
+            name: new_name,
             ty: param.ty.clone(),
+            astptr: param.astptr,
         }
     }
 }

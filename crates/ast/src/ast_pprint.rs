@@ -646,10 +646,10 @@ impl Item {
 
 impl ClosureParam {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let pat_doc = self.pat.to_doc();
-        match &self.ty {
-            Some(ty) => pat_doc.append(RcDoc::text(": ")).append(ty.to_doc()),
-            None => pat_doc,
+        let mut doc = RcDoc::text(self.name.0.clone());
+        if let Some(ty) = &self.ty {
+            doc = doc.append(RcDoc::text(": ")).append(ty.to_doc());
         }
+        doc
     }
 }

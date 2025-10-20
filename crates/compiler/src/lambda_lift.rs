@@ -323,33 +323,15 @@ fn transform_closure(
 
     scope.push_layer();
     for (param, param_ty) in params.iter().zip(param_tys.iter()) {
-        match &param.pat {
-            tast::Pat::PVar { name, .. } => {
-                scope.insert(
-                    name.clone(),
-                    ScopeEntry {
-                        ty: param_ty.clone(),
-                        closure_struct: state.closure_struct_for_ty(param_ty),
-                    },
-                );
-                lowered_params.push((name.clone(), param_ty.clone()));
-                bound_names.push(name.clone());
-            }
-            tast::Pat::PWild { .. } => {
-                let fresh = state.env.gensym("arg");
-                scope.insert(
-                    fresh.clone(),
-                    ScopeEntry {
-                        ty: param_ty.clone(),
-                        closure_struct: state.closure_struct_for_ty(param_ty),
-                    },
-                );
-                lowered_params.push((fresh, param_ty.clone()));
-            }
-            _ => {
-                panic!("complex closure parameters are not supported yet");
-            }
-        }
+        scope.insert(
+            param.name.clone(),
+            ScopeEntry {
+                ty: param_ty.clone(),
+                closure_struct: state.closure_struct_for_ty(param_ty),
+            },
+        );
+        lowered_params.push((param.name.clone(), param_ty.clone()));
+        bound_names.push(param.name.clone());
     }
 
     let body = transform_expr(state, scope, *body);
@@ -473,9 +455,7 @@ fn collect_captured(
         core::Expr::EClosure { params, body, .. } => {
             let mut nested_bound = bound.clone();
             for param in params {
-                if let tast::Pat::PVar { name, .. } = &param.pat {
-                    nested_bound.push(name.clone());
-                }
+                nested_bound.push(param.name.clone());
             }
             collect_captured(body, &mut nested_bound, captured, scope);
         }
