@@ -1306,7 +1306,9 @@ impl TypeInference {
                 let params = params
                     .into_iter()
                     .map(|param| tast::ClosureParam {
-                        pat: self.subst_pat(env, param.pat),
+                        name: param.name,
+                        ty: self.subst_ty(env, &param.ty),
+                        astptr: param.astptr,
                     })
                     .collect();
                 let body = Box::new(self.subst(env, *body));
@@ -1649,14 +1651,17 @@ impl TypeInference {
                 let mut param_tys = Vec::new();
 
                 for param in params.iter() {
-                    let expected_ty = match &param.ty {
+                    let param_ty = match &param.ty {
                         Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env),
                         None => self.fresh_ty_var(),
                     };
-                    let pat_tast = self.check_pat(env, &mut closure_vars, &param.pat, &expected_ty);
-                    let pat_ty = pat_tast.get_ty();
-                    param_tys.push(pat_ty.clone());
-                    params_tast.push(tast::ClosureParam { pat: pat_tast });
+                    closure_vars.insert(param.name.clone(), param_ty.clone());
+                    param_tys.push(param_ty.clone());
+                    params_tast.push(tast::ClosureParam {
+                        name: param.name.0.clone(),
+                        ty: param_ty,
+                        astptr: Some(param.astptr),
+                    });
                 }
 
                 let body_tast = self.infer(env, &closure_vars, body);

@@ -501,27 +501,22 @@ fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast
 }
 
 fn lower_closure_param(ctx: &mut LowerCtx, node: cst::ClosureParam) -> Option<ast::ClosureParam> {
-    let pat_node = match node.pat() {
-        Some(pat) => pat,
-        None => {
-            ctx.push_error(
-                Some(node.syntax().text_range()),
-                "Closure parameter missing pattern",
-            );
-            return None;
-        }
-    };
-    let pat = match lower_pat(ctx, pat_node) {
-        Some(pat) => pat,
-        None => return None,
+    let Some(name_token) = node.lident() else {
+        ctx.push_error(
+            Some(node.syntax().text_range()),
+            "Closure parameter missing name",
+        );
+        return None;
     };
 
+    let name = ast::Lident(name_token.to_string());
     let ty = match node.ty() {
         Some(ty_node) => Some(lower_ty(ctx, ty_node)?),
         None => None,
     };
+    let astptr = MySyntaxNodePtr::new(node.syntax());
 
-    Some(ast::ClosureParam { pat, ty })
+    Some(ast::ClosureParam { name, ty, astptr })
 }
 
 fn lower_expr(ctx: &mut LowerCtx, node: cst::Expr) -> Option<ast::Expr> {

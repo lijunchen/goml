@@ -188,7 +188,11 @@ impl Expr {
                     RcDoc::text("||")
                 } else {
                     let list = RcDoc::intersperse(
-                        params.iter().map(|param| param.pat.to_doc(env)),
+                        params.iter().map(|param| {
+                            RcDoc::text(param.name.clone())
+                                .append(RcDoc::text(": "))
+                                .append(param.ty.to_doc(env))
+                        }),
                         RcDoc::text(", "),
                     );
                     RcDoc::text("|").append(list).append(RcDoc::text("|"))

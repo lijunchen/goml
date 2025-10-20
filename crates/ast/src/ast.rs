@@ -83,8 +83,9 @@ pub enum Ty {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub pat: Pat,
+    pub name: Lident,
     pub ty: Option<Ty>,
+    pub astptr: MySyntaxNodePtr,
 }
 
 #[derive(Debug, Clone)]
