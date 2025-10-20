@@ -204,7 +204,7 @@ pub enum Expr {
         else_branch: Box<Expr>,
     },
     ECall {
-        func: Lident,
+        func: Box<Expr>,
         args: Vec<Expr>,
     },
     EUnary {

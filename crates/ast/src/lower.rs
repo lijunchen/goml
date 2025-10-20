@@ -613,27 +613,62 @@ fn lower_expr_with_args(
             })
         }
         cst::Expr::CallExpr(it) => {
-            let mut args: Vec<ast::Expr> = it
+            let args: Vec<ast::Expr> = it
                 .arg_list()
                 .map(|list| list.args().flat_map(|arg| lower_arg(ctx, arg)).collect())
                 .unwrap_or_default();
-            if let Some(func) = it.l_name() {
-                args.extend(trailing_args);
-                return Some(ast::Expr::ECall {
-                    func: ast::Lident(func),
-                    args,
-                });
-            }
-            if let Some(func) = it.u_name() {
-                args.extend(trailing_args);
-                return Some(ast::Expr::EConstr {
-                    vcon: ast::Uident::new(&func),
-                    args,
-                });
-            }
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
-                args.extend(trailing_args);
-                return lower_expr_with_args(ctx, callee, args);
+                return match callee {
+                    cst::Expr::LidentExpr(lident_expr) => {
+                        let name = lident_expr.lident_token().unwrap().to_string();
+                        let var_expr = ast::Expr::EVar {
+                            name: ast::Lident(name),
+                            astptr: MySyntaxNodePtr::new(lident_expr.syntax()),
+                        };
+                        let call = ast::Expr::ECall {
+                            func: Box::new(var_expr),
+                            args,
+                        };
+                        apply_trailing_args(
+                            ctx,
+                            call,
+                            trailing_args,
+                            Some(it.syntax().text_range()),
+                        )
+                    }
+                    cst::Expr::UidentExpr(uident_expr) => {
+                        let name = uident_expr.uident().unwrap().to_string();
+                        let constr = ast::Expr::EConstr {
+                            vcon: ast::Uident::new(&name),
+                            args,
+                        };
+                        apply_trailing_args(
+                            ctx,
+                            constr,
+                            trailing_args,
+                            Some(it.syntax().text_range()),
+                        )
+                    }
+                    other => {
+                        if matches!(other, cst::Expr::CallExpr(_)) {
+                            let func_expr = lower_expr(ctx, other)?;
+                            let call = ast::Expr::ECall {
+                                func: Box::new(func_expr),
+                                args,
+                            };
+                            apply_trailing_args(
+                                ctx,
+                                call,
+                                trailing_args,
+                                Some(it.syntax().text_range()),
+                            )
+                        } else {
+                            let mut combined_args = args;
+                            combined_args.extend(trailing_args);
+                            lower_expr_with_args(ctx, other, combined_args)
+                        }
+                    }
+                };
             }
             ctx.push_error(
                 Some(it.syntax().text_range()),
@@ -1080,13 +1115,19 @@ fn apply_trailing_args(
     }
 
     match expr {
-        ast::Expr::EVar { name, .. } => Some(ast::Expr::ECall {
-            func: name,
+        ast::Expr::EVar { name, astptr } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EVar { name, astptr }),
             args: trailing_args,
         }),
-        ast::Expr::ECall { func, mut args } => {
-            args.extend(trailing_args);
-            Some(ast::Expr::ECall { func, args })
+        ast::Expr::ECall { func, args } => {
+            let mut result = ast::Expr::ECall { func, args };
+            for arg in trailing_args {
+                result = ast::Expr::ECall {
+                    func: Box::new(result),
+                    args: vec![arg],
+                };
+            }
+            Some(result)
         }
         ast::Expr::EConstr { vcon, mut args } => {
             args.extend(trailing_args);

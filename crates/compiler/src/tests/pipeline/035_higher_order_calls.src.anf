@@ -1,0 +1,28 @@
+fn double(x/0: int) -> int {
+  int_mul(x/0, 2)
+}
+
+fn increment(x/1: int) -> int {
+  int_add(x/1, 1)
+}
+
+fn chooser(flag/2: bool) -> (int) -> int {
+  if flag/2 {
+    double
+  } else {
+    increment
+  }
+}
+
+fn main() -> unit {
+  let chosen/3 = chooser(true) in
+  let applied/4 = chosen/3(5) in
+  let t2 = chooser(false) in
+  let direct/5 = t2(5) in
+  let printer/6 = string_println in
+  let t3 = int_to_string(applied/4) in
+  let mtmp0 = printer/6(t3) in
+  let t4 = int_to_string(direct/5) in
+  let mtmp1 = printer/6(t4) in
+  ()
+}

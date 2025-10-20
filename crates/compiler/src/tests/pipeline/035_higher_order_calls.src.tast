@@ -1,0 +1,25 @@
+fn double(x/0: int) -> int {
+  (x/0 : int) * 2
+}
+
+fn increment(x/1: int) -> int {
+  (x/1 : int) + 1
+}
+
+fn chooser(flag/2: bool) -> (int) -> int {
+  if (flag/2 : bool) {
+      (double : (int) -> int)
+  } else {
+      (increment : (int) -> int)
+  }
+}
+
+fn main() -> unit {
+  let chosen/3: (int) -> int = (chooser : (bool) -> (int) -> int)(true) in
+  let applied/4: int = (chosen/3 : (int) -> int)(5) in
+  let direct/5: int = (chooser : (bool) -> (int) -> int)(false)(5) in
+  let printer/6: (string) -> unit = (string_println : (string) -> unit) in
+  let _ : unit = (printer/6 : (string) -> unit)((int_to_string : (int) -> string)((applied/4 : int))) in
+  let _ : unit = (printer/6 : (string) -> unit)((int_to_string : (int) -> string)((direct/5 : int))) in
+  ()
+}
