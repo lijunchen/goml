@@ -314,10 +314,8 @@ fn param(p: &mut Parser) {
 }
 
 pub(crate) fn type_expr(p: &mut Parser) {
-    if type_expr_bp(p, 0).is_none() {
-        if !p.eof() {
-            p.advance_with_error("expected a type");
-        }
+    if type_expr_bp(p, 0).is_none() && !p.eof() {
+        p.advance_with_error("expected a type");
     }
 }
 

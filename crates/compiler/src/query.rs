@@ -104,10 +104,10 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             ty: _,
         } => {
             for param in params {
-                if let Some(astptr) = param.astptr {
-                    if astptr.text_range().contains_range(*range) {
-                        return Some(param.ty.to_pretty(env, 80));
-                    }
+                if let Some(astptr) = param.astptr
+                    && astptr.text_range().contains_range(*range)
+                {
+                    return Some(param.ty.to_pretty(env, 80));
                 }
             }
             find_type_expr(env, body, range)

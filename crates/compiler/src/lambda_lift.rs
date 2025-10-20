@@ -118,7 +118,7 @@ pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
         toplevels.push(f);
     }
 
-    toplevels.extend(state.new_functions.into_iter());
+    toplevels.append(&mut state.new_functions);
 
     core::File { toplevels }
 }
@@ -173,7 +173,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             core::Expr::EArray { items, ty }
         }
         core::Expr::EClosure { params, body, ty } => {
-            transform_closure(state, scope, params, body, ty)
+            transform_closure(state, scope, params, *body, ty)
         }
         core::Expr::ELet {
             name, value, body, ..
@@ -260,32 +260,29 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
 
             if let core::Expr::EVar { name, .. } = func.as_ref()
                 && let Some(entry) = scope.get(name)
-            {
-                if let Some(struct_name) = entry
+                && let Some(struct_name) = entry
                     .closure_struct
                     .clone()
                     .or_else(|| state.closure_struct_for_ty(&entry.ty))
-                {
-                    if let Some(apply_fn) = state.apply_fn_for_struct(&struct_name) {
-                        let mut call_args = Vec::with_capacity(args.len() + 1);
-                        call_args.push(core::Expr::EVar {
-                            name: name.clone(),
-                            ty: Ty::TCon {
-                                name: struct_name.clone(),
-                            },
-                        });
-                        call_args.extend(args);
-                        let func_ty = entry.ty.clone();
-                        return core::Expr::ECall {
-                            func: Box::new(core::Expr::EVar {
-                                name: apply_fn.to_string(),
-                                ty: func_ty,
-                            }),
-                            args: call_args,
-                            ty,
-                        };
-                    }
-                }
+                && let Some(apply_fn) = state.apply_fn_for_struct(&struct_name)
+            {
+                let mut call_args = Vec::with_capacity(args.len() + 1);
+                call_args.push(core::Expr::EVar {
+                    name: name.clone(),
+                    ty: Ty::TCon {
+                        name: struct_name.clone(),
+                    },
+                });
+                call_args.extend(args);
+                let func_ty = entry.ty.clone();
+                return core::Expr::ECall {
+                    func: Box::new(core::Expr::EVar {
+                        name: apply_fn.to_string(),
+                        ty: func_ty,
+                    }),
+                    args: call_args,
+                    ty,
+                };
             }
             core::Expr::ECall { func, args, ty }
         }
@@ -300,7 +297,7 @@ fn transform_closure(
     state: &mut State<'_>,
     scope: &mut Scope,
     params: Vec<tast::ClosureParam>,
-    body: Box<core::Expr>,
+    body: core::Expr,
     ty: Ty,
 ) -> core::Expr {
     let (param_tys, ret_ty) = match ty.clone() {
@@ -334,7 +331,7 @@ fn transform_closure(
         bound_names.push(param.name.clone());
     }
 
-    let body = transform_expr(state, scope, *body);
+    let body = transform_expr(state, scope, body);
     scope.pop_layer();
 
     let mut captured = IndexMap::new();
@@ -430,12 +427,12 @@ fn collect_captured(
 ) {
     match expr {
         core::Expr::EVar { name, .. } => {
-            if !bound.iter().any(|n| n == name) {
-                if let Some(entry) = scope.get(name) {
-                    captured
-                        .entry(name.clone())
-                        .or_insert_with(|| entry.ty.clone());
-                }
+            if !bound.iter().any(|n| n == name)
+                && let Some(entry) = scope.get(name)
+            {
+                captured
+                    .entry(name.clone())
+                    .or_insert_with(|| entry.ty.clone());
             }
         }
         core::Expr::EUnit { .. }
