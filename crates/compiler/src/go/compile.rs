@@ -378,7 +378,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
         }
         anf::CExpr::ECall { func, args, ty } => {
             let compiled_args: Vec<_> = args.iter().map(|arg| compile_imm(env, arg)).collect();
-            let func_ty = tast_ty_to_go_type(&imm_ty(&func));
+            let func_ty = tast_ty_to_go_type(&imm_ty(func));
 
             if let anf::ImmExpr::ImmVar { name, .. } = &func
                 && (*name == "array_get" || *name == "array_set")
@@ -406,7 +406,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
                 }
             } else {
                 goast::Expr::Call {
-                    func: Box::new(compile_imm(env, &func)),
+                    func: Box::new(compile_imm(env, func)),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }

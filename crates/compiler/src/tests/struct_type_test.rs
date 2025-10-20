@@ -269,7 +269,7 @@ fn wrap[T](value: T) -> T {
     else {
         panic!("expected closure type to be a function");
     };
-    assert_eq!(func_params.as_slice(), &[expected.clone()]);
+    assert_eq!(func_params.as_slice(), std::slice::from_ref(&expected));
     assert_eq!(**ret_ty, expected);
 }
 
