@@ -1769,14 +1769,6 @@ impl TypeInference {
                                 call_site_func_ty.clone(),
                             ));
 
-                            if name.0 == "array_set"
-                                && let Some(first_arg_ty) =
-                                    args_tast.first().map(|arg| arg.get_ty())
-                            {
-                                env.constraints
-                                    .push(Constraint::TypeEqual(ret_ty.clone(), first_arg_ty));
-                            }
-
                             tast::Expr::ECall {
                                 func: Box::new(tast::Expr::EVar {
                                     name: name.0.clone(),
