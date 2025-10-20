@@ -1,7 +1,10 @@
 use std::cell::Cell;
+use std::collections::HashSet;
 
 use ::ast::ast::Lident;
 use ast::ast;
+
+use crate::env;
 
 #[derive(Default)]
 pub struct Rename {
@@ -41,16 +44,29 @@ impl Rename {
     }
 
     pub fn rename_file(&self, ast: ast::File) -> ast::File {
+        let mut global_funcs: HashSet<String> = env::builtin_function_names().into_iter().collect();
+        for item in ast.toplevels.iter() {
+            match item {
+                ast::Item::Fn(func) => {
+                    global_funcs.insert(func.name.0.clone());
+                }
+                ast::Item::ExternGo(ext) => {
+                    global_funcs.insert(ext.goml_name.0.clone());
+                }
+                _ => {}
+            }
+        }
+
         ast::File {
             toplevels: ast
                 .toplevels
                 .iter()
-                .map(|it| self.rename_item(it))
+                .map(|it| self.rename_item(it, &global_funcs))
                 .collect(),
         }
     }
 
-    pub fn rename_item(&self, item: &ast::Item) -> ast::Item {
+    pub fn rename_item(&self, item: &ast::Item, global_funcs: &HashSet<String>) -> ast::Item {
         match item {
             ast::Item::EnumDef(_) => item.clone(),
             ast::Item::StructDef(_) => item.clone(),
@@ -58,14 +74,18 @@ impl Rename {
             ast::Item::ImplBlock(i) => ast::Item::ImplBlock(ast::ImplBlock {
                 trait_name: i.trait_name.clone(),
                 for_type: i.for_type.clone(),
-                methods: i.methods.iter().map(|m| self.rename_fn(m)).collect(),
+                methods: i
+                    .methods
+                    .iter()
+                    .map(|m| self.rename_fn(m, global_funcs))
+                    .collect(),
             }),
-            ast::Item::Fn(func) => ast::Item::Fn(self.rename_fn(func)),
+            ast::Item::Fn(func) => ast::Item::Fn(self.rename_fn(func, global_funcs)),
             ast::Item::ExternGo(ext) => ast::Item::ExternGo(ext.clone()),
         }
     }
 
-    pub fn rename_fn(&self, func: &ast::Fn) -> ast::Fn {
+    pub fn rename_fn(&self, func: &ast::Fn, global_funcs: &HashSet<String>) -> ast::Fn {
         let ast::Fn {
             name,
             generics,
@@ -86,16 +106,26 @@ impl Rename {
             generics: generics.clone(),
             params: new_params,
             ret_ty: ret_ty.clone(),
-            body: self.rename_expr(body, &mut env),
+            body: self.rename_expr(body, &mut env, global_funcs),
         }
     }
 
-    fn rename_expr(&self, expr: &ast::Expr, env: &mut Env) -> ast::Expr {
+    fn rename_expr(
+        &self,
+        expr: &ast::Expr,
+        env: &mut Env,
+        global_funcs: &HashSet<String>,
+    ) -> ast::Expr {
         match expr {
             ast::Expr::EVar { name, astptr } => {
                 if let Some(new_name) = env.rfind(name) {
                     ast::Expr::EVar {
                         name: new_name.clone(),
+                        astptr: *astptr,
+                    }
+                } else if global_funcs.contains(&name.0) {
+                    ast::Expr::EVar {
+                        name: name.clone(),
                         astptr: *astptr,
                     }
                 } else {
@@ -108,25 +138,33 @@ impl Rename {
             ast::Expr::EString { .. } => expr.clone(),
             ast::Expr::EConstr { vcon, args } => ast::Expr::EConstr {
                 vcon: vcon.clone(),
-                args: args.iter().map(|arg| self.rename_expr(arg, env)).collect(),
+                args: args
+                    .iter()
+                    .map(|arg| self.rename_expr(arg, env, global_funcs))
+                    .collect(),
             },
             ast::Expr::EStructLiteral { name, fields } => ast::Expr::EStructLiteral {
                 name: name.clone(),
                 fields: fields
                     .iter()
-                    .map(|(field_name, expr)| (field_name.clone(), self.rename_expr(expr, env)))
+                    .map(|(field_name, expr)| {
+                        (
+                            field_name.clone(),
+                            self.rename_expr(expr, env, global_funcs),
+                        )
+                    })
                     .collect(),
             },
             ast::Expr::ETuple { items } => ast::Expr::ETuple {
                 items: items
                     .iter()
-                    .map(|item| self.rename_expr(item, env))
+                    .map(|item| self.rename_expr(item, env, global_funcs))
                     .collect(),
             },
             ast::Expr::EArray { items } => ast::Expr::EArray {
                 items: items
                     .iter()
-                    .map(|item| self.rename_expr(item, env))
+                    .map(|item| self.rename_expr(item, env, global_funcs))
                     .collect(),
             },
             ast::Expr::EClosure { params, body } => {
@@ -135,7 +173,7 @@ impl Rename {
                     .iter()
                     .map(|param| self.rename_closure_param(param, &mut closure_env))
                     .collect();
-                let new_body = self.rename_expr(body, &mut closure_env);
+                let new_body = self.rename_expr(body, &mut closure_env, global_funcs);
 
                 ast::Expr::EClosure {
                     params: new_params,
@@ -143,9 +181,9 @@ impl Rename {
                 }
             }
             ast::Expr::ELet { pat, value, body } => {
-                let new_value = self.rename_expr(value, env);
+                let new_value = self.rename_expr(value, env, global_funcs);
                 let new_pat = self.rename_pat(pat, env);
-                let new_body = self.rename_expr(body, env);
+                let new_body = self.rename_expr(body, env, global_funcs);
                 ast::Expr::ELet {
                     pat: new_pat,
                     value: Box::new(new_value),
@@ -153,12 +191,12 @@ impl Rename {
                 }
             }
             ast::Expr::EMatch { expr, arms } => {
-                let new_expr = self.rename_expr(expr, env);
+                let new_expr = self.rename_expr(expr, env, global_funcs);
                 let new_arms = arms
                     .iter()
                     .map(|arm| {
                         let new_pat = self.rename_pat(&arm.pat, env);
-                        let new_body = self.rename_expr(&arm.body, env);
+                        let new_body = self.rename_expr(&arm.body, env, global_funcs);
                         ast::Arm {
                             pat: new_pat,
                             body: new_body,
@@ -175,9 +213,9 @@ impl Rename {
                 then_branch,
                 else_branch,
             } => ast::Expr::EIf {
-                cond: Box::new(self.rename_expr(cond, env)),
-                then_branch: Box::new(self.rename_expr(then_branch, env)),
-                else_branch: Box::new(self.rename_expr(else_branch, env)),
+                cond: Box::new(self.rename_expr(cond, env, global_funcs)),
+                then_branch: Box::new(self.rename_expr(then_branch, env, global_funcs)),
+                else_branch: Box::new(self.rename_expr(else_branch, env, global_funcs)),
             },
             ast::Expr::ECall { func, args } => {
                 let new_func = if let Some(new_name) = env.rfind(func) {
@@ -185,7 +223,10 @@ impl Rename {
                 } else {
                     func.clone()
                 };
-                let new_args = args.iter().map(|arg| self.rename_expr(arg, env)).collect();
+                let new_args = args
+                    .iter()
+                    .map(|arg| self.rename_expr(arg, env, global_funcs))
+                    .collect();
                 ast::Expr::ECall {
                     func: new_func,
                     args: new_args,
@@ -193,15 +234,15 @@ impl Rename {
             }
             ast::Expr::EUnary { op, expr } => ast::Expr::EUnary {
                 op: *op,
-                expr: Box::new(self.rename_expr(expr, env)),
+                expr: Box::new(self.rename_expr(expr, env, global_funcs)),
             },
             ast::Expr::EBinary { op, lhs, rhs } => ast::Expr::EBinary {
                 op: *op,
-                lhs: Box::new(self.rename_expr(lhs, env)),
-                rhs: Box::new(self.rename_expr(rhs, env)),
+                lhs: Box::new(self.rename_expr(lhs, env, global_funcs)),
+                rhs: Box::new(self.rename_expr(rhs, env, global_funcs)),
             },
             ast::Expr::EProj { tuple, index } => ast::Expr::EProj {
-                tuple: Box::new(self.rename_expr(tuple, env)),
+                tuple: Box::new(self.rename_expr(tuple, env, global_funcs)),
                 index: *index,
             },
         }

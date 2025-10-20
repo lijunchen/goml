@@ -28,19 +28,19 @@ fn get_y(p/10: Point) -> int {
 
 fn point_to_string(p/13: Point) -> string {
   let Point { x: x/14: int, y: y/15: int } = (p/13 : Point) in
-  string_add(string_add(string_add("Point { x: ", int_to_string((x/14 : int))), string_add(", y: ", int_to_string((y/15 : int)))), "}")
+  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int) -> string)((x/14 : int))), (string_add : (string, string) -> string)(", y: ", (int_to_string : (int) -> string)((y/15 : int)))), "}")
 }
 
 fn main() -> unit {
-  let start/16: Point = make_point() in
-  let _ : unit = string_println(point_to_string((start/16 : Point))) in
-  let swapped/17: Point = flip(Point { x: 1, y: 2 }) in
-  let _ : unit = string_println(point_to_string((swapped/17 : Point))) in
-  let boxed/18: Wrapper[int] = wrap_int(3) in
+  let start/16: Point = (make_point : () -> Point)() in
+  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)((start/16 : Point))) in
+  let swapped/17: Point = (flip : (Point) -> Point)(Point { x: 1, y: 2 }) in
+  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)((swapped/17 : Point))) in
+  let boxed/18: Wrapper[int] = (wrap_int : (int) -> Wrapper[int])(3) in
   let point_box/19: Wrapper[Point] = Wrapper { value: (swapped/17 : Point) } in
-  let a/20: Point = x_add_1((start/16 : Point)) in
-  let _ : unit = string_println(point_to_string((a/20 : Point))) in
-  let a/21: Point = flip(x_add_1((start/16 : Point))) in
-  let _ : unit = string_println(point_to_string((a/21 : Point))) in
+  let a/20: Point = (x_add_1 : (Point) -> Point)((start/16 : Point)) in
+  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)((a/20 : Point))) in
+  let a/21: Point = (flip : (Point) -> Point)((x_add_1 : (Point) -> Point)((start/16 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)((a/21 : Point))) in
   ()
 }

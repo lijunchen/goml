@@ -1,6 +1,6 @@
 fn point_to_string(p/0: Point) -> string {
   let Point { x: x/1: int, y: y/2: int } = (p/0 : Point) in
-  string_add("Point { x: ", string_add(int_to_string((x/1 : int)), string_add(", y: ", string_add(int_to_string((y/2 : int)), " }"))))
+  (string_add : (string, string) -> string)("Point { x: ", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((x/1 : int)), (string_add : (string, string) -> string)(", y: ", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((y/2 : int)), " }"))))
 }
 
 fn color_to_string(c/3: Color) -> string {
@@ -13,7 +13,7 @@ fn color_to_string(c/3: Color) -> string {
 
 fn line_to_string(l/4: Line) -> string {
   let Line { from: from/5: Point, to: to/6: Point, color: color/7: Color } = (l/4 : Line) in
-  string_add("Line { from: ", string_add(point_to_string((from/5 : Point)), string_add(", to: ", string_add(point_to_string((to/6 : Point)), string_add(", color: ", string_add(color_to_string((color/7 : Color)), " }"))))))
+  (string_add : (string, string) -> string)("Line { from: ", (string_add : (string, string) -> string)((point_to_string : (Point) -> string)((from/5 : Point)), (string_add : (string, string) -> string)(", to: ", (string_add : (string, string) -> string)((point_to_string : (Point) -> string)((to/6 : Point)), (string_add : (string, string) -> string)(", color: ", (string_add : (string, string) -> string)((color_to_string : (Color) -> string)((color/7 : Color)), " }"))))))
 }
 
 fn point_type(p/8: Point) -> string {
@@ -21,7 +21,7 @@ fn point_type(p/8: Point) -> string {
       Point { x: 0, y: 0 } => "origin",
       Point { x: 0, y: 1 } => "up",
       Point { x: 1, y: 0 } => "right",
-      Point { x: 0, y: y/9: int } => match int_less(0, (y/9 : int)) {
+      Point { x: 0, y: y/9: int } => match (int_less : (int, int) -> bool)(0, (y/9 : int)) {
             true => "above",
             false => "below",
         },
@@ -31,8 +31,8 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10: Point = Point { x: 0, y: 0 } in
-  let _ : unit = string_println(point_type((p0/10 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point_type : (Point) -> string)((p0/10 : Point))) in
   let p1/11: Point = Point { x: 10, y: 10 } in
   let line/12: Line = Line { from: (p0/10 : Point), to: (p1/11 : Point), color: Color::Red } in
-  string_println(line_to_string((line/12 : Line)))
+  (string_println : (string) -> unit)((line_to_string : (Line) -> string)((line/12 : Line)))
 }

@@ -63,7 +63,7 @@ pub enum CExpr {
         ty: Ty,
     },
     ECall {
-        func: String,
+        func: ImmExpr,
         args: Vec<ImmExpr>,
         ty: Ty,
     },
@@ -337,17 +337,27 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
                 })
             }),
         ),
-        core::Expr::ECall { func, args, ty: _ } => anf_list(
-            env,
-            &args,
-            Box::new(move |args| {
-                k(CExpr::ECall {
-                    func: func.clone(),
-                    args,
-                    ty: e_ty,
-                })
-            }),
-        ),
+        core::Expr::ECall { func, args, ty: _ } => {
+            let call_ty = e_ty.clone();
+            anf_imm(
+                env,
+                *func,
+                Box::new(move |func_imm| {
+                    let call_ty = call_ty.clone();
+                    anf_list(
+                        env,
+                        &args,
+                        Box::new(move |args| {
+                            k(CExpr::ECall {
+                                func: func_imm,
+                                args,
+                                ty: call_ty.clone(),
+                            })
+                        }),
+                    )
+                }),
+            )
+        }
         core::Expr::EProj {
             tuple,
             index,
@@ -535,7 +545,7 @@ pub mod anf_renamer {
                 ty,
             },
             anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
-                func: func.replace("/", "__"),
+                func: rename_imm(func),
                 args: args.into_iter().map(rename_imm).collect(),
                 ty,
             },

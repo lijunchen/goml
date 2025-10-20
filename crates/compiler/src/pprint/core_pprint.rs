@@ -291,7 +291,7 @@ impl Expr {
                 let args_doc =
                     RcDoc::intersperse(args.iter().map(|arg| arg.to_doc(env)), RcDoc::text(", "));
 
-                RcDoc::text(func)
+                func.to_doc(env)
                     .append(RcDoc::text("("))
                     .append(args_doc)
                     .append(RcDoc::text(")"))

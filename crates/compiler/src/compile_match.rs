@@ -105,7 +105,13 @@ impl Variable {
 
 fn emissing(ty: &Ty) -> core::Expr {
     core::Expr::ECall {
-        func: "missing".to_string(),
+        func: Box::new(core::Expr::EVar {
+            name: "missing".to_string(),
+            ty: Ty::TFunc {
+                params: vec![Ty::TString],
+                ret_ty: Box::new(ty.clone()),
+            },
+        }),
         args: vec![core::Expr::EString {
             value: "".to_string(),
             ty: Ty::TString,
@@ -890,7 +896,14 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                         pat: Pat::PWild { ty: pat.get_ty() },
                     }],
                     body: ECall {
-                        func: "missing".to_string(),
+                        func: Box::new(Expr::EVar {
+                            name: "missing".to_string(),
+                            ty: Ty::TFunc {
+                                params: vec![Ty::TString],
+                                ret_ty: Box::new(body.get_ty()),
+                            },
+                            astptr: None,
+                        }),
                         args: vec![Expr::EString {
                             value: "".to_string(),
                             ty: Ty::TString,
@@ -959,8 +972,15 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                             op, ty
                         )
                     });
+                    let arg_ty = arg.get_ty();
                     core::Expr::ECall {
-                        func: func.to_string(),
+                        func: Box::new(core::Expr::EVar {
+                            name: func.to_string(),
+                            ty: Ty::TFunc {
+                                params: vec![arg_ty.clone()],
+                                ret_ty: Box::new(ty.clone()),
+                            },
+                        }),
                         args: vec![arg],
                         ty: ty.clone(),
                     }
@@ -970,7 +990,13 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                     let self_ty = arg.get_ty();
                     let func_name = mangle_impl_name(trait_name, &self_ty, method);
                     core::Expr::ECall {
-                        func: func_name,
+                        func: Box::new(core::Expr::EVar {
+                            name: func_name,
+                            ty: Ty::TFunc {
+                                params: vec![self_ty.clone()],
+                                ret_ty: Box::new(ty.clone()),
+                            },
+                        }),
                         args: vec![arg],
                         ty: ty.clone(),
                     }
@@ -993,8 +1019,15 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                     let func = builtin_function_for(*op, ty).unwrap_or_else(|| {
                         panic!("Unsupported builtin operator {:?} for type {:?}", op, ty)
                     });
+                    let param_tys = args.iter().map(|arg| arg.get_ty()).collect();
                     core::Expr::ECall {
-                        func: func.to_string(),
+                        func: Box::new(core::Expr::EVar {
+                            name: func.to_string(),
+                            ty: Ty::TFunc {
+                                params: param_tys,
+                                ret_ty: Box::new(ty.clone()),
+                            },
+                        }),
                         args,
                         ty: ty.clone(),
                     }
@@ -1003,8 +1036,15 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                     let method = op.method_name();
                     let self_ty = args[0].get_ty();
                     let func_name = mangle_impl_name(trait_name, &self_ty, method);
+                    let param_tys = args.iter().map(|arg| arg.get_ty()).collect();
                     core::Expr::ECall {
-                        func: func_name,
+                        func: Box::new(core::Expr::EVar {
+                            name: func_name,
+                            ty: Ty::TFunc {
+                                params: param_tys,
+                                ret_ty: Box::new(ty.clone()),
+                            },
+                        }),
                         args,
                         ty: ty.clone(),
                     }
@@ -1012,24 +1052,29 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             }
         }
         ECall { func, args, ty } => {
-            let is_overloaded = env.overloaded_funcs_to_trait_name.contains_key(func);
+            let core_func = compile_expr(func, env);
+            let args = args
+                .iter()
+                .map(|arg| compile_expr(arg, env))
+                .collect::<Vec<_>>();
 
-            let args = args.iter().map(|arg| compile_expr(arg, env)).collect();
-
-            if !is_overloaded {
-                core::Expr::ECall {
-                    func: func.clone(),
-                    args,
-                    ty: ty.clone(),
+            let func_expr = if let tast::Expr::EVar { name, .. } = func.as_ref()
+                && env.overloaded_funcs_to_trait_name.contains_key(name)
+            {
+                let trait_name = env.overloaded_funcs_to_trait_name[name].clone();
+                let for_ty = args[0].get_ty();
+                core::Expr::EVar {
+                    name: mangle_impl_name(&trait_name, &for_ty, name),
+                    ty: core_func.get_ty(),
                 }
             } else {
-                let trait_name = env.overloaded_funcs_to_trait_name[func].clone();
-                let for_ty = args[0].get_ty();
-                core::Expr::ECall {
-                    func: mangle_impl_name(&trait_name, &for_ty, func),
-                    args,
-                    ty: ty.clone(),
-                }
+                core_func
+            };
+
+            core::Expr::ECall {
+                func: Box::new(func_expr),
+                args,
+                ty: ty.clone(),
             }
         }
         EProj { tuple, index, ty } => {

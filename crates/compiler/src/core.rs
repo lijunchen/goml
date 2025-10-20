@@ -78,7 +78,7 @@ pub enum Expr {
         ty: Ty,
     },
     ECall {
-        func: String,
+        func: Box<Expr>,
         args: Vec<Expr>,
         ty: Ty,
     },

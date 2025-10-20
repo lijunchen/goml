@@ -2,25 +2,25 @@ fn test() -> unit {
   let y/0: int = 3 in
   let z/1: int = 5 in
   let f/3: (int) -> int = |x/2: int| => (x/2 : int) * (y/0 : int) * (z/1 : int) in
-  let _ : unit = string_println(int_to_string(f/3(2))) in
-  string_println(int_to_string(f/3(3)))
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((f/3 : (int) -> int)(2))) in
+  (string_println : (string) -> unit)((int_to_string : (int) -> string)((f/3 : (int) -> int)(3)))
 }
 
 fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
-  f/4((v/5 : int))
+  (f/4 : (int) -> int)((v/5 : int))
 }
 
 fn main() -> unit {
   let base/6: int = 5 in
   let add_base/8: (int) -> int = |x/7: int| => (x/7 : int) + (base/6 : int) in
-  let result/9: int = add_base/8(7) in
-  let printer/13: (string, int) -> unit = |prefix/10: string, value/11: int| => let message/12: string = string_add((prefix/10 : string), int_to_string((value/11 : int))) in
-  string_println((message/12 : string)) in
-  let _ : unit = printer/13("result: ", (result/9 : int)) in
+  let result/9: int = (add_base/8 : (int) -> int)(7) in
+  let printer/13: (string, int) -> unit = |prefix/10: string, value/11: int| => let message/12: string = (string_add : (string, string) -> string)((prefix/10 : string), (int_to_string : (int) -> string)((value/11 : int))) in
+  (string_println : (string) -> unit)((message/12 : string)) in
+  let _ : unit = (printer/13 : (string, int) -> unit)("result: ", (result/9 : int)) in
   let unused/15: (int) -> int = |y/14: int| => (y/14 : int) + (result/9 : int) in
   let no_capture/17: (int) -> int = |z/16: int| => (z/16 : int) * 2 in
-  let doubled/18: int = no_capture/17(3) in
-  let _ : unit = string_println(int_to_string((doubled/18 : int))) in
-  let _ : unit = test() in
+  let doubled/18: int = (no_capture/17 : (int) -> int)(3) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((doubled/18 : int))) in
+  let _ : unit = (test : () -> unit)() in
   ()
 }

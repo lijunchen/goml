@@ -1,8 +1,8 @@
 fn main() -> unit {
   let t/0: T = T::B(true, ()) in
   match (t/0 : T) {
-      T::A => string_print(int_to_string(1)),
-      T::B(true, ()) => string_print(int_to_string(2)),
-      T::B(false, ()) => string_print(int_to_string(3)),
+      T::A => (string_print : (string) -> unit)((int_to_string : (int) -> string)(1)),
+      T::B(true, ()) => (string_print : (string) -> unit)((int_to_string : (int) -> string)(2)),
+      T::B(false, ()) => (string_print : (string) -> unit)((int_to_string : (int) -> string)(3)),
   }
 }

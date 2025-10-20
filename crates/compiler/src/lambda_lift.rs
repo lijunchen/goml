@@ -252,11 +252,15 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             }
         }
         core::Expr::ECall { func, args, ty } => {
+            let func = Box::new(transform_expr(state, scope, *func));
             let args = args
                 .into_iter()
                 .map(|arg| transform_expr(state, scope, arg))
                 .collect::<Vec<_>>();
-            if let Some(entry) = scope.get(&func) {
+
+            if let core::Expr::EVar { name, .. } = func.as_ref()
+                && let Some(entry) = scope.get(name)
+            {
                 if let Some(struct_name) = entry
                     .closure_struct
                     .clone()
@@ -265,14 +269,18 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     if let Some(apply_fn) = state.apply_fn_for_struct(&struct_name) {
                         let mut call_args = Vec::with_capacity(args.len() + 1);
                         call_args.push(core::Expr::EVar {
-                            name: func,
+                            name: name.clone(),
                             ty: Ty::TCon {
                                 name: struct_name.clone(),
                             },
                         });
                         call_args.extend(args);
+                        let func_ty = entry.ty.clone();
                         return core::Expr::ECall {
-                            func: apply_fn.to_string(),
+                            func: Box::new(core::Expr::EVar {
+                                name: apply_fn.to_string(),
+                                ty: func_ty,
+                            }),
                             args: call_args,
                             ty,
                         };
@@ -507,7 +515,8 @@ fn collect_captured(
         core::Expr::EConstrGet { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }
-        core::Expr::ECall { args, .. } => {
+        core::Expr::ECall { func, args, .. } => {
+            collect_captured(func, bound, captured, scope);
             for arg in args {
                 collect_captured(arg, bound, captured, scope);
             }
