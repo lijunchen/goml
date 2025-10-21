@@ -16,6 +16,7 @@ struct State<'env> {
     next_id: usize,
     new_functions: Vec<core::Fn>,
     closure_types: IndexMap<String, ClosureTypeInfo>,
+    context_stack: Vec<String>,
 }
 
 impl<'env> State<'env> {
@@ -25,11 +26,16 @@ impl<'env> State<'env> {
             next_id: 0,
             new_functions: Vec::new(),
             closure_types: IndexMap::new(),
+            context_stack: Vec::new(),
         }
     }
 
-    fn fresh_struct_name(&mut self) -> Uident {
-        let name = format!("ClosureEnv{}", self.next_id);
+    fn fresh_struct_name(&mut self, hint: Option<&str>) -> Uident {
+        let name = if let Some(hint) = hint {
+            format!("closure_env_{}_{}", hint, self.next_id)
+        } else {
+            format!("closure_env_{}", self.next_id)
+        };
         self.next_id += 1;
         Uident::new(&name)
     }
@@ -50,6 +56,18 @@ impl<'env> State<'env> {
         self.closure_types
             .get(struct_name)
             .map(|info| info.apply_fn.as_str())
+    }
+
+    fn push_context_name(&mut self, name: String) {
+        self.context_stack.push(name);
+    }
+
+    fn pop_context_name(&mut self) {
+        self.context_stack.pop();
+    }
+
+    fn current_context_name(&self) -> Option<&str> {
+        self.context_stack.last().map(|s| s.as_str())
     }
 }
 
@@ -112,7 +130,14 @@ pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
             );
         }
 
+        let fn_context = sanitize_env_name(&f.name);
+        if let Some(ctx) = fn_context.as_ref() {
+            state.push_context_name(ctx.clone());
+        }
         let body = transform_expr(&mut state, &mut scope, f.body);
+        if fn_context.is_some() {
+            state.pop_context_name();
+        }
         scope.pop_layer();
         f.body = body;
         toplevels.push(f);
@@ -173,12 +198,17 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             core::Expr::EArray { items, ty }
         }
         core::Expr::EClosure { params, body, ty } => {
-            transform_closure(state, scope, params, *body, ty)
+            transform_closure(state, scope, params, *body, ty, None)
         }
         core::Expr::ELet {
             name, value, body, ..
         } => {
-            let value = transform_expr(state, scope, *value);
+            let value = match *value {
+                core::Expr::EClosure { params, body, ty } => {
+                    transform_closure(state, scope, params, *body, ty, Some(name.clone()))
+                }
+                other => transform_expr(state, scope, other),
+            };
             let value_ty = value.get_ty();
             scope.push_layer();
             let closure_struct = state.closure_struct_for_ty(&value_ty);
@@ -299,6 +329,7 @@ fn transform_closure(
     params: Vec<tast::ClosureParam>,
     body: core::Expr,
     ty: Ty,
+    name_hint: Option<String>,
 ) -> core::Expr {
     let (param_tys, ret_ty) = match ty.clone() {
         Ty::TFunc { params, ret_ty } => (params, *ret_ty),
@@ -331,14 +362,27 @@ fn transform_closure(
         bound_names.push(param.name.clone());
     }
 
+    let mut sanitized_hint = name_hint.as_deref().and_then(sanitize_env_name);
+    if sanitized_hint.is_none() {
+        sanitized_hint = state
+            .current_context_name()
+            .and_then(|name| sanitize_env_name(name));
+    }
+
+    if let Some(ref hint) = sanitized_hint {
+        state.push_context_name(hint.clone());
+    }
     let body = transform_expr(state, scope, body);
+    if sanitized_hint.is_some() {
+        state.pop_context_name();
+    }
     scope.pop_layer();
 
     let mut captured = IndexMap::new();
     let mut bound = bound_names.clone();
     collect_captured(&body, &mut bound, &mut captured, scope);
 
-    let struct_name = state.fresh_struct_name();
+    let struct_name = state.fresh_struct_name(sanitized_hint.as_deref());
     let env_ty = Ty::TCon {
         name: struct_name.0.clone(),
     };
@@ -504,24 +548,27 @@ fn collect_captured(
     }
 }
 
+fn sanitize_env_name(name: &str) -> Option<String> {
+    let primary = name.split('/').next().unwrap_or(name);
+    let mut sanitized = primary
+        .chars()
+        .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '_' })
+        .collect::<String>();
+    sanitized = sanitized
+        .split('_')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("_");
+    if sanitized.is_empty() {
+        return None;
+    }
+    if sanitized.chars().next().is_some_and(|c| c.is_ascii_digit()) {
+        sanitized.insert(0, '_');
+    }
+    Some(sanitized)
+}
+
 fn make_field_name(name: &str, index: usize) -> String {
-    let mut result = String::new();
-    for ch in name.chars() {
-        if ch.is_ascii_alphanumeric() {
-            if ch == '/' {
-                result.push('_');
-            } else {
-                result.push(ch);
-            }
-        } else {
-            result.push('_');
-        }
-    }
-    if result.is_empty() {
-        result = "field".to_string();
-    }
-    if result.chars().next().is_some_and(|c| c.is_ascii_digit()) {
-        result.insert(0, '_');
-    }
-    format!("{}_{}", result, index)
+    let base = sanitize_env_name(name).unwrap_or_else(|| "field".to_string());
+    format!("{}_{}", base, index)
 }

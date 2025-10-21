@@ -25,30 +25,30 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type ClosureEnv0 struct {
-    y_0_0 int
-    z_1_1 int
+type closure_env_f_0 struct {
+    y_0 int
+    z_1 int
 }
 
-type ClosureEnv1 struct {
-    base_6_0 int
+type closure_env_add_base_1 struct {
+    base_0 int
 }
 
-type ClosureEnv2 struct {}
+type closure_env_printer_2 struct {}
 
-type ClosureEnv3 struct {
-    result_9_0 int
+type closure_env_unused_3 struct {
+    result_0 int
 }
 
-type ClosureEnv4 struct {}
+type closure_env_no_capture_4 struct {}
 
 func test() struct{} {
     var ret21 struct{}
     var y__0 int = 3
     var z__1 int = 5
-    var f__3 ClosureEnv0 = ClosureEnv0{
-        y_0_0: y__0,
-        z_1_1: z__1,
+    var f__3 closure_env_f_0 = closure_env_f_0{
+        y_0: y__0,
+        z_1: z__1,
     }
     var t15 int = __closure_apply4(f__3, 2)
     var t14 string = int_to_string(t15)
@@ -62,13 +62,13 @@ func test() struct{} {
 func main0() struct{} {
     var ret23 struct{}
     var base__6 int = 5
-    var add_base__8 ClosureEnv1 = ClosureEnv1{
-        base_6_0: base__6,
+    var add_base__8 closure_env_add_base_1 = closure_env_add_base_1{
+        base_0: base__6,
     }
     var result__9 int = __closure_apply6(add_base__8, 7)
-    var printer__13 ClosureEnv2 = ClosureEnv2{}
+    var printer__13 closure_env_printer_2 = closure_env_printer_2{}
     __closure_apply8(printer__13, "result: ", result__9)
-    var no_capture__17 ClosureEnv4 = ClosureEnv4{}
+    var no_capture__17 closure_env_no_capture_4 = closure_env_no_capture_4{}
     var doubled__18 int = __closure_apply12(no_capture__17, 3)
     var t18 string = int_to_string(doubled__18)
     string_println(t18)
@@ -77,23 +77,23 @@ func main0() struct{} {
     return ret23
 }
 
-func __closure_apply4(env5 ClosureEnv0, x__2 int) int {
+func __closure_apply4(env5 closure_env_f_0, x__2 int) int {
     var ret24 int
-    var y__0 int = env5.y_0_0
-    var z__1 int = env5.z_1_1
+    var y__0 int = env5.y_0
+    var z__1 int = env5.z_1
     var t19 int = int_mul(x__2, y__0)
     ret24 = int_mul(t19, z__1)
     return ret24
 }
 
-func __closure_apply6(env7 ClosureEnv1, x__7 int) int {
+func __closure_apply6(env7 closure_env_add_base_1, x__7 int) int {
     var ret25 int
-    var base__6 int = env7.base_6_0
+    var base__6 int = env7.base_0
     ret25 = int_add(x__7, base__6)
     return ret25
 }
 
-func __closure_apply8(env9 ClosureEnv2, prefix__10 string, value__11 int) struct{} {
+func __closure_apply8(env9 closure_env_printer_2, prefix__10 string, value__11 int) struct{} {
     var ret26 struct{}
     var t20 string = int_to_string(value__11)
     var message__12 string = string_add(prefix__10, t20)
@@ -101,7 +101,7 @@ func __closure_apply8(env9 ClosureEnv2, prefix__10 string, value__11 int) struct
     return ret26
 }
 
-func __closure_apply12(env13 ClosureEnv4, z__16 int) int {
+func __closure_apply12(env13 closure_env_no_capture_4, z__16 int) int {
     var ret28 int
     ret28 = int_mul(z__16, 2)
     return ret28
