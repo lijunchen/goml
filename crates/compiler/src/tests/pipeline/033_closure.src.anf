@@ -1,7 +1,7 @@
 fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
-  let f/3 = ClosureEnv0 { y_0_0: y/0, z_1_1: z/1 } in
+  let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
   let t15 = __closure_apply4(f/3, 2) in
   let t14 = int_to_string(t15) in
   let mtmp0 = string_println(t14) in
@@ -16,12 +16,12 @@ fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
 
 fn main() -> unit {
   let base/6 = 5 in
-  let add_base/8 = ClosureEnv1 { base_6_0: base/6 } in
+  let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
   let result/9 = __closure_apply6(add_base/8, 7) in
-  let printer/13 = ClosureEnv2 {} in
+  let printer/13 = closure_env_printer_2 {} in
   let mtmp1 = __closure_apply8(printer/13, "result: ", result/9) in
-  let unused/15 = ClosureEnv3 { result_9_0: result/9 } in
-  let no_capture/17 = ClosureEnv4 {} in
+  let unused/15 = closure_env_unused_3 { result_0: result/9 } in
+  let no_capture/17 = closure_env_no_capture_4 {} in
   let doubled/18 = __closure_apply12(no_capture/17, 3) in
   let t18 = int_to_string(doubled/18) in
   let mtmp2 = string_println(t18) in
@@ -29,29 +29,29 @@ fn main() -> unit {
   ()
 }
 
-fn __closure_apply4(env5: ClosureEnv0, x/2: int) -> int {
-  let y/0 = ClosureEnv0.y_0_0(env5) in
-  let z/1 = ClosureEnv0.z_1_1(env5) in
+fn __closure_apply4(env5: closure_env_f_0, x/2: int) -> int {
+  let y/0 = closure_env_f_0.y_0(env5) in
+  let z/1 = closure_env_f_0.z_1(env5) in
   let t19 = int_mul(x/2, y/0) in
   int_mul(t19, z/1)
 }
 
-fn __closure_apply6(env7: ClosureEnv1, x/7: int) -> int {
-  let base/6 = ClosureEnv1.base_6_0(env7) in
+fn __closure_apply6(env7: closure_env_add_base_1, x/7: int) -> int {
+  let base/6 = closure_env_add_base_1.base_0(env7) in
   int_add(x/7, base/6)
 }
 
-fn __closure_apply8(env9: ClosureEnv2, prefix/10: string, value/11: int) -> unit {
+fn __closure_apply8(env9: closure_env_printer_2, prefix/10: string, value/11: int) -> unit {
   let t20 = int_to_string(value/11) in
   let message/12 = string_add(prefix/10, t20) in
   string_println(message/12)
 }
 
-fn __closure_apply10(env11: ClosureEnv3, y/14: int) -> int {
-  let result/9 = ClosureEnv3.result_9_0(env11) in
+fn __closure_apply10(env11: closure_env_unused_3, y/14: int) -> int {
+  let result/9 = closure_env_unused_3.result_0(env11) in
   int_add(y/14, result/9)
 }
 
-fn __closure_apply12(env13: ClosureEnv4, z/16: int) -> int {
+fn __closure_apply12(env13: closure_env_no_capture_4, z/16: int) -> int {
   int_mul(z/16, 2)
 }

@@ -21,11 +21,11 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type ClosureEnv0 struct {}
+type closure_env_closure_apply_0 struct {}
 
-type ClosureEnv1 struct {}
+type closure_env_global_invoker_1 struct {}
 
-type ClosureEnv2 struct {}
+type closure_env_composer_closure_2 struct {}
 
 func double(x__0 int) int {
     var ret15 int
@@ -57,11 +57,11 @@ func main0() struct{} {
     var local__7 func(int) int = double
     var first__8 int = apply_once(local__7, 4)
     var composed__9 int = compose(double, increment, first__8)
-    var closure_apply__11 ClosureEnv0 = ClosureEnv0{}
+    var closure_apply__11 closure_env_closure_apply_0 = closure_env_closure_apply_0{}
     var closure_result__12 int = __closure_apply4(closure_apply__11, composed__9)
-    var global_invoker__15 ClosureEnv1 = ClosureEnv1{}
+    var global_invoker__15 closure_env_global_invoker_1 = closure_env_global_invoker_1{}
     var invoked_with_global__16 int = __closure_apply6(global_invoker__15, double, 3)
-    var composer_closure__18 ClosureEnv2 = ClosureEnv2{}
+    var composer_closure__18 closure_env_composer_closure_2 = closure_env_composer_closure_2{}
     var composed_by_closure__19 int = __closure_apply8(composer_closure__18, 5)
     var printer__20 func(string) struct{} = string_println
     var t11 string = int_to_string(composed__9)
@@ -76,19 +76,19 @@ func main0() struct{} {
     return ret19
 }
 
-func __closure_apply4(env5 ClosureEnv0, value__10 int) int {
+func __closure_apply4(env5 closure_env_closure_apply_0, value__10 int) int {
     var ret20 int
     ret20 = apply_once(increment, value__10)
     return ret20
 }
 
-func __closure_apply6(env7 ClosureEnv1, func_to_call__13 func(int) int, value__14 int) int {
+func __closure_apply6(env7 closure_env_global_invoker_1, func_to_call__13 func(int) int, value__14 int) int {
     var ret21 int
     ret21 = apply_once(func_to_call__13, value__14)
     return ret21
 }
 
-func __closure_apply8(env9 ClosureEnv2, value__17 int) int {
+func __closure_apply8(env9 closure_env_composer_closure_2, value__17 int) int {
     var ret22 int
     ret22 = compose(double, increment, value__17)
     return ret22

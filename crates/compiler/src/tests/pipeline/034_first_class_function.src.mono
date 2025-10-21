@@ -18,11 +18,11 @@ fn main() -> unit {
   let local/7 = double in
   let first/8 = apply_once(local/7, 4) in
   let composed/9 = compose(double, increment, first/8) in
-  let closure_apply/11 = ClosureEnv0 {} in
+  let closure_apply/11 = closure_env_closure_apply_0 {} in
   let closure_result/12 = __closure_apply4(closure_apply/11, composed/9) in
-  let global_invoker/15 = ClosureEnv1 {} in
+  let global_invoker/15 = closure_env_global_invoker_1 {} in
   let invoked_with_global/16 = __closure_apply6(global_invoker/15, double, 3) in
-  let composer_closure/18 = ClosureEnv2 {} in
+  let composer_closure/18 = closure_env_composer_closure_2 {} in
   let composed_by_closure/19 = __closure_apply8(composer_closure/18, 5) in
   let printer/20 = string_println in
   let mtmp0 = printer/20(int_to_string(composed/9)) in
@@ -32,14 +32,14 @@ fn main() -> unit {
   ()
 }
 
-fn __closure_apply4(env5: ClosureEnv0, value/10: int) -> int {
+fn __closure_apply4(env5: closure_env_closure_apply_0, value/10: int) -> int {
   apply_once(increment, value/10)
 }
 
-fn __closure_apply6(env7: ClosureEnv1, func_to_call/13: (int) -> int, value/14: int) -> int {
+fn __closure_apply6(env7: closure_env_global_invoker_1, func_to_call/13: (int) -> int, value/14: int) -> int {
   apply_once(func_to_call/13, value/14)
 }
 
-fn __closure_apply8(env9: ClosureEnv2, value/17: int) -> int {
+fn __closure_apply8(env9: closure_env_composer_closure_2, value/17: int) -> int {
   compose(double, increment, value/17)
 }
