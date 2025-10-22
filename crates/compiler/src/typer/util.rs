@@ -6,7 +6,7 @@ use crate::{
 };
 use ast::ast;
 
-pub fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
+pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit | tast::Ty::TBool | tast::Ty::TInt | tast::Ty::TString => {}
@@ -87,7 +87,7 @@ pub fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     }
 }
 
-pub fn ast_ty_to_tast_ty_with_tparams_env(
+pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
     ast_ty: &ast::Ty,
     tparams_env: &[ast::Uident],
 ) -> tast::Ty {
@@ -135,6 +135,21 @@ pub fn ast_ty_to_tast_ty_with_tparams_env(
     }
 }
 
-pub fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
+pub(crate) fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
     tparams.iter().map(|param| param.0.clone()).collect()
+}
+
+pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    match op {
+        ast::BinaryOp::Add => matches!(
+            (lhs, rhs),
+            (tast::Ty::TInt, tast::Ty::TInt) | (tast::Ty::TString, tast::Ty::TString)
+        ),
+        ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+            matches!((lhs, rhs), (tast::Ty::TInt, tast::Ty::TInt))
+        }
+        ast::BinaryOp::And | ast::BinaryOp::Or => {
+            matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))
+        }
+    }
 }
