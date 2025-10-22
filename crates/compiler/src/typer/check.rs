@@ -1615,7 +1615,7 @@ impl TypeInference {
         env.constraints
             .push(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
         tast::Pat::PString {
-            value: value.clone(),
+            value: value.to_owned(),
             ty: tast::Ty::TString,
         }
     }
