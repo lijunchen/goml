@@ -364,9 +364,7 @@ fn transform_closure(
 
     let mut sanitized_hint = name_hint.as_deref().and_then(sanitize_env_name);
     if sanitized_hint.is_none() {
-        sanitized_hint = state
-            .current_context_name()
-            .and_then(|name| sanitize_env_name(name));
+        sanitized_hint = state.current_context_name().and_then(sanitize_env_name);
     }
 
     if let Some(ref hint) = sanitized_hint {
