@@ -62,6 +62,28 @@ impl TypeInference {
         }
     }
 
+    pub fn check_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        e: &ast::Expr,
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        let expr_tast = match e {
+            ast::Expr::EClosure { params, body } => {
+                self.check_closure_expr(env, vars, params, body, expected)
+            }
+            ast::Expr::ELet { pat, value, body } => {
+                self.check_let_expr(env, vars, pat, value, body, expected)
+            }
+            _ => self.infer_expr(env, vars, e),
+        };
+
+        env.constraints
+            .push(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
+        expr_tast
+    }
+
     fn infer_var_expr(
         &mut self,
         env: &mut Env,
@@ -332,6 +354,66 @@ impl TypeInference {
         }
     }
 
+    fn check_closure_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        params: &[ast::ClosureParam],
+        body: &ast::Expr,
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        match expected {
+            tast::Ty::TFunc {
+                params: expected_params,
+                ret_ty: expected_ret,
+            } if expected_params.len() == params.len() => {
+                let mut closure_vars = vars.clone();
+                let mut params_tast = Vec::new();
+                let mut param_tys = Vec::new();
+                let current_tparams_env = self.current_tparams_env();
+
+                for (param, expected_param_ty) in params.iter().zip(expected_params.iter()) {
+                    let annotated_ty = param
+                        .ty
+                        .as_ref()
+                        .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env));
+
+                    let param_ty = match annotated_ty {
+                        Some(ann_ty) => {
+                            env.constraints.push(Constraint::TypeEqual(
+                                ann_ty.clone(),
+                                expected_param_ty.clone(),
+                            ));
+                            ann_ty
+                        }
+                        None => expected_param_ty.clone(),
+                    };
+
+                    closure_vars.insert(param.name.clone(), param_ty.clone());
+                    param_tys.push(param_ty.clone());
+                    params_tast.push(tast::ClosureParam {
+                        name: param.name.0.clone(),
+                        ty: param_ty,
+                        astptr: Some(param.astptr),
+                    });
+                }
+
+                let body_tast = self.check_expr(env, &closure_vars, body, expected_ret.as_ref());
+                let body_ty = body_tast.get_ty();
+
+                tast::Expr::EClosure {
+                    params: params_tast,
+                    body: Box::new(body_tast),
+                    ty: tast::Ty::TFunc {
+                        params: param_tys,
+                        ret_ty: Box::new(body_ty),
+                    },
+                }
+            }
+            _ => self.infer_closure_expr(env, vars, params, body),
+        }
+    }
+
     fn infer_let_expr(
         &mut self,
         env: &mut Env,
@@ -353,6 +435,32 @@ impl TypeInference {
             value: Box::new(value_tast),
             body: Box::new(body_tast),
             ty: body_ty.clone(),
+        }
+    }
+
+    fn check_let_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        pat: &ast::Pat,
+        value: &ast::Expr,
+        body: &ast::Expr,
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        let value_tast = self.infer_expr(env, vars, value);
+        let value_ty = value_tast.get_ty();
+
+        let mut new_vars = vars.clone();
+        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
+
+        let body_tast = self.check_expr(env, &new_vars, body, expected);
+        let body_ty = body_tast.get_ty();
+
+        tast::Expr::ELet {
+            pat: pat_tast,
+            value: Box::new(value_tast),
+            body: Box::new(body_tast),
+            ty: body_ty,
         }
     }
 
