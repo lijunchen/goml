@@ -8,7 +8,7 @@ mod toplevel;
 mod unify;
 mod util;
 
-pub use check::check_file;
+pub use toplevel::check_file;
 
 #[derive(Default)]
 pub struct TypeInference {
