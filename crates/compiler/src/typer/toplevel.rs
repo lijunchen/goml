@@ -463,7 +463,8 @@ fn check_fn(env: &mut Env, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
         None => tast::Ty::TUnit,
     };
 
-    let typed_body = typer.with_tparams_env(&f.generics, |typer| typer.infer(env, &vars, &f.body));
+    let typed_body =
+        typer.with_tparams_env(&f.generics, |typer| typer.infer_expr(env, &vars, &f.body));
     typer.solve(env);
     let typed_body = typer.subst(env, typed_body);
     tast::Fn {
@@ -504,7 +505,7 @@ fn check_impl_block(
         };
 
         let typed_body =
-            typer.with_tparams_env(&f.generics, |typer| typer.infer(env, &vars, &f.body));
+            typer.with_tparams_env(&f.generics, |typer| typer.infer_expr(env, &vars, &f.body));
         typer.solve(env);
         let typed_body = typer.subst(env, typed_body);
         typed_methods.push(tast::Fn {

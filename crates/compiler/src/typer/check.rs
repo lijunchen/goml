@@ -14,7 +14,7 @@ use crate::{
 };
 
 impl TypeInference {
-    pub fn infer(
+    pub fn infer_expr(
         &mut self,
         env: &mut Env,
         vars: &im::HashMap<Lident, tast::Ty>,
@@ -137,7 +137,7 @@ impl TypeInference {
 
         let mut args_tast = Vec::new();
         for arg in args.iter() {
-            let arg_tast = self.infer(env, vars, arg);
+            let arg_tast = self.infer_expr(env, vars, arg);
             args_tast.push(arg_tast);
         }
 
@@ -209,7 +209,7 @@ impl TypeInference {
                     field_name.0, name.0
                 );
             }
-            let field_expr = self.infer(env, vars, expr);
+            let field_expr = self.infer_expr(env, vars, expr);
             ordered_args[*idx] = Some(field_expr);
         }
 
@@ -256,7 +256,7 @@ impl TypeInference {
         let mut typs = Vec::new();
         let mut items_tast = Vec::new();
         for item in items.iter() {
-            let item_tast = self.infer(env, vars, item);
+            let item_tast = self.infer_expr(env, vars, item);
             typs.push(item_tast.get_ty());
             items_tast.push(item_tast);
         }
@@ -276,7 +276,7 @@ impl TypeInference {
         let elem_ty = self.fresh_ty_var();
         let mut items_tast = Vec::with_capacity(len);
         for item in items.iter() {
-            let item_tast = self.infer(env, vars, item);
+            let item_tast = self.infer_expr(env, vars, item);
             env.constraints
                 .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
             items_tast.push(item_tast);
@@ -317,7 +317,7 @@ impl TypeInference {
             });
         }
 
-        let body_tast = self.infer(env, &closure_vars, body);
+        let body_tast = self.infer_expr(env, &closure_vars, body);
         let body_ty = body_tast.get_ty();
 
         let closure_ty = tast::Ty::TFunc {
@@ -340,13 +340,13 @@ impl TypeInference {
         value: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
-        let value_tast = self.infer(env, vars, value);
+        let value_tast = self.infer_expr(env, vars, value);
         let value_ty = value_tast.get_ty();
 
         let mut new_vars = vars.clone();
         let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
 
-        let body_tast = self.infer(env, &new_vars, body);
+        let body_tast = self.infer_expr(env, &new_vars, body);
         let body_ty = body_tast.get_ty();
         tast::Expr::ELet {
             pat: pat_tast,
@@ -363,7 +363,7 @@ impl TypeInference {
         expr: &ast::Expr,
         arms: &[ast::Arm],
     ) -> tast::Expr {
-        let expr_tast = self.infer(env, vars, expr);
+        let expr_tast = self.infer_expr(env, vars, expr);
         let expr_ty = expr_tast.get_ty();
 
         let mut arms_tast = Vec::new();
@@ -371,7 +371,7 @@ impl TypeInference {
         for arm in arms.iter() {
             let mut new_vars = vars.clone();
             let arm_tast = self.check_pat(env, &mut new_vars, &arm.pat, &expr_ty);
-            let arm_body_tast = self.infer(env, &new_vars, &arm.body);
+            let arm_body_tast = self.infer_expr(env, &new_vars, &arm.body);
             env.constraints.push(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
                 arm_ty.clone(),
@@ -397,12 +397,12 @@ impl TypeInference {
         then_branch: &ast::Expr,
         else_branch: &ast::Expr,
     ) -> tast::Expr {
-        let cond_tast = self.infer(env, vars, cond);
+        let cond_tast = self.infer_expr(env, vars, cond);
         env.constraints
             .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
 
-        let then_tast = self.infer(env, vars, then_branch);
-        let else_tast = self.infer(env, vars, else_branch);
+        let then_tast = self.infer_expr(env, vars, then_branch);
+        let else_tast = self.infer_expr(env, vars, else_branch);
         let result_ty = self.fresh_ty_var();
 
         env.constraints
@@ -428,7 +428,7 @@ impl TypeInference {
         let mut args_tast = Vec::new();
         let mut arg_types = Vec::new();
         for arg in args.iter() {
-            let arg_tast = self.infer(env, vars, arg);
+            let arg_tast = self.infer_expr(env, vars, arg);
             arg_types.push(arg_tast.get_ty());
             args_tast.push(arg_tast);
         }
@@ -490,7 +490,7 @@ impl TypeInference {
                         ty: ret_ty,
                     }
                 } else {
-                    let func_tast = self.infer(env, vars, func);
+                    let func_tast = self.infer_expr(env, vars, func);
                     env.constraints.push(Constraint::TypeEqual(
                         func_tast.get_ty(),
                         call_site_func_ty.clone(),
@@ -504,7 +504,7 @@ impl TypeInference {
                 }
             }
             _ => {
-                let func_tast = self.infer(env, vars, func);
+                let func_tast = self.infer_expr(env, vars, func);
                 env.constraints.push(Constraint::TypeEqual(
                     func_tast.get_ty(),
                     call_site_func_ty.clone(),
@@ -526,7 +526,7 @@ impl TypeInference {
         op: ast::UnaryOp,
         expr: &ast::Expr,
     ) -> tast::Expr {
-        let expr_tast = self.infer(env, vars, expr);
+        let expr_tast = self.infer_expr(env, vars, expr);
         let expr_ty = expr_tast.get_ty();
         let method_name = op.method_name();
 
@@ -581,8 +581,8 @@ impl TypeInference {
         lhs: &ast::Expr,
         rhs: &ast::Expr,
     ) -> tast::Expr {
-        let lhs_tast = self.infer(env, vars, lhs);
-        let rhs_tast = self.infer(env, vars, rhs);
+        let lhs_tast = self.infer_expr(env, vars, lhs);
+        let rhs_tast = self.infer_expr(env, vars, rhs);
         let lhs_ty = lhs_tast.get_ty();
         let rhs_ty = rhs_tast.get_ty();
         let method_name = op.method_name();
@@ -652,7 +652,7 @@ impl TypeInference {
         tuple: &ast::Expr,
         index: usize,
     ) -> tast::Expr {
-        let tuple_tast = self.infer(env, vars, tuple);
+        let tuple_tast = self.infer_expr(env, vars, tuple);
         let tuple_ty = tuple_tast.get_ty();
         match &tuple_ty {
             tast::Ty::TTuple { typs } => {
