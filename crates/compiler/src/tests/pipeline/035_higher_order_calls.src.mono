@@ -15,11 +15,15 @@ fn chooser(flag/2: bool) -> (int) -> int {
 }
 
 fn main() -> unit {
-  let chosen/3 = chooser(true) in
-  let applied/4 = chosen/3(5) in
-  let direct/5 = chooser(false)(5) in
-  let printer/6 = string_println in
-  let mtmp0 = printer/6(int_to_string(applied/4)) in
-  let mtmp1 = printer/6(int_to_string(direct/5)) in
+  let xs/3 = [double, increment] in
+  let f/4 = array_get(xs/3, 0) in
+  let g/5 = array_get(xs/3, 1) in
+  let mtmp0 = string_println(int_to_string(g/5(f/4(10)))) in
+  let chosen/6 = chooser(true) in
+  let applied/7 = chosen/6(5) in
+  let direct/8 = chooser(false)(5) in
+  let printer/9 = string_println in
+  let mtmp1 = printer/9(int_to_string(applied/7)) in
+  let mtmp2 = printer/9(int_to_string(direct/8)) in
   ()
 }

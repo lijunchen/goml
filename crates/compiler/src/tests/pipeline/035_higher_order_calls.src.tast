@@ -15,11 +15,15 @@ fn chooser(flag/2: bool) -> (int) -> int {
 }
 
 fn main() -> unit {
-  let chosen/3: (int) -> int = (chooser : (bool) -> (int) -> int)(true) in
-  let applied/4: int = (chosen/3 : (int) -> int)(5) in
-  let direct/5: int = (chooser : (bool) -> (int) -> int)(false)(5) in
-  let printer/6: (string) -> unit = (string_println : (string) -> unit) in
-  let _ : unit = (printer/6 : (string) -> unit)((int_to_string : (int) -> string)((applied/4 : int))) in
-  let _ : unit = (printer/6 : (string) -> unit)((int_to_string : (int) -> string)((direct/5 : int))) in
+  let xs/3: [(int) -> int; 2] = [(double : (int) -> int), (increment : (int) -> int)] in
+  let f/4: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((xs/3 : [(int) -> int; 2]), 0) in
+  let g/5: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((xs/3 : [(int) -> int; 2]), 1) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((g/5 : (int) -> int)((f/4 : (int) -> int)(10)))) in
+  let chosen/6: (int) -> int = (chooser : (bool) -> (int) -> int)(true) in
+  let applied/7: int = (chosen/6 : (int) -> int)(5) in
+  let direct/8: int = (chooser : (bool) -> (int) -> int)(false)(5) in
+  let printer/9: (string) -> unit = (string_println : (string) -> unit) in
+  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int) -> string)((applied/7 : int))) in
+  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int) -> string)((direct/8 : int))) in
   ()
 }
