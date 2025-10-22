@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use ::ast::ast::Lident;
 use ast::ast;
 use ena::unify::InPlaceUnificationTable;
+use parser::syntax::MySyntaxNodePtr;
 
 use crate::{
     env::{self, Constraint, Env},
@@ -890,26 +891,8 @@ impl TypeInference {
         vars: &im::HashMap<Lident, tast::Ty>,
         e: &ast::Expr,
     ) -> tast::Expr {
-        let current_tparams_env = self.current_tparams_env();
         match e {
-            ast::Expr::EVar { name, astptr } => {
-                if let Some(ty) = vars.get(name) {
-                    tast::Expr::EVar {
-                        name: name.0.clone(),
-                        ty: ty.clone(),
-                        astptr: Some(*astptr),
-                    }
-                } else if let Some(func_ty) = env.get_type_of_function(&name.0) {
-                    let inst_ty = self.inst_ty(&func_ty);
-                    tast::Expr::EVar {
-                        name: name.0.clone(),
-                        ty: inst_ty,
-                        astptr: Some(*astptr),
-                    }
-                } else {
-                    panic!("Variable {} not found in environment", name.0);
-                }
-            }
+            ast::Expr::EVar { name, astptr } => self.infer_var_expr(env, vars, name, astptr),
             ast::Expr::EUnit => tast::Expr::EUnit {
                 ty: tast::Ty::TUnit,
             },
@@ -925,522 +908,647 @@ impl TypeInference {
                 value: value.clone(),
                 ty: tast::Ty::TString,
             },
-            ast::Expr::EConstr { vcon, args } => {
-                let (constructor, constr_ty) = env
-                    .lookup_constructor(vcon)
-                    .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
-
-                let expected_arity = match &constructor {
-                    tast::Constructor::Enum(enum_constructor) => env
-                        .enums
-                        .get(&enum_constructor.type_name)
-                        .map(|def| def.variants[enum_constructor.index].1.len())
-                        .unwrap_or_else(|| {
-                            panic!(
-                                "Enum {} not found when checking constructor {}",
-                                enum_constructor.type_name.0,
-                                constructor.name().0
-                            )
-                        }),
-                    tast::Constructor::Struct(struct_constructor) => env
-                        .structs
-                        .get(&struct_constructor.type_name)
-                        .map(|def| def.fields.len())
-                        .unwrap_or_else(|| {
-                            panic!(
-                                "Struct {} not found when checking constructor {}",
-                                struct_constructor.type_name.0,
-                                constructor.name().0
-                            )
-                        }),
-                };
-
-                if expected_arity != args.len() {
-                    panic!(
-                        "Constructor {} expects {} arguments, but got {}",
-                        constructor.name().0,
-                        expected_arity,
-                        args.len()
-                    );
-                }
-
-                let inst_constr_ty = self.inst_ty(&constr_ty);
-
-                let ret_ty = self.fresh_ty_var();
-                let mut args_tast = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer(env, vars, arg);
-                    args_tast.push(arg_tast.clone());
-                }
-
-                if !args_tast.is_empty() {
-                    let actual_ty = tast::Ty::TFunc {
-                        params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
-                } else {
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
-                }
-
-                tast::Expr::EConstr {
-                    constructor,
-                    args: args_tast,
-                    ty: ret_ty,
-                }
-            }
+            ast::Expr::EConstr { vcon, args } => self.infer_constructor_expr(env, vars, vcon, args),
             ast::Expr::EStructLiteral { name, fields } => {
-                let (constructor, constr_ty) = env
-                    .lookup_constructor(name)
-                    .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
-
-                let struct_fields = match &constructor {
-                    tast::Constructor::Struct(struct_constructor) => {
-                        let type_name = &struct_constructor.type_name;
-                        let struct_def = env.structs.get(type_name).unwrap_or_else(|| {
-                            panic!(
-                                "Struct {} not found when checking literal {}",
-                                type_name.0, name.0
-                            )
-                        });
-                        struct_def.fields.clone()
-                    }
-                    tast::Constructor::Enum { .. } => {
-                        panic!(
-                            "Constructor {} refers to an enum, but a struct literal was used",
-                            name.0
-                        )
-                    }
-                };
-
-                let mut field_positions: HashMap<Lident, usize> = HashMap::new();
-                for (idx, (fname, _)) in struct_fields.iter().enumerate() {
-                    field_positions.insert(fname.clone(), idx);
-                }
-
-                let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
-                for (field_name, expr) in fields.iter() {
-                    let idx = field_positions.get(field_name).unwrap_or_else(|| {
-                        panic!(
-                            "Unknown field {} on struct literal {}",
-                            field_name.0, name.0
-                        )
-                    });
-                    if ordered_args[*idx].is_some() {
-                        panic!(
-                            "Duplicate field {} in struct literal {}",
-                            field_name.0, name.0
-                        );
-                    }
-                    let field_expr = self.infer(env, vars, expr);
-                    ordered_args[*idx] = Some(field_expr);
-                }
-
-                for (idx, slot) in ordered_args.iter().enumerate() {
-                    if slot.is_none() {
-                        let missing = &struct_fields[idx].0;
-                        panic!("Missing field {} in struct literal {}", missing.0, name.0);
-                    }
-                }
-
-                let args_tast: Vec<tast::Expr> = ordered_args
-                    .into_iter()
-                    .map(|arg| arg.expect("field checked to exist"))
-                    .collect();
-
-                let inst_constr_ty = self.inst_ty(&constr_ty);
-                let ret_ty = self.fresh_ty_var();
-
-                if !args_tast.is_empty() {
-                    let actual_ty = tast::Ty::TFunc {
-                        params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
-                } else {
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
-                }
-
-                tast::Expr::EConstr {
-                    constructor,
-                    args: args_tast,
-                    ty: ret_ty,
-                }
+                self.infer_struct_literal_expr(env, vars, name, fields)
             }
-            ast::Expr::ETuple { items } => {
-                let mut typs = Vec::new();
-                let mut items_tast = Vec::new();
-                for item in items.iter() {
-                    let item_tast = self.infer(env, vars, item);
-                    items_tast.push(item_tast.clone());
-                    typs.push(item_tast.get_ty());
-                }
-                tast::Expr::ETuple {
-                    items: items_tast,
-                    ty: tast::Ty::TTuple { typs },
-                }
-            }
-            ast::Expr::EArray { items } => {
-                let len = items.len();
-                let elem_ty = self.fresh_ty_var();
-                let mut items_tast = Vec::with_capacity(len);
-                for item in items.iter() {
-                    let item_tast = self.infer(env, vars, item);
-                    env.constraints
-                        .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
-                    items_tast.push(item_tast);
-                }
-
-                tast::Expr::EArray {
-                    items: items_tast,
-                    ty: tast::Ty::TArray {
-                        len,
-                        elem: Box::new(elem_ty),
-                    },
-                }
-            }
+            ast::Expr::ETuple { items } => self.infer_tuple_expr(env, vars, items),
+            ast::Expr::EArray { items } => self.infer_array_expr(env, vars, items),
             ast::Expr::EClosure { params, body } => {
-                let mut closure_vars = vars.clone();
-                let mut params_tast = Vec::new();
-                let mut param_tys = Vec::new();
-
-                for param in params.iter() {
-                    let param_ty = match &param.ty {
-                        Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env),
-                        None => self.fresh_ty_var(),
-                    };
-                    closure_vars.insert(param.name.clone(), param_ty.clone());
-                    param_tys.push(param_ty.clone());
-                    params_tast.push(tast::ClosureParam {
-                        name: param.name.0.clone(),
-                        ty: param_ty,
-                        astptr: Some(param.astptr),
-                    });
-                }
-
-                let body_tast = self.infer(env, &closure_vars, body);
-                let body_ty = body_tast.get_ty();
-
-                let closure_ty = tast::Ty::TFunc {
-                    params: param_tys,
-                    ret_ty: Box::new(body_ty.clone()),
-                };
-
-                tast::Expr::EClosure {
-                    params: params_tast,
-                    body: Box::new(body_tast),
-                    ty: closure_ty,
-                }
+                self.infer_closure_expr(env, vars, params, body)
             }
             ast::Expr::ELet { pat, value, body } => {
-                let value_tast = self.infer(env, vars, value);
-                let value_ty = value_tast.get_ty();
-
-                let mut new_vars = vars.clone();
-                let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
-
-                let body_tast = self.infer(env, &new_vars, body);
-                let body_ty = body_tast.get_ty();
-                tast::Expr::ELet {
-                    pat: pat_tast,
-                    value: Box::new(value_tast),
-                    body: Box::new(body_tast),
-                    ty: body_ty.clone(),
-                }
+                self.infer_let_expr(env, vars, pat, value, body)
             }
-            ast::Expr::EMatch { expr, arms } => {
-                let expr_tast = self.infer(env, vars, expr);
-                let expr_ty = expr_tast.get_ty();
-
-                let mut arms_tast = Vec::new();
-                let arm_ty = self.fresh_ty_var();
-                for arm in arms.iter() {
-                    let mut new_vars = vars.clone();
-                    let arm_tast = self.check_pat(env, &mut new_vars, &arm.pat, &expr_ty);
-                    let arm_body_tast = self.infer(env, &new_vars, &arm.body);
-                    env.constraints.push(Constraint::TypeEqual(
-                        arm_body_tast.get_ty(),
-                        arm_ty.clone(),
-                    ));
-
-                    arms_tast.push(tast::Arm {
-                        pat: arm_tast,
-                        body: arm_body_tast,
-                    });
-                }
-                tast::Expr::EMatch {
-                    expr: Box::new(expr_tast),
-                    arms: arms_tast,
-                    ty: arm_ty,
-                }
-            }
+            ast::Expr::EMatch { expr, arms } => self.infer_match_expr(env, vars, expr, arms),
             ast::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
-            } => {
-                let cond_tast = self.infer(env, vars, cond);
-                env.constraints
-                    .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+            } => self.infer_if_expr(env, vars, cond, then_branch, else_branch),
+            ast::Expr::ECall { func, args } => self.infer_call_expr(env, vars, func, args),
+            ast::Expr::EUnary { op, expr } => self.infer_unary_expr(env, vars, *op, expr),
+            ast::Expr::EBinary { op, lhs, rhs } => self.infer_binary_expr(env, vars, *op, lhs, rhs),
+            ast::Expr::EProj { tuple, index } => self.infer_proj_expr(env, vars, tuple, *index),
+        }
+    }
 
-                let then_tast = self.infer(env, vars, then_branch);
-                let else_tast = self.infer(env, vars, else_branch);
-                let result_ty = self.fresh_ty_var();
-
-                env.constraints
-                    .push(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
-                env.constraints
-                    .push(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
-
-                tast::Expr::EIf {
-                    cond: Box::new(cond_tast),
-                    then_branch: Box::new(then_tast),
-                    else_branch: Box::new(else_tast),
-                    ty: result_ty,
-                }
+    fn infer_var_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        name: &Lident,
+        astptr: &MySyntaxNodePtr,
+    ) -> tast::Expr {
+        if let Some(ty) = vars.get(name) {
+            tast::Expr::EVar {
+                name: name.0.clone(),
+                ty: ty.clone(),
+                astptr: Some(*astptr),
             }
-            ast::Expr::ECall { func, args } => {
-                let mut args_tast = Vec::new();
-                let mut arg_types = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer(env, vars, arg);
-                    arg_types.push(arg_tast.get_ty());
-                    args_tast.push(arg_tast);
-                }
-
-                let ret_ty = self.fresh_ty_var();
-                let call_site_func_ty = tast::Ty::TFunc {
-                    params: arg_types,
-                    ret_ty: Box::new(ret_ty.clone()),
-                };
-
-                match func.as_ref() {
-                    ast::Expr::EVar { name, astptr } => {
-                        if let Some(func_ty) = env.get_type_of_function(&name.0) {
-                            let inst_func_ty = self.inst_ty(&func_ty);
-                            env.constraints.push(Constraint::TypeEqual(
-                                inst_func_ty.clone(),
-                                call_site_func_ty.clone(),
-                            ));
-
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::EVar {
-                                    name: name.0.clone(),
-                                    ty: inst_func_ty,
-                                    astptr: Some(*astptr),
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        } else if let Some(trait_name) =
-                            env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
-                        {
-                            env.constraints.push(Constraint::Overloaded {
-                                op: name.clone(),
-                                trait_name,
-                                call_site_type: call_site_func_ty.clone(),
-                            });
-
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::EVar {
-                                    name: name.0.clone(),
-                                    ty: call_site_func_ty.clone(),
-                                    astptr: Some(*astptr),
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        } else if let Some(var_ty) = vars.get(name) {
-                            env.constraints.push(Constraint::TypeEqual(
-                                var_ty.clone(),
-                                call_site_func_ty.clone(),
-                            ));
-
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::EVar {
-                                    name: name.0.clone(),
-                                    ty: var_ty.clone(),
-                                    astptr: Some(*astptr),
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        } else {
-                            let func_tast = self.infer(env, vars, func);
-                            env.constraints.push(Constraint::TypeEqual(
-                                func_tast.get_ty(),
-                                call_site_func_ty.clone(),
-                            ));
-
-                            tast::Expr::ECall {
-                                func: Box::new(func_tast),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        }
-                    }
-                    _ => {
-                        let func_tast = self.infer(env, vars, func);
-                        env.constraints.push(Constraint::TypeEqual(
-                            func_tast.get_ty(),
-                            call_site_func_ty.clone(),
-                        ));
-
-                        tast::Expr::ECall {
-                            func: Box::new(func_tast),
-                            args: args_tast,
-                            ty: ret_ty,
-                        }
-                    }
-                }
+        } else if let Some(func_ty) = env.get_type_of_function(&name.0) {
+            let inst_ty = self.inst_ty(&func_ty);
+            tast::Expr::EVar {
+                name: name.0.clone(),
+                ty: inst_ty,
+                astptr: Some(*astptr),
             }
-            ast::Expr::EUnary { op, expr } => {
-                let expr_tast = self.infer(env, vars, expr);
-                let expr_ty = expr_tast.get_ty();
-                let method_name = op.method_name();
+        } else {
+            panic!("Variable {} not found in environment", name.0);
+        }
+    }
 
-                if let Some(trait_name) =
-                    env.overloaded_funcs_to_trait_name.get(method_name).cloned()
-                {
-                    let ret_ty = self.fresh_ty_var();
-                    let call_site_type = tast::Ty::TFunc {
-                        params: vec![expr_ty.clone()],
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints.push(Constraint::Overloaded {
-                        op: ast::Lident(method_name.to_string()),
-                        trait_name: trait_name.clone(),
-                        call_site_type,
-                    });
-                    tast::Expr::EUnary {
-                        op: *op,
-                        expr: Box::new(expr_tast),
+    fn infer_constructor_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        vcon: &ast::Uident,
+        args: &[ast::Expr],
+    ) -> tast::Expr {
+        let (constructor, constr_ty) = env
+            .lookup_constructor(vcon)
+            .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
+
+        let expected_arity = match &constructor {
+            tast::Constructor::Enum(enum_constructor) => env
+                .enums
+                .get(&enum_constructor.type_name)
+                .map(|def| def.variants[enum_constructor.index].1.len())
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Enum {} not found when checking constructor {}",
+                        enum_constructor.type_name.0,
+                        constructor.name().0
+                    )
+                }),
+            tast::Constructor::Struct(struct_constructor) => env
+                .structs
+                .get(&struct_constructor.type_name)
+                .map(|def| def.fields.len())
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Struct {} not found when checking constructor {}",
+                        struct_constructor.type_name.0,
+                        constructor.name().0
+                    )
+                }),
+        };
+
+        if expected_arity != args.len() {
+            panic!(
+                "Constructor {} expects {} arguments, but got {}",
+                constructor.name().0,
+                expected_arity,
+                args.len()
+            );
+        }
+
+        let inst_constr_ty = self.inst_ty(&constr_ty);
+        let ret_ty = self.fresh_ty_var();
+
+        let mut args_tast = Vec::new();
+        for arg in args.iter() {
+            let arg_tast = self.infer(env, vars, arg);
+            args_tast.push(arg_tast);
+        }
+
+        if !args_tast.is_empty() {
+            let actual_ty = tast::Ty::TFunc {
+                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            env.constraints
+                .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+        } else {
+            env.constraints
+                .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+        }
+
+        tast::Expr::EConstr {
+            constructor,
+            args: args_tast,
+            ty: ret_ty,
+        }
+    }
+
+    fn infer_struct_literal_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        name: &ast::Uident,
+        fields: &[(ast::Lident, ast::Expr)],
+    ) -> tast::Expr {
+        let (constructor, constr_ty) = env
+            .lookup_constructor(name)
+            .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
+
+        let struct_fields = match &constructor {
+            tast::Constructor::Struct(struct_constructor) => {
+                let type_name = &struct_constructor.type_name;
+                let struct_def = env.structs.get(type_name).unwrap_or_else(|| {
+                    panic!(
+                        "Struct {} not found when checking literal {}",
+                        type_name.0, name.0
+                    )
+                });
+                struct_def.fields.clone()
+            }
+            tast::Constructor::Enum { .. } => {
+                panic!(
+                    "Constructor {} refers to an enum, but a struct literal was used",
+                    name.0
+                )
+            }
+        };
+
+        let mut field_positions: HashMap<Lident, usize> = HashMap::new();
+        for (idx, (fname, _)) in struct_fields.iter().enumerate() {
+            field_positions.insert(fname.clone(), idx);
+        }
+
+        let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
+        for (field_name, expr) in fields.iter() {
+            let idx = field_positions.get(field_name).unwrap_or_else(|| {
+                panic!(
+                    "Unknown field {} on struct literal {}",
+                    field_name.0, name.0
+                )
+            });
+            if ordered_args[*idx].is_some() {
+                panic!(
+                    "Duplicate field {} in struct literal {}",
+                    field_name.0, name.0
+                );
+            }
+            let field_expr = self.infer(env, vars, expr);
+            ordered_args[*idx] = Some(field_expr);
+        }
+
+        for (idx, slot) in ordered_args.iter().enumerate() {
+            if slot.is_none() {
+                let missing = &struct_fields[idx].0;
+                panic!("Missing field {} in struct literal {}", missing.0, name.0);
+            }
+        }
+
+        let args_tast: Vec<tast::Expr> = ordered_args
+            .into_iter()
+            .map(|arg| arg.expect("field checked to exist"))
+            .collect();
+
+        let inst_constr_ty = self.inst_ty(&constr_ty);
+        let ret_ty = self.fresh_ty_var();
+
+        if !args_tast.is_empty() {
+            let actual_ty = tast::Ty::TFunc {
+                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            env.constraints
+                .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+        } else {
+            env.constraints
+                .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+        }
+
+        tast::Expr::EConstr {
+            constructor,
+            args: args_tast,
+            ty: ret_ty,
+        }
+    }
+
+    fn infer_tuple_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        items: &[ast::Expr],
+    ) -> tast::Expr {
+        let mut typs = Vec::new();
+        let mut items_tast = Vec::new();
+        for item in items.iter() {
+            let item_tast = self.infer(env, vars, item);
+            typs.push(item_tast.get_ty());
+            items_tast.push(item_tast);
+        }
+        tast::Expr::ETuple {
+            items: items_tast,
+            ty: tast::Ty::TTuple { typs },
+        }
+    }
+
+    fn infer_array_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        items: &[ast::Expr],
+    ) -> tast::Expr {
+        let len = items.len();
+        let elem_ty = self.fresh_ty_var();
+        let mut items_tast = Vec::with_capacity(len);
+        for item in items.iter() {
+            let item_tast = self.infer(env, vars, item);
+            env.constraints
+                .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
+            items_tast.push(item_tast);
+        }
+
+        tast::Expr::EArray {
+            items: items_tast,
+            ty: tast::Ty::TArray {
+                len,
+                elem: Box::new(elem_ty),
+            },
+        }
+    }
+
+    fn infer_closure_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        params: &[ast::ClosureParam],
+        body: &ast::Expr,
+    ) -> tast::Expr {
+        let mut closure_vars = vars.clone();
+        let mut params_tast = Vec::new();
+        let mut param_tys = Vec::new();
+        let current_tparams_env = self.current_tparams_env();
+
+        for param in params.iter() {
+            let param_ty = match &param.ty {
+                Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env),
+                None => self.fresh_ty_var(),
+            };
+            closure_vars.insert(param.name.clone(), param_ty.clone());
+            param_tys.push(param_ty.clone());
+            params_tast.push(tast::ClosureParam {
+                name: param.name.0.clone(),
+                ty: param_ty,
+                astptr: Some(param.astptr),
+            });
+        }
+
+        let body_tast = self.infer(env, &closure_vars, body);
+        let body_ty = body_tast.get_ty();
+
+        let closure_ty = tast::Ty::TFunc {
+            params: param_tys,
+            ret_ty: Box::new(body_ty.clone()),
+        };
+
+        tast::Expr::EClosure {
+            params: params_tast,
+            body: Box::new(body_tast),
+            ty: closure_ty,
+        }
+    }
+
+    fn infer_let_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        pat: &ast::Pat,
+        value: &ast::Expr,
+        body: &ast::Expr,
+    ) -> tast::Expr {
+        let value_tast = self.infer(env, vars, value);
+        let value_ty = value_tast.get_ty();
+
+        let mut new_vars = vars.clone();
+        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
+
+        let body_tast = self.infer(env, &new_vars, body);
+        let body_ty = body_tast.get_ty();
+        tast::Expr::ELet {
+            pat: pat_tast,
+            value: Box::new(value_tast),
+            body: Box::new(body_tast),
+            ty: body_ty.clone(),
+        }
+    }
+
+    fn infer_match_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        expr: &ast::Expr,
+        arms: &[ast::Arm],
+    ) -> tast::Expr {
+        let expr_tast = self.infer(env, vars, expr);
+        let expr_ty = expr_tast.get_ty();
+
+        let mut arms_tast = Vec::new();
+        let arm_ty = self.fresh_ty_var();
+        for arm in arms.iter() {
+            let mut new_vars = vars.clone();
+            let arm_tast = self.check_pat(env, &mut new_vars, &arm.pat, &expr_ty);
+            let arm_body_tast = self.infer(env, &new_vars, &arm.body);
+            env.constraints.push(Constraint::TypeEqual(
+                arm_body_tast.get_ty(),
+                arm_ty.clone(),
+            ));
+
+            arms_tast.push(tast::Arm {
+                pat: arm_tast,
+                body: arm_body_tast,
+            });
+        }
+        tast::Expr::EMatch {
+            expr: Box::new(expr_tast),
+            arms: arms_tast,
+            ty: arm_ty,
+        }
+    }
+
+    fn infer_if_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        cond: &ast::Expr,
+        then_branch: &ast::Expr,
+        else_branch: &ast::Expr,
+    ) -> tast::Expr {
+        let cond_tast = self.infer(env, vars, cond);
+        env.constraints
+            .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+
+        let then_tast = self.infer(env, vars, then_branch);
+        let else_tast = self.infer(env, vars, else_branch);
+        let result_ty = self.fresh_ty_var();
+
+        env.constraints
+            .push(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
+        env.constraints
+            .push(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
+
+        tast::Expr::EIf {
+            cond: Box::new(cond_tast),
+            then_branch: Box::new(then_tast),
+            else_branch: Box::new(else_tast),
+            ty: result_ty,
+        }
+    }
+
+    fn infer_call_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        func: &ast::Expr,
+        args: &[ast::Expr],
+    ) -> tast::Expr {
+        let mut args_tast = Vec::new();
+        let mut arg_types = Vec::new();
+        for arg in args.iter() {
+            let arg_tast = self.infer(env, vars, arg);
+            arg_types.push(arg_tast.get_ty());
+            args_tast.push(arg_tast);
+        }
+
+        let ret_ty = self.fresh_ty_var();
+        let call_site_func_ty = tast::Ty::TFunc {
+            params: arg_types,
+            ret_ty: Box::new(ret_ty.clone()),
+        };
+
+        match func {
+            ast::Expr::EVar { name, astptr } => {
+                if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                    let inst_ty = self.inst_ty(&func_ty);
+                    env.constraints.push(Constraint::TypeEqual(
+                        inst_ty.clone(),
+                        call_site_func_ty.clone(),
+                    ));
+                    tast::Expr::ECall {
+                        func: Box::new(tast::Expr::EVar {
+                            name: name.0.clone(),
+                            ty: inst_ty,
+                            astptr: Some(*astptr),
+                        }),
+                        args: args_tast,
                         ty: ret_ty,
-                        resolution: tast::UnaryResolution::Overloaded { trait_name },
+                    }
+                } else if let Some(trait_name) =
+                    env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
+                {
+                    env.constraints.push(Constraint::Overloaded {
+                        op: name.clone(),
+                        trait_name,
+                        call_site_type: call_site_func_ty.clone(),
+                    });
+
+                    tast::Expr::ECall {
+                        func: Box::new(tast::Expr::EVar {
+                            name: name.0.clone(),
+                            ty: call_site_func_ty.clone(),
+                            astptr: Some(*astptr),
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
+                    }
+                } else if let Some(var_ty) = vars.get(name) {
+                    env.constraints.push(Constraint::TypeEqual(
+                        var_ty.clone(),
+                        call_site_func_ty.clone(),
+                    ));
+
+                    tast::Expr::ECall {
+                        func: Box::new(tast::Expr::EVar {
+                            name: name.0.clone(),
+                            ty: var_ty.clone(),
+                            astptr: Some(*astptr),
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
                     }
                 } else {
-                    match op {
-                        ast::UnaryOp::Neg => {
-                            env.constraints
-                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
-                            tast::Expr::EUnary {
-                                op: *op,
-                                expr: Box::new(expr_tast),
-                                ty: tast::Ty::TInt,
-                                resolution: tast::UnaryResolution::Builtin,
-                            }
-                        }
-                        ast::UnaryOp::Not => {
-                            env.constraints
-                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
-                            tast::Expr::EUnary {
-                                op: *op,
-                                expr: Box::new(expr_tast),
-                                ty: tast::Ty::TBool,
-                                resolution: tast::UnaryResolution::Builtin,
-                            }
-                        }
-                    }
-                }
-            }
-            ast::Expr::EBinary { op, lhs, rhs } => {
-                let lhs_tast = self.infer(env, vars, lhs);
-                let rhs_tast = self.infer(env, vars, rhs);
-                let lhs_ty = lhs_tast.get_ty();
-                let rhs_ty = rhs_tast.get_ty();
-                let method_name = op.method_name();
+                    let func_tast = self.infer(env, vars, func);
+                    env.constraints.push(Constraint::TypeEqual(
+                        func_tast.get_ty(),
+                        call_site_func_ty.clone(),
+                    ));
 
-                if let Some(trait_name) =
-                    env.overloaded_funcs_to_trait_name.get(method_name).cloned()
-                    && !binary_supports_builtin(*op, &lhs_ty, &rhs_ty)
-                {
-                    let ret_ty = self.fresh_ty_var();
-                    let call_site_type = tast::Ty::TFunc {
-                        params: vec![lhs_ty.clone(), rhs_ty.clone()],
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints.push(Constraint::Overloaded {
-                        op: ast::Lident(method_name.to_string()),
-                        trait_name: trait_name.clone(),
-                        call_site_type,
-                    });
-                    return tast::Expr::EBinary {
-                        op: *op,
-                        lhs: Box::new(lhs_tast),
-                        rhs: Box::new(rhs_tast),
+                    tast::Expr::ECall {
+                        func: Box::new(func_tast),
+                        args: args_tast,
                         ty: ret_ty,
-                        resolution: tast::BinaryResolution::Overloaded { trait_name },
-                    };
-                }
-
-                let ret_ty = match op {
-                    ast::BinaryOp::Add => self.fresh_ty_var(),
-                    ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
-                    ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
-                };
-
-                match op {
-                    ast::BinaryOp::Add => {
-                        env.constraints
-                            .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                        env.constraints
-                            .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
                     }
-                    ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-                        env.constraints
-                            .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
-                        env.constraints
-                            .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
-                    }
-                    ast::BinaryOp::And | ast::BinaryOp::Or => {
-                        env.constraints
-                            .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
-                        env.constraints
-                            .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
-                    }
-                }
-
-                tast::Expr::EBinary {
-                    op: *op,
-                    lhs: Box::new(lhs_tast),
-                    rhs: Box::new(rhs_tast),
-                    ty: ret_ty.clone(),
-                    resolution: tast::BinaryResolution::Builtin,
                 }
             }
-            ast::Expr::EProj { tuple, index } => {
-                let tuple_tast = self.infer(env, vars, tuple);
-                let tuple_ty = tuple_tast.get_ty();
-                match &tuple_ty {
-                    tast::Ty::TTuple { typs } => {
-                        let field_ty = typs.get(*index).cloned().unwrap_or_else(|| {
-                            panic!(
-                                "Tuple index {} out of bounds for type {:?}",
-                                index, tuple_ty
-                            )
-                        });
-                        tast::Expr::EProj {
-                            tuple: Box::new(tuple_tast),
-                            index: *index,
-                            ty: field_ty,
-                        }
+            _ => {
+                let func_tast = self.infer(env, vars, func);
+                env.constraints.push(Constraint::TypeEqual(
+                    func_tast.get_ty(),
+                    call_site_func_ty.clone(),
+                ));
+
+                tast::Expr::ECall {
+                    func: Box::new(func_tast),
+                    args: args_tast,
+                    ty: ret_ty,
+                }
+            }
+        }
+    }
+
+    fn infer_unary_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        op: ast::UnaryOp,
+        expr: &ast::Expr,
+    ) -> tast::Expr {
+        let expr_tast = self.infer(env, vars, expr);
+        let expr_ty = expr_tast.get_ty();
+        let method_name = op.method_name();
+
+        if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned() {
+            let ret_ty = self.fresh_ty_var();
+            let call_site_type = tast::Ty::TFunc {
+                params: vec![expr_ty.clone()],
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            env.constraints.push(Constraint::Overloaded {
+                op: ast::Lident(method_name.to_string()),
+                trait_name: trait_name.clone(),
+                call_site_type,
+            });
+            tast::Expr::EUnary {
+                op,
+                expr: Box::new(expr_tast),
+                ty: ret_ty,
+                resolution: tast::UnaryResolution::Overloaded { trait_name },
+            }
+        } else {
+            match op {
+                ast::UnaryOp::Neg => {
+                    env.constraints
+                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
+                    tast::Expr::EUnary {
+                        op,
+                        expr: Box::new(expr_tast),
+                        ty: tast::Ty::TInt,
+                        resolution: tast::UnaryResolution::Builtin,
                     }
-                    _ => {
-                        env.report_typer_error(format!(
-                            "Cannot project field {} on non-tuple type {:?}",
-                            index, tuple_ty
-                        ));
-                        let ret_ty = self.fresh_ty_var();
-                        tast::Expr::EProj {
-                            tuple: Box::new(tuple_tast),
-                            index: *index,
-                            ty: ret_ty,
-                        }
+                }
+                ast::UnaryOp::Not => {
+                    env.constraints
+                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                    tast::Expr::EUnary {
+                        op,
+                        expr: Box::new(expr_tast),
+                        ty: tast::Ty::TBool,
+                        resolution: tast::UnaryResolution::Builtin,
                     }
+                }
+            }
+        }
+    }
+
+    fn infer_binary_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        op: ast::BinaryOp,
+        lhs: &ast::Expr,
+        rhs: &ast::Expr,
+    ) -> tast::Expr {
+        let lhs_tast = self.infer(env, vars, lhs);
+        let rhs_tast = self.infer(env, vars, rhs);
+        let lhs_ty = lhs_tast.get_ty();
+        let rhs_ty = rhs_tast.get_ty();
+        let method_name = op.method_name();
+
+        if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+            && !binary_supports_builtin(op, &lhs_ty, &rhs_ty)
+        {
+            let ret_ty = self.fresh_ty_var();
+            let call_site_type = tast::Ty::TFunc {
+                params: vec![lhs_ty.clone(), rhs_ty.clone()],
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            env.constraints.push(Constraint::Overloaded {
+                op: ast::Lident(method_name.to_string()),
+                trait_name: trait_name.clone(),
+                call_site_type,
+            });
+            return tast::Expr::EBinary {
+                op,
+                lhs: Box::new(lhs_tast),
+                rhs: Box::new(rhs_tast),
+                ty: ret_ty,
+                resolution: tast::BinaryResolution::Overloaded { trait_name },
+            };
+        }
+
+        let ret_ty = match op {
+            ast::BinaryOp::Add => self.fresh_ty_var(),
+            ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
+            ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
+        };
+
+        match op {
+            ast::BinaryOp::Add => {
+                env.constraints
+                    .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
+                env.constraints
+                    .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+            }
+            ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+                env.constraints
+                    .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
+                env.constraints
+                    .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
+            }
+            ast::BinaryOp::And | ast::BinaryOp::Or => {
+                env.constraints
+                    .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
+                env.constraints
+                    .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
+            }
+        }
+
+        tast::Expr::EBinary {
+            op,
+            lhs: Box::new(lhs_tast),
+            rhs: Box::new(rhs_tast),
+            ty: ret_ty.clone(),
+            resolution: tast::BinaryResolution::Builtin,
+        }
+    }
+
+    fn infer_proj_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        tuple: &ast::Expr,
+        index: usize,
+    ) -> tast::Expr {
+        let tuple_tast = self.infer(env, vars, tuple);
+        let tuple_ty = tuple_tast.get_ty();
+        match &tuple_ty {
+            tast::Ty::TTuple { typs } => {
+                let field_ty = typs.get(index).cloned().unwrap_or_else(|| {
+                    panic!(
+                        "Tuple index {} out of bounds for type {:?}",
+                        index, tuple_ty
+                    )
+                });
+                tast::Expr::EProj {
+                    tuple: Box::new(tuple_tast),
+                    index,
+                    ty: field_ty,
+                }
+            }
+            _ => {
+                env.report_typer_error(format!(
+                    "Cannot project field {} on non-tuple type {:?}",
+                    index, tuple_ty
+                ));
+                let ret_ty = self.fresh_ty_var();
+                tast::Expr::EProj {
+                    tuple: Box::new(tuple_tast),
+                    index,
+                    ty: ret_ty,
                 }
             }
         }
@@ -1454,72 +1562,105 @@ impl TypeInference {
         ty: &tast::Ty,
     ) -> tast::Pat {
         match pat {
-            ast::Pat::PVar { name, astptr } => {
-                vars.insert(name.clone(), ty.clone());
-                tast::Pat::PVar {
-                    name: name.0.clone(),
-                    ty: ty.clone(),
-                    astptr: Some(*astptr),
-                }
-            }
-            ast::Pat::PUnit => tast::Pat::PUnit {
-                ty: tast::Ty::TUnit,
-            },
-            ast::Pat::PBool { value } => tast::Pat::PBool {
-                value: *value,
-                ty: tast::Ty::TBool,
-            },
-            ast::Pat::PInt { value } => {
-                env.constraints
-                    .push(Constraint::TypeEqual(tast::Ty::TInt, ty.clone()));
-                tast::Pat::PInt {
-                    value: *value,
-                    ty: tast::Ty::TInt,
-                }
-            }
-            ast::Pat::PString { value } => {
-                env.constraints
-                    .push(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
-                tast::Pat::PString {
-                    value: value.clone(),
-                    ty: tast::Ty::TString,
-                }
-            }
-            ast::Pat::PConstr { .. } => {
-                let tast = self.infer_pat(env, vars, pat);
-                env.constraints
-                    .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
-                tast
-            }
-            ast::Pat::PStruct { .. } => {
-                let tast = self.infer_pat(env, vars, pat);
-                env.constraints
-                    .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
-                tast
-            }
-            ast::Pat::PTuple { pats } => {
-                let mut pats_tast = Vec::new();
-                let mut pat_typs = Vec::new();
-                for pat in pats.iter() {
-                    let pat_tast = self.infer_pat(env, vars, pat);
-                    pat_typs.push(pat_tast.get_ty());
-                    pats_tast.push(pat_tast);
-                }
-                let pat_ty = tast::Ty::TTuple { typs: pat_typs };
-                env.constraints
-                    .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
-                tast::Pat::PTuple {
-                    items: pats_tast,
-                    ty: pat_ty,
-                }
-            }
-            ast::Pat::PWild => {
-                let pat_ty = self.fresh_ty_var();
-                env.constraints
-                    .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
-                tast::Pat::PWild { ty: pat_ty }
-            }
+            ast::Pat::PVar { name, astptr } => self.check_pat_var(vars, name, astptr, ty),
+            ast::Pat::PUnit => self.check_pat_unit(),
+            ast::Pat::PBool { value } => self.check_pat_bool(*value),
+            ast::Pat::PInt { value } => self.check_pat_int(env, *value, ty),
+            ast::Pat::PString { value } => self.check_pat_string(env, value, ty),
+            ast::Pat::PConstr { .. } => self.check_pat_constructor(env, vars, pat, ty),
+            ast::Pat::PStruct { .. } => self.check_pat_constructor(env, vars, pat, ty),
+            ast::Pat::PTuple { pats } => self.check_pat_tuple(env, vars, pats, ty),
+            ast::Pat::PWild => self.check_pat_wild(env, ty),
         }
+    }
+
+    fn check_pat_var(
+        &mut self,
+        vars: &mut im::HashMap<Lident, tast::Ty>,
+        name: &Lident,
+        astptr: &MySyntaxNodePtr,
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        vars.insert(name.clone(), ty.clone());
+        tast::Pat::PVar {
+            name: name.0.clone(),
+            ty: ty.clone(),
+            astptr: Some(*astptr),
+        }
+    }
+
+    fn check_pat_unit(&self) -> tast::Pat {
+        tast::Pat::PUnit {
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn check_pat_bool(&self, value: bool) -> tast::Pat {
+        tast::Pat::PBool {
+            value,
+            ty: tast::Ty::TBool,
+        }
+    }
+
+    fn check_pat_int(&mut self, env: &mut Env, value: i32, ty: &tast::Ty) -> tast::Pat {
+        env.constraints
+            .push(Constraint::TypeEqual(tast::Ty::TInt, ty.clone()));
+        tast::Pat::PInt {
+            value,
+            ty: tast::Ty::TInt,
+        }
+    }
+
+    fn check_pat_string(&mut self, env: &mut Env, value: &String, ty: &tast::Ty) -> tast::Pat {
+        env.constraints
+            .push(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
+        tast::Pat::PString {
+            value: value.clone(),
+            ty: tast::Ty::TString,
+        }
+    }
+
+    fn check_pat_constructor(
+        &mut self,
+        env: &mut Env,
+        vars: &mut im::HashMap<Lident, tast::Ty>,
+        pat: &ast::Pat,
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        let tast = self.infer_pat(env, vars, pat);
+        env.constraints
+            .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
+        tast
+    }
+
+    fn check_pat_tuple(
+        &mut self,
+        env: &mut Env,
+        vars: &mut im::HashMap<Lident, tast::Ty>,
+        pats: &[ast::Pat],
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        let mut pats_tast = Vec::new();
+        let mut pat_typs = Vec::new();
+        for pat in pats.iter() {
+            let pat_tast = self.infer_pat(env, vars, pat);
+            pat_typs.push(pat_tast.get_ty());
+            pats_tast.push(pat_tast);
+        }
+        let pat_ty = tast::Ty::TTuple { typs: pat_typs };
+        env.constraints
+            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        tast::Pat::PTuple {
+            items: pats_tast,
+            ty: pat_ty,
+        }
+    }
+
+    fn check_pat_wild(&mut self, env: &mut Env, ty: &tast::Ty) -> tast::Pat {
+        let pat_ty = self.fresh_ty_var();
+        env.constraints
+            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        tast::Pat::PWild { ty: pat_ty }
     }
 
     fn infer_pat(
