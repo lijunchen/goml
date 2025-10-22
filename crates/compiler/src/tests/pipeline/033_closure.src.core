@@ -22,5 +22,26 @@ fn main() -> unit {
   let doubled/18 = no_capture/17(3) in
   let mtmp2 = string_println(int_to_string(doubled/18)) in
   let mtmp3 = test() in
+  let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
+  let point/20 = Point { x: 10, y: 20 } in
+  let play_list_and_point/25 = || => match list123/19 {
+    IntList::Nil => {
+      string_println("Empty list")
+    },
+    IntList::Cons(x4, x5) => {
+      let x4 = IntList::Cons._0(list123/19) in
+      let x5 = IntList::Cons._1(list123/19) in
+      let tail/22 = x5 in
+      let head/21 = x4 in
+      let mtmp6 = string_println(int_to_string(head/21)) in
+      let x7 = Point.x(point/20) in
+      let x8 = Point.y(point/20) in
+      let y/24 = x8 in
+      let x/23 = x7 in
+      let mtmp9 = string_println(string_add("Point: (", string_add(int_to_string(x/23), string_add(", ", string_add(int_to_string(y/24), ")"))))) in
+      ()
+    },
+  } in
+  let mtmp10 = play_list_and_point/25() in
   ()
 }

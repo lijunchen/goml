@@ -25,6 +25,11 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type Point struct {
+    x int
+    y int
+}
+
 type closure_env_f_0 struct {
     y_0 int
     z_1 int
@@ -42,69 +47,139 @@ type closure_env_unused_3 struct {
 
 type closure_env_no_capture_4 struct {}
 
+type closure_env_play_list_and_point_5 struct {
+    list123_0 IntList
+    point_1 Point
+}
+
+type IntList interface {
+    isIntList()
+}
+
+type Nil struct {}
+
+func (_ Nil) isIntList() {}
+
+type Cons struct {
+    _0 int
+    _1 IntList
+}
+
+func (_ Cons) isIntList() {}
+
 func test() struct{} {
-    var ret21 struct{}
+    var ret40 struct{}
     var y__0 int = 3
     var z__1 int = 5
     var f__3 closure_env_f_0 = closure_env_f_0{
         y_0: y__0,
         z_1: z__1,
     }
-    var t15 int = __closure_apply4(f__3, 2)
-    var t14 string = int_to_string(t15)
-    string_println(t14)
-    var t17 int = __closure_apply4(f__3, 3)
-    var t16 string = int_to_string(t17)
-    ret21 = string_println(t16)
-    return ret21
+    var t24 int = __closure_apply11(f__3, 2)
+    var t23 string = int_to_string(t24)
+    string_println(t23)
+    var t26 int = __closure_apply11(f__3, 3)
+    var t25 string = int_to_string(t26)
+    ret40 = string_println(t25)
+    return ret40
 }
 
 func main0() struct{} {
-    var ret23 struct{}
+    var ret42 struct{}
     var base__6 int = 5
     var add_base__8 closure_env_add_base_1 = closure_env_add_base_1{
         base_0: base__6,
     }
-    var result__9 int = __closure_apply6(add_base__8, 7)
+    var result__9 int = __closure_apply13(add_base__8, 7)
     var printer__13 closure_env_printer_2 = closure_env_printer_2{}
-    __closure_apply8(printer__13, "result: ", result__9)
+    __closure_apply15(printer__13, "result: ", result__9)
     var no_capture__17 closure_env_no_capture_4 = closure_env_no_capture_4{}
-    var doubled__18 int = __closure_apply12(no_capture__17, 3)
-    var t18 string = int_to_string(doubled__18)
-    string_println(t18)
+    var doubled__18 int = __closure_apply19(no_capture__17, 3)
+    var t27 string = int_to_string(doubled__18)
+    string_println(t27)
     test()
-    ret23 = struct{}{}
-    return ret23
+    var t30 IntList = Nil{}
+    var t29 IntList = Cons{
+        _0: 3,
+        _1: t30,
+    }
+    var t28 IntList = Cons{
+        _0: 2,
+        _1: t29,
+    }
+    var list123__19 IntList = Cons{
+        _0: 1,
+        _1: t28,
+    }
+    var point__20 Point = Point{
+        x: 10,
+        y: 20,
+    }
+    var play_list_and_point__25 closure_env_play_list_and_point_5 = closure_env_play_list_and_point_5{
+        list123_0: list123__19,
+        point_1: point__20,
+    }
+    __closure_apply21(play_list_and_point__25)
+    ret42 = struct{}{}
+    return ret42
 }
 
-func __closure_apply4(env5 closure_env_f_0, x__2 int) int {
-    var ret24 int
-    var y__0 int = env5.y_0
-    var z__1 int = env5.z_1
-    var t19 int = int_mul(x__2, y__0)
-    ret24 = int_mul(t19, z__1)
-    return ret24
+func __closure_apply11(env12 closure_env_f_0, x__2 int) int {
+    var ret43 int
+    var y__0 int = env12.y_0
+    var z__1 int = env12.z_1
+    var t31 int = int_mul(x__2, y__0)
+    ret43 = int_mul(t31, z__1)
+    return ret43
 }
 
-func __closure_apply6(env7 closure_env_add_base_1, x__7 int) int {
-    var ret25 int
-    var base__6 int = env7.base_0
-    ret25 = int_add(x__7, base__6)
-    return ret25
+func __closure_apply13(env14 closure_env_add_base_1, x__7 int) int {
+    var ret44 int
+    var base__6 int = env14.base_0
+    ret44 = int_add(x__7, base__6)
+    return ret44
 }
 
-func __closure_apply8(env9 closure_env_printer_2, prefix__10 string, value__11 int) struct{} {
-    var ret26 struct{}
-    var t20 string = int_to_string(value__11)
-    var message__12 string = string_add(prefix__10, t20)
-    ret26 = string_println(message__12)
-    return ret26
+func __closure_apply15(env16 closure_env_printer_2, prefix__10 string, value__11 int) struct{} {
+    var ret45 struct{}
+    var t32 string = int_to_string(value__11)
+    var message__12 string = string_add(prefix__10, t32)
+    ret45 = string_println(message__12)
+    return ret45
 }
 
-func __closure_apply12(env13 closure_env_no_capture_4, z__16 int) int {
-    var ret28 int
-    ret28 = int_mul(z__16, 2)
-    return ret28
+func __closure_apply19(env20 closure_env_no_capture_4, z__16 int) int {
+    var ret47 int
+    ret47 = int_mul(z__16, 2)
+    return ret47
+}
+
+func __closure_apply21(env22 closure_env_play_list_and_point_5) struct{} {
+    var ret48 struct{}
+    var list123__19 IntList = env22.list123_0
+    var point__20 Point = env22.point_1
+    switch list123__19 := list123__19.(type) {
+    case Nil:
+        ret48 = string_println("Empty list")
+    case Cons:
+        var x4 int = list123__19._0
+        var head__21 int = x4
+        var t33 string = int_to_string(head__21)
+        string_println(t33)
+        var x7 int = point__20.x
+        var x8 int = point__20.y
+        var y__24 int = x8
+        var x__23 int = x7
+        var t36 string = int_to_string(x__23)
+        var t39 string = int_to_string(y__24)
+        var t38 string = string_add(t39, ")")
+        var t37 string = string_add(", ", t38)
+        var t35 string = string_add(t36, t37)
+        var t34 string = string_add("Point: (", t35)
+        string_println(t34)
+        ret48 = struct{}{}
+    }
+    return ret48
 }
 
 func main() {

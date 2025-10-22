@@ -22,5 +22,16 @@ fn main() -> unit {
   let doubled/18: int = (no_capture/17 : (int) -> int)(3) in
   let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((doubled/18 : int))) in
   let _ : unit = (test : () -> unit)() in
+  let list123/19: IntList = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
+  let point/20: Point = Point { x: 10, y: 20 } in
+  let play_list_and_point/25: () -> unit = || => match (list123/19 : IntList) {
+      IntList::Nil => (string_println : (string) -> unit)("Empty list"),
+      IntList::Cons(head/21: int, tail/22: IntList) => let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((head/21 : int))) in
+        match (point/20 : Point) {
+            Point { x: x/23: int, y: y/24: int } => let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("Point: (", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((x/23 : int)), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((y/24 : int)), ")"))))) in
+              (),
+        },
+  } in
+  let _ : unit = (play_list_and_point/25 : () -> unit)() in
   ()
 }

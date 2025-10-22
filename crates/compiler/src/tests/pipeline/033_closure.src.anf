@@ -2,12 +2,12 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
-  let t15 = __closure_apply4(f/3, 2) in
-  let t14 = int_to_string(t15) in
-  let mtmp0 = string_println(t14) in
-  let t17 = __closure_apply4(f/3, 3) in
-  let t16 = int_to_string(t17) in
-  string_println(t16)
+  let t24 = __closure_apply11(f/3, 2) in
+  let t23 = int_to_string(t24) in
+  let mtmp0 = string_println(t23) in
+  let t26 = __closure_apply11(f/3, 3) in
+  let t25 = int_to_string(t26) in
+  string_println(t25)
 }
 
 fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
@@ -17,41 +17,78 @@ fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
 fn main() -> unit {
   let base/6 = 5 in
   let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
-  let result/9 = __closure_apply6(add_base/8, 7) in
+  let result/9 = __closure_apply13(add_base/8, 7) in
   let printer/13 = closure_env_printer_2 {} in
-  let mtmp1 = __closure_apply8(printer/13, "result: ", result/9) in
+  let mtmp1 = __closure_apply15(printer/13, "result: ", result/9) in
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
-  let doubled/18 = __closure_apply12(no_capture/17, 3) in
-  let t18 = int_to_string(doubled/18) in
-  let mtmp2 = string_println(t18) in
+  let doubled/18 = __closure_apply19(no_capture/17, 3) in
+  let t27 = int_to_string(doubled/18) in
+  let mtmp2 = string_println(t27) in
   let mtmp3 = test() in
+  let t30 = Tag_0 in
+  let t29 = IntList::Cons(3, t30) in
+  let t28 = IntList::Cons(2, t29) in
+  let list123/19 = IntList::Cons(1, t28) in
+  let point/20 = Point { x: 10, y: 20 } in
+  let play_list_and_point/25 = closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
+  let mtmp10 = __closure_apply21(play_list_and_point/25) in
   ()
 }
 
-fn __closure_apply4(env5: closure_env_f_0, x/2: int) -> int {
-  let y/0 = closure_env_f_0.y_0(env5) in
-  let z/1 = closure_env_f_0.z_1(env5) in
-  let t19 = int_mul(x/2, y/0) in
-  int_mul(t19, z/1)
+fn __closure_apply11(env12: closure_env_f_0, x/2: int) -> int {
+  let y/0 = closure_env_f_0.y_0(env12) in
+  let z/1 = closure_env_f_0.z_1(env12) in
+  let t31 = int_mul(x/2, y/0) in
+  int_mul(t31, z/1)
 }
 
-fn __closure_apply6(env7: closure_env_add_base_1, x/7: int) -> int {
-  let base/6 = closure_env_add_base_1.base_0(env7) in
+fn __closure_apply13(env14: closure_env_add_base_1, x/7: int) -> int {
+  let base/6 = closure_env_add_base_1.base_0(env14) in
   int_add(x/7, base/6)
 }
 
-fn __closure_apply8(env9: closure_env_printer_2, prefix/10: string, value/11: int) -> unit {
-  let t20 = int_to_string(value/11) in
-  let message/12 = string_add(prefix/10, t20) in
+fn __closure_apply15(env16: closure_env_printer_2, prefix/10: string, value/11: int) -> unit {
+  let t32 = int_to_string(value/11) in
+  let message/12 = string_add(prefix/10, t32) in
   string_println(message/12)
 }
 
-fn __closure_apply10(env11: closure_env_unused_3, y/14: int) -> int {
-  let result/9 = closure_env_unused_3.result_0(env11) in
+fn __closure_apply17(env18: closure_env_unused_3, y/14: int) -> int {
+  let result/9 = closure_env_unused_3.result_0(env18) in
   int_add(y/14, result/9)
 }
 
-fn __closure_apply12(env13: closure_env_no_capture_4, z/16: int) -> int {
+fn __closure_apply19(env20: closure_env_no_capture_4, z/16: int) -> int {
   int_mul(z/16, 2)
+}
+
+fn __closure_apply21(env22: closure_env_play_list_and_point_5) -> unit {
+  let list123/19 = closure_env_play_list_and_point_5.list123_0(env22) in
+  let point/20 = closure_env_play_list_and_point_5.point_1(env22) in
+  match list123/19 {
+    Tag_0 => {
+      string_println("Empty list")
+    },
+    Tag_1 => {
+      let x4 = IntList::Cons._0(list123/19) in
+      let x5 = IntList::Cons._1(list123/19) in
+      let tail/22 = x5 in
+      let head/21 = x4 in
+      let t33 = int_to_string(head/21) in
+      let mtmp6 = string_println(t33) in
+      let x7 = Point.x(point/20) in
+      let x8 = Point.y(point/20) in
+      let y/24 = x8 in
+      let x/23 = x7 in
+      let t36 = int_to_string(x/23) in
+      let t39 = int_to_string(y/24) in
+      let t38 = string_add(t39, ")") in
+      let t37 = string_add(", ", t38) in
+      let t35 = string_add(t36, t37) in
+      let t34 = string_add("Point: (", t35) in
+      let mtmp9 = string_println(t34) in
+      ()
+    },
+  }
 }

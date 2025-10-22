@@ -10,6 +10,16 @@ fn call_int_id(f : (int) -> int, v: int) -> int {
     f(v)
 }
 
+enum IntList {
+    Nil,
+    Cons(int, IntList),
+}
+
+struct Point {
+    x: int,
+    y: int,
+}
+
 fn main() {
     let base = 5 in
     let add_base = |x: int| x + base in
@@ -24,5 +34,26 @@ fn main() {
     let doubled = no_capture(3) in
     let _ = string_println(int_to_string(doubled)) in
     let _ = test() in
+
+    let list123 = Cons(1, Cons(2, Cons(3, Nil))) in
+
+    let point = Point { x: 10, y: 20 } in
+
+    let play_list_and_point = || {
+        match list123 {
+            Nil => string_println("Empty list"),
+            Cons(head, tail) => {
+                let _ = string_println(int_to_string(head)) in
+                match point {
+                    Point { x: x, y: y } => {
+                        let _ = string_println(string_add("Point: (", string_add(int_to_string(x), string_add(", ", string_add(int_to_string(y), ")"))))) in
+                        ()
+                    }
+                }
+            }
+        }
+    } in
+
+    let _ = play_list_and_point() in
     ()
 }
