@@ -149,21 +149,22 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             continue;
         };
 
-        let slice_go_ty = goast::tast_ty_to_go_type(ty);
+        let ref_go_ty = goast::tast_ty_to_go_type(ty);
         let elem_go_ty = goast::tast_ty_to_go_type(elem);
 
         let new_fn = goast::Fn {
             name: ref_helper_fn_name("ref_new", ty),
             params: vec![("value".to_string(), elem_go_ty.clone())],
-            ret_ty: Some(slice_go_ty.clone()),
+            ret_ty: Some(ref_go_ty.clone()),
             body: goast::Block {
                 stmts: vec![goast::Stmt::Return {
-                    expr: Some(goast::Expr::ArrayLiteral {
-                        elems: vec![goast::Expr::Var {
+                    expr: Some(goast::Expr::UnaryOp {
+                        op: goast::UnaryOp::AddrOf,
+                        expr: Box::new(goast::Expr::Var {
                             name: "value".to_string(),
                             ty: elem_go_ty.clone(),
-                        }],
-                        ty: slice_go_ty.clone(),
+                        }),
+                        ty: ref_go_ty.clone(),
                     }),
                 }],
             },
@@ -171,18 +172,15 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
 
         let get_fn = goast::Fn {
             name: ref_helper_fn_name("ref_get", ty),
-            params: vec![("reference".to_string(), slice_go_ty.clone())],
+            params: vec![("reference".to_string(), ref_go_ty.clone())],
             ret_ty: Some(elem_go_ty.clone()),
             body: goast::Block {
                 stmts: vec![goast::Stmt::Return {
-                    expr: Some(goast::Expr::Index {
-                        array: Box::new(goast::Expr::Var {
+                    expr: Some(goast::Expr::UnaryOp {
+                        op: goast::UnaryOp::Deref,
+                        expr: Box::new(goast::Expr::Var {
                             name: "reference".to_string(),
-                            ty: slice_go_ty.clone(),
-                        }),
-                        index: Box::new(goast::Expr::Int {
-                            value: 0,
-                            ty: goty::GoType::TInt,
+                            ty: ref_go_ty.clone(),
                         }),
                         ty: elem_go_ty.clone(),
                     }),
@@ -193,20 +191,16 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         let set_fn = goast::Fn {
             name: ref_helper_fn_name("ref_set", ty),
             params: vec![
-                ("reference".to_string(), slice_go_ty.clone()),
+                ("reference".to_string(), ref_go_ty.clone()),
                 ("value".to_string(), elem_go_ty.clone()),
             ],
             ret_ty: Some(goty::GoType::TUnit),
             body: goast::Block {
                 stmts: vec![
-                    goast::Stmt::IndexAssign {
-                        array: goast::Expr::Var {
+                    goast::Stmt::PointerAssign {
+                        pointer: goast::Expr::Var {
                             name: "reference".to_string(),
-                            ty: slice_go_ty.clone(),
-                        },
-                        index: goast::Expr::Int {
-                            value: 0,
-                            ty: goty::GoType::TInt,
+                            ty: ref_go_ty.clone(),
                         },
                         value: goast::Expr::Var {
                             name: "value".to_string(),

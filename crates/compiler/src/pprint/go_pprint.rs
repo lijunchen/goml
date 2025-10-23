@@ -18,6 +18,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TInt => "int".to_string(),
         GoType::TString => "string".to_string(),
         GoType::TStruct { name, .. } => name.clone(),
+        GoType::TPointer { elem } => format!("*{}", go_type_name(elem)),
         GoType::TName { name } => name.clone(),
         GoType::TArray { len, elem } => format!("[{}]{}", len, go_type_name(elem)),
         GoType::TSlice { elem } => format!("[]{}", go_type_name(elem)),
@@ -44,6 +45,7 @@ fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
         }
         GoType::TArray { len, elem } => RcDoc::text(format!("[{}]", len)).append(go_type_doc(elem)),
         GoType::TSlice { elem } => RcDoc::text("[]").append(go_type_doc(elem)),
+        GoType::TPointer { elem } => RcDoc::text("*").append(go_type_doc(elem)),
         other => RcDoc::text(go_type_name(other)),
     }
 }
@@ -416,6 +418,12 @@ impl Stmt {
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
                 .append(value.to_doc(env)),
+            Stmt::PointerAssign { pointer, value } => RcDoc::text("*")
+                .append(pointer.to_doc(env))
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc(env)),
             Stmt::IndexAssign {
                 array,
                 index,
@@ -726,6 +734,8 @@ impl UnaryOp {
         match self {
             UnaryOp::Neg => RcDoc::text("-"),
             UnaryOp::Not => RcDoc::text("!"),
+            UnaryOp::AddrOf => RcDoc::text("&"),
+            UnaryOp::Deref => RcDoc::text("*"),
         }
     }
 }

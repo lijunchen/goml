@@ -398,16 +398,47 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
                 && (*name == "ref_new" || *name == "ref_get" || *name == "ref_set")
             {
-                let helper = if name == "ref_new" {
-                    runtime::ref_helper_fn_name(name, ty)
+                let (helper, helper_ty) = if name == "ref_new" {
+                    let tast::Ty::TRef { elem } = ty else {
+                        panic!("ref_new return type must be reference, got {:?}", ty);
+                    };
+                    let elem_go_ty = tast_ty_to_go_type(elem);
+                    let ref_go_ty = tast_ty_to_go_type(ty);
+                    (
+                        runtime::ref_helper_fn_name(name, ty),
+                        goty::GoType::TFunc {
+                            params: vec![elem_go_ty],
+                            ret_ty: Box::new(ref_go_ty),
+                        },
+                    )
                 } else {
                     let ref_ty = imm_ty(&args[0]);
-                    runtime::ref_helper_fn_name(name, &ref_ty)
+                    let tast::Ty::TRef { elem } = &ref_ty else {
+                        panic!("{} expects reference argument, got {:?}", name, ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    let elem_go_ty = tast_ty_to_go_type(elem);
+                    let ret_ty = if name == "ref_get" {
+                        elem_go_ty.clone()
+                    } else {
+                        goty::GoType::TUnit
+                    };
+                    (
+                        runtime::ref_helper_fn_name(name, &ref_ty),
+                        goty::GoType::TFunc {
+                            params: if name == "ref_get" {
+                                vec![ref_go_ty.clone()]
+                            } else {
+                                vec![ref_go_ty.clone(), elem_go_ty.clone()]
+                            },
+                            ret_ty: Box::new(ret_ty),
+                        },
+                    )
                 };
                 goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
                         name: helper,
-                        ty: func_ty,
+                        ty: helper_ty,
                     }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
