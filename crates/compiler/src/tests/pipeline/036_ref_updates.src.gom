@@ -1,0 +1,48 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+func ref_new__Ref_int(value int) *int {
+    return &value
+}
+
+func ref_get__Ref_int(reference *int) int {
+    return *reference
+}
+
+func ref_set__Ref_int(reference *int, value int) struct{} {
+    *reference = value
+    return struct{}{}
+}
+
+func main0() struct{} {
+    var ret5 struct{}
+    var reference__0 *int = ref_new__Ref_int(10)
+    var current__1 int = ref_get__Ref_int(reference__0)
+    var t2 int = int_add(current__1, 5)
+    ref_set__Ref_int(reference__0, t2)
+    var t4 int = ref_get__Ref_int(reference__0)
+    var t3 string = int_to_string(t4)
+    string_println(t3)
+    ret5 = struct{}{}
+    return ret5
+}
+
+func main() {
+    main0()
+}

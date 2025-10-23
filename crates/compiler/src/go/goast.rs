@@ -182,6 +182,8 @@ impl Expr {
 pub enum UnaryOp {
     Neg,
     Not,
+    AddrOf,
+    Deref,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -205,6 +207,10 @@ pub enum Stmt {
     },
     Assignment {
         name: String,
+        value: Expr,
+    },
+    PointerAssign {
+        pointer: Expr,
         value: Expr,
     },
     IndexAssign {
@@ -267,7 +273,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
             len: *len,
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
-        tast::Ty::TRef { elem } => goty::GoType::TSlice {
+        tast::Ty::TRef { elem } => goty::GoType::TPointer {
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
         tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
@@ -304,8 +310,8 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
         ),
         tast::Ty::TRef { elem } => format!(
-            "Ref_{}",
-            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
+            "RefPtr_{}",
+            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
         ),
         // Fallback textual
         tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),

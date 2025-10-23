@@ -47,6 +47,28 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
     run_typer_error_cases(&diagnostics_dir)
 }
 
+#[test]
+fn reference_runtime_executes() -> anyhow::Result<()> {
+    let src = r#"
+fn main() -> unit {
+    let r = ref 3 in
+    let _ = r = 5 in
+    string_println(int_to_string(!r))
+}
+"#;
+
+    let path = PathBuf::from("ref_runtime.gom");
+    let compilation = pipeline::compile(&path, src)
+        .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
+
+    let go_source = compilation.go.to_pretty(&compilation.env, 120);
+    let go_output = execute_go_source(&go_source)?;
+
+    assert_eq!(go_output, "5\n");
+
+    Ok(())
+}
+
 fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
     let child = Command::new("go")
         .arg("run")

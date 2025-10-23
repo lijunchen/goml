@@ -9,6 +9,9 @@ pub enum GoType {
         name: String,
         fields: Vec<(String, GoType)>,
     },
+    TPointer {
+        elem: Box<GoType>,
+    },
     TFunc {
         params: Vec<GoType>,
         ret_ty: Box<GoType>,
