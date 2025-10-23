@@ -380,6 +380,9 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
             len: *len,
             elem: Box::new(instantiate_trait_method_ty(elem, self_ty)),
         },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(instantiate_trait_method_ty(elem, self_ty)),
+        },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params

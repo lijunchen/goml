@@ -25,6 +25,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             Ty::TCon { .. } => false,
             Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
             Ty::TArray { elem, .. } => has_tparam(elem),
+            Ty::TRef { elem } => has_tparam(elem),
             Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
         }
     }
@@ -82,6 +83,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             },
             Ty::TArray { len, elem } => Ty::TArray {
                 len: *len,
+                elem: Box::new(subst_ty(elem, s)),
+            },
+            Ty::TRef { elem } => Ty::TRef {
                 elem: Box::new(subst_ty(elem, s)),
             },
             Ty::TFunc { params, ret_ty } => Ty::TFunc {
@@ -169,6 +173,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 }
                 unify(le, re, subst)
             }
+            (Ty::TRef { elem: le }, Ty::TRef { elem: re }) => unify(le, re, subst),
             (
                 Ty::TFunc {
                     params: lp,

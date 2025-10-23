@@ -20,4 +20,7 @@ pub enum GoType {
         len: usize,
         elem: Box<GoType>,
     },
+    TSlice {
+        elem: Box<GoType>,
+    },
 }

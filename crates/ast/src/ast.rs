@@ -20,6 +20,7 @@ pub enum BinaryOp {
     Div,
     And,
     Or,
+    Assign,
 }
 
 impl BinaryOp {
@@ -31,6 +32,7 @@ impl BinaryOp {
             Self::Div => "/",
             Self::And => "&&",
             Self::Or => "||",
+            Self::Assign => "=",
         }
     }
 
@@ -42,6 +44,7 @@ impl BinaryOp {
             Self::Div => "div",
             Self::And => "and",
             Self::Or => "or",
+            Self::Assign => "assign",
         }
     }
 }
@@ -50,6 +53,7 @@ impl BinaryOp {
 pub enum UnaryOp {
     Neg,
     Not,
+    Ref,
 }
 
 impl UnaryOp {
@@ -57,6 +61,7 @@ impl UnaryOp {
         match self {
             Self::Neg => "-",
             Self::Not => "!",
+            Self::Ref => "ref",
         }
     }
 
@@ -64,6 +69,7 @@ impl UnaryOp {
         match self {
             Self::Neg => "neg",
             Self::Not => "not",
+            Self::Ref => "ref",
         }
     }
 }

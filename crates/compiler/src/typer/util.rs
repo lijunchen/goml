@@ -84,6 +84,9 @@ pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String
         tast::Ty::TArray { elem, .. } => {
             validate_ty(env, elem, tparams);
         }
+        tast::Ty::TRef { elem } => {
+            validate_ty(env, elem, tparams);
+        }
     }
 }
 
@@ -151,5 +154,6 @@ pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &t
         ast::BinaryOp::And | ast::BinaryOp::Or => {
             matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))
         }
+        ast::BinaryOp::Assign => matches!(lhs, tast::Ty::TRef { .. }),
     }
 }

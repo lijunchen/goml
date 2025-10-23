@@ -16,6 +16,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![false],
     T![-],
     T![!],
+    T![ref],
     T!['('],
     T!['['],
     T![if],
@@ -289,13 +290,14 @@ fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
 
 fn prefix_binding_power(op: TokenKind) -> Option<((), u8)> {
     match op {
-        T![-] | T![!] => Some(((), 23)),
+        T![-] | T![!] | T![ref] => Some(((), 23)),
         _ => None,
     }
 }
 
 fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
+        T![=] => Some((0, 1)),
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
         T![+] | T![-] => Some((13, 14)),

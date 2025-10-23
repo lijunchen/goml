@@ -66,4 +66,86 @@ fn env_registers_builtin_function_signatures() {
             other
         ),
     }
+
+    match env.get_type_of_function("ref_new") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 1);
+            match &params[0] {
+                tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                other => panic!("expected ref_new param to be type param, got {:?}", other),
+            }
+            match ret_ty.as_ref() {
+                tast::Ty::TRef { elem } => match elem.as_ref() {
+                    tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                    other => panic!(
+                        "expected ref_new return element to be type param, got {:?}",
+                        other
+                    ),
+                },
+                other => panic!(
+                    "expected ref_new to return a reference type, got {:?}",
+                    other
+                ),
+            }
+        }
+        other => panic!(
+            "expected ref_new to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("ref_get") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 1);
+            match &params[0] {
+                tast::Ty::TRef { elem } => match elem.as_ref() {
+                    tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                    other => panic!(
+                        "expected ref_get reference element to be type param, got {:?}",
+                        other
+                    ),
+                },
+                other => panic!("expected ref_get param to be reference, got {:?}", other),
+            }
+            match ret_ty.as_ref() {
+                tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                other => panic!("expected ref_get to return type param, got {:?}", other),
+            }
+        }
+        other => panic!(
+            "expected ref_get to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("ref_set") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            match &params[0] {
+                tast::Ty::TRef { elem } => match elem.as_ref() {
+                    tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                    other => panic!(
+                        "expected ref_set reference element to be type param, got {:?}",
+                        other
+                    ),
+                },
+                other => panic!(
+                    "expected ref_set first param to be reference, got {:?}",
+                    other
+                ),
+            }
+            match &params[1] {
+                tast::Ty::TParam { name } => assert_eq!(name, "T"),
+                other => panic!(
+                    "expected ref_set second param to be type param, got {:?}",
+                    other
+                ),
+            }
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUnit));
+        }
+        other => panic!(
+            "expected ref_set to have a function type signature, got {:?}",
+            other
+        ),
+    }
 }
