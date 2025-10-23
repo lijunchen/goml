@@ -637,6 +637,63 @@ impl TypeInference {
         let expr_tast = self.infer_expr(env, vars, expr);
         let expr_ty = expr_tast.get_ty();
         let method_name = op.method_name();
+        let builtin_expr = match op {
+            ast::UnaryOp::Ref => {
+                let ret_ty = tast::Ty::TRef {
+                    elem: Box::new(expr_ty.clone()),
+                };
+                Some(tast::Expr::EUnary {
+                    op,
+                    expr: Box::new(expr_tast.clone()),
+                    ty: ret_ty,
+                    resolution: tast::UnaryResolution::Builtin,
+                })
+            }
+            ast::UnaryOp::Not => {
+                let ref_inner = match &expr_ty {
+                    tast::Ty::TRef { elem } => Some(elem.as_ref().clone()),
+                    _ => None,
+                };
+
+                if let Some(inner_ty) = ref_inner {
+                    env.constraints.push(Constraint::TypeEqual(
+                        expr_ty.clone(),
+                        tast::Ty::TRef {
+                            elem: Box::new(inner_ty.clone()),
+                        },
+                    ));
+                    Some(tast::Expr::EUnary {
+                        op,
+                        expr: Box::new(expr_tast.clone()),
+                        ty: inner_ty,
+                        resolution: tast::UnaryResolution::Builtin,
+                    })
+                } else {
+                    env.constraints
+                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                    Some(tast::Expr::EUnary {
+                        op,
+                        expr: Box::new(expr_tast.clone()),
+                        ty: tast::Ty::TBool,
+                        resolution: tast::UnaryResolution::Builtin,
+                    })
+                }
+            }
+            ast::UnaryOp::Neg => {
+                env.constraints
+                    .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
+                Some(tast::Expr::EUnary {
+                    op,
+                    expr: Box::new(expr_tast.clone()),
+                    ty: tast::Ty::TInt,
+                    resolution: tast::UnaryResolution::Builtin,
+                })
+            }
+        };
+
+        if let Some(expr) = builtin_expr {
+            return expr;
+        }
 
         if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned() {
             let ret_ty = self.fresh_ty_var();
@@ -656,28 +713,7 @@ impl TypeInference {
                 resolution: tast::UnaryResolution::Overloaded { trait_name },
             }
         } else {
-            match op {
-                ast::UnaryOp::Neg => {
-                    env.constraints
-                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
-                    tast::Expr::EUnary {
-                        op,
-                        expr: Box::new(expr_tast),
-                        ty: tast::Ty::TInt,
-                        resolution: tast::UnaryResolution::Builtin,
-                    }
-                }
-                ast::UnaryOp::Not => {
-                    env.constraints
-                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
-                    tast::Expr::EUnary {
-                        op,
-                        expr: Box::new(expr_tast),
-                        ty: tast::Ty::TBool,
-                        resolution: tast::UnaryResolution::Builtin,
-                    }
-                }
-            }
+            panic!("Unsupported unary operator {:?}", op);
         }
     }
 
@@ -694,6 +730,22 @@ impl TypeInference {
         let lhs_ty = lhs_tast.get_ty();
         let rhs_ty = rhs_tast.get_ty();
         let method_name = op.method_name();
+
+        if op == ast::BinaryOp::Assign {
+            env.constraints.push(Constraint::TypeEqual(
+                lhs_ty.clone(),
+                tast::Ty::TRef {
+                    elem: Box::new(rhs_ty.clone()),
+                },
+            ));
+            return tast::Expr::EBinary {
+                op,
+                lhs: Box::new(lhs_tast),
+                rhs: Box::new(rhs_tast),
+                ty: tast::Ty::TUnit,
+                resolution: tast::BinaryResolution::Builtin,
+            };
+        }
 
         if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned()
             && !binary_supports_builtin(op, &lhs_ty, &rhs_ty)
@@ -721,6 +773,7 @@ impl TypeInference {
             ast::BinaryOp::Add => self.fresh_ty_var(),
             ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
             ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
+            ast::BinaryOp::Assign => unreachable!(),
         };
 
         match op {
@@ -742,6 +795,7 @@ impl TypeInference {
                 env.constraints
                     .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
             }
+            ast::BinaryOp::Assign => unreachable!(),
         }
 
         tast::Expr::EBinary {

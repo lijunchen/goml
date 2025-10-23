@@ -177,6 +177,9 @@ pub enum TokenKind {
     #[token("return")]
     ReturnKeyword,
 
+    #[token("ref")]
+    RefKeyword,
+
     #[token("true")]
     TrueKeyword,
 
@@ -266,6 +269,7 @@ impl std::fmt::Display for TokenKind {
             Self::LetKeyword => "let",
             Self::InKeyword => "in",
             Self::ReturnKeyword => "return",
+            Self::RefKeyword => "ref",
             Self::TrueKeyword => "true",
             Self::FalseKeyword => "false",
             Self::WildcardKeyword => "_",
@@ -322,6 +326,7 @@ macro_rules! T {
     [let] => { $crate::TokenKind::LetKeyword };
     [in] => { $crate::TokenKind::InKeyword };
     [return] => { $crate::TokenKind::ReturnKeyword };
+    [ref] => { $crate::TokenKind::RefKeyword };
     [true] => { $crate::TokenKind::TrueKeyword };
     [false] => { $crate::TokenKind::FalseKeyword };
     [_] => { $crate::TokenKind::WildcardKeyword };

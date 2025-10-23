@@ -166,6 +166,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
             len: *len,
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        Ty::TRef { elem } => Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params
                 .iter()
@@ -702,6 +705,7 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
+        Ty::TRef { .. } => panic!("Matching on reference types is not supported"),
     }
 }
 
@@ -755,44 +759,58 @@ pub fn compile_file(env: &Env, file: &File) -> core::File {
     core::File { toplevels }
 }
 
-fn builtin_function_for(op: BinaryOp, ty: &Ty) -> Option<&'static str> {
+fn builtin_function_for(
+    op: BinaryOp,
+    lhs_ty: &Ty,
+    rhs_ty: &Ty,
+    _result_ty: &Ty,
+) -> Option<&'static str> {
     match op {
-        BinaryOp::Add => match ty {
-            Ty::TInt => Some("int_add"),
-            Ty::TString => Some("string_add"),
+        BinaryOp::Add => match (lhs_ty, rhs_ty) {
+            (Ty::TInt, Ty::TInt) => Some("int_add"),
+            (Ty::TString, Ty::TString) => Some("string_add"),
             _ => None,
         },
-        BinaryOp::Sub => match ty {
-            Ty::TInt => Some("int_sub"),
+        BinaryOp::Sub => match (lhs_ty, rhs_ty) {
+            (Ty::TInt, Ty::TInt) => Some("int_sub"),
             _ => None,
         },
-        BinaryOp::Mul => match ty {
-            Ty::TInt => Some("int_mul"),
+        BinaryOp::Mul => match (lhs_ty, rhs_ty) {
+            (Ty::TInt, Ty::TInt) => Some("int_mul"),
             _ => None,
         },
-        BinaryOp::Div => match ty {
-            Ty::TInt => Some("int_div"),
+        BinaryOp::Div => match (lhs_ty, rhs_ty) {
+            (Ty::TInt, Ty::TInt) => Some("int_div"),
             _ => None,
         },
-        BinaryOp::And => match ty {
-            Ty::TBool => Some("bool_and"),
+        BinaryOp::And => match (lhs_ty, rhs_ty) {
+            (Ty::TBool, Ty::TBool) => Some("bool_and"),
             _ => None,
         },
-        BinaryOp::Or => match ty {
-            Ty::TBool => Some("bool_or"),
+        BinaryOp::Or => match (lhs_ty, rhs_ty) {
+            (Ty::TBool, Ty::TBool) => Some("bool_or"),
+            _ => None,
+        },
+        BinaryOp::Assign => match lhs_ty {
+            Ty::TRef { .. } => Some("ref_set"),
             _ => None,
         },
     }
 }
 
-fn builtin_unary_function_for(op: UnaryOp, ty: &Ty) -> Option<&'static str> {
+fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, result_ty: &Ty) -> Option<&'static str> {
     match op {
-        UnaryOp::Neg => match ty {
+        UnaryOp::Neg => match arg_ty {
             Ty::TInt => Some("int_neg"),
             _ => None,
         },
-        UnaryOp::Not => match ty {
+        UnaryOp::Not => match arg_ty {
+            Ty::TRef { .. } => Some("ref_get"),
             Ty::TBool => Some("bool_not"),
+            _ => None,
+        },
+        UnaryOp::Ref => match result_ty {
+            Ty::TRef { .. } => Some("ref_new"),
             _ => None,
         },
     }
@@ -963,16 +981,16 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             resolution,
         } => {
             let arg = compile_expr(expr, env);
+            let arg_ty = arg.get_ty();
 
             match resolution {
                 tast::UnaryResolution::Builtin => {
-                    let func = builtin_unary_function_for(*op, ty).unwrap_or_else(|| {
+                    let func = builtin_unary_function_for(*op, &arg_ty, ty).unwrap_or_else(|| {
                         panic!(
                             "Unsupported builtin unary operator {:?} for type {:?}",
-                            op, ty
+                            op, arg_ty
                         )
                     });
-                    let arg_ty = arg.get_ty();
                     core::Expr::ECall {
                         func: Box::new(core::Expr::EVar {
                             name: func.to_string(),
@@ -1013,13 +1031,14 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             let mut args = Vec::with_capacity(2);
             args.push(compile_expr(lhs, env));
             args.push(compile_expr(rhs, env));
+            let param_tys: Vec<_> = args.iter().map(|arg| arg.get_ty()).collect();
 
             match resolution {
                 tast::BinaryResolution::Builtin => {
-                    let func = builtin_function_for(*op, ty).unwrap_or_else(|| {
-                        panic!("Unsupported builtin operator {:?} for type {:?}", op, ty)
-                    });
-                    let param_tys = args.iter().map(|arg| arg.get_ty()).collect();
+                    let func = builtin_function_for(*op, &param_tys[0], &param_tys[1], ty)
+                        .unwrap_or_else(|| {
+                            panic!("Unsupported builtin operator {:?} for type {:?}", op, ty)
+                        });
                     core::Expr::ECall {
                         func: Box::new(core::Expr::EVar {
                             name: func.to_string(),

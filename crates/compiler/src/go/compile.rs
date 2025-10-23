@@ -193,6 +193,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             len: *len,
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()
@@ -384,6 +387,23 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
                 && (*name == "array_get" || *name == "array_set")
             {
                 let helper = runtime::array_helper_fn_name(name, &imm_ty(&args[0]));
+                goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: helper,
+                        ty: func_ty,
+                    }),
+                    args: compiled_args,
+                    ty: tast_ty_to_go_type(ty),
+                }
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && (*name == "ref_new" || *name == "ref_get" || *name == "ref_set")
+            {
+                let helper = if name == "ref_new" {
+                    runtime::ref_helper_fn_name(name, ty)
+                } else {
+                    let ref_ty = imm_ty(&args[0]);
+                    runtime::ref_helper_fn_name(name, &ref_ty)
+                };
                 goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
                         name: helper,
@@ -778,6 +798,7 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&env.array_types));
+    all.extend(runtime::make_ref_runtime(&env.ref_types));
 
     if !env.extern_funcs.is_empty() {
         let mut existing_imports: IndexSet<String> = IndexSet::new();

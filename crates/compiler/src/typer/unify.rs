@@ -45,6 +45,11 @@ fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
                 return false;
             }
         }
+        tast::Ty::TRef { elem } => {
+            if !occurs(env, var, elem) {
+                return false;
+            }
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
                 if !occurs(env, var, param) {
@@ -79,6 +84,7 @@ impl TypeInference {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
                 tast::Ty::TArray { elem, .. } => is_concrete(elem),
+                tast::Ty::TRef { elem } => is_concrete(elem),
                 tast::Ty::TFunc { params, ret_ty } => {
                     params.iter().all(is_concrete) && is_concrete(ret_ty)
                 }
@@ -207,6 +213,9 @@ impl TypeInference {
                 len: *len,
                 elem: Box::new(self.norm(elem)),
             },
+            tast::Ty::TRef { elem } => tast::Ty::TRef {
+                elem: Box::new(self.norm(elem)),
+            },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params.iter().map(|ty| self.norm(ty)).collect();
                 let ret_ty = Box::new(self.norm(ret_ty));
@@ -278,6 +287,11 @@ impl TypeInference {
                     ));
                     return false;
                 }
+                if !self.unify(env, elem1, elem2) {
+                    return false;
+                }
+            }
+            (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
                 if !self.unify(env, elem1, elem2) {
                     return false;
                 }
@@ -399,6 +413,9 @@ impl TypeInference {
                 len: *len,
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
+            tast::Ty::TRef { elem } => tast::Ty::TRef {
+                elem: Box::new(self._go_inst_ty(elem, subst)),
+            },
             tast::Ty::TParam { name } => {
                 if subst.contains_key(name) {
                     let ty = subst.get(name).unwrap();
@@ -445,6 +462,9 @@ impl TypeInference {
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
+                elem: Box::new(self.subst_ty(env, elem)),
+            },
+            tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.subst_ty(env, elem)),
             },
             tast::Ty::TFunc { params, ret_ty } => {

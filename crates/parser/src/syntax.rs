@@ -38,6 +38,7 @@ pub enum MySyntaxKind {
     LetKeyword,
     InKeyword,
     ReturnKeyword,
+    RefKeyword,
     TrueKeyword,
     FalseKeyword,
     WildcardKeyword,

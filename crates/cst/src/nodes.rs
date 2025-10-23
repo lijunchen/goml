@@ -1000,6 +1000,7 @@ impl BinaryExpr {
                         | MySyntaxKind::Slash
                         | MySyntaxKind::AndAnd
                         | MySyntaxKind::OrOr
+                        | MySyntaxKind::Eq
                         | MySyntaxKind::Dot
                 ) {
                     Some(token)
@@ -1028,7 +1029,10 @@ impl PrefixExpr {
     pub fn op(&self) -> Option<MySyntaxToken> {
         self.syntax.children_with_tokens().find_map(|element| {
             element.into_token().and_then(|token| {
-                if matches!(token.kind(), MySyntaxKind::Minus | MySyntaxKind::Bang) {
+                if matches!(
+                    token.kind(),
+                    MySyntaxKind::Minus | MySyntaxKind::Bang | MySyntaxKind::RefKeyword
+                ) {
                     Some(token)
                 } else {
                     None

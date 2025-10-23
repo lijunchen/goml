@@ -267,6 +267,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
             len: *len,
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
+        tast::Ty::TRef { elem } => goty::GoType::TSlice {
+            elem: Box::new(tast_ty_to_go_type(elem)),
+        },
         tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => {
             let param_tys = params.iter().map(tast_ty_to_go_type).collect();
@@ -298,6 +301,10 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TArray { len, elem } => format!(
             "Array{}_{}",
             len,
+            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
+        ),
+        tast::Ty::TRef { elem } => format!(
+            "Ref_{}",
             go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
         ),
         // Fallback textual

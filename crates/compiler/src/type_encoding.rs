@@ -23,6 +23,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             }
         }
         tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty(elem)),
+        tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty(elem)),
         tast::Ty::TFunc { params, ret_ty } => {
             let p = params.iter().map(encode_ty).collect::<Vec<_>>().join("_");
             let r = encode_ty(ret_ty);
@@ -107,6 +108,15 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
             let elem = decode_range(tokens, start + 2, end)?;
             Ok(tast::Ty::TArray {
                 len,
+                elem: Box::new(elem),
+            })
+        }
+        "Ref" => {
+            if start + 1 >= end {
+                return Err("reference encoding missing element".to_string());
+            }
+            let elem = decode_range(tokens, start + 1, end)?;
+            Ok(tast::Ty::TRef {
                 elem: Box::new(elem),
             })
         }

@@ -125,6 +125,33 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         ),
     );
 
+    let ref_elem_param = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    let ref_ty = tast::Ty::TRef {
+        elem: Box::new(ref_elem_param.clone()),
+    };
+    funcs.insert(
+        "ref_new".to_string(),
+        make_fn_ty(
+            vec![ref_elem_param.clone()],
+            tast::Ty::TRef {
+                elem: Box::new(ref_elem_param.clone()),
+            },
+        ),
+    );
+    funcs.insert(
+        "ref_get".to_string(),
+        make_fn_ty(vec![ref_ty.clone()], ref_elem_param.clone()),
+    );
+    funcs.insert(
+        "ref_set".to_string(),
+        make_fn_ty(
+            vec![ref_ty.clone(), ref_elem_param.clone()],
+            tast::Ty::TUnit,
+        ),
+    );
+
     funcs
 }
 
@@ -173,6 +200,7 @@ pub struct Env {
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
+    pub ref_types: IndexSet<tast::Ty>,
     pub diagnostics: Diagnostics,
 }
 
@@ -196,6 +224,7 @@ impl Env {
             constraints: Vec::new(),
             tuple_types: IndexSet::new(),
             array_types: IndexSet::new(),
+            ref_types: IndexSet::new(),
             diagnostics: Diagnostics::new(),
         }
     }
@@ -360,6 +389,7 @@ impl Env {
         struct TypeCollector {
             tuples: IndexSet<tast::Ty>,
             arrays: IndexSet<tast::Ty>,
+            refs: IndexSet<tast::Ty>,
         }
 
         impl TypeCollector {
@@ -367,14 +397,18 @@ impl Env {
                 Self {
                     tuples: IndexSet::new(),
                     arrays: IndexSet::new(),
+                    refs: IndexSet::new(),
                 }
             }
 
-            fn finish(mut self, file: &core::File) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+            fn finish(
+                mut self,
+                file: &core::File,
+            ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
                 for item in &file.toplevels {
                     self.collect_fn(item);
                 }
-                (self.tuples, self.arrays)
+                (self.tuples, self.arrays, self.refs)
             }
 
             fn collect_fn(&mut self, item: &core::Fn) {
@@ -488,6 +522,11 @@ impl Env {
                             self.collect_type(elem);
                         }
                     }
+                    tast::Ty::TRef { elem } => {
+                        if self.refs.insert(ty.clone()) {
+                            self.collect_type(elem);
+                        }
+                    }
                     tast::Ty::TCon { .. } => {}
                     tast::Ty::TApp { ty, args } => {
                         self.collect_type(ty.as_ref());
@@ -506,9 +545,10 @@ impl Env {
             }
         }
 
-        let (tuples, arrays) = TypeCollector::new().finish(file);
+        let (tuples, arrays, refs) = TypeCollector::new().finish(file);
         self.tuple_types = tuples;
         self.array_types = arrays;
+        self.ref_types = refs;
     }
 }
 
