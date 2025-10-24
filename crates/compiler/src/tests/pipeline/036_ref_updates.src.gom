@@ -68,59 +68,102 @@ func ref_get__Ref_Ref_int(reference **int) *int {
 }
 
 func bump(cell__0 *int) int {
-    var ret21 int
-    var t8 int = ref_get__Ref_int(cell__0)
-    var t7 int = int_add(t8, 1)
-    ref_set__Ref_int(cell__0, t7)
-    ret21 = ref_get__Ref_int(cell__0)
-    return ret21
+    var ret38 int
+    var t12 int = ref_get__Ref_int(cell__0)
+    var t11 int = int_add(t12, 1)
+    ref_set__Ref_int(cell__0, t11)
+    ret38 = ref_get__Ref_int(cell__0)
+    return ret38
 }
 
 func flip(flag__1 *bool) bool {
-    var ret22 bool
+    var ret39 bool
     var current__2 bool = ref_get__Ref_bool(flag__1)
-    var t9 bool = bool_not(current__2)
-    ref_set__Ref_bool(flag__1, t9)
-    ret22 = ref_get__Ref_bool(flag__1)
-    return ret22
+    var t13 bool = bool_not(current__2)
+    ref_set__Ref_bool(flag__1, t13)
+    ret39 = ref_get__Ref_bool(flag__1)
+    return ret39
 }
 
 func nested_total(cell__3 **int) int {
-    var ret23 int
+    var ret40 int
     var inner__4 *int = ref_get__Ref_Ref_int(cell__3)
     var before__5 int = ref_get__Ref_int(inner__4)
-    var t10 int = int_add(before__5, 2)
-    ref_set__Ref_int(inner__4, t10)
-    var t11 int = ref_get__Ref_int(inner__4)
-    ret23 = int_add(before__5, t11)
-    return ret23
+    var t14 int = int_add(before__5, 2)
+    ref_set__Ref_int(inner__4, t14)
+    var t15 int = ref_get__Ref_int(inner__4)
+    ret40 = int_add(before__5, t15)
+    return ret40
+}
+
+func alias_bump(cell__6 *int) int {
+    var ret41 int
+    var alias__7 *int = cell__6
+    var t17 int = ref_get__Ref_int(alias__7)
+    var t16 int = int_add(t17, 5)
+    ref_set__Ref_int(alias__7, t16)
+    ret41 = ref_get__Ref_int(alias__7)
+    return ret41
+}
+
+func pair_sum() int {
+    var ret42 int
+    var first__8 *int = ref_new__Ref_int(4)
+    var second__9 *int = ref_new__Ref_int(6)
+    var t19 int = ref_get__Ref_int(first__8)
+    var t20 int = ref_get__Ref_int(second__9)
+    var t18 int = int_add(t19, t20)
+    ref_set__Ref_int(first__8, t18)
+    var t21 int = ref_get__Ref_int(first__8)
+    var t22 int = ref_get__Ref_int(second__9)
+    ret42 = int_add(t21, t22)
+    return ret42
+}
+
+func reassign_nested(nested__10 **int) int {
+    var ret43 int
+    var inner__11 *int = ref_get__Ref_Ref_int(nested__10)
+    var t24 int = ref_get__Ref_int(inner__11)
+    var t23 int = int_add(t24, 7)
+    ref_set__Ref_int(inner__11, t23)
+    ret43 = ref_get__Ref_int(inner__11)
+    return ret43
 }
 
 func main0() struct{} {
-    var ret24 struct{}
-    var counter__6 *int = ref_new__Ref_int(39)
-    var toggler__7 *bool = ref_new__Ref_bool(false)
-    var t12 *int = ref_new__Ref_int(3)
-    var nested__8 **int = ref_new__Ref_Ref_int(t12)
-    var bumped__9 int = bump(counter__6)
-    var flipped__10 bool = flip(toggler__7)
-    var inner__11 *int = ref_get__Ref_Ref_int(nested__8)
-    var t14 int = ref_get__Ref_int(inner__11)
-    var t13 int = int_add(t14, bumped__9)
-    ref_set__Ref_int(inner__11, t13)
-    var nested_total_val__12 int = nested_total(nested__8)
-    var bool_check__13 bool = bool_not(false)
-    var t17 int = ref_get__Ref_int(counter__6)
-    var t16 int = int_add(bumped__9, t17)
-    var t15 string = int_to_string(t16)
-    string_println(t15)
-    var t18 string = int_to_string(nested_total_val__12)
-    string_println(t18)
-    var t20 bool = bool_and(flipped__10, bool_check__13)
-    var t19 string = bool_to_string(t20)
-    string_println(t19)
-    ret24 = struct{}{}
-    return ret24
+    var ret44 struct{}
+    var counter__12 *int = ref_new__Ref_int(39)
+    var toggler__13 *bool = ref_new__Ref_bool(false)
+    var t25 *int = ref_new__Ref_int(3)
+    var nested__14 **int = ref_new__Ref_Ref_int(t25)
+    var bumped__15 int = bump(counter__12)
+    var flipped__16 bool = flip(toggler__13)
+    var flipped_again__17 bool = flip(toggler__13)
+    var inner__18 *int = ref_get__Ref_Ref_int(nested__14)
+    var t27 int = ref_get__Ref_int(inner__18)
+    var t26 int = int_add(t27, bumped__15)
+    ref_set__Ref_int(inner__18, t26)
+    var nested_total_val__19 int = nested_total(nested__14)
+    var alias_total__20 int = alias_bump(counter__12)
+    var pair_total__21 int = pair_sum()
+    var reassigned__22 int = reassign_nested(nested__14)
+    var bool_check__23 bool = bool_not(false)
+    var t30 int = ref_get__Ref_int(counter__12)
+    var t29 int = int_add(bumped__15, t30)
+    var t28 string = int_to_string(t29)
+    string_println(t28)
+    var t33 int = int_add(nested_total_val__19, alias_total__20)
+    var t32 int = int_add(t33, reassigned__22)
+    var t31 string = int_to_string(t32)
+    string_println(t31)
+    var t34 string = int_to_string(pair_total__21)
+    string_println(t34)
+    var t37 bool = bool_and(flipped__16, flipped_again__17)
+    var t36 bool = bool_and(t37, bool_check__23)
+    var t35 string = bool_to_string(t36)
+    string_println(t35)
+    ret44 = struct{}{}
+    return ret44
 }
 
 func main() {
