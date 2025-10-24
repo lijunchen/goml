@@ -1,7 +1,33 @@
+fn bump(cell/0: ref int) -> int {
+  let mtmp0 = ref_set(cell/0, int_add(ref_get(cell/0), 1)) in
+  ref_get(cell/0)
+}
+
+fn flip(flag/1: ref bool) -> bool {
+  let current/2 = ref_get(flag/1) in
+  let mtmp1 = ref_set(flag/1, bool_not(current/2)) in
+  ref_get(flag/1)
+}
+
+fn nested_total(cell/3: ref ref int) -> int {
+  let inner/4 = ref_get(cell/3) in
+  let before/5 = ref_get(inner/4) in
+  let mtmp2 = ref_set(inner/4, int_add(before/5, 2)) in
+  int_add(before/5, ref_get(inner/4))
+}
+
 fn main() -> unit {
-  let reference/0 = ref_new(10) in
-  let current/1 = ref_get(reference/0) in
-  let mtmp0 = ref_set(reference/0, int_add(current/1, 5)) in
-  let mtmp1 = string_println(int_to_string(ref_get(reference/0))) in
+  let counter/6 = ref_new(39) in
+  let toggler/7 = ref_new(false) in
+  let nested/8 = ref_new(ref_new(3)) in
+  let bumped/9 = bump(counter/6) in
+  let flipped/10 = flip(toggler/7) in
+  let inner/11 = ref_get(nested/8) in
+  let mtmp3 = ref_set(inner/11, int_add(ref_get(inner/11), bumped/9)) in
+  let nested_total_val/12 = nested_total(nested/8) in
+  let bool_check/13 = bool_not(false) in
+  let mtmp4 = string_println(int_to_string(int_add(bumped/9, ref_get(counter/6)))) in
+  let mtmp5 = string_println(int_to_string(nested_total_val/12)) in
+  let mtmp6 = string_println(bool_to_string(bool_and(flipped/10, bool_check/13))) in
   ()
 }

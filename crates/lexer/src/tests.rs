@@ -142,3 +142,27 @@ fn lexes_logical_operators() {
         "#]],
     )
 }
+
+#[test]
+fn lexes_assignment_and_ref() {
+    check(
+        "let r := ref a; !r",
+        expect![[r#"
+            [
+                {kind: LetKeyword, text: "let"},
+                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "r"},
+                {kind: Whitespace, text: " "},
+                {kind: ColonEq, text: ":="},
+                {kind: Whitespace, text: " "},
+                {kind: RefKeyword, text: "ref"},
+                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "a"},
+                {kind: Semi, text: ";"},
+                {kind: Whitespace, text: " "},
+                {kind: Bang, text: "!"},
+                {kind: Lident, text: "r"},
+            ]
+        "#]],
+    )
+}

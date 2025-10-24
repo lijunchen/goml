@@ -5,7 +5,7 @@ use parser::syntax::MySyntaxNode;
 
 use crate::{compile_match, env::Env, tast};
 
-fn typecheck(src: &str) -> (tast::File, Env) {
+fn typecheck(src: &str) -> (ast::ast::File, tast::File, Env) {
     let path = PathBuf::from("test_refs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {
@@ -16,10 +16,11 @@ fn typecheck(src: &str) -> (tast::File, Env) {
     let ast = ast::lower::lower(cst)
         .into_result()
         .expect("failed to lower to AST");
+    let ast_clone = ast.clone();
     let (tast, mut env) = crate::typer::check_file(ast);
     let core = compile_match::compile_file(&env, &tast);
     env.record_tuple_types_from_core(&core);
-    (tast, env)
+    (ast_clone, tast, env)
 }
 
 #[test]
@@ -27,12 +28,58 @@ fn references_typecheck_and_collect() {
     let src = r#"
 fn main() -> int {
     let r = ref 1 in
-    let _ = r = 2 in
+    let _ = r := 2 in
     !r
 }
 "#;
 
-    let (_tast, env) = typecheck(src);
+    let (ast, _tast, env) = typecheck(src);
+
+    let main_fn = match &ast.toplevels[0] {
+        ast::ast::Item::Fn(f) => f,
+        other => panic!("expected function, got {:?}", other),
+    };
+
+    let first_let = match &main_fn.body {
+        ast::ast::Expr::ELet { pat, value, body } => {
+            match pat {
+                ast::ast::Pat::PVar { name, .. } => assert_eq!(name.0, "r"),
+                other => panic!("unexpected first let pattern: {:?}", other),
+            }
+            match value.as_ref() {
+                ast::ast::Expr::EUnary { op, expr } => {
+                    assert!(matches!(op, ast::ast::UnaryOp::Ref));
+                    assert!(matches!(expr.as_ref(), ast::ast::Expr::EInt { value: 1 }));
+                }
+                other => panic!("unexpected first let value: {:?}", other),
+            }
+            body
+        }
+        other => panic!("unexpected main body: {:?}", other),
+    };
+
+    if let ast::ast::Expr::ELet { pat, value, body } = first_let.as_ref() {
+        assert!(matches!(pat, ast::ast::Pat::PWild));
+        match value.as_ref() {
+            ast::ast::Expr::EBinary { op, lhs, rhs } => {
+                assert!(matches!(op, ast::ast::BinaryOp::Assign));
+                assert!(matches!(lhs.as_ref(), ast::ast::Expr::EVar { name, .. } if name.0 == "r"));
+                assert!(matches!(rhs.as_ref(), ast::ast::Expr::EInt { value: 2 }));
+            }
+            other => panic!("unexpected assignment value: {:?}", other),
+        }
+        match body.as_ref() {
+            ast::ast::Expr::EUnary { op, expr } => {
+                assert!(matches!(op, ast::ast::UnaryOp::Not));
+                assert!(
+                    matches!(expr.as_ref(), ast::ast::Expr::EVar { name, .. } if name.0 == "r")
+                );
+            }
+            other => panic!("unexpected final body: {:?}", other),
+        }
+    } else {
+        panic!("expected nested let expression");
+    }
 
     let expected_ref_ty = tast::Ty::TRef {
         elem: Box::new(tast::Ty::TInt),
@@ -48,4 +95,9 @@ fn main() -> int {
         "unexpected diagnostics: {:?}",
         env.diagnostics
     );
+
+    let ref_ty = tast::Ty::TRef {
+        elem: Box::new(tast::Ty::TInt),
+    };
+    assert_eq!(ref_ty.get_constr_name_unsafe(), "Ref");
 }

@@ -4,8 +4,24 @@ import (
     "fmt"
 )
 
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
 func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
+}
+
+func bool_not(x bool) bool {
+    return !x
+}
+
+func bool_and(x bool, y bool) bool {
+    return x && y
 }
 
 func int_add(x int, y int) int {
@@ -30,17 +46,81 @@ func ref_set__Ref_int(reference *int, value int) struct{} {
     return struct{}{}
 }
 
+func ref_new__Ref_bool(value bool) *bool {
+    return &value
+}
+
+func ref_get__Ref_bool(reference *bool) bool {
+    return *reference
+}
+
+func ref_set__Ref_bool(reference *bool, value bool) struct{} {
+    *reference = value
+    return struct{}{}
+}
+
+func ref_new__Ref_Ref_int(value *int) **int {
+    return &value
+}
+
+func ref_get__Ref_Ref_int(reference **int) *int {
+    return *reference
+}
+
+func bump(cell__0 *int) int {
+    var ret21 int
+    var t8 int = ref_get__Ref_int(cell__0)
+    var t7 int = int_add(t8, 1)
+    ref_set__Ref_int(cell__0, t7)
+    ret21 = ref_get__Ref_int(cell__0)
+    return ret21
+}
+
+func flip(flag__1 *bool) bool {
+    var ret22 bool
+    var current__2 bool = ref_get__Ref_bool(flag__1)
+    var t9 bool = bool_not(current__2)
+    ref_set__Ref_bool(flag__1, t9)
+    ret22 = ref_get__Ref_bool(flag__1)
+    return ret22
+}
+
+func nested_total(cell__3 **int) int {
+    var ret23 int
+    var inner__4 *int = ref_get__Ref_Ref_int(cell__3)
+    var before__5 int = ref_get__Ref_int(inner__4)
+    var t10 int = int_add(before__5, 2)
+    ref_set__Ref_int(inner__4, t10)
+    var t11 int = ref_get__Ref_int(inner__4)
+    ret23 = int_add(before__5, t11)
+    return ret23
+}
+
 func main0() struct{} {
-    var ret5 struct{}
-    var reference__0 *int = ref_new__Ref_int(10)
-    var current__1 int = ref_get__Ref_int(reference__0)
-    var t2 int = int_add(current__1, 5)
-    ref_set__Ref_int(reference__0, t2)
-    var t4 int = ref_get__Ref_int(reference__0)
-    var t3 string = int_to_string(t4)
-    string_println(t3)
-    ret5 = struct{}{}
-    return ret5
+    var ret24 struct{}
+    var counter__6 *int = ref_new__Ref_int(39)
+    var toggler__7 *bool = ref_new__Ref_bool(false)
+    var t12 *int = ref_new__Ref_int(3)
+    var nested__8 **int = ref_new__Ref_Ref_int(t12)
+    var bumped__9 int = bump(counter__6)
+    var flipped__10 bool = flip(toggler__7)
+    var inner__11 *int = ref_get__Ref_Ref_int(nested__8)
+    var t14 int = ref_get__Ref_int(inner__11)
+    var t13 int = int_add(t14, bumped__9)
+    ref_set__Ref_int(inner__11, t13)
+    var nested_total_val__12 int = nested_total(nested__8)
+    var bool_check__13 bool = bool_not(false)
+    var t17 int = ref_get__Ref_int(counter__6)
+    var t16 int = int_add(bumped__9, t17)
+    var t15 string = int_to_string(t16)
+    string_println(t15)
+    var t18 string = int_to_string(nested_total_val__12)
+    string_println(t18)
+    var t20 bool = bool_and(flipped__10, bool_check__13)
+    var t19 string = bool_to_string(t20)
+    string_println(t19)
+    ret24 = struct{}{}
+    return ret24
 }
 
 func main() {

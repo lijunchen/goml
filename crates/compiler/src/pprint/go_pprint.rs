@@ -671,8 +671,13 @@ impl Expr {
                     .append(RcDoc::text("}"))
             }
             Expr::ArrayLiteral { ty, elems } => {
-                let GoType::TArray { len, elem } = ty else {
-                    panic!("Array literal must have array type, got {:?}", ty);
+                let (len_prefix, elem_ty_doc) = match ty {
+                    GoType::TArray { len, elem } => (format!("[{}]", len), go_type_doc(elem)),
+                    GoType::TSlice { elem } => ("[]".to_string(), go_type_doc(elem)),
+                    other => panic!(
+                        "Array literal must have array or slice type, got {:?}",
+                        other
+                    ),
                 };
                 let elems_doc = if elems.is_empty() {
                     RcDoc::nil()
@@ -683,8 +688,8 @@ impl Expr {
                     )
                 };
 
-                RcDoc::text(format!("[{}]", len))
-                    .append(go_type_doc(elem))
+                RcDoc::text(len_prefix)
+                    .append(elem_ty_doc)
                     .append(RcDoc::text("{"))
                     .append(elems_doc)
                     .append(RcDoc::text("}"))
