@@ -418,6 +418,12 @@ impl Stmt {
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
                 .append(value.to_doc(env)),
+            Stmt::FieldAssign { target, value } => target
+                .to_doc(env)
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc(env)),
             Stmt::PointerAssign { pointer, value } => RcDoc::text("*")
                 .append(pointer.to_doc(env))
                 .append(RcDoc::space())
