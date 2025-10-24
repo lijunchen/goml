@@ -32,7 +32,7 @@ impl BinaryOp {
             Self::Div => "/",
             Self::And => "&&",
             Self::Or => "||",
-            Self::Assign => "=",
+            Self::Assign => ":=",
         }
     }
 
@@ -84,6 +84,7 @@ pub enum Ty {
     TCon { name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
     TArray { len: usize, elem: Box<Ty> },
+    TRef { elem: Box<Ty> },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
 

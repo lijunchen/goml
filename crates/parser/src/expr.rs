@@ -288,16 +288,16 @@ fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     }
 }
 
-fn prefix_binding_power(op: TokenKind) -> Option<((), u8)> {
+fn prefix_binding_power(op: TokenKind) -> Option<u8> {
     match op {
-        T![-] | T![!] | T![ref] => Some(((), 23)),
+        T![-] | T![!] | T![ref] => Some(23),
         _ => None,
     }
 }
 
 fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
-        T![=] => Some((0, 1)),
+        T![:=] => Some((0, 1)),
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
         T![+] | T![-] => Some((13, 14)),
@@ -348,11 +348,16 @@ fn let_expr(p: &mut Parser) {
 }
 
 fn expr_bp(p: &mut Parser, min_bp: u8) {
-    let mut lhs = if let Some(((), r_bp)) = prefix_binding_power(p.peek()) {
+    let mut lhs = if let Some(r_bp) = prefix_binding_power(p.peek()) {
+        let op = p.peek();
         let m = p.open();
         p.advance();
         expr_bp(p, r_bp);
-        p.close(m, MySyntaxKind::EXPR_PREFIX)
+        let kind = match op {
+            T![ref] => MySyntaxKind::EXPR_REF,
+            _ => MySyntaxKind::EXPR_PREFIX,
+        };
+        p.close(m, kind)
     } else {
         match atom(p) {
             Some(lhs) => lhs,
@@ -389,7 +394,11 @@ fn expr_bp(p: &mut Parser, min_bp: u8) {
             let m = lhs.precede(p);
             p.advance();
             expr_bp(p, r_bp);
-            lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
+            let kind = match op {
+                T![:=] => MySyntaxKind::EXPR_ASSIGN,
+                _ => MySyntaxKind::EXPR_BINARY,
+            };
+            lhs = m.completed(p, kind);
             continue;
         }
         break;

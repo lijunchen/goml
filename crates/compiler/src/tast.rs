@@ -153,6 +153,7 @@ impl Ty {
         match self {
             Self::TCon { name } => name.clone(),
             Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
+            Self::TRef { .. } => "Ref".to_string(),
             _ => {
                 panic!("Expected a constructor type, got: {:?}", self)
             }

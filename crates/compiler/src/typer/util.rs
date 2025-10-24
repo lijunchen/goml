@@ -128,6 +128,9 @@ pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
             len: *len,
             elem: Box::new(ast_ty_to_tast_ty_with_tparams_env(elem, tparams_env)),
         },
+        ast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(ast_ty_to_tast_ty_with_tparams_env(elem, tparams_env)),
+        },
         ast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()

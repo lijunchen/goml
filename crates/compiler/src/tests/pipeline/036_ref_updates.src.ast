@@ -1,8 +1,58 @@
+fn bump(cell: Ref[int]) -> int {
+    let _ = cell := !cell + 1 in
+    !cell
+}
+
+fn flip(flag: Ref[bool]) -> bool {
+    let current = !flag in
+    let _ = flag := !current in
+    !flag
+}
+
+fn nested_total(cell: Ref[Ref[int]]) -> int {
+    let inner = !cell in
+    let before = !inner in
+    let _ = inner := before + 2 in
+    before + !inner
+}
+
+fn alias_bump(cell: Ref[int]) -> int {
+    let alias = cell in
+    let _ = alias := !alias + 5 in
+    !alias
+}
+
+fn pair_sum() -> int {
+    let first = ref4 in
+    let second = ref6 in
+    let _ = first := !first + !second in
+    !first + !second
+}
+
+fn reassign_nested(nested: Ref[Ref[int]]) -> int {
+    let inner = !nested in
+    let _ = inner := !inner + 7 in
+    !inner
+}
+
 fn main() {
-    let reference = ref10 in
-    let current = !reference in
-    let _ = reference = current + 5 in
-    let _ = string_println(int_to_string(!reference)) in
+    let counter = ref39 in
+    let toggler = reffalse in
+    let nested = refref3 in
+    let bumped = bump(counter) in
+    let flipped = flip(toggler) in
+    let flipped_again = flip(toggler) in
+    let inner = !nested in
+    let _ = inner := !inner + bumped in
+    let nested_total_val = nested_total(nested) in
+    let alias_total = alias_bump(counter) in
+    let pair_total = pair_sum() in
+    let reassigned = reassign_nested(nested) in
+    let bool_check = !false in
+    let _ = string_println(int_to_string(bumped + !counter)) in
+    let _ = string_println(int_to_string(nested_total_val + alias_total + reassigned)) in
+    let _ = string_println(int_to_string(pair_total)) in
+    let _ = string_println(bool_to_string(flipped && flipped_again && bool_check)) in
     ()
 }
 

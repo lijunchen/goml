@@ -280,15 +280,37 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
                 .unwrap_or_default();
 
-            let base = ast::Ty::TCon { name };
-
-            if args.is_empty() {
-                Some(base)
+            if name == "Ref" {
+                match args.len() {
+                    1 => Some(ast::Ty::TRef {
+                        elem: Box::new(args.into_iter().next().unwrap()),
+                    }),
+                    0 => {
+                        ctx.push_error(
+                            Some(it.syntax().text_range()),
+                            "Ref type missing element type",
+                        );
+                        None
+                    }
+                    _ => {
+                        ctx.push_error(
+                            Some(it.syntax().text_range()),
+                            "Ref type takes exactly one argument",
+                        );
+                        None
+                    }
+                }
             } else {
-                Some(ast::Ty::TApp {
-                    ty: Box::new(base),
-                    args,
-                })
+                let base = ast::Ty::TCon { name };
+
+                if args.is_empty() {
+                    Some(base)
+                } else {
+                    Some(ast::Ty::TApp {
+                        ty: Box::new(base),
+                        args,
+                    })
+                }
             }
         }
         cst::Type::ArrayTy(it) => {
@@ -676,6 +698,27 @@ fn lower_expr_with_args(
             );
             None
         }
+        cst::Expr::RefExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to ref expression",
+                );
+                return None;
+            }
+            let Some(expr_node) = it.expr() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Ref expression missing operand",
+                );
+                return None;
+            };
+            let expr = lower_expr(ctx, expr_node)?;
+            Some(ast::Expr::EUnary {
+                op: ast::UnaryOp::Ref,
+                expr: Box::new(expr),
+            })
+        }
         cst::Expr::MatchExpr(it) => {
             if !trailing_args.is_empty() {
                 ctx.push_error(
@@ -920,10 +963,6 @@ fn lower_expr_with_args(
                     op: ast::UnaryOp::Not,
                     expr: Box::new(expr),
                 },
-                MySyntaxKind::RefKeyword => ast::Expr::EUnary {
-                    op: ast::UnaryOp::Ref,
-                    expr: Box::new(expr),
-                },
                 kind => {
                     ctx.push_error(
                         Some(op_token.text_range()),
@@ -933,6 +972,44 @@ fn lower_expr_with_args(
                 }
             };
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
+        }
+        cst::Expr::AssignExpr(it) => {
+            let mut exprs = it.exprs();
+            let Some(lhs_cst) = exprs.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Assignment expression missing lhs",
+                );
+                return None;
+            };
+            let Some(rhs_cst) = exprs.next() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Assignment expression missing rhs",
+                );
+                return None;
+            };
+            let lhs = lower_expr_with_args(ctx, lhs_cst, Vec::new())?;
+            let Some(op_token) = it.op() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Assignment expression missing operator",
+                );
+                return None;
+            };
+            if op_token.kind() != MySyntaxKind::ColonEq {
+                ctx.push_error(
+                    Some(op_token.text_range()),
+                    format!("Unsupported assignment operator: {:?}", op_token.kind()),
+                );
+                return None;
+            }
+            let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+            Some(ast::Expr::EBinary {
+                op: ast::BinaryOp::Assign,
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+            })
         }
         cst::Expr::BinaryExpr(it) => {
             let mut exprs = it.exprs();
@@ -1003,14 +1080,6 @@ fn lower_expr_with_args(
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Or,
-                        lhs: Box::new(lhs),
-                        rhs: Box::new(rhs),
-                    })
-                }
-                MySyntaxKind::Eq => {
-                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
-                    Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Assign,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
