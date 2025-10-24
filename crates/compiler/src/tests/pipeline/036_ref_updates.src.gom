@@ -33,41 +33,59 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func ref_new__Ref_int(value int) *int {
-    return &value
+type ref_int_x struct {
+    value int
 }
 
-func ref_get__Ref_int(reference *int) int {
-    return *reference
+func ref_new__Ref_int(value int) *ref_int_x {
+    return &ref_int_x{
+        value: value,
+    }
 }
 
-func ref_set__Ref_int(reference *int, value int) struct{} {
-    *reference = value
+func ref_get__Ref_int(reference *ref_int_x) int {
+    return reference.value
+}
+
+func ref_set__Ref_int(reference *ref_int_x, value int) struct{} {
+    reference.value = value
     return struct{}{}
 }
 
-func ref_new__Ref_bool(value bool) *bool {
-    return &value
+type ref_bool_x struct {
+    value bool
 }
 
-func ref_get__Ref_bool(reference *bool) bool {
-    return *reference
+func ref_new__Ref_bool(value bool) *ref_bool_x {
+    return &ref_bool_x{
+        value: value,
+    }
 }
 
-func ref_set__Ref_bool(reference *bool, value bool) struct{} {
-    *reference = value
+func ref_get__Ref_bool(reference *ref_bool_x) bool {
+    return reference.value
+}
+
+func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
+    reference.value = value
     return struct{}{}
 }
 
-func ref_new__Ref_Ref_int(value *int) **int {
-    return &value
+type ref_ref_int_x struct {
+    value *ref_int_x
 }
 
-func ref_get__Ref_Ref_int(reference **int) *int {
-    return *reference
+func ref_new__Ref_Ref_int(value *ref_int_x) *ref_ref_int_x {
+    return &ref_ref_int_x{
+        value: value,
+    }
 }
 
-func bump(cell__0 *int) int {
+func ref_get__Ref_Ref_int(reference *ref_ref_int_x) *ref_int_x {
+    return reference.value
+}
+
+func bump(cell__0 *ref_int_x) int {
     var ret38 int
     var t12 int = ref_get__Ref_int(cell__0)
     var t11 int = int_add(t12, 1)
@@ -76,7 +94,7 @@ func bump(cell__0 *int) int {
     return ret38
 }
 
-func flip(flag__1 *bool) bool {
+func flip(flag__1 *ref_bool_x) bool {
     var ret39 bool
     var current__2 bool = ref_get__Ref_bool(flag__1)
     var t13 bool = bool_not(current__2)
@@ -85,9 +103,9 @@ func flip(flag__1 *bool) bool {
     return ret39
 }
 
-func nested_total(cell__3 **int) int {
+func nested_total(cell__3 *ref_ref_int_x) int {
     var ret40 int
-    var inner__4 *int = ref_get__Ref_Ref_int(cell__3)
+    var inner__4 *ref_int_x = ref_get__Ref_Ref_int(cell__3)
     var before__5 int = ref_get__Ref_int(inner__4)
     var t14 int = int_add(before__5, 2)
     ref_set__Ref_int(inner__4, t14)
@@ -96,9 +114,9 @@ func nested_total(cell__3 **int) int {
     return ret40
 }
 
-func alias_bump(cell__6 *int) int {
+func alias_bump(cell__6 *ref_int_x) int {
     var ret41 int
-    var alias__7 *int = cell__6
+    var alias__7 *ref_int_x = cell__6
     var t17 int = ref_get__Ref_int(alias__7)
     var t16 int = int_add(t17, 5)
     ref_set__Ref_int(alias__7, t16)
@@ -108,8 +126,8 @@ func alias_bump(cell__6 *int) int {
 
 func pair_sum() int {
     var ret42 int
-    var first__8 *int = ref_new__Ref_int(4)
-    var second__9 *int = ref_new__Ref_int(6)
+    var first__8 *ref_int_x = ref_new__Ref_int(4)
+    var second__9 *ref_int_x = ref_new__Ref_int(6)
     var t19 int = ref_get__Ref_int(first__8)
     var t20 int = ref_get__Ref_int(second__9)
     var t18 int = int_add(t19, t20)
@@ -120,9 +138,9 @@ func pair_sum() int {
     return ret42
 }
 
-func reassign_nested(nested__10 **int) int {
+func reassign_nested(nested__10 *ref_ref_int_x) int {
     var ret43 int
-    var inner__11 *int = ref_get__Ref_Ref_int(nested__10)
+    var inner__11 *ref_int_x = ref_get__Ref_Ref_int(nested__10)
     var t24 int = ref_get__Ref_int(inner__11)
     var t23 int = int_add(t24, 7)
     ref_set__Ref_int(inner__11, t23)
@@ -132,14 +150,14 @@ func reassign_nested(nested__10 **int) int {
 
 func main0() struct{} {
     var ret44 struct{}
-    var counter__12 *int = ref_new__Ref_int(39)
-    var toggler__13 *bool = ref_new__Ref_bool(false)
-    var t25 *int = ref_new__Ref_int(3)
-    var nested__14 **int = ref_new__Ref_Ref_int(t25)
+    var counter__12 *ref_int_x = ref_new__Ref_int(39)
+    var toggler__13 *ref_bool_x = ref_new__Ref_bool(false)
+    var t25 *ref_int_x = ref_new__Ref_int(3)
+    var nested__14 *ref_ref_int_x = ref_new__Ref_Ref_int(t25)
     var bumped__15 int = bump(counter__12)
     var flipped__16 bool = flip(toggler__13)
     var flipped_again__17 bool = flip(toggler__13)
-    var inner__18 *int = ref_get__Ref_Ref_int(nested__14)
+    var inner__18 *ref_int_x = ref_get__Ref_Ref_int(nested__14)
     var t27 int = ref_get__Ref_int(inner__18)
     var t26 int = int_add(t27, bumped__15)
     ref_set__Ref_int(inner__18, t26)

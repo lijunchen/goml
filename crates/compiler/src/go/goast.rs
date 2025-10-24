@@ -1,4 +1,4 @@
-use crate::{go::goty, tast};
+use crate::{go::goty, tast, type_encoding::encode_ty};
 
 #[derive(Debug)]
 pub struct File {
@@ -209,6 +209,10 @@ pub enum Stmt {
         name: String,
         value: Expr,
     },
+    FieldAssign {
+        target: Expr,
+        value: Expr,
+    },
     PointerAssign {
         pointer: Expr,
         value: Expr,
@@ -273,9 +277,12 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
             len: *len,
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
-        tast::Ty::TRef { elem } => goty::GoType::TPointer {
-            elem: Box::new(tast_ty_to_go_type(elem)),
-        },
+        tast::Ty::TRef { elem } => {
+            let struct_name = ref_struct_name(elem);
+            goty::GoType::TPointer {
+                elem: Box::new(goty::GoType::TName { name: struct_name }),
+            }
+        }
         tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => {
             let param_tys = params.iter().map(tast_ty_to_go_type).collect();
@@ -310,10 +317,14 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
         ),
         tast::Ty::TRef { elem } => format!(
-            "RefPtr_{}",
-            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
+            "Ptr_{}",
+            ref_struct_name(elem).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
         ),
         // Fallback textual
         tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),
     }
+}
+
+pub fn ref_struct_name(elem: &tast::Ty) -> String {
+    format!("ref_{}_x", encode_ty(elem).to_lowercase())
 }

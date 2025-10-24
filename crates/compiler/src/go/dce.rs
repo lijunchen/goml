@@ -138,6 +138,13 @@ fn dce_block_with_live(
                 add_uses_expr(&mut live, &value);
                 out.push(ast::Stmt::PointerAssign { pointer, value });
             }
+            ast::Stmt::FieldAssign { target, value } => {
+                let target = dce_expr(target);
+                let value = dce_expr(value);
+                add_uses_expr(&mut live, &target);
+                add_uses_expr(&mut live, &value);
+                out.push(ast::Stmt::FieldAssign { target, value });
+            }
             ast::Stmt::Return { expr } => {
                 let expr = expr.map(dce_expr);
                 if let Some(e) = &expr {
@@ -416,6 +423,10 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                         used.extend(vars_used_in_expr(pointer));
                         used.extend(vars_used_in_expr(value));
                     }
+                    ast::Stmt::FieldAssign { target, value } => {
+                        used.extend(vars_used_in_expr(target));
+                        used.extend(vars_used_in_expr(value));
+                    }
                     ast::Stmt::Return { expr } => {
                         if let Some(e) = expr {
                             used.extend(vars_used_in_expr(e));
@@ -499,6 +510,10 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
             }
             ast::Stmt::PointerAssign { pointer, value } => {
                 used.extend(vars_used_in_expr(pointer));
+                used.extend(vars_used_in_expr(value));
+            }
+            ast::Stmt::FieldAssign { target, value } => {
+                used.extend(vars_used_in_expr(target));
                 used.extend(vars_used_in_expr(value));
             }
             ast::Stmt::Return { expr } => {
@@ -590,6 +605,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::Assignment { value, .. } => expr_has_side_effects(value),
         ast::Stmt::IndexAssign { .. } => true,
         ast::Stmt::PointerAssign { .. } => true,
+        ast::Stmt::FieldAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
@@ -719,6 +735,10 @@ fn collect_called_in_stmt(
         }
         ast::Stmt::PointerAssign { pointer, value } => {
             collect_called_in_expr(pointer, calls, fn_names);
+            collect_called_in_expr(value, calls, fn_names);
+        }
+        ast::Stmt::FieldAssign { target, value } => {
+            collect_called_in_expr(target, calls, fn_names);
             collect_called_in_expr(value, calls, fn_names);
         }
         ast::Stmt::Return { expr } => {
@@ -916,6 +936,10 @@ fn collect_packages_in_stmt(
         }
         ast::Stmt::PointerAssign { pointer, value } => {
             collect_packages_in_expr(pointer, imports, used);
+            collect_packages_in_expr(value, imports, used);
+        }
+        ast::Stmt::FieldAssign { target, value } => {
+            collect_packages_in_expr(target, imports, used);
             collect_packages_in_expr(value, imports, used);
         }
         ast::Stmt::Return { expr } => {
