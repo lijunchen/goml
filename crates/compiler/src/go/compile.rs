@@ -396,11 +396,11 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
                     ty: tast_ty_to_go_type(ty),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                && (*name == "ref_new" || *name == "ref_get" || *name == "ref_set")
+                && (*name == "ref" || *name == "ref_get" || *name == "ref_set")
             {
-                let (helper, helper_ty) = if name == "ref_new" {
+                let (helper, helper_ty) = if name == "ref" {
                     let tast::Ty::TRef { elem } = ty else {
-                        panic!("ref_new return type must be reference, got {:?}", ty);
+                        panic!("ref return type must be reference, got {:?}", ty);
                     };
                     let elem_go_ty = tast_ty_to_go_type(elem);
                     let ref_go_ty = tast_ty_to_go_type(ty);

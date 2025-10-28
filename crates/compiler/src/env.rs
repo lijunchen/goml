@@ -132,7 +132,7 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         elem: Box::new(ref_elem_param.clone()),
     };
     funcs.insert(
-        "ref_new".to_string(),
+        "ref".to_string(),
         make_fn_ty(
             vec![ref_elem_param.clone()],
             tast::Ty::TRef {

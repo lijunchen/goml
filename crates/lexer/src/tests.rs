@@ -146,7 +146,7 @@ fn lexes_logical_operators() {
 #[test]
 fn lexes_assignment_and_ref() {
     check(
-        "let r := ref a; !r",
+        "let r := ref(a); !r",
         expect![[r#"
             [
                 {kind: LetKeyword, text: "let"},
@@ -155,9 +155,10 @@ fn lexes_assignment_and_ref() {
                 {kind: Whitespace, text: " "},
                 {kind: ColonEq, text: ":="},
                 {kind: Whitespace, text: " "},
-                {kind: RefKeyword, text: "ref"},
-                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "ref"},
+                {kind: LParen, text: "("},
                 {kind: Lident, text: "a"},
+                {kind: RParen, text: ")"},
                 {kind: Semi, text: ";"},
                 {kind: Whitespace, text: " "},
                 {kind: Bang, text: "!"},

@@ -798,7 +798,7 @@ fn builtin_function_for(
     }
 }
 
-fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, result_ty: &Ty) -> Option<&'static str> {
+fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty) -> Option<&'static str> {
     match op {
         UnaryOp::Neg => match arg_ty {
             Ty::TInt => Some("int_neg"),
@@ -809,10 +809,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, result_ty: &Ty) -> Optio
             Ty::TBool => Some("bool_not"),
             _ => None,
         },
-        UnaryOp::Ref => match result_ty {
-            Ty::TRef { .. } => Some("ref_new"),
-            _ => None,
-        },
+        UnaryOp::Ref => Some("ref"),
     }
 }
 
@@ -985,7 +982,7 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
 
             match resolution {
                 tast::UnaryResolution::Builtin => {
-                    let func = builtin_unary_function_for(*op, &arg_ty, ty).unwrap_or_else(|| {
+                    let func = builtin_unary_function_for(*op, &arg_ty).unwrap_or_else(|| {
                         panic!(
                             "Unsupported builtin unary operator {:?} for type {:?}",
                             op, arg_ty

@@ -16,7 +16,6 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![false],
     T![-],
     T![!],
-    T![ref],
     T!['('],
     T!['['],
     T![if],
@@ -290,7 +289,7 @@ fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
 
 fn prefix_binding_power(op: TokenKind) -> Option<u8> {
     match op {
-        T![-] | T![!] | T![ref] => Some(23),
+        T![-] | T![!] => Some(23),
         _ => None,
     }
 }
@@ -349,15 +348,10 @@ fn let_expr(p: &mut Parser) {
 
 fn expr_bp(p: &mut Parser, min_bp: u8) {
     let mut lhs = if let Some(r_bp) = prefix_binding_power(p.peek()) {
-        let op = p.peek();
         let m = p.open();
         p.advance();
         expr_bp(p, r_bp);
-        let kind = match op {
-            T![ref] => MySyntaxKind::EXPR_REF,
-            _ => MySyntaxKind::EXPR_PREFIX,
-        };
-        p.close(m, kind)
+        p.close(m, MySyntaxKind::EXPR_PREFIX)
     } else {
         match atom(p) {
             Some(lhs) => lhs,

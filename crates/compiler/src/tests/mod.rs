@@ -51,7 +51,7 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
 fn reference_runtime_executes() -> anyhow::Result<()> {
     let src = r#"
 fn main() -> unit {
-    let r = ref 3 in
+    let r = ref(3) in
     let _ = r := 5 in
     string_println(int_to_string(!r))
 }

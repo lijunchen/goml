@@ -67,29 +67,26 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
-    match env.get_type_of_function("ref_new") {
+    match env.get_type_of_function("ref") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 1);
             match &params[0] {
                 tast::Ty::TParam { name } => assert_eq!(name, "T"),
-                other => panic!("expected ref_new param to be type param, got {:?}", other),
+                other => panic!("expected ref param to be type param, got {:?}", other),
             }
             match ret_ty.as_ref() {
                 tast::Ty::TRef { elem } => match elem.as_ref() {
                     tast::Ty::TParam { name } => assert_eq!(name, "T"),
                     other => panic!(
-                        "expected ref_new return element to be type param, got {:?}",
+                        "expected ref return element to be type param, got {:?}",
                         other
                     ),
                 },
-                other => panic!(
-                    "expected ref_new to return a reference type, got {:?}",
-                    other
-                ),
+                other => panic!("expected ref to return a reference type, got {:?}", other),
             }
         }
         other => panic!(
-            "expected ref_new to have a function type signature, got {:?}",
+            "expected ref to have a function type signature, got {:?}",
             other
         ),
     }
