@@ -47,9 +47,15 @@ fn main() -> int {
                 other => panic!("unexpected first let pattern: {:?}", other),
             }
             match value.as_ref() {
-                ast::ast::Expr::EUnary { op, expr } => {
-                    assert!(matches!(op, ast::ast::UnaryOp::Ref));
-                    assert!(matches!(expr.as_ref(), ast::ast::Expr::EInt { value: 1 }));
+                ast::ast::Expr::ECall { func, args } => {
+                    match func.as_ref() {
+                        ast::ast::Expr::EVar { name, .. } => {
+                            assert_eq!(name.0, "ref");
+                        }
+                        other => panic!("unexpected callee for ref call: {:?}", other),
+                    }
+                    assert_eq!(args.len(), 1, "expected single argument to ref call");
+                    assert!(matches!(args[0], ast::ast::Expr::EInt { value: 1 }));
                 }
                 other => panic!("unexpected first let value: {:?}", other),
             }

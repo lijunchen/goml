@@ -13,13 +13,29 @@ use crate::{
     },
 };
 
+use super::{VarInfo, VarMap};
+
 impl TypeInference {
-    pub fn infer_expr(
-        &mut self,
-        env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
-        e: &ast::Expr,
-    ) -> tast::Expr {
+    fn deref_returns_ref(expr: &tast::Expr) -> bool {
+        if let tast::Expr::EUnary {
+            op: ast::UnaryOp::Not,
+            expr: inner,
+            resolution: tast::UnaryResolution::Builtin,
+            ..
+        } = expr
+        {
+            match inner.get_ty() {
+                tast::Ty::TRef { elem } => {
+                    matches!(elem.as_ref(), tast::Ty::TRef { .. } | tast::Ty::TVar(_))
+                }
+                _ => false,
+            }
+        } else {
+            false
+        }
+    }
+
+    pub(crate) fn infer_expr(&mut self, env: &mut Env, vars: &VarMap, e: &ast::Expr) -> tast::Expr {
         match e {
             ast::Expr::EVar { name, astptr } => self.infer_var_expr(env, vars, name, astptr),
             ast::Expr::EUnit => tast::Expr::EUnit {
@@ -62,10 +78,10 @@ impl TypeInference {
         }
     }
 
-    pub fn check_expr(
+    pub(crate) fn check_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         e: &ast::Expr,
         expected: &tast::Ty,
     ) -> tast::Expr {
@@ -87,14 +103,14 @@ impl TypeInference {
     fn infer_var_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         name: &Lident,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
-        if let Some(ty) = vars.get(name) {
+        if let Some(info) = vars.get(name) {
             tast::Expr::EVar {
                 name: name.0.clone(),
-                ty: ty.clone(),
+                ty: info.ty.clone(),
                 astptr: Some(*astptr),
             }
         } else if let Some(func_ty) = env.get_type_of_function(&name.0) {
@@ -112,7 +128,7 @@ impl TypeInference {
     fn infer_constructor_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         vcon: &ast::Uident,
         args: &[ast::Expr],
     ) -> tast::Expr {
@@ -185,7 +201,7 @@ impl TypeInference {
     fn infer_struct_literal_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         name: &ast::Uident,
         fields: &[(ast::Lident, ast::Expr)],
     ) -> tast::Expr {
@@ -272,7 +288,7 @@ impl TypeInference {
     fn infer_tuple_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         items: &[ast::Expr],
     ) -> tast::Expr {
         let mut typs = Vec::new();
@@ -291,7 +307,7 @@ impl TypeInference {
     fn infer_array_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         items: &[ast::Expr],
     ) -> tast::Expr {
         let len = items.len();
@@ -316,7 +332,7 @@ impl TypeInference {
     fn infer_closure_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
     ) -> tast::Expr {
@@ -330,7 +346,13 @@ impl TypeInference {
                 Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
-            closure_vars.insert(param.name.clone(), param_ty.clone());
+            closure_vars.insert(
+                param.name.clone(),
+                VarInfo {
+                    ty: param_ty.clone(),
+                    derived_from_ref: false,
+                },
+            );
             param_tys.push(param_ty.clone());
             params_tast.push(tast::ClosureParam {
                 name: param.name.0.clone(),
@@ -357,7 +379,7 @@ impl TypeInference {
     fn check_closure_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
         expected: &tast::Ty,
@@ -389,7 +411,13 @@ impl TypeInference {
                         None => expected_param_ty.clone(),
                     };
 
-                    closure_vars.insert(param.name.clone(), param_ty.clone());
+                    closure_vars.insert(
+                        param.name.clone(),
+                        VarInfo {
+                            ty: param_ty.clone(),
+                            derived_from_ref: false,
+                        },
+                    );
                     param_tys.push(param_ty.clone());
                     params_tast.push(tast::ClosureParam {
                         name: param.name.0.clone(),
@@ -417,16 +445,17 @@ impl TypeInference {
     fn infer_let_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         pat: &ast::Pat,
         value: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
         let value_tast = self.infer_expr(env, vars, value);
         let value_ty = value_tast.get_ty();
+        let value_is_deref = Self::deref_returns_ref(&value_tast);
 
         let mut new_vars = vars.clone();
-        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
+        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty, value_is_deref);
 
         let body_tast = self.infer_expr(env, &new_vars, body);
         let body_ty = body_tast.get_ty();
@@ -441,7 +470,7 @@ impl TypeInference {
     fn check_let_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         pat: &ast::Pat,
         value: &ast::Expr,
         body: &ast::Expr,
@@ -449,9 +478,10 @@ impl TypeInference {
     ) -> tast::Expr {
         let value_tast = self.infer_expr(env, vars, value);
         let value_ty = value_tast.get_ty();
+        let value_is_deref = Self::deref_returns_ref(&value_tast);
 
         let mut new_vars = vars.clone();
-        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
+        let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty, value_is_deref);
 
         let body_tast = self.check_expr(env, &new_vars, body, expected);
         let body_ty = body_tast.get_ty();
@@ -467,7 +497,7 @@ impl TypeInference {
     fn infer_match_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         expr: &ast::Expr,
         arms: &[ast::Arm],
     ) -> tast::Expr {
@@ -478,7 +508,7 @@ impl TypeInference {
         let arm_ty = self.fresh_ty_var();
         for arm in arms.iter() {
             let mut new_vars = vars.clone();
-            let arm_tast = self.check_pat(env, &mut new_vars, &arm.pat, &expr_ty);
+            let arm_tast = self.check_pat(env, &mut new_vars, &arm.pat, &expr_ty, false);
             let arm_body_tast = self.infer_expr(env, &new_vars, &arm.body);
             env.constraints.push(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
@@ -500,7 +530,7 @@ impl TypeInference {
     fn infer_if_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         cond: &ast::Expr,
         then_branch: &ast::Expr,
         else_branch: &ast::Expr,
@@ -529,7 +559,7 @@ impl TypeInference {
     fn infer_call_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         func: &ast::Expr,
         args: &[ast::Expr],
     ) -> tast::Expr {
@@ -541,16 +571,18 @@ impl TypeInference {
             args_tast.push(arg_tast);
         }
 
-        let ret_ty = self.fresh_ty_var();
-        let call_site_func_ty = tast::Ty::TFunc {
-            params: arg_types,
-            ret_ty: Box::new(ret_ty.clone()),
-        };
-
         match func {
             ast::Expr::EVar { name, astptr } => {
                 if let Some(func_ty) = env.get_type_of_function(&name.0) {
                     let inst_ty = self.inst_ty(&func_ty);
+                    let inst_ret_ty = match &inst_ty {
+                        tast::Ty::TFunc { ret_ty, .. } => ret_ty.clone(),
+                        _ => panic!("Expected function type for {}, got {:?}", name.0, inst_ty),
+                    };
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types.clone(),
+                        ret_ty: inst_ret_ty.clone(),
+                    };
                     env.constraints.push(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
@@ -562,11 +594,16 @@ impl TypeInference {
                             astptr: Some(*astptr),
                         }),
                         args: args_tast,
-                        ty: ret_ty,
+                        ty: (*inst_ret_ty).clone(),
                     }
                 } else if let Some(trait_name) =
                     env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
                 {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     env.constraints.push(Constraint::Overloaded {
                         op: name.clone(),
                         trait_name,
@@ -582,7 +619,13 @@ impl TypeInference {
                         args: args_tast,
                         ty: ret_ty,
                     }
-                } else if let Some(var_ty) = vars.get(name) {
+                } else if let Some(var_info) = vars.get(name) {
+                    let var_ty = &var_info.ty;
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     env.constraints.push(Constraint::TypeEqual(
                         var_ty.clone(),
                         call_site_func_ty.clone(),
@@ -598,6 +641,11 @@ impl TypeInference {
                         ty: ret_ty,
                     }
                 } else {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     let func_tast = self.infer_expr(env, vars, func);
                     env.constraints.push(Constraint::TypeEqual(
                         func_tast.get_ty(),
@@ -612,6 +660,11 @@ impl TypeInference {
                 }
             }
             _ => {
+                let ret_ty = self.fresh_ty_var();
+                let call_site_func_ty = tast::Ty::TFunc {
+                    params: arg_types,
+                    ret_ty: Box::new(ret_ty.clone()),
+                };
                 let func_tast = self.infer_expr(env, vars, func);
                 env.constraints.push(Constraint::TypeEqual(
                     func_tast.get_ty(),
@@ -630,7 +683,7 @@ impl TypeInference {
     fn infer_unary_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         op: ast::UnaryOp,
         expr: &ast::Expr,
     ) -> tast::Expr {
@@ -638,24 +691,9 @@ impl TypeInference {
         let expr_ty = expr_tast.get_ty();
         let method_name = op.method_name();
         let builtin_expr = match op {
-            ast::UnaryOp::Ref => {
-                let ret_ty = tast::Ty::TRef {
-                    elem: Box::new(expr_ty.clone()),
-                };
-                Some(tast::Expr::EUnary {
-                    op,
-                    expr: Box::new(expr_tast.clone()),
-                    ty: ret_ty,
-                    resolution: tast::UnaryResolution::Builtin,
-                })
-            }
             ast::UnaryOp::Not => {
-                let ref_inner = match &expr_ty {
-                    tast::Ty::TRef { elem } => Some(elem.as_ref().clone()),
-                    _ => None,
-                };
-
-                if let Some(inner_ty) = ref_inner {
+                if let tast::Ty::TRef { elem } = &expr_ty {
+                    let inner_ty = elem.as_ref().clone();
                     env.constraints.push(Constraint::TypeEqual(
                         expr_ty.clone(),
                         tast::Ty::TRef {
@@ -668,6 +706,42 @@ impl TypeInference {
                         ty: inner_ty,
                         resolution: tast::UnaryResolution::Builtin,
                     })
+                } else if let ast::Expr::EVar { name, .. } = expr {
+                    if let Some(info) = vars.get(name) {
+                        if info.derived_from_ref {
+                            let inner_ty = self.fresh_ty_var();
+                            env.constraints.push(Constraint::TypeEqual(
+                                expr_ty.clone(),
+                                tast::Ty::TRef {
+                                    elem: Box::new(inner_ty.clone()),
+                                },
+                            ));
+                            Some(tast::Expr::EUnary {
+                                op,
+                                expr: Box::new(expr_tast.clone()),
+                                ty: inner_ty,
+                                resolution: tast::UnaryResolution::Builtin,
+                            })
+                        } else {
+                            env.constraints
+                                .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                            Some(tast::Expr::EUnary {
+                                op,
+                                expr: Box::new(expr_tast.clone()),
+                                ty: tast::Ty::TBool,
+                                resolution: tast::UnaryResolution::Builtin,
+                            })
+                        }
+                    } else {
+                        env.constraints
+                            .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                        Some(tast::Expr::EUnary {
+                            op,
+                            expr: Box::new(expr_tast.clone()),
+                            ty: tast::Ty::TBool,
+                            resolution: tast::UnaryResolution::Builtin,
+                        })
+                    }
                 } else {
                     env.constraints
                         .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
@@ -720,7 +794,7 @@ impl TypeInference {
     fn infer_binary_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         op: ast::BinaryOp,
         lhs: &ast::Expr,
         rhs: &ast::Expr,
@@ -810,7 +884,7 @@ impl TypeInference {
     fn infer_proj_expr(
         &mut self,
         env: &mut Env,
-        vars: &im::HashMap<Lident, tast::Ty>,
+        vars: &VarMap,
         tuple: &ast::Expr,
         index: usize,
     ) -> tast::Expr {
@@ -848,12 +922,15 @@ impl TypeInference {
     fn check_pat(
         &mut self,
         env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
+        vars: &mut VarMap,
         pat: &ast::Pat,
         ty: &tast::Ty,
+        derived_from_ref: bool,
     ) -> tast::Pat {
         match pat {
-            ast::Pat::PVar { name, astptr } => self.check_pat_var(vars, name, astptr, ty),
+            ast::Pat::PVar { name, astptr } => {
+                self.check_pat_var(vars, name, astptr, ty, derived_from_ref)
+            }
             ast::Pat::PUnit => self.check_pat_unit(),
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
             ast::Pat::PInt { value } => self.check_pat_int(env, *value, ty),
@@ -867,12 +944,19 @@ impl TypeInference {
 
     fn check_pat_var(
         &mut self,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
+        vars: &mut VarMap,
         name: &Lident,
         astptr: &MySyntaxNodePtr,
         ty: &tast::Ty,
+        derived_from_ref: bool,
     ) -> tast::Pat {
-        vars.insert(name.clone(), ty.clone());
+        vars.insert(
+            name.clone(),
+            VarInfo {
+                ty: ty.clone(),
+                derived_from_ref,
+            },
+        );
         tast::Pat::PVar {
             name: name.0.clone(),
             ty: ty.clone(),
@@ -914,7 +998,7 @@ impl TypeInference {
     fn check_pat_constructor(
         &mut self,
         env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
+        vars: &mut VarMap,
         pat: &ast::Pat,
         ty: &tast::Ty,
     ) -> tast::Pat {
@@ -927,7 +1011,7 @@ impl TypeInference {
     fn check_pat_tuple(
         &mut self,
         env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
+        vars: &mut VarMap,
         pats: &[ast::Pat],
         ty: &tast::Ty,
     ) -> tast::Pat {
@@ -954,19 +1038,20 @@ impl TypeInference {
         tast::Pat::PWild { ty: pat_ty }
     }
 
-    fn infer_pat(
-        &mut self,
-        env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
-        pat: &ast::Pat,
-    ) -> tast::Pat {
+    fn infer_pat(&mut self, env: &mut Env, vars: &mut VarMap, pat: &ast::Pat) -> tast::Pat {
         match pat {
             ast::Pat::PVar { name, astptr } => {
                 let pat_ty = match vars.get(name) {
-                    Some(ty) => ty.clone(),
+                    Some(info) => info.ty.clone(),
                     None => {
                         let newvar = self.fresh_ty_var();
-                        vars.insert(name.clone(), newvar.clone());
+                        vars.insert(
+                            name.clone(),
+                            VarInfo {
+                                ty: newvar.clone(),
+                                derived_from_ref: false,
+                            },
+                        );
                         newvar
                     }
                 };

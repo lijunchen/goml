@@ -643,13 +643,6 @@ fn lower_expr_with_args(
                 return match callee {
                     cst::Expr::LidentExpr(lident_expr) => {
                         let name = lident_expr.lident_token().unwrap().to_string();
-                        if name == "ref" && args.len() == 1 && trailing_args.is_empty() {
-                            let arg_expr = args.into_iter().next().unwrap();
-                            return Some(ast::Expr::EUnary {
-                                op: ast::UnaryOp::Ref,
-                                expr: Box::new(arg_expr),
-                            });
-                        }
                         let var_expr = ast::Expr::EVar {
                             name: ast::Lident(name),
                             astptr: MySyntaxNodePtr::new(lident_expr.syntax()),

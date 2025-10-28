@@ -809,7 +809,6 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty) -> Option<&'static str> 
             Ty::TBool => Some("bool_not"),
             _ => None,
         },
-        UnaryOp::Ref => Some("ref"),
     }
 }
 

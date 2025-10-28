@@ -14,6 +14,8 @@ use crate::{
     },
 };
 
+use super::VarInfo;
+
 fn predeclare_types(env: &mut Env, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
@@ -445,10 +447,16 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
 }
 
 fn check_fn(env: &mut Env, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
-    let mut vars = im::HashMap::<Lident, tast::Ty>::new();
+    let mut vars = im::HashMap::<Lident, VarInfo>::new();
     for (name, ty) in f.params.iter() {
         let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
-        vars.insert(name.clone(), ty);
+        vars.insert(
+            name.clone(),
+            VarInfo {
+                ty,
+                derived_from_ref: false,
+            },
+        );
     }
     let new_params = f
         .params
@@ -487,10 +495,16 @@ fn check_impl_block(
     let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
-        let mut vars = im::HashMap::<Lident, tast::Ty>::new();
+        let mut vars = im::HashMap::<Lident, VarInfo>::new();
         for (name, ty) in f.params.iter() {
             let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
-            vars.insert(name.clone(), ty);
+            vars.insert(
+                name.clone(),
+                VarInfo {
+                    ty,
+                    derived_from_ref: false,
+                },
+            );
         }
         let new_params = f
             .params

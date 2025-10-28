@@ -1,7 +1,15 @@
 use ast::ast;
 use ena::unify::InPlaceUnificationTable;
 
-use crate::tast::TypeVar;
+use crate::tast::{self, TypeVar};
+
+#[derive(Clone)]
+pub(crate) struct VarInfo {
+    pub ty: tast::Ty,
+    pub derived_from_ref: bool,
+}
+
+pub(crate) type VarMap = im::HashMap<ast::Lident, VarInfo>;
 
 mod check;
 mod toplevel;
