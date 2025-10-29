@@ -503,7 +503,6 @@ pub enum Expr {
     BinaryExpr(BinaryExpr),
     AssignExpr(AssignExpr),
     PrefixExpr(PrefixExpr),
-    RefExpr(RefExpr),
     ClosureExpr(ClosureExpr),
 }
 
@@ -526,7 +525,6 @@ impl CstNode for Expr {
                 | EXPR_BINARY
                 | EXPR_ASSIGN
                 | EXPR_PREFIX
-                | EXPR_REF
                 | EXPR_CLOSURE
         )
     }
@@ -547,7 +545,6 @@ impl CstNode for Expr {
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_ASSIGN => Expr::AssignExpr(AssignExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
-            EXPR_REF => Expr::RefExpr(RefExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
             _ => return None,
@@ -572,7 +569,6 @@ impl CstNode for Expr {
             Self::BinaryExpr(it) => &it.syntax,
             Self::AssignExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
-            Self::RefExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
         }
     }
@@ -1060,10 +1056,7 @@ impl PrefixExpr {
     pub fn op(&self) -> Option<MySyntaxToken> {
         self.syntax.children_with_tokens().find_map(|element| {
             element.into_token().and_then(|token| {
-                if matches!(
-                    token.kind(),
-                    MySyntaxKind::Minus | MySyntaxKind::Bang | MySyntaxKind::RefKeyword
-                ) {
+                if matches!(token.kind(), MySyntaxKind::Minus | MySyntaxKind::Bang) {
                     Some(token)
                 } else {
                     None
@@ -1075,22 +1068,6 @@ impl PrefixExpr {
 
 impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
 impl_display_via_syntax!(PrefixExpr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct RefExpr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl RefExpr {
-    pub fn expr(&self) -> Option<Expr> {
-        support::child(&self.syntax)
-    }
-}
-
-impl_cst_node_simple!(RefExpr, MySyntaxKind::EXPR_REF);
-impl_display_via_syntax!(RefExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -27,7 +27,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, Env) {
 fn references_typecheck_and_collect() {
     let src = r#"
 fn main() -> int {
-    let r = ref 1 in
+    let r = ref(1) in
     let _ = r := 2 in
     !r
 }
@@ -47,9 +47,13 @@ fn main() -> int {
                 other => panic!("unexpected first let pattern: {:?}", other),
             }
             match value.as_ref() {
-                ast::ast::Expr::EUnary { op, expr } => {
-                    assert!(matches!(op, ast::ast::UnaryOp::Ref));
-                    assert!(matches!(expr.as_ref(), ast::ast::Expr::EInt { value: 1 }));
+                ast::ast::Expr::ECall { func, args } => {
+                    assert_eq!(args.len(), 1);
+                    assert!(matches!(
+                        func.as_ref(),
+                        ast::ast::Expr::EVar { name, .. } if name.0 == "ref"
+                    ));
+                    assert!(matches!(args[0], ast::ast::Expr::EInt { value: 1 }));
                 }
                 other => panic!("unexpected first let value: {:?}", other),
             }
