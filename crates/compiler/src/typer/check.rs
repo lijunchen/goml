@@ -664,34 +664,14 @@ impl TypeInference {
         let method_name = op.method_name();
         let builtin_expr = match op {
             ast::UnaryOp::Not => {
-                let ref_inner = match &expr_ty {
-                    tast::Ty::TRef { elem } => Some(elem.as_ref().clone()),
-                    _ => None,
-                };
-
-                if let Some(inner_ty) = ref_inner {
-                    env.constraints.push(Constraint::TypeEqual(
-                        expr_ty.clone(),
-                        tast::Ty::TRef {
-                            elem: Box::new(inner_ty.clone()),
-                        },
-                    ));
-                    Some(tast::Expr::EUnary {
-                        op,
-                        expr: Box::new(expr_tast.clone()),
-                        ty: inner_ty,
-                        resolution: tast::UnaryResolution::Builtin,
-                    })
-                } else {
-                    env.constraints
-                        .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
-                    Some(tast::Expr::EUnary {
-                        op,
-                        expr: Box::new(expr_tast.clone()),
-                        ty: tast::Ty::TBool,
-                        resolution: tast::UnaryResolution::Builtin,
-                    })
-                }
+                env.constraints
+                    .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                Some(tast::Expr::EUnary {
+                    op,
+                    expr: Box::new(expr_tast.clone()),
+                    ty: tast::Ty::TBool,
+                    resolution: tast::UnaryResolution::Builtin,
+                })
             }
             ast::UnaryOp::Neg => {
                 env.constraints
@@ -700,6 +680,21 @@ impl TypeInference {
                     op,
                     expr: Box::new(expr_tast.clone()),
                     ty: tast::Ty::TInt,
+                    resolution: tast::UnaryResolution::Builtin,
+                })
+            }
+            ast::UnaryOp::Deref => {
+                let inner_ty = self.fresh_ty_var();
+                env.constraints.push(Constraint::TypeEqual(
+                    expr_ty.clone(),
+                    tast::Ty::TRef {
+                        elem: Box::new(inner_ty.clone()),
+                    },
+                ));
+                Some(tast::Expr::EUnary {
+                    op,
+                    expr: Box::new(expr_tast.clone()),
+                    ty: inner_ty,
                     resolution: tast::UnaryResolution::Builtin,
                 })
             }

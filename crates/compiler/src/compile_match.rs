@@ -805,8 +805,11 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
             _ => None,
         },
         UnaryOp::Not => match arg_ty {
-            Ty::TRef { .. } => Some("ref_get"),
             Ty::TBool => Some("bool_not"),
+            _ => None,
+        },
+        UnaryOp::Deref => match arg_ty {
+            Ty::TRef { .. } => Some("ref_get"),
             _ => None,
         },
     }

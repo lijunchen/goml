@@ -942,6 +942,10 @@ fn lower_expr_with_args(
                     op: ast::UnaryOp::Not,
                     expr: Box::new(expr),
                 },
+                MySyntaxKind::Star => ast::Expr::EUnary {
+                    op: ast::UnaryOp::Deref,
+                    expr: Box::new(expr),
+                },
                 kind => {
                     ctx.push_error(
                         Some(op_token.text_range()),

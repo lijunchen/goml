@@ -53,7 +53,7 @@ fn reference_runtime_executes() -> anyhow::Result<()> {
 fn main() -> unit {
     let r = ref(3) in
     let _ = r := 5 in
-    string_println(int_to_string(!r))
+    string_println(int_to_string(*r))
 }
 "#;
 

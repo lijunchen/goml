@@ -29,7 +29,7 @@ fn references_typecheck_and_collect() {
 fn main() -> int {
     let r = ref(1) in
     let _ = r := 2 in
-    !r
+    *r
 }
 "#;
 
@@ -74,7 +74,7 @@ fn main() -> int {
         }
         match body.as_ref() {
             ast::ast::Expr::EUnary { op, expr } => {
-                assert!(matches!(op, ast::ast::UnaryOp::Not));
+                assert!(matches!(op, ast::ast::UnaryOp::Deref));
                 assert!(
                     matches!(expr.as_ref(), ast::ast::Expr::EVar { name, .. } if name.0 == "r")
                 );
