@@ -23,8 +23,8 @@ fn alias_bump(cell/6: ref int) -> int {
 }
 
 fn pair_sum() -> int {
-  let first/8: ref int = ref4 in
-  let second/9: ref int = ref6 in
+  let first/8: ref int = (ref : (int) -> ref int)(4) in
+  let second/9: ref int = (ref : (int) -> ref int)(6) in
   let _ : unit = (first/8 : ref int) := !(first/8 : ref int) + !(second/9 : ref int) in
   !(first/8 : ref int) + !(second/9 : ref int)
 }
@@ -36,9 +36,9 @@ fn reassign_nested(nested/10: ref ref int) -> int {
 }
 
 fn main() -> unit {
-  let counter/12: ref int = ref39 in
-  let toggler/13: ref bool = reffalse in
-  let nested/14: ref ref int = refref3 in
+  let counter/12: ref int = (ref : (int) -> ref int)(39) in
+  let toggler/13: ref bool = (ref : (bool) -> ref bool)(false) in
+  let nested/14: ref ref int = (ref : (ref int) -> ref ref int)((ref : (int) -> ref int)(3)) in
   let bumped/15: int = (bump : (ref int) -> int)((counter/12 : ref int)) in
   let flipped/16: bool = (flip : (ref bool) -> bool)((toggler/13 : ref bool)) in
   let flipped_again/17: bool = (flip : (ref bool) -> bool)((toggler/13 : ref bool)) in

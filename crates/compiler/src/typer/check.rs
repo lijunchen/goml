@@ -541,15 +541,20 @@ impl TypeInference {
             args_tast.push(arg_tast);
         }
 
-        let ret_ty = self.fresh_ty_var();
-        let call_site_func_ty = tast::Ty::TFunc {
-            params: arg_types,
-            ret_ty: Box::new(ret_ty.clone()),
-        };
-
         match func {
             ast::Expr::EVar { name, astptr } => {
                 if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                    let ret_ty = if name.0 == "ref" && args_tast.len() == 1 {
+                        tast::Ty::TRef {
+                            elem: Box::new(args_tast[0].get_ty()),
+                        }
+                    } else {
+                        self.fresh_ty_var()
+                    };
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     let inst_ty = self.inst_ty(&func_ty);
                     env.constraints.push(Constraint::TypeEqual(
                         inst_ty.clone(),
@@ -567,6 +572,11 @@ impl TypeInference {
                 } else if let Some(trait_name) =
                     env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
                 {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     env.constraints.push(Constraint::Overloaded {
                         op: name.clone(),
                         trait_name,
@@ -583,6 +593,11 @@ impl TypeInference {
                         ty: ret_ty,
                     }
                 } else if let Some(var_ty) = vars.get(name) {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     env.constraints.push(Constraint::TypeEqual(
                         var_ty.clone(),
                         call_site_func_ty.clone(),
@@ -598,6 +613,11 @@ impl TypeInference {
                         ty: ret_ty,
                     }
                 } else {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
                     let func_tast = self.infer_expr(env, vars, func);
                     env.constraints.push(Constraint::TypeEqual(
                         func_tast.get_ty(),
@@ -612,6 +632,11 @@ impl TypeInference {
                 }
             }
             _ => {
+                let ret_ty = self.fresh_ty_var();
+                let call_site_func_ty = tast::Ty::TFunc {
+                    params: arg_types,
+                    ret_ty: Box::new(ret_ty.clone()),
+                };
                 let func_tast = self.infer_expr(env, vars, func);
                 env.constraints.push(Constraint::TypeEqual(
                     func_tast.get_ty(),
@@ -638,17 +663,6 @@ impl TypeInference {
         let expr_ty = expr_tast.get_ty();
         let method_name = op.method_name();
         let builtin_expr = match op {
-            ast::UnaryOp::Ref => {
-                let ret_ty = tast::Ty::TRef {
-                    elem: Box::new(expr_ty.clone()),
-                };
-                Some(tast::Expr::EUnary {
-                    op,
-                    expr: Box::new(expr_tast.clone()),
-                    ty: ret_ty,
-                    resolution: tast::UnaryResolution::Builtin,
-                })
-            }
             ast::UnaryOp::Not => {
                 let ref_inner = match &expr_ty {
                     tast::Ty::TRef { elem } => Some(elem.as_ref().clone()),

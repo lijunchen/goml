@@ -168,7 +168,7 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         }));
 
         let new_fn = goast::Fn {
-            name: ref_helper_fn_name("ref_new", ty),
+            name: ref_helper_fn_name("ref", ty),
             params: vec![("value".to_string(), elem_go_ty.clone())],
             ret_ty: Some(ref_go_ty.clone()),
             body: goast::Block {

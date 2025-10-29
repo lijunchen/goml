@@ -53,7 +53,6 @@ impl BinaryOp {
 pub enum UnaryOp {
     Neg,
     Not,
-    Ref,
 }
 
 impl UnaryOp {
@@ -61,7 +60,6 @@ impl UnaryOp {
         match self {
             Self::Neg => "-",
             Self::Not => "!",
-            Self::Ref => "ref",
         }
     }
 
@@ -69,7 +67,6 @@ impl UnaryOp {
         match self {
             Self::Neg => "neg",
             Self::Not => "not",
-            Self::Ref => "ref",
         }
     }
 }

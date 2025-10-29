@@ -155,7 +155,7 @@ fn lexes_assignment_and_ref() {
                 {kind: Whitespace, text: " "},
                 {kind: ColonEq, text: ":="},
                 {kind: Whitespace, text: " "},
-                {kind: RefKeyword, text: "ref"},
+                {kind: Lident, text: "ref"},
                 {kind: Whitespace, text: " "},
                 {kind: Lident, text: "a"},
                 {kind: Semi, text: ";"},

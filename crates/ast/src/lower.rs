@@ -698,27 +698,6 @@ fn lower_expr_with_args(
             );
             None
         }
-        cst::Expr::RefExpr(it) => {
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to ref expression",
-                );
-                return None;
-            }
-            let Some(expr_node) = it.expr() else {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Ref expression missing operand",
-                );
-                return None;
-            };
-            let expr = lower_expr(ctx, expr_node)?;
-            Some(ast::Expr::EUnary {
-                op: ast::UnaryOp::Ref,
-                expr: Box::new(expr),
-            })
-        }
         cst::Expr::MatchExpr(it) => {
             if !trailing_args.is_empty() {
                 ctx.push_error(

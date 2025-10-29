@@ -798,7 +798,7 @@ fn builtin_function_for(
     }
 }
 
-fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, result_ty: &Ty) -> Option<&'static str> {
+fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Option<&'static str> {
     match op {
         UnaryOp::Neg => match arg_ty {
             Ty::TInt => Some("int_neg"),
@@ -807,10 +807,6 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, result_ty: &Ty) -> Optio
         UnaryOp::Not => match arg_ty {
             Ty::TRef { .. } => Some("ref_get"),
             Ty::TBool => Some("bool_not"),
-            _ => None,
-        },
-        UnaryOp::Ref => match result_ty {
-            Ty::TRef { .. } => Some("ref_new"),
             _ => None,
         },
     }
