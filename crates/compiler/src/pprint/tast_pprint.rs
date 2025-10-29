@@ -200,7 +200,9 @@ impl Ty {
                 .append(RcDoc::text("; "))
                 .append(RcDoc::as_string(len))
                 .append(RcDoc::text("]")),
-            Self::TRef { elem } => RcDoc::text("ref ").append(elem.to_doc(_env)),
+            Self::TRef { elem } => RcDoc::text("Ref[")
+                .append(elem.to_doc(_env))
+                .append(RcDoc::text("]")),
             Self::TFunc { params, ret_ty } => {
                 let mut doc = RcDoc::text("(");
 
