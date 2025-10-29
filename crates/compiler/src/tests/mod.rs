@@ -52,8 +52,8 @@ fn reference_runtime_executes() -> anyhow::Result<()> {
     let src = r#"
 fn main() -> unit {
     let r = ref(3) in
-    let _ = r := 5 in
-    string_println(int_to_string(!r))
+    let _ = ref_set(r, 5) in
+    string_println(int_to_string(ref_get(r)))
 }
 "#;
 

@@ -28,8 +28,8 @@ fn references_typecheck_and_collect() {
     let src = r#"
 fn main() -> int {
     let r = ref(1) in
-    let _ = r := 2 in
-    !r
+    let _ = ref_set(r, 2) in
+    ref_get(r)
 }
 "#;
 
@@ -65,19 +65,31 @@ fn main() -> int {
     if let ast::ast::Expr::ELet { pat, value, body } = first_let.as_ref() {
         assert!(matches!(pat, ast::ast::Pat::PWild));
         match value.as_ref() {
-            ast::ast::Expr::EBinary { op, lhs, rhs } => {
-                assert!(matches!(op, ast::ast::BinaryOp::Assign));
-                assert!(matches!(lhs.as_ref(), ast::ast::Expr::EVar { name, .. } if name.0 == "r"));
-                assert!(matches!(rhs.as_ref(), ast::ast::Expr::EInt { value: 2 }));
+            ast::ast::Expr::ECall { func, args } => {
+                assert!(matches!(
+                    func.as_ref(),
+                    ast::ast::Expr::EVar { name, .. } if name.0 == "ref_set"
+                ));
+                assert_eq!(args.len(), 2);
+                assert!(matches!(
+                    args[0],
+                    ast::ast::Expr::EVar { ref name, .. } if name.0 == "r"
+                ));
+                assert!(matches!(args[1], ast::ast::Expr::EInt { value: 2 }));
             }
             other => panic!("unexpected assignment value: {:?}", other),
         }
         match body.as_ref() {
-            ast::ast::Expr::EUnary { op, expr } => {
-                assert!(matches!(op, ast::ast::UnaryOp::Not));
-                assert!(
-                    matches!(expr.as_ref(), ast::ast::Expr::EVar { name, .. } if name.0 == "r")
-                );
+            ast::ast::Expr::ECall { func, args } => {
+                assert!(matches!(
+                    func.as_ref(),
+                    ast::ast::Expr::EVar { name, .. } if name.0 == "ref_get"
+                ));
+                assert_eq!(args.len(), 1);
+                assert!(matches!(
+                    args[0],
+                    ast::ast::Expr::EVar { ref name, .. } if name.0 == "r"
+                ));
             }
             other => panic!("unexpected final body: {:?}", other),
         }

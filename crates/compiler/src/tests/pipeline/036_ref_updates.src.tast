@@ -1,38 +1,38 @@
 fn bump(cell/0: Ref[int]) -> int {
-  let _ : unit = (cell/0 : Ref[int]) := !(cell/0 : Ref[int]) + 1 in
-  !(cell/0 : Ref[int])
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((cell/0 : Ref[int]), (ref_get : (Ref[int]) -> int)((cell/0 : Ref[int])) + 1) in
+  (ref_get : (Ref[int]) -> int)((cell/0 : Ref[int]))
 }
 
 fn flip(flag/1: Ref[bool]) -> bool {
-  let current/2: bool = !(flag/1 : Ref[bool]) in
-  let _ : unit = (flag/1 : Ref[bool]) := !(current/2 : bool) in
-  !(flag/1 : Ref[bool])
+  let current/2: bool = (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool])) in
+  let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((flag/1 : Ref[bool]), !(current/2 : bool)) in
+  (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool]))
 }
 
 fn nested_total(cell/3: Ref[Ref[int]]) -> int {
-  let inner/4: Ref[int] = !(cell/3 : Ref[Ref[int]]) in
-  let before/5: int = !(inner/4 : Ref[int]) in
-  let _ : unit = (inner/4 : Ref[int]) := (before/5 : int) + 2 in
-  (before/5 : int) + !(inner/4 : Ref[int])
+  let inner/4: Ref[int] = (ref_get : (Ref[Ref[int]]) -> Ref[int])((cell/3 : Ref[Ref[int]])) in
+  let before/5: int = (ref_get : (Ref[int]) -> int)((inner/4 : Ref[int])) in
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((inner/4 : Ref[int]), (before/5 : int) + 2) in
+  (before/5 : int) + (ref_get : (Ref[int]) -> int)((inner/4 : Ref[int]))
 }
 
 fn alias_bump(cell/6: Ref[int]) -> int {
   let alias/7: Ref[int] = (cell/6 : Ref[int]) in
-  let _ : unit = (alias/7 : Ref[int]) := !(alias/7 : Ref[int]) + 5 in
-  !(alias/7 : Ref[int])
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((alias/7 : Ref[int]), (ref_get : (Ref[int]) -> int)((alias/7 : Ref[int])) + 5) in
+  (ref_get : (Ref[int]) -> int)((alias/7 : Ref[int]))
 }
 
 fn pair_sum() -> int {
   let first/8: Ref[int] = (ref : (int) -> Ref[int])(4) in
   let second/9: Ref[int] = (ref : (int) -> Ref[int])(6) in
-  let _ : unit = (first/8 : Ref[int]) := !(first/8 : Ref[int]) + !(second/9 : Ref[int]) in
-  !(first/8 : Ref[int]) + !(second/9 : Ref[int])
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((first/8 : Ref[int]), (ref_get : (Ref[int]) -> int)((first/8 : Ref[int])) + (ref_get : (Ref[int]) -> int)((second/9 : Ref[int]))) in
+  (ref_get : (Ref[int]) -> int)((first/8 : Ref[int])) + (ref_get : (Ref[int]) -> int)((second/9 : Ref[int]))
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int]]) -> int {
-  let inner/11: Ref[int] = !(nested/10 : Ref[Ref[int]]) in
-  let _ : unit = (inner/11 : Ref[int]) := !(inner/11 : Ref[int]) + 7 in
-  !(inner/11 : Ref[int])
+  let inner/11: Ref[int] = (ref_get : (Ref[Ref[int]]) -> Ref[int])((nested/10 : Ref[Ref[int]])) in
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((inner/11 : Ref[int]), (ref_get : (Ref[int]) -> int)((inner/11 : Ref[int])) + 7) in
+  (ref_get : (Ref[int]) -> int)((inner/11 : Ref[int]))
 }
 
 fn main() -> unit {
@@ -42,14 +42,14 @@ fn main() -> unit {
   let bumped/15: int = (bump : (Ref[int]) -> int)((counter/12 : Ref[int])) in
   let flipped/16: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool])) in
   let flipped_again/17: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool])) in
-  let inner/18: Ref[int] = !(nested/14 : Ref[Ref[int]]) in
-  let _ : unit = (inner/18 : Ref[int]) := !(inner/18 : Ref[int]) + (bumped/15 : int) in
+  let inner/18: Ref[int] = (ref_get : (Ref[Ref[int]]) -> Ref[int])((nested/14 : Ref[Ref[int]])) in
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((inner/18 : Ref[int]), (ref_get : (Ref[int]) -> int)((inner/18 : Ref[int])) + (bumped/15 : int)) in
   let nested_total_val/19: int = (nested_total : (Ref[Ref[int]]) -> int)((nested/14 : Ref[Ref[int]])) in
   let alias_total/20: int = (alias_bump : (Ref[int]) -> int)((counter/12 : Ref[int])) in
   let pair_total/21: int = (pair_sum : () -> int)() in
   let reassigned/22: int = (reassign_nested : (Ref[Ref[int]]) -> int)((nested/14 : Ref[Ref[int]])) in
   let bool_check/23: bool = !false in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((bumped/15 : int) + !(counter/12 : Ref[int]))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((bumped/15 : int) + (ref_get : (Ref[int]) -> int)((counter/12 : Ref[int])))) in
   let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((nested_total_val/19 : int) + (alias_total/20 : int) + (reassigned/22 : int))) in
   let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((pair_total/21 : int))) in
   let _ : unit = (string_println : (string) -> unit)((bool_to_string : (bool) -> string)((flipped/16 : bool) && (flipped_again/17 : bool) && (bool_check/23 : bool))) in
