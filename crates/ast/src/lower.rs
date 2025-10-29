@@ -952,44 +952,6 @@ fn lower_expr_with_args(
             };
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
         }
-        cst::Expr::AssignExpr(it) => {
-            let mut exprs = it.exprs();
-            let Some(lhs_cst) = exprs.next() else {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Assignment expression missing lhs",
-                );
-                return None;
-            };
-            let Some(rhs_cst) = exprs.next() else {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Assignment expression missing rhs",
-                );
-                return None;
-            };
-            let lhs = lower_expr_with_args(ctx, lhs_cst, Vec::new())?;
-            let Some(op_token) = it.op() else {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Assignment expression missing operator",
-                );
-                return None;
-            };
-            if op_token.kind() != MySyntaxKind::ColonEq {
-                ctx.push_error(
-                    Some(op_token.text_range()),
-                    format!("Unsupported assignment operator: {:?}", op_token.kind()),
-                );
-                return None;
-            }
-            let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
-            Some(ast::Expr::EBinary {
-                op: ast::BinaryOp::Assign,
-                lhs: Box::new(lhs),
-                rhs: Box::new(rhs),
-            })
-        }
         cst::Expr::BinaryExpr(it) => {
             let mut exprs = it.exprs();
             let Some(lhs_cst) = exprs.next() else {

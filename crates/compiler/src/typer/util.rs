@@ -157,6 +157,5 @@ pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &t
         ast::BinaryOp::And | ast::BinaryOp::Or => {
             matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))
         }
-        ast::BinaryOp::Assign => false,
     }
 }

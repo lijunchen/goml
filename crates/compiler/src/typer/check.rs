@@ -725,10 +725,6 @@ impl TypeInference {
         let rhs_ty = rhs_tast.get_ty();
         let method_name = op.method_name();
 
-        if op == ast::BinaryOp::Assign {
-            panic!("assignment operator ':=' is no longer supported; use ref_set instead");
-        }
-
         if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned()
             && !binary_supports_builtin(op, &lhs_ty, &rhs_ty)
         {
@@ -755,7 +751,6 @@ impl TypeInference {
             ast::BinaryOp::Add => self.fresh_ty_var(),
             ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
             ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
-            ast::BinaryOp::Assign => unreachable!(),
         };
 
         match op {
@@ -777,7 +772,6 @@ impl TypeInference {
                 env.constraints
                     .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
             }
-            ast::BinaryOp::Assign => unreachable!(),
         }
 
         tast::Expr::EBinary {

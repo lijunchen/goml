@@ -20,7 +20,6 @@ pub enum BinaryOp {
     Div,
     And,
     Or,
-    Assign,
 }
 
 impl BinaryOp {
@@ -32,7 +31,6 @@ impl BinaryOp {
             Self::Div => "/",
             Self::And => "&&",
             Self::Or => "||",
-            Self::Assign => ":=",
         }
     }
 
@@ -44,7 +42,6 @@ impl BinaryOp {
             Self::Div => "div",
             Self::And => "and",
             Self::Or => "or",
-            Self::Assign => "assign",
         }
     }
 }

@@ -501,7 +501,6 @@ pub enum Expr {
     TupleExpr(TupleExpr),
     LetExpr(LetExpr),
     BinaryExpr(BinaryExpr),
-    AssignExpr(AssignExpr),
     PrefixExpr(PrefixExpr),
     ClosureExpr(ClosureExpr),
 }
@@ -523,7 +522,6 @@ impl CstNode for Expr {
                 | EXPR_TUPLE
                 | EXPR_LET
                 | EXPR_BINARY
-                | EXPR_ASSIGN
                 | EXPR_PREFIX
                 | EXPR_CLOSURE
         )
@@ -543,7 +541,6 @@ impl CstNode for Expr {
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_LET => Expr::LetExpr(LetExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
-            EXPR_ASSIGN => Expr::AssignExpr(AssignExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
@@ -567,7 +564,6 @@ impl CstNode for Expr {
             Self::TupleExpr(it) => &it.syntax,
             Self::LetExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
-            Self::AssignExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
         }
@@ -1019,30 +1015,6 @@ impl BinaryExpr {
 impl_cst_node_simple!(BinaryExpr, MySyntaxKind::EXPR_BINARY);
 impl_display_via_syntax!(BinaryExpr);
 
-////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct AssignExpr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl AssignExpr {
-    pub fn exprs(&self) -> CstChildren<Expr> {
-        support::children(&self.syntax)
-    }
-
-    pub fn op(&self) -> Option<MySyntaxToken> {
-        self.syntax.children_with_tokens().find_map(|element| {
-            element
-                .into_token()
-                .filter(|token| token.kind() == MySyntaxKind::ColonEq)
-        })
-    }
-}
-
-impl_cst_node_simple!(AssignExpr, MySyntaxKind::EXPR_ASSIGN);
-impl_display_via_syntax!(AssignExpr);
-
-////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PrefixExpr {
     pub(crate) syntax: MySyntaxNode,

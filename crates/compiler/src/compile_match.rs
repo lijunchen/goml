@@ -791,7 +791,6 @@ fn builtin_function_for(
             (Ty::TBool, Ty::TBool) => Some("bool_or"),
             _ => None,
         },
-        BinaryOp::Assign => None,
     }
 }
 
