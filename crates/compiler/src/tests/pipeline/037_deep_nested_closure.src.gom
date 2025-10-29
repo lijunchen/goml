@@ -1,0 +1,132 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type closure_env_f4_0 struct {
+    a_0 int
+    b_1 int
+    c_2 int
+    d_3 int
+    x_4 int
+    y_5 int
+    z_6 int
+}
+
+type closure_env_f3_1 struct {
+    a_0 int
+    b_1 int
+    c_2 int
+    x_3 int
+    y_4 int
+}
+
+type closure_env_f2_2 struct {
+    a_0 int
+    b_1 int
+    x_2 int
+}
+
+type closure_env_f1_3 struct {
+    a_0 int
+}
+
+func main0() struct{} {
+    var ret15 struct{}
+    var a__0 int = 10
+    var f1__11 closure_env_f1_3 = closure_env_f1_3{
+        a_0: a__0,
+    }
+    var result__12 int = __closure_apply6(f1__11, 1)
+    var t8 string = int_to_string(result__12)
+    ret15 = string_println(t8)
+    return ret15
+}
+
+func __closure_apply0(env1 closure_env_f4_0, w__7 int) int {
+    var ret16 int
+    var a__0 int = env1.a_0
+    var b__2 int = env1.b_1
+    var c__4 int = env1.c_2
+    var d__6 int = env1.d_3
+    var x__1 int = env1.x_4
+    var y__3 int = env1.y_5
+    var z__5 int = env1.z_6
+    var t14 int = int_add(a__0, b__2)
+    var t13 int = int_add(t14, c__4)
+    var t12 int = int_add(t13, d__6)
+    var t11 int = int_add(t12, x__1)
+    var t10 int = int_add(t11, y__3)
+    var t9 int = int_add(t10, z__5)
+    ret16 = int_add(t9, w__7)
+    return ret16
+}
+
+func __closure_apply2(env3 closure_env_f3_1, z__5 int) int {
+    var ret17 int
+    var a__0 int = env3.a_0
+    var b__2 int = env3.b_1
+    var c__4 int = env3.c_2
+    var x__1 int = env3.x_3
+    var y__3 int = env3.y_4
+    var d__6 int = 40
+    var f4__8 closure_env_f4_0 = closure_env_f4_0{
+        a_0: a__0,
+        b_1: b__2,
+        c_2: c__4,
+        d_3: d__6,
+        x_4: x__1,
+        y_5: y__3,
+        z_6: z__5,
+    }
+    ret17 = __closure_apply0(f4__8, 4)
+    return ret17
+}
+
+func __closure_apply4(env5 closure_env_f2_2, y__3 int) int {
+    var ret18 int
+    var a__0 int = env5.a_0
+    var b__2 int = env5.b_1
+    var x__1 int = env5.x_2
+    var c__4 int = 30
+    var f3__9 closure_env_f3_1 = closure_env_f3_1{
+        a_0: a__0,
+        b_1: b__2,
+        c_2: c__4,
+        x_3: x__1,
+        y_4: y__3,
+    }
+    ret18 = __closure_apply2(f3__9, 3)
+    return ret18
+}
+
+func __closure_apply6(env7 closure_env_f1_3, x__1 int) int {
+    var ret19 int
+    var a__0 int = env7.a_0
+    var b__2 int = 20
+    var f2__10 closure_env_f2_2 = closure_env_f2_2{
+        a_0: a__0,
+        b_1: b__2,
+        x_2: x__1,
+    }
+    ret19 = __closure_apply4(f2__10, 2)
+    return ret19
+}
+
+func main() {
+    main0()
+}
