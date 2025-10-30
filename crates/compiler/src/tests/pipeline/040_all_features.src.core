@@ -1,0 +1,190 @@
+fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Tracker.label(mtmp0) in
+  let x2 = Tracker.count(mtmp0) in
+  let x3 = Tracker.toggled(mtmp0) in
+  let toggled/3 = x3 in
+  let count/2 = x2 in
+  let label/1 = x1 in
+  let current/4 = ref_get(count/2) in
+  let flag/5 = ref_get(toggled/3) in
+  let with_label/6 = string_add("Tracker(", label/1) in
+  let with_count_label/7 = string_add(with_label/6, ", count: ") in
+  let with_count/8 = string_add(with_count_label/7, int_to_string(current/4)) in
+  let with_flag_label/9 = string_add(with_count/8, ", toggled: ") in
+  string_add(with_flag_label/9, string_add(bool_to_string(flag/5), ")"))
+}
+
+fn impl_Describe_Record_int_describe(self/10: Record[int]) -> string {
+  match self/10 {
+    Record::Value(x4) => {
+      let x4 = Record::Value._0(self/10) in
+      let value/11 = x4 in
+      string_add("Value(", string_add(int_to_string(value/11), ")"))
+    },
+    Record::Pair(x5, x6) => {
+      let x5 = Record::Pair._0(self/10) in
+      let x6 = Record::Pair._1(self/10) in
+      let after/13 = x6 in
+      let before/12 = x5 in
+      let prefix/14 = string_add("Pair(", int_to_string(before/12)) in
+      string_add(prefix/14, string_add(", ", string_add(int_to_string(after/13), ")")))
+    },
+    Record::Empty => {
+      "Empty"
+    },
+  }
+}
+
+fn impl_Describe_Record_string_describe(self/15: Record[string]) -> string {
+  match self/15 {
+    Record::Value(x7) => {
+      let x7 = Record::Value._0(self/15) in
+      let text/16 = x7 in
+      string_add("Value(", string_add(text/16, ")"))
+    },
+    Record::Pair(x8, x9) => {
+      let x8 = Record::Pair._0(self/15) in
+      let x9 = Record::Pair._1(self/15) in
+      let after/18 = x9 in
+      let before/17 = x8 in
+      let prefix/19 = string_add("Pair(", before/17) in
+      string_add(prefix/19, string_add(", ", string_add(after/18, ")")))
+    },
+    Record::Empty => {
+      "Empty"
+    },
+  }
+}
+
+fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
+  if flag/20 {
+      when_true/21
+  } else {
+      when_false/22
+  }
+}
+
+fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
+  match value/23 {
+    Maybe::Some(x10) => {
+      let x10 = Maybe::Some._0(value/23) in
+      let inner/25 = x10 in
+      Maybe::Some(f/24(inner/25))
+    },
+    Maybe::None => {
+      Maybe::None
+    },
+  }
+}
+
+fn format_total(total/26: int) -> string {
+  string_add("total: ", int_to_string(total/26))
+}
+
+fn increment(value/27: int) -> int {
+  int_add(value/27, 1)
+}
+
+fn triple(value/28: int) -> int {
+  int_mul(value/28, 3)
+}
+
+fn pair_join(parts/29: (string, string)) -> string {
+  let mtmp11 = parts/29 in
+  let x12 = mtmp11.0 in
+  let x13 = mtmp11.1 in
+  let right/31 = x13 in
+  let left/30 = x12 in
+  string_add(left/30, string_add(" -> ", right/31))
+}
+
+fn run_transforms(value/32: int, transforms/33: [(int) -> int; 2]) -> [int; 2] {
+  let first/34 = array_get(transforms/33, 0) in
+  let second/35 = array_get(transforms/33, 1) in
+  let first_result/36 = first/34(value/32) in
+  let second_result/37 = second/35(first_result/36) in
+  array_set([first_result/36, value/32], 1, second_result/37)
+}
+
+fn gather(record/38: Record[int]) -> Maybe[int] {
+  match record/38 {
+    Record::Value(x14) => {
+      let x14 = Record::Value._0(record/38) in
+      let value/39 = x14 in
+      Maybe::Some(value/39)
+    },
+    Record::Pair(x15, x16) => {
+      let x15 = Record::Pair._0(record/38) in
+      let x16 = Record::Pair._1(record/38) in
+      let after/40 = x16 in
+      Maybe::Some(after/40)
+    },
+    Record::Empty => {
+      Maybe::None
+    },
+  }
+}
+
+fn build_counter(label/41: string, start/42: int) -> (Tracker, () -> Record[int], (int) -> Record[int], () -> Record[string]) {
+  let count/43 = ref(start/42) in
+  let toggled/44 = ref(false) in
+  let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
+  let snapshot/46 = || => Record::Value(ref_get(count/43)) in
+  let bump/49 = |delta/47: int| => let before/48 = ref_get(count/43) in
+  let mtmp17 = ref_set(count/43, int_add(before/48, delta/47)) in
+  Record::Pair(before/48, ref_get(count/43)) in
+  let flip/52 = || => let before/50 = ref_get(toggled/44) in
+  let mtmp18 = ref_set(toggled/44, bool_not(before/50)) in
+  let after/51 = ref_get(toggled/44) in
+  Record::Pair(bool_to_string(before/50), bool_to_string(after/51)) in
+  (tracker/45, snapshot/46, bump/49, flip/52)
+}
+
+fn main() -> unit {
+  let mtmp19 = build_counter("goml", 2) in
+  let x20 = mtmp19.0 in
+  let x21 = mtmp19.1 in
+  let x22 = mtmp19.2 in
+  let x23 = mtmp19.3 in
+  let flip/56 = x23 in
+  let bump/55 = x22 in
+  let snapshot/54 = x21 in
+  let tracker/53 = x20 in
+  let tracker_info/57 = impl_Describe_Tracker_describe(tracker/53) in
+  let first_record/58 = snapshot/54() in
+  let bumped_record/59 = bump/55(5) in
+  let flipped_record/60 = flip/56() in
+  let maybe_first/61 = gather(first_record/58) in
+  let maybe_second/62 = gather(bumped_record/59) in
+  let chosen/63 = choose(true, maybe_second/62, maybe_first/61) in
+  let stringified/64 = map_maybe(chosen/63, format_total) in
+  let transforms/65 = [increment, triple] in
+  let results/66 = run_transforms(4, transforms/65) in
+  let first_result/67 = array_get(results/66, 0) in
+  let second_result/68 = array_get(results/66, 1) in
+  let order_check/69 = bool_and(int_less(first_result/67, second_result/68), true) in
+  let first_text/70 = impl_Describe_Record_int_describe(first_record/58) in
+  let bumped_text/71 = impl_Describe_Record_int_describe(bumped_record/59) in
+  let flipped_text/72 = impl_Describe_Record_string_describe(flipped_record/60) in
+  let summary/74 = match stringified/64 {
+    Maybe::Some(x24) => {
+      let x24 = Maybe::Some._0(stringified/64) in
+      let text/73 = x24 in
+      string_add("Snapshot: ", text/73)
+    },
+    Maybe::None => {
+      "Snapshot: none"
+    },
+  } in
+  let pair_text/75 = pair_join((int_to_string(first_result/67), int_to_string(second_result/68))) in
+  let bool_text/76 = bool_to_string(order_check/69) in
+  let mtmp25 = string_println(tracker_info/57) in
+  let mtmp26 = string_println(first_text/70) in
+  let mtmp27 = string_println(bumped_text/71) in
+  let mtmp28 = string_println(flipped_text/72) in
+  let mtmp29 = string_println(summary/74) in
+  let mtmp30 = string_println(pair_text/75) in
+  let mtmp31 = string_println(bool_text/76) in
+  ()
+}
