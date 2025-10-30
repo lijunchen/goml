@@ -9,6 +9,21 @@ use crate::{
 
 use indexmap::IndexSet;
 
+fn ty_contains_type_param(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TArray { elem, .. } | tast::Ty::TRef { elem } => ty_contains_type_param(elem),
+        tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
+        tast::Ty::TApp { ty, args } => {
+            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
+        }
+        _ => false,
+    }
+}
+
 // unit_to_string(x : struct{}) string
 // bool_to_string(x : bool) string
 // int_to_string(x : int) string
@@ -148,6 +163,10 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         let tast::Ty::TRef { elem } = ty else {
             continue;
         };
+
+        if ty_contains_type_param(elem) {
+            continue;
+        }
 
         let struct_name = goast::ref_struct_name(elem);
         let struct_go_ty = goty::GoType::TName {

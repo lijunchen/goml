@@ -52,6 +52,22 @@ impl<'env> State<'env> {
         }
     }
 
+    fn ty_contains_closure(&self, ty: &Ty) -> bool {
+        match ty {
+            Ty::TCon { name } => self.closure_types.contains_key(name),
+            Ty::TTuple { typs } => typs.iter().any(|t| self.ty_contains_closure(t)),
+            Ty::TArray { elem, .. } => self.ty_contains_closure(elem),
+            Ty::TFunc { params, ret_ty } => {
+                params.iter().any(|t| self.ty_contains_closure(t))
+                    || self.ty_contains_closure(ret_ty)
+            }
+            Ty::TApp { ty, args } => {
+                self.ty_contains_closure(ty) || args.iter().any(|t| self.ty_contains_closure(t))
+            }
+            _ => false,
+        }
+    }
+
     fn apply_fn_for_struct(&self, struct_name: &str) -> Option<&str> {
         self.closure_types
             .get(struct_name)
@@ -139,7 +155,22 @@ pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
             state.pop_context_name();
         }
         scope.pop_layer();
+
+        let body_ty = body.get_ty();
         f.body = body;
+        if body_ty != f.ret_ty {
+            f.ret_ty = body_ty;
+        }
+
+        let fn_ty = Ty::TFunc {
+            params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
+            ret_ty: Box::new(f.ret_ty.clone()),
+        };
+        state
+            .env
+            .funcs
+            .insert(f.name.clone(), fn_ty);
+
         toplevels.push(f);
     }
 
@@ -158,7 +189,15 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                         ty: Ty::TCon { name: struct_name },
                     }
                 } else {
-                    core::Expr::EVar { name, ty }
+                    core::Expr::EVar {
+                        name,
+                        ty: entry.ty.clone(),
+                    }
+                }
+            } else if let Some(func_ty) = state.env.funcs.get(&name) {
+                core::Expr::EVar {
+                    name,
+                    ty: func_ty.clone(),
                 }
             } else {
                 core::Expr::EVar { name, ty }
@@ -176,19 +215,39 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             let args = args
                 .into_iter()
                 .map(|arg| transform_expr(state, scope, arg))
-                .collect();
+                .collect::<Vec<_>>();
+
+            if let Constructor::Struct(struct_constructor) = &constructor {
+                let closure_field_types: Vec<_> = args
+                    .iter()
+                    .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
+                    .collect();
+
+                if let Some(struct_def) = state.env.structs.get_mut(&struct_constructor.type_name) {
+                    for (index, closure_struct_name) in closure_field_types.into_iter().enumerate() {
+                        if let Some(struct_name) = closure_struct_name {
+                            struct_def.fields[index].1 = Ty::TCon { name: struct_name };
+                        }
+                    }
+                }
+            }
+
             core::Expr::EConstr {
                 constructor,
                 args,
                 ty,
             }
         }
-        core::Expr::ETuple { items, ty } => {
+        core::Expr::ETuple { items, ty: _ } => {
             let items = items
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
-                .collect();
-            core::Expr::ETuple { items, ty }
+                .collect::<Vec<_>>();
+            let typs = items.iter().map(|item| item.get_ty()).collect();
+            core::Expr::ETuple {
+                items,
+                ty: Ty::TTuple { typs },
+            }
         }
         core::Expr::EArray { items, ty } => {
             let items = items
@@ -274,21 +333,30 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             ty,
         } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
+            let field_ty = match &constructor {
+                Constructor::Struct(struct_constructor) => state
+                    .env
+                    .structs
+                    .get(&struct_constructor.type_name)
+                    .and_then(|def| def.fields.get(field_index).map(|(_, ty)| ty.clone()))
+                    .unwrap_or(ty),
+                _ => ty,
+            };
             core::Expr::EConstrGet {
                 expr,
                 constructor,
                 field_index,
-                ty,
+                ty: field_ty,
             }
         }
         core::Expr::ECall { func, args, ty } => {
-            let func = Box::new(transform_expr(state, scope, *func));
+            let func_expr = transform_expr(state, scope, *func);
             let args = args
                 .into_iter()
                 .map(|arg| transform_expr(state, scope, arg))
                 .collect::<Vec<_>>();
 
-            if let core::Expr::EVar { name, .. } = func.as_ref()
+            if let core::Expr::EVar { name, .. } = &func_expr
                 && let Some(entry) = scope.get(name)
                 && let Some(struct_name) = entry
                     .closure_struct
@@ -314,11 +382,30 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     ty,
                 };
             }
-            core::Expr::ECall { func, args, ty }
+            let func_ty = func_expr.get_ty();
+            let call_ty = match func_ty {
+                Ty::TFunc { ref ret_ty, .. } if state.ty_contains_closure(ret_ty) => {
+                    *ret_ty.clone()
+                }
+                _ => ty,
+            };
+            core::Expr::ECall {
+                func: Box::new(func_expr),
+                args,
+                ty: call_ty,
+            }
         }
         core::Expr::EProj { tuple, index, ty } => {
             let tuple = Box::new(transform_expr(state, scope, *tuple));
-            core::Expr::EProj { tuple, index, ty }
+            let proj_ty = match tuple.get_ty() {
+                Ty::TTuple { typs } if index < typs.len() => typs[index].clone(),
+                _ => ty,
+            };
+            core::Expr::EProj {
+                tuple,
+                index,
+                ty: proj_ty,
+            }
         }
     }
 }

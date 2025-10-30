@@ -320,8 +320,22 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             "Ptr_{}",
             ref_struct_name(elem).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
         ),
+        tast::Ty::TFunc { params, ret_ty } => {
+            let mut s = String::from("TFunc");
+            if params.is_empty() {
+                s.push_str("_unit");
+            } else {
+                for param in params {
+                    s.push('_');
+                    s.push_str(&go_type_name_for(param));
+                }
+            }
+            s.push('_');
+            s.push_str(&go_type_name_for(ret_ty));
+            s
+        }
         // Fallback textual
-        tast::Ty::TVar(_) | tast::Ty::TParam { .. } | tast::Ty::TFunc { .. } => format!("{:?}", ty),
+        tast::Ty::TVar(_) | tast::Ty::TParam { .. } => format!("{:?}", ty),
     }
 }
 
