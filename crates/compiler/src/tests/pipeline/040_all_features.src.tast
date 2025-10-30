@@ -1,0 +1,131 @@
+impl Describe for Tracker{
+  fn describe(self/0: Tracker) -> string {
+    let Tracker { label: label/1: string, count: count/2: Ref[int], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker) in
+    let current/4: int = (ref_get : (Ref[int]) -> int)((count/2 : Ref[int])) in
+    let flag/5: bool = (ref_get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool])) in
+    let with_label/6: string = (string_add : (string, string) -> string)("Tracker(", (label/1 : string)) in
+    let with_count_label/7: string = (string_add : (string, string) -> string)((with_label/6 : string), ", count: ") in
+    let with_count/8: string = (string_add : (string, string) -> string)((with_count_label/7 : string), (int_to_string : (int) -> string)((current/4 : int))) in
+    let with_flag_label/9: string = (string_add : (string, string) -> string)((with_count/8 : string), ", toggled: ") in
+    (string_add : (string, string) -> string)((with_flag_label/9 : string), (string_add : (string, string) -> string)((bool_to_string : (bool) -> string)((flag/5 : bool)), ")"))
+  }
+}
+
+impl Describe for Record[int]{
+  fn describe(self/10: Record[int]) -> string {
+    match (self/10 : Record[int]) {
+        Record::Value(value/11: int) => (string_add : (string, string) -> string)("Value(", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((value/11 : int)), ")")),
+        Record::Pair(before/12: int, after/13: int) => let prefix/14: string = (string_add : (string, string) -> string)("Pair(", (int_to_string : (int) -> string)((before/12 : int))) in
+          (string_add : (string, string) -> string)((prefix/14 : string), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((after/13 : int)), ")"))),
+        Record::Empty => "Empty",
+    }
+  }
+}
+
+impl Describe for Record[string]{
+  fn describe(self/15: Record[string]) -> string {
+    match (self/15 : Record[string]) {
+        Record::Value(text/16: string) => (string_add : (string, string) -> string)("Value(", (string_add : (string, string) -> string)((text/16 : string), ")")),
+        Record::Pair(before/17: string, after/18: string) => let prefix/19: string = (string_add : (string, string) -> string)("Pair(", (before/17 : string)) in
+          (string_add : (string, string) -> string)((prefix/19 : string), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((after/18 : string), ")"))),
+        Record::Empty => "Empty",
+    }
+  }
+}
+
+fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
+  if (flag/20 : bool) {
+      (when_true/21 : T)
+  } else {
+      (when_false/22 : T)
+  }
+}
+
+fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
+  match (value/23 : Maybe[T]) {
+      Maybe::Some(inner/25: T) => Maybe::Some((f/24 : (T) -> U)((inner/25 : T))),
+      Maybe::None => Maybe::None,
+  }
+}
+
+fn format_total(total/26: int) -> string {
+  (string_add : (string, string) -> string)("total: ", (int_to_string : (int) -> string)((total/26 : int)))
+}
+
+fn increment(value/27: int) -> int {
+  (value/27 : int) + 1
+}
+
+fn triple(value/28: int) -> int {
+  (value/28 : int) * 3
+}
+
+fn pair_join(parts/29: (string, string)) -> string {
+  let (left/30: string, right/31: string) = (parts/29 : (string, string)) in
+  (string_add : (string, string) -> string)((left/30 : string), (string_add : (string, string) -> string)(" -> ", (right/31 : string)))
+}
+
+fn run_transforms(value/32: int, transforms/33: [(int) -> int; 2]) -> [int; 2] {
+  let first/34: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((transforms/33 : [(int) -> int; 2]), 0) in
+  let second/35: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((transforms/33 : [(int) -> int; 2]), 1) in
+  let first_result/36: int = (first/34 : (int) -> int)((value/32 : int)) in
+  let second_result/37: int = (second/35 : (int) -> int)((first_result/36 : int)) in
+  (array_set : ([int; 18446744073709551615], int, int) -> [int; 18446744073709551615])([(first_result/36 : int), (value/32 : int)], 1, (second_result/37 : int))
+}
+
+fn gather(record/38: Record[int]) -> Maybe[int] {
+  match (record/38 : Record[int]) {
+      Record::Value(value/39: int) => Maybe::Some((value/39 : int)),
+      Record::Pair(_ : int, after/40: int) => Maybe::Some((after/40 : int)),
+      Record::Empty => Maybe::None,
+  }
+}
+
+fn build_counter(label/41: string, start/42: int) -> (Tracker, () -> Record[int], (int) -> Record[int], () -> Record[string]) {
+  let count/43: Ref[int] = (ref : (int) -> Ref[int])((start/42 : int)) in
+  let toggled/44: Ref[bool] = (ref : (bool) -> Ref[bool])(false) in
+  let tracker/45: Tracker = Tracker { label: (label/41 : string), count: (count/43 : Ref[int]), toggled: (toggled/44 : Ref[bool]) } in
+  let snapshot/46: () -> Record[int] = || => Record::Value((ref_get : (Ref[int]) -> int)((count/43 : Ref[int]))) in
+  let bump/49: (int) -> Record[int] = |delta/47: int| => let before/48: int = (ref_get : (Ref[int]) -> int)((count/43 : Ref[int])) in
+  let _ : unit = (ref_set : (Ref[int], int) -> unit)((count/43 : Ref[int]), (before/48 : int) + (delta/47 : int)) in
+  Record::Pair((before/48 : int), (ref_get : (Ref[int]) -> int)((count/43 : Ref[int]))) in
+  let flip/52: () -> Record[string] = || => let before/50: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool])) in
+  let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((toggled/44 : Ref[bool]), !(before/50 : bool)) in
+  let after/51: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool])) in
+  Record::Pair((bool_to_string : (bool) -> string)((before/50 : bool)), (bool_to_string : (bool) -> string)((after/51 : bool))) in
+  ((tracker/45 : Tracker), (snapshot/46 : () -> Record[int]), (bump/49 : (int) -> Record[int]), (flip/52 : () -> Record[string]))
+}
+
+fn main() -> unit {
+  let (tracker/53: Tracker, snapshot/54: () -> Record[int], bump/55: (int) -> Record[int], flip/56: () -> Record[string]) = (build_counter : (string, int) -> (Tracker, () -> Record[int], (int) -> Record[int], () -> Record[string]))("goml", 2) in
+  let tracker_info/57: string = (describe : (Tracker) -> string)((tracker/53 : Tracker)) in
+  let first_record/58: Record[int] = (snapshot/54 : () -> Record[int])() in
+  let bumped_record/59: Record[int] = (bump/55 : (int) -> Record[int])(5) in
+  let flipped_record/60: Record[string] = (flip/56 : () -> Record[string])() in
+  let maybe_first/61: Maybe[int] = (gather : (Record[int]) -> Maybe[int])((first_record/58 : Record[int])) in
+  let maybe_second/62: Maybe[int] = (gather : (Record[int]) -> Maybe[int])((bumped_record/59 : Record[int])) in
+  let chosen/63: Maybe[int] = (choose : (bool, Maybe[int], Maybe[int]) -> Maybe[int])(true, (maybe_second/62 : Maybe[int]), (maybe_first/61 : Maybe[int])) in
+  let stringified/64: Maybe[string] = (map_maybe : (Maybe[int], (int) -> string) -> Maybe[string])((chosen/63 : Maybe[int]), (format_total : (int) -> string)) in
+  let transforms/65: [(int) -> int; 2] = [(increment : (int) -> int), (triple : (int) -> int)] in
+  let results/66: [int; 2] = (run_transforms : (int, [(int) -> int; 2]) -> [int; 2])(4, (transforms/65 : [(int) -> int; 2])) in
+  let first_result/67: int = (array_get : ([int; 18446744073709551615], int) -> int)((results/66 : [int; 2]), 0) in
+  let second_result/68: int = (array_get : ([int; 18446744073709551615], int) -> int)((results/66 : [int; 2]), 1) in
+  let order_check/69: bool = (int_less : (int, int) -> bool)((first_result/67 : int), (second_result/68 : int)) && true in
+  let first_text/70: string = (describe : (Record[int]) -> string)((first_record/58 : Record[int])) in
+  let bumped_text/71: string = (describe : (Record[int]) -> string)((bumped_record/59 : Record[int])) in
+  let flipped_text/72: string = (describe : (Record[string]) -> string)((flipped_record/60 : Record[string])) in
+  let summary/74: string = match (stringified/64 : Maybe[string]) {
+      Maybe::Some(text/73: string) => (string_add : (string, string) -> string)("Snapshot: ", (text/73 : string)),
+      Maybe::None => "Snapshot: none",
+  } in
+  let pair_text/75: string = (pair_join : ((string, string)) -> string)(((int_to_string : (int) -> string)((first_result/67 : int)), (int_to_string : (int) -> string)((second_result/68 : int)))) in
+  let bool_text/76: string = (bool_to_string : (bool) -> string)((order_check/69 : bool)) in
+  let _ : unit = (string_println : (string) -> unit)((tracker_info/57 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((first_text/70 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((bumped_text/71 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((flipped_text/72 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((summary/74 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((pair_text/75 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((bool_text/76 : string)) in
+  ()
+}
