@@ -144,24 +144,21 @@ fn lexes_logical_operators() {
 }
 
 #[test]
-fn lexes_assignment_and_ref() {
+fn lexes_ref_builtins() {
     check(
-        "let r := ref a; !r",
+        "ref_set(r, ref_get(a))",
         expect![[r#"
             [
-                {kind: LetKeyword, text: "let"},
-                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "ref_set"},
+                {kind: LParen, text: "("},
                 {kind: Lident, text: "r"},
+                {kind: Comma, text: ","},
                 {kind: Whitespace, text: " "},
-                {kind: ColonEq, text: ":="},
-                {kind: Whitespace, text: " "},
-                {kind: Lident, text: "ref"},
-                {kind: Whitespace, text: " "},
+                {kind: Lident, text: "ref_get"},
+                {kind: LParen, text: "("},
                 {kind: Lident, text: "a"},
-                {kind: Semi, text: ";"},
-                {kind: Whitespace, text: " "},
-                {kind: Bang, text: "!"},
-                {kind: Lident, text: "r"},
+                {kind: RParen, text: ")"},
+                {kind: RParen, text: ")"},
             ]
         "#]],
     )

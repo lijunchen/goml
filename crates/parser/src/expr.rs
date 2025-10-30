@@ -296,7 +296,6 @@ fn prefix_binding_power(op: TokenKind) -> Option<u8> {
 
 fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
-        T![:=] => Some((0, 1)),
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
         T![+] | T![-] => Some((13, 14)),
@@ -388,11 +387,7 @@ fn expr_bp(p: &mut Parser, min_bp: u8) {
             let m = lhs.precede(p);
             p.advance();
             expr_bp(p, r_bp);
-            let kind = match op {
-                T![:=] => MySyntaxKind::EXPR_ASSIGN,
-                _ => MySyntaxKind::EXPR_BINARY,
-            };
-            lhs = m.completed(p, kind);
+            lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
             continue;
         }
         break;

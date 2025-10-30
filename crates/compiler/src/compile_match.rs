@@ -791,10 +791,6 @@ fn builtin_function_for(
             (Ty::TBool, Ty::TBool) => Some("bool_or"),
             _ => None,
         },
-        BinaryOp::Assign => match lhs_ty {
-            Ty::TRef { .. } => Some("ref_set"),
-            _ => None,
-        },
     }
 }
 
@@ -805,7 +801,6 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
             _ => None,
         },
         UnaryOp::Not => match arg_ty {
-            Ty::TRef { .. } => Some("ref_get"),
             Ty::TBool => Some("bool_not"),
             _ => None,
         },
