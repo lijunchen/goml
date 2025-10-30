@@ -1,0 +1,16 @@
+fn my_int_equal(x: int, y: int) -> bool {
+    bool_and(bool_not(int_less(x, y)), bool_not(int_less(y, x)))
+}
+
+fn sum(n: int) -> int {
+    if my_int_equal(n, 1) {
+        1
+    } else {
+        n + sum(n - 1)
+    }
+}
+
+fn main() {
+    string_println(int_to_string(sum(100)))
+}
+

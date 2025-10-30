@@ -1,0 +1,24 @@
+fn my_int_equal(x/0: int, y/1: int) -> bool {
+  let t1 = int_less(x/0, y/1) in
+  let t0 = bool_not(t1) in
+  let t3 = int_less(y/1, x/0) in
+  let t2 = bool_not(t3) in
+  bool_and(t0, t2)
+}
+
+fn sum(n/2: int) -> int {
+  let t4 = my_int_equal(n/2, 1) in
+  if t4 {
+    1
+  } else {
+    let t6 = int_sub(n/2, 1) in
+    let t5 = sum(t6) in
+    int_add(n/2, t5)
+  }
+}
+
+fn main() -> unit {
+  let t8 = sum(100) in
+  let t7 = int_to_string(t8) in
+  string_println(t7)
+}
