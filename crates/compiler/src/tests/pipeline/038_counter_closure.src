@@ -1,0 +1,30 @@
+fn make_counter() -> (() -> int, () -> unit) {
+    let cell = ref(0) in
+    let next = || {
+        let next = ref_get(cell) + 1 in
+        let _ = ref_set(cell, next) in
+        next
+    } in
+    let reset = || {
+        let _ = ref_set(cell, 0) in
+        ()
+    } in
+    (next, reset)
+}
+
+fn main() {
+    let counter = make_counter() in
+    let (next, reset) = counter in
+    let first = next() in
+    let second = next() in
+    let _ = reset() in
+    let third = next() in
+    let new_counter = make_counter() in
+    let (new_next, _) = new_counter in
+    let fourth = new_next() in
+    let _ = string_println(int_to_string(first)) in
+    let _ = string_println(int_to_string(second)) in
+    let _ = string_println(int_to_string(third)) in
+    let _ = string_println(int_to_string(fourth)) in
+    ()
+}

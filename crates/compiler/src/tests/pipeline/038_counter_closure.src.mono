@@ -1,0 +1,43 @@
+fn make_counter() -> (closure_env_next_0, closure_env_reset_1) {
+  let cell/0 = ref(0) in
+  let next/2 = closure_env_next_0 { cell_0: cell/0 } in
+  let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
+  (next/2, reset/3)
+}
+
+fn main() -> unit {
+  let counter/4 = make_counter() in
+  let mtmp2 = counter/4 in
+  let x3 = mtmp2.0 in
+  let x4 = mtmp2.1 in
+  let reset/6 = x4 in
+  let next/5 = x3 in
+  let first/7 = __closure_apply13(next/5) in
+  let second/8 = __closure_apply13(next/5) in
+  let mtmp5 = __closure_apply15(reset/6) in
+  let third/9 = __closure_apply13(next/5) in
+  let new_counter/10 = make_counter() in
+  let mtmp6 = new_counter/10 in
+  let x7 = mtmp6.0 in
+  let x8 = mtmp6.1 in
+  let new_next/11 = x7 in
+  let fourth/12 = __closure_apply13(new_next/11) in
+  let mtmp9 = string_println(int_to_string(first/7)) in
+  let mtmp10 = string_println(int_to_string(second/8)) in
+  let mtmp11 = string_println(int_to_string(third/9)) in
+  let mtmp12 = string_println(int_to_string(fourth/12)) in
+  ()
+}
+
+fn __closure_apply13(env14: closure_env_next_0) -> int {
+  let cell/0 = closure_env_next_0.cell_0(env14) in
+  let next/1 = int_add(ref_get(cell/0), 1) in
+  let mtmp0 = ref_set(cell/0, next/1) in
+  next/1
+}
+
+fn __closure_apply15(env16: closure_env_reset_1) -> unit {
+  let cell/0 = closure_env_reset_1.cell_0(env16) in
+  let mtmp1 = ref_set(cell/0, 0) in
+  ()
+}
