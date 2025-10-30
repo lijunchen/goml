@@ -14,6 +14,21 @@ use std::collections::HashMap;
 use super::goty;
 use super::runtime;
 
+fn ty_contains_type_param(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TArray { elem, .. } | tast::Ty::TRef { elem } => ty_contains_type_param(elem),
+        tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
+        tast::Ty::TApp { ty, args } => {
+            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
+        }
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
+        }
+        _ => false,
+    }
+}
+
 fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
@@ -928,12 +943,8 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
 fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in env.structs.iter() {
-        let has_type_param = name.0.contains("TParam")
-            || !def.generics.is_empty()
-            || def
-                .fields
-                .iter()
-                .any(|(_, ty)| matches!(ty, tast::Ty::TParam { .. }));
+        let has_type_param =
+            !def.generics.is_empty() || def.fields.iter().any(|(_, ty)| ty_contains_type_param(ty));
         if has_type_param {
             continue;
         }
@@ -955,11 +966,11 @@ fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
 
     for (name, def) in env.enums.iter() {
         // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
-        let has_type_param = name.0.contains("TParam")
+        let has_type_param = !def.generics.is_empty()
             || def
                 .variants
                 .iter()
-                .any(|(_, fields)| fields.iter().any(|f| matches!(f, tast::Ty::TParam { .. })));
+                .any(|(_, fields)| fields.iter().any(ty_contains_type_param));
         if has_type_param {
             continue;
         }
