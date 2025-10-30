@@ -928,7 +928,8 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
 fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in env.structs.iter() {
-        let has_type_param = !def.generics.is_empty()
+        let has_type_param = name.0.contains("TParam")
+            || !def.generics.is_empty()
             || def
                 .fields
                 .iter()
@@ -954,10 +955,11 @@ fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
 
     for (name, def) in env.enums.iter() {
         // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
-        let has_type_param = def
-            .variants
-            .iter()
-            .any(|(_, fields)| fields.iter().any(|f| matches!(f, tast::Ty::TParam { .. })));
+        let has_type_param = name.0.contains("TParam")
+            || def
+                .variants
+                .iter()
+                .any(|(_, fields)| fields.iter().any(|f| matches!(f, tast::Ty::TParam { .. })));
         if has_type_param {
             continue;
         }

@@ -1,10 +1,12 @@
 use ast::ast::{Lident, Uident};
 use indexmap::IndexMap;
+use std::collections::HashMap;
 
 use crate::{
     core,
     env::{Env, StructDef},
     tast::{self, Constructor, StructConstructor, Ty},
+    type_encoding::decode_ty,
 };
 
 struct ClosureTypeInfo {
@@ -158,7 +160,7 @@ pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
 
         let body_ty = body.get_ty();
         f.body = body;
-        if body_ty != f.ret_ty {
+        if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
             f.ret_ty = body_ty;
         }
 
@@ -166,10 +168,7 @@ pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
             ret_ty: Box::new(f.ret_ty.clone()),
         };
-        state
-            .env
-            .funcs
-            .insert(f.name.clone(), fn_ty);
+        state.env.funcs.insert(f.name.clone(), fn_ty);
 
         toplevels.push(f);
     }
@@ -224,7 +223,8 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     .collect();
 
                 if let Some(struct_def) = state.env.structs.get_mut(&struct_constructor.type_name) {
-                    for (index, closure_struct_name) in closure_field_types.into_iter().enumerate() {
+                    for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
+                    {
                         if let Some(struct_name) = closure_struct_name {
                             struct_def.fields[index].1 = Ty::TCon { name: struct_name };
                         }
@@ -333,20 +333,32 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             ty,
         } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
-            let field_ty = match &constructor {
-                Constructor::Struct(struct_constructor) => state
-                    .env
-                    .structs
-                    .get(&struct_constructor.type_name)
-                    .and_then(|def| def.fields.get(field_index).map(|(_, ty)| ty.clone()))
-                    .unwrap_or(ty),
-                _ => ty,
+            let expr_ty = expr.get_ty();
+            let instantiated_ty = match &constructor {
+                Constructor::Struct(struct_constructor) => instantiate_struct_field_ty(
+                    state,
+                    &struct_constructor.type_name,
+                    field_index,
+                    &expr_ty,
+                ),
+                Constructor::Enum(enum_constructor) => {
+                    instantiate_enum_field_ty(state, enum_constructor, field_index, &expr_ty)
+                }
             };
+            let mut result_ty = ty;
+            if let Some(field_ty) = instantiated_ty {
+                if state.ty_contains_closure(&field_ty)
+                    || matches!(result_ty, Ty::TParam { .. })
+                    || ty_contains_type_param(&result_ty)
+                {
+                    result_ty = field_ty;
+                }
+            }
             core::Expr::EConstrGet {
                 expr,
                 constructor,
                 field_index,
-                ty: field_ty,
+                ty: result_ty,
             }
         }
         core::Expr::ECall { func, args, ty } => {
@@ -656,4 +668,159 @@ fn sanitize_env_name(name: &str) -> Option<String> {
 fn make_field_name(name: &str, index: usize) -> String {
     let base = sanitize_env_name(name).unwrap_or_else(|| "field".to_string());
     format!("{}_{}", base, index)
+}
+
+fn instantiate_struct_field_ty(
+    state: &State<'_>,
+    struct_name: &Uident,
+    field_index: usize,
+    instance_ty: &Ty,
+) -> Option<Ty> {
+    let struct_def = state.env.structs.get(struct_name)?;
+    let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
+    if struct_def.generics.is_empty() {
+        return Some(raw_field_ty.clone());
+    }
+
+    let Some(args) = resolve_type_arguments(&struct_name.0, instance_ty) else {
+        return Some(raw_field_ty.clone());
+    };
+    if args.len() != struct_def.generics.len() {
+        return Some(raw_field_ty.clone());
+    }
+
+    let subst = struct_def
+        .generics
+        .iter()
+        .zip(args.into_iter())
+        .map(|(g, arg)| (g.0.clone(), arg))
+        .collect::<HashMap<_, _>>();
+
+    Some(substitute_ty_params(raw_field_ty, &subst))
+}
+
+fn instantiate_enum_field_ty(
+    state: &State<'_>,
+    constructor: &tast::EnumConstructor,
+    field_index: usize,
+    instance_ty: &Ty,
+) -> Option<Ty> {
+    let enum_def = state.env.enums.get(&constructor.type_name)?;
+    let (_, fields) = enum_def
+        .variants
+        .iter()
+        .find(|(variant, _)| variant == &constructor.variant)?;
+    let raw_field_ty = fields.get(field_index)?.clone();
+    if enum_def.generics.is_empty() {
+        return Some(raw_field_ty);
+    }
+
+    let Some(args) = resolve_type_arguments(&enum_def.name.0, instance_ty) else {
+        return Some(raw_field_ty);
+    };
+    if args.len() != enum_def.generics.len() {
+        return Some(raw_field_ty);
+    }
+
+    let subst = enum_def
+        .generics
+        .iter()
+        .zip(args.into_iter())
+        .map(|(g, arg)| (g.0.clone(), arg))
+        .collect::<HashMap<_, _>>();
+
+    Some(substitute_ty_params(&raw_field_ty, &subst))
+}
+
+fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
+    match ty {
+        Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TString => ty.clone(),
+        Ty::TCon { .. } => ty.clone(),
+        Ty::TVar { .. } => ty.clone(),
+        Ty::TParam { name } => subst.get(name).cloned().unwrap_or_else(|| ty.clone()),
+        Ty::TFunc { params, ret_ty } => Ty::TFunc {
+            params: params
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
+        Ty::TTuple { typs } => Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        Ty::TArray { len, elem } => Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::TRef { elem } => Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::TApp { ty, args } => Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
+            args: args
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+    }
+}
+
+fn ty_contains_type_param(ty: &Ty) -> bool {
+    match ty {
+        Ty::TParam { .. } => true,
+        Ty::TArray { elem, .. } | Ty::TRef { elem } => ty_contains_type_param(elem),
+        Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
+        Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
+        }
+        Ty::TApp { ty, args } => {
+            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
+        }
+        _ => false,
+    }
+}
+
+fn resolve_type_arguments(base_name: &str, instance_ty: &Ty) -> Option<Vec<Ty>> {
+    match instance_ty {
+        Ty::TApp { ty, args } => {
+            if let Ty::TCon { name } = ty.as_ref() {
+                if name == base_name {
+                    return Some(args.clone());
+                }
+            }
+            None
+        }
+        Ty::TCon { name } => {
+            let prefix = format!("{}__", base_name);
+            let encoded = name.strip_prefix(&prefix)?;
+            decode_encoded_type_list(encoded)
+        }
+        _ => None,
+    }
+}
+
+fn decode_encoded_type_list(encoded: &str) -> Option<Vec<Ty>> {
+    if encoded.is_empty() {
+        return Some(Vec::new());
+    }
+    let tokens: Vec<&str> = encoded.split('_').collect();
+    let mut items = Vec::new();
+    let mut cur = 0;
+    while cur < tokens.len() {
+        let mut found = None;
+        for mid in (cur + 1..=tokens.len()).rev() {
+            let slice = tokens[cur..mid].join("_");
+            if let Ok(ty) = decode_ty(&slice) {
+                items.push(ty);
+                found = Some(mid);
+                break;
+            }
+        }
+        let next = found?;
+        cur = next;
+    }
+    Some(items)
 }
