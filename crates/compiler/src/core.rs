@@ -71,6 +71,11 @@ pub enum Expr {
         else_branch: Box<Expr>,
         ty: Ty,
     },
+    EWhile {
+        cond: Box<Expr>,
+        body: Box<Expr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<Expr>,
         constructor: Constructor,
@@ -104,6 +109,7 @@ impl Expr {
             Expr::ELet { ty, .. } => ty.clone(),
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),
+            Expr::EWhile { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),

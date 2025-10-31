@@ -451,6 +451,21 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EWhile { cond, body, .. } => {
+                let body_block = RcDoc::hardline()
+                    .append(body.to_doc(env))
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("while")
+                    .append(RcDoc::space())
+                    .append(cond.to_doc(env))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(body_block)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
             Self::EBinary {
                 op,
                 lhs,

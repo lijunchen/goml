@@ -230,6 +230,10 @@ pub enum Stmt {
         then: Block,
         else_: Option<Block>,
     },
+    Loop {
+        body: Block,
+    },
+    Break,
     // switch <expr> { case <value>: ...; default: ... }
     SwitchExpr {
         expr: Expr,

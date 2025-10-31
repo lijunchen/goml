@@ -61,6 +61,7 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EArray { ty, .. }
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
+        | anf::CExpr::EWhile { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
         // For EConstrGet, compute field type from the scrutinee's data constructor
@@ -329,6 +330,9 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             else_: _,
             ty: _,
         } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
+        anf::CExpr::EWhile { .. } => {
+            panic!("EWhile should be lowered to goast::Stmt::Loop in compile_aexpr")
+        }
         anf::CExpr::EConstrGet {
             expr,
             constructor,
@@ -614,6 +618,126 @@ where
     }
 }
 
+fn compile_cexpr_effect(env: &Env, expr: &anf::CExpr) -> Vec<goast::Stmt> {
+    match expr {
+        anf::CExpr::CImm { .. }
+        | anf::CExpr::EConstr { .. }
+        | anf::CExpr::ETuple { .. }
+        | anf::CExpr::EArray { .. }
+        | anf::CExpr::EConstrGet { .. }
+        | anf::CExpr::EProj { .. } => Vec::new(),
+        anf::CExpr::ECall { .. } => vec![goast::Stmt::Expr(compile_cexpr(env, expr))],
+        anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
+            panic!("control-flow expressions should be handled before compile_cexpr_effect")
+        }
+    }
+}
+
+fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
+    match e {
+        AExpr::ACExpr { expr } => match expr {
+            anf::CExpr::EIf {
+                cond, then, else_, ..
+            } => {
+                let cond_e = compile_imm(env, &cond);
+                let then_block = goast::Block {
+                    stmts: compile_aexpr_effect(env, *then),
+                };
+                let else_block = goast::Block {
+                    stmts: compile_aexpr_effect(env, *else_),
+                };
+                vec![goast::Stmt::If {
+                    cond: cond_e,
+                    then: then_block,
+                    else_: Some(else_block),
+                }]
+            }
+            anf::CExpr::EMatch {
+                expr: scrutinee,
+                arms,
+                default,
+                ty: _,
+            } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
+                compile_aexpr_effect(env, branch)
+            }),
+            anf::CExpr::EWhile { cond, body, .. } => compile_while(env, *cond, *body),
+            other => compile_cexpr_effect(env, &other),
+        },
+        AExpr::ALet {
+            name,
+            value,
+            body,
+            ty: _,
+        } => {
+            let mut out = Vec::new();
+            let value_expr = *value;
+            match value_expr {
+                complex @ (anf::CExpr::EIf { .. }
+                | anf::CExpr::EMatch { .. }
+                | anf::CExpr::EWhile { .. }) => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(env, &complex),
+                        value: None,
+                    });
+                    out.extend(compile_aexpr_assign(
+                        env,
+                        &name,
+                        AExpr::ACExpr { expr: complex },
+                    ));
+                }
+                simple => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(env, &simple),
+                        value: Some(compile_cexpr(env, &simple)),
+                    });
+                }
+            }
+            out.extend(compile_aexpr_effect(env, *body));
+            out
+        }
+    }
+}
+
+fn compile_while(env: &Env, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
+    let cond_ty = cond.get_ty();
+    if cond_ty != tast::Ty::TBool {
+        panic!("while condition must have type bool, got {:?}", cond_ty);
+    }
+
+    let cond_var = env.gensym("cond");
+    let mut stmts = Vec::new();
+    stmts.push(goast::Stmt::VarDecl {
+        name: cond_var.clone(),
+        ty: goty::GoType::TBool,
+        value: None,
+    });
+
+    let mut loop_body = compile_aexpr_assign(env, &cond_var, cond);
+    let not_cond = goast::Expr::UnaryOp {
+        op: goast::UnaryOp::Not,
+        expr: Box::new(goast::Expr::Var {
+            name: cond_var.clone(),
+            ty: goty::GoType::TBool,
+        }),
+        ty: goty::GoType::TBool,
+    };
+    loop_body.push(goast::Stmt::If {
+        cond: not_cond,
+        then: goast::Block {
+            stmts: vec![goast::Stmt::Break],
+        },
+        else_: None,
+    });
+    loop_body.extend(compile_aexpr_effect(env, body));
+
+    stmts.push(goast::Stmt::Loop {
+        body: goast::Block { stmts: loop_body },
+    });
+    stmts
+}
+
 fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -637,6 +761,16 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
                 compile_aexpr_assign(env, target, branch)
             }),
+            anf::CExpr::EWhile { cond, body, .. } => {
+                let mut stmts = compile_while(env, *cond, *body);
+                stmts.push(goast::Stmt::Assignment {
+                    name: target.to_string(),
+                    value: goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    },
+                });
+                stmts
+            }
             other @ (anf::CExpr::CImm { .. }
             | anf::CExpr::EConstr { .. }
             | anf::CExpr::EConstrGet { .. }
@@ -659,7 +793,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             match &*value {
                 // If RHS needs statements (if/match), first declare the variable,
                 // then lower the RHS into assignments targeting that variable.
-                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
+                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } | anf::CExpr::EWhile { .. } => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
                         ty: cexpr_ty(env, &value),
@@ -724,6 +858,14 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                     |branch| compile_aexpr(env, branch),
                 ));
             }
+            anf::CExpr::EWhile { cond, body, .. } => {
+                stmts.extend(compile_while(env, *cond, *body));
+                stmts.push(goast::Stmt::Return {
+                    expr: Some(goast::Expr::Unit {
+                        ty: goty::GoType::TUnit,
+                    }),
+                });
+            }
             _ => {
                 let e = compile_cexpr(env, &expr);
                 match e.get_ty() {
@@ -742,7 +884,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
         } => {
             match &*value {
                 // If RHS needs statements, declare then fill via if-lowering
-                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } => {
+                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } | anf::CExpr::EWhile { .. } => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
                         ty: cexpr_ty(env, &value),

@@ -1,0 +1,140 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func bool_not(x bool) bool {
+    return !x
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type ref_int_x struct {
+    value int
+}
+
+func ref__Ref_int(value int) *ref_int_x {
+    return &ref_int_x{
+        value: value,
+    }
+}
+
+func ref_get__Ref_int(reference *ref_int_x) int {
+    return reference.value
+}
+
+func ref_set__Ref_int(reference *ref_int_x, value int) struct{} {
+    reference.value = value
+    return struct{}{}
+}
+
+type ref_bool_x struct {
+    value bool
+}
+
+func ref__Ref_bool(value bool) *ref_bool_x {
+    return &ref_bool_x{
+        value: value,
+    }
+}
+
+func ref_get__Ref_bool(reference *ref_bool_x) bool {
+    return reference.value
+}
+
+func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
+    reference.value = value
+    return struct{}{}
+}
+
+type Tuple1_unit struct {
+    _0 struct{}
+}
+
+func sum_to(limit__0 int) int {
+    var ret23 int
+    var acc__1 *ref_int_x = ref__Ref_int(0)
+    var i__2 *ref_int_x = ref__Ref_int(0)
+    var cond24 bool
+    for {
+        var t9 int = ref_get__Ref_int(i__2)
+        cond24 = int_less(t9, limit__0)
+        if !cond24 {
+            break
+        }
+        var current__3 int = ref_get__Ref_int(i__2)
+        var t11 int = ref_get__Ref_int(acc__1)
+        var t10 int = int_add(t11, current__3)
+        ref_set__Ref_int(acc__1, t10)
+        var t12 int = int_add(current__3, 1)
+        ref_set__Ref_int(i__2, t12)
+    }
+    ret23 = ref_get__Ref_int(acc__1)
+    return ret23
+}
+
+func sum_even(limit__4 int) int {
+    var ret25 int
+    var acc__5 *ref_int_x = ref__Ref_int(0)
+    var i__6 *ref_int_x = ref__Ref_int(0)
+    var is_even__7 *ref_bool_x = ref__Ref_bool(true)
+    var cond26 bool
+    for {
+        var t14 int = ref_get__Ref_int(i__6)
+        cond26 = int_less(t14, limit__4)
+        if !cond26 {
+            break
+        }
+        var current__8 int = ref_get__Ref_int(i__6)
+        var t15 int = int_add(current__8, 1)
+        ref_set__Ref_int(i__6, t15)
+        var add_now__9 bool = ref_get__Ref_bool(is_even__7)
+        var t16 bool = bool_not(add_now__9)
+        ref_set__Ref_bool(is_even__7, t16)
+        if add_now__9 {
+            var t18 int = ref_get__Ref_int(acc__5)
+            var t17 int = int_add(t18, current__8)
+            ref_set__Ref_int(acc__5, t17)
+        } else {}
+    }
+    ret25 = ref_get__Ref_int(acc__5)
+    return ret25
+}
+
+func main0() struct{} {
+    var ret27 struct{}
+    var first__10 int = sum_to(5)
+    var evens__11 int = sum_even(6)
+    var t20 string = int_to_string(first__10)
+    var t19 string = string_add("sum_to(5)=", t20)
+    string_println(t19)
+    var t22 string = int_to_string(evens__11)
+    var t21 string = string_add("sum_even(6)=", t22)
+    string_println(t21)
+    ret27 = struct{}{}
+    return ret27
+}
+
+func main() {
+    main0()
+}

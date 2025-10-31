@@ -204,6 +204,10 @@ pub enum Expr {
         then_branch: Box<Expr>,
         else_branch: Box<Expr>,
     },
+    EWhile {
+        cond: Box<Expr>,
+        body: Box<Expr>,
+    },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,

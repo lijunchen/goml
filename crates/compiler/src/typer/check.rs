@@ -55,6 +55,7 @@ impl TypeInference {
                 then_branch,
                 else_branch,
             } => self.infer_if_expr(env, vars, cond, then_branch, else_branch),
+            ast::Expr::EWhile { cond, body } => self.infer_while_expr(env, vars, cond, body),
             ast::Expr::ECall { func, args } => self.infer_call_expr(env, vars, func, args),
             ast::Expr::EUnary { op, expr } => self.infer_unary_expr(env, vars, *op, expr),
             ast::Expr::EBinary { op, lhs, rhs } => self.infer_binary_expr(env, vars, *op, lhs, rhs),
@@ -523,6 +524,28 @@ impl TypeInference {
             then_branch: Box::new(then_tast),
             else_branch: Box::new(else_tast),
             ty: result_ty,
+        }
+    }
+
+    fn infer_while_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        cond: &ast::Expr,
+        body: &ast::Expr,
+    ) -> tast::Expr {
+        let cond_tast = self.infer_expr(env, vars, cond);
+        env.constraints
+            .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+
+        let body_tast = self.infer_expr(env, vars, body);
+        env.constraints
+            .push(Constraint::TypeEqual(body_tast.get_ty(), tast::Ty::TUnit));
+
+        tast::Expr::EWhile {
+            cond: Box::new(cond_tast),
+            body: Box::new(body_tast),
+            ty: tast::Ty::TUnit,
         }
     }
 

@@ -685,6 +685,16 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EWhile { cond, body, ty } => {
+                let ty = self.subst_ty(env, &ty);
+                let cond = Box::new(self.subst(env, *cond));
+                let body = Box::new(self.subst(env, *body));
+                tast::Expr::EWhile {
+                    cond,
+                    body,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ECall { func, args, ty } => {
                 let ty = self.subst_ty(env, &ty);
                 let func = Box::new(self.subst(env, *func));
