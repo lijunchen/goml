@@ -57,7 +57,7 @@ pub enum CExpr {
         ty: Ty,
     },
     EWhile {
-        cond: Box<AExpr>,
+        cond: Box<CExpr>,
         body: Box<AExpr>,
         ty: Ty,
     },
@@ -349,16 +349,20 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
             )
         }
         core::Expr::EWhile { cond, body, ty: _ } => {
-            let cond_core = *cond;
             let body_core = *body;
             let ty_clone = e_ty.clone();
-            let cond_a = anf(env, cond_core, Box::new(|c| AExpr::ACExpr { expr: c }));
-            let body_a = anf(env, body_core, Box::new(|c| AExpr::ACExpr { expr: c }));
-            k(CExpr::EWhile {
-                cond: Box::new(cond_a),
-                body: Box::new(body_a),
-                ty: ty_clone,
-            })
+            anf(
+                env,
+                *cond,
+                Box::new(move |cond_cexpr| {
+                    let body_a = anf(env, body_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+                    k(CExpr::EWhile {
+                        cond: Box::new(cond_cexpr),
+                        body: Box::new(body_a),
+                        ty: ty_clone.clone(),
+                    })
+                }),
+            )
         }
         core::Expr::EMatch {
             expr,
@@ -590,7 +594,7 @@ pub mod anf_renamer {
                 ty,
             },
             anf::CExpr::EWhile { cond, body, ty } => anf::CExpr::EWhile {
-                cond: Box::new(rename_aexpr(*cond)),
+                cond: Box::new(rename_cexpr(*cond)),
                 body: Box::new(rename_aexpr(*body)),
                 ty,
             },

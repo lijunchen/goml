@@ -700,10 +700,10 @@ fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
     }
 }
 
-fn compile_while(env: &Env, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
-    let cond_ty = cond.get_ty();
-    if cond_ty != tast::Ty::TBool {
-        panic!("while condition must have type bool, got {:?}", cond_ty);
+fn compile_while(env: &Env, cond: anf::CExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
+    match cexpr_ty(env, &cond) {
+        goty::GoType::TBool => {}
+        other => panic!("while condition must have type bool, got {:?}", other),
     }
 
     let cond_var = env.gensym("cond");
@@ -714,7 +714,7 @@ fn compile_while(env: &Env, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::St
         value: None,
     });
 
-    let mut loop_body = compile_aexpr_assign(env, &cond_var, cond);
+    let mut loop_body = compile_aexpr_assign(env, &cond_var, AExpr::ACExpr { expr: cond });
     let not_cond = goast::Expr::UnaryOp {
         op: goast::UnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
