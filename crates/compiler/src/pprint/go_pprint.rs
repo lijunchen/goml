@@ -451,6 +451,26 @@ impl Stmt {
                     return_stmt
                 }
             }
+            Stmt::Loop { body } => {
+                let body_doc = if body.stmts.is_empty() {
+                    RcDoc::nil()
+                } else {
+                    RcDoc::hardline()
+                        .append(RcDoc::intersperse(
+                            body.stmts.iter().map(|s| s.to_doc(env)),
+                            RcDoc::hardline(),
+                        ))
+                        .nest(4)
+                        .append(RcDoc::hardline())
+                };
+
+                RcDoc::text("for")
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(body_doc)
+                    .append(RcDoc::text("}"))
+            }
+            Stmt::Break => RcDoc::text("break"),
             Stmt::If { cond, then, else_ } => {
                 let if_part = RcDoc::text("if")
                     .append(RcDoc::space())

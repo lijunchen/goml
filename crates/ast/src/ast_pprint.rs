@@ -236,6 +236,21 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EWhile { cond, body } => {
+                let body_doc = RcDoc::hardline()
+                    .append(body.to_doc())
+                    .nest(4)
+                    .append(RcDoc::hardline());
+
+                RcDoc::text("while")
+                    .append(RcDoc::space())
+                    .append(cond.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("{"))
+                    .append(body_doc)
+                    .append(RcDoc::text("}"))
+                    .group()
+            }
 
             Self::ECall { func, args } => {
                 let func_doc = func.to_doc();

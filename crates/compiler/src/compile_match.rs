@@ -965,6 +965,11 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             else_branch: Box::new(compile_expr(else_branch, env)),
             ty: ty.clone(),
         },
+        EWhile { cond, body, ty } => core::Expr::EWhile {
+            cond: Box::new(compile_expr(cond, env)),
+            body: Box::new(compile_expr(body, env)),
+            ty: ty.clone(),
+        },
         EUnary {
             op,
             expr,

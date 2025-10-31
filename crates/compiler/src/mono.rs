@@ -320,6 +320,11 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
                 ty: subst_ty(&ty, s),
             },
+            core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
+                cond: Box::new(mono_expr(ctx, &cond, s)),
+                body: Box::new(mono_expr(ctx, &body, s)),
+                ty: subst_ty(&ty, s),
+            },
             core::Expr::EConstrGet {
                 expr,
                 constructor,
@@ -690,6 +695,11 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 cond: Box::new(rewrite_expr_types(*cond, m)),
                 then_branch: Box::new(rewrite_expr_types(*then_branch, m)),
                 else_branch: Box::new(rewrite_expr_types(*else_branch, m)),
+                ty: m.collapse_type_apps(&ty),
+            },
+            core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
+                cond: Box::new(rewrite_expr_types(*cond, m)),
+                body: Box::new(rewrite_expr_types(*body, m)),
                 ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EConstrGet {

@@ -254,6 +254,15 @@ impl CExpr {
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
                 .group(),
+            CExpr::EWhile { cond, body, ty: _ } => RcDoc::text("while")
+                .append(RcDoc::space())
+                .append(cond.to_doc(env))
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(RcDoc::hardline().append(body.to_doc(env)).nest(2))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group(),
             CExpr::EConstrGet {
                 expr,
                 constructor,

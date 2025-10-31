@@ -485,6 +485,11 @@ impl Env {
                         self.collect_expr(else_branch);
                         self.collect_type(ty);
                     }
+                    core::Expr::EWhile { cond, body, ty } => {
+                        self.collect_expr(cond);
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
                     core::Expr::EConstrGet {
                         expr,
                         constructor: _,

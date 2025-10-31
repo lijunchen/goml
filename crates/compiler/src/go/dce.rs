@@ -152,6 +152,15 @@ fn dce_block_with_live(
                 }
                 out.push(ast::Stmt::Return { expr });
             }
+            ast::Stmt::Loop { body } => {
+                let (body_block, body_live_in) = dce_block_with_live(body, &live);
+                live.extend(body_live_in);
+                needs_decl.extend(assigned_vars_in_block(&body_block));
+                out.push(ast::Stmt::Loop { body: body_block });
+            }
+            ast::Stmt::Break => {
+                out.push(ast::Stmt::Break);
+            }
             ast::Stmt::If { cond, then, else_ } => {
                 let cond = dce_expr(cond);
                 let (then_b, then_live_in) = dce_block_with_live(then, &live);
@@ -350,6 +359,10 @@ fn assigned_vars_in_block(b: &ast::Block) -> HashSet<String> {
                     s.extend(assigned_vars_in_block(b));
                 }
             }
+            ast::Stmt::Loop { body } => {
+                s.extend(assigned_vars_in_block(body));
+            }
+            ast::Stmt::Break => {}
             _ => {}
         }
     }
@@ -468,6 +481,10 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                             used.extend(free_vars_in_block(b));
                         }
                     }
+                    ast::Stmt::Loop { body } => {
+                        used.extend(free_vars_in_block(body));
+                    }
+                    ast::Stmt::Break => {}
                 }
             }
             s.extend(&used - &declared);
@@ -557,6 +574,10 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
                     used.extend(free_vars_in_block(b));
                 }
             }
+            ast::Stmt::Loop { body } => {
+                used.extend(free_vars_in_block(body));
+            }
+            ast::Stmt::Break => {}
         }
     }
     &used - &declared
@@ -607,6 +628,8 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::PointerAssign { .. } => true,
         ast::Stmt::FieldAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
+        ast::Stmt::Loop { body } => body.stmts.iter().any(stmt_has_side_effects),
+        ast::Stmt::Break => false,
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
                 || then.stmts.iter().any(stmt_has_side_effects)
@@ -781,6 +804,10 @@ fn collect_called_in_stmt(
                 collect_called_in_block(b, calls, fn_names);
             }
         }
+        ast::Stmt::Loop { body } => {
+            collect_called_in_block(body, calls, fn_names);
+        }
+        ast::Stmt::Break => {}
     }
 }
 
@@ -982,6 +1009,10 @@ fn collect_packages_in_stmt(
                 collect_packages_in_block(b, imports, used);
             }
         }
+        ast::Stmt::Loop { body } => {
+            collect_packages_in_block(body, imports, used);
+        }
+        ast::Stmt::Break => {}
     }
 }
 

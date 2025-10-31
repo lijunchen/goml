@@ -56,6 +56,11 @@ pub enum CExpr {
         else_: Box<AExpr>,
         ty: Ty,
     },
+    EWhile {
+        cond: Box<AExpr>,
+        body: Box<AExpr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<ImmExpr>,
         constructor: Constructor,
@@ -87,6 +92,15 @@ pub enum AExpr {
     },
 }
 
+impl AExpr {
+    pub fn get_ty(&self) -> Ty {
+        match self {
+            AExpr::ACExpr { expr } => cexpr_tast_ty(expr),
+            AExpr::ALet { ty, .. } => ty.clone(),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Arm {
     pub lhs: ImmExpr,
@@ -115,6 +129,32 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
             "Expected an immediate expression for match arm LHS, found {:?}",
             core_imm
         ),
+    }
+}
+
+fn cexpr_tast_ty(e: &CExpr) -> Ty {
+    match e {
+        CExpr::CImm { imm } => imm_ty(imm),
+        CExpr::EConstr { ty, .. }
+        | CExpr::ETuple { ty, .. }
+        | CExpr::EArray { ty, .. }
+        | CExpr::EMatch { ty, .. }
+        | CExpr::EIf { ty, .. }
+        | CExpr::EWhile { ty, .. }
+        | CExpr::ECall { ty, .. }
+        | CExpr::EProj { ty, .. }
+        | CExpr::EConstrGet { ty, .. } => ty.clone(),
+    }
+}
+
+fn imm_ty(imm: &ImmExpr) -> Ty {
+    match imm {
+        ImmExpr::ImmVar { ty, .. }
+        | ImmExpr::ImmUnit { ty }
+        | ImmExpr::ImmBool { ty, .. }
+        | ImmExpr::ImmInt { ty, .. }
+        | ImmExpr::ImmString { ty, .. }
+        | ImmExpr::ImmTag { ty, .. } => ty.clone(),
     }
 }
 
@@ -308,6 +348,18 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
                 }),
             )
         }
+        core::Expr::EWhile { cond, body, ty: _ } => {
+            let cond_core = *cond;
+            let body_core = *body;
+            let ty_clone = e_ty.clone();
+            let cond_a = anf(env, cond_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+            let body_a = anf(env, body_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+            k(CExpr::EWhile {
+                cond: Box::new(cond_a),
+                body: Box::new(body_a),
+                ty: ty_clone,
+            })
+        }
         core::Expr::EMatch {
             expr,
             arms,
@@ -389,14 +441,18 @@ fn anf_imm<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(ImmExpr) -> AExpr 
             anf(
                 env,
                 e,
-                Box::new(move |e| AExpr::ALet {
-                    name: name.clone(),
-                    value: Box::new(e),
-                    body: Box::new(k(ImmExpr::ImmVar {
-                        name,
+                Box::new(move |value_expr| {
+                    let body_expr = k(ImmExpr::ImmVar {
+                        name: name.clone(),
                         ty: ty.clone(),
-                    })),
-                    ty: ty.clone(),
+                    });
+                    let body_ty = body_expr.get_ty();
+                    AExpr::ALet {
+                        name: name.clone(),
+                        value: Box::new(value_expr),
+                        body: Box::new(body_expr),
+                        ty: body_ty,
+                    }
                 }),
             )
         }
@@ -531,6 +587,11 @@ pub mod anf_renamer {
                 cond: Box::new(rename_imm(*cond)),
                 then: Box::new(rename_aexpr(*then)),
                 else_: Box::new(rename_aexpr(*else_)),
+                ty,
+            },
+            anf::CExpr::EWhile { cond, body, ty } => anf::CExpr::EWhile {
+                cond: Box::new(rename_aexpr(*cond)),
+                body: Box::new(rename_aexpr(*body)),
                 ty,
             },
             anf::CExpr::EConstrGet {

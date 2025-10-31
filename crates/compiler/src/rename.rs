@@ -217,6 +217,10 @@ impl Rename {
                 then_branch: Box::new(self.rename_expr(then_branch, env, global_funcs)),
                 else_branch: Box::new(self.rename_expr(else_branch, env, global_funcs)),
             },
+            ast::Expr::EWhile { cond, body } => ast::Expr::EWhile {
+                cond: Box::new(self.rename_expr(cond, env, global_funcs)),
+                body: Box::new(self.rename_expr(body, env, global_funcs)),
+            },
             ast::Expr::ECall { func, args } => {
                 let new_func = match func.as_ref() {
                     ast::Expr::EVar { name, astptr } => {

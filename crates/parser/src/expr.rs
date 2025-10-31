@@ -21,6 +21,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![if],
     T![let],
     T![match],
+    T![while],
     T![|],
     T![||],
 ];
@@ -154,6 +155,30 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 match_arm_list(p);
             }
             p.close(m, MySyntaxKind::EXPR_MATCH)
+        }
+        T![while] => {
+            let m = p.open();
+            p.expect(T![while]);
+
+            let cond_marker = p.open();
+            if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected an expression after `while`");
+            }
+            p.close(cond_marker, MySyntaxKind::EXPR_WHILE_COND);
+
+            let body_marker = p.open();
+            if p.at(T!['{']) {
+                block(p);
+            } else if p.at_any(EXPR_FIRST) {
+                expr(p);
+            } else {
+                p.advance_with_error("expected a body expression for `while`");
+            }
+            p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
+
+            p.close(m, MySyntaxKind::EXPR_WHILE)
         }
         T![|] | T![||] => closure_expr(p),
         _ => {

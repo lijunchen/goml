@@ -326,6 +326,11 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty,
             }
         }
+        core::Expr::EWhile { cond, body, ty } => {
+            let cond = Box::new(transform_expr(state, scope, *cond));
+            let body = Box::new(transform_expr(state, scope, *body));
+            core::Expr::EWhile { cond, body, ty }
+        }
         core::Expr::EConstrGet {
             expr,
             constructor,
@@ -629,6 +634,10 @@ fn collect_captured(
             collect_captured(cond, bound, captured, scope);
             collect_captured(then_branch, bound, captured, scope);
             collect_captured(else_branch, bound, captured, scope);
+        }
+        core::Expr::EWhile { cond, body, .. } => {
+            collect_captured(cond, bound, captured, scope);
+            collect_captured(body, bound, captured, scope);
         }
         core::Expr::EConstrGet { expr, .. } => {
             collect_captured(expr, bound, captured, scope);

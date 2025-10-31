@@ -154,6 +154,12 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             find_type_expr(env, else_branch, range)
         }
+        tast::Expr::EWhile { cond, body, ty: _ } => {
+            if let Some(expr) = find_type_expr(env, cond, range) {
+                return Some(expr);
+            }
+            find_type_expr(env, body, range)
+        }
         tast::Expr::ECall { func, args, ty: _ } => {
             if let Some(expr) = find_type_expr(env, func, range) {
                 return Some(expr);

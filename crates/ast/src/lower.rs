@@ -801,6 +801,59 @@ fn lower_expr_with_args(
                 else_branch: Box::new(else_branch),
             })
         }
+        cst::Expr::WhileExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to while expression",
+                );
+                return None;
+            }
+
+            let cond = it
+                .cond()
+                .and_then(|cond| cond.expr())
+                .and_then(|expr| lower_expr(ctx, expr));
+
+            let cond = match cond {
+                Some(cond) => cond,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "While expression missing condition",
+                    );
+                    return None;
+                }
+            };
+
+            let body = match it.body() {
+                Some(body) => {
+                    if let Some(block) = body.block() {
+                        lower_block(ctx, block)
+                    } else if let Some(expr) = body.expr() {
+                        lower_expr(ctx, expr)
+                    } else {
+                        ctx.push_error(
+                            Some(body.syntax().text_range()),
+                            "While expression body missing expression",
+                        );
+                        None
+                    }
+                }
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "While expression missing body",
+                    );
+                    None
+                }
+            }?;
+
+            Some(ast::Expr::EWhile {
+                cond: Box::new(cond),
+                body: Box::new(body),
+            })
+        }
         cst::Expr::StructLiteralExpr(it) => {
             if !trailing_args.is_empty() {
                 ctx.push_error(
