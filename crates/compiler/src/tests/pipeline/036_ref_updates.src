@@ -1,59 +1,59 @@
 fn bump(cell: Ref[int]) -> int {
-    let _ = ref_set(cell, ref_get(cell) + 1) in
+    let _ = ref_set(cell, ref_get(cell) + 1);
     ref_get(cell)
 }
 
 fn flip(flag: Ref[bool]) -> bool {
-    let current = ref_get(flag) in
-    let _ = ref_set(flag, !current) in
+    let current = ref_get(flag);
+    let _ = ref_set(flag, !current);
     ref_get(flag)
 }
 
 fn nested_total(cell: Ref[Ref[int]]) -> int {
-    let inner = ref_get(cell) in
-    let before = ref_get(inner) in
-    let _ = ref_set(inner, before + 2) in
+    let inner = ref_get(cell);
+    let before = ref_get(inner);
+    let _ = ref_set(inner, before + 2);
     before + ref_get(inner)
 }
 
 fn alias_bump(cell: Ref[int]) -> int {
-    let alias = cell in
-    let _ = ref_set(alias, ref_get(alias) + 5) in
+    let alias = cell;
+    let _ = ref_set(alias, ref_get(alias) + 5);
     ref_get(alias)
 }
 
 fn pair_sum() -> int {
-    let first = ref(4) in
-    let second = ref(6) in
-    let _ = ref_set(first, ref_get(first) + ref_get(second)) in
+    let first = ref(4);
+    let second = ref(6);
+    let _ = ref_set(first, ref_get(first) + ref_get(second));
     ref_get(first) + ref_get(second)
 }
 
 fn reassign_nested(nested: Ref[Ref[int]]) -> int {
-    let inner = ref_get(nested) in
-    let _ = ref_set(inner, ref_get(inner) + 7) in
+    let inner = ref_get(nested);
+    let _ = ref_set(inner, ref_get(inner) + 7);
     ref_get(inner)
 }
 
 fn main() {
-    let counter = ref(39) in
-    let toggler = ref(false) in
-    let nested = ref(ref(3)) in
+    let counter = ref(39);
+    let toggler = ref(false);
+    let nested = ref(ref(3));
 
-    let bumped = bump(counter) in
-    let flipped = flip(toggler) in
-    let flipped_again = flip(toggler) in
-    let inner = ref_get(nested) in
-    let _ = ref_set(inner, ref_get(inner) + bumped) in
-    let nested_total_val = nested_total(nested) in
-    let alias_total = alias_bump(counter) in
-    let pair_total = pair_sum() in
-    let reassigned = reassign_nested(nested) in
+    let bumped = bump(counter);
+    let flipped = flip(toggler);
+    let flipped_again = flip(toggler);
+    let inner = ref_get(nested);
+    let _ = ref_set(inner, ref_get(inner) + bumped);
+    let nested_total_val = nested_total(nested);
+    let alias_total = alias_bump(counter);
+    let pair_total = pair_sum();
+    let reassigned = reassign_nested(nested);
 
-    let bool_check = !false in
-    let _ = string_println(int_to_string(bumped + ref_get(counter))) in
-    let _ = string_println(int_to_string(nested_total_val + alias_total + reassigned)) in
-    let _ = string_println(int_to_string(pair_total)) in
-    let _ = string_println(bool_to_string(flipped && flipped_again && bool_check)) in
+    let bool_check = !false;
+    let _ = string_println(int_to_string(bumped + ref_get(counter)));
+    let _ = string_println(int_to_string(nested_total_val + alias_total + reassigned));
+    let _ = string_println(int_to_string(pair_total));
+    let _ = string_println(bool_to_string(flipped && flipped_again && bool_check));
     ()
 }

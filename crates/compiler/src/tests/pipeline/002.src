@@ -1,20 +1,20 @@
 fn main() {
-    let a = (true, false) in
+    let a = (true, false);
     let b = match a {
         (false, false) => (true, true),
         (false, true) => (true, false),
         (true, false) => (false, true),
         (true, true) => (false, false),
-    } in
+    };
     let b_1 = match b {
         (_, w) => w
-    } in
+    };
     let c = match (true, b_1) {
         (false, false) => string_print(int_to_string(0)),
         (false, true) => string_print(int_to_string(1)),
         (true, false) => string_print(int_to_string(2)),
         (true, true) => string_print(int_to_string(3)),
     }
-    in
+ ;
     string_print(unit_to_string(c))
 }

@@ -357,9 +357,9 @@ fn let_expr(p: &mut Parser) {
         expr(p);
         p.close(n, MySyntaxKind::EXPR_LET_VALUE);
     }
-    p.expect(T![in]);
+    p.expect(T![;]);
     if !p.at_any(EXPR_FIRST) {
-        p.advance_with_error("let .. in [_] expected an expression");
+        p.advance_with_error("let .. ; [_] expected an expression");
         return;
     }
     {

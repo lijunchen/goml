@@ -194,7 +194,7 @@ enum List {
 fn closure_infers_param_and_return_types() {
     let src = r#"
 fn use_closure(x: int) -> int {
-    let add = |y| y + x in
+    let add = |y| y + x;
     x
 }
 "#;
@@ -235,7 +235,7 @@ fn use_closure(x: int) -> int {
 fn closure_parameter_annotations_use_enclosing_generics() {
     let src = r#"
 fn wrap[T](value: T) -> T {
-    let id = |x: T| x in
+    let id = |x: T| x;
     value
 }
 "#;
