@@ -15,19 +15,19 @@ fn compose(f: (int) -> int, g: (int) -> int, value: int) -> int {
 }
 
 fn main() {
-    let local = double in
-    let first = apply_once(local, 4) in
-    let composed = compose(double, increment, first) in
-    let closure_apply = |value: int| apply_once(increment, value) in
-    let closure_result = closure_apply(composed) in
-    let global_invoker = |func_to_call: (int) -> int, value: int| apply_once(func_to_call, value) in
-    let invoked_with_global = global_invoker(double, 3) in
-    let composer_closure = |value: int| compose(double, increment, value) in
-    let composed_by_closure = composer_closure(5) in
-    let printer = string_println in
-    let _ = printer(int_to_string(composed)) in
-    let _ = printer(int_to_string(closure_result)) in
-    let _ = printer(int_to_string(invoked_with_global)) in
-    let _ = printer(int_to_string(composed_by_closure)) in
+    let local = double;
+    let first = apply_once(local, 4);
+    let composed = compose(double, increment, first);
+    let closure_apply = |value: int| apply_once(increment, value);
+    let closure_result = closure_apply(composed);
+    let global_invoker = |func_to_call: (int) -> int, value: int| apply_once(func_to_call, value);
+    let invoked_with_global = global_invoker(double, 3);
+    let composer_closure = |value: int| compose(double, increment, value);
+    let composed_by_closure = composer_closure(5);
+    let printer = string_println;
+    let _ = printer(int_to_string(composed));
+    let _ = printer(int_to_string(closure_result));
+    let _ = printer(int_to_string(invoked_with_global));
+    let _ = printer(int_to_string(composed_by_closure));
     ()
 }

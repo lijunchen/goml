@@ -27,8 +27,8 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, Env) {
 fn references_typecheck_and_collect() {
     let src = r#"
 fn main() -> int {
-    let r = ref(1) in
-    let _ = ref_set(r, 2) in
+    let r = ref(1);
+    let _ = ref_set(r, 2);
     ref_get(r)
 }
 "#;

@@ -13,9 +13,9 @@ fn smoke_test() {
     let src = r#"enum Color { Red, Green, Blue }
 
 fn main() {
-    let a = 1 in
-    let a = (true, 2) in
-    let a = Green in
+    let a = 1;
+    let a = (true, 2);
+    let a = Green;
     ()
 }
 "#;
