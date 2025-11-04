@@ -1,0 +1,21 @@
+fn test_basic_sequence() -> unit {
+  let mtmp0 = string_print("first") in
+  let mtmp1 = string_print("second") in
+  let mtmp2 = string_print("third") in
+  ()
+}
+
+fn test_mixed_expressions() -> int {
+  let mtmp3 = string_print("computing") in
+  let x/0 = 5 in
+  let mtmp4 = string_print(int_to_string(x/0)) in
+  int_add(x/0, 10)
+}
+
+fn main() -> unit {
+  let mtmp5 = test_basic_sequence() in
+  let result/1 = test_mixed_expressions() in
+  let mtmp6 = string_print("result: ") in
+  let mtmp7 = string_print(int_to_string(result/1)) in
+  ()
+}

@@ -1,0 +1,52 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func test_basic_sequence() struct{} {
+    var ret10 struct{}
+    string_print("first")
+    string_print("second")
+    string_print("third")
+    ret10 = struct{}{}
+    return ret10
+}
+
+func test_mixed_expressions() int {
+    var ret11 int
+    string_print("computing")
+    var x__0 int = 5
+    var t8 string = int_to_string(x__0)
+    string_print(t8)
+    ret11 = int_add(x__0, 10)
+    return ret11
+}
+
+func main0() struct{} {
+    var ret12 struct{}
+    test_basic_sequence()
+    var result__1 int = test_mixed_expressions()
+    string_print("result: ")
+    var t9 string = int_to_string(result__1)
+    string_print(t9)
+    ret12 = struct{}{}
+    return ret12
+}
+
+func main() {
+    main0()
+}

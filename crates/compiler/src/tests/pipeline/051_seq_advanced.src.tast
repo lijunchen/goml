@@ -1,0 +1,21 @@
+fn test_basic_sequence() -> unit {
+  let _ : unit = (string_print : (string) -> unit)("first") in
+  let _ : unit = (string_print : (string) -> unit)("second") in
+  let _ : unit = (string_print : (string) -> unit)("third") in
+  ()
+}
+
+fn test_mixed_expressions() -> int {
+  let _ : unit = (string_print : (string) -> unit)("computing") in
+  let x/0: int = 5 in
+  let _ : unit = (string_print : (string) -> unit)((int_to_string : (int) -> string)((x/0 : int))) in
+  (x/0 : int) + 10
+}
+
+fn main() -> unit {
+  let _ : unit = (test_basic_sequence : () -> unit)() in
+  let result/1: int = (test_mixed_expressions : () -> int)() in
+  let _ : unit = (string_print : (string) -> unit)("result: ") in
+  let _ : unit = (string_print : (string) -> unit)((int_to_string : (int) -> string)((result/1 : int))) in
+  ()
+}

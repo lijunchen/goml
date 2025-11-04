@@ -1,0 +1,23 @@
+// Test statement sequences with various expression types
+
+fn test_basic_sequence() {
+    string_print("first");
+    string_print("second");
+    string_print("third");
+    ()
+}
+
+fn test_mixed_expressions() -> int {
+    string_print("computing");
+    let x = 5;
+    string_print(int_to_string(x));
+    x + 10
+}
+
+fn main() {
+    test_basic_sequence();
+    let result = test_mixed_expressions();
+    string_print("result: ");
+    string_print(int_to_string(result));
+    ()
+}
