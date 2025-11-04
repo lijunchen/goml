@@ -475,6 +475,10 @@ pub struct Block {
 }
 
 impl Block {
+    pub fn stmts(&self) -> CstChildren<Stmt> {
+        support::children(&self.syntax)
+    }
+
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }
@@ -482,6 +486,67 @@ impl Block {
 
 impl_cst_node_simple!(Block, MySyntaxKind::BLOCK);
 impl_display_via_syntax!(Block);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Stmt {
+    LetStmt(LetStmt),
+    ExprStmt(ExprStmt),
+}
+
+impl CstNode for Stmt {
+    fn can_cast(kind: MySyntaxKind) -> bool {
+        matches!(kind, MySyntaxKind::STMT_LET | MySyntaxKind::STMT_EXPR)
+    }
+
+    fn cast(syntax: MySyntaxNode) -> Option<Self> {
+        match syntax.kind() {
+            MySyntaxKind::STMT_LET => Some(Stmt::LetStmt(LetStmt { syntax })),
+            MySyntaxKind::STMT_EXPR => Some(Stmt::ExprStmt(ExprStmt { syntax })),
+            _ => None,
+        }
+    }
+
+    fn syntax(&self) -> &MySyntaxNode {
+        match self {
+            Stmt::LetStmt(stmt) => stmt.syntax(),
+            Stmt::ExprStmt(stmt) => stmt.syntax(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LetStmt {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl LetStmt {
+    pub fn pattern(&self) -> Option<Pattern> {
+        support::child(&self.syntax)
+    }
+
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(LetStmt, MySyntaxKind::STMT_LET);
+impl_display_via_syntax!(LetStmt);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExprStmt {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ExprStmt {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ExprStmt, MySyntaxKind::STMT_EXPR);
+impl_display_via_syntax!(ExprStmt);
 
 ////////////////////////////////////////////////////////////////////////////////
 

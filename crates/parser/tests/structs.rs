@@ -139,3 +139,16 @@ fn let_expression_without_pattern_reports_error() {
     let errors = result.format_errors(src);
     assert!(errors.iter().any(|msg| msg.contains("expected a pattern")));
 }
+
+#[test]
+fn block_allows_expression_statements() {
+    let path = Path::new("test.goml");
+    let src = "fn main() {\n    foo();\n    ()\n}";
+    let result = parse(path, src);
+    if result.has_errors() {
+        panic!(
+            "unexpected parse errors:\n{}",
+            result.format_errors(src).join("\n")
+        );
+    }
+}

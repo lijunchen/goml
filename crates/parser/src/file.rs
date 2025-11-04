@@ -3,6 +3,7 @@ use lexer::{T, TokenKind};
 use crate::{
     expr::{EXPR_FIRST, expr},
     parser::{MarkerClosed, Parser},
+    pattern,
     syntax::MySyntaxKind,
 };
 
@@ -22,7 +23,7 @@ pub fn file(p: &mut Parser) {
         } else if p.at(T![impl]) {
             impl_block(p)
         } else if p.at_any(EXPR_FIRST) {
-            expr(p)
+            let _ = expr(p);
         } else {
             p.advance_with_error("expected a function")
         }
@@ -437,7 +438,50 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
-    expr(p);
+    while !p.at(T!['}']) && !p.eof() {
+        if p.at(T![let]) {
+            let stmt_marker = p.open();
+            parse_let_statement(p);
+            p.expect(T![;]);
+            p.close(stmt_marker, MySyntaxKind::STMT_LET);
+        } else if p.at_any(EXPR_FIRST) {
+            match expr(p) {
+                Some(expr_marker) => {
+                    if p.eat(T![;]) {
+                        let stmt_marker = expr_marker.precede(p);
+                        p.close(stmt_marker, MySyntaxKind::STMT_EXPR);
+                    } else {
+                        if !p.at(T!['}']) {
+                            p.advance_with_error("expected ';' or '}' after expression");
+                        }
+                        break;
+                    }
+                }
+                None => break,
+            }
+        } else {
+            p.advance_with_error("expected a statement");
+            if p.eat(T![;]) {
+                continue;
+            }
+            if p.at(T!['}']) || p.eof() {
+                break;
+            }
+            p.advance();
+        }
+    }
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::BLOCK);
+}
+
+fn parse_let_statement(p: &mut Parser) {
+    assert!(p.at(T![let]));
+    p.expect(T![let]);
+    let _ = pattern::pattern(p);
+    p.expect(T![=]);
+    if p.at_any(EXPR_FIRST) {
+        let _ = expr(p);
+    } else {
+        p.advance_with_error("let statement expected an expression");
+    }
 }

@@ -205,7 +205,7 @@ FILE@0..1018
     BLOCK@246..1018
       LBrace@246..247 "{"
       Whitespace@247..252 "\n    "
-      EXPR_LET@252..1016
+      STMT_LET@252..276
         LetKeyword@252..255 "let"
         Whitespace@255..256 " "
         PATTERN_VARIABLE@256..262
@@ -213,403 +213,375 @@ FILE@0..1018
           Whitespace@261..262 " "
         Eq@262..263 "="
         Whitespace@263..264 " "
-        EXPR_LET_VALUE@264..270
-          EXPR_LIDENT@264..270
-            Lident@264..270 "double"
+        EXPR_LIDENT@264..270
+          Lident@264..270 "double"
         Semi@270..271 ";"
         Whitespace@271..276 "\n    "
-        EXPR_LET_BODY@276..1016
-          EXPR_LET@276..1016
-            LetKeyword@276..279 "let"
-            Whitespace@279..280 " "
-            PATTERN_VARIABLE@280..286
-              Lident@280..285 "first"
-              Whitespace@285..286 " "
-            Eq@286..287 "="
-            Whitespace@287..288 " "
-            EXPR_LET_VALUE@288..308
-              EXPR_CALL@288..308
-                EXPR_LIDENT@288..298
-                  Lident@288..298 "apply_once"
-                ARG_LIST@298..308
-                  LParen@298..299 "("
-                  ARG@299..306
-                    EXPR_LIDENT@299..304
-                      Lident@299..304 "local"
-                    Comma@304..305 ","
-                    Whitespace@305..306 " "
-                  ARG@306..307
-                    EXPR_INT@306..307
-                      Int@306..307 "4"
-                  RParen@307..308 ")"
-            Semi@308..309 ";"
-            Whitespace@309..314 "\n    "
-            EXPR_LET_BODY@314..1016
-              EXPR_LET@314..1016
-                LetKeyword@314..317 "let"
-                Whitespace@317..318 " "
-                PATTERN_VARIABLE@318..327
-                  Lident@318..326 "composed"
-                  Whitespace@326..327 " "
-                Eq@327..328 "="
-                Whitespace@328..329 " "
-                EXPR_LET_VALUE@329..362
-                  EXPR_CALL@329..362
-                    EXPR_LIDENT@329..336
-                      Lident@329..336 "compose"
-                    ARG_LIST@336..362
-                      LParen@336..337 "("
-                      ARG@337..345
-                        EXPR_LIDENT@337..343
-                          Lident@337..343 "double"
-                        Comma@343..344 ","
-                        Whitespace@344..345 " "
-                      ARG@345..356
-                        EXPR_LIDENT@345..354
-                          Lident@345..354 "increment"
-                        Comma@354..355 ","
-                        Whitespace@355..356 " "
-                      ARG@356..361
-                        EXPR_LIDENT@356..361
-                          Lident@356..361 "first"
-                      RParen@361..362 ")"
-                Semi@362..363 ";"
-                Whitespace@363..368 "\n    "
-                EXPR_LET_BODY@368..1016
-                  EXPR_LET@368..1016
-                    LetKeyword@368..371 "let"
-                    Whitespace@371..372 " "
-                    PATTERN_VARIABLE@372..386
-                      Lident@372..385 "closure_apply"
-                      Whitespace@385..386 " "
-                    Eq@386..387 "="
-                    Whitespace@387..388 " "
-                    EXPR_LET_VALUE@388..429
-                      EXPR_CLOSURE@388..429
-                        CLOSURE_PARAM_LIST@388..401
-                          Pipe@388..389 "|"
-                          CLOSURE_PARAM@389..399
-                            Lident@389..394 "value"
-                            Colon@394..395 ":"
-                            Whitespace@395..396 " "
-                            TYPE_INT@396..399
-                              IntKeyword@396..399 "int"
-                          Pipe@399..400 "|"
-                          Whitespace@400..401 " "
-                        EXPR_CLOSURE_BODY@401..429
-                          EXPR_CALL@401..429
-                            EXPR_LIDENT@401..411
-                              Lident@401..411 "apply_once"
-                            ARG_LIST@411..429
-                              LParen@411..412 "("
-                              ARG@412..423
-                                EXPR_LIDENT@412..421
-                                  Lident@412..421 "increment"
-                                Comma@421..422 ","
-                                Whitespace@422..423 " "
-                              ARG@423..428
-                                EXPR_LIDENT@423..428
-                                  Lident@423..428 "value"
-                              RParen@428..429 ")"
-                    Semi@429..430 ";"
-                    Whitespace@430..435 "\n    "
-                    EXPR_LET_BODY@435..1016
-                      EXPR_LET@435..1016
-                        LetKeyword@435..438 "let"
-                        Whitespace@438..439 " "
-                        PATTERN_VARIABLE@439..454
-                          Lident@439..453 "closure_result"
-                          Whitespace@453..454 " "
-                        Eq@454..455 "="
-                        Whitespace@455..456 " "
-                        EXPR_LET_VALUE@456..479
-                          EXPR_CALL@456..479
-                            EXPR_LIDENT@456..469
-                              Lident@456..469 "closure_apply"
-                            ARG_LIST@469..479
-                              LParen@469..470 "("
-                              ARG@470..478
-                                EXPR_LIDENT@470..478
-                                  Lident@470..478 "composed"
-                              RParen@478..479 ")"
-                        Semi@479..480 ";"
-                        Whitespace@480..485 "\n    "
-                        EXPR_LET_BODY@485..1016
-                          EXPR_LET@485..1016
-                            LetKeyword@485..488 "let"
-                            Whitespace@488..489 " "
-                            PATTERN_VARIABLE@489..504
-                              Lident@489..503 "global_invoker"
-                              Whitespace@503..504 " "
-                            Eq@504..505 "="
-                            Whitespace@505..506 " "
-                            EXPR_LET_VALUE@506..578
-                              EXPR_CLOSURE@506..578
-                                CLOSURE_PARAM_LIST@506..547
-                                  Pipe@506..507 "|"
-                                  CLOSURE_PARAM@507..533
-                                    Lident@507..519 "func_to_call"
-                                    Colon@519..520 ":"
-                                    Whitespace@520..521 " "
-                                    TYPE_FUNC@521..533
-                                      TYPE_TUPLE@521..527
-                                        TYPE_LIST@521..527
-                                          LParen@521..522 "("
-                                          TYPE_INT@522..525
-                                            IntKeyword@522..525 "int"
-                                          RParen@525..526 ")"
-                                          Whitespace@526..527 " "
-                                      Arrow@527..529 "->"
-                                      Whitespace@529..530 " "
-                                      TYPE_INT@530..533
-                                        IntKeyword@530..533 "int"
-                                  Comma@533..534 ","
-                                  Whitespace@534..535 " "
-                                  CLOSURE_PARAM@535..545
-                                    Lident@535..540 "value"
-                                    Colon@540..541 ":"
-                                    Whitespace@541..542 " "
-                                    TYPE_INT@542..545
-                                      IntKeyword@542..545 "int"
-                                  Pipe@545..546 "|"
-                                  Whitespace@546..547 " "
-                                EXPR_CLOSURE_BODY@547..578
-                                  EXPR_CALL@547..578
-                                    EXPR_LIDENT@547..557
-                                      Lident@547..557 "apply_once"
-                                    ARG_LIST@557..578
-                                      LParen@557..558 "("
-                                      ARG@558..572
-                                        EXPR_LIDENT@558..570
-                                          Lident@558..570 "func_to_call"
-                                        Comma@570..571 ","
-                                        Whitespace@571..572 " "
-                                      ARG@572..577
-                                        EXPR_LIDENT@572..577
-                                          Lident@572..577 "value"
-                                      RParen@577..578 ")"
-                            Semi@578..579 ";"
-                            Whitespace@579..584 "\n    "
-                            EXPR_LET_BODY@584..1016
-                              EXPR_LET@584..1016
-                                LetKeyword@584..587 "let"
-                                Whitespace@587..588 " "
-                                PATTERN_VARIABLE@588..608
-                                  Lident@588..607 "invoked_with_global"
-                                  Whitespace@607..608 " "
-                                Eq@608..609 "="
-                                Whitespace@609..610 " "
-                                EXPR_LET_VALUE@610..635
-                                  EXPR_CALL@610..635
-                                    EXPR_LIDENT@610..624
-                                      Lident@610..624 "global_invoker"
-                                    ARG_LIST@624..635
-                                      LParen@624..625 "("
-                                      ARG@625..633
-                                        EXPR_LIDENT@625..631
-                                          Lident@625..631 "double"
-                                        Comma@631..632 ","
-                                        Whitespace@632..633 " "
-                                      ARG@633..634
-                                        EXPR_INT@633..634
-                                          Int@633..634 "3"
-                                      RParen@634..635 ")"
-                                Semi@635..636 ";"
-                                Whitespace@636..641 "\n    "
-                                EXPR_LET_BODY@641..1016
-                                  EXPR_LET@641..1016
-                                    LetKeyword@641..644 "let"
-                                    Whitespace@644..645 " "
-                                    PATTERN_VARIABLE@645..662
-                                      Lident@645..661 "composer_closure"
-                                      Whitespace@661..662 " "
-                                    Eq@662..663 "="
-                                    Whitespace@663..664 " "
-                                    EXPR_LET_VALUE@664..710
-                                      EXPR_CLOSURE@664..710
-                                        CLOSURE_PARAM_LIST@664..677
-                                          Pipe@664..665 "|"
-                                          CLOSURE_PARAM@665..675
-                                            Lident@665..670 "value"
-                                            Colon@670..671 ":"
-                                            Whitespace@671..672 " "
-                                            TYPE_INT@672..675
-                                              IntKeyword@672..675 "int"
-                                          Pipe@675..676 "|"
-                                          Whitespace@676..677 " "
-                                        EXPR_CLOSURE_BODY@677..710
-                                          EXPR_CALL@677..710
-                                            EXPR_LIDENT@677..684
-                                              Lident@677..684 "compose"
-                                            ARG_LIST@684..710
-                                              LParen@684..685 "("
-                                              ARG@685..693
-                                                EXPR_LIDENT@685..691
-                                                  Lident@685..691 "double"
-                                                Comma@691..692 ","
-                                                Whitespace@692..693 " "
-                                              ARG@693..704
-                                                EXPR_LIDENT@693..702
-                                                  Lident@693..702 "increment"
-                                                Comma@702..703 ","
-                                                Whitespace@703..704 " "
-                                              ARG@704..709
-                                                EXPR_LIDENT@704..709
-                                                  Lident@704..709 "value"
-                                              RParen@709..710 ")"
-                                    Semi@710..711 ";"
-                                    Whitespace@711..716 "\n    "
-                                    EXPR_LET_BODY@716..1016
-                                      EXPR_LET@716..1016
-                                        LetKeyword@716..719 "let"
-                                        Whitespace@719..720 " "
-                                        PATTERN_VARIABLE@720..740
-                                          Lident@720..739 "composed_by_closure"
-                                          Whitespace@739..740 " "
-                                        Eq@740..741 "="
-                                        Whitespace@741..742 " "
-                                        EXPR_LET_VALUE@742..761
-                                          EXPR_CALL@742..761
-                                            EXPR_LIDENT@742..758
-                                              Lident@742..758 "composer_closure"
-                                            ARG_LIST@758..761
-                                              LParen@758..759 "("
-                                              ARG@759..760
-                                                EXPR_INT@759..760
-                                                  Int@759..760 "5"
-                                              RParen@760..761 ")"
-                                        Semi@761..762 ";"
-                                        Whitespace@762..767 "\n    "
-                                        EXPR_LET_BODY@767..1016
-                                          EXPR_LET@767..1016
-                                            LetKeyword@767..770 "let"
-                                            Whitespace@770..771 " "
-                                            PATTERN_VARIABLE@771..779
-                                              Lident@771..778 "printer"
-                                              Whitespace@778..779 " "
-                                            Eq@779..780 "="
-                                            Whitespace@780..781 " "
-                                            EXPR_LET_VALUE@781..795
-                                              EXPR_LIDENT@781..795
-                                                Lident@781..795 "string_println"
-                                            Semi@795..796 ";"
-                                            Whitespace@796..801 "\n    "
-                                            EXPR_LET_BODY@801..1016
-                                              EXPR_LET@801..1016
-                                                LetKeyword@801..804 "let"
-                                                Whitespace@804..805 " "
-                                                PATTERN_WILDCARD@805..807
-                                                  WildcardKeyword@805..806 "_"
-                                                  Whitespace@806..807 " "
-                                                Eq@807..808 "="
-                                                Whitespace@808..809 " "
-                                                EXPR_LET_VALUE@809..841
-                                                  EXPR_CALL@809..841
-                                                    EXPR_LIDENT@809..816
-                                                      Lident@809..816 "printer"
-                                                    ARG_LIST@816..841
-                                                      LParen@816..817 "("
-                                                      ARG@817..840
-                                                        EXPR_CALL@817..840
-                                                          EXPR_LIDENT@817..830
-                                                            Lident@817..830 "int_to_string"
-                                                          ARG_LIST@830..840
-                                                            LParen@830..831 "("
-                                                            ARG@831..839
-                                                              EXPR_LIDENT@831..839
-                                                                Lident@831..839 "composed"
-                                                            RParen@839..840 ")"
-                                                      RParen@840..841 ")"
-                                                Semi@841..842 ";"
-                                                Whitespace@842..847 "\n    "
-                                                EXPR_LET_BODY@847..1016
-                                                  EXPR_LET@847..1016
-                                                    LetKeyword@847..850 "let"
-                                                    Whitespace@850..851 " "
-                                                    PATTERN_WILDCARD@851..853
-                                                      WildcardKeyword@851..852 "_"
-                                                      Whitespace@852..853 " "
-                                                    Eq@853..854 "="
-                                                    Whitespace@854..855 " "
-                                                    EXPR_LET_VALUE@855..893
-                                                      EXPR_CALL@855..893
-                                                        EXPR_LIDENT@855..862
-                                                          Lident@855..862 "printer"
-                                                        ARG_LIST@862..893
-                                                          LParen@862..863 "("
-                                                          ARG@863..892
-                                                            EXPR_CALL@863..892
-                                                              EXPR_LIDENT@863..876
-                                                                Lident@863..876 "int_to_string"
-                                                              ARG_LIST@876..892
-                                                                LParen@876..877 "("
-                                                                ARG@877..891
-                                                                  EXPR_LIDENT@877..891
-                                                                    Lident@877..891 "closure_result"
-                                                                RParen@891..892 ")"
-                                                          RParen@892..893 ")"
-                                                    Semi@893..894 ";"
-                                                    Whitespace@894..899 "\n    "
-                                                    EXPR_LET_BODY@899..1016
-                                                      EXPR_LET@899..1016
-                                                        LetKeyword@899..902 "let"
-                                                        Whitespace@902..903 " "
-                                                        PATTERN_WILDCARD@903..905
-                                                          WildcardKeyword@903..904 "_"
-                                                          Whitespace@904..905 " "
-                                                        Eq@905..906 "="
-                                                        Whitespace@906..907 " "
-                                                        EXPR_LET_VALUE@907..950
-                                                          EXPR_CALL@907..950
-                                                            EXPR_LIDENT@907..914
-                                                              Lident@907..914 "printer"
-                                                            ARG_LIST@914..950
-                                                              LParen@914..915 "("
-                                                              ARG@915..949
-                                                                EXPR_CALL@915..949
-                                                                  EXPR_LIDENT@915..928
-                                                                    Lident@915..928 "int_to_string"
-                                                                  ARG_LIST@928..949
-                                                                    LParen@928..929 "("
-                                                                    ARG@929..948
-                                                                      EXPR_LIDENT@929..948
-                                                                        Lident@929..948 "invoked_with_global"
-                                                                    RParen@948..949 ")"
-                                                              RParen@949..950 ")"
-                                                        Semi@950..951 ";"
-                                                        Whitespace@951..956 "\n    "
-                                                        EXPR_LET_BODY@956..1016
-                                                          EXPR_LET@956..1016
-                                                            LetKeyword@956..959 "let"
-                                                            Whitespace@959..960 " "
-                                                            PATTERN_WILDCARD@960..962
-                                                              WildcardKeyword@960..961 "_"
-                                                              Whitespace@961..962 " "
-                                                            Eq@962..963 "="
-                                                            Whitespace@963..964 " "
-                                                            EXPR_LET_VALUE@964..1007
-                                                              EXPR_CALL@964..1007
-                                                                EXPR_LIDENT@964..971
-                                                                  Lident@964..971 "printer"
-                                                                ARG_LIST@971..1007
-                                                                  LParen@971..972 "("
-                                                                  ARG@972..1006
-                                                                    EXPR_CALL@972..1006
-                                                                      EXPR_LIDENT@972..985
-                                                                        Lident@972..985 "int_to_string"
-                                                                      ARG_LIST@985..1006
-                                                                        LParen@985..986 "("
-                                                                        ARG@986..1005
-                                                                          EXPR_LIDENT@986..1005
-                                                                            Lident@986..1005 "composed_by_closure"
-                                                                        RParen@1005..1006 ")"
-                                                                  RParen@1006..1007 ")"
-                                                            Semi@1007..1008 ";"
-                                                            Whitespace@1008..1013 "\n    "
-                                                            EXPR_LET_BODY@1013..1016
-                                                              EXPR_UNIT@1013..1016
-                                                                LParen@1013..1014 "("
-                                                                RParen@1014..1015 ")"
-                                                                Whitespace@1015..1016 "\n"
+      STMT_LET@276..314
+        LetKeyword@276..279 "let"
+        Whitespace@279..280 " "
+        PATTERN_VARIABLE@280..286
+          Lident@280..285 "first"
+          Whitespace@285..286 " "
+        Eq@286..287 "="
+        Whitespace@287..288 " "
+        EXPR_CALL@288..308
+          EXPR_LIDENT@288..298
+            Lident@288..298 "apply_once"
+          ARG_LIST@298..308
+            LParen@298..299 "("
+            ARG@299..306
+              EXPR_LIDENT@299..304
+                Lident@299..304 "local"
+              Comma@304..305 ","
+              Whitespace@305..306 " "
+            ARG@306..307
+              EXPR_INT@306..307
+                Int@306..307 "4"
+            RParen@307..308 ")"
+        Semi@308..309 ";"
+        Whitespace@309..314 "\n    "
+      STMT_LET@314..368
+        LetKeyword@314..317 "let"
+        Whitespace@317..318 " "
+        PATTERN_VARIABLE@318..327
+          Lident@318..326 "composed"
+          Whitespace@326..327 " "
+        Eq@327..328 "="
+        Whitespace@328..329 " "
+        EXPR_CALL@329..362
+          EXPR_LIDENT@329..336
+            Lident@329..336 "compose"
+          ARG_LIST@336..362
+            LParen@336..337 "("
+            ARG@337..345
+              EXPR_LIDENT@337..343
+                Lident@337..343 "double"
+              Comma@343..344 ","
+              Whitespace@344..345 " "
+            ARG@345..356
+              EXPR_LIDENT@345..354
+                Lident@345..354 "increment"
+              Comma@354..355 ","
+              Whitespace@355..356 " "
+            ARG@356..361
+              EXPR_LIDENT@356..361
+                Lident@356..361 "first"
+            RParen@361..362 ")"
+        Semi@362..363 ";"
+        Whitespace@363..368 "\n    "
+      STMT_LET@368..435
+        LetKeyword@368..371 "let"
+        Whitespace@371..372 " "
+        PATTERN_VARIABLE@372..386
+          Lident@372..385 "closure_apply"
+          Whitespace@385..386 " "
+        Eq@386..387 "="
+        Whitespace@387..388 " "
+        EXPR_CLOSURE@388..429
+          CLOSURE_PARAM_LIST@388..401
+            Pipe@388..389 "|"
+            CLOSURE_PARAM@389..399
+              Lident@389..394 "value"
+              Colon@394..395 ":"
+              Whitespace@395..396 " "
+              TYPE_INT@396..399
+                IntKeyword@396..399 "int"
+            Pipe@399..400 "|"
+            Whitespace@400..401 " "
+          EXPR_CLOSURE_BODY@401..429
+            EXPR_CALL@401..429
+              EXPR_LIDENT@401..411
+                Lident@401..411 "apply_once"
+              ARG_LIST@411..429
+                LParen@411..412 "("
+                ARG@412..423
+                  EXPR_LIDENT@412..421
+                    Lident@412..421 "increment"
+                  Comma@421..422 ","
+                  Whitespace@422..423 " "
+                ARG@423..428
+                  EXPR_LIDENT@423..428
+                    Lident@423..428 "value"
+                RParen@428..429 ")"
+        Semi@429..430 ";"
+        Whitespace@430..435 "\n    "
+      STMT_LET@435..485
+        LetKeyword@435..438 "let"
+        Whitespace@438..439 " "
+        PATTERN_VARIABLE@439..454
+          Lident@439..453 "closure_result"
+          Whitespace@453..454 " "
+        Eq@454..455 "="
+        Whitespace@455..456 " "
+        EXPR_CALL@456..479
+          EXPR_LIDENT@456..469
+            Lident@456..469 "closure_apply"
+          ARG_LIST@469..479
+            LParen@469..470 "("
+            ARG@470..478
+              EXPR_LIDENT@470..478
+                Lident@470..478 "composed"
+            RParen@478..479 ")"
+        Semi@479..480 ";"
+        Whitespace@480..485 "\n    "
+      STMT_LET@485..584
+        LetKeyword@485..488 "let"
+        Whitespace@488..489 " "
+        PATTERN_VARIABLE@489..504
+          Lident@489..503 "global_invoker"
+          Whitespace@503..504 " "
+        Eq@504..505 "="
+        Whitespace@505..506 " "
+        EXPR_CLOSURE@506..578
+          CLOSURE_PARAM_LIST@506..547
+            Pipe@506..507 "|"
+            CLOSURE_PARAM@507..533
+              Lident@507..519 "func_to_call"
+              Colon@519..520 ":"
+              Whitespace@520..521 " "
+              TYPE_FUNC@521..533
+                TYPE_TUPLE@521..527
+                  TYPE_LIST@521..527
+                    LParen@521..522 "("
+                    TYPE_INT@522..525
+                      IntKeyword@522..525 "int"
+                    RParen@525..526 ")"
+                    Whitespace@526..527 " "
+                Arrow@527..529 "->"
+                Whitespace@529..530 " "
+                TYPE_INT@530..533
+                  IntKeyword@530..533 "int"
+            Comma@533..534 ","
+            Whitespace@534..535 " "
+            CLOSURE_PARAM@535..545
+              Lident@535..540 "value"
+              Colon@540..541 ":"
+              Whitespace@541..542 " "
+              TYPE_INT@542..545
+                IntKeyword@542..545 "int"
+            Pipe@545..546 "|"
+            Whitespace@546..547 " "
+          EXPR_CLOSURE_BODY@547..578
+            EXPR_CALL@547..578
+              EXPR_LIDENT@547..557
+                Lident@547..557 "apply_once"
+              ARG_LIST@557..578
+                LParen@557..558 "("
+                ARG@558..572
+                  EXPR_LIDENT@558..570
+                    Lident@558..570 "func_to_call"
+                  Comma@570..571 ","
+                  Whitespace@571..572 " "
+                ARG@572..577
+                  EXPR_LIDENT@572..577
+                    Lident@572..577 "value"
+                RParen@577..578 ")"
+        Semi@578..579 ";"
+        Whitespace@579..584 "\n    "
+      STMT_LET@584..641
+        LetKeyword@584..587 "let"
+        Whitespace@587..588 " "
+        PATTERN_VARIABLE@588..608
+          Lident@588..607 "invoked_with_global"
+          Whitespace@607..608 " "
+        Eq@608..609 "="
+        Whitespace@609..610 " "
+        EXPR_CALL@610..635
+          EXPR_LIDENT@610..624
+            Lident@610..624 "global_invoker"
+          ARG_LIST@624..635
+            LParen@624..625 "("
+            ARG@625..633
+              EXPR_LIDENT@625..631
+                Lident@625..631 "double"
+              Comma@631..632 ","
+              Whitespace@632..633 " "
+            ARG@633..634
+              EXPR_INT@633..634
+                Int@633..634 "3"
+            RParen@634..635 ")"
+        Semi@635..636 ";"
+        Whitespace@636..641 "\n    "
+      STMT_LET@641..716
+        LetKeyword@641..644 "let"
+        Whitespace@644..645 " "
+        PATTERN_VARIABLE@645..662
+          Lident@645..661 "composer_closure"
+          Whitespace@661..662 " "
+        Eq@662..663 "="
+        Whitespace@663..664 " "
+        EXPR_CLOSURE@664..710
+          CLOSURE_PARAM_LIST@664..677
+            Pipe@664..665 "|"
+            CLOSURE_PARAM@665..675
+              Lident@665..670 "value"
+              Colon@670..671 ":"
+              Whitespace@671..672 " "
+              TYPE_INT@672..675
+                IntKeyword@672..675 "int"
+            Pipe@675..676 "|"
+            Whitespace@676..677 " "
+          EXPR_CLOSURE_BODY@677..710
+            EXPR_CALL@677..710
+              EXPR_LIDENT@677..684
+                Lident@677..684 "compose"
+              ARG_LIST@684..710
+                LParen@684..685 "("
+                ARG@685..693
+                  EXPR_LIDENT@685..691
+                    Lident@685..691 "double"
+                  Comma@691..692 ","
+                  Whitespace@692..693 " "
+                ARG@693..704
+                  EXPR_LIDENT@693..702
+                    Lident@693..702 "increment"
+                  Comma@702..703 ","
+                  Whitespace@703..704 " "
+                ARG@704..709
+                  EXPR_LIDENT@704..709
+                    Lident@704..709 "value"
+                RParen@709..710 ")"
+        Semi@710..711 ";"
+        Whitespace@711..716 "\n    "
+      STMT_LET@716..767
+        LetKeyword@716..719 "let"
+        Whitespace@719..720 " "
+        PATTERN_VARIABLE@720..740
+          Lident@720..739 "composed_by_closure"
+          Whitespace@739..740 " "
+        Eq@740..741 "="
+        Whitespace@741..742 " "
+        EXPR_CALL@742..761
+          EXPR_LIDENT@742..758
+            Lident@742..758 "composer_closure"
+          ARG_LIST@758..761
+            LParen@758..759 "("
+            ARG@759..760
+              EXPR_INT@759..760
+                Int@759..760 "5"
+            RParen@760..761 ")"
+        Semi@761..762 ";"
+        Whitespace@762..767 "\n    "
+      STMT_LET@767..801
+        LetKeyword@767..770 "let"
+        Whitespace@770..771 " "
+        PATTERN_VARIABLE@771..779
+          Lident@771..778 "printer"
+          Whitespace@778..779 " "
+        Eq@779..780 "="
+        Whitespace@780..781 " "
+        EXPR_LIDENT@781..795
+          Lident@781..795 "string_println"
+        Semi@795..796 ";"
+        Whitespace@796..801 "\n    "
+      STMT_LET@801..847
+        LetKeyword@801..804 "let"
+        Whitespace@804..805 " "
+        PATTERN_WILDCARD@805..807
+          WildcardKeyword@805..806 "_"
+          Whitespace@806..807 " "
+        Eq@807..808 "="
+        Whitespace@808..809 " "
+        EXPR_CALL@809..841
+          EXPR_LIDENT@809..816
+            Lident@809..816 "printer"
+          ARG_LIST@816..841
+            LParen@816..817 "("
+            ARG@817..840
+              EXPR_CALL@817..840
+                EXPR_LIDENT@817..830
+                  Lident@817..830 "int_to_string"
+                ARG_LIST@830..840
+                  LParen@830..831 "("
+                  ARG@831..839
+                    EXPR_LIDENT@831..839
+                      Lident@831..839 "composed"
+                  RParen@839..840 ")"
+            RParen@840..841 ")"
+        Semi@841..842 ";"
+        Whitespace@842..847 "\n    "
+      STMT_LET@847..899
+        LetKeyword@847..850 "let"
+        Whitespace@850..851 " "
+        PATTERN_WILDCARD@851..853
+          WildcardKeyword@851..852 "_"
+          Whitespace@852..853 " "
+        Eq@853..854 "="
+        Whitespace@854..855 " "
+        EXPR_CALL@855..893
+          EXPR_LIDENT@855..862
+            Lident@855..862 "printer"
+          ARG_LIST@862..893
+            LParen@862..863 "("
+            ARG@863..892
+              EXPR_CALL@863..892
+                EXPR_LIDENT@863..876
+                  Lident@863..876 "int_to_string"
+                ARG_LIST@876..892
+                  LParen@876..877 "("
+                  ARG@877..891
+                    EXPR_LIDENT@877..891
+                      Lident@877..891 "closure_result"
+                  RParen@891..892 ")"
+            RParen@892..893 ")"
+        Semi@893..894 ";"
+        Whitespace@894..899 "\n    "
+      STMT_LET@899..956
+        LetKeyword@899..902 "let"
+        Whitespace@902..903 " "
+        PATTERN_WILDCARD@903..905
+          WildcardKeyword@903..904 "_"
+          Whitespace@904..905 " "
+        Eq@905..906 "="
+        Whitespace@906..907 " "
+        EXPR_CALL@907..950
+          EXPR_LIDENT@907..914
+            Lident@907..914 "printer"
+          ARG_LIST@914..950
+            LParen@914..915 "("
+            ARG@915..949
+              EXPR_CALL@915..949
+                EXPR_LIDENT@915..928
+                  Lident@915..928 "int_to_string"
+                ARG_LIST@928..949
+                  LParen@928..929 "("
+                  ARG@929..948
+                    EXPR_LIDENT@929..948
+                      Lident@929..948 "invoked_with_global"
+                  RParen@948..949 ")"
+            RParen@949..950 ")"
+        Semi@950..951 ";"
+        Whitespace@951..956 "\n    "
+      STMT_LET@956..1013
+        LetKeyword@956..959 "let"
+        Whitespace@959..960 " "
+        PATTERN_WILDCARD@960..962
+          WildcardKeyword@960..961 "_"
+          Whitespace@961..962 " "
+        Eq@962..963 "="
+        Whitespace@963..964 " "
+        EXPR_CALL@964..1007
+          EXPR_LIDENT@964..971
+            Lident@964..971 "printer"
+          ARG_LIST@971..1007
+            LParen@971..972 "("
+            ARG@972..1006
+              EXPR_CALL@972..1006
+                EXPR_LIDENT@972..985
+                  Lident@972..985 "int_to_string"
+                ARG_LIST@985..1006
+                  LParen@985..986 "("
+                  ARG@986..1005
+                    EXPR_LIDENT@986..1005
+                      Lident@986..1005 "composed_by_closure"
+                  RParen@1005..1006 ")"
+            RParen@1006..1007 ")"
+        Semi@1007..1008 ";"
+        Whitespace@1008..1013 "\n    "
+      EXPR_UNIT@1013..1016
+        LParen@1013..1014 "("
+        RParen@1014..1015 ")"
+        Whitespace@1015..1016 "\n"
       RBrace@1016..1017 "}"
       Whitespace@1017..1018 "\n"

@@ -502,9 +502,59 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let cst_e = node.expr();
+    let mut expr = match node.expr() {
+        Some(expr) => lower_expr(ctx, expr)?,
+        None => ast::Expr::EUnit,
+    };
 
-    cst_e.and_then(|expr| lower_expr(ctx, expr))
+    let stmts: Vec<_> = node.stmts().collect();
+    for stmt in stmts.into_iter().rev() {
+        expr = match stmt {
+            cst::Stmt::LetStmt(let_stmt) => {
+                let Some(pat_node) = let_stmt.pattern() else {
+                    ctx.push_error(
+                        Some(let_stmt.syntax().text_range()),
+                        "Let statement missing pattern",
+                    );
+                    return None;
+                };
+                let pat = lower_pat(ctx, pat_node)?;
+
+                let Some(value_node) = let_stmt.expr() else {
+                    ctx.push_error(
+                        Some(let_stmt.syntax().text_range()),
+                        "Let statement missing value",
+                    );
+                    return None;
+                };
+                let value = lower_expr(ctx, value_node)?;
+
+                ast::Expr::ELet {
+                    pat,
+                    value: Box::new(value),
+                    body: Box::new(expr),
+                }
+            }
+            cst::Stmt::ExprStmt(expr_stmt) => {
+                let Some(expr_node) = expr_stmt.expr() else {
+                    ctx.push_error(
+                        Some(expr_stmt.syntax().text_range()),
+                        "Expression statement missing expression",
+                    );
+                    return None;
+                };
+                let value = lower_expr(ctx, expr_node)?;
+
+                ast::Expr::ELet {
+                    pat: ast::Pat::PWild,
+                    value: Box::new(value),
+                    body: Box::new(expr),
+                }
+            }
+        };
+    }
+
+    Some(expr)
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
