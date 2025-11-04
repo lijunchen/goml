@@ -501,6 +501,7 @@ pub enum Expr {
     LidentExpr(LidentExpr),
     TupleExpr(TupleExpr),
     LetExpr(LetExpr),
+    SeqExpr(SeqExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
     ClosureExpr(ClosureExpr),
@@ -522,6 +523,7 @@ impl CstNode for Expr {
                 | EXPR_LIDENT
                 | EXPR_TUPLE
                 | EXPR_LET
+                | EXPR_SEQ
                 | EXPR_BINARY
                 | EXPR_PREFIX
                 | EXPR_CLOSURE
@@ -543,6 +545,7 @@ impl CstNode for Expr {
             EXPR_LIDENT => Expr::LidentExpr(LidentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_LET => Expr::LetExpr(LetExpr { syntax }),
+            EXPR_SEQ => Expr::SeqExpr(SeqExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
@@ -567,6 +570,7 @@ impl CstNode for Expr {
             Self::LidentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
             Self::LetExpr(it) => &it.syntax,
+            Self::SeqExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
@@ -1041,6 +1045,26 @@ impl_display_via_syntax!(LetExpr);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SeqExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl SeqExpr {
+    pub fn first(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn rest(&self) -> Option<SeqExprRest> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(SeqExpr, MySyntaxKind::EXPR_SEQ);
+impl_display_via_syntax!(SeqExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BinaryExpr {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -1203,6 +1227,19 @@ impl LetExprBody {
 }
 impl_cst_node_simple!(LetExprBody, MySyntaxKind::EXPR_LET_BODY);
 impl_display_via_syntax!(LetExprBody);
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SeqExprRest {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl SeqExprRest {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+impl_cst_node_simple!(SeqExprRest, MySyntaxKind::EXPR_SEQ_REST);
+impl_display_via_syntax!(SeqExprRest);
 
 ////////////////////////////////////////////////////////////////////////////////
 

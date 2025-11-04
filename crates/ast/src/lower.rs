@@ -965,6 +965,43 @@ fn lower_expr_with_args(
                 body: Box::new(body),
             })
         }
+        cst::Expr::SeqExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to sequence expression",
+                );
+                return None;
+            }
+            // Lower sequence to a let expression with wildcard pattern
+            // expr1; expr2  =>  let _ = expr1; expr2
+            let Some(first) = it.first() else {
+                ctx.push_error(Some(it.syntax().text_range()), "SeqExpr has no first expression");
+                return None;
+            };
+            let value = lower_expr(ctx, first)?;
+            
+            let Some(rest_node) = it.rest() else {
+                ctx.push_error(Some(it.syntax().text_range()), "SeqExpr has no rest");
+                return None;
+            };
+            let body = match rest_node.expr() {
+                Some(expr) => lower_expr(ctx, expr)?,
+                None => {
+                    ctx.push_error(
+                        Some(rest_node.syntax().text_range()),
+                        "SeqExpr rest missing expr",
+                    );
+                    return None;
+                }
+            };
+            
+            Some(ast::Expr::ELet {
+                pat: ast::Pat::PWild,
+                value: Box::new(value),
+                body: Box::new(body),
+            })
+        }
         cst::Expr::PrefixExpr(it) => {
             let expr = match it
                 .expr()

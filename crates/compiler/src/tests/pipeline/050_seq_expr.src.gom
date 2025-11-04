@@ -1,0 +1,22 @@
+package main
+
+import (
+    "fmt"
+)
+
+func string_print(s string) struct{} {
+    fmt.Print(s)
+    return struct{}{}
+}
+
+func main0() struct{} {
+    var ret2 struct{}
+    string_print("first")
+    string_print("second")
+    ret2 = string_print("third")
+    return ret2
+}
+
+func main() {
+    main0()
+}

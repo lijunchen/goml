@@ -1,4 +1,5 @@
 use crate::{
+    event::Event,
     file::{block, type_expr},
     parser::{MarkerClosed, Parser},
     pattern,
@@ -245,7 +246,7 @@ fn closure_body(p: &mut Parser) {
     if p.at(T!['{']) {
         block(p);
     } else if p.at_any(EXPR_FIRST) {
-        expr(p);
+        expr_impl(p, false);  // Don't allow bare sequences in closure body
     } else {
         p.advance_with_error("expected a closure body");
     }
@@ -331,15 +332,42 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
 }
 
 pub fn expr(p: &mut Parser) {
+    expr_impl(p, true);
+}
+
+fn expr_impl(p: &mut Parser, allow_seq: bool) {
     let token = p.peek();
-    // let m = p.open();
     if token == T![let] {
         let_expr(p);
-        // p.close(m, MySyntaxKind::EXPR);
         return;
     }
+    
+    // Try to detect if this will be a sequence by looking ahead
+    // We need to parse the expression and then check for semicolon
+    let checkpoint = p.events.len();
+    
     expr_bp(p, 0);
-    // p.close(m, MySyntaxKind::EXPR);
+    
+    // Now check if there's a sequence (only if allowed in this context)
+    if allow_seq && p.at(T![;]) {
+        p.expect(T![;]);
+        if p.at_any(EXPR_FIRST) {
+            // This IS a sequence. We need to wrap what we just parsed.
+            // Insert an Open event before what we parsed
+            p.events.insert(checkpoint, Event::Open {
+                kind: MySyntaxKind::EXPR_SEQ,
+                forward_parent: None,
+            });
+            // Now parse the rest
+            {
+                let n = p.open();
+                expr_impl(p, allow_seq);  // Recursively allow sequences in the rest
+                p.close(n, MySyntaxKind::EXPR_SEQ_REST);
+            }
+            // Close the sequence
+            p.events.push(Event::Close);
+        }
+    }
 }
 
 fn let_expr(p: &mut Parser) {
@@ -354,7 +382,7 @@ fn let_expr(p: &mut Parser) {
     }
     {
         let n = p.open();
-        expr(p);
+        expr_impl(p, false);  // Don't allow sequences in the value part
         p.close(n, MySyntaxKind::EXPR_LET_VALUE);
     }
     p.expect(T![;]);
@@ -364,7 +392,7 @@ fn let_expr(p: &mut Parser) {
     }
     {
         let n = p.open();
-        expr(p);
+        expr(p);  // Allow sequences in the body part
         p.close(n, MySyntaxKind::EXPR_LET_BODY);
     }
     p.close(m, MySyntaxKind::EXPR_LET);
