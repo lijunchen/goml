@@ -502,9 +502,45 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let cst_e = node.expr();
+    // Collect all statements
+    let stmts: Vec<cst::Stmt> = node.stmts().collect();
 
-    cst_e.and_then(|expr| lower_expr(ctx, expr))
+    if stmts.is_empty() {
+        // Empty block, return unit
+        return Some(ast::Expr::EUnit);
+    }
+
+    // Convert statement sequence into nested let expressions
+    // stmt1; stmt2; expr  becomes  let _ = stmt1; let _ = stmt2; expr
+    let mut result: Option<ast::Expr> = None;
+
+    for stmt in stmts.into_iter().rev() {
+        let stmt_expr = stmt.expr().and_then(|e| lower_expr(ctx, e))?;
+
+        if let Some(body) = result {
+            // This is not the last statement, wrap in a let binding
+            result = Some(ast::Expr::ELet {
+                pat: ast::Pat::PWild,
+                value: Box::new(stmt_expr),
+                body: Box::new(body),
+            });
+        } else {
+            // This is the last statement (or only statement)
+            if stmt.has_semicolon() {
+                // Even the last statement has a semicolon, so we need a unit body
+                result = Some(ast::Expr::ELet {
+                    pat: ast::Pat::PWild,
+                    value: Box::new(stmt_expr),
+                    body: Box::new(ast::Expr::EUnit),
+                });
+            } else {
+                // Last statement without semicolon is the result
+                result = Some(stmt_expr);
+            }
+        }
+    }
+
+    result
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {

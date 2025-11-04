@@ -437,7 +437,28 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
-    expr(p);
+
+    // Parse statement sequence
+    while !p.at(T!['}']) && !p.eof() {
+        if p.at_any(EXPR_FIRST) {
+            let stmt_marker = p.open();
+            expr(p);
+
+            // If followed by semicolon, this is a statement
+            if p.at(T![;]) {
+                p.expect(T![;]);
+                p.close(stmt_marker, MySyntaxKind::STMT);
+            } else {
+                // No semicolon means this is the final expression
+                p.close(stmt_marker, MySyntaxKind::STMT);
+                break;
+            }
+        } else {
+            p.advance_with_error("expected an expression in block");
+            break;
+        }
+    }
+
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::BLOCK);
 }

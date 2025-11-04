@@ -470,11 +470,36 @@ impl_display_via_syntax!(Param);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Stmt {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Stmt {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+
+    pub fn has_semicolon(&self) -> bool {
+        self.syntax
+            .children_with_tokens()
+            .any(|child| child.kind() == MySyntaxKind::Semi)
+    }
+}
+
+impl_cst_node_simple!(Stmt, MySyntaxKind::STMT);
+impl_display_via_syntax!(Stmt);
+
+////////////////////////////////////////////////////////////////////////////////
+
 pub struct Block {
     pub(crate) syntax: MySyntaxNode,
 }
 
 impl Block {
+    pub fn stmts(&self) -> CstChildren<Stmt> {
+        support::children(&self.syntax)
+    }
+
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }

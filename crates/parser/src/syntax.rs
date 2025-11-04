@@ -130,6 +130,7 @@ pub enum MySyntaxKind {
     GENERIC,
     GENERIC_LIST,
     TYPE_PARAM_LIST,
+    STMT,
     BLOCK,
     FILE,
 }
