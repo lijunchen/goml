@@ -342,8 +342,12 @@ fn expr_impl(p: &mut Parser, allow_seq: bool) {
         return;
     }
     
-    // Try to detect if this will be a sequence by looking ahead
-    // We need to parse the expression and then check for semicolon
+    // Sequence expression parsing (e.g., expr1; expr2)
+    // We use a checkpoint-based approach because:
+    // 1. The parser is single-pass left-to-right
+    // 2. We can't know if we're in a sequence until after parsing the first expr
+    // 3. The alternative would require significant grammar restructuring or backtracking
+    // This approach is similar to how other parsers handle operator precedence.
     let checkpoint = p.events.len();
     
     expr_bp(p, 0);
@@ -353,7 +357,7 @@ fn expr_impl(p: &mut Parser, allow_seq: bool) {
         p.expect(T![;]);
         if p.at_any(EXPR_FIRST) {
             // This IS a sequence. We need to wrap what we just parsed.
-            // Insert an Open event before what we parsed
+            // Insert an Open event before what we parsed at the checkpoint position
             p.events.insert(checkpoint, Event::Open {
                 kind: MySyntaxKind::EXPR_SEQ,
                 forward_parent: None,
@@ -364,7 +368,7 @@ fn expr_impl(p: &mut Parser, allow_seq: bool) {
                 expr_impl(p, allow_seq);  // Recursively allow sequences in the rest
                 p.close(n, MySyntaxKind::EXPR_SEQ_REST);
             }
-            // Close the sequence
+            // Close the sequence node we opened at the checkpoint
             p.events.push(Event::Close);
         }
     }
