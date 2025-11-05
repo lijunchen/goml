@@ -1,0 +1,75 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int_less(x int, y int) bool {
+    return x < y
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type ref_int_x struct {
+    value int
+}
+
+func ref__Ref_int(value int) *ref_int_x {
+    return &ref_int_x{
+        value: value,
+    }
+}
+
+func ref_get__Ref_int(reference *ref_int_x) int {
+    return reference.value
+}
+
+func ref_set__Ref_int(reference *ref_int_x, value int) struct{} {
+    reference.value = value
+    return struct{}{}
+}
+
+type closure_env_main_0 struct {
+    signal_0 *ref_int_x
+}
+
+func child(signal__0 *ref_int_x) struct{} {
+    var ret8 struct{}
+    ret8 = ref_set__Ref_int(signal__0, 1)
+    return ret8
+}
+
+func main0() struct{} {
+    var ret9 struct{}
+    var signal__1 *ref_int_x = ref__Ref_int(0)
+    var t6 closure_env_main_0 = closure_env_main_0{
+        signal_0: signal__1,
+    }
+    go __closure_apply4(t6)
+    var cond10 bool
+    for {
+        var t7 int = ref_get__Ref_int(signal__1)
+        cond10 = int_less(t7, 1)
+        if !cond10 {
+            break
+        }
+    }
+    string_println("main")
+    ret9 = struct{}{}
+    return ret9
+}
+
+func __closure_apply4(env5 closure_env_main_0) struct{} {
+    var ret11 struct{}
+    var signal__1 *ref_int_x = env5.signal_0
+    child(signal__1)
+    ret11 = struct{}{}
+    return ret11
+}
+
+func main() {
+    main0()
+}

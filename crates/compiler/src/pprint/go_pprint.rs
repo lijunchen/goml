@@ -396,6 +396,9 @@ impl Stmt {
     pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
         match self {
             Stmt::Expr(expr) => expr.to_doc(env),
+            Stmt::Go { call } => RcDoc::text("go")
+                .append(RcDoc::space())
+                .append(call.to_doc(env)),
             Stmt::VarDecl { name, ty, value } => {
                 let var_decl = RcDoc::text("var")
                     .append(RcDoc::space())

@@ -1,0 +1,12 @@
+fn child(signal: Ref[int]) -> unit {
+    ref_set(signal, 1)
+}
+
+fn main() -> unit {
+    let signal = ref(0);
+    go child(signal);
+    while int_less(ref_get(signal), 1) {
+        ()
+    };
+    string_println("main");
+}

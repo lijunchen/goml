@@ -626,11 +626,90 @@ fn compile_cexpr_effect(env: &Env, expr: &anf::CExpr) -> Vec<goast::Stmt> {
         | anf::CExpr::EArray { .. }
         | anf::CExpr::EConstrGet { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
-        anf::CExpr::ECall { .. } => vec![goast::Stmt::Expr(compile_cexpr(env, expr))],
+        anf::CExpr::ECall { func, args, .. } => {
+            if let Some(spawn) = compile_spawn_call(env, func, args) {
+                vec![spawn.stmt]
+            } else {
+                vec![goast::Stmt::Expr(compile_cexpr(env, expr))]
+            }
+        }
         anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
             panic!("control-flow expressions should be handled before compile_cexpr_effect")
         }
     }
+}
+
+struct ClosureApplyFn {
+    name: String,
+    ty: tast::Ty,
+    ret_ty: tast::Ty,
+}
+
+struct SpawnCompilation {
+    stmt: goast::Stmt,
+    result_ty: goty::GoType,
+    result_expr: goast::Expr,
+}
+
+fn compile_spawn_call(
+    env: &Env,
+    func: &anf::ImmExpr,
+    args: &[anf::ImmExpr],
+) -> Option<SpawnCompilation> {
+    let anf::ImmExpr::ImmVar { name, .. } = func else {
+        return None;
+    };
+    if name != "spawn" {
+        return None;
+    }
+
+    if args.len() != 1 {
+        return None;
+    }
+    let closure_env = &args[0];
+
+    let closure_ty = imm_ty(closure_env);
+    let apply = find_closure_apply_fn(env, &closure_ty)?;
+
+    let apply_call = anf::CExpr::ECall {
+        func: anf::ImmExpr::ImmVar {
+            name: apply.name.clone(),
+            ty: apply.ty.clone(),
+        },
+        args: vec![closure_env.clone()],
+        ty: apply.ret_ty.clone(),
+    };
+
+    let call_expr = compile_cexpr(env, &apply_call);
+    Some(SpawnCompilation {
+        stmt: goast::Stmt::Go { call: call_expr },
+        result_ty: goty::GoType::TUnit,
+        result_expr: goast::Expr::Unit {
+            ty: goty::GoType::TUnit,
+        },
+    })
+}
+
+fn find_closure_apply_fn(env: &Env, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
+    let tast::Ty::TCon { name } = closure_ty else {
+        return None;
+    };
+
+    let apply_name = env.closure_apply_fn(name)?;
+    let fn_ty = env.funcs.get(apply_name)?;
+    let tast::Ty::TFunc { params, ret_ty } = fn_ty else {
+        return None;
+    };
+
+    if params.first()? != closure_ty {
+        return None;
+    }
+
+    Some(ClosureApplyFn {
+        name: apply_name.to_string(),
+        ty: fn_ty.clone(),
+        ret_ty: (**ret_ty).clone(),
+    })
 }
 
 fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
@@ -671,6 +750,23 @@ fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
         } => {
             let mut out = Vec::new();
             let value_expr = *value;
+
+            if let anf::CExpr::ECall {
+                ref func, ref args, ..
+            } = value_expr
+            {
+                if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    out.push(spawn.stmt);
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: spawn.result_ty.clone(),
+                        value: Some(spawn.result_expr),
+                    });
+                    out.extend(compile_aexpr_effect(env, *body));
+                    return out;
+                }
+            }
+
             match value_expr {
                 complex @ (anf::CExpr::EIf { .. }
                 | anf::CExpr::EMatch { .. }
@@ -774,13 +870,28 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             other @ (anf::CExpr::CImm { .. }
             | anf::CExpr::EConstr { .. }
             | anf::CExpr::EConstrGet { .. }
-            | anf::CExpr::ECall { .. }
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
                 name: target.to_string(),
                 value: compile_cexpr(env, &other),
             }],
+            anf::CExpr::ECall { func, args, ty } => {
+                if let Some(spawn) = compile_spawn_call(env, &func, &args) {
+                    let mut stmts = Vec::new();
+                    stmts.push(spawn.stmt);
+                    stmts.push(goast::Stmt::Assignment {
+                        name: target.to_string(),
+                        value: spawn.result_expr,
+                    });
+                    stmts
+                } else {
+                    vec![goast::Stmt::Assignment {
+                        name: target.to_string(),
+                        value: compile_cexpr(env, &anf::CExpr::ECall { func, args, ty }),
+                    }]
+                }
+            }
         },
         AExpr::ALet {
             name,
@@ -789,6 +900,22 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             ty: _,
         } => {
             let mut out = Vec::new();
+
+            if let anf::CExpr::ECall {
+                ref func, ref args, ..
+            } = *value.clone()
+            {
+                if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    out.push(spawn.stmt);
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: spawn.result_ty.clone(),
+                        value: Some(spawn.result_expr),
+                    });
+                    out.extend(compile_aexpr_assign(env, target, *body));
+                    return out;
+                }
+            }
 
             match &*value {
                 // If RHS needs statements (if/match), first declare the variable,
@@ -882,6 +1009,22 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
             body,
             ty: _,
         } => {
+            if let anf::CExpr::ECall {
+                ref func, ref args, ..
+            } = *value.clone()
+            {
+                if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    stmts.push(spawn.stmt);
+                    stmts.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: spawn.result_ty.clone(),
+                        value: Some(spawn.result_expr),
+                    });
+                    stmts.extend(compile_aexpr(env, *body));
+                    return stmts;
+                }
+            }
+
             match &*value {
                 // If RHS needs statements, declare then fill via if-lowering
                 anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } | anf::CExpr::EWhile { .. } => {
@@ -933,8 +1076,10 @@ fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
         f.name.clone()
     };
 
+    let body = f.body;
+
     let (ret_ty, body_stmts) = match go_ret_ty {
-        goty::GoType::TVoid => (None, compile_aexpr(env, f.body)),
+        goty::GoType::TVoid => (None, compile_aexpr(env, body)),
         _ => {
             let ret_name = env.gensym("ret");
             let mut stmts = Vec::new();
@@ -945,7 +1090,7 @@ fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
                 value: None,
             });
 
-            stmts.extend(compile_aexpr_assign(env, &ret_name, f.body));
+            stmts.extend(compile_aexpr_assign(env, &ret_name, body));
 
             stmts.push(goast::Stmt::Return {
                 expr: Some(goast::Expr::Var {

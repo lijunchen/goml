@@ -793,6 +793,49 @@ fn lower_expr_with_args(
                 arms,
             })
         }
+        cst::Expr::GoExpr(it) => {
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to go expression",
+                );
+                return None;
+            }
+
+            let Some(inner) = it.expr() else {
+                ctx.push_error(Some(it.syntax().text_range()), "go expression missing body");
+                return None;
+            };
+
+            if !matches!(&inner, cst::Expr::CallExpr(_)) {
+                ctx.push_error(
+                    Some(inner.syntax().text_range()),
+                    "go expression expects a call expression",
+                );
+                return None;
+            }
+
+            let call_expr = lower_expr(ctx, inner)?;
+
+            let closure_body = ast::Expr::ELet {
+                pat: ast::Pat::PWild,
+                value: Box::new(call_expr),
+                body: Box::new(ast::Expr::EUnit),
+            };
+
+            let closure = ast::Expr::EClosure {
+                params: Vec::new(),
+                body: Box::new(closure_body),
+            };
+
+            Some(ast::Expr::ECall {
+                func: Box::new(ast::Expr::EVar {
+                    name: ast::Lident("spawn".to_string()),
+                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                }),
+                args: vec![closure],
+            })
+        }
         cst::Expr::IfExpr(it) => {
             if !trailing_args.is_empty() {
                 ctx.push_error(
