@@ -1,0 +1,15 @@
+fn child(signal: Ref[int]) -> unit {
+    ref_set(signal, 1)
+}
+
+fn main() -> unit {
+    let signal = ref(0) in
+    let _ = spawn(|| let _ = child(signal) in
+      ()) in
+    let _ = while int_less(ref_get(signal), 1) {
+        ()
+    } in
+    let _ = string_println("main") in
+    ()
+}
+

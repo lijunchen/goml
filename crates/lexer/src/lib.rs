@@ -177,6 +177,9 @@ pub enum TokenKind {
     #[token("return")]
     ReturnKeyword,
 
+    #[token("go")]
+    GoKeyword,
+
     #[token("while")]
     WhileKeyword,
 
@@ -269,6 +272,7 @@ impl std::fmt::Display for TokenKind {
             Self::LetKeyword => "let",
             Self::InKeyword => "in",
             Self::ReturnKeyword => "return",
+            Self::GoKeyword => "go",
             Self::WhileKeyword => "while",
             Self::TrueKeyword => "true",
             Self::FalseKeyword => "false",
@@ -326,6 +330,7 @@ macro_rules! T {
     [let] => { $crate::TokenKind::LetKeyword };
     [in] => { $crate::TokenKind::InKeyword };
     [return] => { $crate::TokenKind::ReturnKeyword };
+    [go] => { $crate::TokenKind::GoKeyword };
     [while] => { $crate::TokenKind::WhileKeyword };
     [true] => { $crate::TokenKind::TrueKeyword };
     [false] => { $crate::TokenKind::FalseKeyword };

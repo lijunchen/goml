@@ -22,6 +22,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![while],
     T![|],
     T![||],
+    T![go],
 ];
 
 fn expect_expr_with_message(p: &mut Parser, message: &str) -> bool {
@@ -194,6 +195,16 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
 
             p.close(m, MySyntaxKind::EXPR_WHILE)
+        }
+        T![go] => {
+            let m = p.open();
+            p.expect(T![go]);
+            if !expect_expr_with_message(p, "expected an expression after `go`") {
+                while !p.eof() && !p.at(T![;]) && !p.at(T!['}']) {
+                    p.advance();
+                }
+            }
+            p.close(m, MySyntaxKind::EXPR_GO)
         }
         T![|] | T![||] => closure_expr(p),
         _ => {

@@ -575,6 +575,7 @@ pub enum Expr {
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
     ClosureExpr(ClosureExpr),
+    GoExpr(GoExpr),
 }
 
 impl CstNode for Expr {
@@ -596,6 +597,7 @@ impl CstNode for Expr {
                 | EXPR_PREFIX
                 | EXPR_CLOSURE
                 | EXPR_WHILE
+                | EXPR_GO
         )
     }
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
@@ -616,6 +618,7 @@ impl CstNode for Expr {
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
+            EXPR_GO => Expr::GoExpr(GoExpr { syntax }),
             _ => return None,
         };
         Some(res)
@@ -638,6 +641,7 @@ impl CstNode for Expr {
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
+            Self::GoExpr(it) => &it.syntax,
         }
     }
 }
@@ -1160,6 +1164,22 @@ impl ClosureExpr {
 
 impl_cst_node_simple!(ClosureExpr, MySyntaxKind::EXPR_CLOSURE);
 impl_display_via_syntax!(ClosureExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct GoExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl GoExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(GoExpr, MySyntaxKind::EXPR_GO);
+impl_display_via_syntax!(GoExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

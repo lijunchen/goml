@@ -200,6 +200,9 @@ pub enum BinaryOp {
 #[derive(Debug)]
 pub enum Stmt {
     Expr(Expr),
+    Go {
+        call: Expr,
+    },
     VarDecl {
         name: String,
         ty: goty::GoType,

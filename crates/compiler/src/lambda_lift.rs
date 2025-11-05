@@ -43,8 +43,13 @@ impl<'env> State<'env> {
     }
 
     fn register_closure_type(&mut self, struct_name: &Uident, apply_fn: String) {
-        self.closure_types
-            .insert(struct_name.0.clone(), ClosureTypeInfo { apply_fn });
+        self.closure_types.insert(
+            struct_name.0.clone(),
+            ClosureTypeInfo {
+                apply_fn: apply_fn.clone(),
+            },
+        );
+        self.env.register_closure_apply(struct_name, apply_fn);
     }
 
     fn closure_struct_for_ty(&self, ty: &Ty) -> Option<String> {

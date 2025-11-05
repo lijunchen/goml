@@ -152,6 +152,17 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         ),
     );
 
+    funcs.insert(
+        "spawn".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFunc {
+                params: Vec::new(),
+                ret_ty: Box::new(tast::Ty::TUnit),
+            }],
+            tast::Ty::TUnit,
+        ),
+    );
+
     funcs
 }
 
@@ -192,6 +203,7 @@ pub struct Env {
     counter: Cell<i32>,
     pub enums: IndexMap<Uident, EnumDef>,
     pub structs: IndexMap<Uident, StructDef>,
+    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
     pub trait_impls: IndexMap<(String, String, Lident), tast::Ty>,
@@ -216,6 +228,7 @@ impl Env {
             counter: Cell::new(0),
             enums: IndexMap::new(),
             structs: IndexMap::new(),
+            closure_env_apply: IndexMap::new(),
             funcs: builtin_functions(),
             extern_funcs: IndexMap::new(),
             trait_defs: IndexMap::new(),
@@ -245,6 +258,15 @@ impl Env {
                 ty,
             },
         );
+    }
+
+    pub fn register_closure_apply(&mut self, struct_name: &Uident, apply_fn: String) {
+        self.closure_env_apply
+            .insert(struct_name.0.clone(), apply_fn);
+    }
+
+    pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {
+        self.closure_env_apply.get(struct_name).map(|s| s.as_str())
     }
 
     pub fn report_typer_error(&mut self, message: impl Into<String>) {

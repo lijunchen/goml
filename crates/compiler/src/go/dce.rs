@@ -44,6 +44,11 @@ fn dce_block_with_live(
                 add_uses_expr(&mut live, &e);
                 out.push(ast::Stmt::Expr(e));
             }
+            ast::Stmt::Go { call } => {
+                let call = dce_expr(call);
+                add_uses_expr(&mut live, &call);
+                out.push(ast::Stmt::Go { call });
+            }
             ast::Stmt::VarDecl { name, ty, value } => {
                 let value = value.map(dce_expr);
                 let used_rhs = value.as_ref().map(vars_used_in_expr).unwrap_or_default();
@@ -446,6 +451,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                         }
                     }
                     ast::Stmt::Expr(e) => used.extend(vars_used_in_expr(e)),
+                    ast::Stmt::Go { call } => used.extend(vars_used_in_expr(call)),
                     ast::Stmt::If { cond, then, else_ } => {
                         used.extend(vars_used_in_expr(cond));
                         used.extend(free_vars_in_block(then));
@@ -539,6 +545,7 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
                 }
             }
             ast::Stmt::Expr(e) => used.extend(vars_used_in_expr(e)),
+            ast::Stmt::Go { call } => used.extend(vars_used_in_expr(call)),
             ast::Stmt::If { cond, then, else_ } => {
                 used.extend(vars_used_in_expr(cond));
                 used.extend(free_vars_in_block(then));
@@ -620,6 +627,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
 fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
     match s {
         ast::Stmt::Expr(e) => expr_has_side_effects(e),
+        ast::Stmt::Go { call: _ } => true,
         ast::Stmt::VarDecl { value, .. } => {
             value.as_ref().map(expr_has_side_effects).unwrap_or(false)
         }
@@ -741,6 +749,7 @@ fn collect_called_in_stmt(
 ) {
     match stmt {
         ast::Stmt::Expr(e) => collect_called_in_expr(e, calls, fn_names),
+        ast::Stmt::Go { call } => collect_called_in_expr(call, calls, fn_names),
         ast::Stmt::VarDecl { value, .. } => {
             if let Some(v) = value {
                 collect_called_in_expr(v, calls, fn_names);
@@ -946,6 +955,7 @@ fn collect_packages_in_stmt(
 ) {
     match stmt {
         ast::Stmt::Expr(e) => collect_packages_in_expr(e, imports, used),
+        ast::Stmt::Go { call } => collect_packages_in_expr(call, imports, used),
         ast::Stmt::VarDecl { value, .. } => {
             if let Some(v) = value {
                 collect_packages_in_expr(v, imports, used);
