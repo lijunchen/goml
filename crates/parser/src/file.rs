@@ -23,7 +23,9 @@ pub fn file(p: &mut Parser) {
         } else if p.at(T![impl]) {
             impl_block(p)
         } else if p.at_any(EXPR_FIRST) {
-            let _ = expr(p);
+            if expr(p).is_none() {
+                p.advance_with_error("expected an expression");
+            }
         } else {
             p.advance_with_error("expected a function")
         }
