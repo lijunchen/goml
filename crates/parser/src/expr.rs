@@ -1,7 +1,6 @@
 use crate::{
     file::{block, type_expr},
     parser::{MarkerClosed, Parser},
-    pattern,
     syntax::MySyntaxKind,
 };
 use lexer::T;
@@ -19,12 +18,33 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T!['('],
     T!['['],
     T![if],
-    T![let],
     T![match],
     T![while],
     T![|],
     T![||],
 ];
+
+fn expect_expr_with_message(p: &mut Parser, message: &str) -> bool {
+    if expr(p).is_some() {
+        true
+    } else {
+        if !p.eof() {
+            p.advance_with_error(message);
+        }
+        false
+    }
+}
+
+fn expect_expr_bp_with_message(p: &mut Parser, min_bp: u8, message: &str) -> bool {
+    if expr_bp(p, min_bp).is_some() {
+        true
+    } else {
+        if !p.eof() {
+            p.advance_with_error(message);
+        }
+        false
+    }
+}
 
 fn atom(p: &mut Parser) -> Option<MarkerClosed> {
     let result = match p.peek() {
@@ -36,23 +56,18 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T!['['] => {
             let m = p.open();
             p.expect(T!['[']);
-            if !p.at(T![']']) && !p.eof() {
-                if p.at_any(EXPR_FIRST) {
-                    expr(p);
-                    while p.at(T![,]) {
-                        p.expect(T![,]);
-                        if p.at(T![']']) {
-                            break;
-                        }
-                        if p.at_any(EXPR_FIRST) {
-                            expr(p);
-                        } else {
-                            p.advance_with_error("expected an expression in array literal");
-                            break;
-                        }
+            if !p.at(T![']'])
+                && !p.eof()
+                && expect_expr_with_message(p, "expected an expression in array literal")
+            {
+                while p.at(T![,]) {
+                    p.expect(T![,]);
+                    if p.at(T![']']) {
+                        break;
                     }
-                } else {
-                    p.advance_with_error("expected an expression in array literal");
+                    if !expect_expr_with_message(p, "expected an expression in array literal") {
+                        break;
+                    }
                 }
             }
             p.expect(T![']']);
@@ -92,12 +107,12 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 p.expect(T![')']);
                 p.close(m, MySyntaxKind::EXPR_UNIT)
             } else {
-                expr(p);
+                expect_expr_with_message(p, "expected an expression in tuple literal");
                 if p.at(T![,]) {
                     while p.at(T![,]) {
                         p.expect(T![,]);
                         if p.at_any(EXPR_FIRST) {
-                            expr(p);
+                            expect_expr_with_message(p, "expected an expression in tuple literal");
                         }
                     }
                     p.expect(T![')']);
@@ -114,7 +129,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 
             let cond_marker = p.open();
             if p.at_any(EXPR_FIRST) {
-                expr(p);
+                expect_expr_with_message(p, "expected an expression after `if`");
             } else {
                 p.advance_with_error("expected an expression after `if`");
             }
@@ -124,7 +139,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             if p.at(T!['{']) {
                 block(p);
             } else if p.at_any(EXPR_FIRST) {
-                expr(p);
+                expect_expr_with_message(p, "expected a then-branch expression for `if`");
             } else {
                 p.advance_with_error("expected a then-branch expression for `if`");
             }
@@ -136,7 +151,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 if p.at(T!['{']) {
                     block(p);
                 } else if p.at_any(EXPR_FIRST) {
-                    expr(p);
+                    expect_expr_with_message(p, "expected an else-branch expression for `if`");
                 } else {
                     p.advance_with_error("expected an else-branch expression for `if`");
                 }
@@ -150,7 +165,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T![match] => {
             let m = p.open();
             p.expect(T![match]);
-            expr(p);
+            expect_expr_with_message(p, "expected a scrutinee expression for `match`");
             if p.at(T!['{']) {
                 match_arm_list(p);
             }
@@ -162,7 +177,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
 
             let cond_marker = p.open();
             if p.at_any(EXPR_FIRST) {
-                expr(p);
+                expect_expr_with_message(p, "expected an expression after `while`");
             } else {
                 p.advance_with_error("expected an expression after `while`");
             }
@@ -172,7 +187,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             if p.at(T!['{']) {
                 block(p);
             } else if p.at_any(EXPR_FIRST) {
-                expr(p);
+                expect_expr_with_message(p, "expected a body expression for `while`");
             } else {
                 p.advance_with_error("expected a body expression for `while`");
             }
@@ -182,10 +197,6 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
         T![|] | T![||] => closure_expr(p),
         _ => {
-            dbg!(&p.peek());
-            dbg!(&EXPR_FIRST);
-            dbg!(EXPR_FIRST.contains(&p.peek()));
-            assert!(!p.at_any(EXPR_FIRST));
             return None;
         }
     };
@@ -245,7 +256,7 @@ fn closure_body(p: &mut Parser) {
     if p.at(T!['{']) {
         block(p);
     } else if p.at_any(EXPR_FIRST) {
-        expr(p);
+        expect_expr_with_message(p, "expected a closure body");
     } else {
         p.advance_with_error("expected a closure body");
     }
@@ -271,7 +282,7 @@ fn match_arm(p: &mut Parser) {
     if p.at(T!['{']) {
         block(p);
     } else {
-        expr(p);
+        expect_expr_with_message(p, "expected an expression in match arm");
     }
     p.close(m, MySyntaxKind::MATCH_ARM);
 }
@@ -298,7 +309,7 @@ fn struct_literal_field(p: &mut Parser) {
     p.expect(T![lident]);
     p.expect(T![:]);
     if p.at_any(EXPR_FIRST) {
-        expr(p);
+        expect_expr_with_message(p, "expected an expression");
     } else {
         p.advance_with_error("expected an expression");
     }
@@ -330,57 +341,18 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     }
 }
 
-pub fn expr(p: &mut Parser) {
-    let token = p.peek();
-    // let m = p.open();
-    if token == T![let] {
-        let_expr(p);
-        // p.close(m, MySyntaxKind::EXPR);
-        return;
-    }
-    expr_bp(p, 0);
-    // p.close(m, MySyntaxKind::EXPR);
+pub fn expr(p: &mut Parser) -> Option<MarkerClosed> {
+    expr_bp(p, 0)
 }
 
-fn let_expr(p: &mut Parser) {
-    assert!(p.at(T![let]));
-    let m = p.open();
-    p.expect(T![let]);
-    let _ = pattern::pattern(p);
-    p.expect(T![=]);
-    if !p.at_any(EXPR_FIRST) {
-        p.advance_with_error("let [_] expected an expression");
-        return;
-    }
-    {
-        let n = p.open();
-        expr(p);
-        p.close(n, MySyntaxKind::EXPR_LET_VALUE);
-    }
-    p.expect(T![;]);
-    if !p.at_any(EXPR_FIRST) {
-        p.advance_with_error("let .. ; [_] expected an expression");
-        return;
-    }
-    {
-        let n = p.open();
-        expr(p);
-        p.close(n, MySyntaxKind::EXPR_LET_BODY);
-    }
-    p.close(m, MySyntaxKind::EXPR_LET);
-}
-
-fn expr_bp(p: &mut Parser, min_bp: u8) {
+fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
     let mut lhs = if let Some(r_bp) = prefix_binding_power(p.peek()) {
         let m = p.open();
         p.advance();
-        expr_bp(p, r_bp);
+        expect_expr_bp_with_message(p, r_bp, "expected an operand for prefix operator");
         p.close(m, MySyntaxKind::EXPR_PREFIX)
     } else {
-        match atom(p) {
-            Some(lhs) => lhs,
-            None => return,
-        }
+        atom(p)?
     };
 
     loop {
@@ -411,12 +383,14 @@ fn expr_bp(p: &mut Parser, min_bp: u8) {
             }
             let m = lhs.precede(p);
             p.advance();
-            expr_bp(p, r_bp);
+            expect_expr_bp_with_message(p, r_bp, "expected a right-hand side for binary operator");
             lhs = m.completed(p, MySyntaxKind::EXPR_BINARY);
             continue;
         }
         break;
     }
+
+    Some(lhs)
 }
 
 // ArgList = '(' Arg* ')'
@@ -438,7 +412,9 @@ pub fn arg_list(p: &mut Parser) {
 // Arg = Expr ','?
 fn arg(p: &mut Parser) {
     let m = p.open();
-    expr(p);
+    if expr(p).is_none() {
+        p.advance_with_error("expected an expression");
+    }
     if !p.at(T![')']) {
         p.expect(T![,]);
     }

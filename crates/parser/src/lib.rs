@@ -13,6 +13,7 @@ pub mod file;
 pub mod input;
 pub mod parser;
 pub mod pattern;
+pub mod stmt;
 pub mod syntax;
 
 pub use error::{DiagnosticFormatExt, format_parser_diagnostics};

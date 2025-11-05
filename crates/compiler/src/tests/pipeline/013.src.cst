@@ -1,5 +1,5 @@
-FILE@0..101
-  FN@0..101
+FILE@0..85
+  FN@0..85
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
     Lident@3..7 "main"
@@ -7,10 +7,10 @@ FILE@0..101
       LParen@7..8 "("
       RParen@8..9 ")"
       Whitespace@9..10 " "
-    BLOCK@10..101
+    BLOCK@10..85
       LBrace@10..11 "{"
       Whitespace@11..16 "\n    "
-      EXPR_LET@16..100
+      STMT_LET@16..37
         LetKeyword@16..19 "let"
         Whitespace@19..20 " "
         PATTERN_VARIABLE@20..22
@@ -18,56 +18,36 @@ FILE@0..101
           Whitespace@21..22 " "
         Eq@22..23 "="
         Whitespace@23..24 " "
-        EXPR_LET_VALUE@24..31
-          EXPR_STR@24..31
-            Str@24..31 "\"abcde\""
+        EXPR_STR@24..31
+          Str@24..31 "\"abcde\""
         Semi@31..32 ";"
         Whitespace@32..37 "\n    "
-        EXPR_LET_BODY@37..100
-          EXPR_LET@37..100
-            LetKeyword@37..40 "let"
-            Whitespace@40..41 " "
-            PATTERN_WILDCARD@41..43
-              WildcardKeyword@41..42 "_"
-              Whitespace@42..43 " "
-            Eq@43..44 "="
-            Whitespace@44..45 " "
-            EXPR_LET_VALUE@45..62
-              EXPR_CALL@45..62
-                EXPR_LIDENT@45..59
-                  Lident@45..59 "string_println"
-                ARG_LIST@59..62
-                  LParen@59..60 "("
-                  ARG@60..61
-                    EXPR_LIDENT@60..61
-                      Lident@60..61 "s"
-                  RParen@61..62 ")"
-            Semi@62..63 ";"
-            Whitespace@63..68 "\n    "
-            EXPR_LET_BODY@68..100
-              EXPR_LET@68..100
-                LetKeyword@68..71 "let"
-                Whitespace@71..72 " "
-                PATTERN_WILDCARD@72..74
-                  WildcardKeyword@72..73 "_"
-                  Whitespace@73..74 " "
-                Eq@74..75 "="
-                Whitespace@75..76 " "
-                EXPR_LET_VALUE@76..91
-                  EXPR_CALL@76..91
-                    EXPR_LIDENT@76..88
-                      Lident@76..88 "string_print"
-                    ARG_LIST@88..91
-                      LParen@88..89 "("
-                      ARG@89..90
-                        EXPR_LIDENT@89..90
-                          Lident@89..90 "s"
-                      RParen@90..91 ")"
-                Semi@91..92 ";"
-                Whitespace@92..97 "\n    "
-                EXPR_LET_BODY@97..100
-                  EXPR_UNIT@97..100
-                    LParen@97..98 "("
-                    RParen@98..99 ")"
-                    Whitespace@99..100 "\n"
-      RBrace@100..101 "}"
+      STMT_EXPR@37..60
+        EXPR_CALL@37..54
+          EXPR_LIDENT@37..51
+            Lident@37..51 "string_println"
+          ARG_LIST@51..54
+            LParen@51..52 "("
+            ARG@52..53
+              EXPR_LIDENT@52..53
+                Lident@52..53 "s"
+            RParen@53..54 ")"
+        Semi@54..55 ";"
+        Whitespace@55..60 "\n    "
+      STMT_EXPR@60..81
+        EXPR_CALL@60..75
+          EXPR_LIDENT@60..72
+            Lident@60..72 "string_print"
+          ARG_LIST@72..75
+            LParen@72..73 "("
+            ARG@73..74
+              EXPR_LIDENT@73..74
+                Lident@73..74 "s"
+            RParen@74..75 ")"
+        Semi@75..76 ";"
+        Whitespace@76..81 "\n    "
+      EXPR_UNIT@81..84
+        LParen@81..82 "("
+        RParen@82..83 ")"
+        Whitespace@83..84 "\n"
+      RBrace@84..85 "}"

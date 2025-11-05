@@ -3,6 +3,7 @@ use lexer::{T, TokenKind};
 use crate::{
     expr::{EXPR_FIRST, expr},
     parser::{MarkerClosed, Parser},
+    stmt,
     syntax::MySyntaxKind,
 };
 
@@ -22,7 +23,9 @@ pub fn file(p: &mut Parser) {
         } else if p.at(T![impl]) {
             impl_block(p)
         } else if p.at_any(EXPR_FIRST) {
-            expr(p)
+            if expr(p).is_none() {
+                p.advance_with_error("expected an expression");
+            }
         } else {
             p.advance_with_error("expected a function")
         }
@@ -437,7 +440,40 @@ pub fn block(p: &mut Parser) {
     assert!(p.at(T!['{']));
     let m = p.open();
     p.expect(T!['{']);
-    expr(p);
+
+    let mut trailing_expr_seen = false;
+
+    while !p.eof() && !p.at(T!['}']) {
+        if trailing_expr_seen {
+            p.advance_with_error("expected `}` after block expression");
+            break;
+        }
+
+        if p.at(T![let]) {
+            let _ = stmt::let_stmt(p);
+            continue;
+        }
+
+        if p.at_any(EXPR_FIRST) {
+            if let Some(expr_marker) = expr(p) {
+                if p.eat(T![;]) {
+                    stmt::wrap_expr_stmt(p, expr_marker);
+                } else {
+                    trailing_expr_seen = true;
+                }
+                continue;
+            } else {
+                break;
+            }
+        }
+
+        if p.eat(T![;]) {
+            continue;
+        }
+
+        p.advance_with_error("expected a statement or expression");
+    }
+
     p.expect(T!['}']);
     p.close(m, MySyntaxKind::BLOCK);
 }

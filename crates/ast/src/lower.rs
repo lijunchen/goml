@@ -502,9 +502,78 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let cst_e = node.expr();
+    let mut result = match node.expr() {
+        Some(expr) => lower_expr(ctx, expr)?,
+        None => ast::Expr::EUnit,
+    };
 
-    cst_e.and_then(|expr| lower_expr(ctx, expr))
+    let mut stmts: Vec<cst::Stmt> = node.stmts().collect();
+    while let Some(stmt) = stmts.pop() {
+        result = lower_stmt(ctx, stmt, result);
+    }
+
+    Some(result)
+}
+
+fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr {
+    match stmt {
+        cst::Stmt::LetStmt(it) => {
+            let pattern = match it.pattern() {
+                Some(pattern) => pattern,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Let statement missing pattern",
+                    );
+                    return body;
+                }
+            };
+            let pat = match lower_pat(ctx, pattern) {
+                Some(pat) => pat,
+                None => return body,
+            };
+            let value_node = match it.value() {
+                Some(value) => value,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Let statement missing value",
+                    );
+                    return body;
+                }
+            };
+            let value = match lower_expr(ctx, value_node) {
+                Some(expr) => expr,
+                None => return body,
+            };
+            ast::Expr::ELet {
+                pat,
+                value: Box::new(value),
+                body: Box::new(body),
+            }
+        }
+        cst::Stmt::ExprStmt(it) => {
+            let expr_node = match it.expr() {
+                Some(expr) => expr,
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Expression statement missing expression",
+                    );
+                    return body;
+                }
+            };
+            let value = match lower_expr(ctx, expr_node) {
+                Some(expr) => expr,
+                None => return body,
+            };
+            ast::Expr::ELet {
+                pat: ast::Pat::PWild,
+                value: Box::new(value),
+                body: Box::new(body),
+            }
+        }
+    }
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
@@ -917,53 +986,6 @@ fn lower_expr_with_args(
             }
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
             Some(ast::Expr::ETuple { items })
-        }
-        cst::Expr::LetExpr(it) => {
-            if !trailing_args.is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Cannot apply arguments to let expression",
-                );
-                return None;
-            }
-            let Some(pattern) = it.pattern() else {
-                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no pattern");
-                return None;
-            };
-            let pat = lower_pat(ctx, pattern)?;
-            let Some(value_node) = it.value() else {
-                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no value");
-                return None;
-            };
-            let value = match value_node.expr() {
-                Some(expr) => lower_expr(ctx, expr)?,
-                None => {
-                    ctx.push_error(
-                        Some(value_node.syntax().text_range()),
-                        "LetExpr value missing expr",
-                    );
-                    return None;
-                }
-            };
-            let Some(body_node) = it.body() else {
-                ctx.push_error(Some(it.syntax().text_range()), "LetExpr has no body");
-                return None;
-            };
-            let body = match body_node.expr() {
-                Some(expr) => lower_expr(ctx, expr)?,
-                None => {
-                    ctx.push_error(
-                        Some(body_node.syntax().text_range()),
-                        "LetExpr body missing expr",
-                    );
-                    return None;
-                }
-            };
-            Some(ast::Expr::ELet {
-                pat,
-                value: Box::new(value),
-                body: Box::new(body),
-            })
         }
         cst::Expr::PrefixExpr(it) => {
             let expr = match it
