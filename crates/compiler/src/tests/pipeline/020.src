@@ -62,24 +62,28 @@ fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
 
 fn shape_int_to_string(shape: Shape[int]) -> string {
     match shape {
-        Dot(point) =>
+        Dot(point) => {
             let prefix = string_add("Shape::Dot(", point_to_string(point));
-            string_add(prefix, ")"),
-        Wrapped(wrapper) =>
+            string_add(prefix, ")")
+        },
+        Wrapped(wrapper) => {
             let prefix = string_add("Shape::Wrapped(", wrapper_int_to_string(wrapper));
-            string_add(prefix, ")"),
+            string_add(prefix, ")")
+        },
         Origin => "Shape::Origin",
     }
 }
 
 fn shape_unit_to_string(shape: Shape[unit]) -> string {
     match shape {
-        Dot(point) =>
+        Dot(point) => {
             let prefix = string_add("Shape::Dot(", point_to_string(point));
-            string_add(prefix, ")"),
-        Wrapped(wrapper) =>
+            string_add(prefix, ")")
+        },
+        Wrapped(wrapper) => {
             let prefix = string_add("Shape::Wrapped(", wrapper_unit_to_string(wrapper));
-            string_add(prefix, ")"),
+            string_add(prefix, ")")
+        },
         Origin => "Shape::Origin",
     }
 }

@@ -111,7 +111,7 @@ FILE@0..307
     BLOCK@147..307
       LBrace@147..148 "{"
       Whitespace@148..153 "\n    "
-      EXPR_LET@153..305
+      STMT_LET@153..178
         LetKeyword@153..156 "let"
         Whitespace@156..157 " "
         PATTERN_VARIABLE@157..161
@@ -119,96 +119,88 @@ FILE@0..307
           Whitespace@160..161 " "
         Eq@161..162 "="
         Whitespace@162..163 " "
-        EXPR_LET_VALUE@163..172
-          EXPR_ARRAY_LITERAL@163..172
-            LBracket@163..164 "["
-            EXPR_INT@164..165
-              Int@164..165 "1"
-            Comma@165..166 ","
-            Whitespace@166..167 " "
-            EXPR_INT@167..168
-              Int@167..168 "2"
-            Comma@168..169 ","
-            Whitespace@169..170 " "
-            EXPR_INT@170..171
-              Int@170..171 "3"
-            RBracket@171..172 "]"
+        EXPR_ARRAY_LITERAL@163..172
+          LBracket@163..164 "["
+          EXPR_INT@164..165
+            Int@164..165 "1"
+          Comma@165..166 ","
+          Whitespace@166..167 " "
+          EXPR_INT@167..168
+            Int@167..168 "2"
+          Comma@168..169 ","
+          Whitespace@169..170 " "
+          EXPR_INT@170..171
+            Int@170..171 "3"
+          RBracket@171..172 "]"
         Semi@172..173 ";"
         Whitespace@173..178 "\n    "
-        EXPR_LET_BODY@178..305
-          EXPR_LET@178..305
-            LetKeyword@178..181 "let"
-            Whitespace@181..182 " "
-            PATTERN_VARIABLE@182..190
-              Lident@182..189 "updated"
-              Whitespace@189..190 " "
-            Eq@190..191 "="
-            Whitespace@191..192 " "
-            EXPR_LET_VALUE@192..209
-              EXPR_CALL@192..209
-                EXPR_LIDENT@192..204
-                  Lident@192..204 "update_array"
-                ARG_LIST@204..209
-                  LParen@204..205 "("
-                  ARG@205..208
-                    EXPR_LIDENT@205..208
-                      Lident@205..208 "arr"
-                  RParen@208..209 ")"
-            Semi@209..210 ";"
-            Whitespace@210..215 "\n    "
-            EXPR_LET_BODY@215..305
-              EXPR_LET@215..305
-                LetKeyword@215..218 "let"
-                Whitespace@218..219 " "
-                PATTERN_VARIABLE@219..225
-                  Lident@219..224 "value"
-                  Whitespace@224..225 " "
-                Eq@225..226 "="
-                Whitespace@226..227 " "
-                EXPR_LET_VALUE@227..246
-                  EXPR_CALL@227..246
-                    EXPR_LIDENT@227..237
-                      Lident@227..237 "read_array"
-                    ARG_LIST@237..246
-                      LParen@237..238 "("
-                      ARG@238..245
-                        EXPR_LIDENT@238..245
-                          Lident@238..245 "updated"
-                      RParen@245..246 ")"
-                Semi@246..247 ";"
-                Whitespace@247..252 "\n    "
-                EXPR_LET_BODY@252..305
-                  EXPR_LET@252..305
-                    LetKeyword@252..255 "let"
-                    Whitespace@255..256 " "
-                    PATTERN_WILDCARD@256..258
-                      WildcardKeyword@256..257 "_"
-                      Whitespace@257..258 " "
-                    Eq@258..259 "="
-                    Whitespace@259..260 " "
-                    EXPR_LET_VALUE@260..296
-                      EXPR_CALL@260..296
-                        EXPR_LIDENT@260..274
-                          Lident@260..274 "string_println"
-                        ARG_LIST@274..296
-                          LParen@274..275 "("
-                          ARG@275..295
-                            EXPR_CALL@275..295
-                              EXPR_LIDENT@275..288
-                                Lident@275..288 "int_to_string"
-                              ARG_LIST@288..295
-                                LParen@288..289 "("
-                                ARG@289..294
-                                  EXPR_LIDENT@289..294
-                                    Lident@289..294 "value"
-                                RParen@294..295 ")"
-                          RParen@295..296 ")"
-                    Semi@296..297 ";"
-                    Whitespace@297..302 "\n    "
-                    EXPR_LET_BODY@302..305
-                      EXPR_UNIT@302..305
-                        LParen@302..303 "("
-                        RParen@303..304 ")"
-                        Whitespace@304..305 "\n"
+      STMT_LET@178..215
+        LetKeyword@178..181 "let"
+        Whitespace@181..182 " "
+        PATTERN_VARIABLE@182..190
+          Lident@182..189 "updated"
+          Whitespace@189..190 " "
+        Eq@190..191 "="
+        Whitespace@191..192 " "
+        EXPR_CALL@192..209
+          EXPR_LIDENT@192..204
+            Lident@192..204 "update_array"
+          ARG_LIST@204..209
+            LParen@204..205 "("
+            ARG@205..208
+              EXPR_LIDENT@205..208
+                Lident@205..208 "arr"
+            RParen@208..209 ")"
+        Semi@209..210 ";"
+        Whitespace@210..215 "\n    "
+      STMT_LET@215..252
+        LetKeyword@215..218 "let"
+        Whitespace@218..219 " "
+        PATTERN_VARIABLE@219..225
+          Lident@219..224 "value"
+          Whitespace@224..225 " "
+        Eq@225..226 "="
+        Whitespace@226..227 " "
+        EXPR_CALL@227..246
+          EXPR_LIDENT@227..237
+            Lident@227..237 "read_array"
+          ARG_LIST@237..246
+            LParen@237..238 "("
+            ARG@238..245
+              EXPR_LIDENT@238..245
+                Lident@238..245 "updated"
+            RParen@245..246 ")"
+        Semi@246..247 ";"
+        Whitespace@247..252 "\n    "
+      STMT_LET@252..302
+        LetKeyword@252..255 "let"
+        Whitespace@255..256 " "
+        PATTERN_WILDCARD@256..258
+          WildcardKeyword@256..257 "_"
+          Whitespace@257..258 " "
+        Eq@258..259 "="
+        Whitespace@259..260 " "
+        EXPR_CALL@260..296
+          EXPR_LIDENT@260..274
+            Lident@260..274 "string_println"
+          ARG_LIST@274..296
+            LParen@274..275 "("
+            ARG@275..295
+              EXPR_CALL@275..295
+                EXPR_LIDENT@275..288
+                  Lident@275..288 "int_to_string"
+                ARG_LIST@288..295
+                  LParen@288..289 "("
+                  ARG@289..294
+                    EXPR_LIDENT@289..294
+                      Lident@289..294 "value"
+                  RParen@294..295 ")"
+            RParen@295..296 ")"
+        Semi@296..297 ";"
+        Whitespace@297..302 "\n    "
+      EXPR_UNIT@302..305
+        LParen@302..303 "("
+        RParen@303..304 ")"
+        Whitespace@304..305 "\n"
       RBrace@305..306 "}"
       Whitespace@306..307 "\n"

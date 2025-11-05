@@ -6,7 +6,7 @@ enum IntList {
 fn print_int_list(xs: IntList) {
     match xs {
         Nil => string_print("Nil"),
-        Cons(x, xs) =>
+        Cons(x, xs) => {
             let _ = string_print("Cons");
             let _ = string_print("(");
             let _ = string_print(int_to_string(x));
@@ -14,6 +14,7 @@ fn print_int_list(xs: IntList) {
             let _ = print_int_list(xs);
             let _ = string_print(")");
             ()
+        }
     }
 }
 
