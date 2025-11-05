@@ -133,7 +133,7 @@ fn reports_parse_errors_without_panicking() {
 #[test]
 fn let_expression_without_pattern_reports_error() {
     let path = Path::new("test.goml");
-    let src = "let = 42; foo";
+    let src = "fn main() { let = 42; foo }";
     let result = parse(path, src);
     assert!(result.has_errors());
     let errors = result.format_errors(src);

@@ -1024,9 +1024,7 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             ty,
             resolution,
         } => {
-            let mut args = Vec::with_capacity(2);
-            args.push(compile_expr(lhs, env));
-            args.push(compile_expr(rhs, env));
+            let args = vec![compile_expr(lhs, env), compile_expr(rhs, env)];
             let param_tys: Vec<_> = args.iter().map(|arg| arg.get_ty()).collect();
 
             match resolution {

@@ -56,16 +56,17 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         T!['['] => {
             let m = p.open();
             p.expect(T!['[']);
-            if !p.at(T![']']) && !p.eof() {
-                if expect_expr_with_message(p, "expected an expression in array literal") {
-                    while p.at(T![,]) {
-                        p.expect(T![,]);
-                        if p.at(T![']']) {
-                            break;
-                        }
-                        if !expect_expr_with_message(p, "expected an expression in array literal") {
-                            break;
-                        }
+            if !p.at(T![']'])
+                && !p.eof()
+                && expect_expr_with_message(p, "expected an expression in array literal")
+            {
+                while p.at(T![,]) {
+                    p.expect(T![,]);
+                    if p.at(T![']']) {
+                        break;
+                    }
+                    if !expect_expr_with_message(p, "expected an expression in array literal") {
+                        break;
                     }
                 }
             }
@@ -196,10 +197,6 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         }
         T![|] | T![||] => closure_expr(p),
         _ => {
-            dbg!(&p.peek());
-            dbg!(&EXPR_FIRST);
-            dbg!(EXPR_FIRST.contains(&p.peek()));
-            assert!(!p.at_any(EXPR_FIRST));
             return None;
         }
     };
@@ -355,10 +352,7 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
         expect_expr_bp_with_message(p, r_bp, "expected an operand for prefix operator");
         p.close(m, MySyntaxKind::EXPR_PREFIX)
     } else {
-        match atom(p) {
-            Some(lhs) => lhs,
-            None => return None,
-        }
+        atom(p)?
     };
 
     loop {

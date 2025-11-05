@@ -351,13 +351,12 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 }
             };
             let mut result_ty = ty;
-            if let Some(field_ty) = instantiated_ty {
-                if state.ty_contains_closure(&field_ty)
+            if let Some(field_ty) = instantiated_ty
+                && (state.ty_contains_closure(&field_ty)
                     || matches!(result_ty, Ty::TParam { .. })
-                    || ty_contains_type_param(&result_ty)
-                {
-                    result_ty = field_ty;
-                }
+                    || ty_contains_type_param(&result_ty))
+            {
+                result_ty = field_ty;
             }
             core::Expr::EConstrGet {
                 expr,
@@ -701,7 +700,7 @@ fn instantiate_struct_field_ty(
     let subst = struct_def
         .generics
         .iter()
-        .zip(args.into_iter())
+        .zip(args)
         .map(|(g, arg)| (g.0.clone(), arg))
         .collect::<HashMap<_, _>>();
 
@@ -734,7 +733,7 @@ fn instantiate_enum_field_ty(
     let subst = enum_def
         .generics
         .iter()
-        .zip(args.into_iter())
+        .zip(args)
         .map(|(g, arg)| (g.0.clone(), arg))
         .collect::<HashMap<_, _>>();
 
@@ -795,10 +794,10 @@ fn ty_contains_type_param(ty: &Ty) -> bool {
 fn resolve_type_arguments(base_name: &str, instance_ty: &Ty) -> Option<Vec<Ty>> {
     match instance_ty {
         Ty::TApp { ty, args } => {
-            if let Ty::TCon { name } = ty.as_ref() {
-                if name == base_name {
-                    return Some(args.clone());
-                }
+            if let Ty::TCon { name } = ty.as_ref()
+                && name == base_name
+            {
+                return Some(args.clone());
             }
             None
         }
