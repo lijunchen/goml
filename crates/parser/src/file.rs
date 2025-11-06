@@ -37,6 +37,16 @@ fn extern_decl(p: &mut Parser) {
     assert!(p.at(T![extern]));
     let m = p.open();
     p.expect(T![extern]);
+    if p.at(T![type]) {
+        p.expect(T![type]);
+        if p.at(T![uident]) {
+            p.advance();
+        } else {
+            p.advance_with_error("expected a type name");
+        }
+        p.close(m, MySyntaxKind::EXTERN);
+        return;
+    }
     if p.at(T![str]) {
         p.advance();
     } else {
@@ -47,18 +57,37 @@ fn extern_decl(p: &mut Parser) {
     } else {
         p.advance_with_error("expected a package string");
     }
-    if p.at(T![lident]) {
+    let has_symbol_override = if p.at(T![str]) {
         p.advance();
+        true
     } else {
-        p.advance_with_error("expected a function name");
+        false
+    };
+    if has_symbol_override && !p.at(T![type]) && !p.at(T![lident]) {
+        p.advance_with_error("expected a function or type declaration after Go symbol");
     }
-    if p.at(T!['(']) {
-        param_list(p);
+
+    if p.at(T![type]) {
+        p.expect(T![type]);
+        if p.at(T![uident]) {
+            p.advance();
+        } else {
+            p.advance_with_error("expected a type name");
+        }
     } else {
-        p.advance_with_error("expected parameter list");
-    }
-    if p.eat(T![->]) {
-        type_expr(p);
+        if p.at(T![lident]) {
+            p.advance();
+        } else {
+            p.advance_with_error("expected a function name");
+        }
+        if p.at(T!['(']) {
+            param_list(p);
+        } else {
+            p.advance_with_error("expected parameter list");
+        }
+        if p.eat(T![->]) {
+            type_expr(p);
+        }
     }
     p.close(m, MySyntaxKind::EXTERN);
 }

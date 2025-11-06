@@ -159,6 +159,9 @@ pub enum TokenKind {
     #[token("struct")]
     StructKeyword,
 
+    #[token("type")]
+    TypeKeyword,
+
     #[token("match")]
     MatchKeyword,
 
@@ -262,6 +265,7 @@ impl std::fmt::Display for TokenKind {
             Self::ExternKeyword => "extern",
             Self::EnumKeyword => "enum",
             Self::StructKeyword => "struct",
+            Self::TypeKeyword => "type",
             Self::FnKeyword => "fn",
             Self::TraitKeyword => "trait",
             Self::ImplKeyword => "impl",
@@ -324,6 +328,7 @@ macro_rules! T {
     [for] => { $crate::TokenKind::ForKeyword };
     [enum] => { $crate::TokenKind::EnumKeyword };
     [struct] => { $crate::TokenKind::StructKeyword };
+    [type] => { $crate::TokenKind::TypeKeyword };
     [match] => { $crate::TokenKind::MatchKeyword };
     [if] => { $crate::TokenKind::IfKeyword };
     [else] => { $crate::TokenKind::ElseKeyword };

@@ -1118,7 +1118,7 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     all.extend(runtime::make_array_runtime(&env.array_types));
     all.extend(runtime::make_ref_runtime(&env.ref_types));
 
-    if !env.extern_funcs.is_empty() {
+    if !env.extern_funcs.is_empty() || !env.extern_types.is_empty() {
         let mut existing_imports: IndexSet<String> = IndexSet::new();
         for item in &all {
             if let goast::Item::Import(import_decl) = item {
@@ -1135,6 +1135,16 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
                     alias: None,
                     path: extern_fn.package_path.clone(),
                 });
+            }
+        }
+        for extern_ty in env.extern_types.values() {
+            if let Some(package_path) = &extern_ty.package_path {
+                if existing_imports.insert(package_path.clone()) {
+                    extra_specs.push(goast::ImportSpec {
+                        alias: None,
+                        path: package_path.clone(),
+                    });
+                }
             }
         }
 
@@ -1286,6 +1296,19 @@ fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
                 name: variant_name,
                 fields,
                 methods,
+            }));
+        }
+    }
+
+    for (name, ext) in env.extern_types.iter() {
+        if let Some(package_path) = &ext.package_path {
+            let alias = go_package_alias(package_path);
+            let go_ty = goty::GoType::TName {
+                name: format!("{}.{}", alias, ext.go_name),
+            };
+            defs.push(goast::Item::TypeAlias(goast::TypeAlias {
+                name: name.clone(),
+                ty: go_ty,
             }));
         }
     }

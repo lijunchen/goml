@@ -415,8 +415,27 @@ impl Extern {
         strings.next()
     }
 
+    pub fn symbol(&self) -> Option<MySyntaxToken> {
+        let mut strings = self
+            .syntax
+            .children_with_tokens()
+            .filter_map(|it| it.into_token())
+            .filter(|tok| tok.kind() == MySyntaxKind::Str);
+        strings.next()?;
+        strings.next()?;
+        strings.next()
+    }
+
     pub fn lident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Lident)
+    }
+
+    pub fn type_keyword(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::TypeKeyword)
+    }
+
+    pub fn uident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Uident)
     }
 
     pub fn param_list(&self) -> Option<ParamList> {

@@ -53,6 +53,7 @@ impl Rename {
                 ast::Item::ExternGo(ext) => {
                     global_funcs.insert(ext.goml_name.0.clone());
                 }
+                ast::Item::ExternType(_) => {}
                 _ => {}
             }
         }
@@ -82,6 +83,7 @@ impl Rename {
             }),
             ast::Item::Fn(func) => ast::Item::Fn(self.rename_fn(func, global_funcs)),
             ast::Item::ExternGo(ext) => ast::Item::ExternGo(ext.clone()),
+            ast::Item::ExternType(ext) => ast::Item::ExternType(ext.clone()),
         }
     }
 

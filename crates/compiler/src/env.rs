@@ -30,6 +30,12 @@ pub struct ExternFunc {
     pub ty: tast::Ty,
 }
 
+#[derive(Debug, Clone)]
+pub struct ExternType {
+    pub go_name: String,
+    pub package_path: Option<String>,
+}
+
 fn builtin_functions() -> IndexMap<String, tast::Ty> {
     let mut funcs = IndexMap::new();
 
@@ -209,6 +215,7 @@ pub struct Env {
     pub trait_impls: IndexMap<(String, String, Lident), tast::Ty>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
+    pub extern_types: IndexMap<String, ExternType>,
     pub constraints: Vec<Constraint>,
     pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
@@ -231,6 +238,7 @@ impl Env {
             closure_env_apply: IndexMap::new(),
             funcs: builtin_functions(),
             extern_funcs: IndexMap::new(),
+            extern_types: IndexMap::new(),
             trait_defs: IndexMap::new(),
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
@@ -250,6 +258,7 @@ impl Env {
         ty: tast::Ty,
     ) {
         self.funcs.insert(goml_name.clone(), ty.clone());
+        self.record_extern_type_usage(&ty, &package_path);
         self.extern_funcs.insert(
             goml_name,
             ExternFunc {
@@ -258,6 +267,67 @@ impl Env {
                 ty,
             },
         );
+    }
+
+    pub fn register_extern_type(&mut self, goml_name: String) {
+        self.extern_types
+            .entry(goml_name.clone())
+            .or_insert_with(|| ExternType {
+                go_name: goml_name.clone(),
+                package_path: None,
+            });
+    }
+
+    fn assign_package_to_extern_type(&mut self, type_name: &str, package_path: &str) {
+        if let Some(ext_ty) = self.extern_types.get_mut(type_name) {
+            match &ext_ty.package_path {
+                Some(existing) => {
+                    if existing != package_path {
+                        // keep the first associated package to avoid conflicting bindings
+                    }
+                }
+                None => {
+                    ext_ty.package_path = Some(package_path.to_string());
+                }
+            }
+        }
+    }
+
+    fn record_extern_type_usage(&mut self, ty: &tast::Ty, package_path: &str) {
+        match ty {
+            tast::Ty::TVar(_)
+            | tast::Ty::TUnit
+            | tast::Ty::TBool
+            | tast::Ty::TInt
+            | tast::Ty::TString => {}
+            tast::Ty::TTuple { typs } => {
+                for ty in typs {
+                    self.record_extern_type_usage(ty, package_path);
+                }
+            }
+            tast::Ty::TFunc { params, ret_ty } => {
+                for param in params {
+                    self.record_extern_type_usage(param, package_path);
+                }
+                self.record_extern_type_usage(ret_ty, package_path);
+            }
+            tast::Ty::TParam { .. } => {}
+            tast::Ty::TCon { name } => {
+                self.assign_package_to_extern_type(name, package_path);
+            }
+            tast::Ty::TApp { ty, args } => {
+                self.record_extern_type_usage(ty, package_path);
+                for arg in args {
+                    self.record_extern_type_usage(arg, package_path);
+                }
+            }
+            tast::Ty::TArray { elem, .. } => {
+                self.record_extern_type_usage(elem, package_path);
+            }
+            tast::Ty::TRef { elem } => {
+                self.record_extern_type_usage(elem, package_path);
+            }
+        }
     }
 
     pub fn register_closure_apply(&mut self, struct_name: &Uident, apply_fn: String) {

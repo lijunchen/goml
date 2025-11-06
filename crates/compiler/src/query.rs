@@ -64,6 +64,7 @@ fn find_type(env: &Env, tast: &tast::File, range: &rowan::TextRange) -> Option<S
                 }
             }
             tast::Item::ExternGo(_) => {}
+            tast::Item::ExternType(_) => {}
         }
     }
     None

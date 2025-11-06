@@ -32,6 +32,7 @@ pub enum MySyntaxKind {
     ForKeyword,
     EnumKeyword,
     StructKeyword,
+    TypeKeyword,
     MatchKeyword,
     IfKeyword,
     ElseKeyword,

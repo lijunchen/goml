@@ -11,6 +11,7 @@ pub enum Item {
     Import(ImportDecl),
     Interface(Interface),
     Struct(Struct),
+    TypeAlias(TypeAlias),
     Fn(Fn),
 }
 
@@ -35,6 +36,12 @@ pub struct Struct {
     pub name: String,
     pub fields: Vec<Field>,
     pub methods: Vec<Method>,
+}
+
+#[derive(Debug)]
+pub struct TypeAlias {
+    pub name: String,
+    pub ty: goty::GoType,
 }
 
 #[derive(Debug)]

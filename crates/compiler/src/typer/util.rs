@@ -47,6 +47,8 @@ pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String
                         struct_def.generics.len()
                     ));
                 }
+            } else if env.extern_types.contains_key(name) {
+                // Extern types do not have generics.
             } else {
                 env.report_typer_error(format!("Unknown type constructor {}", name));
             }
@@ -75,6 +77,14 @@ pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String
                     env.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got {}",
                         base_name, expected, actual
+                    ));
+                }
+            } else if env.extern_types.contains_key(&base_name) {
+                if !args.is_empty() {
+                    env.report_typer_error(format!(
+                        "Type {} does not accept type arguments, but got {}",
+                        base_name,
+                        args.len()
                     ));
                 }
             } else {
