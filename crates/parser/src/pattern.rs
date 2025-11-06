@@ -108,11 +108,13 @@ fn struct_pattern_field(p: &mut Parser) {
     assert!(p.at(T![lident]));
     let m = p.open();
     p.expect(T![lident]);
-    p.expect(T![:]);
-    if p.at_any(PATTERN_FIRST) {
-        let _ = pattern(p);
-    } else {
-        p.advance_with_error("expected a pattern");
+    if p.at(T![:]) {
+        p.expect(T![:]);
+        if p.at_any(PATTERN_FIRST) {
+            let _ = pattern(p);
+        } else {
+            p.advance_with_error("expected a pattern");
+        }
     }
     p.close(m, MySyntaxKind::STRUCT_PATTERN_FIELD);
 }

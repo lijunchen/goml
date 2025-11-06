@@ -1442,11 +1442,18 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     let pat = match field.pattern() {
                         Some(pattern) => lower_pat(ctx, pattern)?,
                         None => {
-                            ctx.push_error(
-                                Some(field.syntax().text_range()),
-                                "Struct pattern field missing pattern",
-                            );
-                            return None;
+                            if support::token(field.syntax(), MySyntaxKind::Colon).is_some() {
+                                ctx.push_error(
+                                    Some(field.syntax().text_range()),
+                                    "Struct pattern field missing pattern",
+                                );
+                                return None;
+                            }
+
+                            ast::Pat::PVar {
+                                name: ast::Lident(fname.clone()),
+                                astptr: MySyntaxNodePtr::new(field.syntax()),
+                            }
                         }
                     };
                     fields.push((ast::Lident(fname), pat));
