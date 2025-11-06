@@ -51,16 +51,43 @@ fn point_to_string(p/13: Point) -> string {
   string_add(string_add(string_add("Point { x: ", int_to_string(x/14)), string_add(", y: ", int_to_string(y/15))), "}")
 }
 
+fn point_to_string2(p/16: Point) -> string {
+  let mtmp15 = p/16 in
+  let x16 = Point.x(mtmp15) in
+  let x17 = Point.y(mtmp15) in
+  let y/18 = x17 in
+  let x/17 = x16 in
+  string_add(string_add(string_add("Point { x: ", int_to_string(x/17)), string_add(", y: ", int_to_string(y/18))), "}")
+}
+
+fn point_to_string3(p/19: Point) -> string {
+  let mtmp18 = p/19 in
+  let x19 = Point.x(mtmp18) in
+  let x20 = Point.y(mtmp18) in
+  let y/21 = x20 in
+  let x/20 = x19 in
+  string_add(string_add(string_add("Point { x: ", int_to_string(x/20)), string_add(", y: ", int_to_string(y/21))), "}")
+}
+
+fn point_to_string4(p/22: Point) -> string {
+  let mtmp21 = p/22 in
+  let x22 = Point.x(mtmp21) in
+  let x23 = Point.y(mtmp21) in
+  let y/24 = x23 in
+  let x/23 = x22 in
+  string_add(string_add(string_add("Point { x: ", int_to_string(x/23)), string_add(", y: ", int_to_string(y/24))), "}")
+}
+
 fn main() -> unit {
-  let start/16 = make_point() in
-  let mtmp15 = string_println(point_to_string(start/16)) in
-  let swapped/17 = flip(Point { x: 1, y: 2 }) in
-  let mtmp16 = string_println(point_to_string(swapped/17)) in
-  let boxed/18 = wrap_int(3) in
-  let point_box/19 = Wrapper { value: swapped/17 } in
-  let a/20 = x_add_1(start/16) in
-  let mtmp17 = string_println(point_to_string(a/20)) in
-  let a/21 = flip(x_add_1(start/16)) in
-  let mtmp18 = string_println(point_to_string(a/21)) in
+  let start/25 = make_point() in
+  let mtmp24 = string_println(point_to_string(start/25)) in
+  let swapped/26 = flip(Point { x: 1, y: 2 }) in
+  let mtmp25 = string_println(point_to_string2(swapped/26)) in
+  let boxed/27 = wrap_int(3) in
+  let point_box/28 = Wrapper { value: swapped/26 } in
+  let a/29 = x_add_1(start/25) in
+  let mtmp26 = string_println(point_to_string3(a/29)) in
+  let a/30 = flip(x_add_1(start/25)) in
+  let mtmp27 = string_println(point_to_string4(a/30)) in
   ()
 }
