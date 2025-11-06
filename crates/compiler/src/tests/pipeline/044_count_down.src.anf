@@ -1,29 +1,23 @@
 fn main() -> unit {
   let counter/0 = ref(0) in
-  let t9 = closure_env_main_1 { counter_0: counter/0 } in
-  let mtmp4 = spawn(t9) in
-  while let t10 = ref_get(counter/0) in
-  int_less(t10, 10) {
+  let t6 = closure_env_main_0 { counter_0: counter/0 } in
+  let mtmp3 = spawn(t6) in
+  while let t7 = ref_get(counter/0) in
+  int_less(t7, 10) {
     ()
   }
 }
 
-fn __closure_apply5(env6: closure_env_mtmp3_0) -> unit {
-  let counter/0 = closure_env_mtmp3_0.counter_0(env6) in
-  while let t11 = ref_get(counter/0) in
-  int_less(t11, 10) {
+fn __closure_apply4(env5: closure_env_main_0) -> unit {
+  let counter/0 = closure_env_main_0.counter_0(env5) in
+  while let t8 = ref_get(counter/0) in
+  int_less(t8, 10) {
     let mtmp0 = string_println("hello") in
-    let t12 = duration(1000) in
-    let mtmp1 = sleep(t12) in
-    let t14 = ref_get(counter/0) in
-    let t13 = int_add(t14, 1) in
-    let mtmp2 = ref_set(counter/0, t13) in
+    let t9 = duration(1000) in
+    let mtmp1 = sleep(t9) in
+    let t11 = ref_get(counter/0) in
+    let t10 = int_add(t11, 1) in
+    let mtmp2 = ref_set(counter/0, t10) in
     ()
   }
-}
-
-fn __closure_apply7(env8: closure_env_main_1) -> unit {
-  let counter/0 = closure_env_main_1.counter_0(env8) in
-  let mtmp3 = closure_env_mtmp3_0 { counter_0: counter/0 } in
-  ()
 }

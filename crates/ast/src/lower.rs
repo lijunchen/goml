@@ -781,7 +781,7 @@ fn lower_expr_with_args(
                         )
                     }
                     other => {
-                        if matches!(other, cst::Expr::CallExpr(_)) {
+                        if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_)) {
                             let func_expr = lower_expr(ctx, other)?;
                             let call = ast::Expr::ECall {
                                 func: Box::new(func_expr),
@@ -857,15 +857,28 @@ fn lower_expr_with_args(
 
             let call_expr = lower_expr(ctx, inner)?;
 
-            let closure_body = ast::Expr::ELet {
-                pat: ast::Pat::PWild,
-                value: Box::new(call_expr),
-                body: Box::new(ast::Expr::EUnit),
+            let wrap_in_closure = |call: ast::Expr| ast::Expr::EClosure {
+                params: Vec::new(),
+                body: Box::new(ast::Expr::ELet {
+                    pat: ast::Pat::PWild,
+                    value: Box::new(call),
+                    body: Box::new(ast::Expr::EUnit),
+                }),
             };
 
-            let closure = ast::Expr::EClosure {
-                params: Vec::new(),
-                body: Box::new(closure_body),
+            let closure_arg = match call_expr {
+                ast::Expr::ECall { func, args } => {
+                    if args.is_empty() {
+                        if let ast::Expr::EClosure { params, body } = *func {
+                            ast::Expr::EClosure { params, body }
+                        } else {
+                            wrap_in_closure(ast::Expr::ECall { func, args })
+                        }
+                    } else {
+                        wrap_in_closure(ast::Expr::ECall { func, args })
+                    }
+                }
+                other => wrap_in_closure(other),
             };
 
             Some(ast::Expr::ECall {
@@ -873,7 +886,7 @@ fn lower_expr_with_args(
                     name: ast::Lident("spawn".to_string()),
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 }),
-                args: vec![closure],
+                args: vec![closure_arg],
             })
         }
         cst::Expr::IfExpr(it) => {
