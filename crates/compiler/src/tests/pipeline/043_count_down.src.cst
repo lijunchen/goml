@@ -1,0 +1,229 @@
+FILE@0..408
+  EXTERN@0..22
+    ExternKeyword@0..6 "extern"
+    Whitespace@6..7 " "
+    TypeKeyword@7..11 "type"
+    Whitespace@11..12 " "
+    Uident@12..20 "Duration"
+    Whitespace@20..22 "\n\n"
+  EXTERN@22..68
+    ExternKeyword@22..28 "extern"
+    Whitespace@28..29 " "
+    Str@29..33 "\"go\""
+    Whitespace@33..34 " "
+    Str@34..40 "\"time\""
+    Whitespace@40..41 " "
+    Lident@41..46 "sleep"
+    PARAM_LIST@46..60
+      LParen@46..47 "("
+      PARAM@47..58
+        Lident@47..48 "d"
+        Colon@48..49 ":"
+        Whitespace@49..50 " "
+        TYPE_TAPP@50..58
+          Uident@50..58 "Duration"
+      RParen@58..59 ")"
+      Whitespace@59..60 " "
+    Arrow@60..62 "->"
+    Whitespace@62..63 " "
+    TYPE_UNIT@63..68
+      UnitKeyword@63..67 "unit"
+      Whitespace@67..68 "\n"
+  EXTERN@68..122
+    ExternKeyword@68..74 "extern"
+    Whitespace@74..75 " "
+    Str@75..79 "\"go\""
+    Whitespace@79..80 " "
+    Str@80..86 "\"time\""
+    Whitespace@86..87 " "
+    Lident@87..95 "duration"
+    PARAM_LIST@95..108
+      LParen@95..96 "("
+      PARAM@96..106
+        Lident@96..101 "nanos"
+        Colon@101..102 ":"
+        Whitespace@102..103 " "
+        TYPE_INT@103..106
+          IntKeyword@103..106 "int"
+      RParen@106..107 ")"
+      Whitespace@107..108 " "
+    Arrow@108..110 "->"
+    Whitespace@110..111 " "
+    TYPE_TAPP@111..122
+      Uident@111..119 "Duration"
+      Whitespace@119..122 "\n\n\n"
+  FN@122..408
+    FnKeyword@122..124 "fn"
+    Whitespace@124..125 " "
+    Lident@125..129 "main"
+    PARAM_LIST@129..132
+      LParen@129..130 "("
+      RParen@130..131 ")"
+      Whitespace@131..132 " "
+    BLOCK@132..408
+      LBrace@132..133 "{"
+      Whitespace@133..138 "\n    "
+      STMT_LET@138..164
+        LetKeyword@138..141 "let"
+        Whitespace@141..142 " "
+        PATTERN_VARIABLE@142..150
+          Lident@142..149 "counter"
+          Whitespace@149..150 " "
+        Eq@150..151 "="
+        Whitespace@151..152 " "
+        EXPR_CALL@152..158
+          EXPR_LIDENT@152..155
+            Lident@152..155 "ref"
+          ARG_LIST@155..158
+            LParen@155..156 "("
+            ARG@156..157
+              EXPR_INT@156..157
+                Int@156..157 "0"
+            RParen@157..158 ")"
+        Semi@158..159 ";"
+        Whitespace@159..164 "\n    "
+      STMT_EXPR@164..366
+        EXPR_GO@164..360
+          GoKeyword@164..166 "go"
+          Whitespace@166..167 " "
+          EXPR_CALL@167..360
+            EXPR_CLOSURE@167..358
+              CLOSURE_PARAM_LIST@167..170
+                OrOr@167..169 "||"
+                Whitespace@169..170 " "
+              EXPR_CLOSURE_BODY@170..358
+                BLOCK@170..358
+                  LBrace@170..171 "{"
+                  Whitespace@171..180 "\n        "
+                  EXPR_WHILE@180..357
+                    WhileKeyword@180..185 "while"
+                    Whitespace@185..186 " "
+                    EXPR_WHILE_COND@186..217
+                      EXPR_CALL@186..217
+                        EXPR_LIDENT@186..194
+                          Lident@186..194 "int_less"
+                        ARG_LIST@194..217
+                          LParen@194..195 "("
+                          ARG@195..213
+                            EXPR_CALL@195..211
+                              EXPR_LIDENT@195..202
+                                Lident@195..202 "ref_get"
+                              ARG_LIST@202..211
+                                LParen@202..203 "("
+                                ARG@203..210
+                                  EXPR_LIDENT@203..210
+                                    Lident@203..210 "counter"
+                                RParen@210..211 ")"
+                            Comma@211..212 ","
+                            Whitespace@212..213 " "
+                          ARG@213..215
+                            EXPR_INT@213..215
+                              Int@213..215 "10"
+                          RParen@215..216 ")"
+                          Whitespace@216..217 " "
+                    EXPR_WHILE_BODY@217..357
+                      BLOCK@217..357
+                        LBrace@217..218 "{"
+                        Whitespace@218..231 "\n            "
+                        STMT_EXPR@231..268
+                          EXPR_CALL@231..254
+                            EXPR_LIDENT@231..245
+                              Lident@231..245 "string_println"
+                            ARG_LIST@245..254
+                              LParen@245..246 "("
+                              ARG@246..253
+                                EXPR_STR@246..253
+                                  Str@246..253 "\"hello\""
+                              RParen@253..254 ")"
+                          Semi@254..255 ";"
+                          Whitespace@255..268 "\n            "
+                        STMT_EXPR@268..303
+                          EXPR_CALL@268..289
+                            EXPR_LIDENT@268..273
+                              Lident@268..273 "sleep"
+                            ARG_LIST@273..289
+                              LParen@273..274 "("
+                              ARG@274..288
+                                EXPR_CALL@274..288
+                                  EXPR_LIDENT@274..282
+                                    Lident@274..282 "duration"
+                                  ARG_LIST@282..288
+                                    LParen@282..283 "("
+                                    ARG@283..287
+                                      EXPR_INT@283..287
+                                        Int@283..287 "1000"
+                                    RParen@287..288 ")"
+                              RParen@288..289 ")"
+                          Semi@289..290 ";"
+                          Whitespace@290..303 "\n            "
+                        STMT_EXPR@303..351
+                          EXPR_CALL@303..341
+                            EXPR_LIDENT@303..310
+                              Lident@303..310 "ref_set"
+                            ARG_LIST@310..341
+                              LParen@310..311 "("
+                              ARG@311..320
+                                EXPR_LIDENT@311..318
+                                  Lident@311..318 "counter"
+                                Comma@318..319 ","
+                                Whitespace@319..320 " "
+                              ARG@320..340
+                                EXPR_BINARY@320..340
+                                  EXPR_CALL@320..337
+                                    EXPR_LIDENT@320..327
+                                      Lident@320..327 "ref_get"
+                                    ARG_LIST@327..337
+                                      LParen@327..328 "("
+                                      ARG@328..335
+                                        EXPR_LIDENT@328..335
+                                          Lident@328..335 "counter"
+                                      RParen@335..336 ")"
+                                      Whitespace@336..337 " "
+                                  Plus@337..338 "+"
+                                  Whitespace@338..339 " "
+                                  EXPR_INT@339..340
+                                    Int@339..340 "1"
+                              RParen@340..341 ")"
+                          Semi@341..342 ";"
+                          Whitespace@342..351 "\n        "
+                        RBrace@351..352 "}"
+                        Whitespace@352..357 "\n    "
+                  RBrace@357..358 "}"
+            ARG_LIST@358..360
+              LParen@358..359 "("
+              RParen@359..360 ")"
+        Semi@360..361 ";"
+        Whitespace@361..366 "\n    "
+      EXPR_WHILE@366..406
+        WhileKeyword@366..371 "while"
+        Whitespace@371..372 " "
+        EXPR_WHILE_COND@372..403
+          EXPR_CALL@372..403
+            EXPR_LIDENT@372..380
+              Lident@372..380 "int_less"
+            ARG_LIST@380..403
+              LParen@380..381 "("
+              ARG@381..399
+                EXPR_CALL@381..397
+                  EXPR_LIDENT@381..388
+                    Lident@381..388 "ref_get"
+                  ARG_LIST@388..397
+                    LParen@388..389 "("
+                    ARG@389..396
+                      EXPR_LIDENT@389..396
+                        Lident@389..396 "counter"
+                    RParen@396..397 ")"
+                Comma@397..398 ","
+                Whitespace@398..399 " "
+              ARG@399..401
+                EXPR_INT@399..401
+                  Int@399..401 "10"
+              RParen@401..402 ")"
+              Whitespace@402..403 " "
+        EXPR_WHILE_BODY@403..406
+          BLOCK@403..406
+            LBrace@403..404 "{"
+            RBrace@404..405 "}"
+            Whitespace@405..406 "\n"
+      RBrace@406..407 "}"
+      Whitespace@407..408 "\n"
