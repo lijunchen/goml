@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, ClosureParam, EnumDef, Expr, ExternGo, File, Fn, ImplBlock, Item, Pat, StructDef,
-    TraitDef, TraitMethodSignature, Ty, Uident,
+    Arm, ClosureParam, EnumDef, Expr, ExternGo, ExternType, File, Fn, ImplBlock, Item, Pat,
+    StructDef, TraitDef, TraitMethodSignature, Ty, Uident,
 };
 use pretty::RcDoc;
 
@@ -613,6 +613,11 @@ impl ExternGo {
             .append(RcDoc::text("\"go\""))
             .append(RcDoc::space())
             .append(RcDoc::text(format!("\"{}\"", self.package_path)))
+            .append(if self.explicit_go_symbol {
+                RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_symbol)))
+            } else {
+                RcDoc::nil()
+            })
             .append(RcDoc::space())
             .append(RcDoc::text(self.goml_name.0.clone()))
             .append(RcDoc::text("("))
@@ -625,6 +630,16 @@ impl ExternGo {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl ExternType {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        RcDoc::text("extern")
+            .append(RcDoc::space())
+            .append(RcDoc::text("type"))
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.goml_name.0.clone()))
     }
 }
 
@@ -653,6 +668,7 @@ impl Item {
             Item::ImplBlock(def) => def.to_doc(),
             Item::Fn(func) => func.to_doc(),
             Item::ExternGo(ext) => ext.to_doc(),
+            Item::ExternType(ext) => ext.to_doc(),
         }
     }
 

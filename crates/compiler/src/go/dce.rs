@@ -21,6 +21,7 @@ fn dce_item(item: ast::Item) -> ast::Item {
             ast::Item::Fn(f)
         }
         ast::Item::Struct(s) => ast::Item::Struct(s),
+        ast::Item::TypeAlias(a) => ast::Item::TypeAlias(a),
         ast::Item::Interface(i) => ast::Item::Interface(i),
     }
 }
@@ -935,6 +936,7 @@ fn collect_packages_in_item(
             }
         }
         ast::Item::Package(_) | ast::Item::Import(_) | ast::Item::Interface(_) => {}
+        ast::Item::TypeAlias(_) => {}
     }
 }
 

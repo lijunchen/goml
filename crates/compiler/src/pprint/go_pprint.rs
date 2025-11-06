@@ -5,7 +5,7 @@ use crate::{
     go::{
         goast::{
             BinaryOp, Block, Expr, Field, File, Fn, ImportDecl, ImportSpec, Interface, Item,
-            Method, MethodElem, Package, Receiver, Stmt, Struct, UnaryOp,
+            Method, MethodElem, Package, Receiver, Stmt, Struct, TypeAlias, UnaryOp,
         },
         goty::GoType,
     },
@@ -73,6 +73,7 @@ impl Item {
             Item::Import(import_decl) => import_decl.to_doc(env),
             Item::Interface(interface) => interface.to_doc(env),
             Item::Struct(struct_def) => struct_def.to_doc(env),
+            Item::TypeAlias(alias) => alias.to_doc(env),
             Item::Fn(func) => func.to_doc(env),
         }
     }
@@ -251,6 +252,24 @@ impl Struct {
                 .append(RcDoc::hardline())
                 .append(methods)
         }
+    }
+
+    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(env).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl TypeAlias {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+        RcDoc::text("type")
+            .append(RcDoc::space())
+            .append(RcDoc::text(&self.name))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(go_type_doc(&self.ty))
     }
 
     pub fn to_pretty(&self, env: &Env, width: usize) -> String {

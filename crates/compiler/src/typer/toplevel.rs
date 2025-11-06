@@ -349,6 +349,10 @@ fn define_extern_go(env: &mut Env, ext: &ast::ExternGo) {
     );
 }
 
+fn define_extern_type(env: &mut Env, ext: &ast::ExternType) {
+    env.register_extern_type(ext.goml_name.0.clone());
+}
+
 fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
@@ -405,6 +409,7 @@ pub fn collect_typedefs(env: &mut Env, ast: &ast::File) {
             ast::Item::ImplBlock(impl_block) => define_impl(env, impl_block),
             ast::Item::Fn(func) => define_function(env, func),
             ast::Item::ExternGo(ext) => define_extern_go(env, ext),
+            ast::Item::ExternType(ext) => define_extern_type(env, ext),
         }
     }
 }
@@ -432,6 +437,9 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
                 typed_toplevel_tasts.push(tast::Item::ExternGo(check_extern_go(
                     &mut env, &mut typer, ext,
                 )));
+            }
+            ast::Item::ExternType(ext) => {
+                typed_toplevel_tasts.push(tast::Item::ExternType(check_extern_type(&mut env, ext)));
             }
         }
     }
@@ -548,5 +556,12 @@ fn check_extern_go(
         package_path: ext.package_path.clone(),
         params,
         ret_ty,
+    }
+}
+
+fn check_extern_type(env: &mut Env, ext: &ast::ExternType) -> tast::ExternType {
+    env.register_extern_type(ext.goml_name.0.clone());
+    tast::ExternType {
+        goml_name: ext.goml_name.0.clone(),
     }
 }

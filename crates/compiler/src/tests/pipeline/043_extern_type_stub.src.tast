@@ -1,0 +1,33 @@
+extern type Time
+
+extern type Duration
+
+extern "go" "time" unix(secs: int, nanos: int) -> Time
+
+extern "go" "time" duration(nanos: int) -> Duration
+
+extern "go" "fmt" format_time(format: string, value: Time) -> string
+
+extern "go" "fmt" format_duration(format: string, value: Duration) -> string
+
+fn describe_epoch() -> string {
+  let epoch/0: Time = (unix : (int, int) -> Time)(946684800, 500000000) in
+  (format_time : (string, Time) -> string)("epoch snapshot => %v", (epoch/0 : Time))
+}
+
+fn describe_planned_launch() -> string {
+  let launch/1: Time = (unix : (int, int) -> Time)(1709294730, 250000000) in
+  (format_time : (string, Time) -> string)("planned launch => %v", (launch/1 : Time))
+}
+
+fn describe_duration() -> string {
+  let parsed/2: Duration = (duration : (int) -> Duration)(1500000000) in
+  (format_duration : (string, Duration) -> string)("parsed duration => %v", (parsed/2 : Duration))
+}
+
+fn main() -> unit {
+  let _ : unit = (string_println : (string) -> unit)((describe_epoch : () -> string)()) in
+  let _ : unit = (string_println : (string) -> unit)((describe_planned_launch : () -> string)()) in
+  let _ : unit = (string_println : (string) -> unit)((describe_duration : () -> string)()) in
+  ()
+}

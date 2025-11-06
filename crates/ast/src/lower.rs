@@ -100,7 +100,7 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
         cst::Item::Trait(it) => Some(ast::Item::TraitDef(lower_trait(ctx, it)?)),
         cst::Item::Impl(it) => Some(ast::Item::ImplBlock(lower_impl_block(ctx, it)?)),
         cst::Item::Fn(it) => Some(ast::Item::Fn(lower_fn(ctx, it)?)),
-        cst::Item::Extern(it) => Some(ast::Item::ExternGo(lower_extern(ctx, it)?)),
+        cst::Item::Extern(it) => lower_extern(ctx, it),
     }
 }
 
@@ -429,13 +429,27 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     })
 }
 
-fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> {
+fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
+    if node.type_keyword().is_some() && node.lang().is_none() {
+        let Some(name_token) = node.uident() else {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Extern type declaration is missing type name",
+            );
+            return None;
+        };
+        let name = name_token.to_string();
+        return Some(ast::Item::ExternType(ast::ExternType {
+            goml_name: ast::Uident::new(&name),
+        }));
+    }
+
     let lang_token = node.lang();
     let lang = match lang_token {
         Some(token) => {
             let raw = token.to_string();
-            raw.strip_prefix('"')
-                .and_then(|s| s.strip_suffix('"'))
+            raw.strip_prefix('\"')
+                .and_then(|s| s.strip_suffix('\"'))
                 .map(|s| s.to_string())
         }
         None => None,
@@ -459,8 +473,8 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
     let package_path = match package_token {
         Some(token) => {
             let raw = token.to_string();
-            raw.strip_prefix('"')
-                .and_then(|s| s.strip_suffix('"'))
+            raw.strip_prefix('\"')
+                .and_then(|s| s.strip_suffix('\"'))
                 .map(|s| s.to_string())
         }
         None => None,
@@ -473,6 +487,27 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
         return None;
     };
 
+    if node.type_keyword().is_some() {
+        let Some(name_token) = node.uident() else {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Extern type declaration is missing type name",
+            );
+            return None;
+        };
+        let name = name_token.to_string();
+        return Some(ast::Item::ExternType(ast::ExternType {
+            goml_name: ast::Uident::new(&name),
+        }));
+    }
+
+    let go_symbol_override = node.symbol().and_then(|token| {
+        let raw = token.to_string();
+        raw.strip_prefix('\"')
+            .and_then(|s| s.strip_suffix('\"'))
+            .map(|s| s.to_string())
+    });
+
     let Some(name_token) = node.lident() else {
         ctx.push_error(
             Some(node.syntax().text_range()),
@@ -481,6 +516,10 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
         return None;
     };
     let name = name_token.to_string();
+    let (go_symbol, explicit_go_symbol) = match go_symbol_override {
+        Some(symbol) => (symbol, true),
+        None => (name.clone(), false),
+    };
 
     let params = node
         .param_list()
@@ -492,13 +531,14 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::ExternGo> 
         .unwrap_or_default();
     let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
 
-    Some(ast::ExternGo {
+    Some(ast::Item::ExternGo(ast::ExternGo {
         package_path,
-        go_symbol: name.clone(),
+        go_symbol,
         goml_name: ast::Lident(name),
+        explicit_go_symbol,
         params,
         ret_ty,
-    })
+    }))
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {

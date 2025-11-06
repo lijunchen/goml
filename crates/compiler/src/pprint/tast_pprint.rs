@@ -32,6 +32,7 @@ impl Item {
             Self::ImplBlock(impl_block) => impl_block.to_doc(env),
             Self::Fn(func) => func.to_doc(env),
             Self::ExternGo(ext) => ext.to_doc(env),
+            Self::ExternType(ext) => ext.to_doc(env),
         }
     }
 
@@ -144,6 +145,16 @@ impl crate::tast::ExternGo {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl crate::tast::ExternType {
+    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+        RcDoc::text("extern")
+            .append(RcDoc::space())
+            .append(RcDoc::text("type"))
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.goml_name.clone()))
     }
 }
 
