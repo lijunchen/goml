@@ -1,7 +1,21 @@
 package main
 
+import (
+    "fmt"
+    "time"
+)
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
 func int_less(x int, y int) bool {
     return x < y
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
 }
 
 type ref_int_x struct {
@@ -18,39 +32,55 @@ func ref_get__Ref_int(reference *ref_int_x) int {
     return reference.value
 }
 
-type closure_env_mtmp3_0 struct {
-    counter_0 *ref_int_x
+func ref_set__Ref_int(reference *ref_int_x, value int) struct{} {
+    reference.value = value
+    return struct{}{}
 }
 
-type closure_env_main_1 struct {
+type closure_env_main_0 struct {
     counter_0 *ref_int_x
 }
 
 type Duration = time.Duration
 
 func main0() struct{} {
-    var ret15 struct{}
+    var ret12 struct{}
     var counter__0 *ref_int_x = ref__Ref_int(0)
-    var t9 closure_env_main_1 = closure_env_main_1{
+    var t6 closure_env_main_0 = closure_env_main_0{
         counter_0: counter__0,
     }
-    go __closure_apply7(t9)
-    var cond16 bool
+    go __closure_apply4(t6)
+    var cond13 bool
     for {
-        var t10 int = ref_get__Ref_int(counter__0)
-        cond16 = int_less(t10, 10)
-        if !cond16 {
+        var t7 int = ref_get__Ref_int(counter__0)
+        cond13 = int_less(t7, 10)
+        if !cond13 {
             break
         }
     }
-    ret15 = struct{}{}
-    return ret15
+    ret12 = struct{}{}
+    return ret12
 }
 
-func __closure_apply7(env8 closure_env_main_1) struct{} {
-    var ret19 struct{}
-    ret19 = struct{}{}
-    return ret19
+func __closure_apply4(env5 closure_env_main_0) struct{} {
+    var ret14 struct{}
+    var counter__0 *ref_int_x = env5.counter_0
+    var cond15 bool
+    for {
+        var t8 int = ref_get__Ref_int(counter__0)
+        cond15 = int_less(t8, 10)
+        if !cond15 {
+            break
+        }
+        string_println("hello")
+        var t9 Duration = time.Duration(1000)
+        time.Sleep(t9)
+        var t11 int = ref_get__Ref_int(counter__0)
+        var t10 int = int_add(t11, 1)
+        ref_set__Ref_int(counter__0, t10)
+    }
+    ret14 = struct{}{}
+    return ret14
 }
 
 func main() {
