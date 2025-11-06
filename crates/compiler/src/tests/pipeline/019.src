@@ -46,21 +46,54 @@ fn point_to_string(p: Point) -> string {
     )
 }
 
+fn point_to_string2(p: Point) -> string {
+    let Point { x, y } = p;
+    string_add(
+        string_add(
+            string_add("Point { x: ", int_to_string(x)),
+            string_add(", y: ", int_to_string(y)),
+        ),
+        "}",
+    )
+}
+
+fn point_to_string3(p: Point) -> string {
+    let Point { x: x, y } = p;
+    string_add(
+        string_add(
+            string_add("Point { x: ", int_to_string(x)),
+            string_add(", y: ", int_to_string(y)),
+        ),
+        "}",
+    )
+}
+
+fn point_to_string4(p: Point) -> string {
+    let Point { x, y: y } = p;
+    string_add(
+        string_add(
+            string_add("Point { x: ", int_to_string(x)),
+            string_add(", y: ", int_to_string(y)),
+        ),
+        "}",
+    )
+}
+
 fn main() {
     let start = make_point();
     let _ = string_println(point_to_string(start));
 
     let swapped = flip(Point { y: 2, x: 1 });
-    let _ = string_println(point_to_string(swapped));
+    let _ = string_println(point_to_string2(swapped));
 
     let boxed = wrap_int(3);
     let point_box = Wrapper { value: swapped };
 
     let a = x_add_1(start);
-    let _ = string_println(point_to_string(a));
+    let _ = string_println(point_to_string3(a));
 
     let a = flip(x_add_1(start));
-    let _ = string_println(point_to_string(a));
+    let _ = string_println(point_to_string4(a));
 
     ()
 }

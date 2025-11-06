@@ -120,6 +120,51 @@ fn struct_literal_expr() {
 }
 
 #[test]
+fn struct_pattern_shorthand() {
+    check(
+        "fn main() { let Point { x, y } = point; }",
+        expect![[r#"
+            FILE@0..41
+              FN@0..41
+                FnKeyword@0..2 "fn"
+                Whitespace@2..3 " "
+                Lident@3..7 "main"
+                PARAM_LIST@7..10
+                  LParen@7..8 "("
+                  RParen@8..9 ")"
+                  Whitespace@9..10 " "
+                BLOCK@10..41
+                  LBrace@10..11 "{"
+                  Whitespace@11..12 " "
+                  STMT_LET@12..40
+                    LetKeyword@12..15 "let"
+                    Whitespace@15..16 " "
+                    PATTERN_CONSTR@16..31
+                      Uident@16..21 "Point"
+                      Whitespace@21..22 " "
+                      STRUCT_PATTERN_FIELD_LIST@22..31
+                        LBrace@22..23 "{"
+                        Whitespace@23..24 " "
+                        STRUCT_PATTERN_FIELD@24..25
+                          Lident@24..25 "x"
+                        Comma@25..26 ","
+                        Whitespace@26..27 " "
+                        STRUCT_PATTERN_FIELD@27..29
+                          Lident@27..28 "y"
+                          Whitespace@28..29 " "
+                        RBrace@29..30 "}"
+                        Whitespace@30..31 " "
+                    Eq@31..32 "="
+                    Whitespace@32..33 " "
+                    EXPR_LIDENT@33..38
+                      Lident@33..38 "point"
+                    Semi@38..39 ";"
+                    Whitespace@39..40 " "
+                  RBrace@40..41 "}""#]],
+    );
+}
+
+#[test]
 fn reports_parse_errors_without_panicking() {
     let path = Path::new("test.goml");
     let src = "fn foo(";
