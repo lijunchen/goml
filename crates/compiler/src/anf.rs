@@ -20,7 +20,7 @@ pub enum ImmExpr {
     ImmVar { name: String, ty: Ty },
     ImmUnit { ty: Ty },
     ImmBool { value: bool, ty: Ty },
-    ImmInt { value: i32, ty: Ty },
+    ImmInt { value: i64, ty: Ty },
     ImmString { value: String, ty: Ty },
     ImmTag { index: usize, ty: Ty },
 }

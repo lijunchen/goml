@@ -20,7 +20,14 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
         match ty {
             Ty::TParam { .. } => true,
             Ty::TVar(..) => false,
-            Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TInt8 | Ty::TString => false,
+            Ty::TUnit
+            | Ty::TBool
+            | Ty::TInt
+            | Ty::TInt8
+            | Ty::TInt16
+            | Ty::TInt32
+            | Ty::TInt64
+            | Ty::TString => false,
             Ty::TTuple { typs } => typs.iter().any(has_tparam),
             Ty::TCon { .. } => false,
             Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
@@ -72,7 +79,14 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
         match ty {
             Ty::TParam { name } => s.get(name).cloned().unwrap_or_else(|| ty.clone()),
             Ty::TVar(..) => ty.clone(),
-            Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TInt8 | Ty::TString => ty.clone(),
+            Ty::TUnit
+            | Ty::TBool
+            | Ty::TInt
+            | Ty::TInt8
+            | Ty::TInt16
+            | Ty::TInt32
+            | Ty::TInt64
+            | Ty::TString => ty.clone(),
             Ty::TTuple { typs } => Ty::TTuple {
                 typs: typs.iter().map(|t| subst_ty(t, s)).collect(),
             },
@@ -142,6 +156,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             | (Ty::TBool, Ty::TBool)
             | (Ty::TInt, Ty::TInt)
             | (Ty::TInt8, Ty::TInt8)
+            | (Ty::TInt16, Ty::TInt16)
+            | (Ty::TInt32, Ty::TInt32)
+            | (Ty::TInt64, Ty::TInt64)
             | (Ty::TString, Ty::TString) => Ok(()),
             (Ty::TTuple { typs: l }, Ty::TTuple { typs: r }) => {
                 if l.len() != r.len() {

@@ -13,6 +13,9 @@ pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String
         | tast::Ty::TBool
         | tast::Ty::TInt
         | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
         | tast::Ty::TString => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
@@ -113,6 +116,9 @@ pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
         ast::Ty::TBool => tast::Ty::TBool,
         ast::Ty::TInt => tast::Ty::TInt,
         ast::Ty::TInt8 => tast::Ty::TInt8,
+        ast::Ty::TInt16 => tast::Ty::TInt16,
+        ast::Ty::TInt32 => tast::Ty::TInt32,
+        ast::Ty::TInt64 => tast::Ty::TInt64,
         ast::Ty::TString => tast::Ty::TString,
         ast::Ty::TTuple { typs } => {
             let typs = typs
@@ -162,20 +168,28 @@ pub(crate) fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
 
 pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
     match op {
-        ast::BinaryOp::Add => matches!(
-            (lhs, rhs),
-            (tast::Ty::TInt, tast::Ty::TInt)
-                | (tast::Ty::TInt8, tast::Ty::TInt8)
-                | (tast::Ty::TString, tast::Ty::TString)
-        ),
+        ast::BinaryOp::Add => {
+            if matches!((lhs, rhs), (tast::Ty::TString, tast::Ty::TString)) {
+                return true;
+            }
+            numeric_binary_same_width(lhs, rhs)
+        }
         ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-            matches!(
-                (lhs, rhs),
-                (tast::Ty::TInt, tast::Ty::TInt) | (tast::Ty::TInt8, tast::Ty::TInt8)
-            )
+            numeric_binary_same_width(lhs, rhs)
         }
         ast::BinaryOp::And | ast::BinaryOp::Or => {
             matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))
         }
     }
+}
+
+fn numeric_binary_same_width(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    matches!(
+        (lhs, rhs),
+        (tast::Ty::TInt, tast::Ty::TInt)
+            | (tast::Ty::TInt8, tast::Ty::TInt8)
+            | (tast::Ty::TInt16, tast::Ty::TInt16)
+            | (tast::Ty::TInt32, tast::Ty::TInt32)
+            | (tast::Ty::TInt64, tast::Ty::TInt64)
+    )
 }

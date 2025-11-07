@@ -1,0 +1,29 @@
+fn main() -> unit {
+  let start16/0 = 300 in
+  let delta16/1 = 45 in
+  let sum16/2 = int16_add(start16/0, delta16/1) in
+  let flipped16/3 = int16_neg(start16/0) in
+  let base32/4 = 100000 in
+  let more32/5 = 200000 in
+  let sum32/6 = int32_add(base32/4, more32/5) in
+  let diff32/7 = int32_sub(sum32/6, base32/4) in
+  let big64/8 = 5000000000 in
+  let step64/9 = 2000000000 in
+  let remain64/10 = int64_sub(big64/8, step64/9) in
+  let neg64/11 = int64_neg(step64/9) in
+  let t8 = int16_to_string(sum16/2) in
+  let t7 = string_add(t8, ", ") in
+  let t9 = int16_to_string(flipped16/3) in
+  let t6 = string_add(t7, t9) in
+  let t5 = string_add(t6, "; ") in
+  let t10 = int32_to_string(diff32/7) in
+  let t4 = string_add(t5, t10) in
+  let t3 = string_add(t4, "; ") in
+  let t11 = int64_to_string(remain64/10) in
+  let t2 = string_add(t3, t11) in
+  let t1 = string_add(t2, "; ") in
+  let t12 = int64_to_string(neg64/11) in
+  let message/12 = string_add(t1, t12) in
+  let mtmp0 = string_println(message/12) in
+  ()
+}

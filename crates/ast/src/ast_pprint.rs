@@ -11,6 +11,9 @@ impl Ty {
             Self::TBool => RcDoc::text("bool"),
             Self::TInt => RcDoc::text("int"),
             Self::TInt8 => RcDoc::text("int8"),
+            Self::TInt16 => RcDoc::text("int16"),
+            Self::TInt32 => RcDoc::text("int32"),
+            Self::TInt64 => RcDoc::text("int64"),
             Self::TString => RcDoc::text("string"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");

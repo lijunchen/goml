@@ -29,10 +29,13 @@ impl TypeInference {
                 value: *value,
                 ty: tast::Ty::TBool,
             },
-            ast::Expr::EInt { value } => tast::Expr::EInt {
-                value: *value,
-                ty: tast::Ty::TInt,
-            },
+            ast::Expr::EInt { value } => {
+                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
+                tast::Expr::EInt {
+                    value: *value,
+                    ty: tast::Ty::TInt,
+                }
+            }
             ast::Expr::EString { value } => tast::Expr::EString {
                 value: value.clone(),
                 ty: tast::Ty::TString,
@@ -76,21 +79,11 @@ impl TypeInference {
     ) -> tast::Expr {
         let expr_tast = match e {
             ast::Expr::EInt { value } => {
-                if matches!(expected, tast::Ty::TInt8) {
-                    if (i8::MIN as i32..=i8::MAX as i32).contains(value) {
-                        tast::Expr::EInt {
-                            value: *value,
-                            ty: tast::Ty::TInt8,
-                        }
-                    } else {
-                        env.report_typer_error(format!(
-                            "Integer literal {} does not fit in int8",
-                            value
-                        ));
-                        tast::Expr::EInt {
-                            value: *value,
-                            ty: tast::Ty::TInt8,
-                        }
+                if let Some(target_ty) = integer_literal_target(expected) {
+                    ensure_integer_literal_fits(env, *value, &target_ty);
+                    tast::Expr::EInt {
+                        value: *value,
+                        ty: target_ty,
                     }
                 } else {
                     self.infer_expr(env, vars, e)
@@ -99,17 +92,17 @@ impl TypeInference {
             ast::Expr::EUnary {
                 op: ast::UnaryOp::Neg,
                 expr: inner,
-            } if matches!(expected, tast::Ty::TInt8) => {
+            } if is_integer_ty(expected) => {
                 let operand = self.check_expr(env, vars, inner, expected);
                 tast::Expr::EUnary {
                     op: ast::UnaryOp::Neg,
                     expr: Box::new(operand),
-                    ty: tast::Ty::TInt8,
+                    ty: expected.clone(),
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
             ast::Expr::EBinary { op, lhs, rhs }
-                if matches!(expected, tast::Ty::TInt8)
+                if is_integer_ty(expected)
                     && matches!(
                         op,
                         ast::BinaryOp::Add
@@ -124,7 +117,7 @@ impl TypeInference {
                     op: *op,
                     lhs: Box::new(lhs_tast),
                     rhs: Box::new(rhs_tast),
-                    ty: tast::Ty::TInt8,
+                    ty: expected.clone(),
                     resolution: tast::BinaryResolution::Builtin,
                 }
             }
@@ -780,8 +773,8 @@ impl TypeInference {
                 })
             }
             ast::UnaryOp::Neg => {
-                let target_ty = if matches!(expr_ty, tast::Ty::TInt8) {
-                    tast::Ty::TInt8
+                let target_ty = if is_integer_ty(&expr_ty) {
+                    expr_ty.clone()
                 } else {
                     tast::Ty::TInt
                 };
@@ -835,38 +828,14 @@ impl TypeInference {
         let mut lhs_ty = lhs_tast.get_ty();
         let mut rhs_ty = rhs_tast.get_ty();
 
-        if matches!(lhs_ty, tast::Ty::TInt8)
-            && matches!(rhs_ty, tast::Ty::TInt)
-            && matches!(rhs, ast::Expr::EInt { .. })
-            && let tast::Expr::EInt { value, .. } = &rhs_tast
-        {
-            let value = *value;
-            if (i8::MIN as i32..=i8::MAX as i32).contains(&value) {
-                rhs_tast = tast::Expr::EInt {
-                    value,
-                    ty: tast::Ty::TInt8,
-                };
-                rhs_ty = tast::Ty::TInt8;
-            } else {
-                env.report_typer_error(format!("Integer literal {} does not fit in int8", value));
-            }
+        if let Some(new_rhs) = self.try_adjust_int_literal(env, rhs, &rhs_tast, &lhs_ty) {
+            rhs_tast = new_rhs;
+            rhs_ty = rhs_tast.get_ty();
         }
 
-        if matches!(rhs_ty, tast::Ty::TInt8)
-            && matches!(lhs_ty, tast::Ty::TInt)
-            && matches!(lhs, ast::Expr::EInt { .. })
-            && let tast::Expr::EInt { value, .. } = &lhs_tast
-        {
-            let value = *value;
-            if (i8::MIN as i32..=i8::MAX as i32).contains(&value) {
-                lhs_tast = tast::Expr::EInt {
-                    value,
-                    ty: tast::Ty::TInt8,
-                };
-                lhs_ty = tast::Ty::TInt8;
-            } else {
-                env.report_typer_error(format!("Integer literal {} does not fit in int8", value));
-            }
+        if let Some(new_lhs) = self.try_adjust_int_literal(env, lhs, &lhs_tast, &rhs_ty) {
+            lhs_tast = new_lhs;
+            lhs_ty = lhs_tast.get_ty();
         }
         let method_name = op.method_name();
 
@@ -893,15 +862,8 @@ impl TypeInference {
         }
 
         let ret_ty = match op {
-            ast::BinaryOp::Add => self.fresh_ty_var(),
-            ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-                if matches!(lhs_ty, tast::Ty::TInt8) && matches!(rhs_ty, tast::Ty::TInt8) {
-                    tast::Ty::TInt8
-                } else {
-                    tast::Ty::TInt
-                }
-            }
             ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
+            _ => self.fresh_ty_var(),
         };
 
         match op {
@@ -931,6 +893,29 @@ impl TypeInference {
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
             resolution: tast::BinaryResolution::Builtin,
+        }
+    }
+
+    fn try_adjust_int_literal(
+        &mut self,
+        env: &mut Env,
+        ast_expr: &ast::Expr,
+        tast_expr: &tast::Expr,
+        target_ty: &tast::Ty,
+    ) -> Option<tast::Expr> {
+        if !is_integer_ty(target_ty) {
+            return None;
+        }
+
+        match (ast_expr, tast_expr) {
+            (ast::Expr::EInt { value }, tast::Expr::EInt { .. }) => {
+                ensure_integer_literal_fits(env, *value, target_ty);
+                Some(tast::Expr::EInt {
+                    value: *value,
+                    ty: target_ty.clone(),
+                })
+            }
+            _ => None,
         }
     }
 
@@ -1043,12 +1028,14 @@ impl TypeInference {
         }
     }
 
-    fn check_pat_int(&mut self, env: &mut Env, value: i32, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_int(&mut self, env: &mut Env, value: i64, ty: &tast::Ty) -> tast::Pat {
+        let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt);
+        ensure_integer_literal_fits(env, value, &target_ty);
         env.constraints
-            .push(Constraint::TypeEqual(tast::Ty::TInt, ty.clone()));
+            .push(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PInt {
             value,
-            ty: tast::Ty::TInt,
+            ty: target_ty,
         }
     }
 
@@ -1279,10 +1266,13 @@ impl TypeInference {
                 value: *value,
                 ty: tast::Ty::TBool,
             },
-            ast::Pat::PInt { value } => tast::Pat::PInt {
-                value: *value,
-                ty: tast::Ty::TInt,
-            },
+            ast::Pat::PInt { value } => {
+                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
+                tast::Pat::PInt {
+                    value: *value,
+                    ty: tast::Ty::TInt,
+                }
+            }
             ast::Pat::PString { value } => tast::Pat::PString {
                 value: value.clone(),
                 ty: tast::Ty::TString,
@@ -1293,4 +1283,56 @@ impl TypeInference {
             }
         }
     }
+}
+
+fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
+    if is_integer_ty(expected) {
+        Some(expected.clone())
+    } else {
+        None
+    }
+}
+
+fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
+    if let Some((min, max)) = integer_bounds(ty)
+        && (value < min || value > max)
+    {
+        if let Some(name) = integer_type_name(ty) {
+            env.report_typer_error(format!(
+                "Integer literal {} does not fit in {}",
+                value, name
+            ));
+        } else {
+            env.report_typer_error(format!(
+                "Integer literal {} does not fit in integer type {:?}",
+                value, ty
+            ));
+        }
+    }
+}
+
+fn integer_bounds(ty: &tast::Ty) -> Option<(i64, i64)> {
+    match ty {
+        tast::Ty::TInt8 => Some((i8::MIN as i64, i8::MAX as i64)),
+        tast::Ty::TInt16 => Some((i16::MIN as i64, i16::MAX as i64)),
+        tast::Ty::TInt32 => Some((i32::MIN as i64, i32::MAX as i64)),
+        tast::Ty::TInt => Some((i32::MIN as i64, i32::MAX as i64)),
+        tast::Ty::TInt64 => Some((i64::MIN, i64::MAX)),
+        _ => None,
+    }
+}
+
+fn integer_type_name(ty: &tast::Ty) -> Option<&'static str> {
+    match ty {
+        tast::Ty::TInt8 => Some("int8"),
+        tast::Ty::TInt16 => Some("int16"),
+        tast::Ty::TInt32 => Some("int32"),
+        tast::Ty::TInt64 => Some("int64"),
+        tast::Ty::TInt => Some("int"),
+        _ => None,
+    }
+}
+
+fn is_integer_ty(ty: &tast::Ty) -> bool {
+    integer_bounds(ty).is_some()
 }

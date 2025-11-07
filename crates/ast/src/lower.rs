@@ -265,6 +265,9 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
         cst::Type::BoolTy(_) => Some(ast::Ty::TBool),
         cst::Type::IntTy(_) => Some(ast::Ty::TInt),
         cst::Type::Int8Ty(_) => Some(ast::Ty::TInt8),
+        cst::Type::Int16Ty(_) => Some(ast::Ty::TInt16),
+        cst::Type::Int32Ty(_) => Some(ast::Ty::TInt32),
+        cst::Type::Int64Ty(_) => Some(ast::Ty::TInt64),
         cst::Type::StringTy(_) => Some(ast::Ty::TString),
         cst::Type::TupleTy(it) => {
             let typs = it
@@ -707,7 +710,7 @@ fn lower_expr_with_args(
                 return None;
             };
             let text = token.to_string();
-            let value = match text.parse::<i32>() {
+            let value = match text.parse::<i64>() {
                 Ok(value) => value,
                 Err(_) => {
                     ctx.push_error(
@@ -1420,7 +1423,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::IntPat(it) => {
             let value = it.value()?.to_string();
-            match value.parse::<i32>() {
+            match value.parse::<i64>() {
                 Ok(value) => Some(ast::Pat::PInt { value }),
                 Err(_) => {
                     ctx.push_error(

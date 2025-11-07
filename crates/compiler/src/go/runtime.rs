@@ -54,8 +54,14 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(bool_to_string()),
         Item::Fn(int_to_string()),
         Item::Fn(int8_to_string()),
+        Item::Fn(int16_to_string()),
+        Item::Fn(int32_to_string()),
+        Item::Fn(int64_to_string()),
         Item::Fn(int_neg()),
         Item::Fn(int8_neg()),
+        Item::Fn(int16_neg()),
+        Item::Fn(int32_neg()),
+        Item::Fn(int64_neg()),
         Item::Fn(bool_not()),
         Item::Fn(bool_and()),
         Item::Fn(bool_or()),
@@ -69,6 +75,21 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int8_mul()),
         Item::Fn(int8_div()),
         Item::Fn(int8_less()),
+        Item::Fn(int16_add()),
+        Item::Fn(int16_sub()),
+        Item::Fn(int16_mul()),
+        Item::Fn(int16_div()),
+        Item::Fn(int16_less()),
+        Item::Fn(int32_add()),
+        Item::Fn(int32_sub()),
+        Item::Fn(int32_mul()),
+        Item::Fn(int32_div()),
+        Item::Fn(int32_less()),
+        Item::Fn(int64_add()),
+        Item::Fn(int64_sub()),
+        Item::Fn(int64_mul()),
+        Item::Fn(int64_div()),
+        Item::Fn(int64_less()),
         Item::Fn(string_add()),
         Item::Fn(string_print()),
         Item::Fn(string_println()),
@@ -323,20 +344,21 @@ fn bool_to_string() -> goast::Fn {
     }
 }
 
-fn int_to_string() -> goast::Fn {
+fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
+    let fmt_ty = goty::GoType::TFunc {
+        params: vec![goty::GoType::TString, ty.clone()],
+        ret_ty: Box::new(goty::GoType::TString),
+    };
     goast::Fn {
-        name: "int_to_string".to_string(),
-        params: vec![("x".to_string(), goty::GoType::TInt)],
+        name: name.to_string(),
+        params: vec![("x".to_string(), ty.clone())],
         ret_ty: Some(goty::GoType::TString),
         body: goast::Block {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
                         name: "fmt.Sprintf".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TString, goty::GoType::TInt],
-                            ret_ty: Box::new(goty::GoType::TString),
-                        },
+                        ty: fmt_ty,
                     }),
                     args: vec![
                         goast::Expr::String {
@@ -345,7 +367,7 @@ fn int_to_string() -> goast::Fn {
                         },
                         goast::Expr::Var {
                             name: "x".to_string(),
-                            ty: goty::GoType::TInt,
+                            ty,
                         },
                     ],
                     ty: goty::GoType::TString,
@@ -353,78 +375,114 @@ fn int_to_string() -> goast::Fn {
             }],
         },
     }
+}
+
+fn neg_fn(name: &str, ty: goty::GoType) -> goast::Fn {
+    goast::Fn {
+        name: name.to_string(),
+        params: vec![("x".to_string(), ty.clone())],
+        ret_ty: Some(ty.clone()),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::UnaryOp {
+                    op: UnaryOp::Neg,
+                    expr: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: ty.clone(),
+                    }),
+                    ty,
+                }),
+            }],
+        },
+    }
+}
+
+fn arithmetic_binary_fn_with_ty(name: &str, op: BinaryOp, ty: goty::GoType) -> goast::Fn {
+    goast::Fn {
+        name: name.to_string(),
+        params: vec![("x".to_string(), ty.clone()), ("y".to_string(), ty.clone())],
+        ret_ty: Some(ty.clone()),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::BinaryOp {
+                    op,
+                    lhs: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: ty.clone(),
+                    }),
+                    rhs: Box::new(goast::Expr::Var {
+                        name: "y".to_string(),
+                        ty: ty.clone(),
+                    }),
+                    ty,
+                }),
+            }],
+        },
+    }
+}
+
+fn less_fn_with_ty(name: &str, ty: goty::GoType) -> goast::Fn {
+    goast::Fn {
+        name: name.to_string(),
+        params: vec![("x".to_string(), ty.clone()), ("y".to_string(), ty.clone())],
+        ret_ty: Some(goty::GoType::TBool),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::BinaryOp {
+                    op: BinaryOp::Less,
+                    lhs: Box::new(goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: ty.clone(),
+                    }),
+                    rhs: Box::new(goast::Expr::Var {
+                        name: "y".to_string(),
+                        ty: ty.clone(),
+                    }),
+                    ty: goty::GoType::TBool,
+                }),
+            }],
+        },
+    }
+}
+
+fn int_to_string() -> goast::Fn {
+    to_string_fn("int_to_string", goty::GoType::TInt)
 }
 
 fn int_neg() -> goast::Fn {
-    goast::Fn {
-        name: "int_neg".to_string(),
-        params: vec![("x".to_string(), goty::GoType::TInt)],
-        ret_ty: Some(goty::GoType::TInt),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::UnaryOp {
-                    op: UnaryOp::Neg,
-                    expr: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt,
-                    }),
-                    ty: goty::GoType::TInt,
-                }),
-            }],
-        },
-    }
+    neg_fn("int_neg", goty::GoType::TInt)
 }
 
 fn int8_to_string() -> goast::Fn {
-    goast::Fn {
-        name: "int8_to_string".to_string(),
-        params: vec![("x".to_string(), goty::GoType::TInt8)],
-        ret_ty: Some(goty::GoType::TString),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "fmt.Sprintf".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TString, goty::GoType::TInt8],
-                            ret_ty: Box::new(goty::GoType::TString),
-                        },
-                    }),
-                    args: vec![
-                        goast::Expr::String {
-                            value: "%d".to_string(),
-                            ty: goty::GoType::TString,
-                        },
-                        goast::Expr::Var {
-                            name: "x".to_string(),
-                            ty: goty::GoType::TInt8,
-                        },
-                    ],
-                    ty: goty::GoType::TString,
-                }),
-            }],
-        },
-    }
+    to_string_fn("int8_to_string", goty::GoType::TInt8)
 }
 
 fn int8_neg() -> goast::Fn {
-    goast::Fn {
-        name: "int8_neg".to_string(),
-        params: vec![("x".to_string(), goty::GoType::TInt8)],
-        ret_ty: Some(goty::GoType::TInt8),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::UnaryOp {
-                    op: UnaryOp::Neg,
-                    expr: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt8,
-                    }),
-                    ty: goty::GoType::TInt8,
-                }),
-            }],
-        },
-    }
+    neg_fn("int8_neg", goty::GoType::TInt8)
+}
+
+fn int16_to_string() -> goast::Fn {
+    to_string_fn("int16_to_string", goty::GoType::TInt16)
+}
+
+fn int16_neg() -> goast::Fn {
+    neg_fn("int16_neg", goty::GoType::TInt16)
+}
+
+fn int32_to_string() -> goast::Fn {
+    to_string_fn("int32_to_string", goty::GoType::TInt32)
+}
+
+fn int32_neg() -> goast::Fn {
+    neg_fn("int32_neg", goty::GoType::TInt32)
+}
+
+fn int64_to_string() -> goast::Fn {
+    to_string_fn("int64_to_string", goty::GoType::TInt64)
+}
+
+fn int64_neg() -> goast::Fn {
+    neg_fn("int64_neg", goty::GoType::TInt64)
 }
 
 fn bool_not() -> goast::Fn {
@@ -534,111 +592,79 @@ fn int8_div() -> goast::Fn {
 }
 
 fn arithmetic_binary_fn(name: &str, op: BinaryOp) -> goast::Fn {
-    goast::Fn {
-        name: name.to_string(),
-        params: vec![
-            ("x".to_string(), goty::GoType::TInt),
-            ("y".to_string(), goty::GoType::TInt),
-        ],
-        ret_ty: Some(goty::GoType::TInt),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::BinaryOp {
-                    op,
-                    lhs: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt,
-                    }),
-                    rhs: Box::new(goast::Expr::Var {
-                        name: "y".to_string(),
-                        ty: goty::GoType::TInt,
-                    }),
-                    ty: goty::GoType::TInt,
-                }),
-            }],
-        },
-    }
+    arithmetic_binary_fn_with_ty(name, op, goty::GoType::TInt)
 }
 
 fn arithmetic_binary_fn_int8(name: &str, op: BinaryOp) -> goast::Fn {
-    goast::Fn {
-        name: name.to_string(),
-        params: vec![
-            ("x".to_string(), goty::GoType::TInt8),
-            ("y".to_string(), goty::GoType::TInt8),
-        ],
-        ret_ty: Some(goty::GoType::TInt8),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::BinaryOp {
-                    op,
-                    lhs: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt8,
-                    }),
-                    rhs: Box::new(goast::Expr::Var {
-                        name: "y".to_string(),
-                        ty: goty::GoType::TInt8,
-                    }),
-                    ty: goty::GoType::TInt8,
-                }),
-            }],
-        },
-    }
+    arithmetic_binary_fn_with_ty(name, op, goty::GoType::TInt8)
+}
+
+fn int16_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int16_add", BinaryOp::Add, goty::GoType::TInt16)
+}
+
+fn int16_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int16_sub", BinaryOp::Sub, goty::GoType::TInt16)
+}
+
+fn int16_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int16_mul", BinaryOp::Mul, goty::GoType::TInt16)
+}
+
+fn int16_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int16_div", BinaryOp::Div, goty::GoType::TInt16)
+}
+
+fn int32_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int32_add", BinaryOp::Add, goty::GoType::TInt32)
+}
+
+fn int32_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int32_sub", BinaryOp::Sub, goty::GoType::TInt32)
+}
+
+fn int32_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int32_mul", BinaryOp::Mul, goty::GoType::TInt32)
+}
+
+fn int32_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int32_div", BinaryOp::Div, goty::GoType::TInt32)
+}
+
+fn int64_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int64_add", BinaryOp::Add, goty::GoType::TInt64)
+}
+
+fn int64_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int64_sub", BinaryOp::Sub, goty::GoType::TInt64)
+}
+
+fn int64_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int64_mul", BinaryOp::Mul, goty::GoType::TInt64)
+}
+
+fn int64_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("int64_div", BinaryOp::Div, goty::GoType::TInt64)
 }
 
 fn int_less() -> goast::Fn {
-    goast::Fn {
-        name: "int_less".to_string(),
-        params: vec![
-            ("x".to_string(), goty::GoType::TInt),
-            ("y".to_string(), goty::GoType::TInt),
-        ],
-        ret_ty: Some(goty::GoType::TBool),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::BinaryOp {
-                    op: BinaryOp::Less,
-                    lhs: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt,
-                    }),
-                    rhs: Box::new(goast::Expr::Var {
-                        name: "y".to_string(),
-                        ty: goty::GoType::TInt,
-                    }),
-                    ty: goty::GoType::TBool,
-                }),
-            }],
-        },
-    }
+    less_fn_with_ty("int_less", goty::GoType::TInt)
 }
 
 fn int8_less() -> goast::Fn {
-    goast::Fn {
-        name: "int8_less".to_string(),
-        params: vec![
-            ("x".to_string(), goty::GoType::TInt8),
-            ("y".to_string(), goty::GoType::TInt8),
-        ],
-        ret_ty: Some(goty::GoType::TBool),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::BinaryOp {
-                    op: BinaryOp::Less,
-                    lhs: Box::new(goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TInt8,
-                    }),
-                    rhs: Box::new(goast::Expr::Var {
-                        name: "y".to_string(),
-                        ty: goty::GoType::TInt8,
-                    }),
-                    ty: goty::GoType::TBool,
-                }),
-            }],
-        },
-    }
+    less_fn_with_ty("int8_less", goty::GoType::TInt8)
+}
+
+fn int16_less() -> goast::Fn {
+    less_fn_with_ty("int16_less", goty::GoType::TInt16)
+}
+
+fn int32_less() -> goast::Fn {
+    less_fn_with_ty("int32_less", goty::GoType::TInt32)
+}
+
+fn int64_less() -> goast::Fn {
+    less_fn_with_ty("int64_less", goty::GoType::TInt64)
 }
 
 fn string_add() -> goast::Fn {

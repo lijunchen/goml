@@ -143,7 +143,15 @@ fn branch_variable(rows: &[Row]) -> Variable {
 
 fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     match ty {
-        Ty::TVar(_) | Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TInt8 | Ty::TString => ty.clone(),
+        Ty::TVar(_)
+        | Ty::TUnit
+        | Ty::TBool
+        | Ty::TInt
+        | Ty::TInt8
+        | Ty::TInt16
+        | Ty::TInt32
+        | Ty::TInt64
+        | Ty::TString => ty.clone(),
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs
                 .iter()
@@ -559,7 +567,7 @@ fn compile_int_case(
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
-    let mut value_rows: IndexMap<i32, Vec<Row>> = IndexMap::new();
+    let mut value_rows: IndexMap<i64, Vec<Row>> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
     let mut default_rows: Vec<Row> = Vec::new();
 
@@ -698,6 +706,9 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TBool => compile_bool_case(env, rows, &bvar),
         Ty::TInt => compile_int_case(env, rows, &bvar, ty, Ty::TInt),
         Ty::TInt8 => compile_int_case(env, rows, &bvar, ty, Ty::TInt8),
+        Ty::TInt16 => compile_int_case(env, rows, &bvar, ty, Ty::TInt16),
+        Ty::TInt32 => compile_int_case(env, rows, &bvar, ty, Ty::TInt32),
+        Ty::TInt64 => compile_int_case(env, rows, &bvar, ty, Ty::TInt64),
         Ty::TString => compile_string_case(env, rows, &bvar, ty),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
@@ -789,22 +800,34 @@ fn builtin_function_for(
         BinaryOp::Add => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_add"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_add"),
+            (Ty::TInt16, Ty::TInt16) => Some("int16_add"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_add"),
+            (Ty::TInt64, Ty::TInt64) => Some("int64_add"),
             (Ty::TString, Ty::TString) => Some("string_add"),
             _ => None,
         },
         BinaryOp::Sub => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_sub"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_sub"),
+            (Ty::TInt16, Ty::TInt16) => Some("int16_sub"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_sub"),
+            (Ty::TInt64, Ty::TInt64) => Some("int64_sub"),
             _ => None,
         },
         BinaryOp::Mul => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_mul"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_mul"),
+            (Ty::TInt16, Ty::TInt16) => Some("int16_mul"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_mul"),
+            (Ty::TInt64, Ty::TInt64) => Some("int64_mul"),
             _ => None,
         },
         BinaryOp::Div => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_div"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_div"),
+            (Ty::TInt16, Ty::TInt16) => Some("int16_div"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_div"),
+            (Ty::TInt64, Ty::TInt64) => Some("int64_div"),
             _ => None,
         },
         BinaryOp::And => match (lhs_ty, rhs_ty) {
@@ -823,6 +846,9 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
         UnaryOp::Neg => match arg_ty {
             Ty::TInt => Some("int_neg"),
             Ty::TInt8 => Some("int8_neg"),
+            Ty::TInt16 => Some("int16_neg"),
+            Ty::TInt32 => Some("int32_neg"),
+            Ty::TInt64 => Some("int64_neg"),
             _ => None,
         },
         UnaryOp::Not => match arg_ty {
