@@ -268,6 +268,10 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
         cst::Type::Int16Ty(_) => Some(ast::Ty::TInt16),
         cst::Type::Int32Ty(_) => Some(ast::Ty::TInt32),
         cst::Type::Int64Ty(_) => Some(ast::Ty::TInt64),
+        cst::Type::Uint8Ty(_) => Some(ast::Ty::TUint8),
+        cst::Type::Uint16Ty(_) => Some(ast::Ty::TUint16),
+        cst::Type::Uint32Ty(_) => Some(ast::Ty::TUint32),
+        cst::Type::Uint64Ty(_) => Some(ast::Ty::TUint64),
         cst::Type::StringTy(_) => Some(ast::Ty::TString),
         cst::Type::TupleTy(it) => {
             let typs = it

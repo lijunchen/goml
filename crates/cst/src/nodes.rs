@@ -1486,6 +1486,10 @@ pub enum Type {
     Int16Ty(Int16Ty),
     Int32Ty(Int32Ty),
     Int64Ty(Int64Ty),
+    Uint8Ty(Uint8Ty),
+    Uint16Ty(Uint16Ty),
+    Uint32Ty(Uint32Ty),
+    Uint64Ty(Uint64Ty),
     StringTy(StringTy),
     TupleTy(TupleTy),
     TAppTy(TAppTy),
@@ -1504,6 +1508,10 @@ impl CstNode for Type {
                 | TYPE_INT16
                 | TYPE_INT32
                 | TYPE_INT64
+                | TYPE_UINT8
+                | TYPE_UINT16
+                | TYPE_UINT32
+                | TYPE_UINT64
                 | TYPE_STRING
                 | TYPE_TUPLE
                 | TYPE_TAPP
@@ -1520,6 +1528,10 @@ impl CstNode for Type {
             TYPE_INT16 => Type::Int16Ty(Int16Ty { syntax }),
             TYPE_INT32 => Type::Int32Ty(Int32Ty { syntax }),
             TYPE_INT64 => Type::Int64Ty(Int64Ty { syntax }),
+            TYPE_UINT8 => Type::Uint8Ty(Uint8Ty { syntax }),
+            TYPE_UINT16 => Type::Uint16Ty(Uint16Ty { syntax }),
+            TYPE_UINT32 => Type::Uint32Ty(Uint32Ty { syntax }),
+            TYPE_UINT64 => Type::Uint64Ty(Uint64Ty { syntax }),
             TYPE_STRING => Type::StringTy(StringTy { syntax }),
             TYPE_TUPLE => Type::TupleTy(TupleTy { syntax }),
             TYPE_TAPP => Type::TAppTy(TAppTy { syntax }),
@@ -1538,6 +1550,10 @@ impl CstNode for Type {
             Type::Int16Ty(it) => &it.syntax,
             Type::Int32Ty(it) => &it.syntax,
             Type::Int64Ty(it) => &it.syntax,
+            Type::Uint8Ty(it) => &it.syntax,
+            Type::Uint16Ty(it) => &it.syntax,
+            Type::Uint32Ty(it) => &it.syntax,
+            Type::Uint64Ty(it) => &it.syntax,
             Type::StringTy(it) => &it.syntax,
             Type::TupleTy(it) => &it.syntax,
             Type::TAppTy(it) => &it.syntax,
@@ -1624,6 +1640,46 @@ impl Int64Ty {}
 
 impl_cst_node_simple!(Int64Ty, MySyntaxKind::TYPE_INT64);
 impl_display_via_syntax!(Int64Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Uint8Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Uint8Ty {}
+
+impl_cst_node_simple!(Uint8Ty, MySyntaxKind::TYPE_UINT8);
+impl_display_via_syntax!(Uint8Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Uint16Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Uint16Ty {}
+
+impl_cst_node_simple!(Uint16Ty, MySyntaxKind::TYPE_UINT16);
+impl_display_via_syntax!(Uint16Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Uint32Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Uint32Ty {}
+
+impl_cst_node_simple!(Uint32Ty, MySyntaxKind::TYPE_UINT32);
+impl_display_via_syntax!(Uint32Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Uint64Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Uint64Ty {}
+
+impl_cst_node_simple!(Uint64Ty, MySyntaxKind::TYPE_UINT64);
+impl_display_via_syntax!(Uint64Ty);
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringTy {

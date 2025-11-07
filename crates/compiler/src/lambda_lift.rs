@@ -754,6 +754,10 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TInt16
         | Ty::TInt32
         | Ty::TInt64
+        | Ty::TUint8
+        | Ty::TUint16
+        | Ty::TUint32
+        | Ty::TUint64
         | Ty::TString => ty.clone(),
         Ty::TCon { .. } => ty.clone(),
         Ty::TVar { .. } => ty.clone(),

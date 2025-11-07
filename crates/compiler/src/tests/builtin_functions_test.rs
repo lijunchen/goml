@@ -28,6 +28,18 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
+    match env.get_type_of_function("uint8_to_string") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 1);
+            assert!(matches!(params[0], tast::Ty::TUint8));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TString));
+        }
+        other => panic!(
+            "expected uint8_to_string to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
     match env.get_type_of_function("int_add") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
@@ -54,6 +66,19 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
+    match env.get_type_of_function("uint8_add") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TUint8));
+            assert!(matches!(params[1], tast::Ty::TUint8));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint8));
+        }
+        other => panic!(
+            "expected uint8_add to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
     match env.get_type_of_function("int16_add") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
@@ -63,6 +88,19 @@ fn env_registers_builtin_function_signatures() {
         }
         other => panic!(
             "expected int16_add to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("uint16_add") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TUint16));
+            assert!(matches!(params[1], tast::Ty::TUint16));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint16));
+        }
+        other => panic!(
+            "expected uint16_add to have a function type signature, got {:?}",
             other
         ),
     }
@@ -80,6 +118,19 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
+    match env.get_type_of_function("uint32_add") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TUint32));
+            assert!(matches!(params[1], tast::Ty::TUint32));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint32));
+        }
+        other => panic!(
+            "expected uint32_add to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
     match env.get_type_of_function("int64_add") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
@@ -89,6 +140,19 @@ fn env_registers_builtin_function_signatures() {
         }
         other => panic!(
             "expected int64_add to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    match env.get_type_of_function("uint64_add") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 2);
+            assert!(matches!(params[0], tast::Ty::TUint64));
+            assert!(matches!(params[1], tast::Ty::TUint64));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint64));
+        }
+        other => panic!(
+            "expected uint64_add to have a function type signature, got {:?}",
             other
         ),
     }

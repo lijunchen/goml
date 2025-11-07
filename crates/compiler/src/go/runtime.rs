@@ -57,11 +57,19 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
         Item::Fn(int64_to_string()),
+        Item::Fn(uint8_to_string()),
+        Item::Fn(uint16_to_string()),
+        Item::Fn(uint32_to_string()),
+        Item::Fn(uint64_to_string()),
         Item::Fn(int_neg()),
         Item::Fn(int8_neg()),
         Item::Fn(int16_neg()),
         Item::Fn(int32_neg()),
         Item::Fn(int64_neg()),
+        Item::Fn(uint8_neg()),
+        Item::Fn(uint16_neg()),
+        Item::Fn(uint32_neg()),
+        Item::Fn(uint64_neg()),
         Item::Fn(bool_not()),
         Item::Fn(bool_and()),
         Item::Fn(bool_or()),
@@ -90,6 +98,26 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int64_mul()),
         Item::Fn(int64_div()),
         Item::Fn(int64_less()),
+        Item::Fn(uint8_add()),
+        Item::Fn(uint8_sub()),
+        Item::Fn(uint8_mul()),
+        Item::Fn(uint8_div()),
+        Item::Fn(uint8_less()),
+        Item::Fn(uint16_add()),
+        Item::Fn(uint16_sub()),
+        Item::Fn(uint16_mul()),
+        Item::Fn(uint16_div()),
+        Item::Fn(uint16_less()),
+        Item::Fn(uint32_add()),
+        Item::Fn(uint32_sub()),
+        Item::Fn(uint32_mul()),
+        Item::Fn(uint32_div()),
+        Item::Fn(uint32_less()),
+        Item::Fn(uint64_add()),
+        Item::Fn(uint64_sub()),
+        Item::Fn(uint64_mul()),
+        Item::Fn(uint64_div()),
+        Item::Fn(uint64_less()),
         Item::Fn(string_add()),
         Item::Fn(string_print()),
         Item::Fn(string_println()),
@@ -485,6 +513,38 @@ fn int64_neg() -> goast::Fn {
     neg_fn("int64_neg", goty::GoType::TInt64)
 }
 
+fn uint8_to_string() -> goast::Fn {
+    to_string_fn("uint8_to_string", goty::GoType::TUint8)
+}
+
+fn uint8_neg() -> goast::Fn {
+    neg_fn("uint8_neg", goty::GoType::TUint8)
+}
+
+fn uint16_to_string() -> goast::Fn {
+    to_string_fn("uint16_to_string", goty::GoType::TUint16)
+}
+
+fn uint16_neg() -> goast::Fn {
+    neg_fn("uint16_neg", goty::GoType::TUint16)
+}
+
+fn uint32_to_string() -> goast::Fn {
+    to_string_fn("uint32_to_string", goty::GoType::TUint32)
+}
+
+fn uint32_neg() -> goast::Fn {
+    neg_fn("uint32_neg", goty::GoType::TUint32)
+}
+
+fn uint64_to_string() -> goast::Fn {
+    to_string_fn("uint64_to_string", goty::GoType::TUint64)
+}
+
+fn uint64_neg() -> goast::Fn {
+    neg_fn("uint64_neg", goty::GoType::TUint64)
+}
+
 fn bool_not() -> goast::Fn {
     goast::Fn {
         name: "bool_not".to_string(),
@@ -665,6 +725,86 @@ fn int32_less() -> goast::Fn {
 
 fn int64_less() -> goast::Fn {
     less_fn_with_ty("int64_less", goty::GoType::TInt64)
+}
+
+fn uint8_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint8_add", BinaryOp::Add, goty::GoType::TUint8)
+}
+
+fn uint8_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint8_sub", BinaryOp::Sub, goty::GoType::TUint8)
+}
+
+fn uint8_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint8_mul", BinaryOp::Mul, goty::GoType::TUint8)
+}
+
+fn uint8_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint8_div", BinaryOp::Div, goty::GoType::TUint8)
+}
+
+fn uint8_less() -> goast::Fn {
+    less_fn_with_ty("uint8_less", goty::GoType::TUint8)
+}
+
+fn uint16_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint16_add", BinaryOp::Add, goty::GoType::TUint16)
+}
+
+fn uint16_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint16_sub", BinaryOp::Sub, goty::GoType::TUint16)
+}
+
+fn uint16_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint16_mul", BinaryOp::Mul, goty::GoType::TUint16)
+}
+
+fn uint16_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint16_div", BinaryOp::Div, goty::GoType::TUint16)
+}
+
+fn uint16_less() -> goast::Fn {
+    less_fn_with_ty("uint16_less", goty::GoType::TUint16)
+}
+
+fn uint32_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint32_add", BinaryOp::Add, goty::GoType::TUint32)
+}
+
+fn uint32_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint32_sub", BinaryOp::Sub, goty::GoType::TUint32)
+}
+
+fn uint32_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint32_mul", BinaryOp::Mul, goty::GoType::TUint32)
+}
+
+fn uint32_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint32_div", BinaryOp::Div, goty::GoType::TUint32)
+}
+
+fn uint32_less() -> goast::Fn {
+    less_fn_with_ty("uint32_less", goty::GoType::TUint32)
+}
+
+fn uint64_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint64_add", BinaryOp::Add, goty::GoType::TUint64)
+}
+
+fn uint64_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint64_sub", BinaryOp::Sub, goty::GoType::TUint64)
+}
+
+fn uint64_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint64_mul", BinaryOp::Mul, goty::GoType::TUint64)
+}
+
+fn uint64_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("uint64_div", BinaryOp::Div, goty::GoType::TUint64)
+}
+
+fn uint64_less() -> goast::Fn {
+    less_fn_with_ty("uint64_less", goty::GoType::TUint64)
 }
 
 fn string_add() -> goast::Fn {

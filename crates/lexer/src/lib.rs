@@ -216,6 +216,18 @@ pub enum TokenKind {
     #[token("int64")]
     Int64Keyword,
 
+    #[token("uint8")]
+    Uint8Keyword,
+
+    #[token("uint16")]
+    Uint16Keyword,
+
+    #[token("uint32")]
+    Uint32Keyword,
+
+    #[token("uint64")]
+    Uint64Keyword,
+
     #[token("string")]
     StringKeyword,
 
@@ -300,6 +312,10 @@ impl std::fmt::Display for TokenKind {
             Self::Int16Keyword => "int16",
             Self::Int32Keyword => "int32",
             Self::Int64Keyword => "int64",
+            Self::Uint8Keyword => "uint8",
+            Self::Uint16Keyword => "uint16",
+            Self::Uint32Keyword => "uint32",
+            Self::Uint64Keyword => "uint64",
             Self::StringKeyword => "string",
             Self::ArrayKeyword => "array",
             Self::Lident => "lident",
@@ -363,6 +379,10 @@ macro_rules! T {
     [Int16] => { $crate::TokenKind::Int16Keyword };
     [Int32] => { $crate::TokenKind::Int32Keyword };
     [Int64] => { $crate::TokenKind::Int64Keyword };
+    [Uint8] => { $crate::TokenKind::Uint8Keyword };
+    [Uint16] => { $crate::TokenKind::Uint16Keyword };
+    [Uint32] => { $crate::TokenKind::Uint32Keyword };
+    [Uint64] => { $crate::TokenKind::Uint64Keyword };
     [String] => { $crate::TokenKind::StringKeyword };
     [array] => { $crate::TokenKind::ArrayKeyword };
     [lident] => { $crate::TokenKind::Lident };

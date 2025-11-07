@@ -271,6 +271,10 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TInt16 => goty::GoType::TInt16,
         tast::Ty::TInt32 => goty::GoType::TInt32,
         tast::Ty::TInt64 => goty::GoType::TInt64,
+        tast::Ty::TUint8 => goty::GoType::TUint8,
+        tast::Ty::TUint16 => goty::GoType::TUint16,
+        tast::Ty::TUint32 => goty::GoType::TUint32,
+        tast::Ty::TUint64 => goty::GoType::TUint64,
         tast::Ty::TString => goty::GoType::TString,
         tast::Ty::TTuple { typs } => {
             // compile to struct with field _0, _1, ...
@@ -322,6 +326,10 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
         tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint8 => "uint8".to_string(),
+        tast::Ty::TUint16 => "uint16".to_string(),
+        tast::Ty::TUint32 => "uint32".to_string(),
+        tast::Ty::TUint64 => "uint64".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TCon { name } => name.clone(),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),
