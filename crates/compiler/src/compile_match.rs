@@ -201,6 +201,18 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
         .collect()
 }
 
+fn decompose_struct_type(ty: &Ty) -> Option<(Uident, Vec<Ty>)> {
+    match ty {
+        Ty::TCon { name } => Some((Uident::new(name), Vec::new())),
+        Ty::TApp { ty: base, args } => {
+            let (type_name, mut collected) = decompose_struct_type(base)?;
+            collected.extend(args.iter().cloned());
+            Some((type_name, collected))
+        }
+        _ => None,
+    }
+}
+
 struct ConstructorCase {
     constructor: Constructor,
     vars: Vec<Variable>,
@@ -1108,6 +1120,32 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             core::Expr::EProj {
                 tuple: Box::new(tuple),
                 index: *index,
+                ty: ty.clone(),
+            }
+        }
+        EField {
+            expr,
+            field_name,
+            ty,
+        } => {
+            let base_ty = expr.get_ty();
+            let expr_core = compile_expr(expr, env);
+            let (type_name, type_args) = decompose_struct_type(&base_ty)
+                .unwrap_or_else(|| panic!("Field access on non-struct type {:?}", base_ty));
+            let struct_def = env
+                .structs
+                .get(&type_name)
+                .unwrap_or_else(|| panic!("Struct {} not found", type_name.0));
+            let inst_fields = instantiate_struct_fields(struct_def, &type_args);
+            let (field_index, _) = inst_fields
+                .iter()
+                .enumerate()
+                .find(|(_, (name, _))| name == field_name)
+                .unwrap_or_else(|| panic!("Struct {} has no field {}", type_name.0, field_name));
+            core::Expr::EConstrGet {
+                expr: Box::new(expr_core),
+                constructor: tast::Constructor::Struct(tast::StructConstructor { type_name }),
+                field_index,
                 ty: ty.clone(),
             }
         }

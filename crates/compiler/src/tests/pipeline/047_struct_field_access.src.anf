@@ -1,0 +1,22 @@
+fn make_point(base/0: int) -> Point {
+  let t0 = int_add(base/0, 1) in
+  Point { x: base/0, y: t0 }
+}
+
+fn sum_point(p/1: Point) -> int {
+  let t1 = Point.x(p/1) in
+  let t2 = Point.y(p/1) in
+  int_add(t1, t2)
+}
+
+fn main() -> int {
+  let p/2 = make_point(5) in
+  let t4 = Point.x(p/2) in
+  let t3 = int_add(t4, 1) in
+  let t6 = Point.y(p/2) in
+  let t5 = int_sub(t6, 2) in
+  let shifted/3 = Point { x: t3, y: t5 } in
+  let t7 = Point.x(shifted/3) in
+  let t8 = sum_point(shifted/3) in
+  int_add(t7, t8)
+}

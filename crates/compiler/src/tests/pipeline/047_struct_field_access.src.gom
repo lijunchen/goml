@@ -1,0 +1,53 @@
+package main
+
+func int_add(x int, y int) int {
+    return x + y
+}
+
+func int_sub(x int, y int) int {
+    return x - y
+}
+
+type Point struct {
+    x int
+    y int
+}
+
+func make_point(base__0 int) Point {
+    var ret9 Point
+    var t0 int = int_add(base__0, 1)
+    ret9 = Point{
+        x: base__0,
+        y: t0,
+    }
+    return ret9
+}
+
+func sum_point(p__1 Point) int {
+    var ret10 int
+    var t1 int = p__1.x
+    var t2 int = p__1.y
+    ret10 = int_add(t1, t2)
+    return ret10
+}
+
+func main0() int {
+    var ret11 int
+    var p__2 Point = make_point(5)
+    var t4 int = p__2.x
+    var t3 int = int_add(t4, 1)
+    var t6 int = p__2.y
+    var t5 int = int_sub(t6, 2)
+    var shifted__3 Point = Point{
+        x: t3,
+        y: t5,
+    }
+    var t7 int = shifted__3.x
+    var t8 int = sum_point(shifted__3)
+    ret11 = int_add(t7, t8)
+    return ret11
+}
+
+func main() {
+    main0()
+}

@@ -294,6 +294,10 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(index.to_string())),
+            Self::EField { expr, field } => expr
+                .to_doc()
+                .append(RcDoc::text("."))
+                .append(RcDoc::text(field.0.clone())),
         }
     }
 

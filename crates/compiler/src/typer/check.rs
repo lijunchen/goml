@@ -63,6 +63,7 @@ impl TypeInference {
             ast::Expr::EUnary { op, expr } => self.infer_unary_expr(env, vars, *op, expr),
             ast::Expr::EBinary { op, lhs, rhs } => self.infer_binary_expr(env, vars, *op, lhs, rhs),
             ast::Expr::EProj { tuple, index } => self.infer_proj_expr(env, vars, tuple, *index),
+            ast::Expr::EField { expr, field } => self.infer_field_expr(env, vars, expr, field),
         }
     }
 
@@ -968,6 +969,29 @@ impl TypeInference {
                     ty: ret_ty,
                 }
             }
+        }
+    }
+
+    fn infer_field_expr(
+        &mut self,
+        env: &mut Env,
+        vars: &im::HashMap<Lident, tast::Ty>,
+        expr: &ast::Expr,
+        field: &ast::Lident,
+    ) -> tast::Expr {
+        let base_tast = self.infer_expr(env, vars, expr);
+        let base_ty = base_tast.get_ty();
+        let result_ty = self.fresh_ty_var();
+        env.constraints.push(Constraint::StructFieldAccess {
+            expr_ty: base_ty.clone(),
+            field: field.clone(),
+            result_ty: result_ty.clone(),
+        });
+
+        tast::Expr::EField {
+            expr: Box::new(base_tast),
+            field_name: field.0.clone(),
+            ty: result_ty,
         }
     }
 

@@ -229,6 +229,11 @@ pub enum Constraint {
         trait_name: Uident,
         call_site_type: tast::Ty,
     },
+    StructFieldAccess {
+        expr_ty: tast::Ty,
+        field: Lident,
+        result_ty: tast::Ty,
+    },
 }
 
 #[derive(Debug, Clone)]
