@@ -1,9 +1,38 @@
 package main
 
+import (
+    "fmt"
+)
+
+func int_to_string(x int) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func int8_to_string(x int8) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
 func main0() struct{} {
-    var ret2 struct{}
-    ret2 = struct{}{}
-    return ret2
+    var ret6 struct{}
+    var x__0 int = 1
+    var y__1 int8 = 1
+    var t3 string = int_to_string(x__0)
+    var t2 string = string_add("int: ", t3)
+    string_println(t2)
+    var t5 string = int8_to_string(y__1)
+    var t4 string = string_add("int8: ", t5)
+    string_println(t4)
+    ret6 = struct{}{}
+    return ret6
 }
 
 func main() {
