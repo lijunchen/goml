@@ -22,6 +22,9 @@ fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
         | tast::Ty::TBool
         | tast::Ty::TInt
         | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
         | tast::Ty::TString
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
@@ -74,6 +77,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TBool
         | tast::Ty::TInt
         | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
         | tast::Ty::TString => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
@@ -161,6 +167,9 @@ impl TypeInference {
                 | tast::Ty::TBool
                 | tast::Ty::TInt
                 | tast::Ty::TInt8
+                | tast::Ty::TInt16
+                | tast::Ty::TInt32
+                | tast::Ty::TInt64
                 | tast::Ty::TString
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
@@ -312,6 +321,9 @@ impl TypeInference {
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
+            tast::Ty::TInt16 => tast::Ty::TInt16,
+            tast::Ty::TInt32 => tast::Ty::TInt32,
+            tast::Ty::TInt64 => tast::Ty::TInt64,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
                 let typs = typs.iter().map(|ty| self.norm(ty)).collect();
@@ -368,6 +380,9 @@ impl TypeInference {
             (tast::Ty::TBool, tast::Ty::TBool) => {}
             (tast::Ty::TInt, tast::Ty::TInt) => {}
             (tast::Ty::TInt8, tast::Ty::TInt8) => {}
+            (tast::Ty::TInt16, tast::Ty::TInt16) => {}
+            (tast::Ty::TInt32, tast::Ty::TInt32) => {}
+            (tast::Ty::TInt64, tast::Ty::TInt64) => {}
             (tast::Ty::TString, tast::Ty::TString) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
@@ -504,6 +519,9 @@ impl TypeInference {
             tast::Ty::TBool => ty.clone(),
             tast::Ty::TInt => ty.clone(),
             tast::Ty::TInt8 => ty.clone(),
+            tast::Ty::TInt16 => ty.clone(),
+            tast::Ty::TInt32 => ty.clone(),
+            tast::Ty::TInt64 => ty.clone(),
             tast::Ty::TString => ty.clone(),
             tast::Ty::TTuple { typs } => {
                 let typs = typs
@@ -566,6 +584,9 @@ impl TypeInference {
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
+            tast::Ty::TInt16 => tast::Ty::TInt16,
+            tast::Ty::TInt32 => tast::Ty::TInt32,
+            tast::Ty::TInt64 => tast::Ty::TInt64,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
                 let typs = typs.iter().map(|ty| self.subst_ty(env, ty)).collect();

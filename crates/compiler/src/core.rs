@@ -28,7 +28,7 @@ pub enum Expr {
         ty: Ty,
     },
     EInt {
-        value: i32,
+        value: i64,
         ty: Ty,
     },
     EString {

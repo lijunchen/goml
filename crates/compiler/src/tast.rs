@@ -126,6 +126,9 @@ pub enum Ty {
     TBool,
     TInt,
     TInt8,
+    TInt16,
+    TInt32,
+    TInt64,
     TString,
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
@@ -144,6 +147,9 @@ impl std::fmt::Debug for Ty {
             Self::TBool => write!(f, "TBool"),
             Self::TInt => write!(f, "TInt"),
             Self::TInt8 => write!(f, "TInt8"),
+            Self::TInt16 => write!(f, "TInt16"),
+            Self::TInt32 => write!(f, "TInt32"),
+            Self::TInt64 => write!(f, "TInt64"),
             Self::TString => write!(f, "TString"),
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
             Self::TCon { name } => write!(f, "TCon({})", name),
@@ -217,7 +223,7 @@ pub enum Expr {
         ty: Ty,
     },
     EInt {
-        value: i32,
+        value: i64,
         ty: Ty,
     },
     EString {
@@ -340,7 +346,7 @@ pub enum Pat {
         ty: Ty,
     },
     PInt {
-        value: i32,
+        value: i64,
         ty: Ty,
     },
     PString {

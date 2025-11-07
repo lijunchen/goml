@@ -172,6 +172,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TBool
         | tast::Ty::TInt
         | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
         | tast::Ty::TString => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
@@ -525,7 +528,11 @@ where
                 default: default_block,
             }]
         }
-        tast::Ty::TInt | tast::Ty::TInt8 => {
+        tast::Ty::TInt
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64 => {
             let mut cases = Vec::new();
             for arm in arms {
                 if let anf::ImmExpr::ImmInt { value, .. } = &arm.lhs {

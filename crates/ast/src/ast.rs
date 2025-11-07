@@ -74,6 +74,9 @@ pub enum Ty {
     TBool,
     TInt,
     TInt8,
+    TInt16,
+    TInt32,
+    TInt64,
     TString,
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
@@ -175,7 +178,7 @@ pub enum Expr {
         value: bool,
     },
     EInt {
-        value: i32,
+        value: i64,
     },
     EString {
         value: String,
@@ -257,7 +260,7 @@ pub enum Pat {
         value: bool,
     },
     PInt {
-        value: i32,
+        value: i64,
     },
     PString {
         value: String,

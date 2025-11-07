@@ -5,6 +5,9 @@ pub enum GoType {
     TBool,
     TInt,
     TInt8,
+    TInt16,
+    TInt32,
+    TInt64,
     TString,
     TStruct {
         name: String,
