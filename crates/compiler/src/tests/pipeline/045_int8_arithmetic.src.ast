@@ -1,0 +1,44 @@
+fn a_value() -> int8 {
+    90
+}
+
+fn b_value() -> int8 {
+    -20
+}
+
+fn c_value() -> int8 {
+    3
+}
+
+fn show_int8(label: string, value: int8) {
+    let _ = string_println(string_add(label, int8_to_string(value))) in
+    ()
+}
+
+fn show_bool(label: string, value: bool) {
+    let _ = string_println(string_add(label, bool_to_string(value))) in
+    ()
+}
+
+fn main() {
+    let a = a_value() in
+    let b = b_value() in
+    let c = c_value() in
+    let sum = int8_add(a, b) in
+    let diff = int8_sub(a, c) in
+    let prod = int8_mul(b, c) in
+    let quot = int8_div(a, c) in
+    let neg = int8_neg(b) in
+    let less = int8_less(b, a) in
+    let _ = show_int8("a=", a) in
+    let _ = show_int8("b=", b) in
+    let _ = show_int8("c=", c) in
+    let _ = show_int8("sum=", sum) in
+    let _ = show_int8("diff=", diff) in
+    let _ = show_int8("prod=", prod) in
+    let _ = show_int8("quot=", quot) in
+    let _ = show_int8("neg=", neg) in
+    let _ = show_bool("b<a=", less) in
+    ()
+}
+

@@ -4,6 +4,7 @@ pub enum GoType {
     TUnit, // struct{}, it has only one value: struct{}{}
     TBool,
     TInt,
+    TInt8,
     TString,
     TStruct {
         name: String,

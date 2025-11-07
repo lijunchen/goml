@@ -747,7 +747,7 @@ fn instantiate_enum_field_ty(
 
 fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     match ty {
-        Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TString => ty.clone(),
+        Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TInt8 | Ty::TString => ty.clone(),
         Ty::TCon { .. } => ty.clone(),
         Ty::TVar { .. } => ty.clone(),
         Ty::TParam { name } => subst.get(name).cloned().unwrap_or_else(|| ty.clone()),

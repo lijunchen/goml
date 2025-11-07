@@ -163,3 +163,15 @@ fn lexes_ref_builtins() {
         "#]],
     )
 }
+
+#[test]
+fn lexes_int8_keyword() {
+    check(
+        "int8",
+        expect![[r#"
+            [
+                {kind: Int8Keyword, text: "int8"},
+            ]
+        "#]],
+    );
+}

@@ -359,6 +359,7 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TUnit => tast::Ty::TUnit,
         tast::Ty::TBool => tast::Ty::TBool,
         tast::Ty::TInt => tast::Ty::TInt,
+        tast::Ty::TInt8 => tast::Ty::TInt8,
         tast::Ty::TString => tast::Ty::TString,
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs

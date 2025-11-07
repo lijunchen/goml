@@ -143,7 +143,7 @@ fn branch_variable(rows: &[Row]) -> Variable {
 
 fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     match ty {
-        Ty::TVar(_) | Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TString => ty.clone(),
+        Ty::TVar(_) | Ty::TUnit | Ty::TBool | Ty::TInt | Ty::TInt8 | Ty::TString => ty.clone(),
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs
                 .iter()
@@ -538,7 +538,13 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     }
 }
 
-fn compile_int_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
+fn compile_int_case(
+    env: &Env,
+    rows: Vec<Row>,
+    bvar: &Variable,
+    ty: &Ty,
+    literal_ty: Ty,
+) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let mut value_rows: IndexMap<i32, Vec<Row>> = IndexMap::new();
@@ -579,7 +585,7 @@ fn compile_int_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core
         .map(|(value, rows)| core::Arm {
             lhs: core::Expr::EInt {
                 value,
-                ty: Ty::TInt,
+                ty: literal_ty.clone(),
             },
             body: compile_rows(env, rows, ty),
         })
@@ -678,7 +684,8 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TVar(..) => unreachable!(),
         Ty::TUnit => compile_unit_case(env, rows, &bvar),
         Ty::TBool => compile_bool_case(env, rows, &bvar),
-        Ty::TInt => compile_int_case(env, rows, &bvar, ty),
+        Ty::TInt => compile_int_case(env, rows, &bvar, ty, Ty::TInt),
+        Ty::TInt8 => compile_int_case(env, rows, &bvar, ty, Ty::TInt8),
         Ty::TString => compile_string_case(env, rows, &bvar, ty),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
@@ -769,19 +776,23 @@ fn builtin_function_for(
     match op {
         BinaryOp::Add => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_add"),
+            (Ty::TInt8, Ty::TInt8) => Some("int8_add"),
             (Ty::TString, Ty::TString) => Some("string_add"),
             _ => None,
         },
         BinaryOp::Sub => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_sub"),
+            (Ty::TInt8, Ty::TInt8) => Some("int8_sub"),
             _ => None,
         },
         BinaryOp::Mul => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_mul"),
+            (Ty::TInt8, Ty::TInt8) => Some("int8_mul"),
             _ => None,
         },
         BinaryOp::Div => match (lhs_ty, rhs_ty) {
             (Ty::TInt, Ty::TInt) => Some("int_div"),
+            (Ty::TInt8, Ty::TInt8) => Some("int8_div"),
             _ => None,
         },
         BinaryOp::And => match (lhs_ty, rhs_ty) {
@@ -799,6 +810,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     match op {
         UnaryOp::Neg => match arg_ty {
             Ty::TInt => Some("int_neg"),
+            Ty::TInt8 => Some("int8_neg"),
             _ => None,
         },
         UnaryOp::Not => match arg_ty {
@@ -821,13 +833,13 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
         EUnit { .. } => core::Expr::EUnit {
             ty: core::Ty::TUnit,
         },
-        EBool { value, ty: _ } => core::Expr::EBool {
+        EBool { value, ty } => core::Expr::EBool {
             value: *value,
-            ty: Ty::TBool,
+            ty: ty.clone(),
         },
-        EInt { value, ty: _ } => core::Expr::EInt {
+        EInt { value, ty } => core::Expr::EInt {
             value: *value,
-            ty: Ty::TInt,
+            ty: ty.clone(),
         },
         EString { value, ty: _ } => core::Expr::EString {
             value: value.clone(),

@@ -204,6 +204,9 @@ pub enum TokenKind {
     #[token("int")]
     IntKeyword,
 
+    #[token("int8")]
+    Int8Keyword,
+
     #[token("string")]
     StringKeyword,
 
@@ -284,6 +287,7 @@ impl std::fmt::Display for TokenKind {
             Self::UnitKeyword => "unit",
             Self::BoolKeyword => "bool",
             Self::IntKeyword => "int",
+            Self::Int8Keyword => "int8",
             Self::StringKeyword => "string",
             Self::ArrayKeyword => "array",
             Self::Lident => "lident",
@@ -343,6 +347,7 @@ macro_rules! T {
     [Unit] => { $crate::TokenKind::UnitKeyword };
     [Bool] => { $crate::TokenKind::BoolKeyword };
     [Int] => { $crate::TokenKind::IntKeyword };
+    [Int8] => { $crate::TokenKind::Int8Keyword };
     [String] => { $crate::TokenKind::StringKeyword };
     [array] => { $crate::TokenKind::ArrayKeyword };
     [lident] => { $crate::TokenKind::Lident };

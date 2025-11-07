@@ -265,6 +265,7 @@ const TYPE_FIRST: &[TokenKind] = &[
     T![Unit],
     T![Bool],
     T![Int],
+    T![Int8],
     T![String],
     T!['['],
     T!['('],
@@ -399,6 +400,10 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
         T![Int] => {
             p.advance();
             p.close(m, MySyntaxKind::TYPE_INT)
+        }
+        T![Int8] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_INT8)
         }
         T![String] => {
             p.advance();

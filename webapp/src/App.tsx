@@ -37,7 +37,7 @@ function App() {
         keywords: ['fn', 'let', 'in'],
         tokenizer: {
           root: [
-            [/\b(fn|enum|trait|impl|for|match|if|else|let|in|return|true|false|unit|bool|int|string)\b/, "keyword"],
+            [/\b(fn|enum|trait|impl|for|match|if|else|let|in|return|true|false|unit|bool|int|int8|string)\b/, "keyword"],
             [/\b[A-Z][a-zA-Z0-9_]*\b/, "type"],
             [/\b\d+\b/, "number"],
             [/[a-zA-Z_]\w*(?=\s*\()/, "function"],

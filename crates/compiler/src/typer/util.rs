@@ -9,7 +9,11 @@ use ast::ast;
 pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
     match ty {
         tast::Ty::TVar(_) => {}
-        tast::Ty::TUnit | tast::Ty::TBool | tast::Ty::TInt | tast::Ty::TString => {}
+        tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt
+        | tast::Ty::TInt8
+        | tast::Ty::TString => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
                 validate_ty(env, ty, tparams);
@@ -108,6 +112,7 @@ pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
         ast::Ty::TUnit => tast::Ty::TUnit,
         ast::Ty::TBool => tast::Ty::TBool,
         ast::Ty::TInt => tast::Ty::TInt,
+        ast::Ty::TInt8 => tast::Ty::TInt8,
         ast::Ty::TString => tast::Ty::TString,
         ast::Ty::TTuple { typs } => {
             let typs = typs
@@ -159,10 +164,15 @@ pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &t
     match op {
         ast::BinaryOp::Add => matches!(
             (lhs, rhs),
-            (tast::Ty::TInt, tast::Ty::TInt) | (tast::Ty::TString, tast::Ty::TString)
+            (tast::Ty::TInt, tast::Ty::TInt)
+                | (tast::Ty::TInt8, tast::Ty::TInt8)
+                | (tast::Ty::TString, tast::Ty::TString)
         ),
         ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-            matches!((lhs, rhs), (tast::Ty::TInt, tast::Ty::TInt))
+            matches!(
+                (lhs, rhs),
+                (tast::Ty::TInt, tast::Ty::TInt) | (tast::Ty::TInt8, tast::Ty::TInt8)
+            )
         }
         ast::BinaryOp::And | ast::BinaryOp::Or => {
             matches!((lhs, rhs), (tast::Ty::TBool, tast::Ty::TBool))

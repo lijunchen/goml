@@ -27,9 +27,9 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
             value: *value,
             ty: goty::GoType::TBool,
         },
-        anf::ImmExpr::ImmInt { value, ty: _ } => goast::Expr::Int {
+        anf::ImmExpr::ImmInt { value, .. } => goast::Expr::Int {
             value: *value,
-            ty: goty::GoType::TInt,
+            ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::ImmString { value, ty: _ } => goast::Expr::String {
             value: value.clone(),
@@ -171,6 +171,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TUnit
         | tast::Ty::TBool
         | tast::Ty::TInt
+        | tast::Ty::TInt8
         | tast::Ty::TString => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
@@ -524,14 +525,14 @@ where
                 default: default_block,
             }]
         }
-        tast::Ty::TInt => {
+        tast::Ty::TInt | tast::Ty::TInt8 => {
             let mut cases = Vec::new();
             for arm in arms {
                 if let anf::ImmExpr::ImmInt { value, .. } = &arm.lhs {
                     cases.push((
                         goast::Expr::Int {
                             value: *value,
-                            ty: goty::GoType::TInt,
+                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                         },
                         goast::Block {
                             stmts: build_branch(arm.body.clone()),
@@ -751,22 +752,6 @@ fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
             let mut out = Vec::new();
             let value_expr = *value;
 
-            if let anf::CExpr::ECall {
-                ref func, ref args, ..
-            } = value_expr
-            {
-                if let Some(spawn) = compile_spawn_call(env, func, args) {
-                    out.push(spawn.stmt);
-                    out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
-                        ty: spawn.result_ty.clone(),
-                        value: Some(spawn.result_expr),
-                    });
-                    out.extend(compile_aexpr_effect(env, *body));
-                    return out;
-                }
-            }
-
             match value_expr {
                 complex @ (anf::CExpr::EIf { .. }
                 | anf::CExpr::EMatch { .. }
@@ -781,6 +766,26 @@ fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
                         &name,
                         AExpr::ACExpr { expr: complex },
                     ));
+                }
+                ref simple @ anf::CExpr::ECall {
+                    ref func, ref args, ..
+                } => {
+                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                        out.push(spawn.stmt);
+                        out.push(goast::Stmt::VarDecl {
+                            name: name.clone(),
+                            ty: spawn.result_ty.clone(),
+                            value: Some(spawn.result_expr),
+                        });
+                        out.extend(compile_aexpr_effect(env, *body));
+                        return out;
+                    }
+
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(env, simple),
+                        value: Some(compile_cexpr(env, simple)),
+                    });
                 }
                 simple => {
                     out.push(goast::Stmt::VarDecl {
@@ -878,13 +883,13 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             }],
             anf::CExpr::ECall { func, args, ty } => {
                 if let Some(spawn) = compile_spawn_call(env, &func, &args) {
-                    let mut stmts = Vec::new();
-                    stmts.push(spawn.stmt);
-                    stmts.push(goast::Stmt::Assignment {
-                        name: target.to_string(),
-                        value: spawn.result_expr,
-                    });
-                    stmts
+                    vec![
+                        spawn.stmt,
+                        goast::Stmt::Assignment {
+                            name: target.to_string(),
+                            value: spawn.result_expr,
+                        },
+                    ]
                 } else {
                     vec![goast::Stmt::Assignment {
                         name: target.to_string(),
@@ -900,45 +905,50 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
             ty: _,
         } => {
             let mut out = Vec::new();
+            let value_expr = *value;
 
-            if let anf::CExpr::ECall {
-                ref func, ref args, ..
-            } = *value.clone()
-            {
-                if let Some(spawn) = compile_spawn_call(env, func, args) {
-                    out.push(spawn.stmt);
-                    out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
-                        ty: spawn.result_ty.clone(),
-                        value: Some(spawn.result_expr),
-                    });
-                    out.extend(compile_aexpr_assign(env, target, *body));
-                    return out;
-                }
-            }
-
-            match &*value {
+            match value_expr {
                 // If RHS needs statements (if/match), first declare the variable,
                 // then lower the RHS into assignments targeting that variable.
-                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } | anf::CExpr::EWhile { .. } => {
+                complex @ (anf::CExpr::EIf { .. }
+                | anf::CExpr::EMatch { .. }
+                | anf::CExpr::EWhile { .. }) => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &value),
+                        ty: cexpr_ty(env, &complex),
                         value: None,
                     });
                     out.extend(compile_aexpr_assign(
                         env,
                         &name,
-                        AExpr::ACExpr {
-                            expr: *value.clone(),
-                        },
+                        AExpr::ACExpr { expr: complex },
                     ));
                 }
-                _ => {
+                ref simple @ anf::CExpr::ECall {
+                    ref func, ref args, ..
+                } => {
+                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                        out.push(spawn.stmt);
+                        out.push(goast::Stmt::VarDecl {
+                            name: name.clone(),
+                            ty: spawn.result_ty.clone(),
+                            value: Some(spawn.result_expr),
+                        });
+                        out.extend(compile_aexpr_assign(env, target, *body));
+                        return out;
+                    }
+
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &value),
-                        value: Some(compile_cexpr(env, &value)),
+                        ty: cexpr_ty(env, simple),
+                        value: Some(compile_cexpr(env, simple)),
+                    });
+                }
+                simple => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(env, &simple),
+                        value: Some(compile_cexpr(env, &simple)),
                     });
                 }
             }
@@ -1009,50 +1019,49 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
             body,
             ty: _,
         } => {
-            if let anf::CExpr::ECall {
-                ref func, ref args, ..
-            } = *value.clone()
-            {
-                if let Some(spawn) = compile_spawn_call(env, func, args) {
-                    stmts.push(spawn.stmt);
-                    stmts.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
-                        ty: spawn.result_ty.clone(),
-                        value: Some(spawn.result_expr),
-                    });
-                    stmts.extend(compile_aexpr(env, *body));
-                    return stmts;
-                }
-            }
+            let value_expr = *value;
 
-            match &*value {
+            match value_expr {
                 // If RHS needs statements, declare then fill via if-lowering
-                anf::CExpr::EIf { .. } | anf::CExpr::EMatch { .. } | anf::CExpr::EWhile { .. } => {
+                complex @ (anf::CExpr::EIf { .. }
+                | anf::CExpr::EMatch { .. }
+                | anf::CExpr::EWhile { .. }) => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &value),
+                        ty: cexpr_ty(env, &complex),
                         value: None,
                     });
                     stmts.extend(compile_aexpr_assign(
                         env,
                         &name,
-                        AExpr::ACExpr {
-                            expr: *value.clone(),
-                        },
+                        AExpr::ACExpr { expr: complex },
                     ));
                 }
-                anf::CExpr::ETuple { .. } => {
+                ref simple @ anf::CExpr::ECall {
+                    ref func, ref args, ..
+                } => {
+                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                        stmts.push(spawn.stmt);
+                        stmts.push(goast::Stmt::VarDecl {
+                            name: name.clone(),
+                            ty: spawn.result_ty.clone(),
+                            value: Some(spawn.result_expr),
+                        });
+                        stmts.extend(compile_aexpr(env, *body));
+                        return stmts;
+                    }
+
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &value),
-                        value: Some(compile_cexpr(env, &value)),
+                        ty: cexpr_ty(env, simple),
+                        value: Some(compile_cexpr(env, simple)),
                     });
                 }
-                _ => {
+                simple => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &value),
-                        value: Some(compile_cexpr(env, &value)),
+                        ty: cexpr_ty(env, &simple),
+                        value: Some(compile_cexpr(env, &simple)),
                     });
                 }
             }
@@ -1138,13 +1147,13 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
             }
         }
         for extern_ty in env.extern_types.values() {
-            if let Some(package_path) = &extern_ty.package_path {
-                if existing_imports.insert(package_path.clone()) {
-                    extra_specs.push(goast::ImportSpec {
-                        alias: None,
-                        path: package_path.clone(),
-                    });
-                }
+            if let Some(package_path) = &extern_ty.package_path
+                && existing_imports.insert(package_path.clone())
+            {
+                extra_specs.push(goast::ImportSpec {
+                    alias: None,
+                    path: package_path.clone(),
+                });
             }
         }
 

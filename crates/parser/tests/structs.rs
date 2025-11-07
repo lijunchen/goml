@@ -54,6 +54,36 @@ fn struct_with_fields() {
 }
 
 #[test]
+fn struct_with_int8_field() {
+    check(
+        r#"struct Byte {
+    value: int8,
+}
+"#,
+        expect![[r#"
+            FILE@0..33
+              STRUCT@0..33
+                StructKeyword@0..6 "struct"
+                Whitespace@6..7 " "
+                Uident@7..11 "Byte"
+                Whitespace@11..12 " "
+                LBrace@12..13 "{"
+                Whitespace@13..18 "\n    "
+                STRUCT_FIELD_LIST@18..33
+                  STRUCT_FIELD@18..29
+                    Lident@18..23 "value"
+                    Colon@23..24 ":"
+                    Whitespace@24..25 " "
+                    TYPE_INT8@25..29
+                      Int8Keyword@25..29 "int8"
+                  Comma@29..30 ","
+                  Whitespace@30..31 "\n"
+                  RBrace@31..32 "}"
+                  Whitespace@32..33 "\n""#]],
+    );
+}
+
+#[test]
 fn struct_with_generics() {
     check(
         r#"struct Wrapper[T] {
