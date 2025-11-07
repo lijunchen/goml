@@ -5,6 +5,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt => "int".to_string(),
+        tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TVar(_v) => "Var".to_string(),
         tast::Ty::TParam { name } => format!("TParam_{}", name),
@@ -65,6 +66,13 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
                 Ok(tast::Ty::TInt)
             } else {
                 Err("unexpected trailing tokens after int".to_string())
+            }
+        }
+        "int8" => {
+            if start + 1 == end {
+                Ok(tast::Ty::TInt8)
+            } else {
+                Err("unexpected trailing tokens after int8".to_string())
             }
         }
         "string" => {

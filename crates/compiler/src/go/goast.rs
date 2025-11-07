@@ -267,6 +267,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TUnit => goty::GoType::TUnit,
         tast::Ty::TBool => goty::GoType::TBool,
         tast::Ty::TInt => goty::GoType::TInt,
+        tast::Ty::TInt8 => goty::GoType::TInt8,
         tast::Ty::TString => goty::GoType::TString,
         tast::Ty::TTuple { typs } => {
             // compile to struct with field _0, _1, ...
@@ -314,6 +315,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
         tast::Ty::TInt => "int".to_string(),
+        tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TCon { name } => name.clone(),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),

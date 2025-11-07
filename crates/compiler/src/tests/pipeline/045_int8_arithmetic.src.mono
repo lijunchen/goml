@@ -1,0 +1,43 @@
+fn a_value() -> int8 {
+  90
+}
+
+fn b_value() -> int8 {
+  int8_neg(20)
+}
+
+fn c_value() -> int8 {
+  3
+}
+
+fn show_int8(label/0: string, value/1: int8) -> unit {
+  let mtmp0 = string_println(string_add(label/0, int8_to_string(value/1))) in
+  ()
+}
+
+fn show_bool(label/2: string, value/3: bool) -> unit {
+  let mtmp1 = string_println(string_add(label/2, bool_to_string(value/3))) in
+  ()
+}
+
+fn main() -> unit {
+  let a/4 = a_value() in
+  let b/5 = b_value() in
+  let c/6 = c_value() in
+  let sum/7 = int8_add(a/4, b/5) in
+  let diff/8 = int8_sub(a/4, c/6) in
+  let prod/9 = int8_mul(b/5, c/6) in
+  let quot/10 = int8_div(a/4, c/6) in
+  let neg/11 = int8_neg(b/5) in
+  let less/12 = int8_less(b/5, a/4) in
+  let mtmp2 = show_int8("a=", a/4) in
+  let mtmp3 = show_int8("b=", b/5) in
+  let mtmp4 = show_int8("c=", c/6) in
+  let mtmp5 = show_int8("sum=", sum/7) in
+  let mtmp6 = show_int8("diff=", diff/8) in
+  let mtmp7 = show_int8("prod=", prod/9) in
+  let mtmp8 = show_int8("quot=", quot/10) in
+  let mtmp9 = show_int8("neg=", neg/11) in
+  let mtmp10 = show_bool("b<a=", less/12) in
+  ()
+}

@@ -20,6 +20,7 @@ fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
         tast::Ty::TUnit
         | tast::Ty::TBool
         | tast::Ty::TInt
+        | tast::Ty::TInt8
         | tast::Ty::TString
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
@@ -76,6 +77,7 @@ impl TypeInference {
                 tast::Ty::TUnit
                 | tast::Ty::TBool
                 | tast::Ty::TInt
+                | tast::Ty::TInt8
                 | tast::Ty::TString
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
@@ -199,6 +201,7 @@ impl TypeInference {
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt => tast::Ty::TInt,
+            tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
                 let typs = typs.iter().map(|ty| self.norm(ty)).collect();
@@ -254,6 +257,7 @@ impl TypeInference {
             (tast::Ty::TUnit, tast::Ty::TUnit) => {}
             (tast::Ty::TBool, tast::Ty::TBool) => {}
             (tast::Ty::TInt, tast::Ty::TInt) => {}
+            (tast::Ty::TInt8, tast::Ty::TInt8) => {}
             (tast::Ty::TString, tast::Ty::TString) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
@@ -389,6 +393,7 @@ impl TypeInference {
             tast::Ty::TUnit => ty.clone(),
             tast::Ty::TBool => ty.clone(),
             tast::Ty::TInt => ty.clone(),
+            tast::Ty::TInt8 => ty.clone(),
             tast::Ty::TString => ty.clone(),
             tast::Ty::TTuple { typs } => {
                 let typs = typs
@@ -450,6 +455,7 @@ impl TypeInference {
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TBool => tast::Ty::TBool,
             tast::Ty::TInt => tast::Ty::TInt,
+            tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
                 let typs = typs.iter().map(|ty| self.subst_ty(env, ty)).collect();

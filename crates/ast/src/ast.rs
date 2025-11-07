@@ -73,6 +73,7 @@ pub enum Ty {
     TUnit,
     TBool,
     TInt,
+    TInt8,
     TString,
     TTuple { typs: Vec<Ty> },
     TCon { name: String },

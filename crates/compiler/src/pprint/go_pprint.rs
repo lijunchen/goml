@@ -16,6 +16,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
         GoType::TInt => "int".to_string(),
+        GoType::TInt8 => "int8".to_string(),
         GoType::TString => "string".to_string(),
         GoType::TStruct { name, .. } => name.clone(),
         GoType::TPointer { elem } => format!("*{}", go_type_name(elem)),

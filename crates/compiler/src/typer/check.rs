@@ -71,6 +71,59 @@ impl TypeInference {
         expected: &tast::Ty,
     ) -> tast::Expr {
         let expr_tast = match e {
+            ast::Expr::EInt { value } => {
+                if matches!(expected, tast::Ty::TInt8) {
+                    if (i8::MIN as i32..=i8::MAX as i32).contains(value) {
+                        tast::Expr::EInt {
+                            value: *value,
+                            ty: tast::Ty::TInt8,
+                        }
+                    } else {
+                        env.report_typer_error(format!(
+                            "Integer literal {} does not fit in int8",
+                            value
+                        ));
+                        tast::Expr::EInt {
+                            value: *value,
+                            ty: tast::Ty::TInt8,
+                        }
+                    }
+                } else {
+                    self.infer_expr(env, vars, e)
+                }
+            }
+            ast::Expr::EUnary {
+                op: ast::UnaryOp::Neg,
+                expr: inner,
+            } if matches!(expected, tast::Ty::TInt8) => {
+                let operand = self.check_expr(env, vars, inner, expected);
+                tast::Expr::EUnary {
+                    op: ast::UnaryOp::Neg,
+                    expr: Box::new(operand),
+                    ty: tast::Ty::TInt8,
+                    resolution: tast::UnaryResolution::Builtin,
+                }
+            }
+            ast::Expr::EBinary { op, lhs, rhs }
+                if matches!(expected, tast::Ty::TInt8)
+                    && matches!(
+                        op,
+                        ast::BinaryOp::Add
+                            | ast::BinaryOp::Sub
+                            | ast::BinaryOp::Mul
+                            | ast::BinaryOp::Div
+                    ) =>
+            {
+                let lhs_tast = self.check_expr(env, vars, lhs, expected);
+                let rhs_tast = self.check_expr(env, vars, rhs, expected);
+                tast::Expr::EBinary {
+                    op: *op,
+                    lhs: Box::new(lhs_tast),
+                    rhs: Box::new(rhs_tast),
+                    ty: tast::Ty::TInt8,
+                    resolution: tast::BinaryResolution::Builtin,
+                }
+            }
             ast::Expr::EClosure { params, body } => {
                 self.check_closure_expr(env, vars, params, body, expected)
             }
@@ -697,12 +750,17 @@ impl TypeInference {
                 })
             }
             ast::UnaryOp::Neg => {
+                let target_ty = if matches!(expr_ty, tast::Ty::TInt8) {
+                    tast::Ty::TInt8
+                } else {
+                    tast::Ty::TInt
+                };
                 env.constraints
-                    .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TInt));
+                    .push(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
                 Some(tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast.clone()),
-                    ty: tast::Ty::TInt,
+                    ty: target_ty,
                     resolution: tast::UnaryResolution::Builtin,
                 })
             }
@@ -742,10 +800,44 @@ impl TypeInference {
         lhs: &ast::Expr,
         rhs: &ast::Expr,
     ) -> tast::Expr {
-        let lhs_tast = self.infer_expr(env, vars, lhs);
-        let rhs_tast = self.infer_expr(env, vars, rhs);
-        let lhs_ty = lhs_tast.get_ty();
-        let rhs_ty = rhs_tast.get_ty();
+        let mut lhs_tast = self.infer_expr(env, vars, lhs);
+        let mut rhs_tast = self.infer_expr(env, vars, rhs);
+        let mut lhs_ty = lhs_tast.get_ty();
+        let mut rhs_ty = rhs_tast.get_ty();
+
+        if matches!(lhs_ty, tast::Ty::TInt8)
+            && matches!(rhs_ty, tast::Ty::TInt)
+            && matches!(rhs, ast::Expr::EInt { .. })
+            && let tast::Expr::EInt { value, .. } = &rhs_tast
+        {
+            let value = *value;
+            if (i8::MIN as i32..=i8::MAX as i32).contains(&value) {
+                rhs_tast = tast::Expr::EInt {
+                    value,
+                    ty: tast::Ty::TInt8,
+                };
+                rhs_ty = tast::Ty::TInt8;
+            } else {
+                env.report_typer_error(format!("Integer literal {} does not fit in int8", value));
+            }
+        }
+
+        if matches!(rhs_ty, tast::Ty::TInt8)
+            && matches!(lhs_ty, tast::Ty::TInt)
+            && matches!(lhs, ast::Expr::EInt { .. })
+            && let tast::Expr::EInt { value, .. } = &lhs_tast
+        {
+            let value = *value;
+            if (i8::MIN as i32..=i8::MAX as i32).contains(&value) {
+                lhs_tast = tast::Expr::EInt {
+                    value,
+                    ty: tast::Ty::TInt8,
+                };
+                lhs_ty = tast::Ty::TInt8;
+            } else {
+                env.report_typer_error(format!("Integer literal {} does not fit in int8", value));
+            }
+        }
         let method_name = op.method_name();
 
         if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned()
@@ -772,7 +864,13 @@ impl TypeInference {
 
         let ret_ty = match op {
             ast::BinaryOp::Add => self.fresh_ty_var(),
-            ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => tast::Ty::TInt,
+            ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
+                if matches!(lhs_ty, tast::Ty::TInt8) && matches!(rhs_ty, tast::Ty::TInt8) {
+                    tast::Ty::TInt8
+                } else {
+                    tast::Ty::TInt
+                }
+            }
             ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
         };
 
@@ -785,9 +883,9 @@ impl TypeInference {
             }
             ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
                 env.constraints
-                    .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TInt));
+                    .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
                 env.constraints
-                    .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TInt));
+                    .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
             }
             ast::BinaryOp::And | ast::BinaryOp::Or => {
                 env.constraints

@@ -1478,6 +1478,7 @@ pub enum Type {
     UnitTy(UnitTy),
     BoolTy(BoolTy),
     IntTy(IntTy),
+    Int8Ty(Int8Ty),
     StringTy(StringTy),
     TupleTy(TupleTy),
     TAppTy(TAppTy),
@@ -1492,6 +1493,7 @@ impl CstNode for Type {
             TYPE_UNIT
                 | TYPE_BOOL
                 | TYPE_INT
+                | TYPE_INT8
                 | TYPE_STRING
                 | TYPE_TUPLE
                 | TYPE_TAPP
@@ -1504,6 +1506,7 @@ impl CstNode for Type {
             TYPE_UNIT => Type::UnitTy(UnitTy { syntax }),
             TYPE_BOOL => Type::BoolTy(BoolTy { syntax }),
             TYPE_INT => Type::IntTy(IntTy { syntax }),
+            TYPE_INT8 => Type::Int8Ty(Int8Ty { syntax }),
             TYPE_STRING => Type::StringTy(StringTy { syntax }),
             TYPE_TUPLE => Type::TupleTy(TupleTy { syntax }),
             TYPE_TAPP => Type::TAppTy(TAppTy { syntax }),
@@ -1518,6 +1521,7 @@ impl CstNode for Type {
             Type::UnitTy(it) => &it.syntax,
             Type::BoolTy(it) => &it.syntax,
             Type::IntTy(it) => &it.syntax,
+            Type::Int8Ty(it) => &it.syntax,
             Type::StringTy(it) => &it.syntax,
             Type::TupleTy(it) => &it.syntax,
             Type::TAppTy(it) => &it.syntax,
@@ -1563,6 +1567,17 @@ impl IntTy {}
 
 impl_cst_node_simple!(IntTy, MySyntaxKind::TYPE_INT);
 impl_display_via_syntax!(IntTy);
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Int8Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Int8Ty {}
+
+impl_cst_node_simple!(Int8Ty, MySyntaxKind::TYPE_INT8);
+impl_display_via_syntax!(Int8Ty);
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringTy {

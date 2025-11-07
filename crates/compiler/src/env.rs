@@ -94,6 +94,34 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TBool),
     );
     funcs.insert(
+        "int8_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8], tast::Ty::TString),
+    );
+    funcs.insert(
+        "int8_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8], tast::Ty::TInt8),
+    );
+    funcs.insert(
+        "int8_add".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
+    );
+    funcs.insert(
+        "int8_sub".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
+    );
+    funcs.insert(
+        "int8_mul".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
+    );
+    funcs.insert(
+        "int8_div".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
+    );
+    funcs.insert(
+        "int8_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TBool),
+    );
+    funcs.insert(
         "string_add".to_string(),
         make_fn_ty(
             vec![tast::Ty::TString, tast::Ty::TString],
@@ -299,6 +327,7 @@ impl Env {
             | tast::Ty::TUnit
             | tast::Ty::TBool
             | tast::Ty::TInt
+            | tast::Ty::TInt8
             | tast::Ty::TString => {}
             tast::Ty::TTuple { typs } => {
                 for ty in typs {
