@@ -268,6 +268,10 @@ impl Rename {
                 tuple: Box::new(self.rename_expr(tuple, env, global_funcs)),
                 index: *index,
             },
+            ast::Expr::EField { expr, field } => ast::Expr::EField {
+                expr: Box::new(self.rename_expr(expr, env, global_funcs)),
+                field: field.clone(),
+            },
         }
     }
 

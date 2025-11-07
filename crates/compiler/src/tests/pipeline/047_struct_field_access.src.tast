@@ -1,0 +1,13 @@
+fn make_point(base/0: int) -> Point {
+  Point { x: (base/0 : int), y: (base/0 : int) + 1 }
+}
+
+fn sum_point(p/1: Point) -> int {
+  (p/1 : Point).x + (p/1 : Point).y
+}
+
+fn main() -> int {
+  let p/2: Point = (make_point : (int) -> Point)(5) in
+  let shifted/3: Point = Point { x: (p/2 : Point).x + 1, y: (p/2 : Point).y - 2 } in
+  (shifted/3 : Point).x + (sum_point : (Point) -> int)((shifted/3 : Point))
+}

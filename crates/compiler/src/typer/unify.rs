@@ -5,6 +5,7 @@ use crate::{
     tast::{self, TypeVar},
     typer::TypeInference,
 };
+use ast::ast::{Lident, Uident};
 
 fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
@@ -64,6 +65,88 @@ fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
     }
 
     true
+}
+
+fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt
+        | tast::Ty::TInt8
+        | tast::Ty::TString => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty, subst)),
+            args: args
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+        },
+        tast::Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|t| substitute_ty_params(t, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
+        },
+    }
+}
+
+fn instantiate_struct_field_ty(
+    struct_def: &crate::env::StructDef,
+    type_args: &[tast::Ty],
+    field: &Lident,
+) -> tast::Ty {
+    if struct_def.generics.len() != type_args.len() {
+        panic!(
+            "Struct {} expects {} type arguments, but got {}",
+            struct_def.name.0,
+            struct_def.generics.len(),
+            type_args.len()
+        );
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(type_args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    struct_def
+        .fields
+        .iter()
+        .find(|(fname, _)| fname == field)
+        .map(|(_, ty)| substitute_ty_params(ty, &subst))
+        .unwrap_or_else(|| panic!("Struct {} has no field {}", struct_def.name.0, field.0))
+}
+
+fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
+    match ty {
+        tast::Ty::TCon { name } => Some((Uident::new(name), Vec::new())),
+        tast::Ty::TApp { ty: base, args } => {
+            let (type_name, mut collected) = decompose_struct_type(base)?;
+            collected.extend(args.iter().cloned());
+            Some((type_name, collected))
+        }
+        _ => None,
+    }
 }
 
 impl TypeInference {
@@ -170,9 +253,36 @@ impl TypeInference {
                             ));
                         }
                     }
+                    Constraint::StructFieldAccess {
+                        expr_ty,
+                        field,
+                        result_ty,
+                    } => {
+                        let norm_expr_ty = self.norm(&expr_ty);
+                        if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
+                            let struct_def = env.structs.get(&type_name).unwrap_or_else(|| {
+                                panic!(
+                                    "Struct {} not found when accessing field {}",
+                                    type_name.0, field.0
+                                )
+                            });
+                            let field_ty =
+                                instantiate_struct_field_ty(struct_def, &type_args, &field);
+                            if self.unify(env, &result_ty, &field_ty) {
+                                changed = true;
+                            }
+                        } else {
+                            still_pending.push(Constraint::StructFieldAccess {
+                                expr_ty: norm_expr_ty,
+                                field,
+                                result_ty,
+                            });
+                        }
+                    }
                 }
             }
             constraints.extend(still_pending);
+
             if !changed && !constraints.is_empty() {
                 env.report_typer_error(format!(
                     "Could not solve all constraints: {:?}",
@@ -753,6 +863,19 @@ impl TypeInference {
                 tast::Expr::EProj {
                     tuple,
                     index,
+                    ty: ty.clone(),
+                }
+            }
+            tast::Expr::EField {
+                expr,
+                field_name,
+                ty,
+            } => {
+                let ty = self.subst_ty(env, &ty);
+                let expr = Box::new(self.subst(env, *expr));
+                tast::Expr::EField {
+                    expr,
+                    field_name,
                     ty: ty.clone(),
                 }
             }

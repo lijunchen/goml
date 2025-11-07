@@ -1,0 +1,230 @@
+FILE@0..286
+  STRUCT@0..38
+    StructKeyword@0..6 "struct"
+    Whitespace@6..7 " "
+    Uident@7..12 "Point"
+    Whitespace@12..13 " "
+    LBrace@13..14 "{"
+    Whitespace@14..17 "\n  "
+    STRUCT_FIELD_LIST@17..38
+      STRUCT_FIELD@17..23
+        Lident@17..18 "x"
+        Colon@18..19 ":"
+        Whitespace@19..20 " "
+        TYPE_INT@20..23
+          IntKeyword@20..23 "int"
+      Comma@23..24 ","
+      Whitespace@24..27 "\n  "
+      STRUCT_FIELD@27..33
+        Lident@27..28 "y"
+        Colon@28..29 ":"
+        Whitespace@29..30 " "
+        TYPE_INT@30..33
+          IntKeyword@30..33 "int"
+      Comma@33..34 ","
+      Whitespace@34..35 "\n"
+      RBrace@35..36 "}"
+      Whitespace@36..38 "\n\n"
+  FN@38..110
+    FnKeyword@38..40 "fn"
+    Whitespace@40..41 " "
+    Lident@41..51 "make_point"
+    PARAM_LIST@51..63
+      LParen@51..52 "("
+      PARAM@52..61
+        Lident@52..56 "base"
+        Colon@56..57 ":"
+        Whitespace@57..58 " "
+        TYPE_INT@58..61
+          IntKeyword@58..61 "int"
+      RParen@61..62 ")"
+      Whitespace@62..63 " "
+    Arrow@63..65 "->"
+    Whitespace@65..66 " "
+    TYPE_TAPP@66..72
+      Uident@66..71 "Point"
+      Whitespace@71..72 " "
+    BLOCK@72..110
+      LBrace@72..73 "{"
+      Whitespace@73..76 "\n  "
+      EXPR_STRUCT_LITERAL@76..107
+        Uident@76..81 "Point"
+        Whitespace@81..82 " "
+        STRUCT_LITERAL_FIELD_LIST@82..107
+          LBrace@82..83 "{"
+          Whitespace@83..84 " "
+          STRUCT_LITERAL_FIELD@84..91
+            Lident@84..85 "x"
+            Colon@85..86 ":"
+            Whitespace@86..87 " "
+            EXPR_LIDENT@87..91
+              Lident@87..91 "base"
+          Comma@91..92 ","
+          Whitespace@92..93 " "
+          STRUCT_LITERAL_FIELD@93..105
+            Lident@93..94 "y"
+            Colon@94..95 ":"
+            Whitespace@95..96 " "
+            EXPR_BINARY@96..105
+              EXPR_LIDENT@96..101
+                Lident@96..100 "base"
+                Whitespace@100..101 " "
+              Plus@101..102 "+"
+              Whitespace@102..103 " "
+              EXPR_INT@103..105
+                Int@103..104 "1"
+                Whitespace@104..105 " "
+          RBrace@105..106 "}"
+          Whitespace@106..107 "\n"
+      RBrace@107..108 "}"
+      Whitespace@108..110 "\n\n"
+  FN@110..157
+    FnKeyword@110..112 "fn"
+    Whitespace@112..113 " "
+    Lident@113..122 "sum_point"
+    PARAM_LIST@122..133
+      LParen@122..123 "("
+      PARAM@123..131
+        Lident@123..124 "p"
+        Colon@124..125 ":"
+        Whitespace@125..126 " "
+        TYPE_TAPP@126..131
+          Uident@126..131 "Point"
+      RParen@131..132 ")"
+      Whitespace@132..133 " "
+    Arrow@133..135 "->"
+    Whitespace@135..136 " "
+    TYPE_INT@136..140
+      IntKeyword@136..139 "int"
+      Whitespace@139..140 " "
+    BLOCK@140..157
+      LBrace@140..141 "{"
+      Whitespace@141..144 "\n  "
+      EXPR_BINARY@144..154
+        EXPR_BINARY@144..148
+          EXPR_LIDENT@144..145
+            Lident@144..145 "p"
+          Dot@145..146 "."
+          EXPR_LIDENT@146..148
+            Lident@146..147 "x"
+            Whitespace@147..148 " "
+        Plus@148..149 "+"
+        Whitespace@149..150 " "
+        EXPR_BINARY@150..154
+          EXPR_LIDENT@150..151
+            Lident@150..151 "p"
+          Dot@151..152 "."
+          EXPR_LIDENT@152..154
+            Lident@152..153 "y"
+            Whitespace@153..154 "\n"
+      RBrace@154..155 "}"
+      Whitespace@155..157 "\n\n"
+  FN@157..286
+    FnKeyword@157..159 "fn"
+    Whitespace@159..160 " "
+    Lident@160..164 "main"
+    PARAM_LIST@164..167
+      LParen@164..165 "("
+      RParen@165..166 ")"
+      Whitespace@166..167 " "
+    Arrow@167..169 "->"
+    Whitespace@169..170 " "
+    TYPE_INT@170..174
+      IntKeyword@170..173 "int"
+      Whitespace@173..174 " "
+    BLOCK@174..286
+      LBrace@174..175 "{"
+      Whitespace@175..178 "\n  "
+      STMT_LET@178..203
+        LetKeyword@178..181 "let"
+        Whitespace@181..182 " "
+        PATTERN_VARIABLE@182..184
+          Lident@182..183 "p"
+          Whitespace@183..184 " "
+        Eq@184..185 "="
+        Whitespace@185..186 " "
+        EXPR_CALL@186..199
+          EXPR_LIDENT@186..196
+            Lident@186..196 "make_point"
+          ARG_LIST@196..199
+            LParen@196..197 "("
+            ARG@197..198
+              EXPR_INT@197..198
+                Int@197..198 "5"
+            RParen@198..199 ")"
+        Semi@199..200 ";"
+        Whitespace@200..203 "\n  "
+      STMT_LET@203..253
+        LetKeyword@203..206 "let"
+        Whitespace@206..207 " "
+        PATTERN_VARIABLE@207..215
+          Lident@207..214 "shifted"
+          Whitespace@214..215 " "
+        Eq@215..216 "="
+        Whitespace@216..217 " "
+        EXPR_STRUCT_LITERAL@217..249
+          Uident@217..222 "Point"
+          Whitespace@222..223 " "
+          STRUCT_LITERAL_FIELD_LIST@223..249
+            LBrace@223..224 "{"
+            Whitespace@224..225 " "
+            STRUCT_LITERAL_FIELD@225..235
+              Lident@225..226 "x"
+              Colon@226..227 ":"
+              Whitespace@227..228 " "
+              EXPR_BINARY@228..235
+                EXPR_BINARY@228..232
+                  EXPR_LIDENT@228..229
+                    Lident@228..229 "p"
+                  Dot@229..230 "."
+                  EXPR_LIDENT@230..232
+                    Lident@230..231 "x"
+                    Whitespace@231..232 " "
+                Plus@232..233 "+"
+                Whitespace@233..234 " "
+                EXPR_INT@234..235
+                  Int@234..235 "1"
+            Comma@235..236 ","
+            Whitespace@236..237 " "
+            STRUCT_LITERAL_FIELD@237..248
+              Lident@237..238 "y"
+              Colon@238..239 ":"
+              Whitespace@239..240 " "
+              EXPR_BINARY@240..248
+                EXPR_BINARY@240..244
+                  EXPR_LIDENT@240..241
+                    Lident@240..241 "p"
+                  Dot@241..242 "."
+                  EXPR_LIDENT@242..244
+                    Lident@242..243 "y"
+                    Whitespace@243..244 " "
+                Minus@244..245 "-"
+                Whitespace@245..246 " "
+                EXPR_INT@246..248
+                  Int@246..247 "2"
+                  Whitespace@247..248 " "
+            RBrace@248..249 "}"
+        Semi@249..250 ";"
+        Whitespace@250..253 "\n  "
+      EXPR_CALL@253..284
+        EXPR_BINARY@253..274
+          EXPR_BINARY@253..263
+            EXPR_LIDENT@253..260
+              Lident@253..260 "shifted"
+            Dot@260..261 "."
+            EXPR_LIDENT@261..263
+              Lident@261..262 "x"
+              Whitespace@262..263 " "
+          Plus@263..264 "+"
+          Whitespace@264..265 " "
+          EXPR_LIDENT@265..274
+            Lident@265..274 "sum_point"
+        ARG_LIST@274..284
+          LParen@274..275 "("
+          ARG@275..282
+            EXPR_LIDENT@275..282
+              Lident@275..282 "shifted"
+          RParen@282..283 ")"
+          Whitespace@283..284 "\n"
+      RBrace@284..285 "}"
+      Whitespace@285..286 "\n"

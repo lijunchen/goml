@@ -515,6 +515,14 @@ impl Expr {
                 .to_doc(env)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(index.to_string())),
+            Self::EField {
+                expr,
+                field_name,
+                ty: _,
+            } => expr
+                .to_doc(env)
+                .append(RcDoc::text("."))
+                .append(RcDoc::text(field_name.clone())),
         }
     }
 

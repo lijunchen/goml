@@ -1,0 +1,25 @@
+struct Point {
+    x: int,
+    y: int,
+}
+
+fn make_point(base: int) -> Point {
+    Point {
+        x: base,
+        y: base + 1
+    }
+}
+
+fn sum_point(p: Point) -> int {
+    p.x + p.y
+}
+
+fn main() -> int {
+    let p = make_point(5) in
+    let shifted = Point {
+        x: p.x + 1,
+        y: p.y - 2
+    } in
+    shifted.x + sum_point(shifted)
+}
+

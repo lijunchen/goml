@@ -1234,6 +1234,20 @@ fn lower_expr_with_args(
                                 index,
                             })
                         }
+                        cst::Expr::LidentExpr(lident_expr) => {
+                            let Some(token) = lident_expr.lident_token() else {
+                                ctx.push_error(
+                                    Some(lident_expr.syntax().text_range()),
+                                    "Field access missing name",
+                                );
+                                return None;
+                            };
+                            let field = ast::Lident(token.to_string());
+                            Some(ast::Expr::EField {
+                                expr: Box::new(lhs),
+                                field,
+                            })
+                        }
                         other => {
                             ctx.push_error(
                                 Some(other.syntax().text_range()),

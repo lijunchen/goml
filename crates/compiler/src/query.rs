@@ -194,6 +194,16 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             None
         }
+        tast::Expr::EField {
+            expr,
+            field_name: _,
+            ty: _,
+        } => {
+            if let Some(expr) = find_type_expr(env, expr, range) {
+                return Some(expr);
+            }
+            None
+        }
     }
 }
 

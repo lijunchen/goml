@@ -234,6 +234,10 @@ pub enum Expr {
         tuple: Box<Expr>,
         index: usize,
     },
+    EField {
+        expr: Box<Expr>,
+        field: Lident,
+    },
 }
 
 #[derive(Debug, Clone)]

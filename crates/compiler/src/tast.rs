@@ -280,6 +280,11 @@ pub enum Expr {
         index: usize,
         ty: Ty,
     },
+    EField {
+        expr: Box<Expr>,
+        field_name: String,
+        ty: Ty,
+    },
     EBinary {
         op: BinaryOp,
         lhs: Box<Expr>,
@@ -308,6 +313,7 @@ impl Expr {
             Self::ECall { ty, .. } => ty.clone(),
             Self::EUnary { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),
+            Self::EField { ty, .. } => ty.clone(),
             Self::EBinary { ty, .. } => ty.clone(),
         }
     }
