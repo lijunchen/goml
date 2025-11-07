@@ -46,9 +46,12 @@ impl TypeInference {
             ast::Expr::EClosure { params, body } => {
                 self.infer_closure_expr(env, vars, params, body)
             }
-            ast::Expr::ELet { pat, value, body } => {
-                self.infer_let_expr(env, vars, pat, value, body)
-            }
+            ast::Expr::ELet {
+                pat,
+                annotation,
+                value,
+                body,
+            } => self.infer_let_expr(env, vars, pat, annotation, value, body),
             ast::Expr::EMatch { expr, arms } => self.infer_match_expr(env, vars, expr, arms),
             ast::Expr::EIf {
                 cond,
@@ -127,9 +130,12 @@ impl TypeInference {
             ast::Expr::EClosure { params, body } => {
                 self.check_closure_expr(env, vars, params, body, expected)
             }
-            ast::Expr::ELet { pat, value, body } => {
-                self.check_let_expr(env, vars, pat, value, body, expected)
-            }
+            ast::Expr::ELet {
+                pat,
+                annotation,
+                value,
+                body,
+            } => self.check_let_expr(env, vars, pat, annotation, value, body, expected),
             _ => self.infer_expr(env, vars, e),
         };
 
@@ -473,11 +479,22 @@ impl TypeInference {
         env: &mut Env,
         vars: &im::HashMap<Lident, tast::Ty>,
         pat: &ast::Pat,
+        annotation: &Option<ast::Ty>,
         value: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
-        let value_tast = self.infer_expr(env, vars, value);
-        let value_ty = value_tast.get_ty();
+        let current_tparams_env = self.current_tparams_env();
+        let annotated_ty = annotation
+            .as_ref()
+            .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env));
+
+        let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
+            (self.check_expr(env, vars, value, ann_ty), ann_ty.clone())
+        } else {
+            let tast = self.infer_expr(env, vars, value);
+            let ty = tast.get_ty();
+            (tast, ty)
+        };
 
         let mut new_vars = vars.clone();
         let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);
@@ -492,17 +509,29 @@ impl TypeInference {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn check_let_expr(
         &mut self,
         env: &mut Env,
         vars: &im::HashMap<Lident, tast::Ty>,
         pat: &ast::Pat,
+        annotation: &Option<ast::Ty>,
         value: &ast::Expr,
         body: &ast::Expr,
         expected: &tast::Ty,
     ) -> tast::Expr {
-        let value_tast = self.infer_expr(env, vars, value);
-        let value_ty = value_tast.get_ty();
+        let current_tparams_env = self.current_tparams_env();
+        let annotated_ty = annotation
+            .as_ref()
+            .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, &current_tparams_env));
+
+        let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
+            (self.check_expr(env, vars, value, ann_ty), ann_ty.clone())
+        } else {
+            let tast = self.infer_expr(env, vars, value);
+            let ty = tast.get_ty();
+            (tast, ty)
+        };
 
         let mut new_vars = vars.clone();
         let pat_tast = self.check_pat(env, &mut new_vars, pat, &value_ty);

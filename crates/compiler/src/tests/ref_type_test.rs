@@ -41,7 +41,13 @@ fn main() -> int {
     };
 
     let first_let = match &main_fn.body {
-        ast::ast::Expr::ELet { pat, value, body } => {
+        ast::ast::Expr::ELet {
+            pat,
+            annotation,
+            value,
+            body,
+        } => {
+            assert!(annotation.is_none());
             match pat {
                 ast::ast::Pat::PVar { name, .. } => assert_eq!(name.0, "r"),
                 other => panic!("unexpected first let pattern: {:?}", other),
@@ -62,7 +68,14 @@ fn main() -> int {
         other => panic!("unexpected main body: {:?}", other),
     };
 
-    if let ast::ast::Expr::ELet { pat, value, body } = first_let.as_ref() {
+    if let ast::ast::Expr::ELet {
+        pat,
+        annotation,
+        value,
+        body,
+    } = first_let.as_ref()
+    {
+        assert!(annotation.is_none());
         assert!(matches!(pat, ast::ast::Pat::PWild));
         match value.as_ref() {
             ast::ast::Expr::ECall { func, args } => {

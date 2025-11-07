@@ -583,12 +583,14 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
                     return body;
                 }
             };
+            let annotation = it.ty().and_then(|ty| lower_ty(ctx, ty));
             let value = match lower_expr(ctx, value_node) {
                 Some(expr) => expr,
                 None => return body,
             };
             ast::Expr::ELet {
                 pat,
+                annotation,
                 value: Box::new(value),
                 body: Box::new(body),
             }
@@ -610,6 +612,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
             };
             ast::Expr::ELet {
                 pat: ast::Pat::PWild,
+                annotation: None,
                 value: Box::new(value),
                 body: Box::new(body),
             }
@@ -862,6 +865,7 @@ fn lower_expr_with_args(
                 params: Vec::new(),
                 body: Box::new(ast::Expr::ELet {
                     pat: ast::Pat::PWild,
+                    annotation: None,
                     value: Box::new(call),
                     body: Box::new(ast::Expr::EUnit),
                 }),

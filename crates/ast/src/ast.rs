@@ -196,6 +196,7 @@ pub enum Expr {
     },
     ELet {
         pat: Pat,
+        annotation: Option<Ty>,
         value: Box<Expr>,
         body: Box<Expr>,
     },

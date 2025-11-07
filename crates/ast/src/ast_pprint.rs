@@ -177,18 +177,32 @@ impl Expr {
                     .append(RcDoc::text("| "))
                     .append(body.to_doc())
             }
-            Self::ELet { pat, value, body } => RcDoc::text("let")
-                .append(RcDoc::space())
-                .append(pat.to_doc())
-                .append(RcDoc::space())
-                .append(RcDoc::text("="))
-                .append(RcDoc::space())
-                .append(value.to_doc())
-                .append(RcDoc::space())
-                .append(RcDoc::text("in"))
-                .append(RcDoc::hardline())
-                .append(body.to_doc())
-                .group(),
+            Self::ELet {
+                pat,
+                annotation,
+                value,
+                body,
+            } => {
+                let base_pat_doc = pat.to_doc();
+                let pat_doc = if let Some(ty) = annotation {
+                    base_pat_doc.append(RcDoc::text(": ")).append(ty.to_doc())
+                } else {
+                    base_pat_doc
+                };
+
+                RcDoc::text("let")
+                    .append(RcDoc::space())
+                    .append(pat_doc)
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("="))
+                    .append(RcDoc::space())
+                    .append(value.to_doc())
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("in"))
+                    .append(RcDoc::hardline())
+                    .append(body.to_doc())
+                    .group()
+            }
 
             Self::EMatch { expr, arms } => {
                 let match_expr = RcDoc::text("match")
