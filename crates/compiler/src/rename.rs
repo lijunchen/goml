@@ -182,12 +182,18 @@ impl Rename {
                     body: Box::new(new_body),
                 }
             }
-            ast::Expr::ELet { pat, value, body } => {
+            ast::Expr::ELet {
+                pat,
+                annotation,
+                value,
+                body,
+            } => {
                 let new_value = self.rename_expr(value, env, global_funcs);
                 let new_pat = self.rename_pat(pat, env);
                 let new_body = self.rename_expr(body, env, global_funcs);
                 ast::Expr::ELet {
                     pat: new_pat,
+                    annotation: annotation.clone(),
                     value: Box::new(new_value),
                     body: Box::new(new_body),
                 }

@@ -550,6 +550,10 @@ impl LetStmt {
         support::child(&self.syntax)
     }
 
+    pub fn ty(&self) -> Option<Type> {
+        support::child(&self.syntax)
+    }
+
     pub fn value(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }

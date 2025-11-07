@@ -1,5 +1,6 @@
 use crate::{
     expr::expr,
+    file::type_expr,
     parser::{MarkerClosed, Parser},
     pattern,
     syntax::MySyntaxKind,
@@ -15,6 +16,10 @@ pub fn let_stmt(p: &mut Parser) -> Option<MarkerClosed> {
     p.expect(T![let]);
     if pattern::pattern(p).is_none() {
         p.advance_with_error("expected a pattern in let statement");
+    }
+    if p.at(T![:]) {
+        p.expect(T![:]);
+        type_expr(p);
     }
     p.expect(T![=]);
     if expr(p).is_none() {
