@@ -9,6 +9,10 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
         tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint8 => "uint8".to_string(),
+        tast::Ty::TUint16 => "uint16".to_string(),
+        tast::Ty::TUint32 => "uint32".to_string(),
+        tast::Ty::TUint64 => "uint64".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TVar(_v) => "Var".to_string(),
         tast::Ty::TParam { name } => format!("TParam_{}", name),
@@ -97,6 +101,34 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
                 Ok(tast::Ty::TInt64)
             } else {
                 Err("unexpected trailing tokens after int64".to_string())
+            }
+        }
+        "uint8" => {
+            if start + 1 == end {
+                Ok(tast::Ty::TUint8)
+            } else {
+                Err("unexpected trailing tokens after uint8".to_string())
+            }
+        }
+        "uint16" => {
+            if start + 1 == end {
+                Ok(tast::Ty::TUint16)
+            } else {
+                Err("unexpected trailing tokens after uint16".to_string())
+            }
+        }
+        "uint32" => {
+            if start + 1 == end {
+                Ok(tast::Ty::TUint32)
+            } else {
+                Err("unexpected trailing tokens after uint32".to_string())
+            }
+        }
+        "uint64" => {
+            if start + 1 == end {
+                Ok(tast::Ty::TUint64)
+            } else {
+                Err("unexpected trailing tokens after uint64".to_string())
             }
         }
         "string" => {

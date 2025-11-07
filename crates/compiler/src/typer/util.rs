@@ -16,6 +16,10 @@ pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String
         | tast::Ty::TInt16
         | tast::Ty::TInt32
         | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
         | tast::Ty::TString => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
@@ -119,6 +123,10 @@ pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
         ast::Ty::TInt16 => tast::Ty::TInt16,
         ast::Ty::TInt32 => tast::Ty::TInt32,
         ast::Ty::TInt64 => tast::Ty::TInt64,
+        ast::Ty::TUint8 => tast::Ty::TUint8,
+        ast::Ty::TUint16 => tast::Ty::TUint16,
+        ast::Ty::TUint32 => tast::Ty::TUint32,
+        ast::Ty::TUint64 => tast::Ty::TUint64,
         ast::Ty::TString => tast::Ty::TString,
         ast::Ty::TTuple { typs } => {
             let typs = typs
@@ -191,5 +199,9 @@ fn numeric_binary_same_width(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
             | (tast::Ty::TInt16, tast::Ty::TInt16)
             | (tast::Ty::TInt32, tast::Ty::TInt32)
             | (tast::Ty::TInt64, tast::Ty::TInt64)
+            | (tast::Ty::TUint8, tast::Ty::TUint8)
+            | (tast::Ty::TUint16, tast::Ty::TUint16)
+            | (tast::Ty::TUint32, tast::Ty::TUint32)
+            | (tast::Ty::TUint64, tast::Ty::TUint64)
     )
 }

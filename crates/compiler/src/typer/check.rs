@@ -1294,6 +1294,7 @@ fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
 }
 
 fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
+    let value = value as i128;
     if let Some((min, max)) = integer_bounds(ty)
         && (value < min || value > max)
     {
@@ -1311,13 +1312,17 @@ fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
     }
 }
 
-fn integer_bounds(ty: &tast::Ty) -> Option<(i64, i64)> {
+fn integer_bounds(ty: &tast::Ty) -> Option<(i128, i128)> {
     match ty {
-        tast::Ty::TInt8 => Some((i8::MIN as i64, i8::MAX as i64)),
-        tast::Ty::TInt16 => Some((i16::MIN as i64, i16::MAX as i64)),
-        tast::Ty::TInt32 => Some((i32::MIN as i64, i32::MAX as i64)),
-        tast::Ty::TInt => Some((i32::MIN as i64, i32::MAX as i64)),
-        tast::Ty::TInt64 => Some((i64::MIN, i64::MAX)),
+        tast::Ty::TInt8 => Some((i8::MIN as i128, i8::MAX as i128)),
+        tast::Ty::TInt16 => Some((i16::MIN as i128, i16::MAX as i128)),
+        tast::Ty::TInt32 => Some((i32::MIN as i128, i32::MAX as i128)),
+        tast::Ty::TInt => Some((i32::MIN as i128, i32::MAX as i128)),
+        tast::Ty::TInt64 => Some((i64::MIN as i128, i64::MAX as i128)),
+        tast::Ty::TUint8 => Some((0, u8::MAX as i128)),
+        tast::Ty::TUint16 => Some((0, u16::MAX as i128)),
+        tast::Ty::TUint32 => Some((0, u32::MAX as i128)),
+        tast::Ty::TUint64 => Some((0, u64::MAX as i128)),
         _ => None,
     }
 }
@@ -1329,6 +1334,10 @@ fn integer_type_name(ty: &tast::Ty) -> Option<&'static str> {
         tast::Ty::TInt32 => Some("int32"),
         tast::Ty::TInt64 => Some("int64"),
         tast::Ty::TInt => Some("int"),
+        tast::Ty::TUint8 => Some("uint8"),
+        tast::Ty::TUint16 => Some("uint16"),
+        tast::Ty::TUint32 => Some("uint32"),
+        tast::Ty::TUint64 => Some("uint64"),
         _ => None,
     }
 }

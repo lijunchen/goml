@@ -206,6 +206,154 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TBool),
     );
     funcs.insert(
+        "uint8_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8], tast::Ty::TString),
+    );
+    funcs.insert(
+        "uint8_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8], tast::Ty::TUint8),
+    );
+    funcs.insert(
+        "uint8_add".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
+    );
+    funcs.insert(
+        "uint8_sub".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
+    );
+    funcs.insert(
+        "uint8_mul".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
+    );
+    funcs.insert(
+        "uint8_div".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
+    );
+    funcs.insert(
+        "uint8_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "uint16_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint16], tast::Ty::TString),
+    );
+    funcs.insert(
+        "uint16_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint16], tast::Ty::TUint16),
+    );
+    funcs.insert(
+        "uint16_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint16, tast::Ty::TUint16],
+            tast::Ty::TUint16,
+        ),
+    );
+    funcs.insert(
+        "uint16_sub".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint16, tast::Ty::TUint16],
+            tast::Ty::TUint16,
+        ),
+    );
+    funcs.insert(
+        "uint16_mul".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint16, tast::Ty::TUint16],
+            tast::Ty::TUint16,
+        ),
+    );
+    funcs.insert(
+        "uint16_div".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint16, tast::Ty::TUint16],
+            tast::Ty::TUint16,
+        ),
+    );
+    funcs.insert(
+        "uint16_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint16, tast::Ty::TUint16], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "uint32_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint32], tast::Ty::TString),
+    );
+    funcs.insert(
+        "uint32_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint32], tast::Ty::TUint32),
+    );
+    funcs.insert(
+        "uint32_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint32, tast::Ty::TUint32],
+            tast::Ty::TUint32,
+        ),
+    );
+    funcs.insert(
+        "uint32_sub".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint32, tast::Ty::TUint32],
+            tast::Ty::TUint32,
+        ),
+    );
+    funcs.insert(
+        "uint32_mul".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint32, tast::Ty::TUint32],
+            tast::Ty::TUint32,
+        ),
+    );
+    funcs.insert(
+        "uint32_div".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint32, tast::Ty::TUint32],
+            tast::Ty::TUint32,
+        ),
+    );
+    funcs.insert(
+        "uint32_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint32, tast::Ty::TUint32], tast::Ty::TBool),
+    );
+    funcs.insert(
+        "uint64_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint64], tast::Ty::TString),
+    );
+    funcs.insert(
+        "uint64_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint64], tast::Ty::TUint64),
+    );
+    funcs.insert(
+        "uint64_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint64, tast::Ty::TUint64],
+            tast::Ty::TUint64,
+        ),
+    );
+    funcs.insert(
+        "uint64_sub".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint64, tast::Ty::TUint64],
+            tast::Ty::TUint64,
+        ),
+    );
+    funcs.insert(
+        "uint64_mul".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint64, tast::Ty::TUint64],
+            tast::Ty::TUint64,
+        ),
+    );
+    funcs.insert(
+        "uint64_div".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TUint64, tast::Ty::TUint64],
+            tast::Ty::TUint64,
+        ),
+    );
+    funcs.insert(
+        "uint64_less".to_string(),
+        make_fn_ty(vec![tast::Ty::TUint64, tast::Ty::TUint64], tast::Ty::TBool),
+    );
+    funcs.insert(
         "string_add".to_string(),
         make_fn_ty(
             vec![tast::Ty::TString, tast::Ty::TString],
@@ -420,6 +568,10 @@ impl Env {
             | tast::Ty::TInt16
             | tast::Ty::TInt32
             | tast::Ty::TInt64
+            | tast::Ty::TUint8
+            | tast::Ty::TUint16
+            | tast::Ty::TUint32
+            | tast::Ty::TUint64
             | tast::Ty::TString => {}
             tast::Ty::TTuple { typs } => {
                 for ty in typs {

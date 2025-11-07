@@ -1,0 +1,21 @@
+fn main() -> unit {
+  let start8/0: uint8 = 200 in
+  let add8/1: uint8 = 55 in
+  let sum8/2: uint8 = (start8/0 : uint8) + (add8/1 : uint8) in
+  let neg8/3: uint8 = -(start8/0 : uint8) in
+  let start16/4: uint16 = 50000 in
+  let add16/5: uint16 = 12000 in
+  let sum16/6: uint16 = (start16/4 : uint16) + (add16/5 : uint16) in
+  let diff16/7: uint16 = (sum16/6 : uint16) - (start16/4 : uint16) in
+  let start32/8: uint32 = 3000000000 in
+  let add32/9: uint32 = 123456789 in
+  let sum32/10: uint32 = (start32/8 : uint32) + (add32/9 : uint32) in
+  let neg32/11: uint32 = -(add32/9 : uint32) in
+  let start64/12: uint64 = 6000000000 in
+  let add64/13: uint64 = 4000000000 in
+  let sum64/14: uint64 = (start64/12 : uint64) + (add64/13 : uint64) in
+  let diff64/15: uint64 = (sum64/14 : uint64) - (add64/13 : uint64) in
+  let message/16: string = (uint8_to_string : (uint8) -> string)((sum8/2 : uint8)) + ", " + (uint8_to_string : (uint8) -> string)((neg8/3 : uint8)) + "; " + (uint16_to_string : (uint16) -> string)((diff16/7 : uint16)) + "; " + (uint32_to_string : (uint32) -> string)((neg32/11 : uint32)) + "; " + (uint64_to_string : (uint64) -> string)((diff64/15 : uint64)) in
+  let _ : unit = (string_println : (string) -> unit)((message/16 : string)) in
+  ()
+}

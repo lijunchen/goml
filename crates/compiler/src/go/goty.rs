@@ -8,6 +8,10 @@ pub enum GoType {
     TInt16,
     TInt32,
     TInt64,
+    TUint8,
+    TUint16,
+    TUint32,
+    TUint64,
     TString,
     TStruct {
         name: String,
