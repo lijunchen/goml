@@ -8,6 +8,7 @@ use lexer::TokenKind;
 
 pub const EXPR_FIRST: &[TokenKind] = &[
     T![int],
+    T![float],
     T![str],
     T![lident],
     T![uident],
@@ -53,6 +54,11 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::EXPR_INT)
+        }
+        T![float] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::EXPR_FLOAT)
         }
         T!['['] => {
             let m = p.open();

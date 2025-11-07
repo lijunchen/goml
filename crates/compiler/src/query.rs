@@ -89,6 +89,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
         tast::Expr::EUnit { ty: _ } => None,
         tast::Expr::EBool { value: _, ty: _ } => None,
         tast::Expr::EInt { value: _, ty: _ } => None,
+        tast::Expr::EFloat { value: _, ty: _ } => None,
         tast::Expr::EString { value: _, ty: _ } => None,
         tast::Expr::EConstr { .. } => None,
         tast::Expr::ETuple { items, ty: _ } | tast::Expr::EArray { items, ty: _ } => {

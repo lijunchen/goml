@@ -137,6 +137,7 @@ impl Rename {
             ast::Expr::EUnit => expr.clone(),
             ast::Expr::EBool { .. } => expr.clone(),
             ast::Expr::EInt { .. } => expr.clone(),
+            ast::Expr::EFloat { .. } => expr.clone(),
             ast::Expr::EString { .. } => expr.clone(),
             ast::Expr::EConstr { vcon, args } => ast::Expr::EConstr {
                 vcon: vcon.clone(),

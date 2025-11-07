@@ -1,0 +1,52 @@
+fn show32(label: string, value: float32) {
+    let message = string_add(label, float32_to_string(value));
+    let _ = string_println(message);
+    ()
+}
+
+fn show64(label: string, value: float64) {
+    let message = string_add(label, float64_to_string(value));
+    let _ = string_println(message);
+    ()
+}
+
+fn lerp32(a: float32, b: float32, weight: float32) -> float32 {
+    let delta = b - a;
+    a + delta * weight
+}
+
+fn midpoint_energy(x: float64, y: float64) -> float64 {
+    let sum = x * x + y * y;
+    sum / 2.0
+}
+
+fn main() {
+    let start32: float32 = 1.25;
+    let end32: float32 = 5.75;
+    let half: float32 = 0.5;
+    let scale: float32 = 2.0;
+
+    let mid32 = lerp32(start32, end32, half);
+    let neg_end32 = -end32;
+    let ratio32 = end32 / scale;
+    let less32 = float32_less(start32, end32);
+
+    let dx: float64 = 6.5;
+    let dy: float64 = 3.5;
+    let quarter: float64 = 0.25;
+    let energy: float64 = midpoint_energy(dx, dy);
+    let neg_dx = -dx;
+    let adjusted: float64 = energy + dy - dx * quarter;
+    let threshold: float64 = 4.0;
+    let less64 = float64_less(adjusted, threshold);
+
+    show32("mid32=", mid32);
+    show32("neg_end32=", neg_end32);
+    show32("ratio32=", ratio32);
+    let _ = string_println(string_add("less32=", bool_to_string(less32)));
+
+    show64("energy=", energy);
+    show64("neg_dx=", neg_dx);
+    show64("adjusted=", adjusted);
+    let _ = string_println(string_add("less64=", bool_to_string(less64)));
+}

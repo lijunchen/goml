@@ -228,6 +228,12 @@ pub enum TokenKind {
     #[token("uint64")]
     Uint64Keyword,
 
+    #[token("float32")]
+    Float32Keyword,
+
+    #[token("float64")]
+    Float64Keyword,
+
     #[token("string")]
     StringKeyword,
 
@@ -239,6 +245,9 @@ pub enum TokenKind {
 
     #[regex("[A-Z][A-Za-z_0-9]*")]
     Uident,
+
+    #[regex(r"[0-9]+\.[0-9]+", priority = 2)]
+    Float,
 
     #[regex("[0-9]+")]
     Int,
@@ -316,10 +325,13 @@ impl std::fmt::Display for TokenKind {
             Self::Uint16Keyword => "uint16",
             Self::Uint32Keyword => "uint32",
             Self::Uint64Keyword => "uint64",
+            Self::Float32Keyword => "float32",
+            Self::Float64Keyword => "float64",
             Self::StringKeyword => "string",
             Self::ArrayKeyword => "array",
             Self::Lident => "lident",
             Self::Uident => "uident",
+            Self::Float => "float",
             Self::Int => "int",
             Self::Str => "str",
             Self::Whitespace => "whitespace",
@@ -383,10 +395,13 @@ macro_rules! T {
     [Uint16] => { $crate::TokenKind::Uint16Keyword };
     [Uint32] => { $crate::TokenKind::Uint32Keyword };
     [Uint64] => { $crate::TokenKind::Uint64Keyword };
+    [Float32] => { $crate::TokenKind::Float32Keyword };
+    [Float64] => { $crate::TokenKind::Float64Keyword };
     [String] => { $crate::TokenKind::StringKeyword };
     [array] => { $crate::TokenKind::ArrayKeyword };
     [lident] => { $crate::TokenKind::Lident };
     [uident] => { $crate::TokenKind::Uident };
+    [float] => { $crate::TokenKind::Float };
     [int] => { $crate::TokenKind::Int };
     [str] => { $crate::TokenKind::Str };
     [whitespace] => { $crate::TokenKind::Whitespace };

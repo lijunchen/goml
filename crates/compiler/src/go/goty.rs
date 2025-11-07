@@ -12,6 +12,8 @@ pub enum GoType {
     TUint16,
     TUint32,
     TUint64,
+    TFloat32,
+    TFloat64,
     TString,
     TStruct {
         name: String,

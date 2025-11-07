@@ -155,6 +155,8 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TUint16
         | Ty::TUint32
         | Ty::TUint64
+        | Ty::TFloat32
+        | Ty::TFloat64
         | Ty::TString => ty.clone(),
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs
@@ -717,6 +719,9 @@ fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
         Ty::TUint16 => compile_int_case(env, rows, &bvar, ty, Ty::TUint16),
         Ty::TUint32 => compile_int_case(env, rows, &bvar, ty, Ty::TUint32),
         Ty::TUint64 => compile_int_case(env, rows, &bvar, ty, Ty::TUint64),
+        Ty::TFloat32 | Ty::TFloat64 => {
+            panic!("Matching on floating point types is not supported")
+        }
         Ty::TString => compile_string_case(env, rows, &bvar, ty),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
@@ -815,6 +820,8 @@ fn builtin_function_for(
             (Ty::TUint16, Ty::TUint16) => Some("uint16_add"),
             (Ty::TUint32, Ty::TUint32) => Some("uint32_add"),
             (Ty::TUint64, Ty::TUint64) => Some("uint64_add"),
+            (Ty::TFloat32, Ty::TFloat32) => Some("float32_add"),
+            (Ty::TFloat64, Ty::TFloat64) => Some("float64_add"),
             (Ty::TString, Ty::TString) => Some("string_add"),
             _ => None,
         },
@@ -828,6 +835,8 @@ fn builtin_function_for(
             (Ty::TUint16, Ty::TUint16) => Some("uint16_sub"),
             (Ty::TUint32, Ty::TUint32) => Some("uint32_sub"),
             (Ty::TUint64, Ty::TUint64) => Some("uint64_sub"),
+            (Ty::TFloat32, Ty::TFloat32) => Some("float32_sub"),
+            (Ty::TFloat64, Ty::TFloat64) => Some("float64_sub"),
             _ => None,
         },
         BinaryOp::Mul => match (lhs_ty, rhs_ty) {
@@ -840,6 +849,8 @@ fn builtin_function_for(
             (Ty::TUint16, Ty::TUint16) => Some("uint16_mul"),
             (Ty::TUint32, Ty::TUint32) => Some("uint32_mul"),
             (Ty::TUint64, Ty::TUint64) => Some("uint64_mul"),
+            (Ty::TFloat32, Ty::TFloat32) => Some("float32_mul"),
+            (Ty::TFloat64, Ty::TFloat64) => Some("float64_mul"),
             _ => None,
         },
         BinaryOp::Div => match (lhs_ty, rhs_ty) {
@@ -852,6 +863,8 @@ fn builtin_function_for(
             (Ty::TUint16, Ty::TUint16) => Some("uint16_div"),
             (Ty::TUint32, Ty::TUint32) => Some("uint32_div"),
             (Ty::TUint64, Ty::TUint64) => Some("uint64_div"),
+            (Ty::TFloat32, Ty::TFloat32) => Some("float32_div"),
+            (Ty::TFloat64, Ty::TFloat64) => Some("float64_div"),
             _ => None,
         },
         BinaryOp::And => match (lhs_ty, rhs_ty) {
@@ -877,6 +890,8 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
             Ty::TUint16 => Some("uint16_neg"),
             Ty::TUint32 => Some("uint32_neg"),
             Ty::TUint64 => Some("uint64_neg"),
+            Ty::TFloat32 => Some("float32_neg"),
+            Ty::TFloat64 => Some("float64_neg"),
             _ => None,
         },
         UnaryOp::Not => match arg_ty {
@@ -904,6 +919,10 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             ty: ty.clone(),
         },
         EInt { value, ty } => core::Expr::EInt {
+            value: *value,
+            ty: ty.clone(),
+        },
+        EFloat { value, ty } => core::Expr::EFloat {
             value: *value,
             ty: ty.clone(),
         },
