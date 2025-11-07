@@ -324,6 +324,7 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
         | e @ ast::Expr::Var { .. }
         | e @ ast::Expr::Bool { .. }
         | e @ ast::Expr::Int { .. }
+        | e @ ast::Expr::Float { .. }
         | e @ ast::Expr::String { .. } => e,
     }
 }
@@ -504,6 +505,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
+        | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
     }
     s
@@ -621,6 +623,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
+        | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => false,
     }
 }
@@ -872,6 +875,7 @@ fn collect_called_in_expr(
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
+        | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
     }
 }
@@ -1083,6 +1087,7 @@ fn collect_packages_in_expr(
         | ast::Expr::Var { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
+        | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
     }
 }

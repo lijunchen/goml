@@ -31,6 +31,10 @@ pub enum Expr {
         value: i64,
         ty: Ty,
     },
+    EFloat {
+        value: f64,
+        ty: Ty,
+    },
     EString {
         value: String,
         ty: Ty,
@@ -101,6 +105,7 @@ impl Expr {
             Expr::EUnit { ty } => ty.clone(),
             Expr::EBool { ty, .. } => ty.clone(),
             Expr::EInt { ty, .. } => ty.clone(),
+            Expr::EFloat { ty, .. } => ty.clone(),
             Expr::EString { ty, .. } => ty.clone(),
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),

@@ -24,6 +24,8 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TUint16 => "uint16".to_string(),
         GoType::TUint32 => "uint32".to_string(),
         GoType::TUint64 => "uint64".to_string(),
+        GoType::TFloat32 => "float32".to_string(),
+        GoType::TFloat64 => "float64".to_string(),
         GoType::TString => "string".to_string(),
         GoType::TStruct { name, .. } => name.clone(),
         GoType::TPointer { elem } => format!("*{}", go_type_name(elem)),
@@ -657,6 +659,7 @@ impl Expr {
             Expr::Var { name, ty: _ } => RcDoc::text(name),
             Expr::Bool { value, ty: _ } => RcDoc::text(if *value { "true" } else { "false" }),
             Expr::Int { value, ty: _ } => RcDoc::as_string(value),
+            Expr::Float { value, ty: _ } => RcDoc::as_string(value),
             Expr::String { value, ty: _ } => RcDoc::text("\"")
                 .append(RcDoc::text(value))
                 .append(RcDoc::text("\"")),

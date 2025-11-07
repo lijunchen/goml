@@ -210,6 +210,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
         core::Expr::EUnit { .. }
         | core::Expr::EBool { .. }
         | core::Expr::EInt { .. }
+        | core::Expr::EFloat { .. }
         | core::Expr::EString { .. } => expr,
         core::Expr::EConstr {
             constructor,
@@ -588,6 +589,7 @@ fn collect_captured(
         core::Expr::EUnit { .. }
         | core::Expr::EBool { .. }
         | core::Expr::EInt { .. }
+        | core::Expr::EFloat { .. }
         | core::Expr::EString { .. } => {}
         core::Expr::EConstr { args, .. } => {
             for arg in args {
@@ -758,6 +760,8 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TUint16
         | Ty::TUint32
         | Ty::TUint64
+        | Ty::TFloat32
+        | Ty::TFloat64
         | Ty::TString => ty.clone(),
         Ty::TCon { .. } => ty.clone(),
         Ty::TVar { .. } => ty.clone(),

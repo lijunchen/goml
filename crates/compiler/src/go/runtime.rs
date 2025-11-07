@@ -61,6 +61,8 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(uint16_to_string()),
         Item::Fn(uint32_to_string()),
         Item::Fn(uint64_to_string()),
+        Item::Fn(float32_to_string()),
+        Item::Fn(float64_to_string()),
         Item::Fn(int_neg()),
         Item::Fn(int8_neg()),
         Item::Fn(int16_neg()),
@@ -70,6 +72,8 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(uint16_neg()),
         Item::Fn(uint32_neg()),
         Item::Fn(uint64_neg()),
+        Item::Fn(float32_neg()),
+        Item::Fn(float64_neg()),
         Item::Fn(bool_not()),
         Item::Fn(bool_and()),
         Item::Fn(bool_or()),
@@ -118,6 +122,16 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(uint64_mul()),
         Item::Fn(uint64_div()),
         Item::Fn(uint64_less()),
+        Item::Fn(float32_add()),
+        Item::Fn(float32_sub()),
+        Item::Fn(float32_mul()),
+        Item::Fn(float32_div()),
+        Item::Fn(float32_less()),
+        Item::Fn(float64_add()),
+        Item::Fn(float64_sub()),
+        Item::Fn(float64_mul()),
+        Item::Fn(float64_div()),
+        Item::Fn(float64_less()),
         Item::Fn(string_add()),
         Item::Fn(string_print()),
         Item::Fn(string_println()),
@@ -545,6 +559,22 @@ fn uint64_neg() -> goast::Fn {
     neg_fn("uint64_neg", goty::GoType::TUint64)
 }
 
+fn float32_to_string() -> goast::Fn {
+    to_string_fn("float32_to_string", goty::GoType::TFloat32)
+}
+
+fn float32_neg() -> goast::Fn {
+    neg_fn("float32_neg", goty::GoType::TFloat32)
+}
+
+fn float64_to_string() -> goast::Fn {
+    to_string_fn("float64_to_string", goty::GoType::TFloat64)
+}
+
+fn float64_neg() -> goast::Fn {
+    neg_fn("float64_neg", goty::GoType::TFloat64)
+}
+
 fn bool_not() -> goast::Fn {
     goast::Fn {
         name: "bool_not".to_string(),
@@ -805,6 +835,46 @@ fn uint64_div() -> goast::Fn {
 
 fn uint64_less() -> goast::Fn {
     less_fn_with_ty("uint64_less", goty::GoType::TUint64)
+}
+
+fn float32_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float32_add", BinaryOp::Add, goty::GoType::TFloat32)
+}
+
+fn float32_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float32_sub", BinaryOp::Sub, goty::GoType::TFloat32)
+}
+
+fn float32_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float32_mul", BinaryOp::Mul, goty::GoType::TFloat32)
+}
+
+fn float32_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float32_div", BinaryOp::Div, goty::GoType::TFloat32)
+}
+
+fn float32_less() -> goast::Fn {
+    less_fn_with_ty("float32_less", goty::GoType::TFloat32)
+}
+
+fn float64_add() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float64_add", BinaryOp::Add, goty::GoType::TFloat64)
+}
+
+fn float64_sub() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float64_sub", BinaryOp::Sub, goty::GoType::TFloat64)
+}
+
+fn float64_mul() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float64_mul", BinaryOp::Mul, goty::GoType::TFloat64)
+}
+
+fn float64_div() -> goast::Fn {
+    arithmetic_binary_fn_with_ty("float64_div", BinaryOp::Div, goty::GoType::TFloat64)
+}
+
+fn float64_less() -> goast::Fn {
+    less_fn_with_ty("float64_less", goty::GoType::TFloat64)
 }
 
 fn string_add() -> goast::Fn {

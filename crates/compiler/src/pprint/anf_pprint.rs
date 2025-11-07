@@ -334,6 +334,7 @@ impl ImmExpr {
                 }
             }
             ImmExpr::ImmInt { value, ty: _ } => RcDoc::text(value.to_string()),
+            ImmExpr::ImmFloat { value, ty: _ } => RcDoc::text(format!("{}", value)),
             ImmExpr::ImmString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
             ImmExpr::ImmTag { index, ty: _ } => RcDoc::text(format!("Tag_{}", index)),
         }

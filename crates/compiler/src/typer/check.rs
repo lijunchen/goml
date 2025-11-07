@@ -36,6 +36,13 @@ impl TypeInference {
                     ty: tast::Ty::TInt,
                 }
             }
+            ast::Expr::EFloat { value } => {
+                ensure_float_literal_fits(env, *value, &tast::Ty::TFloat64);
+                tast::Expr::EFloat {
+                    value: *value,
+                    ty: tast::Ty::TFloat64,
+                }
+            }
             ast::Expr::EString { value } => tast::Expr::EString {
                 value: value.clone(),
                 ty: tast::Ty::TString,
@@ -85,6 +92,24 @@ impl TypeInference {
                         value: *value,
                         ty: target_ty,
                     }
+                } else if is_float_ty(expected) {
+                    let float_value = *value as f64;
+                    ensure_float_literal_fits(env, float_value, expected);
+                    tast::Expr::EFloat {
+                        value: float_value,
+                        ty: expected.clone(),
+                    }
+                } else {
+                    self.infer_expr(env, vars, e)
+                }
+            }
+            ast::Expr::EFloat { value } => {
+                if let Some(target_ty) = float_literal_target(expected) {
+                    ensure_float_literal_fits(env, *value, &target_ty);
+                    tast::Expr::EFloat {
+                        value: *value,
+                        ty: target_ty,
+                    }
                 } else {
                     self.infer_expr(env, vars, e)
                 }
@@ -92,7 +117,7 @@ impl TypeInference {
             ast::Expr::EUnary {
                 op: ast::UnaryOp::Neg,
                 expr: inner,
-            } if is_integer_ty(expected) => {
+            } if is_numeric_ty(expected) => {
                 let operand = self.check_expr(env, vars, inner, expected);
                 tast::Expr::EUnary {
                     op: ast::UnaryOp::Neg,
@@ -102,7 +127,7 @@ impl TypeInference {
                 }
             }
             ast::Expr::EBinary { op, lhs, rhs }
-                if is_integer_ty(expected)
+                if is_numeric_ty(expected)
                     && matches!(
                         op,
                         ast::BinaryOp::Add
@@ -773,7 +798,7 @@ impl TypeInference {
                 })
             }
             ast::UnaryOp::Neg => {
-                let target_ty = if is_integer_ty(&expr_ty) {
+                let target_ty = if is_numeric_ty(&expr_ty) {
                     expr_ty.clone()
                 } else {
                     tast::Ty::TInt
@@ -903,14 +928,28 @@ impl TypeInference {
         tast_expr: &tast::Expr,
         target_ty: &tast::Ty,
     ) -> Option<tast::Expr> {
-        if !is_integer_ty(target_ty) {
-            return None;
-        }
-
         match (ast_expr, tast_expr) {
             (ast::Expr::EInt { value }, tast::Expr::EInt { .. }) => {
-                ensure_integer_literal_fits(env, *value, target_ty);
-                Some(tast::Expr::EInt {
+                if is_integer_ty(target_ty) {
+                    ensure_integer_literal_fits(env, *value, target_ty);
+                    Some(tast::Expr::EInt {
+                        value: *value,
+                        ty: target_ty.clone(),
+                    })
+                } else if is_float_ty(target_ty) {
+                    let float_value = *value as f64;
+                    ensure_float_literal_fits(env, float_value, target_ty);
+                    Some(tast::Expr::EFloat {
+                        value: float_value,
+                        ty: target_ty.clone(),
+                    })
+                } else {
+                    None
+                }
+            }
+            (ast::Expr::EFloat { value }, tast::Expr::EFloat { .. }) if is_float_ty(target_ty) => {
+                ensure_float_literal_fits(env, *value, target_ty);
+                Some(tast::Expr::EFloat {
                     value: *value,
                     ty: target_ty.clone(),
                 })
@@ -1293,6 +1332,14 @@ fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
+fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
+    if is_float_ty(expected) {
+        Some(expected.clone())
+    } else {
+        None
+    }
+}
+
 fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
     let value = value as i128;
     if let Some((min, max)) = integer_bounds(ty)
@@ -1309,6 +1356,25 @@ fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
                 value, ty
             ));
         }
+    }
+}
+
+fn ensure_float_literal_fits(env: &mut Env, value: f64, ty: &tast::Ty) {
+    if !value.is_finite() {
+        env.report_typer_error("Float literal must be finite".to_string());
+        return;
+    }
+
+    match ty {
+        tast::Ty::TFloat32 => {
+            if value < f32::MIN as f64 || value > f32::MAX as f64 {
+                env.report_typer_error(format!("Float literal {} does not fit in float32", value));
+            }
+        }
+        tast::Ty::TFloat64 => {
+            // Any finite f64 literal fits.
+        }
+        _ => {}
     }
 }
 
@@ -1344,4 +1410,12 @@ fn integer_type_name(ty: &tast::Ty) -> Option<&'static str> {
 
 fn is_integer_ty(ty: &tast::Ty) -> bool {
     integer_bounds(ty).is_some()
+}
+
+fn is_float_ty(ty: &tast::Ty) -> bool {
+    matches!(ty, tast::Ty::TFloat32 | tast::Ty::TFloat64)
+}
+
+fn is_numeric_ty(ty: &tast::Ty) -> bool {
+    is_integer_ty(ty) || is_float_ty(ty)
 }

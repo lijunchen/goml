@@ -272,6 +272,8 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
         cst::Type::Uint16Ty(_) => Some(ast::Ty::TUint16),
         cst::Type::Uint32Ty(_) => Some(ast::Ty::TUint32),
         cst::Type::Uint64Ty(_) => Some(ast::Ty::TUint64),
+        cst::Type::Float32Ty(_) => Some(ast::Ty::TFloat32),
+        cst::Type::Float64Ty(_) => Some(ast::Ty::TFloat64),
         cst::Type::StringTy(_) => Some(ast::Ty::TString),
         cst::Type::TupleTy(it) => {
             let typs = it
@@ -732,6 +734,31 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EInt { value })
+        }
+        cst::Expr::FloatExpr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "FloatExpr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = match text.parse::<f64>() {
+                Ok(value) => value,
+                Err(_) => {
+                    ctx.push_error(
+                        Some(token.text_range()),
+                        format!("Invalid float literal: {}", text),
+                    );
+                    return None;
+                }
+            };
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to float literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EFloat { value })
         }
         cst::Expr::StrExpr(it) => {
             let Some(token) = it.value() else {

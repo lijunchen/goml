@@ -113,6 +113,10 @@ pub enum Expr {
         value: i64,
         ty: goty::GoType,
     },
+    Float {
+        value: f64,
+        ty: goty::GoType,
+    },
     String {
         value: String,
         ty: goty::GoType,
@@ -171,6 +175,7 @@ impl Expr {
             | Expr::Var { ty, .. }
             | Expr::Bool { ty, .. }
             | Expr::Int { ty, .. }
+            | Expr::Float { ty, .. }
             | Expr::String { ty, .. }
             | Expr::Call { ty, .. }
             | Expr::UnaryOp { ty, .. }
@@ -275,6 +280,8 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TUint16 => goty::GoType::TUint16,
         tast::Ty::TUint32 => goty::GoType::TUint32,
         tast::Ty::TUint64 => goty::GoType::TUint64,
+        tast::Ty::TFloat32 => goty::GoType::TFloat32,
+        tast::Ty::TFloat64 => goty::GoType::TFloat64,
         tast::Ty::TString => goty::GoType::TString,
         tast::Ty::TTuple { typs } => {
             // compile to struct with field _0, _1, ...
@@ -330,6 +337,8 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TUint16 => "uint16".to_string(),
         tast::Ty::TUint32 => "uint32".to_string(),
         tast::Ty::TUint64 => "uint64".to_string(),
+        tast::Ty::TFloat32 => "float32".to_string(),
+        tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TCon { name } => name.clone(),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),

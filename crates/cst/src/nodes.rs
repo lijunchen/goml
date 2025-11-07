@@ -585,6 +585,7 @@ pub enum Expr {
     UnitExpr(UnitExpr),
     BoolExpr(BoolExpr),
     IntExpr(IntExpr),
+    FloatExpr(FloatExpr),
     StrExpr(StrExpr),
     CallExpr(CallExpr),
     StructLiteralExpr(StructLiteralExpr),
@@ -608,6 +609,7 @@ impl CstNode for Expr {
             EXPR_UNIT
                 | EXPR_BOOL
                 | EXPR_INT
+                | EXPR_FLOAT
                 | EXPR_STR
                 | EXPR_CALL
                 | EXPR_STRUCT_LITERAL
@@ -628,6 +630,7 @@ impl CstNode for Expr {
             EXPR_UNIT => Expr::UnitExpr(UnitExpr { syntax }),
             EXPR_BOOL => Expr::BoolExpr(BoolExpr { syntax }),
             EXPR_INT => Expr::IntExpr(IntExpr { syntax }),
+            EXPR_FLOAT => Expr::FloatExpr(FloatExpr { syntax }),
             EXPR_STR => Expr::StrExpr(StrExpr { syntax }),
             EXPR_CALL => Expr::CallExpr(CallExpr { syntax }),
             EXPR_STRUCT_LITERAL => Expr::StructLiteralExpr(StructLiteralExpr { syntax }),
@@ -651,6 +654,7 @@ impl CstNode for Expr {
             Self::UnitExpr(it) => &it.syntax,
             Self::BoolExpr(it) => &it.syntax,
             Self::IntExpr(it) => &it.syntax,
+            Self::FloatExpr(it) => &it.syntax,
             Self::StrExpr(it) => &it.syntax,
             Self::CallExpr(it) => &it.syntax,
             Self::StructLiteralExpr(it) => &it.syntax,
@@ -708,6 +712,22 @@ impl IntExpr {
 
 impl_cst_node_simple!(IntExpr, MySyntaxKind::EXPR_INT);
 impl_display_via_syntax!(IntExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FloatExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl FloatExpr {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Float)
+    }
+}
+
+impl_cst_node_simple!(FloatExpr, MySyntaxKind::EXPR_FLOAT);
+impl_display_via_syntax!(FloatExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1490,6 +1510,8 @@ pub enum Type {
     Uint16Ty(Uint16Ty),
     Uint32Ty(Uint32Ty),
     Uint64Ty(Uint64Ty),
+    Float32Ty(Float32Ty),
+    Float64Ty(Float64Ty),
     StringTy(StringTy),
     TupleTy(TupleTy),
     TAppTy(TAppTy),
@@ -1512,6 +1534,8 @@ impl CstNode for Type {
                 | TYPE_UINT16
                 | TYPE_UINT32
                 | TYPE_UINT64
+                | TYPE_FLOAT32
+                | TYPE_FLOAT64
                 | TYPE_STRING
                 | TYPE_TUPLE
                 | TYPE_TAPP
@@ -1532,6 +1556,8 @@ impl CstNode for Type {
             TYPE_UINT16 => Type::Uint16Ty(Uint16Ty { syntax }),
             TYPE_UINT32 => Type::Uint32Ty(Uint32Ty { syntax }),
             TYPE_UINT64 => Type::Uint64Ty(Uint64Ty { syntax }),
+            TYPE_FLOAT32 => Type::Float32Ty(Float32Ty { syntax }),
+            TYPE_FLOAT64 => Type::Float64Ty(Float64Ty { syntax }),
             TYPE_STRING => Type::StringTy(StringTy { syntax }),
             TYPE_TUPLE => Type::TupleTy(TupleTy { syntax }),
             TYPE_TAPP => Type::TAppTy(TAppTy { syntax }),
@@ -1554,6 +1580,8 @@ impl CstNode for Type {
             Type::Uint16Ty(it) => &it.syntax,
             Type::Uint32Ty(it) => &it.syntax,
             Type::Uint64Ty(it) => &it.syntax,
+            Type::Float32Ty(it) => &it.syntax,
+            Type::Float64Ty(it) => &it.syntax,
             Type::StringTy(it) => &it.syntax,
             Type::TupleTy(it) => &it.syntax,
             Type::TAppTy(it) => &it.syntax,
@@ -1680,6 +1708,26 @@ impl Uint64Ty {}
 
 impl_cst_node_simple!(Uint64Ty, MySyntaxKind::TYPE_UINT64);
 impl_display_via_syntax!(Uint64Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Float32Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Float32Ty {}
+
+impl_cst_node_simple!(Float32Ty, MySyntaxKind::TYPE_FLOAT32);
+impl_display_via_syntax!(Float32Ty);
+////////////////////////////////////////////////////////////////////////////////
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Float64Ty {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Float64Ty {}
+
+impl_cst_node_simple!(Float64Ty, MySyntaxKind::TYPE_FLOAT64);
+impl_display_via_syntax!(Float64Ty);
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct StringTy {

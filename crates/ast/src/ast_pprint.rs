@@ -18,6 +18,8 @@ impl Ty {
             Self::TUint16 => RcDoc::text("uint16"),
             Self::TUint32 => RcDoc::text("uint32"),
             Self::TUint64 => RcDoc::text("uint64"),
+            Self::TFloat32 => RcDoc::text("float32"),
+            Self::TFloat64 => RcDoc::text("float64"),
             Self::TString => RcDoc::text("string"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");
@@ -100,6 +102,7 @@ impl Expr {
             }
 
             Self::EInt { value } => RcDoc::text(value.to_string()),
+            Self::EFloat { value } => RcDoc::text(value.to_string()),
             Self::EString { value } => RcDoc::text(format!("{:?}", value)),
 
             Self::EConstr { vcon, args } => {

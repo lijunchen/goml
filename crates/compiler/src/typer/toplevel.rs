@@ -367,6 +367,8 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TUint16 => tast::Ty::TUint16,
         tast::Ty::TUint32 => tast::Ty::TUint32,
         tast::Ty::TUint64 => tast::Ty::TUint64,
+        tast::Ty::TFloat32 => tast::Ty::TFloat32,
+        tast::Ty::TFloat64 => tast::Ty::TFloat64,
         tast::Ty::TString => tast::Ty::TString,
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs

@@ -31,6 +31,8 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             | Ty::TUint16
             | Ty::TUint32
             | Ty::TUint64
+            | Ty::TFloat32
+            | Ty::TFloat64
             | Ty::TString => false,
             Ty::TTuple { typs } => typs.iter().any(has_tparam),
             Ty::TCon { .. } => false,
@@ -94,6 +96,8 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             | Ty::TUint16
             | Ty::TUint32
             | Ty::TUint64
+            | Ty::TFloat32
+            | Ty::TFloat64
             | Ty::TString => ty.clone(),
             Ty::TTuple { typs } => Ty::TTuple {
                 typs: typs.iter().map(|t| subst_ty(t, s)).collect(),
@@ -171,6 +175,8 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
             | (Ty::TUint16, Ty::TUint16)
             | (Ty::TUint32, Ty::TUint32)
             | (Ty::TUint64, Ty::TUint64)
+            | (Ty::TFloat32, Ty::TFloat32)
+            | (Ty::TFloat64, Ty::TFloat64)
             | (Ty::TString, Ty::TString) => Ok(()),
             (Ty::TTuple { typs: l }, Ty::TTuple { typs: r }) => {
                 if l.len() != r.len() {
@@ -280,6 +286,10 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 ty: subst_ty(&ty, s),
             },
             core::Expr::EInt { value, ty } => core::Expr::EInt {
+                value,
+                ty: subst_ty(&ty, s),
+            },
+            core::Expr::EFloat { value, ty } => core::Expr::EFloat {
                 value,
                 ty: subst_ty(&ty, s),
             },
@@ -651,6 +661,10 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 ty: m.collapse_type_apps(&ty),
             },
             core::Expr::EInt { value, ty } => core::Expr::EInt {
+                value,
+                ty: m.collapse_type_apps(&ty),
+            },
+            core::Expr::EFloat { value, ty } => core::Expr::EFloat {
                 value,
                 ty: m.collapse_type_apps(&ty),
             },

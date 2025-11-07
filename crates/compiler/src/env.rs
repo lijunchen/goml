@@ -322,6 +322,92 @@ fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TUint64], tast::Ty::TUint64),
     );
     funcs.insert(
+        "float32_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TFloat32], tast::Ty::TString),
+    );
+    funcs.insert(
+        "float32_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TFloat32], tast::Ty::TFloat32),
+    );
+    funcs.insert(
+        "float32_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
+            tast::Ty::TFloat32,
+        ),
+    );
+    funcs.insert(
+        "float32_sub".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
+            tast::Ty::TFloat32,
+        ),
+    );
+    funcs.insert(
+        "float32_mul".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
+            tast::Ty::TFloat32,
+        ),
+    );
+    funcs.insert(
+        "float32_div".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
+            tast::Ty::TFloat32,
+        ),
+    );
+    funcs.insert(
+        "float32_less".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
+            tast::Ty::TBool,
+        ),
+    );
+    funcs.insert(
+        "float64_to_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TFloat64], tast::Ty::TString),
+    );
+    funcs.insert(
+        "float64_neg".to_string(),
+        make_fn_ty(vec![tast::Ty::TFloat64], tast::Ty::TFloat64),
+    );
+    funcs.insert(
+        "float64_add".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
+            tast::Ty::TFloat64,
+        ),
+    );
+    funcs.insert(
+        "float64_sub".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
+            tast::Ty::TFloat64,
+        ),
+    );
+    funcs.insert(
+        "float64_mul".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
+            tast::Ty::TFloat64,
+        ),
+    );
+    funcs.insert(
+        "float64_div".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
+            tast::Ty::TFloat64,
+        ),
+    );
+    funcs.insert(
+        "float64_less".to_string(),
+        make_fn_ty(
+            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
+            tast::Ty::TBool,
+        ),
+    );
+    funcs.insert(
         "uint64_add".to_string(),
         make_fn_ty(
             vec![tast::Ty::TUint64, tast::Ty::TUint64],
@@ -572,6 +658,8 @@ impl Env {
             | tast::Ty::TUint16
             | tast::Ty::TUint32
             | tast::Ty::TUint64
+            | tast::Ty::TFloat32
+            | tast::Ty::TFloat64
             | tast::Ty::TString => {}
             tast::Ty::TTuple { typs } => {
                 for ty in typs {
@@ -790,6 +878,7 @@ impl Env {
                     | core::Expr::EUnit { ty }
                     | core::Expr::EBool { ty, .. }
                     | core::Expr::EInt { ty, .. }
+                    | core::Expr::EFloat { ty, .. }
                     | core::Expr::EString { ty, .. } => {
                         self.collect_type(ty);
                     }

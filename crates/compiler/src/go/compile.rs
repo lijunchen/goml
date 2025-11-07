@@ -31,6 +31,10 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
             value: *value,
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
+        anf::ImmExpr::ImmFloat { value, .. } => goast::Expr::Float {
+            value: *value,
+            ty: tast_ty_to_go_type(&imm_ty(imm)),
+        },
         anf::ImmExpr::ImmString { value, ty: _ } => goast::Expr::String {
             value: value.clone(),
             ty: goty::GoType::TString,
@@ -48,6 +52,7 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
         | anf::ImmExpr::ImmUnit { ty }
         | anf::ImmExpr::ImmBool { ty, .. }
         | anf::ImmExpr::ImmInt { ty, .. }
+        | anf::ImmExpr::ImmFloat { ty, .. }
         | anf::ImmExpr::ImmString { ty, .. }
         | anf::ImmExpr::ImmTag { ty, .. } => ty.clone(),
     }
@@ -179,6 +184,8 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TUint16
         | tast::Ty::TUint32
         | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
         | tast::Ty::TString => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
@@ -540,21 +547,37 @@ where
         | tast::Ty::TUint8
         | tast::Ty::TUint16
         | tast::Ty::TUint32
-        | tast::Ty::TUint64 => {
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64 => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmInt { value, .. } = &arm.lhs {
-                    cases.push((
-                        goast::Expr::Int {
-                            value: *value,
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        },
-                        goast::Block {
-                            stmts: build_branch(arm.body.clone()),
-                        },
-                    ));
-                } else {
-                    panic!("expected ImmInt in integer match arm");
+                match &arm.lhs {
+                    anf::ImmExpr::ImmInt { value, .. } => {
+                        cases.push((
+                            goast::Expr::Int {
+                                value: *value,
+                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                            },
+                            goast::Block {
+                                stmts: build_branch(arm.body.clone()),
+                            },
+                        ));
+                    }
+                    anf::ImmExpr::ImmFloat { value, .. } => {
+                        cases.push((
+                            goast::Expr::Float {
+                                value: *value,
+                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                            },
+                            goast::Block {
+                                stmts: build_branch(arm.body.clone()),
+                            },
+                        ));
+                    }
+                    _ => {
+                        panic!("expected numeric literal in match arm");
+                    }
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {

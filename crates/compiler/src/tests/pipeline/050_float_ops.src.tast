@@ -1,0 +1,49 @@
+fn show32(label/0: string, value/1: float32) -> unit {
+  let message/2: string = (string_add : (string, string) -> string)((label/0 : string), (float32_to_string : (float32) -> string)((value/1 : float32))) in
+  let _ : unit = (string_println : (string) -> unit)((message/2 : string)) in
+  ()
+}
+
+fn show64(label/3: string, value/4: float64) -> unit {
+  let message/5: string = (string_add : (string, string) -> string)((label/3 : string), (float64_to_string : (float64) -> string)((value/4 : float64))) in
+  let _ : unit = (string_println : (string) -> unit)((message/5 : string)) in
+  ()
+}
+
+fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
+  let delta/9: float32 = (b/7 : float32) - (a/6 : float32) in
+  (a/6 : float32) + (delta/9 : float32) * (weight/8 : float32)
+}
+
+fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
+  let sum/12: float64 = (x/10 : float64) * (x/10 : float64) + (y/11 : float64) * (y/11 : float64) in
+  (sum/12 : float64) / 2
+}
+
+fn main() -> unit {
+  let start32/13: float32 = 1.25 in
+  let end32/14: float32 = 5.75 in
+  let half/15: float32 = 0.5 in
+  let scale/16: float32 = 2 in
+  let mid32/17: float32 = (lerp32 : (float32, float32, float32) -> float32)((start32/13 : float32), (end32/14 : float32), (half/15 : float32)) in
+  let neg_end32/18: float32 = -(end32/14 : float32) in
+  let ratio32/19: float32 = (end32/14 : float32) / (scale/16 : float32) in
+  let less32/20: bool = (float32_less : (float32, float32) -> bool)((start32/13 : float32), (end32/14 : float32)) in
+  let dx/21: float64 = 6.5 in
+  let dy/22: float64 = 3.5 in
+  let quarter/23: float64 = 0.25 in
+  let energy/24: float64 = (midpoint_energy : (float64, float64) -> float64)((dx/21 : float64), (dy/22 : float64)) in
+  let neg_dx/25: float64 = -(dx/21 : float64) in
+  let adjusted/26: float64 = (energy/24 : float64) + (dy/22 : float64) - (dx/21 : float64) * (quarter/23 : float64) in
+  let threshold/27: float64 = 4 in
+  let less64/28: bool = (float64_less : (float64, float64) -> bool)((adjusted/26 : float64), (threshold/27 : float64)) in
+  let _ : unit = (show32 : (string, float32) -> unit)("mid32=", (mid32/17 : float32)) in
+  let _ : unit = (show32 : (string, float32) -> unit)("neg_end32=", (neg_end32/18 : float32)) in
+  let _ : unit = (show32 : (string, float32) -> unit)("ratio32=", (ratio32/19 : float32)) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("less32=", (bool_to_string : (bool) -> string)((less32/20 : bool)))) in
+  let _ : unit = (show64 : (string, float64) -> unit)("energy=", (energy/24 : float64)) in
+  let _ : unit = (show64 : (string, float64) -> unit)("neg_dx=", (neg_dx/25 : float64)) in
+  let _ : unit = (show64 : (string, float64) -> unit)("adjusted=", (adjusted/26 : float64)) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("less64=", (bool_to_string : (bool) -> string)((less64/28 : bool)))) in
+  ()
+}

@@ -21,6 +21,7 @@ pub enum ImmExpr {
     ImmUnit { ty: Ty },
     ImmBool { value: bool, ty: Ty },
     ImmInt { value: i64, ty: Ty },
+    ImmFloat { value: f64, ty: Ty },
     ImmString { value: String, ty: Ty },
     ImmTag { index: usize, ty: Ty },
 }
@@ -115,6 +116,7 @@ fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
         core::Expr::EUnit { ty } => ImmExpr::ImmUnit { ty },
         core::Expr::EBool { value, ty } => ImmExpr::ImmBool { value, ty },
         core::Expr::EInt { value, ty } => ImmExpr::ImmInt { value, ty },
+        core::Expr::EFloat { value, ty } => ImmExpr::ImmFloat { value, ty },
         core::Expr::EString { value, ty } => ImmExpr::ImmString { value, ty },
         core::Expr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
@@ -153,6 +155,7 @@ fn imm_ty(imm: &ImmExpr) -> Ty {
         | ImmExpr::ImmUnit { ty }
         | ImmExpr::ImmBool { ty, .. }
         | ImmExpr::ImmInt { ty, .. }
+        | ImmExpr::ImmFloat { ty, .. }
         | ImmExpr::ImmString { ty, .. }
         | ImmExpr::ImmTag { ty, .. } => ty.clone(),
     }
@@ -176,6 +179,7 @@ fn compile_match_arms_to_anf<'a>(
             | core::Expr::EUnit { .. }
             | core::Expr::EBool { .. }
             | core::Expr::EInt { .. }
+            | core::Expr::EFloat { .. }
             | core::Expr::EString { .. } => {
                 // Immediate patterns can be converted directly
                 let anf_lhs = core_imm_to_anf_imm(arm.lhs);
@@ -249,6 +253,9 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
         }),
         core::Expr::EInt { value, ty } => k(CExpr::CImm {
             imm: ImmExpr::ImmInt { value, ty },
+        }),
+        core::Expr::EFloat { value, ty } => k(CExpr::CImm {
+            imm: ImmExpr::ImmFloat { value, ty },
         }),
         core::Expr::EString { value, ty } => k(CExpr::CImm {
             imm: ImmExpr::ImmString { value, ty },
@@ -434,6 +441,7 @@ fn anf_imm<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(ImmExpr) -> AExpr 
         core::Expr::EUnit { ty } => k(ImmExpr::ImmUnit { ty }),
         core::Expr::EBool { value, ty } => k(ImmExpr::ImmBool { value, ty }),
         core::Expr::EInt { value, ty } => k(ImmExpr::ImmInt { value, ty }),
+        core::Expr::EFloat { value, ty } => k(ImmExpr::ImmFloat { value, ty }),
         core::Expr::EString { value, ty } => k(ImmExpr::ImmString { value, ty }),
         _ => {
             let name = env.gensym("t");
@@ -534,6 +542,7 @@ pub mod anf_renamer {
             anf::ImmExpr::ImmUnit { ty } => anf::ImmExpr::ImmUnit { ty },
             anf::ImmExpr::ImmBool { value, ty } => anf::ImmExpr::ImmBool { value, ty },
             anf::ImmExpr::ImmInt { value, ty } => anf::ImmExpr::ImmInt { value, ty },
+            anf::ImmExpr::ImmFloat { value, ty } => anf::ImmExpr::ImmFloat { value, ty },
             anf::ImmExpr::ImmString { value, ty } => anf::ImmExpr::ImmString { value, ty },
             anf::ImmExpr::ImmTag { index, ty } => anf::ImmExpr::ImmTag { index, ty },
         }

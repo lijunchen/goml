@@ -77,6 +77,7 @@ impl Expr {
                 }
             }
             Expr::EInt { value, ty: _ } => RcDoc::text(value.to_string()),
+            Expr::EFloat { value, ty: _ } => RcDoc::text(format!("{}", value)),
             Expr::EString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
             Expr::EConstr {
                 constructor,

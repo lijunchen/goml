@@ -133,6 +133,8 @@ pub enum Ty {
     TUint16,
     TUint32,
     TUint64,
+    TFloat32,
+    TFloat64,
     TString,
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
@@ -158,6 +160,8 @@ impl std::fmt::Debug for Ty {
             Self::TUint16 => write!(f, "TUint16"),
             Self::TUint32 => write!(f, "TUint32"),
             Self::TUint64 => write!(f, "TUint64"),
+            Self::TFloat32 => write!(f, "TFloat32"),
+            Self::TFloat64 => write!(f, "TFloat64"),
             Self::TString => write!(f, "TString"),
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
             Self::TCon { name } => write!(f, "TCon({})", name),
@@ -232,6 +236,10 @@ pub enum Expr {
     },
     EInt {
         value: i64,
+        ty: Ty,
+    },
+    EFloat {
+        value: f64,
         ty: Ty,
     },
     EString {
@@ -315,6 +323,7 @@ impl Expr {
             Self::EUnit { ty, .. } => ty.clone(),
             Self::EBool { ty, .. } => ty.clone(),
             Self::EInt { ty, .. } => ty.clone(),
+            Self::EFloat { ty, .. } => ty.clone(),
             Self::EString { ty, .. } => ty.clone(),
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),

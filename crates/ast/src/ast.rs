@@ -81,6 +81,8 @@ pub enum Ty {
     TUint16,
     TUint32,
     TUint64,
+    TFloat32,
+    TFloat64,
     TString,
     TTuple { typs: Vec<Ty> },
     TCon { name: String },
@@ -183,6 +185,9 @@ pub enum Expr {
     },
     EInt {
         value: i64,
+    },
+    EFloat {
+        value: f64,
     },
     EString {
         value: String,
