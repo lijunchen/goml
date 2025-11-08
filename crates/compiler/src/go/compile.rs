@@ -28,7 +28,7 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
             ty: goty::GoType::TBool,
         },
         anf::ImmExpr::ImmInt { value, .. } => goast::Expr::Int {
-            value: *value,
+            value: value.to_string(),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::ImmFloat { value, .. } => goast::Expr::Float {
@@ -556,7 +556,7 @@ where
                     anf::ImmExpr::ImmInt { value, .. } => {
                         cases.push((
                             goast::Expr::Int {
-                                value: *value,
+                                value: value.to_string(),
                                 ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                             },
                             goast::Block {

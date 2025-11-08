@@ -30,9 +30,10 @@ impl TypeInference {
                 ty: tast::Ty::TBool,
             },
             ast::Expr::EInt { value } => {
-                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
+                let parsed = parse_integer_literal(value, env).unwrap_or(0);
+                ensure_integer_literal_fits(env, parsed, &tast::Ty::TInt);
                 tast::Expr::EInt {
-                    value: *value,
+                    value: parsed,
                     ty: tast::Ty::TInt,
                 }
             }
@@ -87,13 +88,15 @@ impl TypeInference {
         let expr_tast = match e {
             ast::Expr::EInt { value } => {
                 if let Some(target_ty) = integer_literal_target(expected) {
-                    ensure_integer_literal_fits(env, *value, &target_ty);
+                    let parsed = parse_integer_literal(value, env).unwrap_or(0);
+                    ensure_integer_literal_fits(env, parsed, &target_ty);
                     tast::Expr::EInt {
-                        value: *value,
+                        value: parsed,
                         ty: target_ty,
                     }
                 } else if is_float_ty(expected) {
-                    let float_value = *value as f64;
+                    let parsed = parse_integer_literal(value, env).unwrap_or(0);
+                    let float_value = parsed as f64;
                     ensure_float_literal_fits(env, float_value, expected);
                     tast::Expr::EFloat {
                         value: float_value,
@@ -930,14 +933,15 @@ impl TypeInference {
     ) -> Option<tast::Expr> {
         match (ast_expr, tast_expr) {
             (ast::Expr::EInt { value }, tast::Expr::EInt { .. }) => {
+                let parsed = parse_integer_literal(value, env).unwrap_or(0);
                 if is_integer_ty(target_ty) {
-                    ensure_integer_literal_fits(env, *value, target_ty);
+                    ensure_integer_literal_fits(env, parsed, target_ty);
                     Some(tast::Expr::EInt {
-                        value: *value,
+                        value: parsed,
                         ty: target_ty.clone(),
                     })
                 } else if is_float_ty(target_ty) {
-                    let float_value = *value as f64;
+                    let float_value = parsed as f64;
                     ensure_float_literal_fits(env, float_value, target_ty);
                     Some(tast::Expr::EFloat {
                         value: float_value,
@@ -1030,7 +1034,7 @@ impl TypeInference {
             ast::Pat::PVar { name, astptr } => self.check_pat_var(vars, name, astptr, ty),
             ast::Pat::PUnit => self.check_pat_unit(),
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
-            ast::Pat::PInt { value } => self.check_pat_int(env, *value, ty),
+            ast::Pat::PInt { value } => self.check_pat_int(env, value, ty),
             ast::Pat::PString { value } => self.check_pat_string(env, value, ty),
             ast::Pat::PConstr { .. } => self.check_pat_constructor(env, vars, pat, ty),
             ast::Pat::PStruct { .. } => self.check_pat_constructor(env, vars, pat, ty),
@@ -1067,13 +1071,14 @@ impl TypeInference {
         }
     }
 
-    fn check_pat_int(&mut self, env: &mut Env, value: i64, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_int(&mut self, env: &mut Env, value: &str, ty: &tast::Ty) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt);
-        ensure_integer_literal_fits(env, value, &target_ty);
+        let parsed = parse_integer_literal(value, env).unwrap_or(0);
+        ensure_integer_literal_fits(env, parsed, &target_ty);
         env.constraints
             .push(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PInt {
-            value,
+            value: parsed,
             ty: target_ty,
         }
     }
@@ -1306,9 +1311,10 @@ impl TypeInference {
                 ty: tast::Ty::TBool,
             },
             ast::Pat::PInt { value } => {
-                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
+                let parsed = parse_integer_literal(value, env).unwrap_or(0);
+                ensure_integer_literal_fits(env, parsed, &tast::Ty::TInt);
                 tast::Pat::PInt {
-                    value: *value,
+                    value: parsed,
                     ty: tast::Ty::TInt,
                 }
             }
@@ -1332,6 +1338,16 @@ fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
+fn parse_integer_literal(value: &str, env: &mut Env) -> Option<i128> {
+    match value.parse::<i128>() {
+        Ok(parsed) => Some(parsed),
+        Err(_) => {
+            env.report_typer_error(format!("Invalid integer literal: {}", value));
+            None
+        }
+    }
+}
+
 fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     if is_float_ty(expected) {
         Some(expected.clone())
@@ -1340,8 +1356,7 @@ fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
-fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
-    let value = value as i128;
+fn ensure_integer_literal_fits(env: &mut Env, value: i128, ty: &tast::Ty) {
     if let Some((min, max)) = integer_bounds(ty)
         && (value < min || value > max)
     {

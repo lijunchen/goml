@@ -235,7 +235,7 @@ pub enum Expr {
         ty: Ty,
     },
     EInt {
-        value: i64,
+        value: i128,
         ty: Ty,
     },
     EFloat {
@@ -363,7 +363,7 @@ pub enum Pat {
         ty: Ty,
     },
     PInt {
-        value: i64,
+        value: i128,
         ty: Ty,
     },
     PString {

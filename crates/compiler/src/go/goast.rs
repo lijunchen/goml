@@ -110,7 +110,7 @@ pub enum Expr {
         ty: goty::GoType,
     },
     Int {
-        value: i64,
+        value: String,
         ty: goty::GoType,
     },
     Float {

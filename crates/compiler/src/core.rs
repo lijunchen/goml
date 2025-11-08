@@ -28,7 +28,7 @@ pub enum Expr {
         ty: Ty,
     },
     EInt {
-        value: i64,
+        value: i128,
         ty: Ty,
     },
     EFloat {

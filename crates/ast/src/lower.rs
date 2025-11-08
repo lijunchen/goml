@@ -715,17 +715,7 @@ fn lower_expr_with_args(
                 ctx.push_error(Some(it.syntax().text_range()), "IntExpr has no value");
                 return None;
             };
-            let text = token.to_string();
-            let value = match text.parse::<i64>() {
-                Ok(value) => value,
-                Err(_) => {
-                    ctx.push_error(
-                        Some(token.text_range()),
-                        format!("Invalid integer literal: {}", text),
-                    );
-                    return None;
-                }
-            };
+            let value = token.to_string();
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1452,19 +1442,9 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                 }
             }
         }
-        cst::Pattern::IntPat(it) => {
-            let value = it.value()?.to_string();
-            match value.parse::<i64>() {
-                Ok(value) => Some(ast::Pat::PInt { value }),
-                Err(_) => {
-                    ctx.push_error(
-                        Some(it.syntax().text_range()),
-                        format!("Invalid integer pattern: {}", value),
-                    );
-                    None
-                }
-            }
-        }
+        cst::Pattern::IntPat(it) => Some(ast::Pat::PInt {
+            value: it.value()?.to_string(),
+        }),
         cst::Pattern::StringPat(it) => {
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "StringPat has no value");
