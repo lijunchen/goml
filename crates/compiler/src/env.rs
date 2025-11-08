@@ -874,12 +874,7 @@ impl Env {
 
             fn collect_expr(&mut self, expr: &core::Expr) {
                 match expr {
-                    core::Expr::EVar { ty, .. }
-                    | core::Expr::EUnit { ty }
-                    | core::Expr::EBool { ty, .. }
-                    | core::Expr::EInt { ty, .. }
-                    | core::Expr::EFloat { ty, .. }
-                    | core::Expr::EString { ty, .. } => {
+                    core::Expr::EVar { ty, .. } | core::Expr::EPrimitive { ty, .. } => {
                         self.collect_type(ty);
                     }
                     core::Expr::EConstr {

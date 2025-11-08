@@ -6,7 +6,7 @@ use parser::syntax::MySyntaxNodePtr;
 
 use crate::{
     env::{Constraint, Env},
-    tast::{self},
+    tast::{self, Primitive},
     typer::{
         TypeInference,
         util::{ast_ty_to_tast_ty_with_tparams_env, binary_supports_builtin},
@@ -22,29 +22,32 @@ impl TypeInference {
     ) -> tast::Expr {
         match e {
             ast::Expr::EVar { name, astptr } => self.infer_var_expr(env, vars, name, astptr),
-            ast::Expr::EUnit => tast::Expr::EUnit {
+            ast::Expr::EUnit => tast::Expr::EPrimitive {
+                value: Primitive::unit(),
                 ty: tast::Ty::TUnit,
             },
-            ast::Expr::EBool { value } => tast::Expr::EBool {
-                value: *value,
+            ast::Expr::EBool { value } => tast::Expr::EPrimitive {
+                value: Primitive::boolean(*value),
                 ty: tast::Ty::TBool,
             },
             ast::Expr::EInt { value } => {
                 ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
-                tast::Expr::EInt {
-                    value: *value,
-                    ty: tast::Ty::TInt,
+                let ty = tast::Ty::TInt;
+                tast::Expr::EPrimitive {
+                    value: Primitive::from_int_literal(*value, &ty),
+                    ty,
                 }
             }
             ast::Expr::EFloat { value } => {
                 ensure_float_literal_fits(env, *value, &tast::Ty::TFloat64);
-                tast::Expr::EFloat {
-                    value: *value,
-                    ty: tast::Ty::TFloat64,
+                let ty = tast::Ty::TFloat64;
+                tast::Expr::EPrimitive {
+                    value: Primitive::from_float_literal(*value, &ty),
+                    ty,
                 }
             }
-            ast::Expr::EString { value } => tast::Expr::EString {
-                value: value.clone(),
+            ast::Expr::EString { value } => tast::Expr::EPrimitive {
+                value: Primitive::string(value.clone()),
                 ty: tast::Ty::TString,
             },
             ast::Expr::EConstr { vcon, args } => self.infer_constructor_expr(env, vars, vcon, args),
@@ -88,15 +91,15 @@ impl TypeInference {
             ast::Expr::EInt { value } => {
                 if let Some(target_ty) = integer_literal_target(expected) {
                     ensure_integer_literal_fits(env, *value, &target_ty);
-                    tast::Expr::EInt {
-                        value: *value,
+                    tast::Expr::EPrimitive {
+                        value: Primitive::from_int_literal(*value, &target_ty),
                         ty: target_ty,
                     }
                 } else if is_float_ty(expected) {
                     let float_value = *value as f64;
                     ensure_float_literal_fits(env, float_value, expected);
-                    tast::Expr::EFloat {
-                        value: float_value,
+                    tast::Expr::EPrimitive {
+                        value: Primitive::from_float_literal(float_value, expected),
                         ty: expected.clone(),
                     }
                 } else {
@@ -106,8 +109,8 @@ impl TypeInference {
             ast::Expr::EFloat { value } => {
                 if let Some(target_ty) = float_literal_target(expected) {
                     ensure_float_literal_fits(env, *value, &target_ty);
-                    tast::Expr::EFloat {
-                        value: *value,
+                    tast::Expr::EPrimitive {
+                        value: Primitive::from_float_literal(*value, &target_ty),
                         ty: target_ty,
                     }
                 } else {
@@ -929,28 +932,30 @@ impl TypeInference {
         target_ty: &tast::Ty,
     ) -> Option<tast::Expr> {
         match (ast_expr, tast_expr) {
-            (ast::Expr::EInt { value }, tast::Expr::EInt { .. }) => {
+            (ast::Expr::EInt { value }, tast::Expr::EPrimitive { .. }) => {
                 if is_integer_ty(target_ty) {
                     ensure_integer_literal_fits(env, *value, target_ty);
-                    Some(tast::Expr::EInt {
-                        value: *value,
+                    Some(tast::Expr::EPrimitive {
+                        value: Primitive::from_int_literal(*value, target_ty),
                         ty: target_ty.clone(),
                     })
                 } else if is_float_ty(target_ty) {
                     let float_value = *value as f64;
                     ensure_float_literal_fits(env, float_value, target_ty);
-                    Some(tast::Expr::EFloat {
-                        value: float_value,
+                    Some(tast::Expr::EPrimitive {
+                        value: Primitive::from_float_literal(float_value, target_ty),
                         ty: target_ty.clone(),
                     })
                 } else {
                     None
                 }
             }
-            (ast::Expr::EFloat { value }, tast::Expr::EFloat { .. }) if is_float_ty(target_ty) => {
+            (ast::Expr::EFloat { value }, tast::Expr::EPrimitive { .. })
+                if is_float_ty(target_ty) =>
+            {
                 ensure_float_literal_fits(env, *value, target_ty);
-                Some(tast::Expr::EFloat {
-                    value: *value,
+                Some(tast::Expr::EPrimitive {
+                    value: Primitive::from_float_literal(*value, target_ty),
                     ty: target_ty.clone(),
                 })
             }

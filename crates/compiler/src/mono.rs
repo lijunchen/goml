@@ -278,25 +278,13 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 name,
                 ty: subst_ty(&ty, s),
             },
-            core::Expr::EUnit { ty } => core::Expr::EUnit {
-                ty: subst_ty(&ty, s),
-            },
-            core::Expr::EBool { value, ty } => core::Expr::EBool {
-                value,
-                ty: subst_ty(&ty, s),
-            },
-            core::Expr::EInt { value, ty } => core::Expr::EInt {
-                value,
-                ty: subst_ty(&ty, s),
-            },
-            core::Expr::EFloat { value, ty } => core::Expr::EFloat {
-                value,
-                ty: subst_ty(&ty, s),
-            },
-            core::Expr::EString { value, ty } => core::Expr::EString {
-                value,
-                ty: subst_ty(&ty, s),
-            },
+            core::Expr::EPrimitive { value, ty } => {
+                let ty = subst_ty(&ty, s);
+                core::Expr::EPrimitive {
+                    value: value.coerce(&ty),
+                    ty,
+                }
+            }
             core::Expr::EConstr {
                 constructor,
                 args,
@@ -653,25 +641,13 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 name,
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EUnit { ty } => core::Expr::EUnit {
-                ty: m.collapse_type_apps(&ty),
-            },
-            core::Expr::EBool { value, ty } => core::Expr::EBool {
-                value,
-                ty: m.collapse_type_apps(&ty),
-            },
-            core::Expr::EInt { value, ty } => core::Expr::EInt {
-                value,
-                ty: m.collapse_type_apps(&ty),
-            },
-            core::Expr::EFloat { value, ty } => core::Expr::EFloat {
-                value,
-                ty: m.collapse_type_apps(&ty),
-            },
-            core::Expr::EString { value, ty } => core::Expr::EString {
-                value,
-                ty: m.collapse_type_apps(&ty),
-            },
+            core::Expr::EPrimitive { value, ty } => {
+                let ty = m.collapse_type_apps(&ty);
+                core::Expr::EPrimitive {
+                    value: value.coerce(&ty),
+                    ty,
+                }
+            }
             core::Expr::EConstr {
                 constructor,
                 args,

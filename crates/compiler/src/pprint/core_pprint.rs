@@ -67,18 +67,7 @@ impl Expr {
         match self {
             Expr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
 
-            Expr::EUnit { ty: _ } => RcDoc::text("()"),
-
-            Expr::EBool { value, ty: _ } => {
-                if *value {
-                    RcDoc::text("true")
-                } else {
-                    RcDoc::text("false")
-                }
-            }
-            Expr::EInt { value, ty: _ } => RcDoc::text(value.to_string()),
-            Expr::EFloat { value, ty: _ } => RcDoc::text(format!("{}", value)),
-            Expr::EString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
+            Expr::EPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {
                 constructor,
                 args,

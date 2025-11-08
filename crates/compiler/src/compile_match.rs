@@ -8,7 +8,7 @@ use crate::tast::Constructor;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
-use crate::tast::{self, File};
+use crate::tast::{self, File, Primitive};
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -112,8 +112,8 @@ fn emissing(ty: &Ty) -> core::Expr {
                 ret_ty: Box::new(ty.clone()),
             },
         }),
-        args: vec![core::Expr::EString {
-            value: "".to_string(),
+        args: vec![core::Expr::EPrimitive {
+            value: Primitive::string("".to_string()),
             ty: Ty::TString,
         }],
         ty: ty.clone(),
@@ -609,8 +609,8 @@ fn compile_int_case(
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
-            lhs: core::Expr::EInt {
-                value,
+            lhs: core::Expr::EPrimitive {
+                value: Primitive::from_int_literal(value, &literal_ty),
                 ty: literal_ty.clone(),
             },
             body: compile_rows(env, rows, ty),
@@ -670,8 +670,8 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
-            lhs: core::Expr::EString {
-                value,
+            lhs: core::Expr::EPrimitive {
+                value: Primitive::string(value),
                 ty: Ty::TString,
             },
             body: compile_rows(env, rows, ty),
@@ -911,24 +911,9 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             name: name.to_string(),
             ty: ty.clone(),
         },
-        EUnit { .. } => core::Expr::EUnit {
-            ty: core::Ty::TUnit,
-        },
-        EBool { value, ty } => core::Expr::EBool {
-            value: *value,
-            ty: ty.clone(),
-        },
-        EInt { value, ty } => core::Expr::EInt {
-            value: *value,
-            ty: ty.clone(),
-        },
-        EFloat { value, ty } => core::Expr::EFloat {
-            value: *value,
-            ty: ty.clone(),
-        },
-        EString { value, ty: _ } => core::Expr::EString {
+        EPrimitive { value, ty } => core::Expr::EPrimitive {
             value: value.clone(),
-            ty: Ty::TString,
+            ty: ty.clone(),
         },
         ETuple { items, ty } => {
             let items = items.iter().map(|item| compile_expr(item, env)).collect();
@@ -1011,8 +996,8 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                             },
                             astptr: None,
                         }),
-                        args: vec![Expr::EString {
-                            value: "".to_string(),
+                        args: vec![Expr::EPrimitive {
+                            value: Primitive::string("".to_string()),
                             ty: Ty::TString,
                         }],
                         ty: body.get_ty(),

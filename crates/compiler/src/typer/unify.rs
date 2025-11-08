@@ -734,37 +734,10 @@ impl TypeInference {
                     astptr,
                 }
             }
-            tast::Expr::EUnit { ty } => {
+            tast::Expr::EPrimitive { value, ty } => {
                 let ty = self.subst_ty(env, &ty);
-                tast::Expr::EUnit { ty: ty.clone() }
-            }
-            tast::Expr::EBool { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Expr::EBool {
-                    value,
-                    ty: ty.clone(),
-                }
-            }
-            tast::Expr::EInt { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Expr::EInt {
-                    value,
-                    ty: ty.clone(),
-                }
-            }
-            tast::Expr::EFloat { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Expr::EFloat {
-                    value,
-                    ty: ty.clone(),
-                }
-            }
-            tast::Expr::EString { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Expr::EString {
-                    value: value.clone(),
-                    ty: ty.clone(),
-                }
+                let value = value.coerce(&ty);
+                tast::Expr::EPrimitive { value, ty }
             }
             tast::Expr::EConstr {
                 constructor,
