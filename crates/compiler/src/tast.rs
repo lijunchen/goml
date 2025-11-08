@@ -189,6 +189,234 @@ impl Ty {
 
 impl EqUnifyValue for Ty {}
 
+#[derive(Debug, Clone)]
+pub enum Primitive {
+    Unit { value: () },
+    Bool { value: bool },
+    Int8 { value: i8 },
+    Int16 { value: i16 },
+    Int32 { value: i32 },
+    Int64 { value: i64 },
+    UInt8 { value: u8 },
+    UInt16 { value: u16 },
+    UInt32 { value: u32 },
+    UInt64 { value: u64 },
+    Float32 { value: f32 },
+    Float64 { value: f64 },
+    String { value: String },
+}
+
+impl Primitive {
+    pub fn unit() -> Self {
+        Primitive::Unit { value: () }
+    }
+
+    pub fn boolean(value: bool) -> Self {
+        Primitive::Bool { value }
+    }
+
+    pub fn string(value: String) -> Self {
+        Primitive::String { value }
+    }
+
+    pub fn from_int_literal(value: i64, ty: &Ty) -> Self {
+        match ty {
+            Ty::TInt8 => Primitive::Int8 { value: value as i8 },
+            Ty::TInt16 => Primitive::Int16 {
+                value: value as i16,
+            },
+            Ty::TInt32 | Ty::TInt => Primitive::Int32 {
+                value: value as i32,
+            },
+            Ty::TInt64 => Primitive::Int64 {
+                value: value as i64,
+            },
+            Ty::TUint8 => Primitive::UInt8 { value: value as u8 },
+            Ty::TUint16 => Primitive::UInt16 {
+                value: value as u16,
+            },
+            Ty::TUint32 => Primitive::UInt32 {
+                value: value as u32,
+            },
+            Ty::TUint64 => Primitive::UInt64 {
+                value: value as u64,
+            },
+            _ => panic!("Unsupported integer literal type {:?}", ty),
+        }
+    }
+
+    pub fn from_float_literal(value: f64, ty: &Ty) -> Self {
+        match ty {
+            Ty::TFloat32 => Primitive::Float32 {
+                value: value as f32,
+            },
+            Ty::TFloat64 => Primitive::Float64 { value },
+            _ => panic!("Unsupported float literal type {:?}", ty),
+        }
+    }
+
+    pub fn coerce(self, ty: &Ty) -> Self {
+        match ty {
+            Ty::TUnit => self.expect_unit(),
+            Ty::TBool => self.expect_bool(),
+            Ty::TInt8 => Primitive::Int8 {
+                value: self.into_signed_value() as i8,
+            },
+            Ty::TInt16 => Primitive::Int16 {
+                value: self.into_signed_value() as i16,
+            },
+            Ty::TInt32 | Ty::TInt => Primitive::Int32 {
+                value: self.into_signed_value() as i32,
+            },
+            Ty::TInt64 => Primitive::Int64 {
+                value: self.into_signed_value() as i64,
+            },
+            Ty::TUint8 => Primitive::UInt8 {
+                value: self.into_unsigned_value() as u8,
+            },
+            Ty::TUint16 => Primitive::UInt16 {
+                value: self.into_unsigned_value() as u16,
+            },
+            Ty::TUint32 => Primitive::UInt32 {
+                value: self.into_unsigned_value() as u32,
+            },
+            Ty::TUint64 => Primitive::UInt64 {
+                value: self.into_unsigned_value() as u64,
+            },
+            Ty::TFloat32 => Primitive::Float32 {
+                value: self.into_float_value() as f32,
+            },
+            Ty::TFloat64 => Primitive::Float64 {
+                value: self.into_float_value(),
+            },
+            Ty::TString => self.expect_string(),
+            Ty::TVar(_) => self,
+            Ty::TTuple { .. }
+            | Ty::TCon { .. }
+            | Ty::TApp { .. }
+            | Ty::TArray { .. }
+            | Ty::TRef { .. }
+            | Ty::TParam { .. }
+            | Ty::TFunc { .. } => panic!(
+                "Cannot coerce primitive literal {:?} to non-primitive type {:?}",
+                self, ty
+            ),
+        }
+    }
+
+    fn expect_unit(self) -> Self {
+        match self {
+            Primitive::Unit { .. } => Primitive::Unit { value: () },
+            other => panic!("Expected unit primitive, got {:?}", other),
+        }
+    }
+
+    fn expect_bool(self) -> Self {
+        match self {
+            Primitive::Bool { value } => Primitive::Bool { value },
+            other => panic!("Expected bool primitive, got {:?}", other),
+        }
+    }
+
+    fn expect_string(self) -> Self {
+        match self {
+            Primitive::String { value } => Primitive::String { value },
+            other => panic!("Expected string primitive, got {:?}", other),
+        }
+    }
+
+    fn into_signed_value(self) -> i128 {
+        match self {
+            Primitive::Int8 { value } => value as i128,
+            Primitive::Int16 { value } => value as i128,
+            Primitive::Int32 { value } => value as i128,
+            Primitive::Int64 { value } => value as i128,
+            other => panic!("Expected signed integer primitive, got {:?}", other),
+        }
+    }
+
+    fn into_unsigned_value(self) -> u128 {
+        match self {
+            Primitive::UInt8 { value } => value as u128,
+            Primitive::UInt16 { value } => value as u128,
+            Primitive::UInt32 { value } => value as u128,
+            Primitive::UInt64 { value } => value as u128,
+            other => panic!("Expected unsigned integer primitive, got {:?}", other),
+        }
+    }
+
+    fn into_float_value(self) -> f64 {
+        match self {
+            Primitive::Float32 { value } => value as f64,
+            Primitive::Float64 { value } => value,
+            other => panic!("Expected float primitive, got {:?}", other),
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        if let Primitive::Bool { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_signed(&self) -> Option<i128> {
+        match self {
+            Primitive::Int8 { value } => Some(*value as i128),
+            Primitive::Int16 { value } => Some(*value as i128),
+            Primitive::Int32 { value } => Some(*value as i128),
+            Primitive::Int64 { value } => Some(*value as i128),
+            _ => None,
+        }
+    }
+
+    pub fn as_unsigned(&self) -> Option<u128> {
+        match self {
+            Primitive::UInt8 { value } => Some(*value as u128),
+            Primitive::UInt16 { value } => Some(*value as u128),
+            Primitive::UInt32 { value } => Some(*value as u128),
+            Primitive::UInt64 { value } => Some(*value as u128),
+            _ => None,
+        }
+    }
+
+    pub fn as_float(&self) -> Option<f64> {
+        match self {
+            Primitive::Float32 { value } => Some(*value as f64),
+            Primitive::Float64 { value } => Some(*value),
+            _ => None,
+        }
+    }
+
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Primitive::String { value } => Some(value.as_str()),
+            _ => None,
+        }
+    }
+}
+
+impl std::fmt::Display for Primitive {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Primitive::Unit { .. } => write!(f, "()"),
+            Primitive::Bool { value } => write!(f, "{}", value),
+            Primitive::Int8 { value } => write!(f, "{}", value),
+            Primitive::Int16 { value } => write!(f, "{}", value),
+            Primitive::Int32 { value } => write!(f, "{}", value),
+            Primitive::Int64 { value } => write!(f, "{}", value),
+            Primitive::UInt8 { value } => write!(f, "{}", value),
+            Primitive::UInt16 { value } => write!(f, "{}", value),
+            Primitive::UInt32 { value } => write!(f, "{}", value),
+            Primitive::UInt64 { value } => write!(f, "{}", value),
+            Primitive::Float32 { value } => write!(f, "{}", value),
+            Primitive::Float64 { value } => write!(f, "{}", value),
+            Primitive::String { value } => write!(f, "{:?}", value),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TypeVar(u32);
 
@@ -227,23 +455,8 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
-    EUnit {
-        ty: Ty,
-    },
-    EBool {
-        value: bool,
-        ty: Ty,
-    },
-    EInt {
-        value: i64,
-        ty: Ty,
-    },
-    EFloat {
-        value: f64,
-        ty: Ty,
-    },
-    EString {
-        value: String,
+    EPrimitive {
+        value: Primitive,
         ty: Ty,
     },
     EConstr {
@@ -320,11 +533,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Self::EVar { ty, .. } => ty.clone(),
-            Self::EUnit { ty, .. } => ty.clone(),
-            Self::EBool { ty, .. } => ty.clone(),
-            Self::EInt { ty, .. } => ty.clone(),
-            Self::EFloat { ty, .. } => ty.clone(),
-            Self::EString { ty, .. } => ty.clone(),
+            Self::EPrimitive { ty, .. } => ty.clone(),
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),
             Self::EArray { ty, .. } => ty.clone(),

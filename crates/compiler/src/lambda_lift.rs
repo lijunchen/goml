@@ -207,11 +207,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 core::Expr::EVar { name, ty }
             }
         }
-        core::Expr::EUnit { .. }
-        | core::Expr::EBool { .. }
-        | core::Expr::EInt { .. }
-        | core::Expr::EFloat { .. }
-        | core::Expr::EString { .. } => expr,
+        core::Expr::EPrimitive { .. } => expr,
         core::Expr::EConstr {
             constructor,
             args,
@@ -586,11 +582,7 @@ fn collect_captured(
                     .or_insert_with(|| entry.ty.clone());
             }
         }
-        core::Expr::EUnit { .. }
-        | core::Expr::EBool { .. }
-        | core::Expr::EInt { .. }
-        | core::Expr::EFloat { .. }
-        | core::Expr::EString { .. } => {}
+        core::Expr::EPrimitive { .. } => {}
         core::Expr::EConstr { args, .. } => {
             for arg in args {
                 collect_captured(arg, bound, captured, scope);

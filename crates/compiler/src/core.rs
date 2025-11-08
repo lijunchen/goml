@@ -1,5 +1,5 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::{self, Constructor};
+use crate::tast::{self, Constructor, Primitive};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -20,23 +20,8 @@ pub enum Expr {
         name: String,
         ty: Ty,
     },
-    EUnit {
-        ty: Ty,
-    },
-    EBool {
-        value: bool,
-        ty: Ty,
-    },
-    EInt {
-        value: i64,
-        ty: Ty,
-    },
-    EFloat {
-        value: f64,
-        ty: Ty,
-    },
-    EString {
-        value: String,
+    EPrimitive {
+        value: Primitive,
         ty: Ty,
     },
     EConstr {
@@ -102,11 +87,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Expr::EVar { ty, .. } => ty.clone(),
-            Expr::EUnit { ty } => ty.clone(),
-            Expr::EBool { ty, .. } => ty.clone(),
-            Expr::EInt { ty, .. } => ty.clone(),
-            Expr::EFloat { ty, .. } => ty.clone(),
-            Expr::EString { ty, .. } => ty.clone(),
+            Expr::EPrimitive { ty, .. } => ty.clone(),
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),
             Expr::EArray { ty, .. } => ty.clone(),
@@ -129,12 +110,15 @@ pub struct Arm {
 }
 
 pub fn eunit() -> Expr {
-    Expr::EUnit { ty: Ty::TUnit }
+    Expr::EPrimitive {
+        value: Primitive::unit(),
+        ty: Ty::TUnit,
+    }
 }
 
 pub fn ebool(value: bool) -> Expr {
-    Expr::EBool {
-        value,
+    Expr::EPrimitive {
+        value: Primitive::boolean(value),
         ty: Ty::TBool,
     }
 }

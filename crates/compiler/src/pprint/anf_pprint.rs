@@ -325,17 +325,7 @@ impl ImmExpr {
     pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::ImmVar { name, ty: _ } => RcDoc::text(name.clone()),
-            ImmExpr::ImmUnit { ty: _ } => RcDoc::text("()"),
-            ImmExpr::ImmBool { value, ty: _ } => {
-                if *value {
-                    RcDoc::text("true")
-                } else {
-                    RcDoc::text("false")
-                }
-            }
-            ImmExpr::ImmInt { value, ty: _ } => RcDoc::text(value.to_string()),
-            ImmExpr::ImmFloat { value, ty: _ } => RcDoc::text(format!("{}", value)),
-            ImmExpr::ImmString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
+            ImmExpr::ImmPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
             ImmExpr::ImmTag { index, ty: _ } => RcDoc::text(format!("Tag_{}", index)),
         }
     }

@@ -4,8 +4,7 @@ use crate::{
     anf::{self, AExpr},
     env::Env,
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    tast,
-    tast::Constructor,
+    tast::{self, Constructor, Primitive},
 };
 
 use indexmap::IndexSet;
@@ -14,31 +13,64 @@ use std::collections::HashMap;
 use super::goty;
 use super::runtime;
 
+fn go_literal_from_primitive(value: &Primitive, ty: &tast::Ty) -> goast::Expr {
+    if matches!(value, Primitive::Unit { .. }) {
+        return goast::Expr::Unit {
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(bool_value) = value.as_bool() {
+        return goast::Expr::Bool {
+            value: bool_value,
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(str_value) = value.as_str() {
+        return goast::Expr::String {
+            value: str_value.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(signed_value) = value.as_signed() {
+        return goast::Expr::Int {
+            value: signed_value.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(unsigned_value) = value.as_unsigned() {
+        return goast::Expr::Int {
+            value: unsigned_value.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(float_value) = value.as_float() {
+        return goast::Expr::Float {
+            value: float_value,
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    panic!(
+        "Unsupported primitive literal {:?} for Go code generation with type {:?}",
+        value, ty
+    );
+}
+
 fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
             name: name.clone(),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
-        anf::ImmExpr::ImmUnit { ty: _ } => goast::Expr::Unit {
-            ty: goty::GoType::TUnit,
-        },
-        anf::ImmExpr::ImmBool { value, ty: _ } => goast::Expr::Bool {
-            value: *value,
-            ty: goty::GoType::TBool,
-        },
-        anf::ImmExpr::ImmInt { value, .. } => goast::Expr::Int {
-            value: *value,
-            ty: tast_ty_to_go_type(&imm_ty(imm)),
-        },
-        anf::ImmExpr::ImmFloat { value, .. } => goast::Expr::Float {
-            value: *value,
-            ty: tast_ty_to_go_type(&imm_ty(imm)),
-        },
-        anf::ImmExpr::ImmString { value, ty: _ } => goast::Expr::String {
-            value: value.clone(),
-            ty: goty::GoType::TString,
-        },
+        anf::ImmExpr::ImmPrimitive { value, .. } => {
+            let ty = imm_ty(imm);
+            go_literal_from_primitive(value, &ty)
+        }
         anf::ImmExpr::ImmTag { index, ty } => goast::Expr::StructLiteral {
             fields: vec![],
             ty: variant_ty_by_index(env, ty, *index),
@@ -49,11 +81,7 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
 fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     match imm {
         anf::ImmExpr::ImmVar { ty, .. }
-        | anf::ImmExpr::ImmUnit { ty }
-        | anf::ImmExpr::ImmBool { ty, .. }
-        | anf::ImmExpr::ImmInt { ty, .. }
-        | anf::ImmExpr::ImmFloat { ty, .. }
-        | anf::ImmExpr::ImmString { ty, .. }
+        | anf::ImmExpr::ImmPrimitive { ty, .. }
         | anf::ImmExpr::ImmTag { ty, .. } => ty.clone(),
     }
 }
@@ -516,18 +544,22 @@ where
         tast::Ty::TBool => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmBool { value, .. } = &arm.lhs {
-                    cases.push((
-                        goast::Expr::Bool {
-                            value: *value,
-                            ty: goty::GoType::TBool,
-                        },
-                        goast::Block {
-                            stmts: build_branch(arm.body.clone()),
-                        },
-                    ));
+                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                    if let Some(bool_value) = value.as_bool() {
+                        cases.push((
+                            goast::Expr::Bool {
+                                value: bool_value,
+                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                            },
+                            goast::Block {
+                                stmts: build_branch(arm.body.clone()),
+                            },
+                        ));
+                    } else {
+                        panic!("expected boolean primitive in boolean match arm");
+                    }
                 } else {
-                    panic!("expected ImmBool in boolean match arm");
+                    panic!("expected primitive literal in boolean match arm");
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {
@@ -552,32 +584,33 @@ where
         | tast::Ty::TFloat64 => {
             let mut cases = Vec::new();
             for arm in arms {
-                match &arm.lhs {
-                    anf::ImmExpr::ImmInt { value, .. } => {
-                        cases.push((
-                            goast::Expr::Int {
-                                value: *value,
-                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                            },
-                            goast::Block {
-                                stmts: build_branch(arm.body.clone()),
-                            },
-                        ));
-                    }
-                    anf::ImmExpr::ImmFloat { value, .. } => {
-                        cases.push((
-                            goast::Expr::Float {
-                                value: *value,
-                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                            },
-                            goast::Block {
-                                stmts: build_branch(arm.body.clone()),
-                            },
-                        ));
-                    }
-                    _ => {
-                        panic!("expected numeric literal in match arm");
-                    }
+                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                    let case_expr = if let Some(signed) = value.as_signed() {
+                        goast::Expr::Int {
+                            value: signed.to_string(),
+                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                        }
+                    } else if let Some(unsigned) = value.as_unsigned() {
+                        goast::Expr::Int {
+                            value: unsigned.to_string(),
+                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                        }
+                    } else if let Some(float_value) = value.as_float() {
+                        goast::Expr::Float {
+                            value: float_value,
+                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                        }
+                    } else {
+                        panic!("expected numeric primitive in match arm");
+                    };
+                    cases.push((
+                        case_expr,
+                        goast::Block {
+                            stmts: build_branch(arm.body.clone()),
+                        },
+                    ));
+                } else {
+                    panic!("expected primitive literal in numeric match arm");
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {
@@ -592,18 +625,22 @@ where
         tast::Ty::TString => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmString { value, .. } = &arm.lhs {
-                    cases.push((
-                        goast::Expr::String {
-                            value: value.clone(),
-                            ty: goty::GoType::TString,
-                        },
-                        goast::Block {
-                            stmts: build_branch(arm.body.clone()),
-                        },
-                    ));
+                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                    if let Some(str_value) = value.as_str() {
+                        cases.push((
+                            goast::Expr::String {
+                                value: str_value.to_string(),
+                                ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                            },
+                            goast::Block {
+                                stmts: build_branch(arm.body.clone()),
+                            },
+                        ));
+                    } else {
+                        panic!("expected string primitive in string match arm");
+                    }
                 } else {
-                    panic!("expected ImmString in string match arm");
+                    panic!("expected primitive literal in string match arm");
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {

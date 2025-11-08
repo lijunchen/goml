@@ -263,18 +263,7 @@ impl Expr {
                 .append(ty.to_doc(env))
                 .append(RcDoc::text(")")),
 
-            Self::EUnit { ty: _ } => RcDoc::text("()"),
-
-            Self::EBool { value, ty: _ } => {
-                if *value {
-                    RcDoc::text("true")
-                } else {
-                    RcDoc::text("false")
-                }
-            }
-            Self::EInt { value, ty: _ } => RcDoc::text(value.to_string()),
-            Self::EFloat { value, ty: _ } => RcDoc::text(format!("{}", value)),
-            Self::EString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
+            Self::EPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {
                 constructor,
                 args,
