@@ -59,7 +59,10 @@ fn main() -> int {
                         func.as_ref(),
                         ast::ast::Expr::EVar { name, .. } if name.0 == "ref"
                     ));
-                    assert!(matches!(args[0], ast::ast::Expr::EInt { value: 1 }));
+                    assert!(matches!(
+                        args[0],
+                        ast::ast::Expr::EInt { value: ref v } if v == "1"
+                    ));
                 }
                 other => panic!("unexpected first let value: {:?}", other),
             }
@@ -88,7 +91,10 @@ fn main() -> int {
                     args[0],
                     ast::ast::Expr::EVar { ref name, .. } if name.0 == "r"
                 ));
-                assert!(matches!(args[1], ast::ast::Expr::EInt { value: 2 }));
+                assert!(matches!(
+                    args[1],
+                    ast::ast::Expr::EInt { value: ref v } if v == "2"
+                ));
             }
             other => panic!("unexpected assignment value: {:?}", other),
         }
