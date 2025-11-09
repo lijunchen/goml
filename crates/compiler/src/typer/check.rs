@@ -734,15 +734,16 @@ impl TypeInference {
             ast::Expr::EVar { name, astptr } => {
                 if let Some(func_ty) = env.get_type_of_function(&name.0) {
                     let inst_ty = self.inst_ty(&func_ty);
-                    if let tast::Ty::TFunc { params, .. } = &inst_ty {
-                        if params.len() == args.len() && !params.is_empty() {
-                            args_tast.clear();
-                            arg_types.clear();
-                            for (arg, expected_ty) in args.iter().zip(params.iter()) {
-                                let arg_tast = self.check_expr(env, vars, arg, expected_ty);
-                                arg_types.push(arg_tast.get_ty());
-                                args_tast.push(arg_tast);
-                            }
+                    if let tast::Ty::TFunc { params, .. } = &inst_ty
+                        && params.len() == args.len()
+                        && !params.is_empty()
+                    {
+                        args_tast.clear();
+                        arg_types.clear();
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast = self.check_expr(env, vars, arg, expected_ty);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
                         }
                     }
 
