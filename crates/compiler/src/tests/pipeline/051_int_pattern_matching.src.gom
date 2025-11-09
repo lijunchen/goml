@@ -1,0 +1,184 @@
+package main
+
+import (
+    "fmt"
+)
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type Tuple2_int8_int16 struct {
+    _0 int8
+    _1 int16
+}
+
+type PairData struct {
+    head int32
+    tail int64
+}
+
+func is_special8(value__0 int8) bool {
+    var ret22 bool
+    switch value__0 {
+    case 5:
+        ret22 = true
+    case 7:
+        ret22 = true
+    default:
+        ret22 = false
+    }
+    return ret22
+}
+
+func is_special16(value__1 int16) bool {
+    var ret23 bool
+    switch value__1 {
+    case 1024:
+        ret23 = true
+    case 2048:
+        ret23 = true
+    default:
+        ret23 = false
+    }
+    return ret23
+}
+
+func is_special32(value__2 int32) bool {
+    var ret24 bool
+    switch value__2 {
+    case 4096:
+        ret24 = true
+    case 8192:
+        ret24 = true
+    default:
+        ret24 = false
+    }
+    return ret24
+}
+
+func is_special64(value__3 int64) bool {
+    var ret25 bool
+    switch value__3 {
+    case 16384:
+        ret25 = true
+    case 32768:
+        ret25 = true
+    default:
+        ret25 = false
+    }
+    return ret25
+}
+
+func match_tuple(values__4 Tuple2_int8_int16) bool {
+    var ret26 bool
+    var x0 int8 = values__4._0
+    var x1 int16 = values__4._1
+    switch x1 {
+    case 2:
+        switch x0 {
+        case 1:
+            ret26 = true
+        default:
+            ret26 = false
+        }
+    default:
+        ret26 = false
+    }
+    return ret26
+}
+
+func match_struct(pair__5 PairData) bool {
+    var ret27 bool
+    var x2 int32 = pair__5.head
+    var x3 int64 = pair__5.tail
+    switch x3 {
+    case 200:
+        switch x2 {
+        case 100:
+            ret27 = true
+        default:
+            ret27 = false
+        }
+    case 300:
+        ret27 = true
+    default:
+        ret27 = false
+    }
+    return ret27
+}
+
+func report(label__6 string, value__7 bool) string {
+    var ret28 string
+    var t5 string = bool_to_string(value__7)
+    ret28 = string_add(label__6, t5)
+    return ret28
+}
+
+func main0() struct{} {
+    var ret29 struct{}
+    var tuple_first__8 int8 = 1
+    var tuple_second__9 int16 = 2
+    var t6 Tuple2_int8_int16 = Tuple2_int8_int16{
+        _0: tuple_first__8,
+        _1: tuple_second__9,
+    }
+    var tuple_result_hit__10 bool = match_tuple(t6)
+    var t7 Tuple2_int8_int16 = Tuple2_int8_int16{
+        _0: 3,
+        _1: 4,
+    }
+    var tuple_result_miss__11 bool = match_tuple(t7)
+    var t8 PairData = PairData{
+        head: 100,
+        tail: 200,
+    }
+    var pair_first__12 bool = match_struct(t8)
+    var t9 PairData = PairData{
+        head: 10,
+        tail: 300,
+    }
+    var pair_second__13 bool = match_struct(t9)
+    var t10 bool = is_special8(5)
+    var part1__14 string = report("int8=", t10)
+    var t11 bool = is_special16(1024)
+    var part2__15 string = report(",int16=", t11)
+    var t12 bool = is_special32(8192)
+    var part3__16 string = report(",int32=", t12)
+    var t13 bool = is_special64(16384)
+    var part4__17 string = report(",int64_a=", t13)
+    var t14 bool = is_special64(32768)
+    var part5__18 string = report(",int64_b=", t14)
+    var part6__19 string = report(",tuple_hit=", tuple_result_hit__10)
+    var part7__20 string = report(",tuple_miss=", tuple_result_miss__11)
+    var part8__21 string = report(",struct_first=", pair_first__12)
+    var part9__22 string = report(",struct_second=", pair_second__13)
+    var t21 string = string_add(part8__21, part9__22)
+    var t20 string = string_add(part7__20, t21)
+    var t19 string = string_add(part6__19, t20)
+    var t18 string = string_add(part5__18, t19)
+    var t17 string = string_add(part4__17, t18)
+    var t16 string = string_add(part3__16, t17)
+    var t15 string = string_add(part2__15, t16)
+    var message__23 string = string_add(part1__14, t15)
+    string_println(message__23)
+    ret29 = struct{}{}
+    return ret29
+}
+
+func main() {
+    main0()
+}

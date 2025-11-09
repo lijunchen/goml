@@ -535,12 +535,15 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     let mut false_rows = vec![];
     for mut r in rows {
         if let Some(col) = r.remove_column(&bvar.name) {
-            if let Pat::PBool { value, ty: _ } = col.pat {
-                if value {
-                    true_rows.push(r);
-                } else {
-                    false_rows.push(r);
+            match col.pat {
+                Pat::PPrimitive { value, ty: _ } => {
+                    if value.as_bool().expect("expected boolean primitive pattern") {
+                        true_rows.push(r);
+                    } else {
+                        false_rows.push(r);
+                    }
                 }
+                _ => unreachable!("expected bool pattern"),
             }
         } else {
             true_rows.push(r.clone());
@@ -580,9 +583,13 @@ fn compile_int_case(
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             match col.pat {
-                Pat::PInt { value, ty: _ } => {
+                Pat::PPrimitive { value, ty: _ } => {
+                    let key = value
+                        .as_signed()
+                        .or_else(|| value.as_unsigned().map(|v| v as i128))
+                        .expect("expected integer primitive pattern");
                     let entry = value_rows
-                        .entry(value)
+                        .entry(key)
                         .or_insert_with(|| fallback_rows.clone());
                     entry.push(row);
                 }
@@ -641,9 +648,13 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             match col.pat {
-                Pat::PString { value, ty: _ } => {
+                Pat::PPrimitive { value, ty: _ } => {
+                    let key = value
+                        .as_str()
+                        .expect("expected string primitive pattern")
+                        .to_string();
                     let entry = value_rows
-                        .entry(value)
+                        .entry(key)
                         .or_insert_with(|| fallback_rows.clone());
                     entry.push(row);
                 }

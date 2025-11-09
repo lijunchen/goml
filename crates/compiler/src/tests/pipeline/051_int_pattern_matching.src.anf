@@ -1,0 +1,124 @@
+fn is_special8(value/0: int8) -> bool {
+  match value/0 {
+    5 => {
+      true
+    },
+    7 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_special16(value/1: int16) -> bool {
+  match value/1 {
+    1024 => {
+      true
+    },
+    2048 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_special32(value/2: int32) -> bool {
+  match value/2 {
+    4096 => {
+      true
+    },
+    8192 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_special64(value/3: int64) -> bool {
+  match value/3 {
+    16384 => {
+      true
+    },
+    32768 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn match_tuple(values/4: (int8, int16)) -> bool {
+  let x0 = values/4.0 in
+  let x1 = values/4.1 in
+  match x1 {
+    2 => {
+      match x0 {
+        1 => {
+          true
+        },
+        _ => false,
+      }
+    },
+    _ => false,
+  }
+}
+
+fn match_struct(pair/5: PairData) -> bool {
+  let x2 = PairData.head(pair/5) in
+  let x3 = PairData.tail(pair/5) in
+  match x3 {
+    200 => {
+      match x2 {
+        100 => {
+          true
+        },
+        _ => false,
+      }
+    },
+    300 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn report(label/6: string, value/7: bool) -> string {
+  let t5 = bool_to_string(value/7) in
+  string_add(label/6, t5)
+}
+
+fn main() -> unit {
+  let tuple_first/8 = 1 in
+  let tuple_second/9 = 2 in
+  let t6 = (tuple_first/8, tuple_second/9) in
+  let tuple_result_hit/10 = match_tuple(t6) in
+  let t7 = (3, 4) in
+  let tuple_result_miss/11 = match_tuple(t7) in
+  let t8 = PairData { head: 100, tail: 200 } in
+  let pair_first/12 = match_struct(t8) in
+  let t9 = PairData { head: 10, tail: 300 } in
+  let pair_second/13 = match_struct(t9) in
+  let t10 = is_special8(5) in
+  let part1/14 = report("int8=", t10) in
+  let t11 = is_special16(1024) in
+  let part2/15 = report(",int16=", t11) in
+  let t12 = is_special32(8192) in
+  let part3/16 = report(",int32=", t12) in
+  let t13 = is_special64(16384) in
+  let part4/17 = report(",int64_a=", t13) in
+  let t14 = is_special64(32768) in
+  let part5/18 = report(",int64_b=", t14) in
+  let part6/19 = report(",tuple_hit=", tuple_result_hit/10) in
+  let part7/20 = report(",tuple_miss=", tuple_result_miss/11) in
+  let part8/21 = report(",struct_first=", pair_first/12) in
+  let part9/22 = report(",struct_second=", pair_second/13) in
+  let t21 = string_add(part8/21, part9/22) in
+  let t20 = string_add(part7/20, t21) in
+  let t19 = string_add(part6/19, t20) in
+  let t18 = string_add(part5/18, t19) in
+  let t17 = string_add(part4/17, t18) in
+  let t16 = string_add(part3/16, t17) in
+  let t15 = string_add(part2/15, t16) in
+  let message/23 = string_add(part1/14, t15) in
+  let mtmp4 = string_println(message/23) in
+  ()
+}
