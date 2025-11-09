@@ -1,0 +1,30 @@
+fn summarize(event/0: FloatEvent) -> string {
+  match (event/0 : FloatEvent) {
+      FloatEvent::Sample32(label/1: string, value/2: float32) => (string_add : (string, string) -> string)((label/1 : string), (float32_to_string : (float32) -> string)((value/2 : float32))),
+      FloatEvent::Sample64(label/3: string, value/4: float64) => (string_add : (string, string) -> string)((label/3 : string), (float64_to_string : (float64) -> string)((value/4 : float64))),
+  }
+}
+
+fn compare(values/5: (float32, float64)) -> string {
+  match (values/5 : (float32, float64)) {
+      (left/6: float32, right/7: float64) => let limit32/8: float32 = 1 in
+        let limit64/9: float64 = 5 in
+        let less_left/10: bool = (float32_less : (float32, float32) -> bool)((left/6 : float32), (limit32/8 : float32)) in
+        let less_right/11: bool = (float64_less : (float64, float64) -> bool)((right/7 : float64), (limit64/9 : float64)) in
+        (string_add : (string, string) -> string)((string_add : (string, string) -> string)("left<1?=", (bool_to_string : (bool) -> string)((less_left/10 : bool))), (string_add : (string, string) -> string)(",right<5?=", (bool_to_string : (bool) -> string)((less_right/11 : bool)))),
+  }
+}
+
+fn main() -> unit {
+  let first_value/12: float32 = 0.5 in
+  let second_value/13: float32 = 2.25 in
+  let third_value/14: float64 = 9.5 in
+  let first/15: FloatEvent = FloatEvent::Sample32("f32=", (first_value/12 : float32)) in
+  let second/16: FloatEvent = FloatEvent::Sample32("f32_b=", (second_value/13 : float32)) in
+  let third/17: FloatEvent = FloatEvent::Sample64("f64=", (third_value/14 : float64)) in
+  let tuple/18: (float32, float64) = (0.75, 4) in
+  let tuple_other/19: (float32, float64) = (1.5, 7.25) in
+  let message/20: string = (string_add : (string, string) -> string)((summarize : (FloatEvent) -> string)((first/15 : FloatEvent)), (string_add : (string, string) -> string)((summarize : (FloatEvent) -> string)((second/16 : FloatEvent)), (string_add : (string, string) -> string)((summarize : (FloatEvent) -> string)((third/17 : FloatEvent)), (string_add : (string, string) -> string)((compare : ((float32, float64)) -> string)((tuple/18 : (float32, float64))), (compare : ((float32, float64)) -> string)((tuple_other/19 : (float32, float64))))))) in
+  let _ : unit = (string_println : (string) -> unit)((message/20 : string)) in
+  ()
+}

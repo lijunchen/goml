@@ -1,0 +1,154 @@
+package main
+
+import (
+    "fmt"
+)
+
+func bool_to_string(x bool) string {
+    if x {
+        return "true"
+    } else {
+        return "false"
+    }
+}
+
+func string_add(a string, b string) string {
+    return a + b
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type Counter struct {
+    start uint32
+    end uint64
+}
+
+func is_flag8(value__0 uint8) bool {
+    var ret32 bool
+    switch value__0 {
+    case 0:
+        ret32 = true
+    case 200:
+        ret32 = true
+    default:
+        ret32 = false
+    }
+    return ret32
+}
+
+func is_flag16(value__1 uint16) bool {
+    var ret33 bool
+    switch value__1 {
+    case 1024:
+        ret33 = true
+    case 65000:
+        ret33 = true
+    default:
+        ret33 = false
+    }
+    return ret33
+}
+
+func is_flag32(value__2 uint32) bool {
+    var ret34 bool
+    switch value__2 {
+    case 4000000000:
+        ret34 = true
+    case 1234567890:
+        ret34 = true
+    default:
+        ret34 = false
+    }
+    return ret34
+}
+
+func is_flag64(value__3 uint64) bool {
+    var ret35 bool
+    switch value__3 {
+    case 900000000:
+        ret35 = true
+    case 600000000:
+        ret35 = true
+    default:
+        ret35 = false
+    }
+    return ret35
+}
+
+func match_struct(counter__4 Counter) bool {
+    var ret36 bool
+    var x0 uint32 = counter__4.start
+    var x1 uint64 = counter__4.end
+    switch x1 {
+    case 900000000:
+        switch x0 {
+        case 4000000000:
+            ret36 = true
+        default:
+            ret36 = false
+        }
+    case 600000000:
+        ret36 = true
+    default:
+        ret36 = false
+    }
+    return ret36
+}
+
+func report(label__5 string, value__6 bool) string {
+    var ret37 string
+    var t3 string = bool_to_string(value__6)
+    ret37 = string_add(label__5, t3)
+    return ret37
+}
+
+func main0() struct{} {
+    var ret38 struct{}
+    var counter__7 Counter = Counter{
+        start: 4000000000,
+        end: 900000000,
+    }
+    var alt_counter__8 Counter = Counter{
+        start: 12,
+        end: 600000000,
+    }
+    var t5 bool = is_flag8(200)
+    var t4 string = report("u8_hit=", t5)
+    var t8 bool = is_flag8(15)
+    var t7 string = report(",u8_miss=", t8)
+    var t11 bool = is_flag16(65000)
+    var t10 string = report(",u16_hit=", t11)
+    var t14 bool = is_flag16(42)
+    var t13 string = report(",u16_miss=", t14)
+    var t17 bool = is_flag32(1234567890)
+    var t16 string = report(",u32_hit=", t17)
+    var t20 bool = is_flag32(99)
+    var t19 string = report(",u32_miss=", t20)
+    var t23 bool = is_flag64(900000000)
+    var t22 string = report(",u64_hit=", t23)
+    var t26 bool = is_flag64(700000000)
+    var t25 string = report(",u64_miss=", t26)
+    var t29 bool = match_struct(counter__7)
+    var t28 string = report(",struct_first=", t29)
+    var t31 bool = match_struct(alt_counter__8)
+    var t30 string = report(",struct_second=", t31)
+    var t27 string = string_add(t28, t30)
+    var t24 string = string_add(t25, t27)
+    var t21 string = string_add(t22, t24)
+    var t18 string = string_add(t19, t21)
+    var t15 string = string_add(t16, t18)
+    var t12 string = string_add(t13, t15)
+    var t9 string = string_add(t10, t12)
+    var t6 string = string_add(t7, t9)
+    var message__9 string = string_add(t4, t6)
+    string_println(message__9)
+    ret38 = struct{}{}
+    return ret38
+}
+
+func main() {
+    main0()
+}

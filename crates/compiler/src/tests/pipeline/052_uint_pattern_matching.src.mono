@@ -1,0 +1,78 @@
+fn is_flag8(value/0: uint8) -> bool {
+  match value/0 {
+    0 => {
+      true
+    },
+    200 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_flag16(value/1: uint16) -> bool {
+  match value/1 {
+    1024 => {
+      true
+    },
+    65000 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_flag32(value/2: uint32) -> bool {
+  match value/2 {
+    4000000000 => {
+      true
+    },
+    1234567890 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn is_flag64(value/3: uint64) -> bool {
+  match value/3 {
+    900000000 => {
+      true
+    },
+    600000000 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn match_struct(counter/4: Counter) -> bool {
+  let x0 = Counter.start(counter/4) in
+  let x1 = Counter.end(counter/4) in
+  match x1 {
+    900000000 => {
+      match x0 {
+        4000000000 => {
+          true
+        },
+        _ => false,
+      }
+    },
+    600000000 => {
+      true
+    },
+    _ => false,
+  }
+}
+
+fn report(label/5: string, value/6: bool) -> string {
+  string_add(label/5, bool_to_string(value/6))
+}
+
+fn main() -> unit {
+  let counter/7 = Counter { start: 4000000000, end: 900000000 } in
+  let alt_counter/8 = Counter { start: 12, end: 600000000 } in
+  let message/9 = string_add(report("u8_hit=", is_flag8(200)), string_add(report(",u8_miss=", is_flag8(15)), string_add(report(",u16_hit=", is_flag16(65000)), string_add(report(",u16_miss=", is_flag16(42)), string_add(report(",u32_hit=", is_flag32(1234567890)), string_add(report(",u32_miss=", is_flag32(99)), string_add(report(",u64_hit=", is_flag64(900000000)), string_add(report(",u64_miss=", is_flag64(700000000)), string_add(report(",struct_first=", match_struct(counter/7)), report(",struct_second=", match_struct(alt_counter/8))))))))))) in
+  let mtmp2 = string_println(message/9) in
+  ()
+}
