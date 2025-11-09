@@ -175,8 +175,7 @@ impl TypeInference {
                 value,
                 body,
             } => self.check_let_expr(env, vars, pat, annotation, value, body, expected),
-            ast::Expr::ETuple { items }
-                if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
+            ast::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
             {
                 let expected_elem_tys = match expected {
                     tast::Ty::TTuple { typs } => typs.clone(),
@@ -1143,7 +1142,8 @@ impl TypeInference {
     }
 
     fn check_pat_unit(&self) -> tast::Pat {
-        tast::Pat::PUnit {
+        tast::Pat::PPrimitive {
+            value: Primitive::Unit { value: () },
             ty: tast::Ty::TUnit,
         }
     }
@@ -1287,9 +1287,9 @@ impl TypeInference {
                     let pat_ast = field_map.remove(&field_name.0).unwrap_or_else(|| {
                         panic!("Struct pattern {} missing field {}", name.0, field_name.0)
                     });
-                    let expected_ty = param_tys
-                        .get(idx)
-                        .unwrap_or_else(|| panic!("Missing instantiated type for field {}", field_name.0));
+                    let expected_ty = param_tys.get(idx).unwrap_or_else(|| {
+                        panic!("Missing instantiated type for field {}", field_name.0)
+                    });
                     let pat_tast = self.check_pat(env, vars, pat_ast, expected_ty);
                     args_tast.push(pat_tast);
                 }
@@ -1346,7 +1346,6 @@ impl TypeInference {
             .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
         tast::Pat::PWild { ty: pat_ty }
     }
-
 }
 
 fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {

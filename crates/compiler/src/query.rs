@@ -216,7 +216,6 @@ fn find_type_pat(env: &Env, tast: &tast::Pat, range: &rowan::TextRange) -> Optio
             }
             None
         }
-        tast::Pat::PUnit { ty: _ } => None,
         tast::Pat::PPrimitive { value: _, ty: _ } => None,
         tast::Pat::PConstr { args, .. } => {
             for arg in args {

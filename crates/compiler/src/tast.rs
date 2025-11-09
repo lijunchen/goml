@@ -564,9 +564,6 @@ pub enum Pat {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
-    PUnit {
-        ty: Ty,
-    },
     PPrimitive {
         value: Primitive,
         ty: Ty,
@@ -589,7 +586,6 @@ impl Pat {
     pub fn get_ty(&self) -> Ty {
         match self {
             Self::PVar { ty, .. } => ty.clone(),
-            Self::PUnit { ty, .. } => ty.clone(),
             Self::PPrimitive { ty, .. } => ty.clone(),
             Self::PConstr { ty, .. } => ty.clone(),
             Self::PTuple { ty, .. } => ty.clone(),

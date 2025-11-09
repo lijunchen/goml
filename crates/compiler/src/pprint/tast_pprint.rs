@@ -543,7 +543,6 @@ impl Pat {
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())
                 .append(ty.to_doc(env)),
-            Pat::PUnit { .. } => RcDoc::text("()"),
             Pat::PPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,

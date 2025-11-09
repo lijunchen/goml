@@ -665,10 +665,6 @@ impl TypeInference {
                     astptr,
                 }
             }
-            tast::Pat::PUnit { ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Pat::PUnit { ty: ty.clone() }
-            }
             tast::Pat::PPrimitive { value, ty } => {
                 let ty = self.subst_ty(env, &ty);
                 let value = value.coerce(&ty);
