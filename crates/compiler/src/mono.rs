@@ -278,9 +278,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 name,
                 ty: subst_ty(&ty, s),
             },
-            core::Expr::EPrimitive { value, ty } => {
+            core::Expr::EPrim { value, ty } => {
                 let ty = subst_ty(&ty, s);
-                core::Expr::EPrimitive {
+                core::Expr::EPrim {
                     value: value.coerce(&ty),
                     ty,
                 }
@@ -641,9 +641,9 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
                 name,
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EPrimitive { value, ty } => {
+            core::Expr::EPrim { value, ty } => {
                 let ty = m.collapse_type_apps(&ty);
-                core::Expr::EPrimitive {
+                core::Expr::EPrim {
                     value: value.coerce(&ty),
                     ty,
                 }

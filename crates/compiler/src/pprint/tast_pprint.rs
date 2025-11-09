@@ -263,7 +263,7 @@ impl Expr {
                 .append(ty.to_doc(env))
                 .append(RcDoc::text(")")),
 
-            Self::EPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
+            Self::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {
                 constructor,
                 args,
@@ -543,7 +543,7 @@ impl Pat {
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())
                 .append(ty.to_doc(env)),
-            Pat::PPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
+            Pat::PPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,
                 args,

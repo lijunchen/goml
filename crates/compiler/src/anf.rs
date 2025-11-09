@@ -1,5 +1,5 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::{Constructor, Primitive};
+use crate::tast::{Constructor, Prim};
 use crate::{core, env::Env};
 
 #[derive(Debug, Clone)]
@@ -18,7 +18,7 @@ pub struct Fn {
 #[derive(Debug, Clone)]
 pub enum ImmExpr {
     ImmVar { name: String, ty: Ty },
-    ImmPrimitive { value: Primitive, ty: Ty },
+    ImmPrim { value: Prim, ty: Ty },
     ImmTag { index: usize, ty: Ty },
 }
 
@@ -109,7 +109,7 @@ pub struct Arm {
 fn core_imm_to_anf_imm(core_imm: core::Expr) -> ImmExpr {
     match core_imm {
         core::Expr::EVar { name, ty } => ImmExpr::ImmVar { name, ty },
-        core::Expr::EPrimitive { value, ty } => ImmExpr::ImmPrimitive { value, ty },
+        core::Expr::EPrim { value, ty } => ImmExpr::ImmPrim { value, ty },
         core::Expr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
             args,
@@ -143,9 +143,9 @@ fn cexpr_tast_ty(e: &CExpr) -> Ty {
 
 fn imm_ty(imm: &ImmExpr) -> Ty {
     match imm {
-        ImmExpr::ImmVar { ty, .. }
-        | ImmExpr::ImmPrimitive { ty, .. }
-        | ImmExpr::ImmTag { ty, .. } => ty.clone(),
+        ImmExpr::ImmVar { ty, .. } | ImmExpr::ImmPrim { ty, .. } | ImmExpr::ImmTag { ty, .. } => {
+            ty.clone()
+        }
     }
 }
 
@@ -163,7 +163,7 @@ fn compile_match_arms_to_anf<'a>(
     // Process arms in original order to maintain sequence
     for arm in arms {
         match &arm.lhs {
-            core::Expr::EVar { .. } | core::Expr::EPrimitive { .. } => {
+            core::Expr::EVar { .. } | core::Expr::EPrim { .. } => {
                 // Immediate patterns can be converted directly
                 let anf_lhs = core_imm_to_anf_imm(arm.lhs);
                 let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
@@ -228,8 +228,8 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
         core::Expr::EVar { name, ty } => k(CExpr::CImm {
             imm: ImmExpr::ImmVar { name, ty },
         }),
-        core::Expr::EPrimitive { value, ty } => k(CExpr::CImm {
-            imm: ImmExpr::ImmPrimitive { value, ty },
+        core::Expr::EPrim { value, ty } => k(CExpr::CImm {
+            imm: ImmExpr::ImmPrim { value, ty },
         }),
 
         core::Expr::EConstr {
@@ -409,7 +409,7 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
 fn anf_imm<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>) -> AExpr {
     match e {
         core::Expr::EVar { name, ty } => k(ImmExpr::ImmVar { name, ty }),
-        core::Expr::EPrimitive { value, ty } => k(ImmExpr::ImmPrimitive { value, ty }),
+        core::Expr::EPrim { value, ty } => k(ImmExpr::ImmPrim { value, ty }),
         _ => {
             let name = env.gensym("t");
             let ty = e.get_ty();
@@ -506,7 +506,7 @@ pub mod anf_renamer {
                 name: name.replace("/", "__"),
                 ty,
             },
-            anf::ImmExpr::ImmPrimitive { value, ty } => anf::ImmExpr::ImmPrimitive { value, ty },
+            anf::ImmExpr::ImmPrim { value, ty } => anf::ImmExpr::ImmPrim { value, ty },
             anf::ImmExpr::ImmTag { index, ty } => anf::ImmExpr::ImmTag { index, ty },
         }
     }

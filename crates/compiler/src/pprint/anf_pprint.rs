@@ -325,7 +325,7 @@ impl ImmExpr {
     pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::ImmVar { name, ty: _ } => RcDoc::text(name.clone()),
-            ImmExpr::ImmPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
+            ImmExpr::ImmPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             ImmExpr::ImmTag { index, ty: _ } => RcDoc::text(format!("Tag_{}", index)),
         }
     }

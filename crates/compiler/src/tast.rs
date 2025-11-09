@@ -190,7 +190,7 @@ impl Ty {
 impl EqUnifyValue for Ty {}
 
 #[derive(Debug, Clone)]
-pub enum Primitive {
+pub enum Prim {
     Unit { value: () },
     Bool { value: bool },
     Int8 { value: i8 },
@@ -206,39 +206,39 @@ pub enum Primitive {
     String { value: String },
 }
 
-impl Primitive {
+impl Prim {
     pub fn unit() -> Self {
-        Primitive::Unit { value: () }
+        Prim::Unit { value: () }
     }
 
     pub fn boolean(value: bool) -> Self {
-        Primitive::Bool { value }
+        Prim::Bool { value }
     }
 
     pub fn string(value: String) -> Self {
-        Primitive::String { value }
+        Prim::String { value }
     }
 
     pub fn from_int_literal(value: i128, ty: &Ty) -> Self {
         match ty {
-            Ty::TInt8 => Primitive::Int8 { value: value as i8 },
-            Ty::TInt16 => Primitive::Int16 {
+            Ty::TInt8 => Prim::Int8 { value: value as i8 },
+            Ty::TInt16 => Prim::Int16 {
                 value: value as i16,
             },
-            Ty::TInt32 | Ty::TInt => Primitive::Int32 {
+            Ty::TInt32 | Ty::TInt => Prim::Int32 {
                 value: value as i32,
             },
-            Ty::TInt64 => Primitive::Int64 {
+            Ty::TInt64 => Prim::Int64 {
                 value: value as i64,
             },
-            Ty::TUint8 => Primitive::UInt8 { value: value as u8 },
-            Ty::TUint16 => Primitive::UInt16 {
+            Ty::TUint8 => Prim::UInt8 { value: value as u8 },
+            Ty::TUint16 => Prim::UInt16 {
                 value: value as u16,
             },
-            Ty::TUint32 => Primitive::UInt32 {
+            Ty::TUint32 => Prim::UInt32 {
                 value: value as u32,
             },
-            Ty::TUint64 => Primitive::UInt64 {
+            Ty::TUint64 => Prim::UInt64 {
                 value: value as u64,
             },
             _ => panic!("Unsupported integer literal type {:?}", ty),
@@ -247,10 +247,10 @@ impl Primitive {
 
     pub fn from_float_literal(value: f64, ty: &Ty) -> Self {
         match ty {
-            Ty::TFloat32 => Primitive::Float32 {
+            Ty::TFloat32 => Prim::Float32 {
                 value: value as f32,
             },
-            Ty::TFloat64 => Primitive::Float64 { value },
+            Ty::TFloat64 => Prim::Float64 { value },
             _ => panic!("Unsupported float literal type {:?}", ty),
         }
     }
@@ -259,34 +259,34 @@ impl Primitive {
         match ty {
             Ty::TUnit => self.expect_unit(),
             Ty::TBool => self.expect_bool(),
-            Ty::TInt8 => Primitive::Int8 {
+            Ty::TInt8 => Prim::Int8 {
                 value: self.into_signed_value() as i8,
             },
-            Ty::TInt16 => Primitive::Int16 {
+            Ty::TInt16 => Prim::Int16 {
                 value: self.into_signed_value() as i16,
             },
-            Ty::TInt32 | Ty::TInt => Primitive::Int32 {
+            Ty::TInt32 | Ty::TInt => Prim::Int32 {
                 value: self.into_signed_value() as i32,
             },
-            Ty::TInt64 => Primitive::Int64 {
+            Ty::TInt64 => Prim::Int64 {
                 value: self.into_signed_value() as i64,
             },
-            Ty::TUint8 => Primitive::UInt8 {
+            Ty::TUint8 => Prim::UInt8 {
                 value: self.into_unsigned_value() as u8,
             },
-            Ty::TUint16 => Primitive::UInt16 {
+            Ty::TUint16 => Prim::UInt16 {
                 value: self.into_unsigned_value() as u16,
             },
-            Ty::TUint32 => Primitive::UInt32 {
+            Ty::TUint32 => Prim::UInt32 {
                 value: self.into_unsigned_value() as u32,
             },
-            Ty::TUint64 => Primitive::UInt64 {
+            Ty::TUint64 => Prim::UInt64 {
                 value: self.into_unsigned_value() as u64,
             },
-            Ty::TFloat32 => Primitive::Float32 {
+            Ty::TFloat32 => Prim::Float32 {
                 value: self.into_float_value() as f32,
             },
-            Ty::TFloat64 => Primitive::Float64 {
+            Ty::TFloat64 => Prim::Float64 {
                 value: self.into_float_value(),
             },
             Ty::TString => self.expect_string(),
@@ -306,55 +306,55 @@ impl Primitive {
 
     fn expect_unit(self) -> Self {
         match self {
-            Primitive::Unit { .. } => Primitive::Unit { value: () },
+            Prim::Unit { .. } => Prim::Unit { value: () },
             other => panic!("Expected unit primitive, got {:?}", other),
         }
     }
 
     fn expect_bool(self) -> Self {
         match self {
-            Primitive::Bool { value } => Primitive::Bool { value },
+            Prim::Bool { value } => Prim::Bool { value },
             other => panic!("Expected bool primitive, got {:?}", other),
         }
     }
 
     fn expect_string(self) -> Self {
         match self {
-            Primitive::String { value } => Primitive::String { value },
+            Prim::String { value } => Prim::String { value },
             other => panic!("Expected string primitive, got {:?}", other),
         }
     }
 
     fn into_signed_value(self) -> i128 {
         match self {
-            Primitive::Int8 { value } => value as i128,
-            Primitive::Int16 { value } => value as i128,
-            Primitive::Int32 { value } => value as i128,
-            Primitive::Int64 { value } => value as i128,
+            Prim::Int8 { value } => value as i128,
+            Prim::Int16 { value } => value as i128,
+            Prim::Int32 { value } => value as i128,
+            Prim::Int64 { value } => value as i128,
             other => panic!("Expected signed integer primitive, got {:?}", other),
         }
     }
 
     fn into_unsigned_value(self) -> u128 {
         match self {
-            Primitive::UInt8 { value } => value as u128,
-            Primitive::UInt16 { value } => value as u128,
-            Primitive::UInt32 { value } => value as u128,
-            Primitive::UInt64 { value } => value as u128,
+            Prim::UInt8 { value } => value as u128,
+            Prim::UInt16 { value } => value as u128,
+            Prim::UInt32 { value } => value as u128,
+            Prim::UInt64 { value } => value as u128,
             other => panic!("Expected unsigned integer primitive, got {:?}", other),
         }
     }
 
     fn into_float_value(self) -> f64 {
         match self {
-            Primitive::Float32 { value } => value as f64,
-            Primitive::Float64 { value } => value,
+            Prim::Float32 { value } => value as f64,
+            Prim::Float64 { value } => value,
             other => panic!("Expected float primitive, got {:?}", other),
         }
     }
 
     pub fn as_bool(&self) -> Option<bool> {
-        if let Primitive::Bool { value } = self {
+        if let Prim::Bool { value } = self {
             Some(*value)
         } else {
             None
@@ -363,56 +363,56 @@ impl Primitive {
 
     pub fn as_signed(&self) -> Option<i128> {
         match self {
-            Primitive::Int8 { value } => Some(*value as i128),
-            Primitive::Int16 { value } => Some(*value as i128),
-            Primitive::Int32 { value } => Some(*value as i128),
-            Primitive::Int64 { value } => Some(*value as i128),
+            Prim::Int8 { value } => Some(*value as i128),
+            Prim::Int16 { value } => Some(*value as i128),
+            Prim::Int32 { value } => Some(*value as i128),
+            Prim::Int64 { value } => Some(*value as i128),
             _ => None,
         }
     }
 
     pub fn as_unsigned(&self) -> Option<u128> {
         match self {
-            Primitive::UInt8 { value } => Some(*value as u128),
-            Primitive::UInt16 { value } => Some(*value as u128),
-            Primitive::UInt32 { value } => Some(*value as u128),
-            Primitive::UInt64 { value } => Some(*value as u128),
+            Prim::UInt8 { value } => Some(*value as u128),
+            Prim::UInt16 { value } => Some(*value as u128),
+            Prim::UInt32 { value } => Some(*value as u128),
+            Prim::UInt64 { value } => Some(*value as u128),
             _ => None,
         }
     }
 
     pub fn as_float(&self) -> Option<f64> {
         match self {
-            Primitive::Float32 { value } => Some(*value as f64),
-            Primitive::Float64 { value } => Some(*value),
+            Prim::Float32 { value } => Some(*value as f64),
+            Prim::Float64 { value } => Some(*value),
             _ => None,
         }
     }
 
     pub fn as_str(&self) -> Option<&str> {
         match self {
-            Primitive::String { value } => Some(value.as_str()),
+            Prim::String { value } => Some(value.as_str()),
             _ => None,
         }
     }
 }
 
-impl std::fmt::Display for Primitive {
+impl std::fmt::Display for Prim {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Primitive::Unit { .. } => write!(f, "()"),
-            Primitive::Bool { value } => write!(f, "{}", value),
-            Primitive::Int8 { value } => write!(f, "{}", value),
-            Primitive::Int16 { value } => write!(f, "{}", value),
-            Primitive::Int32 { value } => write!(f, "{}", value),
-            Primitive::Int64 { value } => write!(f, "{}", value),
-            Primitive::UInt8 { value } => write!(f, "{}", value),
-            Primitive::UInt16 { value } => write!(f, "{}", value),
-            Primitive::UInt32 { value } => write!(f, "{}", value),
-            Primitive::UInt64 { value } => write!(f, "{}", value),
-            Primitive::Float32 { value } => write!(f, "{}", value),
-            Primitive::Float64 { value } => write!(f, "{}", value),
-            Primitive::String { value } => write!(f, "{:?}", value),
+            Prim::Unit { .. } => write!(f, "()"),
+            Prim::Bool { value } => write!(f, "{}", value),
+            Prim::Int8 { value } => write!(f, "{}", value),
+            Prim::Int16 { value } => write!(f, "{}", value),
+            Prim::Int32 { value } => write!(f, "{}", value),
+            Prim::Int64 { value } => write!(f, "{}", value),
+            Prim::UInt8 { value } => write!(f, "{}", value),
+            Prim::UInt16 { value } => write!(f, "{}", value),
+            Prim::UInt32 { value } => write!(f, "{}", value),
+            Prim::UInt64 { value } => write!(f, "{}", value),
+            Prim::Float32 { value } => write!(f, "{}", value),
+            Prim::Float64 { value } => write!(f, "{}", value),
+            Prim::String { value } => write!(f, "{:?}", value),
         }
     }
 }
@@ -455,8 +455,8 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
-    EPrimitive {
-        value: Primitive,
+    EPrim {
+        value: Prim,
         ty: Ty,
     },
     EConstr {
@@ -533,7 +533,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Self::EVar { ty, .. } => ty.clone(),
-            Self::EPrimitive { ty, .. } => ty.clone(),
+            Self::EPrim { ty, .. } => ty.clone(),
             Self::EConstr { ty, .. } => ty.clone(),
             Self::ETuple { ty, .. } => ty.clone(),
             Self::EArray { ty, .. } => ty.clone(),
@@ -564,8 +564,8 @@ pub enum Pat {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
-    PPrimitive {
-        value: Primitive,
+    PPrim {
+        value: Prim,
         ty: Ty,
     },
     PConstr {
@@ -586,7 +586,7 @@ impl Pat {
     pub fn get_ty(&self) -> Ty {
         match self {
             Self::PVar { ty, .. } => ty.clone(),
-            Self::PPrimitive { ty, .. } => ty.clone(),
+            Self::PPrim { ty, .. } => ty.clone(),
             Self::PConstr { ty, .. } => ty.clone(),
             Self::PTuple { ty, .. } => ty.clone(),
             Self::PWild { ty, .. } => ty.clone(),

@@ -67,7 +67,7 @@ impl Expr {
         match self {
             Expr::EVar { name, ty: _ } => RcDoc::text(name.clone()),
 
-            Expr::EPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
+            Expr::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Expr::EConstr {
                 constructor,
                 args,

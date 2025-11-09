@@ -1,5 +1,5 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::{self, Constructor, Primitive};
+use crate::tast::{self, Constructor, Prim};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -20,8 +20,8 @@ pub enum Expr {
         name: String,
         ty: Ty,
     },
-    EPrimitive {
-        value: Primitive,
+    EPrim {
+        value: Prim,
         ty: Ty,
     },
     EConstr {
@@ -87,7 +87,7 @@ impl Expr {
     pub fn get_ty(&self) -> Ty {
         match self {
             Expr::EVar { ty, .. } => ty.clone(),
-            Expr::EPrimitive { ty, .. } => ty.clone(),
+            Expr::EPrim { ty, .. } => ty.clone(),
             Expr::EConstr { ty, .. } => ty.clone(),
             Expr::ETuple { ty, .. } => ty.clone(),
             Expr::EArray { ty, .. } => ty.clone(),
@@ -110,15 +110,15 @@ pub struct Arm {
 }
 
 pub fn eunit() -> Expr {
-    Expr::EPrimitive {
-        value: Primitive::unit(),
+    Expr::EPrim {
+        value: Prim::unit(),
         ty: Ty::TUnit,
     }
 }
 
 pub fn ebool(value: bool) -> Expr {
-    Expr::EPrimitive {
-        value: Primitive::boolean(value),
+    Expr::EPrim {
+        value: Prim::boolean(value),
         ty: Ty::TBool,
     }
 }

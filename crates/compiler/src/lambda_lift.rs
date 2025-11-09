@@ -207,7 +207,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 core::Expr::EVar { name, ty }
             }
         }
-        core::Expr::EPrimitive { .. } => expr,
+        core::Expr::EPrim { .. } => expr,
         core::Expr::EConstr {
             constructor,
             args,
@@ -582,7 +582,7 @@ fn collect_captured(
                     .or_insert_with(|| entry.ty.clone());
             }
         }
-        core::Expr::EPrimitive { .. } => {}
+        core::Expr::EPrim { .. } => {}
         core::Expr::EConstr { args, .. } => {
             for arg in args {
                 collect_captured(arg, bound, captured, scope);

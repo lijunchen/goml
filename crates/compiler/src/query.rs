@@ -86,7 +86,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             }
             None
         }
-        tast::Expr::EPrimitive { .. } => None,
+        tast::Expr::EPrim { .. } => None,
         tast::Expr::EConstr { .. } => None,
         tast::Expr::ETuple { items, ty: _ } | tast::Expr::EArray { items, ty: _ } => {
             for item in items {
@@ -216,7 +216,7 @@ fn find_type_pat(env: &Env, tast: &tast::Pat, range: &rowan::TextRange) -> Optio
             }
             None
         }
-        tast::Pat::PPrimitive { value: _, ty: _ } => None,
+        tast::Pat::PPrim { value: _, ty: _ } => None,
         tast::Pat::PConstr { args, .. } => {
             for arg in args {
                 if let Some(expr) = find_type_pat(env, arg, range) {

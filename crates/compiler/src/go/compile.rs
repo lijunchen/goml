@@ -4,7 +4,7 @@ use crate::{
     anf::{self, AExpr},
     env::Env,
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    tast::{self, Constructor, Primitive},
+    tast::{self, Constructor, Prim},
 };
 
 use indexmap::IndexSet;
@@ -13,8 +13,8 @@ use std::collections::HashMap;
 use super::goty;
 use super::runtime;
 
-fn go_literal_from_primitive(value: &Primitive, ty: &tast::Ty) -> goast::Expr {
-    if matches!(value, Primitive::Unit { .. }) {
+fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
+    if matches!(value, Prim::Unit { .. }) {
         return goast::Expr::Unit {
             ty: tast_ty_to_go_type(ty),
         };
@@ -67,7 +67,7 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
             name: name.clone(),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
-        anf::ImmExpr::ImmPrimitive { value, .. } => {
+        anf::ImmExpr::ImmPrim { value, .. } => {
             let ty = imm_ty(imm);
             go_literal_from_primitive(value, &ty)
         }
@@ -81,7 +81,7 @@ fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
 fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     match imm {
         anf::ImmExpr::ImmVar { ty, .. }
-        | anf::ImmExpr::ImmPrimitive { ty, .. }
+        | anf::ImmExpr::ImmPrim { ty, .. }
         | anf::ImmExpr::ImmTag { ty, .. } => ty.clone(),
     }
 }
@@ -544,7 +544,7 @@ where
         tast::Ty::TBool => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
                     if let Some(bool_value) = value.as_bool() {
                         cases.push((
                             goast::Expr::Bool {
@@ -584,7 +584,7 @@ where
         | tast::Ty::TFloat64 => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
                     let case_expr = if let Some(signed) = value.as_signed() {
                         goast::Expr::Int {
                             value: signed.to_string(),
@@ -625,7 +625,7 @@ where
         tast::Ty::TString => {
             let mut cases = Vec::new();
             for arm in arms {
-                if let anf::ImmExpr::ImmPrimitive { value, .. } = &arm.lhs {
+                if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
                     if let Some(str_value) = value.as_str() {
                         cases.push((
                             goast::Expr::String {

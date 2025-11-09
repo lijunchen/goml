@@ -8,7 +8,7 @@ use crate::tast::Constructor;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
-use crate::tast::{self, File, Primitive};
+use crate::tast::{self, File, Prim};
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -112,8 +112,8 @@ fn emissing(ty: &Ty) -> core::Expr {
                 ret_ty: Box::new(ty.clone()),
             },
         }),
-        args: vec![core::Expr::EPrimitive {
-            value: Primitive::string("".to_string()),
+        args: vec![core::Expr::EPrim {
+            value: Prim::string("".to_string()),
             ty: Ty::TString,
         }],
         ty: ty.clone(),
@@ -536,7 +536,7 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     for mut r in rows {
         if let Some(col) = r.remove_column(&bvar.name) {
             match col.pat {
-                Pat::PPrimitive { value, ty: _ } => {
+                Pat::PPrim { value, ty: _ } => {
                     if value.as_bool().expect("expected boolean primitive pattern") {
                         true_rows.push(r);
                     } else {
@@ -583,7 +583,7 @@ fn compile_int_case(
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             match col.pat {
-                Pat::PPrimitive { value, ty: _ } => {
+                Pat::PPrim { value, ty: _ } => {
                     let key = value
                         .as_signed()
                         .or_else(|| value.as_unsigned().map(|v| v as i128))
@@ -616,8 +616,8 @@ fn compile_int_case(
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
-            lhs: core::Expr::EPrimitive {
-                value: Primitive::from_int_literal(value, &literal_ty),
+            lhs: core::Expr::EPrim {
+                value: Prim::from_int_literal(value, &literal_ty),
                 ty: literal_ty.clone(),
             },
             body: compile_rows(env, rows, ty),
@@ -648,7 +648,7 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             match col.pat {
-                Pat::PPrimitive { value, ty: _ } => {
+                Pat::PPrim { value, ty: _ } => {
                     let key = value
                         .as_str()
                         .expect("expected string primitive pattern")
@@ -681,8 +681,8 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
-            lhs: core::Expr::EPrimitive {
-                value: Primitive::string(value),
+            lhs: core::Expr::EPrim {
+                value: Prim::string(value),
                 ty: Ty::TString,
             },
             body: compile_rows(env, rows, ty),
@@ -922,7 +922,7 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
             name: name.to_string(),
             ty: ty.clone(),
         },
-        EPrimitive { value, ty } => core::Expr::EPrimitive {
+        EPrim { value, ty } => core::Expr::EPrim {
             value: value.clone(),
             ty: ty.clone(),
         },
@@ -1007,8 +1007,8 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                             },
                             astptr: None,
                         }),
-                        args: vec![Expr::EPrimitive {
-                            value: Primitive::string("".to_string()),
+                        args: vec![Expr::EPrim {
+                            value: Prim::string("".to_string()),
                             ty: Ty::TString,
                         }],
                         ty: body.get_ty(),
