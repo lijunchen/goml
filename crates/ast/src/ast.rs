@@ -184,7 +184,7 @@ pub enum Expr {
         value: bool,
     },
     EInt {
-        value: i64,
+        value: String,
     },
     EFloat {
         value: f64,
@@ -269,7 +269,7 @@ pub enum Pat {
         value: bool,
     },
     PInt {
-        value: i64,
+        value: String,
     },
     PString {
         value: String,

@@ -573,7 +573,7 @@ fn compile_int_case(
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
-    let mut value_rows: IndexMap<i64, Vec<Row>> = IndexMap::new();
+    let mut value_rows: IndexMap<i128, Vec<Row>> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
     let mut default_rows: Vec<Row> = Vec::new();
 

@@ -30,14 +30,14 @@ impl TypeInference {
                 value: Primitive::boolean(*value),
                 ty: tast::Ty::TBool,
             },
-            ast::Expr::EInt { value } => {
-                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
-                let ty = tast::Ty::TInt;
-                tast::Expr::EPrimitive {
-                    value: Primitive::from_int_literal(*value, &ty),
-                    ty,
+            ast::Expr::EInt { value } => match parse_integer_literal(env, value) {
+                Some(parsed) => {
+                    let ty = tast::Ty::TInt;
+                    ensure_integer_literal_fits(env, parsed, &ty);
+                    int_literal_expr(parsed, ty)
                 }
-            }
+                None => int_literal_expr(0, tast::Ty::TInt),
+            },
             ast::Expr::EFloat { value } => {
                 ensure_float_literal_fits(env, *value, &tast::Ty::TFloat64);
                 let ty = tast::Ty::TFloat64;
@@ -89,21 +89,38 @@ impl TypeInference {
     ) -> tast::Expr {
         let expr_tast = match e {
             ast::Expr::EInt { value } => {
-                if let Some(target_ty) = integer_literal_target(expected) {
-                    ensure_integer_literal_fits(env, *value, &target_ty);
-                    tast::Expr::EPrimitive {
-                        value: Primitive::from_int_literal(*value, &target_ty),
-                        ty: target_ty,
+                let target_int_ty = integer_literal_target(expected);
+                let expects_float = is_float_ty(expected);
+                match parse_integer_literal(env, value) {
+                    Some(parsed) => {
+                        if let Some(target_ty) = target_int_ty.clone() {
+                            ensure_integer_literal_fits(env, parsed, &target_ty);
+                            int_literal_expr(parsed, target_ty)
+                        } else if expects_float {
+                            let float_value = parsed as f64;
+                            ensure_float_literal_fits(env, float_value, expected);
+                            tast::Expr::EPrimitive {
+                                value: Primitive::from_float_literal(float_value, expected),
+                                ty: expected.clone(),
+                            }
+                        } else {
+                            let ty = tast::Ty::TInt;
+                            ensure_integer_literal_fits(env, parsed, &ty);
+                            int_literal_expr(parsed, ty)
+                        }
                     }
-                } else if is_float_ty(expected) {
-                    let float_value = *value as f64;
-                    ensure_float_literal_fits(env, float_value, expected);
-                    tast::Expr::EPrimitive {
-                        value: Primitive::from_float_literal(float_value, expected),
-                        ty: expected.clone(),
+                    None => {
+                        if let Some(target_ty) = target_int_ty {
+                            int_literal_expr(0, target_ty)
+                        } else if expects_float {
+                            tast::Expr::EPrimitive {
+                                value: Primitive::from_float_literal(0.0, expected),
+                                ty: expected.clone(),
+                            }
+                        } else {
+                            int_literal_expr(0, tast::Ty::TInt)
+                        }
                     }
-                } else {
-                    self.infer_expr(env, vars, e)
                 }
             }
             ast::Expr::EFloat { value } => {
@@ -933,17 +950,25 @@ impl TypeInference {
     ) -> Option<tast::Expr> {
         match (ast_expr, tast_expr) {
             (ast::Expr::EInt { value }, tast::Expr::EPrimitive { .. }) => {
-                if is_integer_ty(target_ty) {
-                    ensure_integer_literal_fits(env, *value, target_ty);
-                    Some(tast::Expr::EPrimitive {
-                        value: Primitive::from_int_literal(*value, target_ty),
-                        ty: target_ty.clone(),
-                    })
+                if let Some(parsed) = parse_integer_literal(env, value) {
+                    if is_integer_ty(target_ty) {
+                        ensure_integer_literal_fits(env, parsed, target_ty);
+                        Some(int_literal_expr(parsed, target_ty.clone()))
+                    } else if is_float_ty(target_ty) {
+                        let float_value = parsed as f64;
+                        ensure_float_literal_fits(env, float_value, target_ty);
+                        Some(tast::Expr::EPrimitive {
+                            value: Primitive::from_float_literal(float_value, target_ty),
+                            ty: target_ty.clone(),
+                        })
+                    } else {
+                        None
+                    }
+                } else if is_integer_ty(target_ty) {
+                    Some(int_literal_expr(0, target_ty.clone()))
                 } else if is_float_ty(target_ty) {
-                    let float_value = *value as f64;
-                    ensure_float_literal_fits(env, float_value, target_ty);
                     Some(tast::Expr::EPrimitive {
-                        value: Primitive::from_float_literal(float_value, target_ty),
+                        value: Primitive::from_float_literal(0.0, target_ty),
                         ty: target_ty.clone(),
                     })
                 } else {
@@ -1035,7 +1060,7 @@ impl TypeInference {
             ast::Pat::PVar { name, astptr } => self.check_pat_var(vars, name, astptr, ty),
             ast::Pat::PUnit => self.check_pat_unit(),
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
-            ast::Pat::PInt { value } => self.check_pat_int(env, *value, ty),
+            ast::Pat::PInt { value } => self.check_pat_int(env, value, ty),
             ast::Pat::PString { value } => self.check_pat_string(env, value, ty),
             ast::Pat::PConstr { .. } => self.check_pat_constructor(env, vars, pat, ty),
             ast::Pat::PStruct { .. } => self.check_pat_constructor(env, vars, pat, ty),
@@ -1072,13 +1097,14 @@ impl TypeInference {
         }
     }
 
-    fn check_pat_int(&mut self, env: &mut Env, value: i64, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_int(&mut self, env: &mut Env, value: &str, ty: &tast::Ty) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt);
-        ensure_integer_literal_fits(env, value, &target_ty);
+        let parsed = parse_integer_literal(env, value).unwrap_or(0);
+        ensure_integer_literal_fits(env, parsed, &target_ty);
         env.constraints
             .push(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PInt {
-            value,
+            value: parsed,
             ty: target_ty,
         }
     }
@@ -1311,9 +1337,10 @@ impl TypeInference {
                 ty: tast::Ty::TBool,
             },
             ast::Pat::PInt { value } => {
-                ensure_integer_literal_fits(env, *value, &tast::Ty::TInt);
+                let parsed = parse_integer_literal(env, value).unwrap_or(0);
+                ensure_integer_literal_fits(env, parsed, &tast::Ty::TInt);
                 tast::Pat::PInt {
-                    value: *value,
+                    value: parsed,
                     ty: tast::Ty::TInt,
                 }
             }
@@ -1345,8 +1372,24 @@ fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
-fn ensure_integer_literal_fits(env: &mut Env, value: i64, ty: &tast::Ty) {
-    let value = value as i128;
+fn parse_integer_literal(env: &mut Env, literal: &str) -> Option<i128> {
+    match literal.parse::<i128>() {
+        Ok(value) => Some(value),
+        Err(_) => {
+            env.report_typer_error(format!("Invalid integer literal: {}", literal));
+            None
+        }
+    }
+}
+
+fn int_literal_expr(value: i128, ty: tast::Ty) -> tast::Expr {
+    tast::Expr::EPrimitive {
+        value: Primitive::from_int_literal(value, &ty),
+        ty,
+    }
+}
+
+fn ensure_integer_literal_fits(env: &mut Env, value: i128, ty: &tast::Ty) {
     if let Some((min, max)) = integer_bounds(ty)
         && (value < min || value > max)
     {

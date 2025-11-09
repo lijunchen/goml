@@ -101,7 +101,7 @@ impl Expr {
                 }
             }
 
-            Self::EInt { value } => RcDoc::text(value.to_string()),
+            Self::EInt { value } => RcDoc::text(value.clone()),
             Self::EFloat { value } => RcDoc::text(value.to_string()),
             Self::EString { value } => RcDoc::text(format!("{:?}", value)),
 
@@ -330,7 +330,7 @@ impl Pat {
                     RcDoc::text("false")
                 }
             }
-            Pat::PInt { value } => RcDoc::text(value.to_string()),
+            Pat::PInt { value } => RcDoc::text(value.clone()),
             Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
             Pat::PConstr { vcon, args } => {
                 let prefix = RcDoc::text(vcon.0.clone());

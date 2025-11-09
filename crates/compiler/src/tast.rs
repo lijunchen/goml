@@ -219,7 +219,7 @@ impl Primitive {
         Primitive::String { value }
     }
 
-    pub fn from_int_literal(value: i64, ty: &Ty) -> Self {
+    pub fn from_int_literal(value: i128, ty: &Ty) -> Self {
         match ty {
             Ty::TInt8 => Primitive::Int8 { value: value as i8 },
             Ty::TInt16 => Primitive::Int16 {
@@ -572,7 +572,7 @@ pub enum Pat {
         ty: Ty,
     },
     PInt {
-        value: i64,
+        value: i128,
         ty: Ty,
     },
     PString {
