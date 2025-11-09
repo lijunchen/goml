@@ -175,6 +175,25 @@ impl TypeInference {
                 value,
                 body,
             } => self.check_let_expr(env, vars, pat, annotation, value, body, expected),
+            ast::Expr::ETuple { items }
+                if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
+            {
+                let expected_elem_tys = match expected {
+                    tast::Ty::TTuple { typs } => typs.clone(),
+                    _ => unreachable!("Tuple guard ensures tuple type"),
+                };
+                let mut checked_items = Vec::with_capacity(items.len());
+                let mut elem_tys = Vec::with_capacity(items.len());
+                for (item_expr, expected_ty) in items.iter().zip(expected_elem_tys.iter()) {
+                    let item_tast = self.check_expr(env, vars, item_expr, expected_ty);
+                    elem_tys.push(item_tast.get_ty());
+                    checked_items.push(item_tast);
+                }
+                tast::Expr::ETuple {
+                    items: checked_items,
+                    ty: tast::Ty::TTuple { typs: elem_tys },
+                }
+            }
             _ => self.infer_expr(env, vars, e),
         };
 
@@ -254,12 +273,22 @@ impl TypeInference {
         }
 
         let inst_constr_ty = self.inst_ty(&constr_ty);
+        let param_tys = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.clone(),
+            _ => Vec::new(),
+        };
+
         let ret_ty = self.fresh_ty_var();
 
         let mut args_tast = Vec::new();
-        for arg in args.iter() {
-            let arg_tast = self.infer_expr(env, vars, arg);
-            args_tast.push(arg_tast);
+        if param_tys.is_empty() {
+            for arg in args.iter() {
+                args_tast.push(self.infer_expr(env, vars, arg));
+            }
+        } else {
+            for (arg, expected_ty) in args.iter().zip(param_tys.iter()) {
+                args_tast.push(self.check_expr(env, vars, arg, expected_ty));
+            }
         }
 
         if !args_tast.is_empty() {
@@ -311,6 +340,21 @@ impl TypeInference {
             }
         };
 
+        let inst_constr_ty = self.inst_ty(&constr_ty);
+        let param_tys = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.clone(),
+            _ => Vec::new(),
+        };
+
+        if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
+            panic!(
+                "Constructor {} expects {} fields, but got {}",
+                name.0,
+                param_tys.len(),
+                struct_fields.len()
+            );
+        }
+
         let mut field_positions: HashMap<Lident, usize> = HashMap::new();
         for (idx, (fname, _)) in struct_fields.iter().enumerate() {
             field_positions.insert(fname.clone(), idx);
@@ -330,7 +374,11 @@ impl TypeInference {
                     field_name.0, name.0
                 );
             }
-            let field_expr = self.infer_expr(env, vars, expr);
+            let field_expr = if let Some(expected_ty) = param_tys.get(*idx) {
+                self.check_expr(env, vars, expr, expected_ty)
+            } else {
+                self.infer_expr(env, vars, expr)
+            };
             ordered_args[*idx] = Some(field_expr);
         }
 
@@ -345,8 +393,6 @@ impl TypeInference {
             .into_iter()
             .map(|arg| arg.expect("field checked to exist"))
             .collect();
-
-        let inst_constr_ty = self.inst_ty(&constr_ty);
         let ret_ty = self.fresh_ty_var();
 
         if !args_tast.is_empty() {
@@ -688,6 +734,19 @@ impl TypeInference {
         match func {
             ast::Expr::EVar { name, astptr } => {
                 if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                    let inst_ty = self.inst_ty(&func_ty);
+                    if let tast::Ty::TFunc { params, .. } = &inst_ty {
+                        if params.len() == args.len() && !params.is_empty() {
+                            args_tast.clear();
+                            arg_types.clear();
+                            for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                                let arg_tast = self.check_expr(env, vars, arg, expected_ty);
+                                arg_types.push(arg_tast.get_ty());
+                                args_tast.push(arg_tast);
+                            }
+                        }
+                    }
+
                     let ret_ty = if name.0 == "ref" && args_tast.len() == 1 {
                         tast::Ty::TRef {
                             elem: Box::new(args_tast[0].get_ty()),
@@ -699,7 +758,6 @@ impl TypeInference {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    let inst_ty = self.inst_ty(&func_ty);
                     env.constraints.push(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
@@ -1091,8 +1149,8 @@ impl TypeInference {
     }
 
     fn check_pat_bool(&self, value: bool) -> tast::Pat {
-        tast::Pat::PBool {
-            value,
+        tast::Pat::PPrimitive {
+            value: Primitive::boolean(value),
             ty: tast::Ty::TBool,
         }
     }
@@ -1103,17 +1161,17 @@ impl TypeInference {
         ensure_integer_literal_fits(env, parsed, &target_ty);
         env.constraints
             .push(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
-        tast::Pat::PInt {
-            value: parsed,
-            ty: target_ty,
+        tast::Pat::PPrimitive {
+            value: Primitive::from_int_literal(parsed, &target_ty),
+            ty: ty.clone(),
         }
     }
 
     fn check_pat_string(&mut self, env: &mut Env, value: &String, ty: &tast::Ty) -> tast::Pat {
         env.constraints
             .push(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
-        tast::Pat::PString {
-            value: value.to_owned(),
+        tast::Pat::PPrimitive {
+            value: Primitive::string(value.to_owned()),
             ty: tast::Ty::TString,
         }
     }
@@ -1125,64 +1183,7 @@ impl TypeInference {
         pat: &ast::Pat,
         ty: &tast::Ty,
     ) -> tast::Pat {
-        let tast = self.infer_pat(env, vars, pat);
-        env.constraints
-            .push(Constraint::TypeEqual(tast.get_ty(), ty.clone()));
-        tast
-    }
-
-    fn check_pat_tuple(
-        &mut self,
-        env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
-        pats: &[ast::Pat],
-        ty: &tast::Ty,
-    ) -> tast::Pat {
-        let mut pats_tast = Vec::new();
-        let mut pat_typs = Vec::new();
-        for pat in pats.iter() {
-            let pat_tast = self.infer_pat(env, vars, pat);
-            pat_typs.push(pat_tast.get_ty());
-            pats_tast.push(pat_tast);
-        }
-        let pat_ty = tast::Ty::TTuple { typs: pat_typs };
-        env.constraints
-            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
-        tast::Pat::PTuple {
-            items: pats_tast,
-            ty: pat_ty,
-        }
-    }
-
-    fn check_pat_wild(&mut self, env: &mut Env, ty: &tast::Ty) -> tast::Pat {
-        let pat_ty = self.fresh_ty_var();
-        env.constraints
-            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
-        tast::Pat::PWild { ty: pat_ty }
-    }
-
-    fn infer_pat(
-        &mut self,
-        env: &mut Env,
-        vars: &mut im::HashMap<Lident, tast::Ty>,
-        pat: &ast::Pat,
-    ) -> tast::Pat {
         match pat {
-            ast::Pat::PVar { name, astptr } => {
-                let pat_ty = match vars.get(name) {
-                    Some(ty) => ty.clone(),
-                    None => {
-                        let newvar = self.fresh_ty_var();
-                        vars.insert(name.clone(), newvar.clone());
-                        newvar
-                    }
-                };
-                tast::Pat::PVar {
-                    name: name.0.clone(),
-                    ty: pat_ty.clone(),
-                    astptr: Some(*astptr),
-                }
-            }
             ast::Pat::PConstr { vcon, args } => {
                 let (constructor, constr_ty) = env
                     .lookup_constructor(vcon)
@@ -1218,29 +1219,19 @@ impl TypeInference {
                 }
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
+                let (param_tys, ret_ty) = match &inst_constr_ty {
+                    tast::Ty::TFunc { params, ret_ty } => (params.clone(), ret_ty.as_ref().clone()),
+                    ty => (Vec::new(), ty.clone()),
+                };
 
-                let ret_ty = self.fresh_ty_var();
                 let mut args_tast = Vec::new();
-                let mut args_ty = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer_pat(env, vars, arg);
-                    args_ty.push(arg_tast.get_ty());
+                for (arg_ast, expected_ty) in args.iter().zip(param_tys.iter()) {
+                    let arg_tast = self.check_pat(env, vars, arg_ast, expected_ty);
                     args_tast.push(arg_tast);
                 }
 
-                if !args_ty.is_empty() {
-                    let actual_ty = tast::Ty::TFunc {
-                        params: args_ty,
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty.clone(), actual_ty));
-                } else {
-                    env.constraints.push(Constraint::TypeEqual(
-                        inst_constr_ty.clone(),
-                        ret_ty.clone(),
-                    ));
-                }
+                env.constraints
+                    .push(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
                 tast::Pat::PConstr {
                     constructor,
@@ -1276,15 +1267,30 @@ impl TypeInference {
                     panic!("Struct {} not found when checking constructor", name.0)
                 });
 
-                let mut args_tast = Vec::new();
-                let mut args_ty = Vec::new();
+                let inst_constr_ty = self.inst_ty(&constr_ty);
+                let (param_tys, ret_ty) = match &inst_constr_ty {
+                    tast::Ty::TFunc { params, ret_ty } => (params.clone(), ret_ty.as_ref().clone()),
+                    ty => (Vec::new(), ty.clone()),
+                };
 
-                for (field_name, _) in struct_fields.iter() {
+                if param_tys.len() != struct_fields.len() {
+                    panic!(
+                        "Constructor {} expects {} fields, but got {}",
+                        name.0,
+                        param_tys.len(),
+                        struct_fields.len()
+                    );
+                }
+
+                let mut args_tast = Vec::new();
+                for (idx, (field_name, _)) in struct_fields.iter().enumerate() {
                     let pat_ast = field_map.remove(&field_name.0).unwrap_or_else(|| {
                         panic!("Struct pattern {} missing field {}", name.0, field_name.0)
                     });
-                    let pat_tast = self.infer_pat(env, vars, pat_ast);
-                    args_ty.push(pat_tast.get_ty());
+                    let expected_ty = param_tys
+                        .get(idx)
+                        .unwrap_or_else(|| panic!("Missing instantiated type for field {}", field_name.0));
+                    let pat_tast = self.check_pat(env, vars, pat_ast, expected_ty);
                     args_tast.push(pat_tast);
                 }
 
@@ -1293,22 +1299,8 @@ impl TypeInference {
                     panic!("Struct pattern {} has unknown fields: {}", name.0, extra);
                 }
 
-                let inst_constr_ty = self.inst_ty(&constr_ty);
-                let ret_ty = self.fresh_ty_var();
-
-                if !args_ty.is_empty() {
-                    let actual_ty = tast::Ty::TFunc {
-                        params: args_ty,
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    env.constraints
-                        .push(Constraint::TypeEqual(inst_constr_ty.clone(), actual_ty));
-                } else {
-                    env.constraints.push(Constraint::TypeEqual(
-                        inst_constr_ty.clone(),
-                        ret_ty.clone(),
-                    ));
-                }
+                env.constraints
+                    .push(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
                 tast::Pat::PConstr {
                     constructor,
@@ -1316,44 +1308,45 @@ impl TypeInference {
                     ty: ret_ty,
                 }
             }
-            ast::Pat::PTuple { pats } => {
-                let mut pats_tast = Vec::new();
-                let mut pat_typs = Vec::new();
-                for pat in pats.iter() {
-                    let pat_tast = self.infer_pat(env, vars, pat);
-                    pat_typs.push(pat_tast.get_ty());
-                    pats_tast.push(pat_tast);
-                }
-                tast::Pat::PTuple {
-                    items: pats_tast,
-                    ty: tast::Ty::TTuple { typs: pat_typs },
-                }
-            }
-            ast::Pat::PUnit => tast::Pat::PUnit {
-                ty: tast::Ty::TUnit,
-            },
-            ast::Pat::PBool { value } => tast::Pat::PBool {
-                value: *value,
-                ty: tast::Ty::TBool,
-            },
-            ast::Pat::PInt { value } => {
-                let parsed = parse_integer_literal(env, value).unwrap_or(0);
-                ensure_integer_literal_fits(env, parsed, &tast::Ty::TInt);
-                tast::Pat::PInt {
-                    value: parsed,
-                    ty: tast::Ty::TInt,
-                }
-            }
-            ast::Pat::PString { value } => tast::Pat::PString {
-                value: value.clone(),
-                ty: tast::Ty::TString,
-            },
-            ast::Pat::PWild => {
-                let pat_ty = self.fresh_ty_var();
-                tast::Pat::PWild { ty: pat_ty }
-            }
+            _ => unreachable!("Expected constructor pattern"),
         }
     }
+
+    fn check_pat_tuple(
+        &mut self,
+        env: &mut Env,
+        vars: &mut im::HashMap<Lident, tast::Ty>,
+        pats: &[ast::Pat],
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        let expected_elem_tys: Vec<tast::Ty> = match ty {
+            tast::Ty::TTuple { typs } if typs.len() == pats.len() => typs.clone(),
+            _ => (0..pats.len()).map(|_| self.fresh_ty_var()).collect(),
+        };
+
+        let mut pats_tast = Vec::new();
+        let mut pat_typs = Vec::new();
+        for (pat, expected_ty) in pats.iter().zip(expected_elem_tys.iter()) {
+            let pat_tast = self.check_pat(env, vars, pat, expected_ty);
+            pat_typs.push(pat_tast.get_ty());
+            pats_tast.push(pat_tast);
+        }
+        let pat_ty = tast::Ty::TTuple { typs: pat_typs };
+        env.constraints
+            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        tast::Pat::PTuple {
+            items: pats_tast,
+            ty: pat_ty,
+        }
+    }
+
+    fn check_pat_wild(&mut self, env: &mut Env, ty: &tast::Ty) -> tast::Pat {
+        let pat_ty = self.fresh_ty_var();
+        env.constraints
+            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        tast::Pat::PWild { ty: pat_ty }
+    }
+
 }
 
 fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {

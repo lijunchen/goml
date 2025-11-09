@@ -669,23 +669,10 @@ impl TypeInference {
                 let ty = self.subst_ty(env, &ty);
                 tast::Pat::PUnit { ty: ty.clone() }
             }
-            tast::Pat::PBool { value, ty } => {
+            tast::Pat::PPrimitive { value, ty } => {
                 let ty = self.subst_ty(env, &ty);
-                tast::Pat::PBool {
-                    value,
-                    ty: ty.clone(),
-                }
-            }
-            tast::Pat::PInt { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Pat::PInt {
-                    value,
-                    ty: ty.clone(),
-                }
-            }
-            tast::Pat::PString { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                tast::Pat::PString {
+                let value = value.coerce(&ty);
+                tast::Pat::PPrimitive {
                     value,
                     ty: ty.clone(),
                 }

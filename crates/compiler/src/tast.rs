@@ -567,16 +567,8 @@ pub enum Pat {
     PUnit {
         ty: Ty,
     },
-    PBool {
-        value: bool,
-        ty: Ty,
-    },
-    PInt {
-        value: i128,
-        ty: Ty,
-    },
-    PString {
-        value: String,
+    PPrimitive {
+        value: Primitive,
         ty: Ty,
     },
     PConstr {
@@ -598,9 +590,7 @@ impl Pat {
         match self {
             Self::PVar { ty, .. } => ty.clone(),
             Self::PUnit { ty, .. } => ty.clone(),
-            Self::PBool { ty, .. } => ty.clone(),
-            Self::PInt { ty, .. } => ty.clone(),
-            Self::PString { ty, .. } => ty.clone(),
+            Self::PPrimitive { ty, .. } => ty.clone(),
             Self::PConstr { ty, .. } => ty.clone(),
             Self::PTuple { ty, .. } => ty.clone(),
             Self::PWild { ty, .. } => ty.clone(),

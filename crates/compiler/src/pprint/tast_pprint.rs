@@ -544,15 +544,7 @@ impl Pat {
                 .append(RcDoc::space())
                 .append(ty.to_doc(env)),
             Pat::PUnit { .. } => RcDoc::text("()"),
-            Pat::PBool { value, ty: _ } => {
-                if *value {
-                    RcDoc::text("true")
-                } else {
-                    RcDoc::text("false")
-                }
-            }
-            Pat::PInt { value, ty: _ } => RcDoc::text(value.to_string()),
-            Pat::PString { value, ty: _ } => RcDoc::text(format!("{:?}", value)),
+            Pat::PPrimitive { value, ty: _ } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,
                 args,
