@@ -4,14 +4,6 @@ import (
     "fmt"
 )
 
-func int_neg(x int) int {
-    return -x
-}
-
-func int_less(x int, y int) bool {
-    return x < y
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -19,11 +11,11 @@ func string_println(s string) struct{} {
 
 func classify(x__0 int) string {
     var ret12 string
-    var t6 bool = int_less(x__0, 0)
+    var t6 bool = x__0 < 0
     if t6 {
         ret12 = "negative"
     } else {
-        var t7 bool = int_less(0, x__0)
+        var t7 bool = 0 < x__0
         if t7 {
             ret12 = "positive"
         } else {
@@ -35,16 +27,16 @@ func classify(x__0 int) string {
 
 func triangle_type(a__1 int, b__2 int, c__3 int) string {
     var ret13 string
-    var t8 bool = int_less(a__1, b__2)
+    var t8 bool = a__1 < b__2
     if t8 {
-        var t9 bool = int_less(b__2, c__3)
+        var t9 bool = b__2 < c__3
         if t9 {
             ret13 = "ascending"
         } else {
             ret13 = "peak"
         }
     } else {
-        var t10 bool = int_less(a__1, c__3)
+        var t10 bool = a__1 < c__3
         if t10 {
             ret13 = "valley"
         } else {
@@ -56,7 +48,7 @@ func triangle_type(a__1 int, b__2 int, c__3 int) string {
 
 func main0() struct{} {
     var ret14 struct{}
-    var t11 int = int_neg(42)
+    var t11 int = -42
     var first__4 string = classify(t11)
     var second__5 string = classify(0)
     var third__6 string = classify(17)

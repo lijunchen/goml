@@ -139,6 +139,168 @@ fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
     tast_ty_to_go_type(&t)
 }
 
+const NEG_BUILTINS: &[&str] = &[
+    "int_neg",
+    "int8_neg",
+    "int16_neg",
+    "int32_neg",
+    "int64_neg",
+    "uint8_neg",
+    "uint16_neg",
+    "uint32_neg",
+    "uint64_neg",
+    "float32_neg",
+    "float64_neg",
+];
+
+const ADD_BUILTINS: &[&str] = &[
+    "int_add",
+    "int8_add",
+    "int16_add",
+    "int32_add",
+    "int64_add",
+    "uint8_add",
+    "uint16_add",
+    "uint32_add",
+    "uint64_add",
+    "float32_add",
+    "float64_add",
+    "string_add",
+];
+
+const SUB_BUILTINS: &[&str] = &[
+    "int_sub",
+    "int8_sub",
+    "int16_sub",
+    "int32_sub",
+    "int64_sub",
+    "uint8_sub",
+    "uint16_sub",
+    "uint32_sub",
+    "uint64_sub",
+    "float32_sub",
+    "float64_sub",
+];
+
+const MUL_BUILTINS: &[&str] = &[
+    "int_mul",
+    "int8_mul",
+    "int16_mul",
+    "int32_mul",
+    "int64_mul",
+    "uint8_mul",
+    "uint16_mul",
+    "uint32_mul",
+    "uint64_mul",
+    "float32_mul",
+    "float64_mul",
+];
+
+const DIV_BUILTINS: &[&str] = &[
+    "int_div",
+    "int8_div",
+    "int16_div",
+    "int32_div",
+    "int64_div",
+    "uint8_div",
+    "uint16_div",
+    "uint32_div",
+    "uint64_div",
+    "float32_div",
+    "float64_div",
+];
+
+const LESS_BUILTINS: &[&str] = &[
+    "int_less",
+    "int8_less",
+    "int16_less",
+    "int32_less",
+    "int64_less",
+    "uint8_less",
+    "uint16_less",
+    "uint32_less",
+    "uint64_less",
+    "float32_less",
+    "float64_less",
+];
+
+fn builtin_unary_operator(name: &str) -> Option<goast::UnaryOp> {
+    if name == "bool_not" {
+        return Some(goast::UnaryOp::Not);
+    }
+    if NEG_BUILTINS.contains(&name) {
+        return Some(goast::UnaryOp::Neg);
+    }
+    None
+}
+
+fn builtin_binary_operator(name: &str) -> Option<goast::BinaryOp> {
+    if name == "bool_and" {
+        return Some(goast::BinaryOp::And);
+    }
+    if name == "bool_or" {
+        return Some(goast::BinaryOp::Or);
+    }
+    if ADD_BUILTINS.contains(&name) {
+        return Some(goast::BinaryOp::Add);
+    }
+    if SUB_BUILTINS.contains(&name) {
+        return Some(goast::BinaryOp::Sub);
+    }
+    if MUL_BUILTINS.contains(&name) {
+        return Some(goast::BinaryOp::Mul);
+    }
+    if DIV_BUILTINS.contains(&name) {
+        return Some(goast::BinaryOp::Div);
+    }
+    if LESS_BUILTINS.contains(&name) {
+        return Some(goast::BinaryOp::Less);
+    }
+    None
+}
+
+fn compile_builtin_call(
+    name: &str,
+    args: Vec<goast::Expr>,
+    ty: &tast::Ty,
+) -> Result<goast::Expr, Vec<goast::Expr>> {
+    if let Some(op) = builtin_unary_operator(name) {
+        let mut args = args.into_iter();
+        let arg = args
+            .next()
+            .unwrap_or_else(|| panic!("builtin {} expects 1 argument", name));
+        if args.next().is_some() {
+            panic!("builtin {} expects 1 argument", name);
+        }
+        return Ok(goast::Expr::UnaryOp {
+            op,
+            expr: Box::new(arg),
+            ty: tast_ty_to_go_type(ty),
+        });
+    }
+
+    if let Some(op) = builtin_binary_operator(name) {
+        let mut args = args.into_iter();
+        let lhs = args
+            .next()
+            .unwrap_or_else(|| panic!("builtin {} expects 2 arguments", name));
+        let rhs = args
+            .next()
+            .unwrap_or_else(|| panic!("builtin {} expects 2 arguments", name));
+        if args.next().is_some() {
+            panic!("builtin {} expects 2 arguments", name);
+        }
+        return Ok(goast::Expr::BinaryOp {
+            op,
+            lhs: Box::new(lhs),
+            rhs: Box::new(rhs),
+            ty: tast_ty_to_go_type(ty),
+        });
+    }
+
+    Err(args)
+}
+
 fn variant_struct_name(env: &Env, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
@@ -427,7 +589,20 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
             }
         }
         anf::CExpr::ECall { func, args, ty } => {
-            let compiled_args: Vec<_> = args.iter().map(|arg| compile_imm(env, arg)).collect();
+            let mut compiled_args: Option<Vec<_>> = None;
+            if let anf::ImmExpr::ImmVar { name, .. } = &func {
+                let args_exprs = args
+                    .iter()
+                    .map(|arg| compile_imm(env, arg))
+                    .collect::<Vec<_>>();
+                match compile_builtin_call(name, args_exprs, ty) {
+                    Ok(expr) => return expr,
+                    Err(args_exprs) => compiled_args = Some(args_exprs),
+                }
+            }
+
+            let compiled_args = compiled_args
+                .unwrap_or_else(|| args.iter().map(|arg| compile_imm(env, arg)).collect());
             let func_ty = tast_ty_to_go_type(&imm_ty(func));
 
             if let anf::ImmExpr::ImmVar { name, .. } = &func

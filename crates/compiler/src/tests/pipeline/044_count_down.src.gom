@@ -5,14 +5,6 @@ import (
     "time"
 )
 
-func int_add(x int, y int) int {
-    return x + y
-}
-
-func int_less(x int, y int) bool {
-    return x < y
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -53,7 +45,7 @@ func main0() struct{} {
     var cond13 bool
     for {
         var t7 int = ref_get__Ref_int(counter__0)
-        cond13 = int_less(t7, 10)
+        cond13 = t7 < 10
         if !cond13 {
             break
         }
@@ -68,7 +60,7 @@ func __closure_apply4(env5 closure_env_main_0) struct{} {
     var cond15 bool
     for {
         var t8 int = ref_get__Ref_int(counter__0)
-        cond15 = int_less(t8, 10)
+        cond15 = t8 < 10
         if !cond15 {
             break
         }
@@ -76,7 +68,7 @@ func __closure_apply4(env5 closure_env_main_0) struct{} {
         var t9 Duration = time.Duration(1000)
         time.Sleep(t9)
         var t11 int = ref_get__Ref_int(counter__0)
-        var t10 int = int_add(t11, 1)
+        var t10 int = t11 + 1
         ref_set__Ref_int(counter__0, t10)
     }
     ret14 = struct{}{}

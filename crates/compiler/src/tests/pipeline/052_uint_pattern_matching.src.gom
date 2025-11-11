@@ -12,10 +12,6 @@ func bool_to_string(x bool) string {
     }
 }
 
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -101,7 +97,7 @@ func match_struct(counter__4 Counter) bool {
 func report(label__5 string, value__6 bool) string {
     var ret37 string
     var t3 string = bool_to_string(value__6)
-    ret37 = string_add(label__5, t3)
+    ret37 = label__5 + t3
     return ret37
 }
 
@@ -135,15 +131,15 @@ func main0() struct{} {
     var t28 string = report(",struct_first=", t29)
     var t31 bool = match_struct(alt_counter__8)
     var t30 string = report(",struct_second=", t31)
-    var t27 string = string_add(t28, t30)
-    var t24 string = string_add(t25, t27)
-    var t21 string = string_add(t22, t24)
-    var t18 string = string_add(t19, t21)
-    var t15 string = string_add(t16, t18)
-    var t12 string = string_add(t13, t15)
-    var t9 string = string_add(t10, t12)
-    var t6 string = string_add(t7, t9)
-    var message__9 string = string_add(t4, t6)
+    var t27 string = t28 + t30
+    var t24 string = t25 + t27
+    var t21 string = t22 + t24
+    var t18 string = t19 + t21
+    var t15 string = t16 + t18
+    var t12 string = t13 + t15
+    var t9 string = t10 + t12
+    var t6 string = t7 + t9
+    var message__9 string = t4 + t6
     string_println(message__9)
     ret38 = struct{}{}
     return ret38
