@@ -16,34 +16,6 @@ func int8_to_string(x int8) string {
     return fmt.Sprintf("%d", x)
 }
 
-func int8_neg(x int8) int8 {
-    return -x
-}
-
-func int8_add(x int8, y int8) int8 {
-    return x + y
-}
-
-func int8_sub(x int8, y int8) int8 {
-    return x - y
-}
-
-func int8_mul(x int8, y int8) int8 {
-    return x * y
-}
-
-func int8_div(x int8, y int8) int8 {
-    return x / y
-}
-
-func int8_less(x int8, y int8) bool {
-    return x < y
-}
-
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -57,7 +29,7 @@ func a_value() int8 {
 
 func b_value() int8 {
     var ret16 int8
-    ret16 = int8_neg(20)
+    ret16 = -20
     return ret16
 }
 
@@ -70,7 +42,7 @@ func c_value() int8 {
 func show_int8(label__0 string, value__1 int8) struct{} {
     var ret18 struct{}
     var t12 string = int8_to_string(value__1)
-    var t11 string = string_add(label__0, t12)
+    var t11 string = label__0 + t12
     string_println(t11)
     ret18 = struct{}{}
     return ret18
@@ -79,7 +51,7 @@ func show_int8(label__0 string, value__1 int8) struct{} {
 func show_bool(label__2 string, value__3 bool) struct{} {
     var ret19 struct{}
     var t14 string = bool_to_string(value__3)
-    var t13 string = string_add(label__2, t14)
+    var t13 string = label__2 + t14
     string_println(t13)
     ret19 = struct{}{}
     return ret19
@@ -90,12 +62,12 @@ func main0() struct{} {
     var a__4 int8 = a_value()
     var b__5 int8 = b_value()
     var c__6 int8 = c_value()
-    var sum__7 int8 = int8_add(a__4, b__5)
-    var diff__8 int8 = int8_sub(a__4, c__6)
-    var prod__9 int8 = int8_mul(b__5, c__6)
-    var quot__10 int8 = int8_div(a__4, c__6)
-    var neg__11 int8 = int8_neg(b__5)
-    var less__12 bool = int8_less(b__5, a__4)
+    var sum__7 int8 = a__4 + b__5
+    var diff__8 int8 = a__4 - c__6
+    var prod__9 int8 = b__5 * c__6
+    var quot__10 int8 = a__4 / c__6
+    var neg__11 int8 = -b__5
+    var less__12 bool = b__5 < a__4
     show_int8("a=", a__4)
     show_int8("b=", b__5)
     show_int8("c=", c__6)

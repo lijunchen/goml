@@ -16,30 +16,6 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
-func bool_not(x bool) bool {
-    return !x
-}
-
-func bool_and(x bool, y bool) bool {
-    return x && y
-}
-
-func int_add(x int, y int) int {
-    return x + y
-}
-
-func int_mul(x int, y int) int {
-    return x * y
-}
-
-func int_less(x int, y int) bool {
-    return x < y
-}
-
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -207,14 +183,14 @@ func impl_Describe_Tracker_describe(self__0 Tracker) string {
     var label__1 string = x1
     var current__4 int = ref_get__Ref_int(count__2)
     var flag__5 bool = ref_get__Ref_bool(toggled__3)
-    var with_label__6 string = string_add("Tracker(", label__1)
-    var with_count_label__7 string = string_add(with_label__6, ", count: ")
+    var with_label__6 string = "Tracker(" + label__1
+    var with_count_label__7 string = with_label__6 + ", count: "
     var t38 string = int_to_string(current__4)
-    var with_count__8 string = string_add(with_count_label__7, t38)
-    var with_flag_label__9 string = string_add(with_count__8, ", toggled: ")
+    var with_count__8 string = with_count_label__7 + t38
+    var with_flag_label__9 string = with_count__8 + ", toggled: "
     var t40 string = bool_to_string(flag__5)
-    var t39 string = string_add(t40, ")")
-    ret64 = string_add(with_flag_label__9, t39)
+    var t39 string = t40 + ")"
+    ret64 = with_flag_label__9 + t39
     return ret64
 }
 
@@ -225,19 +201,19 @@ func impl_Describe_Record_int_describe(self__10 Record__int) string {
         var x4 int = self__10._0
         var value__11 int = x4
         var t42 string = int_to_string(value__11)
-        var t41 string = string_add(t42, ")")
-        ret65 = string_add("Value(", t41)
+        var t41 string = t42 + ")"
+        ret65 = "Value(" + t41
     case Record__int_Pair:
         var x5 int = self__10._0
         var x6 int = self__10._1
         var after__13 int = x6
         var before__12 int = x5
         var t43 string = int_to_string(before__12)
-        var prefix__14 string = string_add("Pair(", t43)
+        var prefix__14 string = "Pair(" + t43
         var t46 string = int_to_string(after__13)
-        var t45 string = string_add(t46, ")")
-        var t44 string = string_add(", ", t45)
-        ret65 = string_add(prefix__14, t44)
+        var t45 string = t46 + ")"
+        var t44 string = ", " + t45
+        ret65 = prefix__14 + t44
     case Record__int_Empty:
         ret65 = "Empty"
     }
@@ -250,17 +226,17 @@ func impl_Describe_Record_string_describe(self__15 Record__string) string {
     case Record__string_Value:
         var x7 string = self__15._0
         var text__16 string = x7
-        var t47 string = string_add(text__16, ")")
-        ret66 = string_add("Value(", t47)
+        var t47 string = text__16 + ")"
+        ret66 = "Value(" + t47
     case Record__string_Pair:
         var x8 string = self__15._0
         var x9 string = self__15._1
         var after__18 string = x9
         var before__17 string = x8
-        var prefix__19 string = string_add("Pair(", before__17)
-        var t49 string = string_add(after__18, ")")
-        var t48 string = string_add(", ", t49)
-        ret66 = string_add(prefix__19, t48)
+        var prefix__19 string = "Pair(" + before__17
+        var t49 string = after__18 + ")"
+        var t48 string = ", " + t49
+        ret66 = prefix__19 + t48
     case Record__string_Empty:
         ret66 = "Empty"
     }
@@ -270,19 +246,19 @@ func impl_Describe_Record_string_describe(self__15 Record__string) string {
 func format_total(total__26 int) string {
     var ret67 string
     var t50 string = int_to_string(total__26)
-    ret67 = string_add("total: ", t50)
+    ret67 = "total: " + t50
     return ret67
 }
 
 func increment(value__27 int) int {
     var ret68 int
-    ret68 = int_add(value__27, 1)
+    ret68 = value__27 + 1
     return ret68
 }
 
 func triple(value__28 int) int {
     var ret69 int
-    ret69 = int_mul(value__28, 3)
+    ret69 = value__28 * 3
     return ret69
 }
 
@@ -293,8 +269,8 @@ func pair_join(parts__29 Tuple2_string_string) string {
     var x13 string = mtmp11._1
     var right__31 string = x13
     var left__30 string = x12
-    var t51 string = string_add(" -> ", right__31)
-    ret70 = string_add(left__30, t51)
+    var t51 string = " -> " + right__31
+    ret70 = left__30 + t51
     return ret70
 }
 
@@ -380,8 +356,8 @@ func main0() struct{} {
     var results__66 [2]int = run_transforms(4, transforms__65)
     var first_result__67 int = array_get__Array_2_int(results__66, 0)
     var second_result__68 int = array_get__Array_2_int(results__66, 1)
-    var t53 bool = int_less(first_result__67, second_result__68)
-    var order_check__69 bool = bool_and(t53, true)
+    var t53 bool = first_result__67 < second_result__68
+    var order_check__69 bool = t53 && true
     var first_text__70 string = impl_Describe_Record_int_describe(first_record__58)
     var bumped_text__71 string = impl_Describe_Record_int_describe(bumped_record__59)
     var flipped_text__72 string = impl_Describe_Record_string_describe(flipped_record__60)
@@ -390,7 +366,7 @@ func main0() struct{} {
     case Maybe__string_Some:
         var x24 string = stringified__64._0
         var text__73 string = x24
-        summary__74 = string_add("Snapshot: ", text__73)
+        summary__74 = "Snapshot: " + text__73
     case Maybe__string_None:
         summary__74 = "Snapshot: none"
     }
@@ -427,7 +403,7 @@ func __closure_apply34(env35 closure_env_bump_1, delta__47 int) Record__int {
     var ret76 Record__int
     var count__43 *ref_int_x = env35.count_0
     var before__48 int = ref_get__Ref_int(count__43)
-    var t58 int = int_add(before__48, delta__47)
+    var t58 int = before__48 + delta__47
     ref_set__Ref_int(count__43, t58)
     var t59 int = ref_get__Ref_int(count__43)
     ret76 = Record__int_Pair{
@@ -441,7 +417,7 @@ func __closure_apply36(env37 closure_env_flip_2) Record__string {
     var ret77 Record__string
     var toggled__44 *ref_bool_x = env37.toggled_0
     var before__50 bool = ref_get__Ref_bool(toggled__44)
-    var t60 bool = bool_not(before__50)
+    var t60 bool = !before__50
     ref_set__Ref_bool(toggled__44, t60)
     var after__51 bool = ref_get__Ref_bool(toggled__44)
     var t61 string = bool_to_string(before__50)

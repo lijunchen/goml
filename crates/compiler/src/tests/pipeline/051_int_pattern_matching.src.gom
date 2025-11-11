@@ -12,10 +12,6 @@ func bool_to_string(x bool) string {
     }
 }
 
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -124,7 +120,7 @@ func match_struct(pair__5 PairData) bool {
 func report(label__6 string, value__7 bool) string {
     var ret28 string
     var t5 string = bool_to_string(value__7)
-    ret28 = string_add(label__6, t5)
+    ret28 = label__6 + t5
     return ret28
 }
 
@@ -166,14 +162,14 @@ func main0() struct{} {
     var part7__20 string = report(",tuple_miss=", tuple_result_miss__11)
     var part8__21 string = report(",struct_first=", pair_first__12)
     var part9__22 string = report(",struct_second=", pair_second__13)
-    var t21 string = string_add(part8__21, part9__22)
-    var t20 string = string_add(part7__20, t21)
-    var t19 string = string_add(part6__19, t20)
-    var t18 string = string_add(part5__18, t19)
-    var t17 string = string_add(part4__17, t18)
-    var t16 string = string_add(part3__16, t17)
-    var t15 string = string_add(part2__15, t16)
-    var message__23 string = string_add(part1__14, t15)
+    var t21 string = part8__21 + part9__22
+    var t20 string = part7__20 + t21
+    var t19 string = part6__19 + t20
+    var t18 string = part5__18 + t19
+    var t17 string = part4__17 + t18
+    var t16 string = part3__16 + t17
+    var t15 string = part2__15 + t16
+    var message__23 string = part1__14 + t15
     string_println(message__23)
     ret29 = struct{}{}
     return ret29

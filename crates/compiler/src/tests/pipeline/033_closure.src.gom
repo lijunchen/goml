@@ -8,18 +8,6 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
-func int_add(x int, y int) int {
-    return x + y
-}
-
-func int_mul(x int, y int) int {
-    return x * y
-}
-
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -128,29 +116,29 @@ func __closure_apply11(env12 closure_env_f_0, x__2 int) int {
     var ret43 int
     var y__0 int = env12.y_0
     var z__1 int = env12.z_1
-    var t31 int = int_mul(x__2, y__0)
-    ret43 = int_mul(t31, z__1)
+    var t31 int = x__2 * y__0
+    ret43 = t31 * z__1
     return ret43
 }
 
 func __closure_apply13(env14 closure_env_add_base_1, x__7 int) int {
     var ret44 int
     var base__6 int = env14.base_0
-    ret44 = int_add(x__7, base__6)
+    ret44 = x__7 + base__6
     return ret44
 }
 
 func __closure_apply15(env16 closure_env_printer_2, prefix__10 string, value__11 int) struct{} {
     var ret45 struct{}
     var t32 string = int_to_string(value__11)
-    var message__12 string = string_add(prefix__10, t32)
+    var message__12 string = prefix__10 + t32
     ret45 = string_println(message__12)
     return ret45
 }
 
 func __closure_apply19(env20 closure_env_no_capture_4, z__16 int) int {
     var ret47 int
-    ret47 = int_mul(z__16, 2)
+    ret47 = z__16 * 2
     return ret47
 }
 
@@ -172,10 +160,10 @@ func __closure_apply21(env22 closure_env_play_list_and_point_5) struct{} {
         var x__23 int = x7
         var t36 string = int_to_string(x__23)
         var t39 string = int_to_string(y__24)
-        var t38 string = string_add(t39, ")")
-        var t37 string = string_add(", ", t38)
-        var t35 string = string_add(t36, t37)
-        var t34 string = string_add("Point: (", t35)
+        var t38 string = t39 + ")"
+        var t37 string = ", " + t38
+        var t35 string = t36 + t37
+        var t34 string = "Point: (" + t35
         string_println(t34)
         ret48 = struct{}{}
     }

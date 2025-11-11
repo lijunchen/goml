@@ -12,10 +12,6 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -103,11 +99,11 @@ func point_to_string(point__8 Point) string {
     var y__10 int = x6
     var x__9 int = x5
     var t25 string = int_to_string(x__9)
-    var with_x__11 string = string_add("Point { x: ", t25)
-    var with_y_label__12 string = string_add(with_x__11, ", y: ")
+    var with_x__11 string = "Point { x: " + t25
+    var with_y_label__12 string = with_x__11 + ", y: "
     var t26 string = int_to_string(y__10)
-    var with_y__13 string = string_add(with_y_label__12, t26)
-    ret60 = string_add(with_y__13, " }")
+    var with_y__13 string = with_y_label__12 + t26
+    ret60 = with_y__13 + " }"
     return ret60
 }
 
@@ -117,8 +113,8 @@ func wrapper_int_to_string(wrapper__14 Wrapper__int) string {
     var x8 int = mtmp7.value
     var value__15 int = x8
     var t27 string = int_to_string(value__15)
-    var prefix__16 string = string_add("Wrapper[int] { value: ", t27)
-    ret61 = string_add(prefix__16, " }")
+    var prefix__16 string = "Wrapper[int] { value: " + t27
+    ret61 = prefix__16 + " }"
     return ret61
 }
 
@@ -128,8 +124,8 @@ func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
     var x10 struct{} = mtmp9.value
     var value__18 struct{} = x10
     var t28 string = unit_to_string(value__18)
-    var prefix__19 string = string_add("Wrapper[unit] { value: ", t28)
-    ret62 = string_add(prefix__19, " }")
+    var prefix__19 string = "Wrapper[unit] { value: " + t28
+    ret62 = prefix__19 + " }"
     return ret62
 }
 
@@ -140,14 +136,14 @@ func shape_int_to_string(shape__20 Shape__int) string {
         var x11 Point = shape__20._0
         var point__21 Point = x11
         var t29 string = point_to_string(point__21)
-        var prefix__22 string = string_add("Shape::Dot(", t29)
-        ret63 = string_add(prefix__22, ")")
+        var prefix__22 string = "Shape::Dot(" + t29
+        ret63 = prefix__22 + ")"
     case Shape__int_Wrapped:
         var x12 Wrapper__int = shape__20._0
         var wrapper__23 Wrapper__int = x12
         var t30 string = wrapper_int_to_string(wrapper__23)
-        var prefix__24 string = string_add("Shape::Wrapped(", t30)
-        ret63 = string_add(prefix__24, ")")
+        var prefix__24 string = "Shape::Wrapped(" + t30
+        ret63 = prefix__24 + ")"
     case Shape__int_Origin:
         ret63 = "Shape::Origin"
     }
@@ -161,14 +157,14 @@ func shape_unit_to_string(shape__25 Shape__unit) string {
         var x13 Point = shape__25._0
         var point__26 Point = x13
         var t31 string = point_to_string(point__26)
-        var prefix__27 string = string_add("Shape::Dot(", t31)
-        ret64 = string_add(prefix__27, ")")
+        var prefix__27 string = "Shape::Dot(" + t31
+        ret64 = prefix__27 + ")"
     case Shape__unit_Wrapped:
         var x14 Wrapper__unit = shape__25._0
         var wrapper__28 Wrapper__unit = x14
         var t32 string = wrapper_unit_to_string(wrapper__28)
-        var prefix__29 string = string_add("Shape::Wrapped(", t32)
-        ret64 = string_add(prefix__29, ")")
+        var prefix__29 string = "Shape::Wrapped(" + t32
+        ret64 = prefix__29 + ")"
     case Shape__unit_Origin:
         ret64 = "Shape::Origin"
     }

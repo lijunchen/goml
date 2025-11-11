@@ -8,10 +8,6 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
-func string_add(a string, b string) string {
-    return a + b
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -49,8 +45,8 @@ func impl_Display_Option_int_show(self__1 Option__int) string {
         var x0 int = self__1._0
         var value__2 int = x0
         var t5 string = int_to_string(value__2)
-        var t4 string = string_add(t5, ")")
-        ret10 = string_add("Some(", t4)
+        var t4 string = t5 + ")"
+        ret10 = "Some(" + t4
     case None:
         ret10 = "None"
     }

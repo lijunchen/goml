@@ -8,26 +8,6 @@ func int_to_string(x int) string {
     return fmt.Sprintf("%d", x)
 }
 
-func bool_not(x bool) bool {
-    return !x
-}
-
-func bool_and(x bool, y bool) bool {
-    return x && y
-}
-
-func int_add(x int, y int) int {
-    return x + y
-}
-
-func int_sub(x int, y int) int {
-    return x - y
-}
-
-func int_less(x int, y int) bool {
-    return x < y
-}
-
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -35,11 +15,11 @@ func string_println(s string) struct{} {
 
 func my_int_equal(x__0 int, y__1 int) bool {
     var ret9 bool
-    var t1 bool = int_less(x__0, y__1)
-    var t0 bool = bool_not(t1)
-    var t3 bool = int_less(y__1, x__0)
-    var t2 bool = bool_not(t3)
-    ret9 = bool_and(t0, t2)
+    var t1 bool = x__0 < y__1
+    var t0 bool = !t1
+    var t3 bool = y__1 < x__0
+    var t2 bool = !t3
+    ret9 = t0 && t2
     return ret9
 }
 
@@ -49,9 +29,9 @@ func sum(n__2 int) int {
     if t4 {
         ret10 = 1
     } else {
-        var t6 int = int_sub(n__2, 1)
+        var t6 int = n__2 - 1
         var t5 int = sum(t6)
-        ret10 = int_add(n__2, t5)
+        ret10 = n__2 + t5
     }
     return ret10
 }
