@@ -524,7 +524,7 @@ impl GlobalEnv {
 #[derive(Debug, Clone)]
 pub struct TypeEnv {
     scopes: Vec<ImHashMap<Lident, tast::Ty>>,
-    tparams_env_stack: Vec<Vec<Uident>>,
+    tparams_env: Vec<Uident>,
     capture_stack: Vec<IndexMap<Lident, tast::Ty>>,
 }
 
@@ -538,7 +538,7 @@ impl TypeEnv {
     pub fn new() -> Self {
         Self {
             scopes: vec![ImHashMap::new()],
-            tparams_env_stack: Vec::new(),
+            tparams_env: Vec::new(),
             capture_stack: Vec::new(),
         }
     }
@@ -584,29 +584,16 @@ impl TypeEnv {
         None
     }
 
-    pub fn push_tparams_env(&mut self, params: &[Uident]) {
-        self.tparams_env_stack.push(params.to_vec());
+    pub fn set_tparams_env(&mut self, params: &[Uident]) {
+        self.tparams_env = params.to_vec();
     }
 
-    pub fn pop_tparams_env(&mut self) {
-        self.tparams_env_stack.pop();
+    pub fn clear_tparams_env(&mut self) {
+        self.tparams_env.clear();
     }
 
     pub fn current_tparams_env(&self) -> Vec<Uident> {
-        self.tparams_env_stack
-            .iter()
-            .flat_map(|env| env.iter().cloned())
-            .collect()
-    }
-
-    pub fn with_tparams_env<F, R>(&mut self, params: &[Uident], f: F) -> R
-    where
-        F: FnOnce(&mut TypeEnv) -> R,
-    {
-        self.push_tparams_env(params);
-        let result = f(self);
-        self.pop_tparams_env();
-        result
+        self.tparams_env.clone()
     }
 
     pub fn begin_closure(&mut self) {

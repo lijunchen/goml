@@ -486,15 +486,14 @@ fn check_fn(env: &GlobalEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
         None => tast::Ty::TUnit,
     };
 
-    let typed_body = type_env.with_tparams_env(&f.generics, |type_env| {
-        type_env.push_scope();
-        for (name, ty) in param_types.iter() {
-            type_env.insert_var(name, ty.clone());
-        }
-        let body = typer.check_expr(env, type_env, &f.body, &ret_ty);
-        type_env.pop_scope();
-        body
-    });
+    type_env.set_tparams_env(&f.generics);
+    type_env.push_scope();
+    for (name, ty) in param_types.iter() {
+        type_env.insert_var(name, ty.clone());
+    }
+    let typed_body = typer.check_expr(env, &mut type_env, &f.body, &ret_ty);
+    type_env.pop_scope();
+    type_env.clear_tparams_env();
     typer.solve(env);
     let typed_body = typer.subst(typed_body);
     tast::Fn {
@@ -534,15 +533,14 @@ fn check_impl_block(
             None => tast::Ty::TUnit,
         };
 
-        let typed_body = type_env.with_tparams_env(&f.generics, |type_env| {
-            type_env.push_scope();
-            for (name, ty) in param_types.iter() {
-                type_env.insert_var(name, ty.clone());
-            }
-            let body = typer.check_expr(env, type_env, &f.body, &ret_ty);
-            type_env.pop_scope();
-            body
-        });
+        type_env.set_tparams_env(&f.generics);
+        type_env.push_scope();
+        for (name, ty) in param_types.iter() {
+            type_env.insert_var(name, ty.clone());
+        }
+        let typed_body = typer.check_expr(env, &mut type_env, &f.body, &ret_ty);
+        type_env.pop_scope();
+        type_env.clear_tparams_env();
         typer.solve(env);
         let typed_body = typer.subst(typed_body);
         typed_methods.push(tast::Fn {
