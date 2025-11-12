@@ -10,19 +10,19 @@ mod util;
 
 pub use toplevel::check_file;
 
-pub struct TypeInference {
+pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
     diagnostics: Diagnostics,
 }
 
-impl Default for TypeInference {
+impl Default for Typer {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl TypeInference {
+impl Typer {
     pub fn new() -> Self {
         Self {
             uni: InPlaceUnificationTable::new(),

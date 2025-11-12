@@ -3,11 +3,11 @@ use std::collections::HashMap;
 use crate::{
     env::{Constraint, GlobalEnv},
     tast::{self, TypeVar},
-    typer::TypeInference,
+    typer::Typer,
 };
 use ast::ast::{Lident, Uident};
 
-fn occurs(typer: &mut TypeInference, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(typer: &mut Typer, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
@@ -164,7 +164,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
     }
 }
 
-impl TypeInference {
+impl Typer {
     pub fn solve(&mut self, env: &GlobalEnv) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;

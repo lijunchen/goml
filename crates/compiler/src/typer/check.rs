@@ -8,12 +8,12 @@ use crate::{
     env::{Constraint, GlobalEnv, TypeEnv},
     tast::{self, Prim},
     typer::{
-        TypeInference,
+        Typer,
         util::{ast_ty_to_tast_ty_with_tparams_env, binary_supports_builtin},
     },
 };
 
-impl TypeInference {
+impl Typer {
     pub fn infer_expr(
         &mut self,
         env: &GlobalEnv,
@@ -1386,7 +1386,7 @@ fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
 }
 
-impl TypeInference {
+impl Typer {
     fn parse_integer_literal(&mut self, literal: &str) -> Option<i128> {
         match literal.parse::<i128>() {
             Ok(value) => Some(value),

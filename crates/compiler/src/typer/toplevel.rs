@@ -9,7 +9,7 @@ use crate::{
     tast::{self},
     type_encoding::encode_ty,
     typer::{
-        TypeInference,
+        Typer,
         util::{ast_ty_to_tast_ty_with_tparams_env, type_param_name_set, validate_ty},
     },
 };
@@ -428,7 +428,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalEnv) {
     let mut env = env::GlobalEnv::new();
     let ast = rename::Rename::default().rename_file(ast);
     collect_typedefs(&mut env, &ast);
-    let mut typer = TypeInference::new();
+    let mut typer = Typer::new();
     let mut typed_toplevel_tasts = vec![];
     for item in ast.toplevels.iter() {
         match item {
@@ -464,7 +464,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalEnv) {
     )
 }
 
-fn check_fn(env: &GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
+fn check_fn(env: &GlobalEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
     let mut type_env = TypeEnv::new();
     let param_types: Vec<(Lident, tast::Ty)> = f
         .params
@@ -507,7 +507,7 @@ fn check_fn(env: &GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn
 
 fn check_impl_block(
     env: &GlobalEnv,
-    typer: &mut TypeInference,
+    typer: &mut Typer,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
     let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
@@ -560,11 +560,7 @@ fn check_impl_block(
     }
 }
 
-fn check_extern_go(
-    _env: &GlobalEnv,
-    _typer: &mut TypeInference,
-    ext: &ast::ExternGo,
-) -> tast::ExternGo {
+fn check_extern_go(_env: &GlobalEnv, _typer: &mut Typer, ext: &ast::ExternGo) -> tast::ExternGo {
     let params = ext
         .params
         .iter()
