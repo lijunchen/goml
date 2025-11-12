@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, Env},
+    env::{Constraint, GlobalEnv},
     tast::{self, TypeVar},
     typer::TypeInference,
 };
 use ast::ast::{Lident, Uident};
 
-fn occurs(env: &mut Env, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(env: &mut GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
@@ -168,7 +168,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
 }
 
 impl TypeInference {
-    pub fn solve(&mut self, env: &mut Env) {
+    pub fn solve(&mut self, env: &mut GlobalEnv) {
         let mut constraints = env.constraints.clone();
         let mut changed = true;
 
@@ -374,7 +374,7 @@ impl TypeInference {
         }
     }
 
-    fn unify(&mut self, env: &mut Env, l: &tast::Ty, r: &tast::Ty) -> bool {
+    fn unify(&mut self, env: &mut GlobalEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
@@ -606,7 +606,7 @@ impl TypeInference {
         }
     }
 
-    fn subst_ty(&mut self, env: &mut Env, ty: &tast::Ty) -> tast::Ty {
+    fn subst_ty(&mut self, env: &mut GlobalEnv, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {
@@ -655,7 +655,7 @@ impl TypeInference {
         }
     }
 
-    fn subst_pat(&mut self, env: &mut Env, p: tast::Pat) -> tast::Pat {
+    fn subst_pat(&mut self, env: &mut GlobalEnv, p: tast::Pat) -> tast::Pat {
         match p {
             tast::Pat::PVar { name, ty, astptr } => {
                 let ty = self.subst_ty(env, &ty);
@@ -707,7 +707,7 @@ impl TypeInference {
         }
     }
 
-    pub fn subst(&mut self, env: &mut Env, e: tast::Expr) -> tast::Expr {
+    pub fn subst(&mut self, env: &mut GlobalEnv, e: tast::Expr) -> tast::Expr {
         match e {
             tast::Expr::EVar { name, ty, astptr } => {
                 let ty = self.subst_ty(env, &ty);
@@ -760,7 +760,12 @@ impl TypeInference {
                     ty: ty.clone(),
                 }
             }
-            tast::Expr::EClosure { params, body, ty } => {
+            tast::Expr::EClosure {
+                params,
+                body,
+                ty,
+                captures,
+            } => {
                 let ty = self.subst_ty(env, &ty);
                 let params = params
                     .into_iter()
@@ -771,10 +776,15 @@ impl TypeInference {
                     })
                     .collect();
                 let body = Box::new(self.subst(env, *body));
+                let captures = captures
+                    .into_iter()
+                    .map(|(name, cap_ty)| (name, self.subst_ty(env, &cap_ty)))
+                    .collect();
                 tast::Expr::EClosure {
                     params,
                     body,
                     ty: ty.clone(),
+                    captures,
                 }
             }
             tast::Expr::ELet {

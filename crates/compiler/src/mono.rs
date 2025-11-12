@@ -1,5 +1,5 @@
 use super::core;
-use crate::env::{EnumDef, Env, StructDef};
+use crate::env::{EnumDef, GlobalEnv, StructDef};
 use crate::tast::{self, Constructor, Ty};
 use crate::type_encoding::encode_ty;
 use ast::ast::Uident;
@@ -8,7 +8,7 @@ use std::collections::VecDeque;
 
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(env: &mut Env, file: core::File) -> core::File {
+pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
     // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
@@ -492,7 +492,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
 
     // Phase 2: monomorphize enum type applications in types and update env
     struct TypeMono<'a> {
-        env: &'a mut Env,
+        env: &'a mut GlobalEnv,
         // map generic (name, args) to new concrete Uident
         map: IndexMap<(String, Vec<Ty>), Uident>,
         // snapshot of original generic enum defs
@@ -501,7 +501,7 @@ pub fn mono(env: &mut Env, file: core::File) -> core::File {
     }
 
     impl<'a> TypeMono<'a> {
-        fn new(env: &'a mut Env) -> Self {
+        fn new(env: &'a mut GlobalEnv) -> Self {
             let enum_base = env.enums.clone();
             let struct_base = env.structs.clone();
             Self {

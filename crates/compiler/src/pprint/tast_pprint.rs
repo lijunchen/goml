@@ -1,6 +1,6 @@
 use pretty::RcDoc;
 
-use crate::env::Env;
+use crate::env::GlobalEnv;
 use crate::tast::ClosureParam;
 use crate::tast::Constructor;
 use crate::tast::Expr;
@@ -12,14 +12,14 @@ use crate::tast::Pat;
 use crate::tast::Ty;
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
         )
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -27,7 +27,7 @@ impl File {
 }
 
 impl Item {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Self::ImplBlock(impl_block) => impl_block.to_doc(env),
             Self::Fn(func) => func.to_doc(env),
@@ -36,7 +36,7 @@ impl Item {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -44,7 +44,7 @@ impl Item {
 }
 
 impl ImplBlock {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let trait_name = RcDoc::text(self.trait_name.0.clone());
         let for_type = self.for_type.to_doc(env);
         let methods = RcDoc::intersperse(
@@ -65,7 +65,7 @@ impl ImplBlock {
             .append(RcDoc::text("}"))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -73,7 +73,7 @@ impl ImplBlock {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -106,7 +106,7 @@ impl Fn {
             .append(RcDoc::text("}"))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -114,7 +114,7 @@ impl Fn {
 }
 
 impl crate::tast::ExternGo {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
                 RcDoc::text(name.clone())
@@ -141,7 +141,7 @@ impl crate::tast::ExternGo {
             .append(self.ret_ty.to_doc(env))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -149,7 +149,7 @@ impl crate::tast::ExternGo {
 }
 
 impl crate::tast::ExternType {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text("extern")
             .append(RcDoc::space())
             .append(RcDoc::text("type"))
@@ -159,7 +159,7 @@ impl crate::tast::ExternType {
 }
 
 impl ClosureParam {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text(self.name.clone())
             .append(RcDoc::text(": "))
             .append(self.ty.to_doc(env))
@@ -167,7 +167,7 @@ impl ClosureParam {
 }
 
 impl Ty {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Self::TVar(x) => RcDoc::text(format!("{:?}", x)),
             Self::TUnit => RcDoc::text("unit"),
@@ -243,7 +243,7 @@ impl Ty {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -251,7 +251,7 @@ impl Ty {
 }
 
 impl Expr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Self::EVar {
                 name,
@@ -377,6 +377,7 @@ impl Expr {
                 params,
                 body,
                 ty: _,
+                captures: _,
             } => {
                 let params_doc = if params.is_empty() {
                     RcDoc::text("||")
@@ -525,7 +526,7 @@ impl Expr {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -533,7 +534,7 @@ impl Expr {
 }
 
 impl Pat {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Pat::PVar {
                 name,
@@ -635,7 +636,7 @@ impl Pat {
                 .append(ty.to_doc(env)),
         }
     }
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -643,7 +644,7 @@ impl Pat {
 }
 
 impl crate::tast::Arm {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         self.pat
             .to_doc(env)
             .append(RcDoc::space())
@@ -655,7 +656,7 @@ impl crate::tast::Arm {
             .append(RcDoc::text(","))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()

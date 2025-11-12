@@ -2,19 +2,19 @@ use pretty::RcDoc;
 
 use crate::{
     anf::{AExpr, Arm, CExpr, File, Fn, ImmExpr},
-    env::Env,
+    env::GlobalEnv,
     tast::Constructor,
 };
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
         )
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -22,7 +22,7 @@ impl File {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
@@ -55,7 +55,7 @@ impl Fn {
             .append(RcDoc::text("}"))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -63,7 +63,7 @@ impl Fn {
 }
 
 impl AExpr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             AExpr::ACExpr { expr } => expr.to_doc(env),
             AExpr::ALet {
@@ -86,7 +86,7 @@ impl AExpr {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -94,7 +94,7 @@ impl AExpr {
 }
 
 impl CExpr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             CExpr::CImm { imm } => imm.to_doc(env),
             CExpr::EConstr {
@@ -314,7 +314,7 @@ impl CExpr {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -322,7 +322,7 @@ impl CExpr {
 }
 
 impl ImmExpr {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::ImmVar { name, ty: _ } => RcDoc::text(name.clone()),
             ImmExpr::ImmPrim { value, ty: _ } => RcDoc::text(value.to_string()),
@@ -330,7 +330,7 @@ impl ImmExpr {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -338,7 +338,7 @@ impl ImmExpr {
 }
 
 impl Arm {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         self.lhs
             .to_doc(env)
             .append(RcDoc::space())
@@ -355,7 +355,7 @@ impl Arm {
             .append(RcDoc::text(","))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()

@@ -3,9 +3,9 @@ use std::path::PathBuf;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{compile_match, env::Env, tast};
+use crate::{compile_match, env::GlobalEnv, tast};
 
-fn typecheck(src: &str) -> (ast::ast::File, tast::File, Env) {
+fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalEnv) {
     let path = PathBuf::from("test_refs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {

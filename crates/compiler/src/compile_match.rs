@@ -1,7 +1,7 @@
 use ast::ast::{BinaryOp, Uident, UnaryOp};
 
 use crate::core;
-use crate::env::{Env, StructDef};
+use crate::env::{GlobalEnv, StructDef};
 use crate::mangle::mangle_impl_name;
 use crate::tast::Arm;
 use crate::tast::Constructor;
@@ -234,7 +234,7 @@ struct ConstructorCase {
 }
 
 fn compile_constructor_cases(
-    env: &Env,
+    env: &GlobalEnv,
     rows: Vec<Row>,
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
@@ -290,7 +290,7 @@ fn compile_constructor_cases(
 }
 
 fn compile_enum_case(
-    env: &Env,
+    env: &GlobalEnv,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -359,7 +359,7 @@ fn compile_enum_case(
 }
 
 fn compile_struct_case(
-    env: &Env,
+    env: &GlobalEnv,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -445,7 +445,7 @@ fn compile_struct_case(
 }
 
 fn compile_tuple_case(
-    env: &Env,
+    env: &GlobalEnv,
     rows: Vec<Row>,
     bvar: &Variable,
     typs: &[Ty],
@@ -505,7 +505,7 @@ fn compile_tuple_case(
     result
 }
 
-fn compile_unit_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+fn compile_unit_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
     let mut new_rows = vec![];
     for mut r in rows {
@@ -528,7 +528,7 @@ fn compile_unit_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     }
 }
 
-fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+fn compile_bool_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let mut true_rows = vec![];
@@ -568,7 +568,7 @@ fn compile_bool_case(env: &Env, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
 }
 
 fn compile_int_case(
-    env: &Env,
+    env: &GlobalEnv,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -638,7 +638,7 @@ fn compile_int_case(
     }
 }
 
-fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
+fn compile_string_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let mut value_rows: IndexMap<String, Vec<Row>> = IndexMap::new();
@@ -703,7 +703,7 @@ fn compile_string_case(env: &Env, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> c
     }
 }
 
-fn compile_rows(env: &Env, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
+fn compile_rows(env: &GlobalEnv, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
     }
@@ -771,7 +771,7 @@ fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
     }
 }
 
-pub fn compile_file(env: &Env, file: &File) -> core::File {
+pub fn compile_file(env: &GlobalEnv, file: &File) -> core::File {
     let mut toplevels = vec![];
     for item in file.toplevels.iter() {
         match item {
@@ -912,7 +912,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     }
 }
 
-fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
+fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
     match e {
         EVar {
             name,
@@ -952,7 +952,12 @@ fn compile_expr(e: &Expr, env: &Env) -> core::Expr {
                 ty: ty.clone(),
             }
         }
-        EClosure { params, body, ty } => {
+        EClosure {
+            params,
+            body,
+            ty,
+            captures: _,
+        } => {
             let params = params.clone();
             let body = Box::new(compile_expr(body, env));
             core::Expr::EClosure {

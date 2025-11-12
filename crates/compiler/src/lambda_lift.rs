@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     core,
-    env::{Env, StructDef},
+    env::{GlobalEnv, StructDef},
     tast::{self, Constructor, StructConstructor, Ty},
     type_encoding::decode_ty,
 };
@@ -14,7 +14,7 @@ struct ClosureTypeInfo {
 }
 
 struct State<'env> {
-    env: &'env mut Env,
+    env: &'env mut GlobalEnv,
     next_id: usize,
     new_functions: Vec<core::Fn>,
     closure_types: IndexMap<String, ClosureTypeInfo>,
@@ -22,7 +22,7 @@ struct State<'env> {
 }
 
 impl<'env> State<'env> {
-    fn new(env: &'env mut Env) -> Self {
+    fn new(env: &'env mut GlobalEnv) -> Self {
         Self {
             env,
             next_id: 0,
@@ -135,7 +135,7 @@ impl Scope {
     }
 }
 
-pub fn lambda_lift(env: &mut Env, file: core::File) -> core::File {
+pub fn lambda_lift(env: &mut GlobalEnv, file: core::File) -> core::File {
     let mut state = State::new(env);
     let mut toplevels = Vec::new();
 

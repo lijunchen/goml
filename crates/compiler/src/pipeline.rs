@@ -8,7 +8,7 @@ use rowan::GreenNode;
 
 use crate::{
     anf, compile_match,
-    env::Env,
+    env::GlobalEnv,
     go::{self, goast},
     lambda_lift, mono, tast, typer,
 };
@@ -19,8 +19,8 @@ pub struct Compilation {
     pub cst: CstFile,
     pub ast: ast::File,
     pub tast: tast::File,
-    pub typer_env: Env,
-    pub env: Env,
+    pub typer_env: GlobalEnv,
+    pub env: GlobalEnv,
     pub core: crate::core::File,
     pub lambda: crate::core::File,
     pub mono: crate::core::File,
