@@ -2,15 +2,13 @@ use ast::ast::{Lident, Uident};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use indexmap::{IndexMap, IndexSet};
 
-mod builtins;
-
-use self::builtins::builtin_functions;
+pub use super::builtins::builtin_function_names;
+use super::builtins::builtin_functions;
 use crate::{
     core,
     tast::{self, Constructor},
     type_encoding::{decode_ty, encode_ty},
 };
-pub use builtins::builtin_function_names;
 use std::cell::Cell;
 
 #[derive(Debug, Clone)]

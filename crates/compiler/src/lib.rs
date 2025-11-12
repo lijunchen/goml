@@ -1,4 +1,5 @@
 pub mod anf;
+pub mod builtins;
 pub mod compile_match;
 pub mod core;
 pub mod env;
