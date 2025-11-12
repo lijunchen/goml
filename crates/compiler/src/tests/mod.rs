@@ -27,13 +27,6 @@ fn test_cases() -> anyhow::Result<()> {
 }
 
 #[test]
-fn test_examples() -> anyhow::Result<()> {
-    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
-    let examples_dir = root_dir.join("src/tests/examples");
-    run_test_cases(&examples_dir)
-}
-
-#[test]
 fn test_parse_error_cases() -> anyhow::Result<()> {
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let diagnostics_dir = root_dir.join("src/tests/diagnostics");

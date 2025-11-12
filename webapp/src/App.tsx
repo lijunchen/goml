@@ -6,7 +6,7 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 const demos: Record<string, string> = {};
 
 const loadDemos = async () => {
-  const modules = import.meta.glob('../../crates/compiler/src/tests/examples/*.src', { query: '?raw', import: 'default' });
+  const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*.src', { query: '?raw', import: 'default' });
   for (const path in modules) {
     const name = path.split('/').pop()?.replace('.src', '') || 'unknown';
     demos[name] = await modules[path]() as string;
