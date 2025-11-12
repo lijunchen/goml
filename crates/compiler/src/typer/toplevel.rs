@@ -437,22 +437,24 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalEnv) {
             ast::Item::TraitDef(..) => (),
             ast::Item::ImplBlock(impl_block) => {
                 typed_toplevel_tasts.push(tast::Item::ImplBlock(check_impl_block(
-                    &mut env, &mut typer, impl_block,
+                    &env, &mut typer, impl_block,
                 )));
             }
             ast::Item::Fn(f) => {
-                typed_toplevel_tasts.push(tast::Item::Fn(check_fn(&mut env, &mut typer, f)));
+                typed_toplevel_tasts.push(tast::Item::Fn(check_fn(&env, &mut typer, f)));
             }
             ast::Item::ExternGo(ext) => {
-                typed_toplevel_tasts.push(tast::Item::ExternGo(check_extern_go(
-                    &mut env, &mut typer, ext,
-                )));
+                typed_toplevel_tasts
+                    .push(tast::Item::ExternGo(check_extern_go(&env, &mut typer, ext)));
             }
             ast::Item::ExternType(ext) => {
                 typed_toplevel_tasts.push(tast::Item::ExternType(check_extern_type(&mut env, ext)));
             }
         }
     }
+
+    let typer_diagnostics = typer.into_diagnostics();
+    env.extend_diagnostics(typer_diagnostics);
 
     (
         tast::File {
@@ -462,7 +464,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalEnv) {
     )
 }
 
-fn check_fn(env: &mut GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
+fn check_fn(env: &GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
     let mut type_env = TypeEnv::new();
     let param_types: Vec<(Lident, tast::Ty)> = f
         .params
@@ -494,7 +496,7 @@ fn check_fn(env: &mut GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast
         body
     });
     typer.solve(env);
-    let typed_body = typer.subst(env, typed_body);
+    let typed_body = typer.subst(typed_body);
     tast::Fn {
         name: f.name.0.clone(),
         params: new_params,
@@ -504,7 +506,7 @@ fn check_fn(env: &mut GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast
 }
 
 fn check_impl_block(
-    env: &mut GlobalEnv,
+    env: &GlobalEnv,
     typer: &mut TypeInference,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
@@ -542,7 +544,7 @@ fn check_impl_block(
             body
         });
         typer.solve(env);
-        let typed_body = typer.subst(env, typed_body);
+        let typed_body = typer.subst(typed_body);
         typed_methods.push(tast::Fn {
             name: f.name.0.clone(),
             params: new_params,
@@ -559,7 +561,7 @@ fn check_impl_block(
 }
 
 fn check_extern_go(
-    _env: &mut GlobalEnv,
+    _env: &GlobalEnv,
     _typer: &mut TypeInference,
     ext: &ast::ExternGo,
 ) -> tast::ExternGo {

@@ -7,14 +7,11 @@ use crate::{
 };
 use ast::ast::{Lident, Uident};
 
-fn occurs(env: &mut GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(typer: &mut TypeInference, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
-                env.report_typer_error(format!(
-                    "occurs check failed: {:?} occurs in {:?}",
-                    var, ty
-                ));
+                typer.report_error(format!("occurs check failed: {:?} occurs in {:?}", var, ty));
                 return false;
             }
         }
@@ -35,39 +32,39 @@ fn occurs(env: &mut GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(env, var, ty) {
+                if !occurs(typer, _env, var, ty) {
                     return false;
                 }
             }
         }
         tast::Ty::TCon { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(env, var, ty.as_ref()) {
+            if !occurs(typer, _env, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(env, var, arg) {
+                if !occurs(typer, _env, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(env, var, elem) {
+            if !occurs(typer, _env, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(env, var, elem) {
+            if !occurs(typer, _env, var, elem) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(env, var, param) {
+                if !occurs(typer, _env, var, param) {
                     return false;
                 }
             }
-            if !occurs(env, var, ret_ty) {
+            if !occurs(typer, _env, var, ret_ty) {
                 return false;
             }
         }
@@ -168,8 +165,8 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
 }
 
 impl TypeInference {
-    pub fn solve(&mut self, env: &mut GlobalEnv) {
-        let mut constraints = env.constraints.clone();
+    pub fn solve(&mut self, env: &GlobalEnv) {
+        let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 
         fn is_concrete(norm_ty: &tast::Ty) -> bool {
@@ -245,7 +242,7 @@ impl TypeInference {
                                                 changed = true;
                                             }
                                             None => {
-                                                env.report_typer_error(format!(
+                                                self.report_error(format!(
                                                     "No instance found for trait {}<{:?}> for operator {}",
                                                     trait_name.0, ty, op.0
                                                 ));
@@ -261,20 +258,20 @@ impl TypeInference {
                                         });
                                     }
                                     _ => {
-                                        env.report_typer_error(format!(
+                                        self.report_error(format!(
                                             "Overload resolution failed for non-concrete, non-variable type {:?}",
                                             self_ty
                                         ));
                                     }
                                 }
                             } else {
-                                env.report_typer_error(format!(
+                                self.report_error(format!(
                                     "Overloaded operator {} called with no arguments?",
                                     op.0
                                 ));
                             }
                         } else {
-                            env.report_typer_error(format!(
+                            self.report_error(format!(
                                 "Overloaded constraint does not involve a function type: {:?}",
                                 norm_call_site_type
                             ));
@@ -311,7 +308,7 @@ impl TypeInference {
             constraints.extend(still_pending);
 
             if !changed && !constraints.is_empty() {
-                env.report_typer_error(format!(
+                self.report_error(format!(
                     "Could not solve all constraints: {:?}",
                     constraints
                 ));
@@ -319,11 +316,12 @@ impl TypeInference {
             }
         }
         if !constraints.is_empty() {
-            env.report_typer_error(format!(
+            self.report_error(format!(
                 "Type inference failed, remaining constraints: {:?}",
                 constraints
             ));
         }
+        self.constraints = constraints;
     }
 
     fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
@@ -374,13 +372,13 @@ impl TypeInference {
         }
     }
 
-    fn unify(&mut self, env: &mut GlobalEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
+    fn unify(&mut self, env: &GlobalEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
             (tast::Ty::TVar(a), tast::Ty::TVar(b)) => {
                 if self.uni.unify_var_var(*a, *b).is_err() {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Failed to unify type variables {:?} and {:?}",
                         a, b
                     ));
@@ -388,11 +386,11 @@ impl TypeInference {
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
-                if !occurs(env, *a, t) {
+                if !occurs(self, env, *a, t) {
                     return false;
                 }
                 if self.uni.unify_var_value(*a, Some(t.clone())).is_err() {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Failed to unify type variable {:?} with {:?}",
                         a, t
                     ));
@@ -416,7 +414,7 @@ impl TypeInference {
             (tast::Ty::TString, tast::Ty::TString) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Tuple types have different lengths: {:?} and {:?}",
                         l, r
                     ));
@@ -440,7 +438,7 @@ impl TypeInference {
             ) => {
                 let wildcard = tast::ARRAY_WILDCARD_LEN;
                 if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Array types have different lengths: {:?} and {:?}",
                         l, r
                     ));
@@ -466,7 +464,7 @@ impl TypeInference {
                 },
             ) => {
                 if param1.len() != param2.len() {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Function types have different parameter lengths: {:?} and {:?}",
                         l, r
                     ));
@@ -483,7 +481,7 @@ impl TypeInference {
             }
             (tast::Ty::TCon { name: n1 }, tast::Ty::TCon { name: n2 }) => {
                 if n1 != n2 {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Constructor types are different: {:?} and {:?}",
                         l, r
                     ));
@@ -501,7 +499,7 @@ impl TypeInference {
                 },
             ) => {
                 if args1.len() != args2.len() {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Constructor types have different argument lengths: {:?} and {:?}",
                         l, r
                     ));
@@ -518,7 +516,7 @@ impl TypeInference {
             }
             (tast::Ty::TParam { name }, tast::Ty::TParam { name: name2 }) => {
                 if name != name2 {
-                    env.report_typer_error(format!(
+                    self.report_error(format!(
                         "Type parameters are different: {:?} and {:?}",
                         l, r
                     ));
@@ -526,7 +524,7 @@ impl TypeInference {
                 }
             }
             _ => {
-                env.report_typer_error(format!("type not equal {:?} and {:?}", l_norm, r_norm));
+                self.report_error(format!("type not equal {:?} and {:?}", l_norm, r_norm));
                 return false;
             }
         }
@@ -606,13 +604,13 @@ impl TypeInference {
         }
     }
 
-    fn subst_ty(&mut self, env: &mut GlobalEnv, ty: &tast::Ty) -> tast::Ty {
+    fn subst_ty(&mut self, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {
-                    self.subst_ty(env, &value)
+                    self.subst_ty(&value)
                 } else {
-                    env.report_typer_error(format!("Type variable {:?} not resolved", v));
+                    self.report_error(format!("Type variable {:?} not resolved", v));
                     tast::Ty::TVar(*v)
                 }
             }
@@ -631,34 +629,34 @@ impl TypeInference {
             tast::Ty::TFloat64 => tast::Ty::TFloat64,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
-                let typs = typs.iter().map(|ty| self.subst_ty(env, ty)).collect();
+                let typs = typs.iter().map(|ty| self.subst_ty(ty)).collect();
                 tast::Ty::TTuple { typs }
             }
             tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-                ty: Box::new(self.subst_ty(env, ty)),
-                args: args.iter().map(|arg| self.subst_ty(env, arg)).collect(),
+                ty: Box::new(self.subst_ty(ty)),
+                args: args.iter().map(|arg| self.subst_ty(arg)).collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
-                elem: Box::new(self.subst_ty(env, elem)),
+                elem: Box::new(self.subst_ty(elem)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
-                elem: Box::new(self.subst_ty(env, elem)),
+                elem: Box::new(self.subst_ty(elem)),
             },
             tast::Ty::TFunc { params, ret_ty } => {
-                let params = params.iter().map(|ty| self.subst_ty(env, ty)).collect();
-                let ret_ty = Box::new(self.subst_ty(env, ret_ty));
+                let params = params.iter().map(|ty| self.subst_ty(ty)).collect();
+                let ret_ty = Box::new(self.subst_ty(ret_ty));
                 tast::Ty::TFunc { params, ret_ty }
             }
             tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         }
     }
 
-    fn subst_pat(&mut self, env: &mut GlobalEnv, p: tast::Pat) -> tast::Pat {
+    fn subst_pat(&mut self, p: tast::Pat) -> tast::Pat {
         match p {
             tast::Pat::PVar { name, ty, astptr } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 tast::Pat::PVar {
                     name: name.clone(),
                     ty: ty.clone(),
@@ -666,7 +664,7 @@ impl TypeInference {
                 }
             }
             tast::Pat::PPrim { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let value = value.coerce(&ty);
                 tast::Pat::PPrim {
                     value,
@@ -678,10 +676,10 @@ impl TypeInference {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst_pat(env, arg))
+                    .map(|arg| self.subst_pat(arg))
                     .collect::<Vec<_>>();
                 tast::Pat::PConstr {
                     constructor,
@@ -690,10 +688,10 @@ impl TypeInference {
                 }
             }
             tast::Pat::PTuple { items, ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst_pat(env, item))
+                    .map(|item| self.subst_pat(item))
                     .collect::<Vec<_>>();
                 tast::Pat::PTuple {
                     items,
@@ -701,16 +699,16 @@ impl TypeInference {
                 }
             }
             tast::Pat::PWild { ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 tast::Pat::PWild { ty: ty.clone() }
             }
         }
     }
 
-    pub fn subst(&mut self, env: &mut GlobalEnv, e: tast::Expr) -> tast::Expr {
+    pub fn subst(&mut self, e: tast::Expr) -> tast::Expr {
         match e {
             tast::Expr::EVar { name, ty, astptr } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 tast::Expr::EVar {
                     name,
                     ty: ty.clone(),
@@ -718,7 +716,7 @@ impl TypeInference {
                 }
             }
             tast::Expr::EPrim { value, ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let value = value.coerce(&ty);
                 tast::Expr::EPrim { value, ty }
             }
@@ -727,10 +725,10 @@ impl TypeInference {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst(env, arg))
+                    .map(|arg| self.subst(arg))
                     .collect::<Vec<_>>();
                 tast::Expr::EConstr {
                     constructor,
@@ -739,10 +737,10 @@ impl TypeInference {
                 }
             }
             tast::Expr::ETuple { items, ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst(env, item))
+                    .map(|item| self.subst(item))
                     .collect::<Vec<_>>();
                 tast::Expr::ETuple {
                     items,
@@ -750,10 +748,10 @@ impl TypeInference {
                 }
             }
             tast::Expr::EArray { items, ty } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst(env, item))
+                    .map(|item| self.subst(item))
                     .collect::<Vec<_>>();
                 tast::Expr::EArray {
                     items,
@@ -766,19 +764,19 @@ impl TypeInference {
                 ty,
                 captures,
             } => {
-                let ty = self.subst_ty(env, &ty);
+                let ty = self.subst_ty(&ty);
                 let params = params
                     .into_iter()
                     .map(|param| tast::ClosureParam {
                         name: param.name,
-                        ty: self.subst_ty(env, &param.ty),
+                        ty: self.subst_ty(&param.ty),
                         astptr: param.astptr,
                     })
                     .collect();
-                let body = Box::new(self.subst(env, *body));
+                let body = Box::new(self.subst(*body));
                 let captures = captures
                     .into_iter()
-                    .map(|(name, cap_ty)| (name, self.subst_ty(env, &cap_ty)))
+                    .map(|(name, cap_ty)| (name, self.subst_ty(&cap_ty)))
                     .collect();
                 tast::Expr::EClosure {
                     params,
@@ -793,10 +791,10 @@ impl TypeInference {
                 body,
                 ty,
             } => {
-                let ty = self.subst_ty(env, &ty);
-                let pat = self.subst_pat(env, pat);
-                let value = Box::new(self.subst(env, *value));
-                let body = Box::new(self.subst(env, *body));
+                let ty = self.subst_ty(&ty);
+                let pat = self.subst_pat(pat);
+                let value = Box::new(self.subst(*value));
+                let body = Box::new(self.subst(*body));
                 tast::Expr::ELet {
                     pat,
                     value,
@@ -805,13 +803,13 @@ impl TypeInference {
                 }
             }
             tast::Expr::EMatch { expr, arms, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                let expr = Box::new(self.subst(env, *expr));
+                let ty = self.subst_ty(&ty);
+                let expr = Box::new(self.subst(*expr));
                 let arms = arms
                     .into_iter()
                     .map(|arm| tast::Arm {
-                        pat: self.subst_pat(env, arm.pat),
-                        body: self.subst(env, arm.body),
+                        pat: self.subst_pat(arm.pat),
+                        body: self.subst(arm.body),
                     })
                     .collect::<Vec<_>>();
                 tast::Expr::EMatch {
@@ -826,10 +824,10 @@ impl TypeInference {
                 else_branch,
                 ty,
             } => {
-                let ty = self.subst_ty(env, &ty);
-                let cond = Box::new(self.subst(env, *cond));
-                let then_branch = Box::new(self.subst(env, *then_branch));
-                let else_branch = Box::new(self.subst(env, *else_branch));
+                let ty = self.subst_ty(&ty);
+                let cond = Box::new(self.subst(*cond));
+                let then_branch = Box::new(self.subst(*then_branch));
+                let else_branch = Box::new(self.subst(*else_branch));
                 tast::Expr::EIf {
                     cond,
                     then_branch,
@@ -838,9 +836,9 @@ impl TypeInference {
                 }
             }
             tast::Expr::EWhile { cond, body, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                let cond = Box::new(self.subst(env, *cond));
-                let body = Box::new(self.subst(env, *body));
+                let ty = self.subst_ty(&ty);
+                let cond = Box::new(self.subst(*cond));
+                let body = Box::new(self.subst(*body));
                 tast::Expr::EWhile {
                     cond,
                     body,
@@ -848,11 +846,11 @@ impl TypeInference {
                 }
             }
             tast::Expr::ECall { func, args, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                let func = Box::new(self.subst(env, *func));
+                let ty = self.subst_ty(&ty);
+                let func = Box::new(self.subst(*func));
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst(env, arg))
+                    .map(|arg| self.subst(arg))
                     .collect::<Vec<_>>();
                 tast::Expr::ECall {
                     func,
@@ -866,8 +864,8 @@ impl TypeInference {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(env, &ty);
-                let expr = Box::new(self.subst(env, *expr));
+                let ty = self.subst_ty(&ty);
+                let expr = Box::new(self.subst(*expr));
                 tast::Expr::EUnary {
                     op,
                     expr,
@@ -882,9 +880,9 @@ impl TypeInference {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(env, &ty);
-                let lhs = Box::new(self.subst(env, *lhs));
-                let rhs = Box::new(self.subst(env, *rhs));
+                let ty = self.subst_ty(&ty);
+                let lhs = Box::new(self.subst(*lhs));
+                let rhs = Box::new(self.subst(*rhs));
                 tast::Expr::EBinary {
                     op,
                     lhs,
@@ -894,8 +892,8 @@ impl TypeInference {
                 }
             }
             tast::Expr::EProj { tuple, index, ty } => {
-                let ty = self.subst_ty(env, &ty);
-                let tuple = Box::new(self.subst(env, *tuple));
+                let ty = self.subst_ty(&ty);
+                let tuple = Box::new(self.subst(*tuple));
                 tast::Expr::EProj {
                     tuple,
                     index,
@@ -907,8 +905,8 @@ impl TypeInference {
                 field_name,
                 ty,
             } => {
-                let ty = self.subst_ty(env, &ty);
-                let expr = Box::new(self.subst(env, *expr));
+                let ty = self.subst_ty(&ty);
+                let expr = Box::new(self.subst(*expr));
                 tast::Expr::EField {
                     expr,
                     field_name,

@@ -16,7 +16,7 @@ use crate::{
 impl TypeInference {
     pub fn infer_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         e: &ast::Expr,
     ) -> tast::Expr {
@@ -30,16 +30,16 @@ impl TypeInference {
                 value: Prim::boolean(*value),
                 ty: tast::Ty::TBool,
             },
-            ast::Expr::EInt { value } => match parse_integer_literal(env, value) {
+            ast::Expr::EInt { value } => match self.parse_integer_literal(value) {
                 Some(parsed) => {
                     let ty = tast::Ty::TInt;
-                    ensure_integer_literal_fits(env, parsed, &ty);
+                    self.ensure_integer_literal_fits(parsed, &ty);
                     int_literal_expr(parsed, ty)
                 }
                 None => int_literal_expr(0, tast::Ty::TInt),
             },
             ast::Expr::EFloat { value } => {
-                ensure_float_literal_fits(env, *value, &tast::Ty::TFloat64);
+                self.ensure_float_literal_fits(*value, &tast::Ty::TFloat64);
                 let ty = tast::Ty::TFloat64;
                 tast::Expr::EPrim {
                     value: Prim::from_float_literal(*value, &ty),
@@ -86,7 +86,7 @@ impl TypeInference {
 
     pub fn check_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         e: &ast::Expr,
         expected: &tast::Ty,
@@ -95,21 +95,21 @@ impl TypeInference {
             ast::Expr::EInt { value } => {
                 let target_int_ty = integer_literal_target(expected);
                 let expects_float = is_float_ty(expected);
-                match parse_integer_literal(env, value) {
+                match self.parse_integer_literal(value) {
                     Some(parsed) => {
                         if let Some(target_ty) = target_int_ty.clone() {
-                            ensure_integer_literal_fits(env, parsed, &target_ty);
+                            self.ensure_integer_literal_fits(parsed, &target_ty);
                             int_literal_expr(parsed, target_ty)
                         } else if expects_float {
                             let float_value = parsed as f64;
-                            ensure_float_literal_fits(env, float_value, expected);
+                            self.ensure_float_literal_fits(float_value, expected);
                             tast::Expr::EPrim {
                                 value: Prim::from_float_literal(float_value, expected),
                                 ty: expected.clone(),
                             }
                         } else {
                             let ty = tast::Ty::TInt;
-                            ensure_integer_literal_fits(env, parsed, &ty);
+                            self.ensure_integer_literal_fits(parsed, &ty);
                             int_literal_expr(parsed, ty)
                         }
                     }
@@ -129,7 +129,7 @@ impl TypeInference {
             }
             ast::Expr::EFloat { value } => {
                 if let Some(target_ty) = float_literal_target(expected) {
-                    ensure_float_literal_fits(env, *value, &target_ty);
+                    self.ensure_float_literal_fits(*value, &target_ty);
                     tast::Expr::EPrim {
                         value: Prim::from_float_literal(*value, &target_ty),
                         ty: target_ty,
@@ -200,14 +200,13 @@ impl TypeInference {
             _ => self.infer_expr(env, type_env, e),
         };
 
-        env.constraints
-            .push(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
+        self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
         expr_tast
     }
 
     fn infer_var_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         name: &Lident,
         astptr: &MySyntaxNodePtr,
@@ -232,7 +231,7 @@ impl TypeInference {
 
     fn infer_constructor_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         vcon: &ast::Uident,
         args: &[ast::Expr],
@@ -299,11 +298,9 @@ impl TypeInference {
                 params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            env.constraints
-                .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, actual_ty));
         } else {
-            env.constraints
-                .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
         }
 
         tast::Expr::EConstr {
@@ -315,7 +312,7 @@ impl TypeInference {
 
     fn infer_struct_literal_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         name: &ast::Uident,
         fields: &[(ast::Lident, ast::Expr)],
@@ -403,11 +400,9 @@ impl TypeInference {
                 params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            env.constraints
-                .push(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, actual_ty));
         } else {
-            env.constraints
-                .push(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
         }
 
         tast::Expr::EConstr {
@@ -419,7 +414,7 @@ impl TypeInference {
 
     fn infer_tuple_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         items: &[ast::Expr],
     ) -> tast::Expr {
@@ -438,7 +433,7 @@ impl TypeInference {
 
     fn infer_array_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         items: &[ast::Expr],
     ) -> tast::Expr {
@@ -447,8 +442,7 @@ impl TypeInference {
         let mut items_tast = Vec::with_capacity(len);
         for item in items.iter() {
             let item_tast = self.infer_expr(env, type_env, item);
-            env.constraints
-                .push(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
             items_tast.push(item_tast);
         }
 
@@ -463,7 +457,7 @@ impl TypeInference {
 
     fn infer_closure_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
@@ -506,7 +500,7 @@ impl TypeInference {
 
     fn check_closure_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
@@ -530,7 +524,7 @@ impl TypeInference {
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
-                            env.constraints.push(Constraint::TypeEqual(
+                            self.push_constraint(Constraint::TypeEqual(
                                 ann_ty.clone(),
                                 expected_param_ty.clone(),
                             ));
@@ -568,7 +562,7 @@ impl TypeInference {
 
     fn infer_let_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         annotation: &Option<ast::Ty>,
@@ -607,7 +601,7 @@ impl TypeInference {
     #[allow(clippy::too_many_arguments)]
     fn check_let_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         annotation: &Option<ast::Ty>,
@@ -647,7 +641,7 @@ impl TypeInference {
 
     fn infer_match_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         expr: &ast::Expr,
         arms: &[ast::Arm],
@@ -662,7 +656,7 @@ impl TypeInference {
             let arm_tast = self.check_pat(env, type_env, &arm.pat, &expr_ty);
             let arm_body_tast = self.infer_expr(env, type_env, &arm.body);
             type_env.pop_scope();
-            env.constraints.push(Constraint::TypeEqual(
+            self.push_constraint(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
                 arm_ty.clone(),
             ));
@@ -681,24 +675,21 @@ impl TypeInference {
 
     fn infer_if_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         cond: &ast::Expr,
         then_branch: &ast::Expr,
         else_branch: &ast::Expr,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(env, type_env, cond);
-        env.constraints
-            .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+        self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
 
         let then_tast = self.infer_expr(env, type_env, then_branch);
         let else_tast = self.infer_expr(env, type_env, else_branch);
         let result_ty = self.fresh_ty_var();
 
-        env.constraints
-            .push(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
-        env.constraints
-            .push(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
 
         tast::Expr::EIf {
             cond: Box::new(cond_tast),
@@ -710,18 +701,16 @@ impl TypeInference {
 
     fn infer_while_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         cond: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(env, type_env, cond);
-        env.constraints
-            .push(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+        self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
 
         let body_tast = self.infer_expr(env, type_env, body);
-        env.constraints
-            .push(Constraint::TypeEqual(body_tast.get_ty(), tast::Ty::TUnit));
+        self.push_constraint(Constraint::TypeEqual(body_tast.get_ty(), tast::Ty::TUnit));
 
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
@@ -732,7 +721,7 @@ impl TypeInference {
 
     fn infer_call_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         func: &ast::Expr,
         args: &[ast::Expr],
@@ -773,7 +762,7 @@ impl TypeInference {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    env.constraints.push(Constraint::TypeEqual(
+                    self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
                     ));
@@ -794,7 +783,7 @@ impl TypeInference {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    env.constraints.push(Constraint::Overloaded {
+                    self.push_constraint(Constraint::Overloaded {
                         op: name.clone(),
                         trait_name,
                         call_site_type: call_site_func_ty.clone(),
@@ -815,7 +804,7 @@ impl TypeInference {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
                     };
-                    env.constraints.push(Constraint::TypeEqual(
+                    self.push_constraint(Constraint::TypeEqual(
                         var_ty.clone(),
                         call_site_func_ty.clone(),
                     ));
@@ -840,7 +829,7 @@ impl TypeInference {
                     ret_ty: Box::new(ret_ty.clone()),
                 };
                 let func_tast = self.infer_expr(env, type_env, func);
-                env.constraints.push(Constraint::TypeEqual(
+                self.push_constraint(Constraint::TypeEqual(
                     func_tast.get_ty(),
                     call_site_func_ty.clone(),
                 ));
@@ -856,7 +845,7 @@ impl TypeInference {
 
     fn infer_unary_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         op: ast::UnaryOp,
         expr: &ast::Expr,
@@ -866,8 +855,7 @@ impl TypeInference {
         let method_name = op.method_name();
         let builtin_expr = match op {
             ast::UnaryOp::Not => {
-                env.constraints
-                    .push(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
                 Some(tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast.clone()),
@@ -881,8 +869,7 @@ impl TypeInference {
                 } else {
                     tast::Ty::TInt
                 };
-                env.constraints
-                    .push(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
                 Some(tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast.clone()),
@@ -902,7 +889,7 @@ impl TypeInference {
                 params: vec![expr_ty.clone()],
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            env.constraints.push(Constraint::Overloaded {
+            self.push_constraint(Constraint::Overloaded {
                 op: ast::Lident(method_name.to_string()),
                 trait_name: trait_name.clone(),
                 call_site_type,
@@ -920,7 +907,7 @@ impl TypeInference {
 
     fn infer_binary_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         op: ast::BinaryOp,
         lhs: &ast::Expr,
@@ -931,12 +918,12 @@ impl TypeInference {
         let mut lhs_ty = lhs_tast.get_ty();
         let mut rhs_ty = rhs_tast.get_ty();
 
-        if let Some(new_rhs) = self.try_adjust_int_literal(env, rhs, &rhs_tast, &lhs_ty) {
+        if let Some(new_rhs) = self.try_adjust_int_literal(rhs, &rhs_tast, &lhs_ty) {
             rhs_tast = new_rhs;
             rhs_ty = rhs_tast.get_ty();
         }
 
-        if let Some(new_lhs) = self.try_adjust_int_literal(env, lhs, &lhs_tast, &rhs_ty) {
+        if let Some(new_lhs) = self.try_adjust_int_literal(lhs, &lhs_tast, &rhs_ty) {
             lhs_tast = new_lhs;
             lhs_ty = lhs_tast.get_ty();
         }
@@ -950,7 +937,7 @@ impl TypeInference {
                 params: vec![lhs_ty.clone(), rhs_ty.clone()],
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            env.constraints.push(Constraint::Overloaded {
+            self.push_constraint(Constraint::Overloaded {
                 op: ast::Lident(method_name.to_string()),
                 trait_name: trait_name.clone(),
                 call_site_type,
@@ -971,22 +958,16 @@ impl TypeInference {
 
         match op {
             ast::BinaryOp::Add => {
-                env.constraints
-                    .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                env.constraints
-                    .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
             }
             ast::BinaryOp::Sub | ast::BinaryOp::Mul | ast::BinaryOp::Div => {
-                env.constraints
-                    .push(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                env.constraints
-                    .push(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
             }
             ast::BinaryOp::And | ast::BinaryOp::Or => {
-                env.constraints
-                    .push(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
-                env.constraints
-                    .push(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
+                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
+                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
             }
         }
 
@@ -1001,20 +982,19 @@ impl TypeInference {
 
     fn try_adjust_int_literal(
         &mut self,
-        env: &mut GlobalEnv,
         ast_expr: &ast::Expr,
         tast_expr: &tast::Expr,
         target_ty: &tast::Ty,
     ) -> Option<tast::Expr> {
         match (ast_expr, tast_expr) {
             (ast::Expr::EInt { value }, tast::Expr::EPrim { .. }) => {
-                if let Some(parsed) = parse_integer_literal(env, value) {
+                if let Some(parsed) = self.parse_integer_literal(value) {
                     if is_integer_ty(target_ty) {
-                        ensure_integer_literal_fits(env, parsed, target_ty);
+                        self.ensure_integer_literal_fits(parsed, target_ty);
                         Some(int_literal_expr(parsed, target_ty.clone()))
                     } else if is_float_ty(target_ty) {
                         let float_value = parsed as f64;
-                        ensure_float_literal_fits(env, float_value, target_ty);
+                        self.ensure_float_literal_fits(float_value, target_ty);
                         Some(tast::Expr::EPrim {
                             value: Prim::from_float_literal(float_value, target_ty),
                             ty: target_ty.clone(),
@@ -1034,7 +1014,7 @@ impl TypeInference {
                 }
             }
             (ast::Expr::EFloat { value }, tast::Expr::EPrim { .. }) if is_float_ty(target_ty) => {
-                ensure_float_literal_fits(env, *value, target_ty);
+                self.ensure_float_literal_fits(*value, target_ty);
                 Some(tast::Expr::EPrim {
                     value: Prim::from_float_literal(*value, target_ty),
                     ty: target_ty.clone(),
@@ -1046,7 +1026,7 @@ impl TypeInference {
 
     fn infer_proj_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         tuple: &ast::Expr,
         index: usize,
@@ -1068,7 +1048,7 @@ impl TypeInference {
                 }
             }
             _ => {
-                env.report_typer_error(format!(
+                self.report_error(format!(
                     "Cannot project field {} on non-tuple type {:?}",
                     index, tuple_ty
                 ));
@@ -1084,7 +1064,7 @@ impl TypeInference {
 
     fn infer_field_expr(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         expr: &ast::Expr,
         field: &ast::Lident,
@@ -1092,7 +1072,7 @@ impl TypeInference {
         let base_tast = self.infer_expr(env, type_env, expr);
         let base_ty = base_tast.get_ty();
         let result_ty = self.fresh_ty_var();
-        env.constraints.push(Constraint::StructFieldAccess {
+        self.push_constraint(Constraint::StructFieldAccess {
             expr_ty: base_ty.clone(),
             field: field.clone(),
             result_ty: result_ty.clone(),
@@ -1107,7 +1087,7 @@ impl TypeInference {
 
     fn check_pat(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         ty: &tast::Ty,
@@ -1116,12 +1096,12 @@ impl TypeInference {
             ast::Pat::PVar { name, astptr } => self.check_pat_var(type_env, name, astptr, ty),
             ast::Pat::PUnit => self.check_pat_unit(),
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
-            ast::Pat::PInt { value } => self.check_pat_int(env, value, ty),
-            ast::Pat::PString { value } => self.check_pat_string(env, value, ty),
+            ast::Pat::PInt { value } => self.check_pat_int(value, ty),
+            ast::Pat::PString { value } => self.check_pat_string(value, ty),
             ast::Pat::PConstr { .. } => self.check_pat_constructor(env, type_env, pat, ty),
             ast::Pat::PStruct { .. } => self.check_pat_constructor(env, type_env, pat, ty),
             ast::Pat::PTuple { pats } => self.check_pat_tuple(env, type_env, pats, ty),
-            ast::Pat::PWild => self.check_pat_wild(env, ty),
+            ast::Pat::PWild => self.check_pat_wild(ty),
         }
     }
 
@@ -1154,26 +1134,19 @@ impl TypeInference {
         }
     }
 
-    fn check_pat_int(&mut self, env: &mut GlobalEnv, value: &str, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_int(&mut self, value: &str, ty: &tast::Ty) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt);
-        let parsed = parse_integer_literal(env, value).unwrap_or(0);
-        ensure_integer_literal_fits(env, parsed, &target_ty);
-        env.constraints
-            .push(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
+        let parsed = self.parse_integer_literal(value).unwrap_or(0);
+        self.ensure_integer_literal_fits(parsed, &target_ty);
+        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PPrim {
             value: Prim::from_int_literal(parsed, &target_ty),
             ty: ty.clone(),
         }
     }
 
-    fn check_pat_string(
-        &mut self,
-        env: &mut GlobalEnv,
-        value: &String,
-        ty: &tast::Ty,
-    ) -> tast::Pat {
-        env.constraints
-            .push(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
+    fn check_pat_string(&mut self, value: &String, ty: &tast::Ty) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
         tast::Pat::PPrim {
             value: Prim::string(value.to_owned()),
             ty: tast::Ty::TString,
@@ -1182,7 +1155,7 @@ impl TypeInference {
 
     fn check_pat_constructor(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         ty: &tast::Ty,
@@ -1234,8 +1207,7 @@ impl TypeInference {
                     args_tast.push(arg_tast);
                 }
 
-                env.constraints
-                    .push(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
                 tast::Pat::PConstr {
                     constructor,
@@ -1303,8 +1275,7 @@ impl TypeInference {
                     panic!("Struct pattern {} has unknown fields: {}", name.0, extra);
                 }
 
-                env.constraints
-                    .push(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
                 tast::Pat::PConstr {
                     constructor,
@@ -1318,7 +1289,7 @@ impl TypeInference {
 
     fn check_pat_tuple(
         &mut self,
-        env: &mut GlobalEnv,
+        env: &GlobalEnv,
         type_env: &mut TypeEnv,
         pats: &[ast::Pat],
         ty: &tast::Ty,
@@ -1336,18 +1307,16 @@ impl TypeInference {
             pats_tast.push(pat_tast);
         }
         let pat_ty = tast::Ty::TTuple { typs: pat_typs };
-        env.constraints
-            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
         tast::Pat::PTuple {
             items: pats_tast,
             ty: pat_ty,
         }
     }
 
-    fn check_pat_wild(&mut self, env: &mut GlobalEnv, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_wild(&mut self, ty: &tast::Ty) -> tast::Pat {
         let pat_ty = self.fresh_ty_var();
-        env.constraints
-            .push(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
         tast::Pat::PWild { ty: pat_ty }
     }
 }
@@ -1368,57 +1337,10 @@ fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
-fn parse_integer_literal(env: &mut GlobalEnv, literal: &str) -> Option<i128> {
-    match literal.parse::<i128>() {
-        Ok(value) => Some(value),
-        Err(_) => {
-            env.report_typer_error(format!("Invalid integer literal: {}", literal));
-            None
-        }
-    }
-}
-
 fn int_literal_expr(value: i128, ty: tast::Ty) -> tast::Expr {
     tast::Expr::EPrim {
         value: Prim::from_int_literal(value, &ty),
         ty,
-    }
-}
-
-fn ensure_integer_literal_fits(env: &mut GlobalEnv, value: i128, ty: &tast::Ty) {
-    if let Some((min, max)) = integer_bounds(ty)
-        && (value < min || value > max)
-    {
-        if let Some(name) = integer_type_name(ty) {
-            env.report_typer_error(format!(
-                "Integer literal {} does not fit in {}",
-                value, name
-            ));
-        } else {
-            env.report_typer_error(format!(
-                "Integer literal {} does not fit in integer type {:?}",
-                value, ty
-            ));
-        }
-    }
-}
-
-fn ensure_float_literal_fits(env: &mut GlobalEnv, value: f64, ty: &tast::Ty) {
-    if !value.is_finite() {
-        env.report_typer_error("Float literal must be finite".to_string());
-        return;
-    }
-
-    match ty {
-        tast::Ty::TFloat32 => {
-            if value < f32::MIN as f64 || value > f32::MAX as f64 {
-                env.report_typer_error(format!("Float literal {} does not fit in float32", value));
-            }
-        }
-        tast::Ty::TFloat64 => {
-            // Any finite f64 literal fits.
-        }
-        _ => {}
     }
 }
 
@@ -1462,4 +1384,53 @@ fn is_float_ty(ty: &tast::Ty) -> bool {
 
 fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
+}
+
+impl TypeInference {
+    fn parse_integer_literal(&mut self, literal: &str) -> Option<i128> {
+        match literal.parse::<i128>() {
+            Ok(value) => Some(value),
+            Err(_) => {
+                self.report_error(format!("Invalid integer literal: {}", literal));
+                None
+            }
+        }
+    }
+
+    fn ensure_integer_literal_fits(&mut self, value: i128, ty: &tast::Ty) {
+        if let Some((min, max)) = integer_bounds(ty)
+            && (value < min || value > max)
+        {
+            if let Some(name) = integer_type_name(ty) {
+                self.report_error(format!(
+                    "Integer literal {} does not fit in {}",
+                    value, name
+                ));
+            } else {
+                self.report_error(format!(
+                    "Integer literal {} does not fit in integer type {:?}",
+                    value, ty
+                ));
+            }
+        }
+    }
+
+    fn ensure_float_literal_fits(&mut self, value: f64, ty: &tast::Ty) {
+        if !value.is_finite() {
+            self.report_error("Float literal must be finite".to_string());
+            return;
+        }
+
+        match ty {
+            tast::Ty::TFloat32 => {
+                if value < f32::MIN as f64 || value > f32::MAX as f64 {
+                    self.report_error(format!("Float literal {} does not fit in float32", value));
+                }
+            }
+            tast::Ty::TFloat64 => {
+                // Any finite f64 literal fits.
+            }
+            _ => {}
+        }
+    }
 }
