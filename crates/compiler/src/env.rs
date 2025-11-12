@@ -573,10 +573,10 @@ impl TypeEnv {
     pub fn lookup_var(&mut self, name: &Lident) -> Option<tast::Ty> {
         for (depth, scope) in self.scopes.iter().enumerate().rev() {
             if let Some(ty) = scope.get(name) {
-                if depth + 1 < self.scopes.len() {
-                    if let Some(captures) = self.capture_stack.last_mut() {
-                        captures.entry(name.clone()).or_insert_with(|| ty.clone());
-                    }
+                if depth + 1 < self.scopes.len()
+                    && let Some(captures) = self.capture_stack.last_mut()
+                {
+                    captures.entry(name.clone()).or_insert_with(|| ty.clone());
                 }
                 return Some(ty.clone());
             }
@@ -618,7 +618,7 @@ impl TypeEnv {
         let captured = self
             .capture_stack
             .pop()
-            .unwrap_or_else(IndexMap::new)
+            .unwrap_or_default()
             .into_iter()
             .map(|(name, ty)| (name.0, ty))
             .collect();

@@ -16,6 +16,12 @@ pub struct TypeInference {
     diagnostics: Diagnostics,
 }
 
+impl Default for TypeInference {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TypeInference {
     pub fn new() -> Self {
         Self {

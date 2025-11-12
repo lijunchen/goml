@@ -7,7 +7,7 @@ use crate::{
 };
 use ast::ast::{Lident, Uident};
 
-fn occurs(typer: &mut TypeInference, env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(typer: &mut TypeInference, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
@@ -32,39 +32,39 @@ fn occurs(typer: &mut TypeInference, env: &GlobalEnv, var: TypeVar, ty: &tast::T
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(typer, env, var, ty) {
+                if !occurs(typer, _env, var, ty) {
                     return false;
                 }
             }
         }
         tast::Ty::TCon { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(typer, env, var, ty.as_ref()) {
+            if !occurs(typer, _env, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(typer, env, var, arg) {
+                if !occurs(typer, _env, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(typer, env, var, elem) {
+            if !occurs(typer, _env, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(typer, env, var, elem) {
+            if !occurs(typer, _env, var, elem) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(typer, env, var, param) {
+                if !occurs(typer, _env, var, param) {
                     return false;
                 }
             }
-            if !occurs(typer, env, var, ret_ty) {
+            if !occurs(typer, _env, var, ret_ty) {
                 return false;
             }
         }
