@@ -4,7 +4,7 @@ use ::ast::ast::{Lident, StructDef, TraitMethodSignature};
 use ast::ast;
 
 use crate::{
-    env::{self, Env},
+    env::{self, GlobalEnv, TypeEnv},
     rename,
     tast::{self},
     type_encoding::encode_ty,
@@ -14,7 +14,7 @@ use crate::{
     },
 };
 
-fn predeclare_types(env: &mut Env, ast: &ast::File) {
+fn predeclare_types(env: &mut GlobalEnv, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(enum_def) => {
@@ -40,7 +40,7 @@ fn predeclare_types(env: &mut Env, ast: &ast::File) {
     }
 }
 
-fn define_enum(env: &mut Env, enum_def: &ast::EnumDef) {
+fn define_enum(env: &mut GlobalEnv, enum_def: &ast::EnumDef) {
     let params_env = &enum_def.generics;
     let tparam_names = type_param_name_set(params_env);
 
@@ -68,7 +68,7 @@ fn define_enum(env: &mut Env, enum_def: &ast::EnumDef) {
     );
 }
 
-fn define_struct(env: &mut Env, struct_def: &ast::StructDef) {
+fn define_struct(env: &mut GlobalEnv, struct_def: &ast::StructDef) {
     let tparam_names = type_param_name_set(&struct_def.generics);
     let fields = struct_def
         .fields
@@ -90,7 +90,7 @@ fn define_struct(env: &mut Env, struct_def: &ast::StructDef) {
     );
 }
 
-fn define_trait(env: &mut Env, trait_def: &ast::TraitDef) {
+fn define_trait(env: &mut GlobalEnv, trait_def: &ast::TraitDef) {
     for TraitMethodSignature {
         name: method_name,
         params,
@@ -115,7 +115,7 @@ fn define_trait(env: &mut Env, trait_def: &ast::TraitDef) {
     }
 }
 
-fn define_impl(env: &mut Env, impl_block: &ast::ImplBlock) {
+fn define_impl(env: &mut GlobalEnv, impl_block: &ast::ImplBlock) {
     let empty_tparams = HashSet::new();
     let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
     validate_ty(env, &for_ty, &empty_tparams);
@@ -264,7 +264,7 @@ fn define_impl(env: &mut Env, impl_block: &ast::ImplBlock) {
     }
 }
 
-fn define_function(env: &mut Env, func: &ast::Fn) {
+fn define_function(env: &mut GlobalEnv, func: &ast::Fn) {
     let name = func.name.clone();
     let tparam_names = type_param_name_set(&func.generics);
     let params = func
@@ -317,7 +317,7 @@ pub fn go_symbol_name(name: &str) -> String {
     }
 }
 
-fn define_extern_go(env: &mut Env, ext: &ast::ExternGo) {
+fn define_extern_go(env: &mut GlobalEnv, ext: &ast::ExternGo) {
     let params = ext
         .params
         .iter()
@@ -349,7 +349,7 @@ fn define_extern_go(env: &mut Env, ext: &ast::ExternGo) {
     );
 }
 
-fn define_extern_type(env: &mut Env, ext: &ast::ExternType) {
+fn define_extern_type(env: &mut GlobalEnv, ext: &ast::ExternType) {
     env.register_extern_type(ext.goml_name.0.clone());
 }
 
@@ -408,7 +408,7 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     }
 }
 
-pub fn collect_typedefs(env: &mut Env, ast: &ast::File) {
+pub fn collect_typedefs(env: &mut GlobalEnv, ast: &ast::File) {
     predeclare_types(env, ast);
 
     for item in ast.toplevels.iter() {
@@ -424,8 +424,8 @@ pub fn collect_typedefs(env: &mut Env, ast: &ast::File) {
     }
 }
 
-pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
-    let mut env = env::Env::new();
+pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalEnv) {
+    let mut env = env::GlobalEnv::new();
     let ast = rename::Rename::default().rename_file(ast);
     collect_typedefs(&mut env, &ast);
     let mut typer = TypeInference::new();
@@ -462,21 +462,21 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::Env) {
     )
 }
 
-fn check_fn(env: &mut Env, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
-    let mut vars = im::HashMap::<Lident, tast::Ty>::new();
-    for (name, ty) in f.params.iter() {
-        let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
-        vars.insert(name.clone(), ty);
-    }
-    let new_params = f
+fn check_fn(env: &mut GlobalEnv, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
+    let mut type_env = TypeEnv::new();
+    let param_types: Vec<(Lident, tast::Ty)> = f
         .params
         .iter()
         .map(|(name, ty)| {
             (
-                name.0.clone(),
+                name.clone(),
                 ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
             )
         })
+        .collect();
+    let new_params = param_types
+        .iter()
+        .map(|(name, ty)| (name.0.clone(), ty.clone()))
         .collect::<Vec<_>>();
 
     let ret_ty = match &f.ret_ty {
@@ -484,8 +484,14 @@ fn check_fn(env: &mut Env, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
         None => tast::Ty::TUnit,
     };
 
-    let typed_body = typer.with_tparams_env(&f.generics, |typer| {
-        typer.check_expr(env, &vars, &f.body, &ret_ty)
+    let typed_body = type_env.with_tparams_env(&f.generics, |type_env| {
+        type_env.push_scope();
+        for (name, ty) in param_types.iter() {
+            type_env.insert_var(name, ty.clone());
+        }
+        let body = typer.check_expr(env, type_env, &f.body, &ret_ty);
+        type_env.pop_scope();
+        body
     });
     typer.solve(env);
     let typed_body = typer.subst(env, typed_body);
@@ -498,27 +504,27 @@ fn check_fn(env: &mut Env, typer: &mut TypeInference, f: &ast::Fn) -> tast::Fn {
 }
 
 fn check_impl_block(
-    env: &mut Env,
+    env: &mut GlobalEnv,
     typer: &mut TypeInference,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
     let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
-        let mut vars = im::HashMap::<Lident, tast::Ty>::new();
-        for (name, ty) in f.params.iter() {
-            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics);
-            vars.insert(name.clone(), ty);
-        }
-        let new_params = f
+        let mut type_env = TypeEnv::new();
+        let param_types: Vec<(Lident, tast::Ty)> = f
             .params
             .iter()
             .map(|(name, ty)| {
                 (
-                    name.0.clone(),
+                    name.clone(),
                     ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
                 )
             })
+            .collect();
+        let new_params = param_types
+            .iter()
+            .map(|(name, ty)| (name.0.clone(), ty.clone()))
             .collect::<Vec<_>>();
 
         let ret_ty = match &f.ret_ty {
@@ -526,8 +532,14 @@ fn check_impl_block(
             None => tast::Ty::TUnit,
         };
 
-        let typed_body = typer.with_tparams_env(&f.generics, |typer| {
-            typer.check_expr(env, &vars, &f.body, &ret_ty)
+        let typed_body = type_env.with_tparams_env(&f.generics, |type_env| {
+            type_env.push_scope();
+            for (name, ty) in param_types.iter() {
+                type_env.insert_var(name, ty.clone());
+            }
+            let body = typer.check_expr(env, type_env, &f.body, &ret_ty);
+            type_env.pop_scope();
+            body
         });
         typer.solve(env);
         let typed_body = typer.subst(env, typed_body);
@@ -547,7 +559,7 @@ fn check_impl_block(
 }
 
 fn check_extern_go(
-    _env: &mut Env,
+    _env: &mut GlobalEnv,
     _typer: &mut TypeInference,
     ext: &ast::ExternGo,
 ) -> tast::ExternGo {
@@ -569,7 +581,7 @@ fn check_extern_go(
     }
 }
 
-fn check_extern_type(env: &mut Env, ext: &ast::ExternType) -> tast::ExternType {
+fn check_extern_type(env: &mut GlobalEnv, ext: &ast::ExternType) -> tast::ExternType {
     env.register_extern_type(ext.goml_name.0.clone());
     tast::ExternType {
         goml_name: ext.goml_name.0.clone(),

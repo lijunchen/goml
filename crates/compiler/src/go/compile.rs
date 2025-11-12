@@ -2,7 +2,7 @@ use ast::ast::Uident;
 
 use crate::{
     anf::{self, AExpr},
-    env::Env,
+    env::GlobalEnv,
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast::{self, Constructor, Prim},
 };
@@ -61,7 +61,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
     );
 }
 
-fn compile_imm(env: &Env, imm: &anf::ImmExpr) -> goast::Expr {
+fn compile_imm(env: &GlobalEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
             name: name.clone(),
@@ -86,7 +86,7 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     }
 }
 
-fn cexpr_ty(env: &Env, e: &anf::CExpr) -> goty::GoType {
+fn cexpr_ty(env: &GlobalEnv, e: &anf::CExpr) -> goty::GoType {
     let t = match e {
         anf::CExpr::CImm { imm } => imm_ty(imm),
         anf::CExpr::EConstr { ty, .. }
@@ -301,7 +301,7 @@ fn compile_builtin_call(
     Err(args)
 }
 
-fn variant_struct_name(env: &Env, enum_name: &str, variant_name: &str) -> String {
+fn variant_struct_name(env: &GlobalEnv, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
     for (_ename, edef) in env.enums.iter() {
@@ -323,7 +323,7 @@ fn variant_struct_name(env: &Env, enum_name: &str, variant_name: &str) -> String
     }
 }
 
-fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
+fn lookup_variant_name(env: &GlobalEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
     if let Some(def) = env.enums.get(&Uident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
@@ -335,7 +335,7 @@ fn lookup_variant_name(env: &Env, ty: &tast::Ty, index: usize) -> String {
     );
 }
 
-fn variant_ty_by_index(env: &Env, ty: &tast::Ty, index: usize) -> goty::GoType {
+fn variant_ty_by_index(env: &GlobalEnv, ty: &tast::Ty, index: usize) -> goty::GoType {
     let vname = lookup_variant_name(env, ty, index);
     let ty = tast::Ty::TCon { name: vname };
     tast_ty_to_go_type(&ty)
@@ -413,7 +413,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 }
 
 fn instantiate_struct_fields(
-    env: &Env,
+    env: &GlobalEnv,
     type_name: &Uident,
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
@@ -443,7 +443,7 @@ fn instantiate_struct_fields(
         .collect()
 }
 
-fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
+fn tuple_to_go_struct_type(_env: &GlobalEnv, ty: &tast::Ty) -> goty::GoType {
     if let tast::Ty::TTuple { typs } = ty {
         let name = go_type_name_for(ty);
         goty::GoType::TStruct {
@@ -459,7 +459,7 @@ fn tuple_to_go_struct_type(_env: &Env, ty: &tast::Ty) -> goty::GoType {
     }
 }
 
-fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
+fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
     match e {
         anf::CExpr::CImm { imm } => compile_imm(env, imm),
         anf::CExpr::EConstr {
@@ -697,7 +697,7 @@ fn compile_cexpr(env: &Env, e: &anf::CExpr) -> goast::Expr {
 }
 
 fn compile_match_branches<F>(
-    env: &Env,
+    env: &GlobalEnv,
     scrutinee: &anf::ImmExpr,
     arms: &[anf::Arm],
     default: &Option<Box<anf::AExpr>>,
@@ -869,7 +869,7 @@ where
     }
 }
 
-fn compile_cexpr_effect(env: &Env, expr: &anf::CExpr) -> Vec<goast::Stmt> {
+fn compile_cexpr_effect(env: &GlobalEnv, expr: &anf::CExpr) -> Vec<goast::Stmt> {
     match expr {
         anf::CExpr::CImm { .. }
         | anf::CExpr::EConstr { .. }
@@ -903,7 +903,7 @@ struct SpawnCompilation {
 }
 
 fn compile_spawn_call(
-    env: &Env,
+    env: &GlobalEnv,
     func: &anf::ImmExpr,
     args: &[anf::ImmExpr],
 ) -> Option<SpawnCompilation> {
@@ -941,7 +941,7 @@ fn compile_spawn_call(
     })
 }
 
-fn find_closure_apply_fn(env: &Env, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
+fn find_closure_apply_fn(env: &GlobalEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
     let tast::Ty::TCon { name } = closure_ty else {
         return None;
     };
@@ -963,7 +963,7 @@ fn find_closure_apply_fn(env: &Env, closure_ty: &tast::Ty) -> Option<ClosureAppl
     })
 }
 
-fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::EIf {
@@ -1051,7 +1051,7 @@ fn compile_aexpr_effect(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
     }
 }
 
-fn compile_while(env: &Env, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_while(env: &GlobalEnv, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
     let cond_ty = cond.get_ty();
     if cond_ty != tast::Ty::TBool {
         panic!("while condition must have type bool, got {:?}", cond_ty);
@@ -1089,7 +1089,7 @@ fn compile_while(env: &Env, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::St
     stmts
 }
 
-fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::EIf {
@@ -1210,7 +1210,7 @@ fn compile_aexpr_assign(env: &Env, target: &str, e: anf::AExpr) -> Vec<goast::St
     }
 }
 
-fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -1321,7 +1321,7 @@ fn compile_aexpr(env: &Env, e: anf::AExpr) -> Vec<goast::Stmt> {
     stmts
 }
 
-fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
+fn compile_fn(env: &GlobalEnv, f: anf::Fn) -> goast::Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
         params.push((name, tast_ty_to_go_type(&ty)));
@@ -1370,7 +1370,7 @@ fn compile_fn(env: &Env, f: anf::Fn) -> goast::Fn {
     }
 }
 
-pub fn go_file(env: &Env, file: anf::File) -> goast::File {
+pub fn go_file(env: &GlobalEnv, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
@@ -1481,7 +1481,7 @@ pub fn go_file(env: &Env, file: anf::File) -> goast::File {
     crate::go::dce::eliminate_dead_vars(file)
 }
 
-fn gen_type_definition(env: &Env) -> Vec<goast::Item> {
+fn gen_type_definition(env: &GlobalEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in env.structs.iter() {
         let has_type_param = name.0.contains("TParam")
@@ -1579,7 +1579,7 @@ fn test_type_gen() {
     use crate::env::EnumDef;
     use expect_test::expect;
 
-    let mut env = Env::new();
+    let mut env = GlobalEnv::new();
     env.enums.insert(
         Uident::new("Tree"),
         EnumDef {

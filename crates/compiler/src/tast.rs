@@ -476,6 +476,7 @@ pub enum Expr {
         params: Vec<ClosureParam>,
         body: Box<Expr>,
         ty: Ty,
+        captures: Vec<(String, Ty)>,
     },
     ELet {
         pat: Pat,

@@ -1,6 +1,6 @@
 pub type Ty = crate::tast::Ty;
 use crate::tast::{Constructor, Prim};
-use crate::{core, env::Env};
+use crate::{core, env::GlobalEnv};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -151,7 +151,7 @@ fn imm_ty(imm: &ImmExpr) -> Ty {
 
 // Helper function to compile match arms with complex patterns to immediate patterns
 fn compile_match_arms_to_anf<'a>(
-    env: &'a Env,
+    env: &'a GlobalEnv,
     scrutinee: ImmExpr,
     arms: Vec<core::Arm>,
     default: Option<Box<core::Expr>>,
@@ -222,7 +222,7 @@ fn compile_match_arms_to_anf<'a>(
     })
 }
 
-fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>) -> AExpr {
+fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>) -> AExpr {
     let e_ty = e.get_ty();
     match e {
         core::Expr::EVar { name, ty } => k(CExpr::CImm {
@@ -406,7 +406,11 @@ fn anf<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>)
     }
 }
 
-fn anf_imm<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>) -> AExpr {
+fn anf_imm<'a>(
+    env: &'a GlobalEnv,
+    e: core::Expr,
+    k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>,
+) -> AExpr {
     match e {
         core::Expr::EVar { name, ty } => k(ImmExpr::ImmVar { name, ty }),
         core::Expr::EPrim { value, ty } => k(ImmExpr::ImmPrim { value, ty }),
@@ -435,7 +439,7 @@ fn anf_imm<'a>(env: &'a Env, e: core::Expr, k: Box<dyn FnOnce(ImmExpr) -> AExpr 
 }
 
 fn anf_list<'a>(
-    env: &'a Env,
+    env: &'a GlobalEnv,
     es: &'a [core::Expr],
     k: Box<dyn FnOnce(Vec<ImmExpr>) -> AExpr + 'a>,
 ) -> AExpr {
@@ -461,7 +465,7 @@ fn anf_list<'a>(
     }
 }
 
-pub fn anf_file(env: &Env, file: core::File) -> File {
+pub fn anf_file(env: &GlobalEnv, file: core::File) -> File {
     let mut toplevels = Vec::new();
     for core_fn in file.toplevels {
         let name = core_fn.name;

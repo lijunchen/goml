@@ -4,9 +4,9 @@ use ast::ast::Uident;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{env::Env, tast};
+use crate::{env::GlobalEnv, tast};
 
-fn typecheck(src: &str) -> (tast::File, Env) {
+fn typecheck(src: &str) -> (tast::File, GlobalEnv) {
     let path = PathBuf::from("test_structs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {
@@ -211,7 +211,13 @@ fn use_closure(x: int) -> int {
         _ => panic!("expected let binding in function body"),
     };
 
-    let tast::Expr::EClosure { params, body, ty } = &**closure_expr else {
+    let tast::Expr::EClosure {
+        params,
+        body,
+        ty,
+        captures: _,
+    } = &**closure_expr
+    else {
         panic!("expected closure expression");
     };
 

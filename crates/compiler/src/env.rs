@@ -1,5 +1,6 @@
 use ast::ast::{Lident, Uident};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use im::HashMap as ImHashMap;
 use indexmap::{IndexMap, IndexSet};
 
 pub use super::builtins::builtin_function_names;
@@ -72,7 +73,7 @@ pub enum Constraint {
 
 #[derive(Debug, Clone)]
 #[allow(unused)]
-pub struct Env {
+pub struct GlobalEnv {
     counter: Cell<i32>,
     pub enums: IndexMap<Uident, EnumDef>,
     pub structs: IndexMap<Uident, StructDef>,
@@ -90,13 +91,13 @@ pub struct Env {
     pub diagnostics: Diagnostics,
 }
 
-impl Default for Env {
+impl Default for GlobalEnv {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl Env {
+impl GlobalEnv {
     pub fn new() -> Self {
         Self {
             counter: Cell::new(0),
@@ -519,6 +520,116 @@ impl Env {
         self.tuple_types = tuples;
         self.array_types = arrays;
         self.ref_types = refs;
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct TypeEnv {
+    scopes: Vec<ImHashMap<Lident, tast::Ty>>,
+    tparams_env_stack: Vec<Vec<Uident>>,
+    capture_stack: Vec<IndexMap<Lident, tast::Ty>>,
+}
+
+impl Default for TypeEnv {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl TypeEnv {
+    pub fn new() -> Self {
+        Self {
+            scopes: vec![ImHashMap::new()],
+            tparams_env_stack: Vec::new(),
+            capture_stack: Vec::new(),
+        }
+    }
+
+    pub fn push_scope(&mut self) {
+        self.scopes.push(ImHashMap::new());
+    }
+
+    pub fn pop_scope(&mut self) {
+        if self.scopes.len() <= 1 {
+            panic!("attempted to pop base scope from type environment");
+        }
+        self.scopes.pop();
+    }
+
+    pub fn with_scope<F, R>(&mut self, f: F) -> R
+    where
+        F: FnOnce(&mut TypeEnv) -> R,
+    {
+        self.push_scope();
+        let result = f(self);
+        self.pop_scope();
+        result
+    }
+
+    pub fn insert_var(&mut self, name: &Lident, ty: tast::Ty) {
+        if let Some(scope) = self.scopes.last_mut() {
+            scope.insert(name.clone(), ty);
+        }
+    }
+
+    pub fn lookup_var(&mut self, name: &Lident) -> Option<tast::Ty> {
+        for (depth, scope) in self.scopes.iter().enumerate().rev() {
+            if let Some(ty) = scope.get(name) {
+                if depth + 1 < self.scopes.len() {
+                    if let Some(captures) = self.capture_stack.last_mut() {
+                        captures.entry(name.clone()).or_insert_with(|| ty.clone());
+                    }
+                }
+                return Some(ty.clone());
+            }
+        }
+        None
+    }
+
+    pub fn push_tparams_env(&mut self, params: &[Uident]) {
+        self.tparams_env_stack.push(params.to_vec());
+    }
+
+    pub fn pop_tparams_env(&mut self) {
+        self.tparams_env_stack.pop();
+    }
+
+    pub fn current_tparams_env(&self) -> Vec<Uident> {
+        self.tparams_env_stack
+            .iter()
+            .flat_map(|env| env.iter().cloned())
+            .collect()
+    }
+
+    pub fn with_tparams_env<F, R>(&mut self, params: &[Uident], f: F) -> R
+    where
+        F: FnOnce(&mut TypeEnv) -> R,
+    {
+        self.push_tparams_env(params);
+        let result = f(self);
+        self.pop_tparams_env();
+        result
+    }
+
+    pub fn begin_closure(&mut self) {
+        self.capture_stack.push(IndexMap::new());
+        self.push_scope();
+    }
+
+    pub fn end_closure(&mut self) -> Vec<(String, tast::Ty)> {
+        let captured = self
+            .capture_stack
+            .pop()
+            .unwrap_or_else(IndexMap::new)
+            .into_iter()
+            .map(|(name, ty)| (name.0, ty))
+            .collect();
+        self.pop_scope();
+        captured
+    }
+
+    pub fn capture_stack_depth(&self) -> usize {
+        self.capture_stack.len()
     }
 }
 

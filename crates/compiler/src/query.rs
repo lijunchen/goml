@@ -1,7 +1,7 @@
 use cst::cst::CstNode;
 use parser::syntax::{MySyntaxKind, MySyntaxNode};
 
-use crate::{env::Env, tast};
+use crate::{env::GlobalEnv, tast};
 
 pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
@@ -48,7 +48,7 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
     ty.map(|node| node.to_string())
 }
 
-fn find_type(env: &Env, tast: &tast::File, range: &rowan::TextRange) -> Option<String> {
+fn find_type(env: &GlobalEnv, tast: &tast::File, range: &rowan::TextRange) -> Option<String> {
     for item in &tast.toplevels {
         match item {
             tast::Item::ImplBlock(impl_block) => {
@@ -70,11 +70,11 @@ fn find_type(env: &Env, tast: &tast::File, range: &rowan::TextRange) -> Option<S
     None
 }
 
-fn find_type_fn(env: &Env, tast: &tast::Fn, range: &rowan::TextRange) -> Option<String> {
+fn find_type_fn(env: &GlobalEnv, tast: &tast::Fn, range: &rowan::TextRange) -> Option<String> {
     find_type_expr(env, &tast.body, range)
 }
 
-fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Option<String> {
+fn find_type_expr(env: &GlobalEnv, tast: &tast::Expr, range: &rowan::TextRange) -> Option<String> {
     match tast {
         tast::Expr::EVar {
             name: _,
@@ -100,6 +100,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
             params,
             body,
             ty: _,
+            captures: _,
         } => {
             for param in params {
                 if let Some(astptr) = param.astptr
@@ -204,7 +205,7 @@ fn find_type_expr(env: &Env, tast: &tast::Expr, range: &rowan::TextRange) -> Opt
     }
 }
 
-fn find_type_pat(env: &Env, tast: &tast::Pat, range: &rowan::TextRange) -> Option<String> {
+fn find_type_pat(env: &GlobalEnv, tast: &tast::Pat, range: &rowan::TextRange) -> Option<String> {
     match tast {
         tast::Pat::PVar {
             name: _,

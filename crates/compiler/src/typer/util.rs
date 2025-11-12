@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
 use crate::{
-    env::Env,
+    env::GlobalEnv,
     tast::{self},
 };
 use ast::ast;
 
-pub(crate) fn validate_ty(env: &mut Env, ty: &tast::Ty, tparams: &HashSet<String>) {
+pub(crate) fn validate_ty(env: &mut GlobalEnv, ty: &tast::Ty, tparams: &HashSet<String>) {
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit

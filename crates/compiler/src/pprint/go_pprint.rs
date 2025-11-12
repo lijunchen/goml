@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 
 use crate::{
-    env::Env,
+    env::GlobalEnv,
     go::{
         goast::{
             BinaryOp, Block, Expr, Field, File, Fn, ImportDecl, ImportSpec, Interface, Item,
@@ -61,7 +61,7 @@ fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
 }
 
 impl File {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
             self.toplevels.iter().map(|item| item.to_doc(env)),
             RcDoc::hardline().append(RcDoc::hardline()),
@@ -69,7 +69,7 @@ impl File {
         .append(RcDoc::hardline())
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -77,7 +77,7 @@ impl File {
 }
 
 impl Item {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Item::Package(package) => package.to_doc(env),
             Item::Import(import_decl) => import_decl.to_doc(env),
@@ -88,7 +88,7 @@ impl Item {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -96,13 +96,13 @@ impl Item {
 }
 
 impl Package {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text("package")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -110,7 +110,7 @@ impl Package {
 }
 
 impl ImportDecl {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         if self.specs.is_empty() {
             RcDoc::text("import ()")
         } else {
@@ -128,7 +128,7 @@ impl ImportDecl {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -136,7 +136,7 @@ impl ImportDecl {
 }
 
 impl ImportSpec {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         let alias = if let Some(alias) = &self.alias {
             RcDoc::text(alias).append(RcDoc::space())
         } else {
@@ -149,7 +149,7 @@ impl ImportSpec {
             .append(RcDoc::text("\""))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -157,7 +157,7 @@ impl ImportSpec {
 }
 
 impl Interface {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(&self.name);
         let methods = if self.methods.is_empty() {
             RcDoc::nil()
@@ -182,7 +182,7 @@ impl Interface {
             .append(RcDoc::text("}"))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -190,7 +190,7 @@ impl Interface {
 }
 
 impl MethodElem {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(&self.name);
         let params = if self.params.is_empty() {
             RcDoc::nil()
@@ -217,7 +217,7 @@ impl MethodElem {
             .append(ret_type)
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -225,7 +225,7 @@ impl MethodElem {
 }
 
 impl Struct {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(&self.name);
         let fields = if self.fields.is_empty() {
             RcDoc::nil()
@@ -264,7 +264,7 @@ impl Struct {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -272,7 +272,7 @@ impl Struct {
 }
 
 impl TypeAlias {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text("type")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name))
@@ -282,7 +282,7 @@ impl TypeAlias {
             .append(go_type_doc(&self.ty))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -290,13 +290,13 @@ impl TypeAlias {
 }
 
 impl Field {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text(&self.name)
             .append(RcDoc::space())
             .append(go_type_doc(&self.ty))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -304,7 +304,7 @@ impl Field {
 }
 
 impl Fn {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(&self.name);
         let params = if self.params.is_empty() {
             RcDoc::nil()
@@ -336,7 +336,7 @@ impl Fn {
             .append(body)
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -344,7 +344,7 @@ impl Fn {
 }
 
 impl Method {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         let receiver = self.receiver.to_doc(env);
         let name = RcDoc::text(&self.name);
         let params = if self.params.is_empty() {
@@ -374,7 +374,7 @@ impl Method {
             .append(body)
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -382,7 +382,7 @@ impl Method {
 }
 
 impl Receiver {
-    pub fn to_doc(&self, _env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, _env: &GlobalEnv) -> RcDoc<'_, ()> {
         RcDoc::text("(")
             .append(RcDoc::text(&self.name))
             .append(RcDoc::space())
@@ -390,7 +390,7 @@ impl Receiver {
             .append(RcDoc::text(")"))
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -398,7 +398,7 @@ impl Receiver {
 }
 
 impl Block {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         if self.stmts.is_empty() {
             RcDoc::text("{}")
         } else {
@@ -414,7 +414,7 @@ impl Block {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -422,7 +422,7 @@ impl Block {
 }
 
 impl Stmt {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Stmt::Expr(expr) => expr.to_doc(env),
             Stmt::Go { call } => RcDoc::text("go")
@@ -643,7 +643,7 @@ impl Stmt {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -651,7 +651,7 @@ impl Stmt {
 }
 
 impl Expr {
-    pub fn to_doc(&self, env: &Env) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, env: &GlobalEnv) -> RcDoc<'_, ()> {
         match self {
             Expr::Nil { ty: _ } => RcDoc::text("nil"),
             Expr::Void { ty: _ } => RcDoc::text(""),
@@ -786,7 +786,7 @@ impl Expr {
         }
     }
 
-    pub fn to_pretty(&self, env: &Env, width: usize) -> String {
+    pub fn to_pretty(&self, env: &GlobalEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(env).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
