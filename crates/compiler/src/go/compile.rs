@@ -2,7 +2,7 @@ use ast::ast::Uident;
 
 use crate::{
     anf::{self, AExpr},
-    env::{Gensym, GlobalEnv},
+    env::{Gensym, GlobalTypeEnv},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast::{self, Constructor, Prim},
 };
@@ -61,7 +61,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
     );
 }
 
-fn compile_imm(env: &GlobalEnv, imm: &anf::ImmExpr) -> goast::Expr {
+fn compile_imm(genv: &GlobalTypeEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
             name: name.clone(),
@@ -73,7 +73,7 @@ fn compile_imm(env: &GlobalEnv, imm: &anf::ImmExpr) -> goast::Expr {
         }
         anf::ImmExpr::ImmTag { index, ty } => goast::Expr::StructLiteral {
             fields: vec![],
-            ty: variant_ty_by_index(env, ty, *index),
+            ty: variant_ty_by_index(genv, ty, *index),
         },
     }
 }
@@ -86,7 +86,7 @@ fn imm_ty(imm: &anf::ImmExpr) -> tast::Ty {
     }
 }
 
-fn cexpr_ty(env: &GlobalEnv, e: &anf::CExpr) -> goty::GoType {
+fn cexpr_ty(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goty::GoType {
     let t = match e {
         anf::CExpr::CImm { imm } => imm_ty(imm),
         anf::CExpr::EConstr { ty, .. }
@@ -105,7 +105,7 @@ fn cexpr_ty(env: &GlobalEnv, e: &anf::CExpr) -> goty::GoType {
             ty: _,
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
-                let def = env
+                let def = genv
                     .enums
                     .get(&enum_constructor.type_name)
                     .expect("unknown enum in EConstrGet");
@@ -131,7 +131,7 @@ fn cexpr_ty(env: &GlobalEnv, e: &anf::CExpr) -> goty::GoType {
                     struct_name, ty_name
                 );
                 let fields =
-                    instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
+                    instantiate_struct_fields(genv, &struct_constructor.type_name, &type_args);
                 fields[*field_index].1.clone()
             }
         },
@@ -301,10 +301,10 @@ fn compile_builtin_call(
     Err(args)
 }
 
-fn variant_struct_name(env: &GlobalEnv, enum_name: &str, variant_name: &str) -> String {
+fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
-    for (_ename, edef) in env.enums.iter() {
+    for (_ename, edef) in genv.enums.iter() {
         if edef
             .variants
             .iter()
@@ -323,11 +323,11 @@ fn variant_struct_name(env: &GlobalEnv, enum_name: &str, variant_name: &str) -> 
     }
 }
 
-fn lookup_variant_name(env: &GlobalEnv, ty: &tast::Ty, index: usize) -> String {
+fn lookup_variant_name(genv: &GlobalTypeEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
-    if let Some(def) = env.enums.get(&Uident::new(&name)) {
+    if let Some(def) = genv.enums.get(&Uident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
-        return variant_struct_name(env, &name, &vname.0);
+        return variant_struct_name(genv, &name, &vname.0);
     }
     panic!(
         "Cannot resolve variant name for ty {:?} index {}",
@@ -335,8 +335,8 @@ fn lookup_variant_name(env: &GlobalEnv, ty: &tast::Ty, index: usize) -> String {
     );
 }
 
-fn variant_ty_by_index(env: &GlobalEnv, ty: &tast::Ty, index: usize) -> goty::GoType {
-    let vname = lookup_variant_name(env, ty, index);
+fn variant_ty_by_index(genv: &GlobalTypeEnv, ty: &tast::Ty, index: usize) -> goty::GoType {
+    let vname = lookup_variant_name(genv, ty, index);
     let ty = tast::Ty::TCon { name: vname };
     tast_ty_to_go_type(&ty)
 }
@@ -413,11 +413,11 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 }
 
 fn instantiate_struct_fields(
-    env: &GlobalEnv,
+    genv: &GlobalTypeEnv,
     type_name: &Uident,
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
-    let struct_def = env
+    let struct_def = genv
         .structs
         .get(type_name)
         .unwrap_or_else(|| panic!("Unknown struct {}", type_name.0));
@@ -443,7 +443,7 @@ fn instantiate_struct_fields(
         .collect()
 }
 
-fn tuple_to_go_struct_type(_env: &GlobalEnv, ty: &tast::Ty) -> goty::GoType {
+fn tuple_to_go_struct_type(_genv: &GlobalTypeEnv, ty: &tast::Ty) -> goty::GoType {
     if let tast::Ty::TTuple { typs } = ty {
         let name = go_type_name_for(ty);
         goty::GoType::TStruct {
@@ -459,20 +459,20 @@ fn tuple_to_go_struct_type(_env: &GlobalEnv, ty: &tast::Ty) -> goty::GoType {
     }
 }
 
-fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
+fn compile_cexpr(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goast::Expr {
     match e {
-        anf::CExpr::CImm { imm } => compile_imm(env, imm),
+        anf::CExpr::CImm { imm } => compile_imm(genv, imm),
         anf::CExpr::EConstr {
             constructor,
             args,
             ty,
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
-                let variant_ty = variant_ty_by_index(env, ty, enum_constructor.index);
+                let variant_ty = variant_ty_by_index(genv, ty, enum_constructor.index);
                 let fields = args
                     .iter()
                     .enumerate()
-                    .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
+                    .map(|(i, a)| (format!("_{}", i), compile_imm(genv, a)))
                     .collect();
                 goast::Expr::StructLiteral {
                     ty: variant_ty,
@@ -481,7 +481,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
             }
             Constructor::Struct(struct_constructor) => {
                 let go_ty = tast_ty_to_go_type(ty);
-                let struct_def = env
+                let struct_def = genv
                     .structs
                     .get(&struct_constructor.type_name)
                     .unwrap_or_else(|| panic!("unknown struct {}", struct_constructor.type_name.0));
@@ -497,7 +497,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
                     .fields
                     .iter()
                     .zip(args.iter())
-                    .map(|((fname, _), arg)| (fname.0.clone(), compile_imm(env, arg)))
+                    .map(|((fname, _), arg)| (fname.0.clone(), compile_imm(genv, arg)))
                     .collect();
                 goast::Expr::StructLiteral { ty: go_ty, fields }
             }
@@ -506,15 +506,15 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
             let fields = items
                 .iter()
                 .enumerate()
-                .map(|(i, a)| (format!("_{}", i), compile_imm(env, a)))
+                .map(|(i, a)| (format!("_{}", i), compile_imm(genv, a)))
                 .collect();
             goast::Expr::StructLiteral {
-                ty: tuple_to_go_struct_type(env, ty),
+                ty: tuple_to_go_struct_type(genv, ty),
                 fields,
             }
         }
         anf::CExpr::EArray { items, ty } => {
-            let elems = items.iter().map(|item| compile_imm(env, item)).collect();
+            let elems = items.iter().map(|item| compile_imm(genv, item)).collect();
             goast::Expr::ArrayLiteral {
                 elems,
                 ty: tast_ty_to_go_type(ty),
@@ -544,10 +544,10 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
             field_index,
             ty: _,
         } => {
-            let obj = compile_imm(env, expr);
+            let obj = compile_imm(genv, expr);
             match constructor {
                 Constructor::Enum(enum_constructor) => {
-                    let def = env
+                    let def = genv
                         .enums
                         .get(&enum_constructor.type_name)
                         .expect("unknown enum in EConstrGet");
@@ -578,7 +578,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
                         struct_name, ty_name
                     );
                     let fields =
-                        instantiate_struct_fields(env, &struct_constructor.type_name, &type_args);
+                        instantiate_struct_fields(genv, &struct_constructor.type_name, &type_args);
                     let (field_name, field_ty) = &fields[*field_index];
                     goast::Expr::FieldAccess {
                         obj: Box::new(obj),
@@ -593,7 +593,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
             if let anf::ImmExpr::ImmVar { name, .. } = &func {
                 let args_exprs = args
                     .iter()
-                    .map(|arg| compile_imm(env, arg))
+                    .map(|arg| compile_imm(genv, arg))
                     .collect::<Vec<_>>();
                 match compile_builtin_call(name, args_exprs, ty) {
                     Ok(expr) => return expr,
@@ -602,7 +602,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
             }
 
             let compiled_args = compiled_args
-                .unwrap_or_else(|| args.iter().map(|arg| compile_imm(env, arg)).collect());
+                .unwrap_or_else(|| args.iter().map(|arg| compile_imm(genv, arg)).collect());
             let func_ty = tast_ty_to_go_type(&imm_ty(func));
 
             if let anf::ImmExpr::ImmVar { name, .. } = &func
@@ -666,7 +666,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
                     ty: tast_ty_to_go_type(ty),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                && let Some(extern_fn) = env.extern_funcs.get(name)
+                && let Some(extern_fn) = genv.extern_funcs.get(name)
             {
                 let alias = go_package_alias(&extern_fn.package_path);
                 goast::Expr::Call {
@@ -679,14 +679,14 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
                 }
             } else {
                 goast::Expr::Call {
-                    func: Box::new(compile_imm(env, func)),
+                    func: Box::new(compile_imm(genv, func)),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
             }
         }
         anf::CExpr::EProj { tuple, index, ty } => {
-            let obj = compile_imm(env, tuple);
+            let obj = compile_imm(genv, tuple);
             goast::Expr::FieldAccess {
                 obj: Box::new(obj),
                 field: format!("_{}", index),
@@ -697,7 +697,7 @@ fn compile_cexpr(env: &GlobalEnv, e: &anf::CExpr) -> goast::Expr {
 }
 
 fn compile_match_branches<F>(
-    env: &GlobalEnv,
+    genv: &GlobalTypeEnv,
     scrutinee: &anf::ImmExpr,
     arms: &[anf::Arm],
     default: &Option<Box<anf::AExpr>>,
@@ -741,7 +741,7 @@ where
                 stmts: build_branch((**d).clone()),
             });
             vec![goast::Stmt::SwitchExpr {
-                expr: compile_imm(env, scrutinee),
+                expr: compile_imm(genv, scrutinee),
                 cases,
                 default: default_block,
             }]
@@ -792,7 +792,7 @@ where
                 stmts: build_branch((**d).clone()),
             });
             vec![goast::Stmt::SwitchExpr {
-                expr: compile_imm(env, scrutinee),
+                expr: compile_imm(genv, scrutinee),
                 cases,
                 default: default_block,
             }]
@@ -822,14 +822,14 @@ where
                 stmts: build_branch((**d).clone()),
             });
             vec![goast::Stmt::SwitchExpr {
-                expr: compile_imm(env, scrutinee),
+                expr: compile_imm(genv, scrutinee),
                 cases,
                 default: default_block,
             }]
         }
         ty @ (tast::Ty::TCon { .. } | tast::Ty::TApp { .. }) => {
             let type_name = ty.get_constr_name_unsafe();
-            if !env.enums.contains_key(&Uident::new(&type_name)) {
+            if !genv.enums.contains_key(&Uident::new(&type_name)) {
                 panic!(
                     "unsupported scrutinee type {:?} for match in Go backend",
                     ty
@@ -844,7 +844,7 @@ where
             let mut cases = Vec::new();
             for arm in arms {
                 if let anf::ImmExpr::ImmTag { index, ty } = &arm.lhs {
-                    let vty = variant_ty_by_index(env, ty, *index);
+                    let vty = variant_ty_by_index(genv, ty, *index);
                     cases.push((
                         vty,
                         goast::Block {
@@ -860,7 +860,7 @@ where
             });
             vec![goast::Stmt::SwitchType {
                 bind: Some(scrutinee_name),
-                expr: compile_imm(env, scrutinee),
+                expr: compile_imm(genv, scrutinee),
                 cases,
                 default: default_block,
             }]
@@ -869,7 +869,7 @@ where
     }
 }
 
-fn compile_cexpr_effect(env: &GlobalEnv, expr: &anf::CExpr) -> Vec<goast::Stmt> {
+fn compile_cexpr_effect(genv: &GlobalTypeEnv, expr: &anf::CExpr) -> Vec<goast::Stmt> {
     match expr {
         anf::CExpr::CImm { .. }
         | anf::CExpr::EConstr { .. }
@@ -878,10 +878,10 @@ fn compile_cexpr_effect(env: &GlobalEnv, expr: &anf::CExpr) -> Vec<goast::Stmt> 
         | anf::CExpr::EConstrGet { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
         anf::CExpr::ECall { func, args, .. } => {
-            if let Some(spawn) = compile_spawn_call(env, func, args) {
+            if let Some(spawn) = compile_spawn_call(genv, func, args) {
                 vec![spawn.stmt]
             } else {
-                vec![goast::Stmt::Expr(compile_cexpr(env, expr))]
+                vec![goast::Stmt::Expr(compile_cexpr(genv, expr))]
             }
         }
         anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
@@ -903,7 +903,7 @@ struct SpawnCompilation {
 }
 
 fn compile_spawn_call(
-    env: &GlobalEnv,
+    genv: &GlobalTypeEnv,
     func: &anf::ImmExpr,
     args: &[anf::ImmExpr],
 ) -> Option<SpawnCompilation> {
@@ -920,7 +920,7 @@ fn compile_spawn_call(
     let closure_env = &args[0];
 
     let closure_ty = imm_ty(closure_env);
-    let apply = find_closure_apply_fn(env, &closure_ty)?;
+    let apply = find_closure_apply_fn(genv, &closure_ty)?;
 
     let apply_call = anf::CExpr::ECall {
         func: anf::ImmExpr::ImmVar {
@@ -931,7 +931,7 @@ fn compile_spawn_call(
         ty: apply.ret_ty.clone(),
     };
 
-    let call_expr = compile_cexpr(env, &apply_call);
+    let call_expr = compile_cexpr(genv, &apply_call);
     Some(SpawnCompilation {
         stmt: goast::Stmt::Go { call: call_expr },
         result_ty: goty::GoType::TUnit,
@@ -941,13 +941,13 @@ fn compile_spawn_call(
     })
 }
 
-fn find_closure_apply_fn(env: &GlobalEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
+fn find_closure_apply_fn(genv: &GlobalTypeEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
     let tast::Ty::TCon { name } = closure_ty else {
         return None;
     };
 
-    let apply_name = env.closure_apply_fn(name)?;
-    let fn_ty = env.funcs.get(apply_name)?;
+    let apply_name = genv.closure_apply_fn(name)?;
+    let fn_ty = genv.funcs.get(apply_name)?;
     let tast::Ty::TFunc { params, ret_ty } = fn_ty else {
         return None;
     };
@@ -963,18 +963,18 @@ fn find_closure_apply_fn(env: &GlobalEnv, closure_ty: &tast::Ty) -> Option<Closu
     })
 }
 
-fn compile_aexpr_effect(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr_effect(genv: &GlobalTypeEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::EIf {
                 cond, then, else_, ..
             } => {
-                let cond_e = compile_imm(env, &cond);
+                let cond_e = compile_imm(genv, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr_effect(env, gensym, *then),
+                    stmts: compile_aexpr_effect(genv, gensym, *then),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr_effect(env, gensym, *else_),
+                    stmts: compile_aexpr_effect(genv, gensym, *else_),
                 };
                 vec![goast::Stmt::If {
                     cond: cond_e,
@@ -987,11 +987,11 @@ fn compile_aexpr_effect(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<
                 arms,
                 default,
                 ty: _,
-            } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
-                compile_aexpr_effect(env, gensym, branch)
+            } => compile_match_branches(genv, scrutinee.as_ref(), &arms, &default, |branch| {
+                compile_aexpr_effect(genv, gensym, branch)
             }),
-            anf::CExpr::EWhile { cond, body, .. } => compile_while(env, gensym, *cond, *body),
-            other => compile_cexpr_effect(env, &other),
+            anf::CExpr::EWhile { cond, body, .. } => compile_while(genv, gensym, *cond, *body),
+            other => compile_cexpr_effect(genv, &other),
         },
         AExpr::ALet {
             name,
@@ -1008,11 +1008,11 @@ fn compile_aexpr_effect(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<
                 | anf::CExpr::EWhile { .. }) => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &complex),
+                        ty: cexpr_ty(genv, &complex),
                         value: None,
                     });
                     out.extend(compile_aexpr_assign(
-                        env,
+                        genv,
                         gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
@@ -1021,39 +1021,39 @@ fn compile_aexpr_effect(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<
                 ref simple @ anf::CExpr::ECall {
                     ref func, ref args, ..
                 } => {
-                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    if let Some(spawn) = compile_spawn_call(genv, func, args) {
                         out.push(spawn.stmt);
                         out.push(goast::Stmt::VarDecl {
                             name: name.clone(),
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        out.extend(compile_aexpr_effect(env, gensym, *body));
+                        out.extend(compile_aexpr_effect(genv, gensym, *body));
                         return out;
                     }
 
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, simple),
-                        value: Some(compile_cexpr(env, simple)),
+                        ty: cexpr_ty(genv, simple),
+                        value: Some(compile_cexpr(genv, simple)),
                     });
                 }
                 simple => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &simple),
-                        value: Some(compile_cexpr(env, &simple)),
+                        ty: cexpr_ty(genv, &simple),
+                        value: Some(compile_cexpr(genv, &simple)),
                     });
                 }
             }
-            out.extend(compile_aexpr_effect(env, gensym, *body));
+            out.extend(compile_aexpr_effect(genv, gensym, *body));
             out
         }
     }
 }
 
 fn compile_while(
-    env: &GlobalEnv,
+    genv: &GlobalTypeEnv,
     gensym: &Gensym,
     cond: anf::AExpr,
     body: anf::AExpr,
@@ -1071,7 +1071,7 @@ fn compile_while(
         value: None,
     });
 
-    let mut loop_body = compile_aexpr_assign(env, gensym, &cond_var, cond);
+    let mut loop_body = compile_aexpr_assign(genv, gensym, &cond_var, cond);
     let not_cond = goast::Expr::UnaryOp {
         op: goast::UnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
@@ -1087,7 +1087,7 @@ fn compile_while(
         },
         else_: None,
     });
-    loop_body.extend(compile_aexpr_effect(env, gensym, body));
+    loop_body.extend(compile_aexpr_effect(genv, gensym, body));
 
     stmts.push(goast::Stmt::Loop {
         body: goast::Block { stmts: loop_body },
@@ -1096,7 +1096,7 @@ fn compile_while(
 }
 
 fn compile_aexpr_assign(
-    env: &GlobalEnv,
+    genv: &GlobalTypeEnv,
     gensym: &Gensym,
     target: &str,
     e: anf::AExpr,
@@ -1106,9 +1106,9 @@ fn compile_aexpr_assign(
             anf::CExpr::EIf {
                 cond, then, else_, ..
             } => {
-                let cond_e = compile_imm(env, &cond);
-                let then_stmts = compile_aexpr_assign(env, gensym, target, *then);
-                let else_stmts = compile_aexpr_assign(env, gensym, target, *else_);
+                let cond_e = compile_imm(genv, &cond);
+                let then_stmts = compile_aexpr_assign(genv, gensym, target, *then);
+                let else_stmts = compile_aexpr_assign(genv, gensym, target, *else_);
                 vec![goast::Stmt::If {
                     cond: cond_e,
                     then: goast::Block { stmts: then_stmts },
@@ -1120,11 +1120,11 @@ fn compile_aexpr_assign(
                 arms,
                 default,
                 ty: _,
-            } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
-                compile_aexpr_assign(env, gensym, target, branch)
+            } => compile_match_branches(genv, scrutinee.as_ref(), &arms, &default, |branch| {
+                compile_aexpr_assign(genv, gensym, target, branch)
             }),
             anf::CExpr::EWhile { cond, body, .. } => {
-                let mut stmts = compile_while(env, gensym, *cond, *body);
+                let mut stmts = compile_while(genv, gensym, *cond, *body);
                 stmts.push(goast::Stmt::Assignment {
                     name: target.to_string(),
                     value: goast::Expr::Unit {
@@ -1140,10 +1140,10 @@ fn compile_aexpr_assign(
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
                 name: target.to_string(),
-                value: compile_cexpr(env, &other),
+                value: compile_cexpr(genv, &other),
             }],
             anf::CExpr::ECall { func, args, ty } => {
-                if let Some(spawn) = compile_spawn_call(env, &func, &args) {
+                if let Some(spawn) = compile_spawn_call(genv, &func, &args) {
                     vec![
                         spawn.stmt,
                         goast::Stmt::Assignment {
@@ -1154,7 +1154,7 @@ fn compile_aexpr_assign(
                 } else {
                     vec![goast::Stmt::Assignment {
                         name: target.to_string(),
-                        value: compile_cexpr(env, &anf::CExpr::ECall { func, args, ty }),
+                        value: compile_cexpr(genv, &anf::CExpr::ECall { func, args, ty }),
                     }]
                 }
             }
@@ -1174,11 +1174,11 @@ fn compile_aexpr_assign(
                 | anf::CExpr::EWhile { .. }) => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &complex),
+                        ty: cexpr_ty(genv, &complex),
                         value: None,
                     });
                     out.extend(compile_aexpr_assign(
-                        env,
+                        genv,
                         gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
@@ -1187,39 +1187,39 @@ fn compile_aexpr_assign(
                 ref simple @ anf::CExpr::ECall {
                     ref func, ref args, ..
                 } => {
-                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    if let Some(spawn) = compile_spawn_call(genv, func, args) {
                         out.push(spawn.stmt);
                         out.push(goast::Stmt::VarDecl {
                             name: name.clone(),
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        out.extend(compile_aexpr_assign(env, gensym, target, *body));
+                        out.extend(compile_aexpr_assign(genv, gensym, target, *body));
                         return out;
                     }
 
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, simple),
-                        value: Some(compile_cexpr(env, simple)),
+                        ty: cexpr_ty(genv, simple),
+                        value: Some(compile_cexpr(genv, simple)),
                     });
                 }
                 simple => {
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &simple),
-                        value: Some(compile_cexpr(env, &simple)),
+                        ty: cexpr_ty(genv, &simple),
+                        value: Some(compile_cexpr(genv, &simple)),
                     });
                 }
             }
 
-            out.extend(compile_aexpr_assign(env, gensym, target, *body));
+            out.extend(compile_aexpr_assign(genv, gensym, target, *body));
             out
         }
     }
 }
 
-fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr(genv: &GlobalTypeEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -1227,12 +1227,12 @@ fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::
             anf::CExpr::EIf {
                 cond, then, else_, ..
             } => {
-                let cond_e = compile_imm(env, &cond);
+                let cond_e = compile_imm(genv, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr(env, gensym, *then),
+                    stmts: compile_aexpr(genv, gensym, *then),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr(env, gensym, *else_),
+                    stmts: compile_aexpr(genv, gensym, *else_),
                 };
                 stmts.push(goast::Stmt::If {
                     cond: cond_e,
@@ -1247,15 +1247,15 @@ fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::
                 ty: _,
             } => {
                 stmts.extend(compile_match_branches(
-                    env,
+                    genv,
                     scrutinee.as_ref(),
                     &arms,
                     &default,
-                    |branch| compile_aexpr(env, gensym, branch),
+                    |branch| compile_aexpr(genv, gensym, branch),
                 ));
             }
             anf::CExpr::EWhile { cond, body, .. } => {
-                stmts.extend(compile_while(env, gensym, *cond, *body));
+                stmts.extend(compile_while(genv, gensym, *cond, *body));
                 stmts.push(goast::Stmt::Return {
                     expr: Some(goast::Expr::Unit {
                         ty: goty::GoType::TUnit,
@@ -1263,7 +1263,7 @@ fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::
                 });
             }
             _ => {
-                let e = compile_cexpr(env, &expr);
+                let e = compile_cexpr(genv, &expr);
                 match e.get_ty() {
                     goty::GoType::TVoid => {}
                     _ => {
@@ -1287,11 +1287,11 @@ fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::
                 | anf::CExpr::EWhile { .. }) => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &complex),
+                        ty: cexpr_ty(genv, &complex),
                         value: None,
                     });
                     stmts.extend(compile_aexpr_assign(
-                        env,
+                        genv,
                         gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
@@ -1300,38 +1300,38 @@ fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::
                 ref simple @ anf::CExpr::ECall {
                     ref func, ref args, ..
                 } => {
-                    if let Some(spawn) = compile_spawn_call(env, func, args) {
+                    if let Some(spawn) = compile_spawn_call(genv, func, args) {
                         stmts.push(spawn.stmt);
                         stmts.push(goast::Stmt::VarDecl {
                             name: name.clone(),
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        stmts.extend(compile_aexpr(env, gensym, *body));
+                        stmts.extend(compile_aexpr(genv, gensym, *body));
                         return stmts;
                     }
 
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, simple),
-                        value: Some(compile_cexpr(env, simple)),
+                        ty: cexpr_ty(genv, simple),
+                        value: Some(compile_cexpr(genv, simple)),
                     });
                 }
                 simple => {
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(env, &simple),
-                        value: Some(compile_cexpr(env, &simple)),
+                        ty: cexpr_ty(genv, &simple),
+                        value: Some(compile_cexpr(genv, &simple)),
                     });
                 }
             }
-            stmts.extend(compile_aexpr(env, gensym, *body));
+            stmts.extend(compile_aexpr(genv, gensym, *body));
         }
     }
     stmts
 }
 
-fn compile_fn(env: &GlobalEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
+fn compile_fn(genv: &GlobalTypeEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
         params.push((name, tast_ty_to_go_type(&ty)));
@@ -1348,7 +1348,7 @@ fn compile_fn(env: &GlobalEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     let body = f.body;
 
     let (ret_ty, body_stmts) = match go_ret_ty {
-        goty::GoType::TVoid => (None, compile_aexpr(env, gensym, body)),
+        goty::GoType::TVoid => (None, compile_aexpr(genv, gensym, body)),
         _ => {
             let ret_name = gensym.gensym("ret");
             let mut stmts = Vec::new();
@@ -1359,7 +1359,7 @@ fn compile_fn(env: &GlobalEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
                 value: None,
             });
 
-            stmts.extend(compile_aexpr_assign(env, gensym, &ret_name, body));
+            stmts.extend(compile_aexpr_assign(genv, gensym, &ret_name, body));
 
             stmts.push(goast::Stmt::Return {
                 expr: Some(goast::Expr::Var {
@@ -1380,14 +1380,14 @@ fn compile_fn(env: &GlobalEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     }
 }
 
-pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File {
+pub fn go_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
-    all.extend(runtime::make_array_runtime(&env.array_types));
-    all.extend(runtime::make_ref_runtime(&env.ref_types));
+    all.extend(runtime::make_array_runtime(&genv.array_types));
+    all.extend(runtime::make_ref_runtime(&genv.ref_types));
 
-    if !env.extern_funcs.is_empty() || !env.extern_types.is_empty() {
+    if !genv.extern_funcs.is_empty() || !genv.extern_types.is_empty() {
         let mut existing_imports: IndexSet<String> = IndexSet::new();
         for item in &all {
             if let goast::Item::Import(import_decl) = item {
@@ -1398,7 +1398,7 @@ pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File
         }
 
         let mut extra_specs = Vec::new();
-        for extern_fn in env.extern_funcs.values() {
+        for extern_fn in genv.extern_funcs.values() {
             if existing_imports.insert(extern_fn.package_path.clone()) {
                 extra_specs.push(goast::ImportSpec {
                     alias: None,
@@ -1406,7 +1406,7 @@ pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File
                 });
             }
         }
-        for extern_ty in env.extern_types.values() {
+        for extern_ty in genv.extern_types.values() {
             if let Some(package_path) = &extern_ty.package_path
                 && existing_imports.insert(package_path.clone())
             {
@@ -1440,8 +1440,8 @@ pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File
         }
     }
 
-    for ty in env.tuple_types.iter() {
-        match tuple_to_go_struct_type(env, ty) {
+    for ty in genv.tuple_types.iter() {
+        match tuple_to_go_struct_type(genv, ty) {
             goty::GoType::TStruct { name, fields } => {
                 let fields = fields
                     .into_iter()
@@ -1462,9 +1462,9 @@ pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File
 
     let file = anf::anf_renamer::rename(file);
 
-    let mut toplevels = gen_type_definition(env);
+    let mut toplevels = gen_type_definition(genv);
     for item in file.toplevels {
-        let gof = compile_fn(env, gensym, item);
+        let gof = compile_fn(genv, gensym, item);
         toplevels.push(goast::Item::Fn(gof));
     }
     all.extend(toplevels);
@@ -1491,9 +1491,9 @@ pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File
     crate::go::dce::eliminate_dead_vars(file)
 }
 
-fn gen_type_definition(env: &GlobalEnv) -> Vec<goast::Item> {
+fn gen_type_definition(genv: &GlobalTypeEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
-    for (name, def) in env.structs.iter() {
+    for (name, def) in genv.structs.iter() {
         let has_type_param = name.0.contains("TParam")
             || !def.generics.is_empty()
             || def
@@ -1519,7 +1519,7 @@ fn gen_type_definition(env: &GlobalEnv) -> Vec<goast::Item> {
         }));
     }
 
-    for (name, def) in env.enums.iter() {
+    for (name, def) in genv.enums.iter() {
         // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
         let has_type_param = name.0.contains("TParam")
             || def
@@ -1540,7 +1540,7 @@ fn gen_type_definition(env: &GlobalEnv) -> Vec<goast::Item> {
             }],
         }));
         for (variant_name, variant_fields) in def.variants.iter() {
-            let variant_name = variant_struct_name(env, &name.0, &variant_name.0);
+            let variant_name = variant_struct_name(genv, &name.0, &variant_name.0);
             let mut fields = Vec::new();
             for (i, field) in variant_fields.iter().enumerate() {
                 fields.push(goast::Field {
@@ -1569,7 +1569,7 @@ fn gen_type_definition(env: &GlobalEnv) -> Vec<goast::Item> {
         }
     }
 
-    for (name, ext) in env.extern_types.iter() {
+    for (name, ext) in genv.extern_types.iter() {
         if let Some(package_path) = &ext.package_path {
             let alias = go_package_alias(package_path);
             let go_ty = goty::GoType::TName {
@@ -1589,7 +1589,7 @@ fn test_type_gen() {
     use crate::env::EnumDef;
     use expect_test::expect;
 
-    let mut env = GlobalEnv::new();
+    let mut env = GlobalTypeEnv::new();
     env.enums.insert(
         Uident::new("Tree"),
         EnumDef {

@@ -1,5 +1,5 @@
 use super::core;
-use crate::env::{EnumDef, GlobalEnv, StructDef};
+use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::tast::{self, Constructor, Ty};
 use crate::type_encoding::encode_ty;
 use ast::ast::Uident;
@@ -8,7 +8,7 @@ use std::collections::VecDeque;
 
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
+pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
@@ -492,7 +492,7 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
 
     // Phase 2: monomorphize enum type applications in types and update env
     struct TypeMono<'a> {
-        env: &'a mut GlobalEnv,
+        genv: &'a mut GlobalTypeEnv,
         // map generic (name, args) to new concrete Uident
         map: IndexMap<(String, Vec<Ty>), Uident>,
         // snapshot of original generic enum defs
@@ -501,11 +501,11 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
     }
 
     impl<'a> TypeMono<'a> {
-        fn new(env: &'a mut GlobalEnv) -> Self {
-            let enum_base = env.enums.clone();
-            let struct_base = env.structs.clone();
+        fn new(genv: &'a mut GlobalTypeEnv) -> Self {
+            let enum_base = genv.enums.clone();
+            let struct_base = genv.structs.clone();
             Self {
-                env,
+                genv,
                 map: IndexMap::new(),
                 enum_base,
                 struct_base,
@@ -565,7 +565,7 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
                     generics: vec![],
                     variants: new_variants,
                 };
-                self.env.enums.insert(new_name.clone(), new_def);
+                self.genv.enums.insert(new_name.clone(), new_def);
             } else if let Some(generic_def) = self.struct_base.get(&ident) {
                 let mut subst: IndexMap<String, Ty> = IndexMap::new();
                 if generic_def.generics.len() != args.len() {
@@ -593,7 +593,7 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
                     generics: vec![],
                     fields: new_fields,
                 };
-                self.env.structs.insert(new_name.clone(), new_def);
+                self.genv.structs.insert(new_name.clone(), new_def);
             } else {
                 // Unknown type constructor; just return synthesized name without registering a def
             }
@@ -752,7 +752,7 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
     }
 
     // Rewrite function signatures and bodies
-    let mut m = TypeMono::new(env);
+    let mut m = TypeMono::new(genv);
     let mut new_fns = Vec::new();
     for f in ctx.out.into_iter() {
         let params = f
@@ -771,10 +771,10 @@ pub fn mono(env: &mut GlobalEnv, file: core::File) -> core::File {
     }
 
     // Drop all generic enum defs to avoid Go backend panics
-    m.env.enums.retain(|_n, def| def.generics.is_empty());
-    m.env.structs.retain(|_n, def| def.generics.is_empty());
+    m.genv.enums.retain(|_n, def| def.generics.is_empty());
+    m.genv.structs.retain(|_n, def| def.generics.is_empty());
 
     let result = core::File { toplevels: new_fns };
-    m.env.record_tuple_types_from_core(&result);
+    m.genv.record_tuple_types_from_core(&result);
     result
 }

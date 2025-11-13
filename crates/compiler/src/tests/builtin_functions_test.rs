@@ -1,8 +1,8 @@
-use crate::{env::GlobalEnv, tast};
+use crate::{env::GlobalTypeEnv, tast};
 
 #[test]
 fn env_registers_builtin_function_signatures() {
-    let env = GlobalEnv::new();
+    let env = GlobalTypeEnv::new();
 
     match env.get_type_of_function("string_print") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {

@@ -4,9 +4,9 @@ use ast::ast::Uident;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{env::GlobalEnv, tast};
+use crate::{env::GlobalTypeEnv, tast};
 
-fn typecheck(src: &str) -> (tast::File, GlobalEnv) {
+fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
     let path = PathBuf::from("test_structs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {

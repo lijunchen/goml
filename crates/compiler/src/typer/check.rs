@@ -5,7 +5,7 @@ use ast::ast;
 use parser::syntax::MySyntaxNodePtr;
 
 use crate::{
-    env::{Constraint, GlobalEnv, TypeEnv},
+    env::{Constraint, GlobalTypeEnv, TypeEnv},
     tast::{self, Prim},
     typer::{
         Typer,
@@ -16,12 +16,12 @@ use crate::{
 impl Typer {
     pub fn infer_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         e: &ast::Expr,
     ) -> tast::Expr {
         match e {
-            ast::Expr::EVar { name, astptr } => self.infer_var_expr(env, type_env, name, astptr),
+            ast::Expr::EVar { name, astptr } => self.infer_var_expr(genv, type_env, name, astptr),
             ast::Expr::EUnit => tast::Expr::EPrim {
                 value: Prim::unit(),
                 ty: tast::Ty::TUnit,
@@ -51,42 +51,44 @@ impl Typer {
                 ty: tast::Ty::TString,
             },
             ast::Expr::EConstr { vcon, args } => {
-                self.infer_constructor_expr(env, type_env, vcon, args)
+                self.infer_constructor_expr(genv, type_env, vcon, args)
             }
             ast::Expr::EStructLiteral { name, fields } => {
-                self.infer_struct_literal_expr(env, type_env, name, fields)
+                self.infer_struct_literal_expr(genv, type_env, name, fields)
             }
-            ast::Expr::ETuple { items } => self.infer_tuple_expr(env, type_env, items),
-            ast::Expr::EArray { items } => self.infer_array_expr(env, type_env, items),
+            ast::Expr::ETuple { items } => self.infer_tuple_expr(genv, type_env, items),
+            ast::Expr::EArray { items } => self.infer_array_expr(genv, type_env, items),
             ast::Expr::EClosure { params, body } => {
-                self.infer_closure_expr(env, type_env, params, body)
+                self.infer_closure_expr(genv, type_env, params, body)
             }
             ast::Expr::ELet {
                 pat,
                 annotation,
                 value,
                 body,
-            } => self.infer_let_expr(env, type_env, pat, annotation, value, body),
-            ast::Expr::EMatch { expr, arms } => self.infer_match_expr(env, type_env, expr, arms),
+            } => self.infer_let_expr(genv, type_env, pat, annotation, value, body),
+            ast::Expr::EMatch { expr, arms } => self.infer_match_expr(genv, type_env, expr, arms),
             ast::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
-            } => self.infer_if_expr(env, type_env, cond, then_branch, else_branch),
-            ast::Expr::EWhile { cond, body } => self.infer_while_expr(env, type_env, cond, body),
-            ast::Expr::ECall { func, args } => self.infer_call_expr(env, type_env, func, args),
-            ast::Expr::EUnary { op, expr } => self.infer_unary_expr(env, type_env, *op, expr),
+            } => self.infer_if_expr(genv, type_env, cond, then_branch, else_branch),
+            ast::Expr::EWhile { cond, body } => self.infer_while_expr(genv, type_env, cond, body),
+            ast::Expr::ECall { func, args } => self.infer_call_expr(genv, type_env, func, args),
+            ast::Expr::EUnary { op, expr } => self.infer_unary_expr(genv, type_env, *op, expr),
             ast::Expr::EBinary { op, lhs, rhs } => {
-                self.infer_binary_expr(env, type_env, *op, lhs, rhs)
+                self.infer_binary_expr(genv, type_env, *op, lhs, rhs)
             }
-            ast::Expr::EProj { tuple, index } => self.infer_proj_expr(env, type_env, tuple, *index),
-            ast::Expr::EField { expr, field } => self.infer_field_expr(env, type_env, expr, field),
+            ast::Expr::EProj { tuple, index } => {
+                self.infer_proj_expr(genv, type_env, tuple, *index)
+            }
+            ast::Expr::EField { expr, field } => self.infer_field_expr(genv, type_env, expr, field),
         }
     }
 
     pub fn check_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         e: &ast::Expr,
         expected: &tast::Ty,
@@ -135,14 +137,14 @@ impl Typer {
                         ty: target_ty,
                     }
                 } else {
-                    self.infer_expr(env, type_env, e)
+                    self.infer_expr(genv, type_env, e)
                 }
             }
             ast::Expr::EUnary {
                 op: ast::UnaryOp::Neg,
                 expr: inner,
             } if is_numeric_ty(expected) => {
-                let operand = self.check_expr(env, type_env, inner, expected);
+                let operand = self.check_expr(genv, type_env, inner, expected);
                 tast::Expr::EUnary {
                     op: ast::UnaryOp::Neg,
                     expr: Box::new(operand),
@@ -160,8 +162,8 @@ impl Typer {
                             | ast::BinaryOp::Div
                     ) =>
             {
-                let lhs_tast = self.check_expr(env, type_env, lhs, expected);
-                let rhs_tast = self.check_expr(env, type_env, rhs, expected);
+                let lhs_tast = self.check_expr(genv, type_env, lhs, expected);
+                let rhs_tast = self.check_expr(genv, type_env, rhs, expected);
                 tast::Expr::EBinary {
                     op: *op,
                     lhs: Box::new(lhs_tast),
@@ -171,14 +173,14 @@ impl Typer {
                 }
             }
             ast::Expr::EClosure { params, body } => {
-                self.check_closure_expr(env, type_env, params, body, expected)
+                self.check_closure_expr(genv, type_env, params, body, expected)
             }
             ast::Expr::ELet {
                 pat,
                 annotation,
                 value,
                 body,
-            } => self.check_let_expr(env, type_env, pat, annotation, value, body, expected),
+            } => self.check_let_expr(genv, type_env, pat, annotation, value, body, expected),
             ast::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
             {
                 let expected_elem_tys = match expected {
@@ -188,7 +190,7 @@ impl Typer {
                 let mut checked_items = Vec::with_capacity(items.len());
                 let mut elem_tys = Vec::with_capacity(items.len());
                 for (item_expr, expected_ty) in items.iter().zip(expected_elem_tys.iter()) {
-                    let item_tast = self.check_expr(env, type_env, item_expr, expected_ty);
+                    let item_tast = self.check_expr(genv, type_env, item_expr, expected_ty);
                     elem_tys.push(item_tast.get_ty());
                     checked_items.push(item_tast);
                 }
@@ -197,7 +199,7 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
-            _ => self.infer_expr(env, type_env, e),
+            _ => self.infer_expr(genv, type_env, e),
         };
 
         self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
@@ -206,7 +208,7 @@ impl Typer {
 
     fn infer_var_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         name: &Lident,
         astptr: &MySyntaxNodePtr,
@@ -217,7 +219,7 @@ impl Typer {
                 ty: ty.clone(),
                 astptr: Some(*astptr),
             }
-        } else if let Some(func_ty) = env.get_type_of_function(&name.0) {
+        } else if let Some(func_ty) = genv.get_type_of_function(&name.0) {
             let inst_ty = self.inst_ty(&func_ty);
             tast::Expr::EVar {
                 name: name.0.clone(),
@@ -231,17 +233,17 @@ impl Typer {
 
     fn infer_constructor_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         vcon: &ast::Uident,
         args: &[ast::Expr],
     ) -> tast::Expr {
-        let (constructor, constr_ty) = env
+        let (constructor, constr_ty) = genv
             .lookup_constructor(vcon)
             .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
 
         let expected_arity = match &constructor {
-            tast::Constructor::Enum(enum_constructor) => env
+            tast::Constructor::Enum(enum_constructor) => genv
                 .enums
                 .get(&enum_constructor.type_name)
                 .map(|def| def.variants[enum_constructor.index].1.len())
@@ -252,7 +254,7 @@ impl Typer {
                         constructor.name().0
                     )
                 }),
-            tast::Constructor::Struct(struct_constructor) => env
+            tast::Constructor::Struct(struct_constructor) => genv
                 .structs
                 .get(&struct_constructor.type_name)
                 .map(|def| def.fields.len())
@@ -285,11 +287,11 @@ impl Typer {
         let mut args_tast = Vec::new();
         if param_tys.is_empty() {
             for arg in args.iter() {
-                args_tast.push(self.infer_expr(env, type_env, arg));
+                args_tast.push(self.infer_expr(genv, type_env, arg));
             }
         } else {
             for (arg, expected_ty) in args.iter().zip(param_tys.iter()) {
-                args_tast.push(self.check_expr(env, type_env, arg, expected_ty));
+                args_tast.push(self.check_expr(genv, type_env, arg, expected_ty));
             }
         }
 
@@ -312,19 +314,19 @@ impl Typer {
 
     fn infer_struct_literal_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         name: &ast::Uident,
         fields: &[(ast::Lident, ast::Expr)],
     ) -> tast::Expr {
-        let (constructor, constr_ty) = env
+        let (constructor, constr_ty) = genv
             .lookup_constructor(name)
             .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
 
         let struct_fields = match &constructor {
             tast::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
-                let struct_def = env.structs.get(type_name).unwrap_or_else(|| {
+                let struct_def = genv.structs.get(type_name).unwrap_or_else(|| {
                     panic!(
                         "Struct {} not found when checking literal {}",
                         type_name.0, name.0
@@ -375,9 +377,9 @@ impl Typer {
                 );
             }
             let field_expr = if let Some(expected_ty) = param_tys.get(*idx) {
-                self.check_expr(env, type_env, expr, expected_ty)
+                self.check_expr(genv, type_env, expr, expected_ty)
             } else {
-                self.infer_expr(env, type_env, expr)
+                self.infer_expr(genv, type_env, expr)
             };
             ordered_args[*idx] = Some(field_expr);
         }
@@ -414,14 +416,14 @@ impl Typer {
 
     fn infer_tuple_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         items: &[ast::Expr],
     ) -> tast::Expr {
         let mut typs = Vec::new();
         let mut items_tast = Vec::new();
         for item in items.iter() {
-            let item_tast = self.infer_expr(env, type_env, item);
+            let item_tast = self.infer_expr(genv, type_env, item);
             typs.push(item_tast.get_ty());
             items_tast.push(item_tast);
         }
@@ -433,7 +435,7 @@ impl Typer {
 
     fn infer_array_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         items: &[ast::Expr],
     ) -> tast::Expr {
@@ -441,7 +443,7 @@ impl Typer {
         let elem_ty = self.fresh_ty_var();
         let mut items_tast = Vec::with_capacity(len);
         for item in items.iter() {
-            let item_tast = self.infer_expr(env, type_env, item);
+            let item_tast = self.infer_expr(genv, type_env, item);
             self.push_constraint(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
             items_tast.push(item_tast);
         }
@@ -457,7 +459,7 @@ impl Typer {
 
     fn infer_closure_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
@@ -481,7 +483,7 @@ impl Typer {
             });
         }
 
-        let body_tast = self.infer_expr(env, type_env, body);
+        let body_tast = self.infer_expr(genv, type_env, body);
         let body_ty = body_tast.get_ty();
         let captures = type_env.end_closure();
 
@@ -500,7 +502,7 @@ impl Typer {
 
     fn check_closure_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         params: &[ast::ClosureParam],
         body: &ast::Expr,
@@ -542,7 +544,7 @@ impl Typer {
                     });
                 }
 
-                let body_tast = self.check_expr(env, type_env, body, expected_ret.as_ref());
+                let body_tast = self.check_expr(genv, type_env, body, expected_ret.as_ref());
                 let body_ty = body_tast.get_ty();
                 let captures = type_env.end_closure();
 
@@ -556,13 +558,13 @@ impl Typer {
                     captures,
                 }
             }
-            _ => self.infer_closure_expr(env, type_env, params, body),
+            _ => self.infer_closure_expr(genv, type_env, params, body),
         }
     }
 
     fn infer_let_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         annotation: &Option<ast::Ty>,
@@ -576,18 +578,18 @@ impl Typer {
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
-                self.check_expr(env, type_env, value, ann_ty),
+                self.check_expr(genv, type_env, value, ann_ty),
                 ann_ty.clone(),
             )
         } else {
-            let tast = self.infer_expr(env, type_env, value);
+            let tast = self.infer_expr(genv, type_env, value);
             let ty = tast.get_ty();
             (tast, ty)
         };
 
         type_env.push_scope();
-        let pat_tast = self.check_pat(env, type_env, pat, &value_ty);
-        let body_tast = self.infer_expr(env, type_env, body);
+        let pat_tast = self.check_pat(genv, type_env, pat, &value_ty);
+        let body_tast = self.infer_expr(genv, type_env, body);
         type_env.pop_scope();
         let body_ty = body_tast.get_ty();
         tast::Expr::ELet {
@@ -601,7 +603,7 @@ impl Typer {
     #[allow(clippy::too_many_arguments)]
     fn check_let_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         annotation: &Option<ast::Ty>,
@@ -616,18 +618,18 @@ impl Typer {
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
-                self.check_expr(env, type_env, value, ann_ty),
+                self.check_expr(genv, type_env, value, ann_ty),
                 ann_ty.clone(),
             )
         } else {
-            let tast = self.infer_expr(env, type_env, value);
+            let tast = self.infer_expr(genv, type_env, value);
             let ty = tast.get_ty();
             (tast, ty)
         };
 
         type_env.push_scope();
-        let pat_tast = self.check_pat(env, type_env, pat, &value_ty);
-        let body_tast = self.check_expr(env, type_env, body, expected);
+        let pat_tast = self.check_pat(genv, type_env, pat, &value_ty);
+        let body_tast = self.check_expr(genv, type_env, body, expected);
         type_env.pop_scope();
         let body_ty = body_tast.get_ty();
 
@@ -641,20 +643,20 @@ impl Typer {
 
     fn infer_match_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         expr: &ast::Expr,
         arms: &[ast::Arm],
     ) -> tast::Expr {
-        let expr_tast = self.infer_expr(env, type_env, expr);
+        let expr_tast = self.infer_expr(genv, type_env, expr);
         let expr_ty = expr_tast.get_ty();
 
         let mut arms_tast = Vec::new();
         let arm_ty = self.fresh_ty_var();
         for arm in arms.iter() {
             type_env.push_scope();
-            let arm_tast = self.check_pat(env, type_env, &arm.pat, &expr_ty);
-            let arm_body_tast = self.infer_expr(env, type_env, &arm.body);
+            let arm_tast = self.check_pat(genv, type_env, &arm.pat, &expr_ty);
+            let arm_body_tast = self.infer_expr(genv, type_env, &arm.body);
             type_env.pop_scope();
             self.push_constraint(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
@@ -675,17 +677,17 @@ impl Typer {
 
     fn infer_if_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         cond: &ast::Expr,
         then_branch: &ast::Expr,
         else_branch: &ast::Expr,
     ) -> tast::Expr {
-        let cond_tast = self.infer_expr(env, type_env, cond);
+        let cond_tast = self.infer_expr(genv, type_env, cond);
         self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
 
-        let then_tast = self.infer_expr(env, type_env, then_branch);
-        let else_tast = self.infer_expr(env, type_env, else_branch);
+        let then_tast = self.infer_expr(genv, type_env, then_branch);
+        let else_tast = self.infer_expr(genv, type_env, else_branch);
         let result_ty = self.fresh_ty_var();
 
         self.push_constraint(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
@@ -701,15 +703,15 @@ impl Typer {
 
     fn infer_while_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         cond: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
-        let cond_tast = self.infer_expr(env, type_env, cond);
+        let cond_tast = self.infer_expr(genv, type_env, cond);
         self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
 
-        let body_tast = self.infer_expr(env, type_env, body);
+        let body_tast = self.infer_expr(genv, type_env, body);
         self.push_constraint(Constraint::TypeEqual(body_tast.get_ty(), tast::Ty::TUnit));
 
         tast::Expr::EWhile {
@@ -721,7 +723,7 @@ impl Typer {
 
     fn infer_call_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         func: &ast::Expr,
         args: &[ast::Expr],
@@ -729,14 +731,14 @@ impl Typer {
         let mut args_tast = Vec::new();
         let mut arg_types = Vec::new();
         for arg in args.iter() {
-            let arg_tast = self.infer_expr(env, type_env, arg);
+            let arg_tast = self.infer_expr(genv, type_env, arg);
             arg_types.push(arg_tast.get_ty());
             args_tast.push(arg_tast);
         }
 
         match func {
             ast::Expr::EVar { name, astptr } => {
-                if let Some(func_ty) = env.get_type_of_function(&name.0) {
+                if let Some(func_ty) = genv.get_type_of_function(&name.0) {
                     let inst_ty = self.inst_ty(&func_ty);
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
@@ -745,7 +747,7 @@ impl Typer {
                         args_tast.clear();
                         arg_types.clear();
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
-                            let arg_tast = self.check_expr(env, type_env, arg, expected_ty);
+                            let arg_tast = self.check_expr(genv, type_env, arg, expected_ty);
                             arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }
@@ -776,7 +778,7 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else if let Some(trait_name) =
-                    env.overloaded_funcs_to_trait_name.get(&name.0).cloned()
+                    genv.overloaded_funcs_to_trait_name.get(&name.0).cloned()
                 {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
@@ -828,7 +830,7 @@ impl Typer {
                     params: arg_types,
                     ret_ty: Box::new(ret_ty.clone()),
                 };
-                let func_tast = self.infer_expr(env, type_env, func);
+                let func_tast = self.infer_expr(genv, type_env, func);
                 self.push_constraint(Constraint::TypeEqual(
                     func_tast.get_ty(),
                     call_site_func_ty.clone(),
@@ -845,12 +847,12 @@ impl Typer {
 
     fn infer_unary_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         op: ast::UnaryOp,
         expr: &ast::Expr,
     ) -> tast::Expr {
-        let expr_tast = self.infer_expr(env, type_env, expr);
+        let expr_tast = self.infer_expr(genv, type_env, expr);
         let expr_ty = expr_tast.get_ty();
         let method_name = op.method_name();
         let builtin_expr = match op {
@@ -883,7 +885,11 @@ impl Typer {
             return expr;
         }
 
-        if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned() {
+        if let Some(trait_name) = genv
+            .overloaded_funcs_to_trait_name
+            .get(method_name)
+            .cloned()
+        {
             let ret_ty = self.fresh_ty_var();
             let call_site_type = tast::Ty::TFunc {
                 params: vec![expr_ty.clone()],
@@ -907,14 +913,14 @@ impl Typer {
 
     fn infer_binary_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         op: ast::BinaryOp,
         lhs: &ast::Expr,
         rhs: &ast::Expr,
     ) -> tast::Expr {
-        let mut lhs_tast = self.infer_expr(env, type_env, lhs);
-        let mut rhs_tast = self.infer_expr(env, type_env, rhs);
+        let mut lhs_tast = self.infer_expr(genv, type_env, lhs);
+        let mut rhs_tast = self.infer_expr(genv, type_env, rhs);
         let mut lhs_ty = lhs_tast.get_ty();
         let mut rhs_ty = rhs_tast.get_ty();
 
@@ -929,7 +935,10 @@ impl Typer {
         }
         let method_name = op.method_name();
 
-        if let Some(trait_name) = env.overloaded_funcs_to_trait_name.get(method_name).cloned()
+        if let Some(trait_name) = genv
+            .overloaded_funcs_to_trait_name
+            .get(method_name)
+            .cloned()
             && !binary_supports_builtin(op, &lhs_ty, &rhs_ty)
         {
             let ret_ty = self.fresh_ty_var();
@@ -1026,12 +1035,12 @@ impl Typer {
 
     fn infer_proj_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         tuple: &ast::Expr,
         index: usize,
     ) -> tast::Expr {
-        let tuple_tast = self.infer_expr(env, type_env, tuple);
+        let tuple_tast = self.infer_expr(genv, type_env, tuple);
         let tuple_ty = tuple_tast.get_ty();
         match &tuple_ty {
             tast::Ty::TTuple { typs } => {
@@ -1064,12 +1073,12 @@ impl Typer {
 
     fn infer_field_expr(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         expr: &ast::Expr,
         field: &ast::Lident,
     ) -> tast::Expr {
-        let base_tast = self.infer_expr(env, type_env, expr);
+        let base_tast = self.infer_expr(genv, type_env, expr);
         let base_ty = base_tast.get_ty();
         let result_ty = self.fresh_ty_var();
         self.push_constraint(Constraint::StructFieldAccess {
@@ -1087,7 +1096,7 @@ impl Typer {
 
     fn check_pat(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         ty: &tast::Ty,
@@ -1098,9 +1107,9 @@ impl Typer {
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
             ast::Pat::PInt { value } => self.check_pat_int(value, ty),
             ast::Pat::PString { value } => self.check_pat_string(value, ty),
-            ast::Pat::PConstr { .. } => self.check_pat_constructor(env, type_env, pat, ty),
-            ast::Pat::PStruct { .. } => self.check_pat_constructor(env, type_env, pat, ty),
-            ast::Pat::PTuple { pats } => self.check_pat_tuple(env, type_env, pats, ty),
+            ast::Pat::PConstr { .. } => self.check_pat_constructor(genv, type_env, pat, ty),
+            ast::Pat::PStruct { .. } => self.check_pat_constructor(genv, type_env, pat, ty),
+            ast::Pat::PTuple { pats } => self.check_pat_tuple(genv, type_env, pats, ty),
             ast::Pat::PWild => self.check_pat_wild(ty),
         }
     }
@@ -1155,19 +1164,19 @@ impl Typer {
 
     fn check_pat_constructor(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         pat: &ast::Pat,
         ty: &tast::Ty,
     ) -> tast::Pat {
         match pat {
             ast::Pat::PConstr { vcon, args } => {
-                let (constructor, constr_ty) = env
+                let (constructor, constr_ty) = genv
                     .lookup_constructor(vcon)
                     .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
 
                 let expected_arity = match &constructor {
-                    tast::Constructor::Enum(enum_constructor) => env
+                    tast::Constructor::Enum(enum_constructor) => genv
                         .enums
                         .get(&enum_constructor.type_name)
                         .map(|def| def.variants[enum_constructor.index].1.len())
@@ -1203,7 +1212,7 @@ impl Typer {
 
                 let mut args_tast = Vec::new();
                 for (arg_ast, expected_ty) in args.iter().zip(param_tys.iter()) {
-                    let arg_tast = self.check_pat(env, type_env, arg_ast, expected_ty);
+                    let arg_tast = self.check_pat(genv, type_env, arg_ast, expected_ty);
                     args_tast.push(arg_tast);
                 }
 
@@ -1217,7 +1226,7 @@ impl Typer {
             }
             ast::Pat::PStruct { name, fields } => {
                 let struct_fields = {
-                    let struct_def = env.structs.get(name).unwrap_or_else(|| {
+                    let struct_def = genv.structs.get(name).unwrap_or_else(|| {
                         panic!("Struct {} not found when checking pattern", name.0)
                     });
                     let expected_len = struct_def.fields.len();
@@ -1239,7 +1248,7 @@ impl Typer {
                     }
                 }
 
-                let (constructor, constr_ty) = env.lookup_constructor(name).unwrap_or_else(|| {
+                let (constructor, constr_ty) = genv.lookup_constructor(name).unwrap_or_else(|| {
                     panic!("Struct {} not found when checking constructor", name.0)
                 });
 
@@ -1266,7 +1275,7 @@ impl Typer {
                     let expected_ty = param_tys.get(idx).unwrap_or_else(|| {
                         panic!("Missing instantiated type for field {}", field_name.0)
                     });
-                    let pat_tast = self.check_pat(env, type_env, pat_ast, expected_ty);
+                    let pat_tast = self.check_pat(genv, type_env, pat_ast, expected_ty);
                     args_tast.push(pat_tast);
                 }
 
@@ -1289,7 +1298,7 @@ impl Typer {
 
     fn check_pat_tuple(
         &mut self,
-        env: &GlobalEnv,
+        genv: &GlobalTypeEnv,
         type_env: &mut TypeEnv,
         pats: &[ast::Pat],
         ty: &tast::Ty,
@@ -1302,7 +1311,7 @@ impl Typer {
         let mut pats_tast = Vec::new();
         let mut pat_typs = Vec::new();
         for (pat, expected_ty) in pats.iter().zip(expected_elem_tys.iter()) {
-            let pat_tast = self.check_pat(env, type_env, pat, expected_ty);
+            let pat_tast = self.check_pat(genv, type_env, pat, expected_ty);
             pat_typs.push(pat_tast.get_ty());
             pats_tast.push(pat_tast);
         }

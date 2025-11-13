@@ -4,11 +4,11 @@ use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
 use crate::{
-    env::{GlobalEnv, format_typer_diagnostics},
+    env::{GlobalTypeEnv, format_typer_diagnostics},
     tast,
 };
 
-fn typecheck(src: &str) -> (tast::File, GlobalEnv) {
+fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
     let path = PathBuf::from("dummy.src");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {

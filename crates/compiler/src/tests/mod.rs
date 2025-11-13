@@ -54,7 +54,7 @@ fn main() -> unit {
     let compilation = pipeline::compile(&path, src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
-    let go_source = compilation.go.to_pretty(&compilation.env, 120);
+    let go_source = compilation.go.to_pretty(&compilation.genv, 120);
     let go_output = execute_go_source(&go_source)?;
 
     assert_eq!(go_output, "5\n");
@@ -216,11 +216,11 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     expect_test::expect_file![core_filename]
         .assert_eq(&compilation.core.to_pretty(&compilation.typer_env, 120));
     expect_test::expect_file![mono_filename]
-        .assert_eq(&compilation.mono.to_pretty(&compilation.env, 120));
+        .assert_eq(&compilation.mono.to_pretty(&compilation.genv, 120));
     expect_test::expect_file![anf_filename]
-        .assert_eq(&compilation.anf.to_pretty(&compilation.env, 120));
+        .assert_eq(&compilation.anf.to_pretty(&compilation.genv, 120));
 
-    let go_source = compilation.go.to_pretty(&compilation.env, 120);
+    let go_source = compilation.go.to_pretty(&compilation.genv, 120);
     expect_test::expect_file![&go_filename].assert_eq(&go_source);
 
     let go_output = execute_go_source(&go_source)?;

@@ -73,7 +73,7 @@ pub enum Constraint {
 
 #[derive(Debug, Clone)]
 #[allow(unused)]
-pub struct GlobalEnv {
+pub struct GlobalTypeEnv {
     pub enums: IndexMap<Uident, EnumDef>,
     pub structs: IndexMap<Uident, StructDef>,
     pub closure_env_apply: IndexMap<String, String>,
@@ -89,13 +89,13 @@ pub struct GlobalEnv {
     pub diagnostics: Diagnostics,
 }
 
-impl Default for GlobalEnv {
+impl Default for GlobalTypeEnv {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl GlobalEnv {
+impl GlobalTypeEnv {
     pub fn new() -> Self {
         Self {
             enums: IndexMap::new(),

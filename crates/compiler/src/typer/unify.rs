@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, GlobalEnv},
+    env::{Constraint, GlobalTypeEnv},
     tast::{self, TypeVar},
     typer::Typer,
 };
 use ast::ast::{Lident, Uident};
 
-fn occurs(typer: &mut Typer, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(typer: &mut Typer, _genv: &GlobalTypeEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
@@ -32,39 +32,39 @@ fn occurs(typer: &mut Typer, _env: &GlobalEnv, var: TypeVar, ty: &tast::Ty) -> b
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(typer, _env, var, ty) {
+                if !occurs(typer, _genv, var, ty) {
                     return false;
                 }
             }
         }
         tast::Ty::TCon { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(typer, _env, var, ty.as_ref()) {
+            if !occurs(typer, _genv, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(typer, _env, var, arg) {
+                if !occurs(typer, _genv, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(typer, _env, var, elem) {
+            if !occurs(typer, _genv, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(typer, _env, var, elem) {
+            if !occurs(typer, _genv, var, elem) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(typer, _env, var, param) {
+                if !occurs(typer, _genv, var, param) {
                     return false;
                 }
             }
-            if !occurs(typer, _env, var, ret_ty) {
+            if !occurs(typer, _genv, var, ret_ty) {
                 return false;
             }
         }
@@ -165,7 +165,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
 }
 
 impl Typer {
-    pub fn solve(&mut self, env: &GlobalEnv) {
+    pub fn solve(&mut self, genv: &GlobalTypeEnv) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 
@@ -206,7 +206,7 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r) => {
-                        if self.unify(env, &l, &r) {
+                        if self.unify(genv, &l, &r) {
                             changed = true;
                         }
                     }
@@ -224,7 +224,7 @@ impl Typer {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
-                                        match env.get_trait_impl(&trait_name, self_ty, &op) {
+                                        match genv.get_trait_impl(&trait_name, self_ty, &op) {
                                             Some(impl_scheme) => {
                                                 let impl_fun_ty = self.inst_ty(&impl_scheme);
 
@@ -284,7 +284,7 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let struct_def = env.structs.get(&type_name).unwrap_or_else(|| {
+                            let struct_def = genv.structs.get(&type_name).unwrap_or_else(|| {
                                 panic!(
                                     "Struct {} not found when accessing field {}",
                                     type_name.0, field.0
@@ -292,7 +292,7 @@ impl Typer {
                             });
                             let field_ty =
                                 instantiate_struct_field_ty(struct_def, &type_args, &field);
-                            if self.unify(env, &result_ty, &field_ty) {
+                            if self.unify(genv, &result_ty, &field_ty) {
                                 changed = true;
                             }
                         } else {
@@ -372,7 +372,7 @@ impl Typer {
         }
     }
 
-    fn unify(&mut self, env: &GlobalEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
+    fn unify(&mut self, genv: &GlobalTypeEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
@@ -386,7 +386,7 @@ impl Typer {
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
-                if !occurs(self, env, *a, t) {
+                if !occurs(self, genv, *a, t) {
                     return false;
                 }
                 if self.uni.unify_var_value(*a, Some(t.clone())).is_err() {
@@ -421,7 +421,7 @@ impl Typer {
                     return false;
                 }
                 for (ty1, ty2) in typs1.iter().zip(typs2.iter()) {
-                    if !self.unify(env, ty1, ty2) {
+                    if !self.unify(genv, ty1, ty2) {
                         return false;
                     }
                 }
@@ -444,12 +444,12 @@ impl Typer {
                     ));
                     return false;
                 }
-                if !self.unify(env, elem1, elem2) {
+                if !self.unify(genv, elem1, elem2) {
                     return false;
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
-                if !self.unify(env, elem1, elem2) {
+                if !self.unify(genv, elem1, elem2) {
                     return false;
                 }
             }
@@ -471,11 +471,11 @@ impl Typer {
                     return false;
                 }
                 for (p1, p2) in param1.iter().zip(param2.iter()) {
-                    if !self.unify(env, p1, p2) {
+                    if !self.unify(genv, p1, p2) {
                         return false;
                     }
                 }
-                if !self.unify(env, ret_ty1, ret_ty2) {
+                if !self.unify(genv, ret_ty1, ret_ty2) {
                     return false;
                 }
             }
@@ -505,11 +505,11 @@ impl Typer {
                     ));
                     return false;
                 }
-                if !self.unify(env, ty1.as_ref(), ty2.as_ref()) {
+                if !self.unify(genv, ty1.as_ref(), ty2.as_ref()) {
                     return false;
                 }
                 for (arg1, arg2) in args1.iter().zip(args2.iter()) {
-                    if !self.unify(env, arg1, arg2) {
+                    if !self.unify(genv, arg1, arg2) {
                         return false;
                     }
                 }

@@ -5,11 +5,11 @@ use parser::syntax::MySyntaxNode;
 
 use crate::{
     compile_match,
-    env::{Gensym, GlobalEnv},
+    env::{Gensym, GlobalTypeEnv},
     tast,
 };
 
-fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalEnv) {
+fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
     let path = PathBuf::from("test_refs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {

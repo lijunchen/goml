@@ -1,12 +1,12 @@
 use std::collections::HashSet;
 
 use crate::{
-    env::GlobalEnv,
+    env::GlobalTypeEnv,
     tast::{self},
 };
 use ast::ast;
 
-pub(crate) fn validate_ty(env: &mut GlobalEnv, ty: &tast::Ty, tparams: &HashSet<String>) {
+pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &HashSet<String>) {
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit
@@ -25,18 +25,18 @@ pub(crate) fn validate_ty(env: &mut GlobalEnv, ty: &tast::Ty, tparams: &HashSet<
         | tast::Ty::TString => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                validate_ty(env, ty, tparams);
+                validate_ty(genv, ty, tparams);
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                validate_ty(env, param, tparams);
+                validate_ty(genv, param, tparams);
             }
-            validate_ty(env, ret_ty.as_ref(), tparams);
+            validate_ty(genv, ret_ty.as_ref(), tparams);
         }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
-                env.report_typer_error(format!("Unbound type parameter {}", name));
+                genv.report_typer_error(format!("Unbound type parameter {}", name));
             }
         }
         tast::Ty::TCon { name } => {
@@ -44,71 +44,71 @@ pub(crate) fn validate_ty(env: &mut GlobalEnv, ty: &tast::Ty, tparams: &HashSet<
                 return;
             }
             let ident = ast::Uident::new(name);
-            if let Some(enum_def) = env.enums.get(&ident) {
+            if let Some(enum_def) = genv.enums.get(&ident) {
                 if !enum_def.generics.is_empty() {
-                    env.report_typer_error(format!(
+                    genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
                         name,
                         enum_def.generics.len()
                     ));
                 }
-            } else if let Some(struct_def) = env.structs.get(&ident) {
+            } else if let Some(struct_def) = genv.structs.get(&ident) {
                 if !struct_def.generics.is_empty() {
-                    env.report_typer_error(format!(
+                    genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
                         name,
                         struct_def.generics.len()
                     ));
                 }
-            } else if env.extern_types.contains_key(name) {
+            } else if genv.extern_types.contains_key(name) {
                 // Extern types do not have generics.
             } else {
-                env.report_typer_error(format!("Unknown type constructor {}", name));
+                genv.report_typer_error(format!("Unknown type constructor {}", name));
             }
         }
         tast::Ty::TApp { ty, args } => {
             for arg in args.iter() {
-                validate_ty(env, arg, tparams);
+                validate_ty(genv, arg, tparams);
             }
 
             let base_name = ty.get_constr_name_unsafe();
             let ident = ast::Uident::new(&base_name);
 
-            if let Some(enum_def) = env.enums.get(&ident) {
+            if let Some(enum_def) = genv.enums.get(&ident) {
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    env.report_typer_error(format!(
+                    genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got {}",
                         base_name, expected, actual
                     ));
                 }
-            } else if let Some(struct_def) = env.structs.get(&ident) {
+            } else if let Some(struct_def) = genv.structs.get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    env.report_typer_error(format!(
+                    genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got {}",
                         base_name, expected, actual
                     ));
                 }
-            } else if env.extern_types.contains_key(&base_name) {
+            } else if genv.extern_types.contains_key(&base_name) {
                 if !args.is_empty() {
-                    env.report_typer_error(format!(
+                    genv.report_typer_error(format!(
                         "Type {} does not accept type arguments, but got {}",
                         base_name,
                         args.len()
                     ));
                 }
             } else {
-                env.report_typer_error(format!("Unknown type constructor {}", base_name));
+                genv.report_typer_error(format!("Unknown type constructor {}", base_name));
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            validate_ty(env, elem, tparams);
+            validate_ty(genv, elem, tparams);
         }
         tast::Ty::TRef { elem } => {
-            validate_ty(env, elem, tparams);
+            validate_ty(genv, elem, tparams);
         }
     }
 }

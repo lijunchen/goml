@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     core,
-    env::{Gensym, GlobalEnv, StructDef},
+    env::{Gensym, GlobalTypeEnv, StructDef},
     tast::{self, Constructor, StructConstructor, Ty},
     type_encoding::decode_ty,
 };
@@ -14,7 +14,7 @@ struct ClosureTypeInfo {
 }
 
 struct State<'env> {
-    env: &'env mut GlobalEnv,
+    genv: &'env mut GlobalTypeEnv,
     gensym: &'env Gensym,
     next_id: usize,
     new_functions: Vec<core::Fn>,
@@ -23,9 +23,9 @@ struct State<'env> {
 }
 
 impl<'env> State<'env> {
-    fn new(env: &'env mut GlobalEnv, gensym: &'env Gensym) -> Self {
+    fn new(genv: &'env mut GlobalTypeEnv, gensym: &'env Gensym) -> Self {
         Self {
-            env,
+            genv,
             gensym,
             next_id: 0,
             new_functions: Vec::new(),
@@ -51,7 +51,7 @@ impl<'env> State<'env> {
                 apply_fn: apply_fn.clone(),
             },
         );
-        self.env.register_closure_apply(struct_name, apply_fn);
+        self.genv.register_closure_apply(struct_name, apply_fn);
     }
 
     fn closure_struct_for_ty(&self, ty: &Ty) -> Option<String> {
@@ -137,8 +137,8 @@ impl Scope {
     }
 }
 
-pub fn lambda_lift(env: &mut GlobalEnv, gensym: &Gensym, file: core::File) -> core::File {
-    let mut state = State::new(env, gensym);
+pub fn lambda_lift(genv: &mut GlobalTypeEnv, gensym: &Gensym, file: core::File) -> core::File {
+    let mut state = State::new(genv, gensym);
     let mut toplevels = Vec::new();
 
     for mut f in file.toplevels.into_iter() {
@@ -175,7 +175,7 @@ pub fn lambda_lift(env: &mut GlobalEnv, gensym: &Gensym, file: core::File) -> co
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
             ret_ty: Box::new(f.ret_ty.clone()),
         };
-        state.env.funcs.insert(f.name.clone(), fn_ty);
+        state.genv.funcs.insert(f.name.clone(), fn_ty);
 
         toplevels.push(f);
     }
@@ -200,7 +200,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                         ty: entry.ty.clone(),
                     }
                 }
-            } else if let Some(func_ty) = state.env.funcs.get(&name) {
+            } else if let Some(func_ty) = state.genv.funcs.get(&name) {
                 core::Expr::EVar {
                     name,
                     ty: func_ty.clone(),
@@ -226,7 +226,8 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
                     .collect();
 
-                if let Some(struct_def) = state.env.structs.get_mut(&struct_constructor.type_name) {
+                if let Some(struct_def) = state.genv.structs.get_mut(&struct_constructor.type_name)
+                {
                     for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
                     {
                         if let Some(struct_name) = closure_struct_name {
@@ -509,7 +510,7 @@ fn transform_closure(
         generics: Vec::new(),
         fields: struct_fields,
     };
-    state.env.structs.insert(struct_name.clone(), struct_def);
+    state.genv.structs.insert(struct_name.clone(), struct_def);
 
     let apply_fn_name = state.gensym.gensym("__closure_apply");
     state.register_closure_type(&struct_name, apply_fn_name.clone());
@@ -551,7 +552,7 @@ fn transform_closure(
     let mut func_param_tys = Vec::with_capacity(param_tys.len() + 1);
     func_param_tys.push(env_ty.clone());
     func_param_tys.extend(param_tys.clone());
-    state.env.funcs.insert(
+    state.genv.funcs.insert(
         apply_fn_name,
         Ty::TFunc {
             params: func_param_tys,
@@ -685,7 +686,7 @@ fn instantiate_struct_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let struct_def = state.env.structs.get(struct_name)?;
+    let struct_def = state.genv.structs.get(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     if struct_def.generics.is_empty() {
         return Some(raw_field_ty.clone());
@@ -714,7 +715,7 @@ fn instantiate_enum_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let enum_def = state.env.enums.get(&constructor.type_name)?;
+    let enum_def = state.genv.enums.get(&constructor.type_name)?;
     let (_, fields) = enum_def
         .variants
         .iter()
