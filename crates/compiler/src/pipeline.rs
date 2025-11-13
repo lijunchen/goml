@@ -19,6 +19,7 @@ pub struct Compilation {
     pub cst: CstFile,
     pub ast: ast::File,
     pub tast: tast::File,
+    // TODO: fix me
     pub typer_env: GlobalTypeEnv,
     pub genv: GlobalTypeEnv,
     pub core: crate::core::File,
