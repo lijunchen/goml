@@ -2,7 +2,7 @@ use ast::ast::Uident;
 
 use crate::{
     anf::{self, AExpr},
-    env::GlobalEnv,
+    env::{Gensym, GlobalEnv},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast::{self, Constructor, Prim},
 };
@@ -963,7 +963,7 @@ fn find_closure_apply_fn(env: &GlobalEnv, closure_ty: &tast::Ty) -> Option<Closu
     })
 }
 
-fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr_effect(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::EIf {
@@ -971,10 +971,10 @@ fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
             } => {
                 let cond_e = compile_imm(env, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr_effect(env, *then),
+                    stmts: compile_aexpr_effect(env, gensym, *then),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr_effect(env, *else_),
+                    stmts: compile_aexpr_effect(env, gensym, *else_),
                 };
                 vec![goast::Stmt::If {
                     cond: cond_e,
@@ -988,9 +988,9 @@ fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                 default,
                 ty: _,
             } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
-                compile_aexpr_effect(env, branch)
+                compile_aexpr_effect(env, gensym, branch)
             }),
-            anf::CExpr::EWhile { cond, body, .. } => compile_while(env, *cond, *body),
+            anf::CExpr::EWhile { cond, body, .. } => compile_while(env, gensym, *cond, *body),
             other => compile_cexpr_effect(env, &other),
         },
         AExpr::ALet {
@@ -1013,6 +1013,7 @@ fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                     });
                     out.extend(compile_aexpr_assign(
                         env,
+                        gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
                     ));
@@ -1027,7 +1028,7 @@ fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        out.extend(compile_aexpr_effect(env, *body));
+                        out.extend(compile_aexpr_effect(env, gensym, *body));
                         return out;
                     }
 
@@ -1045,19 +1046,24 @@ fn compile_aexpr_effect(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                     });
                 }
             }
-            out.extend(compile_aexpr_effect(env, *body));
+            out.extend(compile_aexpr_effect(env, gensym, *body));
             out
         }
     }
 }
 
-fn compile_while(env: &GlobalEnv, cond: anf::AExpr, body: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_while(
+    env: &GlobalEnv,
+    gensym: &Gensym,
+    cond: anf::AExpr,
+    body: anf::AExpr,
+) -> Vec<goast::Stmt> {
     let cond_ty = cond.get_ty();
     if cond_ty != tast::Ty::TBool {
         panic!("while condition must have type bool, got {:?}", cond_ty);
     }
 
-    let cond_var = env.gensym("cond");
+    let cond_var = gensym.gensym("cond");
     let mut stmts = Vec::new();
     stmts.push(goast::Stmt::VarDecl {
         name: cond_var.clone(),
@@ -1065,7 +1071,7 @@ fn compile_while(env: &GlobalEnv, cond: anf::AExpr, body: anf::AExpr) -> Vec<goa
         value: None,
     });
 
-    let mut loop_body = compile_aexpr_assign(env, &cond_var, cond);
+    let mut loop_body = compile_aexpr_assign(env, gensym, &cond_var, cond);
     let not_cond = goast::Expr::UnaryOp {
         op: goast::UnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
@@ -1081,7 +1087,7 @@ fn compile_while(env: &GlobalEnv, cond: anf::AExpr, body: anf::AExpr) -> Vec<goa
         },
         else_: None,
     });
-    loop_body.extend(compile_aexpr_effect(env, body));
+    loop_body.extend(compile_aexpr_effect(env, gensym, body));
 
     stmts.push(goast::Stmt::Loop {
         body: goast::Block { stmts: loop_body },
@@ -1089,15 +1095,20 @@ fn compile_while(env: &GlobalEnv, cond: anf::AExpr, body: anf::AExpr) -> Vec<goa
     stmts
 }
 
-fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr_assign(
+    env: &GlobalEnv,
+    gensym: &Gensym,
+    target: &str,
+    e: anf::AExpr,
+) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
             anf::CExpr::EIf {
                 cond, then, else_, ..
             } => {
                 let cond_e = compile_imm(env, &cond);
-                let then_stmts = compile_aexpr_assign(env, target, *then);
-                let else_stmts = compile_aexpr_assign(env, target, *else_);
+                let then_stmts = compile_aexpr_assign(env, gensym, target, *then);
+                let else_stmts = compile_aexpr_assign(env, gensym, target, *else_);
                 vec![goast::Stmt::If {
                     cond: cond_e,
                     then: goast::Block { stmts: then_stmts },
@@ -1110,10 +1121,10 @@ fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goa
                 default,
                 ty: _,
             } => compile_match_branches(env, scrutinee.as_ref(), &arms, &default, |branch| {
-                compile_aexpr_assign(env, target, branch)
+                compile_aexpr_assign(env, gensym, target, branch)
             }),
             anf::CExpr::EWhile { cond, body, .. } => {
-                let mut stmts = compile_while(env, *cond, *body);
+                let mut stmts = compile_while(env, gensym, *cond, *body);
                 stmts.push(goast::Stmt::Assignment {
                     name: target.to_string(),
                     value: goast::Expr::Unit {
@@ -1158,8 +1169,6 @@ fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goa
             let value_expr = *value;
 
             match value_expr {
-                // If RHS needs statements (if/match), first declare the variable,
-                // then lower the RHS into assignments targeting that variable.
                 complex @ (anf::CExpr::EIf { .. }
                 | anf::CExpr::EMatch { .. }
                 | anf::CExpr::EWhile { .. }) => {
@@ -1170,6 +1179,7 @@ fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goa
                     });
                     out.extend(compile_aexpr_assign(
                         env,
+                        gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
                     ));
@@ -1184,7 +1194,7 @@ fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goa
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        out.extend(compile_aexpr_assign(env, target, *body));
+                        out.extend(compile_aexpr_assign(env, gensym, target, *body));
                         return out;
                     }
 
@@ -1203,14 +1213,13 @@ fn compile_aexpr_assign(env: &GlobalEnv, target: &str, e: anf::AExpr) -> Vec<goa
                 }
             }
 
-            // Continue with body to finally assign into the target
-            out.extend(compile_aexpr_assign(env, target, *body));
+            out.extend(compile_aexpr_assign(env, gensym, target, *body));
             out
         }
     }
 }
 
-fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
+fn compile_aexpr(env: &GlobalEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -1220,10 +1229,10 @@ fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
             } => {
                 let cond_e = compile_imm(env, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr(env, *then),
+                    stmts: compile_aexpr(env, gensym, *then),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr(env, *else_),
+                    stmts: compile_aexpr(env, gensym, *else_),
                 };
                 stmts.push(goast::Stmt::If {
                     cond: cond_e,
@@ -1242,11 +1251,11 @@ fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                     scrutinee.as_ref(),
                     &arms,
                     &default,
-                    |branch| compile_aexpr(env, branch),
+                    |branch| compile_aexpr(env, gensym, branch),
                 ));
             }
             anf::CExpr::EWhile { cond, body, .. } => {
-                stmts.extend(compile_while(env, *cond, *body));
+                stmts.extend(compile_while(env, gensym, *cond, *body));
                 stmts.push(goast::Stmt::Return {
                     expr: Some(goast::Expr::Unit {
                         ty: goty::GoType::TUnit,
@@ -1283,6 +1292,7 @@ fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                     });
                     stmts.extend(compile_aexpr_assign(
                         env,
+                        gensym,
                         &name,
                         AExpr::ACExpr { expr: complex },
                     ));
@@ -1297,7 +1307,7 @@ fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                             ty: spawn.result_ty.clone(),
                             value: Some(spawn.result_expr),
                         });
-                        stmts.extend(compile_aexpr(env, *body));
+                        stmts.extend(compile_aexpr(env, gensym, *body));
                         return stmts;
                     }
 
@@ -1315,13 +1325,13 @@ fn compile_aexpr(env: &GlobalEnv, e: anf::AExpr) -> Vec<goast::Stmt> {
                     });
                 }
             }
-            stmts.extend(compile_aexpr(env, *body));
+            stmts.extend(compile_aexpr(env, gensym, *body));
         }
     }
     stmts
 }
 
-fn compile_fn(env: &GlobalEnv, f: anf::Fn) -> goast::Fn {
+fn compile_fn(env: &GlobalEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
         params.push((name, tast_ty_to_go_type(&ty)));
@@ -1338,9 +1348,9 @@ fn compile_fn(env: &GlobalEnv, f: anf::Fn) -> goast::Fn {
     let body = f.body;
 
     let (ret_ty, body_stmts) = match go_ret_ty {
-        goty::GoType::TVoid => (None, compile_aexpr(env, body)),
+        goty::GoType::TVoid => (None, compile_aexpr(env, gensym, body)),
         _ => {
-            let ret_name = env.gensym("ret");
+            let ret_name = gensym.gensym("ret");
             let mut stmts = Vec::new();
 
             stmts.push(goast::Stmt::VarDecl {
@@ -1349,7 +1359,7 @@ fn compile_fn(env: &GlobalEnv, f: anf::Fn) -> goast::Fn {
                 value: None,
             });
 
-            stmts.extend(compile_aexpr_assign(env, &ret_name, body));
+            stmts.extend(compile_aexpr_assign(env, gensym, &ret_name, body));
 
             stmts.push(goast::Stmt::Return {
                 expr: Some(goast::Expr::Var {
@@ -1370,7 +1380,7 @@ fn compile_fn(env: &GlobalEnv, f: anf::Fn) -> goast::Fn {
     }
 }
 
-pub fn go_file(env: &GlobalEnv, file: anf::File) -> goast::File {
+pub fn go_file(env: &GlobalEnv, gensym: &Gensym, file: anf::File) -> goast::File {
     let mut all = Vec::new();
 
     all.extend(runtime::make_runtime());
@@ -1454,7 +1464,7 @@ pub fn go_file(env: &GlobalEnv, file: anf::File) -> goast::File {
 
     let mut toplevels = gen_type_definition(env);
     for item in file.toplevels {
-        let gof = compile_fn(env, item);
+        let gof = compile_fn(env, gensym, item);
         toplevels.push(goast::Item::Fn(gof));
     }
     all.extend(toplevels);

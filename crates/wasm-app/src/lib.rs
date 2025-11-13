@@ -2,7 +2,7 @@ use cst::cst::CstNode;
 use diagnostics::Diagnostics;
 use parser::{parser::ParseResult, syntax::MySyntaxNode};
 
-use compiler::env::format_typer_diagnostics;
+use compiler::env::{Gensym, format_typer_diagnostics};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -28,7 +28,8 @@ pub fn execute(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let core = compiler::compile_match::compile_file(&env, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
     let _ = core;
     "not support for now".into()
 }
@@ -56,7 +57,8 @@ pub fn compile_to_core(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let core = compiler::compile_match::compile_file(&env, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     core.to_pretty(&env, 120)
 }
@@ -84,7 +86,8 @@ pub fn compile_to_mono(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let core = compiler::compile_match::compile_file(&env, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
     mono.to_pretty(&env, 120)
@@ -113,11 +116,12 @@ pub fn compile_to_anf(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let core = compiler::compile_match::compile_file(&env, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
 
-    let anf = compiler::anf::anf_file(&env, mono);
+    let anf = compiler::anf::anf_file(&env, &gensym, mono);
     anf.to_pretty(&env, 120)
 }
 
@@ -144,13 +148,14 @@ pub fn compile_to_go(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let core = compiler::compile_match::compile_file(&env, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
 
-    let anf = compiler::anf::anf_file(&env, mono);
+    let anf = compiler::anf::anf_file(&env, &gensym, mono);
 
-    let go = compiler::go::compile::go_file(&env, anf);
+    let go = compiler::go::compile::go_file(&env, &gensym, anf);
     go.to_pretty(&env, 120)
 }
 

@@ -1,6 +1,9 @@
 pub type Ty = crate::tast::Ty;
 use crate::tast::{Constructor, Prim};
-use crate::{core, env::GlobalEnv};
+use crate::{
+    core,
+    env::{Gensym, GlobalEnv},
+};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -152,6 +155,7 @@ fn imm_ty(imm: &ImmExpr) -> Ty {
 // Helper function to compile match arms with complex patterns to immediate patterns
 fn compile_match_arms_to_anf<'a>(
     env: &'a GlobalEnv,
+    gensym: &'a Gensym,
     scrutinee: ImmExpr,
     arms: Vec<core::Arm>,
     default: Option<Box<core::Expr>>,
@@ -166,7 +170,12 @@ fn compile_match_arms_to_anf<'a>(
             core::Expr::EVar { .. } | core::Expr::EPrim { .. } => {
                 // Immediate patterns can be converted directly
                 let anf_lhs = core_imm_to_anf_imm(arm.lhs);
-                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                let anf_body = anf(
+                    env,
+                    gensym,
+                    arm.body,
+                    Box::new(|c| AExpr::ACExpr { expr: c }),
+                );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
                     body: anf_body,
@@ -182,7 +191,12 @@ fn compile_match_arms_to_anf<'a>(
                     index: enum_constructor.enum_index(),
                     ty: ty.clone(),
                 };
-                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                let anf_body = anf(
+                    env,
+                    gensym,
+                    arm.body,
+                    Box::new(|c| AExpr::ACExpr { expr: c }),
+                );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
                     body: anf_body,
@@ -198,7 +212,12 @@ fn compile_match_arms_to_anf<'a>(
                     index: enum_constructor.enum_index(),
                     ty: ty.clone(),
                 };
-                let anf_body = anf(env, arm.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+                let anf_body = anf(
+                    env,
+                    gensym,
+                    arm.body,
+                    Box::new(|c| AExpr::ACExpr { expr: c }),
+                );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
                     body: anf_body,
@@ -211,8 +230,14 @@ fn compile_match_arms_to_anf<'a>(
     }
 
     // Convert default case
-    let anf_default = default
-        .map(|def_body| Box::new(anf(env, *def_body, Box::new(|c| AExpr::ACExpr { expr: c }))));
+    let anf_default = default.map(|def_body| {
+        Box::new(anf(
+            env,
+            gensym,
+            *def_body,
+            Box::new(|c| AExpr::ACExpr { expr: c }),
+        ))
+    });
 
     k(CExpr::EMatch {
         expr: Box::new(scrutinee),
@@ -222,7 +247,12 @@ fn compile_match_arms_to_anf<'a>(
     })
 }
 
-fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>) -> AExpr {
+fn anf<'a>(
+    env: &'a GlobalEnv,
+    gensym: &'a Gensym,
+    e: core::Expr,
+    k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
+) -> AExpr {
     let e_ty = e.get_ty();
     match e {
         core::Expr::EVar { name, ty } => k(CExpr::CImm {
@@ -254,6 +284,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             let ty_clone = e_ty.clone();
             anf_list(
                 env,
+                gensym,
                 &args,
                 Box::new(move |args| {
                     k(CExpr::EConstr {
@@ -266,6 +297,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
         }
         core::Expr::ETuple { items, ty: _ } => anf_list(
             env,
+            gensym,
             &items,
             Box::new(move |items| {
                 k(CExpr::ETuple {
@@ -276,6 +308,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
         ),
         core::Expr::EArray { items, ty: _ } => anf_list(
             env,
+            gensym,
             &items,
             Box::new(move |items| {
                 k(CExpr::EArray {
@@ -294,11 +327,12 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             ty: _,
         } => anf(
             env,
+            gensym,
             *value,
             Box::new(move |ve| AExpr::ALet {
                 name,
                 value: Box::new(ve),
-                body: Box::new(anf(env, *body, k)),
+                body: Box::new(anf(env, gensym, *body, k)),
                 ty: e_ty.clone(),
             }),
         ),
@@ -313,10 +347,21 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             let ty_clone = e_ty.clone();
             anf_imm(
                 env,
+                gensym,
                 *cond,
                 Box::new(move |cond_imm| {
-                    let then_a = anf(env, then_core, Box::new(|c| AExpr::ACExpr { expr: c }));
-                    let else_a = anf(env, else_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+                    let then_a = anf(
+                        env,
+                        gensym,
+                        then_core,
+                        Box::new(|c| AExpr::ACExpr { expr: c }),
+                    );
+                    let else_a = anf(
+                        env,
+                        gensym,
+                        else_core,
+                        Box::new(|c| AExpr::ACExpr { expr: c }),
+                    );
                     k(CExpr::EIf {
                         cond: Box::new(cond_imm),
                         then: Box::new(then_a),
@@ -330,8 +375,18 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             let cond_core = *cond;
             let body_core = *body;
             let ty_clone = e_ty.clone();
-            let cond_a = anf(env, cond_core, Box::new(|c| AExpr::ACExpr { expr: c }));
-            let body_a = anf(env, body_core, Box::new(|c| AExpr::ACExpr { expr: c }));
+            let cond_a = anf(
+                env,
+                gensym,
+                cond_core,
+                Box::new(|c| AExpr::ACExpr { expr: c }),
+            );
+            let body_a = anf(
+                env,
+                gensym,
+                body_core,
+                Box::new(|c| AExpr::ACExpr { expr: c }),
+            );
             k(CExpr::EWhile {
                 cond: Box::new(cond_a),
                 body: Box::new(body_a),
@@ -345,9 +400,10 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             ty: _,
         } => anf_imm(
             env,
+            gensym,
             *expr,
             Box::new(move |imm_expr| {
-                compile_match_arms_to_anf(env, imm_expr, arms, default, e_ty, k)
+                compile_match_arms_to_anf(env, gensym, imm_expr, arms, default, e_ty, k)
             }),
         ),
         core::Expr::EConstrGet {
@@ -357,6 +413,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             ty: _,
         } => anf_imm(
             env,
+            gensym,
             *expr,
             Box::new(move |e| {
                 k(CExpr::EConstrGet {
@@ -371,11 +428,13 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             let call_ty = e_ty.clone();
             anf_imm(
                 env,
+                gensym,
                 *func,
                 Box::new(move |func_imm| {
                     let call_ty = call_ty.clone();
                     anf_list(
                         env,
+                        gensym,
                         &args,
                         Box::new(move |args| {
                             k(CExpr::ECall {
@@ -394,6 +453,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
             ty: _,
         } => anf_imm(
             env,
+            gensym,
             *tuple,
             Box::new(move |e| {
                 k(CExpr::EProj {
@@ -408,6 +468,7 @@ fn anf<'a>(env: &'a GlobalEnv, e: core::Expr, k: Box<dyn FnOnce(CExpr) -> AExpr 
 
 fn anf_imm<'a>(
     env: &'a GlobalEnv,
+    gensym: &'a Gensym,
     e: core::Expr,
     k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>,
 ) -> AExpr {
@@ -415,10 +476,11 @@ fn anf_imm<'a>(
         core::Expr::EVar { name, ty } => k(ImmExpr::ImmVar { name, ty }),
         core::Expr::EPrim { value, ty } => k(ImmExpr::ImmPrim { value, ty }),
         _ => {
-            let name = env.gensym("t");
+            let name = gensym.gensym("t");
             let ty = e.get_ty();
             anf(
                 env,
+                gensym,
                 e,
                 Box::new(move |value_expr| {
                     let body_expr = k(ImmExpr::ImmVar {
@@ -440,6 +502,7 @@ fn anf_imm<'a>(
 
 fn anf_list<'a>(
     env: &'a GlobalEnv,
+    gensym: &'a Gensym,
     es: &'a [core::Expr],
     k: Box<dyn FnOnce(Vec<ImmExpr>) -> AExpr + 'a>,
 ) -> AExpr {
@@ -450,10 +513,12 @@ fn anf_list<'a>(
         let tail = &es[1..];
         anf_imm(
             env,
+            gensym,
             head.clone(),
             Box::new(move |imm_head| {
                 anf_list(
                     env,
+                    gensym,
                     tail,
                     Box::new(move |mut imm_tail| {
                         imm_tail.insert(0, imm_head);
@@ -465,13 +530,18 @@ fn anf_list<'a>(
     }
 }
 
-pub fn anf_file(env: &GlobalEnv, file: core::File) -> File {
+pub fn anf_file(env: &GlobalEnv, gensym: &Gensym, file: core::File) -> File {
     let mut toplevels = Vec::new();
     for core_fn in file.toplevels {
         let name = core_fn.name;
         let params = core_fn.params;
         let ret_ty = core_fn.ret_ty;
-        let body = anf(env, core_fn.body, Box::new(|c| AExpr::ACExpr { expr: c }));
+        let body = anf(
+            env,
+            gensym,
+            core_fn.body,
+            Box::new(|c| AExpr::ACExpr { expr: c }),
+        );
         toplevels.push(Fn {
             name,
             params,
