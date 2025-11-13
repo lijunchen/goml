@@ -15,7 +15,7 @@ struct ClosureTypeInfo {
 
 struct State<'env> {
     env: &'env mut GlobalEnv,
-    gensym: &'env mut Gensym,
+    gensym: &'env Gensym,
     next_id: usize,
     new_functions: Vec<core::Fn>,
     closure_types: IndexMap<String, ClosureTypeInfo>,
@@ -23,7 +23,7 @@ struct State<'env> {
 }
 
 impl<'env> State<'env> {
-    fn new(env: &'env mut GlobalEnv, gensym: &'env mut Gensym) -> Self {
+    fn new(env: &'env mut GlobalEnv, gensym: &'env Gensym) -> Self {
         Self {
             env,
             gensym,
@@ -137,7 +137,7 @@ impl Scope {
     }
 }
 
-pub fn lambda_lift(env: &mut GlobalEnv, gensym: &mut Gensym, file: core::File) -> core::File {
+pub fn lambda_lift(env: &mut GlobalEnv, gensym: &Gensym, file: core::File) -> core::File {
     let mut state = State::new(env, gensym);
     let mut toplevels = Vec::new();
 

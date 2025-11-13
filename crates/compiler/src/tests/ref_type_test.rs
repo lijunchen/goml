@@ -22,8 +22,8 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalEnv) {
         .expect("failed to lower to AST");
     let ast_clone = ast.clone();
     let (tast, mut env) = crate::typer::check_file(ast);
-    let mut gensym = Gensym::new();
-    let core = compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compile_match::compile_file(&env, &gensym, &tast);
     env.record_tuple_types_from_core(&core);
     (ast_clone, tast, env)
 }

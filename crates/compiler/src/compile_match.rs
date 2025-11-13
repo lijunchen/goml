@@ -235,7 +235,7 @@ struct ConstructorCase {
 
 fn compile_constructor_cases(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
@@ -292,7 +292,7 @@ fn compile_constructor_cases(
 
 fn compile_enum_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -362,7 +362,7 @@ fn compile_enum_case(
 
 fn compile_struct_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -449,7 +449,7 @@ fn compile_struct_case(
 
 fn compile_tuple_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     typs: &[Ty],
@@ -511,7 +511,7 @@ fn compile_tuple_case(
 
 fn compile_unit_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
 ) -> core::Expr {
@@ -539,7 +539,7 @@ fn compile_unit_case(
 
 fn compile_bool_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
 ) -> core::Expr {
@@ -583,7 +583,7 @@ fn compile_bool_case(
 
 fn compile_int_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -655,7 +655,7 @@ fn compile_int_case(
 
 fn compile_string_case(
     env: &GlobalEnv,
-    gensym: &mut Gensym,
+    gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -724,7 +724,7 @@ fn compile_string_case(
     }
 }
 
-fn compile_rows(env: &GlobalEnv, gensym: &mut Gensym, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
+fn compile_rows(env: &GlobalEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
     }
@@ -792,7 +792,7 @@ fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
     }
 }
 
-pub fn compile_file(env: &GlobalEnv, gensym: &mut Gensym, file: &File) -> core::File {
+pub fn compile_file(env: &GlobalEnv, gensym: &Gensym, file: &File) -> core::File {
     let mut toplevels = vec![];
     for item in file.toplevels.iter() {
         match item {
@@ -933,7 +933,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     }
 }
 
-fn compile_expr(e: &Expr, env: &GlobalEnv, gensym: &mut Gensym) -> core::Expr {
+fn compile_expr(e: &Expr, env: &GlobalEnv, gensym: &Gensym) -> core::Expr {
     match e {
         EVar {
             name,

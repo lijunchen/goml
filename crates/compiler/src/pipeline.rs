@@ -81,10 +81,10 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let typer_env = env.clone();
 
-    let mut gensym = Gensym::new();
+    let gensym = Gensym::new();
 
-    let core = compile_match::compile_file(&env, &mut gensym, &tast);
-    let lifted_core = lambda_lift::lambda_lift(&mut env, &mut gensym, core.clone());
+    let core = compile_match::compile_file(&env, &gensym, &tast);
+    let lifted_core = lambda_lift::lambda_lift(&mut env, &gensym, core.clone());
     let mono = mono::mono(&mut env, lifted_core.clone());
     let anf = anf::anf_file(&env, &gensym, mono.clone());
     let go = go::compile::go_file(&env, &gensym, anf.clone());

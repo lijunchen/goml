@@ -28,8 +28,8 @@ pub fn execute(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let mut gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
     let _ = core;
     "not support for now".into()
 }
@@ -57,8 +57,8 @@ pub fn compile_to_core(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let mut gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     core.to_pretty(&env, 120)
 }
@@ -86,8 +86,8 @@ pub fn compile_to_mono(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let mut gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
     mono.to_pretty(&env, 120)
@@ -116,8 +116,8 @@ pub fn compile_to_anf(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let mut gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
 
@@ -148,8 +148,8 @@ pub fn compile_to_go(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let mut gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &mut gensym, &tast);
+    let gensym = Gensym::new();
+    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
 
     let mono = compiler::mono::mono(&mut env, core);
 
