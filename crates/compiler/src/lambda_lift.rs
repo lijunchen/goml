@@ -4,7 +4,7 @@ use std::collections::HashMap;
 
 use crate::{
     core,
-    env::{GlobalEnv, StructDef},
+    env::{Gensym, GlobalEnv, StructDef},
     tast::{self, Constructor, StructConstructor, Ty},
     type_encoding::decode_ty,
 };
@@ -15,6 +15,7 @@ struct ClosureTypeInfo {
 
 struct State<'env> {
     env: &'env mut GlobalEnv,
+    gensym: &'env mut Gensym,
     next_id: usize,
     new_functions: Vec<core::Fn>,
     closure_types: IndexMap<String, ClosureTypeInfo>,
@@ -22,9 +23,10 @@ struct State<'env> {
 }
 
 impl<'env> State<'env> {
-    fn new(env: &'env mut GlobalEnv) -> Self {
+    fn new(env: &'env mut GlobalEnv, gensym: &'env mut Gensym) -> Self {
         Self {
             env,
+            gensym,
             next_id: 0,
             new_functions: Vec::new(),
             closure_types: IndexMap::new(),
@@ -135,8 +137,8 @@ impl Scope {
     }
 }
 
-pub fn lambda_lift(env: &mut GlobalEnv, file: core::File) -> core::File {
-    let mut state = State::new(env);
+pub fn lambda_lift(env: &mut GlobalEnv, gensym: &mut Gensym, file: core::File) -> core::File {
+    let mut state = State::new(env, gensym);
     let mut toplevels = Vec::new();
 
     for mut f in file.toplevels.into_iter() {
@@ -509,11 +511,11 @@ fn transform_closure(
     };
     state.env.structs.insert(struct_name.clone(), struct_def);
 
-    let apply_fn_name = state.env.gensym("__closure_apply");
+    let apply_fn_name = state.gensym.gensym("__closure_apply");
     state.register_closure_type(&struct_name, apply_fn_name.clone());
 
     let mut fn_params = Vec::with_capacity(lowered_params.len() + 1);
-    let env_param_name = state.env.gensym("env");
+    let env_param_name = state.gensym.gensym("env");
     fn_params.push((env_param_name.clone(), env_ty.clone()));
     fn_params.extend(lowered_params.iter().cloned());
 

@@ -3,7 +3,11 @@ use std::path::PathBuf;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{compile_match, env::GlobalEnv, tast};
+use crate::{
+    compile_match,
+    env::{Gensym, GlobalEnv},
+    tast,
+};
 
 fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalEnv) {
     let path = PathBuf::from("test_refs.gom");
@@ -18,7 +22,8 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalEnv) {
         .expect("failed to lower to AST");
     let ast_clone = ast.clone();
     let (tast, mut env) = crate::typer::check_file(ast);
-    let core = compile_match::compile_file(&env, &tast);
+    let mut gensym = Gensym::new();
+    let core = compile_match::compile_file(&env, &mut gensym, &tast);
     env.record_tuple_types_from_core(&core);
     (ast_clone, tast, env)
 }

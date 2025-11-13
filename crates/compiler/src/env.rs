@@ -74,7 +74,6 @@ pub enum Constraint {
 #[derive(Debug, Clone)]
 #[allow(unused)]
 pub struct GlobalEnv {
-    counter: Cell<i32>,
     pub enums: IndexMap<Uident, EnumDef>,
     pub structs: IndexMap<Uident, StructDef>,
     pub closure_env_apply: IndexMap<String, String>,
@@ -99,7 +98,6 @@ impl Default for GlobalEnv {
 impl GlobalEnv {
     pub fn new() -> Self {
         Self {
-            counter: Cell::new(0),
             enums: IndexMap::new(),
             structs: IndexMap::new(),
             closure_env_apply: IndexMap::new(),
@@ -243,17 +241,6 @@ impl GlobalEnv {
         let enum_def = self.enums.get(&Uident::new(tenum_name)).unwrap();
         let variant = &enum_def.variants[index as usize];
         format!("{}::{}", enum_def.name.0, variant.0.0)
-    }
-
-    pub fn gensym(&self, prefix: &str) -> String {
-        let count = self.counter.get();
-        self.counter.set(count + 1);
-        format!("{}{}", prefix, count)
-    }
-
-    #[allow(unused)]
-    pub fn reset(&self) {
-        self.counter.set(0);
     }
 
     pub fn lookup_constructor(&self, constr: &Uident) -> Option<(Constructor, tast::Ty)> {
@@ -518,6 +505,31 @@ impl GlobalEnv {
         self.tuple_types = tuples;
         self.array_types = arrays;
         self.ref_types = refs;
+    }
+}
+
+/// Helper used by later compilation stages to mint stable temporary names
+/// without mutating [`GlobalEnv`].
+#[derive(Debug, Clone, Default)]
+pub struct Gensym {
+    counter: Cell<i32>,
+}
+
+impl Gensym {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    /// Returns a fresh identifier prefixed by `prefix`.
+    pub fn gensym(&self, prefix: &str) -> String {
+        let current = self.counter.get();
+        self.counter.set(current + 1);
+        format!("{}{}", prefix, current)
+    }
+
+    #[allow(unused)]
+    pub fn reset(&self) {
+        self.counter.set(0);
     }
 }
 

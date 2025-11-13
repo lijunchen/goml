@@ -1,7 +1,7 @@
 use ast::ast::{BinaryOp, Uident, UnaryOp};
 
 use crate::core;
-use crate::env::{GlobalEnv, StructDef};
+use crate::env::{Gensym, GlobalEnv, StructDef};
 use crate::mangle::mangle_impl_name;
 use crate::tast::Arm;
 use crate::tast::Constructor;
@@ -235,6 +235,7 @@ struct ConstructorCase {
 
 fn compile_constructor_cases(
     env: &GlobalEnv,
+    gensym: &mut Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
@@ -282,7 +283,7 @@ fn compile_constructor_cases(
                 args,
                 ty: bvar.ty.clone(),
             },
-            body: compile_rows(env, case.rows, ty),
+            body: compile_rows(env, gensym, case.rows, ty),
         };
         arms.push(arm);
     }
@@ -291,6 +292,7 @@ fn compile_constructor_cases(
 
 fn compile_enum_case(
     env: &GlobalEnv,
+    gensym: &mut Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -312,7 +314,7 @@ fn compile_enum_case(
             vars: args
                 .iter()
                 .map(|arg_ty| Variable {
-                    name: env.gensym("x"),
+                    name: gensym.gensym("x"),
                     ty: arg_ty.clone(),
                 })
                 .collect::<Vec<_>>(),
@@ -341,7 +343,7 @@ fn compile_enum_case(
         results.push(result);
     }
 
-    let arms = compile_constructor_cases(env, rows, bvar, cases, ty);
+    let arms = compile_constructor_cases(env, gensym, rows, bvar, cases, ty);
 
     let mut new_arms = vec![];
     for (mut res, mut arm) in results.into_iter().zip(arms.into_iter()) {
@@ -360,6 +362,7 @@ fn compile_enum_case(
 
 fn compile_struct_case(
     env: &GlobalEnv,
+    gensym: &mut Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -384,7 +387,7 @@ fn compile_struct_case(
     let field_vars: Vec<Variable> = inst_fields
         .iter()
         .map(|(_, fty)| Variable {
-            name: env.gensym("x"),
+            name: gensym.gensym("x"),
             ty: fty.clone(),
         })
         .collect();
@@ -439,19 +442,20 @@ fn compile_struct_case(
         });
     }
 
-    let inner = compile_rows(env, new_rows, ty);
+    let inner = compile_rows(env, gensym, new_rows, ty);
     replace_default_expr(&mut result, inner);
     result
 }
 
 fn compile_tuple_case(
     env: &GlobalEnv,
+    gensym: &mut Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     typs: &[Ty],
     ty: &Ty,
 ) -> core::Expr {
-    let names = typs.iter().map(|_| env.gensym("x")).collect::<Vec<_>>();
+    let names = typs.iter().map(|_| gensym.gensym("x")).collect::<Vec<_>>();
     let mut new_rows = vec![];
 
     let hole = core::eunit();
@@ -498,14 +502,19 @@ fn compile_tuple_case(
         });
     }
 
-    let inner = compile_rows(env, new_rows, ty);
+    let inner = compile_rows(env, gensym, new_rows, ty);
 
     // Replace the empty default result with the actual compiled rows
     replace_default_expr(&mut result, inner);
     result
 }
 
-fn compile_unit_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+fn compile_unit_case(
+    env: &GlobalEnv,
+    gensym: &mut Gensym,
+    rows: Vec<Row>,
+    bvar: &Variable,
+) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
     let mut new_rows = vec![];
     for mut r in rows {
@@ -521,14 +530,19 @@ fn compile_unit_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::
         expr: Box::new(bvar.to_core()),
         arms: vec![core::Arm {
             lhs: core::eunit(),
-            body: compile_rows(env, new_rows, &bvar.ty),
+            body: compile_rows(env, gensym, new_rows, &bvar.ty),
         }],
         default: None,
         ty: body_ty,
     }
 }
 
-fn compile_bool_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::Expr {
+fn compile_bool_case(
+    env: &GlobalEnv,
+    gensym: &mut Gensym,
+    rows: Vec<Row>,
+    bvar: &Variable,
+) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let mut true_rows = vec![];
@@ -555,11 +569,11 @@ fn compile_bool_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::
         arms: vec![
             core::Arm {
                 lhs: core::ebool(true),
-                body: compile_rows(env, true_rows, &bvar.ty),
+                body: compile_rows(env, gensym, true_rows, &bvar.ty),
             },
             core::Arm {
                 lhs: core::ebool(false),
-                body: compile_rows(env, false_rows, &bvar.ty),
+                body: compile_rows(env, gensym, false_rows, &bvar.ty),
             },
         ],
         default: None,
@@ -569,6 +583,7 @@ fn compile_bool_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable) -> core::
 
 fn compile_int_case(
     env: &GlobalEnv,
+    gensym: &mut Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
@@ -620,14 +635,14 @@ fn compile_int_case(
                 value: Prim::from_int_literal(value, &literal_ty),
                 ty: literal_ty.clone(),
             },
-            body: compile_rows(env, rows, ty),
+            body: compile_rows(env, gensym, rows, ty),
         })
         .collect();
 
     let default = if default_rows.is_empty() {
         None
     } else {
-        Some(Box::new(compile_rows(env, default_rows, ty)))
+        Some(Box::new(compile_rows(env, gensym, default_rows, ty)))
     };
 
     core::Expr::EMatch {
@@ -638,7 +653,13 @@ fn compile_int_case(
     }
 }
 
-fn compile_string_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable, ty: &Ty) -> core::Expr {
+fn compile_string_case(
+    env: &GlobalEnv,
+    gensym: &mut Gensym,
+    rows: Vec<Row>,
+    bvar: &Variable,
+    ty: &Ty,
+) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let mut value_rows: IndexMap<String, Vec<Row>> = IndexMap::new();
@@ -685,14 +706,14 @@ fn compile_string_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable, ty: &Ty
                 value: Prim::string(value),
                 ty: Ty::TString,
             },
-            body: compile_rows(env, rows, ty),
+            body: compile_rows(env, gensym, rows, ty),
         })
         .collect();
 
     let default = if default_rows.is_empty() {
         None
     } else {
-        Some(Box::new(compile_rows(env, default_rows, ty)))
+        Some(Box::new(compile_rows(env, gensym, default_rows, ty)))
     };
 
     core::Expr::EMatch {
@@ -703,7 +724,7 @@ fn compile_string_case(env: &GlobalEnv, rows: Vec<Row>, bvar: &Variable, ty: &Ty
     }
 }
 
-fn compile_rows(env: &GlobalEnv, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
+fn compile_rows(env: &GlobalEnv, gensym: &mut Gensym, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
     }
@@ -713,33 +734,33 @@ fn compile_rows(env: &GlobalEnv, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
 
     if rows.first().is_some_and(|c| c.columns.is_empty()) {
         let row = rows.remove(0);
-        return compile_expr(&row.body, env);
+        return compile_expr(&row.body, env, gensym);
     }
 
     let bvar = branch_variable(&rows);
     match &bvar.ty {
         Ty::TVar(..) => unreachable!(),
-        Ty::TUnit => compile_unit_case(env, rows, &bvar),
-        Ty::TBool => compile_bool_case(env, rows, &bvar),
-        Ty::TInt => compile_int_case(env, rows, &bvar, ty, Ty::TInt),
-        Ty::TInt8 => compile_int_case(env, rows, &bvar, ty, Ty::TInt8),
-        Ty::TInt16 => compile_int_case(env, rows, &bvar, ty, Ty::TInt16),
-        Ty::TInt32 => compile_int_case(env, rows, &bvar, ty, Ty::TInt32),
-        Ty::TInt64 => compile_int_case(env, rows, &bvar, ty, Ty::TInt64),
-        Ty::TUint8 => compile_int_case(env, rows, &bvar, ty, Ty::TUint8),
-        Ty::TUint16 => compile_int_case(env, rows, &bvar, ty, Ty::TUint16),
-        Ty::TUint32 => compile_int_case(env, rows, &bvar, ty, Ty::TUint32),
-        Ty::TUint64 => compile_int_case(env, rows, &bvar, ty, Ty::TUint64),
+        Ty::TUnit => compile_unit_case(env, gensym, rows, &bvar),
+        Ty::TBool => compile_bool_case(env, gensym, rows, &bvar),
+        Ty::TInt => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TInt),
+        Ty::TInt8 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TInt8),
+        Ty::TInt16 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TInt16),
+        Ty::TInt32 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TInt32),
+        Ty::TInt64 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TInt64),
+        Ty::TUint8 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TUint8),
+        Ty::TUint16 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TUint16),
+        Ty::TUint32 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TUint32),
+        Ty::TUint64 => compile_int_case(env, gensym, rows, &bvar, ty, Ty::TUint64),
         Ty::TFloat32 | Ty::TFloat64 => {
             panic!("Matching on floating point types is not supported")
         }
-        Ty::TString => compile_string_case(env, rows, &bvar, ty),
+        Ty::TString => compile_string_case(env, gensym, rows, &bvar, ty),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
             if env.enums.contains_key(&ident) {
-                compile_enum_case(env, rows, &bvar, ty, &ident)
+                compile_enum_case(env, gensym, rows, &bvar, ty, &ident)
             } else if env.structs.contains_key(&ident) {
-                compile_struct_case(env, rows, &bvar, ty, &ident, &[])
+                compile_struct_case(env, gensym, rows, &bvar, ty, &ident, &[])
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
@@ -748,14 +769,14 @@ fn compile_rows(env: &GlobalEnv, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
             let name = base.get_constr_name_unsafe();
             let ident = Uident::new(&name);
             if env.enums.contains_key(&ident) {
-                compile_enum_case(env, rows, &bvar, ty, &ident)
+                compile_enum_case(env, gensym, rows, &bvar, ty, &ident)
             } else if env.structs.contains_key(&ident) {
-                compile_struct_case(env, rows, &bvar, ty, &ident, args)
+                compile_struct_case(env, gensym, rows, &bvar, ty, &ident, args)
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
         }
-        Ty::TTuple { typs } => compile_tuple_case(env, rows, &bvar, typs, ty),
+        Ty::TTuple { typs } => compile_tuple_case(env, gensym, rows, &bvar, typs, ty),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
@@ -771,7 +792,7 @@ fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
     }
 }
 
-pub fn compile_file(env: &GlobalEnv, file: &File) -> core::File {
+pub fn compile_file(env: &GlobalEnv, gensym: &mut Gensym, file: &File) -> core::File {
     let mut toplevels = vec![];
     for item in file.toplevels.iter() {
         match item {
@@ -789,7 +810,7 @@ pub fn compile_file(env: &GlobalEnv, file: &File) -> core::File {
                             .map(|(name, ty)| (name.clone(), ty.clone()))
                             .collect(),
                         ret_ty: m.ret_ty.clone(),
-                        body: compile_expr(&m.body, env),
+                        body: compile_expr(&m.body, env, gensym),
                     };
 
                     toplevels.push(f);
@@ -804,7 +825,7 @@ pub fn compile_file(env: &GlobalEnv, file: &File) -> core::File {
                         .map(|(name, ty)| (name.clone(), ty.clone()))
                         .collect(),
                     ret_ty: f.ret_ty.clone(),
-                    body: compile_expr(&f.body, env),
+                    body: compile_expr(&f.body, env, gensym),
                 });
             }
             tast::Item::ExternGo(_) => {}
@@ -912,7 +933,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     }
 }
 
-fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
+fn compile_expr(e: &Expr, env: &GlobalEnv, gensym: &mut Gensym) -> core::Expr {
     match e {
         EVar {
             name,
@@ -927,14 +948,20 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             ty: ty.clone(),
         },
         ETuple { items, ty } => {
-            let items = items.iter().map(|item| compile_expr(item, env)).collect();
+            let items = items
+                .iter()
+                .map(|item| compile_expr(item, env, gensym))
+                .collect();
             core::Expr::ETuple {
                 items,
                 ty: ty.clone(),
             }
         }
         EArray { items, ty } => {
-            let items = items.iter().map(|item| compile_expr(item, env)).collect();
+            let items = items
+                .iter()
+                .map(|item| compile_expr(item, env, gensym))
+                .collect();
             core::Expr::EArray {
                 items,
                 ty: ty.clone(),
@@ -945,7 +972,10 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             args,
             ty,
         } => {
-            let args = args.iter().map(|arg| compile_expr(arg, env)).collect();
+            let args = args
+                .iter()
+                .map(|arg| compile_expr(arg, env, gensym))
+                .collect();
             core::Expr::EConstr {
                 constructor: constructor.clone(),
                 args,
@@ -959,7 +989,7 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             captures: _,
         } => {
             let params = params.clone();
-            let body = Box::new(compile_expr(body, env));
+            let body = Box::new(compile_expr(body, env, gensym));
             core::Expr::EClosure {
                 params,
                 body,
@@ -978,8 +1008,8 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             ty,
         } => core::Expr::ELet {
             name: name.clone(),
-            value: Box::new(compile_expr(value, env)),
-            body: Box::new(compile_expr(body, env)),
+            value: Box::new(compile_expr(value, env, gensym)),
+            body: Box::new(compile_expr(body, env, gensym)),
             ty: ty.clone(),
         },
         ELet {
@@ -988,8 +1018,8 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             body,
             ty,
         } => {
-            let core_value = compile_expr(value, env);
-            let x = env.gensym("mtmp");
+            let core_value = compile_expr(value, env, gensym);
+            let x = gensym.gensym("mtmp");
             let rows = vec![
                 Row {
                     columns: vec![Column {
@@ -1023,7 +1053,7 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             core::Expr::ELet {
                 name: x,
                 value: Box::new(core_value),
-                body: Box::new(compile_rows(env, rows, ty)),
+                body: Box::new(compile_rows(env, gensym, rows, ty)),
                 ty: ty.clone(),
             }
         }
@@ -1034,17 +1064,17 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
                 astptr: _,
             } => {
                 let rows = make_rows(name, arms);
-                compile_rows(env, rows, ty)
+                compile_rows(env, gensym, rows, ty)
             }
             _ => {
                 // create a new variable
                 // match (a, b, c) { .. }
                 // =>
                 // let tmp = (a, b, c) in match tmp { ... }
-                let mtmp = env.gensym("mtmp");
+                let mtmp = gensym.gensym("mtmp");
                 let rows = make_rows(mtmp.as_str(), arms);
-                let core_expr = compile_expr(expr, env);
-                let core_rows = compile_rows(env, rows, ty);
+                let core_expr = compile_expr(expr, env, gensym);
+                let core_rows = compile_rows(env, gensym, rows, ty);
                 core::Expr::ELet {
                     name: mtmp,
                     value: Box::new(core_expr),
@@ -1059,14 +1089,14 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             else_branch,
             ty,
         } => core::Expr::EIf {
-            cond: Box::new(compile_expr(cond, env)),
-            then_branch: Box::new(compile_expr(then_branch, env)),
-            else_branch: Box::new(compile_expr(else_branch, env)),
+            cond: Box::new(compile_expr(cond, env, gensym)),
+            then_branch: Box::new(compile_expr(then_branch, env, gensym)),
+            else_branch: Box::new(compile_expr(else_branch, env, gensym)),
             ty: ty.clone(),
         },
         EWhile { cond, body, ty } => core::Expr::EWhile {
-            cond: Box::new(compile_expr(cond, env)),
-            body: Box::new(compile_expr(body, env)),
+            cond: Box::new(compile_expr(cond, env, gensym)),
+            body: Box::new(compile_expr(body, env, gensym)),
             ty: ty.clone(),
         },
         EUnary {
@@ -1075,7 +1105,7 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             ty,
             resolution,
         } => {
-            let arg = compile_expr(expr, env);
+            let arg = compile_expr(expr, env, gensym);
             let arg_ty = arg.get_ty();
 
             match resolution {
@@ -1123,7 +1153,10 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             ty,
             resolution,
         } => {
-            let args = vec![compile_expr(lhs, env), compile_expr(rhs, env)];
+            let args = vec![
+                compile_expr(lhs, env, gensym),
+                compile_expr(rhs, env, gensym),
+            ];
             let param_tys: Vec<_> = args.iter().map(|arg| arg.get_ty()).collect();
 
             match resolution {
@@ -1164,10 +1197,10 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             }
         }
         ECall { func, args, ty } => {
-            let core_func = compile_expr(func, env);
+            let core_func = compile_expr(func, env, gensym);
             let args = args
                 .iter()
-                .map(|arg| compile_expr(arg, env))
+                .map(|arg| compile_expr(arg, env, gensym))
                 .collect::<Vec<_>>();
 
             let func_expr = if let tast::Expr::EVar { name, .. } = func.as_ref()
@@ -1190,7 +1223,7 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             }
         }
         EProj { tuple, index, ty } => {
-            let tuple = compile_expr(tuple, env);
+            let tuple = compile_expr(tuple, env, gensym);
             core::Expr::EProj {
                 tuple: Box::new(tuple),
                 index: *index,
@@ -1203,7 +1236,7 @@ fn compile_expr(e: &Expr, env: &GlobalEnv) -> core::Expr {
             ty,
         } => {
             let base_ty = expr.get_ty();
-            let expr_core = compile_expr(expr, env);
+            let expr_core = compile_expr(expr, env, gensym);
             let (type_name, type_args) = decompose_struct_type(&base_ty)
                 .unwrap_or_else(|| panic!("Field access on non-struct type {:?}", base_ty));
             let struct_def = env
