@@ -508,8 +508,6 @@ impl GlobalEnv {
     }
 }
 
-/// Helper used by later compilation stages to mint stable temporary names
-/// without mutating [`GlobalEnv`].
 #[derive(Debug, Clone, Default)]
 pub struct Gensym {
     counter: Cell<i32>,
