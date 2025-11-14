@@ -6,12 +6,28 @@ import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 const demos: Record<string, string> = {};
 
 const loadDemos = async () => {
-  const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*.src', { query: '?raw', import: 'default' });
-  for (const path in modules) {
-    const name = path.split('/').pop()?.replace('.src', '') || 'unknown';
-    demos[name] = await modules[path]() as string;
-  }
+  const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*.src', {
+    query: '?raw',
+    import: 'default'
+  });
+
+  const loadedEntries = await Promise.all(
+    Object.entries(modules).map(async ([path, loader]) => {
+      const name = path.split('/').pop()?.replace('.src', '') || 'unknown';
+      const content = await loader() as string;
+      return [name, content] as const;
+    })
+  );
+
+  loadedEntries
+    .sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([name, content]) => {
+      demos[name] = content;
+    });
 };
+
+type ViewMode = 'cst' | 'ast' | 'tast' | 'core' | 'mono' | 'anf' | 'go';
+type PipelineOutputs = Record<ViewMode, string>;
 
 function App() {
   const monaco = useMonaco();
@@ -19,13 +35,26 @@ function App() {
   const [result, setResult] = useState("");
   const [core, setCore] = useState("");
   const [selectedDemo, setSelectedDemo] = useState("");
-  const [viewMode, setViewMode] = useState("go");
+  const [viewMode, setViewMode] = useState<ViewMode>('go');
+  const [pipelineOutputs, setPipelineOutputs] = useState<PipelineOutputs>({
+    cst: "",
+    ast: "",
+    tast: "",
+    core: "",
+    mono: "",
+    anf: "",
+    go: ""
+  });
 
   useEffect(() => {
     loadDemos().then(() => {
-      const defaultDemo = Object.keys(demos)[0];
-      setSelectedDemo(defaultDemo);
-      setCode(demos[defaultDemo]);
+      const demoNames = Object.keys(demos);
+      const defaultDemo = demoNames[0];
+
+      if (defaultDemo) {
+        setSelectedDemo(defaultDemo);
+        setCode(demos[defaultDemo]);
+      }
     });
   }, []);
 
@@ -89,39 +118,37 @@ function App() {
 
   useEffect(() => {
     try {
-      if (viewMode === "core") setCore(compile_to_core(code));
-      else if (viewMode === "cst") setCore(get_cst(code));
-      else if (viewMode === "ast") setCore(get_ast(code));
-      else if (viewMode === "tast") setCore(get_tast(code));
-      else if (viewMode === "mono") setCore(compile_to_mono(code));
-      else if (viewMode === "anf") setCore(compile_to_anf(code));
-      else if (viewMode === "go") setCore(compile_to_go(code));
+      setPipelineOutputs({
+        cst: get_cst(code),
+        ast: get_ast(code),
+        tast: get_tast(code),
+        core: compile_to_core(code),
+        mono: compile_to_mono(code),
+        anf: compile_to_anf(code),
+        go: compile_to_go(code)
+      });
       setResult(execute(code));
     } catch (error) {
       console.error(error);
     }
-  }, [code, viewMode]);
+  }, [code]);
+
+  useEffect(() => {
+    setCore(pipelineOutputs[viewMode] || "");
+  }, [pipelineOutputs, viewMode]);
 
   const handleDemoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const demoName = e.target.value;
     setSelectedDemo(demoName);
-    setCode(demos[demoName]);
+    const selectedCode = demos[demoName];
+
+    if (selectedCode !== undefined) {
+      setCode(selectedCode);
+    }
   };
 
   const handleViewModeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setViewMode(e.target.value);
-    try {
-      if (e.target.value === "cst") setCore(get_cst(code));
-      else if (e.target.value === "ast") setCore(get_ast(code));
-      else if (e.target.value === "tast") setCore(get_tast(code));
-      else if (e.target.value === "core") setCore(compile_to_core(code));
-      else if (e.target.value === "mono") setCore(compile_to_mono(code));
-      else if (e.target.value === "anf") setCore(compile_to_anf(code));
-      else if (e.target.value === "go") setCore(compile_to_go(code));
-      else setCore(compile_to_core(code));
-    } catch (error) {
-      console.error(error);
-    }
+    setViewMode(e.target.value as ViewMode);
   };
 
   return (
