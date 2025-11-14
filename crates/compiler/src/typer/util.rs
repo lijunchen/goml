@@ -114,7 +114,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
 }
 
 impl tast::Ty {
-    pub(crate) fn from_ast_with_tparams_env(ast_ty: &ast::Ty, tparams_env: &[ast::Uident]) -> Self {
+    pub(crate) fn from_ast(ast_ty: &ast::Ty, tparams_env: &[ast::Uident]) -> Self {
         match ast_ty {
             ast::Ty::TUnit => Self::TUnit,
             ast::Ty::TBool => Self::TBool,
@@ -133,7 +133,7 @@ impl tast::Ty {
             ast::Ty::TTuple { typs } => Self::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::from_ast_with_tparams_env(ty, tparams_env))
+                    .map(|ty| Self::from_ast(ty, tparams_env))
                     .collect(),
             },
             ast::Ty::TCon { name } => {
@@ -144,25 +144,25 @@ impl tast::Ty {
                 }
             }
             ast::Ty::TApp { ty, args } => Self::TApp {
-                ty: Box::new(Self::from_ast_with_tparams_env(ty, tparams_env)),
+                ty: Box::new(Self::from_ast(ty, tparams_env)),
                 args: args
                     .iter()
-                    .map(|ty| Self::from_ast_with_tparams_env(ty, tparams_env))
+                    .map(|ty| Self::from_ast(ty, tparams_env))
                     .collect(),
             },
             ast::Ty::TArray { len, elem } => Self::TArray {
                 len: *len,
-                elem: Box::new(Self::from_ast_with_tparams_env(elem, tparams_env)),
+                elem: Box::new(Self::from_ast(elem, tparams_env)),
             },
             ast::Ty::TRef { elem } => Self::TRef {
-                elem: Box::new(Self::from_ast_with_tparams_env(elem, tparams_env)),
+                elem: Box::new(Self::from_ast(elem, tparams_env)),
             },
             ast::Ty::TFunc { params, ret_ty } => Self::TFunc {
                 params: params
                     .iter()
-                    .map(|ty| Self::from_ast_with_tparams_env(ty, tparams_env))
+                    .map(|ty| Self::from_ast(ty, tparams_env))
                     .collect(),
-                ret_ty: Box::new(Self::from_ast_with_tparams_env(ret_ty, tparams_env)),
+                ret_ty: Box::new(Self::from_ast(ret_ty, tparams_env)),
             },
         }
     }
