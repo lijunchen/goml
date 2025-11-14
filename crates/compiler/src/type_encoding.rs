@@ -4,7 +4,6 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
     match ty {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
-        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),
@@ -72,7 +71,7 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
         }
         "int" => {
             if start + 1 == end {
-                Ok(tast::Ty::TInt)
+                Ok(tast::Ty::TInt32)
             } else {
                 Err("unexpected trailing tokens after int".to_string())
             }

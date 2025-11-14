@@ -87,7 +87,7 @@ pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> 
             name: array_helper_fn_name("array_get", ty),
             params: vec![
                 ("arr".to_string(), arr_go_ty.clone()),
-                ("index".to_string(), goty::GoType::TInt),
+                ("index".to_string(), goty::GoType::TInt32),
             ],
             ret_ty: Some(elem_go_ty.clone()),
             body: goast::Block {
@@ -99,7 +99,7 @@ pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> 
                         }),
                         index: Box::new(goast::Expr::Var {
                             name: "index".to_string(),
-                            ty: goty::GoType::TInt,
+                            ty: goty::GoType::TInt32,
                         }),
                         ty: elem_go_ty.clone(),
                     }),
@@ -111,7 +111,7 @@ pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> 
             name: array_helper_fn_name("array_set", ty),
             params: vec![
                 ("arr".to_string(), arr_go_ty.clone()),
-                ("index".to_string(), goty::GoType::TInt),
+                ("index".to_string(), goty::GoType::TInt32),
                 ("value".to_string(), elem_go_ty.clone()),
             ],
             ret_ty: Some(arr_go_ty.clone()),
@@ -124,7 +124,7 @@ pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> 
                         },
                         index: goast::Expr::Var {
                             name: "index".to_string(),
-                            ty: goty::GoType::TInt,
+                            ty: goty::GoType::TInt32,
                         },
                         value: goast::Expr::Var {
                             name: "value".to_string(),
@@ -341,7 +341,7 @@ fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
 }
 
 fn int_to_string() -> goast::Fn {
-    to_string_fn("int_to_string", goty::GoType::TInt)
+    to_string_fn("int_to_string", goty::GoType::TInt32)
 }
 
 fn int8_to_string() -> goast::Fn {

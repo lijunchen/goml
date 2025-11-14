@@ -1,4 +1,4 @@
-fn my_int_equal(x/0: int, y/1: int) -> bool {
+fn my_int_equal(x/0: int32, y/1: int32) -> bool {
   let t1 = int_less(x/0, y/1) in
   let t0 = bool_not(t1) in
   let t3 = int_less(y/1, x/0) in
@@ -6,7 +6,7 @@ fn my_int_equal(x/0: int, y/1: int) -> bool {
   bool_and(t0, t2)
 }
 
-fn sum(n/2: int) -> int {
+fn sum(n/2: int32) -> int32 {
   let t4 = my_int_equal(n/2, 1) in
   if t4 {
     1

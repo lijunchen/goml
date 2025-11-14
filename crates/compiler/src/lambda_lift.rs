@@ -746,7 +746,6 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     match ty {
         Ty::TUnit
         | Ty::TBool
-        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32

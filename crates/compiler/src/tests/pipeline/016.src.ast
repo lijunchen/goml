@@ -3,14 +3,14 @@ enum List[T] {
     Cons(T, List[T])
 }
 
-fn list_length(xs: List[T]) -> int {
+fn list_length(xs: List[T]) -> int32 {
     match xs {
         Nil => 0,
         Cons(_, tail) => 1 + list_length(tail),
     }
 }
 
-fn int_list_length(xs: List[int]) -> int {
+fn int_list_length(xs: List[int32]) -> int32 {
     match xs {
         Nil => 0,
         Cons(_, tail) => 1 + int_list_length(tail),

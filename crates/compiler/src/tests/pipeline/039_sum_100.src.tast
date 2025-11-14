@@ -1,15 +1,15 @@
-fn my_int_equal(x/0: int, y/1: int) -> bool {
-  (bool_and : (bool, bool) -> bool)((bool_not : (bool) -> bool)((int_less : (int, int) -> bool)((x/0 : int), (y/1 : int))), (bool_not : (bool) -> bool)((int_less : (int, int) -> bool)((y/1 : int), (x/0 : int))))
+fn my_int_equal(x/0: int32, y/1: int32) -> bool {
+  (bool_and : (bool, bool) -> bool)((bool_not : (bool) -> bool)((int_less : (int32, int32) -> bool)((x/0 : int32), (y/1 : int32))), (bool_not : (bool) -> bool)((int_less : (int32, int32) -> bool)((y/1 : int32), (x/0 : int32))))
 }
 
-fn sum(n/2: int) -> int {
-  if (my_int_equal : (int, int) -> bool)((n/2 : int), 1) {
+fn sum(n/2: int32) -> int32 {
+  if (my_int_equal : (int32, int32) -> bool)((n/2 : int32), 1) {
       1
   } else {
-      (n/2 : int) + (sum : (int) -> int)((n/2 : int) - 1)
+      (n/2 : int32) + (sum : (int32) -> int32)((n/2 : int32) - 1)
   }
 }
 
 fn main() -> unit {
-  (string_println : (string) -> unit)((int_to_string : (int) -> string)((sum : (int) -> int)(100)))
+  (string_println : (string) -> unit)((int_to_string : (int32) -> string)((sum : (int32) -> int32)(100)))
 }

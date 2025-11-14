@@ -1,38 +1,38 @@
-fn match_mixed_pair(pair/0: (int, string)) -> int {
-  match (pair/0 : (int, string)) {
+fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
+  match (pair/0 : (int32, string)) {
       (0, "zero") => 1,
       (0, _ : string) => 2,
       (1, "one") => 3,
-      (_ : int, "zero") => 4,
-      _ : (int, string) => 5,
+      (_ : int32, "zero") => 4,
+      _ : (int32, string) => 5,
   }
 }
 
-fn match_mixed_enum(value/1: Mixed) -> int {
+fn match_mixed_enum(value/1: Mixed) -> int32 {
   match (value/1 : Mixed) {
       Mixed::OnlyInt(0) => 6,
-      Mixed::OnlyInt(_ : int) => 7,
+      Mixed::OnlyInt(_ : int32) => 7,
       Mixed::OnlyStr("zero") => 8,
       Mixed::OnlyStr(_ : string) => 9,
       Mixed::Both(0, "zero") => 10,
       Mixed::Both(0, _ : string) => 11,
-      Mixed::Both(_ : int, "zero") => 12,
-      Mixed::Both(_ : int, _ : string) => 13,
+      Mixed::Both(_ : int32, "zero") => 12,
+      Mixed::Both(_ : int32, _ : string) => 13,
   }
 }
 
 fn main() -> unit {
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_pair : ((int, string)) -> int)((0, "zero")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_pair : ((int, string)) -> int)((0, "other")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_pair : ((int, string)) -> int)((1, "one")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_pair : ((int, string)) -> int)((2, "zero")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_pair : ((int, string)) -> int)((2, "two")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::OnlyInt(0)))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::OnlyInt(5)))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::OnlyStr("zero")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::OnlyStr("hello")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::Both(0, "zero")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::Both(0, "hello")))) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::Both(2, "zero")))) in
-  (string_println : (string) -> unit)((int_to_string : (int) -> string)((match_mixed_enum : (Mixed) -> int)(Mixed::Both(3, "three"))))
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_pair : ((int32, string)) -> int32)((0, "zero")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_pair : ((int32, string)) -> int32)((0, "other")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_pair : ((int32, string)) -> int32)((1, "one")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_pair : ((int32, string)) -> int32)((2, "zero")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_pair : ((int32, string)) -> int32)((2, "two")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::OnlyInt(0)))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::OnlyInt(5)))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::OnlyStr("zero")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::OnlyStr("hello")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::Both(0, "zero")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::Both(0, "hello")))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::Both(2, "zero")))) in
+  (string_println : (string) -> unit)((int_to_string : (int32) -> string)((match_mixed_enum : (Mixed) -> int32)(Mixed::Both(3, "three"))))
 }

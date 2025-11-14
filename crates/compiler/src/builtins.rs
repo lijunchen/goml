@@ -33,31 +33,31 @@ pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
 
     funcs.insert(
         "int_to_string".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt], tast::Ty::TString),
+        make_fn_ty(vec![tast::Ty::TInt32], tast::Ty::TString),
     );
     funcs.insert(
         "int_neg".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt], tast::Ty::TInt),
+        make_fn_ty(vec![tast::Ty::TInt32], tast::Ty::TInt32),
     );
     funcs.insert(
         "int_add".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
     );
     funcs.insert(
         "int_sub".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
     );
     funcs.insert(
         "int_mul".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
     );
     funcs.insert(
         "int_div".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TInt),
+        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
     );
     funcs.insert(
         "int_less".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt, tast::Ty::TInt], tast::Ty::TBool),
+        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TBool),
     );
     funcs.insert(
         "int16_to_string".to_string(),
@@ -431,14 +431,14 @@ pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
     funcs.insert(
         "array_get".to_string(),
         make_fn_ty(
-            vec![array_ty.clone(), tast::Ty::TInt],
+            vec![array_ty.clone(), tast::Ty::TInt32],
             array_elem_param.clone(),
         ),
     );
     funcs.insert(
         "array_set".to_string(),
         make_fn_ty(
-            vec![array_ty.clone(), tast::Ty::TInt, array_elem_param.clone()],
+            vec![array_ty.clone(), tast::Ty::TInt32, array_elem_param.clone()],
             array_ty,
         ),
     );

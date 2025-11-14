@@ -1,15 +1,15 @@
-impl Arith for int{
-  fn add(self/0: int, other/1: int) -> int {
-    (self/0 : int) + (other/1 : int)
+impl Arith for int32{
+  fn add(self/0: int32, other/1: int32) -> int32 {
+    (self/0 : int32) + (other/1 : int32)
   }
-  fn less(self/2: int, other/3: int) -> bool {
-    (int_less : (int, int) -> bool)((self/2 : int), (other/3 : int))
+  fn less(self/2: int32, other/3: int32) -> bool {
+    (int_less : (int32, int32) -> bool)((self/2 : int32), (other/3 : int32))
   }
 }
 
-impl ToString for int{
-  fn to_string(self/4: int) -> string {
-    (int_to_string : (int) -> string)((self/4 : int))
+impl ToString for int32{
+  fn to_string(self/4: int32) -> string {
+    (int_to_string : (int32) -> string)((self/4 : int32))
   }
 }
 
@@ -19,9 +19,9 @@ impl ToString for bool{
   }
 }
 
-impl Output for int{
-  fn output(self/6: int) -> unit {
-    (string_println : (string) -> unit)((to_string : (int) -> string)((self/6 : int)))
+impl Output for int32{
+  fn output(self/6: int32) -> unit {
+    (string_println : (string) -> unit)((to_string : (int32) -> string)((self/6 : int32)))
   }
 }
 
@@ -36,13 +36,13 @@ fn id(x/8: T) -> T {
 }
 
 fn main() -> unit {
-  let a/9: int = (id : (int) -> int)(1) in
-  let b/10: int = (id : (int) -> int)(2) in
-  let c/11: int = (add : (int, int) -> int)((a/9 : int), (b/10 : int)) in
-  let _ : unit = (output : (int) -> unit)((c/11 : int)) in
-  let a/12: int = (id : (int) -> int)(3) in
-  let b/13: int = (id : (int) -> int)(4) in
-  let c/14: bool = (less : (int, int) -> bool)((a/12 : int), (b/13 : int)) in
+  let a/9: int32 = (id : (int32) -> int32)(1) in
+  let b/10: int32 = (id : (int32) -> int32)(2) in
+  let c/11: int32 = (add : (int32, int32) -> int32)((a/9 : int32), (b/10 : int32)) in
+  let _ : unit = (output : (int32) -> unit)((c/11 : int32)) in
+  let a/12: int32 = (id : (int32) -> int32)(3) in
+  let b/13: int32 = (id : (int32) -> int32)(4) in
+  let c/14: bool = (less : (int32, int32) -> bool)((a/12 : int32), (b/13 : int32)) in
   let _ : unit = (output : (bool) -> unit)((c/14 : bool)) in
   let _ : string = (id : (string) -> string)("abc") in
   let _ : bool = (id : (bool) -> bool)(true) in

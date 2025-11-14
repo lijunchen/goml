@@ -1,9 +1,9 @@
 fn print_int_list(xs/0: IntList) -> unit {
   match (xs/0 : IntList) {
       IntList::Nil => (string_print : (string) -> unit)("Nil"),
-      IntList::Cons(x/1: int, xs/2: IntList) => let _ : unit = (string_print : (string) -> unit)("Cons") in
+      IntList::Cons(x/1: int32, xs/2: IntList) => let _ : unit = (string_print : (string) -> unit)("Cons") in
         let _ : unit = (string_print : (string) -> unit)("(") in
-        let _ : unit = (string_print : (string) -> unit)((int_to_string : (int) -> string)((x/1 : int))) in
+        let _ : unit = (string_print : (string) -> unit)((int_to_string : (int32) -> string)((x/1 : int32))) in
         let _ : unit = (string_print : (string) -> unit)(", ") in
         let _ : unit = (print_int_list : (IntList) -> unit)((xs/2 : IntList)) in
         let _ : unit = (string_print : (string) -> unit)(")") in
@@ -14,7 +14,7 @@ fn print_int_list(xs/0: IntList) -> unit {
 fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
   match (xs/3 : IntList) {
       IntList::Nil => (acc/4 : IntList),
-      IntList::Cons(head/5: int, tail/6: IntList) => (int_list_rev_aux : (IntList, IntList) -> IntList)((tail/6 : IntList), IntList::Cons((head/5 : int), (acc/4 : IntList))),
+      IntList::Cons(head/5: int32, tail/6: IntList) => (int_list_rev_aux : (IntList, IntList) -> IntList)((tail/6 : IntList), IntList::Cons((head/5 : int32), (acc/4 : IntList))),
   }
 }
 
@@ -22,16 +22,16 @@ fn int_list_rev(xs/7: IntList) -> IntList {
   (int_list_rev_aux : (IntList, IntList) -> IntList)((xs/7 : IntList), IntList::Nil)
 }
 
-fn int_list_length(xs/8: IntList) -> int {
+fn int_list_length(xs/8: IntList) -> int32 {
   match (xs/8 : IntList) {
       IntList::Nil => 0,
-      IntList::Cons(_ : int, xs/9: IntList) => 1 + (int_list_length : (IntList) -> int)((xs/9 : IntList)),
+      IntList::Cons(_ : int32, xs/9: IntList) => 1 + (int_list_length : (IntList) -> int32)((xs/9 : IntList)),
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
   let _ : unit = (string_print : (string) -> unit)("Length: ") in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((int_list_length : (IntList) -> int)((xs/10 : IntList)))) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList)))) in
   ()
 }
 

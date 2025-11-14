@@ -1,29 +1,29 @@
-fn double(x/0: int) -> int {
-  (x/0 : int) * 2
+fn double(x/0: int32) -> int32 {
+  (x/0 : int32) * 2
 }
 
-fn increment(x/1: int) -> int {
-  (x/1 : int) + 1
+fn increment(x/1: int32) -> int32 {
+  (x/1 : int32) + 1
 }
 
-fn chooser(flag/2: bool) -> (int) -> int {
+fn chooser(flag/2: bool) -> (int32) -> int32 {
   if (flag/2 : bool) {
-      (double : (int) -> int)
+      (double : (int32) -> int32)
   } else {
-      (increment : (int) -> int)
+      (increment : (int32) -> int32)
   }
 }
 
 fn main() -> unit {
-  let xs/3: [(int) -> int; 2] = [(double : (int) -> int), (increment : (int) -> int)] in
-  let f/4: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((xs/3 : [(int) -> int; 2]), 0) in
-  let g/5: (int) -> int = (array_get : ([(int) -> int; 18446744073709551615], int) -> (int) -> int)((xs/3 : [(int) -> int; 2]), 1) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((g/5 : (int) -> int)((f/4 : (int) -> int)(10)))) in
-  let chosen/6: (int) -> int = (chooser : (bool) -> (int) -> int)(true) in
-  let applied/7: int = (chosen/6 : (int) -> int)(5) in
-  let direct/8: int = (chooser : (bool) -> (int) -> int)(false)(5) in
+  let xs/3: [(int32) -> int32; 2] = [(double : (int32) -> int32), (increment : (int32) -> int32)] in
+  let f/4: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 0) in
+  let g/5: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 1) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((g/5 : (int32) -> int32)((f/4 : (int32) -> int32)(10)))) in
+  let chosen/6: (int32) -> int32 = (chooser : (bool) -> (int32) -> int32)(true) in
+  let applied/7: int32 = (chosen/6 : (int32) -> int32)(5) in
+  let direct/8: int32 = (chooser : (bool) -> (int32) -> int32)(false)(5) in
   let printer/9: (string) -> unit = (string_println : (string) -> unit) in
-  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int) -> string)((applied/7 : int))) in
-  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int) -> string)((direct/8 : int))) in
+  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int32) -> string)((applied/7 : int32))) in
+  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int32) -> string)((direct/8 : int32))) in
   ()
 }

@@ -1,15 +1,15 @@
-fn choose(flag/0: bool, x/1: int, y/2: int) -> int {
+fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
   if (flag/0 : bool) {
-      (x/1 : int)
+      (x/1 : int32)
   } else {
-      (y/2 : int)
+      (y/2 : int32)
   }
 }
 
 fn main() -> unit {
-  let yes/3: int = (choose : (bool, int, int) -> int)(true, 10, 99) in
-  let no/4: int = (choose : (bool, int, int) -> int)(false, 10, 99) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("yes=", (int_to_string : (int) -> string)((yes/3 : int)))) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("no=", (int_to_string : (int) -> string)((no/4 : int)))) in
+  let yes/3: int32 = (choose : (bool, int32, int32) -> int32)(true, 10, 99) in
+  let no/4: int32 = (choose : (bool, int32, int32) -> int32)(false, 10, 99) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("yes=", (int_to_string : (int32) -> string)((yes/3 : int32)))) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("no=", (int_to_string : (int32) -> string)((no/4 : int32)))) in
   ()
 }

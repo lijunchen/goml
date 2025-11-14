@@ -46,9 +46,9 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
     assert!(point.generics.is_empty());
     assert_eq!(point.fields.len(), 2);
     assert_eq!(point.fields[0].0.0, "x");
-    assert_eq!(point.fields[0].1, tast::Ty::TInt);
+    assert_eq!(point.fields[0].1, tast::Ty::TInt32);
     assert_eq!(point.fields[1].0.0, "y");
-    assert_eq!(point.fields[1].1, tast::Ty::TInt);
+    assert_eq!(point.fields[1].1, tast::Ty::TInt32);
 
     let wrapper = genv
         .structs
@@ -222,7 +222,7 @@ fn use_closure(x: int) -> int {
     };
 
     assert_eq!(params.len(), 1);
-    assert_eq!(params[0].ty, tast::Ty::TInt);
+    assert_eq!(params[0].ty, tast::Ty::TInt32);
 
     assert!(matches!(**body, tast::Expr::EBinary { .. }));
 
@@ -233,8 +233,8 @@ fn use_closure(x: int) -> int {
     else {
         panic!("expected closure type to be a function");
     };
-    assert_eq!(func_params.as_slice(), &[tast::Ty::TInt]);
-    assert_eq!(**ret_ty, tast::Ty::TInt);
+    assert_eq!(func_params.as_slice(), &[tast::Ty::TInt32]);
+    assert_eq!(**ret_ty, tast::Ty::TInt32);
 }
 
 #[test]

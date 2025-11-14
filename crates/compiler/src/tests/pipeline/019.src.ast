@@ -1,6 +1,6 @@
 struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 
 struct Wrapper[T] {
@@ -22,7 +22,7 @@ fn flip(point: Point) -> Point {
     }
 }
 
-fn wrap_int(x: int) -> Wrapper[int] {
+fn wrap_int(x: int32) -> Wrapper[int32] {
     Wrapper {
         value: x
     }
@@ -36,12 +36,12 @@ fn x_add_1(p: Point) -> Point {
     }
 }
 
-fn get_x(p: Point) -> int {
+fn get_x(p: Point) -> int32 {
     let Point { x: x, y: y } = p in
     x
 }
 
-fn get_y(p: Point) -> int {
+fn get_y(p: Point) -> int32 {
     let Point { x: x, y: y } = p in
     y
 }

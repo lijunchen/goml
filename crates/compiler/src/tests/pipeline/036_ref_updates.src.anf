@@ -1,4 +1,4 @@
-fn bump(cell/0: Ref[int]) -> int {
+fn bump(cell/0: Ref[int32]) -> int32 {
   let t12 = ref_get(cell/0) in
   let t11 = int_add(t12, 1) in
   let mtmp0 = ref_set(cell/0, t11) in
@@ -12,7 +12,7 @@ fn flip(flag/1: Ref[bool]) -> bool {
   ref_get(flag/1)
 }
 
-fn nested_total(cell/3: Ref[Ref[int]]) -> int {
+fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
   let inner/4 = ref_get(cell/3) in
   let before/5 = ref_get(inner/4) in
   let t14 = int_add(before/5, 2) in
@@ -21,7 +21,7 @@ fn nested_total(cell/3: Ref[Ref[int]]) -> int {
   int_add(before/5, t15)
 }
 
-fn alias_bump(cell/6: Ref[int]) -> int {
+fn alias_bump(cell/6: Ref[int32]) -> int32 {
   let alias/7 = cell/6 in
   let t17 = ref_get(alias/7) in
   let t16 = int_add(t17, 5) in
@@ -29,7 +29,7 @@ fn alias_bump(cell/6: Ref[int]) -> int {
   ref_get(alias/7)
 }
 
-fn pair_sum() -> int {
+fn pair_sum() -> int32 {
   let first/8 = ref(4) in
   let second/9 = ref(6) in
   let t19 = ref_get(first/8) in
@@ -41,7 +41,7 @@ fn pair_sum() -> int {
   int_add(t21, t22)
 }
 
-fn reassign_nested(nested/10: Ref[Ref[int]]) -> int {
+fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
   let inner/11 = ref_get(nested/10) in
   let t24 = ref_get(inner/11) in
   let t23 = int_add(t24, 7) in

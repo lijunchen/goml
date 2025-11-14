@@ -2,7 +2,7 @@ fn impl_Display_Point_show(self/0: Point) -> string {
   "Point"
 }
 
-fn impl_Display_Option_int_show(self/1: Option[int]) -> string {
+fn impl_Display_Option_int32_show(self/1: Option[int32]) -> string {
   match self/1 {
     Option::Some(x0) => {
       let x0 = Option::Some._0(self/1) in
@@ -15,7 +15,7 @@ fn impl_Display_Option_int_show(self/1: Option[int]) -> string {
   }
 }
 
-fn make_optional(flag/3: bool) -> Option[int] {
+fn make_optional(flag/3: bool) -> Option[int32] {
   if flag/3 {
       Option::Some(42)
   } else {
@@ -28,7 +28,7 @@ fn main() -> unit {
   let some_number/5 = make_optional(true) in
   let none_number/6 = make_optional(false) in
   let mtmp1 = string_println(impl_Display_Point_show(point/4)) in
-  let mtmp2 = string_println(impl_Display_Option_int_show(some_number/5)) in
-  let mtmp3 = string_println(impl_Display_Option_int_show(none_number/6)) in
+  let mtmp2 = string_println(impl_Display_Option_int32_show(some_number/5)) in
+  let mtmp3 = string_println(impl_Display_Option_int32_show(none_number/6)) in
   ()
 }

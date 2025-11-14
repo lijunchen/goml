@@ -122,7 +122,7 @@ fn main() -> int {
     }
 
     let expected_ref_ty = tast::Ty::TRef {
-        elem: Box::new(tast::Ty::TInt),
+        elem: Box::new(tast::Ty::TInt32),
     };
     assert!(
         genv.ref_types.contains(&expected_ref_ty),
@@ -137,7 +137,7 @@ fn main() -> int {
     );
 
     let ref_ty = tast::Ty::TRef {
-        elem: Box::new(tast::Ty::TInt),
+        elem: Box::new(tast::Ty::TInt32),
     };
     assert_eq!(ref_ty.get_constr_name_unsafe(), "Ref");
 }

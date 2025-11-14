@@ -146,7 +146,6 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         Ty::TVar(_)
         | Ty::TUnit
         | Ty::TBool
-        | Ty::TInt
         | Ty::TInt8
         | Ty::TInt16
         | Ty::TInt32
@@ -742,10 +741,9 @@ fn compile_rows(genv: &GlobalTypeEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &
         Ty::TVar(..) => unreachable!(),
         Ty::TUnit => compile_unit_case(genv, gensym, rows, &bvar),
         Ty::TBool => compile_bool_case(genv, gensym, rows, &bvar),
-        Ty::TInt => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt),
+        Ty::TInt32 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt32),
         Ty::TInt8 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt8),
         Ty::TInt16 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt16),
-        Ty::TInt32 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt32),
         Ty::TInt64 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt64),
         Ty::TUint8 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint8),
         Ty::TUint16 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint16),
@@ -843,10 +841,9 @@ fn builtin_function_for(
 ) -> Option<&'static str> {
     match op {
         BinaryOp::Add => match (lhs_ty, rhs_ty) {
-            (Ty::TInt, Ty::TInt) => Some("int_add"),
+            (Ty::TInt32, Ty::TInt32) => Some("int_add"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_add"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_add"),
-            (Ty::TInt32, Ty::TInt32) => Some("int32_add"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_add"),
             (Ty::TUint8, Ty::TUint8) => Some("uint8_add"),
             (Ty::TUint16, Ty::TUint16) => Some("uint16_add"),
@@ -858,10 +855,9 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Sub => match (lhs_ty, rhs_ty) {
-            (Ty::TInt, Ty::TInt) => Some("int_sub"),
+            (Ty::TInt32, Ty::TInt32) => Some("int_sub"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_sub"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_sub"),
-            (Ty::TInt32, Ty::TInt32) => Some("int32_sub"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_sub"),
             (Ty::TUint8, Ty::TUint8) => Some("uint8_sub"),
             (Ty::TUint16, Ty::TUint16) => Some("uint16_sub"),
@@ -872,10 +868,9 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Mul => match (lhs_ty, rhs_ty) {
-            (Ty::TInt, Ty::TInt) => Some("int_mul"),
+            (Ty::TInt32, Ty::TInt32) => Some("int_mul"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_mul"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_mul"),
-            (Ty::TInt32, Ty::TInt32) => Some("int32_mul"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_mul"),
             (Ty::TUint8, Ty::TUint8) => Some("uint8_mul"),
             (Ty::TUint16, Ty::TUint16) => Some("uint16_mul"),
@@ -886,10 +881,9 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Div => match (lhs_ty, rhs_ty) {
-            (Ty::TInt, Ty::TInt) => Some("int_div"),
+            (Ty::TInt32, Ty::TInt32) => Some("int_div"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_div"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_div"),
-            (Ty::TInt32, Ty::TInt32) => Some("int32_div"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_div"),
             (Ty::TUint8, Ty::TUint8) => Some("uint8_div"),
             (Ty::TUint16, Ty::TUint16) => Some("uint16_div"),
@@ -913,10 +907,9 @@ fn builtin_function_for(
 fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Option<&'static str> {
     match op {
         UnaryOp::Neg => match arg_ty {
-            Ty::TInt => Some("int_neg"),
+            Ty::TInt32 => Some("int_neg"),
             Ty::TInt8 => Some("int8_neg"),
             Ty::TInt16 => Some("int16_neg"),
-            Ty::TInt32 => Some("int32_neg"),
             Ty::TInt64 => Some("int64_neg"),
             Ty::TUint8 => Some("uint8_neg"),
             Ty::TUint16 => Some("uint16_neg"),

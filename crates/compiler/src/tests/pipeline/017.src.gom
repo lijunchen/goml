@@ -12,7 +12,7 @@ func bool_to_string(x bool) string {
     }
 }
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -21,12 +21,12 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Tuple2_int_int struct {
-    _0 int
-    _1 int
+type Tuple2_int32_int32 struct {
+    _0 int32
+    _1 int32
 }
 
-func impl_ToString_int_to_string(self__0 int) string {
+func impl_ToString_int32_to_string(self__0 int32) string {
     var ret6 string
     ret6 = int_to_string(self__0)
     return ret6
@@ -38,7 +38,7 @@ func impl_ToString_bool_to_string(self__1 bool) string {
     return ret7
 }
 
-func impl_ToString_Tuple_int_int_to_string(self__2 Tuple2_int_int) string {
+func impl_ToString_Tuple_int32_int32_to_string(self__2 Tuple2_int32_int32) string {
     var ret8 string
     ret8 = "(?, ?)"
     return ret8
@@ -46,17 +46,17 @@ func impl_ToString_Tuple_int_int_to_string(self__2 Tuple2_int_int) string {
 
 func main0() struct{} {
     var ret9 struct{}
-    var x__3 int = 123
-    var t3 string = impl_ToString_int_to_string(x__3)
+    var x__3 int32 = 123
+    var t3 string = impl_ToString_int32_to_string(x__3)
     string_println(t3)
     var x__4 bool = true
     var t4 string = impl_ToString_bool_to_string(x__4)
     string_println(t4)
-    var x__5 Tuple2_int_int = Tuple2_int_int{
+    var x__5 Tuple2_int32_int32 = Tuple2_int32_int32{
         _0: 3,
         _1: 4,
     }
-    var t5 string = impl_ToString_Tuple_int_int_to_string(x__5)
+    var t5 string = impl_ToString_Tuple_int32_int32_to_string(x__5)
     string_println(t5)
     ret9 = struct{}{}
     return ret9

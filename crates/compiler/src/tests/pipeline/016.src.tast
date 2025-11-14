@@ -1,35 +1,35 @@
-fn list_length(xs/0: List[T]) -> int {
+fn list_length(xs/0: List[T]) -> int32 {
   match (xs/0 : List[T]) {
       List::Nil => 0,
-      List::Cons(_ : T, tail/1: List[T]) => 1 + (list_length : (List[T]) -> int)((tail/1 : List[T])),
+      List::Cons(_ : T, tail/1: List[T]) => 1 + (list_length : (List[T]) -> int32)((tail/1 : List[T])),
   }
 }
 
-fn int_list_length(xs/2: List[int]) -> int {
-  match (xs/2 : List[int]) {
+fn int_list_length(xs/2: List[int32]) -> int32 {
+  match (xs/2 : List[int32]) {
       List::Nil => 0,
-      List::Cons(_ : int, tail/3: List[int]) => 1 + (int_list_length : (List[int]) -> int)((tail/3 : List[int])),
+      List::Cons(_ : int32, tail/3: List[int32]) => 1 + (int_list_length : (List[int32]) -> int32)((tail/3 : List[int32])),
   }
 }
 
 fn main() -> unit {
-  let x/4: List[int] = List::Cons(1, List::Nil) in
-  let length/5: int = (list_length : (List[int]) -> int)((x/4 : List[int])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/5 : int))) in
-  let x/6: List[int] = List::Cons(1, List::Cons(2, List::Nil)) in
-  let length/7: int = (list_length : (List[int]) -> int)((x/6 : List[int])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/7 : int))) in
-  let x/8: List[int] = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil))) in
-  let length/9: int = (int_list_length : (List[int]) -> int)((x/8 : List[int])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/9 : int))) in
+  let x/4: List[int32] = List::Cons(1, List::Nil) in
+  let length/5: int32 = (list_length : (List[int32]) -> int32)((x/4 : List[int32])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/5 : int32))) in
+  let x/6: List[int32] = List::Cons(1, List::Cons(2, List::Nil)) in
+  let length/7: int32 = (list_length : (List[int32]) -> int32)((x/6 : List[int32])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/7 : int32))) in
+  let x/8: List[int32] = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil))) in
+  let length/9: int32 = (int_list_length : (List[int32]) -> int32)((x/8 : List[int32])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/9 : int32))) in
   let x/10: List[unit] = List::Cons((), List::Nil) in
-  let length/11: int = (list_length : (List[unit]) -> int)((x/10 : List[unit])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/11 : int))) in
+  let length/11: int32 = (list_length : (List[unit]) -> int32)((x/10 : List[unit])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/11 : int32))) in
   let x/12: List[unit] = List::Cons((), List::Cons((), List::Nil)) in
-  let length/13: int = (list_length : (List[unit]) -> int)((x/12 : List[unit])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/13 : int))) in
+  let length/13: int32 = (list_length : (List[unit]) -> int32)((x/12 : List[unit])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/13 : int32))) in
   let x/14: List[bool] = List::Cons(true, List::Cons(false, List::Nil)) in
-  let length/15: int = (list_length : (List[bool]) -> int)((x/14 : List[bool])) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((length/15 : int))) in
+  let length/15: int32 = (list_length : (List[bool]) -> int32)((x/14 : List[bool])) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((length/15 : int32))) in
   ()
 }

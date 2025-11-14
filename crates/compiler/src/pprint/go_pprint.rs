@@ -15,7 +15,6 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TVoid => "void".to_string(),
         GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
-        GoType::TInt => "int".to_string(),
         GoType::TInt8 => "int8".to_string(),
         GoType::TInt16 => "int16".to_string(),
         GoType::TInt32 => "int32".to_string(),

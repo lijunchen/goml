@@ -1,33 +1,33 @@
-fn double(x/0: int) -> int {
-  (x/0 : int) * 2
+fn double(x/0: int32) -> int32 {
+  (x/0 : int32) * 2
 }
 
-fn increment(x/1: int) -> int {
-  (x/1 : int) + 1
+fn increment(x/1: int32) -> int32 {
+  (x/1 : int32) + 1
 }
 
-fn apply_once(f/2: (int) -> int, value/3: int) -> int {
-  (f/2 : (int) -> int)((value/3 : int))
+fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
+  (f/2 : (int32) -> int32)((value/3 : int32))
 }
 
-fn compose(f/4: (int) -> int, g/5: (int) -> int, value/6: int) -> int {
-  (f/4 : (int) -> int)((g/5 : (int) -> int)((value/6 : int)))
+fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
+  (f/4 : (int32) -> int32)((g/5 : (int32) -> int32)((value/6 : int32)))
 }
 
 fn main() -> unit {
-  let local/7: (int) -> int = (double : (int) -> int) in
-  let first/8: int = (apply_once : ((int) -> int, int) -> int)((local/7 : (int) -> int), 4) in
-  let composed/9: int = (compose : ((int) -> int, (int) -> int, int) -> int)((double : (int) -> int), (increment : (int) -> int), (first/8 : int)) in
-  let closure_apply/11: (int) -> int = |value/10: int| => (apply_once : ((int) -> int, int) -> int)((increment : (int) -> int), (value/10 : int)) in
-  let closure_result/12: int = (closure_apply/11 : (int) -> int)((composed/9 : int)) in
-  let global_invoker/15: ((int) -> int, int) -> int = |func_to_call/13: (int) -> int, value/14: int| => (apply_once : ((int) -> int, int) -> int)((func_to_call/13 : (int) -> int), (value/14 : int)) in
-  let invoked_with_global/16: int = (global_invoker/15 : ((int) -> int, int) -> int)((double : (int) -> int), 3) in
-  let composer_closure/18: (int) -> int = |value/17: int| => (compose : ((int) -> int, (int) -> int, int) -> int)((double : (int) -> int), (increment : (int) -> int), (value/17 : int)) in
-  let composed_by_closure/19: int = (composer_closure/18 : (int) -> int)(5) in
+  let local/7: (int32) -> int32 = (double : (int32) -> int32) in
+  let first/8: int32 = (apply_once : ((int32) -> int32, int32) -> int32)((local/7 : (int32) -> int32), 4) in
+  let composed/9: int32 = (compose : ((int32) -> int32, (int32) -> int32, int32) -> int32)((double : (int32) -> int32), (increment : (int32) -> int32), (first/8 : int32)) in
+  let closure_apply/11: (int32) -> int32 = |value/10: int32| => (apply_once : ((int32) -> int32, int32) -> int32)((increment : (int32) -> int32), (value/10 : int32)) in
+  let closure_result/12: int32 = (closure_apply/11 : (int32) -> int32)((composed/9 : int32)) in
+  let global_invoker/15: ((int32) -> int32, int32) -> int32 = |func_to_call/13: (int32) -> int32, value/14: int32| => (apply_once : ((int32) -> int32, int32) -> int32)((func_to_call/13 : (int32) -> int32), (value/14 : int32)) in
+  let invoked_with_global/16: int32 = (global_invoker/15 : ((int32) -> int32, int32) -> int32)((double : (int32) -> int32), 3) in
+  let composer_closure/18: (int32) -> int32 = |value/17: int32| => (compose : ((int32) -> int32, (int32) -> int32, int32) -> int32)((double : (int32) -> int32), (increment : (int32) -> int32), (value/17 : int32)) in
+  let composed_by_closure/19: int32 = (composer_closure/18 : (int32) -> int32)(5) in
   let printer/20: (string) -> unit = (string_println : (string) -> unit) in
-  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int) -> string)((composed/9 : int))) in
-  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int) -> string)((closure_result/12 : int))) in
-  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int) -> string)((invoked_with_global/16 : int))) in
-  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int) -> string)((composed_by_closure/19 : int))) in
+  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int32) -> string)((composed/9 : int32))) in
+  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int32) -> string)((closure_result/12 : int32))) in
+  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int32) -> string)((invoked_with_global/16 : int32))) in
+  let _ : unit = (printer/20 : (string) -> unit)((int_to_string : (int32) -> string)((composed_by_closure/19 : int32))) in
   ()
 }

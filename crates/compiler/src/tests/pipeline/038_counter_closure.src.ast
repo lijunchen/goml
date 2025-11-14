@@ -1,4 +1,4 @@
-fn make_counter() -> (() -> int, () -> unit) {
+fn make_counter() -> (() -> int32, () -> unit) {
     let cell = ref(0) in
     let next = || let next = ref_get(cell) + 1 in
     let _ = ref_set(cell, next) in

@@ -12,7 +12,7 @@ func bool_to_string(x bool) string {
     }
 }
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -21,21 +21,21 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type ref_int_x struct {
-    value int
+type ref_int32_x struct {
+    value int32
 }
 
-func ref__Ref_int(value int) *ref_int_x {
-    return &ref_int_x{
+func ref__Ref_int32(value int32) *ref_int32_x {
+    return &ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_int(reference *ref_int_x) int {
+func ref_get__Ref_int32(reference *ref_int32_x) int32 {
     return reference.value
 }
 
-func ref_set__Ref_int(reference *ref_int_x, value int) struct{} {
+func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
     reference.value = value
     return struct{}{}
 }
@@ -59,26 +59,26 @@ func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
     return struct{}{}
 }
 
-type ref_ref_int_x struct {
-    value *ref_int_x
+type ref_ref_int32_x struct {
+    value *ref_int32_x
 }
 
-func ref__Ref_Ref_int(value *ref_int_x) *ref_ref_int_x {
-    return &ref_ref_int_x{
+func ref__Ref_Ref_int32(value *ref_int32_x) *ref_ref_int32_x {
+    return &ref_ref_int32_x{
         value: value,
     }
 }
 
-func ref_get__Ref_Ref_int(reference *ref_ref_int_x) *ref_int_x {
+func ref_get__Ref_Ref_int32(reference *ref_ref_int32_x) *ref_int32_x {
     return reference.value
 }
 
-func bump(cell__0 *ref_int_x) int {
-    var ret38 int
-    var t12 int = ref_get__Ref_int(cell__0)
-    var t11 int = t12 + 1
-    ref_set__Ref_int(cell__0, t11)
-    ret38 = ref_get__Ref_int(cell__0)
+func bump(cell__0 *ref_int32_x) int32 {
+    var ret38 int32
+    var t12 int32 = ref_get__Ref_int32(cell__0)
+    var t11 int32 = t12 + 1
+    ref_set__Ref_int32(cell__0, t11)
+    ret38 = ref_get__Ref_int32(cell__0)
     return ret38
 }
 
@@ -91,75 +91,75 @@ func flip(flag__1 *ref_bool_x) bool {
     return ret39
 }
 
-func nested_total(cell__3 *ref_ref_int_x) int {
-    var ret40 int
-    var inner__4 *ref_int_x = ref_get__Ref_Ref_int(cell__3)
-    var before__5 int = ref_get__Ref_int(inner__4)
-    var t14 int = before__5 + 2
-    ref_set__Ref_int(inner__4, t14)
-    var t15 int = ref_get__Ref_int(inner__4)
+func nested_total(cell__3 *ref_ref_int32_x) int32 {
+    var ret40 int32
+    var inner__4 *ref_int32_x = ref_get__Ref_Ref_int32(cell__3)
+    var before__5 int32 = ref_get__Ref_int32(inner__4)
+    var t14 int32 = before__5 + 2
+    ref_set__Ref_int32(inner__4, t14)
+    var t15 int32 = ref_get__Ref_int32(inner__4)
     ret40 = before__5 + t15
     return ret40
 }
 
-func alias_bump(cell__6 *ref_int_x) int {
-    var ret41 int
-    var alias__7 *ref_int_x = cell__6
-    var t17 int = ref_get__Ref_int(alias__7)
-    var t16 int = t17 + 5
-    ref_set__Ref_int(alias__7, t16)
-    ret41 = ref_get__Ref_int(alias__7)
+func alias_bump(cell__6 *ref_int32_x) int32 {
+    var ret41 int32
+    var alias__7 *ref_int32_x = cell__6
+    var t17 int32 = ref_get__Ref_int32(alias__7)
+    var t16 int32 = t17 + 5
+    ref_set__Ref_int32(alias__7, t16)
+    ret41 = ref_get__Ref_int32(alias__7)
     return ret41
 }
 
-func pair_sum() int {
-    var ret42 int
-    var first__8 *ref_int_x = ref__Ref_int(4)
-    var second__9 *ref_int_x = ref__Ref_int(6)
-    var t19 int = ref_get__Ref_int(first__8)
-    var t20 int = ref_get__Ref_int(second__9)
-    var t18 int = t19 + t20
-    ref_set__Ref_int(first__8, t18)
-    var t21 int = ref_get__Ref_int(first__8)
-    var t22 int = ref_get__Ref_int(second__9)
+func pair_sum() int32 {
+    var ret42 int32
+    var first__8 *ref_int32_x = ref__Ref_int32(4)
+    var second__9 *ref_int32_x = ref__Ref_int32(6)
+    var t19 int32 = ref_get__Ref_int32(first__8)
+    var t20 int32 = ref_get__Ref_int32(second__9)
+    var t18 int32 = t19 + t20
+    ref_set__Ref_int32(first__8, t18)
+    var t21 int32 = ref_get__Ref_int32(first__8)
+    var t22 int32 = ref_get__Ref_int32(second__9)
     ret42 = t21 + t22
     return ret42
 }
 
-func reassign_nested(nested__10 *ref_ref_int_x) int {
-    var ret43 int
-    var inner__11 *ref_int_x = ref_get__Ref_Ref_int(nested__10)
-    var t24 int = ref_get__Ref_int(inner__11)
-    var t23 int = t24 + 7
-    ref_set__Ref_int(inner__11, t23)
-    ret43 = ref_get__Ref_int(inner__11)
+func reassign_nested(nested__10 *ref_ref_int32_x) int32 {
+    var ret43 int32
+    var inner__11 *ref_int32_x = ref_get__Ref_Ref_int32(nested__10)
+    var t24 int32 = ref_get__Ref_int32(inner__11)
+    var t23 int32 = t24 + 7
+    ref_set__Ref_int32(inner__11, t23)
+    ret43 = ref_get__Ref_int32(inner__11)
     return ret43
 }
 
 func main0() struct{} {
     var ret44 struct{}
-    var counter__12 *ref_int_x = ref__Ref_int(39)
+    var counter__12 *ref_int32_x = ref__Ref_int32(39)
     var toggler__13 *ref_bool_x = ref__Ref_bool(false)
-    var t25 *ref_int_x = ref__Ref_int(3)
-    var nested__14 *ref_ref_int_x = ref__Ref_Ref_int(t25)
-    var bumped__15 int = bump(counter__12)
+    var t25 *ref_int32_x = ref__Ref_int32(3)
+    var nested__14 *ref_ref_int32_x = ref__Ref_Ref_int32(t25)
+    var bumped__15 int32 = bump(counter__12)
     var flipped__16 bool = flip(toggler__13)
     var flipped_again__17 bool = flip(toggler__13)
-    var inner__18 *ref_int_x = ref_get__Ref_Ref_int(nested__14)
-    var t27 int = ref_get__Ref_int(inner__18)
-    var t26 int = t27 + bumped__15
-    ref_set__Ref_int(inner__18, t26)
-    var nested_total_val__19 int = nested_total(nested__14)
-    var alias_total__20 int = alias_bump(counter__12)
-    var pair_total__21 int = pair_sum()
-    var reassigned__22 int = reassign_nested(nested__14)
+    var inner__18 *ref_int32_x = ref_get__Ref_Ref_int32(nested__14)
+    var t27 int32 = ref_get__Ref_int32(inner__18)
+    var t26 int32 = t27 + bumped__15
+    ref_set__Ref_int32(inner__18, t26)
+    var nested_total_val__19 int32 = nested_total(nested__14)
+    var alias_total__20 int32 = alias_bump(counter__12)
+    var pair_total__21 int32 = pair_sum()
+    var reassigned__22 int32 = reassign_nested(nested__14)
     var bool_check__23 bool = !false
-    var t30 int = ref_get__Ref_int(counter__12)
-    var t29 int = bumped__15 + t30
+    var t30 int32 = ref_get__Ref_int32(counter__12)
+    var t29 int32 = bumped__15 + t30
     var t28 string = int_to_string(t29)
     string_println(t28)
-    var t33 int = nested_total_val__19 + alias_total__20
-    var t32 int = t33 + reassigned__22
+    var t33 int32 = nested_total_val__19 + alias_total__20
+    var t32 int32 = t33 + reassigned__22
     var t31 string = int_to_string(t32)
     string_println(t31)
     var t34 string = int_to_string(pair_total__21)

@@ -11,7 +11,6 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit
         | tast::Ty::TBool
-        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -118,7 +117,6 @@ impl tast::Ty {
         match ast_ty {
             ast::Ty::TUnit => Self::TUnit,
             ast::Ty::TBool => Self::TBool,
-            ast::Ty::TInt => Self::TInt,
             ast::Ty::TInt8 => Self::TInt8,
             ast::Ty::TInt16 => Self::TInt16,
             ast::Ty::TInt32 => Self::TInt32,
@@ -192,8 +190,7 @@ pub(crate) fn binary_supports_builtin(op: ast::BinaryOp, lhs: &tast::Ty, rhs: &t
 fn numeric_binary_same_width(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
     matches!(
         (lhs, rhs),
-        (tast::Ty::TInt, tast::Ty::TInt)
-            | (tast::Ty::TInt8, tast::Ty::TInt8)
+        (tast::Ty::TInt8, tast::Ty::TInt8)
             | (tast::Ty::TInt16, tast::Ty::TInt16)
             | (tast::Ty::TInt32, tast::Ty::TInt32)
             | (tast::Ty::TInt64, tast::Ty::TInt64)

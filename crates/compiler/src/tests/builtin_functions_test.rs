@@ -43,9 +43,9 @@ fn env_registers_builtin_function_signatures() {
     match env.get_type_of_function("int_add") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TInt));
-            assert!(matches!(params[1], tast::Ty::TInt));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt));
+            assert!(matches!(params[0], tast::Ty::TInt32));
+            assert!(matches!(params[1], tast::Ty::TInt32));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt32));
         }
         other => panic!(
             "expected int_add to have a function type signature, got {:?}",

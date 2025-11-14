@@ -162,7 +162,6 @@ impl GlobalTypeEnv {
             tast::Ty::TVar(_)
             | tast::Ty::TUnit
             | tast::Ty::TBool
-            | tast::Ty::TInt
             | tast::Ty::TInt8
             | tast::Ty::TInt16
             | tast::Ty::TInt32

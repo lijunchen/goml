@@ -1,6 +1,6 @@
 struct Tracker {
     label: string,
-    count: Ref[int],
+    count: Ref[int32],
     toggled: Ref[bool],
 }
 
@@ -32,8 +32,8 @@ impl Describe for Tracker {
   }
 }
 
-impl Describe for Record[int] {
-  fn describe(self: Record[int]) -> string {
+impl Describe for Record[int32] {
+  fn describe(self: Record[int32]) -> string {
       match self {
           Value(value) => string_add("Value(", string_add(int_to_string(value), ")")),
           Pair(before, after) => let prefix = string_add("Pair(", int_to_string(before)) in
@@ -69,15 +69,15 @@ fn map_maybe(value: Maybe[T], f: (T) -> U) -> Maybe[U] {
     }
 }
 
-fn format_total(total: int) -> string {
+fn format_total(total: int32) -> string {
     string_add("total: ", int_to_string(total))
 }
 
-fn increment(value: int) -> int {
+fn increment(value: int32) -> int32 {
     value + 1
 }
 
-fn triple(value: int) -> int {
+fn triple(value: int32) -> int32 {
     value * 3
 }
 
@@ -86,7 +86,7 @@ fn pair_join(parts: (string, string)) -> string {
     string_add(left, string_add(" -> ", right))
 }
 
-fn run_transforms(value: int, transforms: [(int) -> int; 2]) -> [int; 2] {
+fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2] {
     let first = array_get(transforms, 0) in
     let second = array_get(transforms, 1) in
     let first_result = first(value) in
@@ -94,7 +94,7 @@ fn run_transforms(value: int, transforms: [(int) -> int; 2]) -> [int; 2] {
     array_set([first_result, value], 1, second_result)
 }
 
-fn gather(record: Record[int]) -> Maybe[int] {
+fn gather(record: Record[int32]) -> Maybe[int32] {
     match record {
         Value(value) => Some(value),
         Pair(_, after) => Some(after),
@@ -102,7 +102,7 @@ fn gather(record: Record[int]) -> Maybe[int] {
     }
 }
 
-fn build_counter(label: string, start: int) -> (Tracker, () -> Record[int], (int) -> Record[int], () -> Record[string]) {
+fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
     let count = ref(start) in
     let toggled = ref(false) in
     let tracker = Tracker {
@@ -111,7 +111,7 @@ fn build_counter(label: string, start: int) -> (Tracker, () -> Record[int], (int
         toggled: toggled
     } in
     let snapshot = || Value(ref_get(count)) in
-    let bump = |delta: int| let before = ref_get(count) in
+    let bump = |delta: int32| let before = ref_get(count) in
     let _ = ref_set(count, before + delta) in
     Pair(before, ref_get(count)) in
     let flip = || let before = ref_get(toggled) in

@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -13,32 +13,32 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func array_get__Array_3_int(arr [3]int, index int) int {
+func array_get__Array_3_int32(arr [3]int32, index int32) int32 {
     return arr[index]
 }
 
-func array_set__Array_3_int(arr [3]int, index int, value int) [3]int {
+func array_set__Array_3_int32(arr [3]int32, index int32, value int32) [3]int32 {
     arr[index] = value
     return arr
 }
 
-func update_array(arr__0 [3]int) [3]int {
-    var ret2 [3]int
-    ret2 = array_set__Array_3_int(arr__0, 1, 42)
+func update_array(arr__0 [3]int32) [3]int32 {
+    var ret2 [3]int32
+    ret2 = array_set__Array_3_int32(arr__0, 1, 42)
     return ret2
 }
 
-func read_array(arr__1 [3]int) int {
-    var ret3 int
-    ret3 = array_get__Array_3_int(arr__1, 1)
+func read_array(arr__1 [3]int32) int32 {
+    var ret3 int32
+    ret3 = array_get__Array_3_int32(arr__1, 1)
     return ret3
 }
 
 func main0() struct{} {
     var ret4 struct{}
-    var arr__2 [3]int = [3]int{1, 2, 3}
-    var updated__3 [3]int = update_array(arr__2)
-    var value__4 int = read_array(updated__3)
+    var arr__2 [3]int32 = [3]int32{1, 2, 3}
+    var updated__3 [3]int32 = update_array(arr__2)
+    var value__4 int32 = read_array(updated__3)
     var t1 string = int_to_string(value__4)
     string_println(t1)
     ret4 = struct{}{}

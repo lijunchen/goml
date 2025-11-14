@@ -1,6 +1,6 @@
 enum IntList {
     Nil,
-    Cons(int, IntList)
+    Cons(int32, IntList)
 }
 
 fn print_int_list(xs: IntList) {
@@ -27,7 +27,7 @@ fn int_list_rev(xs: IntList) -> IntList {
     int_list_rev_aux(xs, Nil)
 }
 
-fn int_list_length(xs: IntList) -> int {
+fn int_list_length(xs: IntList) -> int32 {
     match xs {
         Nil => 0,
         Cons(_, xs) => 1 + int_list_length(xs),

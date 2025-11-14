@@ -99,7 +99,7 @@ impl Display for int {
 
     expect_single_error(
         src,
-        "Trait Display implementation for TInt is missing method debug",
+        "Trait Display implementation for TInt32 is missing method debug",
     );
 }
 
@@ -171,6 +171,6 @@ impl Display for Option[int] {
 
     expect_single_error(
         src,
-        "Trait Display implementation for TApp(TCon(Option), [TInt]) is missing method debug",
+        "Trait Display implementation for TApp(TCon(Option), [TInt32]) is missing method debug",
     );
 }
