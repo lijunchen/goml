@@ -31,26 +31,26 @@ fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper__int32) -> Shape__int32
   }
 }
 
-fn point_to_string(point/8: Point) -> string {
+fn point32_to_string(point/8: Point) -> string {
   let mtmp4 = point/8 in
   let x5 = Point.x(mtmp4) in
   let x6 = Point.y(mtmp4) in
   let y/10 = x6 in
   let x/9 = x5 in
-  let t25 = int_to_string(x/9) in
+  let t25 = int32_to_string(x/9) in
   let with_x/11 = string_add("Point { x: ", t25) in
   let with_y_label/12 = string_add(with_x/11, ", y: ") in
-  let t26 = int_to_string(y/10) in
+  let t26 = int32_to_string(y/10) in
   let with_y/13 = string_add(with_y_label/12, t26) in
   string_add(with_y/13, " }")
 }
 
-fn wrapper_int_to_string(wrapper/14: Wrapper__int32) -> string {
+fn wrapper_int32_to_string(wrapper/14: Wrapper__int32) -> string {
   let mtmp7 = wrapper/14 in
   let x8 = Wrapper__int32.value(mtmp7) in
   let value/15 = x8 in
-  let t27 = int_to_string(value/15) in
-  let prefix/16 = string_add("Wrapper[int] { value: ", t27) in
+  let t27 = int32_to_string(value/15) in
+  let prefix/16 = string_add("Wrapper[int32] { value: ", t27) in
   string_add(prefix/16, " }")
 }
 
@@ -63,19 +63,19 @@ fn wrapper_unit_to_string(wrapper/17: Wrapper__unit) -> string {
   string_add(prefix/19, " }")
 }
 
-fn shape_int_to_string(shape/20: Shape__int32) -> string {
+fn shape_int32_to_string(shape/20: Shape__int32) -> string {
   match shape/20 {
     Tag_0 => {
       let x11 = Shape__int32::Dot._0(shape/20) in
       let point/21 = x11 in
-      let t29 = point_to_string(point/21) in
+      let t29 = point32_to_string(point/21) in
       let prefix/22 = string_add("Shape::Dot(", t29) in
       string_add(prefix/22, ")")
     },
     Tag_1 => {
       let x12 = Shape__int32::Wrapped._0(shape/20) in
       let wrapper/23 = x12 in
-      let t30 = wrapper_int_to_string(wrapper/23) in
+      let t30 = wrapper_int32_to_string(wrapper/23) in
       let prefix/24 = string_add("Shape::Wrapped(", t30) in
       string_add(prefix/24, ")")
     },
@@ -90,7 +90,7 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
     Tag_0 => {
       let x13 = Shape__unit::Dot._0(shape/25) in
       let point/26 = x13 in
-      let t31 = point_to_string(point/26) in
+      let t31 = point32_to_string(point/26) in
       let prefix/27 = string_add("Shape::Dot(", t31) in
       string_add(prefix/27, ")")
     },
@@ -109,10 +109,10 @@ fn shape_unit_to_string(shape/25: Shape__unit) -> string {
 
 fn main() -> unit {
   let t34 = Point { x: 3, y: 4 } in
-  let t33 = point_to_string(t34) in
+  let t33 = point32_to_string(t34) in
   let mtmp15 = string_println(t33) in
   let t36 = Wrapper__int32 { value: 7 } in
-  let t35 = wrapper_int_to_string(t36) in
+  let t35 = wrapper_int32_to_string(t36) in
   let mtmp16 = string_println(t35) in
   let t38 = Wrapper__unit { value: () } in
   let t37 = wrapper_unit_to_string(t38) in
@@ -121,13 +121,13 @@ fn main() -> unit {
   let bounced_origin/30 = bounce_int(t39) in
   let t42 = Point { x: 3, y: 4 } in
   let t41 = Shape__int32::Dot(t42) in
-  let t40 = shape_int_to_string(t41) in
+  let t40 = shape_int32_to_string(t41) in
   let mtmp18 = string_println(t40) in
   let t45 = Wrapper__int32 { value: 7 } in
   let t44 = Shape__int32::Wrapped(t45) in
-  let t43 = shape_int_to_string(t44) in
+  let t43 = shape_int32_to_string(t44) in
   let mtmp19 = string_println(t43) in
-  let t46 = shape_int_to_string(bounced_origin/30) in
+  let t46 = shape_int32_to_string(bounced_origin/30) in
   let mtmp20 = string_println(t46) in
   let t49 = Point { x: 3, y: 4 } in
   let t48 = Shape__unit::Dot(t49) in

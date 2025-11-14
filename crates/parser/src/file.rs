@@ -148,8 +148,8 @@ fn trait_def(p: &mut Parser) {
 }
 
 // {
-//   fn foo(x: int) -> int;
-//   fn bar(x: int) -> int;
+//   fn foo(x: int32) -> int32;
+//   fn bar(x: int32) -> int32;
 // }
 
 fn trait_method_list(p: &mut Parser) {
@@ -264,7 +264,6 @@ fn variant(p: &mut Parser) {
 const TYPE_FIRST: &[TokenKind] = &[
     T![Unit],
     T![Bool],
-    T![Int],
     T![Int8],
     T![Int16],
     T![Int32],
@@ -405,10 +404,6 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
         T![Bool] => {
             p.advance();
             p.close(m, MySyntaxKind::TYPE_BOOL)
-        }
-        T![Int] => {
-            p.advance();
-            p.close(m, MySyntaxKind::TYPE_INT)
         }
         T![Int8] => {
             p.advance();

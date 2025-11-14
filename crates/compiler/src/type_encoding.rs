@@ -69,13 +69,6 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
                 Err("unexpected trailing tokens after bool".to_string())
             }
         }
-        "int" => {
-            if start + 1 == end {
-                Ok(tast::Ty::TInt32)
-            } else {
-                Err("unexpected trailing tokens after int".to_string())
-            }
-        }
         "int8" => {
             if start + 1 == end {
                 Ok(tast::Ty::TInt8)

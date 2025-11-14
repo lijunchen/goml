@@ -40,19 +40,6 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
-    match env.get_type_of_function("int_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TInt32));
-            assert!(matches!(params[1], tast::Ty::TInt32));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt32));
-        }
-        other => panic!(
-            "expected int_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
     match env.get_type_of_function("int8_add") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
@@ -272,5 +259,27 @@ fn env_registers_builtin_function_signatures() {
             "expected ref_set to have a function type signature, got {:?}",
             other
         ),
+    }
+}
+
+#[test]
+fn env_does_not_register_legacy_int_aliases() {
+    let env = GlobalTypeEnv::new();
+    let legacy_symbols = [
+        "int_to_string",
+        "int_neg",
+        "int_add",
+        "int_sub",
+        "int_mul",
+        "int_div",
+        "int_less",
+    ];
+
+    for symbol in legacy_symbols {
+        assert!(
+            env.get_type_of_function(symbol).is_none(),
+            "legacy builtin `{}` should not be registered",
+            symbol,
+        );
     }
 }

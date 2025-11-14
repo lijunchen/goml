@@ -1,17 +1,17 @@
 fn main() -> unit {
   let counter/0 = ref(0) in
   let mtmp3 = spawn(closure_env_main_0 { counter_0: counter/0 }) in
-  while int_less(ref_get(counter/0), 10) {
+  while int32_less(ref_get(counter/0), 10) {
       ()
   }
 }
 
 fn __closure_apply4(env5: closure_env_main_0) -> unit {
   let counter/0 = closure_env_main_0.counter_0(env5) in
-  while int_less(ref_get(counter/0), 10) {
+  while int32_less(ref_get(counter/0), 10) {
       let mtmp0 = string_println("hello") in
       let mtmp1 = sleep(duration(1000)) in
-      let mtmp2 = ref_set(counter/0, int_add(ref_get(counter/0), 1)) in
+      let mtmp2 = ref_set(counter/0, int32_add(ref_get(counter/0), 1)) in
       ()
   }
 }

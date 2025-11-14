@@ -1501,7 +1501,6 @@ pub struct WildPat {
 pub enum Type {
     UnitTy(UnitTy),
     BoolTy(BoolTy),
-    IntTy(IntTy),
     Int8Ty(Int8Ty),
     Int16Ty(Int16Ty),
     Int32Ty(Int32Ty),
@@ -1525,7 +1524,6 @@ impl CstNode for Type {
             kind,
             TYPE_UNIT
                 | TYPE_BOOL
-                | TYPE_INT
                 | TYPE_INT8
                 | TYPE_INT16
                 | TYPE_INT32
@@ -1547,7 +1545,6 @@ impl CstNode for Type {
         let res = match syntax.kind() {
             TYPE_UNIT => Type::UnitTy(UnitTy { syntax }),
             TYPE_BOOL => Type::BoolTy(BoolTy { syntax }),
-            TYPE_INT => Type::IntTy(IntTy { syntax }),
             TYPE_INT8 => Type::Int8Ty(Int8Ty { syntax }),
             TYPE_INT16 => Type::Int16Ty(Int16Ty { syntax }),
             TYPE_INT32 => Type::Int32Ty(Int32Ty { syntax }),
@@ -1571,7 +1568,6 @@ impl CstNode for Type {
         match self {
             Type::UnitTy(it) => &it.syntax,
             Type::BoolTy(it) => &it.syntax,
-            Type::IntTy(it) => &it.syntax,
             Type::Int8Ty(it) => &it.syntax,
             Type::Int16Ty(it) => &it.syntax,
             Type::Int32Ty(it) => &it.syntax,
@@ -1617,16 +1613,6 @@ impl BoolTy {}
 impl_cst_node_simple!(BoolTy, MySyntaxKind::TYPE_BOOL);
 impl_display_via_syntax!(BoolTy);
 
-////////////////////////////////////////////////////////////////////////////////
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IntTy {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl IntTy {}
-
-impl_cst_node_simple!(IntTy, MySyntaxKind::TYPE_INT);
-impl_display_via_syntax!(IntTy);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

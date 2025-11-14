@@ -1,11 +1,11 @@
-fn point_to_string(p/0: Point) -> string {
+fn point32_to_string(p/0: Point) -> string {
   let mtmp0 = p/0 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
   let y/2 = x2 in
   let x/1 = x1 in
-  let t12 = int_to_string(x/1) in
-  let t15 = int_to_string(y/2) in
+  let t12 = int32_to_string(x/1) in
+  let t15 = int32_to_string(y/2) in
   let t14 = string_add(t15, " }") in
   let t13 = string_add(", y: ", t14) in
   let t11 = string_add(t12, t13) in
@@ -34,8 +34,8 @@ fn line_to_string(l/4: Line) -> string {
   let color/7 = x6 in
   let to/6 = x5 in
   let from/5 = x4 in
-  let t17 = point_to_string(from/5) in
-  let t20 = point_to_string(to/6) in
+  let t17 = point32_to_string(from/5) in
+  let t20 = point32_to_string(to/6) in
   let t23 = color_to_string(color/7) in
   let t22 = string_add(t23, " }") in
   let t21 = string_add(", color: ", t22) in
@@ -58,7 +58,7 @@ fn point_type(p/8: Point) -> string {
           "up"
         },
         _ => let y/9 = x8 in
-        let mtmp9 = int_less(0, y/9) in
+        let mtmp9 = int32_less(0, y/9) in
         match mtmp9 {
           true => {
             "above"

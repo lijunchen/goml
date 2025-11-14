@@ -2,8 +2,8 @@ fn test() {
     let y = 3 in
     let z = 5 in
     let f = |x: int32| x * y * z in
-    let _ = string_println(int_to_string(f(2))) in
-    string_println(int_to_string(f(3)))
+    let _ = string_println(int32_to_string(f(2))) in
+    string_println(int32_to_string(f(3)))
 }
 
 fn call_int_id(f: (int32) -> int32, v: int32) -> int32 {
@@ -24,13 +24,13 @@ fn main() {
     let base = 5 in
     let add_base = |x: int32| x + base in
     let result = add_base(7) in
-    let printer = |prefix: string, value: int32| let message = string_add(prefix, int_to_string(value)) in
+    let printer = |prefix: string, value: int32| let message = string_add(prefix, int32_to_string(value)) in
     string_println(message) in
     let _ = printer("result: ", result) in
     let unused = |y: int32| y + result in
     let no_capture = |z: int32| z * 2 in
     let doubled = no_capture(3) in
-    let _ = string_println(int_to_string(doubled)) in
+    let _ = string_println(int32_to_string(doubled)) in
     let _ = test() in
     let list123 = Cons(1, Cons(2, Cons(3, Nil))) in
     let point = Point {
@@ -39,9 +39,9 @@ fn main() {
     } in
     let play_list_and_point = || match list123 {
         Nil => string_println("Empty list"),
-        Cons(head, tail) => let _ = string_println(int_to_string(head)) in
+        Cons(head, tail) => let _ = string_println(int32_to_string(head)) in
           match point {
-              Point { x: x, y: y } => let _ = string_println(string_add("Point: (", string_add(int_to_string(x), string_add(", ", string_add(int_to_string(y), ")"))))) in
+              Point { x: x, y: y } => let _ = string_println(string_add("Point: (", string_add(int32_to_string(x), string_add(", ", string_add(int32_to_string(y), ")"))))) in
                 (),
           },
     } in

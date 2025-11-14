@@ -1,4 +1,4 @@
-fn match_mixed_pair(pair: (int, string)) -> int {
+fn match_mixed_pair(pair: (int32, string)) -> int32 {
   match pair {
     (0, "zero") => 1,
     (0, _) => 2,
@@ -9,12 +9,12 @@ fn match_mixed_pair(pair: (int, string)) -> int {
 }
 
 enum Mixed {
-  OnlyInt(int),
+  OnlyInt(int32),
   OnlyStr(string),
-  Both(int, string),
+  Both(int32, string),
 }
 
-fn match_mixed_enum(value: Mixed) -> int {
+fn match_mixed_enum(value: Mixed) -> int32 {
   match value {
     OnlyInt(0) => 6,
     OnlyInt(_) => 7,
@@ -28,17 +28,17 @@ fn match_mixed_enum(value: Mixed) -> int {
 }
 
 fn main() {
-    let _ = string_println(int_to_string(match_mixed_pair((0, "zero"))));
-    let _ = string_println(int_to_string(match_mixed_pair((0, "other"))));
-    let _ = string_println(int_to_string(match_mixed_pair((1, "one"))));
-    let _ = string_println(int_to_string(match_mixed_pair((2, "zero"))));
-    let _ = string_println(int_to_string(match_mixed_pair((2, "two"))));
-    let _ = string_println(int_to_string(match_mixed_enum(OnlyInt(0))));
-    let _ = string_println(int_to_string(match_mixed_enum(OnlyInt(5))));
-    let _ = string_println(int_to_string(match_mixed_enum(OnlyStr("zero"))));
-    let _ = string_println(int_to_string(match_mixed_enum(OnlyStr("hello"))));
-    let _ = string_println(int_to_string(match_mixed_enum(Both(0, "zero"))));
-    let _ = string_println(int_to_string(match_mixed_enum(Both(0, "hello"))));
-    let _ = string_println(int_to_string(match_mixed_enum(Both(2, "zero"))));
-    string_println(int_to_string(match_mixed_enum(Both(3, "three"))))
+    let _ = string_println(int32_to_string(match_mixed_pair((0, "zero"))));
+    let _ = string_println(int32_to_string(match_mixed_pair((0, "other"))));
+    let _ = string_println(int32_to_string(match_mixed_pair((1, "one"))));
+    let _ = string_println(int32_to_string(match_mixed_pair((2, "zero"))));
+    let _ = string_println(int32_to_string(match_mixed_pair((2, "two"))));
+    let _ = string_println(int32_to_string(match_mixed_enum(OnlyInt(0))));
+    let _ = string_println(int32_to_string(match_mixed_enum(OnlyInt(5))));
+    let _ = string_println(int32_to_string(match_mixed_enum(OnlyStr("zero"))));
+    let _ = string_println(int32_to_string(match_mixed_enum(OnlyStr("hello"))));
+    let _ = string_println(int32_to_string(match_mixed_enum(Both(0, "zero"))));
+    let _ = string_println(int32_to_string(match_mixed_enum(Both(0, "hello"))));
+    let _ = string_println(int32_to_string(match_mixed_enum(Both(2, "zero"))));
+    string_println(int32_to_string(match_mixed_enum(Both(3, "three"))))
 }

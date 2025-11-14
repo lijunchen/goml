@@ -6,7 +6,7 @@ fn main() -> unit {
   let signal/1 = ref(0) in
   let mtmp1 = spawn(|| => let mtmp0 = child(signal/1) in
   ()) in
-  let mtmp2 = while int_less(ref_get(signal/1), 1) {
+  let mtmp2 = while int32_less(ref_get(signal/1), 1) {
       ()
   } in
   let mtmp3 = string_println("main") in

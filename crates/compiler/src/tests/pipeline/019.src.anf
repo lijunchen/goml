@@ -21,7 +21,7 @@ fn x_add_1(p/4: Point) -> Point {
   let x5 = Point.y(mtmp3) in
   let y/6 = x5 in
   let x/5 = x4 in
-  let t28 = int_add(x/5, 1) in
+  let t28 = int32_add(x/5, 1) in
   Point { x: t28, y: y/6 }
 }
 
@@ -43,57 +43,57 @@ fn get_y(p/10: Point) -> int32 {
   y/12
 }
 
-fn point_to_string(p/13: Point) -> string {
+fn point32_to_string(p/13: Point) -> string {
   let mtmp12 = p/13 in
   let x13 = Point.x(mtmp12) in
   let x14 = Point.y(mtmp12) in
   let y/15 = x14 in
   let x/14 = x13 in
-  let t31 = int_to_string(x/14) in
+  let t31 = int32_to_string(x/14) in
   let t30 = string_add("Point { x: ", t31) in
-  let t33 = int_to_string(y/15) in
+  let t33 = int32_to_string(y/15) in
   let t32 = string_add(", y: ", t33) in
   let t29 = string_add(t30, t32) in
   string_add(t29, "}")
 }
 
-fn point_to_string2(p/16: Point) -> string {
+fn point32_to_string2(p/16: Point) -> string {
   let mtmp15 = p/16 in
   let x16 = Point.x(mtmp15) in
   let x17 = Point.y(mtmp15) in
   let y/18 = x17 in
   let x/17 = x16 in
-  let t36 = int_to_string(x/17) in
+  let t36 = int32_to_string(x/17) in
   let t35 = string_add("Point { x: ", t36) in
-  let t38 = int_to_string(y/18) in
+  let t38 = int32_to_string(y/18) in
   let t37 = string_add(", y: ", t38) in
   let t34 = string_add(t35, t37) in
   string_add(t34, "}")
 }
 
-fn point_to_string3(p/19: Point) -> string {
+fn point32_to_string3(p/19: Point) -> string {
   let mtmp18 = p/19 in
   let x19 = Point.x(mtmp18) in
   let x20 = Point.y(mtmp18) in
   let y/21 = x20 in
   let x/20 = x19 in
-  let t41 = int_to_string(x/20) in
+  let t41 = int32_to_string(x/20) in
   let t40 = string_add("Point { x: ", t41) in
-  let t43 = int_to_string(y/21) in
+  let t43 = int32_to_string(y/21) in
   let t42 = string_add(", y: ", t43) in
   let t39 = string_add(t40, t42) in
   string_add(t39, "}")
 }
 
-fn point_to_string4(p/22: Point) -> string {
+fn point32_to_string4(p/22: Point) -> string {
   let mtmp21 = p/22 in
   let x22 = Point.x(mtmp21) in
   let x23 = Point.y(mtmp21) in
   let y/24 = x23 in
   let x/23 = x22 in
-  let t46 = int_to_string(x/23) in
+  let t46 = int32_to_string(x/23) in
   let t45 = string_add("Point { x: ", t46) in
-  let t48 = int_to_string(y/24) in
+  let t48 = int32_to_string(y/24) in
   let t47 = string_add(", y: ", t48) in
   let t44 = string_add(t45, t47) in
   string_add(t44, "}")
@@ -101,20 +101,20 @@ fn point_to_string4(p/22: Point) -> string {
 
 fn main() -> unit {
   let start/25 = make_point() in
-  let t49 = point_to_string(start/25) in
+  let t49 = point32_to_string(start/25) in
   let mtmp24 = string_println(t49) in
   let t50 = Point { x: 1, y: 2 } in
   let swapped/26 = flip(t50) in
-  let t51 = point_to_string2(swapped/26) in
+  let t51 = point32_to_string2(swapped/26) in
   let mtmp25 = string_println(t51) in
   let boxed/27 = wrap_int(3) in
   let point_box/28 = Wrapper__Point { value: swapped/26 } in
   let a/29 = x_add_1(start/25) in
-  let t52 = point_to_string3(a/29) in
+  let t52 = point32_to_string3(a/29) in
   let mtmp26 = string_println(t52) in
   let t53 = x_add_1(start/25) in
   let a/30 = flip(t53) in
-  let t54 = point_to_string4(a/30) in
+  let t54 = point32_to_string4(a/30) in
   let mtmp27 = string_println(t54) in
   ()
 }

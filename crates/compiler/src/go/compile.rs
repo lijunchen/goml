@@ -140,7 +140,6 @@ fn cexpr_ty(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goty::GoType {
 }
 
 const NEG_BUILTINS: &[&str] = &[
-    "int_neg",
     "int8_neg",
     "int16_neg",
     "int32_neg",
@@ -154,7 +153,6 @@ const NEG_BUILTINS: &[&str] = &[
 ];
 
 const ADD_BUILTINS: &[&str] = &[
-    "int_add",
     "int8_add",
     "int16_add",
     "int32_add",
@@ -169,7 +167,6 @@ const ADD_BUILTINS: &[&str] = &[
 ];
 
 const SUB_BUILTINS: &[&str] = &[
-    "int_sub",
     "int8_sub",
     "int16_sub",
     "int32_sub",
@@ -183,7 +180,6 @@ const SUB_BUILTINS: &[&str] = &[
 ];
 
 const MUL_BUILTINS: &[&str] = &[
-    "int_mul",
     "int8_mul",
     "int16_mul",
     "int32_mul",
@@ -197,7 +193,6 @@ const MUL_BUILTINS: &[&str] = &[
 ];
 
 const DIV_BUILTINS: &[&str] = &[
-    "int_div",
     "int8_div",
     "int16_div",
     "int32_div",
@@ -211,7 +206,6 @@ const DIV_BUILTINS: &[&str] = &[
 ];
 
 const LESS_BUILTINS: &[&str] = &[
-    "int_less",
     "int8_less",
     "int16_less",
     "int32_less",

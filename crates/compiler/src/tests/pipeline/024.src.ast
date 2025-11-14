@@ -3,9 +3,9 @@ struct Point {
     y: int32,
 }
 
-fn point_to_string(p: Point) -> string {
+fn point32_to_string(p: Point) -> string {
     let Point { x: x, y: y } = p in
-    string_add("Point { x: ", string_add(int_to_string(x), string_add(", y: ", string_add(int_to_string(y), " }"))))
+    string_add("Point { x: ", string_add(int32_to_string(x), string_add(", y: ", string_add(int32_to_string(y), " }"))))
 }
 
 enum Color {
@@ -30,7 +30,7 @@ struct Line {
 
 fn line_to_string(l: Line) -> string {
     let Line { from: from, to: to, color: color } = l in
-    string_add("Line { from: ", string_add(point_to_string(from), string_add(", to: ", string_add(point_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
+    string_add("Line { from: ", string_add(point32_to_string(from), string_add(", to: ", string_add(point32_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
 }
 
 fn point_type(p: Point) -> string {
@@ -38,7 +38,7 @@ fn point_type(p: Point) -> string {
         Point { x: 0, y: 0 } => "origin",
         Point { x: 0, y: 1 } => "up",
         Point { x: 1, y: 0 } => "right",
-        Point { x: 0, y: y } => match int_less(0, y) {
+        Point { x: 0, y: y } => match int32_less(0, y) {
               true => "above",
               false => "below",
           },

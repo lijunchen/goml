@@ -25,17 +25,17 @@ fn describe(shape/7: Shape[T]) -> int32 {
   }
 }
 
-fn point_to_string(point/8: Point) -> string {
+fn point32_to_string(point/8: Point) -> string {
   let Point { x: x/9: int32, y: y/10: int32 } = (point/8 : Point) in
-  let with_x/11: string = (string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int32) -> string)((x/9 : int32))) in
+  let with_x/11: string = (string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/9 : int32))) in
   let with_y_label/12: string = (string_add : (string, string) -> string)((with_x/11 : string), ", y: ") in
-  let with_y/13: string = (string_add : (string, string) -> string)((with_y_label/12 : string), (int_to_string : (int32) -> string)((y/10 : int32))) in
+  let with_y/13: string = (string_add : (string, string) -> string)((with_y_label/12 : string), (int32_to_string : (int32) -> string)((y/10 : int32))) in
   (string_add : (string, string) -> string)((with_y/13 : string), " }")
 }
 
-fn wrapper_int_to_string(wrapper/14: Wrapper[int32]) -> string {
+fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
   let Wrapper { value: value/15: int32 } = (wrapper/14 : Wrapper[int32]) in
-  let prefix/16: string = (string_add : (string, string) -> string)("Wrapper[int] { value: ", (int_to_string : (int32) -> string)((value/15 : int32))) in
+  let prefix/16: string = (string_add : (string, string) -> string)("Wrapper[int32] { value: ", (int32_to_string : (int32) -> string)((value/15 : int32))) in
   (string_add : (string, string) -> string)((prefix/16 : string), " }")
 }
 
@@ -45,11 +45,11 @@ fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
   (string_add : (string, string) -> string)((prefix/19 : string), " }")
 }
 
-fn shape_int_to_string(shape/20: Shape[int32]) -> string {
+fn shape_int32_to_string(shape/20: Shape[int32]) -> string {
   match (shape/20 : Shape[int32]) {
-      Shape::Dot(point/21: Point) => let prefix/22: string = (string_add : (string, string) -> string)("Shape::Dot(", (point_to_string : (Point) -> string)((point/21 : Point))) in
+      Shape::Dot(point/21: Point) => let prefix/22: string = (string_add : (string, string) -> string)("Shape::Dot(", (point32_to_string : (Point) -> string)((point/21 : Point))) in
         (string_add : (string, string) -> string)((prefix/22 : string), ")"),
-      Shape::Wrapped(wrapper/23: Wrapper[int32]) => let prefix/24: string = (string_add : (string, string) -> string)("Shape::Wrapped(", (wrapper_int_to_string : (Wrapper[int32]) -> string)((wrapper/23 : Wrapper[int32]))) in
+      Shape::Wrapped(wrapper/23: Wrapper[int32]) => let prefix/24: string = (string_add : (string, string) -> string)("Shape::Wrapped(", (wrapper_int32_to_string : (Wrapper[int32]) -> string)((wrapper/23 : Wrapper[int32]))) in
         (string_add : (string, string) -> string)((prefix/24 : string), ")"),
       Shape::Origin => "Shape::Origin",
   }
@@ -57,7 +57,7 @@ fn shape_int_to_string(shape/20: Shape[int32]) -> string {
 
 fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
   match (shape/25 : Shape[unit]) {
-      Shape::Dot(point/26: Point) => let prefix/27: string = (string_add : (string, string) -> string)("Shape::Dot(", (point_to_string : (Point) -> string)((point/26 : Point))) in
+      Shape::Dot(point/26: Point) => let prefix/27: string = (string_add : (string, string) -> string)("Shape::Dot(", (point32_to_string : (Point) -> string)((point/26 : Point))) in
         (string_add : (string, string) -> string)((prefix/27 : string), ")"),
       Shape::Wrapped(wrapper/28: Wrapper[unit]) => let prefix/29: string = (string_add : (string, string) -> string)("Shape::Wrapped(", (wrapper_unit_to_string : (Wrapper[unit]) -> string)((wrapper/28 : Wrapper[unit]))) in
         (string_add : (string, string) -> string)((prefix/29 : string), ")"),
@@ -66,13 +66,13 @@ fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
 }
 
 fn main() -> unit {
-  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)(Point { x: 3, y: 4 })) in
-  let _ : unit = (string_println : (string) -> unit)((wrapper_int_to_string : (Wrapper[int32]) -> string)(Wrapper { value: 7 })) in
+  let _ : unit = (string_println : (string) -> unit)((point32_to_string : (Point) -> string)(Point { x: 3, y: 4 })) in
+  let _ : unit = (string_println : (string) -> unit)((wrapper_int32_to_string : (Wrapper[int32]) -> string)(Wrapper { value: 7 })) in
   let _ : unit = (string_println : (string) -> unit)((wrapper_unit_to_string : (Wrapper[unit]) -> string)(Wrapper { value: () })) in
   let bounced_origin/30: Shape[int32] = (bounce_int : (Shape[int32]) -> Shape[int32])(Shape::Origin) in
-  let _ : unit = (string_println : (string) -> unit)((shape_int_to_string : (Shape[int32]) -> string)(Shape::Dot(Point { x: 3, y: 4 }))) in
-  let _ : unit = (string_println : (string) -> unit)((shape_int_to_string : (Shape[int32]) -> string)(Shape::Wrapped(Wrapper { value: 7 }))) in
-  let _ : unit = (string_println : (string) -> unit)((shape_int_to_string : (Shape[int32]) -> string)((bounced_origin/30 : Shape[int32]))) in
+  let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Dot(Point { x: 3, y: 4 }))) in
+  let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)(Shape::Wrapped(Wrapper { value: 7 }))) in
+  let _ : unit = (string_println : (string) -> unit)((shape_int32_to_string : (Shape[int32]) -> string)((bounced_origin/30 : Shape[int32]))) in
   let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Dot(Point { x: 3, y: 4 }))) in
   let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Wrapped(Wrapper { value: () }))) in
   let _ : unit = (string_println : (string) -> unit)((shape_unit_to_string : (Shape[unit]) -> string)(Shape::Origin)) in

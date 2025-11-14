@@ -1,15 +1,15 @@
 fn fib(x/0: int32) -> int32 {
-  let mtmp0 = int_less(x/0, 2) in
+  let mtmp0 = int32_less(x/0, 2) in
   match mtmp0 {
     true => {
       1
     },
     false => {
-      int_add(fib(int_sub(x/0, 1)), fib(int_sub(x/0, 2)))
+      int32_add(fib(int32_sub(x/0, 1)), fib(int32_sub(x/0, 2)))
     },
   }
 }
 
 fn main() -> unit {
-  string_print(int_to_string(fib(10)))
+  string_print(int32_to_string(fib(10)))
 }

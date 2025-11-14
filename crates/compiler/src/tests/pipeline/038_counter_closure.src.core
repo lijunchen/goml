@@ -1,6 +1,6 @@
 fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = ref(0) in
-  let next/2 = || => let next/1 = int_add(ref_get(cell/0), 1) in
+  let next/2 = || => let next/1 = int32_add(ref_get(cell/0), 1) in
   let mtmp0 = ref_set(cell/0, next/1) in
   next/1 in
   let reset/3 = || => let mtmp1 = ref_set(cell/0, 0) in
@@ -25,9 +25,9 @@ fn main() -> unit {
   let x8 = mtmp6.1 in
   let new_next/11 = x7 in
   let fourth/12 = new_next/11() in
-  let mtmp9 = string_println(int_to_string(first/7)) in
-  let mtmp10 = string_println(int_to_string(second/8)) in
-  let mtmp11 = string_println(int_to_string(third/9)) in
-  let mtmp12 = string_println(int_to_string(fourth/12)) in
+  let mtmp9 = string_println(int32_to_string(first/7)) in
+  let mtmp10 = string_println(int32_to_string(second/8)) in
+  let mtmp11 = string_println(int32_to_string(third/9)) in
+  let mtmp12 = string_println(int32_to_string(fourth/12)) in
   ()
 }

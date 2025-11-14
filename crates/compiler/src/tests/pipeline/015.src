@@ -1,6 +1,6 @@
 enum IntList {
     Nil,
-    Cons(int, IntList),
+    Cons(int32, IntList),
 }
 
 fn print_int_list(xs: IntList) {
@@ -9,7 +9,7 @@ fn print_int_list(xs: IntList) {
         Cons(x, xs) => {
             let _ = string_print("Cons");
             let _ = string_print("(");
-            let _ = string_print(int_to_string(x));
+            let _ = string_print(int32_to_string(x));
             let _ = string_print(", ");
             let _ = print_int_list(xs);
             let _ = string_print(")");
@@ -30,7 +30,7 @@ fn int_list_rev(xs: IntList) -> IntList {
 }
 
 
-fn int_list_length(xs: IntList) -> int {
+fn int_list_length(xs: IntList) -> int32 {
     match xs {
         Nil => 0,
         Cons(_, xs) => 1 + int_list_length(xs),
@@ -39,7 +39,7 @@ fn int_list_length(xs: IntList) -> int {
 
 fn print_int_list_length(xs: IntList) {
     let _ = string_print("Length: ");
-    let _ = string_println(int_to_string(int_list_length(xs)));
+    let _ = string_println(int32_to_string(int_list_length(xs)));
     ()
 }
 

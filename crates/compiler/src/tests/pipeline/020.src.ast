@@ -40,17 +40,17 @@ fn describe(shape: Shape[T]) -> int32 {
     }
 }
 
-fn point_to_string(point: Point) -> string {
+fn point32_to_string(point: Point) -> string {
     let Point { x: x, y: y } = point in
-    let with_x = string_add("Point { x: ", int_to_string(x)) in
+    let with_x = string_add("Point { x: ", int32_to_string(x)) in
     let with_y_label = string_add(with_x, ", y: ") in
-    let with_y = string_add(with_y_label, int_to_string(y)) in
+    let with_y = string_add(with_y_label, int32_to_string(y)) in
     string_add(with_y, " }")
 }
 
-fn wrapper_int_to_string(wrapper: Wrapper[int32]) -> string {
+fn wrapper_int32_to_string(wrapper: Wrapper[int32]) -> string {
     let Wrapper { value: value } = wrapper in
-    let prefix = string_add("Wrapper[int] { value: ", int_to_string(value)) in
+    let prefix = string_add("Wrapper[int32] { value: ", int32_to_string(value)) in
     string_add(prefix, " }")
 }
 
@@ -60,11 +60,11 @@ fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
     string_add(prefix, " }")
 }
 
-fn shape_int_to_string(shape: Shape[int32]) -> string {
+fn shape_int32_to_string(shape: Shape[int32]) -> string {
     match shape {
-        Dot(point) => let prefix = string_add("Shape::Dot(", point_to_string(point)) in
+        Dot(point) => let prefix = string_add("Shape::Dot(", point32_to_string(point)) in
           string_add(prefix, ")"),
-        Wrapped(wrapper) => let prefix = string_add("Shape::Wrapped(", wrapper_int_to_string(wrapper)) in
+        Wrapped(wrapper) => let prefix = string_add("Shape::Wrapped(", wrapper_int32_to_string(wrapper)) in
           string_add(prefix, ")"),
         Origin => "Shape::Origin",
     }
@@ -72,7 +72,7 @@ fn shape_int_to_string(shape: Shape[int32]) -> string {
 
 fn shape_unit_to_string(shape: Shape[unit]) -> string {
     match shape {
-        Dot(point) => let prefix = string_add("Shape::Dot(", point_to_string(point)) in
+        Dot(point) => let prefix = string_add("Shape::Dot(", point32_to_string(point)) in
           string_add(prefix, ")"),
         Wrapped(wrapper) => let prefix = string_add("Shape::Wrapped(", wrapper_unit_to_string(wrapper)) in
           string_add(prefix, ")"),
@@ -81,13 +81,13 @@ fn shape_unit_to_string(shape: Shape[unit]) -> string {
 }
 
 fn main() {
-    let _ = string_println(point_to_string(Point(3, 4))) in
-    let _ = string_println(wrapper_int_to_string(Wrapper(7))) in
+    let _ = string_println(point32_to_string(Point(3, 4))) in
+    let _ = string_println(wrapper_int32_to_string(Wrapper(7))) in
     let _ = string_println(wrapper_unit_to_string(Wrapper(()))) in
     let bounced_origin = bounce_int(Origin) in
-    let _ = string_println(shape_int_to_string(Dot(Point(3, 4)))) in
-    let _ = string_println(shape_int_to_string(Wrapped(Wrapper(7)))) in
-    let _ = string_println(shape_int_to_string(bounced_origin)) in
+    let _ = string_println(shape_int32_to_string(Dot(Point(3, 4)))) in
+    let _ = string_println(shape_int32_to_string(Wrapped(Wrapper(7)))) in
+    let _ = string_println(shape_int32_to_string(bounced_origin)) in
     let _ = string_println(shape_unit_to_string(Dot(Point(3, 4)))) in
     let _ = string_println(shape_unit_to_string(Wrapped(Wrapper(())))) in
     let _ = string_println(shape_unit_to_string(Origin)) in

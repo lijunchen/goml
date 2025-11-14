@@ -26,7 +26,7 @@ impl Describe for Tracker {
       let flag = ref_get(toggled) in
       let with_label = string_add("Tracker(", label) in
       let with_count_label = string_add(with_label, ", count: ") in
-      let with_count = string_add(with_count_label, int_to_string(current)) in
+      let with_count = string_add(with_count_label, int32_to_string(current)) in
       let with_flag_label = string_add(with_count, ", toggled: ") in
       string_add(with_flag_label, string_add(bool_to_string(flag), ")"))
   }
@@ -35,9 +35,9 @@ impl Describe for Tracker {
 impl Describe for Record[int32] {
   fn describe(self: Record[int32]) -> string {
       match self {
-          Value(value) => string_add("Value(", string_add(int_to_string(value), ")")),
-          Pair(before, after) => let prefix = string_add("Pair(", int_to_string(before)) in
-            string_add(prefix, string_add(", ", string_add(int_to_string(after), ")"))),
+          Value(value) => string_add("Value(", string_add(int32_to_string(value), ")")),
+          Pair(before, after) => let prefix = string_add("Pair(", int32_to_string(before)) in
+            string_add(prefix, string_add(", ", string_add(int32_to_string(after), ")"))),
           Empty => "Empty",
       }
   }
@@ -70,7 +70,7 @@ fn map_maybe(value: Maybe[T], f: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total: int32) -> string {
-    string_add("total: ", int_to_string(total))
+    string_add("total: ", int32_to_string(total))
 }
 
 fn increment(value: int32) -> int32 {
@@ -135,7 +135,7 @@ fn main() {
     let results = run_transforms(4, transforms) in
     let first_result = array_get(results, 0) in
     let second_result = array_get(results, 1) in
-    let order_check = int_less(first_result, second_result) && true in
+    let order_check = int32_less(first_result, second_result) && true in
     let first_text = describe(first_record) in
     let bumped_text = describe(bumped_record) in
     let flipped_text = describe(flipped_record) in
@@ -143,7 +143,7 @@ fn main() {
         Some(text) => string_add("Snapshot: ", text),
         None => "Snapshot: none",
     } in
-    let pair_text = pair_join((int_to_string(first_result), int_to_string(second_result))) in
+    let pair_text = pair_join((int32_to_string(first_result), int32_to_string(second_result))) in
     let bool_text = bool_to_string(order_check) in
     let _ = string_println(tracker_info) in
     let _ = string_println(first_text) in
