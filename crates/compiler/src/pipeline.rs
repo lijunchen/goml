@@ -19,8 +19,6 @@ pub struct Compilation {
     pub cst: CstFile,
     pub ast: ast::File,
     pub tast: tast::File,
-    // TODO: fix me
-    pub typer_env: GlobalTypeEnv,
     pub genv: GlobalTypeEnv,
     pub core: crate::core::File,
     pub lambda: crate::core::File,
@@ -80,8 +78,6 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         });
     }
 
-    let typer_env = env.clone();
-
     let gensym = Gensym::new();
 
     let core = compile_match::compile_file(&env, &gensym, &tast);
@@ -95,7 +91,6 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         cst,
         ast,
         tast,
-        typer_env,
         genv: env,
         core,
         lambda: lifted_core,
