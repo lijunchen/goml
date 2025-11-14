@@ -88,8 +88,9 @@ pub fn compile_to_mono(src: &str) -> String {
     }
     let gensym = Gensym::new();
     let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, core);
+    let mono = compiler::mono::mono(&mut genv, lifted);
     mono.to_pretty(&genv, 120)
 }
 
@@ -118,8 +119,9 @@ pub fn compile_to_anf(src: &str) -> String {
     }
     let gensym = Gensym::new();
     let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, core);
+    let mono = compiler::mono::mono(&mut genv, lifted);
 
     let anf = compiler::anf::anf_file(&genv, &gensym, mono);
     anf.to_pretty(&genv, 120)
@@ -150,8 +152,9 @@ pub fn compile_to_go(src: &str) -> String {
     }
     let gensym = Gensym::new();
     let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, core);
+    let mono = compiler::mono::mono(&mut genv, lifted);
 
     let anf = compiler::anf::anf_file(&genv, &gensym, mono);
 
