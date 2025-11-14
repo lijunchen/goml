@@ -23,8 +23,8 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
 }
 
 fn expect_single_error(src: &str, expected: &str) {
-    let (_, env) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&env.diagnostics);
+    let (_, genv) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
     assert_eq!(
         diagnostics.len(),
         1,

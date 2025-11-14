@@ -38,7 +38,7 @@ fn main() -> int {
 }
 "#;
 
-    let (ast, _tast, env) = typecheck(src);
+    let (ast, _tast, genv) = typecheck(src);
 
     let main_fn = match &ast.toplevels[0] {
         ast::ast::Item::Fn(f) => f,
@@ -125,15 +125,15 @@ fn main() -> int {
         elem: Box::new(tast::Ty::TInt),
     };
     assert!(
-        env.ref_types.contains(&expected_ref_ty),
+        genv.ref_types.contains(&expected_ref_ty),
         "expected ref type {:?} to be collected, got {:?}",
         expected_ref_ty,
-        env.ref_types
+        genv.ref_types
     );
     assert!(
-        env.diagnostics.is_empty(),
+        genv.diagnostics.is_empty(),
         "unexpected diagnostics: {:?}",
-        env.diagnostics
+        genv.diagnostics
     );
 
     let ref_ty = tast::Ty::TRef {

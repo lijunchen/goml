@@ -37,9 +37,9 @@ fn consume_point(p: Point) -> unit { () }
 fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 "#;
 
-    let (_tast, env) = typecheck(src);
+    let (_tast, genv) = typecheck(src);
 
-    let point = env
+    let point = genv
         .structs
         .get(&Uident::new("Point"))
         .expect("Point struct to be recorded");
@@ -50,7 +50,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
     assert_eq!(point.fields[1].0.0, "y");
     assert_eq!(point.fields[1].1, tast::Ty::TInt);
 
-    let wrapper = env
+    let wrapper = genv
         .structs
         .get(&Uident::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
@@ -65,7 +65,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
         }
     );
 
-    let wrapper_fn = env
+    let wrapper_fn = genv
         .funcs
         .get("consume_wrapper")
         .expect("function type to be recorded");
@@ -105,9 +105,9 @@ enum Shape[T] {
 }
 "#;
 
-    let (_tast, env) = typecheck(src);
+    let (_tast, genv) = typecheck(src);
 
-    let shape = env
+    let shape = genv
         .enums
         .get(&Uident::new("Shape"))
         .expect("Shape enum to be recorded");
@@ -159,9 +159,9 @@ enum List {
 }
 "#;
 
-    let (_tast, env) = typecheck(src);
+    let (_tast, genv) = typecheck(src);
 
-    let node = env
+    let node = genv
         .structs
         .get(&Uident::new("Node"))
         .expect("Node struct to be recorded");
@@ -174,7 +174,7 @@ enum List {
         }
     );
 
-    let list = env
+    let list = genv
         .enums
         .get(&Uident::new("List"))
         .expect("List enum to be recorded");
@@ -280,8 +280,8 @@ fn wrap[T](value: T) -> T {
 }
 
 fn assert_typer_error(src: &str, expected_message: &str) {
-    let (_tast, env) = typecheck(src);
-    let messages: Vec<String> = env
+    let (_tast, genv) = typecheck(src);
+    let messages: Vec<String> = genv
         .diagnostics
         .iter()
         .map(|diagnostic| diagnostic.message().to_string())
