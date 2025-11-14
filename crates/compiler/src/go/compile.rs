@@ -365,7 +365,6 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
         | tast::Ty::TBool
-        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -746,10 +745,9 @@ where
                 default: default_block,
             }]
         }
-        tast::Ty::TInt
+        tast::Ty::TInt32
         | tast::Ty::TInt8
         | tast::Ty::TInt16
-        | tast::Ty::TInt32
         | tast::Ty::TInt64
         | tast::Ty::TUint8
         | tast::Ty::TUint16
@@ -1597,7 +1595,7 @@ fn test_type_gen() {
             generics: vec![],
             variants: vec![
                 (Uident::new("Empty"), vec![]),
-                (Uident::new("Leaf"), vec![tast::Ty::TInt]),
+                (Uident::new("Leaf"), vec![tast::Ty::TInt32]),
                 (
                     Uident::new("Node"),
                     vec![
@@ -1625,7 +1623,7 @@ fn test_type_gen() {
         func (_ Empty) isTree() {}
 
         type Leaf struct {
-            _0 int
+            _0 int32
         }
 
         func (_ Leaf) isTree() {}

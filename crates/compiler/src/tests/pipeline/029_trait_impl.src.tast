@@ -4,16 +4,16 @@ impl Display for Point{
   }
 }
 
-impl Display for Option[int]{
-  fn show(self/1: Option[int]) -> string {
-    match (self/1 : Option[int]) {
-        Option::Some(value/2: int) => (string_add : (string, string) -> string)("Some(", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((value/2 : int)), ")")),
+impl Display for Option[int32]{
+  fn show(self/1: Option[int32]) -> string {
+    match (self/1 : Option[int32]) {
+        Option::Some(value/2: int32) => (string_add : (string, string) -> string)("Some(", (string_add : (string, string) -> string)((int_to_string : (int32) -> string)((value/2 : int32)), ")")),
         Option::None => "None",
     }
   }
 }
 
-fn make_optional(flag/3: bool) -> Option[int] {
+fn make_optional(flag/3: bool) -> Option[int32] {
   if (flag/3 : bool) {
       Option::Some(42)
   } else {
@@ -23,10 +23,10 @@ fn make_optional(flag/3: bool) -> Option[int] {
 
 fn main() -> unit {
   let point/4: Point = Point { x: 1, y: 2 } in
-  let some_number/5: Option[int] = (make_optional : (bool) -> Option[int])(true) in
-  let none_number/6: Option[int] = (make_optional : (bool) -> Option[int])(false) in
+  let some_number/5: Option[int32] = (make_optional : (bool) -> Option[int32])(true) in
+  let none_number/6: Option[int32] = (make_optional : (bool) -> Option[int32])(false) in
   let _ : unit = (string_println : (string) -> unit)((show : (Point) -> string)((point/4 : Point))) in
-  let _ : unit = (string_println : (string) -> unit)((show : (Option[int]) -> string)((some_number/5 : Option[int]))) in
-  let _ : unit = (string_println : (string) -> unit)((show : (Option[int]) -> string)((none_number/6 : Option[int]))) in
+  let _ : unit = (string_println : (string) -> unit)((show : (Option[int32]) -> string)((some_number/5 : Option[int32]))) in
+  let _ : unit = (string_println : (string) -> unit)((show : (Option[int32]) -> string)((none_number/6 : Option[int32]))) in
   ()
 }

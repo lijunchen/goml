@@ -271,10 +271,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         }
         tast::Ty::TUnit => goty::GoType::TUnit,
         tast::Ty::TBool => goty::GoType::TBool,
-        tast::Ty::TInt => goty::GoType::TInt,
+        tast::Ty::TInt32 => goty::GoType::TInt32,
         tast::Ty::TInt8 => goty::GoType::TInt8,
         tast::Ty::TInt16 => goty::GoType::TInt16,
-        tast::Ty::TInt32 => goty::GoType::TInt32,
         tast::Ty::TInt64 => goty::GoType::TInt64,
         tast::Ty::TUint8 => goty::GoType::TUint8,
         tast::Ty::TUint16 => goty::GoType::TUint16,
@@ -328,7 +327,6 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
     match ty {
         tast::Ty::TUnit => "unit".to_string(),
         tast::Ty::TBool => "bool".to_string(),
-        tast::Ty::TInt => "int".to_string(),
         tast::Ty::TInt8 => "int8".to_string(),
         tast::Ty::TInt16 => "int16".to_string(),
         tast::Ty::TInt32 => "int32".to_string(),

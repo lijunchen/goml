@@ -72,7 +72,6 @@ impl UnaryOp {
 pub enum Ty {
     TUnit,
     TBool,
-    TInt,
     TInt8,
     TInt16,
     TInt32,

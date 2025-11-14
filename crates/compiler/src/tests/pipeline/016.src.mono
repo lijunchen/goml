@@ -1,11 +1,11 @@
-fn int_list_length(xs/2: List__int) -> int {
+fn int_list_length(xs/2: List__int32) -> int32 {
   match xs/2 {
-    List__int::Nil => {
+    List__int32::Nil => {
       0
     },
-    List__int::Cons(x2, x3) => {
-      let x2 = List__int::Cons._0(xs/2) in
-      let x3 = List__int::Cons._1(xs/2) in
+    List__int32::Cons(x2, x3) => {
+      let x2 = List__int32::Cons._0(xs/2) in
+      let x3 = List__int32::Cons._1(xs/2) in
       let tail/3 = x3 in
       int_add(1, int_list_length(tail/3))
     },
@@ -13,13 +13,13 @@ fn int_list_length(xs/2: List__int) -> int {
 }
 
 fn main() -> unit {
-  let x/4 = List__int::Cons(1, List__int::Nil) in
-  let length/5 = list_length__T_int(x/4) in
+  let x/4 = List__int32::Cons(1, List__int32::Nil) in
+  let length/5 = list_length__T_int32(x/4) in
   let mtmp4 = string_println(int_to_string(length/5)) in
-  let x/6 = List__int::Cons(1, List__int::Cons(2, List__int::Nil)) in
-  let length/7 = list_length__T_int(x/6) in
+  let x/6 = List__int32::Cons(1, List__int32::Cons(2, List__int32::Nil)) in
+  let length/7 = list_length__T_int32(x/6) in
   let mtmp5 = string_println(int_to_string(length/7)) in
-  let x/8 = List__int::Cons(0, List__int::Cons(1, List__int::Cons(2, List__int::Nil))) in
+  let x/8 = List__int32::Cons(0, List__int32::Cons(1, List__int32::Cons(2, List__int32::Nil))) in
   let length/9 = int_list_length(x/8) in
   let mtmp6 = string_println(int_to_string(length/9)) in
   let x/10 = List__unit::Cons((), List__unit::Nil) in
@@ -34,21 +34,21 @@ fn main() -> unit {
   ()
 }
 
-fn list_length__T_int(xs/0: List__int) -> int {
+fn list_length__T_int32(xs/0: List__int32) -> int32 {
   match xs/0 {
-    List__int::Nil => {
+    List__int32::Nil => {
       0
     },
-    List__int::Cons(x0, x1) => {
-      let x0 = List__int::Cons._0(xs/0) in
-      let x1 = List__int::Cons._1(xs/0) in
+    List__int32::Cons(x0, x1) => {
+      let x0 = List__int32::Cons._0(xs/0) in
+      let x1 = List__int32::Cons._1(xs/0) in
       let tail/1 = x1 in
-      int_add(1, list_length__T_int(tail/1))
+      int_add(1, list_length__T_int32(tail/1))
     },
   }
 }
 
-fn list_length__T_unit(xs/0: List__unit) -> int {
+fn list_length__T_unit(xs/0: List__unit) -> int32 {
   match xs/0 {
     List__unit::Nil => {
       0
@@ -62,7 +62,7 @@ fn list_length__T_unit(xs/0: List__unit) -> int {
   }
 }
 
-fn list_length__T_bool(xs/0: List__bool) -> int {
+fn list_length__T_bool(xs/0: List__bool) -> int32 {
   match xs/0 {
     List__bool::Nil => {
       0

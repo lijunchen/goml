@@ -1,12 +1,12 @@
-fn impl_Arith_int_add(self/0: int, other/1: int) -> int {
+fn impl_Arith_int32_add(self/0: int32, other/1: int32) -> int32 {
   int_add(self/0, other/1)
 }
 
-fn impl_Arith_int_less(self/2: int, other/3: int) -> bool {
+fn impl_Arith_int32_less(self/2: int32, other/3: int32) -> bool {
   int_less(self/2, other/3)
 }
 
-fn impl_ToString_int_to_string(self/4: int) -> string {
+fn impl_ToString_int32_to_string(self/4: int32) -> string {
   int_to_string(self/4)
 }
 
@@ -14,8 +14,8 @@ fn impl_ToString_bool_to_string(self/5: bool) -> string {
   bool_to_string(self/5)
 }
 
-fn impl_Output_int_output(self/6: int) -> unit {
-  string_println(impl_ToString_int_to_string(self/6))
+fn impl_Output_int32_output(self/6: int32) -> unit {
+  string_println(impl_ToString_int32_to_string(self/6))
 }
 
 fn impl_Output_bool_output(self/7: bool) -> unit {
@@ -29,11 +29,11 @@ fn id(x/8: T) -> T {
 fn main() -> unit {
   let a/9 = id(1) in
   let b/10 = id(2) in
-  let c/11 = impl_Arith_int_add(a/9, b/10) in
-  let mtmp0 = impl_Output_int_output(c/11) in
+  let c/11 = impl_Arith_int32_add(a/9, b/10) in
+  let mtmp0 = impl_Output_int32_output(c/11) in
   let a/12 = id(3) in
   let b/13 = id(4) in
-  let c/14 = impl_Arith_int_less(a/12, b/13) in
+  let c/14 = impl_Arith_int32_less(a/12, b/13) in
   let mtmp1 = impl_Output_bool_output(c/14) in
   let mtmp2 = id("abc") in
   let mtmp3 = id(true) in

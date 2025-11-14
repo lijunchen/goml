@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -27,7 +27,7 @@ type Nil struct {}
 func (_ Nil) isIntList() {}
 
 type Cons struct {
-    _0 int
+    _0 int32
     _1 IntList
 }
 
@@ -39,10 +39,10 @@ func print_int_list(xs__0 IntList) struct{} {
     case Nil:
         ret35 = string_print("Nil")
     case Cons:
-        var x0 int = xs__0._0
+        var x0 int32 = xs__0._0
         var x1 IntList = xs__0._1
         var xs__2 IntList = x1
-        var x__1 int = x0
+        var x__1 int32 = x0
         string_print("Cons")
         string_print("(")
         var t25 string = int_to_string(x__1)
@@ -61,10 +61,10 @@ func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
     case Nil:
         ret36 = acc__4
     case Cons:
-        var x8 int = xs__3._0
+        var x8 int32 = xs__3._0
         var x9 IntList = xs__3._1
         var tail__6 IntList = x9
-        var head__5 int = x8
+        var head__5 int32 = x8
         var t26 IntList = Cons{
             _0: head__5,
             _1: acc__4,
@@ -81,15 +81,15 @@ func int_list_rev(xs__7 IntList) IntList {
     return ret37
 }
 
-func int_list_length(xs__8 IntList) int {
-    var ret38 int
+func int_list_length(xs__8 IntList) int32 {
+    var ret38 int32
     switch xs__8 := xs__8.(type) {
     case Nil:
         ret38 = 0
     case Cons:
         var x11 IntList = xs__8._1
         var xs__9 IntList = x11
-        var t28 int = int_list_length(xs__9)
+        var t28 int32 = int_list_length(xs__9)
         ret38 = 1 + t28
     }
     return ret38
@@ -98,7 +98,7 @@ func int_list_length(xs__8 IntList) int {
 func print_int_list_length(xs__10 IntList) struct{} {
     var ret39 struct{}
     string_print("Length: ")
-    var t30 int = int_list_length(xs__10)
+    var t30 int32 = int_list_length(xs__10)
     var t29 string = int_to_string(t30)
     string_println(t29)
     ret39 = struct{}{}

@@ -1,16 +1,16 @@
-fn double(x/0: int) -> int {
+fn double(x/0: int32) -> int32 {
   int_mul(x/0, 2)
 }
 
-fn increment(x/1: int) -> int {
+fn increment(x/1: int32) -> int32 {
   int_add(x/1, 1)
 }
 
-fn apply_once(f/2: (int) -> int, value/3: int) -> int {
+fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
   f/2(value/3)
 }
 
-fn compose(f/4: (int) -> int, g/5: (int) -> int, value/6: int) -> int {
+fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
   let t10 = g/5(value/6) in
   f/4(t10)
 }
@@ -37,14 +37,14 @@ fn main() -> unit {
   ()
 }
 
-fn __closure_apply4(env5: closure_env_closure_apply_0, value/10: int) -> int {
+fn __closure_apply4(env5: closure_env_closure_apply_0, value/10: int32) -> int32 {
   apply_once(increment, value/10)
 }
 
-fn __closure_apply6(env7: closure_env_global_invoker_1, func_to_call/13: (int) -> int, value/14: int) -> int {
+fn __closure_apply6(env7: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
   apply_once(func_to_call/13, value/14)
 }
 
-fn __closure_apply8(env9: closure_env_composer_closure_2, value/17: int) -> int {
+fn __closure_apply8(env9: closure_env_composer_closure_2, value/17: int32) -> int32 {
   compose(double, increment, value/17)
 }

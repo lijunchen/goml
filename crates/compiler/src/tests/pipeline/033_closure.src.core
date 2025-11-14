@@ -1,24 +1,24 @@
 fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
-  let f/3 = |x/2: int| => int_mul(int_mul(x/2, y/0), z/1) in
+  let f/3 = |x/2: int32| => int_mul(int_mul(x/2, y/0), z/1) in
   let mtmp0 = string_println(int_to_string(f/3(2))) in
   string_println(int_to_string(f/3(3)))
 }
 
-fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
+fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
   f/4(v/5)
 }
 
 fn main() -> unit {
   let base/6 = 5 in
-  let add_base/8 = |x/7: int| => int_add(x/7, base/6) in
+  let add_base/8 = |x/7: int32| => int_add(x/7, base/6) in
   let result/9 = add_base/8(7) in
-  let printer/13 = |prefix/10: string, value/11: int| => let message/12 = string_add(prefix/10, int_to_string(value/11)) in
+  let printer/13 = |prefix/10: string, value/11: int32| => let message/12 = string_add(prefix/10, int_to_string(value/11)) in
   string_println(message/12) in
   let mtmp1 = printer/13("result: ", result/9) in
-  let unused/15 = |y/14: int| => int_add(y/14, result/9) in
-  let no_capture/17 = |z/16: int| => int_mul(z/16, 2) in
+  let unused/15 = |y/14: int32| => int_add(y/14, result/9) in
+  let no_capture/17 = |z/16: int32| => int_mul(z/16, 2) in
   let doubled/18 = no_capture/17(3) in
   let mtmp2 = string_println(int_to_string(doubled/18)) in
   let mtmp3 = test() in

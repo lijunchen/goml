@@ -1,8 +1,8 @@
-fn classify(x/0: int) -> string {
-  if (int_less : (int, int) -> bool)((x/0 : int), 0) {
+fn classify(x/0: int32) -> string {
+  if (int_less : (int32, int32) -> bool)((x/0 : int32), 0) {
       "negative"
   } else {
-      if (int_less : (int, int) -> bool)(0, (x/0 : int)) {
+      if (int_less : (int32, int32) -> bool)(0, (x/0 : int32)) {
           "positive"
       } else {
           "zero"
@@ -10,15 +10,15 @@ fn classify(x/0: int) -> string {
   }
 }
 
-fn triangle_type(a/1: int, b/2: int, c/3: int) -> string {
-  if (int_less : (int, int) -> bool)((a/1 : int), (b/2 : int)) {
-      if (int_less : (int, int) -> bool)((b/2 : int), (c/3 : int)) {
+fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
+  if (int_less : (int32, int32) -> bool)((a/1 : int32), (b/2 : int32)) {
+      if (int_less : (int32, int32) -> bool)((b/2 : int32), (c/3 : int32)) {
           "ascending"
       } else {
           "peak"
       }
   } else {
-      if (int_less : (int, int) -> bool)((a/1 : int), (c/3 : int)) {
+      if (int_less : (int32, int32) -> bool)((a/1 : int32), (c/3 : int32)) {
           "valley"
       } else {
           "flat"
@@ -27,12 +27,12 @@ fn triangle_type(a/1: int, b/2: int, c/3: int) -> string {
 }
 
 fn main() -> unit {
-  let first/4: string = (classify : (int) -> string)(-42) in
-  let second/5: string = (classify : (int) -> string)(0) in
-  let third/6: string = (classify : (int) -> string)(17) in
-  let shape1/7: string = (triangle_type : (int, int, int) -> string)(1, 2, 3) in
-  let shape2/8: string = (triangle_type : (int, int, int) -> string)(3, 2, 1) in
-  let shape3/9: string = (triangle_type : (int, int, int) -> string)(2, 3, 2) in
+  let first/4: string = (classify : (int32) -> string)(-42) in
+  let second/5: string = (classify : (int32) -> string)(0) in
+  let third/6: string = (classify : (int32) -> string)(17) in
+  let shape1/7: string = (triangle_type : (int32, int32, int32) -> string)(1, 2, 3) in
+  let shape2/8: string = (triangle_type : (int32, int32, int32) -> string)(3, 2, 1) in
+  let shape3/9: string = (triangle_type : (int32, int32, int32) -> string)(2, 3, 2) in
   let _ : unit = (string_println : (string) -> unit)((first/4 : string)) in
   let _ : unit = (string_println : (string) -> unit)((second/5 : string)) in
   let _ : unit = (string_println : (string) -> unit)((third/6 : string)) in

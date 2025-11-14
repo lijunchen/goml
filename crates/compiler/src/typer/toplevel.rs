@@ -358,7 +358,6 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
         tast::Ty::TUnit => tast::Ty::TUnit,
         tast::Ty::TBool => tast::Ty::TBool,
-        tast::Ty::TInt => tast::Ty::TInt,
         tast::Ty::TInt8 => tast::Ty::TInt8,
         tast::Ty::TInt16 => tast::Ty::TInt16,
         tast::Ty::TInt32 => tast::Ty::TInt32,

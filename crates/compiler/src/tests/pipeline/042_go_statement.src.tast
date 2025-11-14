@@ -1,12 +1,12 @@
-fn child(signal/0: Ref[int]) -> unit {
-  (ref_set : (Ref[int], int) -> unit)((signal/0 : Ref[int]), 1)
+fn child(signal/0: Ref[int32]) -> unit {
+  (ref_set : (Ref[int32], int32) -> unit)((signal/0 : Ref[int32]), 1)
 }
 
 fn main() -> unit {
-  let signal/1: Ref[int] = (ref : (int) -> Ref[int])(0) in
-  let _ : unit = (spawn : (() -> unit) -> unit)(|| => let _ : unit = (child : (Ref[int]) -> unit)((signal/1 : Ref[int])) in
+  let signal/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
+  let _ : unit = (spawn : (() -> unit) -> unit)(|| => let _ : unit = (child : (Ref[int32]) -> unit)((signal/1 : Ref[int32])) in
   ()) in
-  let _ : unit = while (int_less : (int, int) -> bool)((ref_get : (Ref[int]) -> int)((signal/1 : Ref[int])), 1) {
+  let _ : unit = while (int_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((signal/1 : Ref[int32])), 1) {
       ()
   } in
   let _ : unit = (string_println : (string) -> unit)("main") in

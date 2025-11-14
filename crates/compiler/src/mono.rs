@@ -22,7 +22,6 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             Ty::TVar(..) => false,
             Ty::TUnit
             | Ty::TBool
-            | Ty::TInt
             | Ty::TInt8
             | Ty::TInt16
             | Ty::TInt32
@@ -87,7 +86,6 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             Ty::TVar(..) => ty.clone(),
             Ty::TUnit
             | Ty::TBool
-            | Ty::TInt
             | Ty::TInt8
             | Ty::TInt16
             | Ty::TInt32
@@ -166,7 +164,6 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             }
             (Ty::TUnit, Ty::TUnit)
             | (Ty::TBool, Ty::TBool)
-            | (Ty::TInt, Ty::TInt)
             | (Ty::TInt8, Ty::TInt8)
             | (Ty::TInt16, Ty::TInt16)
             | (Ty::TInt32, Ty::TInt32)

@@ -8,7 +8,7 @@ func unit_to_string(x struct{}) string {
     return "()"
 }
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -18,37 +18,37 @@ func string_println(s string) struct{} {
 }
 
 type Point struct {
-    x int
-    y int
+    x int32
+    y int32
 }
 
-type Wrapper__int struct {
-    value int
+type Wrapper__int32 struct {
+    value int32
 }
 
 type Wrapper__unit struct {
     value struct{}
 }
 
-type Shape__int interface {
-    isShape__int()
+type Shape__int32 interface {
+    isShape__int32()
 }
 
-type Shape__int_Dot struct {
+type Shape__int32_Dot struct {
     _0 Point
 }
 
-func (_ Shape__int_Dot) isShape__int() {}
+func (_ Shape__int32_Dot) isShape__int32() {}
 
-type Shape__int_Wrapped struct {
-    _0 Wrapper__int
+type Shape__int32_Wrapped struct {
+    _0 Wrapper__int32
 }
 
-func (_ Shape__int_Wrapped) isShape__int() {}
+func (_ Shape__int32_Wrapped) isShape__int32() {}
 
-type Shape__int_Origin struct {}
+type Shape__int32_Origin struct {}
 
-func (_ Shape__int_Origin) isShape__int() {}
+func (_ Shape__int32_Origin) isShape__int32() {}
 
 type Shape__unit interface {
     isShape__unit()
@@ -70,23 +70,23 @@ type Shape__unit_Origin struct {}
 
 func (_ Shape__unit_Origin) isShape__unit() {}
 
-func bounce_int(shape__0 Shape__int) Shape__int {
-    var ret57 Shape__int
+func bounce_int(shape__0 Shape__int32) Shape__int32 {
+    var ret57 Shape__int32
     switch shape__0 := shape__0.(type) {
-    case Shape__int_Dot:
+    case Shape__int32_Dot:
         var x0 Point = shape__0._0
         var point__1 Point = x0
-        ret57 = Shape__int_Dot{
+        ret57 = Shape__int32_Dot{
             _0: point__1,
         }
-    case Shape__int_Wrapped:
-        var x1 Wrapper__int = shape__0._0
-        var inner__2 Wrapper__int = x1
-        ret57 = Shape__int_Wrapped{
+    case Shape__int32_Wrapped:
+        var x1 Wrapper__int32 = shape__0._0
+        var inner__2 Wrapper__int32 = x1
+        ret57 = Shape__int32_Wrapped{
             _0: inner__2,
         }
-    case Shape__int_Origin:
-        ret57 = Shape__int_Origin{}
+    case Shape__int32_Origin:
+        ret57 = Shape__int32_Origin{}
     }
     return ret57
 }
@@ -94,10 +94,10 @@ func bounce_int(shape__0 Shape__int) Shape__int {
 func point_to_string(point__8 Point) string {
     var ret60 string
     var mtmp4 Point = point__8
-    var x5 int = mtmp4.x
-    var x6 int = mtmp4.y
-    var y__10 int = x6
-    var x__9 int = x5
+    var x5 int32 = mtmp4.x
+    var x6 int32 = mtmp4.y
+    var y__10 int32 = x6
+    var x__9 int32 = x5
     var t25 string = int_to_string(x__9)
     var with_x__11 string = "Point { x: " + t25
     var with_y_label__12 string = with_x__11 + ", y: "
@@ -107,11 +107,11 @@ func point_to_string(point__8 Point) string {
     return ret60
 }
 
-func wrapper_int_to_string(wrapper__14 Wrapper__int) string {
+func wrapper_int_to_string(wrapper__14 Wrapper__int32) string {
     var ret61 string
-    var mtmp7 Wrapper__int = wrapper__14
-    var x8 int = mtmp7.value
-    var value__15 int = x8
+    var mtmp7 Wrapper__int32 = wrapper__14
+    var x8 int32 = mtmp7.value
+    var value__15 int32 = x8
     var t27 string = int_to_string(value__15)
     var prefix__16 string = "Wrapper[int] { value: " + t27
     ret61 = prefix__16 + " }"
@@ -129,22 +129,22 @@ func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
     return ret62
 }
 
-func shape_int_to_string(shape__20 Shape__int) string {
+func shape_int_to_string(shape__20 Shape__int32) string {
     var ret63 string
     switch shape__20 := shape__20.(type) {
-    case Shape__int_Dot:
+    case Shape__int32_Dot:
         var x11 Point = shape__20._0
         var point__21 Point = x11
         var t29 string = point_to_string(point__21)
         var prefix__22 string = "Shape::Dot(" + t29
         ret63 = prefix__22 + ")"
-    case Shape__int_Wrapped:
-        var x12 Wrapper__int = shape__20._0
-        var wrapper__23 Wrapper__int = x12
+    case Shape__int32_Wrapped:
+        var x12 Wrapper__int32 = shape__20._0
+        var wrapper__23 Wrapper__int32 = x12
         var t30 string = wrapper_int_to_string(wrapper__23)
         var prefix__24 string = "Shape::Wrapped(" + t30
         ret63 = prefix__24 + ")"
-    case Shape__int_Origin:
+    case Shape__int32_Origin:
         ret63 = "Shape::Origin"
     }
     return ret63
@@ -179,7 +179,7 @@ func main0() struct{} {
     }
     var t33 string = point_to_string(t34)
     string_println(t33)
-    var t36 Wrapper__int = Wrapper__int{
+    var t36 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
     var t35 string = wrapper_int_to_string(t36)
@@ -189,21 +189,21 @@ func main0() struct{} {
     }
     var t37 string = wrapper_unit_to_string(t38)
     string_println(t37)
-    var t39 Shape__int = Shape__int_Origin{}
-    var bounced_origin__30 Shape__int = bounce_int(t39)
+    var t39 Shape__int32 = Shape__int32_Origin{}
+    var bounced_origin__30 Shape__int32 = bounce_int(t39)
     var t42 Point = Point{
         x: 3,
         y: 4,
     }
-    var t41 Shape__int = Shape__int_Dot{
+    var t41 Shape__int32 = Shape__int32_Dot{
         _0: t42,
     }
     var t40 string = shape_int_to_string(t41)
     string_println(t40)
-    var t45 Wrapper__int = Wrapper__int{
+    var t45 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t44 Shape__int = Shape__int_Wrapped{
+    var t44 Shape__int32 = Shape__int32_Wrapped{
         _0: t45,
     }
     var t43 string = shape_int_to_string(t44)
@@ -230,21 +230,21 @@ func main0() struct{} {
     var t54 Shape__unit = Shape__unit_Origin{}
     var t53 string = shape_unit_to_string(t54)
     string_println(t53)
-    var t56 Shape__int = Shape__int_Origin{}
-    var t55 Shape__int = bounce_int(t56)
-    describe__T_int(t55)
+    var t56 Shape__int32 = Shape__int32_Origin{}
+    var t55 Shape__int32 = bounce_int(t56)
+    describe__T_int32(t55)
     ret65 = string_println("struct enums!")
     return ret65
 }
 
-func describe__T_int(shape__7 Shape__int) int {
-    var ret66 int
+func describe__T_int32(shape__7 Shape__int32) int32 {
+    var ret66 int32
     switch shape__7.(type) {
-    case Shape__int_Dot:
+    case Shape__int32_Dot:
         ret66 = 1
-    case Shape__int_Wrapped:
+    case Shape__int32_Wrapped:
         ret66 = 2
-    case Shape__int_Origin:
+    case Shape__int32_Origin:
         ret66 = 0
     }
     return ret66

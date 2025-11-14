@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -14,23 +14,23 @@ func string_println(s string) struct{} {
 }
 
 type Point struct {
-    x int
-    y int
+    x int32
+    y int32
 }
 
-type Option__int interface {
-    isOption__int()
+type Option__int32 interface {
+    isOption__int32()
 }
 
 type Some struct {
-    _0 int
+    _0 int32
 }
 
-func (_ Some) isOption__int() {}
+func (_ Some) isOption__int32() {}
 
 type None struct {}
 
-func (_ None) isOption__int() {}
+func (_ None) isOption__int32() {}
 
 func impl_Display_Point_show(self__0 Point) string {
     var ret9 string
@@ -38,12 +38,12 @@ func impl_Display_Point_show(self__0 Point) string {
     return ret9
 }
 
-func impl_Display_Option_int_show(self__1 Option__int) string {
+func impl_Display_Option_int32_show(self__1 Option__int32) string {
     var ret10 string
     switch self__1 := self__1.(type) {
     case Some:
-        var x0 int = self__1._0
-        var value__2 int = x0
+        var x0 int32 = self__1._0
+        var value__2 int32 = x0
         var t5 string = int_to_string(value__2)
         var t4 string = t5 + ")"
         ret10 = "Some(" + t4
@@ -53,8 +53,8 @@ func impl_Display_Option_int_show(self__1 Option__int) string {
     return ret10
 }
 
-func make_optional(flag__3 bool) Option__int {
-    var ret11 Option__int
+func make_optional(flag__3 bool) Option__int32 {
+    var ret11 Option__int32
     if flag__3 {
         ret11 = Some{
             _0: 42,
@@ -71,13 +71,13 @@ func main0() struct{} {
         x: 1,
         y: 2,
     }
-    var some_number__5 Option__int = make_optional(true)
-    var none_number__6 Option__int = make_optional(false)
+    var some_number__5 Option__int32 = make_optional(true)
+    var none_number__6 Option__int32 = make_optional(false)
     var t6 string = impl_Display_Point_show(point__4)
     string_println(t6)
-    var t7 string = impl_Display_Option_int_show(some_number__5)
+    var t7 string = impl_Display_Option_int32_show(some_number__5)
     string_println(t7)
-    var t8 string = impl_Display_Option_int_show(none_number__6)
+    var t8 string = impl_Display_Option_int32_show(none_number__6)
     string_println(t8)
     ret12 = struct{}{}
     return ret12

@@ -1,34 +1,34 @@
 fn test() {
     let y = 3 in
     let z = 5 in
-    let f = |x: int| x * y * z in
+    let f = |x: int32| x * y * z in
     let _ = string_println(int_to_string(f(2))) in
     string_println(int_to_string(f(3)))
 }
 
-fn call_int_id(f: (int) -> int, v: int) -> int {
+fn call_int_id(f: (int32) -> int32, v: int32) -> int32 {
     f(v)
 }
 
 enum IntList {
     Nil,
-    Cons(int, IntList)
+    Cons(int32, IntList)
 }
 
 struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 
 fn main() {
     let base = 5 in
-    let add_base = |x: int| x + base in
+    let add_base = |x: int32| x + base in
     let result = add_base(7) in
-    let printer = |prefix: string, value: int| let message = string_add(prefix, int_to_string(value)) in
+    let printer = |prefix: string, value: int32| let message = string_add(prefix, int_to_string(value)) in
     string_println(message) in
     let _ = printer("result: ", result) in
-    let unused = |y: int| y + result in
-    let no_capture = |z: int| z * 2 in
+    let unused = |y: int32| y + result in
+    let no_capture = |z: int32| z * 2 in
     let doubled = no_capture(3) in
     let _ = string_println(int_to_string(doubled)) in
     let _ = test() in

@@ -1,11 +1,11 @@
-fn int_list_length(xs/2: List__int) -> int {
+fn int_list_length(xs/2: List__int32) -> int32 {
   match xs/2 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x2 = List__int::Cons._0(xs/2) in
-      let x3 = List__int::Cons._1(xs/2) in
+      let x2 = List__int32::Cons._0(xs/2) in
+      let x3 = List__int32::Cons._1(xs/2) in
       let tail/3 = x3 in
       let t10 = int_list_length(tail/3) in
       int_add(1, t10)
@@ -15,20 +15,20 @@ fn int_list_length(xs/2: List__int) -> int {
 
 fn main() -> unit {
   let t11 = Tag_0 in
-  let x/4 = List__int::Cons(1, t11) in
-  let length/5 = list_length__T_int(x/4) in
+  let x/4 = List__int32::Cons(1, t11) in
+  let length/5 = list_length__T_int32(x/4) in
   let t12 = int_to_string(length/5) in
   let mtmp4 = string_println(t12) in
   let t14 = Tag_0 in
-  let t13 = List__int::Cons(2, t14) in
-  let x/6 = List__int::Cons(1, t13) in
-  let length/7 = list_length__T_int(x/6) in
+  let t13 = List__int32::Cons(2, t14) in
+  let x/6 = List__int32::Cons(1, t13) in
+  let length/7 = list_length__T_int32(x/6) in
   let t15 = int_to_string(length/7) in
   let mtmp5 = string_println(t15) in
   let t18 = Tag_0 in
-  let t17 = List__int::Cons(2, t18) in
-  let t16 = List__int::Cons(1, t17) in
-  let x/8 = List__int::Cons(0, t16) in
+  let t17 = List__int32::Cons(2, t18) in
+  let t16 = List__int32::Cons(1, t17) in
+  let x/8 = List__int32::Cons(0, t16) in
   let length/9 = int_list_length(x/8) in
   let t19 = int_to_string(length/9) in
   let mtmp6 = string_println(t19) in
@@ -52,22 +52,22 @@ fn main() -> unit {
   ()
 }
 
-fn list_length__T_int(xs/0: List__int) -> int {
+fn list_length__T_int32(xs/0: List__int32) -> int32 {
   match xs/0 {
     Tag_0 => {
       0
     },
     Tag_1 => {
-      let x0 = List__int::Cons._0(xs/0) in
-      let x1 = List__int::Cons._1(xs/0) in
+      let x0 = List__int32::Cons._0(xs/0) in
+      let x1 = List__int32::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t28 = list_length__T_int(tail/1) in
+      let t28 = list_length__T_int32(tail/1) in
       int_add(1, t28)
     },
   }
 }
 
-fn list_length__T_unit(xs/0: List__unit) -> int {
+fn list_length__T_unit(xs/0: List__unit) -> int32 {
   match xs/0 {
     Tag_0 => {
       0
@@ -82,7 +82,7 @@ fn list_length__T_unit(xs/0: List__unit) -> int {
   }
 }
 
-fn list_length__T_bool(xs/0: List__bool) -> int {
+fn list_length__T_bool(xs/0: List__bool) -> int32 {
   match xs/0 {
     Tag_0 => {
       0

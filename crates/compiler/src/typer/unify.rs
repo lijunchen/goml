@@ -17,7 +17,6 @@ fn occurs(typer: &mut Typer, _genv: &GlobalTypeEnv, var: TypeVar, ty: &tast::Ty)
         }
         tast::Ty::TUnit
         | tast::Ty::TBool
-        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -78,7 +77,6 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         tast::Ty::TVar(_)
         | tast::Ty::TUnit
         | tast::Ty::TBool
-        | tast::Ty::TInt
         | tast::Ty::TInt8
         | tast::Ty::TInt16
         | tast::Ty::TInt32
@@ -174,7 +172,6 @@ impl Typer {
                 tast::Ty::TVar(..) => false,
                 tast::Ty::TUnit
                 | tast::Ty::TBool
-                | tast::Ty::TInt
                 | tast::Ty::TInt8
                 | tast::Ty::TInt16
                 | tast::Ty::TInt32
@@ -335,7 +332,6 @@ impl Typer {
             }
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TBool => tast::Ty::TBool,
-            tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,
@@ -400,10 +396,9 @@ impl Typer {
 
             (tast::Ty::TUnit, tast::Ty::TUnit) => {}
             (tast::Ty::TBool, tast::Ty::TBool) => {}
-            (tast::Ty::TInt, tast::Ty::TInt) => {}
+            (tast::Ty::TInt32, tast::Ty::TInt32) => {}
             (tast::Ty::TInt8, tast::Ty::TInt8) => {}
             (tast::Ty::TInt16, tast::Ty::TInt16) => {}
-            (tast::Ty::TInt32, tast::Ty::TInt32) => {}
             (tast::Ty::TInt64, tast::Ty::TInt64) => {}
             (tast::Ty::TUint8, tast::Ty::TUint8) => {}
             (tast::Ty::TUint16, tast::Ty::TUint16) => {}
@@ -545,7 +540,6 @@ impl Typer {
             tast::Ty::TVar(_) => ty.clone(),
             tast::Ty::TUnit => ty.clone(),
             tast::Ty::TBool => ty.clone(),
-            tast::Ty::TInt => ty.clone(),
             tast::Ty::TInt8 => ty.clone(),
             tast::Ty::TInt16 => ty.clone(),
             tast::Ty::TInt32 => ty.clone(),
@@ -616,7 +610,6 @@ impl Typer {
             }
             tast::Ty::TUnit => tast::Ty::TUnit,
             tast::Ty::TBool => tast::Ty::TBool,
-            tast::Ty::TInt => tast::Ty::TInt,
             tast::Ty::TInt8 => tast::Ty::TInt8,
             tast::Ty::TInt16 => tast::Ty::TInt16,
             tast::Ty::TInt32 => tast::Ty::TInt32,

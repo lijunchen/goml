@@ -29,11 +29,11 @@ impl Typer {
             },
             ast::Expr::EInt { value } => match self.parse_integer_literal(value) {
                 Some(parsed) => {
-                    let ty = tast::Ty::TInt;
+                    let ty = tast::Ty::TInt32;
                     self.ensure_integer_literal_fits(parsed, &ty);
                     int_literal_expr(parsed, ty)
                 }
-                None => int_literal_expr(0, tast::Ty::TInt),
+                None => int_literal_expr(0, tast::Ty::TInt32),
             },
             ast::Expr::EFloat { value } => {
                 self.ensure_float_literal_fits(*value, &tast::Ty::TFloat64);
@@ -109,7 +109,7 @@ impl Typer {
                                 ty: expected.clone(),
                             }
                         } else {
-                            let ty = tast::Ty::TInt;
+                            let ty = tast::Ty::TInt32;
                             self.ensure_integer_literal_fits(parsed, &ty);
                             int_literal_expr(parsed, ty)
                         }
@@ -123,7 +123,7 @@ impl Typer {
                                 ty: expected.clone(),
                             }
                         } else {
-                            int_literal_expr(0, tast::Ty::TInt)
+                            int_literal_expr(0, tast::Ty::TInt32)
                         }
                     }
                 }
@@ -868,7 +868,7 @@ impl Typer {
                 let target_ty = if is_numeric_ty(&expr_ty) {
                     expr_ty.clone()
                 } else {
-                    tast::Ty::TInt
+                    tast::Ty::TInt32
                 };
                 self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
                 Some(tast::Expr::EUnary {
@@ -1143,7 +1143,7 @@ impl Typer {
     }
 
     fn check_pat_int(&mut self, value: &str, ty: &tast::Ty) -> tast::Pat {
-        let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt);
+        let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
         let parsed = self.parse_integer_literal(value).unwrap_or(0);
         self.ensure_integer_literal_fits(parsed, &target_ty);
         self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
@@ -1357,7 +1357,6 @@ fn integer_bounds(ty: &tast::Ty) -> Option<(i128, i128)> {
         tast::Ty::TInt8 => Some((i8::MIN as i128, i8::MAX as i128)),
         tast::Ty::TInt16 => Some((i16::MIN as i128, i16::MAX as i128)),
         tast::Ty::TInt32 => Some((i32::MIN as i128, i32::MAX as i128)),
-        tast::Ty::TInt => Some((i32::MIN as i128, i32::MAX as i128)),
         tast::Ty::TInt64 => Some((i64::MIN as i128, i64::MAX as i128)),
         tast::Ty::TUint8 => Some((0, u8::MAX as i128)),
         tast::Ty::TUint16 => Some((0, u16::MAX as i128)),
@@ -1373,7 +1372,6 @@ fn integer_type_name(ty: &tast::Ty) -> Option<&'static str> {
         tast::Ty::TInt16 => Some("int16"),
         tast::Ty::TInt32 => Some("int32"),
         tast::Ty::TInt64 => Some("int64"),
-        tast::Ty::TInt => Some("int"),
         tast::Ty::TUint8 => Some("uint8"),
         tast::Ty::TUint16 => Some("uint16"),
         tast::Ty::TUint32 => Some("uint32"),

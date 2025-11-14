@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -14,23 +14,23 @@ func string_println(s string) struct{} {
 }
 
 type Point struct {
-    x int
-    y int
+    x int32
+    y int32
 }
 
 type closure_env_f_0 struct {
-    y_0 int
-    z_1 int
+    y_0 int32
+    z_1 int32
 }
 
 type closure_env_add_base_1 struct {
-    base_0 int
+    base_0 int32
 }
 
 type closure_env_printer_2 struct {}
 
 type closure_env_unused_3 struct {
-    result_0 int
+    result_0 int32
 }
 
 type closure_env_no_capture_4 struct {}
@@ -49,7 +49,7 @@ type Nil struct {}
 func (_ Nil) isIntList() {}
 
 type Cons struct {
-    _0 int
+    _0 int32
     _1 IntList
 }
 
@@ -57,16 +57,16 @@ func (_ Cons) isIntList() {}
 
 func test() struct{} {
     var ret40 struct{}
-    var y__0 int = 3
-    var z__1 int = 5
+    var y__0 int32 = 3
+    var z__1 int32 = 5
     var f__3 closure_env_f_0 = closure_env_f_0{
         y_0: y__0,
         z_1: z__1,
     }
-    var t24 int = __closure_apply11(f__3, 2)
+    var t24 int32 = __closure_apply11(f__3, 2)
     var t23 string = int_to_string(t24)
     string_println(t23)
-    var t26 int = __closure_apply11(f__3, 3)
+    var t26 int32 = __closure_apply11(f__3, 3)
     var t25 string = int_to_string(t26)
     ret40 = string_println(t25)
     return ret40
@@ -74,15 +74,15 @@ func test() struct{} {
 
 func main0() struct{} {
     var ret42 struct{}
-    var base__6 int = 5
+    var base__6 int32 = 5
     var add_base__8 closure_env_add_base_1 = closure_env_add_base_1{
         base_0: base__6,
     }
-    var result__9 int = __closure_apply13(add_base__8, 7)
+    var result__9 int32 = __closure_apply13(add_base__8, 7)
     var printer__13 closure_env_printer_2 = closure_env_printer_2{}
     __closure_apply15(printer__13, "result: ", result__9)
     var no_capture__17 closure_env_no_capture_4 = closure_env_no_capture_4{}
-    var doubled__18 int = __closure_apply19(no_capture__17, 3)
+    var doubled__18 int32 = __closure_apply19(no_capture__17, 3)
     var t27 string = int_to_string(doubled__18)
     string_println(t27)
     test()
@@ -112,23 +112,23 @@ func main0() struct{} {
     return ret42
 }
 
-func __closure_apply11(env12 closure_env_f_0, x__2 int) int {
-    var ret43 int
-    var y__0 int = env12.y_0
-    var z__1 int = env12.z_1
-    var t31 int = x__2 * y__0
+func __closure_apply11(env12 closure_env_f_0, x__2 int32) int32 {
+    var ret43 int32
+    var y__0 int32 = env12.y_0
+    var z__1 int32 = env12.z_1
+    var t31 int32 = x__2 * y__0
     ret43 = t31 * z__1
     return ret43
 }
 
-func __closure_apply13(env14 closure_env_add_base_1, x__7 int) int {
-    var ret44 int
-    var base__6 int = env14.base_0
+func __closure_apply13(env14 closure_env_add_base_1, x__7 int32) int32 {
+    var ret44 int32
+    var base__6 int32 = env14.base_0
     ret44 = x__7 + base__6
     return ret44
 }
 
-func __closure_apply15(env16 closure_env_printer_2, prefix__10 string, value__11 int) struct{} {
+func __closure_apply15(env16 closure_env_printer_2, prefix__10 string, value__11 int32) struct{} {
     var ret45 struct{}
     var t32 string = int_to_string(value__11)
     var message__12 string = prefix__10 + t32
@@ -136,8 +136,8 @@ func __closure_apply15(env16 closure_env_printer_2, prefix__10 string, value__11
     return ret45
 }
 
-func __closure_apply19(env20 closure_env_no_capture_4, z__16 int) int {
-    var ret47 int
+func __closure_apply19(env20 closure_env_no_capture_4, z__16 int32) int32 {
+    var ret47 int32
     ret47 = z__16 * 2
     return ret47
 }
@@ -150,14 +150,14 @@ func __closure_apply21(env22 closure_env_play_list_and_point_5) struct{} {
     case Nil:
         ret48 = string_println("Empty list")
     case Cons:
-        var x4 int = list123__19._0
-        var head__21 int = x4
+        var x4 int32 = list123__19._0
+        var head__21 int32 = x4
         var t33 string = int_to_string(head__21)
         string_println(t33)
-        var x7 int = point__20.x
-        var x8 int = point__20.y
-        var y__24 int = x8
-        var x__23 int = x7
+        var x7 int32 = point__20.x
+        var x8 int32 = point__20.y
+        var y__24 int32 = x8
+        var x__23 int32 = x7
         var t36 string = int_to_string(x__23)
         var t39 string = int_to_string(y__24)
         var t38 string = t39 + ")"

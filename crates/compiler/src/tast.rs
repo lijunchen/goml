@@ -124,7 +124,6 @@ pub enum Ty {
     TVar(TypeVar),
     TUnit,
     TBool,
-    TInt,
     TInt8,
     TInt16,
     TInt32,
@@ -151,7 +150,6 @@ impl std::fmt::Debug for Ty {
             Self::TVar(var) => write!(f, "TVar({})", var.0),
             Self::TUnit => write!(f, "TUnit"),
             Self::TBool => write!(f, "TBool"),
-            Self::TInt => write!(f, "TInt"),
             Self::TInt8 => write!(f, "TInt8"),
             Self::TInt16 => write!(f, "TInt16"),
             Self::TInt32 => write!(f, "TInt32"),
@@ -225,7 +223,7 @@ impl Prim {
             Ty::TInt16 => Prim::Int16 {
                 value: value as i16,
             },
-            Ty::TInt32 | Ty::TInt => Prim::Int32 {
+            Ty::TInt32 => Prim::Int32 {
                 value: value as i32,
             },
             Ty::TInt64 => Prim::Int64 {
@@ -265,7 +263,7 @@ impl Prim {
             Ty::TInt16 => Prim::Int16 {
                 value: self.into_signed_value() as i16,
             },
-            Ty::TInt32 | Ty::TInt => Prim::Int32 {
+            Ty::TInt32 => Prim::Int32 {
                 value: self.into_signed_value() as i32,
             },
             Ty::TInt64 => Prim::Int64 {

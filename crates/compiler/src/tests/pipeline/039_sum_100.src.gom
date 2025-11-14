@@ -4,7 +4,7 @@ import (
     "fmt"
 )
 
-func int_to_string(x int) string {
+func int_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -13,7 +13,7 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-func my_int_equal(x__0 int, y__1 int) bool {
+func my_int_equal(x__0 int32, y__1 int32) bool {
     var ret9 bool
     var t1 bool = x__0 < y__1
     var t0 bool = !t1
@@ -23,14 +23,14 @@ func my_int_equal(x__0 int, y__1 int) bool {
     return ret9
 }
 
-func sum(n__2 int) int {
-    var ret10 int
+func sum(n__2 int32) int32 {
+    var ret10 int32
     var t4 bool = my_int_equal(n__2, 1)
     if t4 {
         ret10 = 1
     } else {
-        var t6 int = n__2 - 1
-        var t5 int = sum(t6)
+        var t6 int32 = n__2 - 1
+        var t5 int32 = sum(t6)
         ret10 = n__2 + t5
     }
     return ret10
@@ -38,7 +38,7 @@ func sum(n__2 int) int {
 
 func main0() struct{} {
     var ret11 struct{}
-    var t8 int = sum(100)
+    var t8 int32 = sum(100)
     var t7 string = int_to_string(t8)
     ret11 = string_println(t7)
     return ret11

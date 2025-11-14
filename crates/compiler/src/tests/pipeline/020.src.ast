@@ -1,6 +1,6 @@
 struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 
 struct Wrapper[T] {
@@ -13,7 +13,7 @@ enum Shape[T] {
     Origin
 }
 
-fn bounce_int(shape: Shape[int]) -> Shape[int] {
+fn bounce_int(shape: Shape[int32]) -> Shape[int32] {
     match shape {
         Dot(point) => Dot(point),
         Wrapped(inner) => Wrapped(inner),
@@ -25,14 +25,14 @@ fn wrap_unit(value: Wrapper[unit]) -> Shape[unit] {
     Wrapped(value)
 }
 
-fn pick(flag: bool, point: Point, wrapper: Wrapper[int]) -> Shape[int] {
+fn pick(flag: bool, point: Point, wrapper: Wrapper[int32]) -> Shape[int32] {
     match flag {
         true => Dot(point),
         false => Wrapped(wrapper),
     }
 }
 
-fn describe(shape: Shape[T]) -> int {
+fn describe(shape: Shape[T]) -> int32 {
     match shape {
         Dot(_) => 1,
         Wrapped(_) => 2,
@@ -48,7 +48,7 @@ fn point_to_string(point: Point) -> string {
     string_add(with_y, " }")
 }
 
-fn wrapper_int_to_string(wrapper: Wrapper[int]) -> string {
+fn wrapper_int_to_string(wrapper: Wrapper[int32]) -> string {
     let Wrapper { value: value } = wrapper in
     let prefix = string_add("Wrapper[int] { value: ", int_to_string(value)) in
     string_add(prefix, " }")
@@ -60,7 +60,7 @@ fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
     string_add(prefix, " }")
 }
 
-fn shape_int_to_string(shape: Shape[int]) -> string {
+fn shape_int_to_string(shape: Shape[int32]) -> string {
     match shape {
         Dot(point) => let prefix = string_add("Shape::Dot(", point_to_string(point)) in
           string_add(prefix, ")"),

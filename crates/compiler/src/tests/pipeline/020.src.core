@@ -1,4 +1,4 @@
-fn bounce_int(shape/0: Shape[int]) -> Shape[int] {
+fn bounce_int(shape/0: Shape[int32]) -> Shape[int32] {
   match shape/0 {
     Shape::Dot(x0) => {
       let x0 = Shape::Dot._0(shape/0) in
@@ -20,7 +20,7 @@ fn wrap_unit(value/3: Wrapper[unit]) -> Shape[unit] {
   Shape::Wrapped(value/3)
 }
 
-fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper[int]) -> Shape[int] {
+fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper[int32]) -> Shape[int32] {
   match flag/4 {
     true => {
       Shape::Dot(point/5)
@@ -31,7 +31,7 @@ fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper[int]) -> Shape[int] {
   }
 }
 
-fn describe(shape/7: Shape[T]) -> int {
+fn describe(shape/7: Shape[T]) -> int32 {
   match shape/7 {
     Shape::Dot(x2) => {
       let x2 = Shape::Dot._0(shape/7) in
@@ -59,7 +59,7 @@ fn point_to_string(point/8: Point) -> string {
   string_add(with_y/13, " }")
 }
 
-fn wrapper_int_to_string(wrapper/14: Wrapper[int]) -> string {
+fn wrapper_int_to_string(wrapper/14: Wrapper[int32]) -> string {
   let mtmp7 = wrapper/14 in
   let x8 = Wrapper.value(mtmp7) in
   let value/15 = x8 in
@@ -75,7 +75,7 @@ fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
   string_add(prefix/19, " }")
 }
 
-fn shape_int_to_string(shape/20: Shape[int]) -> string {
+fn shape_int_to_string(shape/20: Shape[int32]) -> string {
   match shape/20 {
     Shape::Dot(x11) => {
       let x11 = Shape::Dot._0(shape/20) in

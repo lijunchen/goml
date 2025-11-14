@@ -1,34 +1,34 @@
 fn test() -> unit {
-  let y/0: int = 3 in
-  let z/1: int = 5 in
-  let f/3: (int) -> int = |x/2: int| => (x/2 : int) * (y/0 : int) * (z/1 : int) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((f/3 : (int) -> int)(2))) in
-  (string_println : (string) -> unit)((int_to_string : (int) -> string)((f/3 : (int) -> int)(3)))
+  let y/0: int32 = 3 in
+  let z/1: int32 = 5 in
+  let f/3: (int32) -> int32 = |x/2: int32| => (x/2 : int32) * (y/0 : int32) * (z/1 : int32) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((f/3 : (int32) -> int32)(2))) in
+  (string_println : (string) -> unit)((int_to_string : (int32) -> string)((f/3 : (int32) -> int32)(3)))
 }
 
-fn call_int_id(f/4: (int) -> int, v/5: int) -> int {
-  (f/4 : (int) -> int)((v/5 : int))
+fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
+  (f/4 : (int32) -> int32)((v/5 : int32))
 }
 
 fn main() -> unit {
-  let base/6: int = 5 in
-  let add_base/8: (int) -> int = |x/7: int| => (x/7 : int) + (base/6 : int) in
-  let result/9: int = (add_base/8 : (int) -> int)(7) in
-  let printer/13: (string, int) -> unit = |prefix/10: string, value/11: int| => let message/12: string = (string_add : (string, string) -> string)((prefix/10 : string), (int_to_string : (int) -> string)((value/11 : int))) in
+  let base/6: int32 = 5 in
+  let add_base/8: (int32) -> int32 = |x/7: int32| => (x/7 : int32) + (base/6 : int32) in
+  let result/9: int32 = (add_base/8 : (int32) -> int32)(7) in
+  let printer/13: (string, int32) -> unit = |prefix/10: string, value/11: int32| => let message/12: string = (string_add : (string, string) -> string)((prefix/10 : string), (int_to_string : (int32) -> string)((value/11 : int32))) in
   (string_println : (string) -> unit)((message/12 : string)) in
-  let _ : unit = (printer/13 : (string, int) -> unit)("result: ", (result/9 : int)) in
-  let unused/15: (int) -> int = |y/14: int| => (y/14 : int) + (result/9 : int) in
-  let no_capture/17: (int) -> int = |z/16: int| => (z/16 : int) * 2 in
-  let doubled/18: int = (no_capture/17 : (int) -> int)(3) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((doubled/18 : int))) in
+  let _ : unit = (printer/13 : (string, int32) -> unit)("result: ", (result/9 : int32)) in
+  let unused/15: (int32) -> int32 = |y/14: int32| => (y/14 : int32) + (result/9 : int32) in
+  let no_capture/17: (int32) -> int32 = |z/16: int32| => (z/16 : int32) * 2 in
+  let doubled/18: int32 = (no_capture/17 : (int32) -> int32)(3) in
+  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((doubled/18 : int32))) in
   let _ : unit = (test : () -> unit)() in
   let list123/19: IntList = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
   let point/20: Point = Point { x: 10, y: 20 } in
   let play_list_and_point/25: () -> unit = || => match (list123/19 : IntList) {
       IntList::Nil => (string_println : (string) -> unit)("Empty list"),
-      IntList::Cons(head/21: int, tail/22: IntList) => let _ : unit = (string_println : (string) -> unit)((int_to_string : (int) -> string)((head/21 : int))) in
+      IntList::Cons(head/21: int32, tail/22: IntList) => let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((head/21 : int32))) in
         match (point/20 : Point) {
-            Point { x: x/23: int, y: y/24: int } => let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("Point: (", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((x/23 : int)), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int_to_string : (int) -> string)((y/24 : int)), ")"))))) in
+            Point { x: x/23: int32, y: y/24: int32 } => let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("Point: (", (string_add : (string, string) -> string)((int_to_string : (int32) -> string)((x/23 : int32)), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int_to_string : (int32) -> string)((y/24 : int32)), ")"))))) in
               (),
         },
   } in
