@@ -1,4 +1,4 @@
-fn make_counter() -> (() -> int, () -> unit) {
+fn make_counter() -> (() -> int32, () -> unit) {
     let cell = ref(0);
     let next = || {
         let next = ref_get(cell) + 1;
@@ -22,9 +22,9 @@ fn main() {
     let new_counter = make_counter();
     let (new_next, _) = new_counter;
     let fourth = new_next();
-    let _ = string_println(int_to_string(first));
-    let _ = string_println(int_to_string(second));
-    let _ = string_println(int_to_string(third));
-    let _ = string_println(int_to_string(fourth));
+    let _ = string_println(int32_to_string(first));
+    let _ = string_println(int32_to_string(second));
+    let _ = string_println(int32_to_string(third));
+    let _ = string_println(int32_to_string(fourth));
     ()
 }

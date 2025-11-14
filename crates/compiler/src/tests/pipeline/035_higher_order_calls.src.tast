@@ -18,12 +18,12 @@ fn main() -> unit {
   let xs/3: [(int32) -> int32; 2] = [(double : (int32) -> int32), (increment : (int32) -> int32)] in
   let f/4: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 0) in
   let g/5: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 1) in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((g/5 : (int32) -> int32)((f/4 : (int32) -> int32)(10)))) in
+  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((g/5 : (int32) -> int32)((f/4 : (int32) -> int32)(10)))) in
   let chosen/6: (int32) -> int32 = (chooser : (bool) -> (int32) -> int32)(true) in
   let applied/7: int32 = (chosen/6 : (int32) -> int32)(5) in
   let direct/8: int32 = (chooser : (bool) -> (int32) -> int32)(false)(5) in
   let printer/9: (string) -> unit = (string_println : (string) -> unit) in
-  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int32) -> string)((applied/7 : int32))) in
-  let _ : unit = (printer/9 : (string) -> unit)((int_to_string : (int32) -> string)((direct/8 : int32))) in
+  let _ : unit = (printer/9 : (string) -> unit)((int32_to_string : (int32) -> string)((applied/7 : int32))) in
+  let _ : unit = (printer/9 : (string) -> unit)((int32_to_string : (int32) -> string)((direct/8 : int32))) in
   ()
 }

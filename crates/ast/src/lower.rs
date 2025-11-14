@@ -263,7 +263,6 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
     match node {
         cst::Type::UnitTy(_) => Some(ast::Ty::TUnit),
         cst::Type::BoolTy(_) => Some(ast::Ty::TBool),
-        cst::Type::IntTy(_) => Some(ast::Ty::TInt32),
         cst::Type::Int8Ty(_) => Some(ast::Ty::TInt8),
         cst::Type::Int16Ty(_) => Some(ast::Ty::TInt16),
         cst::Type::Int32Ty(_) => Some(ast::Ty::TInt32),
@@ -719,7 +718,7 @@ fn lower_expr_with_args(
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
-                    "Cannot apply arguments to int literal",
+                    "Cannot apply arguments to integer literal",
                 );
                 return None;
             }

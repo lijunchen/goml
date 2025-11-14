@@ -32,34 +32,6 @@ pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
     );
 
     funcs.insert(
-        "int_to_string".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32], tast::Ty::TString),
-    );
-    funcs.insert(
-        "int_neg".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int_add".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int_sub".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int_mul".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int_div".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int_less".to_string(),
-        make_fn_ty(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TBool),
-    );
-    funcs.insert(
         "int16_to_string".to_string(),
         make_fn_ty(vec![tast::Ty::TInt16], tast::Ty::TString),
     );

@@ -26,7 +26,6 @@ fn ty_contains_type_param(ty: &tast::Ty) -> bool {
 
 // unit_to_string(x : struct{}) string
 // bool_to_string(x : bool) string
-// int_to_string(x : int) string
 // print(s : string) struct{}
 // println(s : string) struct{}
 // missing(s : string) struct{}
@@ -43,7 +42,6 @@ pub fn make_runtime() -> Vec<goast::Item> {
         }),
         Item::Fn(unit_to_string()),
         Item::Fn(bool_to_string()),
-        Item::Fn(int_to_string()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
@@ -338,10 +336,6 @@ fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
             }],
         },
     }
-}
-
-fn int_to_string() -> goast::Fn {
-    to_string_fn("int_to_string", goty::GoType::TInt32)
 }
 
 fn int8_to_string() -> goast::Fn {

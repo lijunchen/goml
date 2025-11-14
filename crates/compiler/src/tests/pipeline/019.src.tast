@@ -26,36 +26,36 @@ fn get_y(p/10: Point) -> int32 {
   (y/12 : int32)
 }
 
-fn point_to_string(p/13: Point) -> string {
+fn point32_to_string(p/13: Point) -> string {
   let Point { x: x/14: int32, y: y/15: int32 } = (p/13 : Point) in
-  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int32) -> string)((x/14 : int32))), (string_add : (string, string) -> string)(", y: ", (int_to_string : (int32) -> string)((y/15 : int32)))), "}")
+  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/14 : int32))), (string_add : (string, string) -> string)(", y: ", (int32_to_string : (int32) -> string)((y/15 : int32)))), "}")
 }
 
-fn point_to_string2(p/16: Point) -> string {
+fn point32_to_string2(p/16: Point) -> string {
   let Point { x: x/17: int32, y: y/18: int32 } = (p/16 : Point) in
-  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int32) -> string)((x/17 : int32))), (string_add : (string, string) -> string)(", y: ", (int_to_string : (int32) -> string)((y/18 : int32)))), "}")
+  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/17 : int32))), (string_add : (string, string) -> string)(", y: ", (int32_to_string : (int32) -> string)((y/18 : int32)))), "}")
 }
 
-fn point_to_string3(p/19: Point) -> string {
+fn point32_to_string3(p/19: Point) -> string {
   let Point { x: x/20: int32, y: y/21: int32 } = (p/19 : Point) in
-  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int32) -> string)((x/20 : int32))), (string_add : (string, string) -> string)(", y: ", (int_to_string : (int32) -> string)((y/21 : int32)))), "}")
+  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/20 : int32))), (string_add : (string, string) -> string)(", y: ", (int32_to_string : (int32) -> string)((y/21 : int32)))), "}")
 }
 
-fn point_to_string4(p/22: Point) -> string {
+fn point32_to_string4(p/22: Point) -> string {
   let Point { x: x/23: int32, y: y/24: int32 } = (p/22 : Point) in
-  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int_to_string : (int32) -> string)((x/23 : int32))), (string_add : (string, string) -> string)(", y: ", (int_to_string : (int32) -> string)((y/24 : int32)))), "}")
+  (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/23 : int32))), (string_add : (string, string) -> string)(", y: ", (int32_to_string : (int32) -> string)((y/24 : int32)))), "}")
 }
 
 fn main() -> unit {
   let start/25: Point = (make_point : () -> Point)() in
-  let _ : unit = (string_println : (string) -> unit)((point_to_string : (Point) -> string)((start/25 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point32_to_string : (Point) -> string)((start/25 : Point))) in
   let swapped/26: Point = (flip : (Point) -> Point)(Point { x: 1, y: 2 }) in
-  let _ : unit = (string_println : (string) -> unit)((point_to_string2 : (Point) -> string)((swapped/26 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point32_to_string2 : (Point) -> string)((swapped/26 : Point))) in
   let boxed/27: Wrapper[int32] = (wrap_int : (int32) -> Wrapper[int32])(3) in
   let point_box/28: Wrapper[Point] = Wrapper { value: (swapped/26 : Point) } in
   let a/29: Point = (x_add_1 : (Point) -> Point)((start/25 : Point)) in
-  let _ : unit = (string_println : (string) -> unit)((point_to_string3 : (Point) -> string)((a/29 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point32_to_string3 : (Point) -> string)((a/29 : Point))) in
   let a/30: Point = (flip : (Point) -> Point)((x_add_1 : (Point) -> Point)((start/25 : Point))) in
-  let _ : unit = (string_println : (string) -> unit)((point_to_string4 : (Point) -> string)((a/30 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((point32_to_string4 : (Point) -> string)((a/30 : Point))) in
   ()
 }

@@ -1,7 +1,7 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let i/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
-  let _ : (unit) = (while (int_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])), (limit/0 : int32)) {
+  let _ : (unit) = (while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])), (limit/0 : int32)) {
         let current/3: int32 = (ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) in
         let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32])) + (current/3 : int32)) in
         let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (current/3 : int32) + 1) in
@@ -14,7 +14,7 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let i/6: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let is_even/7: Ref[bool] = (ref : (bool) -> Ref[bool])(true) in
-  let _ : (unit) = (while (int_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])), (limit/4 : int32)) {
+  let _ : (unit) = (while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])), (limit/4 : int32)) {
         let current/8: int32 = (ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])) in
         let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/6 : Ref[int32]), (current/8 : int32) + 1) in
         let add_now/9: bool = (ref_get : (Ref[bool]) -> bool)((is_even/7 : Ref[bool])) in
@@ -31,7 +31,7 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
   let first/10: int32 = (sum_to : (int32) -> int32)(5) in
   let evens/11: int32 = (sum_even : (int32) -> int32)(6) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("sum_to(5)=", (int_to_string : (int32) -> string)((first/10 : int32)))) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("sum_even(6)=", (int_to_string : (int32) -> string)((evens/11 : int32)))) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("sum_to(5)=", (int32_to_string : (int32) -> string)((first/10 : int32)))) in
+  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("sum_even(6)=", (int32_to_string : (int32) -> string)((evens/11 : int32)))) in
   ()
 }

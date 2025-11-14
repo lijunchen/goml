@@ -1,15 +1,15 @@
 trait Arith {
-    fn add(Self, Self) -> int;
+    fn add(Self, Self) -> int32;
     fn less(Self, Self) -> bool;
 }
 
-impl Arith for int {
-    fn add(self: int, other: int) -> int {
+impl Arith for int32 {
+    fn add(self: int32, other: int32) -> int32 {
         self + other
     }
 
-    fn less(self: int, other: int) -> bool {
-        int_less(self, other)
+    fn less(self: int32, other: int32) -> bool {
+        int32_less(self, other)
     }
 }
 
@@ -17,9 +17,9 @@ trait ToString {
     fn to_string(Self) -> string;
 }
 
-impl ToString for int {
-    fn to_string(self: int) -> string {
-        int_to_string(self)
+impl ToString for int32 {
+    fn to_string(self: int32) -> string {
+        int32_to_string(self)
     }
 }
 
@@ -33,8 +33,8 @@ trait Output {
     fn output(Self) -> unit;
 }
 
-impl Output for int {
-    fn output(self: int) -> unit {
+impl Output for int32 {
+    fn output(self: int32) -> unit {
         string_println(to_string(self))
     }
 }

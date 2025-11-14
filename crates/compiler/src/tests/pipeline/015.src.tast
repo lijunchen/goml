@@ -3,7 +3,7 @@ fn print_int_list(xs/0: IntList) -> unit {
       IntList::Nil => (string_print : (string) -> unit)("Nil"),
       IntList::Cons(x/1: int32, xs/2: IntList) => let _ : unit = (string_print : (string) -> unit)("Cons") in
         let _ : unit = (string_print : (string) -> unit)("(") in
-        let _ : unit = (string_print : (string) -> unit)((int_to_string : (int32) -> string)((x/1 : int32))) in
+        let _ : unit = (string_print : (string) -> unit)((int32_to_string : (int32) -> string)((x/1 : int32))) in
         let _ : unit = (string_print : (string) -> unit)(", ") in
         let _ : unit = (print_int_list : (IntList) -> unit)((xs/2 : IntList)) in
         let _ : unit = (string_print : (string) -> unit)(")") in
@@ -31,7 +31,7 @@ fn int_list_length(xs/8: IntList) -> int32 {
 
 fn print_int_list_length(xs/10: IntList) -> unit {
   let _ : unit = (string_print : (string) -> unit)("Length: ") in
-  let _ : unit = (string_println : (string) -> unit)((int_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList)))) in
+  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList)))) in
   ()
 }
 

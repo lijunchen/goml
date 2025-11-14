@@ -1,5 +1,5 @@
 fn show_int(label/0: string, value/1: int32) -> unit {
-  let t13 = int_to_string(value/1) in
+  let t13 = int32_to_string(value/1) in
   let t12 = string_add(label/0, t13) in
   let mtmp0 = string_println(t12) in
   ()
@@ -14,10 +14,10 @@ fn show_bool(label/2: string, value/3: bool) -> unit {
 
 fn main() -> unit {
   let base/4 = 10 in
-  let sum/5 = int_add(base/4, 5) in
-  let diff/6 = int_sub(sum/5, 3) in
-  let prod/7 = int_mul(diff/6, 2) in
-  let quot/8 = int_div(prod/7, 4) in
+  let sum/5 = int32_add(base/4, 5) in
+  let diff/6 = int32_sub(sum/5, 3) in
+  let prod/7 = int32_mul(diff/6, 2) in
+  let quot/8 = int32_div(prod/7, 4) in
   let mtmp2 = show_int("sum=", sum/5) in
   let mtmp3 = show_int("diff=", diff/6) in
   let mtmp4 = show_int("prod=", prod/7) in
@@ -26,10 +26,10 @@ fn main() -> unit {
   let or_result/10 = bool_or(true, false) in
   let not_result/11 = bool_not(false) in
   let t17 = bool_not(and_result/9) in
-  let t20 = int_mul(prod/7, base/4) in
-  let t19 = int_add(sum/5, t20) in
-  let t21 = int_div(prod/7, 2) in
-  let mtmp6 = int_sub(t19, t21) in
+  let t20 = int32_mul(prod/7, base/4) in
+  let t19 = int32_add(sum/5, t20) in
+  let t21 = int32_div(prod/7, 2) in
+  let mtmp6 = int32_sub(t19, t21) in
   let t18 = match mtmp6 {
     0 => {
       false
@@ -37,10 +37,10 @@ fn main() -> unit {
     _ => true,
   } in
   let t16 = bool_and(t17, t18) in
-  let t25 = int_sub(diff/6, quot/8) in
-  let t24 = int_add(t25, base/4) in
-  let t26 = int_div(sum/5, 2) in
-  let mtmp7 = int_sub(t24, t26) in
+  let t25 = int32_sub(diff/6, quot/8) in
+  let t24 = int32_add(t25, base/4) in
+  let t26 = int32_div(sum/5, 2) in
+  let mtmp7 = int32_sub(t24, t26) in
   let t23 = match mtmp7 {
     0 => {
       false

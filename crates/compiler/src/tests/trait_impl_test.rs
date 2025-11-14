@@ -46,8 +46,8 @@ trait Display {
     fn show(Self) -> string;
 }
 
-impl Display for int {
-    fn show(self: int) -> bool { true }
+impl Display for int32 {
+    fn show(self: int32) -> bool { true }
 }
 "#;
 
@@ -61,7 +61,7 @@ trait Display {
     fn show(Self) -> string;
 }
 
-impl Display for int {
+impl Display for int32 {
     fn show(self: bool) -> string { "ok" }
 }
 "#;
@@ -76,8 +76,8 @@ trait Add {
     fn add(Self, Self) -> Self;
 }
 
-impl Add for int {
-    fn add(self: int) -> int { self }
+impl Add for int32 {
+    fn add(self: int32) -> int32 { self }
 }
 "#;
 
@@ -92,8 +92,8 @@ trait Display {
     fn debug(Self) -> string;
 }
 
-impl Display for int {
-    fn show(self: int) -> string { "value" }
+impl Display for int32 {
+    fn show(self: int32) -> string { "value" }
 }
 "#;
 
@@ -110,9 +110,9 @@ trait Display {
     fn show(Self) -> string;
 }
 
-impl Display for int {
-    fn show(self: int) -> string { "value" }
-    fn extra(self: int) -> string { "extra" }
+impl Display for int32 {
+    fn show(self: int32) -> string { "value" }
+    fn extra(self: int32) -> string { "extra" }
 }
 "#;
 
@@ -122,8 +122,8 @@ impl Display for int {
 #[test]
 fn impl_for_unknown_trait_reports_diagnostic() {
     let src = r#"
-impl Unknown for int {
-    fn mystery(self: int) -> int { self }
+impl Unknown for int32 {
+    fn mystery(self: int32) -> int32 { self }
 }
 "#;
 
@@ -133,7 +133,7 @@ impl Unknown for int {
 #[test]
 fn impl_for_struct_reports_missing_method_diagnostic() {
     let src = r#"
-struct Point { x: int, y: int }
+struct Point { x: int32, y: int32 }
 
 trait Display {
     fn show(Self) -> string;
@@ -164,8 +164,8 @@ trait Display {
     fn debug(Self) -> string;
 }
 
-impl Display for Option[int] {
-    fn show(self: Option[int]) -> string { "value" }
+impl Display for Option[int32] {
+    fn show(self: Option[int32]) -> string { "value" }
 }
 "#;
 

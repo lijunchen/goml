@@ -12,7 +12,7 @@ func bool_to_string(x bool) string {
     }
 }
 
-func int_to_string(x int32) string {
+func int32_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
@@ -185,7 +185,7 @@ func impl_Describe_Tracker_describe(self__0 Tracker) string {
     var flag__5 bool = ref_get__Ref_bool(toggled__3)
     var with_label__6 string = "Tracker(" + label__1
     var with_count_label__7 string = with_label__6 + ", count: "
-    var t38 string = int_to_string(current__4)
+    var t38 string = int32_to_string(current__4)
     var with_count__8 string = with_count_label__7 + t38
     var with_flag_label__9 string = with_count__8 + ", toggled: "
     var t40 string = bool_to_string(flag__5)
@@ -200,7 +200,7 @@ func impl_Describe_Record_int32_describe(self__10 Record__int32) string {
     case Record__int32_Value:
         var x4 int32 = self__10._0
         var value__11 int32 = x4
-        var t42 string = int_to_string(value__11)
+        var t42 string = int32_to_string(value__11)
         var t41 string = t42 + ")"
         ret65 = "Value(" + t41
     case Record__int32_Pair:
@@ -208,9 +208,9 @@ func impl_Describe_Record_int32_describe(self__10 Record__int32) string {
         var x6 int32 = self__10._1
         var after__13 int32 = x6
         var before__12 int32 = x5
-        var t43 string = int_to_string(before__12)
+        var t43 string = int32_to_string(before__12)
         var prefix__14 string = "Pair(" + t43
-        var t46 string = int_to_string(after__13)
+        var t46 string = int32_to_string(after__13)
         var t45 string = t46 + ")"
         var t44 string = ", " + t45
         ret65 = prefix__14 + t44
@@ -245,7 +245,7 @@ func impl_Describe_Record_string_describe(self__15 Record__string) string {
 
 func format_total(total__26 int32) string {
     var ret67 string
-    var t50 string = int_to_string(total__26)
+    var t50 string = int32_to_string(total__26)
     ret67 = "total: " + t50
     return ret67
 }
@@ -370,8 +370,8 @@ func main0() struct{} {
     case Maybe__string_None:
         summary__74 = "Snapshot: none"
     }
-    var t55 string = int_to_string(first_result__67)
-    var t56 string = int_to_string(second_result__68)
+    var t55 string = int32_to_string(first_result__67)
+    var t56 string = int32_to_string(second_result__68)
     var t54 Tuple2_string_string = Tuple2_string_string{
         _0: t55,
         _1: t56,

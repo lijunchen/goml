@@ -6,13 +6,13 @@ extern "go" "time" duration(nanos: int32) -> Duration
 
 fn main() -> unit {
   let counter/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
-  let _ : unit = (spawn : (() -> unit) -> unit)(|| => while (int_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])), 10) {
+  let _ : unit = (spawn : (() -> unit) -> unit)(|| => while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])), 10) {
       let _ : unit = (string_println : (string) -> unit)("hello") in
       let _ : unit = (sleep : (Duration) -> unit)((duration : (int32) -> Duration)(1000)) in
       let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((counter/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1) in
       ()
   }) in
-  while (int_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])), 10) {
+  while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])), 10) {
       ()
   }
 }

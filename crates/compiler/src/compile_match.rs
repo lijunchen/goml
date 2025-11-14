@@ -615,7 +615,7 @@ fn compile_int_case(
                     fallback_rows.push(row_clone.clone());
                     default_rows.push(row);
                 }
-                _ => unreachable!("expected int pattern"),
+                _ => unreachable!("expected int32 pattern"),
             }
         } else {
             let row_clone = row.clone();
@@ -841,7 +841,7 @@ fn builtin_function_for(
 ) -> Option<&'static str> {
     match op {
         BinaryOp::Add => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int_add"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_add"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_add"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_add"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_add"),
@@ -855,7 +855,7 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Sub => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int_sub"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_sub"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_sub"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_sub"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_sub"),
@@ -868,7 +868,7 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Mul => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int_mul"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_mul"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_mul"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_mul"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_mul"),
@@ -881,7 +881,7 @@ fn builtin_function_for(
             _ => None,
         },
         BinaryOp::Div => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int_div"),
+            (Ty::TInt32, Ty::TInt32) => Some("int32_div"),
             (Ty::TInt8, Ty::TInt8) => Some("int8_div"),
             (Ty::TInt16, Ty::TInt16) => Some("int16_div"),
             (Ty::TInt64, Ty::TInt64) => Some("int64_div"),
@@ -909,7 +909,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
         UnaryOp::Neg => match arg_ty {
             Ty::TInt8 => Some("int8_neg"),
             Ty::TInt16 => Some("int16_neg"),
-            Ty::TInt32 => Some("int_neg"),
+            Ty::TInt32 => Some("int32_neg"),
             Ty::TInt64 => Some("int64_neg"),
             Ty::TUint8 => Some("uint8_neg"),
             Ty::TUint16 => Some("uint16_neg"),

@@ -31,7 +31,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
 #[test]
 fn references_typecheck_and_collect() {
     let src = r#"
-fn main() -> int {
+fn main() -> int32 {
     let r = ref(1);
     let _ = ref_set(r, 2);
     ref_get(r)

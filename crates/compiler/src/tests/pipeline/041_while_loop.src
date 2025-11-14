@@ -1,7 +1,7 @@
-fn sum_to(limit: int) -> int {
+fn sum_to(limit: int32) -> int32 {
   let acc = ref(0);
   let i = ref(0);
-  let _ = (while int_less(ref_get(i), limit) {
+  let _ = (while int32_less(ref_get(i), limit) {
     let current = ref_get(i);
     let _ = ref_set(acc, ref_get(acc) + current);
     let _ = ref_set(i, current + 1);
@@ -10,11 +10,11 @@ fn sum_to(limit: int) -> int {
   ref_get(acc)
 }
 
-fn sum_even(limit: int) -> int {
+fn sum_even(limit: int32) -> int32 {
   let acc = ref(0);
   let i = ref(0);
   let is_even = ref(true);
-  let _ = (while int_less(ref_get(i), limit) {
+  let _ = (while int32_less(ref_get(i), limit) {
     let current = ref_get(i);
     let _ = ref_set(i, current + 1);
     let add_now = ref_get(is_even);
@@ -31,7 +31,7 @@ fn sum_even(limit: int) -> int {
 fn main() {
   let first = sum_to(5);
   let evens = sum_even(6);
-  let _ = string_println(string_add("sum_to(5)=", int_to_string(first)));
-  let _ = string_println(string_add("sum_even(6)=", int_to_string(evens)));
+  let _ = string_println(string_add("sum_to(5)=", int32_to_string(first)));
+  let _ = string_println(string_add("sum_even(6)=", int32_to_string(evens)));
   ()
 }

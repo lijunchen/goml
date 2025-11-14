@@ -8,7 +8,7 @@ fn print_int_list(xs: IntList) {
         Nil => string_print("Nil"),
         Cons(x, xs) => let _ = string_print("Cons") in
           let _ = string_print("(") in
-          let _ = string_print(int_to_string(x)) in
+          let _ = string_print(int32_to_string(x)) in
           let _ = string_print(", ") in
           let _ = print_int_list(xs) in
           let _ = string_print(")") in
@@ -36,7 +36,7 @@ fn int_list_length(xs: IntList) -> int32 {
 
 fn print_int_list_length(xs: IntList) {
     let _ = string_print("Length: ") in
-    let _ = string_println(int_to_string(int_list_length(xs))) in
+    let _ = string_println(int32_to_string(int_list_length(xs))) in
     ()
 }
 

@@ -18,38 +18,38 @@ fn check(input: &str, expect: Expect) {
 fn struct_with_fields() {
     check(
         r#"struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 "#,
         expect![[r#"
-            FILE@0..41
-              STRUCT@0..41
+            FILE@0..45
+              STRUCT@0..45
                 StructKeyword@0..6 "struct"
                 Whitespace@6..7 " "
                 Uident@7..12 "Point"
                 Whitespace@12..13 " "
                 LBrace@13..14 "{"
                 Whitespace@14..19 "\n    "
-                STRUCT_FIELD_LIST@19..41
-                  STRUCT_FIELD@19..25
+                STRUCT_FIELD_LIST@19..45
+                  STRUCT_FIELD@19..27
                     Lident@19..20 "x"
                     Colon@20..21 ":"
                     Whitespace@21..22 " "
-                    TYPE_INT@22..25
-                      IntKeyword@22..25 "int"
-                  Comma@25..26 ","
-                  Whitespace@26..31 "\n    "
-                  STRUCT_FIELD@31..37
-                    Lident@31..32 "y"
-                    Colon@32..33 ":"
-                    Whitespace@33..34 " "
-                    TYPE_INT@34..37
-                      IntKeyword@34..37 "int"
-                  Comma@37..38 ","
-                  Whitespace@38..39 "\n"
-                  RBrace@39..40 "}"
-                  Whitespace@40..41 "\n""#]],
+                    TYPE_INT32@22..27
+                      Int32Keyword@22..27 "int32"
+                  Comma@27..28 ","
+                  Whitespace@28..33 "\n    "
+                  STRUCT_FIELD@33..41
+                    Lident@33..34 "y"
+                    Colon@34..35 ":"
+                    Whitespace@35..36 " "
+                    TYPE_INT32@36..41
+                      Int32Keyword@36..41 "int32"
+                  Comma@41..42 ","
+                  Whitespace@42..43 "\n"
+                  RBrace@43..44 "}"
+                  Whitespace@44..45 "\n""#]],
     );
 }
 

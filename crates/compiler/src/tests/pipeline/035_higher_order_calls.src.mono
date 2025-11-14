@@ -1,9 +1,9 @@
 fn double(x/0: int32) -> int32 {
-  int_mul(x/0, 2)
+  int32_mul(x/0, 2)
 }
 
 fn increment(x/1: int32) -> int32 {
-  int_add(x/1, 1)
+  int32_add(x/1, 1)
 }
 
 fn chooser(flag/2: bool) -> (int32) -> int32 {
@@ -18,12 +18,12 @@ fn main() -> unit {
   let xs/3 = [double, increment] in
   let f/4 = array_get(xs/3, 0) in
   let g/5 = array_get(xs/3, 1) in
-  let mtmp0 = string_println(int_to_string(g/5(f/4(10)))) in
+  let mtmp0 = string_println(int32_to_string(g/5(f/4(10)))) in
   let chosen/6 = chooser(true) in
   let applied/7 = chosen/6(5) in
   let direct/8 = chooser(false)(5) in
   let printer/9 = string_println in
-  let mtmp1 = printer/9(int_to_string(applied/7)) in
-  let mtmp2 = printer/9(int_to_string(direct/8)) in
+  let mtmp1 = printer/9(int32_to_string(applied/7)) in
+  let mtmp2 = printer/9(int32_to_string(direct/8)) in
   ()
 }

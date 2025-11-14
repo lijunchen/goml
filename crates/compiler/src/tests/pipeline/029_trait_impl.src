@@ -1,4 +1,4 @@
-struct Point { x: int, y: int }
+struct Point { x: int32, y: int32 }
 
 enum Option[T] {
     Some(T),
@@ -13,16 +13,16 @@ impl Display for Point {
     fn show(self: Point) -> string { "Point" }
 }
 
-impl Display for Option[int] {
-    fn show(self: Option[int]) -> string {
+impl Display for Option[int32] {
+    fn show(self: Option[int32]) -> string {
         match self {
-            Some(value) => string_add("Some(", string_add(int_to_string(value), ")")),
+            Some(value) => string_add("Some(", string_add(int32_to_string(value), ")")),
             None => "None",
         }
     }
 }
 
-fn make_optional(flag: bool) -> Option[int] {
+fn make_optional(flag: bool) -> Option[int32] {
     if flag { Some(42) } else { None }
 }
 

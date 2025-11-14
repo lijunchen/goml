@@ -24,8 +24,8 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
 fn collects_struct_definitions() {
     let src = r#"
 struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 
 struct Wrapper[T] {
@@ -90,8 +90,8 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 fn enum_variants_record_struct_types() {
     let src = r#"
 struct Point {
-    x: int,
-    y: int,
+    x: int32,
+    y: int32,
 }
 
 struct Wrapper[U] {
@@ -149,7 +149,7 @@ enum Shape[T] {
 fn structs_and_enums_can_reference_each_other() {
     let src = r#"
 struct Node {
-    value: int,
+    value: int32,
     next: List,
 }
 
@@ -193,7 +193,7 @@ enum List {
 #[test]
 fn closure_infers_param_and_return_types() {
     let src = r#"
-fn use_closure(x: int) -> int {
+fn use_closure(x: int32) -> int32 {
     let add = |y| y + x;
     x
 }
@@ -302,7 +302,7 @@ struct Wrapper[T] {
     value: T,
 }
 
-fn bad(value: Wrapper[int, int]) -> unit { () }
+fn bad(value: Wrapper[int32, int32]) -> unit { () }
 "#;
 
     assert_typer_error(src, "Type Wrapper expects 1 type arguments, but got 2");
@@ -338,7 +338,7 @@ struct Wrapper[T] {
 }
 
 enum Problem {
-    Bad(Wrapper[int, int]),
+    Bad(Wrapper[int32, int32]),
 }
 "#;
 
