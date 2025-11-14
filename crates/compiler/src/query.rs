@@ -41,9 +41,9 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
         Ok(ast) => ast,
         Err(_) => return None,
     };
-    let (tast, env) = crate::typer::check_file(ast);
+    let (tast, genv) = crate::typer::check_file(ast);
 
-    let ty = find_type(&env, &tast, &range);
+    let ty = find_type(&genv, &tast, &range);
 
     ty.map(|node| node.to_string())
 }

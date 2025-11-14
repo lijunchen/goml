@@ -19,8 +19,7 @@ pub struct Compilation {
     pub cst: CstFile,
     pub ast: ast::File,
     pub tast: tast::File,
-    // TODO: fix me
-    pub typer_env: GlobalTypeEnv,
+    pub genv0: GlobalTypeEnv,
     pub genv: GlobalTypeEnv,
     pub core: crate::core::File,
     pub lambda: crate::core::File,
@@ -73,30 +72,30 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    let (tast, mut env) = typer::check_file(ast.clone());
-    if env.diagnostics.has_errors() {
+    let (tast, mut genv) = typer::check_file(ast.clone());
+    if genv.diagnostics.has_errors() {
         return Err(CompilationError::Typer {
-            diagnostics: env.diagnostics.clone(),
+            diagnostics: genv.diagnostics.clone(),
         });
     }
 
-    let typer_env = env.clone();
+    let genv0 = genv.clone();
 
     let gensym = Gensym::new();
 
-    let core = compile_match::compile_file(&env, &gensym, &tast);
-    let lifted_core = lambda_lift::lambda_lift(&mut env, &gensym, core.clone());
-    let mono = mono::mono(&mut env, lifted_core.clone());
-    let anf = anf::anf_file(&env, &gensym, mono.clone());
-    let go = go::compile::go_file(&env, &gensym, anf.clone());
+    let core = compile_match::compile_file(&genv, &gensym, &tast);
+    let lifted_core = lambda_lift::lambda_lift(&mut genv, &gensym, core.clone());
+    let mono = mono::mono(&mut genv, lifted_core.clone());
+    let anf = anf::anf_file(&genv, &gensym, mono.clone());
+    let go = go::compile::go_file(&genv, &gensym, anf.clone());
 
     Ok(Compilation {
         green_node,
         cst,
         ast,
         tast,
-        typer_env,
-        genv: env,
+        genv0,
+        genv,
         core,
         lambda: lifted_core,
         mono,

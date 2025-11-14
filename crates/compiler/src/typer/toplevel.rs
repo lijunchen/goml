@@ -4,7 +4,7 @@ use ::ast::ast::{Lident, StructDef, TraitMethodSignature};
 use ast::ast;
 
 use crate::{
-    env::{self, GlobalTypeEnv, TypeEnv},
+    env::{self, GlobalTypeEnv, LocalTypeEnv},
     rename,
     tast::{self},
     type_encoding::encode_ty,
@@ -467,7 +467,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv) {
 }
 
 fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
-    let mut type_env = TypeEnv::new();
+    let mut local_env = LocalTypeEnv::new();
     let param_types: Vec<(Lident, tast::Ty)> = f
         .params
         .iter()
@@ -488,14 +488,14 @@ fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
         None => tast::Ty::TUnit,
     };
 
-    type_env.set_tparams_env(&f.generics);
-    type_env.push_scope();
+    local_env.set_tparams_env(&f.generics);
+    local_env.push_scope();
     for (name, ty) in param_types.iter() {
-        type_env.insert_var(name, ty.clone());
+        local_env.insert_var(name, ty.clone());
     }
-    let typed_body = typer.check_expr(genv, &mut type_env, &f.body, &ret_ty);
-    type_env.pop_scope();
-    type_env.clear_tparams_env();
+    let typed_body = typer.check_expr(genv, &mut local_env, &f.body, &ret_ty);
+    local_env.pop_scope();
+    local_env.clear_tparams_env();
     typer.solve(genv);
     let typed_body = typer.subst(typed_body);
     tast::Fn {
@@ -514,7 +514,7 @@ fn check_impl_block(
     let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
-        let mut type_env = TypeEnv::new();
+        let mut local_env = LocalTypeEnv::new();
         let param_types: Vec<(Lident, tast::Ty)> = f
             .params
             .iter()
@@ -535,14 +535,14 @@ fn check_impl_block(
             None => tast::Ty::TUnit,
         };
 
-        type_env.set_tparams_env(&f.generics);
-        type_env.push_scope();
+        local_env.set_tparams_env(&f.generics);
+        local_env.push_scope();
         for (name, ty) in param_types.iter() {
-            type_env.insert_var(name, ty.clone());
+            local_env.insert_var(name, ty.clone());
         }
-        let typed_body = typer.check_expr(genv, &mut type_env, &f.body, &ret_ty);
-        type_env.pop_scope();
-        type_env.clear_tparams_env();
+        let typed_body = typer.check_expr(genv, &mut local_env, &f.body, &ret_ty);
+        local_env.pop_scope();
+        local_env.clear_tparams_env();
         typer.solve(genv);
         let typed_body = typer.subst(typed_body);
         typed_methods.push(tast::Fn {

@@ -19,8 +19,8 @@ pub fn execute(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -29,7 +29,7 @@ pub fn execute(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
     let _ = core;
     "not support for now".into()
 }
@@ -48,8 +48,8 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -58,9 +58,9 @@ pub fn compile_to_core(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
 
-    core.to_pretty(&env, 120)
+    core.to_pretty(&genv, 120)
 }
 
 #[wasm_bindgen]
@@ -77,8 +77,8 @@ pub fn compile_to_mono(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, mut env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, mut genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -87,10 +87,10 @@ pub fn compile_to_mono(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
 
-    let mono = compiler::mono::mono(&mut env, core);
-    mono.to_pretty(&env, 120)
+    let mono = compiler::mono::mono(&mut genv, core);
+    mono.to_pretty(&genv, 120)
 }
 
 #[wasm_bindgen]
@@ -107,8 +107,8 @@ pub fn compile_to_anf(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, mut env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, mut genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -117,12 +117,12 @@ pub fn compile_to_anf(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
 
-    let mono = compiler::mono::mono(&mut env, core);
+    let mono = compiler::mono::mono(&mut genv, core);
 
-    let anf = compiler::anf::anf_file(&env, &gensym, mono);
-    anf.to_pretty(&env, 120)
+    let anf = compiler::anf::anf_file(&genv, &gensym, mono);
+    anf.to_pretty(&genv, 120)
 }
 
 #[wasm_bindgen]
@@ -139,8 +139,8 @@ pub fn compile_to_go(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, mut env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, mut genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -149,14 +149,14 @@ pub fn compile_to_go(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&env, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
 
-    let mono = compiler::mono::mono(&mut env, core);
+    let mono = compiler::mono::mono(&mut genv, core);
 
-    let anf = compiler::anf::anf_file(&env, &gensym, mono);
+    let anf = compiler::anf::anf_file(&genv, &gensym, mono);
 
-    let go = compiler::go::compile::go_file(&env, &gensym, anf);
-    go.to_pretty(&env, 120)
+    let go = compiler::go::compile::go_file(&genv, &gensym, anf);
+    go.to_pretty(&genv, 120)
 }
 
 #[wasm_bindgen]
@@ -198,8 +198,8 @@ pub fn get_tast(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, env) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&env.diagnostics);
+    let (tast, genv) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -207,7 +207,7 @@ pub fn get_tast(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    tast.to_pretty(&env, 120)
+    tast.to_pretty(&genv, 120)
 }
 
 #[wasm_bindgen]

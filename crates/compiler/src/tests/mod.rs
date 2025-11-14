@@ -212,9 +212,9 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
     expect_test::expect_file![tast_filename]
-        .assert_eq(&compilation.tast.to_pretty(&compilation.typer_env, 120));
+        .assert_eq(&compilation.tast.to_pretty(&compilation.genv0, 120));
     expect_test::expect_file![core_filename]
-        .assert_eq(&compilation.core.to_pretty(&compilation.typer_env, 120));
+        .assert_eq(&compilation.core.to_pretty(&compilation.genv0, 120));
     expect_test::expect_file![mono_filename]
         .assert_eq(&compilation.mono.to_pretty(&compilation.genv, 120));
     expect_test::expect_file![anf_filename]

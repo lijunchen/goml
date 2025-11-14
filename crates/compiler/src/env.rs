@@ -532,19 +532,19 @@ impl Gensym {
 }
 
 #[derive(Debug, Clone)]
-pub struct TypeEnv {
+pub struct LocalTypeEnv {
     scopes: Vec<ImHashMap<Lident, tast::Ty>>,
     tparams_env: Vec<Uident>,
     capture_stack: Vec<IndexMap<Lident, tast::Ty>>,
 }
 
-impl Default for TypeEnv {
+impl Default for LocalTypeEnv {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl TypeEnv {
+impl LocalTypeEnv {
     pub fn new() -> Self {
         Self {
             scopes: vec![ImHashMap::new()],
@@ -566,7 +566,7 @@ impl TypeEnv {
 
     pub fn with_scope<F, R>(&mut self, f: F) -> R
     where
-        F: FnOnce(&mut TypeEnv) -> R,
+        F: FnOnce(&mut LocalTypeEnv) -> R,
     {
         self.push_scope();
         let result = f(self);
