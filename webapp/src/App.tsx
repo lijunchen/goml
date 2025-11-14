@@ -1,5 +1,5 @@
 import Editor, { useMonaco } from '@monaco-editor/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast } from 'wasm-app';
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
@@ -27,7 +27,29 @@ const loadDemos = async () => {
 };
 
 type ViewMode = 'cst' | 'ast' | 'tast' | 'core' | 'mono' | 'anf' | 'go';
-type PipelineOutputs = Record<ViewMode, string>;
+type PipelineOutputs = Record<ViewMode, string | null>;
+
+const createEmptyPipelineOutputs = (): PipelineOutputs => ({
+  cst: null,
+  ast: null,
+  tast: null,
+  core: null,
+  mono: null,
+  anf: null,
+  go: null
+});
+
+const formatError = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
+const safeRun = (fn: (source: string) => string, source: string) => {
+  try {
+    return fn(source);
+  } catch (error) {
+    console.error(error);
+    return `error: ${formatError(error)}`;
+  }
+};
 
 function App() {
   const monaco = useMonaco();
@@ -36,15 +58,17 @@ function App() {
   const [core, setCore] = useState("");
   const [selectedDemo, setSelectedDemo] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>('go');
-  const [pipelineOutputs, setPipelineOutputs] = useState<PipelineOutputs>({
-    cst: "",
-    ast: "",
-    tast: "",
-    core: "",
-    mono: "",
-    anf: "",
-    go: ""
-  });
+  const [pipelineOutputs, setPipelineOutputs] = useState<PipelineOutputs>(createEmptyPipelineOutputs);
+
+  const pipelineFns = useMemo(() => ({
+    cst: get_cst,
+    ast: get_ast,
+    tast: get_tast,
+    core: compile_to_core,
+    mono: compile_to_mono,
+    anf: compile_to_anf,
+    go: compile_to_go
+  }), []);
 
   useEffect(() => {
     loadDemos().then(() => {
@@ -117,25 +141,27 @@ function App() {
   }, [monaco]);
 
   useEffect(() => {
-    try {
-      setPipelineOutputs({
-        cst: get_cst(code),
-        ast: get_ast(code),
-        tast: get_tast(code),
-        core: compile_to_core(code),
-        mono: compile_to_mono(code),
-        anf: compile_to_anf(code),
-        go: compile_to_go(code)
-      });
-      setResult(execute(code));
-    } catch (error) {
-      console.error(error);
-    }
+    setPipelineOutputs(createEmptyPipelineOutputs());
+    setCore("");
+    setResult(safeRun(execute, code));
   }, [code]);
 
   useEffect(() => {
-    setCore(pipelineOutputs[viewMode] || "");
-  }, [pipelineOutputs, viewMode]);
+    const output = pipelineOutputs[viewMode];
+    if (output !== null) {
+      setCore(output);
+      return;
+    }
+
+    setCore("Loading...");
+
+    const fn = pipelineFns[viewMode];
+    const nextOutput = safeRun(fn, code);
+    setPipelineOutputs(prev => ({
+      ...prev,
+      [viewMode]: nextOutput
+    }));
+  }, [code, pipelineFns, pipelineOutputs, viewMode]);
 
   const handleDemoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const demoName = e.target.value;
