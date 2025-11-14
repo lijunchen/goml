@@ -10,7 +10,7 @@ use crate::{
     type_encoding::encode_ty,
     typer::{
         Typer,
-        util::{ast_ty_to_tast_ty_with_tparams_env, type_param_name_set, validate_ty},
+        util::{type_param_name_set, validate_ty},
     },
 };
 
@@ -50,7 +50,7 @@ fn define_enum(genv: &mut GlobalTypeEnv, enum_def: &ast::EnumDef) {
         .map(|(vcon, typs)| {
             let typs = typs
                 .iter()
-                .map(|ast_ty| ast_ty_to_tast_ty_with_tparams_env(ast_ty, params_env))
+                .map(|ast_ty| tast::Ty::from_ast(ast_ty, params_env))
                 .collect::<Vec<_>>();
             for ty in typs.iter() {
                 validate_ty(genv, ty, &tparam_names);
@@ -74,7 +74,7 @@ fn define_struct(genv: &mut GlobalTypeEnv, struct_def: &ast::StructDef) {
         .fields
         .iter()
         .map(|(fname, ast_ty)| {
-            let ty = ast_ty_to_tast_ty_with_tparams_env(ast_ty, &struct_def.generics);
+            let ty = tast::Ty::from_ast(ast_ty, &struct_def.generics);
             validate_ty(genv, &ty, &tparam_names);
             (fname.clone(), ty)
         })
@@ -102,9 +102,9 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
 
         let param_tys = params
             .iter()
-            .map(|ast_ty| ast_ty_to_tast_ty_with_tparams_env(ast_ty, &[]))
+            .map(|ast_ty| tast::Ty::from_ast(ast_ty, &[]))
             .collect::<Vec<_>>();
-        let ret_ty = ast_ty_to_tast_ty_with_tparams_env(ret_ty, &[]);
+        let ret_ty = tast::Ty::from_ast(ret_ty, &[]);
         let fn_ty = tast::Ty::TFunc {
             params: param_tys,
             ret_ty: Box::new(ret_ty),
@@ -117,7 +117,7 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
 
 fn define_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
     let empty_tparams = HashSet::new();
-    let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
     validate_ty(genv, &for_ty, &empty_tparams);
     let trait_name_str = impl_block.trait_name.0.clone();
     let trait_method_names: HashSet<String> = genv
@@ -173,14 +173,14 @@ fn define_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics);
+                let ty = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ty, &tparam_names);
                 ty
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &m.generics);
+                let ret = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ret, &tparam_names);
                 ret
             }
@@ -271,14 +271,14 @@ fn define_function(genv: &mut GlobalTypeEnv, func: &ast::Fn) {
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics);
+            let ty = tast::Ty::from_ast(ty, &func.generics);
             validate_ty(genv, &ty, &tparam_names);
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &func.ret_ty {
         Some(ty) => {
-            let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &func.generics);
+            let ret = tast::Ty::from_ast(ty, &func.generics);
             validate_ty(genv, &ret, &tparam_names);
             ret
         }
@@ -322,14 +322,14 @@ fn define_extern_go(genv: &mut GlobalTypeEnv, ext: &ast::ExternGo) {
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, &[]);
+            let ty = tast::Ty::from_ast(ty, &[]);
             validate_ty(genv, &ty, &HashSet::new());
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &ext.ret_ty {
         Some(ty) => {
-            let ret = ast_ty_to_tast_ty_with_tparams_env(ty, &[]);
+            let ret = tast::Ty::from_ast(ty, &[]);
             validate_ty(genv, &ret, &HashSet::new());
             ret
         }
@@ -471,12 +471,7 @@ fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
     let param_types: Vec<(Lident, tast::Ty)> = f
         .params
         .iter()
-        .map(|(name, ty)| {
-            (
-                name.clone(),
-                ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
-            )
-        })
+        .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(ty, &f.generics)))
         .collect();
     let new_params = param_types
         .iter()
@@ -484,7 +479,7 @@ fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
         .collect::<Vec<_>>();
 
     let ret_ty = match &f.ret_ty {
-        Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
+        Some(ty) => tast::Ty::from_ast(ty, &f.generics),
         None => tast::Ty::TUnit,
     };
 
@@ -511,19 +506,14 @@ fn check_impl_block(
     typer: &mut Typer,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
-    let for_ty = ast_ty_to_tast_ty_with_tparams_env(&impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
         let mut local_env = LocalTypeEnv::new();
         let param_types: Vec<(Lident, tast::Ty)> = f
             .params
             .iter()
-            .map(|(name, ty)| {
-                (
-                    name.clone(),
-                    ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
-                )
-            })
+            .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(ty, &f.generics)))
             .collect();
         let new_params = param_types
             .iter()
@@ -531,7 +521,7 @@ fn check_impl_block(
             .collect::<Vec<_>>();
 
         let ret_ty = match &f.ret_ty {
-            Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &f.generics),
+            Some(ty) => tast::Ty::from_ast(ty, &f.generics),
             None => tast::Ty::TUnit,
         };
 
@@ -568,10 +558,10 @@ fn check_extern_go(
     let params = ext
         .params
         .iter()
-        .map(|(name, ty)| (name.0.clone(), ast_ty_to_tast_ty_with_tparams_env(ty, &[])))
+        .map(|(name, ty)| (name.0.clone(), tast::Ty::from_ast(ty, &[])))
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
-        Some(ty) => ast_ty_to_tast_ty_with_tparams_env(ty, &[]),
+        Some(ty) => tast::Ty::from_ast(ty, &[]),
         None => tast::Ty::TUnit,
     };
     tast::ExternGo {

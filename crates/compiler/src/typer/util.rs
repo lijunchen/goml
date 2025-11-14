@@ -113,64 +113,58 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
     }
 }
 
-pub(crate) fn ast_ty_to_tast_ty_with_tparams_env(
-    ast_ty: &ast::Ty,
-    tparams_env: &[ast::Uident],
-) -> tast::Ty {
-    match ast_ty {
-        ast::Ty::TUnit => tast::Ty::TUnit,
-        ast::Ty::TBool => tast::Ty::TBool,
-        ast::Ty::TInt => tast::Ty::TInt,
-        ast::Ty::TInt8 => tast::Ty::TInt8,
-        ast::Ty::TInt16 => tast::Ty::TInt16,
-        ast::Ty::TInt32 => tast::Ty::TInt32,
-        ast::Ty::TInt64 => tast::Ty::TInt64,
-        ast::Ty::TUint8 => tast::Ty::TUint8,
-        ast::Ty::TUint16 => tast::Ty::TUint16,
-        ast::Ty::TUint32 => tast::Ty::TUint32,
-        ast::Ty::TUint64 => tast::Ty::TUint64,
-        ast::Ty::TFloat32 => tast::Ty::TFloat32,
-        ast::Ty::TFloat64 => tast::Ty::TFloat64,
-        ast::Ty::TString => tast::Ty::TString,
-        ast::Ty::TTuple { typs } => {
-            let typs = typs
-                .iter()
-                .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env))
-                .collect();
-            tast::Ty::TTuple { typs }
-        }
-        ast::Ty::TCon { name } => {
-            if tparams_env.iter().any(|param| param.0 == *name) {
-                tast::Ty::TParam { name: name.clone() }
-            } else {
-                tast::Ty::TCon { name: name.clone() }
+impl tast::Ty {
+    pub(crate) fn from_ast(ast_ty: &ast::Ty, tparams_env: &[ast::Uident]) -> Self {
+        match ast_ty {
+            ast::Ty::TUnit => Self::TUnit,
+            ast::Ty::TBool => Self::TBool,
+            ast::Ty::TInt => Self::TInt,
+            ast::Ty::TInt8 => Self::TInt8,
+            ast::Ty::TInt16 => Self::TInt16,
+            ast::Ty::TInt32 => Self::TInt32,
+            ast::Ty::TInt64 => Self::TInt64,
+            ast::Ty::TUint8 => Self::TUint8,
+            ast::Ty::TUint16 => Self::TUint16,
+            ast::Ty::TUint32 => Self::TUint32,
+            ast::Ty::TUint64 => Self::TUint64,
+            ast::Ty::TFloat32 => Self::TFloat32,
+            ast::Ty::TFloat64 => Self::TFloat64,
+            ast::Ty::TString => Self::TString,
+            ast::Ty::TTuple { typs } => Self::TTuple {
+                typs: typs
+                    .iter()
+                    .map(|ty| Self::from_ast(ty, tparams_env))
+                    .collect(),
+            },
+            ast::Ty::TCon { name } => {
+                if tparams_env.iter().any(|param| param.0 == *name) {
+                    Self::TParam { name: name.clone() }
+                } else {
+                    Self::TCon { name: name.clone() }
+                }
             }
+            ast::Ty::TApp { ty, args } => Self::TApp {
+                ty: Box::new(Self::from_ast(ty, tparams_env)),
+                args: args
+                    .iter()
+                    .map(|ty| Self::from_ast(ty, tparams_env))
+                    .collect(),
+            },
+            ast::Ty::TArray { len, elem } => Self::TArray {
+                len: *len,
+                elem: Box::new(Self::from_ast(elem, tparams_env)),
+            },
+            ast::Ty::TRef { elem } => Self::TRef {
+                elem: Box::new(Self::from_ast(elem, tparams_env)),
+            },
+            ast::Ty::TFunc { params, ret_ty } => Self::TFunc {
+                params: params
+                    .iter()
+                    .map(|ty| Self::from_ast(ty, tparams_env))
+                    .collect(),
+                ret_ty: Box::new(Self::from_ast(ret_ty, tparams_env)),
+            },
         }
-        ast::Ty::TApp { ty, args } => {
-            let ty = ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env);
-            let args = args
-                .iter()
-                .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env))
-                .collect();
-            tast::Ty::TApp {
-                ty: Box::new(ty),
-                args,
-            }
-        }
-        ast::Ty::TArray { len, elem } => tast::Ty::TArray {
-            len: *len,
-            elem: Box::new(ast_ty_to_tast_ty_with_tparams_env(elem, tparams_env)),
-        },
-        ast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(ast_ty_to_tast_ty_with_tparams_env(elem, tparams_env)),
-        },
-        ast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
-            params: params
-                .iter()
-                .map(|ty| ast_ty_to_tast_ty_with_tparams_env(ty, tparams_env))
-                .collect(),
-            ret_ty: Box::new(ast_ty_to_tast_ty_with_tparams_env(ret_ty, tparams_env)),
-        },
     }
 }
 
