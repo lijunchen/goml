@@ -907,9 +907,9 @@ fn builtin_function_for(
 fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Option<&'static str> {
     match op {
         UnaryOp::Neg => match arg_ty {
-            Ty::TInt32 => Some("int_neg"),
             Ty::TInt8 => Some("int8_neg"),
             Ty::TInt16 => Some("int16_neg"),
+            Ty::TInt32 => Some("int_neg"),
             Ty::TInt64 => Some("int64_neg"),
             Ty::TUint8 => Some("uint8_neg"),
             Ty::TUint16 => Some("uint16_neg"),
