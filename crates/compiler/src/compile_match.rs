@@ -235,6 +235,7 @@ struct ConstructorCase {
     rows: Vec<Row>,
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_constructor_cases(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -294,6 +295,7 @@ fn compile_constructor_cases(
     arms
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_enum_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -375,6 +377,7 @@ fn compile_enum_case(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_struct_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -465,6 +468,7 @@ fn compile_struct_case(
     result
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_tuple_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -605,6 +609,7 @@ fn compile_bool_case(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_int_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -734,6 +739,7 @@ fn compile_int_case(
     unreachable!("expected integer type");
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_int_case_impl<T, Extract, ToPrim>(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
