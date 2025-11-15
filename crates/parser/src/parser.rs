@@ -126,6 +126,22 @@ impl Parser<'_> {
         self.input.peek()
     }
 
+    pub fn nth(&mut self, n: usize) -> TokenKind {
+        if self.fuel.get() == 0 {
+            if !self.stuck_reported.get() {
+                let message = "parser did not consume input while parsing";
+                let range = self.input.current_range();
+                let diagnostic =
+                    Diagnostic::new(Stage::Parser, Severity::Error, message).with_range(range);
+                self.diagnostics.push(diagnostic);
+                self.stuck_reported.set(true);
+            }
+            return T![eof];
+        }
+        self.fuel.set(self.fuel.get() - 1);
+        self.input.nth(n)
+    }
+
     pub fn eof(&mut self) -> bool {
         self.input.eof()
     }

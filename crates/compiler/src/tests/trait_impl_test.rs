@@ -5,7 +5,9 @@ use parser::syntax::MySyntaxNode;
 
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
+    mangle::mangle_inherent_name,
     tast,
+    type_encoding::encode_ty,
 };
 
 fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
@@ -172,5 +174,47 @@ impl Display for Option[int32] {
     expect_single_error(
         src,
         "Trait Display implementation for TApp(TCon(Option), [TInt32]) is missing method debug",
+    );
+}
+
+#[test]
+fn inherent_impl_registers_methods() {
+    let src = r#"
+struct Point { x: int32, y: int32 }
+
+impl Point {
+    fn new(x: int32, y: int32) -> Point { Point { x: x, y: y } }
+    fn origin() -> Point { Point { x: 0, y: 0 } }
+}
+"#;
+
+    let (_tast, genv) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
+    assert!(
+        diagnostics.is_empty(),
+        "unexpected diagnostics: {:?}",
+        diagnostics
+    );
+
+    let point_ty = tast::Ty::TCon {
+        name: "Point".to_string(),
+    };
+    let new_ident = ::ast::ast::Lident("new".to_string());
+    let origin_ident = ::ast::ast::Lident("origin".to_string());
+
+    let new_name = mangle_inherent_name(&point_ty, "new");
+    let origin_name = mangle_inherent_name(&point_ty, "origin");
+
+    assert!(genv.funcs.contains_key(&new_name));
+    assert!(genv.funcs.contains_key(&origin_name));
+
+    let encoded = encode_ty(&point_ty);
+    assert!(
+        genv.inherent_impls
+            .contains_key(&(encoded.clone(), new_ident.clone()))
+    );
+    assert!(
+        genv.inherent_impls
+            .contains_key(&(encoded, origin_ident.clone()))
     );
 }

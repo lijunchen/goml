@@ -2,7 +2,7 @@ use ast::ast::{BinaryOp, Uident, UnaryOp};
 
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::mangle::mangle_impl_name;
+use crate::mangle::{mangle_impl_name, mangle_inherent_name};
 use crate::tast::Arm;
 use crate::tast::Constructor;
 use crate::tast::Expr::{self, *};
@@ -1116,11 +1116,15 @@ pub fn compile_file(
             tast::Item::ImplBlock(impl_block) => {
                 let for_ty = &impl_block.for_type;
                 for m in impl_block.methods.iter() {
-                    let trait_name = &impl_block.trait_name;
                     let method_name = &m.name;
+                    let func_name = if let Some(trait_name) = &impl_block.trait_name {
+                        mangle_impl_name(trait_name, for_ty, method_name)
+                    } else {
+                        mangle_inherent_name(for_ty, method_name)
+                    };
 
                     let f = core::Fn {
-                        name: mangle_impl_name(trait_name, for_ty, method_name),
+                        name: func_name,
                         params: m
                             .params
                             .iter()

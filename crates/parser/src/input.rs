@@ -27,6 +27,22 @@ impl<'t> Input<'t> {
         self.peek_raw_kind()
     }
 
+    pub fn nth(&self, n: usize) -> TokenKind {
+        let mut idx = self.cursor;
+        let mut remaining = n;
+        while idx < self.tokens.len() {
+            let kind = self.tokens[idx].kind;
+            if !kind.is_trivia() {
+                if remaining == 0 {
+                    return kind;
+                }
+                remaining -= 1;
+            }
+            idx += 1;
+        }
+        T![eof]
+    }
+
     #[allow(unused)]
     fn at(&mut self, kind: TokenKind) -> bool {
         self.eat_trivia();

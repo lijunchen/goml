@@ -19,7 +19,7 @@ pub enum Item {
 
 #[derive(Debug)]
 pub struct ImplBlock {
-    pub trait_name: Uident,
+    pub trait_name: Option<Uident>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }

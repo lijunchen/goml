@@ -116,9 +116,14 @@ fn impl_block(p: &mut Parser) {
     assert!(p.at(T![impl]));
     let m = p.open();
     p.expect(T![impl]);
-    p.expect(T![uident]);
-    p.expect(T![for]);
-    type_expr(p);
+    let has_trait = p.at(T![uident]) && matches!(p.nth(1), T![for]);
+    if has_trait {
+        p.expect(T![uident]);
+        p.expect(T![for]);
+        type_expr(p);
+    } else {
+        type_expr(p);
+    }
     if p.at(T!['{']) {
         p.advance();
         while !p.at(T!['}']) && !p.eof() {

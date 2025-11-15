@@ -5,3 +5,8 @@ pub fn mangle_impl_name(trait_name: &ast::Uident, for_ty: &tast::Ty, method_name
     let for_ty_str = encode_ty(for_ty);
     format!("impl_{}_{}_{}", trait_name.0, for_ty_str, method_name)
 }
+
+pub fn mangle_inherent_name(for_ty: &tast::Ty, method_name: &str) -> String {
+    let for_ty_str = encode_ty(for_ty);
+    format!("impl_inherent_{}_{}", for_ty_str, method_name)
+}
