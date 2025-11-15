@@ -27,17 +27,6 @@ const loadDemos = async () => {
 };
 
 type ViewMode = 'cst' | 'ast' | 'tast' | 'core' | 'mono' | 'anf' | 'go';
-type PipelineOutputs = Record<ViewMode, string | null>;
-
-const createEmptyPipelineOutputs = (): PipelineOutputs => ({
-  cst: null,
-  ast: null,
-  tast: null,
-  core: null,
-  mono: null,
-  anf: null,
-  go: null
-});
 
 const formatError = (error: unknown) =>
   error instanceof Error ? error.message : String(error);
@@ -58,7 +47,6 @@ function App() {
   const [core, setCore] = useState("");
   const [selectedDemo, setSelectedDemo] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>('go');
-  const [pipelineOutputs, setPipelineOutputs] = useState<PipelineOutputs>(createEmptyPipelineOutputs);
 
   const pipelineFns = useMemo(() => ({
     cst: get_cst,
@@ -141,27 +129,13 @@ function App() {
   }, [monaco]);
 
   useEffect(() => {
-    setPipelineOutputs(createEmptyPipelineOutputs());
-    setCore("");
     setResult(safeRun(execute, code));
   }, [code]);
 
   useEffect(() => {
-    const output = pipelineOutputs[viewMode];
-    if (output !== null) {
-      setCore(output);
-      return;
-    }
-
-    setCore("Loading...");
-
     const fn = pipelineFns[viewMode];
-    const nextOutput = safeRun(fn, code);
-    setPipelineOutputs(prev => ({
-      ...prev,
-      [viewMode]: nextOutput
-    }));
-  }, [code, pipelineFns, pipelineOutputs, viewMode]);
+    setCore(safeRun(fn, code));
+  }, [code, pipelineFns, viewMode]);
 
   const handleDemoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const demoName = e.target.value;
