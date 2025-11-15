@@ -243,6 +243,20 @@ impl Prim {
         }
     }
 
+    pub fn zero_for_int_ty(ty: &Ty) -> Self {
+        match ty {
+            Ty::TInt8 => Prim::Int8 { value: 0 },
+            Ty::TInt16 => Prim::Int16 { value: 0 },
+            Ty::TInt32 => Prim::Int32 { value: 0 },
+            Ty::TInt64 => Prim::Int64 { value: 0 },
+            Ty::TUint8 => Prim::UInt8 { value: 0 },
+            Ty::TUint16 => Prim::UInt16 { value: 0 },
+            Ty::TUint32 => Prim::UInt32 { value: 0 },
+            Ty::TUint64 => Prim::UInt64 { value: 0 },
+            _ => panic!("Unsupported integer literal type {:?}", ty),
+        }
+    }
+
     pub fn from_float_literal(value: f64, ty: &Ty) -> Self {
         match ty {
             Ty::TFloat32 => Prim::Float32 {
