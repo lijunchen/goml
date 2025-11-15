@@ -9,6 +9,8 @@ use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
 use crate::tast::{self, File, Prim};
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use text_size::TextRange;
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -236,10 +238,12 @@ struct ConstructorCase {
 fn compile_constructor_cases(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> Vec<core::Arm> {
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
@@ -283,7 +287,7 @@ fn compile_constructor_cases(
                 args,
                 ty: bvar.ty.clone(),
             },
-            body: compile_rows(genv, gensym, case.rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, case.rows, ty, match_range),
         };
         arms.push(arm);
     }
@@ -293,12 +297,14 @@ fn compile_constructor_cases(
 fn compile_enum_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
     name: &Uident,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
-    let tydef = &genv.enums[name];
+    let tydef = genv.enums[name].clone();
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let cases: Vec<ConstructorCase> = tydef
@@ -343,7 +349,16 @@ fn compile_enum_case(
         results.push(result);
     }
 
-    let arms = compile_constructor_cases(genv, gensym, rows, bvar, cases, ty);
+    let arms = compile_constructor_cases(
+        genv,
+        gensym,
+        diagnostics,
+        rows,
+        bvar,
+        cases,
+        ty,
+        match_range,
+    );
 
     let mut new_arms = vec![];
     for (mut res, mut arm) in results.into_iter().zip(arms.into_iter()) {
@@ -363,15 +378,18 @@ fn compile_enum_case(
 fn compile_struct_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
     name: &Uident,
     type_args: &[Ty],
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let struct_def = genv
         .structs
         .get(name)
+        .cloned()
         .unwrap_or_else(|| panic!("Unknown struct {}", name.0));
 
     let inst_fields = if struct_def.generics.is_empty() {
@@ -381,7 +399,7 @@ fn compile_struct_case(
             .map(|(fname, fty)| (fname.0.clone(), fty.clone()))
             .collect::<Vec<_>>()
     } else {
-        instantiate_struct_fields(struct_def, type_args)
+        instantiate_struct_fields(&struct_def, type_args)
     };
 
     let field_vars: Vec<Variable> = inst_fields
@@ -442,7 +460,7 @@ fn compile_struct_case(
         });
     }
 
-    let inner = compile_rows(genv, gensym, new_rows, ty);
+    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
     replace_default_expr(&mut result, inner);
     result
 }
@@ -450,10 +468,12 @@ fn compile_struct_case(
 fn compile_tuple_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     typs: &[Ty],
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let names = typs.iter().map(|_| gensym.gensym("x")).collect::<Vec<_>>();
     let mut new_rows = vec![];
@@ -502,7 +522,7 @@ fn compile_tuple_case(
         });
     }
 
-    let inner = compile_rows(genv, gensym, new_rows, ty);
+    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
 
     // Replace the empty default result with the actual compiled rows
     replace_default_expr(&mut result, inner);
@@ -512,8 +532,10 @@ fn compile_tuple_case(
 fn compile_unit_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
     let mut new_rows = vec![];
@@ -530,7 +552,7 @@ fn compile_unit_case(
         expr: Box::new(bvar.to_core()),
         arms: vec![core::Arm {
             lhs: core::eunit(),
-            body: compile_rows(genv, gensym, new_rows, &bvar.ty),
+            body: compile_rows(genv, gensym, diagnostics, new_rows, &bvar.ty, match_range),
         }],
         default: None,
         ty: body_ty,
@@ -540,8 +562,10 @@ fn compile_unit_case(
 fn compile_bool_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
@@ -569,11 +593,11 @@ fn compile_bool_case(
         arms: vec![
             core::Arm {
                 lhs: core::ebool(true),
-                body: compile_rows(genv, gensym, true_rows, &bvar.ty),
+                body: compile_rows(genv, gensym, diagnostics, true_rows, &bvar.ty, match_range),
             },
             core::Arm {
                 lhs: core::ebool(false),
-                body: compile_rows(genv, gensym, false_rows, &bvar.ty),
+                body: compile_rows(genv, gensym, diagnostics, false_rows, &bvar.ty, match_range),
             },
         ],
         default: None,
@@ -584,20 +608,24 @@ fn compile_bool_case(
 fn compile_int_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
     literal_ty: Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     match literal_ty {
         Ty::TInt8 => {
             return compile_int_case_impl::<i8, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TInt8,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i8),
                 |value| Prim::Int8 { value },
             );
@@ -606,10 +634,12 @@ fn compile_int_case(
             return compile_int_case_impl::<i16, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TInt16,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i16),
                 |value| Prim::Int16 { value },
             );
@@ -618,10 +648,12 @@ fn compile_int_case(
             return compile_int_case_impl::<i32, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TInt32,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i32),
                 |value| Prim::Int32 { value },
             );
@@ -630,10 +662,12 @@ fn compile_int_case(
             return compile_int_case_impl::<i64, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TInt64,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i64),
                 |value| Prim::Int64 { value },
             );
@@ -642,10 +676,12 @@ fn compile_int_case(
             return compile_int_case_impl::<u8, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TUint8,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u8),
                 |value| Prim::UInt8 { value },
             );
@@ -654,10 +690,12 @@ fn compile_int_case(
             return compile_int_case_impl::<u16, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TUint16,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u16),
                 |value| Prim::UInt16 { value },
             );
@@ -666,10 +704,12 @@ fn compile_int_case(
             return compile_int_case_impl::<u32, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TUint32,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u32),
                 |value| Prim::UInt32 { value },
             );
@@ -678,10 +718,12 @@ fn compile_int_case(
             return compile_int_case_impl::<u64, _, _>(
                 genv,
                 gensym,
+                diagnostics,
                 rows,
                 bvar,
                 ty,
                 Ty::TUint64,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u64),
                 |value| Prim::UInt64 { value },
             );
@@ -695,10 +737,12 @@ fn compile_int_case(
 fn compile_int_case_impl<T, Extract, ToPrim>(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
     literal_ty: Ty,
+    match_range: Option<TextRange>,
     extract: Extract,
     to_prim: ToPrim,
 ) -> core::Expr
@@ -743,6 +787,18 @@ where
         }
     }
 
+    if default_rows.is_empty() {
+        let message = format!(
+            "non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
+            literal_ty
+        );
+        diagnostics.push(
+            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
+                .with_range(match_range),
+        );
+        return emissing(ty);
+    }
+
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
@@ -750,14 +806,21 @@ where
                 value: to_prim(value),
                 ty: literal_ty.clone(),
             },
-            body: compile_rows(genv, gensym, rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, rows, ty, match_range),
         })
         .collect();
 
     let default = if default_rows.is_empty() {
         None
     } else {
-        Some(Box::new(compile_rows(genv, gensym, default_rows, ty)))
+        Some(Box::new(compile_rows(
+            genv,
+            gensym,
+            diagnostics,
+            default_rows,
+            ty,
+            match_range,
+        )))
     };
 
     core::Expr::EMatch {
@@ -771,9 +834,11 @@ where
 fn compile_string_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
@@ -821,14 +886,21 @@ fn compile_string_case(
                 value: Prim::string(value),
                 ty: Ty::TString,
             },
-            body: compile_rows(genv, gensym, rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, rows, ty, match_range),
         })
         .collect();
 
     let default = if default_rows.is_empty() {
         None
     } else {
-        Some(Box::new(compile_rows(genv, gensym, default_rows, ty)))
+        Some(Box::new(compile_rows(
+            genv,
+            gensym,
+            diagnostics,
+            default_rows,
+            ty,
+            match_range,
+        )))
     };
 
     core::Expr::EMatch {
@@ -839,7 +911,14 @@ fn compile_string_case(
     }
 }
 
-fn compile_rows(genv: &GlobalTypeEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
+fn compile_rows(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    mut rows: Vec<Row>,
+    ty: &Ty,
+    match_range: Option<TextRange>,
+) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
     }
@@ -849,32 +928,123 @@ fn compile_rows(genv: &GlobalTypeEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &
 
     if rows.first().is_some_and(|c| c.columns.is_empty()) {
         let row = rows.remove(0);
-        return compile_expr(&row.body, genv, gensym);
+        return compile_expr(&row.body, genv, gensym, diagnostics);
     }
 
     let bvar = branch_variable(&rows);
     match &bvar.ty {
         Ty::TVar(..) => unreachable!(),
-        Ty::TUnit => compile_unit_case(genv, gensym, rows, &bvar),
-        Ty::TBool => compile_bool_case(genv, gensym, rows, &bvar),
-        Ty::TInt32 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt32),
-        Ty::TInt8 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt8),
-        Ty::TInt16 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt16),
-        Ty::TInt64 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TInt64),
-        Ty::TUint8 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint8),
-        Ty::TUint16 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint16),
-        Ty::TUint32 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint32),
-        Ty::TUint64 => compile_int_case(genv, gensym, rows, &bvar, ty, Ty::TUint64),
+        Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, match_range),
+        Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, match_range),
+        Ty::TInt32 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt32,
+            match_range,
+        ),
+        Ty::TInt8 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt8,
+            match_range,
+        ),
+        Ty::TInt16 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt16,
+            match_range,
+        ),
+        Ty::TInt64 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt64,
+            match_range,
+        ),
+        Ty::TUint8 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint8,
+            match_range,
+        ),
+        Ty::TUint16 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint16,
+            match_range,
+        ),
+        Ty::TUint32 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint32,
+            match_range,
+        ),
+        Ty::TUint64 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint64,
+            match_range,
+        ),
         Ty::TFloat32 | Ty::TFloat64 => {
             panic!("Matching on floating point types is not supported")
         }
-        Ty::TString => compile_string_case(genv, gensym, rows, &bvar, ty),
+        Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
             if genv.enums.contains_key(&ident) {
-                compile_enum_case(genv, gensym, rows, &bvar, ty, &ident)
+                compile_enum_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    match_range,
+                )
             } else if genv.structs.contains_key(&ident) {
-                compile_struct_case(genv, gensym, rows, &bvar, ty, &ident, &[])
+                compile_struct_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    &[],
+                    match_range,
+                )
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
@@ -883,14 +1053,42 @@ fn compile_rows(genv: &GlobalTypeEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &
             let name = base.get_constr_name_unsafe();
             let ident = Uident::new(&name);
             if genv.enums.contains_key(&ident) {
-                compile_enum_case(genv, gensym, rows, &bvar, ty, &ident)
+                compile_enum_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    match_range,
+                )
             } else if genv.structs.contains_key(&ident) {
-                compile_struct_case(genv, gensym, rows, &bvar, ty, &ident, args)
+                compile_struct_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    args,
+                    match_range,
+                )
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
         }
-        Ty::TTuple { typs } => compile_tuple_case(genv, gensym, rows, &bvar, typs, ty),
+        Ty::TTuple { typs } => compile_tuple_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            typs,
+            ty,
+            match_range,
+        ),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
@@ -906,7 +1104,12 @@ fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
     }
 }
 
-pub fn compile_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: &File) -> core::File {
+pub fn compile_file(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    file: &File,
+) -> core::File {
     let mut toplevels = vec![];
     for item in file.toplevels.iter() {
         match item {
@@ -924,7 +1127,7 @@ pub fn compile_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: &File) -> core:
                             .map(|(name, ty)| (name.clone(), ty.clone()))
                             .collect(),
                         ret_ty: m.ret_ty.clone(),
-                        body: compile_expr(&m.body, genv, gensym),
+                        body: compile_expr(&m.body, genv, gensym, diagnostics),
                     };
 
                     toplevels.push(f);
@@ -939,7 +1142,7 @@ pub fn compile_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: &File) -> core:
                         .map(|(name, ty)| (name.clone(), ty.clone()))
                         .collect(),
                     ret_ty: f.ret_ty.clone(),
-                    body: compile_expr(&f.body, genv, gensym),
+                    body: compile_expr(&f.body, genv, gensym, diagnostics),
                 });
             }
             tast::Item::ExternGo(_) => {}
@@ -1042,7 +1245,12 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     }
 }
 
-fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
+fn compile_expr(
+    e: &Expr,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+) -> core::Expr {
     match e {
         EVar {
             name,
@@ -1059,7 +1267,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
         ETuple { items, ty } => {
             let items = items
                 .iter()
-                .map(|item| compile_expr(item, genv, gensym))
+                .map(|item| compile_expr(item, genv, gensym, diagnostics))
                 .collect();
             core::Expr::ETuple {
                 items,
@@ -1069,7 +1277,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
         EArray { items, ty } => {
             let items = items
                 .iter()
-                .map(|item| compile_expr(item, genv, gensym))
+                .map(|item| compile_expr(item, genv, gensym, diagnostics))
                 .collect();
             core::Expr::EArray {
                 items,
@@ -1083,7 +1291,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
         } => {
             let args = args
                 .iter()
-                .map(|arg| compile_expr(arg, genv, gensym))
+                .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect();
             core::Expr::EConstr {
                 constructor: constructor.clone(),
@@ -1098,7 +1306,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             captures: _,
         } => {
             let params = params.clone();
-            let body = Box::new(compile_expr(body, genv, gensym));
+            let body = Box::new(compile_expr(body, genv, gensym, diagnostics));
             core::Expr::EClosure {
                 params,
                 body,
@@ -1117,8 +1325,8 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             ty,
         } => core::Expr::ELet {
             name: name.clone(),
-            value: Box::new(compile_expr(value, genv, gensym)),
-            body: Box::new(compile_expr(body, genv, gensym)),
+            value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
+            body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
         ELet {
@@ -1127,7 +1335,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             body,
             ty,
         } => {
-            let core_value = compile_expr(value, genv, gensym);
+            let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
             let rows = vec![
                 Row {
@@ -1162,18 +1370,24 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             core::Expr::ELet {
                 name: x,
                 value: Box::new(core_value),
-                body: Box::new(compile_rows(genv, gensym, rows, ty)),
+                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
                 ty: ty.clone(),
             }
         }
-        EMatch { expr, arms, ty } => match expr.as_ref() {
+        EMatch {
+            expr,
+            arms,
+            ty,
+            astptr,
+        } => match expr.as_ref() {
             EVar {
                 name,
                 ty: _ty,
                 astptr: _,
             } => {
                 let rows = make_rows(name, arms);
-                compile_rows(genv, gensym, rows, ty)
+                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
+                compile_rows(genv, gensym, diagnostics, rows, ty, match_range)
             }
             _ => {
                 // create a new variable
@@ -1182,8 +1396,9 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
                 // let tmp = (a, b, c) in match tmp { ... }
                 let mtmp = gensym.gensym("mtmp");
                 let rows = make_rows(mtmp.as_str(), arms);
-                let core_expr = compile_expr(expr, genv, gensym);
-                let core_rows = compile_rows(genv, gensym, rows, ty);
+                let core_expr = compile_expr(expr, genv, gensym, diagnostics);
+                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
+                let core_rows = compile_rows(genv, gensym, diagnostics, rows, ty, match_range);
                 core::Expr::ELet {
                     name: mtmp,
                     value: Box::new(core_expr),
@@ -1198,14 +1413,14 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             else_branch,
             ty,
         } => core::Expr::EIf {
-            cond: Box::new(compile_expr(cond, genv, gensym)),
-            then_branch: Box::new(compile_expr(then_branch, genv, gensym)),
-            else_branch: Box::new(compile_expr(else_branch, genv, gensym)),
+            cond: Box::new(compile_expr(cond, genv, gensym, diagnostics)),
+            then_branch: Box::new(compile_expr(then_branch, genv, gensym, diagnostics)),
+            else_branch: Box::new(compile_expr(else_branch, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
         EWhile { cond, body, ty } => core::Expr::EWhile {
-            cond: Box::new(compile_expr(cond, genv, gensym)),
-            body: Box::new(compile_expr(body, genv, gensym)),
+            cond: Box::new(compile_expr(cond, genv, gensym, diagnostics)),
+            body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
         EUnary {
@@ -1214,7 +1429,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             ty,
             resolution,
         } => {
-            let arg = compile_expr(expr, genv, gensym);
+            let arg = compile_expr(expr, genv, gensym, diagnostics);
             let arg_ty = arg.get_ty();
 
             match resolution {
@@ -1263,8 +1478,8 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             resolution,
         } => {
             let args = vec![
-                compile_expr(lhs, genv, gensym),
-                compile_expr(rhs, genv, gensym),
+                compile_expr(lhs, genv, gensym, diagnostics),
+                compile_expr(rhs, genv, gensym, diagnostics),
             ];
             let param_tys: Vec<_> = args.iter().map(|arg| arg.get_ty()).collect();
 
@@ -1306,10 +1521,10 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             }
         }
         ECall { func, args, ty } => {
-            let core_func = compile_expr(func, genv, gensym);
+            let core_func = compile_expr(func, genv, gensym, diagnostics);
             let args = args
                 .iter()
-                .map(|arg| compile_expr(arg, genv, gensym))
+                .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect::<Vec<_>>();
 
             let func_expr = if let tast::Expr::EVar { name, .. } = func.as_ref()
@@ -1332,7 +1547,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             }
         }
         EProj { tuple, index, ty } => {
-            let tuple = compile_expr(tuple, genv, gensym);
+            let tuple = compile_expr(tuple, genv, gensym, diagnostics);
             core::Expr::EProj {
                 tuple: Box::new(tuple),
                 index: *index,
@@ -1345,7 +1560,7 @@ fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
             ty,
         } => {
             let base_ty = expr.get_ty();
-            let expr_core = compile_expr(expr, genv, gensym);
+            let expr_core = compile_expr(expr, genv, gensym, diagnostics);
             let (type_name, type_args) = decompose_struct_type(&base_ty)
                 .unwrap_or_else(|| panic!("Field access on non-struct type {:?}", base_ty));
             let struct_def = genv

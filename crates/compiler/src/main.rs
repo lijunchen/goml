@@ -1,4 +1,4 @@
-use compiler::env::format_typer_diagnostics;
+use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::pipeline::{CompilationError, compile};
 
 use parser::format_parser_diagnostics;
@@ -37,6 +37,11 @@ fn main() {
                 CompilationError::Typer { diagnostics } => {
                     for error in format_typer_diagnostics(diagnostics) {
                         eprintln!("error (typer): {}: {}", file_path.display(), error);
+                    }
+                }
+                CompilationError::Compile { diagnostics } => {
+                    for error in format_compile_diagnostics(diagnostics, &src) {
+                        eprintln!("error (compile): {}: {}", file_path.display(), error);
                     }
                 }
             }

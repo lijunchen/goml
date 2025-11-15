@@ -8,6 +8,7 @@ use crate::{
     env::{Gensym, GlobalTypeEnv},
     tast,
 };
+use diagnostics::Diagnostics;
 
 fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
     let path = PathBuf::from("test_refs.gom");
@@ -23,7 +24,13 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
     let ast_clone = ast.clone();
     let (tast, mut genv) = crate::typer::check_file(ast);
     let gensym = Gensym::new();
-    let core = compile_match::compile_file(&genv, &gensym, &tast);
+    let mut compile_diagnostics = Diagnostics::new();
+    let core = compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
+    assert!(
+        compile_diagnostics.is_empty(),
+        "unexpected compile diagnostics: {:?}",
+        compile_diagnostics
+    );
     genv.record_tuple_types_from_core(&core);
     (ast_clone, tast, genv)
 }

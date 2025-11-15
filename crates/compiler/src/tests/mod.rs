@@ -9,7 +9,7 @@ use diagnostics::Diagnostics;
 use parser::{debug_tree, format_parser_diagnostics};
 
 use crate::{
-    env::format_typer_diagnostics,
+    env::{format_compile_diagnostics, format_typer_diagnostics},
     pipeline::{self, CompilationError},
 };
 
@@ -38,6 +38,13 @@ fn test_typer_error_cases() -> anyhow::Result<()> {
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let diagnostics_dir = root_dir.join("src/tests/typer");
     run_typer_error_cases(&diagnostics_dir)
+}
+
+#[test]
+fn test_compile_error_cases() -> anyhow::Result<()> {
+    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let diagnostics_dir = root_dir.join("src/tests/diagnostics/compile");
+    run_compile_error_cases(&diagnostics_dir)
 }
 
 #[test]
@@ -205,6 +212,11 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
             p.display(),
             format_typer_diagnostics(&diagnostics).join("\n")
         ),
+        CompilationError::Compile { diagnostics } => anyhow::anyhow!(
+            "Compile errors in {}:\n{}",
+            p.display(),
+            format_compile_diagnostics(&diagnostics, &input).join("\n")
+        ),
     })?;
 
     let cst_debug = debug_tree(&compilation.green_node);
@@ -265,6 +277,13 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
                         format_typer_diagnostics(&diagnostics).join("\n")
                     );
                 }
+                Err(CompilationError::Compile { diagnostics }) => {
+                    bail!(
+                        "Expected parse errors in {}, but compile stage reported diagnostics: {}",
+                        p.display(),
+                        format_compile_diagnostics(&diagnostics, &input).join("\n")
+                    );
+                }
                 Ok(_) => {
                     bail!(
                         "Expected parse errors in {}, but compilation succeeded",
@@ -274,6 +293,65 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
             }
         }
     }
+    Ok(())
+}
+
+fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
+    if !dir.exists() {
+        return Ok(());
+    }
+
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        if entry.file_type()?.is_file()
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+        {
+            let p = entry.path();
+            println!("Testing compile diagnostics: {}", p.display());
+            let filename = p.file_name().unwrap().to_str().unwrap();
+            let diag_filename = p.with_file_name(format!("{}.diag", filename));
+
+            let input = std::fs::read_to_string(&p)?;
+            match pipeline::compile(&p, &input) {
+                Err(CompilationError::Compile { diagnostics }) => {
+                    let mut formatted = format_compile_diagnostics(&diagnostics, &input).join("\n");
+                    if !formatted.is_empty() {
+                        formatted.push('\n');
+                    }
+
+                    expect_test::expect_file![diag_filename].assert_eq(&formatted);
+                }
+                Err(CompilationError::Parser { diagnostics }) => {
+                    bail!(
+                        "Expected compile diagnostics in {}, but parser reported diagnostics: {}",
+                        p.display(),
+                        format_parser_diagnostics(&diagnostics, &input).join("\n")
+                    );
+                }
+                Err(CompilationError::Lower { diagnostics }) => {
+                    bail!(
+                        "Expected compile diagnostics in {}, but lowering reported diagnostics: {}",
+                        p.display(),
+                        format_lower_diagnostics(&diagnostics).join("\n")
+                    );
+                }
+                Err(CompilationError::Typer { diagnostics }) => {
+                    bail!(
+                        "Expected compile diagnostics in {}, but typer reported diagnostics: {}",
+                        p.display(),
+                        format_typer_diagnostics(&diagnostics).join("\n")
+                    );
+                }
+                Ok(_) => {
+                    bail!(
+                        "Expected compile diagnostics in {}, but compilation succeeded",
+                        p.display()
+                    );
+                }
+            }
+        }
+    }
+
     Ok(())
 }
 
@@ -310,6 +388,13 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
                         "Expected typer diagnostics in {}, but lowering reported diagnostics: {}",
                         p.display(),
                         format_lower_diagnostics(&diagnostics).join("\n")
+                    );
+                }
+                Err(CompilationError::Compile { diagnostics }) => {
+                    bail!(
+                        "Expected typer diagnostics in {}, but compile stage reported diagnostics: {}",
+                        p.display(),
+                        format_compile_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Ok(_) => {

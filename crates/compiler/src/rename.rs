@@ -199,7 +199,7 @@ impl Rename {
                     body: Box::new(new_body),
                 }
             }
-            ast::Expr::EMatch { expr, arms } => {
+            ast::Expr::EMatch { expr, arms, astptr } => {
                 let new_expr = self.rename_expr(expr, env, global_funcs);
                 let new_arms = arms
                     .iter()
@@ -215,6 +215,7 @@ impl Rename {
                 ast::Expr::EMatch {
                     expr: Box::new(new_expr),
                     arms: new_arms,
+                    astptr: astptr.clone(),
                 }
             }
             ast::Expr::EIf {

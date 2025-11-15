@@ -213,7 +213,11 @@ impl Expr {
                     .group()
             }
 
-            Self::EMatch { expr, arms } => {
+            Self::EMatch {
+                expr,
+                arms,
+                astptr: _,
+            } => {
                 let match_expr = RcDoc::text("match")
                     .append(RcDoc::space())
                     .append(expr.to_doc())

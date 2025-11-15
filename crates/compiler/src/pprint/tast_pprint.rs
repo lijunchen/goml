@@ -415,7 +415,12 @@ impl Expr {
                 .append(body.to_doc(genv))
                 .group(),
 
-            Self::EMatch { expr, arms, ty: _ } => {
+            Self::EMatch {
+                expr,
+                arms,
+                ty: _,
+                astptr: _,
+            } => {
                 let match_expr = RcDoc::text("match")
                     .append(RcDoc::space())
                     .append(expr.to_doc(genv))
