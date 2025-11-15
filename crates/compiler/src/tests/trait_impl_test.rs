@@ -218,3 +218,97 @@ impl Point {
             .contains_key(&(encoded, origin_ident.clone()))
     );
 }
+
+#[test]
+fn inherent_impl_instantiates_self_types() {
+    let src = r#"
+struct Point { x: int32, y: int32 }
+
+impl Point {
+    fn copy(self: Self, other: Self) -> Self { other }
+    fn origin() -> Self { Point { x: 0, y: 0 } }
+}
+"#;
+
+    let (tast_file, genv) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
+    assert!(
+        diagnostics.is_empty(),
+        "unexpected diagnostics: {:?}",
+        diagnostics
+    );
+
+    let point_ty = tast::Ty::TCon {
+        name: "Point".to_string(),
+    };
+    let encoded = encode_ty(&point_ty);
+    let copy_ident = ::ast::ast::Lident("copy".to_string());
+
+    let (copy_mangled, copy_ty) = genv
+        .inherent_impls
+        .get(&(encoded.clone(), copy_ident.clone()))
+        .expect("copy method registered");
+
+    assert_eq!(
+        copy_mangled,
+        &mangle_inherent_name(&point_ty, "copy"),
+        "unexpected mangled name for copy",
+    );
+
+    match copy_ty {
+        tast::Ty::TFunc { params, ret_ty } => {
+            assert_eq!(
+                params,
+                &vec![point_ty.clone(), point_ty.clone()],
+                "copy params should be instantiated to Point",
+            );
+            assert_eq!(
+                **ret_ty,
+                point_ty.clone(),
+                "copy return type should be instantiated to Point",
+            );
+        }
+        other => panic!("expected copy to have function type, found {:?}", other),
+    }
+
+    let copy_func_ty = genv
+        .funcs
+        .get(copy_mangled)
+        .expect("copy function registered in funcs");
+    assert_eq!(copy_func_ty, copy_ty);
+
+    let impl_block = tast_file
+        .toplevels
+        .iter()
+        .find_map(|item| {
+            if let tast::Item::ImplBlock(block) = item {
+                Some(block)
+            } else {
+                None
+            }
+        })
+        .expect("expected inherent impl block in tast");
+
+    let copy_fn = impl_block
+        .methods
+        .iter()
+        .find(|f| f.name == "copy")
+        .expect("copy method present in tast");
+    assert_eq!(copy_fn.params[0].1, point_ty.clone());
+    assert_eq!(copy_fn.params[1].1, point_ty.clone());
+    assert_eq!(copy_fn.ret_ty, point_ty.clone());
+
+    let origin_ident = ::ast::ast::Lident("origin".to_string());
+    let (_, origin_ty) = genv
+        .inherent_impls
+        .get(&(encoded, origin_ident))
+        .expect("origin method registered");
+
+    match origin_ty {
+        tast::Ty::TFunc { params, ret_ty } => {
+            assert!(params.is_empty(), "origin should not take parameters");
+            assert_eq!(**ret_ty, point_ty);
+        }
+        other => panic!("expected origin to have function type, found {:?}", other),
+    }
+}

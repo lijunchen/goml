@@ -176,14 +176,14 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
             .map(|(_, ty)| {
                 let ty = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ty, &tparam_names);
-                ty
+                instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
                 let ret = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ret, &tparam_names);
-                ret
+                instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
         };
@@ -290,14 +290,14 @@ fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
             .map(|(_, ty)| {
                 let ty = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ty, &tparam_names);
-                ty
+                instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
                 let ret = tast::Ty::from_ast(ty, &m.generics);
                 validate_ty(genv, &ret, &tparam_names);
-                ret
+                instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
         };
@@ -405,7 +405,7 @@ fn define_extern_type(genv: &mut GlobalTypeEnv, ext: &ast::ExternType) {
     genv.register_extern_type(ext.goml_name.0.clone());
 }
 
-fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
         tast::Ty::TUnit => tast::Ty::TUnit,
@@ -424,7 +424,7 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()
-                .map(|ty| instantiate_trait_method_ty(ty, self_ty))
+                .map(|ty| instantiate_self_ty(ty, self_ty))
                 .collect(),
         },
         tast::Ty::TCon { name } => {
@@ -435,28 +435,32 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
             }
         }
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-            ty: Box::new(instantiate_trait_method_ty(ty, self_ty)),
+            ty: Box::new(instantiate_self_ty(ty, self_ty)),
             args: args
                 .iter()
-                .map(|ty| instantiate_trait_method_ty(ty, self_ty))
+                .map(|ty| instantiate_self_ty(ty, self_ty))
                 .collect(),
         },
         tast::Ty::TArray { len, elem } => tast::Ty::TArray {
             len: *len,
-            elem: Box::new(instantiate_trait_method_ty(elem, self_ty)),
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
-            elem: Box::new(instantiate_trait_method_ty(elem, self_ty)),
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()
-                .map(|param| instantiate_trait_method_ty(param, self_ty))
+                .map(|param| instantiate_self_ty(param, self_ty))
                 .collect(),
-            ret_ty: Box::new(instantiate_trait_method_ty(ret_ty, self_ty)),
+            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
         },
     }
+}
+
+fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+    instantiate_self_ty(ty, self_ty)
 }
 
 pub fn collect_typedefs(genv: &mut GlobalTypeEnv, ast: &ast::File) {
@@ -570,7 +574,11 @@ fn check_impl_block(
         let param_types: Vec<(Lident, tast::Ty)> = f
             .params
             .iter()
-            .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(ty, &f.generics)))
+            .map(|(name, ty)| {
+                let ty = tast::Ty::from_ast(ty, &f.generics);
+                let ty = instantiate_self_ty(&ty, &for_ty);
+                (name.clone(), ty)
+            })
             .collect();
         let new_params = param_types
             .iter()
@@ -578,7 +586,10 @@ fn check_impl_block(
             .collect::<Vec<_>>();
 
         let ret_ty = match &f.ret_ty {
-            Some(ty) => tast::Ty::from_ast(ty, &f.generics),
+            Some(ty) => {
+                let ty = tast::Ty::from_ast(ty, &f.generics);
+                instantiate_self_ty(&ty, &for_ty)
+            }
             None => tast::Ty::TUnit,
         };
 
