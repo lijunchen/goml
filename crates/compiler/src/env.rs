@@ -5,7 +5,7 @@ use indexmap::{IndexMap, IndexSet};
 use line_index::LineIndex;
 
 pub use super::builtins::builtin_function_names;
-use super::builtins::builtin_functions;
+use super::builtins::{builtin_functions, builtin_inherent_methods};
 use crate::{
     core,
     tast::{self, Constructor},
@@ -109,7 +109,7 @@ impl GlobalTypeEnv {
             trait_defs: IndexMap::new(),
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
-            inherent_impls: IndexMap::new(),
+            inherent_impls: builtin_inherent_methods(),
             tuple_types: IndexSet::new(),
             array_types: IndexSet::new(),
             ref_types: IndexSet::new(),

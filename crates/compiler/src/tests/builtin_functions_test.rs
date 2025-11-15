@@ -1,3 +1,5 @@
+use ast::ast::Lident;
+
 use crate::{env::GlobalTypeEnv, tast};
 
 #[test]
@@ -281,5 +283,24 @@ fn env_does_not_register_legacy_int_aliases() {
             "legacy builtin `{}` should not be registered",
             symbol,
         );
+    }
+}
+
+#[test]
+fn env_registers_builtin_int32_inherent_to_string() {
+    let env = GlobalTypeEnv::new();
+    let method = Lident("to_string".to_string());
+
+    match env.lookup_inherent_method(&tast::Ty::TInt32, &method) {
+        Some((name, tast::Ty::TFunc { params, ret_ty })) => {
+            assert_eq!(name, "int32_to_string");
+            assert_eq!(params.len(), 1);
+            assert!(matches!(params[0], tast::Ty::TInt32));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TString));
+        }
+        other => panic!(
+            "expected builtin int32.to_string to map to builtin int32_to_string, got {:?}",
+            other
+        ),
     }
 }
