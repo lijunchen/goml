@@ -228,13 +228,13 @@ fn lower_trait_method(
 }
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
-    let trait_name = node.uident().unwrap().to_string();
+    let trait_name = node.uident().map(|token| token.to_string());
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
         None => {
             ctx.push_error(
                 Some(node.syntax().text_range()),
-                format!("ImplBlock {} has no for type", trait_name),
+                "Impl block is missing a target type".to_string(),
             );
             return None;
         }
@@ -244,7 +244,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .flat_map(|function| lower_fn(ctx, function))
         .collect();
     Some(ast::ImplBlock {
-        trait_name: ast::Uident::new(&trait_name),
+        trait_name: trait_name.map(|name| ast::Uident::new(&name)),
         for_type,
         methods,
     })

@@ -1,10 +1,11 @@
 use std::collections::HashSet;
 
-use ::ast::ast::{Lident, StructDef, TraitMethodSignature};
+use ::ast::ast::{Lident, StructDef, TraitMethodSignature, Uident};
 use ast::ast;
 
 use crate::{
     env::{self, GlobalTypeEnv, LocalTypeEnv},
+    mangle::mangle_inherent_name,
     rename,
     tast::{self},
     type_encoding::encode_ty,
@@ -115,11 +116,11 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
     }
 }
 
-fn define_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
+fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trait_name: &Uident) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
     validate_ty(genv, &for_ty, &empty_tparams);
-    let trait_name_str = impl_block.trait_name.0.clone();
+    let trait_name_str = trait_name.0.clone();
     let trait_method_names: HashSet<String> = genv
         .trait_defs
         .keys()
@@ -261,6 +262,57 @@ fn define_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
                 trait_name_str, for_ty, method_name
             ));
         }
+    }
+}
+
+fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
+    let empty_tparams = HashSet::new();
+    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
+    validate_ty(genv, &for_ty, &empty_tparams);
+
+    let mut implemented_methods: HashSet<String> = HashSet::new();
+    for m in impl_block.methods.iter() {
+        let method_name = m.name.clone();
+        let method_name_str = method_name.0.clone();
+
+        if !implemented_methods.insert(method_name_str.clone()) {
+            genv.report_typer_error(format!(
+                "Method {} implemented multiple times in impl for {:?}",
+                method_name_str, for_ty
+            ));
+            continue;
+        }
+
+        let tparam_names = type_param_name_set(&m.generics);
+        let params = m
+            .params
+            .iter()
+            .map(|(_, ty)| {
+                let ty = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ty, &tparam_names);
+                ty
+            })
+            .collect::<Vec<_>>();
+        let ret = match &m.ret_ty {
+            Some(ty) => {
+                let ret = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ret, &tparam_names);
+                ret
+            }
+            None => tast::Ty::TUnit,
+        };
+
+        let impl_method_ty = tast::Ty::TFunc {
+            params: params.clone(),
+            ret_ty: Box::new(ret.clone()),
+        };
+
+        let mangled_name = mangle_inherent_name(&for_ty, &method_name_str);
+        let key = (encode_ty(&for_ty), method_name.clone());
+        genv.funcs
+            .insert(mangled_name.clone(), impl_method_ty.clone());
+        genv.inherent_impls
+            .insert(key, (mangled_name, impl_method_ty));
     }
 }
 
@@ -415,7 +467,13 @@ pub fn collect_typedefs(genv: &mut GlobalTypeEnv, ast: &ast::File) {
             ast::Item::EnumDef(enum_def) => define_enum(genv, enum_def),
             ast::Item::StructDef(struct_def) => define_struct(genv, struct_def),
             ast::Item::TraitDef(trait_def) => define_trait(genv, trait_def),
-            ast::Item::ImplBlock(impl_block) => define_impl(genv, impl_block),
+            ast::Item::ImplBlock(impl_block) => {
+                if let Some(trait_name) = &impl_block.trait_name {
+                    define_trait_impl(genv, impl_block, trait_name);
+                } else {
+                    define_inherent_impl(genv, impl_block);
+                }
+            }
             ast::Item::Fn(func) => define_function(genv, func),
             ast::Item::ExternGo(ext) => define_extern_go(genv, ext),
             ast::Item::ExternType(ext) => define_extern_type(genv, ext),

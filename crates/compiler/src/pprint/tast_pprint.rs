@@ -45,21 +45,29 @@ impl Item {
 
 impl ImplBlock {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        let trait_name = RcDoc::text(self.trait_name.0.clone());
         let for_type = self.for_type.to_doc(genv);
         let methods = RcDoc::intersperse(
             self.methods.iter().map(|method| method.to_doc(genv)),
             RcDoc::hardline(),
         );
 
-        RcDoc::text("impl")
-            .append(RcDoc::space())
-            .append(trait_name)
-            .append(RcDoc::space())
-            .append(RcDoc::text("for"))
-            .append(RcDoc::space())
-            .append(for_type)
-            .append(RcDoc::text("{"))
+        let header = if let Some(trait_name) = &self.trait_name {
+            RcDoc::text("impl")
+                .append(RcDoc::space())
+                .append(RcDoc::text(trait_name.0.clone()))
+                .append(RcDoc::space())
+                .append(RcDoc::text("for"))
+                .append(RcDoc::space())
+                .append(for_type)
+                .append(RcDoc::text("{"))
+        } else {
+            RcDoc::text("impl")
+                .append(RcDoc::space())
+                .append(for_type)
+                .append(RcDoc::text("{"))
+        };
+
+        header
             .append(RcDoc::hardline().append(methods).nest(2))
             .append(RcDoc::hardline())
             .append(RcDoc::text("}"))
