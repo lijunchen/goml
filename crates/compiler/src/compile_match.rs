@@ -12,6 +12,7 @@ use crate::tast::{self, File, Prim};
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
+use std::hash::Hash;
 
 #[derive(Debug, Clone)]
 struct Column {
@@ -588,9 +589,127 @@ fn compile_int_case(
     ty: &Ty,
     literal_ty: Ty,
 ) -> core::Expr {
+    match literal_ty {
+        Ty::TInt8 => {
+            return compile_int_case_impl::<i8, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TInt8,
+                |prim| prim.as_signed().map(|value| value as i8),
+                |value| Prim::Int8 { value },
+            );
+        }
+        Ty::TInt16 => {
+            return compile_int_case_impl::<i16, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TInt16,
+                |prim| prim.as_signed().map(|value| value as i16),
+                |value| Prim::Int16 { value },
+            );
+        }
+        Ty::TInt32 => {
+            return compile_int_case_impl::<i32, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TInt32,
+                |prim| prim.as_signed().map(|value| value as i32),
+                |value| Prim::Int32 { value },
+            );
+        }
+        Ty::TInt64 => {
+            return compile_int_case_impl::<i64, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TInt64,
+                |prim| prim.as_signed().map(|value| value as i64),
+                |value| Prim::Int64 { value },
+            );
+        }
+        Ty::TUint8 => {
+            return compile_int_case_impl::<u8, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TUint8,
+                |prim| prim.as_unsigned().map(|value| value as u8),
+                |value| Prim::UInt8 { value },
+            );
+        }
+        Ty::TUint16 => {
+            return compile_int_case_impl::<u16, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TUint16,
+                |prim| prim.as_unsigned().map(|value| value as u16),
+                |value| Prim::UInt16 { value },
+            );
+        }
+        Ty::TUint32 => {
+            return compile_int_case_impl::<u32, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TUint32,
+                |prim| prim.as_unsigned().map(|value| value as u32),
+                |value| Prim::UInt32 { value },
+            );
+        }
+        Ty::TUint64 => {
+            return compile_int_case_impl::<u64, _, _>(
+                genv,
+                gensym,
+                rows,
+                bvar,
+                ty,
+                Ty::TUint64,
+                |prim| prim.as_unsigned().map(|value| value as u64),
+                |value| Prim::UInt64 { value },
+            );
+        }
+        _ => {}
+    }
+
+    unreachable!("expected integer type");
+}
+
+fn compile_int_case_impl<T, Extract, ToPrim>(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    rows: Vec<Row>,
+    bvar: &Variable,
+    ty: &Ty,
+    literal_ty: Ty,
+    extract: Extract,
+    to_prim: ToPrim,
+) -> core::Expr
+where
+    T: Eq + Hash + Copy,
+    Extract: Fn(&Prim) -> Option<T>,
+    ToPrim: Fn(T) -> Prim,
+{
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
-    let mut value_rows: IndexMap<i128, Vec<Row>> = IndexMap::new();
+    let mut value_rows: IndexMap<T, Vec<Row>> = IndexMap::new();
     let mut fallback_rows: Vec<Row> = Vec::new();
     let mut default_rows: Vec<Row> = Vec::new();
 
@@ -598,10 +717,7 @@ fn compile_int_case(
         if let Some(col) = row.remove_column(&bvar.name) {
             match col.pat {
                 Pat::PPrim { value, ty: _ } => {
-                    let key = value
-                        .as_signed()
-                        .or_else(|| value.as_unsigned().map(|v| v as i128))
-                        .expect("expected integer primitive pattern");
+                    let key = extract(&value).expect("expected integer primitive pattern");
                     let entry = value_rows
                         .entry(key)
                         .or_insert_with(|| fallback_rows.clone());
@@ -615,7 +731,7 @@ fn compile_int_case(
                     fallback_rows.push(row_clone.clone());
                     default_rows.push(row);
                 }
-                _ => unreachable!("expected int32 pattern"),
+                _ => unreachable!("expected integer pattern"),
             }
         } else {
             let row_clone = row.clone();
@@ -631,7 +747,7 @@ fn compile_int_case(
         .into_iter()
         .map(|(value, rows)| core::Arm {
             lhs: core::Expr::EPrim {
-                value: Prim::from_int_literal(value, &literal_ty),
+                value: to_prim(value),
                 ty: literal_ty.clone(),
             },
             body: compile_rows(genv, gensym, rows, ty),
