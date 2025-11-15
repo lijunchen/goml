@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, num::IntErrorKind};
 
 use ::ast::ast::Lident;
 use ast::ast;
@@ -27,14 +27,13 @@ impl Typer {
                 value: Prim::boolean(*value),
                 ty: tast::Ty::TBool,
             },
-            ast::Expr::EInt { value } => match self.parse_integer_literal(value) {
-                Some(parsed) => {
-                    let ty = tast::Ty::TInt32;
-                    self.ensure_integer_literal_fits(parsed, &ty);
-                    int_literal_expr(parsed, ty)
-                }
-                None => int_literal_expr(0, tast::Ty::TInt32),
-            },
+            ast::Expr::EInt { value } => {
+                let ty = tast::Ty::TInt32;
+                let prim = self
+                    .parse_integer_literal_with_ty(value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
             ast::Expr::EFloat { value } => {
                 self.ensure_float_literal_fits(*value, &tast::Ty::TFloat64);
                 let ty = tast::Ty::TFloat64;
@@ -94,38 +93,20 @@ impl Typer {
     ) -> tast::Expr {
         let expr_tast = match e {
             ast::Expr::EInt { value } => {
-                let target_int_ty = integer_literal_target(expected);
-                let expects_float = is_float_ty(expected);
-                match self.parse_integer_literal(value) {
-                    Some(parsed) => {
-                        if let Some(target_ty) = target_int_ty.clone() {
-                            self.ensure_integer_literal_fits(parsed, &target_ty);
-                            int_literal_expr(parsed, target_ty)
-                        } else if expects_float {
-                            let float_value = parsed as f64;
-                            self.ensure_float_literal_fits(float_value, expected);
-                            tast::Expr::EPrim {
-                                value: Prim::from_float_literal(float_value, expected),
-                                ty: expected.clone(),
-                            }
-                        } else {
-                            let ty = tast::Ty::TInt32;
-                            self.ensure_integer_literal_fits(parsed, &ty);
-                            int_literal_expr(parsed, ty)
-                        }
+                if let Some(target_ty) = integer_literal_target(expected) {
+                    let prim = self
+                        .parse_integer_literal_with_ty(value, &target_ty)
+                        .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
+                    tast::Expr::EPrim {
+                        value: prim,
+                        ty: target_ty,
                     }
-                    None => {
-                        if let Some(target_ty) = target_int_ty {
-                            int_literal_expr(0, target_ty)
-                        } else if expects_float {
-                            tast::Expr::EPrim {
-                                value: Prim::from_float_literal(0.0, expected),
-                                ty: expected.clone(),
-                            }
-                        } else {
-                            int_literal_expr(0, tast::Ty::TInt32)
-                        }
-                    }
+                } else {
+                    let ty = tast::Ty::TInt32;
+                    let prim = self
+                        .parse_integer_literal_with_ty(value, &ty)
+                        .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                    tast::Expr::EPrim { value: prim, ty }
                 }
             }
             ast::Expr::EFloat { value } => {
@@ -918,20 +899,10 @@ impl Typer {
         lhs: &ast::Expr,
         rhs: &ast::Expr,
     ) -> tast::Expr {
-        let mut lhs_tast = self.infer_expr(genv, local_env, lhs);
-        let mut rhs_tast = self.infer_expr(genv, local_env, rhs);
-        let mut lhs_ty = lhs_tast.get_ty();
-        let mut rhs_ty = rhs_tast.get_ty();
-
-        if let Some(new_rhs) = self.try_adjust_int_literal(rhs, &rhs_tast, &lhs_ty) {
-            rhs_tast = new_rhs;
-            rhs_ty = rhs_tast.get_ty();
-        }
-
-        if let Some(new_lhs) = self.try_adjust_int_literal(lhs, &lhs_tast, &rhs_ty) {
-            lhs_tast = new_lhs;
-            lhs_ty = lhs_tast.get_ty();
-        }
+        let lhs_tast = self.infer_expr(genv, local_env, lhs);
+        let rhs_tast = self.infer_expr(genv, local_env, rhs);
+        let lhs_ty = lhs_tast.get_ty();
+        let rhs_ty = rhs_tast.get_ty();
         let method_name = op.method_name();
 
         if let Some(trait_name) = genv
@@ -985,50 +956,6 @@ impl Typer {
             rhs: Box::new(rhs_tast),
             ty: ret_ty.clone(),
             resolution: tast::BinaryResolution::Builtin,
-        }
-    }
-
-    fn try_adjust_int_literal(
-        &mut self,
-        ast_expr: &ast::Expr,
-        tast_expr: &tast::Expr,
-        target_ty: &tast::Ty,
-    ) -> Option<tast::Expr> {
-        match (ast_expr, tast_expr) {
-            (ast::Expr::EInt { value }, tast::Expr::EPrim { .. }) => {
-                if let Some(parsed) = self.parse_integer_literal(value) {
-                    if is_integer_ty(target_ty) {
-                        self.ensure_integer_literal_fits(parsed, target_ty);
-                        Some(int_literal_expr(parsed, target_ty.clone()))
-                    } else if is_float_ty(target_ty) {
-                        let float_value = parsed as f64;
-                        self.ensure_float_literal_fits(float_value, target_ty);
-                        Some(tast::Expr::EPrim {
-                            value: Prim::from_float_literal(float_value, target_ty),
-                            ty: target_ty.clone(),
-                        })
-                    } else {
-                        None
-                    }
-                } else if is_integer_ty(target_ty) {
-                    Some(int_literal_expr(0, target_ty.clone()))
-                } else if is_float_ty(target_ty) {
-                    Some(tast::Expr::EPrim {
-                        value: Prim::from_float_literal(0.0, target_ty),
-                        ty: target_ty.clone(),
-                    })
-                } else {
-                    None
-                }
-            }
-            (ast::Expr::EFloat { value }, tast::Expr::EPrim { .. }) if is_float_ty(target_ty) => {
-                self.ensure_float_literal_fits(*value, target_ty);
-                Some(tast::Expr::EPrim {
-                    value: Prim::from_float_literal(*value, target_ty),
-                    ty: target_ty.clone(),
-                })
-            }
-            _ => None,
         }
     }
 
@@ -1144,11 +1071,12 @@ impl Typer {
 
     fn check_pat_int(&mut self, value: &str, ty: &tast::Ty) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
-        let parsed = self.parse_integer_literal(value).unwrap_or(0);
-        self.ensure_integer_literal_fits(parsed, &target_ty);
+        let prim = self
+            .parse_integer_literal_with_ty(value, &target_ty)
+            .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
         self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PPrim {
-            value: Prim::from_int_literal(parsed, &target_ty),
+            value: prim,
             ty: ty.clone(),
         }
     }
@@ -1345,43 +1273,18 @@ fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
-fn int_literal_expr(value: i128, ty: tast::Ty) -> tast::Expr {
-    tast::Expr::EPrim {
-        value: Prim::from_int_literal(value, &ty),
-        ty,
-    }
-}
-
-fn integer_bounds(ty: &tast::Ty) -> Option<(i128, i128)> {
-    match ty {
-        tast::Ty::TInt8 => Some((i8::MIN as i128, i8::MAX as i128)),
-        tast::Ty::TInt16 => Some((i16::MIN as i128, i16::MAX as i128)),
-        tast::Ty::TInt32 => Some((i32::MIN as i128, i32::MAX as i128)),
-        tast::Ty::TInt64 => Some((i64::MIN as i128, i64::MAX as i128)),
-        tast::Ty::TUint8 => Some((0, u8::MAX as i128)),
-        tast::Ty::TUint16 => Some((0, u16::MAX as i128)),
-        tast::Ty::TUint32 => Some((0, u32::MAX as i128)),
-        tast::Ty::TUint64 => Some((0, u64::MAX as i128)),
-        _ => None,
-    }
-}
-
-fn integer_type_name(ty: &tast::Ty) -> Option<&'static str> {
-    match ty {
-        tast::Ty::TInt8 => Some("int8"),
-        tast::Ty::TInt16 => Some("int16"),
-        tast::Ty::TInt32 => Some("int32"),
-        tast::Ty::TInt64 => Some("int64"),
-        tast::Ty::TUint8 => Some("uint8"),
-        tast::Ty::TUint16 => Some("uint16"),
-        tast::Ty::TUint32 => Some("uint32"),
-        tast::Ty::TUint64 => Some("uint64"),
-        _ => None,
-    }
-}
-
 fn is_integer_ty(ty: &tast::Ty) -> bool {
-    integer_bounds(ty).is_some()
+    matches!(
+        ty,
+        tast::Ty::TInt8
+            | tast::Ty::TInt16
+            | tast::Ty::TInt32
+            | tast::Ty::TInt64
+            | tast::Ty::TUint8
+            | tast::Ty::TUint16
+            | tast::Ty::TUint32
+            | tast::Ty::TUint64
+    )
 }
 
 fn is_float_ty(ty: &tast::Ty) -> bool {
@@ -1393,32 +1296,92 @@ fn is_numeric_ty(ty: &tast::Ty) -> bool {
 }
 
 impl Typer {
-    fn parse_integer_literal(&mut self, literal: &str) -> Option<i128> {
-        match literal.parse::<i128>() {
+    fn parse_integer_literal_with_ty(&mut self, literal: &str, ty: &tast::Ty) -> Option<Prim> {
+        match ty {
+            tast::Ty::TInt8 => self
+                .parse_signed_integer::<i8>(literal, "int8")
+                .map(|value| Prim::Int8 { value }),
+            tast::Ty::TInt16 => self
+                .parse_signed_integer::<i16>(literal, "int16")
+                .map(|value| Prim::Int16 { value }),
+            tast::Ty::TInt32 => self
+                .parse_signed_integer::<i32>(literal, "int32")
+                .map(|value| Prim::Int32 { value }),
+            tast::Ty::TInt64 => self
+                .parse_signed_integer::<i64>(literal, "int64")
+                .map(|value| Prim::Int64 { value }),
+            tast::Ty::TUint8 => self
+                .parse_unsigned_integer::<u8>(literal, "uint8")
+                .map(|value| Prim::UInt8 { value }),
+            tast::Ty::TUint16 => self
+                .parse_unsigned_integer::<u16>(literal, "uint16")
+                .map(|value| Prim::UInt16 { value }),
+            tast::Ty::TUint32 => self
+                .parse_unsigned_integer::<u32>(literal, "uint32")
+                .map(|value| Prim::UInt32 { value }),
+            tast::Ty::TUint64 => self
+                .parse_unsigned_integer::<u64>(literal, "uint64")
+                .map(|value| Prim::UInt64 { value }),
+            _ => None,
+        }
+    }
+
+    fn parse_signed_integer<T>(&mut self, literal: &str, ty_name: &str) -> Option<T>
+    where
+        T: std::str::FromStr<Err = std::num::ParseIntError>,
+    {
+        match literal.parse::<T>() {
             Ok(value) => Some(value),
-            Err(_) => {
-                self.report_error(format!("Invalid integer literal: {}", literal));
+            Err(err) => {
+                match err.kind() {
+                    IntErrorKind::Empty | IntErrorKind::InvalidDigit => {
+                        self.report_invalid_integer_literal(literal);
+                    }
+                    _ => {
+                        self.report_error(format!(
+                            "Integer literal {} does not fit in {}",
+                            literal, ty_name
+                        ));
+                    }
+                }
                 None
             }
         }
     }
 
-    fn ensure_integer_literal_fits(&mut self, value: i128, ty: &tast::Ty) {
-        if let Some((min, max)) = integer_bounds(ty)
-            && (value < min || value > max)
-        {
-            if let Some(name) = integer_type_name(ty) {
-                self.report_error(format!(
-                    "Integer literal {} does not fit in {}",
-                    value, name
-                ));
-            } else {
-                self.report_error(format!(
-                    "Integer literal {} does not fit in integer type {:?}",
-                    value, ty
-                ));
+    fn parse_unsigned_integer<T>(&mut self, literal: &str, ty_name: &str) -> Option<T>
+    where
+        T: std::str::FromStr<Err = std::num::ParseIntError>,
+    {
+        if literal.starts_with('-') {
+            self.report_error(format!(
+                "Integer literal {} does not fit in {}",
+                literal, ty_name
+            ));
+            return None;
+        }
+
+        match literal.parse::<T>() {
+            Ok(value) => Some(value),
+            Err(err) => {
+                match err.kind() {
+                    IntErrorKind::Empty | IntErrorKind::InvalidDigit => {
+                        self.report_invalid_integer_literal(literal);
+                    }
+                    _ => {
+                        self.report_error(format!(
+                            "Integer literal {} does not fit in {}",
+                            literal, ty_name
+                        ));
+                    }
+                }
+                None
             }
         }
+    }
+
+    fn report_invalid_integer_literal(&mut self, literal: &str) {
+        self.report_error(format!("Invalid integer literal: {}", literal));
     }
 
     fn ensure_float_literal_fits(&mut self, value: f64, ty: &tast::Ty) {
