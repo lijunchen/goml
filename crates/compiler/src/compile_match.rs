@@ -743,6 +743,13 @@ where
         }
     }
 
+    if default_rows.is_empty() {
+        panic!(
+            "Non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
+            literal_ty
+        );
+    }
+
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
