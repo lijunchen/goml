@@ -93,28 +93,13 @@ impl Typer {
     ) -> tast::Expr {
         let expr_tast = match e {
             ast::Expr::EInt { value } => {
-                let target_int_ty = integer_literal_target(expected);
-                let expects_float = is_float_ty(expected);
-                if let Some(target_ty) = target_int_ty {
+                if let Some(target_ty) = integer_literal_target(expected) {
                     let prim = self
                         .parse_integer_literal_with_ty(value, &target_ty)
                         .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
                     tast::Expr::EPrim {
                         value: prim,
                         ty: target_ty,
-                    }
-                } else if expects_float {
-                    if let Some(float_value) = self.parse_integer_literal_as_float(value) {
-                        self.ensure_float_literal_fits(float_value, expected);
-                        tast::Expr::EPrim {
-                            value: Prim::from_float_literal(float_value, expected),
-                            ty: expected.clone(),
-                        }
-                    } else {
-                        tast::Expr::EPrim {
-                            value: Prim::from_float_literal(0.0, expected),
-                            ty: expected.clone(),
-                        }
                     }
                 } else {
                     let ty = tast::Ty::TInt32;
