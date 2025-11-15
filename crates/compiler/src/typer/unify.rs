@@ -795,7 +795,12 @@ impl Typer {
                     ty: ty.clone(),
                 }
             }
-            tast::Expr::EMatch { expr, arms, ty } => {
+            tast::Expr::EMatch {
+                expr,
+                arms,
+                ty,
+                astptr,
+            } => {
                 let ty = self.subst_ty(&ty);
                 let expr = Box::new(self.subst(*expr));
                 let arms = arms
@@ -809,6 +814,7 @@ impl Typer {
                     expr,
                     arms,
                     ty: ty.clone(),
+                    astptr,
                 }
             }
             tast::Expr::EIf {

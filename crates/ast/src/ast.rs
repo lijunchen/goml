@@ -218,6 +218,7 @@ pub enum Expr {
     EMatch {
         expr: Box<Expr>,
         arms: Vec<Arm>,
+        astptr: MySyntaxNodePtr,
     },
     EIf {
         cond: Box<Expr>,

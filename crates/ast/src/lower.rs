@@ -858,6 +858,7 @@ fn lower_expr_with_args(
             Some(ast::Expr::EMatch {
                 expr: Box::new(expr),
                 arms,
+                astptr: MySyntaxNodePtr::new(it.syntax()),
             })
         }
         cst::Expr::GoExpr(it) => {

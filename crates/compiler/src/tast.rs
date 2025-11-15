@@ -500,6 +500,7 @@ pub enum Expr {
         expr: Box<Expr>,
         arms: Vec<Arm>,
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
     EIf {
         cond: Box<Expr>,

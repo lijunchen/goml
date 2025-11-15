@@ -10,6 +10,7 @@ use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
 use crate::tast::{self, File, Prim};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use text_size::TextRange;
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -242,6 +243,7 @@ fn compile_constructor_cases(
     bvar: &Variable,
     mut cases: Vec<ConstructorCase>,
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> Vec<core::Arm> {
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
@@ -285,7 +287,7 @@ fn compile_constructor_cases(
                 args,
                 ty: bvar.ty.clone(),
             },
-            body: compile_rows(genv, gensym, diagnostics, case.rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, case.rows, ty, match_range),
         };
         arms.push(arm);
     }
@@ -300,6 +302,7 @@ fn compile_enum_case(
     bvar: &Variable,
     ty: &Ty,
     name: &Uident,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let tydef = genv.enums[name].clone();
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
@@ -346,7 +349,16 @@ fn compile_enum_case(
         results.push(result);
     }
 
-    let arms = compile_constructor_cases(genv, gensym, diagnostics, rows, bvar, cases, ty);
+    let arms = compile_constructor_cases(
+        genv,
+        gensym,
+        diagnostics,
+        rows,
+        bvar,
+        cases,
+        ty,
+        match_range,
+    );
 
     let mut new_arms = vec![];
     for (mut res, mut arm) in results.into_iter().zip(arms.into_iter()) {
@@ -372,6 +384,7 @@ fn compile_struct_case(
     ty: &Ty,
     name: &Uident,
     type_args: &[Ty],
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let struct_def = genv
         .structs
@@ -447,7 +460,7 @@ fn compile_struct_case(
         });
     }
 
-    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty);
+    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
     replace_default_expr(&mut result, inner);
     result
 }
@@ -460,6 +473,7 @@ fn compile_tuple_case(
     bvar: &Variable,
     typs: &[Ty],
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let names = typs.iter().map(|_| gensym.gensym("x")).collect::<Vec<_>>();
     let mut new_rows = vec![];
@@ -508,7 +522,7 @@ fn compile_tuple_case(
         });
     }
 
-    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty);
+    let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
 
     // Replace the empty default result with the actual compiled rows
     replace_default_expr(&mut result, inner);
@@ -521,6 +535,7 @@ fn compile_unit_case(
     diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
     let mut new_rows = vec![];
@@ -537,7 +552,7 @@ fn compile_unit_case(
         expr: Box::new(bvar.to_core()),
         arms: vec![core::Arm {
             lhs: core::eunit(),
-            body: compile_rows(genv, gensym, diagnostics, new_rows, &bvar.ty),
+            body: compile_rows(genv, gensym, diagnostics, new_rows, &bvar.ty, match_range),
         }],
         default: None,
         ty: body_ty,
@@ -550,6 +565,7 @@ fn compile_bool_case(
     diagnostics: &mut Diagnostics,
     rows: Vec<Row>,
     bvar: &Variable,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
@@ -577,11 +593,11 @@ fn compile_bool_case(
         arms: vec![
             core::Arm {
                 lhs: core::ebool(true),
-                body: compile_rows(genv, gensym, diagnostics, true_rows, &bvar.ty),
+                body: compile_rows(genv, gensym, diagnostics, true_rows, &bvar.ty, match_range),
             },
             core::Arm {
                 lhs: core::ebool(false),
-                body: compile_rows(genv, gensym, diagnostics, false_rows, &bvar.ty),
+                body: compile_rows(genv, gensym, diagnostics, false_rows, &bvar.ty, match_range),
             },
         ],
         default: None,
@@ -597,6 +613,7 @@ fn compile_int_case(
     bvar: &Variable,
     ty: &Ty,
     literal_ty: Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     match literal_ty {
         Ty::TInt8 => {
@@ -608,6 +625,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TInt8,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i8),
                 |value| Prim::Int8 { value },
             );
@@ -621,6 +639,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TInt16,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i16),
                 |value| Prim::Int16 { value },
             );
@@ -634,6 +653,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TInt32,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i32),
                 |value| Prim::Int32 { value },
             );
@@ -647,6 +667,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TInt64,
+                match_range,
                 |prim| prim.as_signed().map(|value| value as i64),
                 |value| Prim::Int64 { value },
             );
@@ -660,6 +681,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TUint8,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u8),
                 |value| Prim::UInt8 { value },
             );
@@ -673,6 +695,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TUint16,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u16),
                 |value| Prim::UInt16 { value },
             );
@@ -686,6 +709,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TUint32,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u32),
                 |value| Prim::UInt32 { value },
             );
@@ -699,6 +723,7 @@ fn compile_int_case(
                 bvar,
                 ty,
                 Ty::TUint64,
+                match_range,
                 |prim| prim.as_unsigned().map(|value| value as u64),
                 |value| Prim::UInt64 { value },
             );
@@ -717,6 +742,7 @@ fn compile_int_case_impl<T, Extract, ToPrim>(
     bvar: &Variable,
     ty: &Ty,
     literal_ty: Ty,
+    match_range: Option<TextRange>,
     extract: Extract,
     to_prim: ToPrim,
 ) -> core::Expr
@@ -766,11 +792,10 @@ where
             "non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
             literal_ty
         );
-        diagnostics.push(Diagnostic::new(
-            Stage::other("compile"),
-            Severity::Error,
-            message,
-        ));
+        diagnostics.push(
+            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
+                .with_range(match_range),
+        );
         return emissing(ty);
     }
 
@@ -781,7 +806,7 @@ where
                 value: to_prim(value),
                 ty: literal_ty.clone(),
             },
-            body: compile_rows(genv, gensym, diagnostics, rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, rows, ty, match_range),
         })
         .collect();
 
@@ -794,6 +819,7 @@ where
             diagnostics,
             default_rows,
             ty,
+            match_range,
         )))
     };
 
@@ -812,6 +838,7 @@ fn compile_string_case(
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
@@ -859,7 +886,7 @@ fn compile_string_case(
                 value: Prim::string(value),
                 ty: Ty::TString,
             },
-            body: compile_rows(genv, gensym, diagnostics, rows, ty),
+            body: compile_rows(genv, gensym, diagnostics, rows, ty, match_range),
         })
         .collect();
 
@@ -872,6 +899,7 @@ fn compile_string_case(
             diagnostics,
             default_rows,
             ty,
+            match_range,
         )))
     };
 
@@ -889,6 +917,7 @@ fn compile_rows(
     diagnostics: &mut Diagnostics,
     mut rows: Vec<Row>,
     ty: &Ty,
+    match_range: Option<TextRange>,
 ) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
@@ -905,26 +934,117 @@ fn compile_rows(
     let bvar = branch_variable(&rows);
     match &bvar.ty {
         Ty::TVar(..) => unreachable!(),
-        Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar),
-        Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar),
-        Ty::TInt32 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TInt32),
-        Ty::TInt8 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TInt8),
-        Ty::TInt16 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TInt16),
-        Ty::TInt64 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TInt64),
-        Ty::TUint8 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TUint8),
-        Ty::TUint16 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TUint16),
-        Ty::TUint32 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TUint32),
-        Ty::TUint64 => compile_int_case(genv, gensym, diagnostics, rows, &bvar, ty, Ty::TUint64),
+        Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, match_range),
+        Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, match_range),
+        Ty::TInt32 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt32,
+            match_range,
+        ),
+        Ty::TInt8 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt8,
+            match_range,
+        ),
+        Ty::TInt16 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt16,
+            match_range,
+        ),
+        Ty::TInt64 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TInt64,
+            match_range,
+        ),
+        Ty::TUint8 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint8,
+            match_range,
+        ),
+        Ty::TUint16 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint16,
+            match_range,
+        ),
+        Ty::TUint32 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint32,
+            match_range,
+        ),
+        Ty::TUint64 => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TUint64,
+            match_range,
+        ),
         Ty::TFloat32 | Ty::TFloat64 => {
             panic!("Matching on floating point types is not supported")
         }
-        Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty),
+        Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TCon { name } => {
             let ident = Uident::new(name);
             if genv.enums.contains_key(&ident) {
-                compile_enum_case(genv, gensym, diagnostics, rows, &bvar, ty, &ident)
+                compile_enum_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    match_range,
+                )
             } else if genv.structs.contains_key(&ident) {
-                compile_struct_case(genv, gensym, diagnostics, rows, &bvar, ty, &ident, &[])
+                compile_struct_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    &[],
+                    match_range,
+                )
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
@@ -933,14 +1053,42 @@ fn compile_rows(
             let name = base.get_constr_name_unsafe();
             let ident = Uident::new(&name);
             if genv.enums.contains_key(&ident) {
-                compile_enum_case(genv, gensym, diagnostics, rows, &bvar, ty, &ident)
+                compile_enum_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    match_range,
+                )
             } else if genv.structs.contains_key(&ident) {
-                compile_struct_case(genv, gensym, diagnostics, rows, &bvar, ty, &ident, args)
+                compile_struct_case(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    &bvar,
+                    ty,
+                    &ident,
+                    args,
+                    match_range,
+                )
             } else {
                 panic!("Unknown type constructor {} in match", name)
             }
         }
-        Ty::TTuple { typs } => compile_tuple_case(genv, gensym, diagnostics, rows, &bvar, typs, ty),
+        Ty::TTuple { typs } => compile_tuple_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            typs,
+            ty,
+            match_range,
+        ),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
@@ -1222,18 +1370,24 @@ fn compile_expr(
             core::Expr::ELet {
                 name: x,
                 value: Box::new(core_value),
-                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty)),
+                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
                 ty: ty.clone(),
             }
         }
-        EMatch { expr, arms, ty } => match expr.as_ref() {
+        EMatch {
+            expr,
+            arms,
+            ty,
+            astptr,
+        } => match expr.as_ref() {
             EVar {
                 name,
                 ty: _ty,
                 astptr: _,
             } => {
                 let rows = make_rows(name, arms);
-                compile_rows(genv, gensym, diagnostics, rows, ty)
+                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
+                compile_rows(genv, gensym, diagnostics, rows, ty, match_range)
             }
             _ => {
                 // create a new variable
@@ -1243,7 +1397,8 @@ fn compile_expr(
                 let mtmp = gensym.gensym("mtmp");
                 let rows = make_rows(mtmp.as_str(), arms);
                 let core_expr = compile_expr(expr, genv, gensym, diagnostics);
-                let core_rows = compile_rows(genv, gensym, diagnostics, rows, ty);
+                let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
+                let core_rows = compile_rows(genv, gensym, diagnostics, rows, ty, match_range);
                 core::Expr::ELet {
                     name: mtmp,
                     value: Box::new(core_expr),

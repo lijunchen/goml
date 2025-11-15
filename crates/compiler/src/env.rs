@@ -2,6 +2,7 @@ use ast::ast::{Lident, Uident};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use im::HashMap as ImHashMap;
 use indexmap::{IndexMap, IndexSet};
+use line_index::LineIndex;
 
 pub use super::builtins::builtin_function_names;
 use super::builtins::builtin_functions;
@@ -637,13 +638,26 @@ pub fn format_typer_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
         .collect()
 }
 
-pub fn format_compile_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
+pub fn format_compile_diagnostics(diagnostics: &Diagnostics, src: &str) -> Vec<String> {
     let compile_stage = Stage::other("compile");
+    let index = LineIndex::new(src);
     diagnostics
         .iter()
         .filter(|diagnostic| {
             diagnostic.severity() == Severity::Error && diagnostic.stage() == &compile_stage
         })
-        .map(|diagnostic| diagnostic.message().to_string())
+        .map(|diagnostic| {
+            if let Some(range) = diagnostic.range() {
+                let line_col = index.line_col(range.start());
+                format!(
+                    "{}:{}: {}",
+                    line_col.line + 1,
+                    line_col.col + 1,
+                    diagnostic.message()
+                )
+            } else {
+                diagnostic.message().to_string()
+            }
+        })
         .collect()
 }

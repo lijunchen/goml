@@ -63,7 +63,9 @@ impl Typer {
                 value,
                 body,
             } => self.infer_let_expr(genv, local_env, pat, annotation, value, body),
-            ast::Expr::EMatch { expr, arms } => self.infer_match_expr(genv, local_env, expr, arms),
+            ast::Expr::EMatch { expr, arms, astptr } => {
+                self.infer_match_expr(genv, local_env, expr, arms, astptr)
+            }
             ast::Expr::EIf {
                 cond,
                 then_branch,
@@ -627,6 +629,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         expr: &ast::Expr,
         arms: &[ast::Arm],
+        astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, expr);
         let expr_ty = expr_tast.get_ty();
@@ -652,6 +655,7 @@ impl Typer {
             expr: Box::new(expr_tast),
             arms: arms_tast,
             ty: arm_ty,
+            astptr: Some(*astptr),
         }
     }
 

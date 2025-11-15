@@ -129,7 +129,12 @@ fn find_type_expr(
             }
             find_type_expr(genv, body, range)
         }
-        tast::Expr::EMatch { expr, arms, ty: _ } => {
+        tast::Expr::EMatch {
+            expr,
+            arms,
+            ty: _,
+            astptr,
+        } => {
             if let Some(expr) = find_type_expr(genv, expr, range) {
                 return Some(expr);
             }
@@ -140,6 +145,11 @@ fn find_type_expr(
                 if let Some(expr) = find_type_expr(genv, &arm.body, range) {
                     return Some(expr);
                 }
+            }
+            if let Some(astptr) = astptr
+                && astptr.text_range().contains_range(*range)
+            {
+                return Some(tast.get_ty().to_pretty(genv, 80));
             }
             None
         }

@@ -33,7 +33,7 @@ pub fn execute(src: &str) -> String {
     let core =
         compiler::compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
-        return format_compile_diagnostics(&compile_diagnostics)
+        return format_compile_diagnostics(&compile_diagnostics, src)
             .into_iter()
             .map(|message| format!("error (compile): {}", message))
             .collect::<Vec<_>>()
@@ -71,7 +71,7 @@ pub fn compile_to_core(src: &str) -> String {
     let core =
         compiler::compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
-        return format_compile_diagnostics(&compile_diagnostics)
+        return format_compile_diagnostics(&compile_diagnostics, src)
             .into_iter()
             .map(|message| format!("error (compile): {}", message))
             .collect::<Vec<_>>()
@@ -109,7 +109,7 @@ pub fn compile_to_mono(src: &str) -> String {
     let core =
         compiler::compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
-        return format_compile_diagnostics(&compile_diagnostics)
+        return format_compile_diagnostics(&compile_diagnostics, src)
             .into_iter()
             .map(|message| format!("error (compile): {}", message))
             .collect::<Vec<_>>()
@@ -149,7 +149,7 @@ pub fn compile_to_anf(src: &str) -> String {
     let core =
         compiler::compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
-        return format_compile_diagnostics(&compile_diagnostics)
+        return format_compile_diagnostics(&compile_diagnostics, src)
             .into_iter()
             .map(|message| format!("error (compile): {}", message))
             .collect::<Vec<_>>()
@@ -191,7 +191,7 @@ pub fn compile_to_go(src: &str) -> String {
     let core =
         compiler::compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
     if compile_diagnostics.has_errors() {
-        return format_compile_diagnostics(&compile_diagnostics)
+        return format_compile_diagnostics(&compile_diagnostics, src)
             .into_iter()
             .map(|message| format!("error (compile): {}", message))
             .collect::<Vec<_>>()

@@ -40,7 +40,7 @@ fn main() {
                     }
                 }
                 CompilationError::Compile { diagnostics } => {
-                    for error in format_compile_diagnostics(diagnostics) {
+                    for error in format_compile_diagnostics(diagnostics, &src) {
                         eprintln!("error (compile): {}: {}", file_path.display(), error);
                     }
                 }

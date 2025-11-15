@@ -215,7 +215,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
         CompilationError::Compile { diagnostics } => anyhow::anyhow!(
             "Compile errors in {}:\n{}",
             p.display(),
-            format_compile_diagnostics(&diagnostics).join("\n")
+            format_compile_diagnostics(&diagnostics, &input).join("\n")
         ),
     })?;
 
@@ -281,7 +281,7 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected parse errors in {}, but compile stage reported diagnostics: {}",
                         p.display(),
-                        format_compile_diagnostics(&diagnostics).join("\n")
+                        format_compile_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Ok(_) => {
@@ -314,7 +314,7 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
             let input = std::fs::read_to_string(&p)?;
             match pipeline::compile(&p, &input) {
                 Err(CompilationError::Compile { diagnostics }) => {
-                    let mut formatted = format_compile_diagnostics(&diagnostics).join("\n");
+                    let mut formatted = format_compile_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
                         formatted.push('\n');
                     }
@@ -394,7 +394,7 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected typer diagnostics in {}, but compile stage reported diagnostics: {}",
                         p.display(),
-                        format_compile_diagnostics(&diagnostics).join("\n")
+                        format_compile_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Ok(_) => {
