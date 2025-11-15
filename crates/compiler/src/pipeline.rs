@@ -86,10 +86,11 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let gensym = Gensym::new();
 
-    let core = compile_match::compile_file(&mut genv, &gensym, &tast);
-    if genv.diagnostics.has_errors() {
+    let mut compile_diagnostics = Diagnostics::new();
+    let core = compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
+    if compile_diagnostics.has_errors() {
         return Err(CompilationError::Compile {
-            diagnostics: genv.diagnostics.clone(),
+            diagnostics: compile_diagnostics,
         });
     }
     let lifted_core = lambda_lift::lambda_lift(&mut genv, &gensym, core.clone());
