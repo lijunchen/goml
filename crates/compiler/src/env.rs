@@ -342,6 +342,15 @@ impl GlobalTypeEnv {
         self.funcs.get(func).cloned()
     }
 
+    pub fn lookup_inherent_method(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &Lident,
+    ) -> Option<(String, tast::Ty)> {
+        let key = (encode_ty(receiver_ty), method.clone());
+        self.inherent_impls.get(&key).cloned()
+    }
+
     pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
         struct TypeCollector {
             tuples: IndexSet<tast::Ty>,

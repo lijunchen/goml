@@ -712,6 +712,47 @@ impl Typer {
         func: &ast::Expr,
         args: &[ast::Expr],
     ) -> tast::Expr {
+        if let ast::Expr::EField {
+            expr: receiver_expr,
+            field,
+        } = func
+        {
+            if let Some((receiver_tast, receiver_ty, mangled_name, method_ty)) = {
+                let receiver_tast = self.infer_expr(genv, local_env, receiver_expr);
+                let receiver_ty = receiver_tast.get_ty();
+                genv.lookup_inherent_method(&receiver_ty, field)
+                    .map(|(name, ty)| (receiver_tast, receiver_ty, name, ty))
+            } {
+                let mut args_tast = Vec::with_capacity(args.len() + 1);
+                let mut arg_types = Vec::with_capacity(args.len() + 1);
+                arg_types.push(receiver_ty.clone());
+                args_tast.push(receiver_tast);
+                for arg in args.iter() {
+                    let arg_tast = self.infer_expr(genv, local_env, arg);
+                    arg_types.push(arg_tast.get_ty());
+                    args_tast.push(arg_tast);
+                }
+
+                let inst_method_ty = self.inst_ty(&method_ty);
+                let ret_ty = self.fresh_ty_var();
+                let call_site_ty = tast::Ty::TFunc {
+                    params: arg_types,
+                    ret_ty: Box::new(ret_ty.clone()),
+                };
+                self.push_constraint(Constraint::TypeEqual(inst_method_ty.clone(), call_site_ty));
+
+                return tast::Expr::ECall {
+                    func: Box::new(tast::Expr::EVar {
+                        name: mangled_name,
+                        ty: inst_method_ty,
+                        astptr: None,
+                    }),
+                    args: args_tast,
+                    ty: ret_ty,
+                };
+            }
+        }
+
         let mut args_tast = Vec::new();
         let mut arg_types = Vec::new();
         for arg in args.iter() {
