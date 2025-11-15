@@ -215,7 +215,7 @@ impl Rename {
                 ast::Expr::EMatch {
                     expr: Box::new(new_expr),
                     arms: new_arms,
-                    astptr: astptr.clone(),
+                    astptr: *astptr,
                 }
             }
             ast::Expr::EIf {

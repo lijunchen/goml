@@ -820,6 +820,27 @@ fn lower_expr_with_args(
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
+                        } else if let cst::Expr::BinaryExpr(bin_expr) = &other {
+                            if matches!(
+                                bin_expr.op().map(|tok| tok.kind()),
+                                Some(MySyntaxKind::Dot)
+                            ) {
+                                let func_expr = lower_expr(ctx, other)?;
+                                let call = ast::Expr::ECall {
+                                    func: Box::new(func_expr),
+                                    args,
+                                };
+                                apply_trailing_args(
+                                    ctx,
+                                    call,
+                                    trailing_args,
+                                    Some(it.syntax().text_range()),
+                                )
+                            } else {
+                                let mut combined_args = args;
+                                combined_args.extend(trailing_args);
+                                lower_expr_with_args(ctx, other, combined_args)
+                            }
                         } else {
                             let mut combined_args = args;
                             combined_args.extend(trailing_args);
@@ -1225,62 +1246,61 @@ fn lower_expr_with_args(
                         rhs: Box::new(rhs),
                     })
                 }
-                MySyntaxKind::Dot => {
-                    if !trailing_args.is_empty() {
-                        ctx.push_error(
-                            Some(it.syntax().text_range()),
-                            "Cannot apply arguments to field access expression",
-                        );
-                        return None;
-                    }
-                    match rhs_cst {
-                        cst::Expr::IntExpr(int_expr) => {
-                            let Some(token) = int_expr.value() else {
-                                ctx.push_error(
-                                    Some(int_expr.syntax().text_range()),
-                                    "Tuple projection missing index",
-                                );
-                                return None;
-                            };
-                            let text = token.to_string();
-                            let index = match text.parse::<usize>() {
-                                Ok(index) => index,
-                                Err(_) => {
-                                    ctx.push_error(
-                                        Some(token.text_range()),
-                                        format!("Invalid tuple index: {}", text),
-                                    );
-                                    return None;
-                                }
-                            };
-                            Some(ast::Expr::EProj {
-                                tuple: Box::new(lhs),
-                                index,
-                            })
-                        }
-                        cst::Expr::LidentExpr(lident_expr) => {
-                            let Some(token) = lident_expr.lident_token() else {
-                                ctx.push_error(
-                                    Some(lident_expr.syntax().text_range()),
-                                    "Field access missing name",
-                                );
-                                return None;
-                            };
-                            let field = ast::Lident(token.to_string());
-                            Some(ast::Expr::EField {
-                                expr: Box::new(lhs),
-                                field,
-                            })
-                        }
-                        other => {
+                MySyntaxKind::Dot => match rhs_cst {
+                    cst::Expr::IntExpr(int_expr) => {
+                        let Some(token) = int_expr.value() else {
                             ctx.push_error(
-                                Some(other.syntax().text_range()),
-                                "Unsupported field access expression",
+                                Some(int_expr.syntax().text_range()),
+                                "Tuple projection missing index",
                             );
-                            None
+                            return None;
+                        };
+                        let text = token.to_string();
+                        let index = match text.parse::<usize>() {
+                            Ok(index) => index,
+                            Err(_) => {
+                                ctx.push_error(
+                                    Some(token.text_range()),
+                                    format!("Invalid tuple index: {}", text),
+                                );
+                                return None;
+                            }
+                        };
+                        Some(ast::Expr::EProj {
+                            tuple: Box::new(lhs),
+                            index,
+                        })
+                    }
+                    cst::Expr::LidentExpr(lident_expr) => {
+                        let Some(token) = lident_expr.lident_token() else {
+                            ctx.push_error(
+                                Some(lident_expr.syntax().text_range()),
+                                "Field access missing name",
+                            );
+                            return None;
+                        };
+                        let field = ast::Lident(token.to_string());
+                        let field_expr = ast::Expr::EField {
+                            expr: Box::new(lhs),
+                            field,
+                        };
+                        if trailing_args.is_empty() {
+                            Some(field_expr)
+                        } else {
+                            Some(ast::Expr::ECall {
+                                func: Box::new(field_expr),
+                                args: trailing_args,
+                            })
                         }
                     }
-                }
+                    other => {
+                        ctx.push_error(
+                            Some(other.syntax().text_range()),
+                            "Unsupported field access expression",
+                        );
+                        None
+                    }
+                },
                 kind => {
                     let message = if trailing_args.is_empty() {
                         format!("Unsupported binary operator: {:?}", kind)
@@ -1369,6 +1389,10 @@ fn apply_trailing_args(
             args.extend(trailing_args);
             Some(ast::Expr::EConstr { vcon, args })
         }
+        ast::Expr::EField { expr, field } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EField { expr, field }),
+            args: trailing_args,
+        }),
         ast::Expr::EBinary { op, lhs, rhs } => {
             let rhs = apply_trailing_args(ctx, *rhs, trailing_args, range)?;
             Some(ast::Expr::EBinary {
