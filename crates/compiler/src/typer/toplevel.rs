@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ::ast::ast::{Lident, StructDef, TraitMethodSignature};
+use ::ast::ast::{Lident, StructDef, TraitMethodSignature, Uident};
 use ast::ast;
 
 use crate::{
@@ -116,199 +116,203 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
     }
 }
 
-fn define_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
+fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trait_name: &Uident) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
     validate_ty(genv, &for_ty, &empty_tparams);
-    if let Some(trait_name) = &impl_block.trait_name {
-        let trait_name_str = trait_name.0.clone();
-        let trait_method_names: HashSet<String> = genv
-            .trait_defs
-            .keys()
-            .filter_map(|(t_name, method_name)| {
-                if t_name == &trait_name_str {
-                    Some(method_name.clone())
-                } else {
-                    None
-                }
-            })
-            .collect();
+    let trait_name_str = trait_name.0.clone();
+    let trait_method_names: HashSet<String> = genv
+        .trait_defs
+        .keys()
+        .filter_map(|(t_name, method_name)| {
+            if t_name == &trait_name_str {
+                Some(method_name.clone())
+            } else {
+                None
+            }
+        })
+        .collect();
 
-        if trait_method_names.is_empty() {
+    if trait_method_names.is_empty() {
+        genv.report_typer_error(format!(
+            "Trait {} is not defined, cannot implement it for {:?}",
+            trait_name_str, for_ty
+        ));
+        return;
+    }
+
+    let mut implemented_methods: HashSet<String> = HashSet::new();
+
+    for m in impl_block.methods.iter() {
+        let method_name = m.name.clone();
+        let method_name_str = method_name.0.clone();
+
+        if !trait_method_names.contains(&method_name_str) {
             genv.report_typer_error(format!(
-                "Trait {} is not defined, cannot implement it for {:?}",
-                trait_name_str, for_ty
+                "Method {} is not declared in trait {}",
+                method_name_str, trait_name_str
             ));
-            return;
+            continue;
         }
 
-        let mut implemented_methods: HashSet<String> = HashSet::new();
+        if !implemented_methods.insert(method_name_str.clone()) {
+            genv.report_typer_error(format!(
+                "Method {} implemented multiple times in impl of trait {}",
+                method_name_str, trait_name_str
+            ));
+            continue;
+        }
 
-        for m in impl_block.methods.iter() {
-            let method_name = m.name.clone();
-            let method_name_str = method_name.0.clone();
+        let trait_sig = genv
+            .trait_defs
+            .get(&(trait_name_str.clone(), method_name_str.clone()))
+            .cloned()
+            .expect("trait method signature to exist");
 
-            if !trait_method_names.contains(&method_name_str) {
-                genv.report_typer_error(format!(
-                    "Method {} is not declared in trait {}",
-                    method_name_str, trait_name_str
-                ));
-                continue;
+        let tparam_names = type_param_name_set(&m.generics);
+        let params = m
+            .params
+            .iter()
+            .map(|(_, ty)| {
+                let ty = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ty, &tparam_names);
+                ty
+            })
+            .collect::<Vec<_>>();
+        let ret = match &m.ret_ty {
+            Some(ty) => {
+                let ret = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ret, &tparam_names);
+                ret
             }
+            None => tast::Ty::TUnit,
+        };
 
-            if !implemented_methods.insert(method_name_str.clone()) {
-                genv.report_typer_error(format!(
-                    "Method {} implemented multiple times in impl of trait {}",
-                    method_name_str, trait_name_str
-                ));
-                continue;
-            }
+        let impl_method_ty = tast::Ty::TFunc {
+            params: params.clone(),
+            ret_ty: Box::new(ret.clone()),
+        };
 
-            let trait_sig = genv
-                .trait_defs
-                .get(&(trait_name_str.clone(), method_name_str.clone()))
-                .cloned()
-                .expect("trait method signature to exist");
+        let expected_method_ty = instantiate_trait_method_ty(&trait_sig, &for_ty);
 
-            let tparam_names = type_param_name_set(&m.generics);
-            let params = m
-                .params
-                .iter()
-                .map(|(_, ty)| {
-                    let ty = tast::Ty::from_ast(ty, &m.generics);
-                    validate_ty(genv, &ty, &tparam_names);
-                    ty
-                })
-                .collect::<Vec<_>>();
-            let ret = match &m.ret_ty {
-                Some(ty) => {
-                    let ret = tast::Ty::from_ast(ty, &m.generics);
-                    validate_ty(genv, &ret, &tparam_names);
-                    ret
-                }
-                None => tast::Ty::TUnit,
-            };
-
-            let impl_method_ty = tast::Ty::TFunc {
-                params: params.clone(),
-                ret_ty: Box::new(ret.clone()),
-            };
-
-            let expected_method_ty = instantiate_trait_method_ty(&trait_sig, &for_ty);
-
-            let mut method_ok = true;
-            match (&expected_method_ty, &impl_method_ty) {
-                (
-                    tast::Ty::TFunc {
-                        params: expected_params,
-                        ret_ty: expected_ret,
-                    },
-                    tast::Ty::TFunc {
-                        params: impl_params,
-                        ret_ty: impl_ret,
-                    },
-                ) => {
-                    if expected_params.len() != impl_params.len() {
-                        genv.report_typer_error(format!(
-                            "Trait {}::{} expects {} parameters but impl has {}",
-                            trait_name_str,
-                            method_name_str,
-                            expected_params.len(),
-                            impl_params.len()
-                        ));
-                        method_ok = false;
-                    }
-
-                    for (idx, (expected, actual)) in
-                        expected_params.iter().zip(impl_params.iter()).enumerate()
-                    {
-                        if expected != actual {
-                            genv.report_typer_error(format!(
-                                "Trait {}::{} parameter {} expected type {:?} but found {:?}",
-                                trait_name_str, method_name_str, idx, expected, actual
-                            ));
-                            method_ok = false;
-                        }
-                    }
-
-                    if **expected_ret != **impl_ret {
-                        genv.report_typer_error(format!(
-                            "Trait {}::{} expected return type {:?} but found {:?}",
-                            trait_name_str, method_name_str, expected_ret, impl_ret
-                        ));
-                        method_ok = false;
-                    }
-                }
-                _ => {
+        let mut method_ok = true;
+        match (&expected_method_ty, &impl_method_ty) {
+            (
+                tast::Ty::TFunc {
+                    params: expected_params,
+                    ret_ty: expected_ret,
+                },
+                tast::Ty::TFunc {
+                    params: impl_params,
+                    ret_ty: impl_ret,
+                },
+            ) => {
+                if expected_params.len() != impl_params.len() {
                     genv.report_typer_error(format!(
-                        "Trait {}::{} does not have a function type signature",
-                        trait_name_str, method_name_str
+                        "Trait {}::{} expects {} parameters but impl has {}",
+                        trait_name_str,
+                        method_name_str,
+                        expected_params.len(),
+                        impl_params.len()
+                    ));
+                    method_ok = false;
+                }
+
+                for (idx, (expected, actual)) in
+                    expected_params.iter().zip(impl_params.iter()).enumerate()
+                {
+                    if expected != actual {
+                        genv.report_typer_error(format!(
+                            "Trait {}::{} parameter {} expected type {:?} but found {:?}",
+                            trait_name_str, method_name_str, idx, expected, actual
+                        ));
+                        method_ok = false;
+                    }
+                }
+
+                if **expected_ret != **impl_ret {
+                    genv.report_typer_error(format!(
+                        "Trait {}::{} expected return type {:?} but found {:?}",
+                        trait_name_str, method_name_str, expected_ret, impl_ret
                     ));
                     method_ok = false;
                 }
             }
-
-            if method_ok {
-                genv.trait_impls.insert(
-                    (trait_name_str.clone(), encode_ty(&for_ty), method_name),
-                    impl_method_ty,
-                );
-            }
-        }
-
-        for method_name in trait_method_names.iter() {
-            if !implemented_methods.contains(method_name) {
+            _ => {
                 genv.report_typer_error(format!(
-                    "Trait {} implementation for {:?} is missing method {}",
-                    trait_name_str, for_ty, method_name
+                    "Trait {}::{} does not have a function type signature",
+                    trait_name_str, method_name_str
                 ));
+                method_ok = false;
             }
         }
-    } else {
-        let mut implemented_methods: HashSet<String> = HashSet::new();
-        for m in impl_block.methods.iter() {
-            let method_name = m.name.clone();
-            let method_name_str = method_name.0.clone();
 
-            if !implemented_methods.insert(method_name_str.clone()) {
-                genv.report_typer_error(format!(
-                    "Method {} implemented multiple times in impl for {:?}",
-                    method_name_str, for_ty
-                ));
-                continue;
-            }
-
-            let tparam_names = type_param_name_set(&m.generics);
-            let params = m
-                .params
-                .iter()
-                .map(|(_, ty)| {
-                    let ty = tast::Ty::from_ast(ty, &m.generics);
-                    validate_ty(genv, &ty, &tparam_names);
-                    ty
-                })
-                .collect::<Vec<_>>();
-            let ret = match &m.ret_ty {
-                Some(ty) => {
-                    let ret = tast::Ty::from_ast(ty, &m.generics);
-                    validate_ty(genv, &ret, &tparam_names);
-                    ret
-                }
-                None => tast::Ty::TUnit,
-            };
-
-            let impl_method_ty = tast::Ty::TFunc {
-                params: params.clone(),
-                ret_ty: Box::new(ret.clone()),
-            };
-
-            let mangled_name = mangle_inherent_name(&for_ty, &method_name_str);
-            let key = (encode_ty(&for_ty), method_name.clone());
-            genv.funcs
-                .insert(mangled_name.clone(), impl_method_ty.clone());
-            genv.inherent_impls
-                .insert(key, (mangled_name, impl_method_ty));
+        if method_ok {
+            genv.trait_impls.insert(
+                (trait_name_str.clone(), encode_ty(&for_ty), method_name),
+                impl_method_ty,
+            );
         }
+    }
+
+    for method_name in trait_method_names.iter() {
+        if !implemented_methods.contains(method_name) {
+            genv.report_typer_error(format!(
+                "Trait {} implementation for {:?} is missing method {}",
+                trait_name_str, for_ty, method_name
+            ));
+        }
+    }
+}
+
+fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
+    let empty_tparams = HashSet::new();
+    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
+    validate_ty(genv, &for_ty, &empty_tparams);
+
+    let mut implemented_methods: HashSet<String> = HashSet::new();
+    for m in impl_block.methods.iter() {
+        let method_name = m.name.clone();
+        let method_name_str = method_name.0.clone();
+
+        if !implemented_methods.insert(method_name_str.clone()) {
+            genv.report_typer_error(format!(
+                "Method {} implemented multiple times in impl for {:?}",
+                method_name_str, for_ty
+            ));
+            continue;
+        }
+
+        let tparam_names = type_param_name_set(&m.generics);
+        let params = m
+            .params
+            .iter()
+            .map(|(_, ty)| {
+                let ty = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ty, &tparam_names);
+                ty
+            })
+            .collect::<Vec<_>>();
+        let ret = match &m.ret_ty {
+            Some(ty) => {
+                let ret = tast::Ty::from_ast(ty, &m.generics);
+                validate_ty(genv, &ret, &tparam_names);
+                ret
+            }
+            None => tast::Ty::TUnit,
+        };
+
+        let impl_method_ty = tast::Ty::TFunc {
+            params: params.clone(),
+            ret_ty: Box::new(ret.clone()),
+        };
+
+        let mangled_name = mangle_inherent_name(&for_ty, &method_name_str);
+        let key = (encode_ty(&for_ty), method_name.clone());
+        genv.funcs
+            .insert(mangled_name.clone(), impl_method_ty.clone());
+        genv.inherent_impls
+            .insert(key, (mangled_name, impl_method_ty));
     }
 }
 
@@ -463,7 +467,13 @@ pub fn collect_typedefs(genv: &mut GlobalTypeEnv, ast: &ast::File) {
             ast::Item::EnumDef(enum_def) => define_enum(genv, enum_def),
             ast::Item::StructDef(struct_def) => define_struct(genv, struct_def),
             ast::Item::TraitDef(trait_def) => define_trait(genv, trait_def),
-            ast::Item::ImplBlock(impl_block) => define_impl(genv, impl_block),
+            ast::Item::ImplBlock(impl_block) => {
+                if let Some(trait_name) = &impl_block.trait_name {
+                    define_trait_impl(genv, impl_block, trait_name);
+                } else {
+                    define_inherent_impl(genv, impl_block);
+                }
+            }
             ast::Item::Fn(func) => define_function(genv, func),
             ast::Item::ExternGo(ext) => define_extern_go(genv, ext),
             ast::Item::ExternType(ext) => define_extern_type(genv, ext),
