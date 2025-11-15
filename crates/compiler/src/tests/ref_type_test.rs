@@ -23,7 +23,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
     let ast_clone = ast.clone();
     let (tast, mut genv) = crate::typer::check_file(ast);
     let gensym = Gensym::new();
-    let core = compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compile_match::compile_file(&mut genv, &gensym, &tast);
     genv.record_tuple_types_from_core(&core);
     (ast_clone, tast, genv)
 }

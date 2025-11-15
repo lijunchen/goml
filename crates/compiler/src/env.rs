@@ -636,3 +636,14 @@ pub fn format_typer_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
         .map(|diagnostic| diagnostic.message().to_string())
         .collect()
 }
+
+pub fn format_compile_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
+    let compile_stage = Stage::other("compile");
+    diagnostics
+        .iter()
+        .filter(|diagnostic| {
+            diagnostic.severity() == Severity::Error && diagnostic.stage() == &compile_stage
+        })
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect()
+}

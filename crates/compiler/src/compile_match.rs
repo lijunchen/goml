@@ -9,6 +9,7 @@ use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
 use crate::tast::{self, File, Prim};
+use diagnostics::{Diagnostic, Severity, Stage};
 
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -234,7 +235,7 @@ struct ConstructorCase {
 }
 
 fn compile_constructor_cases(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -291,14 +292,14 @@ fn compile_constructor_cases(
 }
 
 fn compile_enum_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
     name: &Uident,
 ) -> core::Expr {
-    let tydef = &genv.enums[name];
+    let tydef = genv.enums[name].clone();
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let cases: Vec<ConstructorCase> = tydef
@@ -361,7 +362,7 @@ fn compile_enum_case(
 }
 
 fn compile_struct_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -372,6 +373,7 @@ fn compile_struct_case(
     let struct_def = genv
         .structs
         .get(name)
+        .cloned()
         .unwrap_or_else(|| panic!("Unknown struct {}", name.0));
 
     let inst_fields = if struct_def.generics.is_empty() {
@@ -381,7 +383,7 @@ fn compile_struct_case(
             .map(|(fname, fty)| (fname.0.clone(), fty.clone()))
             .collect::<Vec<_>>()
     } else {
-        instantiate_struct_fields(struct_def, type_args)
+        instantiate_struct_fields(&struct_def, type_args)
     };
 
     let field_vars: Vec<Variable> = inst_fields
@@ -448,7 +450,7 @@ fn compile_struct_case(
 }
 
 fn compile_tuple_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -510,7 +512,7 @@ fn compile_tuple_case(
 }
 
 fn compile_unit_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -538,7 +540,7 @@ fn compile_unit_case(
 }
 
 fn compile_bool_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -582,7 +584,7 @@ fn compile_bool_case(
 }
 
 fn compile_int_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -693,7 +695,7 @@ fn compile_int_case(
 }
 
 fn compile_int_case_impl<T, Extract, ToPrim>(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -744,10 +746,16 @@ where
     }
 
     if default_rows.is_empty() {
-        panic!(
-            "Non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
+        let message = format!(
+            "non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
             literal_ty
         );
+        genv.diagnostics.push(Diagnostic::new(
+            Stage::other("compile"),
+            Severity::Error,
+            message,
+        ));
+        return emissing(ty);
     }
 
     let arms = value_rows
@@ -776,7 +784,7 @@ where
 }
 
 fn compile_string_case(
-    genv: &GlobalTypeEnv,
+    genv: &mut GlobalTypeEnv,
     gensym: &Gensym,
     rows: Vec<Row>,
     bvar: &Variable,
@@ -846,7 +854,12 @@ fn compile_string_case(
     }
 }
 
-fn compile_rows(genv: &GlobalTypeEnv, gensym: &Gensym, mut rows: Vec<Row>, ty: &Ty) -> core::Expr {
+fn compile_rows(
+    genv: &mut GlobalTypeEnv,
+    gensym: &Gensym,
+    mut rows: Vec<Row>,
+    ty: &Ty,
+) -> core::Expr {
     if rows.is_empty() {
         return emissing(ty);
     }
@@ -913,7 +926,7 @@ fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
     }
 }
 
-pub fn compile_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: &File) -> core::File {
+pub fn compile_file(genv: &mut GlobalTypeEnv, gensym: &Gensym, file: &File) -> core::File {
     let mut toplevels = vec![];
     for item in file.toplevels.iter() {
         match item {
@@ -1049,7 +1062,7 @@ fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Opti
     }
 }
 
-fn compile_expr(e: &Expr, genv: &GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
+fn compile_expr(e: &Expr, genv: &mut GlobalTypeEnv, gensym: &Gensym) -> core::Expr {
     match e {
         EVar {
             name,

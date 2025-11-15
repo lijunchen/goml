@@ -19,7 +19,7 @@ pub fn execute(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, genv) = compiler::typer::check_file(ast);
+    let (tast, mut genv) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -29,7 +29,15 @@ pub fn execute(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return genv
+            .diagnostics
+            .iter()
+            .map(|diag| format!("error (compile): {}", diag.message()))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let _ = core;
     "not support for now".into()
 }
@@ -48,7 +56,7 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, genv) = compiler::typer::check_file(ast);
+    let (tast, mut genv) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -58,7 +66,15 @@ pub fn compile_to_core(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return genv
+            .diagnostics
+            .iter()
+            .map(|diag| format!("error (compile): {}", diag.message()))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
 
     core.to_pretty(&genv, 120)
 }
@@ -87,7 +103,15 @@ pub fn compile_to_mono(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return genv
+            .diagnostics
+            .iter()
+            .map(|diag| format!("error (compile): {}", diag.message()))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
     let mono = compiler::mono::mono(&mut genv, lifted);
@@ -118,7 +142,15 @@ pub fn compile_to_anf(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return genv
+            .diagnostics
+            .iter()
+            .map(|diag| format!("error (compile): {}", diag.message()))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
     let mono = compiler::mono::mono(&mut genv, lifted);
@@ -151,7 +183,15 @@ pub fn compile_to_go(src: &str) -> String {
             .join("\n");
     }
     let gensym = Gensym::new();
-    let core = compiler::compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compiler::compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return genv
+            .diagnostics
+            .iter()
+            .map(|diag| format!("error (compile): {}", diag.message()))
+            .collect::<Vec<_>>()
+            .join("\n");
+    }
     let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
 
     let mono = compiler::mono::mono(&mut genv, lifted);

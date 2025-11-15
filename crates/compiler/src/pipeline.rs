@@ -33,6 +33,7 @@ pub enum CompilationError {
     Parser { diagnostics: Diagnostics },
     Lower { diagnostics: Diagnostics },
     Typer { diagnostics: Diagnostics },
+    Compile { diagnostics: Diagnostics },
 }
 
 impl CompilationError {
@@ -40,7 +41,8 @@ impl CompilationError {
         match self {
             CompilationError::Parser { diagnostics }
             | CompilationError::Lower { diagnostics }
-            | CompilationError::Typer { diagnostics } => diagnostics,
+            | CompilationError::Typer { diagnostics }
+            | CompilationError::Compile { diagnostics } => diagnostics,
         }
     }
 
@@ -48,7 +50,8 @@ impl CompilationError {
         match self {
             CompilationError::Parser { diagnostics }
             | CompilationError::Lower { diagnostics }
-            | CompilationError::Typer { diagnostics } => diagnostics,
+            | CompilationError::Typer { diagnostics }
+            | CompilationError::Compile { diagnostics } => diagnostics,
         }
     }
 }
@@ -83,7 +86,12 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let gensym = Gensym::new();
 
-    let core = compile_match::compile_file(&genv, &gensym, &tast);
+    let core = compile_match::compile_file(&mut genv, &gensym, &tast);
+    if genv.diagnostics.has_errors() {
+        return Err(CompilationError::Compile {
+            diagnostics: genv.diagnostics.clone(),
+        });
+    }
     let lifted_core = lambda_lift::lambda_lift(&mut genv, &gensym, core.clone());
     let mono = mono::mono(&mut genv, lifted_core.clone());
     let anf = anf::anf_file(&genv, &gensym, mono.clone());
