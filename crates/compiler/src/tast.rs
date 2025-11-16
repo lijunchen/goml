@@ -533,6 +533,7 @@ pub enum Expr {
         expr: Box<Expr>,
         field_name: String,
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
     EBinary {
         op: BinaryOp,

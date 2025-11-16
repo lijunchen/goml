@@ -1,9 +1,17 @@
 import Editor, { useMonaco } from '@monaco-editor/react';
 import { useEffect, useMemo, useState } from 'react';
-import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast } from 'wasm-app';
+import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast, dot_completions } from 'wasm-app';
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 const demos: Record<string, string> = {};
+
+type DotCompletionKind = 'field' | 'method';
+
+interface DotCompletionItem {
+  name: string;
+  kind: DotCompletionKind;
+  detail?: string;
+}
 
 const loadDemos = async () => {
   const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*.src', {
@@ -121,6 +129,46 @@ function App() {
             };
           }
           return null;
+        },
+      });
+
+      monaco.languages.registerCompletionItemProvider('simple', {
+        triggerCharacters: ['.'],
+        provideCompletionItems: (
+          model: monacoEditor.editor.ITextModel,
+          position: monacoEditor.Position,
+        ): monacoEditor.languages.ProviderResult<monacoEditor.languages.CompletionList> => {
+          const line = position.lineNumber - 1;
+          const col = position.column - 1;
+          const content = model.getValue();
+
+          let items: DotCompletionItem[] = [];
+          try {
+            const raw = dot_completions(content, line, col);
+            items = JSON.parse(raw) as DotCompletionItem[];
+          } catch (error) {
+            console.error('dot completion failed', error);
+          }
+
+          const range = new monacoEditor.Range(
+            position.lineNumber,
+            position.column,
+            position.lineNumber,
+            position.column,
+          );
+
+          const suggestions = items.map((item): monacoEditor.languages.CompletionItem => ({
+            label: item.name,
+            kind:
+              item.kind === 'method'
+                ? monaco.languages.CompletionItemKind.Method
+                : monaco.languages.CompletionItemKind.Field,
+            insertText: item.name,
+            detail: item.detail,
+            range,
+          }));
+
+          return { suggestions };
         },
       });
 

@@ -263,6 +263,58 @@ pub fn hover(src: &str, line: u32, col: u32) -> Option<String> {
     compiler::query::hover_type(src, line, col)
 }
 
+#[wasm_bindgen]
+pub fn dot_completions(src: &str, line: u32, col: u32) -> String {
+    let items = compiler::query::dot_completions(src, line, col).unwrap_or_default();
+    let mut parts = Vec::with_capacity(items.len());
+
+    for item in items {
+        let compiler::query::DotCompletionItem {
+            name,
+            kind,
+            detail,
+        } = item;
+
+        let kind_str = match kind {
+            compiler::query::DotCompletionKind::Field => "field",
+            compiler::query::DotCompletionKind::Method => "method",
+        };
+
+        let mut entry = format!(
+            "{{\"name\":\"{}\",\"kind\":\"{}\"",
+            json_escape(&name),
+            kind_str,
+        );
+
+        if let Some(detail) = detail {
+            entry.push_str(&format!(",\"detail\":\"{}\"", json_escape(&detail)));
+        }
+
+        entry.push('}');
+        parts.push(entry);
+    }
+
+    format!("[{}]", parts.join(","))
+}
+
+fn json_escape(input: &str) -> String {
+    let mut escaped = String::with_capacity(input.len());
+
+    for c in input.chars() {
+        match c {
+            '"' => escaped.push_str("\\\""),
+            '\\' => escaped.push_str("\\\\"),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            c if c.is_control() => escaped.push_str(&format!("\\u{:04x}", c as u32)),
+            c => escaped.push(c),
+        }
+    }
+
+    escaped
+}
+
 fn format_parse_errors(result: &ParseResult, src: &str) -> String {
     result
         .format_errors(src)

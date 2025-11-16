@@ -128,6 +128,7 @@ fn instantiate_struct_field_ty(
     type_args: &[tast::Ty],
     field: &Lident,
 ) -> tast::Ty {
+    const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
     if struct_def.generics.len() != type_args.len() {
         panic!(
             "Struct {} expects {} type arguments, but got {}",
@@ -142,12 +143,13 @@ fn instantiate_struct_field_ty(
         subst.insert(param.0.clone(), arg.clone());
     }
 
-    struct_def
-        .fields
-        .iter()
-        .find(|(fname, _)| fname == field)
-        .map(|(_, ty)| substitute_ty_params(ty, &subst))
-        .unwrap_or_else(|| panic!("Struct {} has no field {}", struct_def.name.0, field.0))
+    if let Some((_, ty)) = struct_def.fields.iter().find(|(fname, _)| fname == field) {
+        substitute_ty_params(ty, &subst)
+    } else if field.0 == COMPLETION_PLACEHOLDER {
+        tast::Ty::TUnit
+    } else {
+        panic!("Struct {} has no field {}", struct_def.name.0, field.0)
+    }
 }
 
 fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
@@ -903,6 +905,7 @@ impl Typer {
                 expr,
                 field_name,
                 ty,
+                astptr,
             } => {
                 let ty = self.subst_ty(&ty);
                 let expr = Box::new(self.subst(*expr));
@@ -910,6 +913,7 @@ impl Typer {
                     expr,
                     field_name,
                     ty: ty.clone(),
+                    astptr,
                 }
             }
         }
