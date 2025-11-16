@@ -532,6 +532,7 @@ impl Expr {
                 expr,
                 field_name,
                 ty: _,
+                ..
             } => expr
                 .to_doc(genv)
                 .append(RcDoc::text("."))

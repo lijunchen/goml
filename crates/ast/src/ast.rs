@@ -249,6 +249,7 @@ pub enum Expr {
     EField {
         expr: Box<Expr>,
         field: Lident,
+        astptr: MySyntaxNodePtr,
     },
 }
 

@@ -1568,6 +1568,7 @@ fn compile_expr(
             expr,
             field_name,
             ty,
+            ..
         } => {
             let base_ty = expr.get_ty();
             let expr_core = compile_expr(expr, genv, gensym, diagnostics);

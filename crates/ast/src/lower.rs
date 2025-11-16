@@ -1283,6 +1283,7 @@ fn lower_expr_with_args(
                         let field_expr = ast::Expr::EField {
                             expr: Box::new(lhs),
                             field,
+                            astptr: MySyntaxNodePtr::new(it.syntax()),
                         };
                         if trailing_args.is_empty() {
                             Some(field_expr)
@@ -1389,8 +1390,16 @@ fn apply_trailing_args(
             args.extend(trailing_args);
             Some(ast::Expr::EConstr { vcon, args })
         }
-        ast::Expr::EField { expr, field } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::EField { expr, field }),
+        ast::Expr::EField {
+            expr,
+            field,
+            astptr,
+        } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EField {
+                expr,
+                field,
+                astptr,
+            }),
             args: trailing_args,
         }),
         ast::Expr::EBinary { op, lhs, rhs } => {
