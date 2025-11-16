@@ -252,7 +252,7 @@ pub enum TokenKind {
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#)]
     Str,
 
-    #[regex("[ \n]+")]
+    #[regex(r"[ \t\r\n]+")]
     Whitespace,
 
     #[regex("//.*")]
