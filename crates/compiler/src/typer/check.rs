@@ -264,7 +264,10 @@ impl Typer {
             _ => Vec::new(),
         };
 
-        let ret_ty = self.fresh_ty_var();
+        let ret_ty = match &inst_constr_ty {
+            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+            _ => inst_constr_ty.clone(),
+        };
 
         let mut args_tast = Vec::new();
         if param_tys.is_empty() {
@@ -377,7 +380,10 @@ impl Typer {
             .into_iter()
             .map(|arg| arg.expect("field checked to exist"))
             .collect();
-        let ret_ty = self.fresh_ty_var();
+        let ret_ty = match &inst_constr_ty {
+            tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+            _ => inst_constr_ty.clone(),
+        };
 
         if !args_tast.is_empty() {
             let actual_ty = tast::Ty::TFunc {
