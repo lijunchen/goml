@@ -8,8 +8,7 @@ use crate::{
 pub const PATTERN_FIRST: &[TokenKind] = &[
     T![true],
     T![false],
-    T![uident],
-    T![lident],
+    T![ident],
     T!['('],
     T![_],
     T![int],
@@ -64,14 +63,9 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
         }
-        T![lident] => {
+        T![ident] => {
             let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::PATTERN_VARIABLE)
-        }
-        T![uident] => {
-            let m = p.open();
-            p.advance();
+            p.expect(T![ident]);
             if p.at(T!['(']) {
                 p.expect(T!['(']);
                 while p.at_any(PATTERN_FIRST) {
@@ -79,10 +73,13 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                     p.eat(T![,]);
                 }
                 p.expect(T![')']);
+                p.close(m, MySyntaxKind::PATTERN_CONSTR)
             } else if p.at(T!['{']) {
                 struct_pattern_field_list(p);
+                p.close(m, MySyntaxKind::PATTERN_CONSTR)
+            } else {
+                p.close(m, MySyntaxKind::PATTERN_VARIABLE)
             }
-            p.close(m, MySyntaxKind::PATTERN_CONSTR)
         }
         _ => unreachable!(),
     })
@@ -93,7 +90,7 @@ fn struct_pattern_field_list(p: &mut Parser) {
     let m = p.open();
     p.expect(T!['{']);
     while !p.eof() && !p.at(T!['}']) {
-        if p.at(T![lident]) {
+        if p.at(T![ident]) {
             struct_pattern_field(p);
             p.eat(T![,]);
         } else {
@@ -105,9 +102,9 @@ fn struct_pattern_field_list(p: &mut Parser) {
 }
 
 fn struct_pattern_field(p: &mut Parser) {
-    assert!(p.at(T![lident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     if p.at(T![:]) {
         p.expect(T![:]);
         if p.at_any(PATTERN_FIRST) {

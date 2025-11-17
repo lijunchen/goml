@@ -42,7 +42,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
             if name == "Self" {
                 return;
             }
-            let ident = ast::Uident::new(name);
+            let ident = ast::Ident::new(name);
             if let Some(enum_def) = genv.enums.get(&ident) {
                 if !enum_def.generics.is_empty() {
                     genv.report_typer_error(format!(
@@ -71,7 +71,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
             }
 
             let base_name = ty.get_constr_name_unsafe();
-            let ident = ast::Uident::new(&base_name);
+            let ident = ast::Ident::new(&base_name);
 
             if let Some(enum_def) = genv.enums.get(&ident) {
                 let expected = enum_def.generics.len();
@@ -113,7 +113,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
 }
 
 impl tast::Ty {
-    pub(crate) fn from_ast(ast_ty: &ast::Ty, tparams_env: &[ast::Uident]) -> Self {
+    pub(crate) fn from_ast(ast_ty: &ast::Ty, tparams_env: &[ast::Ident]) -> Self {
         match ast_ty {
             ast::Ty::TUnit => Self::TUnit,
             ast::Ty::TBool => Self::TBool,
@@ -166,7 +166,7 @@ impl tast::Ty {
     }
 }
 
-pub(crate) fn type_param_name_set(tparams: &[ast::Uident]) -> HashSet<String> {
+pub(crate) fn type_param_name_set(tparams: &[ast::Ident]) -> HashSet<String> {
     tparams.iter().map(|param| param.0.clone()).collect()
 }
 

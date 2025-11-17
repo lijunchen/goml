@@ -1,7 +1,7 @@
 use std::cell::Cell;
 use std::collections::HashSet;
 
-use ::ast::ast::Lident;
+use ::ast::ast::Ident;
 use ast::ast;
 
 use crate::env;
@@ -12,7 +12,7 @@ pub struct Rename {
 }
 
 #[derive(Debug)]
-struct Env(im::Vector<(Lident, Lident)>);
+struct Env(im::Vector<(Ident, Ident)>);
 
 impl Env {
     pub fn new() -> Self {
@@ -24,11 +24,11 @@ impl Env {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &Lident, new_name: &Lident) {
+    pub fn add(&mut self, name: &Ident, new_name: &Ident) {
         self.0.push_back((name.clone(), new_name.clone()));
     }
 
-    pub fn rfind(&self, key: &Lident) -> Option<&Lident> {
+    pub fn rfind(&self, key: &Ident) -> Option<&Ident> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)
@@ -37,10 +37,10 @@ impl Env {
 }
 
 impl Rename {
-    fn fresh_name(&self, name: &str) -> Lident {
+    fn fresh_name(&self, name: &str) -> Ident {
         let new_name = format!("{}/{}", name, self.counter.get());
         self.counter.set(self.counter.get() + 1);
-        Lident(new_name)
+        Ident(new_name)
     }
 
     pub fn rename_file(&self, ast: ast::File) -> ast::File {

@@ -237,11 +237,8 @@ pub enum TokenKind {
     #[token("array")]
     ArrayKeyword,
 
-    #[regex("[a-z][A-Za-z_0-9]*")]
-    Lident,
-
-    #[regex("[A-Z][A-Za-z_0-9]*")]
-    Uident,
+    #[regex("[A-Za-z][A-Za-z_0-9]*")]
+    Ident,
 
     #[regex(r"[0-9]+\.[0-9]+", priority = 2)]
     Float,
@@ -325,8 +322,7 @@ impl std::fmt::Display for TokenKind {
             Self::Float64Keyword => "float64",
             Self::StringKeyword => "string",
             Self::ArrayKeyword => "array",
-            Self::Lident => "lident",
-            Self::Uident => "uident",
+            Self::Ident => "ident",
             Self::Float => "float",
             Self::Int => "int",
             Self::Str => "str",
@@ -394,8 +390,7 @@ macro_rules! T {
     [Float64] => { $crate::TokenKind::Float64Keyword };
     [String] => { $crate::TokenKind::StringKeyword };
     [array] => { $crate::TokenKind::ArrayKeyword };
-    [lident] => { $crate::TokenKind::Lident };
-    [uident] => { $crate::TokenKind::Uident };
+    [ident] => { $crate::TokenKind::Ident };
     [float] => { $crate::TokenKind::Float };
     [int] => { $crate::TokenKind::Int };
     [str] => { $crate::TokenKind::Str };

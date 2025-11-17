@@ -1,4 +1,4 @@
-use ast::ast::Uident;
+use ast::ast::Ident;
 
 use crate::{
     anf::{self, AExpr},
@@ -319,7 +319,7 @@ fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str
 
 fn lookup_variant_name(genv: &GlobalTypeEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
-    if let Some(def) = genv.enums.get(&Uident::new(&name)) {
+    if let Some(def) = genv.enums.get(&Ident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
         return variant_struct_name(genv, &name, &vname.0);
     }
@@ -407,7 +407,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 
 fn instantiate_struct_fields(
     genv: &GlobalTypeEnv,
-    type_name: &Uident,
+    type_name: &Ident,
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
     let struct_def = genv
@@ -821,7 +821,7 @@ where
         }
         ty @ (tast::Ty::TCon { .. } | tast::Ty::TApp { .. }) => {
             let type_name = ty.get_constr_name_unsafe();
-            if !genv.enums.contains_key(&Uident::new(&type_name)) {
+            if !genv.enums.contains_key(&Ident::new(&type_name)) {
                 panic!(
                     "unsupported scrutinee type {:?} for match in Go backend",
                     ty
@@ -1583,15 +1583,15 @@ fn test_type_gen() {
 
     let mut env = GlobalTypeEnv::new();
     env.enums.insert(
-        Uident::new("Tree"),
+        Ident::new("Tree"),
         EnumDef {
-            name: Uident::new("Tree"),
+            name: Ident::new("Tree"),
             generics: vec![],
             variants: vec![
-                (Uident::new("Empty"), vec![]),
-                (Uident::new("Leaf"), vec![tast::Ty::TInt32]),
+                (Ident::new("Empty"), vec![]),
+                (Ident::new("Leaf"), vec![tast::Ty::TInt32]),
                 (
-                    Uident::new("Node"),
+                    Ident::new("Node"),
                     vec![
                         tast::Ty::TCon {
                             name: "Tree".to_string(),

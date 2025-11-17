@@ -1,6 +1,6 @@
 use std::{collections::HashMap, num::IntErrorKind};
 
-use ::ast::ast::Lident;
+use ::ast::ast::Ident;
 use ast::ast;
 use parser::syntax::MySyntaxNodePtr;
 
@@ -194,7 +194,7 @@ impl Typer {
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        name: &Lident,
+        name: &Ident,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
         if let Some(ty) = local_env.lookup_var(name) {
@@ -219,7 +219,7 @@ impl Typer {
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        vcon: &ast::Uident,
+        vcon: &ast::Ident,
         args: &[ast::Expr],
     ) -> tast::Expr {
         let (constructor, constr_ty) = genv
@@ -303,8 +303,8 @@ impl Typer {
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        name: &ast::Uident,
-        fields: &[(ast::Lident, ast::Expr)],
+        name: &ast::Ident,
+        fields: &[(ast::Ident, ast::Expr)],
     ) -> tast::Expr {
         let (constructor, constr_ty) = genv
             .lookup_constructor(name)
@@ -344,7 +344,7 @@ impl Typer {
             );
         }
 
-        let mut field_positions: HashMap<Lident, usize> = HashMap::new();
+        let mut field_positions: HashMap<Ident, usize> = HashMap::new();
         for (idx, (fname, _)) in struct_fields.iter().enumerate() {
             field_positions.insert(fname.clone(), idx);
         }
@@ -940,7 +940,7 @@ impl Typer {
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::Overloaded {
-                op: ast::Lident(method_name.to_string()),
+                op: ast::Ident(method_name.to_string()),
                 trait_name: trait_name.clone(),
                 call_site_type,
             });
@@ -981,7 +981,7 @@ impl Typer {
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::Overloaded {
-                op: ast::Lident(method_name.to_string()),
+                op: ast::Ident(method_name.to_string()),
                 trait_name: trait_name.clone(),
                 call_site_type,
             });
@@ -1066,7 +1066,7 @@ impl Typer {
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
         expr: &ast::Expr,
-        field: &ast::Lident,
+        field: &ast::Ident,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, expr);
@@ -1109,7 +1109,7 @@ impl Typer {
     fn check_pat_var(
         &mut self,
         local_env: &mut LocalTypeEnv,
-        name: &Lident,
+        name: &Ident,
         astptr: &MySyntaxNodePtr,
         ty: &tast::Ty,
     ) -> tast::Pat {

@@ -1,4 +1,4 @@
-use ast::ast::{BinaryOp, Uident, UnaryOp};
+use ast::ast::{BinaryOp, Ident, UnaryOp};
 
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
@@ -217,9 +217,9 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
         .collect()
 }
 
-fn decompose_struct_type(ty: &Ty) -> Option<(Uident, Vec<Ty>)> {
+fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     match ty {
-        Ty::TCon { name } => Some((Uident::new(name), Vec::new())),
+        Ty::TCon { name } => Some((Ident::new(name), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());
@@ -303,7 +303,7 @@ fn compile_enum_case(
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
-    name: &Uident,
+    name: &Ident,
     match_range: Option<TextRange>,
 ) -> core::Expr {
     let tydef = genv.enums[name].clone();
@@ -385,7 +385,7 @@ fn compile_struct_case(
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
-    name: &Uident,
+    name: &Ident,
     type_args: &[Ty],
     match_range: Option<TextRange>,
 ) -> core::Expr {
@@ -1027,7 +1027,7 @@ fn compile_rows(
         }
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TCon { name } => {
-            let ident = Uident::new(name);
+            let ident = Ident::new(name);
             if genv.enums.contains_key(&ident) {
                 compile_enum_case(
                     genv,
@@ -1057,7 +1057,7 @@ fn compile_rows(
         }
         Ty::TApp { ty: base, args } => {
             let name = base.get_constr_name_unsafe();
-            let ident = Uident::new(&name);
+            let ident = Ident::new(&name);
             if genv.enums.contains_key(&ident) {
                 compile_enum_case(
                     genv,

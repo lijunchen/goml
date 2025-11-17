@@ -126,6 +126,11 @@ impl Parser<'_> {
         self.input.peek()
     }
 
+    pub fn peek_text(&mut self) -> Option<&str> {
+        let _ = self.peek();
+        self.input.current_text()
+    }
+
     pub fn nth(&mut self, n: usize) -> TokenKind {
         if self.fuel.get() == 0 {
             if !self.stuck_reported.get() {

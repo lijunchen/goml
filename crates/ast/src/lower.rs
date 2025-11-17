@@ -106,13 +106,13 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
 
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
     let name = node.uident().unwrap().to_string();
-    let generics: Vec<ast::Uident> = node
+    let generics: Vec<ast::Ident> = node
         .generic_list()
         .map(|list| {
             list.generics()
                 .flat_map(|x| {
                     let name = x.uident().unwrap().to_string();
-                    Some(ast::Uident::new(&name))
+                    Some(ast::Ident::new(&name))
                 })
                 .collect()
         })
@@ -129,7 +129,7 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
         Vec::new()
     };
     Some(ast::EnumDef {
-        name: ast::Uident::new(&name),
+        name: ast::Ident::new(&name),
         generics,
         variants,
     })
@@ -137,13 +137,13 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
 
 fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef> {
     let name = node.uident()?.to_string();
-    let generics: Vec<ast::Uident> = node
+    let generics: Vec<ast::Ident> = node
         .generic_list()
         .map(|list| {
             list.generics()
                 .flat_map(|generic| {
                     let name = generic.uident()?.to_string();
-                    Some(ast::Uident::new(&name))
+                    Some(ast::Ident::new(&name))
                 })
                 .collect()
         })
@@ -159,19 +159,16 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
         .unwrap_or_default();
 
     Some(ast::StructDef {
-        name: ast::Uident::new(&name),
+        name: ast::Ident::new(&name),
         generics,
         fields,
     })
 }
 
-fn lower_struct_field(
-    ctx: &mut LowerCtx,
-    node: cst::StructField,
-) -> Option<(ast::Lident, ast::Ty)> {
+fn lower_struct_field(ctx: &mut LowerCtx, node: cst::StructField) -> Option<(ast::Ident, ast::Ty)> {
     let name = node.lident()?.to_string();
     let ty = node.ty().and_then(|ty| lower_ty(ctx, ty))?;
-    Some((ast::Lident(name), ty))
+    Some((ast::Ident(name), ty))
 }
 
 fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
@@ -188,7 +185,7 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         Vec::new()
     };
     Some(ast::TraitDef {
-        name: ast::Uident::new(&name),
+        name: ast::Ident::new(&name),
         method_sigs: methods,
     })
 }
@@ -221,7 +218,7 @@ fn lower_trait_method(
         },
     };
     Some(ast::TraitMethodSignature {
-        name: ast::Lident(name),
+        name: ast::Ident(name),
         params,
         ret_ty,
     })
@@ -244,19 +241,19 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .flat_map(|function| lower_fn(ctx, function))
         .collect();
     Some(ast::ImplBlock {
-        trait_name: trait_name.map(|name| ast::Uident::new(&name)),
+        trait_name: trait_name.map(|name| ast::Ident::new(&name)),
         for_type,
         methods,
     })
 }
 
-fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<(ast::Uident, Vec<ast::Ty>)> {
+fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<(ast::Ident, Vec<ast::Ty>)> {
     let name = node.uident().unwrap().to_string();
     let typs = match node.type_list() {
         None => vec![],
         Some(xs) => xs.types().flat_map(|ty| lower_ty(ctx, ty)).collect(),
     };
-    Some((ast::Uident::new(&name), typs))
+    Some((ast::Ident::new(&name), typs))
 }
 
 fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
@@ -394,13 +391,13 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
 
 fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     let name = node.lident().unwrap().to_string();
-    let generics: Vec<ast::Uident> = node
+    let generics: Vec<ast::Ident> = node
         .generic_list()
         .map(|list| {
             list.generics()
                 .flat_map(|x| {
                     let name = x.uident().unwrap().to_string();
-                    Some(ast::Uident::new(&name))
+                    Some(ast::Ident::new(&name))
                 })
                 .collect()
         })
@@ -430,7 +427,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
         }
     };
     Some(ast::Fn {
-        name: ast::Lident(name),
+        name: ast::Ident(name),
         generics,
         params,
         ret_ty,
@@ -449,7 +446,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         };
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
-            goml_name: ast::Uident::new(&name),
+            goml_name: ast::Ident::new(&name),
         }));
     }
 
@@ -506,7 +503,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         };
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
-            goml_name: ast::Uident::new(&name),
+            goml_name: ast::Ident::new(&name),
         }));
     }
 
@@ -543,7 +540,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     Some(ast::Item::ExternGo(ast::ExternGo {
         package_path,
         go_symbol,
-        goml_name: ast::Lident(name),
+        goml_name: ast::Ident(name),
         explicit_go_symbol,
         params,
         ret_ty,
@@ -628,7 +625,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
     }
 }
 
-fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast::Ty)> {
+fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Ident, ast::Ty)> {
     let name = node.lident().unwrap().to_string();
     let ty = match node.ty().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
@@ -640,7 +637,7 @@ fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Lident, ast
             return None;
         }
     };
-    Some((ast::Lident(name), ty))
+    Some((ast::Ident(name), ty))
 }
 
 fn lower_closure_param(ctx: &mut LowerCtx, node: cst::ClosureParam) -> Option<ast::ClosureParam> {
@@ -652,7 +649,7 @@ fn lower_closure_param(ctx: &mut LowerCtx, node: cst::ClosureParam) -> Option<as
         return None;
     };
 
-    let name = ast::Lident(name_token.to_string());
+    let name = ast::Ident(name_token.to_string());
     let ty = match node.ty() {
         Some(ty_node) => Some(lower_ty(ctx, ty_node)?),
         None => None,
@@ -777,35 +774,40 @@ fn lower_expr_with_args(
                 .unwrap_or_default();
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
-                    cst::Expr::LidentExpr(lident_expr) => {
-                        let name = lident_expr.lident_token().unwrap().to_string();
-                        let var_expr = ast::Expr::EVar {
-                            name: ast::Lident(name),
-                            astptr: MySyntaxNodePtr::new(lident_expr.syntax()),
+                    cst::Expr::IdentExpr(ident_expr) => {
+                        let Some(token) = ident_expr.ident_token() else {
+                            ctx.push_error(
+                                Some(ident_expr.syntax().text_range()),
+                                "Missing identifier in call",
+                            );
+                            return None;
                         };
-                        let call = ast::Expr::ECall {
-                            func: Box::new(var_expr),
-                            args,
-                        };
-                        apply_trailing_args(
-                            ctx,
-                            call,
-                            trailing_args,
-                            Some(it.syntax().text_range()),
-                        )
-                    }
-                    cst::Expr::UidentExpr(uident_expr) => {
-                        let name = uident_expr.uident().unwrap().to_string();
-                        let constr = ast::Expr::EConstr {
-                            vcon: ast::Uident::new(&name),
-                            args,
-                        };
-                        apply_trailing_args(
-                            ctx,
-                            constr,
-                            trailing_args,
-                            Some(it.syntax().text_range()),
-                        )
+                        let name = token.to_string();
+                        let ident = ast::Ident(name);
+                        if ident.starts_with_uppercase() {
+                            let constr = ast::Expr::EConstr { vcon: ident, args };
+                            apply_trailing_args(
+                                ctx,
+                                constr,
+                                trailing_args,
+                                Some(it.syntax().text_range()),
+                            )
+                        } else {
+                            let var_expr = ast::Expr::EVar {
+                                name: ident,
+                                astptr: MySyntaxNodePtr::new(ident_expr.syntax()),
+                            };
+                            let call = ast::Expr::ECall {
+                                func: Box::new(var_expr),
+                                args,
+                            };
+                            apply_trailing_args(
+                                ctx,
+                                call,
+                                trailing_args,
+                                Some(it.syntax().text_range()),
+                            )
+                        }
                     }
                     other => {
                         if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_)) {
@@ -933,7 +935,7 @@ fn lower_expr_with_args(
 
             Some(ast::Expr::ECall {
                 func: Box::new(ast::Expr::EVar {
-                    name: ast::Lident("spawn".to_string()),
+                    name: ast::Ident("spawn".to_string()),
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 }),
                 args: vec![closure_arg],
@@ -1085,13 +1087,13 @@ fn lower_expr_with_args(
                         .flat_map(|field| {
                             let fname = field.lident()?.to_string();
                             let expr = field.expr().and_then(|expr| lower_expr(ctx, expr))?;
-                            Some((ast::Lident(fname), expr))
+                            Some((ast::Ident(fname), expr))
                         })
                         .collect()
                 })
                 .unwrap_or_default();
             Some(ast::Expr::EStructLiteral {
-                name: ast::Uident::new(&name),
+                name: ast::Ident::new(&name),
                 fields,
             })
         }
@@ -1106,21 +1108,29 @@ fn lower_expr_with_args(
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
             Some(ast::Expr::EArray { items })
         }
-        cst::Expr::UidentExpr(it) => {
-            let name = it.uident().unwrap().to_string();
-            let expr = ast::Expr::EConstr {
-                vcon: ast::Uident::new(&name),
-                args: vec![],
+        cst::Expr::IdentExpr(it) => {
+            let Some(token) = it.ident_token() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Missing identifier in expression",
+                );
+                return None;
             };
-            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-        }
-        cst::Expr::LidentExpr(it) => {
-            let name = it.lident_token().unwrap().to_string();
-            let expr = ast::Expr::EVar {
-                name: ast::Lident(name),
-                astptr: MySyntaxNodePtr::new(it.syntax()),
-            };
-            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+            let name = token.to_string();
+            let ident = ast::Ident(name);
+            if ident.starts_with_uppercase() {
+                let expr = ast::Expr::EConstr {
+                    vcon: ident,
+                    args: vec![],
+                };
+                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+            } else {
+                let expr = ast::Expr::EVar {
+                    name: ident,
+                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                };
+                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+            }
         }
         cst::Expr::TupleExpr(it) => {
             if !trailing_args.is_empty() {
@@ -1271,15 +1281,15 @@ fn lower_expr_with_args(
                             index,
                         })
                     }
-                    cst::Expr::LidentExpr(lident_expr) => {
-                        let Some(token) = lident_expr.lident_token() else {
+                    cst::Expr::IdentExpr(ident_expr) => {
+                        let Some(token) = ident_expr.ident_token() else {
                             ctx.push_error(
-                                Some(lident_expr.syntax().text_range()),
+                                Some(ident_expr.syntax().text_range()),
                                 "Field access missing name",
                             );
                             return None;
                         };
-                        let field = ast::Lident(token.to_string());
+                        let field = ast::Ident(token.to_string());
                         let field_expr = ast::Expr::EField {
                             expr: Box::new(lhs),
                             field,
@@ -1454,10 +1464,18 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
     match node {
         cst::Pattern::VarPat(it) => {
             let name = it.lident().unwrap().to_string();
-            Some(ast::Pat::PVar {
-                name: ast::Lident(name),
-                astptr: MySyntaxNodePtr::new(it.syntax()),
-            })
+            let ident = ast::Ident(name);
+            if ident.starts_with_uppercase() {
+                Some(ast::Pat::PConstr {
+                    vcon: ident,
+                    args: Vec::new(),
+                })
+            } else {
+                Some(ast::Pat::PVar {
+                    name: ident,
+                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                })
+            }
         }
         cst::Pattern::UnitPat(_) => Some(ast::Pat::PUnit),
         cst::Pattern::BoolPat(it) => {
@@ -1517,21 +1535,21 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                             }
 
                             ast::Pat::PVar {
-                                name: ast::Lident(fname.clone()),
+                                name: ast::Ident(fname.clone()),
                                 astptr: MySyntaxNodePtr::new(field.syntax()),
                             }
                         }
                     };
-                    fields.push((ast::Lident(fname), pat));
+                    fields.push((ast::Ident(fname), pat));
                 }
                 Some(ast::Pat::PStruct {
-                    name: ast::Uident::new(&name),
+                    name: ast::Ident::new(&name),
                     fields,
                 })
             } else {
                 let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
                 Some(ast::Pat::PConstr {
-                    vcon: ast::Uident::new(&name),
+                    vcon: ast::Ident::new(&name),
                     args: pats,
                 })
             }

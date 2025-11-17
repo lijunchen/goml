@@ -23,16 +23,16 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
     let range = match node {
         rowan::TokenAtOffset::None => None,
         rowan::TokenAtOffset::Single(x) => {
-            if x.kind() == MySyntaxKind::Lident {
+            if x.kind() == MySyntaxKind::Ident {
                 Some(x.text_range())
             } else {
                 None
             }
         }
         rowan::TokenAtOffset::Between(x, y) => {
-            if x.kind() == MySyntaxKind::Lident {
+            if x.kind() == MySyntaxKind::Ident {
                 Some(x.text_range())
-            } else if y.kind() == MySyntaxKind::Lident {
+            } else if y.kind() == MySyntaxKind::Ident {
                 Some(y.text_range())
             } else {
                 None
@@ -479,7 +479,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     let mut items = Vec::new();
 
     if let Some(name) = type_constructor_name(ty) {
-        let uident = ast::ast::Uident::new(name);
+        let uident = ast::ast::Ident::new(name);
         if let Some(struct_def) = genv.structs.get(&uident) {
             for (field_name, field_ty) in &struct_def.fields {
                 items.push(DotCompletionItem {
