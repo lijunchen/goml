@@ -12,6 +12,7 @@ pub mod expr;
 pub mod file;
 pub mod input;
 pub mod parser;
+pub mod path;
 pub mod pattern;
 pub mod stmt;
 pub mod syntax;

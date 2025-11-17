@@ -2,6 +2,7 @@ use lexer::{T, TokenKind};
 
 use crate::{
     parser::{MarkerClosed, Parser},
+    path::parse_path,
     syntax::MySyntaxKind,
 };
 
@@ -9,6 +10,7 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![true],
     T![false],
     T![ident],
+    T![::],
     T!['('],
     T![_],
     T![int],
@@ -63,9 +65,9 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
         }
-        T![ident] => {
+        T![ident] | T![::] => {
             let m = p.open();
-            p.expect(T![ident]);
+            let has_namespace = parse_path(p);
             if p.at(T!['(']) {
                 p.expect(T!['(']);
                 while p.at_any(PATTERN_FIRST) {
@@ -76,6 +78,8 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.close(m, MySyntaxKind::PATTERN_CONSTR)
             } else if p.at(T!['{']) {
                 struct_pattern_field_list(p);
+                p.close(m, MySyntaxKind::PATTERN_CONSTR)
+            } else if has_namespace {
                 p.close(m, MySyntaxKind::PATTERN_CONSTR)
             } else {
                 p.close(m, MySyntaxKind::PATTERN_VARIABLE)

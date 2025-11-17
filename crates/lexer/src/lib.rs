@@ -102,6 +102,9 @@ pub enum TokenKind {
     #[token(",")]
     Comma,
 
+    #[token("::")]
+    ColonColon,
+
     #[token(":")]
     Colon,
 
@@ -278,6 +281,7 @@ impl std::fmt::Display for TokenKind {
             Self::Semi => ";",
             Self::Comma => ",",
             Self::Colon => ":",
+            Self::ColonColon => "::",
             Self::Arrow => "->",
             Self::FatArrow => "=>",
             Self::Plus => "+",
@@ -345,6 +349,7 @@ macro_rules! T {
     [=] => { $crate::TokenKind::Eq };
     [;] => { $crate::TokenKind::Semi };
     [,] => { $crate::TokenKind::Comma };
+    [::] => { $crate::TokenKind::ColonColon };
     [:] => { $crate::TokenKind::Colon };
     [->] => { $crate::TokenKind::Arrow };
     [=>] => { $crate::TokenKind::FatArrow };

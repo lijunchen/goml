@@ -1,6 +1,7 @@
 use crate::{
     file::{block, type_expr},
     parser::{MarkerClosed, Parser},
+    path::parse_path,
     syntax::MySyntaxKind,
 };
 use lexer::T;
@@ -11,6 +12,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![float],
     T![str],
     T![ident],
+    T![::],
     T![true],
     T![false],
     T![-],
@@ -90,9 +92,9 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(m, MySyntaxKind::EXPR_BOOL)
         }
         // ExprName = 'name'
-        T![ident] => {
+        T![ident] | T![::] => {
             let m = p.open();
-            p.expect(T![ident]);
+            parse_path(p);
             if looks_like_struct_literal(p) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
