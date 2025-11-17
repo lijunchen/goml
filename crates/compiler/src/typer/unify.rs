@@ -5,7 +5,7 @@ use crate::{
     tast::{self, TypeVar},
     typer::Typer,
 };
-use ast::ast::{Lident, Uident};
+use ast::ast::Ident;
 
 fn occurs(typer: &mut Typer, _genv: &GlobalTypeEnv, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
@@ -126,7 +126,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 fn instantiate_struct_field_ty(
     struct_def: &crate::env::StructDef,
     type_args: &[tast::Ty],
-    field: &Lident,
+    field: &Ident,
 ) -> tast::Ty {
     const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
     if struct_def.generics.len() != type_args.len() {
@@ -152,9 +152,9 @@ fn instantiate_struct_field_ty(
     }
 }
 
-fn decompose_struct_type(ty: &tast::Ty) -> Option<(Uident, Vec<tast::Ty>)> {
+fn decompose_struct_type(ty: &tast::Ty) -> Option<(Ident, Vec<tast::Ty>)> {
     match ty {
-        tast::Ty::TCon { name } => Some((Uident::new(name), Vec::new())),
+        tast::Ty::TCon { name } => Some((Ident::new(name), Vec::new())),
         tast::Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());

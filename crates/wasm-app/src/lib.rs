@@ -269,11 +269,7 @@ pub fn dot_completions(src: &str, line: u32, col: u32) -> String {
     let mut parts = Vec::with_capacity(items.len());
 
     for item in items {
-        let compiler::query::DotCompletionItem {
-            name,
-            kind,
-            detail,
-        } = item;
+        let compiler::query::DotCompletionItem { name, kind, detail } = item;
 
         let kind_str = match kind {
             compiler::query::DotCompletionKind::Field => "field",

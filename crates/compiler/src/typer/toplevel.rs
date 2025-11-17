@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use ::ast::ast::{Lident, StructDef, TraitMethodSignature, Uident};
+use ::ast::ast::{Ident, StructDef, TraitMethodSignature};
 use ast::ast;
 
 use crate::{
@@ -116,7 +116,7 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
     }
 }
 
-fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trait_name: &Uident) {
+fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trait_name: &Ident) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
     validate_ty(genv, &for_ty, &empty_tparams);
@@ -529,7 +529,7 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv) {
 
 fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
     let mut local_env = LocalTypeEnv::new();
-    let param_types: Vec<(Lident, tast::Ty)> = f
+    let param_types: Vec<(Ident, tast::Ty)> = f
         .params
         .iter()
         .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(ty, &f.generics)))
@@ -571,7 +571,7 @@ fn check_impl_block(
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
         let mut local_env = LocalTypeEnv::new();
-        let param_types: Vec<(Lident, tast::Ty)> = f
+        let param_types: Vec<(Ident, tast::Ty)> = f
             .params
             .iter()
             .map(|(name, ty)| {

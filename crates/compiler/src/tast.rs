@@ -1,4 +1,4 @@
-use ast::ast::{BinaryOp, Uident, UnaryOp};
+use ast::ast::{BinaryOp, Ident, UnaryOp};
 use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -19,7 +19,7 @@ pub enum Item {
 
 #[derive(Debug)]
 pub struct ImplBlock {
-    pub trait_name: Option<Uident>,
+    pub trait_name: Option<Ident>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }
@@ -61,8 +61,8 @@ impl ClosureParam {
 
 #[derive(Debug, Clone)]
 pub struct EnumConstructor {
-    pub type_name: Uident,
-    pub variant: Uident,
+    pub type_name: Ident,
+    pub variant: Ident,
     pub index: usize,
 }
 
@@ -74,7 +74,7 @@ impl EnumConstructor {
 
 #[derive(Debug, Clone)]
 pub struct StructConstructor {
-    pub type_name: Uident,
+    pub type_name: Ident,
 }
 
 #[derive(Debug, Clone)]
@@ -84,14 +84,14 @@ pub enum Constructor {
 }
 
 impl Constructor {
-    pub fn name(&self) -> &Uident {
+    pub fn name(&self) -> &Ident {
         match self {
             Constructor::Enum(constructor) => &constructor.variant,
             Constructor::Struct(constructor) => &constructor.type_name,
         }
     }
 
-    pub fn type_name(&self) -> &Uident {
+    pub fn type_name(&self) -> &Ident {
         match self {
             Constructor::Enum(constructor) => &constructor.type_name,
             Constructor::Struct(constructor) => &constructor.type_name,
@@ -435,13 +435,13 @@ pub struct TypeVar(u32);
 #[derive(Debug, Clone)]
 pub enum BinaryResolution {
     Builtin,
-    Overloaded { trait_name: Uident },
+    Overloaded { trait_name: Ident },
 }
 
 #[derive(Debug, Clone)]
 pub enum UnaryResolution {
     Builtin,
-    Overloaded { trait_name: Uident },
+    Overloaded { trait_name: Ident },
 }
 
 impl UnifyKey for TypeVar {

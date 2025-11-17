@@ -71,4 +71,8 @@ impl<'t> Input<'t> {
     pub fn current_range(&self) -> Option<TextRange> {
         self.tokens.get(self.cursor).map(|token| token.range)
     }
+
+    pub fn current_text(&self) -> Option<&'t str> {
+        self.tokens.get(self.cursor).map(|token| token.text)
+    }
 }

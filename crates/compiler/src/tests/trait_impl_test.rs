@@ -199,8 +199,8 @@ impl Point {
     let point_ty = tast::Ty::TCon {
         name: "Point".to_string(),
     };
-    let new_ident = ::ast::ast::Lident("new".to_string());
-    let origin_ident = ::ast::ast::Lident("origin".to_string());
+    let new_ident = ::ast::ast::Ident("new".to_string());
+    let origin_ident = ::ast::ast::Ident("origin".to_string());
 
     let new_name = mangle_inherent_name(&point_ty, "new");
     let origin_name = mangle_inherent_name(&point_ty, "origin");
@@ -242,7 +242,7 @@ impl Point {
         name: "Point".to_string(),
     };
     let encoded = encode_ty(&point_ty);
-    let copy_ident = ::ast::ast::Lident("copy".to_string());
+    let copy_ident = ::ast::ast::Ident("copy".to_string());
 
     let (copy_mangled, copy_ty) = genv
         .inherent_impls
@@ -298,7 +298,7 @@ impl Point {
     assert_eq!(copy_fn.params[1].1, point_ty.clone());
     assert_eq!(copy_fn.ret_ty, point_ty.clone());
 
-    let origin_ident = ::ast::ast::Lident("origin".to_string());
+    let origin_ident = ::ast::ast::Ident("origin".to_string());
     let (_, origin_ty) = genv
         .inherent_impls
         .get(&(encoded, origin_ident))

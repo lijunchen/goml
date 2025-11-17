@@ -1,4 +1,4 @@
-use ast::ast::{Lident, Uident};
+use ast::ast::Ident;
 use indexmap::IndexMap;
 use std::collections::HashMap;
 
@@ -34,17 +34,17 @@ impl<'env> State<'env> {
         }
     }
 
-    fn fresh_struct_name(&mut self, hint: Option<&str>) -> Uident {
+    fn fresh_struct_name(&mut self, hint: Option<&str>) -> Ident {
         let name = if let Some(hint) = hint {
             format!("closure_env_{}_{}", hint, self.next_id)
         } else {
             format!("closure_env_{}", self.next_id)
         };
         self.next_id += 1;
-        Uident::new(&name)
+        Ident::new(&name)
     }
 
-    fn register_closure_type(&mut self, struct_name: &Uident, apply_fn: String) {
+    fn register_closure_type(&mut self, struct_name: &Ident, apply_fn: String) {
         self.closure_types.insert(
             struct_name.0.clone(),
             ClosureTypeInfo {
@@ -498,7 +498,7 @@ fn transform_closure(
 
     for (index, (name, field_ty)) in captured.iter().enumerate() {
         let field_name = make_field_name(name, index);
-        struct_fields.push((Lident(field_name), field_ty.clone()));
+        struct_fields.push((Ident(field_name), field_ty.clone()));
         captured_args.push(core::Expr::EVar {
             name: name.clone(),
             ty: field_ty.clone(),
@@ -682,7 +682,7 @@ fn make_field_name(name: &str, index: usize) -> String {
 
 fn instantiate_struct_field_ty(
     state: &State<'_>,
-    struct_name: &Uident,
+    struct_name: &Ident,
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {

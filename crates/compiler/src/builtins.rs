@@ -1,4 +1,4 @@
-use ast::ast::Lident;
+use ast::ast::Ident;
 use indexmap::IndexMap;
 
 use crate::{tast, type_encoding::encode_ty};
@@ -457,11 +457,11 @@ pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
     funcs
 }
 
-pub(super) fn builtin_inherent_methods() -> IndexMap<(String, Lident), (String, tast::Ty)> {
+pub(super) fn builtin_inherent_methods() -> IndexMap<(String, Ident), (String, tast::Ty)> {
     let mut methods = IndexMap::new();
 
     let int32_ty = tast::Ty::TInt32;
-    let method_name = Lident("to_string".to_string());
+    let method_name = Ident("to_string".to_string());
     let method_ty = tast::Ty::TFunc {
         params: vec![int32_ty.clone()],
         ret_ty: Box::new(tast::Ty::TString),

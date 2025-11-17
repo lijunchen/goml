@@ -1,14 +1,19 @@
 use parser::syntax::MySyntaxNodePtr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Lident(pub String);
+pub struct Ident(pub String);
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Uident(pub String);
-
-impl Uident {
+impl Ident {
     pub fn new(name: &str) -> Self {
         Self(name.to_string())
+    }
+
+    pub fn starts_with_uppercase(&self) -> bool {
+        self.0
+            .chars()
+            .next()
+            .map(|c| c.is_uppercase())
+            .unwrap_or(false)
     }
 }
 
@@ -93,7 +98,7 @@ pub enum Ty {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub name: Lident,
+    pub name: Ident,
     pub ty: Option<Ty>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -116,9 +121,9 @@ pub enum Item {
 
 #[derive(Debug, Clone)]
 pub struct Fn {
-    pub name: Lident,
-    pub generics: Vec<Uident>,
-    pub params: Vec<(Lident, Ty)>,
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    pub params: Vec<(Ident, Ty)>,
     pub ret_ty: Option<Ty>,
     pub body: Expr,
 }
@@ -127,47 +132,47 @@ pub struct Fn {
 pub struct ExternGo {
     pub package_path: String,
     pub go_symbol: String,
-    pub goml_name: Lident,
+    pub goml_name: Ident,
     pub explicit_go_symbol: bool,
-    pub params: Vec<(Lident, Ty)>,
+    pub params: Vec<(Ident, Ty)>,
     pub ret_ty: Option<Ty>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ExternType {
-    pub goml_name: Uident,
+    pub goml_name: Ident,
 }
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
-    pub name: Uident,
-    pub generics: Vec<Uident>,
-    pub variants: Vec<(Uident, Vec<Ty>)>,
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    pub variants: Vec<(Ident, Vec<Ty>)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct StructDef {
-    pub name: Uident,
-    pub generics: Vec<Uident>,
-    pub fields: Vec<(Lident, Ty)>,
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    pub fields: Vec<(Ident, Ty)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TraitDef {
-    pub name: Uident,
+    pub name: Ident,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
-    pub name: Lident,
+    pub name: Ident,
     pub params: Vec<Ty>,
     pub ret_ty: Ty,
 }
 
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
-    pub trait_name: Option<Uident>,
+    pub trait_name: Option<Ident>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }
@@ -175,7 +180,7 @@ pub struct ImplBlock {
 #[derive(Debug, Clone)]
 pub enum Expr {
     EVar {
-        name: Lident,
+        name: Ident,
         astptr: MySyntaxNodePtr,
     },
     EUnit,
@@ -192,12 +197,12 @@ pub enum Expr {
         value: String,
     },
     EConstr {
-        vcon: Uident,
+        vcon: Ident,
         args: Vec<Expr>,
     },
     EStructLiteral {
-        name: Uident,
-        fields: Vec<(Lident, Expr)>,
+        name: Ident,
+        fields: Vec<(Ident, Expr)>,
     },
     ETuple {
         items: Vec<Expr>,
@@ -248,7 +253,7 @@ pub enum Expr {
     },
     EField {
         expr: Box<Expr>,
-        field: Lident,
+        field: Ident,
         astptr: MySyntaxNodePtr,
     },
 }
@@ -262,7 +267,7 @@ pub struct Arm {
 #[derive(Debug, Clone)]
 pub enum Pat {
     PVar {
-        name: Lident,
+        name: Ident,
         astptr: MySyntaxNodePtr,
     },
     PUnit,
@@ -276,12 +281,12 @@ pub enum Pat {
         value: String,
     },
     PConstr {
-        vcon: Uident,
+        vcon: Ident,
         args: Vec<Pat>,
     },
     PStruct {
-        name: Uident,
-        fields: Vec<(Lident, Pat)>,
+        name: Ident,
+        fields: Vec<(Ident, Pat)>,
     },
     PTuple {
         pats: Vec<Pat>,

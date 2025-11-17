@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use ast::ast::Uident;
+use ast::ast::Ident;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
@@ -41,7 +41,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     let point = genv
         .structs
-        .get(&Uident::new("Point"))
+        .get(&Ident::new("Point"))
         .expect("Point struct to be recorded");
     assert!(point.generics.is_empty());
     assert_eq!(point.fields.len(), 2);
@@ -52,7 +52,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     let wrapper = genv
         .structs
-        .get(&Uident::new("Wrapper"))
+        .get(&Ident::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
     assert_eq!(wrapper.generics.len(), 1);
     assert_eq!(wrapper.generics[0].0, "T");
@@ -109,7 +109,7 @@ enum Shape[T] {
 
     let shape = genv
         .enums
-        .get(&Uident::new("Shape"))
+        .get(&Ident::new("Shape"))
         .expect("Shape enum to be recorded");
     assert_eq!(shape.generics.len(), 1);
     assert_eq!(shape.generics[0].0, "T");
@@ -163,7 +163,7 @@ enum List {
 
     let node = genv
         .structs
-        .get(&Uident::new("Node"))
+        .get(&Ident::new("Node"))
         .expect("Node struct to be recorded");
     assert_eq!(node.fields.len(), 2);
     assert_eq!(node.fields[1].0.0, "next");
@@ -176,7 +176,7 @@ enum List {
 
     let list = genv
         .enums
-        .get(&Uident::new("List"))
+        .get(&Ident::new("List"))
         .expect("List enum to be recorded");
     assert_eq!(list.variants.len(), 2);
     let cons = &list.variants[0];

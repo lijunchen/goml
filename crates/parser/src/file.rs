@@ -39,7 +39,7 @@ fn extern_decl(p: &mut Parser) {
     p.expect(T![extern]);
     if p.at(T![type]) {
         p.expect(T![type]);
-        if p.at(T![uident]) {
+        if p.at(T![ident]) {
             p.advance();
         } else {
             p.advance_with_error("expected a type name");
@@ -63,19 +63,19 @@ fn extern_decl(p: &mut Parser) {
     } else {
         false
     };
-    if has_symbol_override && !p.at(T![type]) && !p.at(T![lident]) {
+    if has_symbol_override && !p.at(T![type]) && !p.at(T![ident]) {
         p.advance_with_error("expected a function or type declaration after Go symbol");
     }
 
     if p.at(T![type]) {
         p.expect(T![type]);
-        if p.at(T![uident]) {
+        if p.at(T![ident]) {
             p.advance();
         } else {
             p.advance_with_error("expected a type name");
         }
     } else {
-        if p.at(T![lident]) {
+        if p.at(T![ident]) {
             p.advance();
         } else {
             p.advance_with_error("expected a function name");
@@ -96,7 +96,7 @@ fn func(p: &mut Parser) {
     assert!(p.at(T![fn]));
     let m = p.open();
     p.expect(T![fn]);
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p);
     }
@@ -116,9 +116,9 @@ fn impl_block(p: &mut Parser) {
     assert!(p.at(T![impl]));
     let m = p.open();
     p.expect(T![impl]);
-    let has_trait = p.at(T![uident]) && matches!(p.nth(1), T![for]);
+    let has_trait = p.at(T![ident]) && matches!(p.nth(1), T![for]);
     if has_trait {
-        p.expect(T![uident]);
+        p.expect(T![ident]);
         p.expect(T![for]);
         type_expr(p);
     } else {
@@ -142,7 +142,7 @@ fn trait_def(p: &mut Parser) {
     assert!(p.at(T![trait]));
     let m = p.open();
     p.expect(T![trait]);
-    p.expect(T![uident]);
+    p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p);
     }
@@ -177,7 +177,7 @@ fn trait_method(p: &mut Parser) {
     assert!(p.at(T![fn]));
     let m = p.open();
     p.expect(T![fn]);
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     if p.at(T!['(']) {
         type_list(p);
     }
@@ -191,7 +191,7 @@ fn enum_def(p: &mut Parser) {
     assert!(p.at(T![enum]));
     let m = p.open();
     p.expect(T![enum]);
-    p.expect(T![uident]);
+    p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p);
     }
@@ -205,7 +205,7 @@ fn struct_def(p: &mut Parser) {
     assert!(p.at(T![struct]));
     let m = p.open();
     p.expect(T![struct]);
-    p.expect(T![uident]);
+    p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p);
     }
@@ -220,7 +220,7 @@ fn variant_list(p: &mut Parser) {
     p.expect(T!['{']);
     let m = p.open();
     while !p.at(T!['}']) && !p.eof() {
-        if p.at(T![uident]) {
+        if p.at(T![ident]) {
             variant(p);
             p.eat(T![,]);
         } else {
@@ -236,7 +236,7 @@ fn struct_field_list(p: &mut Parser) {
     p.expect(T!['{']);
     let m = p.open();
     while !p.at(T!['}']) && !p.eof() {
-        if p.at(T![lident]) {
+        if p.at(T![ident]) {
             struct_field(p);
             p.eat(T![,]);
         } else {
@@ -248,18 +248,18 @@ fn struct_field_list(p: &mut Parser) {
 }
 
 fn struct_field(p: &mut Parser) {
-    assert!(p.at(T![lident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     p.expect(T![:]);
     type_expr(p);
     p.close(m, MySyntaxKind::STRUCT_FIELD);
 }
 
 fn variant(p: &mut Parser) {
-    assert!(p.at(T![uident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![uident]);
+    p.expect(T![ident]);
     if p.at(T!['(']) {
         type_list(p);
     }
@@ -282,7 +282,7 @@ const TYPE_FIRST: &[TokenKind] = &[
     T![String],
     T!['['],
     T!['('],
-    T![uident],
+    T![ident],
 ];
 
 fn type_list(p: &mut Parser) {
@@ -302,9 +302,9 @@ fn type_list(p: &mut Parser) {
 }
 
 fn generic(p: &mut Parser) {
-    assert!(p.at(T![uident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![uident]);
+    p.expect(T![ident]);
     if p.at(T!['[']) {
         generic_list(p);
     }
@@ -316,7 +316,7 @@ fn generic_list(p: &mut Parser) {
     let m = p.open();
     p.expect(T!['[']);
     while !p.at(T![']']) && !p.eof() {
-        if p.at(T![uident]) {
+        if p.at(T![ident]) {
             generic(p);
             p.eat(T![,]);
         } else {
@@ -334,7 +334,7 @@ fn param_list(p: &mut Parser) {
 
     p.expect(T!['(']);
     while !p.at(T![')']) && !p.eof() {
-        if p.at(T![lident]) {
+        if p.at(T![ident]) {
             param(p);
         } else {
             if p.at_any(PARAM_LIST_RECOVERY) {
@@ -348,9 +348,9 @@ fn param_list(p: &mut Parser) {
 }
 
 fn param(p: &mut Parser) {
-    assert!(p.at(T![lident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     p.expect(T![:]);
     type_expr(p);
     if !p.at(T![')']) {
@@ -484,7 +484,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             }
             p.close(m, MySyntaxKind::TYPE_ARRAY)
         }
-        T![uident] => {
+        T![ident] => {
             p.advance();
             if p.at(T!['[']) {
                 type_param_list(p);

@@ -10,8 +10,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![int],
     T![float],
     T![str],
-    T![lident],
-    T![uident],
+    T![ident],
     T![true],
     T![false],
     T![-],
@@ -91,19 +90,15 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(m, MySyntaxKind::EXPR_BOOL)
         }
         // ExprName = 'name'
-        T![lident] => {
+        T![ident] => {
             let m = p.open();
-            p.advance();
-            p.close(m, MySyntaxKind::EXPR_LIDENT)
-        }
-        T![uident] => {
-            let m = p.open();
-            p.expect(T![uident]);
-            if p.at(T!['{']) {
+            let is_type_like = p.peek_text().map_or(false, looks_like_type_name);
+            p.expect(T![ident]);
+            if is_type_like && p.at(T!['{']) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
             } else {
-                p.close(m, MySyntaxKind::EXPR_UIDENT)
+                p.close(m, MySyntaxKind::EXPR_IDENT)
             }
         }
         // ExprParen = '( Expr ')'
@@ -252,8 +247,8 @@ fn closure_param_list(p: &mut Parser) {
 
 fn closure_param(p: &mut Parser) {
     let m = p.open();
-    if p.at(T![lident]) {
-        p.expect(T![lident]);
+    if p.at(T![ident]) {
+        p.expect(T![ident]);
     } else {
         if !p.at(T![|]) && !p.eof() {
             p.advance_with_error("expected an identifier in closure parameter");
@@ -309,7 +304,7 @@ fn struct_literal_field_list(p: &mut Parser) {
     let m = p.open();
     p.expect(T!['{']);
     while !p.eof() && !p.at(T!['}']) {
-        if p.at(T![lident]) {
+        if p.at(T![ident]) {
             struct_literal_field(p);
             p.eat(T![,]);
         } else {
@@ -321,9 +316,9 @@ fn struct_literal_field_list(p: &mut Parser) {
 }
 
 fn struct_literal_field(p: &mut Parser) {
-    assert!(p.at(T![lident]));
+    assert!(p.at(T![ident]));
     let m = p.open();
-    p.expect(T![lident]);
+    p.expect(T![ident]);
     p.expect(T![:]);
     if p.at_any(EXPR_FIRST) {
         expect_expr_with_message(p, "expected an expression");
@@ -345,6 +340,13 @@ fn prefix_binding_power(op: TokenKind) -> Option<u8> {
         T![-] | T![!] => Some(23),
         _ => None,
     }
+}
+
+fn looks_like_type_name(text: &str) -> bool {
+    text.chars()
+        .next()
+        .map(|ch| ch.is_uppercase())
+        .unwrap_or(false)
 }
 
 fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {

@@ -1,4 +1,4 @@
-use ast::ast::{Lident, Uident};
+use ast::ast::Ident;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use im::HashMap as ImHashMap;
 use indexmap::{IndexMap, IndexSet};
@@ -15,16 +15,16 @@ use std::cell::Cell;
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
-    pub name: Uident,
-    pub generics: Vec<Uident>,
-    pub variants: Vec<(Uident, Vec<tast::Ty>)>,
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    pub variants: Vec<(Ident, Vec<tast::Ty>)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct StructDef {
-    pub name: Uident,
-    pub generics: Vec<Uident>,
-    pub fields: Vec<(Lident, tast::Ty)>,
+    pub name: Ident,
+    pub generics: Vec<Ident>,
+    pub fields: Vec<(Ident, tast::Ty)>,
 }
 
 #[derive(Debug, Clone)]
@@ -40,18 +40,18 @@ pub struct ExternType {
     pub package_path: Option<String>,
 }
 
-pub fn encode_trait_impl(trait_name: &Uident, type_name: &tast::Ty) -> String {
+pub fn encode_trait_impl(trait_name: &Ident, type_name: &tast::Ty) -> String {
     let trait_name = &trait_name.0;
     let type_repr = encode_ty(type_name);
     format!("__{}%{}", trait_name, type_repr)
 }
 
-pub fn decode_trait_impl(impl_name: &str) -> (Uident, tast::Ty) {
+pub fn decode_trait_impl(impl_name: &str) -> (Ident, tast::Ty) {
     let impl_name = impl_name.strip_prefix("__").unwrap_or(impl_name);
     let (trait_part, type_part) = impl_name
         .split_once('%')
         .expect("Invalid trait impl name format");
-    let trait_name = Uident::new(trait_part);
+    let trait_name = Ident::new(trait_part);
     let ty = decode_ty(type_part)
         .unwrap_or_else(|err| panic!("Failed to decode trait impl type `{}`: {}", type_part, err));
     (trait_name, ty)
@@ -61,13 +61,13 @@ pub fn decode_trait_impl(impl_name: &str) -> (Uident, tast::Ty) {
 pub enum Constraint {
     TypeEqual(tast::Ty, tast::Ty),
     Overloaded {
-        op: Lident,
-        trait_name: Uident,
+        op: Ident,
+        trait_name: Ident,
         call_site_type: tast::Ty,
     },
     StructFieldAccess {
         expr_ty: tast::Ty,
-        field: Lident,
+        field: Ident,
         result_ty: tast::Ty,
     },
 }
@@ -75,13 +75,13 @@ pub enum Constraint {
 #[derive(Debug, Clone)]
 #[allow(unused)]
 pub struct GlobalTypeEnv {
-    pub enums: IndexMap<Uident, EnumDef>,
-    pub structs: IndexMap<Uident, StructDef>,
+    pub enums: IndexMap<Ident, EnumDef>,
+    pub structs: IndexMap<Ident, StructDef>,
     pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub overloaded_funcs_to_trait_name: IndexMap<String, Uident>,
-    pub trait_impls: IndexMap<(String, String, Lident), tast::Ty>,
-    pub inherent_impls: IndexMap<(String, Lident), (String, tast::Ty)>,
+    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
+    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
+    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
@@ -206,7 +206,7 @@ impl GlobalTypeEnv {
         }
     }
 
-    pub fn register_closure_apply(&mut self, struct_name: &Uident, apply_fn: String) {
+    pub fn register_closure_apply(&mut self, struct_name: &Ident, apply_fn: String) {
         self.closure_env_apply
             .insert(struct_name.0.clone(), apply_fn);
     }
@@ -226,9 +226,9 @@ impl GlobalTypeEnv {
 
     pub fn get_trait_impl(
         &self,
-        trait_name: &Uident,
+        trait_name: &Ident,
         type_name: &tast::Ty,
-        func_name: &Lident,
+        func_name: &Ident,
     ) -> Option<tast::Ty> {
         self.trait_impls
             .get(&(
@@ -240,12 +240,12 @@ impl GlobalTypeEnv {
     }
 
     pub fn get_variant_name(&self, tenum_name: &str, index: i32) -> String {
-        let enum_def = self.enums.get(&Uident::new(tenum_name)).unwrap();
+        let enum_def = self.enums.get(&Ident::new(tenum_name)).unwrap();
         let variant = &enum_def.variants[index as usize];
         format!("{}::{}", enum_def.name.0, variant.0.0)
     }
 
-    pub fn lookup_constructor(&self, constr: &Uident) -> Option<(Constructor, tast::Ty)> {
+    pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
         for (enum_name, enum_def) in self.enums.iter() {
             for (index, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
                 if variant_name == constr {
@@ -323,7 +323,7 @@ impl GlobalTypeEnv {
     }
 
     pub fn get_type_of_constructor(&self, constr: &str) -> Option<tast::Ty> {
-        let uident = Uident::new(constr);
+        let uident = Ident::new(constr);
         self.lookup_constructor(&uident).map(|(_, ty)| ty)
     }
 
@@ -345,7 +345,7 @@ impl GlobalTypeEnv {
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
-        method: &Lident,
+        method: &Ident,
     ) -> Option<(String, tast::Ty)> {
         let key = (encode_ty(receiver_ty), method.clone());
         self.inherent_impls.get(&key).cloned()
@@ -544,9 +544,9 @@ impl Gensym {
 
 #[derive(Debug, Clone)]
 pub struct LocalTypeEnv {
-    scopes: Vec<ImHashMap<Lident, tast::Ty>>,
-    tparams_env: Vec<Uident>,
-    capture_stack: Vec<IndexMap<Lident, tast::Ty>>,
+    scopes: Vec<ImHashMap<Ident, tast::Ty>>,
+    tparams_env: Vec<Ident>,
+    capture_stack: Vec<IndexMap<Ident, tast::Ty>>,
 }
 
 impl Default for LocalTypeEnv {
@@ -585,13 +585,13 @@ impl LocalTypeEnv {
         result
     }
 
-    pub fn insert_var(&mut self, name: &Lident, ty: tast::Ty) {
+    pub fn insert_var(&mut self, name: &Ident, ty: tast::Ty) {
         if let Some(scope) = self.scopes.last_mut() {
             scope.insert(name.clone(), ty);
         }
     }
 
-    pub fn lookup_var(&mut self, name: &Lident) -> Option<tast::Ty> {
+    pub fn lookup_var(&mut self, name: &Ident) -> Option<tast::Ty> {
         for (depth, scope) in self.scopes.iter().enumerate().rev() {
             if let Some(ty) = scope.get(name) {
                 if depth + 1 < self.scopes.len()
@@ -605,7 +605,7 @@ impl LocalTypeEnv {
         None
     }
 
-    pub fn set_tparams_env(&mut self, params: &[Uident]) {
+    pub fn set_tparams_env(&mut self, params: &[Ident]) {
         self.tparams_env = params.to_vec();
     }
 
@@ -613,7 +613,7 @@ impl LocalTypeEnv {
         self.tparams_env.clear();
     }
 
-    pub fn current_tparams_env(&self) -> Vec<Uident> {
+    pub fn current_tparams_env(&self) -> Vec<Ident> {
         self.tparams_env.clone()
     }
 

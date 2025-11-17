@@ -2,7 +2,7 @@ use super::core;
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::tast::{self, Constructor, Ty};
 use crate::type_encoding::encode_ty;
-use ast::ast::Uident;
+use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
@@ -45,7 +45,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
         match (constructor, new_ty) {
             (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
-                let ident = Uident::new(name);
+                let ident = Ident::new(name);
                 Constructor::Enum(tast::EnumConstructor {
                     type_name: ident,
                     variant: enum_constructor.variant.clone(),
@@ -55,19 +55,19 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             (Constructor::Enum(enum_constructor), Ty::TApp { ty, .. }) => {
                 let base = ty.get_constr_name_unsafe();
                 Constructor::Enum(tast::EnumConstructor {
-                    type_name: Uident::new(&base),
+                    type_name: Ident::new(&base),
                     variant: enum_constructor.variant.clone(),
                     index: enum_constructor.index,
                 })
             }
             (Constructor::Struct(_), Ty::TCon { name }) => {
-                let ident = Uident::new(name);
+                let ident = Ident::new(name);
                 Constructor::Struct(tast::StructConstructor { type_name: ident })
             }
             (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
                 let base = ty.get_constr_name_unsafe();
                 Constructor::Struct(tast::StructConstructor {
-                    type_name: Uident::new(&base),
+                    type_name: Ident::new(&base),
                 })
             }
             _ => constructor.clone(),
@@ -490,11 +490,11 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     // Phase 2: monomorphize enum type applications in types and update env
     struct TypeMono<'a> {
         genv: &'a mut GlobalTypeEnv,
-        // map generic (name, args) to new concrete Uident
-        map: IndexMap<(String, Vec<Ty>), Uident>,
+        // map generic (name, args) to new concrete Ident
+        map: IndexMap<(String, Vec<Ty>), Ident>,
         // snapshot of original generic enum defs
-        enum_base: IndexMap<Uident, EnumDef>,
-        struct_base: IndexMap<Uident, StructDef>,
+        enum_base: IndexMap<Ident, EnumDef>,
+        struct_base: IndexMap<Ident, StructDef>,
     }
 
     impl<'a> TypeMono<'a> {
@@ -509,7 +509,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             }
         }
 
-        fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> Uident {
+        fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> Ident {
             let key = (name.to_string(), args.to_vec());
             if let Some(u) = self.map.get(&key) {
                 return u.clone();
@@ -523,10 +523,10 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                     args.iter().map(encode_ty).collect::<Vec<_>>().join("__")
                 )
             };
-            let new_name = Uident::new(&format!("{}{}", name, suffix));
+            let new_name = Ident::new(&format!("{}{}", name, suffix));
             self.map.insert(key.clone(), new_name.clone());
 
-            let ident = Uident::new(name);
+            let ident = Ident::new(name);
 
             if let Some(generic_def) = self.enum_base.get(&ident) {
                 // Build substitution from generics to args
@@ -544,7 +544,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                 }
 
                 // Substitute variant field types and also collapse nested enum/struct apps
-                let mut new_variants: Vec<(Uident, Vec<Ty>)> = Vec::new();
+                let mut new_variants: Vec<(Ident, Vec<Ty>)> = Vec::new();
                 // Clone needed data to limit immutable borrow scope
                 let variants = generic_def.variants.clone();
                 for (vname, vfields) in variants.into_iter() {
@@ -601,7 +601,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
             match ty {
                 Ty::TApp { ty: base, args } if !args.is_empty() => {
                     let base_name = base.get_constr_name_unsafe();
-                    let ident = Uident::new(&base_name);
+                    let ident = Ident::new(&base_name);
                     if self.enum_base.contains_key(&ident) || self.struct_base.contains_key(&ident)
                     {
                         let new_u = self.ensure_instance(&base_name, args);

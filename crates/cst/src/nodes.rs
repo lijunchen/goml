@@ -115,7 +115,7 @@ pub struct Enum {
 
 impl Enum {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn generic_list(&self) -> Option<GenericList> {
@@ -139,7 +139,7 @@ pub struct Struct {
 
 impl Struct {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn generic_list(&self) -> Option<GenericList> {
@@ -163,7 +163,7 @@ pub struct Trait {
 
 impl Trait {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn trait_method_list(&self) -> Option<TraitMethodList> {
@@ -199,7 +199,7 @@ pub struct TraitMethod {
 
 impl TraitMethod {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn type_list(&self) -> Option<TypeList> {
@@ -223,7 +223,7 @@ pub struct Impl {
 
 impl Impl {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn for_type(&self) -> Option<Type> {
@@ -247,7 +247,7 @@ pub struct Generic {
 
 impl Generic {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 }
 impl_cst_node_simple!(Generic, MySyntaxKind::GENERIC);
@@ -293,7 +293,7 @@ pub struct Variant {
 
 impl Variant {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn type_list(&self) -> Option<TypeList> {
@@ -345,7 +345,7 @@ pub struct StructField {
 
 impl StructField {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn ty(&self) -> Option<Type> {
@@ -365,7 +365,7 @@ pub struct Fn {
 
 impl Fn {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn generic_list(&self) -> Option<GenericList> {
@@ -427,7 +427,7 @@ impl Extern {
     }
 
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn type_keyword(&self) -> Option<MySyntaxToken> {
@@ -435,7 +435,7 @@ impl Extern {
     }
 
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn param_list(&self) -> Option<ParamList> {
@@ -475,7 +475,7 @@ pub struct Param {
 
 impl Param {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn ty(&self) -> Option<Type> {
@@ -593,8 +593,7 @@ pub enum Expr {
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
     WhileExpr(WhileExpr),
-    UidentExpr(UidentExpr),
-    LidentExpr(LidentExpr),
+    IdentExpr(IdentExpr),
     TupleExpr(TupleExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
@@ -615,8 +614,7 @@ impl CstNode for Expr {
                 | EXPR_STRUCT_LITERAL
                 | EXPR_ARRAY_LITERAL
                 | EXPR_MATCH
-                | EXPR_UIDENT
-                | EXPR_LIDENT
+                | EXPR_IDENT
                 | EXPR_TUPLE
                 | EXPR_BINARY
                 | EXPR_PREFIX
@@ -637,8 +635,7 @@ impl CstNode for Expr {
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
-            EXPR_UIDENT => Expr::UidentExpr(UidentExpr { syntax }),
-            EXPR_LIDENT => Expr::LidentExpr(LidentExpr { syntax }),
+            EXPR_IDENT => Expr::IdentExpr(IdentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
@@ -662,8 +659,7 @@ impl CstNode for Expr {
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
             Self::WhileExpr(it) => &it.syntax,
-            Self::UidentExpr(it) => &it.syntax,
-            Self::LidentExpr(it) => &it.syntax,
+            Self::IdentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
@@ -754,7 +750,7 @@ pub struct StructLiteralExpr {
 
 impl StructLiteralExpr {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn field_list(&self) -> Option<StructLiteralFieldList> {
@@ -809,7 +805,7 @@ pub struct StructLiteralField {
 
 impl StructLiteralField {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn expr(&self) -> Option<Expr> {
@@ -1023,7 +1019,7 @@ impl CallExpr {
     pub fn l_name(&self) -> Option<String> {
         let node: Option<Expr> = support::child(&self.syntax);
         match node {
-            Some(Expr::LidentExpr(it)) => it.lident_token().map(|t| t.text().to_string()),
+            Some(Expr::IdentExpr(it)) => it.ident_token().map(|t| t.text().to_string()),
             _ => None,
         }
     }
@@ -1031,7 +1027,7 @@ impl CallExpr {
     pub fn u_name(&self) -> Option<String> {
         let node: Option<Expr> = support::child(&self.syntax);
         match node {
-            Some(Expr::UidentExpr(it)) => it.uident().map(|t| t.text().to_string()),
+            Some(Expr::IdentExpr(it)) => it.ident_token().map(|t| t.text().to_string()),
             _ => None,
         }
     }
@@ -1080,34 +1076,18 @@ impl_display_via_syntax!(Arg);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct UidentExpr {
+pub struct IdentExpr {
     pub(crate) syntax: MySyntaxNode,
 }
 
-impl UidentExpr {
-    pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+impl IdentExpr {
+    pub fn ident_token(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 }
 
-impl_cst_node_simple!(UidentExpr, MySyntaxKind::EXPR_UIDENT);
-impl_display_via_syntax!(UidentExpr);
-
-////////////////////////////////////////////////////////////////////////////////
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LidentExpr {
-    pub(crate) syntax: MySyntaxNode,
-}
-
-impl LidentExpr {
-    pub fn lident_token(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
-    }
-}
-
-impl_cst_node_simple!(LidentExpr, MySyntaxKind::EXPR_LIDENT);
-impl_display_via_syntax!(LidentExpr);
+impl_cst_node_simple!(IdentExpr, MySyntaxKind::EXPR_IDENT);
+impl_display_via_syntax!(IdentExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -1249,7 +1229,7 @@ pub struct ClosureParam {
 
 impl ClosureParam {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn ty(&self) -> Option<Type> {
@@ -1346,7 +1326,7 @@ pub struct VarPat {
 
 impl VarPat {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 }
 
@@ -1418,7 +1398,7 @@ pub struct ConstrPat {
 
 impl ConstrPat {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn patterns(&self) -> CstChildren<Pattern> {
@@ -1477,7 +1457,7 @@ pub struct StructPatternField {
 
 impl StructPatternField {
     pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Lident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn pattern(&self) -> Option<Pattern> {
@@ -1751,7 +1731,7 @@ pub struct TAppTy {
 
 impl TAppTy {
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Uident)
+        support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
     pub fn type_param_list(&self) -> Option<TypeParamList> {
