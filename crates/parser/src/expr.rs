@@ -92,9 +92,8 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         // ExprName = 'name'
         T![ident] => {
             let m = p.open();
-            let is_type_like = p.peek_text().map_or(false, looks_like_type_name);
             p.expect(T![ident]);
-            if is_type_like && p.at(T!['{']) {
+            if looks_like_struct_literal(p) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)
             } else {
@@ -328,6 +327,18 @@ fn struct_literal_field(p: &mut Parser) {
     p.close(m, MySyntaxKind::STRUCT_LITERAL_FIELD);
 }
 
+fn looks_like_struct_literal(p: &mut Parser) -> bool {
+    if !p.at(T!['{']) {
+        return false;
+    }
+
+    match p.nth(1) {
+        T!['}'] => true,
+        T![ident] => matches!(p.nth(2), T![:]),
+        _ => false,
+    }
+}
+
 fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     match op {
         T!['('] => Some((7, ())),
@@ -340,13 +351,6 @@ fn prefix_binding_power(op: TokenKind) -> Option<u8> {
         T![-] | T![!] => Some(23),
         _ => None,
     }
-}
-
-fn looks_like_type_name(text: &str) -> bool {
-    text.chars()
-        .next()
-        .map(|ch| ch.is_uppercase())
-        .unwrap_or(false)
 }
 
 fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
