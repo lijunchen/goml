@@ -4,6 +4,7 @@ use ::cst::cst::CstNode;
 use ::cst::{cst, support};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
+use std::collections::HashSet;
 use text_size::TextRange;
 
 pub struct LowerResult {
@@ -50,13 +51,16 @@ impl LowerResult {
 struct LowerCtx {
     stage: Stage,
     diagnostics: Diagnostics,
+    constructor_names: HashSet<String>,
 }
 
 impl LowerCtx {
-    fn new() -> Self {
+    fn new(file: &cst::File) -> Self {
+        let constructor_names = collect_constructor_names(file);
         Self {
             stage: Stage::other("lower"),
             diagnostics: Diagnostics::new(),
+            constructor_names,
         }
     }
 
@@ -73,10 +77,39 @@ impl LowerCtx {
     fn into_diagnostics(self) -> Diagnostics {
         self.diagnostics
     }
+    fn is_constructor(&self, ident: &ast::Ident) -> bool {
+        self.constructor_names.contains(&ident.0)
+    }
+}
+
+fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
+    let mut constructor_names = HashSet::new();
+
+    for item in file.items() {
+        match item {
+            cst::Item::Enum(enum_node) => {
+                if let Some(list) = enum_node.variant_list() {
+                    for variant in list.variants() {
+                        if let Some(token) = variant.uident() {
+                            constructor_names.insert(token.to_string());
+                        }
+                    }
+                }
+            }
+            cst::Item::Struct(struct_node) => {
+                if let Some(token) = struct_node.uident() {
+                    constructor_names.insert(token.to_string());
+                }
+            }
+            _ => {}
+        }
+    }
+
+    constructor_names
 }
 
 pub fn lower(node: cst::File) -> LowerResult {
-    let mut ctx = LowerCtx::new();
+    let mut ctx = LowerCtx::new(&node);
     let items = node
         .items()
         .flat_map(|item| lower_item(&mut ctx, item))
@@ -784,7 +817,7 @@ fn lower_expr_with_args(
                         };
                         let name = token.to_string();
                         let ident = ast::Ident(name);
-                        if ident.starts_with_uppercase() {
+                        if ctx.is_constructor(&ident) {
                             let constr = ast::Expr::EConstr { vcon: ident, args };
                             apply_trailing_args(
                                 ctx,
@@ -1118,7 +1151,7 @@ fn lower_expr_with_args(
             };
             let name = token.to_string();
             let ident = ast::Ident(name);
-            if ident.starts_with_uppercase() {
+            if ctx.is_constructor(&ident) {
                 let expr = ast::Expr::EConstr {
                     vcon: ident,
                     args: vec![],
@@ -1465,7 +1498,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         cst::Pattern::VarPat(it) => {
             let name = it.lident().unwrap().to_string();
             let ident = ast::Ident(name);
-            if ident.starts_with_uppercase() {
+            if ctx.is_constructor(&ident) {
                 Some(ast::Pat::PConstr {
                     vcon: ident,
                     args: Vec::new(),
