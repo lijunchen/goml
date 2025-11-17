@@ -214,3 +214,48 @@ fn let_expression_without_pattern_reports_error() {
     let errors = result.format_errors(src);
     assert!(errors.iter().any(|msg| msg.contains("expected a pattern")));
 }
+
+#[test]
+fn parses_namespaced_expr_ident() {
+    check(
+        "::foo::bar",
+        expect![[r#"
+            FILE@0..10
+              EXPR_IDENT@0..10
+                PATH@0..10
+                  ColonColon@0..2 "::"
+                  Ident@2..5 "foo"
+                  ColonColon@5..7 "::"
+                  Ident@7..10 "bar""#]],
+    );
+}
+
+#[test]
+fn parses_namespaced_type() {
+    check(
+        "fn main(x: ::foo::Bar) {}",
+        expect![[r#"
+            FILE@0..25
+              FN@0..25
+                FnKeyword@0..2 "fn"
+                Whitespace@2..3 " "
+                Ident@3..7 "main"
+                PARAM_LIST@7..23
+                  LParen@7..8 "("
+                  PARAM@8..21
+                    Ident@8..9 "x"
+                    Colon@9..10 ":"
+                    Whitespace@10..11 " "
+                    TYPE_TAPP@11..21
+                      PATH@11..21
+                        ColonColon@11..13 "::"
+                        Ident@13..16 "foo"
+                        ColonColon@16..18 "::"
+                        Ident@18..21 "Bar"
+                  RParen@21..22 ")"
+                  Whitespace@22..23 " "
+                BLOCK@23..25
+                  LBrace@23..24 "{"
+                  RBrace@24..25 "}""#]],
+    );
+}
