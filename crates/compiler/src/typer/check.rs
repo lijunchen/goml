@@ -46,8 +46,8 @@ impl Typer {
                 value: Prim::string(value.clone()),
                 ty: tast::Ty::TString,
             },
-            ast::Expr::EConstr { vcon, args } => {
-                self.infer_constructor_expr(genv, local_env, vcon, args)
+            ast::Expr::EConstr { constructor, args } => {
+                self.infer_constructor_expr(genv, local_env, constructor, args)
             }
             ast::Expr::EStructLiteral { name, fields } => {
                 self.infer_struct_literal_expr(genv, local_env, name, fields)
@@ -219,12 +219,20 @@ impl Typer {
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        vcon: &ast::Ident,
+        constructor_ident: &ast::ConstructorIdent,
         args: &[ast::Expr],
     ) -> tast::Expr {
         let (constructor, constr_ty) = genv
-            .lookup_constructor(vcon)
-            .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
+            .lookup_constructor_with_namespace(
+                constructor_ident.enum_name(),
+                constructor_ident.variant(),
+            )
+            .unwrap_or_else(|| {
+                panic!(
+                    "Constructor {} not found in environment",
+                    constructor_ident.display()
+                )
+            });
 
         let expected_arity = match &constructor {
             tast::Constructor::Enum(enum_constructor) => genv
@@ -1163,10 +1171,21 @@ impl Typer {
         ty: &tast::Ty,
     ) -> tast::Pat {
         match pat {
-            ast::Pat::PConstr { vcon, args } => {
+            ast::Pat::PConstr {
+                constructor: constructor_ident,
+                args,
+            } => {
                 let (constructor, constr_ty) = genv
-                    .lookup_constructor(vcon)
-                    .unwrap_or_else(|| panic!("Constructor {} not found in environment", vcon.0));
+                    .lookup_constructor_with_namespace(
+                        constructor_ident.enum_name(),
+                        constructor_ident.variant(),
+                    )
+                    .unwrap_or_else(|| {
+                        panic!(
+                            "Constructor {} not found in environment",
+                            constructor_ident.display()
+                        )
+                    });
 
                 let expected_arity = match &constructor {
                     tast::Constructor::Enum(enum_constructor) => genv

@@ -246,46 +246,103 @@ impl GlobalTypeEnv {
     }
 
     pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+        self.lookup_constructor_with_namespace(None, constr)
+    }
+
+    pub fn lookup_constructor_with_namespace(
+        &self,
+        enum_name: Option<&Ident>,
+        constr: &Ident,
+    ) -> Option<(Constructor, tast::Ty)> {
+        match enum_name {
+            Some(enum_name) => self.lookup_enum_constructor_in(enum_name, constr),
+            None => self
+                .lookup_enum_constructor(constr)
+                .or_else(|| self.lookup_struct_constructor(constr)),
+        }
+    }
+
+    fn lookup_enum_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+        let mut found: Option<(Constructor, tast::Ty)> = None;
         for (enum_name, enum_def) in self.enums.iter() {
-            for (index, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
-                if variant_name == constr {
-                    let base = tast::Ty::TCon {
-                        name: enum_name.0.clone(),
-                    };
-                    let args: Vec<tast::Ty> = enum_def
-                        .generics
-                        .iter()
-                        .map(|g| tast::Ty::TParam { name: g.0.clone() })
-                        .collect();
-                    let ret_ty = if args.is_empty() {
-                        base.clone()
-                    } else {
-                        tast::Ty::TApp {
-                            ty: Box::new(base.clone()),
-                            args,
-                        }
-                    };
-
-                    let ctor_ty = if fields.is_empty() {
-                        ret_ty.clone()
-                    } else {
-                        tast::Ty::TFunc {
-                            params: fields.clone(),
-                            ret_ty: Box::new(ret_ty.clone()),
-                        }
-                    };
-
-                    let constructor = Constructor::Enum(tast::EnumConstructor {
-                        type_name: enum_name.clone(),
-                        variant: variant_name.clone(),
-                        index,
-                    });
-                    return Some((constructor, ctor_ty));
+            if let Some(candidate) = Self::enum_constructor_info(enum_name, enum_def, constr) {
+                if found.is_some() {
+                    panic!(
+                        "Constructor {} is defined in multiple enums; use Enum::{} to disambiguate",
+                        constr.0, constr.0
+                    );
                 }
+                found = Some(candidate);
             }
         }
+        found
+    }
 
-        if let Some(struct_def) = self.structs.get(constr) {
+    fn lookup_enum_constructor_in(
+        &self,
+        enum_name: &Ident,
+        constr: &Ident,
+    ) -> Option<(Constructor, tast::Ty)> {
+        self.enums
+            .get(enum_name)
+            .and_then(|enum_def| Self::enum_constructor_info(enum_name, enum_def, constr))
+    }
+
+    fn enum_constructor_info(
+        enum_name: &Ident,
+        enum_def: &EnumDef,
+        constr: &Ident,
+    ) -> Option<(Constructor, tast::Ty)> {
+        enum_def
+            .variants
+            .iter()
+            .enumerate()
+            .find(|(_, (variant_name, _))| variant_name == constr)
+            .map(|(index, _)| Self::build_enum_constructor(enum_name, enum_def, index))
+    }
+
+    fn build_enum_constructor(
+        enum_name: &Ident,
+        enum_def: &EnumDef,
+        index: usize,
+    ) -> (Constructor, tast::Ty) {
+        let (_, fields) = &enum_def.variants[index];
+        let base = tast::Ty::TCon {
+            name: enum_name.0.clone(),
+        };
+        let args: Vec<tast::Ty> = enum_def
+            .generics
+            .iter()
+            .map(|g| tast::Ty::TParam { name: g.0.clone() })
+            .collect();
+        let ret_ty = if args.is_empty() {
+            base.clone()
+        } else {
+            tast::Ty::TApp {
+                ty: Box::new(base.clone()),
+                args,
+            }
+        };
+
+        let ctor_ty = if fields.is_empty() {
+            ret_ty.clone()
+        } else {
+            tast::Ty::TFunc {
+                params: fields.clone(),
+                ret_ty: Box::new(ret_ty.clone()),
+            }
+        };
+
+        let constructor = Constructor::Enum(tast::EnumConstructor {
+            type_name: enum_name.clone(),
+            variant: enum_def.variants[index].0.clone(),
+            index,
+        });
+        (constructor, ctor_ty)
+    }
+
+    fn lookup_struct_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+        self.structs.get(constr).map(|struct_def| {
             let base = tast::Ty::TCon {
                 name: struct_def.name.0.clone(),
             };
@@ -316,10 +373,8 @@ impl GlobalTypeEnv {
             let constructor = Constructor::Struct(tast::StructConstructor {
                 type_name: struct_def.name.clone(),
             });
-            return Some((constructor, ctor_ty));
-        }
-
-        None
+            (constructor, ctor_ty)
+        })
     }
 
     pub fn get_type_of_constructor(&self, constr: &str) -> Option<tast::Ty> {

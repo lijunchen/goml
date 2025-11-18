@@ -139,8 +139,8 @@ impl Rename {
             ast::Expr::EInt { .. } => expr.clone(),
             ast::Expr::EFloat { .. } => expr.clone(),
             ast::Expr::EString { .. } => expr.clone(),
-            ast::Expr::EConstr { vcon, args } => ast::Expr::EConstr {
-                vcon: vcon.clone(),
+            ast::Expr::EConstr { constructor, args } => ast::Expr::EConstr {
+                constructor: constructor.clone(),
                 args: args
                     .iter()
                     .map(|arg| self.rename_expr(arg, env, global_funcs))
@@ -296,10 +296,10 @@ impl Rename {
             ast::Pat::PBool { .. } => pat.clone(),
             ast::Pat::PInt { .. } => pat.clone(),
             ast::Pat::PString { .. } => pat.clone(),
-            ast::Pat::PConstr { vcon, args } => {
+            ast::Pat::PConstr { constructor, args } => {
                 let new_args = args.iter().map(|arg| self.rename_pat(arg, env)).collect();
                 ast::Pat::PConstr {
-                    vcon: vcon.clone(),
+                    constructor: constructor.clone(),
                     args: new_args,
                 }
             }

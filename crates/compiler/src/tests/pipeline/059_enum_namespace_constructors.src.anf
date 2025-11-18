@@ -1,0 +1,28 @@
+fn color_is_red(color/0: Color) -> bool {
+  match color/0 {
+    Tag_0 => {
+      true
+    },
+    Tag_1 => {
+      false
+    },
+  }
+}
+
+fn toggle_signal(signal/1: Signal) -> Signal {
+  match signal/1 {
+    Tag_0 => {
+      Tag_1
+    },
+    Tag_1 => {
+      Tag_0
+    },
+  }
+}
+
+fn main() -> Signal {
+  let current/2 = Tag_0 in
+  let mtmp0 = color_is_red(current/2) in
+  let t1 = Tag_0 in
+  toggle_signal(t1)
+}

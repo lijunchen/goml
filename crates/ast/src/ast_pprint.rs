@@ -104,8 +104,8 @@ impl Expr {
             Self::EFloat { value } => RcDoc::text(value.to_string()),
             Self::EString { value } => RcDoc::text(format!("{:?}", value)),
 
-            Self::EConstr { vcon, args } => {
-                let prefix = RcDoc::text(vcon.0.clone());
+            Self::EConstr { constructor, args } => {
+                let prefix = RcDoc::text(constructor.display());
 
                 if args.is_empty() {
                     prefix
@@ -335,8 +335,8 @@ impl Pat {
             }
             Pat::PInt { value } => RcDoc::text(value.clone()),
             Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
-            Pat::PConstr { vcon, args } => {
-                let prefix = RcDoc::text(vcon.0.clone());
+            Pat::PConstr { constructor, args } => {
+                let prefix = RcDoc::text(constructor.display());
 
                 if args.is_empty() {
                     prefix
