@@ -139,6 +139,12 @@ pub struct ClosureParam {
 }
 
 #[derive(Debug, Clone)]
+pub struct Attribute {
+    pub ast: MySyntaxNodePtr,
+    pub text: String,
+}
+
+#[derive(Debug, Clone)]
 pub struct File {
     pub toplevels: Vec<Item>,
 }
@@ -156,6 +162,7 @@ pub enum Item {
 
 #[derive(Debug, Clone)]
 pub struct Fn {
+    pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
     pub params: Vec<(Ident, Ty)>,
@@ -165,6 +172,7 @@ pub struct Fn {
 
 #[derive(Debug, Clone)]
 pub struct ExternGo {
+    pub attrs: Vec<Attribute>,
     pub package_path: String,
     pub go_symbol: String,
     pub goml_name: Ident,
@@ -175,11 +183,13 @@ pub struct ExternGo {
 
 #[derive(Debug, Clone)]
 pub struct ExternType {
+    pub attrs: Vec<Attribute>,
     pub goml_name: Ident,
 }
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
+    pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
     pub variants: Vec<(Ident, Vec<Ty>)>,
@@ -187,6 +197,7 @@ pub struct EnumDef {
 
 #[derive(Debug, Clone)]
 pub struct StructDef {
+    pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
     pub fields: Vec<(Ident, Ty)>,
@@ -194,6 +205,7 @@ pub struct StructDef {
 
 #[derive(Debug, Clone)]
 pub struct TraitDef {
+    pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
@@ -207,6 +219,7 @@ pub struct TraitMethodSignature {
 
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
+    pub attrs: Vec<Attribute>,
     pub trait_name: Option<Ident>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,

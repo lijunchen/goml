@@ -1,8 +1,20 @@
 use crate::ast::{
-    Arm, ClosureParam, EnumDef, Expr, ExternGo, ExternType, File, Fn, Ident, ImplBlock, Item, Pat,
-    StructDef, TraitDef, TraitMethodSignature, Ty,
+    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternGo, ExternType, File, Fn, Ident, ImplBlock,
+    Item, Pat, StructDef, TraitDef, TraitMethodSignature, Ty,
 };
 use pretty::RcDoc;
+
+fn attrs_doc(attrs: &[Attribute]) -> RcDoc<'_, ()> {
+    if attrs.is_empty() {
+        RcDoc::nil()
+    } else {
+        let attrs_doc = RcDoc::intersperse(
+            attrs.iter().map(|attr| RcDoc::text(attr.text.clone())),
+            RcDoc::hardline(),
+        );
+        attrs_doc.append(RcDoc::hardline())
+    }
+}
 
 impl Ty {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
@@ -454,13 +466,15 @@ impl EnumDef {
                 }
             }));
 
-        header
-            .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(variants_doc.nest(4))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
-            .group()
+        attrs_doc(&self.attrs).append(
+            header
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(variants_doc.nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group(),
+        )
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -485,14 +499,15 @@ impl StructDef {
                 .append(ty.to_doc())
                 .append(RcDoc::text(","))
         }));
-
-        header
-            .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(fields_doc.nest(4))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
-            .group()
+        attrs_doc(&self.attrs).append(
+            header
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(fields_doc.nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group(),
+        )
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -512,13 +527,14 @@ impl TraitDef {
             self.method_sigs.iter().map(|sig| sig.to_doc()),
             RcDoc::hardline(),
         );
-
-        header
-            .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(RcDoc::hardline().append(methods_doc).nest(2))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+        attrs_doc(&self.attrs).append(
+            header
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(RcDoc::hardline().append(methods_doc).nest(2))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
+        )
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -575,10 +591,12 @@ impl ImplBlock {
             RcDoc::hardline(),
         );
 
-        header
-            .append(RcDoc::hardline().append(methods_doc).nest(2))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+        attrs_doc(&self.attrs).append(
+            header
+                .append(RcDoc::hardline().append(methods_doc).nest(2))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
+        )
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -610,16 +628,17 @@ impl Fn {
         } else {
             RcDoc::nil()
         };
-
-        header
-            .append(params_doc)
-            .append(RcDoc::text(")"))
-            .append(ret_ty_doc)
-            .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(RcDoc::hardline().append(self.body.to_doc()).nest(4))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+        attrs_doc(&self.attrs).append(
+            header
+                .append(params_doc)
+                .append(RcDoc::text(")"))
+                .append(ret_ty_doc)
+                .append(RcDoc::space())
+                .append(RcDoc::text("{"))
+                .append(RcDoc::hardline().append(self.body.to_doc()).nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
+        )
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -647,7 +666,7 @@ impl ExternGo {
             RcDoc::nil()
         };
 
-        RcDoc::text("extern")
+        let header = RcDoc::text("extern")
             .append(RcDoc::space())
             .append(RcDoc::text("\"go\""))
             .append(RcDoc::space())
@@ -662,7 +681,9 @@ impl ExternGo {
             .append(RcDoc::text("("))
             .append(params_doc)
             .append(RcDoc::text(")"))
-            .append(ret_ty_doc)
+            .append(ret_ty_doc);
+
+        attrs_doc(&self.attrs).append(header)
     }
 
     pub fn to_pretty(&self, width: usize) -> String {
@@ -674,11 +695,13 @@ impl ExternGo {
 
 impl ExternType {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        RcDoc::text("extern")
-            .append(RcDoc::space())
-            .append(RcDoc::text("type"))
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.0.clone()))
+        attrs_doc(&self.attrs).append(
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("type"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.goml_name.0.clone())),
+        )
     }
 }
 

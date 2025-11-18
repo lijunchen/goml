@@ -2,7 +2,7 @@ use lexer::{T, TokenKind};
 
 use crate::{
     expr::{EXPR_FIRST, expr},
-    parser::{MarkerClosed, Parser},
+    parser::{MarkerClosed, MarkerOpened, Parser},
     path::parse_path,
     stmt,
     syntax::MySyntaxKind,
@@ -11,7 +11,10 @@ use crate::{
 pub fn file(p: &mut Parser) {
     let m = p.open();
     while !p.eof() {
-        if p.at(T![extern]) {
+        if p.at(T![#]) {
+            let attrs = attribute_list(p);
+            item_with_attrs(p, attrs);
+        } else if p.at(T![extern]) {
             extern_decl(p)
         } else if p.at(T![fn]) {
             func(p)
@@ -34,9 +37,81 @@ pub fn file(p: &mut Parser) {
     p.close(m, MySyntaxKind::FILE);
 }
 
+fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {
+    if p.at(T![extern]) {
+        let m = attrs.precede(p);
+        extern_decl_with_marker(p, m);
+    } else if p.at(T![fn]) {
+        let m = attrs.precede(p);
+        func_with_marker(p, m);
+    } else if p.at(T![enum]) {
+        let m = attrs.precede(p);
+        enum_def_with_marker(p, m);
+    } else if p.at(T![struct]) {
+        let m = attrs.precede(p);
+        struct_def_with_marker(p, m);
+    } else if p.at(T![trait]) {
+        let m = attrs.precede(p);
+        trait_def_with_marker(p, m);
+    } else if p.at(T![impl]) {
+        let m = attrs.precede(p);
+        impl_block_with_marker(p, m);
+    } else {
+        let m = attrs.precede(p);
+        p.error("expected a top-level item after attributes");
+        if !p.eof() {
+            p.advance();
+        }
+        p.close(m, MySyntaxKind::ErrorTree);
+    }
+}
+
+fn attribute_list(p: &mut Parser) -> MarkerClosed {
+    let m = p.open();
+    while p.at(T![#]) {
+        attribute(p);
+    }
+    p.close(m, MySyntaxKind::ATTRIBUTE_LIST)
+}
+
+fn attribute(p: &mut Parser) {
+    assert!(p.at(T![#]));
+    let m = p.open();
+    p.expect(T![#]);
+    p.eat(T![!]);
+    if p.eat(T!['[']) {
+        attribute_body(p);
+    } else {
+        p.error("expected '[' after '#'");
+    }
+    p.close(m, MySyntaxKind::ATTRIBUTE);
+}
+
+fn attribute_body(p: &mut Parser) {
+    let mut depth = 1;
+    while depth > 0 && !p.eof() {
+        if p.at(T!['[']) {
+            depth += 1;
+            p.advance();
+        } else if p.at(T![']']) {
+            depth -= 1;
+            p.advance();
+        } else {
+            p.advance();
+        }
+    }
+    if depth > 0 {
+        p.error("unterminated attribute");
+    }
+}
+
 fn extern_decl(p: &mut Parser) {
     assert!(p.at(T![extern]));
     let m = p.open();
+    extern_decl_with_marker(p, m);
+}
+
+fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![extern]);
     if p.at(T![type]) {
         p.expect(T![type]);
@@ -96,6 +171,10 @@ fn extern_decl(p: &mut Parser) {
 fn func(p: &mut Parser) {
     assert!(p.at(T![fn]));
     let m = p.open();
+    func_with_marker(p, m);
+}
+
+fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![fn]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
@@ -116,6 +195,10 @@ fn func(p: &mut Parser) {
 fn impl_block(p: &mut Parser) {
     assert!(p.at(T![impl]));
     let m = p.open();
+    impl_block_with_marker(p, m);
+}
+
+fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     let has_trait = p.at(T![ident]) && matches!(p.nth(1), T![for]);
     if has_trait {
@@ -142,6 +225,10 @@ fn impl_block(p: &mut Parser) {
 fn trait_def(p: &mut Parser) {
     assert!(p.at(T![trait]));
     let m = p.open();
+    trait_def_with_marker(p, m);
+}
+
+fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![trait]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
@@ -191,6 +278,10 @@ fn trait_method(p: &mut Parser) {
 fn enum_def(p: &mut Parser) {
     assert!(p.at(T![enum]));
     let m = p.open();
+    enum_def_with_marker(p, m);
+}
+
+fn enum_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![enum]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
@@ -205,6 +296,10 @@ fn enum_def(p: &mut Parser) {
 fn struct_def(p: &mut Parser) {
     assert!(p.at(T![struct]));
     let m = p.open();
+    struct_def_with_marker(p, m);
+}
+
+fn struct_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![struct]);
     p.expect(T![ident]);
     if p.at(T!['[']) {

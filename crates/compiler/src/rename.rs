@@ -73,6 +73,7 @@ impl Rename {
             ast::Item::StructDef(_) => item.clone(),
             ast::Item::TraitDef(_) => item.clone(),
             ast::Item::ImplBlock(i) => ast::Item::ImplBlock(ast::ImplBlock {
+                attrs: i.attrs.clone(),
                 trait_name: i.trait_name.clone(),
                 for_type: i.for_type.clone(),
                 methods: i
@@ -89,6 +90,7 @@ impl Rename {
 
     pub fn rename_fn(&self, func: &ast::Fn, global_funcs: &HashSet<String>) -> ast::Fn {
         let ast::Fn {
+            attrs,
             name,
             generics,
             params,
@@ -104,6 +106,7 @@ impl Rename {
             .map(|param| (env.rfind(&param.0).unwrap().clone(), param.1.clone()))
             .collect();
         ast::Fn {
+            attrs: attrs.clone(),
             name: name.clone(),
             generics: generics.clone(),
             params: new_params,

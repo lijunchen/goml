@@ -1,0 +1,54 @@
+package main
+
+import (
+    "fmt"
+)
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type Point struct {
+    x int32
+    y int32
+}
+
+type Color interface {
+    isColor()
+}
+
+type Red struct {}
+
+func (_ Red) isColor() {}
+
+type Green struct {}
+
+func (_ Green) isColor() {}
+
+type Blue struct {}
+
+func (_ Blue) isColor() {}
+
+func sum(point__0 Point) int32 {
+    var ret3 int32
+    var t1 int32 = point__0.x
+    var t2 int32 = point__0.y
+    ret3 = t1 + t2
+    return ret3
+}
+
+func main0() struct{} {
+    var ret5 struct{}
+    var point__2 Point = Point{
+        x: 1,
+        y: 2,
+    }
+    sum(point__2)
+    ret5 = string_println("()")
+    return ret5
+}
+
+func main() {
+    main0()
+}

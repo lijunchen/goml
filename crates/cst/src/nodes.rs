@@ -59,6 +59,34 @@ impl_display_via_syntax!(File);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AttributeList {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl AttributeList {
+    pub fn attributes(&self) -> CstChildren<Attribute> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(AttributeList, MySyntaxKind::ATTRIBUTE_LIST);
+impl_display_via_syntax!(AttributeList);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Attribute {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Attribute {}
+
+impl_cst_node_simple!(Attribute, MySyntaxKind::ATTRIBUTE);
+impl_display_via_syntax!(Attribute);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Item {
     Enum(Enum),
     Struct(Struct),
@@ -133,6 +161,10 @@ pub struct Enum {
 }
 
 impl Enum {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
@@ -157,6 +189,10 @@ pub struct Struct {
 }
 
 impl Struct {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
@@ -181,6 +217,10 @@ pub struct Trait {
 }
 
 impl Trait {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
@@ -241,6 +281,10 @@ pub struct Impl {
 }
 
 impl Impl {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
@@ -383,6 +427,10 @@ pub struct Fn {
 }
 
 impl Fn {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn lident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
@@ -415,6 +463,10 @@ pub struct Extern {
 }
 
 impl Extern {
+    pub fn attributes(&self) -> Option<AttributeList> {
+        support::child(&self.syntax)
+    }
+
     pub fn lang(&self) -> Option<MySyntaxToken> {
         let mut strings = self
             .syntax
