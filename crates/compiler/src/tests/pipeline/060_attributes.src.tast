@@ -1,0 +1,17 @@
+fn sum(point/0: Point) -> int32 {
+  (point/0 : Point).x + (point/0 : Point).y
+}
+
+impl Color{
+  fn identity(color/1: Color) -> Color {
+    (color/1 : Color)
+  }
+}
+
+extern "go" "math" abs(value: float64) -> float64
+
+fn main() -> unit {
+  let point/2: Point = Point { x: 1, y: 2 } in
+  let _ : int32 = (sum : (Point) -> int32)((point/2 : Point)) in
+  (string_println : (string) -> unit)("()")
+}
