@@ -109,6 +109,25 @@ impl_display_via_syntax!(Item);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Path {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Path {
+    pub fn ident_tokens(&self) -> impl Iterator<Item = MySyntaxToken> + '_ {
+        self.syntax
+            .children_with_tokens()
+            .filter_map(|it| it.into_token())
+            .filter(|token| token.kind() == MySyntaxKind::Ident)
+    }
+}
+
+impl_cst_node_simple!(Path, MySyntaxKind::PATH);
+impl_display_via_syntax!(Path);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Enum {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -1084,6 +1103,10 @@ impl IdentExpr {
     pub fn ident_token(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
+
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
 }
 
 impl_cst_node_simple!(IdentExpr, MySyntaxKind::EXPR_IDENT);
@@ -1399,6 +1422,10 @@ pub struct ConstrPat {
 impl ConstrPat {
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
     }
 
     pub fn patterns(&self) -> CstChildren<Pattern> {

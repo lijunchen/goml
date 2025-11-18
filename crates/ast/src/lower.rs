@@ -808,26 +808,26 @@ fn lower_expr_with_args(
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let Some(token) = ident_expr.ident_token() else {
-                            ctx.push_error(
-                                Some(ident_expr.syntax().text_range()),
-                                "Missing identifier in call",
-                            );
-                            return None;
-                        };
-                        let name = token.to_string();
-                        let ident = ast::Ident(name);
-                        if ctx.is_constructor(&ident) {
-                            let constr = ast::Expr::EConstr { vcon: ident, args };
+                        let constructor =
+                            lower_constructor_ident_from_ident_expr(ctx, &ident_expr)?;
+                        let variant_ident = constructor.variant().clone();
+                        if ctx.is_constructor(&variant_ident) {
+                            let constr = ast::Expr::EConstr { constructor, args };
                             apply_trailing_args(
                                 ctx,
                                 constr,
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
+                        } else if constructor.enum_name().is_some() {
+                            ctx.push_error(
+                                Some(ident_expr.syntax().text_range()),
+                                format!("{} is not a known constructor", constructor.display()),
+                            );
+                            None
                         } else {
                             let var_expr = ast::Expr::EVar {
-                                name: ident,
+                                name: variant_ident,
                                 astptr: MySyntaxNodePtr::new(ident_expr.syntax()),
                             };
                             let call = ast::Expr::ECall {
@@ -1142,24 +1142,23 @@ fn lower_expr_with_args(
             Some(ast::Expr::EArray { items })
         }
         cst::Expr::IdentExpr(it) => {
-            let Some(token) = it.ident_token() else {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    "Missing identifier in expression",
-                );
-                return None;
-            };
-            let name = token.to_string();
-            let ident = ast::Ident(name);
-            if ctx.is_constructor(&ident) {
+            let constructor = lower_constructor_ident_from_ident_expr(ctx, &it)?;
+            let variant_ident = constructor.variant().clone();
+            if ctx.is_constructor(&variant_ident) {
                 let expr = ast::Expr::EConstr {
-                    vcon: ident,
+                    constructor,
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+            } else if constructor.enum_name().is_some() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    format!("{} is not a known constructor", constructor.display()),
+                );
+                None
             } else {
                 let expr = ast::Expr::EVar {
-                    name: ident,
+                    name: variant_ident,
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
@@ -1429,9 +1428,12 @@ fn apply_trailing_args(
             }
             Some(result)
         }
-        ast::Expr::EConstr { vcon, mut args } => {
+        ast::Expr::EConstr {
+            constructor,
+            mut args,
+        } => {
             args.extend(trailing_args);
-            Some(ast::Expr::EConstr { vcon, args })
+            Some(ast::Expr::EConstr { constructor, args })
         }
         ast::Expr::EField {
             expr,
@@ -1500,7 +1502,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             let ident = ast::Ident(name);
             if ctx.is_constructor(&ident) {
                 Some(ast::Pat::PConstr {
-                    vcon: ident,
+                    constructor: ast::ConstructorIdent::from_variant(ident),
                     args: Vec::new(),
                 })
             } else {
@@ -1544,8 +1546,8 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             })
         }
         cst::Pattern::ConstrPat(it) => {
-            let name = it.uident().unwrap().to_string();
             if let Some(field_list) = it.field_list() {
+                let name = it.uident().unwrap().to_string();
                 let mut fields = Vec::new();
                 for field in field_list.fields() {
                     let Some(fname_token) = field.lident() else {
@@ -1580,9 +1582,10 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     fields,
                 })
             } else {
+                let constructor = lower_constructor_ident_from_constr_pat(ctx, &it)?;
                 let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
                 Some(ast::Pat::PConstr {
-                    vcon: ast::Ident::new(&name),
+                    constructor,
                     args: pats,
                 })
             }
@@ -1592,5 +1595,75 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             Some(ast::Pat::PTuple { pats: items })
         }
         cst::Pattern::WildPat(_) => Some(ast::Pat::PWild),
+    }
+}
+
+fn lower_constructor_ident_from_ident_expr(
+    ctx: &mut LowerCtx,
+    expr: &cst::IdentExpr,
+) -> Option<ast::ConstructorIdent> {
+    if let Some(path) = expr.path() {
+        lower_constructor_ident_from_path(ctx, &path)
+    } else if let Some(token) = expr.ident_token() {
+        Some(ast::ConstructorIdent::from_variant(ast::Ident(
+            token.to_string(),
+        )))
+    } else {
+        ctx.push_error(
+            Some(expr.syntax().text_range()),
+            "Missing identifier in expression",
+        );
+        None
+    }
+}
+
+fn lower_constructor_ident_from_constr_pat(
+    ctx: &mut LowerCtx,
+    pat: &cst::ConstrPat,
+) -> Option<ast::ConstructorIdent> {
+    if let Some(path) = pat.path() {
+        lower_constructor_ident_from_path(ctx, &path)
+    } else if let Some(token) = pat.uident() {
+        Some(ast::ConstructorIdent::from_variant(ast::Ident(
+            token.to_string(),
+        )))
+    } else {
+        ctx.push_error(
+            Some(pat.syntax().text_range()),
+            "Missing constructor name in pattern",
+        );
+        None
+    }
+}
+
+fn lower_constructor_ident_from_path(
+    ctx: &mut LowerCtx,
+    path: &cst::Path,
+) -> Option<ast::ConstructorIdent> {
+    let idents: Vec<ast::Ident> = path
+        .ident_tokens()
+        .map(|token| ast::Ident(token.to_string()))
+        .collect();
+
+    match idents.len() {
+        len if len < 2 => {
+            ctx.push_error(
+                Some(path.syntax().text_range()),
+                "Constructor paths must include both the enum and variant name",
+            );
+            None
+        }
+        2 => {
+            let enum_name = idents[0].clone();
+            let variant = idents[1].clone();
+            Some(ast::ConstructorIdent::new(Some(enum_name), variant))
+        }
+        _ => {
+            ctx.push_error(
+                Some(path.syntax().text_range()),
+                "Constructor paths support only a single namespace segment, e.g. Type::Variant",
+            );
+            None
+        }
     }
 }

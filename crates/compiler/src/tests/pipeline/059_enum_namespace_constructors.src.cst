@@ -1,0 +1,230 @@
+FILE@0..471
+  ENUM@0..36
+    EnumKeyword@0..4 "enum"
+    Whitespace@4..5 " "
+    Ident@5..10 "Color"
+    Whitespace@10..11 " "
+    LBrace@11..12 "{"
+    Whitespace@12..17 "\n    "
+    VARIANT_LIST@17..36
+      VARIANT@17..20
+        Ident@17..20 "Red"
+      Comma@20..21 ","
+      Whitespace@21..26 "\n    "
+      VARIANT@26..31
+        Ident@26..31 "Green"
+      Comma@31..32 ","
+      Whitespace@32..33 "\n"
+      RBrace@33..34 "}"
+      Whitespace@34..36 "\n\n"
+  ENUM@36..74
+    EnumKeyword@36..40 "enum"
+    Whitespace@40..41 " "
+    Ident@41..47 "Signal"
+    Whitespace@47..48 " "
+    LBrace@48..49 "{"
+    Whitespace@49..54 "\n    "
+    VARIANT_LIST@54..74
+      VARIANT@54..57
+        Ident@54..57 "Red"
+      Comma@57..58 ","
+      Whitespace@58..63 "\n    "
+      VARIANT@63..69
+        Ident@63..69 "Yellow"
+      Comma@69..70 ","
+      Whitespace@70..71 "\n"
+      RBrace@71..72 "}"
+      Whitespace@72..74 "\n\n"
+  FN@74..200
+    FnKeyword@74..76 "fn"
+    Whitespace@76..77 " "
+    Ident@77..89 "color_is_red"
+    PARAM_LIST@89..104
+      LParen@89..90 "("
+      PARAM@90..102
+        Ident@90..95 "color"
+        Colon@95..96 ":"
+        Whitespace@96..97 " "
+        TYPE_TAPP@97..102
+          Ident@97..102 "Color"
+      RParen@102..103 ")"
+      Whitespace@103..104 " "
+    Arrow@104..106 "->"
+    Whitespace@106..107 " "
+    TYPE_BOOL@107..112
+      BoolKeyword@107..111 "bool"
+      Whitespace@111..112 " "
+    BLOCK@112..200
+      LBrace@112..113 "{"
+      Whitespace@113..118 "\n    "
+      EXPR_MATCH@118..197
+        MatchKeyword@118..123 "match"
+        Whitespace@123..124 " "
+        EXPR_IDENT@124..130
+          Ident@124..129 "color"
+          Whitespace@129..130 " "
+        MATCH_ARM_LIST@130..197
+          LBrace@130..131 "{"
+          Whitespace@131..140 "\n        "
+          MATCH_ARM@140..158
+            PATTERN_CONSTR@140..151
+              PATH@140..151
+                Ident@140..145 "Color"
+                ColonColon@145..147 "::"
+                Ident@147..150 "Red"
+                Whitespace@150..151 " "
+            FatArrow@151..153 "=>"
+            Whitespace@153..154 " "
+            EXPR_BOOL@154..158
+              TrueKeyword@154..158 "true"
+          Comma@158..159 ","
+          Whitespace@159..168 "\n        "
+          MATCH_ARM@168..189
+            PATTERN_CONSTR@168..181
+              PATH@168..181
+                Ident@168..173 "Color"
+                ColonColon@173..175 "::"
+                Ident@175..180 "Green"
+                Whitespace@180..181 " "
+            FatArrow@181..183 "=>"
+            Whitespace@183..184 " "
+            EXPR_BOOL@184..189
+              FalseKeyword@184..189 "false"
+          Comma@189..190 ","
+          Whitespace@190..195 "\n    "
+          RBrace@195..196 "}"
+          Whitespace@196..197 "\n"
+      RBrace@197..198 "}"
+      Whitespace@198..200 "\n\n"
+  FN@200..351
+    FnKeyword@200..202 "fn"
+    Whitespace@202..203 " "
+    Ident@203..216 "toggle_signal"
+    PARAM_LIST@216..233
+      LParen@216..217 "("
+      PARAM@217..231
+        Ident@217..223 "signal"
+        Colon@223..224 ":"
+        Whitespace@224..225 " "
+        TYPE_TAPP@225..231
+          Ident@225..231 "Signal"
+      RParen@231..232 ")"
+      Whitespace@232..233 " "
+    Arrow@233..235 "->"
+    Whitespace@235..236 " "
+    TYPE_TAPP@236..243
+      Ident@236..242 "Signal"
+      Whitespace@242..243 " "
+    BLOCK@243..351
+      LBrace@243..244 "{"
+      Whitespace@244..249 "\n    "
+      EXPR_MATCH@249..348
+        MatchKeyword@249..254 "match"
+        Whitespace@254..255 " "
+        EXPR_IDENT@255..262
+          Ident@255..261 "signal"
+          Whitespace@261..262 " "
+        MATCH_ARM_LIST@262..348
+          LBrace@262..263 "{"
+          Whitespace@263..272 "\n        "
+          MATCH_ARM@272..301
+            PATTERN_CONSTR@272..284
+              PATH@272..284
+                Ident@272..278 "Signal"
+                ColonColon@278..280 "::"
+                Ident@280..283 "Red"
+                Whitespace@283..284 " "
+            FatArrow@284..286 "=>"
+            Whitespace@286..287 " "
+            EXPR_IDENT@287..301
+              PATH@287..301
+                Ident@287..293 "Signal"
+                ColonColon@293..295 "::"
+                Ident@295..301 "Yellow"
+          Comma@301..302 ","
+          Whitespace@302..311 "\n        "
+          MATCH_ARM@311..340
+            PATTERN_CONSTR@311..326
+              PATH@311..326
+                Ident@311..317 "Signal"
+                ColonColon@317..319 "::"
+                Ident@319..325 "Yellow"
+                Whitespace@325..326 " "
+            FatArrow@326..328 "=>"
+            Whitespace@328..329 " "
+            EXPR_IDENT@329..340
+              PATH@329..340
+                Ident@329..335 "Signal"
+                ColonColon@335..337 "::"
+                Ident@337..340 "Red"
+          Comma@340..341 ","
+          Whitespace@341..346 "\n    "
+          RBrace@346..347 "}"
+          Whitespace@347..348 "\n"
+      RBrace@348..349 "}"
+      Whitespace@349..351 "\n\n"
+  FN@351..471
+    FnKeyword@351..353 "fn"
+    Whitespace@353..354 " "
+    Ident@354..358 "main"
+    PARAM_LIST@358..361
+      LParen@358..359 "("
+      RParen@359..360 ")"
+      Whitespace@360..361 " "
+    Arrow@361..363 "->"
+    Whitespace@363..364 " "
+    TYPE_TAPP@364..371
+      Ident@364..370 "Signal"
+      Whitespace@370..371 " "
+    BLOCK@371..471
+      LBrace@371..372 "{"
+      Whitespace@372..377 "\n    "
+      STMT_LET@377..407
+        LetKeyword@377..380 "let"
+        Whitespace@380..381 " "
+        PATTERN_VARIABLE@381..389
+          Ident@381..388 "current"
+          Whitespace@388..389 " "
+        Eq@389..390 "="
+        Whitespace@390..391 " "
+        EXPR_IDENT@391..401
+          PATH@391..401
+            Ident@391..396 "Color"
+            ColonColon@396..398 "::"
+            Ident@398..401 "Red"
+        Semi@401..402 ";"
+        Whitespace@402..407 "\n    "
+      STMT_LET@407..442
+        LetKeyword@407..410 "let"
+        Whitespace@410..411 " "
+        PATTERN_WILDCARD@411..413
+          WildcardKeyword@411..412 "_"
+          Whitespace@412..413 " "
+        Eq@413..414 "="
+        Whitespace@414..415 " "
+        EXPR_CALL@415..436
+          EXPR_IDENT@415..427
+            Ident@415..427 "color_is_red"
+          ARG_LIST@427..436
+            LParen@427..428 "("
+            ARG@428..435
+              EXPR_IDENT@428..435
+                Ident@428..435 "current"
+            RParen@435..436 ")"
+        Semi@436..437 ";"
+        Whitespace@437..442 "\n    "
+      EXPR_CALL@442..469
+        EXPR_IDENT@442..455
+          Ident@442..455 "toggle_signal"
+        ARG_LIST@455..469
+          LParen@455..456 "("
+          ARG@456..467
+            EXPR_IDENT@456..467
+              PATH@456..467
+                Ident@456..462 "Signal"
+                ColonColon@462..464 "::"
+                Ident@464..467 "Red"
+          RParen@467..468 ")"
+          Whitespace@468..469 "\n"
+      RBrace@469..470 "}"
+      Whitespace@470..471 "\n"

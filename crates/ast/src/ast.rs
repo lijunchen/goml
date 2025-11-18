@@ -17,6 +17,41 @@ impl Ident {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ConstructorIdent {
+    pub enum_name: Option<Ident>,
+    pub variant: Ident,
+}
+
+impl ConstructorIdent {
+    pub fn new(enum_name: Option<Ident>, variant: Ident) -> Self {
+        Self { enum_name, variant }
+    }
+
+    pub fn from_variant(variant: Ident) -> Self {
+        Self {
+            enum_name: None,
+            variant,
+        }
+    }
+
+    pub fn enum_name(&self) -> Option<&Ident> {
+        self.enum_name.as_ref()
+    }
+
+    pub fn variant(&self) -> &Ident {
+        &self.variant
+    }
+
+    pub fn display(&self) -> String {
+        if let Some(enum_name) = &self.enum_name {
+            format!("{}::{}", enum_name.0, self.variant.0)
+        } else {
+            self.variant.0.clone()
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BinaryOp {
     Add,
@@ -197,7 +232,7 @@ pub enum Expr {
         value: String,
     },
     EConstr {
-        vcon: Ident,
+        constructor: ConstructorIdent,
         args: Vec<Expr>,
     },
     EStructLiteral {
@@ -281,7 +316,7 @@ pub enum Pat {
         value: String,
     },
     PConstr {
-        vcon: Ident,
+        constructor: ConstructorIdent,
         args: Vec<Pat>,
     },
     PStruct {
