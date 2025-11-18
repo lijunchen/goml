@@ -26,6 +26,7 @@ pub enum MySyntaxKind {
     OrOr,
     Pipe,
     Bang,
+    Pound,
     ExternKeyword,
     FnKeyword,
     TraitKeyword,
@@ -154,6 +155,8 @@ pub enum MySyntaxKind {
     TYPE_PARAM_LIST,
     BLOCK,
     FILE,
+    ATTRIBUTE_LIST,
+    ATTRIBUTE,
 }
 
 impl From<MySyntaxKind> for rowan::SyntaxKind {
@@ -186,7 +189,7 @@ impl rowan::Language for MyLang {
     type Kind = MySyntaxKind;
 
     fn kind_from_raw(raw: rowan::SyntaxKind) -> Self::Kind {
-        assert!(raw.0 <= MySyntaxKind::FILE as u16);
+        assert!(raw.0 <= MySyntaxKind::ATTRIBUTE as u16);
         unsafe { std::mem::transmute::<u16, MySyntaxKind>(raw.0) }
     }
 

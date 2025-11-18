@@ -126,6 +126,21 @@ pub fn lower(node: cst::File) -> LowerResult {
     }
 }
 
+fn lower_attributes(list: Option<cst::AttributeList>) -> Vec<ast::Attribute> {
+    list.map(|list| {
+        list.attributes()
+            .map(|attr| {
+                let syntax = attr.syntax();
+                ast::Attribute {
+                    ast: MySyntaxNodePtr::new(syntax),
+                    text: syntax.text().to_string(),
+                }
+            })
+            .collect()
+    })
+    .unwrap_or_default()
+}
+
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
@@ -138,6 +153,7 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
 }
 
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
+    let attrs = lower_attributes(node.attributes());
     let name = node.uident().unwrap().to_string();
     let generics: Vec<ast::Ident> = node
         .generic_list()
@@ -162,6 +178,7 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
         Vec::new()
     };
     Some(ast::EnumDef {
+        attrs,
         name: ast::Ident::new(&name),
         generics,
         variants,
@@ -169,6 +186,7 @@ fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
 }
 
 fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef> {
+    let attrs = lower_attributes(node.attributes());
     let name = node.uident()?.to_string();
     let generics: Vec<ast::Ident> = node
         .generic_list()
@@ -192,6 +210,7 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
         .unwrap_or_default();
 
     Some(ast::StructDef {
+        attrs,
         name: ast::Ident::new(&name),
         generics,
         fields,
@@ -205,6 +224,7 @@ fn lower_struct_field(ctx: &mut LowerCtx, node: cst::StructField) -> Option<(ast
 }
 
 fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
+    let attrs = lower_attributes(node.attributes());
     let name = node.uident().unwrap().to_string();
     let methods = if let Some(list) = node.trait_method_list() {
         list.methods()
@@ -218,6 +238,7 @@ fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
         Vec::new()
     };
     Some(ast::TraitDef {
+        attrs,
         name: ast::Ident::new(&name),
         method_sigs: methods,
     })
@@ -258,6 +279,7 @@ fn lower_trait_method(
 }
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
+    let attrs = lower_attributes(node.attributes());
     let trait_name = node.uident().map(|token| token.to_string());
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
@@ -274,6 +296,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .flat_map(|function| lower_fn(ctx, function))
         .collect();
     Some(ast::ImplBlock {
+        attrs,
         trait_name: trait_name.map(|name| ast::Ident::new(&name)),
         for_type,
         methods,
@@ -423,6 +446,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
 }
 
 fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
+    let attrs = lower_attributes(node.attributes());
     let name = node.lident().unwrap().to_string();
     let generics: Vec<ast::Ident> = node
         .generic_list()
@@ -460,6 +484,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
         }
     };
     Some(ast::Fn {
+        attrs,
         name: ast::Ident(name),
         generics,
         params,
@@ -469,6 +494,7 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
 }
 
 fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
+    let attrs = lower_attributes(node.attributes());
     if node.type_keyword().is_some() && node.lang().is_none() {
         let Some(name_token) = node.uident() else {
             ctx.push_error(
@@ -479,6 +505,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         };
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
+            attrs: attrs.clone(),
             goml_name: ast::Ident::new(&name),
         }));
     }
@@ -536,6 +563,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         };
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
+            attrs: attrs.clone(),
             goml_name: ast::Ident::new(&name),
         }));
     }
@@ -571,6 +599,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
 
     Some(ast::Item::ExternGo(ast::ExternGo {
+        attrs,
         package_path,
         go_symbol,
         goml_name: ast::Ident(name),
