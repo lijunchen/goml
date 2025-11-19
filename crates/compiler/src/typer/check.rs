@@ -897,6 +897,56 @@ impl Typer {
                     panic!("Method {} not found for type {:?}", field.0, receiver_expr);
                 }
             }
+            ast::Expr::ETypeMember {
+                type_name,
+                member,
+                astptr,
+            } => {
+                let receiver_ty = tast::Ty::TCon {
+                    name: type_name.0.clone(),
+                };
+                if let Some((mangled_name, method_ty)) =
+                    genv.lookup_inherent_method(&receiver_ty, member)
+                {
+                    let inst_method_ty = self.inst_ty(&method_ty);
+                    if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
+                        if params.len() != args.len() {
+                            panic!(
+                                "Method {} expects {} arguments but got {}",
+                                member.0,
+                                params.len(),
+                                args.len()
+                            );
+                        }
+
+                        let mut args_tast = Vec::with_capacity(args.len());
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast = self.check_expr(genv, local_env, arg, expected_ty);
+                            args_tast.push(arg_tast);
+                        }
+
+                        tast::Expr::ECall {
+                            func: Box::new(tast::Expr::EVar {
+                                name: mangled_name,
+                                ty: inst_method_ty,
+                                astptr: Some(astptr.clone()),
+                            }),
+                            args: args_tast,
+                            ty: (*ret_ty).clone(),
+                        }
+                    } else {
+                        panic!(
+                            "Type member {}::{} is not callable",
+                            type_name.0, member.0
+                        );
+                    }
+                } else {
+                    panic!(
+                        "Method {} not found for type {}",
+                        member.0, type_name.0
+                    );
+                }
+            }
             _ => {
                 let mut args_tast = Vec::new();
                 let mut arg_types = Vec::new();

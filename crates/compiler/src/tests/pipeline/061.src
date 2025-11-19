@@ -1,16 +1,54 @@
+#[derive(ToString)]
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+#[derive(ToString)]
 struct Point {
     x: int32,
-    y: int32
+    y: int32,
+    color: Color,
 }
 
 impl Point {
-    fn new(x: int32, y: int32) -> Point {
-        Point { x: x, y: y }
+    fn new(x: int32, y: int32, color: Color) -> Point {
+        Point {
+            x: x,
+            y: y,
+            color: color,
+        }
     }
 }
 
+#[derive(ToString)]
+struct Line {
+    from: Point,
+    to: Point,
+    color: Color,
+}
+
+impl Line {
+    fn new(from: Point, to: Point, color: Color) -> Line {
+        Line {
+            from: from,
+            to: to,
+            color: color,
+        }
+    }
+}
+
+#[derive(ToString)]
+enum LineList {
+    Nil,
+    Cons(Line, LineList),
+}
+
 fn main() {
-    let p = Point::new(10, 20);
-    string_println(int32_to_string(p.x));
-    string_println(int32_to_string(p.y));
+    let from = Point::new(10, 20, Color::Red);
+    let to = Point::new(30, 40, Color::Green);
+    let line = Line::new(from, to, Color::Blue);
+    let lines = LineList::Cons(line, LineList::Nil);
+    string_println(lines.to_string());
 }
