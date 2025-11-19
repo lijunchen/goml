@@ -2,6 +2,7 @@ pub mod anf;
 pub mod builtins;
 pub mod compile_match;
 pub mod core;
+pub mod derive;
 pub mod env;
 pub mod go;
 pub mod lambda_lift;

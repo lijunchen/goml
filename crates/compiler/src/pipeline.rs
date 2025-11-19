@@ -7,7 +7,7 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::{
-    anf, compile_match,
+    anf, compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, goast},
     lambda_lift, mono, tast, typer,
@@ -69,6 +69,13 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     let cst = CstFile::cast(root).expect("failed to cast CST file");
     let lower = ::ast::lower::lower(cst.clone());
     let ast = match lower.into_result() {
+        Ok(ast) => ast,
+        Err(diagnostics) => {
+            return Err(CompilationError::Lower { diagnostics });
+        }
+    };
+
+    let ast = match derive::expand(ast) {
         Ok(ast) => ast,
         Err(diagnostics) => {
             return Err(CompilationError::Lower { diagnostics });

@@ -8,11 +8,10 @@ fn attrs_doc(attrs: &[Attribute]) -> RcDoc<'_, ()> {
     if attrs.is_empty() {
         RcDoc::nil()
     } else {
-        let attrs_doc = RcDoc::intersperse(
+        RcDoc::intersperse(
             attrs.iter().map(|attr| RcDoc::text(attr.text.clone())),
             RcDoc::hardline(),
-        );
-        attrs_doc.append(RcDoc::hardline())
+        )
     }
 }
 
@@ -323,6 +322,13 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
+            Self::ETypeMember {
+                type_name,
+                member,
+                astptr: _,
+            } => RcDoc::text(type_name.0.clone())
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(member.0.clone())),
         }
     }
 

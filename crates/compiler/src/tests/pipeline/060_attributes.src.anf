@@ -1,15 +1,57 @@
-fn sum(point/0: Point) -> int32 {
-  let t1 = Point.x(point/0) in
-  let t2 = Point.y(point/0) in
-  int32_add(t1, t2)
+fn impl_inherent_Point_to_string(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  let t14 = string_add("Point { ", "x: ") in
+  let t15 = int32_to_string(x/1) in
+  let t13 = string_add(t14, t15) in
+  let t12 = string_add(t13, ", ") in
+  let t11 = string_add(t12, "y: ") in
+  let t16 = int32_to_string(y/2) in
+  let t10 = string_add(t11, t16) in
+  string_add(t10, " }")
 }
 
-fn impl_inherent_Color_identity(color/1: Color) -> Color {
-  color/1
+fn impl_inherent_Message_to_string(self/3: Message) -> string {
+  match self/3 {
+    Tag_0 => {
+      "Message::Quit"
+    },
+    Tag_1 => {
+      let x3 = Message::Move._0(self/3) in
+      let x4 = Message::Move._1(self/3) in
+      let __field1/5 = x4 in
+      let __field0/4 = x3 in
+      let t20 = int32_to_string(__field0/4) in
+      let t19 = string_add("Message::Move(", t20) in
+      let t18 = string_add(t19, ", ") in
+      let t21 = int32_to_string(__field1/5) in
+      let t17 = string_add(t18, t21) in
+      string_add(t17, ")")
+    },
+    Tag_2 => {
+      let x5 = Message::Write._0(self/3) in
+      let __field0/6 = x5 in
+      let t22 = string_add("Message::Write(", __field0/6) in
+      string_add(t22, ")")
+    },
+  }
 }
 
 fn main() -> unit {
-  let point/2 = Point { x: 1, y: 2 } in
-  let mtmp0 = sum(point/2) in
-  string_println("()")
+  let point/7 = Point { x: 4, y: 7 } in
+  let summary/8 = impl_inherent_Point_to_string(point/7) in
+  let t23 = Message::Move(1, 2) in
+  let mv/9 = impl_inherent_Message_to_string(t23) in
+  let t24 = Message::Write("done") in
+  let text/10 = impl_inherent_Message_to_string(t24) in
+  let t25 = Tag_0 in
+  let exit/11 = impl_inherent_Message_to_string(t25) in
+  let mtmp6 = string_println(summary/8) in
+  let mtmp7 = string_println(mv/9) in
+  let mtmp8 = string_println(text/10) in
+  let mtmp9 = string_println(exit/11) in
+  ()
 }

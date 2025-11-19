@@ -85,6 +85,11 @@ impl Typer {
                 field,
                 astptr,
             } => self.infer_field_expr(genv, local_env, expr, field, astptr),
+            ast::Expr::ETypeMember {
+                type_name,
+                member,
+                astptr,
+            } => self.infer_type_member_expr(genv, type_name, member, astptr),
         }
     }
 
@@ -215,22 +220,45 @@ impl Typer {
         }
     }
 
+    fn infer_type_member_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        type_name: &Ident,
+        member: &Ident,
+        astptr: &MySyntaxNodePtr,
+    ) -> tast::Expr {
+        let receiver_ty = tast::Ty::TCon {
+            name: type_name.0.clone(),
+        };
+        if let Some((mangled_name, method_ty)) = genv.lookup_inherent_method(&receiver_ty, member) {
+            let inst_ty = self.inst_ty(&method_ty);
+            tast::Expr::EVar {
+                name: mangled_name,
+                ty: inst_ty,
+                astptr: Some(astptr.clone()),
+            }
+        } else {
+            panic!("Method {} not found for type {}", member.0, type_name.0);
+        }
+    }
+
     fn infer_constructor_expr(
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        constructor_ident: &ast::ConstructorIdent,
+        constructor_path: &ast::Path,
         args: &[ast::Expr],
     ) -> tast::Expr {
+        let variant_ident = constructor_path
+            .last_ident()
+            .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+        let enum_name = constructor_path.parent_ident();
         let (constructor, constr_ty) = genv
-            .lookup_constructor_with_namespace(
-                constructor_ident.enum_name(),
-                constructor_ident.variant(),
-            )
+            .lookup_constructor_with_namespace(enum_name, variant_ident)
             .unwrap_or_else(|| {
                 panic!(
                     "Constructor {} not found in environment",
-                    constructor_ident.display()
+                    constructor_path.display()
                 )
             });
 
@@ -1172,18 +1200,19 @@ impl Typer {
     ) -> tast::Pat {
         match pat {
             ast::Pat::PConstr {
-                constructor: constructor_ident,
+                constructor: constructor_path,
                 args,
             } => {
+                let variant_ident = constructor_path
+                    .last_ident()
+                    .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+                let enum_name = constructor_path.parent_ident();
                 let (constructor, constr_ty) = genv
-                    .lookup_constructor_with_namespace(
-                        constructor_ident.enum_name(),
-                        constructor_ident.variant(),
-                    )
+                    .lookup_constructor_with_namespace(enum_name, variant_ident)
                     .unwrap_or_else(|| {
                         panic!(
                             "Constructor {} not found in environment",
-                            constructor_ident.display()
+                            constructor_path.display()
                         )
                     });
 
