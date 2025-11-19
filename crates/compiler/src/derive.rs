@@ -100,7 +100,7 @@ fn derive_struct_tostring(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
-        trait_name: Some(Ident::new(TO_STRING_TRAIT)),
+        trait_name: None,
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
     })
@@ -125,7 +125,7 @@ fn derive_enum_tostring(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
-        trait_name: Some(Ident::new(TO_STRING_TRAIT)),
+        trait_name: None,
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -143,11 +143,15 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
         value: format!("{} {{ ", struct_def.name.0),
     });
 
-    for (idx, (field_name, _)) in struct_def.fields.iter().enumerate() {
+    for (idx, (field_name, field_ty)) in struct_def.fields.iter().enumerate() {
         parts.push(Expr::EString {
             value: format!("{}: ", field_name.0),
         });
-        parts.push(call_to_string(field_expr(field_name, attr_ptr), attr_ptr));
+        parts.push(call_to_string(
+            var_expr(field_name, attr_ptr),
+            Some(field_ty),
+            attr_ptr,
+        ));
         if idx + 1 != struct_def.fields.len() {
             parts.push(Expr::EString {
                 value: ", ".to_string(),
@@ -159,7 +163,28 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
         value: " }".to_string(),
     });
 
-    concat_parts(parts, attr_ptr)
+    let body = concat_parts(parts, attr_ptr);
+    Expr::ELet {
+        pat: Pat::PStruct {
+            name: struct_def.name.clone(),
+            fields: struct_def
+                .fields
+                .iter()
+                .map(|(field_name, _)| {
+                    (
+                        field_name.clone(),
+                        Pat::PVar {
+                            name: field_name.clone(),
+                            astptr: attr_ptr.clone(),
+                        },
+                    )
+                })
+                .collect(),
+        },
+        annotation: None,
+        value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
+        body: Box::new(body),
+    }
 }
 
 fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -194,13 +219,17 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                 parts.push(Expr::EString {
                     value: format!("{}::{}(", enum_def.name.0, variant_name.0),
                 });
-                for (idx, binding) in bindings.iter().enumerate() {
+                for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate() {
                     if idx > 0 {
                         parts.push(Expr::EString {
                             value: ", ".to_string(),
                         });
                     }
-                    parts.push(call_to_string(var_expr(binding, attr_ptr), attr_ptr));
+                    parts.push(call_to_string(
+                        var_expr(binding, attr_ptr),
+                        Some(field_ty),
+                        attr_ptr,
+                    ));
                 }
                 parts.push(Expr::EString {
                     value: ")".to_string(),
@@ -231,8 +260,19 @@ fn concat_parts(parts: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     acc
 }
 
-fn call_to_string(value: Expr, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    call_function(TO_STRING_FN, vec![value], attr_ptr)
+fn call_to_string(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    if matches!(ty, Some(ast::Ty::TString)) {
+        value
+    } else {
+        Expr::ECall {
+            func: Box::new(Expr::EField {
+                expr: Box::new(value),
+                field: Ident::new(TO_STRING_FN),
+                astptr: attr_ptr.clone(),
+            }),
+            args: Vec::new(),
+        }
+    }
 }
 
 fn call_string_add(lhs: Expr, rhs: Expr, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -243,14 +283,6 @@ fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Exp
     Expr::ECall {
         func: Box::new(var_expr(&Ident::new(name), attr_ptr)),
         args,
-    }
-}
-
-fn field_expr(field_name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    Expr::EField {
-        expr: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
-        field: field_name.clone(),
-        astptr: attr_ptr.clone(),
     }
 }
 

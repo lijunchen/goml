@@ -1,37 +1,26 @@
-impl ToString for int32{
-  fn to_string(self/0: int32) -> string {
-    (int32_to_string : (int32) -> string)((self/0 : int32))
+impl Point{
+  fn to_string(self/0: Point) -> string {
+    let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point) in
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (int32_to_string : (int32) -> string)((x/1 : int32))), ", "), "y: "), (int32_to_string : (int32) -> string)((y/2 : int32))), " }")
   }
 }
 
-impl ToString for string{
-  fn to_string(self/1: string) -> string {
-    (self/1 : string)
-  }
-}
-
-impl ToString for Point{
-  fn to_string(self/2: Point) -> string {
-    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (to_string : (int32) -> string)((self/2 : Point).x)), ", "), "y: "), (to_string : (int32) -> string)((self/2 : Point).y)), " }")
-  }
-}
-
-impl ToString for Message{
+impl Message{
   fn to_string(self/3: Message) -> string {
     match (self/3 : Message) {
         Message::Quit => "Message::Quit",
-        Message::Move(__field0/4: int32, __field1/5: int32) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Move(", (to_string : (int32) -> string)((__field0/4 : int32))), ", "), (to_string : (int32) -> string)((__field1/5 : int32))), ")"),
-        Message::Write(__field0/6: string) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Write(", (to_string : (string) -> string)((__field0/6 : string))), ")"),
+        Message::Move(__field0/4: int32, __field1/5: int32) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Move(", (int32_to_string : (int32) -> string)((__field0/4 : int32))), ", "), (int32_to_string : (int32) -> string)((__field1/5 : int32))), ")"),
+        Message::Write(__field0/6: string) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Write(", (__field0/6 : string)), ")"),
     }
   }
 }
 
 fn main() -> unit {
   let point/7: Point = Point { x: 4, y: 7 } in
-  let summary/8: string = (to_string : (Point) -> string)((point/7 : Point)) in
-  let mv/9: string = (to_string : (Message) -> string)(Message::Move(1, 2)) in
-  let text/10: string = (to_string : (Message) -> string)(Message::Write("done")) in
-  let exit/11: string = (to_string : (Message) -> string)(Message::Quit) in
+  let summary/8: string = (impl_inherent_Point_to_string : (Point) -> string)((point/7 : Point)) in
+  let mv/9: string = (impl_inherent_Message_to_string : (Message) -> string)(Message::Move(1, 2)) in
+  let text/10: string = (impl_inherent_Message_to_string : (Message) -> string)(Message::Write("done")) in
+  let exit/11: string = (impl_inherent_Message_to_string : (Message) -> string)(Message::Quit) in
   let _ : unit = (string_println : (string) -> unit)((summary/8 : string)) in
   let _ : unit = (string_println : (string) -> unit)((mv/9 : string)) in
   let _ : unit = (string_println : (string) -> unit)((text/10 : string)) in

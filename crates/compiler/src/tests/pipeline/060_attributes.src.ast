@@ -1,28 +1,13 @@
-trait ToString {
-  fn to_string(Self) -> string;
-}
-
-impl ToString for int32 {
-  fn to_string(self: int32) -> string {
-      int32_to_string(self)
-  }
-}
-
-impl ToString for string {
-  fn to_string(self: string) -> string {
-      self
-  }
-}
-
 #[derive(ToString)]
 struct Point {
     x: int32,
     y: int32,
 }
 
-impl ToString for Point {
+impl Point {
   fn to_string(self: Point) -> string {
-      string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), to_string(self.x)), ", "), "y: "), to_string(self.y)), " }")
+      let Point { x: x, y: y } = self in
+      string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), x.to_string()), ", "), "y: "), y.to_string()), " }")
   }
 }
 
@@ -33,12 +18,12 @@ enum Message {
     Write(string)
 }
 
-impl ToString for Message {
+impl Message {
   fn to_string(self: Message) -> string {
       match self {
           Message::Quit => "Message::Quit",
-          Message::Move(__field0, __field1) => string_add(string_add(string_add(string_add("Message::Move(", to_string(__field0)), ", "), to_string(__field1)), ")"),
-          Message::Write(__field0) => string_add(string_add("Message::Write(", to_string(__field0)), ")"),
+          Message::Move(__field0, __field1) => string_add(string_add(string_add(string_add("Message::Move(", __field0.to_string()), ", "), __field1.to_string()), ")"),
+          Message::Write(__field0) => string_add(string_add("Message::Write(", __field0), ")"),
       }
   }
 }
@@ -48,10 +33,10 @@ fn main() -> unit {
         x: 4,
         y: 7
     } in
-    let summary = to_string(point) in
-    let mv = to_string(Message::Move(1, 2)) in
-    let text = to_string(Message::Write("done")) in
-    let exit = to_string(Message::Quit) in
+    let summary = point.to_string() in
+    let mv = Message::Move(1, 2).to_string() in
+    let text = Message::Write("done").to_string() in
+    let exit = Message::Quit.to_string() in
     let _ = string_println(summary) in
     let _ = string_println(mv) in
     let _ = string_println(text) in

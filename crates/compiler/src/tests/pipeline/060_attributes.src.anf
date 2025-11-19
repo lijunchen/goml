@@ -1,63 +1,57 @@
-fn impl_ToString_int32_to_string(self/0: int32) -> string {
-  int32_to_string(self/0)
+fn impl_inherent_Point_to_string(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  let t14 = string_add("Point { ", "x: ") in
+  let t15 = int32_to_string(x/1) in
+  let t13 = string_add(t14, t15) in
+  let t12 = string_add(t13, ", ") in
+  let t11 = string_add(t12, "y: ") in
+  let t16 = int32_to_string(y/2) in
+  let t10 = string_add(t11, t16) in
+  string_add(t10, " }")
 }
 
-fn impl_ToString_string_to_string(self/1: string) -> string {
-  self/1
-}
-
-fn impl_ToString_Point_to_string(self/2: Point) -> string {
-  let t11 = string_add("Point { ", "x: ") in
-  let t13 = Point.x(self/2) in
-  let t12 = impl_ToString_int32_to_string(t13) in
-  let t10 = string_add(t11, t12) in
-  let t9 = string_add(t10, ", ") in
-  let t8 = string_add(t9, "y: ") in
-  let t15 = Point.y(self/2) in
-  let t14 = impl_ToString_int32_to_string(t15) in
-  let t7 = string_add(t8, t14) in
-  string_add(t7, " }")
-}
-
-fn impl_ToString_Message_to_string(self/3: Message) -> string {
+fn impl_inherent_Message_to_string(self/3: Message) -> string {
   match self/3 {
     Tag_0 => {
       "Message::Quit"
     },
     Tag_1 => {
-      let x0 = Message::Move._0(self/3) in
-      let x1 = Message::Move._1(self/3) in
-      let __field1/5 = x1 in
-      let __field0/4 = x0 in
-      let t19 = impl_ToString_int32_to_string(__field0/4) in
-      let t18 = string_add("Message::Move(", t19) in
-      let t17 = string_add(t18, ", ") in
-      let t20 = impl_ToString_int32_to_string(__field1/5) in
-      let t16 = string_add(t17, t20) in
-      string_add(t16, ")")
+      let x3 = Message::Move._0(self/3) in
+      let x4 = Message::Move._1(self/3) in
+      let __field1/5 = x4 in
+      let __field0/4 = x3 in
+      let t20 = int32_to_string(__field0/4) in
+      let t19 = string_add("Message::Move(", t20) in
+      let t18 = string_add(t19, ", ") in
+      let t21 = int32_to_string(__field1/5) in
+      let t17 = string_add(t18, t21) in
+      string_add(t17, ")")
     },
     Tag_2 => {
-      let x2 = Message::Write._0(self/3) in
-      let __field0/6 = x2 in
-      let t22 = impl_ToString_string_to_string(__field0/6) in
-      let t21 = string_add("Message::Write(", t22) in
-      string_add(t21, ")")
+      let x5 = Message::Write._0(self/3) in
+      let __field0/6 = x5 in
+      let t22 = string_add("Message::Write(", __field0/6) in
+      string_add(t22, ")")
     },
   }
 }
 
 fn main() -> unit {
   let point/7 = Point { x: 4, y: 7 } in
-  let summary/8 = impl_ToString_Point_to_string(point/7) in
+  let summary/8 = impl_inherent_Point_to_string(point/7) in
   let t23 = Message::Move(1, 2) in
-  let mv/9 = impl_ToString_Message_to_string(t23) in
+  let mv/9 = impl_inherent_Message_to_string(t23) in
   let t24 = Message::Write("done") in
-  let text/10 = impl_ToString_Message_to_string(t24) in
+  let text/10 = impl_inherent_Message_to_string(t24) in
   let t25 = Tag_0 in
-  let exit/11 = impl_ToString_Message_to_string(t25) in
-  let mtmp3 = string_println(summary/8) in
-  let mtmp4 = string_println(mv/9) in
-  let mtmp5 = string_println(text/10) in
-  let mtmp6 = string_println(exit/11) in
+  let exit/11 = impl_inherent_Message_to_string(t25) in
+  let mtmp6 = string_println(summary/8) in
+  let mtmp7 = string_println(mv/9) in
+  let mtmp8 = string_println(text/10) in
+  let mtmp9 = string_println(exit/11) in
   ()
 }
