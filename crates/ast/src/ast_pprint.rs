@@ -322,6 +322,13 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
+            Self::ETypeMember {
+                type_name,
+                member,
+                astptr: _,
+            } => RcDoc::text(type_name.0.clone())
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(member.0.clone())),
         }
     }
 

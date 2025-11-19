@@ -85,6 +85,11 @@ impl Typer {
                 field,
                 astptr,
             } => self.infer_field_expr(genv, local_env, expr, field, astptr),
+            ast::Expr::ETypeMember {
+                type_name,
+                member,
+                astptr,
+            } => self.infer_type_member_expr(genv, type_name, member, astptr),
         }
     }
 
@@ -212,6 +217,28 @@ impl Typer {
             }
         } else {
             panic!("Variable {} not found in environment", name.0);
+        }
+    }
+
+    fn infer_type_member_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        type_name: &Ident,
+        member: &Ident,
+        astptr: &MySyntaxNodePtr,
+    ) -> tast::Expr {
+        let receiver_ty = tast::Ty::TCon {
+            name: type_name.0.clone(),
+        };
+        if let Some((mangled_name, method_ty)) = genv.lookup_inherent_method(&receiver_ty, member) {
+            let inst_ty = self.inst_ty(&method_ty);
+            tast::Expr::EVar {
+                name: mangled_name,
+                ty: inst_ty,
+                astptr: Some(astptr.clone()),
+            }
+        } else {
+            panic!("Method {} not found for type {}", member.0, type_name.0);
         }
     }
 

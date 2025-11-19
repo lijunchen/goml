@@ -350,6 +350,11 @@ pub enum Expr {
         field: Ident,
         astptr: MySyntaxNodePtr,
     },
+    ETypeMember {
+        type_name: Ident,
+        member: Ident,
+        astptr: MySyntaxNodePtr,
+    },
 }
 
 #[derive(Debug, Clone)]

@@ -837,11 +837,14 @@ fn lower_expr_with_args(
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let constructor = lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
+                        let constructor =
+                            lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
                         let variant_ident = constructor
                             .last_ident()
                             .cloned()
                             .expect("paths must contain at least one segment");
+                        let astptr = MySyntaxNodePtr::new(ident_expr.syntax());
+
                         if ctx.is_constructor(&variant_ident) {
                             let constr = ast::Expr::EConstr { constructor, args };
                             apply_trailing_args(
@@ -850,16 +853,26 @@ fn lower_expr_with_args(
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
-                        } else if !constructor.namespace_segments().is_empty() {
-                            ctx.push_error(
-                                Some(ident_expr.syntax().text_range()),
-                                format!("{} is not a known constructor", constructor.display()),
-                            );
-                            None
+                        } else if let Some(type_ident) = constructor.parent_ident() {
+                            let type_member = ast::Expr::ETypeMember {
+                                type_name: type_ident.clone(),
+                                member: variant_ident,
+                                astptr: astptr.clone(),
+                            };
+                            let call = ast::Expr::ECall {
+                                func: Box::new(type_member),
+                                args,
+                            };
+                            apply_trailing_args(
+                                ctx,
+                                call,
+                                trailing_args,
+                                Some(it.syntax().text_range()),
+                            )
                         } else {
                             let var_expr = ast::Expr::EVar {
                                 name: variant_ident,
-                                astptr: MySyntaxNodePtr::new(ident_expr.syntax()),
+                                astptr,
                             };
                             let call = ast::Expr::ECall {
                                 func: Box::new(var_expr),
@@ -1184,18 +1197,21 @@ fn lower_expr_with_args(
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-            } else if !constructor.namespace_segments().is_empty() {
-                ctx.push_error(
-                    Some(it.syntax().text_range()),
-                    format!("{} is not a known constructor", constructor.display()),
-                );
-                None
             } else {
-                let expr = ast::Expr::EVar {
-                    name: variant_ident,
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
-                };
-                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+                if let Some(type_ident) = constructor.parent_ident() {
+                    let expr = ast::Expr::ETypeMember {
+                        type_name: type_ident.clone(),
+                        member: variant_ident,
+                        astptr: MySyntaxNodePtr::new(it.syntax()),
+                    };
+                    apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+                } else {
+                    let expr = ast::Expr::EVar {
+                        name: variant_ident,
+                        astptr: MySyntaxNodePtr::new(it.syntax()),
+                    };
+                    apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+                }
             }
         }
         cst::Expr::TupleExpr(it) => {
@@ -1477,6 +1493,18 @@ fn apply_trailing_args(
             func: Box::new(ast::Expr::EField {
                 expr,
                 field,
+                astptr,
+            }),
+            args: trailing_args,
+        }),
+        ast::Expr::ETypeMember {
+            type_name,
+            member,
+            astptr,
+        } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::ETypeMember {
+                type_name,
+                member,
                 astptr,
             }),
             args: trailing_args,

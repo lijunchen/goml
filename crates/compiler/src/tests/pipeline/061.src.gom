@@ -1,0 +1,45 @@
+package main
+
+import (
+    "fmt"
+)
+
+func int32_to_string(x int32) string {
+    return fmt.Sprintf("%d", x)
+}
+
+func string_println(s string) struct{} {
+    fmt.Println(s)
+    return struct{}{}
+}
+
+type Point struct {
+    x int32
+    y int32
+}
+
+func impl_inherent_Point_new(x__0 int32, y__1 int32) Point {
+    var ret6 Point
+    ret6 = Point{
+        x: x__0,
+        y: y__1,
+    }
+    return ret6
+}
+
+func main0() struct{} {
+    var ret7 struct{}
+    var p__2 Point = impl_inherent_Point_new(10, 20)
+    var t3 int32 = p__2.x
+    var t2 string = int32_to_string(t3)
+    string_println(t2)
+    var t5 int32 = p__2.y
+    var t4 string = int32_to_string(t5)
+    string_println(t4)
+    ret7 = struct{}{}
+    return ret7
+}
+
+func main() {
+    main0()
+}

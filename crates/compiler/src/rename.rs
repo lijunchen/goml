@@ -282,6 +282,15 @@ impl Rename {
                 field: field.clone(),
                 astptr: astptr.clone(),
             },
+            ast::Expr::ETypeMember {
+                type_name,
+                member,
+                astptr,
+            } => ast::Expr::ETypeMember {
+                type_name: type_name.clone(),
+                member: member.clone(),
+                astptr: *astptr,
+            },
         }
     }
 
