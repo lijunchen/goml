@@ -1,3 +1,67 @@
+fn impl_inherent_Color_to_string(self/0: Color) -> string {
+  match self/0 {
+    Color::Red => {
+      "Color::Red"
+    },
+    Color::Green => {
+      "Color::Green"
+    },
+    Color::Blue => {
+      "Color::Blue"
+    },
+  }
+}
+
+fn impl_inherent_Point_to_string(self/1: Point) -> string {
+  let mtmp0 = self/1 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let x3 = Point.color(mtmp0) in
+  let color/4 = x3 in
+  let y/3 = x2 in
+  let x/2 = x1 in
+  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), int32_to_string(x/2)), ", "), "y: "), int32_to_string(y/3)), ", "), "color: "), impl_inherent_Color_to_string(color/4)), " }")
+}
+
+fn impl_inherent_Point_new(x/5: int32, y/6: int32, color/7: Color) -> Point {
+  Point { x: x/5, y: y/6, color: color/7 }
+}
+
+fn impl_inherent_Line_to_string(self/8: Line) -> string {
+  let mtmp4 = self/8 in
+  let x5 = Line.from(mtmp4) in
+  let x6 = Line.to(mtmp4) in
+  let x7 = Line.color(mtmp4) in
+  let color/11 = x7 in
+  let to/10 = x6 in
+  let from/9 = x5 in
+  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Line { ", "from: "), impl_inherent_Point_to_string(from/9)), ", "), "to: "), impl_inherent_Point_to_string(to/10)), ", "), "color: "), impl_inherent_Color_to_string(color/11)), " }")
+}
+
+fn impl_inherent_Line_new(from/12: Point, to/13: Point, color/14: Color) -> Line {
+  Line { from: from/12, to: to/13, color: color/14 }
+}
+
+fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
+  match self/15 {
+    LineList::Nil => {
+      "LineList::Nil"
+    },
+    LineList::Cons(x8, x9) => {
+      let x8 = LineList::Cons._0(self/15) in
+      let x9 = LineList::Cons._1(self/15) in
+      let __field1/17 = x9 in
+      let __field0/16 = x8 in
+      string_add(string_add(string_add(string_add("LineList::Cons(", impl_inherent_Line_to_string(__field0/16)), ", "), impl_inherent_LineList_to_string(__field1/17)), ")")
+    },
+  }
+}
+
 fn main() -> unit {
+  let from/18 = impl_inherent_Point_new(10, 20, Color::Red) in
+  let to/19 = impl_inherent_Point_new(30, 40, Color::Green) in
+  let line/20 = impl_inherent_Line_new(from/18, to/19, Color::Blue) in
+  let lines/21 = LineList::Cons(line/20, LineList::Nil) in
+  let mtmp10 = string_println(impl_inherent_LineList_to_string(lines/21)) in
   ()
 }
