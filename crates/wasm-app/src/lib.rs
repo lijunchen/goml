@@ -2,7 +2,10 @@ use cst::cst::CstNode;
 use diagnostics::Diagnostics;
 use parser::{parser::ParseResult, syntax::MySyntaxNode};
 
-use compiler::env::{Gensym, format_compile_diagnostics, format_typer_diagnostics};
+use compiler::{
+    derive,
+    env::{Gensym, format_compile_diagnostics, format_typer_diagnostics},
+};
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -17,6 +20,11 @@ pub fn execute(src: &str) -> String {
     let ast = match lower.into_result() {
         Ok(ast) => ast,
         Err(diagnostics) => return format_lower_errors(diagnostics),
+    };
+
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
     let (tast, genv) = compiler::typer::check_file(ast);
@@ -57,6 +65,11 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
+    };
+
     let (tast, genv) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&genv.diagnostics);
     if !typer_errors.is_empty() {
@@ -93,6 +106,10 @@ pub fn compile_to_mono(src: &str) -> String {
     let ast = match lower.into_result() {
         Ok(ast) => ast,
         Err(diagnostics) => return format_lower_errors(diagnostics),
+    };
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
     let (tast, mut genv) = compiler::typer::check_file(ast);
@@ -133,6 +150,10 @@ pub fn compile_to_anf(src: &str) -> String {
     let ast = match lower.into_result() {
         Ok(ast) => ast,
         Err(diagnostics) => return format_lower_errors(diagnostics),
+    };
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
     let (tast, mut genv) = compiler::typer::check_file(ast);
@@ -175,6 +196,10 @@ pub fn compile_to_go(src: &str) -> String {
     let ast = match lower.into_result() {
         Ok(ast) => ast,
         Err(diagnostics) => return format_lower_errors(diagnostics),
+    };
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
     let (tast, mut genv) = compiler::typer::check_file(ast);
@@ -321,6 +346,20 @@ fn format_parse_errors(result: &ParseResult, src: &str) -> String {
 }
 
 fn format_lower_errors(diagnostics: Diagnostics) -> String {
+    diagnostics
+        .into_iter()
+        .map(|diagnostic| {
+            format!(
+                "error ({}): {}",
+                diagnostic.stage().as_str(),
+                diagnostic.message()
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn format_derive_errors(diagnostics: Diagnostics) -> String {
     diagnostics
         .into_iter()
         .map(|diagnostic| {
