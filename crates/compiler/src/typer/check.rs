@@ -219,18 +219,19 @@ impl Typer {
         &mut self,
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
-        constructor_ident: &ast::ConstructorIdent,
+        constructor_path: &ast::Path,
         args: &[ast::Expr],
     ) -> tast::Expr {
+        let variant_ident = constructor_path
+            .last_ident()
+            .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+        let enum_name = constructor_path.parent_ident();
         let (constructor, constr_ty) = genv
-            .lookup_constructor_with_namespace(
-                constructor_ident.enum_name(),
-                constructor_ident.variant(),
-            )
+            .lookup_constructor_with_namespace(enum_name, variant_ident)
             .unwrap_or_else(|| {
                 panic!(
                     "Constructor {} not found in environment",
-                    constructor_ident.display()
+                    constructor_path.display()
                 )
             });
 
@@ -1172,18 +1173,19 @@ impl Typer {
     ) -> tast::Pat {
         match pat {
             ast::Pat::PConstr {
-                constructor: constructor_ident,
+                constructor: constructor_path,
                 args,
             } => {
+                let variant_ident = constructor_path
+                    .last_ident()
+                    .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+                let enum_name = constructor_path.parent_ident();
                 let (constructor, constr_ty) = genv
-                    .lookup_constructor_with_namespace(
-                        constructor_ident.enum_name(),
-                        constructor_ident.variant(),
-                    )
+                    .lookup_constructor_with_namespace(enum_name, variant_ident)
                     .unwrap_or_else(|| {
                         panic!(
                             "Constructor {} not found in environment",
-                            constructor_ident.display()
+                            constructor_path.display()
                         )
                     });
 

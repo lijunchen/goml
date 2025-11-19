@@ -1,5 +1,5 @@
 use ::ast::ast::{
-    self, Arm, Attribute, ConstructorIdent, EnumDef, Expr, Ident, ImplBlock, Item, Pat, StructDef,
+    self, Arm, Attribute, EnumDef, Expr, Ident, ImplBlock, Item, Pat, Path, StructDef,
 };
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -168,8 +168,7 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
         .variants
         .iter()
         .map(|(variant_name, fields)| {
-            let constructor =
-                ConstructorIdent::new(Some(enum_def.name.clone()), variant_name.clone());
+            let constructor = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
             if fields.is_empty() {
                 Arm {
                     pat: Pat::PConstr {

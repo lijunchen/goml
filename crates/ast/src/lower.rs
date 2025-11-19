@@ -837,9 +837,11 @@ fn lower_expr_with_args(
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let constructor =
-                            lower_constructor_ident_from_ident_expr(ctx, &ident_expr)?;
-                        let variant_ident = constructor.variant().clone();
+                        let constructor = lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
+                        let variant_ident = constructor
+                            .last_ident()
+                            .cloned()
+                            .expect("paths must contain at least one segment");
                         if ctx.is_constructor(&variant_ident) {
                             let constr = ast::Expr::EConstr { constructor, args };
                             apply_trailing_args(
@@ -848,7 +850,7 @@ fn lower_expr_with_args(
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
-                        } else if constructor.enum_name().is_some() {
+                        } else if !constructor.namespace_segments().is_empty() {
                             ctx.push_error(
                                 Some(ident_expr.syntax().text_range()),
                                 format!("{} is not a known constructor", constructor.display()),
@@ -1171,15 +1173,18 @@ fn lower_expr_with_args(
             Some(ast::Expr::EArray { items })
         }
         cst::Expr::IdentExpr(it) => {
-            let constructor = lower_constructor_ident_from_ident_expr(ctx, &it)?;
-            let variant_ident = constructor.variant().clone();
+            let constructor = lower_constructor_path_from_ident_expr(ctx, &it)?;
+            let variant_ident = constructor
+                .last_ident()
+                .cloned()
+                .expect("paths must contain at least one segment");
             if ctx.is_constructor(&variant_ident) {
                 let expr = ast::Expr::EConstr {
                     constructor,
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-            } else if constructor.enum_name().is_some() {
+            } else if !constructor.namespace_segments().is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
                     format!("{} is not a known constructor", constructor.display()),
@@ -1531,7 +1536,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             let ident = ast::Ident(name);
             if ctx.is_constructor(&ident) {
                 Some(ast::Pat::PConstr {
-                    constructor: ast::ConstructorIdent::from_variant(ident),
+                    constructor: ast::Path::from_ident(ident),
                     args: Vec::new(),
                 })
             } else {
@@ -1611,7 +1616,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     fields,
                 })
             } else {
-                let constructor = lower_constructor_ident_from_constr_pat(ctx, &it)?;
+                let constructor = lower_constructor_path_from_constr_pat(ctx, &it)?;
                 let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
                 Some(ast::Pat::PConstr {
                     constructor,
@@ -1627,16 +1632,14 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
     }
 }
 
-fn lower_constructor_ident_from_ident_expr(
+fn lower_constructor_path_from_ident_expr(
     ctx: &mut LowerCtx,
     expr: &cst::IdentExpr,
-) -> Option<ast::ConstructorIdent> {
+) -> Option<ast::Path> {
     if let Some(path) = expr.path() {
-        lower_constructor_ident_from_path(ctx, &path)
+        lower_constructor_path_from_path(ctx, &path)
     } else if let Some(token) = expr.ident_token() {
-        Some(ast::ConstructorIdent::from_variant(ast::Ident(
-            token.to_string(),
-        )))
+        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
         ctx.push_error(
             Some(expr.syntax().text_range()),
@@ -1646,16 +1649,14 @@ fn lower_constructor_ident_from_ident_expr(
     }
 }
 
-fn lower_constructor_ident_from_constr_pat(
+fn lower_constructor_path_from_constr_pat(
     ctx: &mut LowerCtx,
     pat: &cst::ConstrPat,
-) -> Option<ast::ConstructorIdent> {
+) -> Option<ast::Path> {
     if let Some(path) = pat.path() {
-        lower_constructor_ident_from_path(ctx, &path)
+        lower_constructor_path_from_path(ctx, &path)
     } else if let Some(token) = pat.uident() {
-        Some(ast::ConstructorIdent::from_variant(ast::Ident(
-            token.to_string(),
-        )))
+        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
         ctx.push_error(
             Some(pat.syntax().text_range()),
@@ -1665,16 +1666,10 @@ fn lower_constructor_ident_from_constr_pat(
     }
 }
 
-fn lower_constructor_ident_from_path(
-    ctx: &mut LowerCtx,
-    path: &cst::Path,
-) -> Option<ast::ConstructorIdent> {
-    let idents: Vec<ast::Ident> = path
-        .ident_tokens()
-        .map(|token| ast::Ident(token.to_string()))
-        .collect();
+fn lower_constructor_path_from_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
+    let ast_path = lower_path(ctx, path)?;
 
-    match idents.len() {
+    match ast_path.len() {
         len if len < 2 => {
             ctx.push_error(
                 Some(path.syntax().text_range()),
@@ -1682,11 +1677,7 @@ fn lower_constructor_ident_from_path(
             );
             None
         }
-        2 => {
-            let enum_name = idents[0].clone();
-            let variant = idents[1].clone();
-            Some(ast::ConstructorIdent::new(Some(enum_name), variant))
-        }
+        2 => Some(ast_path),
         _ => {
             ctx.push_error(
                 Some(path.syntax().text_range()),
@@ -1694,5 +1685,22 @@ fn lower_constructor_ident_from_path(
             );
             None
         }
+    }
+}
+
+fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
+    let segments: Vec<ast::PathSegment> = path
+        .ident_tokens()
+        .map(|token| ast::PathSegment::new(ast::Ident(token.to_string())))
+        .collect();
+
+    if segments.is_empty() {
+        ctx.push_error(
+            Some(path.syntax().text_range()),
+            "Paths must contain at least one identifier",
+        );
+        None
+    } else {
+        Some(ast::Path::new(segments))
     }
 }

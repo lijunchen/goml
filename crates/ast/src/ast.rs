@@ -18,37 +18,83 @@ impl Ident {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ConstructorIdent {
-    pub enum_name: Option<Ident>,
-    pub variant: Ident,
+pub struct PathSegment {
+    pub ident: Ident,
 }
 
-impl ConstructorIdent {
-    pub fn new(enum_name: Option<Ident>, variant: Ident) -> Self {
-        Self { enum_name, variant }
+impl PathSegment {
+    pub fn new(ident: Ident) -> Self {
+        Self { ident }
     }
 
-    pub fn from_variant(variant: Ident) -> Self {
+    pub fn ident(&self) -> &Ident {
+        &self.ident
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Path {
+    pub segments: Vec<PathSegment>,
+}
+
+impl Path {
+    pub fn new(segments: Vec<PathSegment>) -> Self {
+        Self { segments }
+    }
+
+    pub fn from_idents(idents: Vec<Ident>) -> Self {
+        let segments = idents.into_iter().map(PathSegment::new).collect();
+        Self { segments }
+    }
+
+    pub fn from_ident(ident: Ident) -> Self {
         Self {
-            enum_name: None,
-            variant,
+            segments: vec![PathSegment::new(ident)],
         }
     }
 
-    pub fn enum_name(&self) -> Option<&Ident> {
-        self.enum_name.as_ref()
+    pub fn segments(&self) -> &[PathSegment] {
+        &self.segments
     }
 
-    pub fn variant(&self) -> &Ident {
-        &self.variant
+    pub fn is_empty(&self) -> bool {
+        self.segments.is_empty()
+    }
+
+    pub fn len(&self) -> usize {
+        self.segments.len()
+    }
+
+    pub fn last(&self) -> Option<&PathSegment> {
+        self.segments.last()
+    }
+
+    pub fn last_ident(&self) -> Option<&Ident> {
+        self.last().map(|segment| segment.ident())
+    }
+
+    pub fn namespace_segments(&self) -> &[PathSegment] {
+        if self.segments.len() > 1 {
+            &self.segments[..self.segments.len() - 1]
+        } else {
+            &[]
+        }
+    }
+
+    pub fn parent_ident(&self) -> Option<&Ident> {
+        if self.segments.len() > 1 {
+            Some(self.segments[self.segments.len() - 2].ident())
+        } else {
+            None
+        }
     }
 
     pub fn display(&self) -> String {
-        if let Some(enum_name) = &self.enum_name {
-            format!("{}::{}", enum_name.0, self.variant.0)
-        } else {
-            self.variant.0.clone()
-        }
+        self.segments
+            .iter()
+            .map(|segment| segment.ident.0.clone())
+            .collect::<Vec<_>>()
+            .join("::")
     }
 }
 
@@ -245,7 +291,7 @@ pub enum Expr {
         value: String,
     },
     EConstr {
-        constructor: ConstructorIdent,
+        constructor: Path,
         args: Vec<Expr>,
     },
     EStructLiteral {
@@ -329,7 +375,7 @@ pub enum Pat {
         value: String,
     },
     PConstr {
-        constructor: ConstructorIdent,
+        constructor: Path,
         args: Vec<Pat>,
     },
     PStruct {
