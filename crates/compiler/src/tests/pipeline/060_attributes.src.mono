@@ -1,13 +1,44 @@
-fn sum(point/0: Point) -> int32 {
-  int32_add(Point.x(point/0), Point.y(point/0))
+fn impl_ToString_int32_to_string(self/0: int32) -> string {
+  int32_to_string(self/0)
 }
 
-fn impl_inherent_Color_identity(color/1: Color) -> Color {
-  color/1
+fn impl_ToString_string_to_string(self/1: string) -> string {
+  self/1
+}
+
+fn impl_ToString_Point_to_string(self/2: Point) -> string {
+  string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), impl_ToString_int32_to_string(Point.x(self/2))), ", "), "y: "), impl_ToString_int32_to_string(Point.y(self/2))), " }")
+}
+
+fn impl_ToString_Message_to_string(self/3: Message) -> string {
+  match self/3 {
+    Message::Quit => {
+      "Message::Quit"
+    },
+    Message::Move(x0, x1) => {
+      let x0 = Message::Move._0(self/3) in
+      let x1 = Message::Move._1(self/3) in
+      let __field1/5 = x1 in
+      let __field0/4 = x0 in
+      string_add(string_add(string_add(string_add("Message::Move(", impl_ToString_int32_to_string(__field0/4)), ", "), impl_ToString_int32_to_string(__field1/5)), ")")
+    },
+    Message::Write(x2) => {
+      let x2 = Message::Write._0(self/3) in
+      let __field0/6 = x2 in
+      string_add(string_add("Message::Write(", impl_ToString_string_to_string(__field0/6)), ")")
+    },
+  }
 }
 
 fn main() -> unit {
-  let point/2 = Point { x: 1, y: 2 } in
-  let mtmp0 = sum(point/2) in
-  string_println("()")
+  let point/7 = Point { x: 4, y: 7 } in
+  let summary/8 = impl_ToString_Point_to_string(point/7) in
+  let mv/9 = impl_ToString_Message_to_string(Message::Move(1, 2)) in
+  let text/10 = impl_ToString_Message_to_string(Message::Write("done")) in
+  let exit/11 = impl_ToString_Message_to_string(Message::Quit) in
+  let mtmp3 = string_println(summary/8) in
+  let mtmp4 = string_println(mv/9) in
+  let mtmp5 = string_println(text/10) in
+  let mtmp6 = string_println(exit/11) in
+  ()
 }

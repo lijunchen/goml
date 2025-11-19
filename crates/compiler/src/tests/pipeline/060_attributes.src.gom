@@ -4,6 +4,10 @@ import (
     "fmt"
 )
 
+func int32_to_string(x int32) string {
+    return fmt.Sprintf("%d", x)
+}
+
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
@@ -14,39 +18,104 @@ type Point struct {
     y int32
 }
 
-type Color interface {
-    isColor()
+type Message interface {
+    isMessage()
 }
 
-type Red struct {}
+type Quit struct {}
 
-func (_ Red) isColor() {}
+func (_ Quit) isMessage() {}
 
-type Green struct {}
+type Move struct {
+    _0 int32
+    _1 int32
+}
 
-func (_ Green) isColor() {}
+func (_ Move) isMessage() {}
 
-type Blue struct {}
+type Write struct {
+    _0 string
+}
 
-func (_ Blue) isColor() {}
+func (_ Write) isMessage() {}
 
-func sum(point__0 Point) int32 {
-    var ret3 int32
-    var t1 int32 = point__0.x
-    var t2 int32 = point__0.y
-    ret3 = t1 + t2
-    return ret3
+func impl_ToString_int32_to_string(self__0 int32) string {
+    var ret26 string
+    ret26 = int32_to_string(self__0)
+    return ret26
+}
+
+func impl_ToString_string_to_string(self__1 string) string {
+    var ret27 string
+    ret27 = self__1
+    return ret27
+}
+
+func impl_ToString_Point_to_string(self__2 Point) string {
+    var ret28 string
+    var t11 string = "Point { " + "x: "
+    var t13 int32 = self__2.x
+    var t12 string = impl_ToString_int32_to_string(t13)
+    var t10 string = t11 + t12
+    var t9 string = t10 + ", "
+    var t8 string = t9 + "y: "
+    var t15 int32 = self__2.y
+    var t14 string = impl_ToString_int32_to_string(t15)
+    var t7 string = t8 + t14
+    ret28 = t7 + " }"
+    return ret28
+}
+
+func impl_ToString_Message_to_string(self__3 Message) string {
+    var ret29 string
+    switch self__3 := self__3.(type) {
+    case Quit:
+        ret29 = "Message::Quit"
+    case Move:
+        var x0 int32 = self__3._0
+        var x1 int32 = self__3._1
+        var __field1__5 int32 = x1
+        var __field0__4 int32 = x0
+        var t19 string = impl_ToString_int32_to_string(__field0__4)
+        var t18 string = "Message::Move(" + t19
+        var t17 string = t18 + ", "
+        var t20 string = impl_ToString_int32_to_string(__field1__5)
+        var t16 string = t17 + t20
+        ret29 = t16 + ")"
+    case Write:
+        var x2 string = self__3._0
+        var __field0__6 string = x2
+        var t22 string = impl_ToString_string_to_string(__field0__6)
+        var t21 string = "Message::Write(" + t22
+        ret29 = t21 + ")"
+    }
+    return ret29
 }
 
 func main0() struct{} {
-    var ret5 struct{}
-    var point__2 Point = Point{
-        x: 1,
-        y: 2,
+    var ret30 struct{}
+    var point__7 Point = Point{
+        x: 4,
+        y: 7,
     }
-    sum(point__2)
-    ret5 = string_println("()")
-    return ret5
+    var summary__8 string = impl_ToString_Point_to_string(point__7)
+    var t23 Message = Move{
+        _0: 1,
+        _1: 2,
+    }
+    var mv__9 string = impl_ToString_Message_to_string(t23)
+    var t24 Message = Write{
+        _0: "done",
+    }
+    var text__10 string = impl_ToString_Message_to_string(t24)
+    var t25 Message = Quit{}
+    var exit__11 string = impl_ToString_Message_to_string(t25)
+    string_println(summary__8)
+    string_println(mv__9)
+    string_println(text__10)
+    string_println(exit__11)
+    ret30 = struct{}{}
+    return ret30
 }
 
 func main() {

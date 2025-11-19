@@ -1,37 +1,61 @@
-#[derive(ToString)]
-enum Color {
-    Red,
-    Green,
-    Blue
+trait ToString {
+  fn to_string(Self) -> string;
 }
 
-#[wasm_bindgen]
+impl ToString for int32 {
+  fn to_string(self: int32) -> string {
+      int32_to_string(self)
+  }
+}
+
+impl ToString for string {
+  fn to_string(self: string) -> string {
+      self
+  }
+}
+
+#[derive(ToString)]
 struct Point {
     x: int32,
     y: int32,
 }
 
-#[inline(always)]
-fn sum(point: Point) -> int32 {
-    point.x + point.y
-}
-
-#[cfg(test)]
-impl Color {
-  fn identity(color: Color) -> Color {
-      color
+impl ToString for Point {
+  fn to_string(self: Point) -> string {
+      string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), to_string(self.x)), ", "), "y: "), to_string(self.y)), " }")
   }
 }
 
-#[link("math")]
-extern "go" "math" abs(value: float64) -> float64
+#[derive(ToString)]
+enum Message {
+    Quit,
+    Move(int32, int32),
+    Write(string)
+}
+
+impl ToString for Message {
+  fn to_string(self: Message) -> string {
+      match self {
+          Message::Quit => "Message::Quit",
+          Message::Move(__field0, __field1) => string_add(string_add(string_add(string_add("Message::Move(", to_string(__field0)), ", "), to_string(__field1)), ")"),
+          Message::Write(__field0) => string_add(string_add("Message::Write(", to_string(__field0)), ")"),
+      }
+  }
+}
 
 fn main() -> unit {
     let point = Point {
-        x: 1,
-        y: 2
+        x: 4,
+        y: 7
     } in
-    let _ = sum(point) in
-    string_println("()")
+    let summary = to_string(point) in
+    let mv = to_string(Message::Move(1, 2)) in
+    let text = to_string(Message::Write("done")) in
+    let exit = to_string(Message::Quit) in
+    let _ = string_println(summary) in
+    let _ = string_println(mv) in
+    let _ = string_println(text) in
+    let _ = string_println(exit) in
+    ()
 }
 

@@ -1,17 +1,40 @@
-fn sum(point/0: Point) -> int32 {
-  (point/0 : Point).x + (point/0 : Point).y
-}
-
-impl Color{
-  fn identity(color/1: Color) -> Color {
-    (color/1 : Color)
+impl ToString for int32{
+  fn to_string(self/0: int32) -> string {
+    (int32_to_string : (int32) -> string)((self/0 : int32))
   }
 }
 
-extern "go" "math" abs(value: float64) -> float64
+impl ToString for string{
+  fn to_string(self/1: string) -> string {
+    (self/1 : string)
+  }
+}
+
+impl ToString for Point{
+  fn to_string(self/2: Point) -> string {
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (to_string : (int32) -> string)((self/2 : Point).x)), ", "), "y: "), (to_string : (int32) -> string)((self/2 : Point).y)), " }")
+  }
+}
+
+impl ToString for Message{
+  fn to_string(self/3: Message) -> string {
+    match (self/3 : Message) {
+        Message::Quit => "Message::Quit",
+        Message::Move(__field0/4: int32, __field1/5: int32) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Move(", (to_string : (int32) -> string)((__field0/4 : int32))), ", "), (to_string : (int32) -> string)((__field1/5 : int32))), ")"),
+        Message::Write(__field0/6: string) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)("Message::Write(", (to_string : (string) -> string)((__field0/6 : string))), ")"),
+    }
+  }
+}
 
 fn main() -> unit {
-  let point/2: Point = Point { x: 1, y: 2 } in
-  let _ : int32 = (sum : (Point) -> int32)((point/2 : Point)) in
-  (string_println : (string) -> unit)("()")
+  let point/7: Point = Point { x: 4, y: 7 } in
+  let summary/8: string = (to_string : (Point) -> string)((point/7 : Point)) in
+  let mv/9: string = (to_string : (Message) -> string)(Message::Move(1, 2)) in
+  let text/10: string = (to_string : (Message) -> string)(Message::Write("done")) in
+  let exit/11: string = (to_string : (Message) -> string)(Message::Quit) in
+  let _ : unit = (string_println : (string) -> unit)((summary/8 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((mv/9 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((text/10 : string)) in
+  let _ : unit = (string_println : (string) -> unit)((exit/11 : string)) in
+  ()
 }
