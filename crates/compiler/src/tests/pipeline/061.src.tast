@@ -1,18 +1,53 @@
-impl Point{
-  fn to_string(self/0: Point) -> string {
-    let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point) in
-    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (int32_to_string : (int32) -> string)((x/1 : int32))), ", "), "y: "), (int32_to_string : (int32) -> string)((y/2 : int32))), " }")
+impl Color{
+  fn to_string(self/0: Color) -> string {
+    match (self/0 : Color) {
+        Color::Red => "Color::Red",
+        Color::Green => "Color::Green",
+        Color::Blue => "Color::Blue",
+    }
   }
 }
 
 impl Point{
-  fn new(x/3: int32, y/4: int32) -> Point {
-    Point { x: (x/3 : int32), y: (y/4 : int32) }
+  fn to_string(self/1: Point) -> string {
+    let Point { x: x/2: int32, y: y/3: int32, color: color/4: Color } = (self/1 : Point) in
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (int32_to_string : (int32) -> string)((x/2 : int32))), ", "), "y: "), (int32_to_string : (int32) -> string)((y/3 : int32))), ", "), "color: "), (impl_inherent_Color_to_string : (Color) -> string)((color/4 : Color))), " }")
+  }
+}
+
+impl Point{
+  fn new(x/5: int32, y/6: int32, color/7: Color) -> Point {
+    Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) }
+  }
+}
+
+impl Line{
+  fn to_string(self/8: Line) -> string {
+    let Line { from: from/9: Point, to: to/10: Point, color: color/11: Color } = (self/8 : Line) in
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Line { ", "from: "), (impl_inherent_Point_to_string : (Point) -> string)((from/9 : Point))), ", "), "to: "), (impl_inherent_Point_to_string : (Point) -> string)((to/10 : Point))), ", "), "color: "), (impl_inherent_Color_to_string : (Color) -> string)((color/11 : Color))), " }")
+  }
+}
+
+impl Line{
+  fn new(from/12: Point, to/13: Point, color/14: Color) -> Line {
+    Line { from: (from/12 : Point), to: (to/13 : Point), color: (color/14 : Color) }
+  }
+}
+
+impl LineList{
+  fn to_string(self/15: LineList) -> string {
+    match (self/15 : LineList) {
+        LineList::Nil => "LineList::Nil",
+        LineList::Cons(__field0/16: Line, __field1/17: LineList) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("LineList::Cons(", (impl_inherent_Line_to_string : (Line) -> string)((__field0/16 : Line))), ", "), (impl_inherent_LineList_to_string : (LineList) -> string)((__field1/17 : LineList))), ")"),
+    }
   }
 }
 
 fn main() -> unit {
-  let p/5: Point = (impl_inherent_Point_new : (int32, int32) -> Point)(10, 20) in
-  let _ : unit = (string_println : (string) -> unit)((impl_inherent_Point_to_string : (Point) -> string)((p/5 : Point))) in
+  let from/18: Point = (impl_inherent_Point_new : (int32, int32, Color) -> Point)(10, 20, Color::Red) in
+  let to/19: Point = (impl_inherent_Point_new : (int32, int32, Color) -> Point)(30, 40, Color::Green) in
+  let line/20: Line = (impl_inherent_Line_new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue) in
+  let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil) in
+  let _ : unit = (string_println : (string) -> unit)((impl_inherent_LineList_to_string : (LineList) -> string)((lines/21 : LineList))) in
   ()
 }
