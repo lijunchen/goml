@@ -1,6 +1,7 @@
+#[derive(ToString)]
 struct Point {
     x: int32,
-    y: int32
+    y: int32,
 }
 
 impl Point {
@@ -11,6 +12,5 @@ impl Point {
 
 fn main() {
     let p = Point::new(10, 20);
-    string_println(int32_to_string(p.x));
-    string_println(int32_to_string(p.y));
+    string_println(p.to_string());
 }

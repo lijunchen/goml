@@ -1,10 +1,18 @@
-fn impl_inherent_Point_new(x/0: int32, y/1: int32) -> Point {
-  Point { x: x/0, y: y/1 }
+fn impl_inherent_Point_to_string(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), int32_to_string(x/1)), ", "), "y: "), int32_to_string(y/2)), " }")
+}
+
+fn impl_inherent_Point_new(x/3: int32, y/4: int32) -> Point {
+  Point { x: x/3, y: y/4 }
 }
 
 fn main() -> unit {
-  let p/2 = impl_inherent_Point_new(10, 20) in
-  let mtmp0 = string_println(int32_to_string(Point.x(p/2))) in
-  let mtmp1 = string_println(int32_to_string(Point.y(p/2))) in
+  let p/5 = impl_inherent_Point_new(10, 20) in
+  let mtmp3 = string_println(impl_inherent_Point_to_string(p/5)) in
   ()
 }

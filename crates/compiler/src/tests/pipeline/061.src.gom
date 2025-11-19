@@ -18,26 +18,40 @@ type Point struct {
     y int32
 }
 
-func impl_inherent_Point_new(x__0 int32, y__1 int32) Point {
-    var ret6 Point
-    ret6 = Point{
-        x: x__0,
-        y: y__1,
+func impl_inherent_Point_to_string(self__0 Point) string {
+    var ret12 string
+    var mtmp0 Point = self__0
+    var x1 int32 = mtmp0.x
+    var x2 int32 = mtmp0.y
+    var y__2 int32 = x2
+    var x__1 int32 = x1
+    var t8 string = "Point { " + "x: "
+    var t9 string = int32_to_string(x__1)
+    var t7 string = t8 + t9
+    var t6 string = t7 + ", "
+    var t5 string = t6 + "y: "
+    var t10 string = int32_to_string(y__2)
+    var t4 string = t5 + t10
+    ret12 = t4 + " }"
+    return ret12
+}
+
+func impl_inherent_Point_new(x__3 int32, y__4 int32) Point {
+    var ret13 Point
+    ret13 = Point{
+        x: x__3,
+        y: y__4,
     }
-    return ret6
+    return ret13
 }
 
 func main0() struct{} {
-    var ret7 struct{}
-    var p__2 Point = impl_inherent_Point_new(10, 20)
-    var t3 int32 = p__2.x
-    var t2 string = int32_to_string(t3)
-    string_println(t2)
-    var t5 int32 = p__2.y
-    var t4 string = int32_to_string(t5)
-    string_println(t4)
-    ret7 = struct{}{}
-    return ret7
+    var ret14 struct{}
+    var p__5 Point = impl_inherent_Point_new(10, 20)
+    var t11 string = impl_inherent_Point_to_string(p__5)
+    string_println(t11)
+    ret14 = struct{}{}
+    return ret14
 }
 
 func main() {
