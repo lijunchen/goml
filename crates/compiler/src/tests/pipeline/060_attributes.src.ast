@@ -1,5 +1,4 @@
 #[derive(ToString)]
-
 enum Color {
     Red,
     Green,
@@ -7,20 +6,17 @@ enum Color {
 }
 
 #[wasm_bindgen]
-
 struct Point {
     x: int32,
     y: int32,
 }
 
 #[inline(always)]
-
 fn sum(point: Point) -> int32 {
     point.x + point.y
 }
 
 #[cfg(test)]
-
 impl Color {
   fn identity(color: Color) -> Color {
       color
@@ -28,7 +24,6 @@ impl Color {
 }
 
 #[link("math")]
-
 extern "go" "math" abs(value: float64) -> float64
 
 fn main() -> unit {
