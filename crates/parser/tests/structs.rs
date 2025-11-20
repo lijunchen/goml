@@ -150,6 +150,29 @@ fn struct_literal_expr() {
 }
 
 #[test]
+fn struct_literal_expr_shorthand_field() {
+    check(
+        "Point { x, y }",
+        expect![[r#"
+            FILE@0..14
+              EXPR_STRUCT_LITERAL@0..14
+                Ident@0..5 "Point"
+                Whitespace@5..6 " "
+                STRUCT_LITERAL_FIELD_LIST@6..14
+                  LBrace@6..7 "{"
+                  Whitespace@7..8 " "
+                  STRUCT_LITERAL_FIELD@8..9
+                    Ident@8..9 "x"
+                  Comma@9..10 ","
+                  Whitespace@10..11 " "
+                  STRUCT_LITERAL_FIELD@11..13
+                    Ident@11..12 "y"
+                    Whitespace@12..13 " "
+                  RBrace@13..14 "}""#]],
+    );
+}
+
+#[test]
 fn struct_pattern_shorthand() {
     check(
         "fn main() { let Point { x, y } = point; }",
