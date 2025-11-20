@@ -1163,8 +1163,17 @@ fn lower_expr_with_args(
                     list.fields()
                         .flat_map(|field| {
                             let fname = field.lident()?.to_string();
-                            let expr = field.expr().and_then(|expr| lower_expr(ctx, expr))?;
-                            Some((ast::Ident(fname), expr))
+                            let ident = ast::Ident::new(&fname);
+                            let expr = field
+                                .expr()
+                                .and_then(|expr| lower_expr(ctx, expr))
+                                .or_else(|| {
+                                    Some(ast::Expr::EVar {
+                                        name: ident.clone(),
+                                        astptr: MySyntaxNodePtr::new(field.syntax()),
+                                    })
+                                })?;
+                            Some((ident, expr))
                         })
                         .collect()
                 })

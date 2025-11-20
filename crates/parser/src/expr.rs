@@ -320,11 +320,12 @@ fn struct_literal_field(p: &mut Parser) {
     assert!(p.at(T![ident]));
     let m = p.open();
     p.expect(T![ident]);
-    p.expect(T![:]);
-    if p.at_any(EXPR_FIRST) {
-        expect_expr_with_message(p, "expected an expression");
-    } else {
-        p.advance_with_error("expected an expression");
+    if p.eat(T![:]) {
+        if p.at_any(EXPR_FIRST) {
+            expect_expr_with_message(p, "expected an expression");
+        } else {
+            p.advance_with_error("expected an expression");
+        }
     }
     p.close(m, MySyntaxKind::STRUCT_LITERAL_FIELD);
 }
@@ -336,7 +337,7 @@ fn looks_like_struct_literal(p: &mut Parser) -> bool {
 
     match p.nth(1) {
         T!['}'] => true,
-        T![ident] => matches!(p.nth(2), T![:]),
+        T![ident] => matches!(p.nth(2), T![:] | T![,]),
         _ => false,
     }
 }
