@@ -520,6 +520,13 @@ impl Typer {
                     return false;
                 }
             }
+            (tast::Ty::TParam { name }, ty) | (ty, tast::Ty::TParam { name }) => {
+                self.report_error(format!(
+                    "Cannot unify type parameter {:?} with concrete type {:?}",
+                    name, ty
+                ));
+                return false;
+            }
             _ => {
                 self.report_error(format!("type not equal {:?} and {:?}", l_norm, r_norm));
                 return false;
