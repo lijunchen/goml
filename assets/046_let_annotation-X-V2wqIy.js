@@ -1,0 +1,10 @@
+const n = `fn main() {
+    let x: int32 = 1;
+    let y: int8 = 1;
+    let _ = string_println(string_add("int32: ", int32_to_string(x)));
+    let _ = string_println(string_add("int8: ", int8_to_string(y)));
+}
+`;
+export {
+  n as default
+};

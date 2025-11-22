@@ -1,0 +1,168 @@
+const n = `struct Tracker {
+    label: string,
+    count: Ref[int32],
+    toggled: Ref[bool],
+}
+
+enum Record[T] {
+    Value(T),
+    Pair(T, T),
+    Empty,
+}
+
+enum Maybe[T] {
+    Some(T),
+    None,
+}
+
+trait Describe {
+    fn describe(Self) -> string;
+}
+
+impl Describe for Tracker {
+    fn describe(self: Tracker) -> string {
+        let Tracker { label: label, count: count, toggled: toggled } = self;
+        let current = ref_get(count);
+        let flag = ref_get(toggled);
+        let with_label = string_add("Tracker(", label);
+        let with_count_label = string_add(with_label, ", count: ");
+        let with_count = string_add(with_count_label, int32_to_string(current));
+        let with_flag_label = string_add(with_count, ", toggled: ");
+        string_add(with_flag_label, string_add(bool_to_string(flag), ")"))
+    }
+}
+
+impl Describe for Record[int32] {
+    fn describe(self: Record[int32]) -> string {
+        match self {
+            Value(value) => string_add("Value(", string_add(int32_to_string(value), ")")),
+            Pair(before, after) => {
+                let prefix = string_add("Pair(", int32_to_string(before));
+                string_add(prefix, string_add(", ", string_add(int32_to_string(after), ")")))
+            },
+            Empty => "Empty",
+        }
+    }
+}
+
+impl Describe for Record[string] {
+    fn describe(self: Record[string]) -> string {
+        match self {
+            Value(text) => string_add("Value(", string_add(text, ")")),
+            Pair(before, after) => {
+                let prefix = string_add("Pair(", before);
+                string_add(prefix, string_add(", ", string_add(after, ")")))
+            },
+            Empty => "Empty",
+        }
+    }
+}
+
+fn choose[T](flag: bool, when_true: T, when_false: T) -> T {
+    if flag { when_true } else { when_false }
+}
+
+fn map_maybe[T, U](value: Maybe[T], f: (T) -> U) -> Maybe[U] {
+    match value {
+        Some(inner) => Some(f(inner)),
+        None => None,
+    }
+}
+
+fn format_total(total: int32) -> string {
+    string_add("total: ", int32_to_string(total))
+}
+
+fn increment(value: int32) -> int32 {
+    value + 1
+}
+
+fn triple(value: int32) -> int32 {
+    value * 3
+}
+
+fn pair_join(parts: (string, string)) -> string {
+    let (left, right) = parts;
+    string_add(left, string_add(" -> ", right))
+}
+
+fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2] {
+    let first = array_get(transforms, 0);
+    let second = array_get(transforms, 1);
+    let first_result = first(value);
+    let second_result = second(first_result);
+    array_set([first_result, value], 1, second_result)
+}
+
+fn gather(record: Record[int32]) -> Maybe[int32] {
+    match record {
+        Value(value) => Some(value),
+        Pair(_, after) => Some(after),
+        Empty => None,
+    }
+}
+
+fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
+    let count = ref(start);
+    let toggled = ref(false);
+    let tracker = Tracker { label: label, count: count, toggled: toggled };
+    let snapshot = || {
+        Value(ref_get(count))
+    };
+    let bump = |delta: int32| {
+        let before = ref_get(count);
+        let _ = ref_set(count, before + delta);
+        Pair(before, ref_get(count))
+    };
+    let flip = || {
+        let before = ref_get(toggled);
+        let _ = ref_set(toggled, !before);
+        let after = ref_get(toggled);
+        Pair(bool_to_string(before), bool_to_string(after))
+    };
+    (tracker, snapshot, bump, flip)
+}
+
+fn main() {
+    let (tracker, snapshot, bump, flip) = build_counter("goml", 2);
+    let tracker_info = describe(tracker);
+    let first_record = snapshot();
+    let bumped_record = bump(5);
+    let flipped_record = flip();
+
+    let maybe_first = gather(first_record);
+    let maybe_second = gather(bumped_record);
+    let chosen = choose(true, maybe_second, maybe_first);
+    let stringified = map_maybe(chosen, format_total);
+
+    let transforms = [increment, triple];
+    let results = run_transforms(4, transforms);
+    let first_result = array_get(results, 0);
+    let second_result = array_get(results, 1);
+    let order_check = int32_less(first_result, second_result) && true;
+
+    let first_text = describe(first_record);
+    let bumped_text = describe(bumped_record);
+    let flipped_text = describe(flipped_record);
+
+    let summary = match stringified {
+        Some(text) => string_add("Snapshot: ", text),
+        None => "Snapshot: none",
+    };
+
+    let pair_text = pair_join((int32_to_string(first_result), int32_to_string(second_result)));
+    let bool_text = bool_to_string(order_check);
+
+    let _ = string_println(tracker_info);
+    let _ = string_println(first_text);
+    let _ = string_println(bumped_text);
+    let _ = string_println(flipped_text);
+    let _ = string_println(summary);
+    let _ = string_println(pair_text);
+    let _ = string_println(bool_text);
+    ()
+}
+`;
+export {
+  n as default
+};
