@@ -188,6 +188,44 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
+            ast::Expr::EIf {
+                cond,
+                then_branch,
+                else_branch,
+            } => {
+                let cond_tast = self.check_expr(genv, local_env, cond, &tast::Ty::TBool);
+                let then_tast = self.check_expr(genv, local_env, then_branch, expected);
+                let else_tast = self.check_expr(genv, local_env, else_branch, expected);
+                tast::Expr::EIf {
+                    cond: Box::new(cond_tast),
+                    then_branch: Box::new(then_tast),
+                    else_branch: Box::new(else_tast),
+                    ty: expected.clone(),
+                }
+            }
+            ast::Expr::EMatch { expr, arms, astptr } => {
+                let expr_tast = self.infer_expr(genv, local_env, expr);
+                let expr_ty = expr_tast.get_ty();
+
+                let mut arms_tast = Vec::new();
+                for arm in arms.iter() {
+                    local_env.push_scope();
+                    let arm_tast = self.check_pat(genv, local_env, &arm.pat, &expr_ty);
+                    let arm_body_tast = self.check_expr(genv, local_env, &arm.body, expected);
+                    local_env.pop_scope();
+
+                    arms_tast.push(tast::Arm {
+                        pat: arm_tast,
+                        body: arm_body_tast,
+                    });
+                }
+                tast::Expr::EMatch {
+                    expr: Box::new(expr_tast),
+                    arms: arms_tast,
+                    ty: expected.clone(),
+                    astptr: Some(astptr.clone()),
+                }
+            }
             _ => self.infer_expr(genv, local_env, e),
         };
 
@@ -935,16 +973,10 @@ impl Typer {
                             ty: (*ret_ty).clone(),
                         }
                     } else {
-                        panic!(
-                            "Type member {}::{} is not callable",
-                            type_name.0, member.0
-                        );
+                        panic!("Type member {}::{} is not callable", type_name.0, member.0);
                     }
                 } else {
-                    panic!(
-                        "Method {} not found for type {}",
-                        member.0, type_name.0
-                    );
+                    panic!("Method {} not found for type {}", member.0, type_name.0);
                 }
             }
             _ => {
