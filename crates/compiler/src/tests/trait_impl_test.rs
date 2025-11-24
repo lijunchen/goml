@@ -5,9 +5,9 @@ use parser::syntax::MySyntaxNode;
 
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
+    mangle::encode_ty,
     mangle::mangle_inherent_name,
     tast,
-    type_encoding::encode_ty,
 };
 
 fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {

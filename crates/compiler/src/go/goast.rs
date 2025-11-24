@@ -1,4 +1,4 @@
-use crate::{go::goty, tast, type_encoding::encode_ty};
+use crate::{go::goty, mangle::encode_ty, tast};
 
 #[derive(Debug)]
 pub struct File {

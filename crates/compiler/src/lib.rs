@@ -13,7 +13,6 @@ pub mod pprint;
 pub mod query;
 pub mod rename;
 pub mod tast;
-pub mod type_encoding;
 pub mod typer;
 
 #[cfg(test)]

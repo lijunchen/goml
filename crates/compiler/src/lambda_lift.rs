@@ -5,8 +5,8 @@ use std::collections::HashMap;
 use crate::{
     core,
     env::{Gensym, GlobalTypeEnv, StructDef},
+    mangle::decode_ty,
     tast::{self, Constructor, StructConstructor, Ty},
-    type_encoding::decode_ty,
 };
 
 struct ClosureTypeInfo {

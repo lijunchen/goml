@@ -8,8 +8,8 @@ pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_functions, builtin_inherent_methods};
 use crate::{
     core,
+    mangle::{decode_ty, encode_ty},
     tast::{self, Constructor},
-    type_encoding::{decode_ty, encode_ty},
 };
 use std::cell::Cell;
 

@@ -3,8 +3,8 @@ use crate::{
         goast::{self, BinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
     },
+    mangle::encode_ty,
     tast,
-    type_encoding::encode_ty,
 };
 
 use indexmap::IndexSet;

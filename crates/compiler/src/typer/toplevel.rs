@@ -5,10 +5,10 @@ use ast::ast;
 
 use crate::{
     env::{self, GlobalTypeEnv, LocalTypeEnv},
+    mangle::encode_ty,
     mangle::mangle_inherent_name,
     rename,
     tast::{self},
-    type_encoding::encode_ty,
     typer::{
         Typer,
         util::{type_param_name_set, validate_ty},
