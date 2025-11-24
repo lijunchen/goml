@@ -1,7 +1,7 @@
 use ast::ast::Ident;
 use indexmap::IndexMap;
 
-use crate::{tast, type_encoding::encode_ty};
+use crate::{mangle::encode_ty, tast};
 
 pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
     let mut funcs = IndexMap::new();

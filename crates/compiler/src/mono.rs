@@ -1,7 +1,7 @@
 use super::core;
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
+use crate::mangle::encode_ty;
 use crate::tast::{self, Constructor, Ty};
-use crate::type_encoding::encode_ty;
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;

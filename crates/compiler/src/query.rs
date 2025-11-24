@@ -3,7 +3,7 @@ use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, tast, type_encoding::encode_ty};
+use crate::{env::GlobalTypeEnv, mangle::encode_ty, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 
