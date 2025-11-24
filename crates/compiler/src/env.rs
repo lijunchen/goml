@@ -1,5 +1,5 @@
 use ast::ast::Ident;
-use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use diagnostics::{Diagnostics, Severity, Stage};
 use im::HashMap as ImHashMap;
 use indexmap::{IndexMap, IndexSet};
 use line_index::LineIndex;
@@ -88,7 +88,6 @@ pub struct GlobalTypeEnv {
     pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
-    pub diagnostics: Diagnostics,
 }
 
 impl Default for GlobalTypeEnv {
@@ -113,7 +112,6 @@ impl GlobalTypeEnv {
             tuple_types: IndexSet::new(),
             array_types: IndexSet::new(),
             ref_types: IndexSet::new(),
-            diagnostics: Diagnostics::new(),
         }
     }
 
@@ -269,15 +267,6 @@ impl GlobalTypeEnv {
 
     pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {
         self.closure_env_apply.get(struct_name).map(|s| s.as_str())
-    }
-
-    pub fn report_typer_error(&mut self, message: impl Into<String>) {
-        self.diagnostics
-            .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
-    }
-
-    pub fn extend_diagnostics(&mut self, diagnostics: impl IntoIterator<Item = Diagnostic>) {
-        self.diagnostics.extend(diagnostics);
     }
 
     pub fn get_trait_impl(

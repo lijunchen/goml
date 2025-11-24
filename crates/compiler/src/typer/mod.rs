@@ -1,4 +1,3 @@
-use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use ena::unify::InPlaceUnificationTable;
 
 use crate::{env::Constraint, tast::TypeVar};
@@ -13,7 +12,6 @@ pub use toplevel::check_file;
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
-    diagnostics: Diagnostics,
 }
 
 impl Default for Typer {
@@ -27,20 +25,10 @@ impl Typer {
         Self {
             uni: InPlaceUnificationTable::new(),
             constraints: Vec::new(),
-            diagnostics: Diagnostics::new(),
         }
     }
 
     pub(crate) fn push_constraint(&mut self, constraint: Constraint) {
         self.constraints.push(constraint);
-    }
-
-    pub(crate) fn report_error(&mut self, message: impl Into<String>) {
-        self.diagnostics
-            .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
-    }
-
-    pub(crate) fn into_diagnostics(self) -> Diagnostics {
-        self.diagnostics
     }
 }

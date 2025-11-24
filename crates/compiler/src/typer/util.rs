@@ -5,8 +5,15 @@ use crate::{
     tast::{self},
 };
 use ast::ast;
+use diagnostics::{Severity, Stage};
+use parser::{Diagnostic, Diagnostics};
 
-pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &HashSet<String>) {
+pub(crate) fn validate_ty(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ty: &tast::Ty,
+    tparams: &HashSet<String>,
+) {
     match ty {
         tast::Ty::TVar(_) => {}
         tast::Ty::TUnit
@@ -24,18 +31,22 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
         | tast::Ty::TString => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                validate_ty(genv, ty, tparams);
+                validate_ty(genv, diagnostics, ty, tparams);
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                validate_ty(genv, param, tparams);
+                validate_ty(genv, diagnostics, param, tparams);
             }
-            validate_ty(genv, ret_ty.as_ref(), tparams);
+            validate_ty(genv, diagnostics, ret_ty.as_ref(), tparams);
         }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
-                genv.report_typer_error(format!("Unbound type parameter {}", name));
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Unknown type parameter {}", name),
+                ));
             }
         }
         tast::Ty::TCon { name } => {
@@ -45,29 +56,41 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
             let ident = ast::Ident::new(name);
             if let Some(enum_def) = genv.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
-                    genv.report_typer_error(format!(
-                        "Type {} expects {} type arguments, but got 0",
-                        name,
-                        enum_def.generics.len()
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type {} expects {} type arguments, but got 0",
+                            name,
+                            enum_def.generics.len()
+                        ),
                     ));
                 }
             } else if let Some(struct_def) = genv.structs().get(&ident) {
                 if !struct_def.generics.is_empty() {
-                    genv.report_typer_error(format!(
-                        "Type {} expects {} type arguments, but got 0",
-                        name,
-                        struct_def.generics.len()
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type {} expects {} type arguments, but got 0",
+                            name,
+                            struct_def.generics.len()
+                        ),
                     ));
                 }
             } else if genv.extern_types.contains_key(name) {
                 // Extern types do not have generics.
             } else {
-                genv.report_typer_error(format!("Unknown type constructor {}", name));
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Unknown type constructor {}", name),
+                ));
             }
         }
         tast::Ty::TApp { ty, args } => {
             for arg in args.iter() {
-                validate_ty(genv, arg, tparams);
+                validate_ty(genv, diagnostics, arg, tparams);
             }
 
             let base_name = ty.get_constr_name_unsafe();
@@ -77,37 +100,53 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    genv.report_typer_error(format!(
-                        "Type {} expects {} type arguments, but got {}",
-                        base_name, expected, actual
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type {} expects {} type arguments, but got {}",
+                            base_name, expected, actual
+                        ),
                     ));
                 }
             } else if let Some(struct_def) = genv.structs().get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    genv.report_typer_error(format!(
-                        "Type {} expects {} type arguments, but got {}",
-                        base_name, expected, actual
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type {} expects {} type arguments, but got {}",
+                            base_name, expected, actual
+                        ),
                     ));
                 }
             } else if genv.extern_types.contains_key(&base_name) {
                 if !args.is_empty() {
-                    genv.report_typer_error(format!(
-                        "Type {} does not accept type arguments, but got {}",
-                        base_name,
-                        args.len()
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type {} does not accept type arguments, but got {}",
+                            base_name,
+                            args.len()
+                        ),
                     ));
                 }
             } else {
-                genv.report_typer_error(format!("Unknown type constructor {}", base_name));
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Unknown type constructor {}", base_name),
+                ));
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            validate_ty(genv, elem, tparams);
+            validate_ty(genv, diagnostics, elem, tparams);
         }
         tast::Ty::TRef { elem } => {
-            validate_ty(genv, elem, tparams);
+            validate_ty(genv, diagnostics, elem, tparams);
         }
     }
 }

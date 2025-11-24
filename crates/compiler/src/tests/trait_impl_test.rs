@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use cst::cst::CstNode;
-use parser::syntax::MySyntaxNode;
+use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
@@ -10,7 +10,7 @@ use crate::{
     tast,
 };
 
-fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
+fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     let path = PathBuf::from("dummy.src");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {
@@ -25,8 +25,8 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
 }
 
 fn expect_single_error(src: &str, expected: &str) {
-    let (_, genv) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
+    let (_, _genv, diagnostics) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&diagnostics);
     assert_eq!(
         diagnostics.len(),
         1,
@@ -188,8 +188,8 @@ impl Point {
 }
 "#;
 
-    let (_tast, genv) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
+    let (_tast, genv, diagnostics) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&diagnostics);
     assert!(
         diagnostics.is_empty(),
         "unexpected diagnostics: {:?}",
@@ -230,8 +230,8 @@ impl Point {
 }
 "#;
 
-    let (tast_file, genv) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&genv.diagnostics);
+    let (tast_file, genv, diagnostics) = typecheck(src);
+    let diagnostics = format_typer_diagnostics(&diagnostics);
     assert!(
         diagnostics.is_empty(),
         "unexpected diagnostics: {:?}",

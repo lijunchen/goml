@@ -6,12 +6,23 @@ use crate::{
     typer::Typer,
 };
 use ast::ast::Ident;
+use diagnostics::{Severity, Stage};
+use parser::{Diagnostic, Diagnostics};
 
-fn occurs(typer: &mut Typer, _genv: &GlobalTypeEnv, var: TypeVar, ty: &tast::Ty) -> bool {
+fn occurs(
+    _genv: &GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    var: TypeVar,
+    ty: &tast::Ty,
+) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
-                typer.report_error(format!("occurs check failed: {:?} occurs in {:?}", var, ty));
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("occurs check failed: {:?} occurs in {:?}", var, ty),
+                ));
                 return false;
             }
         }
@@ -31,39 +42,39 @@ fn occurs(typer: &mut Typer, _genv: &GlobalTypeEnv, var: TypeVar, ty: &tast::Ty)
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(typer, _genv, var, ty) {
+                if !occurs(_genv, diagnostics, var, ty) {
                     return false;
                 }
             }
         }
         tast::Ty::TCon { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(typer, _genv, var, ty.as_ref()) {
+            if !occurs(_genv, diagnostics, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(typer, _genv, var, arg) {
+                if !occurs(_genv, diagnostics, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(typer, _genv, var, elem) {
+            if !occurs(_genv, diagnostics, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(typer, _genv, var, elem) {
+            if !occurs(_genv, diagnostics, var, elem) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(typer, _genv, var, param) {
+                if !occurs(_genv, diagnostics, var, param) {
                     return false;
                 }
             }
-            if !occurs(typer, _genv, var, ret_ty) {
+            if !occurs(_genv, diagnostics, var, ret_ty) {
                 return false;
             }
         }
@@ -165,7 +176,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Ident, Vec<tast::Ty>)> {
 }
 
 impl Typer {
-    pub fn solve(&mut self, genv: &GlobalTypeEnv) {
+    pub fn solve(&mut self, diagnostics: &mut Diagnostics, genv: &GlobalTypeEnv) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 
@@ -205,7 +216,7 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r) => {
-                        if self.unify(genv, &l, &r) {
+                        if self.unify(genv, diagnostics, &l, &r) {
                             changed = true;
                         }
                     }
@@ -241,10 +252,14 @@ impl Typer {
                                                 changed = true;
                                             }
                                             None => {
-                                                self.report_error(format!(
-                                                    "No instance found for trait {}<{:?}> for operator {}",
-                                                    trait_name.0, ty, op.0
-                                                ));
+                                                diagnostics.push(Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "No instance found for trait {}<{:?}> for operator {}",
+                                                        trait_name.0, ty, op.0
+                                                    ),
+                                                ))
                                             }
                                         }
                                     }
@@ -257,22 +272,34 @@ impl Typer {
                                         });
                                     }
                                     _ => {
-                                        self.report_error(format!(
-                                            "Overload resolution failed for non-concrete, non-variable type {:?}",
-                                            self_ty
+                                        diagnostics.push(Diagnostic::new(
+                                            Stage::Typer,
+                                            Severity::Error,
+                                            format!(
+                                                "Overload resolution failed for non-concrete, non-variable type {:?}",
+                                                self_ty
+                                            ),
                                         ));
                                     }
                                 }
                             } else {
-                                self.report_error(format!(
-                                    "Overloaded operator {} called with no arguments?",
-                                    op.0
+                                diagnostics.push(Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "Overloaded operator {} called with no arguments?",
+                                        op.0
+                                    ),
                                 ));
                             }
                         } else {
-                            self.report_error(format!(
-                                "Overloaded constraint does not involve a function type: {:?}",
-                                norm_call_site_type
+                            diagnostics.push(Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Overloaded constraint does not involve a function type: {:?}",
+                                    norm_call_site_type
+                                ),
                             ));
                         }
                     }
@@ -291,7 +318,7 @@ impl Typer {
                             });
                             let field_ty =
                                 instantiate_struct_field_ty(struct_def, &type_args, &field);
-                            if self.unify(genv, &result_ty, &field_ty) {
+                            if self.unify(genv, diagnostics, &result_ty, &field_ty) {
                                 changed = true;
                             }
                         } else {
@@ -307,17 +334,22 @@ impl Typer {
             constraints.extend(still_pending);
 
             if !changed && !constraints.is_empty() {
-                self.report_error(format!(
-                    "Could not solve all constraints: {:?}",
-                    constraints
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Could not solve all constraints: {:?}", constraints),
                 ));
                 break;
             }
         }
         if !constraints.is_empty() {
-            self.report_error(format!(
-                "Type inference failed, remaining constraints: {:?}",
-                constraints
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Type inference failed, remaining constraints: {:?}",
+                    constraints
+                ),
             ));
         }
         self.constraints = constraints;
@@ -370,27 +402,36 @@ impl Typer {
         }
     }
 
-    fn unify(&mut self, genv: &GlobalTypeEnv, l: &tast::Ty, r: &tast::Ty) -> bool {
+    fn unify(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        l: &tast::Ty,
+        r: &tast::Ty,
+    ) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
             (tast::Ty::TVar(a), tast::Ty::TVar(b)) => {
                 if self.uni.unify_var_var(*a, *b).is_err() {
-                    self.report_error(format!(
-                        "Failed to unify type variables {:?} and {:?}",
-                        a, b
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Failed to unify type variables {:?} and {:?}", a, b),
                     ));
+
                     return false;
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
-                if !occurs(self, genv, *a, t) {
+                if !occurs(genv, diagnostics, *a, t) {
                     return false;
                 }
                 if self.uni.unify_var_value(*a, Some(t.clone())).is_err() {
-                    self.report_error(format!(
-                        "Failed to unify type variable {:?} with {:?}",
-                        a, t
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Failed to unify type variable {:?} with {:?}", a, t),
                     ));
                     return false;
                 }
@@ -411,14 +452,15 @@ impl Typer {
             (tast::Ty::TString, tast::Ty::TString) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
-                    self.report_error(format!(
-                        "Tuple types have different lengths: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Tuple types have different lengths: {:?} and {:?}", l, r),
                     ));
                     return false;
                 }
                 for (ty1, ty2) in typs1.iter().zip(typs2.iter()) {
-                    if !self.unify(genv, ty1, ty2) {
+                    if !self.unify(genv, diagnostics, ty1, ty2) {
                         return false;
                     }
                 }
@@ -435,18 +477,19 @@ impl Typer {
             ) => {
                 let wildcard = tast::ARRAY_WILDCARD_LEN;
                 if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
-                    self.report_error(format!(
-                        "Array types have different lengths: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Array types have different lengths: {:?} and {:?}", l, r),
                     ));
                     return false;
                 }
-                if !self.unify(genv, elem1, elem2) {
+                if !self.unify(genv, diagnostics, elem1, elem2) {
                     return false;
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
-                if !self.unify(genv, elem1, elem2) {
+                if !self.unify(genv, diagnostics, elem1, elem2) {
                     return false;
                 }
             }
@@ -461,26 +504,31 @@ impl Typer {
                 },
             ) => {
                 if param1.len() != param2.len() {
-                    self.report_error(format!(
-                        "Function types have different parameter lengths: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Function types have different parameter lengths: {:?} and {:?}",
+                            l, r
+                        ),
                     ));
                     return false;
                 }
                 for (p1, p2) in param1.iter().zip(param2.iter()) {
-                    if !self.unify(genv, p1, p2) {
+                    if !self.unify(genv, diagnostics, p1, p2) {
                         return false;
                     }
                 }
-                if !self.unify(genv, ret_ty1, ret_ty2) {
+                if !self.unify(genv, diagnostics, ret_ty1, ret_ty2) {
                     return false;
                 }
             }
             (tast::Ty::TCon { name: n1 }, tast::Ty::TCon { name: n2 }) => {
                 if n1 != n2 {
-                    self.report_error(format!(
-                        "Constructor types are different: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Constructor types are different: {:?} and {:?}", l, r),
                     ));
                     return false;
                 }
@@ -496,39 +544,52 @@ impl Typer {
                 },
             ) => {
                 if args1.len() != args2.len() {
-                    self.report_error(format!(
-                        "Constructor types have different argument lengths: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Constructor types have different argument lengths: {:?} and {:?}",
+                            l, r
+                        ),
                     ));
                     return false;
                 }
-                if !self.unify(genv, ty1.as_ref(), ty2.as_ref()) {
+                if !self.unify(genv, diagnostics, ty1.as_ref(), ty2.as_ref()) {
                     return false;
                 }
                 for (arg1, arg2) in args1.iter().zip(args2.iter()) {
-                    if !self.unify(genv, arg1, arg2) {
+                    if !self.unify(genv, diagnostics, arg1, arg2) {
                         return false;
                     }
                 }
             }
             (tast::Ty::TParam { name }, tast::Ty::TParam { name: name2 }) => {
                 if name != name2 {
-                    self.report_error(format!(
-                        "Type parameters are different: {:?} and {:?}",
-                        l, r
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Type parameters are different: {:?} and {:?}", l, r),
                     ));
                     return false;
                 }
             }
             (tast::Ty::TParam { name }, ty) | (ty, tast::Ty::TParam { name }) => {
-                self.report_error(format!(
-                    "Cannot unify type parameter {:?} with concrete type {:?}",
-                    name, ty
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Cannot unify type parameter {:?} with concrete type {:?}",
+                        name, ty
+                    ),
                 ));
                 return false;
             }
             _ => {
-                self.report_error(format!("type not equal {:?} and {:?}", l_norm, r_norm));
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Types are not equal: {:?} and {:?}", l_norm, r_norm),
+                ));
                 return false;
             }
         }
@@ -607,13 +668,17 @@ impl Typer {
         }
     }
 
-    fn subst_ty(&mut self, ty: &tast::Ty) -> tast::Ty {
+    fn subst_ty(&mut self, diagnostics: &mut Diagnostics, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {
-                    self.subst_ty(&value)
+                    self.subst_ty(diagnostics, &value)
                 } else {
-                    self.report_error(format!("Type variable {:?} not resolved", v));
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Type variable {:?} not resolved", v),
+                    ));
                     tast::Ty::TVar(*v)
                 }
             }
@@ -631,34 +696,43 @@ impl Typer {
             tast::Ty::TFloat64 => tast::Ty::TFloat64,
             tast::Ty::TString => tast::Ty::TString,
             tast::Ty::TTuple { typs } => {
-                let typs = typs.iter().map(|ty| self.subst_ty(ty)).collect();
+                let typs = typs
+                    .iter()
+                    .map(|ty| self.subst_ty(diagnostics, ty))
+                    .collect();
                 tast::Ty::TTuple { typs }
             }
             tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-                ty: Box::new(self.subst_ty(ty)),
-                args: args.iter().map(|arg| self.subst_ty(arg)).collect(),
+                ty: Box::new(self.subst_ty(diagnostics, ty)),
+                args: args
+                    .iter()
+                    .map(|arg| self.subst_ty(diagnostics, arg))
+                    .collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
-                elem: Box::new(self.subst_ty(elem)),
+                elem: Box::new(self.subst_ty(diagnostics, elem)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
-                elem: Box::new(self.subst_ty(elem)),
+                elem: Box::new(self.subst_ty(diagnostics, elem)),
             },
             tast::Ty::TFunc { params, ret_ty } => {
-                let params = params.iter().map(|ty| self.subst_ty(ty)).collect();
-                let ret_ty = Box::new(self.subst_ty(ret_ty));
+                let params = params
+                    .iter()
+                    .map(|ty| self.subst_ty(diagnostics, ty))
+                    .collect();
+                let ret_ty = Box::new(self.subst_ty(diagnostics, ret_ty));
                 tast::Ty::TFunc { params, ret_ty }
             }
             tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         }
     }
 
-    fn subst_pat(&mut self, p: tast::Pat) -> tast::Pat {
+    fn subst_pat(&mut self, diagnostics: &mut Diagnostics, p: tast::Pat) -> tast::Pat {
         match p {
             tast::Pat::PVar { name, ty, astptr } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 tast::Pat::PVar {
                     name: name.clone(),
                     ty: ty.clone(),
@@ -666,7 +740,7 @@ impl Typer {
                 }
             }
             tast::Pat::PPrim { value, ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let value = value.coerce(&ty);
                 tast::Pat::PPrim {
                     value,
@@ -678,10 +752,10 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst_pat(arg))
+                    .map(|arg| self.subst_pat(diagnostics, arg))
                     .collect::<Vec<_>>();
                 tast::Pat::PConstr {
                     constructor,
@@ -690,10 +764,10 @@ impl Typer {
                 }
             }
             tast::Pat::PTuple { items, ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst_pat(item))
+                    .map(|item| self.subst_pat(diagnostics, item))
                     .collect::<Vec<_>>();
                 tast::Pat::PTuple {
                     items,
@@ -701,16 +775,16 @@ impl Typer {
                 }
             }
             tast::Pat::PWild { ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 tast::Pat::PWild { ty: ty.clone() }
             }
         }
     }
 
-    pub fn subst(&mut self, e: tast::Expr) -> tast::Expr {
+    pub fn subst(&mut self, diagnostics: &mut Diagnostics, e: tast::Expr) -> tast::Expr {
         match e {
             tast::Expr::EVar { name, ty, astptr } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 tast::Expr::EVar {
                     name,
                     ty: ty.clone(),
@@ -718,7 +792,7 @@ impl Typer {
                 }
             }
             tast::Expr::EPrim { value, ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let value = value.coerce(&ty);
                 tast::Expr::EPrim { value, ty }
             }
@@ -727,10 +801,10 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst(arg))
+                    .map(|arg| self.subst(diagnostics, arg))
                     .collect::<Vec<_>>();
                 tast::Expr::EConstr {
                     constructor,
@@ -739,10 +813,10 @@ impl Typer {
                 }
             }
             tast::Expr::ETuple { items, ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst(item))
+                    .map(|item| self.subst(diagnostics, item))
                     .collect::<Vec<_>>();
                 tast::Expr::ETuple {
                     items,
@@ -750,10 +824,10 @@ impl Typer {
                 }
             }
             tast::Expr::EArray { items, ty } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let items = items
                     .into_iter()
-                    .map(|item| self.subst(item))
+                    .map(|item| self.subst(diagnostics, item))
                     .collect::<Vec<_>>();
                 tast::Expr::EArray {
                     items,
@@ -766,19 +840,19 @@ impl Typer {
                 ty,
                 captures,
             } => {
-                let ty = self.subst_ty(&ty);
+                let ty = self.subst_ty(diagnostics, &ty);
                 let params = params
                     .into_iter()
                     .map(|param| tast::ClosureParam {
                         name: param.name,
-                        ty: self.subst_ty(&param.ty),
+                        ty: self.subst_ty(diagnostics, &param.ty),
                         astptr: param.astptr,
                     })
                     .collect();
-                let body = Box::new(self.subst(*body));
+                let body = Box::new(self.subst(diagnostics, *body));
                 let captures = captures
                     .into_iter()
-                    .map(|(name, cap_ty)| (name, self.subst_ty(&cap_ty)))
+                    .map(|(name, cap_ty)| (name, self.subst_ty(diagnostics, &cap_ty)))
                     .collect();
                 tast::Expr::EClosure {
                     params,
@@ -793,10 +867,10 @@ impl Typer {
                 body,
                 ty,
             } => {
-                let ty = self.subst_ty(&ty);
-                let pat = self.subst_pat(pat);
-                let value = Box::new(self.subst(*value));
-                let body = Box::new(self.subst(*body));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let pat = self.subst_pat(diagnostics, pat);
+                let value = Box::new(self.subst(diagnostics, *value));
+                let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::ELet {
                     pat,
                     value,
@@ -810,13 +884,13 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(&ty);
-                let expr = Box::new(self.subst(*expr));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let expr = Box::new(self.subst(diagnostics, *expr));
                 let arms = arms
                     .into_iter()
                     .map(|arm| tast::Arm {
-                        pat: self.subst_pat(arm.pat),
-                        body: self.subst(arm.body),
+                        pat: self.subst_pat(diagnostics, arm.pat),
+                        body: self.subst(diagnostics, arm.body),
                     })
                     .collect::<Vec<_>>();
                 tast::Expr::EMatch {
@@ -832,10 +906,10 @@ impl Typer {
                 else_branch,
                 ty,
             } => {
-                let ty = self.subst_ty(&ty);
-                let cond = Box::new(self.subst(*cond));
-                let then_branch = Box::new(self.subst(*then_branch));
-                let else_branch = Box::new(self.subst(*else_branch));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let cond = Box::new(self.subst(diagnostics, *cond));
+                let then_branch = Box::new(self.subst(diagnostics, *then_branch));
+                let else_branch = Box::new(self.subst(diagnostics, *else_branch));
                 tast::Expr::EIf {
                     cond,
                     then_branch,
@@ -844,9 +918,9 @@ impl Typer {
                 }
             }
             tast::Expr::EWhile { cond, body, ty } => {
-                let ty = self.subst_ty(&ty);
-                let cond = Box::new(self.subst(*cond));
-                let body = Box::new(self.subst(*body));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let cond = Box::new(self.subst(diagnostics, *cond));
+                let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::EWhile {
                     cond,
                     body,
@@ -854,11 +928,11 @@ impl Typer {
                 }
             }
             tast::Expr::ECall { func, args, ty } => {
-                let ty = self.subst_ty(&ty);
-                let func = Box::new(self.subst(*func));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let func = Box::new(self.subst(diagnostics, *func));
                 let args = args
                     .into_iter()
-                    .map(|arg| self.subst(arg))
+                    .map(|arg| self.subst(diagnostics, arg))
                     .collect::<Vec<_>>();
                 tast::Expr::ECall {
                     func,
@@ -872,8 +946,8 @@ impl Typer {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(&ty);
-                let expr = Box::new(self.subst(*expr));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let expr = Box::new(self.subst(diagnostics, *expr));
                 tast::Expr::EUnary {
                     op,
                     expr,
@@ -888,9 +962,9 @@ impl Typer {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(&ty);
-                let lhs = Box::new(self.subst(*lhs));
-                let rhs = Box::new(self.subst(*rhs));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let lhs = Box::new(self.subst(diagnostics, *lhs));
+                let rhs = Box::new(self.subst(diagnostics, *rhs));
                 tast::Expr::EBinary {
                     op,
                     lhs,
@@ -900,8 +974,8 @@ impl Typer {
                 }
             }
             tast::Expr::EProj { tuple, index, ty } => {
-                let ty = self.subst_ty(&ty);
-                let tuple = Box::new(self.subst(*tuple));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let tuple = Box::new(self.subst(diagnostics, *tuple));
                 tast::Expr::EProj {
                     tuple,
                     index,
@@ -914,8 +988,8 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(&ty);
-                let expr = Box::new(self.subst(*expr));
+                let ty = self.subst_ty(diagnostics, &ty);
+                let expr = Box::new(self.subst(diagnostics, *expr));
                 tast::Expr::EField {
                     expr,
                     field_name,

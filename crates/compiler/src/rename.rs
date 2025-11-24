@@ -280,7 +280,7 @@ impl Rename {
             } => ast::Expr::EField {
                 expr: Box::new(self.rename_expr(expr, env, global_funcs)),
                 field: field.clone(),
-                astptr: astptr.clone(),
+                astptr: *astptr,
             },
             ast::Expr::ETypeMember {
                 type_name,

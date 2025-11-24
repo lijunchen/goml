@@ -53,7 +53,7 @@ fn find_tostring_attr(attrs: &[Attribute]) -> Option<MySyntaxNodePtr> {
     attrs.iter().find_map(|attr| {
         parse_derive_targets(attr).and_then(|targets| {
             if targets.iter().any(|target| target == TO_STRING_TRAIT) {
-                Some(attr.ast.clone())
+                Some(attr.ast)
             } else {
                 None
             }
@@ -175,7 +175,7 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
                         field_name.clone(),
                         Pat::PVar {
                             name: field_name.clone(),
-                            astptr: attr_ptr.clone(),
+                            astptr: *attr_ptr,
                         },
                     )
                 })
@@ -212,7 +212,7 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                     .iter()
                     .map(|binding| Pat::PVar {
                         name: binding.clone(),
-                        astptr: attr_ptr.clone(),
+                        astptr: *attr_ptr,
                     })
                     .collect();
                 let mut parts = Vec::new();
@@ -245,7 +245,7 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::EMatch {
         expr,
         arms,
-        astptr: attr_ptr.clone(),
+        astptr: *attr_ptr,
     }
 }
 
@@ -268,7 +268,7 @@ fn call_to_string(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr)
             func: Box::new(Expr::EField {
                 expr: Box::new(value),
                 field: Ident::new(TO_STRING_FN),
-                astptr: attr_ptr.clone(),
+                astptr: *attr_ptr,
             }),
             args: Vec::new(),
         }
@@ -289,7 +289,7 @@ fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Exp
 fn var_expr(name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::EVar {
         name: name.clone(),
-        astptr: attr_ptr.clone(),
+        astptr: *attr_ptr,
     }
 }
 

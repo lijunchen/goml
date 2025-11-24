@@ -27,8 +27,8 @@ pub fn execute(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -70,8 +70,8 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -112,8 +112,8 @@ pub fn compile_to_mono(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -156,8 +156,8 @@ pub fn compile_to_anf(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -202,8 +202,8 @@ pub fn compile_to_go(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -271,8 +271,8 @@ pub fn get_tast(src: &str) -> String {
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
 
-    let (tast, genv) = compiler::typer::check_file(ast);
-    let typer_errors = format_typer_diagnostics(&genv.diagnostics);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
