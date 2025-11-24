@@ -39,6 +39,7 @@
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
 - PRs: include a clear description, linked issues, and before/after notes or screenshots for web UI changes.
 - Required: run cargo check, test, fmt, clippy locally; ensure no clippy or fmt diffs.
+- Always run tests before notifying the user that a task is complete.
 
 ## Environment & Tooling
 - Requirements: Rust toolchain, `wasm-pack`, Node 18+, `pnpm`.
