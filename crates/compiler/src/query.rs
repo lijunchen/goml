@@ -325,14 +325,10 @@ pub fn dot_completions(src: &str, line: u32, col: u32) -> Option<Vec<DotCompleti
     }
     let binary_node = binary_node?;
     let binary_expr = BinaryExpr::cast(binary_node)?;
-    if binary_expr
+    binary_expr
         .op()
         .map(|tok| tok.kind())
-        .filter(|kind| *kind == MySyntaxKind::Dot)
-        .is_none()
-    {
-        return None;
-    }
+        .filter(|kind| *kind == MySyntaxKind::Dot)?;
 
     let mut exprs = binary_expr.exprs();
     let lhs_expr = exprs.next()?;
@@ -399,10 +395,10 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             astptr,
             ..
         } => {
-            if let Some(astptr) = astptr {
-                if astptr == ptr {
-                    return Some(expr);
-                }
+            if let Some(astptr) = astptr
+                && astptr == ptr
+            {
+                return Some(expr);
             }
             if let Some(found) = find_expr_in_expr(scrutinee, ptr) {
                 return Some(found);
@@ -458,10 +454,10 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             astptr,
             ..
         } => {
-            if let Some(astptr) = astptr {
-                if astptr == ptr {
-                    return Some(expr);
-                }
+            if let Some(astptr) = astptr
+                && astptr == ptr
+            {
+                return Some(expr);
             }
             find_expr_in_expr(inner, ptr)
         }
@@ -513,7 +509,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     items
 }
 
-fn type_constructor_name<'a>(ty: &'a tast::Ty) -> Option<&'a str> {
+fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
     match ty {
         tast::Ty::TCon { name } => Some(name.as_str()),
         tast::Ty::TApp { ty, .. } => type_constructor_name(ty),

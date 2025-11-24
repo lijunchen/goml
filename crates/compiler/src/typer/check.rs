@@ -223,7 +223,7 @@ impl Typer {
                     expr: Box::new(expr_tast),
                     arms: arms_tast,
                     ty: expected.clone(),
-                    astptr: Some(astptr.clone()),
+                    astptr: Some(*astptr),
                 }
             }
             _ => self.infer_expr(genv, local_env, e),
@@ -244,14 +244,14 @@ impl Typer {
             tast::Expr::EVar {
                 name: name.0.clone(),
                 ty: ty.clone(),
-                astptr: Some(astptr.clone()),
+                astptr: Some(*astptr),
             }
         } else if let Some(func_ty) = genv.get_type_of_function(&name.0) {
             let inst_ty = self.inst_ty(&func_ty);
             tast::Expr::EVar {
                 name: name.0.clone(),
                 ty: inst_ty,
-                astptr: Some(astptr.clone()),
+                astptr: Some(*astptr),
             }
         } else {
             panic!("Variable {} not found in environment", name.0);
@@ -273,7 +273,7 @@ impl Typer {
             tast::Expr::EVar {
                 name: mangled_name,
                 ty: inst_ty,
-                astptr: Some(astptr.clone()),
+                astptr: Some(*astptr),
             }
         } else {
             panic!("Method {} not found for type {}", member.0, type_name.0);
@@ -737,7 +737,7 @@ impl Typer {
             expr: Box::new(expr_tast),
             arms: arms_tast,
             ty: arm_ty,
-            astptr: Some(astptr.clone()),
+            astptr: Some(*astptr),
         }
     }
 
@@ -837,7 +837,7 @@ impl Typer {
                         func: Box::new(tast::Expr::EVar {
                             name: name.0.clone(),
                             ty: inst_ty,
-                            astptr: Some(astptr.clone()),
+                            astptr: Some(*astptr),
                         }),
                         args: args_tast,
                         ty: ret_ty,
@@ -860,7 +860,7 @@ impl Typer {
                         func: Box::new(tast::Expr::EVar {
                             name: name.0.clone(),
                             ty: call_site_func_ty.clone(),
-                            astptr: Some(astptr.clone()),
+                            astptr: Some(*astptr),
                         }),
                         args: args_tast,
                         ty: ret_ty,
@@ -880,7 +880,7 @@ impl Typer {
                         func: Box::new(tast::Expr::EVar {
                             name: name.0.clone(),
                             ty: var_ty.clone(),
-                            astptr: Some(astptr.clone()),
+                            astptr: Some(*astptr),
                         }),
                         args: args_tast,
                         ty: ret_ty,
@@ -967,7 +967,7 @@ impl Typer {
                             func: Box::new(tast::Expr::EVar {
                                 name: mangled_name,
                                 ty: inst_method_ty,
-                                astptr: Some(astptr.clone()),
+                                astptr: Some(*astptr),
                             }),
                             args: args_tast,
                             ty: (*ret_ty).clone(),
@@ -1200,7 +1200,7 @@ impl Typer {
             expr: Box::new(base_tast),
             field_name: field.0.clone(),
             ty: result_ty,
-            astptr: Some(astptr.clone()),
+            astptr: Some(*astptr),
         }
     }
 
@@ -1235,7 +1235,7 @@ impl Typer {
         tast::Pat::PVar {
             name: name.0.clone(),
             ty: ty.clone(),
-            astptr: Some(astptr.clone()),
+            astptr: Some(*astptr),
         }
     }
 

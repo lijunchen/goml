@@ -856,7 +856,7 @@ fn lower_expr_with_args(
                             let type_member = ast::Expr::ETypeMember {
                                 type_name: type_ident.clone(),
                                 member: variant_ident,
-                                astptr: astptr.clone(),
+                                astptr: astptr,
                             };
                             let call = ast::Expr::ECall {
                                 func: Box::new(type_member),
@@ -1205,21 +1205,19 @@ fn lower_expr_with_args(
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+            } else if let Some(type_ident) = constructor.parent_ident() {
+                let expr = ast::Expr::ETypeMember {
+                    type_name: type_ident.clone(),
+                    member: variant_ident,
+                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                };
+                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             } else {
-                if let Some(type_ident) = constructor.parent_ident() {
-                    let expr = ast::Expr::ETypeMember {
-                        type_name: type_ident.clone(),
-                        member: variant_ident,
-                        astptr: MySyntaxNodePtr::new(it.syntax()),
-                    };
-                    apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-                } else {
-                    let expr = ast::Expr::EVar {
-                        name: variant_ident,
-                        astptr: MySyntaxNodePtr::new(it.syntax()),
-                    };
-                    apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-                }
+                let expr = ast::Expr::EVar {
+                    name: variant_ident,
+                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                };
+                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             }
         }
         cst::Expr::TupleExpr(it) => {
