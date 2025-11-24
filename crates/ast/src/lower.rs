@@ -837,8 +837,7 @@ fn lower_expr_with_args(
             if let Some(callee) = support::child::<cst::Expr>(it.syntax()) {
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let constructor =
-                            lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
+                        let constructor = lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
                         let variant_ident = constructor
                             .last_ident()
                             .cloned()

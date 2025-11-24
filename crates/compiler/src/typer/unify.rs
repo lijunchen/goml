@@ -283,7 +283,7 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let struct_def = genv.structs.get(&type_name).unwrap_or_else(|| {
+                            let struct_def = genv.structs().get(&type_name).unwrap_or_else(|| {
                                 panic!(
                                     "Struct {} not found when accessing field {}",
                                     type_name.0, field.0

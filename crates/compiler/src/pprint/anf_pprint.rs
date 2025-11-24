@@ -125,7 +125,7 @@ impl CExpr {
                 Constructor::Struct(struct_constructor) => {
                     let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = genv.structs.get(&struct_constructor.type_name) {
+                    if let Some(struct_def) = genv.structs().get(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
@@ -276,7 +276,7 @@ impl CExpr {
                     )),
                     Constructor::Struct(struct_constructor) => {
                         let field_name = genv
-                            .structs
+                            .structs()
                             .get(&struct_constructor.type_name)
                             .and_then(|def| def.fields.get(*field_index))
                             .map(|(fname, _)| fname.0.clone())

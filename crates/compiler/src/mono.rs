@@ -499,8 +499,8 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
 
     impl<'a> TypeMono<'a> {
         fn new(genv: &'a mut GlobalTypeEnv) -> Self {
-            let enum_base = genv.enums.clone();
-            let struct_base = genv.structs.clone();
+            let enum_base = genv.enums().clone();
+            let struct_base = genv.structs().clone();
             Self {
                 genv,
                 map: IndexMap::new(),
@@ -562,7 +562,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                     generics: vec![],
                     variants: new_variants,
                 };
-                self.genv.enums.insert(new_name.clone(), new_def);
+                self.genv.insert_enum(new_def);
             } else if let Some(generic_def) = self.struct_base.get(&ident) {
                 let mut subst: IndexMap<String, Ty> = IndexMap::new();
                 if generic_def.generics.len() != args.len() {
@@ -590,7 +590,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                     generics: vec![],
                     fields: new_fields,
                 };
-                self.genv.structs.insert(new_name.clone(), new_def);
+                self.genv.insert_struct(new_def);
             } else {
                 // Unknown type constructor; just return synthesized name without registering a def
             }
@@ -768,8 +768,8 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     }
 
     // Drop all generic enum defs to avoid Go backend panics
-    m.genv.enums.retain(|_n, def| def.generics.is_empty());
-    m.genv.structs.retain(|_n, def| def.generics.is_empty());
+    m.genv.retain_enums(|_n, def| def.generics.is_empty());
+    m.genv.retain_structs(|_n, def| def.generics.is_empty());
 
     let result = core::File { toplevels: new_fns };
     m.genv.record_tuple_types_from_core(&result);

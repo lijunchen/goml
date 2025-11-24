@@ -302,7 +302,7 @@ impl Typer {
 
         let expected_arity = match &constructor {
             tast::Constructor::Enum(enum_constructor) => genv
-                .enums
+                .enums()
                 .get(&enum_constructor.type_name)
                 .map(|def| def.variants[enum_constructor.index].1.len())
                 .unwrap_or_else(|| {
@@ -313,7 +313,7 @@ impl Typer {
                     )
                 }),
             tast::Constructor::Struct(struct_constructor) => genv
-                .structs
+                .structs()
                 .get(&struct_constructor.type_name)
                 .map(|def| def.fields.len())
                 .unwrap_or_else(|| {
@@ -387,7 +387,7 @@ impl Typer {
         let struct_fields = match &constructor {
             tast::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
-                let struct_def = genv.structs.get(type_name).unwrap_or_else(|| {
+                let struct_def = genv.structs().get(type_name).unwrap_or_else(|| {
                     panic!(
                         "Struct {} not found when checking literal {}",
                         type_name.0, name.0
@@ -1300,7 +1300,7 @@ impl Typer {
 
                 let expected_arity = match &constructor {
                     tast::Constructor::Enum(enum_constructor) => genv
-                        .enums
+                        .enums()
                         .get(&enum_constructor.type_name)
                         .map(|def| def.variants[enum_constructor.index].1.len())
                         .unwrap_or_else(|| {
@@ -1349,7 +1349,7 @@ impl Typer {
             }
             ast::Pat::PStruct { name, fields } => {
                 let struct_fields = {
-                    let struct_def = genv.structs.get(name).unwrap_or_else(|| {
+                    let struct_def = genv.structs().get(name).unwrap_or_else(|| {
                         panic!("Struct {} not found when checking pattern", name.0)
                     });
                     let expected_len = struct_def.fields.len();
