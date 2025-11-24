@@ -40,7 +40,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
     let (_tast, genv) = typecheck(src);
 
     let point = genv
-        .structs
+        .structs()
         .get(&Ident::new("Point"))
         .expect("Point struct to be recorded");
     assert!(point.generics.is_empty());
@@ -51,7 +51,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
     assert_eq!(point.fields[1].1, tast::Ty::TInt32);
 
     let wrapper = genv
-        .structs
+        .structs()
         .get(&Ident::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
     assert_eq!(wrapper.generics.len(), 1);
@@ -108,7 +108,7 @@ enum Shape[T] {
     let (_tast, genv) = typecheck(src);
 
     let shape = genv
-        .enums
+        .enums()
         .get(&Ident::new("Shape"))
         .expect("Shape enum to be recorded");
     assert_eq!(shape.generics.len(), 1);
@@ -162,7 +162,7 @@ enum List {
     let (_tast, genv) = typecheck(src);
 
     let node = genv
-        .structs
+        .structs()
         .get(&Ident::new("Node"))
         .expect("Node struct to be recorded");
     assert_eq!(node.fields.len(), 2);
@@ -175,7 +175,7 @@ enum List {
     );
 
     let list = genv
-        .enums
+        .enums()
         .get(&Ident::new("List"))
         .expect("List enum to be recorded");
     assert_eq!(list.variants.len(), 2);

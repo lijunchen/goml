@@ -226,8 +226,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
                     .collect();
 
-                if let Some(struct_def) = state.genv.structs.get_mut(&struct_constructor.type_name)
-                {
+                if let Some(struct_def) = state.genv.struct_def_mut(&struct_constructor.type_name) {
                     for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
                     {
                         if let Some(struct_name) = closure_struct_name {
@@ -510,7 +509,7 @@ fn transform_closure(
         generics: Vec::new(),
         fields: struct_fields,
     };
-    state.genv.structs.insert(struct_name.clone(), struct_def);
+    state.genv.insert_struct(struct_def);
 
     let apply_fn_name = state.gensym.gensym("__closure_apply");
     state.register_closure_type(&struct_name, apply_fn_name.clone());
@@ -686,7 +685,7 @@ fn instantiate_struct_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let struct_def = state.genv.structs.get(struct_name)?;
+    let struct_def = state.genv.structs().get(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     if struct_def.generics.is_empty() {
         return Some(raw_field_ty.clone());
@@ -715,7 +714,7 @@ fn instantiate_enum_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let enum_def = state.genv.enums.get(&constructor.type_name)?;
+    let enum_def = state.genv.enums().get(&constructor.type_name)?;
     let (_, fields) = enum_def
         .variants
         .iter()

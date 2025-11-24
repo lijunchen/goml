@@ -43,7 +43,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
                 return;
             }
             let ident = ast::Ident::new(name);
-            if let Some(enum_def) = genv.enums.get(&ident) {
+            if let Some(enum_def) = genv.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
                     genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
@@ -51,7 +51,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
                         enum_def.generics.len()
                     ));
                 }
-            } else if let Some(struct_def) = genv.structs.get(&ident) {
+            } else if let Some(struct_def) = genv.structs().get(&ident) {
                 if !struct_def.generics.is_empty() {
                     genv.report_typer_error(format!(
                         "Type {} expects {} type arguments, but got 0",
@@ -73,7 +73,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
             let base_name = ty.get_constr_name_unsafe();
             let ident = ast::Ident::new(&base_name);
 
-            if let Some(enum_def) = genv.enums.get(&ident) {
+            if let Some(enum_def) = genv.enums().get(&ident) {
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
@@ -82,7 +82,7 @@ pub(crate) fn validate_ty(genv: &mut GlobalTypeEnv, ty: &tast::Ty, tparams: &Has
                         base_name, expected, actual
                     ));
                 }
-            } else if let Some(struct_def) = genv.structs.get(&ident) {
+            } else if let Some(struct_def) = genv.structs().get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {

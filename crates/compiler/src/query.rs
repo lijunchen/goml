@@ -480,7 +480,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
 
     if let Some(name) = type_constructor_name(ty) {
         let uident = ast::ast::Ident::new(name);
-        if let Some(struct_def) = genv.structs.get(&uident) {
+        if let Some(struct_def) = genv.structs().get(&uident) {
             for (field_name, field_ty) in &struct_def.fields {
                 items.push(DotCompletionItem {
                     name: field_name.0.clone(),

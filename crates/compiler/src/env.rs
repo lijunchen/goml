@@ -75,8 +75,8 @@ pub enum Constraint {
 #[derive(Debug, Clone)]
 #[allow(unused)]
 pub struct GlobalTypeEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
+    enums: IndexMap<Ident, EnumDef>,
+    structs: IndexMap<Ident, StructDef>,
     pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
@@ -115,6 +115,62 @@ impl GlobalTypeEnv {
             ref_types: IndexSet::new(),
             diagnostics: Diagnostics::new(),
         }
+    }
+
+    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+        &self.enums
+    }
+
+    pub fn ensure_enum_placeholder(&mut self, name: Ident, generics: Vec<Ident>) -> &mut EnumDef {
+        self.enums.entry(name.clone()).or_insert_with(|| EnumDef {
+            name,
+            generics,
+            variants: Vec::new(),
+        })
+    }
+
+    pub fn insert_enum(&mut self, def: EnumDef) {
+        self.enums.insert(def.name.clone(), def);
+    }
+
+    pub fn retain_enums<F>(&mut self, f: F)
+    where
+        F: FnMut(&Ident, &mut EnumDef) -> bool,
+    {
+        self.enums.retain(f);
+    }
+
+    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+        &self.structs
+    }
+
+    pub fn ensure_struct_placeholder(
+        &mut self,
+        name: Ident,
+        generics: Vec<Ident>,
+    ) -> &mut StructDef {
+        self.structs
+            .entry(name.clone())
+            .or_insert_with(|| StructDef {
+                name,
+                generics,
+                fields: Vec::new(),
+            })
+    }
+
+    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+        self.structs.get_mut(name)
+    }
+
+    pub fn insert_struct(&mut self, def: StructDef) {
+        self.structs.insert(def.name.clone(), def);
+    }
+
+    pub fn retain_structs<F>(&mut self, f: F)
+    where
+        F: FnMut(&Ident, &mut StructDef) -> bool,
+    {
+        self.structs.retain(f);
     }
 
     pub fn register_extern_function(

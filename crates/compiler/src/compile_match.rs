@@ -306,7 +306,11 @@ fn compile_enum_case(
     name: &Ident,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let tydef = genv.enums[name].clone();
+    let tydef = genv
+        .enums()
+        .get(name)
+        .cloned()
+        .unwrap_or_else(|| panic!("Enum {} not found", name.0));
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let cases: Vec<ConstructorCase> = tydef
@@ -390,7 +394,7 @@ fn compile_struct_case(
     match_range: Option<TextRange>,
 ) -> core::Expr {
     let struct_def = genv
-        .structs
+        .structs()
         .get(name)
         .cloned()
         .unwrap_or_else(|| panic!("Unknown struct {}", name.0));
@@ -1028,7 +1032,7 @@ fn compile_rows(
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TCon { name } => {
             let ident = Ident::new(name);
-            if genv.enums.contains_key(&ident) {
+            if genv.enums().contains_key(&ident) {
                 compile_enum_case(
                     genv,
                     gensym,
@@ -1039,7 +1043,7 @@ fn compile_rows(
                     &ident,
                     match_range,
                 )
-            } else if genv.structs.contains_key(&ident) {
+            } else if genv.structs().contains_key(&ident) {
                 compile_struct_case(
                     genv,
                     gensym,
@@ -1058,7 +1062,7 @@ fn compile_rows(
         Ty::TApp { ty: base, args } => {
             let name = base.get_constr_name_unsafe();
             let ident = Ident::new(&name);
-            if genv.enums.contains_key(&ident) {
+            if genv.enums().contains_key(&ident) {
                 compile_enum_case(
                     genv,
                     gensym,
@@ -1069,7 +1073,7 @@ fn compile_rows(
                     &ident,
                     match_range,
                 )
-            } else if genv.structs.contains_key(&ident) {
+            } else if genv.structs().contains_key(&ident) {
                 compile_struct_case(
                     genv,
                     gensym,
@@ -1575,7 +1579,7 @@ fn compile_expr(
             let (type_name, type_args) = decompose_struct_type(&base_ty)
                 .unwrap_or_else(|| panic!("Field access on non-struct type {:?}", base_ty));
             let struct_def = genv
-                .structs
+                .structs()
                 .get(&type_name)
                 .unwrap_or_else(|| panic!("Struct {} not found", type_name.0));
             let inst_fields = instantiate_struct_fields(struct_def, &type_args);

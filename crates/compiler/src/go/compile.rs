@@ -106,7 +106,7 @@ fn cexpr_ty(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goty::GoType {
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
                 let def = genv
-                    .enums
+                    .enums()
                     .get(&enum_constructor.type_name)
                     .expect("unknown enum in EConstrGet");
                 def.variants[enum_constructor.index].1[*field_index].clone()
@@ -298,7 +298,7 @@ fn compile_builtin_call(
 fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
-    for (_ename, edef) in genv.enums.iter() {
+    for (_ename, edef) in genv.enums().iter() {
         if edef
             .variants
             .iter()
@@ -319,7 +319,7 @@ fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str
 
 fn lookup_variant_name(genv: &GlobalTypeEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
-    if let Some(def) = genv.enums.get(&Ident::new(&name)) {
+    if let Some(def) = genv.enums().get(&Ident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
         return variant_struct_name(genv, &name, &vname.0);
     }
@@ -411,7 +411,7 @@ fn instantiate_struct_fields(
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
     let struct_def = genv
-        .structs
+        .structs()
         .get(type_name)
         .unwrap_or_else(|| panic!("Unknown struct {}", type_name.0));
 
@@ -475,7 +475,7 @@ fn compile_cexpr(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goast::Expr {
             Constructor::Struct(struct_constructor) => {
                 let go_ty = tast_ty_to_go_type(ty);
                 let struct_def = genv
-                    .structs
+                    .structs()
                     .get(&struct_constructor.type_name)
                     .unwrap_or_else(|| panic!("unknown struct {}", struct_constructor.type_name.0));
                 if struct_def.fields.len() != args.len() {
@@ -541,7 +541,7 @@ fn compile_cexpr(genv: &GlobalTypeEnv, e: &anf::CExpr) -> goast::Expr {
             match constructor {
                 Constructor::Enum(enum_constructor) => {
                     let def = genv
-                        .enums
+                        .enums()
                         .get(&enum_constructor.type_name)
                         .expect("unknown enum in EConstrGet");
                     let field_ty = def.variants[enum_constructor.index].1[*field_index].clone();
@@ -821,7 +821,7 @@ where
         }
         ty @ (tast::Ty::TCon { .. } | tast::Ty::TApp { .. }) => {
             let type_name = ty.get_constr_name_unsafe();
-            if !genv.enums.contains_key(&Ident::new(&type_name)) {
+            if !genv.enums().contains_key(&Ident::new(&type_name)) {
                 panic!(
                     "unsupported scrutinee type {:?} for match in Go backend",
                     ty
@@ -1485,7 +1485,7 @@ pub fn go_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: anf::File) -> goast:
 
 fn gen_type_definition(genv: &GlobalTypeEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
-    for (name, def) in genv.structs.iter() {
+    for (name, def) in genv.structs().iter() {
         let has_type_param = name.0.contains("TParam")
             || !def.generics.is_empty()
             || def
@@ -1511,7 +1511,7 @@ fn gen_type_definition(genv: &GlobalTypeEnv) -> Vec<goast::Item> {
         }));
     }
 
-    for (name, def) in genv.enums.iter() {
+    for (name, def) in genv.enums().iter() {
         // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
         let has_type_param = name.0.contains("TParam")
             || def
@@ -1582,28 +1582,25 @@ fn test_type_gen() {
     use expect_test::expect;
 
     let mut env = GlobalTypeEnv::new();
-    env.enums.insert(
-        Ident::new("Tree"),
-        EnumDef {
-            name: Ident::new("Tree"),
-            generics: vec![],
-            variants: vec![
-                (Ident::new("Empty"), vec![]),
-                (Ident::new("Leaf"), vec![tast::Ty::TInt32]),
-                (
-                    Ident::new("Node"),
-                    vec![
-                        tast::Ty::TCon {
-                            name: "Tree".to_string(),
-                        },
-                        tast::Ty::TCon {
-                            name: "Tree".to_string(),
-                        },
-                    ],
-                ),
-            ],
-        },
-    );
+    env.insert_enum(EnumDef {
+        name: Ident::new("Tree"),
+        generics: vec![],
+        variants: vec![
+            (Ident::new("Empty"), vec![]),
+            (Ident::new("Leaf"), vec![tast::Ty::TInt32]),
+            (
+                Ident::new("Node"),
+                vec![
+                    tast::Ty::TCon {
+                        name: "Tree".to_string(),
+                    },
+                    tast::Ty::TCon {
+                        name: "Tree".to_string(),
+                    },
+                ],
+            ),
+        ],
+    });
 
     let item = gen_type_definition(&env);
     let dummy_file = goast::File { toplevels: item };

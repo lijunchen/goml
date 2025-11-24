@@ -19,22 +19,10 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, ast: &ast::File) {
     for item in ast.toplevels.iter() {
         match item {
             ast::Item::EnumDef(enum_def) => {
-                genv.enums
-                    .entry(enum_def.name.clone())
-                    .or_insert_with(|| env::EnumDef {
-                        name: enum_def.name.clone(),
-                        generics: enum_def.generics.clone(),
-                        variants: Vec::new(), // empty body
-                    });
+                genv.ensure_enum_placeholder(enum_def.name.clone(), enum_def.generics.clone());
             }
             ast::Item::StructDef(StructDef { name, generics, .. }) => {
-                genv.structs
-                    .entry(name.clone())
-                    .or_insert_with(|| env::StructDef {
-                        name: name.clone(),
-                        generics: generics.clone(),
-                        fields: Vec::new(), // empty body
-                    });
+                genv.ensure_struct_placeholder(name.clone(), generics.clone());
             }
             _ => {}
         }
@@ -59,14 +47,11 @@ fn define_enum(genv: &mut GlobalTypeEnv, enum_def: &ast::EnumDef) {
             (vcon.clone(), typs)
         })
         .collect();
-    genv.enums.insert(
-        enum_def.name.clone(),
-        env::EnumDef {
-            name: enum_def.name.clone(),
-            generics: enum_def.generics.clone(),
-            variants,
-        },
-    );
+    genv.insert_enum(env::EnumDef {
+        name: enum_def.name.clone(),
+        generics: enum_def.generics.clone(),
+        variants,
+    });
 }
 
 fn define_struct(genv: &mut GlobalTypeEnv, struct_def: &ast::StructDef) {
@@ -81,14 +66,11 @@ fn define_struct(genv: &mut GlobalTypeEnv, struct_def: &ast::StructDef) {
         })
         .collect();
 
-    genv.structs.insert(
-        struct_def.name.clone(),
-        env::StructDef {
-            name: struct_def.name.clone(),
-            generics: struct_def.generics.clone(),
-            fields,
-        },
-    );
+    genv.insert_struct(env::StructDef {
+        name: struct_def.name.clone(),
+        generics: struct_def.generics.clone(),
+        fields,
+    });
 }
 
 fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
