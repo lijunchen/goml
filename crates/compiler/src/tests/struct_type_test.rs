@@ -2,11 +2,11 @@ use std::path::PathBuf;
 
 use ast::ast::Ident;
 use cst::cst::CstNode;
-use parser::syntax::MySyntaxNode;
+use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{env::GlobalTypeEnv, tast};
 
-fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv) {
+fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     let path = PathBuf::from("test_structs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {
@@ -37,7 +37,7 @@ fn consume_point(p: Point) -> unit { () }
 fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 "#;
 
-    let (_tast, genv) = typecheck(src);
+    let (_tast, genv, _diagnostics) = typecheck(src);
 
     let point = genv
         .structs()
@@ -105,7 +105,7 @@ enum Shape[T] {
 }
 "#;
 
-    let (_tast, genv) = typecheck(src);
+    let (_tast, genv, _diagnostics) = typecheck(src);
 
     let shape = genv
         .enums()
@@ -159,7 +159,7 @@ enum List {
 }
 "#;
 
-    let (_tast, genv) = typecheck(src);
+    let (_tast, genv, _diagnostics) = typecheck(src);
 
     let node = genv
         .structs()
@@ -199,7 +199,7 @@ fn use_closure(x: int32) -> int32 {
 }
 "#;
 
-    let (tast, _env) = typecheck(src);
+    let (tast, _env, _diagnostics) = typecheck(src);
 
     let func = match &tast.toplevels[0] {
         tast::Item::Fn(f) => f,
@@ -246,7 +246,7 @@ fn wrap[T](value: T) -> T {
 }
 "#;
 
-    let (tast, _env) = typecheck(src);
+    let (tast, _env, _diagnostics) = typecheck(src);
 
     let func = match &tast.toplevels[0] {
         tast::Item::Fn(f) => f,
@@ -280,9 +280,8 @@ fn wrap[T](value: T) -> T {
 }
 
 fn assert_typer_error(src: &str, expected_message: &str) {
-    let (_tast, genv) = typecheck(src);
-    let messages: Vec<String> = genv
-        .diagnostics
+    let (_tast, _genv, diagnostics) = typecheck(src);
+    let messages: Vec<String> = diagnostics
         .iter()
         .map(|diagnostic| diagnostic.message().to_string())
         .collect();

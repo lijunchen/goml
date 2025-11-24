@@ -45,7 +45,7 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
         Ok(ast) => ast,
         Err(_) => return None,
     };
-    let (tast, genv) = crate::typer::check_file(ast);
+    let (tast, genv, _diagnostics) = crate::typer::check_file(ast);
 
     let ty = find_type(&genv, &tast, &range);
 
@@ -340,7 +340,7 @@ pub fn dot_completions(src: &str, line: u32, col: u32) -> Option<Vec<DotCompleti
 
     let lower = ast::lower::lower(file);
     let ast = lower.into_result().ok()?;
-    let (tast, genv) = crate::typer::check_file(ast);
+    let (tast, genv, _diagnostics) = crate::typer::check_file(ast);
 
     let target_expr = find_expr_for_completion(&tast, &lhs_ptr)?;
     let ty = normalize_completion_ty(target_expr.get_ty());

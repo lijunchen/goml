@@ -10,7 +10,7 @@ use crate::{
 };
 use diagnostics::Diagnostics;
 
-fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
+fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnostics) {
     let path = PathBuf::from("test_refs.gom");
     let parsed = parser::parse(&path, src);
     if parsed.has_errors() {
@@ -22,7 +22,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
         .into_result()
         .expect("failed to lower to AST");
     let ast_clone = ast.clone();
-    let (tast, mut genv) = crate::typer::check_file(ast);
+    let (tast, mut genv, diagnostics) = crate::typer::check_file(ast);
     let gensym = Gensym::new();
     let mut compile_diagnostics = Diagnostics::new();
     let core = compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
@@ -32,7 +32,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv) {
         compile_diagnostics
     );
     genv.record_tuple_types_from_core(&core);
-    (ast_clone, tast, genv)
+    (ast_clone, tast, genv, diagnostics)
 }
 
 #[test]
@@ -45,7 +45,7 @@ fn main() -> int32 {
 }
 "#;
 
-    let (ast, _tast, genv) = typecheck(src);
+    let (ast, _tast, genv, diagnostics) = typecheck(src);
 
     let main_fn = match &ast.toplevels[0] {
         ast::ast::Item::Fn(f) => f,
@@ -138,9 +138,9 @@ fn main() -> int32 {
         genv.ref_types
     );
     assert!(
-        genv.diagnostics.is_empty(),
+        diagnostics.is_empty(),
         "unexpected diagnostics: {:?}",
-        genv.diagnostics
+        diagnostics
     );
 
     let ref_ty = tast::Ty::TRef {

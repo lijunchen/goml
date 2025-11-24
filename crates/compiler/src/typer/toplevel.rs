@@ -2,6 +2,8 @@ use std::collections::HashSet;
 
 use ::ast::ast::{Ident, StructDef, TraitMethodSignature};
 use ast::ast;
+use diagnostics::{Severity, Stage};
+use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     env::{self, GlobalTypeEnv, LocalTypeEnv},
@@ -29,7 +31,7 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, ast: &ast::File) {
     }
 }
 
-fn define_enum(genv: &mut GlobalTypeEnv, enum_def: &ast::EnumDef) {
+fn define_enum(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, enum_def: &ast::EnumDef) {
     let params_env = &enum_def.generics;
     let tparam_names = type_param_name_set(params_env);
 
@@ -42,7 +44,7 @@ fn define_enum(genv: &mut GlobalTypeEnv, enum_def: &ast::EnumDef) {
                 .map(|ast_ty| tast::Ty::from_ast(ast_ty, params_env))
                 .collect::<Vec<_>>();
             for ty in typs.iter() {
-                validate_ty(genv, ty, &tparam_names);
+                validate_ty(genv, diagnostics, ty, &tparam_names);
             }
             (vcon.clone(), typs)
         })
@@ -54,14 +56,18 @@ fn define_enum(genv: &mut GlobalTypeEnv, enum_def: &ast::EnumDef) {
     });
 }
 
-fn define_struct(genv: &mut GlobalTypeEnv, struct_def: &ast::StructDef) {
+fn define_struct(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    struct_def: &ast::StructDef,
+) {
     let tparam_names = type_param_name_set(&struct_def.generics);
     let fields = struct_def
         .fields
         .iter()
         .map(|(fname, ast_ty)| {
             let ty = tast::Ty::from_ast(ast_ty, &struct_def.generics);
-            validate_ty(genv, &ty, &tparam_names);
+            validate_ty(genv, diagnostics, &ty, &tparam_names);
             (fname.clone(), ty)
         })
         .collect();
@@ -98,10 +104,15 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
     }
 }
 
-fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trait_name: &Ident) {
+fn define_trait_impl(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    impl_block: &ast::ImplBlock,
+    trait_name: &Ident,
+) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
-    validate_ty(genv, &for_ty, &empty_tparams);
+    validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
     let trait_name_str = trait_name.0.clone();
     let trait_method_names: HashSet<String> = genv
         .trait_defs
@@ -116,9 +127,13 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
         .collect();
 
     if trait_method_names.is_empty() {
-        genv.report_typer_error(format!(
-            "Trait {} is not defined, cannot implement it for {:?}",
-            trait_name_str, for_ty
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Trait {} is not defined, cannot implement it for {:?}",
+                trait_name_str, for_ty
+            ),
         ));
         return;
     }
@@ -130,17 +145,25 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
         let method_name_str = method_name.0.clone();
 
         if !trait_method_names.contains(&method_name_str) {
-            genv.report_typer_error(format!(
-                "Method {} is not declared in trait {}",
-                method_name_str, trait_name_str
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Method {} is not declared in trait {}",
+                    method_name_str, trait_name_str
+                ),
             ));
             continue;
         }
 
         if !implemented_methods.insert(method_name_str.clone()) {
-            genv.report_typer_error(format!(
-                "Method {} implemented multiple times in impl of trait {}",
-                method_name_str, trait_name_str
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Method {} implemented multiple times in impl of trait {}",
+                    method_name_str, trait_name_str
+                ),
             ));
             continue;
         }
@@ -157,14 +180,14 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
             .iter()
             .map(|(_, ty)| {
                 let ty = tast::Ty::from_ast(ty, &m.generics);
-                validate_ty(genv, &ty, &tparam_names);
+                validate_ty(genv, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
                 let ret = tast::Ty::from_ast(ty, &m.generics);
-                validate_ty(genv, &ret, &tparam_names);
+                validate_ty(genv, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -190,12 +213,16 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
                 },
             ) => {
                 if expected_params.len() != impl_params.len() {
-                    genv.report_typer_error(format!(
-                        "Trait {}::{} expects {} parameters but impl has {}",
-                        trait_name_str,
-                        method_name_str,
-                        expected_params.len(),
-                        impl_params.len()
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Trait {}::{} expects {} parameters but impl has {}",
+                            trait_name_str,
+                            method_name_str,
+                            expected_params.len(),
+                            impl_params.len()
+                        ),
                     ));
                     method_ok = false;
                 }
@@ -204,26 +231,38 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
                     expected_params.iter().zip(impl_params.iter()).enumerate()
                 {
                     if expected != actual {
-                        genv.report_typer_error(format!(
-                            "Trait {}::{} parameter {} expected type {:?} but found {:?}",
-                            trait_name_str, method_name_str, idx, expected, actual
+                        diagnostics.push(Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Trait {}::{} parameter {} expected type {:?} but found {:?}",
+                                trait_name_str, method_name_str, idx, expected, actual
+                            ),
                         ));
                         method_ok = false;
                     }
                 }
 
                 if **expected_ret != **impl_ret {
-                    genv.report_typer_error(format!(
-                        "Trait {}::{} expected return type {:?} but found {:?}",
-                        trait_name_str, method_name_str, expected_ret, impl_ret
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Trait {}::{} expected return type {:?} but found {:?}",
+                            trait_name_str, method_name_str, expected_ret, impl_ret
+                        ),
                     ));
                     method_ok = false;
                 }
             }
             _ => {
-                genv.report_typer_error(format!(
-                    "Trait {}::{} does not have a function type signature",
-                    trait_name_str, method_name_str
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {}::{} does not have a function type signature",
+                        trait_name_str, method_name_str
+                    ),
                 ));
                 method_ok = false;
             }
@@ -239,18 +278,26 @@ fn define_trait_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock, trai
 
     for method_name in trait_method_names.iter() {
         if !implemented_methods.contains(method_name) {
-            genv.report_typer_error(format!(
-                "Trait {} implementation for {:?} is missing method {}",
-                trait_name_str, for_ty, method_name
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} implementation for {:?} is missing method {}",
+                    trait_name_str, for_ty, method_name
+                ),
             ));
         }
     }
 }
 
-fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
+fn define_inherent_impl(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    impl_block: &ast::ImplBlock,
+) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
-    validate_ty(genv, &for_ty, &empty_tparams);
+    validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
@@ -258,9 +305,13 @@ fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
         let method_name_str = method_name.0.clone();
 
         if !implemented_methods.insert(method_name_str.clone()) {
-            genv.report_typer_error(format!(
-                "Method {} implemented multiple times in impl for {:?}",
-                method_name_str, for_ty
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Method {} implemented multiple times in impl for {:?}",
+                    method_name_str, for_ty
+                ),
             ));
             continue;
         }
@@ -271,14 +322,14 @@ fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
             .iter()
             .map(|(_, ty)| {
                 let ty = tast::Ty::from_ast(ty, &m.generics);
-                validate_ty(genv, &ty, &tparam_names);
+                validate_ty(genv, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
                 let ret = tast::Ty::from_ast(ty, &m.generics);
-                validate_ty(genv, &ret, &tparam_names);
+                validate_ty(genv, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -298,7 +349,7 @@ fn define_inherent_impl(genv: &mut GlobalTypeEnv, impl_block: &ast::ImplBlock) {
     }
 }
 
-fn define_function(genv: &mut GlobalTypeEnv, func: &ast::Fn) {
+fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func: &ast::Fn) {
     let name = func.name.clone();
     let tparam_names = type_param_name_set(&func.generics);
     let params = func
@@ -306,14 +357,14 @@ fn define_function(genv: &mut GlobalTypeEnv, func: &ast::Fn) {
         .iter()
         .map(|(_, ty)| {
             let ty = tast::Ty::from_ast(ty, &func.generics);
-            validate_ty(genv, &ty, &tparam_names);
+            validate_ty(genv, diagnostics, &ty, &tparam_names);
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &func.ret_ty {
         Some(ty) => {
             let ret = tast::Ty::from_ast(ty, &func.generics);
-            validate_ty(genv, &ret, &tparam_names);
+            validate_ty(genv, diagnostics, &ret, &tparam_names);
             ret
         }
         None => tast::Ty::TUnit,
@@ -351,20 +402,20 @@ pub fn go_symbol_name(name: &str) -> String {
     }
 }
 
-fn define_extern_go(genv: &mut GlobalTypeEnv, ext: &ast::ExternGo) {
+fn define_extern_go(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, ext: &ast::ExternGo) {
     let params = ext
         .params
         .iter()
         .map(|(_, ty)| {
             let ty = tast::Ty::from_ast(ty, &[]);
-            validate_ty(genv, &ty, &HashSet::new());
+            validate_ty(genv, diagnostics, &ty, &HashSet::new());
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &ext.ret_ty {
         Some(ty) => {
             let ret = tast::Ty::from_ast(ty, &[]);
-            validate_ty(genv, &ret, &HashSet::new());
+            validate_ty(genv, diagnostics, &ret, &HashSet::new());
             ret
         }
         None => tast::Ty::TUnit,
@@ -383,7 +434,11 @@ fn define_extern_go(genv: &mut GlobalTypeEnv, ext: &ast::ExternGo) {
     );
 }
 
-fn define_extern_type(genv: &mut GlobalTypeEnv, ext: &ast::ExternType) {
+fn define_extern_type(
+    genv: &mut GlobalTypeEnv,
+    _diagnostics: &mut Diagnostics,
+    ext: &ast::ExternType,
+) {
     genv.register_extern_type(ext.goml_name.0.clone());
 }
 
@@ -445,32 +500,33 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     instantiate_self_ty(ty, self_ty)
 }
 
-pub fn collect_typedefs(genv: &mut GlobalTypeEnv, ast: &ast::File) {
+pub fn collect_typedefs(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, ast: &ast::File) {
     predeclare_types(genv, ast);
 
     for item in ast.toplevels.iter() {
         match item {
-            ast::Item::EnumDef(enum_def) => define_enum(genv, enum_def),
-            ast::Item::StructDef(struct_def) => define_struct(genv, struct_def),
+            ast::Item::EnumDef(enum_def) => define_enum(genv, diagnostics, enum_def),
+            ast::Item::StructDef(struct_def) => define_struct(genv, diagnostics, struct_def),
             ast::Item::TraitDef(trait_def) => define_trait(genv, trait_def),
             ast::Item::ImplBlock(impl_block) => {
                 if let Some(trait_name) = &impl_block.trait_name {
-                    define_trait_impl(genv, impl_block, trait_name);
+                    define_trait_impl(genv, diagnostics, impl_block, trait_name);
                 } else {
-                    define_inherent_impl(genv, impl_block);
+                    define_inherent_impl(genv, diagnostics, impl_block);
                 }
             }
-            ast::Item::Fn(func) => define_function(genv, func),
-            ast::Item::ExternGo(ext) => define_extern_go(genv, ext),
-            ast::Item::ExternType(ext) => define_extern_type(genv, ext),
+            ast::Item::Fn(func) => define_function(genv, diagnostics, func),
+            ast::Item::ExternGo(ext) => define_extern_go(genv, diagnostics, ext),
+            ast::Item::ExternType(ext) => define_extern_type(genv, diagnostics, ext),
         }
     }
 }
 
-pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv) {
+pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = env::GlobalTypeEnv::new();
     let ast = rename::Rename::default().rename_file(ast);
-    collect_typedefs(&mut genv, &ast);
+    let mut diagnostics = Diagnostics::new();
+    collect_typedefs(&mut genv, &mut diagnostics, &ast);
     let mut typer = Typer::new();
     let mut typed_toplevel_tasts = vec![];
     for item in ast.toplevels.iter() {
@@ -497,15 +553,15 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv) {
             }
         }
     }
-
     let typer_diagnostics = typer.into_diagnostics();
-    genv.extend_diagnostics(typer_diagnostics);
+    diagnostics.extend(typer_diagnostics);
 
     (
         tast::File {
             toplevels: typed_toplevel_tasts,
         },
         genv,
+        diagnostics,
     )
 }
 

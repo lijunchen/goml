@@ -82,10 +82,10 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    let (tast, mut genv) = typer::check_file(ast.clone());
-    if genv.diagnostics.has_errors() {
+    let (tast, mut genv, diagnostics) = typer::check_file(ast.clone());
+    if diagnostics.has_errors() {
         return Err(CompilationError::Typer {
-            diagnostics: genv.diagnostics.clone(),
+            diagnostics: diagnostics.clone(),
         });
     }
 
