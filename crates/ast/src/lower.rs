@@ -856,7 +856,7 @@ fn lower_expr_with_args(
                             let type_member = ast::Expr::ETypeMember {
                                 type_name: type_ident.clone(),
                                 member: variant_ident,
-                                astptr: astptr,
+                                astptr,
                             };
                             let call = ast::Expr::ECall {
                                 func: Box::new(type_member),

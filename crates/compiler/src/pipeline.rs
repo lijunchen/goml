@@ -82,7 +82,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    let (tast, mut genv, diagnostics) = typer::check_file(ast.clone());
+    let (tast, mut genv, mut diagnostics) = typer::check_file(ast.clone());
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer {
             diagnostics: diagnostics.clone(),
@@ -93,12 +93,9 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let gensym = Gensym::new();
 
-    let mut compile_diagnostics = Diagnostics::new();
-    let core = compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
-    if compile_diagnostics.has_errors() {
-        return Err(CompilationError::Compile {
-            diagnostics: compile_diagnostics,
-        });
+    let core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &tast);
+    if diagnostics.has_errors() {
+        return Err(CompilationError::Compile { diagnostics });
     }
     let lifted_core = lambda_lift::lambda_lift(&mut genv, &gensym, core.clone());
     let mono = mono::mono(&mut genv, lifted_core.clone());

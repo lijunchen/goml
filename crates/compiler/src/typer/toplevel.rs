@@ -536,25 +536,37 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostic
             ast::Item::TraitDef(..) => (),
             ast::Item::ImplBlock(impl_block) => {
                 typed_toplevel_tasts.push(tast::Item::ImplBlock(check_impl_block(
-                    &genv, &mut typer, impl_block,
+                    &genv,
+                    &mut typer,
+                    &mut diagnostics,
+                    impl_block,
                 )));
             }
             ast::Item::Fn(f) => {
-                typed_toplevel_tasts.push(tast::Item::Fn(check_fn(&genv, &mut typer, f)));
+                typed_toplevel_tasts.push(tast::Item::Fn(check_fn(
+                    &genv,
+                    &mut typer,
+                    &mut diagnostics,
+                    f,
+                )));
             }
             ast::Item::ExternGo(ext) => {
                 typed_toplevel_tasts.push(tast::Item::ExternGo(check_extern_go(
-                    &genv, &mut typer, ext,
+                    &genv,
+                    &mut typer,
+                    &mut diagnostics,
+                    ext,
                 )));
             }
             ast::Item::ExternType(ext) => {
-                typed_toplevel_tasts
-                    .push(tast::Item::ExternType(check_extern_type(&mut genv, ext)));
+                typed_toplevel_tasts.push(tast::Item::ExternType(check_extern_type(
+                    &mut genv,
+                    &mut diagnostics,
+                    ext,
+                )));
             }
         }
     }
-    let typer_diagnostics = typer.into_diagnostics();
-    diagnostics.extend(typer_diagnostics);
 
     (
         tast::File {
@@ -565,7 +577,12 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostic
     )
 }
 
-fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
+fn check_fn(
+    genv: &GlobalTypeEnv,
+    typer: &mut Typer,
+    diagnostics: &mut Diagnostics,
+    f: &ast::Fn,
+) -> tast::Fn {
     let mut local_env = LocalTypeEnv::new();
     let param_types: Vec<(Ident, tast::Ty)> = f
         .params
@@ -587,11 +604,11 @@ fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
     for (name, ty) in param_types.iter() {
         local_env.insert_var(name, ty.clone());
     }
-    let typed_body = typer.check_expr(genv, &mut local_env, &f.body, &ret_ty);
+    let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
     local_env.pop_scope();
     local_env.clear_tparams_env();
-    typer.solve(genv);
-    let typed_body = typer.subst(typed_body);
+    typer.solve(diagnostics, genv);
+    let typed_body = typer.subst(diagnostics, typed_body);
     tast::Fn {
         name: f.name.0.clone(),
         params: new_params,
@@ -603,6 +620,7 @@ fn check_fn(genv: &GlobalTypeEnv, typer: &mut Typer, f: &ast::Fn) -> tast::Fn {
 fn check_impl_block(
     genv: &GlobalTypeEnv,
     typer: &mut Typer,
+    diagnostics: &mut Diagnostics,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
     let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
@@ -636,11 +654,11 @@ fn check_impl_block(
         for (name, ty) in param_types.iter() {
             local_env.insert_var(name, ty.clone());
         }
-        let typed_body = typer.check_expr(genv, &mut local_env, &f.body, &ret_ty);
+        let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
         local_env.pop_scope();
         local_env.clear_tparams_env();
-        typer.solve(genv);
-        let typed_body = typer.subst(typed_body);
+        typer.solve(diagnostics, genv);
+        let typed_body = typer.subst(diagnostics, typed_body);
         typed_methods.push(tast::Fn {
             name: f.name.0.clone(),
             params: new_params,
@@ -659,6 +677,7 @@ fn check_impl_block(
 fn check_extern_go(
     _genv: &GlobalTypeEnv,
     _typer: &mut Typer,
+    _diagnostics: &mut Diagnostics,
     ext: &ast::ExternGo,
 ) -> tast::ExternGo {
     let params = ext
@@ -679,7 +698,11 @@ fn check_extern_go(
     }
 }
 
-fn check_extern_type(genv: &mut GlobalTypeEnv, ext: &ast::ExternType) -> tast::ExternType {
+fn check_extern_type(
+    genv: &mut GlobalTypeEnv,
+    _diagnostics: &mut Diagnostics,
+    ext: &ast::ExternType,
+) -> tast::ExternType {
     genv.register_extern_type(ext.goml_name.0.clone());
     tast::ExternType {
         goml_name: ext.goml_name.0.clone(),
