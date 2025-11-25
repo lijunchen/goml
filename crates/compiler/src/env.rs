@@ -57,8 +57,8 @@ pub enum Constraint {
 
 #[derive(Debug, Clone)]
 pub struct GlobalTypeEnv {
-    enums: IndexMap<Ident, EnumDef>,
-    structs: IndexMap<Ident, StructDef>,
+    pub enums: IndexMap<Ident, EnumDef>,
+    pub structs: IndexMap<Ident, StructDef>,
     pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
@@ -144,13 +144,6 @@ impl GlobalTypeEnv {
 
     pub fn insert_struct(&mut self, def: StructDef) {
         self.structs.insert(def.name.clone(), def);
-    }
-
-    pub fn retain_structs<F>(&mut self, f: F)
-    where
-        F: FnMut(&Ident, &mut StructDef) -> bool,
-    {
-        self.structs.retain(f);
     }
 
     pub fn register_extern_function(
@@ -240,11 +233,6 @@ impl GlobalTypeEnv {
                 self.record_extern_type_usage(elem, package_path);
             }
         }
-    }
-
-    pub fn register_closure_apply(&mut self, struct_name: &Ident, apply_fn: String) {
-        self.closure_env_apply
-            .insert(struct_name.0.clone(), apply_fn);
     }
 
     pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {

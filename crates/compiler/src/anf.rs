@@ -1,9 +1,71 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::{Constructor, Prim};
-use crate::{
-    core,
-    env::{Gensym, GlobalTypeEnv},
-};
+use ast::ast::Ident;
+use indexmap::{IndexMap, IndexSet};
+
+use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
+use crate::mono::GlobalMonoEnv;
+use crate::tast::{self, Constructor, Prim};
+use crate::{core, env::Gensym};
+
+#[derive(Debug, Clone)]
+pub struct GlobalAnfEnv {
+    pub enums: IndexMap<Ident, EnumDef>,
+    pub structs: IndexMap<Ident, StructDef>,
+    pub closure_env_apply: IndexMap<String, String>,
+    pub trait_defs: IndexMap<(String, String), tast::Ty>,
+    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
+    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
+    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub funcs: IndexMap<String, tast::Ty>,
+    pub extern_funcs: IndexMap<String, ExternFunc>,
+    pub extern_types: IndexMap<String, ExternType>,
+    pub tuple_types: IndexSet<tast::Ty>,
+    pub array_types: IndexSet<tast::Ty>,
+    pub ref_types: IndexSet<tast::Ty>,
+}
+
+impl GlobalAnfEnv {
+    pub fn from_mono_env(monoenv: GlobalMonoEnv) -> Self {
+        GlobalAnfEnv {
+            enums: monoenv.enums,
+            structs: monoenv.structs,
+            closure_env_apply: monoenv.closure_env_apply,
+            trait_defs: monoenv.trait_defs,
+            overloaded_funcs_to_trait_name: monoenv.overloaded_funcs_to_trait_name,
+            trait_impls: monoenv.trait_impls,
+            inherent_impls: monoenv.inherent_impls,
+            funcs: monoenv.funcs,
+            extern_funcs: monoenv.extern_funcs,
+            extern_types: monoenv.extern_types,
+            tuple_types: monoenv.tuple_types,
+            array_types: monoenv.array_types,
+            ref_types: monoenv.ref_types,
+        }
+    }
+
+    // TODO: remove me, only for pprint
+    pub fn to_type_env(&self) -> crate::env::GlobalTypeEnv {
+        crate::env::GlobalTypeEnv {
+            enums: self.enums.clone(),
+            structs: self.structs.clone(),
+            trait_defs: self.trait_defs.clone(),
+            overloaded_funcs_to_trait_name: self.overloaded_funcs_to_trait_name.clone(),
+            trait_impls: self.trait_impls.clone(),
+            inherent_impls: self.inherent_impls.clone(),
+            funcs: self.funcs.clone(),
+            extern_types: self.extern_types.clone(),
+            tuple_types: self.tuple_types.clone(),
+            array_types: self.array_types.clone(),
+            ref_types: self.ref_types.clone(),
+            closure_env_apply: self.closure_env_apply.clone(),
+            extern_funcs: self.extern_funcs.clone(),
+        }
+    }
+
+    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+        &self.structs
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -154,7 +216,7 @@ fn imm_ty(imm: &ImmExpr) -> Ty {
 
 // Helper function to compile match arms with complex patterns to immediate patterns
 fn compile_match_arms_to_anf<'a>(
-    genv: &'a GlobalTypeEnv,
+    anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
     scrutinee: ImmExpr,
     arms: Vec<core::Arm>,
@@ -171,7 +233,7 @@ fn compile_match_arms_to_anf<'a>(
                 // Immediate patterns can be converted directly
                 let anf_lhs = core_imm_to_anf_imm(arm.lhs);
                 let anf_body = anf(
-                    genv,
+                    anfenv,
                     gensym,
                     arm.body,
                     Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -192,7 +254,7 @@ fn compile_match_arms_to_anf<'a>(
                     ty: ty.clone(),
                 };
                 let anf_body = anf(
-                    genv,
+                    anfenv,
                     gensym,
                     arm.body,
                     Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -213,7 +275,7 @@ fn compile_match_arms_to_anf<'a>(
                     ty: ty.clone(),
                 };
                 let anf_body = anf(
-                    genv,
+                    anfenv,
                     gensym,
                     arm.body,
                     Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -232,7 +294,7 @@ fn compile_match_arms_to_anf<'a>(
     // Convert default case
     let anf_default = default.map(|def_body| {
         Box::new(anf(
-            genv,
+            anfenv,
             gensym,
             *def_body,
             Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -248,7 +310,7 @@ fn compile_match_arms_to_anf<'a>(
 }
 
 fn anf<'a>(
-    genv: &'a GlobalTypeEnv,
+    anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
     e: core::Expr,
     k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
@@ -283,7 +345,7 @@ fn anf<'a>(
             let constructor = constructor.clone();
             let ty_clone = e_ty.clone();
             anf_list(
-                genv,
+                anfenv,
                 gensym,
                 &args,
                 Box::new(move |args| {
@@ -296,7 +358,7 @@ fn anf<'a>(
             )
         }
         core::Expr::ETuple { items, ty: _ } => anf_list(
-            genv,
+            anfenv,
             gensym,
             &items,
             Box::new(move |items| {
@@ -307,7 +369,7 @@ fn anf<'a>(
             }),
         ),
         core::Expr::EArray { items, ty: _ } => anf_list(
-            genv,
+            anfenv,
             gensym,
             &items,
             Box::new(move |items| {
@@ -326,13 +388,13 @@ fn anf<'a>(
             body,
             ty: _,
         } => anf(
-            genv,
+            anfenv,
             gensym,
             *value,
             Box::new(move |ve| AExpr::ALet {
                 name,
                 value: Box::new(ve),
-                body: Box::new(anf(genv, gensym, *body, k)),
+                body: Box::new(anf(anfenv, gensym, *body, k)),
                 ty: e_ty.clone(),
             }),
         ),
@@ -346,18 +408,18 @@ fn anf<'a>(
             let else_core = *else_branch;
             let ty_clone = e_ty.clone();
             anf_imm(
-                genv,
+                anfenv,
                 gensym,
                 *cond,
                 Box::new(move |cond_imm| {
                     let then_a = anf(
-                        genv,
+                        anfenv,
                         gensym,
                         then_core,
                         Box::new(|c| AExpr::ACExpr { expr: c }),
                     );
                     let else_a = anf(
-                        genv,
+                        anfenv,
                         gensym,
                         else_core,
                         Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -376,13 +438,13 @@ fn anf<'a>(
             let body_core = *body;
             let ty_clone = e_ty.clone();
             let cond_a = anf(
-                genv,
+                anfenv,
                 gensym,
                 cond_core,
                 Box::new(|c| AExpr::ACExpr { expr: c }),
             );
             let body_a = anf(
-                genv,
+                anfenv,
                 gensym,
                 body_core,
                 Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -399,11 +461,11 @@ fn anf<'a>(
             default,
             ty: _,
         } => anf_imm(
-            genv,
+            anfenv,
             gensym,
             *expr,
             Box::new(move |imm_expr| {
-                compile_match_arms_to_anf(genv, gensym, imm_expr, arms, default, e_ty, k)
+                compile_match_arms_to_anf(anfenv, gensym, imm_expr, arms, default, e_ty, k)
             }),
         ),
         core::Expr::EConstrGet {
@@ -412,7 +474,7 @@ fn anf<'a>(
             field_index,
             ty: _,
         } => anf_imm(
-            genv,
+            anfenv,
             gensym,
             *expr,
             Box::new(move |e| {
@@ -427,13 +489,13 @@ fn anf<'a>(
         core::Expr::ECall { func, args, ty: _ } => {
             let call_ty = e_ty.clone();
             anf_imm(
-                genv,
+                anfenv,
                 gensym,
                 *func,
                 Box::new(move |func_imm| {
                     let call_ty = call_ty.clone();
                     anf_list(
-                        genv,
+                        anfenv,
                         gensym,
                         &args,
                         Box::new(move |args| {
@@ -452,7 +514,7 @@ fn anf<'a>(
             index,
             ty: _,
         } => anf_imm(
-            genv,
+            anfenv,
             gensym,
             *tuple,
             Box::new(move |e| {
@@ -467,7 +529,7 @@ fn anf<'a>(
 }
 
 fn anf_imm<'a>(
-    genv: &'a GlobalTypeEnv,
+    anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
     e: core::Expr,
     k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>,
@@ -479,7 +541,7 @@ fn anf_imm<'a>(
             let name = gensym.gensym("t");
             let ty = e.get_ty();
             anf(
-                genv,
+                anfenv,
                 gensym,
                 e,
                 Box::new(move |value_expr| {
@@ -501,7 +563,7 @@ fn anf_imm<'a>(
 }
 
 fn anf_list<'a>(
-    genv: &'a GlobalTypeEnv,
+    anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
     es: &'a [core::Expr],
     k: Box<dyn FnOnce(Vec<ImmExpr>) -> AExpr + 'a>,
@@ -512,12 +574,12 @@ fn anf_list<'a>(
         let head = &es[0];
         let tail = &es[1..];
         anf_imm(
-            genv,
+            anfenv,
             gensym,
             head.clone(),
             Box::new(move |imm_head| {
                 anf_list(
-                    genv,
+                    anfenv,
                     gensym,
                     tail,
                     Box::new(move |mut imm_tail| {
@@ -530,14 +592,15 @@ fn anf_list<'a>(
     }
 }
 
-pub fn anf_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: core::File) -> File {
+pub fn anf_file(monoenv: GlobalMonoEnv, gensym: &Gensym, file: core::File) -> (File, GlobalAnfEnv) {
+    let anfenv = GlobalAnfEnv::from_mono_env(monoenv);
     let mut toplevels = Vec::new();
     for core_fn in file.toplevels {
         let name = core_fn.name;
         let params = core_fn.params;
         let ret_ty = core_fn.ret_ty;
         let body = anf(
-            genv,
+            &anfenv,
             gensym,
             core_fn.body,
             Box::new(|c| AExpr::ACExpr { expr: c }),
@@ -549,7 +612,7 @@ pub fn anf_file(genv: &GlobalTypeEnv, gensym: &Gensym, file: core::File) -> File
             body,
         });
     }
-    File { toplevels }
+    (File { toplevels }, anfenv)
 }
 
 pub mod anf_renamer {
