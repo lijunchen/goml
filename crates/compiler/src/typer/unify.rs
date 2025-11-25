@@ -9,12 +9,7 @@ use ast::ast::Ident;
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
-fn occurs(
-    _genv: &GlobalTypeEnv,
-    diagnostics: &mut Diagnostics,
-    var: TypeVar,
-    ty: &tast::Ty,
-) -> bool {
+fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
@@ -42,39 +37,39 @@ fn occurs(
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(_genv, diagnostics, var, ty) {
+                if !occurs(diagnostics, var, ty) {
                     return false;
                 }
             }
         }
         tast::Ty::TCon { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(_genv, diagnostics, var, ty.as_ref()) {
+            if !occurs(diagnostics, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(_genv, diagnostics, var, arg) {
+                if !occurs(diagnostics, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(_genv, diagnostics, var, elem) {
+            if !occurs(diagnostics, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(_genv, diagnostics, var, elem) {
+            if !occurs(diagnostics, var, elem) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(_genv, diagnostics, var, param) {
+                if !occurs(diagnostics, var, param) {
                     return false;
                 }
             }
-            if !occurs(_genv, diagnostics, var, ret_ty) {
+            if !occurs(diagnostics, var, ret_ty) {
                 return false;
             }
         }
@@ -424,7 +419,7 @@ impl Typer {
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
-                if !occurs(genv, diagnostics, *a, t) {
+                if !occurs(diagnostics, *a, t) {
                     return false;
                 }
                 if self.uni.unify_var_value(*a, Some(t.clone())).is_err() {
