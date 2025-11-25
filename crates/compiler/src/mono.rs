@@ -1,14 +1,272 @@
 use super::core;
-use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
+use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
+use crate::lambda_lift::GlobalLiftEnv;
 use crate::mangle::encode_ty;
 use crate::tast::{self, Constructor, Ty};
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
+#[derive(Debug, Clone)]
+pub struct GlobalMonoEnv {
+    pub enums: IndexMap<Ident, EnumDef>,
+    pub structs: IndexMap<Ident, StructDef>,
+    pub closure_env_apply: IndexMap<String, String>,
+    pub trait_defs: IndexMap<(String, String), tast::Ty>,
+    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
+    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
+    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub funcs: IndexMap<String, tast::Ty>,
+    pub extern_funcs: IndexMap<String, ExternFunc>,
+    pub extern_types: IndexMap<String, ExternType>,
+    pub tuple_types: IndexSet<tast::Ty>,
+    pub array_types: IndexSet<tast::Ty>,
+    pub ref_types: IndexSet<tast::Ty>,
+}
+
+impl GlobalMonoEnv {
+    pub fn from_lift_env(liftenv: GlobalLiftEnv) -> Self {
+        Self {
+            enums: liftenv.enums,
+            structs: liftenv.structs,
+            closure_env_apply: liftenv.closure_env_apply,
+            trait_defs: liftenv.trait_defs,
+            overloaded_funcs_to_trait_name: liftenv.overloaded_funcs_to_trait_name,
+            trait_impls: liftenv.trait_impls,
+            inherent_impls: liftenv.inherent_impls,
+            funcs: liftenv.funcs,
+            extern_funcs: liftenv.extern_funcs,
+            extern_types: liftenv.extern_types,
+            tuple_types: liftenv.tuple_types,
+            array_types: liftenv.array_types,
+            ref_types: liftenv.ref_types,
+        }
+    }
+
+    pub fn to_type_env(&self) -> GlobalTypeEnv {
+        GlobalTypeEnv {
+            enums: self.enums.clone(),
+            structs: self.structs.clone(),
+            trait_defs: self.trait_defs.clone(),
+            overloaded_funcs_to_trait_name: self.overloaded_funcs_to_trait_name.clone(),
+            trait_impls: self.trait_impls.clone(),
+            inherent_impls: self.inherent_impls.clone(),
+            funcs: self.funcs.clone(),
+            extern_funcs: self.extern_funcs.clone(),
+            extern_types: self.extern_types.clone(),
+            closure_env_apply: self.closure_env_apply.clone(),
+            tuple_types: self.tuple_types.clone(),
+            array_types: self.array_types.clone(),
+            ref_types: self.ref_types.clone(),
+        }
+    }
+
+    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+        &self.enums
+    }
+
+    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+        self.structs.get_mut(name)
+    }
+
+    pub fn insert_struct(&mut self, def: StructDef) {
+        self.structs.insert(def.name.clone(), def);
+    }
+
+    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+        &self.structs
+    }
+
+    pub fn insert_enum(&mut self, def: EnumDef) {
+        self.enums.insert(def.name.clone(), def);
+    }
+
+    pub fn retain_enums<F>(&mut self, f: F)
+    where
+        F: FnMut(&Ident, &mut EnumDef) -> bool,
+    {
+        self.enums.retain(f);
+    }
+
+    pub fn retain_structs<F>(&mut self, f: F)
+    where
+        F: FnMut(&Ident, &mut StructDef) -> bool,
+    {
+        self.structs.retain(f);
+    }
+
+    pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
+        struct TypeCollector {
+            tuples: IndexSet<tast::Ty>,
+            arrays: IndexSet<tast::Ty>,
+            refs: IndexSet<tast::Ty>,
+        }
+
+        impl TypeCollector {
+            fn new() -> Self {
+                Self {
+                    tuples: IndexSet::new(),
+                    arrays: IndexSet::new(),
+                    refs: IndexSet::new(),
+                }
+            }
+
+            fn finish(
+                mut self,
+                file: &core::File,
+            ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+                for item in &file.toplevels {
+                    self.collect_fn(item);
+                }
+                (self.tuples, self.arrays, self.refs)
+            }
+
+            fn collect_fn(&mut self, item: &core::Fn) {
+                for (_, ty) in &item.params {
+                    self.collect_type(ty);
+                }
+                self.collect_type(&item.ret_ty);
+                self.collect_expr(&item.body);
+            }
+
+            fn collect_expr(&mut self, expr: &core::Expr) {
+                match expr {
+                    core::Expr::EVar { ty, .. } | core::Expr::EPrim { ty, .. } => {
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EConstr {
+                        constructor: _,
+                        args,
+                        ty,
+                    } => {
+                        for arg in args {
+                            self.collect_expr(arg);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ETuple { items, ty } | core::Expr::EArray { items, ty } => {
+                        for item in items {
+                            self.collect_expr(item);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EClosure { params, body, ty } => {
+                        for param in params {
+                            self.collect_type(&param.get_ty());
+                        }
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ELet {
+                        value, body, ty, ..
+                    } => {
+                        self.collect_expr(value);
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EMatch {
+                        expr,
+                        arms,
+                        default,
+                        ty,
+                    } => {
+                        self.collect_expr(expr);
+                        for arm in arms {
+                            self.collect_expr(&arm.lhs);
+                            self.collect_expr(&arm.body);
+                        }
+                        if let Some(default) = default {
+                            self.collect_expr(default);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EIf {
+                        cond,
+                        then_branch,
+                        else_branch,
+                        ty,
+                    } => {
+                        self.collect_expr(cond);
+                        self.collect_expr(then_branch);
+                        self.collect_expr(else_branch);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EWhile { cond, body, ty } => {
+                        self.collect_expr(cond);
+                        self.collect_expr(body);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EConstrGet {
+                        expr,
+                        constructor: _,
+                        ty,
+                        ..
+                    } => {
+                        self.collect_expr(expr);
+                        self.collect_type(ty);
+                    }
+                    core::Expr::ECall { func, args, ty } => {
+                        self.collect_expr(func);
+                        for arg in args {
+                            self.collect_expr(arg);
+                        }
+                        self.collect_type(ty);
+                    }
+                    core::Expr::EProj { tuple, ty, .. } => {
+                        self.collect_expr(tuple);
+                        self.collect_type(ty);
+                    }
+                }
+            }
+
+            fn collect_type(&mut self, ty: &tast::Ty) {
+                match ty {
+                    tast::Ty::TTuple { typs } => {
+                        if self.tuples.insert(ty.clone()) {
+                            for inner in typs {
+                                self.collect_type(inner);
+                            }
+                        }
+                    }
+                    tast::Ty::TArray { elem, .. } => {
+                        if self.arrays.insert(ty.clone()) {
+                            self.collect_type(elem);
+                        }
+                    }
+                    tast::Ty::TRef { elem } => {
+                        if self.refs.insert(ty.clone()) {
+                            self.collect_type(elem);
+                        }
+                    }
+                    tast::Ty::TCon { .. } => {}
+                    tast::Ty::TApp { ty, args } => {
+                        self.collect_type(ty.as_ref());
+                        for arg in args {
+                            self.collect_type(arg);
+                        }
+                    }
+                    tast::Ty::TFunc { params, ret_ty } => {
+                        for param in params {
+                            self.collect_type(param);
+                        }
+                        self.collect_type(ret_ty);
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        let (tuples, arrays, refs) = TypeCollector::new().finish(file);
+        self.tuple_types = tuples;
+        self.array_types = arrays;
+        self.ref_types = refs;
+    }
+}
+
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
+pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv) {
+    let mut monoenv = GlobalMonoEnv::from_lift_env(genv);
     // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
@@ -489,7 +747,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
 
     // Phase 2: monomorphize enum type applications in types and update env
     struct TypeMono<'a> {
-        genv: &'a mut GlobalTypeEnv,
+        monoenv: &'a mut GlobalMonoEnv,
         // map generic (name, args) to new concrete Ident
         map: IndexMap<(String, Vec<Ty>), Ident>,
         // snapshot of original generic enum defs
@@ -498,11 +756,11 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     }
 
     impl<'a> TypeMono<'a> {
-        fn new(genv: &'a mut GlobalTypeEnv) -> Self {
-            let enum_base = genv.enums().clone();
-            let struct_base = genv.structs().clone();
+        fn new(monoenv: &'a mut GlobalMonoEnv) -> Self {
+            let enum_base = monoenv.enums().clone();
+            let struct_base = monoenv.structs().clone();
             Self {
-                genv,
+                monoenv,
                 map: IndexMap::new(),
                 enum_base,
                 struct_base,
@@ -562,7 +820,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                     generics: vec![],
                     variants: new_variants,
                 };
-                self.genv.insert_enum(new_def);
+                self.monoenv.insert_enum(new_def);
             } else if let Some(generic_def) = self.struct_base.get(&ident) {
                 let mut subst: IndexMap<String, Ty> = IndexMap::new();
                 if generic_def.generics.len() != args.len() {
@@ -590,7 +848,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
                     generics: vec![],
                     fields: new_fields,
                 };
-                self.genv.insert_struct(new_def);
+                self.monoenv.insert_struct(new_def);
             } else {
                 // Unknown type constructor; just return synthesized name without registering a def
             }
@@ -749,7 +1007,7 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     }
 
     // Rewrite function signatures and bodies
-    let mut m = TypeMono::new(genv);
+    let mut m = TypeMono::new(&mut monoenv);
     let mut new_fns = Vec::new();
     for f in ctx.out.into_iter() {
         let params = f
@@ -768,10 +1026,10 @@ pub fn mono(genv: &mut GlobalTypeEnv, file: core::File) -> core::File {
     }
 
     // Drop all generic enum defs to avoid Go backend panics
-    m.genv.retain_enums(|_n, def| def.generics.is_empty());
-    m.genv.retain_structs(|_n, def| def.generics.is_empty());
+    m.monoenv.retain_enums(|_n, def| def.generics.is_empty());
+    m.monoenv.retain_structs(|_n, def| def.generics.is_empty());
 
     let result = core::File { toplevels: new_fns };
-    m.genv.record_tuple_types_from_core(&result);
-    result
+    m.monoenv.record_tuple_types_from_core(&result);
+    (result, monoenv)
 }

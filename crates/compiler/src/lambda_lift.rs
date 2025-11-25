@@ -1,20 +1,77 @@
 use ast::ast::Ident;
-use indexmap::IndexMap;
+use indexmap::{IndexMap, IndexSet};
 use std::collections::HashMap;
 
 use crate::{
     core,
-    env::{Gensym, GlobalTypeEnv, StructDef},
+    env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
     mangle::decode_ty,
     tast::{self, Constructor, StructConstructor, Ty},
 };
+
+#[derive(Debug, Clone)]
+pub struct GlobalLiftEnv {
+    pub enums: IndexMap<Ident, EnumDef>,
+    pub structs: IndexMap<Ident, StructDef>,
+    pub closure_env_apply: IndexMap<String, String>,
+    pub trait_defs: IndexMap<(String, String), tast::Ty>,
+    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
+    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
+    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub funcs: IndexMap<String, tast::Ty>,
+    pub extern_funcs: IndexMap<String, ExternFunc>,
+    pub extern_types: IndexMap<String, ExternType>,
+    pub tuple_types: IndexSet<tast::Ty>,
+    pub array_types: IndexSet<tast::Ty>,
+    pub ref_types: IndexSet<tast::Ty>,
+}
+
+impl GlobalLiftEnv {
+    pub fn from_genv(genv: GlobalTypeEnv) -> Self {
+        Self {
+            enums: genv.enums,
+            structs: genv.structs,
+            closure_env_apply: genv.closure_env_apply,
+            trait_defs: genv.trait_defs,
+            overloaded_funcs_to_trait_name: genv.overloaded_funcs_to_trait_name,
+            trait_impls: genv.trait_impls,
+            inherent_impls: genv.inherent_impls,
+            funcs: genv.funcs,
+            extern_funcs: genv.extern_funcs,
+            extern_types: genv.extern_types,
+            tuple_types: genv.tuple_types,
+            array_types: genv.array_types,
+            ref_types: genv.ref_types,
+        }
+    }
+    pub fn register_closure_apply(&mut self, struct_name: &Ident, apply_fn: String) {
+        self.closure_env_apply
+            .insert(struct_name.0.clone(), apply_fn);
+    }
+
+    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+        &self.enums
+    }
+
+    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+        self.structs.get_mut(name)
+    }
+
+    pub fn insert_struct(&mut self, def: StructDef) {
+        self.structs.insert(def.name.clone(), def);
+    }
+
+    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+        &self.structs
+    }
+}
 
 struct ClosureTypeInfo {
     apply_fn: String,
 }
 
 struct State<'env> {
-    genv: &'env mut GlobalTypeEnv,
+    liftenv: &'env mut GlobalLiftEnv,
     gensym: &'env Gensym,
     next_id: usize,
     new_functions: Vec<core::Fn>,
@@ -23,9 +80,9 @@ struct State<'env> {
 }
 
 impl<'env> State<'env> {
-    fn new(genv: &'env mut GlobalTypeEnv, gensym: &'env Gensym) -> Self {
+    fn new(liftenv: &'env mut GlobalLiftEnv, gensym: &'env Gensym) -> Self {
         Self {
-            genv,
+            liftenv,
             gensym,
             next_id: 0,
             new_functions: Vec::new(),
@@ -51,7 +108,7 @@ impl<'env> State<'env> {
                 apply_fn: apply_fn.clone(),
             },
         );
-        self.genv.register_closure_apply(struct_name, apply_fn);
+        self.liftenv.register_closure_apply(struct_name, apply_fn);
     }
 
     fn closure_struct_for_ty(&self, ty: &Ty) -> Option<String> {
@@ -137,8 +194,13 @@ impl Scope {
     }
 }
 
-pub fn lambda_lift(genv: &mut GlobalTypeEnv, gensym: &Gensym, file: core::File) -> core::File {
-    let mut state = State::new(genv, gensym);
+pub fn lambda_lift(
+    genv: GlobalTypeEnv,
+    gensym: &Gensym,
+    file: core::File,
+) -> (core::File, GlobalLiftEnv) {
+    let mut liftenv = GlobalLiftEnv::from_genv(genv);
+    let mut state = State::new(&mut liftenv, gensym);
     let mut toplevels = Vec::new();
 
     for mut f in file.toplevels.into_iter() {
@@ -175,14 +237,14 @@ pub fn lambda_lift(genv: &mut GlobalTypeEnv, gensym: &Gensym, file: core::File) 
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
             ret_ty: Box::new(f.ret_ty.clone()),
         };
-        state.genv.funcs.insert(f.name.clone(), fn_ty);
+        state.liftenv.funcs.insert(f.name.clone(), fn_ty);
 
         toplevels.push(f);
     }
 
     toplevels.append(&mut state.new_functions);
 
-    core::File { toplevels }
+    (core::File { toplevels }, liftenv)
 }
 
 fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) -> core::Expr {
@@ -200,7 +262,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                         ty: entry.ty.clone(),
                     }
                 }
-            } else if let Some(func_ty) = state.genv.funcs.get(&name) {
+            } else if let Some(func_ty) = state.liftenv.funcs.get(&name) {
                 core::Expr::EVar {
                     name,
                     ty: func_ty.clone(),
@@ -226,7 +288,9 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
                     .collect();
 
-                if let Some(struct_def) = state.genv.struct_def_mut(&struct_constructor.type_name) {
+                if let Some(struct_def) =
+                    state.liftenv.struct_def_mut(&struct_constructor.type_name)
+                {
                     for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
                     {
                         if let Some(struct_name) = closure_struct_name {
@@ -509,7 +573,7 @@ fn transform_closure(
         generics: Vec::new(),
         fields: struct_fields,
     };
-    state.genv.insert_struct(struct_def);
+    state.liftenv.insert_struct(struct_def);
 
     let apply_fn_name = state.gensym.gensym("__closure_apply");
     state.register_closure_type(&struct_name, apply_fn_name.clone());
@@ -551,7 +615,7 @@ fn transform_closure(
     let mut func_param_tys = Vec::with_capacity(param_tys.len() + 1);
     func_param_tys.push(env_ty.clone());
     func_param_tys.extend(param_tys.clone());
-    state.genv.funcs.insert(
+    state.liftenv.funcs.insert(
         apply_fn_name,
         Ty::TFunc {
             params: func_param_tys,
@@ -685,7 +749,7 @@ fn instantiate_struct_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let struct_def = state.genv.structs().get(struct_name)?;
+    let struct_def = state.liftenv.structs().get(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     if struct_def.generics.is_empty() {
         return Some(raw_field_ty.clone());
@@ -714,7 +778,7 @@ fn instantiate_enum_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let enum_def = state.genv.enums().get(&constructor.type_name)?;
+    let enum_def = state.liftenv.enums().get(&constructor.type_name)?;
     let (_, fields) = enum_def
         .variants
         .iter()

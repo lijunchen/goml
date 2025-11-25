@@ -112,7 +112,7 @@ pub fn compile_to_mono(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -132,10 +132,10 @@ pub fn compile_to_mono(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
+    let (lifted, liftenv) = compiler::lambda_lift::lambda_lift(genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, lifted);
-    mono.to_pretty(&genv, 120)
+    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
+    mono.to_pretty(&monoenv.to_type_env(), 120)
 }
 
 #[wasm_bindgen]
@@ -156,7 +156,7 @@ pub fn compile_to_anf(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -176,12 +176,12 @@ pub fn compile_to_anf(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
+    let (lifted, liftenv) = compiler::lambda_lift::lambda_lift(genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, lifted);
+    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
 
-    let anf = compiler::anf::anf_file(&genv, &gensym, mono);
-    anf.to_pretty(&genv, 120)
+    let (anf, anfenv) = compiler::anf::anf_file(monoenv, &gensym, mono);
+    anf.to_pretty(&anfenv.to_type_env(), 120)
 }
 
 #[wasm_bindgen]
@@ -202,7 +202,7 @@ pub fn compile_to_go(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, mut genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -222,14 +222,13 @@ pub fn compile_to_go(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let lifted = compiler::lambda_lift::lambda_lift(&mut genv, &gensym, core);
+    let (lifted, liftenv) = compiler::lambda_lift::lambda_lift(genv, &gensym, core);
 
-    let mono = compiler::mono::mono(&mut genv, lifted);
+    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
 
-    let anf = compiler::anf::anf_file(&genv, &gensym, mono);
-
-    let go = compiler::go::compile::go_file(&genv, &gensym, anf);
-    go.to_pretty(&genv, 120)
+    let (anf, anfenv) = compiler::anf::anf_file(monoenv, &gensym, mono);
+    let (go, goenv) = compiler::go::compile::go_file(anfenv, &gensym, anf);
+    go.to_pretty(&goenv.to_type_env(), 120)
 }
 
 #[wasm_bindgen]

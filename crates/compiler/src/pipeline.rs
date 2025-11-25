@@ -7,10 +7,13 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::{
-    anf, compile_match, derive,
+    anf::{self, GlobalAnfEnv},
+    compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
-    go::{self, goast},
-    lambda_lift, mono, tast, typer,
+    go::{self, compile::GlobalGoEnv, goast},
+    lambda_lift::{self, GlobalLiftEnv},
+    mono::{self, GlobalMonoEnv},
+    tast, typer,
 };
 
 #[derive(Debug)]
@@ -19,8 +22,11 @@ pub struct Compilation {
     pub cst: CstFile,
     pub ast: ast::File,
     pub tast: tast::File,
-    pub genv0: GlobalTypeEnv,
     pub genv: GlobalTypeEnv,
+    pub liftenv: GlobalLiftEnv,
+    pub monoenv: GlobalMonoEnv,
+    pub anfenv: GlobalAnfEnv,
+    pub goenv: GlobalGoEnv,
     pub core: crate::core::File,
     pub lambda: crate::core::File,
     pub mono: crate::core::File,
@@ -82,14 +88,12 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    let (tast, mut genv, mut diagnostics) = typer::check_file(ast.clone());
+    let (tast, genv, mut diagnostics) = typer::check_file(ast.clone());
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer {
             diagnostics: diagnostics.clone(),
         });
     }
-
-    let genv0 = genv.clone();
 
     let gensym = Gensym::new();
 
@@ -97,18 +101,21 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
-    let lifted_core = lambda_lift::lambda_lift(&mut genv, &gensym, core.clone());
-    let mono = mono::mono(&mut genv, lifted_core.clone());
-    let anf = anf::anf_file(&genv, &gensym, mono.clone());
-    let go = go::compile::go_file(&genv, &gensym, anf.clone());
+    let (lifted_core, liftenv) = lambda_lift::lambda_lift(genv.clone(), &gensym, core.clone());
+    let (mono, monoenv) = mono::mono(liftenv.clone(), lifted_core.clone());
+    let (anf, anfenv) = anf::anf_file(monoenv.clone(), &gensym, mono.clone());
+    let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
 
     Ok(Compilation {
         green_node,
         cst,
         ast,
         tast,
-        genv0,
         genv,
+        liftenv,
+        monoenv,
+        anfenv,
+        goenv,
         core,
         lambda: lifted_core,
         mono,

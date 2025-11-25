@@ -224,15 +224,23 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
     expect_test::expect_file![tast_filename]
-        .assert_eq(&compilation.tast.to_pretty(&compilation.genv0, 120));
+        .assert_eq(&compilation.tast.to_pretty(&compilation.genv, 120));
     expect_test::expect_file![core_filename]
-        .assert_eq(&compilation.core.to_pretty(&compilation.genv0, 120));
-    expect_test::expect_file![mono_filename]
-        .assert_eq(&compilation.mono.to_pretty(&compilation.genv, 120));
-    expect_test::expect_file![anf_filename]
-        .assert_eq(&compilation.anf.to_pretty(&compilation.genv, 120));
+        .assert_eq(&compilation.core.to_pretty(&compilation.genv, 120));
+    expect_test::expect_file![mono_filename].assert_eq(
+        &compilation
+            .mono
+            .to_pretty(&compilation.goenv.to_type_env(), 120),
+    );
+    expect_test::expect_file![anf_filename].assert_eq(
+        &compilation
+            .anf
+            .to_pretty(&compilation.goenv.to_type_env(), 120),
+    );
 
-    let go_source = compilation.go.to_pretty(&compilation.genv, 120);
+    let go_source = compilation
+        .go
+        .to_pretty(&compilation.goenv.to_type_env(), 120);
     expect_test::expect_file![&go_filename].assert_eq(&go_source);
 
     let go_output = execute_go_source(&go_source)?;
