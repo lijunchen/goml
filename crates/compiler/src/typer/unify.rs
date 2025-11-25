@@ -171,7 +171,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(Ident, Vec<tast::Ty>)> {
 }
 
 impl Typer {
-    pub fn solve(&mut self, diagnostics: &mut Diagnostics, genv: &GlobalTypeEnv) {
+    pub fn solve(&mut self, genv: &GlobalTypeEnv, diagnostics: &mut Diagnostics) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 

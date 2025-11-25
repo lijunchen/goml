@@ -607,7 +607,7 @@ fn check_fn(
     let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
     local_env.pop_scope();
     local_env.clear_tparams_env();
-    typer.solve(diagnostics, genv);
+    typer.solve(genv, diagnostics);
     let typed_body = typer.subst(diagnostics, typed_body);
     tast::Fn {
         name: f.name.0.clone(),
@@ -657,7 +657,7 @@ fn check_impl_block(
         let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
         local_env.pop_scope();
         local_env.clear_tparams_env();
-        typer.solve(diagnostics, genv);
+        typer.solve(genv, diagnostics);
         let typed_body = typer.subst(diagnostics, typed_body);
         typed_methods.push(tast::Fn {
             name: f.name.0.clone(),
