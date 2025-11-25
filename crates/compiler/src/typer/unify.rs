@@ -211,7 +211,7 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r) => {
-                        if self.unify(genv, diagnostics, &l, &r) {
+                        if self.unify(diagnostics, &l, &r) {
                             changed = true;
                         }
                     }
@@ -313,7 +313,7 @@ impl Typer {
                             });
                             let field_ty =
                                 instantiate_struct_field_ty(struct_def, &type_args, &field);
-                            if self.unify(genv, diagnostics, &result_ty, &field_ty) {
+                            if self.unify(diagnostics, &result_ty, &field_ty) {
                                 changed = true;
                             }
                         } else {
@@ -397,13 +397,7 @@ impl Typer {
         }
     }
 
-    fn unify(
-        &mut self,
-        genv: &GlobalTypeEnv,
-        diagnostics: &mut Diagnostics,
-        l: &tast::Ty,
-        r: &tast::Ty,
-    ) -> bool {
+    fn unify(&mut self, diagnostics: &mut Diagnostics, l: &tast::Ty, r: &tast::Ty) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
@@ -455,7 +449,7 @@ impl Typer {
                     return false;
                 }
                 for (ty1, ty2) in typs1.iter().zip(typs2.iter()) {
-                    if !self.unify(genv, diagnostics, ty1, ty2) {
+                    if !self.unify(diagnostics, ty1, ty2) {
                         return false;
                     }
                 }
@@ -479,12 +473,12 @@ impl Typer {
                     ));
                     return false;
                 }
-                if !self.unify(genv, diagnostics, elem1, elem2) {
+                if !self.unify(diagnostics, elem1, elem2) {
                     return false;
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
-                if !self.unify(genv, diagnostics, elem1, elem2) {
+                if !self.unify(diagnostics, elem1, elem2) {
                     return false;
                 }
             }
@@ -510,11 +504,11 @@ impl Typer {
                     return false;
                 }
                 for (p1, p2) in param1.iter().zip(param2.iter()) {
-                    if !self.unify(genv, diagnostics, p1, p2) {
+                    if !self.unify(diagnostics, p1, p2) {
                         return false;
                     }
                 }
-                if !self.unify(genv, diagnostics, ret_ty1, ret_ty2) {
+                if !self.unify(diagnostics, ret_ty1, ret_ty2) {
                     return false;
                 }
             }
@@ -549,11 +543,11 @@ impl Typer {
                     ));
                     return false;
                 }
-                if !self.unify(genv, diagnostics, ty1.as_ref(), ty2.as_ref()) {
+                if !self.unify(diagnostics, ty1.as_ref(), ty2.as_ref()) {
                     return false;
                 }
                 for (arg1, arg2) in args1.iter().zip(args2.iter()) {
-                    if !self.unify(genv, diagnostics, arg1, arg2) {
+                    if !self.unify(diagnostics, arg1, arg2) {
                         return false;
                     }
                 }
