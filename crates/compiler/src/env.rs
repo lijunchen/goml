@@ -8,7 +8,7 @@ pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_functions, builtin_inherent_methods};
 use crate::{
     core,
-    mangle::{decode_ty, encode_ty},
+    mangle::encode_ty,
     tast::{self, Constructor},
 };
 use std::cell::Cell;
@@ -40,23 +40,6 @@ pub struct ExternType {
     pub package_path: Option<String>,
 }
 
-pub fn encode_trait_impl(trait_name: &Ident, type_name: &tast::Ty) -> String {
-    let trait_name = &trait_name.0;
-    let type_repr = encode_ty(type_name);
-    format!("__{}%{}", trait_name, type_repr)
-}
-
-pub fn decode_trait_impl(impl_name: &str) -> (Ident, tast::Ty) {
-    let impl_name = impl_name.strip_prefix("__").unwrap_or(impl_name);
-    let (trait_part, type_part) = impl_name
-        .split_once('%')
-        .expect("Invalid trait impl name format");
-    let trait_name = Ident::new(trait_part);
-    let ty = decode_ty(type_part)
-        .unwrap_or_else(|err| panic!("Failed to decode trait impl type `{}`: {}", type_part, err));
-    (trait_name, ty)
-}
-
 #[derive(Debug, Clone)]
 pub enum Constraint {
     TypeEqual(tast::Ty, tast::Ty),
@@ -73,7 +56,6 @@ pub enum Constraint {
 }
 
 #[derive(Debug, Clone)]
-#[allow(unused)]
 pub struct GlobalTypeEnv {
     enums: IndexMap<Ident, EnumDef>,
     structs: IndexMap<Ident, StructDef>,
@@ -284,12 +266,6 @@ impl GlobalTypeEnv {
             .cloned()
     }
 
-    pub fn get_variant_name(&self, tenum_name: &str, index: i32) -> String {
-        let enum_def = self.enums.get(&Ident::new(tenum_name)).unwrap();
-        let variant = &enum_def.variants[index as usize];
-        format!("{}::{}", enum_def.name.0, variant.0.0)
-    }
-
     pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
         self.lookup_constructor_with_namespace(None, constr)
     }
@@ -420,22 +396,6 @@ impl GlobalTypeEnv {
             });
             (constructor, ctor_ty)
         })
-    }
-
-    pub fn get_type_of_constructor(&self, constr: &str) -> Option<tast::Ty> {
-        let uident = Ident::new(constr);
-        self.lookup_constructor(&uident).map(|(_, ty)| ty)
-    }
-
-    pub fn get_index_of_constructor(&self, constr: &str) -> Option<i32> {
-        for (_, enum_def) in self.enums.iter() {
-            for (index, variant) in enum_def.variants.iter().enumerate() {
-                if variant.0.0 == constr {
-                    return Some(index as i32);
-                }
-            }
-        }
-        None
     }
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
@@ -673,16 +633,6 @@ impl LocalTypeEnv {
             panic!("attempted to pop base scope from type environment");
         }
         self.scopes.pop();
-    }
-
-    pub fn with_scope<F, R>(&mut self, f: F) -> R
-    where
-        F: FnOnce(&mut LocalTypeEnv) -> R,
-    {
-        self.push_scope();
-        let result = f(self);
-        self.pop_scope();
-        result
     }
 
     pub fn insert_var(&mut self, name: &Ident, ty: tast::Ty) {
