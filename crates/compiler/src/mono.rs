@@ -1,7 +1,7 @@
 use super::core;
 use crate::core::Ty;
 use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
-use crate::lambda_lift::GlobalLiftEnv;
+use crate::lift::GlobalLiftEnv;
 use crate::mangle::encode_ty;
 use crate::tast::{self, Constructor, Prim};
 use ast::ast::Ident;
