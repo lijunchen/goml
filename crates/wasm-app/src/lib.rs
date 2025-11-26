@@ -269,6 +269,10 @@ pub fn get_tast(src: &str) -> String {
         Ok(ast) => ast,
         Err(diagnostics) => return format_lower_errors(diagnostics),
     };
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(diagnostics) => return format_derive_errors(diagnostics),
+    };
 
     let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
     let typer_errors = format_typer_diagnostics(&diagnostics);
