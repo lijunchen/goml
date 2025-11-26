@@ -11,7 +11,7 @@ use crate::{
     compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
-    lambda_lift::{self, GlobalLiftEnv},
+    lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast, typer,
 };
@@ -28,8 +28,8 @@ pub struct Compilation {
     pub anfenv: GlobalAnfEnv,
     pub goenv: GlobalGoEnv,
     pub core: crate::core::File,
-    pub lambda: crate::core::File,
-    pub mono: crate::core::File,
+    pub lambda: LiftFile,
+    pub mono: mono::MonoFile,
     pub anf: anf::File,
     pub go: goast::File,
 }
@@ -101,7 +101,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
-    let (lifted_core, liftenv) = lambda_lift::lambda_lift(genv.clone(), &gensym, core.clone());
+    let (lifted_core, liftenv) = lift::lambda_lift(genv.clone(), &gensym, core.clone());
     let (mono, monoenv) = mono::mono(liftenv.clone(), lifted_core.clone());
     let (anf, anfenv) = anf::anf_file(monoenv.clone(), &gensym, mono.clone());
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());

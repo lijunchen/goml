@@ -5,7 +5,7 @@ pub mod core;
 pub mod derive;
 pub mod env;
 pub mod go;
-pub mod lambda_lift;
+pub mod lift;
 pub mod mangle;
 pub mod mono;
 pub mod pipeline;
