@@ -1,11 +1,137 @@
 use super::core;
+use crate::core::Ty;
 use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
 use crate::lambda_lift::GlobalLiftEnv;
 use crate::mangle::encode_ty;
-use crate::tast::{self, Constructor, Ty};
+use crate::tast::{self, Constructor, Prim};
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum MonoTy {
+    TUnit,
+    TBool,
+    TInt8,
+    TInt16,
+    TInt32,
+    TInt64,
+    TUint8,
+    TUint16,
+    TUint32,
+    TUint64,
+    TFloat32,
+    TFloat64,
+    TString,
+    TTuple {
+        typs: Vec<MonoTy>,
+    },
+    TCon {
+        name: String,
+    },
+    TArray {
+        len: usize,
+        elem: Box<MonoTy>,
+    },
+    TRef {
+        elem: Box<MonoTy>,
+    },
+    TParam {
+        name: String,
+    },
+    TFunc {
+        params: Vec<MonoTy>,
+        ret_ty: Box<MonoTy>,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub struct MonoFile {
+    pub toplevels: Vec<MonoFn>,
+}
+
+#[derive(Debug, Clone)]
+pub struct MonoFn {
+    pub name: String,
+    pub params: Vec<(String, MonoTy)>,
+    pub ret_ty: MonoTy,
+    pub body: MonoExpr,
+}
+
+#[derive(Debug, Clone)]
+pub enum MonoExpr {
+    EVar {
+        name: String,
+        ty: MonoTy,
+    },
+    EPrim {
+        value: Prim,
+        ty: MonoTy,
+    },
+    EConstr {
+        constructor: Constructor,
+        args: Vec<MonoExpr>,
+        ty: MonoTy,
+    },
+    ETuple {
+        items: Vec<MonoExpr>,
+        ty: MonoTy,
+    },
+    EArray {
+        items: Vec<MonoExpr>,
+        ty: MonoTy,
+    },
+    EClosure {
+        params: Vec<tast::ClosureParam>,
+        body: Box<MonoExpr>,
+        ty: MonoTy,
+    },
+    ELet {
+        name: String,
+        value: Box<MonoExpr>,
+        body: Box<MonoExpr>,
+        ty: MonoTy,
+    },
+    EMatch {
+        expr: Box<MonoExpr>,
+        arms: Vec<MonoArm>,
+        default: Option<Box<MonoExpr>>,
+        ty: MonoTy,
+    },
+    EIf {
+        cond: Box<MonoExpr>,
+        then_branch: Box<MonoExpr>,
+        else_branch: Box<MonoExpr>,
+        ty: MonoTy,
+    },
+    EWhile {
+        cond: Box<MonoExpr>,
+        body: Box<MonoExpr>,
+        ty: MonoTy,
+    },
+    EConstrGet {
+        expr: Box<MonoExpr>,
+        constructor: Constructor,
+        field_index: usize,
+        ty: MonoTy,
+    },
+    ECall {
+        func: Box<MonoExpr>,
+        args: Vec<MonoExpr>,
+        ty: MonoTy,
+    },
+    EProj {
+        tuple: Box<MonoExpr>,
+        index: usize,
+        ty: MonoTy,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub struct MonoArm {
+    pub lhs: MonoExpr,
+    pub body: MonoExpr,
+}
 
 #[derive(Debug, Clone)]
 pub struct GlobalMonoEnv {
