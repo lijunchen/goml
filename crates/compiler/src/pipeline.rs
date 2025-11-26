@@ -11,7 +11,7 @@ use crate::{
     compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
-    lift::{self, GlobalLiftEnv},
+    lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast, typer,
 };
@@ -28,7 +28,7 @@ pub struct Compilation {
     pub anfenv: GlobalAnfEnv,
     pub goenv: GlobalGoEnv,
     pub core: crate::core::File,
-    pub lambda: crate::core::File,
+    pub lambda: LiftFile,
     pub mono: mono::MonoFile,
     pub anf: anf::File,
     pub go: goast::File,

@@ -1,7 +1,6 @@
-use super::core;
 use crate::core::Ty;
 use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
-use crate::lift::GlobalLiftEnv;
+use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
 use crate::tast::{self, Constructor, Prim};
 use ast::ast::Ident;
@@ -455,7 +454,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
     }
 }
 
-fn fn_is_generic(f: &core::Fn) -> bool {
+fn fn_is_generic(f: &LiftFn) -> bool {
     f.params.iter().any(|(_, t)| has_tparam(t)) || has_tparam(&f.ret_ty)
 }
 
@@ -612,7 +611,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 
 // State used during transformation
 struct Ctx {
-    orig_fns: IndexMap<String, core::Fn>,
+    orig_fns: IndexMap<String, LiftFn>,
     // map (orig_name, subst_key) -> spec_name
     instances: IndexMap<(String, String), String>,
     queued: IndexSet<(String, String)>,
@@ -621,7 +620,7 @@ struct Ctx {
 }
 
 impl Ctx {
-    fn new(orig_fns: IndexMap<String, core::Fn>) -> Self {
+    fn new(orig_fns: IndexMap<String, LiftFn>) -> Self {
         Self {
             orig_fns,
             instances: IndexMap::new(),
@@ -650,20 +649,20 @@ impl Ctx {
 }
 
 // Transform an expression under a given substitution; queue any needed instances
-fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
+fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
     match e.clone() {
-        core::Expr::EVar { name, ty } => MonoExpr::EVar {
+        LiftExpr::EVar { name, ty } => MonoExpr::EVar {
             name,
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EPrim { value, ty } => {
+        LiftExpr::EPrim { value, ty } => {
             let ty = subst_ty(&ty, s);
             MonoExpr::EPrim {
                 value: value.coerce(&ty),
                 ty,
             }
         }
-        core::Expr::EConstr {
+        LiftExpr::EConstr {
             constructor,
             args,
             ty,
@@ -676,18 +675,15 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        core::Expr::ETuple { items, ty } => MonoExpr::ETuple {
+        LiftExpr::ETuple { items, ty } => MonoExpr::ETuple {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EArray { items, ty } => MonoExpr::EArray {
+        LiftExpr::EArray { items, ty } => MonoExpr::EArray {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EClosure { .. } => {
-            panic!("lambda lift should have removed closures before monomorphization");
-        }
-        core::Expr::ELet {
+        LiftExpr::ELet {
             name,
             value,
             body,
@@ -698,7 +694,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             body: Box::new(mono_expr(ctx, &body, s)),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EMatch {
+        LiftExpr::EMatch {
             expr,
             arms,
             default,
@@ -715,7 +711,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             default: default.map(|d| Box::new(mono_expr(ctx, &d, s))),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EIf {
+        LiftExpr::EIf {
             cond,
             then_branch,
             else_branch,
@@ -726,12 +722,12 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EWhile { cond, body, ty } => MonoExpr::EWhile {
+        LiftExpr::EWhile { cond, body, ty } => MonoExpr::EWhile {
             cond: Box::new(mono_expr(ctx, &cond, s)),
             body: Box::new(mono_expr(ctx, &body, s)),
             ty: subst_ty(&ty, s),
         },
-        core::Expr::EConstrGet {
+        LiftExpr::EConstrGet {
             expr,
             constructor,
             field_index,
@@ -747,7 +743,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: subst_ty(&ty, s),
             }
         }
-        core::Expr::ECall { func, args, ty } => {
+        LiftExpr::ECall { func, args, ty } => {
             let new_func = mono_expr(ctx, &func, s);
             let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
             let new_ty = subst_ty(&ty, s);
@@ -820,7 +816,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
+        LiftExpr::EProj { tuple, index, ty } => MonoExpr::EProj {
             tuple: Box::new(mono_expr(ctx, &tuple, s)),
             index,
             ty: subst_ty(&ty, s),
@@ -1085,12 +1081,12 @@ fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
     }
 }
 
-// Monomorphize Core IR by specializing generic functions per concrete call site.
+// Monomorphize Lift IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) {
+pub fn mono(genv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
     let mut monoenv = GlobalMonoEnv::from_lift_env(genv);
     // Build original function map
-    let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
+    let mut orig_fns: IndexMap<String, LiftFn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
         orig_fns.insert(f.name.clone(), f);
     }

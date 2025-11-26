@@ -6,7 +6,7 @@ use crate::{
     core,
     env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
     mangle::decode_ty,
-    tast::{self, Constructor, StructConstructor, Ty},
+    tast::{self, Constructor, Prim, StructConstructor, Ty},
 };
 
 #[derive(Debug, Clone)]
@@ -66,6 +66,111 @@ impl GlobalLiftEnv {
     }
 }
 
+// Lift IR: Like Core IR but without closures.
+// Closures are converted to struct construction + lifted functions.
+
+#[derive(Debug, Clone)]
+pub struct LiftFile {
+    pub toplevels: Vec<LiftFn>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LiftFn {
+    pub name: String,
+    pub params: Vec<(String, Ty)>,
+    pub ret_ty: Ty,
+    pub body: LiftExpr,
+}
+
+#[derive(Debug, Clone)]
+pub enum LiftExpr {
+    EVar {
+        name: String,
+        ty: Ty,
+    },
+    EPrim {
+        value: Prim,
+        ty: Ty,
+    },
+    EConstr {
+        constructor: Constructor,
+        args: Vec<LiftExpr>,
+        ty: Ty,
+    },
+    ETuple {
+        items: Vec<LiftExpr>,
+        ty: Ty,
+    },
+    EArray {
+        items: Vec<LiftExpr>,
+        ty: Ty,
+    },
+    ELet {
+        name: String,
+        value: Box<LiftExpr>,
+        body: Box<LiftExpr>,
+        ty: Ty,
+    },
+    EMatch {
+        expr: Box<LiftExpr>,
+        arms: Vec<LiftArm>,
+        default: Option<Box<LiftExpr>>,
+        ty: Ty,
+    },
+    EIf {
+        cond: Box<LiftExpr>,
+        then_branch: Box<LiftExpr>,
+        else_branch: Box<LiftExpr>,
+        ty: Ty,
+    },
+    EWhile {
+        cond: Box<LiftExpr>,
+        body: Box<LiftExpr>,
+        ty: Ty,
+    },
+    EConstrGet {
+        expr: Box<LiftExpr>,
+        constructor: Constructor,
+        field_index: usize,
+        ty: Ty,
+    },
+    ECall {
+        func: Box<LiftExpr>,
+        args: Vec<LiftExpr>,
+        ty: Ty,
+    },
+    EProj {
+        tuple: Box<LiftExpr>,
+        index: usize,
+        ty: Ty,
+    },
+}
+
+impl LiftExpr {
+    pub fn get_ty(&self) -> Ty {
+        match self {
+            LiftExpr::EVar { ty, .. } => ty.clone(),
+            LiftExpr::EPrim { ty, .. } => ty.clone(),
+            LiftExpr::EConstr { ty, .. } => ty.clone(),
+            LiftExpr::ETuple { ty, .. } => ty.clone(),
+            LiftExpr::EArray { ty, .. } => ty.clone(),
+            LiftExpr::ELet { ty, .. } => ty.clone(),
+            LiftExpr::EMatch { ty, .. } => ty.clone(),
+            LiftExpr::EIf { ty, .. } => ty.clone(),
+            LiftExpr::EWhile { ty, .. } => ty.clone(),
+            LiftExpr::EConstrGet { ty, .. } => ty.clone(),
+            LiftExpr::ECall { ty, .. } => ty.clone(),
+            LiftExpr::EProj { ty, .. } => ty.clone(),
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct LiftArm {
+    pub lhs: LiftExpr,
+    pub body: LiftExpr,
+}
+
 struct ClosureTypeInfo {
     apply_fn: String,
 }
@@ -74,7 +179,7 @@ struct State<'env> {
     liftenv: &'env mut GlobalLiftEnv,
     gensym: &'env Gensym,
     next_id: usize,
-    new_functions: Vec<core::Fn>,
+    new_functions: Vec<LiftFn>,
     closure_types: IndexMap<String, ClosureTypeInfo>,
     context_stack: Vec<String>,
 }
@@ -198,12 +303,12 @@ pub fn lambda_lift(
     genv: GlobalTypeEnv,
     gensym: &Gensym,
     file: core::File,
-) -> (core::File, GlobalLiftEnv) {
+) -> (LiftFile, GlobalLiftEnv) {
     let mut liftenv = GlobalLiftEnv::from_genv(genv);
     let mut state = State::new(&mut liftenv, gensym);
     let mut toplevels = Vec::new();
 
-    for mut f in file.toplevels.into_iter() {
+    for f in file.toplevels.into_iter() {
         let mut scope = Scope::new();
         scope.push_layer();
         for (name, ty) in f.params.iter() {
@@ -228,50 +333,64 @@ pub fn lambda_lift(
         scope.pop_layer();
 
         let body_ty = body.get_ty();
-        f.body = body;
-        if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
-            f.ret_ty = body_ty;
-        }
+        let ret_ty = if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
+            body_ty
+        } else {
+            f.ret_ty.clone()
+        };
 
         let fn_ty = Ty::TFunc {
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
-            ret_ty: Box::new(f.ret_ty.clone()),
+            ret_ty: Box::new(ret_ty.clone()),
         };
         state.liftenv.funcs.insert(f.name.clone(), fn_ty);
 
-        toplevels.push(f);
+        toplevels.push(LiftFn {
+            name: f.name,
+            params: f.params,
+            ret_ty,
+            body,
+        });
     }
 
-    toplevels.append(&mut state.new_functions);
+    // Convert newly generated closure apply functions to LiftFn
+    for f in state.new_functions.into_iter() {
+        toplevels.push(LiftFn {
+            name: f.name,
+            params: f.params,
+            ret_ty: f.ret_ty,
+            body: f.body,
+        });
+    }
 
-    (core::File { toplevels }, liftenv)
+    (LiftFile { toplevels }, liftenv)
 }
 
-fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) -> core::Expr {
+fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) -> LiftExpr {
     match expr {
         core::Expr::EVar { name, ty } => {
             if let Some(entry) = scope.get(&name) {
                 if let Some(struct_name) = entry.closure_struct.clone() {
-                    core::Expr::EVar {
+                    LiftExpr::EVar {
                         name,
                         ty: Ty::TCon { name: struct_name },
                     }
                 } else {
-                    core::Expr::EVar {
+                    LiftExpr::EVar {
                         name,
                         ty: entry.ty.clone(),
                     }
                 }
             } else if let Some(func_ty) = state.liftenv.funcs.get(&name) {
-                core::Expr::EVar {
+                LiftExpr::EVar {
                     name,
                     ty: func_ty.clone(),
                 }
             } else {
-                core::Expr::EVar { name, ty }
+                LiftExpr::EVar { name, ty }
             }
         }
-        core::Expr::EPrim { .. } => expr,
+        core::Expr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
         core::Expr::EConstr {
             constructor,
             args,
@@ -300,7 +419,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 }
             }
 
-            core::Expr::EConstr {
+            LiftExpr::EConstr {
                 constructor,
                 args,
                 ty,
@@ -312,7 +431,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 .map(|item| transform_expr(state, scope, item))
                 .collect::<Vec<_>>();
             let typs = items.iter().map(|item| item.get_ty()).collect();
-            core::Expr::ETuple {
+            LiftExpr::ETuple {
                 items,
                 ty: Ty::TTuple { typs },
             }
@@ -322,7 +441,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
                 .collect();
-            core::Expr::EArray { items, ty }
+            LiftExpr::EArray { items, ty }
         }
         core::Expr::EClosure { params, body, ty } => {
             transform_closure(state, scope, params, *body, ty, None)
@@ -349,7 +468,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             let body = transform_expr(state, scope, *body);
             scope.pop_layer();
             let body_ty = body.get_ty();
-            core::Expr::ELet {
+            LiftExpr::ELet {
                 name,
                 value: Box::new(value),
                 body: Box::new(body),
@@ -365,13 +484,13 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             let expr = Box::new(transform_expr(state, scope, *expr));
             let arms = arms
                 .into_iter()
-                .map(|arm| core::Arm {
+                .map(|arm| LiftArm {
                     lhs: transform_expr(state, scope, arm.lhs),
                     body: transform_expr(state, scope, arm.body),
                 })
                 .collect();
             let default = default.map(|d| Box::new(transform_expr(state, scope, *d)));
-            core::Expr::EMatch {
+            LiftExpr::EMatch {
                 expr,
                 arms,
                 default,
@@ -387,7 +506,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             let cond = Box::new(transform_expr(state, scope, *cond));
             let then_branch = Box::new(transform_expr(state, scope, *then_branch));
             let else_branch = Box::new(transform_expr(state, scope, *else_branch));
-            core::Expr::EIf {
+            LiftExpr::EIf {
                 cond,
                 then_branch,
                 else_branch,
@@ -397,7 +516,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
         core::Expr::EWhile { cond, body, ty } => {
             let cond = Box::new(transform_expr(state, scope, *cond));
             let body = Box::new(transform_expr(state, scope, *body));
-            core::Expr::EWhile { cond, body, ty }
+            LiftExpr::EWhile { cond, body, ty }
         }
         core::Expr::EConstrGet {
             expr,
@@ -426,7 +545,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
             {
                 result_ty = field_ty;
             }
-            core::Expr::EConstrGet {
+            LiftExpr::EConstrGet {
                 expr,
                 constructor,
                 field_index,
@@ -440,7 +559,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 .map(|arg| transform_expr(state, scope, arg))
                 .collect::<Vec<_>>();
 
-            if let core::Expr::EVar { name, .. } = &func_expr
+            if let LiftExpr::EVar { name, .. } = &func_expr
                 && let Some(entry) = scope.get(name)
                 && let Some(struct_name) = entry
                     .closure_struct
@@ -449,7 +568,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 && let Some(apply_fn) = state.apply_fn_for_struct(&struct_name)
             {
                 let mut call_args = Vec::with_capacity(args.len() + 1);
-                call_args.push(core::Expr::EVar {
+                call_args.push(LiftExpr::EVar {
                     name: name.clone(),
                     ty: Ty::TCon {
                         name: struct_name.clone(),
@@ -457,8 +576,8 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 });
                 call_args.extend(args);
                 let func_ty = entry.ty.clone();
-                return core::Expr::ECall {
-                    func: Box::new(core::Expr::EVar {
+                return LiftExpr::ECall {
+                    func: Box::new(LiftExpr::EVar {
                         name: apply_fn.to_string(),
                         ty: func_ty,
                     }),
@@ -473,7 +592,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 }
                 _ => ty,
             };
-            core::Expr::ECall {
+            LiftExpr::ECall {
                 func: Box::new(func_expr),
                 args,
                 ty: call_ty,
@@ -485,7 +604,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 Ty::TTuple { typs } if index < typs.len() => typs[index].clone(),
                 _ => ty,
             };
-            core::Expr::EProj {
+            LiftExpr::EProj {
                 tuple,
                 index,
                 ty: proj_ty,
@@ -501,7 +620,7 @@ fn transform_closure(
     body: core::Expr,
     ty: Ty,
     name_hint: Option<String>,
-) -> core::Expr {
+) -> LiftExpr {
     let (param_tys, ret_ty) = match ty.clone() {
         Ty::TFunc { params, ret_ty } => (params, *ret_ty),
         other => {
@@ -562,7 +681,7 @@ fn transform_closure(
     for (index, (name, field_ty)) in captured.iter().enumerate() {
         let field_name = make_field_name(name, index);
         struct_fields.push((Ident(field_name), field_ty.clone()));
-        captured_args.push(core::Expr::EVar {
+        captured_args.push(LiftExpr::EVar {
             name: name.clone(),
             ty: field_ty.clone(),
         });
@@ -583,10 +702,11 @@ fn transform_closure(
     fn_params.push((env_param_name.clone(), env_ty.clone()));
     fn_params.extend(lowered_params.iter().cloned());
 
+    // Build the function body by prepending let bindings for captured variables
     let mut fn_body = body;
     for (index, (name, field_ty)) in captured.iter().enumerate().rev() {
-        let field_expr = core::Expr::EConstrGet {
-            expr: Box::new(core::Expr::EVar {
+        let field_expr = LiftExpr::EConstrGet {
+            expr: Box::new(LiftExpr::EVar {
                 name: env_param_name.clone(),
                 ty: env_ty.clone(),
             }),
@@ -597,7 +717,7 @@ fn transform_closure(
             ty: field_ty.clone(),
         };
         let body_ty = fn_body.get_ty();
-        fn_body = core::Expr::ELet {
+        fn_body = LiftExpr::ELet {
             name: name.clone(),
             value: Box::new(field_expr),
             body: Box::new(fn_body),
@@ -605,7 +725,8 @@ fn transform_closure(
         };
     }
 
-    state.new_functions.push(core::Fn {
+    // Store the new function (will be converted to LiftFn later in lambda_lift)
+    state.new_functions.push(LiftFn {
         name: apply_fn_name.clone(),
         params: fn_params,
         ret_ty: ret_ty.clone(),
@@ -623,7 +744,7 @@ fn transform_closure(
         },
     );
 
-    core::Expr::EConstr {
+    LiftExpr::EConstr {
         constructor: Constructor::Struct(StructConstructor {
             type_name: struct_name,
         }),
@@ -633,13 +754,13 @@ fn transform_closure(
 }
 
 fn collect_captured(
-    expr: &core::Expr,
+    expr: &LiftExpr,
     bound: &mut Vec<String>,
     captured: &mut IndexMap<String, Ty>,
     scope: &Scope,
 ) {
     match expr {
-        core::Expr::EVar { name, .. } => {
+        LiftExpr::EVar { name, .. } => {
             if !bound.iter().any(|n| n == name)
                 && let Some(entry) = scope.get(name)
             {
@@ -648,25 +769,18 @@ fn collect_captured(
                     .or_insert_with(|| entry.ty.clone());
             }
         }
-        core::Expr::EPrim { .. } => {}
-        core::Expr::EConstr { args, .. } => {
+        LiftExpr::EPrim { .. } => {}
+        LiftExpr::EConstr { args, .. } => {
             for arg in args {
                 collect_captured(arg, bound, captured, scope);
             }
         }
-        core::Expr::ETuple { items, .. } | core::Expr::EArray { items, .. } => {
+        LiftExpr::ETuple { items, .. } | LiftExpr::EArray { items, .. } => {
             for item in items {
                 collect_captured(item, bound, captured, scope);
             }
         }
-        core::Expr::EClosure { params, body, .. } => {
-            let mut nested_bound = bound.clone();
-            for param in params {
-                nested_bound.push(param.name.clone());
-            }
-            collect_captured(body, &mut nested_bound, captured, scope);
-        }
-        core::Expr::ELet {
+        LiftExpr::ELet {
             name, value, body, ..
         } => {
             collect_captured(value, bound, captured, scope);
@@ -674,7 +788,7 @@ fn collect_captured(
             collect_captured(body, bound, captured, scope);
             bound.pop();
         }
-        core::Expr::EMatch {
+        LiftExpr::EMatch {
             expr,
             arms,
             default,
@@ -689,7 +803,7 @@ fn collect_captured(
                 collect_captured(default, bound, captured, scope);
             }
         }
-        core::Expr::EIf {
+        LiftExpr::EIf {
             cond,
             then_branch,
             else_branch,
@@ -699,20 +813,20 @@ fn collect_captured(
             collect_captured(then_branch, bound, captured, scope);
             collect_captured(else_branch, bound, captured, scope);
         }
-        core::Expr::EWhile { cond, body, .. } => {
+        LiftExpr::EWhile { cond, body, .. } => {
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope);
         }
-        core::Expr::EConstrGet { expr, .. } => {
+        LiftExpr::EConstrGet { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }
-        core::Expr::ECall { func, args, .. } => {
+        LiftExpr::ECall { func, args, .. } => {
             collect_captured(func, bound, captured, scope);
             for arg in args {
                 collect_captured(arg, bound, captured, scope);
             }
         }
-        core::Expr::EProj { tuple, .. } => {
+        LiftExpr::EProj { tuple, .. } => {
             collect_captured(tuple, bound, captured, scope);
         }
     }
