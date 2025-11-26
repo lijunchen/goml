@@ -181,7 +181,7 @@ pub fn compile_to_anf(src: &str) -> String {
     let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
 
     let (anf, anfenv) = compiler::anf::anf_file(monoenv, &gensym, mono);
-    anf.to_pretty(&anfenv.to_type_env(), 120)
+    anf.to_pretty(&anfenv, 120)
 }
 
 #[wasm_bindgen]

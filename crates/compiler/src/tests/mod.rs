@@ -232,11 +232,8 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
             .mono
             .to_pretty(&compilation.goenv.to_type_env(), 120),
     );
-    expect_test::expect_file![anf_filename].assert_eq(
-        &compilation
-            .anf
-            .to_pretty(&compilation.goenv.to_type_env(), 120),
-    );
+    expect_test::expect_file![anf_filename]
+        .assert_eq(&compilation.anf.to_pretty(&compilation.anfenv, 120));
 
     let go_source = compilation
         .go

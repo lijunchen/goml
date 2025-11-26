@@ -1,42 +1,41 @@
 use pretty::RcDoc;
 
 use crate::{
-    anf::{AExpr, Arm, CExpr, File, Fn, ImmExpr},
-    env::GlobalTypeEnv,
+    anf::{AExpr, Arm, CExpr, File, Fn, GlobalAnfEnv, ImmExpr},
     tast::Constructor,
 };
 
 impl File {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
         RcDoc::intersperse(
-            self.toplevels.iter().map(|item| item.to_doc(genv)),
+            self.toplevels.iter().map(|item| item.to_doc(anfenv)),
             RcDoc::hardline().append(RcDoc::hardline()),
         )
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc(anfenv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
 impl Fn {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
         let name = RcDoc::text(self.name.clone());
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
                 RcDoc::text(name.clone())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
-                    .append(ty.to_doc(genv))
+                    .append(ty.to_doc(&anfenv.to_type_env()))
             }),
             RcDoc::text(", "),
         );
 
-        let ret_ty = self.ret_ty.to_doc(genv);
+        let ret_ty = self.ret_ty.to_doc(&anfenv.to_type_env());
 
-        let body = self.body.to_doc(genv);
+        let body = self.body.to_doc(anfenv);
 
         RcDoc::text("fn")
             .append(RcDoc::space())
@@ -55,17 +54,17 @@ impl Fn {
             .append(RcDoc::text("}"))
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc(anfenv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
 impl AExpr {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
         match self {
-            AExpr::ACExpr { expr } => expr.to_doc(genv),
+            AExpr::ACExpr { expr } => expr.to_doc(anfenv),
             AExpr::ALet {
                 name,
                 value,
@@ -77,26 +76,26 @@ impl AExpr {
                 .append(RcDoc::space())
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
-                .append(value.to_doc(genv))
+                .append(value.to_doc(anfenv))
                 .append(RcDoc::space())
                 .append(RcDoc::text("in"))
                 .append(RcDoc::hardline())
-                .append(body.to_doc(genv))
+                .append(body.to_doc(anfenv))
                 .group(),
         }
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc(anfenv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
 impl CExpr {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
         match self {
-            CExpr::CImm { imm } => imm.to_doc(genv),
+            CExpr::CImm { imm } => imm.to_doc(),
             CExpr::EConstr {
                 constructor,
                 args,
@@ -112,7 +111,7 @@ impl CExpr {
                         name_doc
                     } else {
                         let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
+                            args.iter().map(|arg| arg.to_doc()),
                             RcDoc::text(", "),
                         );
 
@@ -125,7 +124,7 @@ impl CExpr {
                 Constructor::Struct(struct_constructor) => {
                     let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = genv.structs().get(&struct_constructor.type_name) {
+                    if let Some(struct_def) = anfenv.structs().get(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
@@ -134,7 +133,7 @@ impl CExpr {
                                     |((fname, _), arg)| {
                                         RcDoc::text(fname.0.clone())
                                             .append(RcDoc::text(": "))
-                                            .append(arg.to_doc(genv))
+                                            .append(arg.to_doc())
                                     },
                                 ),
                                 RcDoc::text(", "),
@@ -149,7 +148,7 @@ impl CExpr {
                             name_doc
                         } else {
                             let args_doc = RcDoc::intersperse(
-                                args.iter().map(|arg| arg.to_doc(genv)),
+                                args.iter().map(|arg| arg.to_doc()),
                                 RcDoc::text(", "),
                             );
 
@@ -162,7 +161,7 @@ impl CExpr {
                         name_doc
                     } else {
                         let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
+                            args.iter().map(|arg| arg.to_doc()),
                             RcDoc::text(", "),
                         );
 
@@ -178,7 +177,7 @@ impl CExpr {
                     RcDoc::text("()")
                 } else {
                     let items_doc = RcDoc::intersperse(
-                        items.iter().map(|item| item.to_doc(genv)),
+                        items.iter().map(|item| item.to_doc()),
                         RcDoc::text(", "),
                     );
 
@@ -190,7 +189,7 @@ impl CExpr {
                     RcDoc::text("[]")
                 } else {
                     let items_doc = RcDoc::intersperse(
-                        items.iter().map(|item| item.to_doc(genv)),
+                        items.iter().map(|item| item.to_doc()),
                         RcDoc::text(", "),
                     );
 
@@ -205,13 +204,13 @@ impl CExpr {
             } => {
                 let match_expr = RcDoc::text("match")
                     .append(RcDoc::space())
-                    .append(expr.to_doc(genv))
+                    .append(expr.to_doc())
                     .append(RcDoc::space())
                     .append(RcDoc::text("{"));
 
                 let arms_doc = RcDoc::concat(
                     arms.iter()
-                        .map(|arm| RcDoc::hardline().append(arm.to_doc(genv))),
+                        .map(|arm| RcDoc::hardline().append(arm.to_doc(anfenv))),
                 );
 
                 let default_doc = if let Some(default_expr) = default {
@@ -220,7 +219,7 @@ impl CExpr {
                         .append(RcDoc::space())
                         .append(RcDoc::text("=>"))
                         .append(RcDoc::space())
-                        .append(default_expr.to_doc(genv)) // Default case body is AExpr
+                        .append(default_expr.to_doc(anfenv)) // Default case body is AExpr
                         .append(RcDoc::text(","))
                 } else {
                     RcDoc::nil()
@@ -240,26 +239,26 @@ impl CExpr {
                 ty: _,
             } => RcDoc::text("if")
                 .append(RcDoc::space())
-                .append(cond.to_doc(genv))
+                .append(cond.to_doc())
                 .append(RcDoc::space())
                 .append(RcDoc::text("{"))
-                .append(RcDoc::hardline().append(then.to_doc(genv)).nest(2))
+                .append(RcDoc::hardline().append(then.to_doc(anfenv)).nest(2))
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
                 .append(RcDoc::space())
                 .append(RcDoc::text("else"))
                 .append(RcDoc::space())
                 .append(RcDoc::text("{"))
-                .append(RcDoc::hardline().append(else_.to_doc(genv)).nest(2))
+                .append(RcDoc::hardline().append(else_.to_doc(anfenv)).nest(2))
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
                 .group(),
             CExpr::EWhile { cond, body, ty: _ } => RcDoc::text("while")
                 .append(RcDoc::space())
-                .append(cond.to_doc(genv))
+                .append(cond.to_doc(anfenv))
                 .append(RcDoc::space())
                 .append(RcDoc::text("{"))
-                .append(RcDoc::hardline().append(body.to_doc(genv)).nest(2))
+                .append(RcDoc::hardline().append(body.to_doc(anfenv)).nest(2))
                 .append(RcDoc::hardline())
                 .append(RcDoc::text("}"))
                 .group(),
@@ -275,7 +274,7 @@ impl CExpr {
                         enum_constructor.type_name.0, enum_constructor.variant.0, field_index
                     )),
                     Constructor::Struct(struct_constructor) => {
-                        let field_name = genv
+                        let field_name = anfenv
                             .structs()
                             .get(&struct_constructor.type_name)
                             .and_then(|def| def.fields.get(*field_index))
@@ -291,14 +290,14 @@ impl CExpr {
 
                 accessor
                     .append(RcDoc::text("("))
-                    .append(expr.to_doc(genv))
+                    .append(expr.to_doc())
                     .append(RcDoc::text(")"))
             }
             CExpr::ECall { func, args, ty: _ } => {
                 let args_doc =
-                    RcDoc::intersperse(args.iter().map(|arg| arg.to_doc(genv)), RcDoc::text(", "));
+                    RcDoc::intersperse(args.iter().map(|arg| arg.to_doc()), RcDoc::text(", "));
 
-                func.to_doc(genv)
+                func.to_doc()
                     .append(RcDoc::text("("))
                     .append(args_doc)
                     .append(RcDoc::text(")"))
@@ -308,21 +307,21 @@ impl CExpr {
                 index,
                 ty: _,
             } => tuple
-                .to_doc(genv)
+                .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(index.to_string())),
         }
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc(anfenv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
 impl ImmExpr {
-    pub fn to_doc(&self, _env: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             ImmExpr::ImmVar { name, ty: _ } => RcDoc::text(name.clone()),
             ImmExpr::ImmPrim { value, ty: _ } => RcDoc::text(value.to_string()),
@@ -330,24 +329,24 @@ impl ImmExpr {
         }
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
 impl Arm {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
         self.lhs
-            .to_doc(genv)
+            .to_doc()
             .append(RcDoc::space())
             .append(RcDoc::text("=>"))
             .append(RcDoc::space())
             .append(RcDoc::text("{"))
             .append(
                 RcDoc::hardline()
-                    .append(self.body.to_doc(genv))
+                    .append(self.body.to_doc(anfenv))
                     .append(RcDoc::hardline())
                     .nest(2),
             )
@@ -355,9 +354,9 @@ impl Arm {
             .append(RcDoc::text(","))
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc(anfenv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
