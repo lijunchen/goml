@@ -53,8 +53,8 @@ pub struct MonoFile {
 #[derive(Debug, Clone)]
 pub struct MonoFn {
     pub name: String,
-    pub params: Vec<(String, MonoTy)>,
-    pub ret_ty: MonoTy,
+    pub params: Vec<(String, Ty)>,
+    pub ret_ty: Ty,
     pub body: MonoExpr,
 }
 
@@ -62,69 +62,83 @@ pub struct MonoFn {
 pub enum MonoExpr {
     EVar {
         name: String,
-        ty: MonoTy,
+        ty: Ty,
     },
     EPrim {
         value: Prim,
-        ty: MonoTy,
+        ty: Ty,
     },
     EConstr {
         constructor: Constructor,
         args: Vec<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     ETuple {
         items: Vec<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EArray {
         items: Vec<MonoExpr>,
-        ty: MonoTy,
-    },
-    EClosure {
-        params: Vec<tast::ClosureParam>,
-        body: Box<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     ELet {
         name: String,
         value: Box<MonoExpr>,
         body: Box<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EMatch {
         expr: Box<MonoExpr>,
         arms: Vec<MonoArm>,
         default: Option<Box<MonoExpr>>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EIf {
         cond: Box<MonoExpr>,
         then_branch: Box<MonoExpr>,
         else_branch: Box<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EWhile {
         cond: Box<MonoExpr>,
         body: Box<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EConstrGet {
         expr: Box<MonoExpr>,
         constructor: Constructor,
         field_index: usize,
-        ty: MonoTy,
+        ty: Ty,
     },
     ECall {
         func: Box<MonoExpr>,
         args: Vec<MonoExpr>,
-        ty: MonoTy,
+        ty: Ty,
     },
     EProj {
         tuple: Box<MonoExpr>,
         index: usize,
-        ty: MonoTy,
+        ty: Ty,
     },
+}
+
+impl MonoExpr {
+    pub fn get_ty(&self) -> Ty {
+        match self {
+            MonoExpr::EVar { ty, .. } => ty.clone(),
+            MonoExpr::EPrim { ty, .. } => ty.clone(),
+            MonoExpr::EConstr { ty, .. } => ty.clone(),
+            MonoExpr::ETuple { ty, .. } => ty.clone(),
+            MonoExpr::EArray { ty, .. } => ty.clone(),
+            MonoExpr::ELet { ty, .. } => ty.clone(),
+            MonoExpr::EMatch { ty, .. } => ty.clone(),
+            MonoExpr::EIf { ty, .. } => ty.clone(),
+            MonoExpr::EWhile { ty, .. } => ty.clone(),
+            MonoExpr::EConstrGet { ty, .. } => ty.clone(),
+            MonoExpr::ECall { ty, .. } => ty.clone(),
+            MonoExpr::EProj { ty, .. } => ty.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -221,7 +235,7 @@ impl GlobalMonoEnv {
         self.structs.retain(f);
     }
 
-    pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
+    pub fn record_tuple_types_from_mono(&mut self, file: &MonoFile) {
         struct TypeCollector {
             tuples: IndexSet<tast::Ty>,
             arrays: IndexSet<tast::Ty>,
@@ -239,7 +253,7 @@ impl GlobalMonoEnv {
 
             fn finish(
                 mut self,
-                file: &core::File,
+                file: &MonoFile,
             ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
                 for item in &file.toplevels {
                     self.collect_fn(item);
@@ -247,7 +261,7 @@ impl GlobalMonoEnv {
                 (self.tuples, self.arrays, self.refs)
             }
 
-            fn collect_fn(&mut self, item: &core::Fn) {
+            fn collect_fn(&mut self, item: &MonoFn) {
                 for (_, ty) in &item.params {
                     self.collect_type(ty);
                 }
@@ -255,12 +269,12 @@ impl GlobalMonoEnv {
                 self.collect_expr(&item.body);
             }
 
-            fn collect_expr(&mut self, expr: &core::Expr) {
+            fn collect_expr(&mut self, expr: &MonoExpr) {
                 match expr {
-                    core::Expr::EVar { ty, .. } | core::Expr::EPrim { ty, .. } => {
+                    MonoExpr::EVar { ty, .. } | MonoExpr::EPrim { ty, .. } => {
                         self.collect_type(ty);
                     }
-                    core::Expr::EConstr {
+                    MonoExpr::EConstr {
                         constructor: _,
                         args,
                         ty,
@@ -270,27 +284,20 @@ impl GlobalMonoEnv {
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::ETuple { items, ty } | core::Expr::EArray { items, ty } => {
+                    MonoExpr::ETuple { items, ty } | MonoExpr::EArray { items, ty } => {
                         for item in items {
                             self.collect_expr(item);
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::EClosure { params, body, ty } => {
-                        for param in params {
-                            self.collect_type(&param.get_ty());
-                        }
-                        self.collect_expr(body);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::ELet {
+                    MonoExpr::ELet {
                         value, body, ty, ..
                     } => {
                         self.collect_expr(value);
                         self.collect_expr(body);
                         self.collect_type(ty);
                     }
-                    core::Expr::EMatch {
+                    MonoExpr::EMatch {
                         expr,
                         arms,
                         default,
@@ -306,7 +313,7 @@ impl GlobalMonoEnv {
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::EIf {
+                    MonoExpr::EIf {
                         cond,
                         then_branch,
                         else_branch,
@@ -317,12 +324,12 @@ impl GlobalMonoEnv {
                         self.collect_expr(else_branch);
                         self.collect_type(ty);
                     }
-                    core::Expr::EWhile { cond, body, ty } => {
+                    MonoExpr::EWhile { cond, body, ty } => {
                         self.collect_expr(cond);
                         self.collect_expr(body);
                         self.collect_type(ty);
                     }
-                    core::Expr::EConstrGet {
+                    MonoExpr::EConstrGet {
                         expr,
                         constructor: _,
                         ty,
@@ -331,14 +338,14 @@ impl GlobalMonoEnv {
                         self.collect_expr(expr);
                         self.collect_type(ty);
                     }
-                    core::Expr::ECall { func, args, ty } => {
+                    MonoExpr::ECall { func, args, ty } => {
                         self.collect_expr(func);
                         for arg in args {
                             self.collect_expr(arg);
                         }
                         self.collect_type(ty);
                     }
-                    core::Expr::EProj { tuple, ty, .. } => {
+                    MonoExpr::EProj { tuple, ty, .. } => {
                         self.collect_expr(tuple);
                         self.collect_type(ty);
                     }
@@ -391,7 +398,7 @@ impl GlobalMonoEnv {
 
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv) {
+pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) {
     let mut monoenv = GlobalMonoEnv::from_lift_env(genv);
     // Build original function map
     let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
@@ -619,7 +626,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
         // map (orig_name, subst_key) -> spec_name
         instances: IndexMap<(String, String), String>,
         queued: IndexSet<(String, String)>,
-        out: Vec<core::Fn>,
+        out: Vec<MonoFn>,
         work: VecDeque<(String, Subst, String)>,
     }
 
@@ -653,15 +660,15 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
     }
 
     // Transform an expression under a given substitution; queue any needed instances
-    fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> core::Expr {
+    fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         match e.clone() {
-            core::Expr::EVar { name, ty } => core::Expr::EVar {
+            core::Expr::EVar { name, ty } => MonoExpr::EVar {
                 name,
                 ty: subst_ty(&ty, s),
             },
             core::Expr::EPrim { value, ty } => {
                 let ty = subst_ty(&ty, s);
-                core::Expr::EPrim {
+                MonoExpr::EPrim {
                     value: value.coerce(&ty),
                     ty,
                 }
@@ -673,17 +680,17 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
             } => {
                 let new_ty = subst_ty(&ty, s);
                 let new_constructor = update_constructor_type(&constructor, &new_ty);
-                core::Expr::EConstr {
+                MonoExpr::EConstr {
                     constructor: new_constructor,
                     args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                     ty: new_ty,
                 }
             }
-            core::Expr::ETuple { items, ty } => core::Expr::ETuple {
+            core::Expr::ETuple { items, ty } => MonoExpr::ETuple {
                 items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                 ty: subst_ty(&ty, s),
             },
-            core::Expr::EArray { items, ty } => core::Expr::EArray {
+            core::Expr::EArray { items, ty } => MonoExpr::EArray {
                 items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
                 ty: subst_ty(&ty, s),
             },
@@ -695,7 +702,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 value,
                 body,
                 ty,
-            } => core::Expr::ELet {
+            } => MonoExpr::ELet {
                 name,
                 value: Box::new(mono_expr(ctx, &value, s)),
                 body: Box::new(mono_expr(ctx, &body, s)),
@@ -706,11 +713,11 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 arms,
                 default,
                 ty,
-            } => core::Expr::EMatch {
+            } => MonoExpr::EMatch {
                 expr: Box::new(mono_expr(ctx, &expr, s)),
                 arms: arms
                     .iter()
-                    .map(|arm| core::Arm {
+                    .map(|arm| MonoArm {
                         lhs: mono_expr(ctx, &arm.lhs, s),
                         body: mono_expr(ctx, &arm.body, s),
                     })
@@ -723,13 +730,13 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 then_branch,
                 else_branch,
                 ty,
-            } => core::Expr::EIf {
+            } => MonoExpr::EIf {
                 cond: Box::new(mono_expr(ctx, &cond, s)),
                 then_branch: Box::new(mono_expr(ctx, &then_branch, s)),
                 else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
                 ty: subst_ty(&ty, s),
             },
-            core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
+            core::Expr::EWhile { cond, body, ty } => MonoExpr::EWhile {
                 cond: Box::new(mono_expr(ctx, &cond, s)),
                 body: Box::new(mono_expr(ctx, &body, s)),
                 ty: subst_ty(&ty, s),
@@ -743,7 +750,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 let new_expr = mono_expr(ctx, &expr, s);
                 let scrut_ty = subst_ty(&expr.get_ty(), s);
                 let new_constructor = update_constructor_type(&constructor, &scrut_ty);
-                core::Expr::EConstrGet {
+                MonoExpr::EConstrGet {
                     expr: Box::new(new_expr),
                     constructor: new_constructor,
                     field_index,
@@ -752,14 +759,14 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
             }
             core::Expr::ECall { func, args, ty } => {
                 let new_func = mono_expr(ctx, &func, s);
-                let new_args: Vec<core::Expr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
+                let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
                 let new_ty = subst_ty(&ty, s);
 
-                let core::Expr::EVar {
+                let MonoExpr::EVar {
                     name: func_name, ..
                 } = &new_func
                 else {
-                    return core::Expr::ECall {
+                    return MonoExpr::ECall {
                         func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
@@ -768,7 +775,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
 
                 // If function is not in current file (runtime/built-in), leave as is
                 let Some(callee) = ctx.orig_fns.get(func_name) else {
-                    return core::Expr::ECall {
+                    return MonoExpr::ECall {
                         func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
@@ -776,7 +783,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 };
 
                 if !fn_is_generic(callee) {
-                    return core::Expr::ECall {
+                    return MonoExpr::ECall {
                         func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
@@ -806,7 +813,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 if call_subst.values().any(has_tparam) {
                     // If we cannot determine concrete types here, keep the call as-is.
                     // This should not happen for reachable instances from monomorphic roots.
-                    return core::Expr::ECall {
+                    return MonoExpr::ECall {
                         func: Box::new(new_func),
                         args: new_args,
                         ty: new_ty,
@@ -814,8 +821,8 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 }
 
                 let spec = ctx.ensure_instance(func_name, call_subst);
-                core::Expr::ECall {
-                    func: Box::new(core::Expr::EVar {
+                MonoExpr::ECall {
+                    func: Box::new(MonoExpr::EVar {
                         name: spec,
                         ty: new_func.get_ty(),
                     }),
@@ -823,7 +830,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                     ty: new_ty,
                 }
             }
-            core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
+            core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
                 tuple: Box::new(mono_expr(ctx, &tuple, s)),
                 index,
                 ty: subst_ty(&ty, s),
@@ -863,7 +870,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
         let new_ret = subst_ty(&orig_ret, &s);
         let new_body = mono_expr(&mut ctx, &orig_body, &s);
 
-        ctx.out.push(core::Fn {
+        ctx.out.push(MonoFn {
             name: spec_name,
             params: new_params,
             ret_ty: new_ret,
@@ -1016,70 +1023,67 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
         }
     }
 
-    fn rewrite_expr_types<'a>(e: core::Expr, m: &mut TypeMono<'a>) -> core::Expr {
+    fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
         match e {
-            core::Expr::EVar { name, ty } => core::Expr::EVar {
+            MonoExpr::EVar { name, ty } => MonoExpr::EVar {
                 name,
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EPrim { value, ty } => {
+            MonoExpr::EPrim { value, ty } => {
                 let ty = m.collapse_type_apps(&ty);
-                core::Expr::EPrim {
+                MonoExpr::EPrim {
                     value: value.coerce(&ty),
                     ty,
                 }
             }
-            core::Expr::EConstr {
+            MonoExpr::EConstr {
                 constructor,
                 args,
                 ty,
             } => {
                 let new_ty = m.collapse_type_apps(&ty);
                 let new_constructor = update_constructor_type(&constructor, &new_ty);
-                core::Expr::EConstr {
+                MonoExpr::EConstr {
                     constructor: new_constructor,
                     args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
                     ty: new_ty,
                 }
             }
-            core::Expr::ETuple { items, ty } => core::Expr::ETuple {
+            MonoExpr::ETuple { items, ty } => MonoExpr::ETuple {
                 items: items
                     .into_iter()
                     .map(|a| rewrite_expr_types(a, m))
                     .collect(),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EArray { items, ty } => core::Expr::EArray {
+            MonoExpr::EArray { items, ty } => MonoExpr::EArray {
                 items: items
                     .into_iter()
                     .map(|a| rewrite_expr_types(a, m))
                     .collect(),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EClosure { .. } => {
-                panic!("lambda lift should have removed closures before monomorphization");
-            }
-            core::Expr::ELet {
+            MonoExpr::ELet {
                 name,
                 value,
                 body,
                 ty,
-            } => core::Expr::ELet {
+            } => MonoExpr::ELet {
                 name,
                 value: Box::new(rewrite_expr_types(*value, m)),
                 body: Box::new(rewrite_expr_types(*body, m)),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EMatch {
+            MonoExpr::EMatch {
                 expr,
                 arms,
                 default,
                 ty,
-            } => core::Expr::EMatch {
+            } => MonoExpr::EMatch {
                 expr: Box::new(rewrite_expr_types(*expr, m)),
                 arms: arms
                     .into_iter()
-                    .map(|arm| core::Arm {
+                    .map(|arm| MonoArm {
                         lhs: rewrite_expr_types(arm.lhs, m),
                         body: rewrite_expr_types(arm.body, m),
                     })
@@ -1087,23 +1091,23 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 default: default.map(|d| Box::new(rewrite_expr_types(*d, m))),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EIf {
+            MonoExpr::EIf {
                 cond,
                 then_branch,
                 else_branch,
                 ty,
-            } => core::Expr::EIf {
+            } => MonoExpr::EIf {
                 cond: Box::new(rewrite_expr_types(*cond, m)),
                 then_branch: Box::new(rewrite_expr_types(*then_branch, m)),
                 else_branch: Box::new(rewrite_expr_types(*else_branch, m)),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
+            MonoExpr::EWhile { cond, body, ty } => MonoExpr::EWhile {
                 cond: Box::new(rewrite_expr_types(*cond, m)),
                 body: Box::new(rewrite_expr_types(*body, m)),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EConstrGet {
+            MonoExpr::EConstrGet {
                 expr,
                 constructor,
                 field_index,
@@ -1112,19 +1116,19 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
                 let new_expr = rewrite_expr_types(*expr, m);
                 let scrut_ty = new_expr.get_ty();
                 let new_constructor = update_constructor_type(&constructor, &scrut_ty);
-                core::Expr::EConstrGet {
+                MonoExpr::EConstrGet {
                     expr: Box::new(new_expr),
                     constructor: new_constructor,
                     field_index,
                     ty: m.collapse_type_apps(&ty),
                 }
             }
-            core::Expr::ECall { func, args, ty } => core::Expr::ECall {
+            MonoExpr::ECall { func, args, ty } => MonoExpr::ECall {
                 func: Box::new(rewrite_expr_types(*func, m)),
                 args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
                 ty: m.collapse_type_apps(&ty),
             },
-            core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
+            MonoExpr::EProj { tuple, index, ty } => MonoExpr::EProj {
                 tuple: Box::new(rewrite_expr_types(*tuple, m)),
                 index,
                 ty: m.collapse_type_apps(&ty),
@@ -1143,7 +1147,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
             .collect();
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_expr_types(f.body, &mut m);
-        new_fns.push(core::Fn {
+        new_fns.push(MonoFn {
             name: f.name,
             params,
             ret_ty,
@@ -1155,7 +1159,7 @@ pub fn mono(genv: GlobalLiftEnv, file: core::File) -> (core::File, GlobalMonoEnv
     m.monoenv.retain_enums(|_n, def| def.generics.is_empty());
     m.monoenv.retain_structs(|_n, def| def.generics.is_empty());
 
-    let result = core::File { toplevels: new_fns };
-    m.monoenv.record_tuple_types_from_core(&result);
+    let result = MonoFile { toplevels: new_fns };
+    m.monoenv.record_tuple_types_from_mono(&result);
     (result, monoenv)
 }

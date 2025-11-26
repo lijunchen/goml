@@ -29,7 +29,7 @@ pub struct Compilation {
     pub goenv: GlobalGoEnv,
     pub core: crate::core::File,
     pub lambda: crate::core::File,
-    pub mono: crate::core::File,
+    pub mono: mono::MonoFile,
     pub anf: anf::File,
     pub go: goast::File,
 }
