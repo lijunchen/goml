@@ -42,6 +42,8 @@ pub fn make_runtime() -> Vec<goast::Item> {
         }),
         Item::Fn(unit_to_string()),
         Item::Fn(bool_to_string()),
+        Item::Fn(bool_to_json()),
+        Item::Fn(json_escape_string()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
@@ -299,6 +301,74 @@ fn bool_to_string() -> goast::Fn {
                             ty: goty::GoType::TString,
                         }),
                     }],
+                }),
+            }],
+        },
+    }
+}
+
+fn bool_to_json() -> goast::Fn {
+    // bool_to_json is the same as bool_to_string for JSON (true/false are valid JSON)
+    goast::Fn {
+        name: "bool_to_json".to_string(),
+        params: vec![("x".to_string(), goty::GoType::TBool)],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::If {
+                cond: goast::Expr::Var {
+                    name: "x".to_string(),
+                    ty: goty::GoType::TBool,
+                },
+                then: goast::Block {
+                    stmts: vec![goast::Stmt::Return {
+                        expr: Some(goast::Expr::String {
+                            value: "true".to_string(),
+                            ty: goty::GoType::TString,
+                        }),
+                    }],
+                },
+                else_: Some(goast::Block {
+                    stmts: vec![goast::Stmt::Return {
+                        expr: Some(goast::Expr::String {
+                            value: "false".to_string(),
+                            ty: goty::GoType::TString,
+                        }),
+                    }],
+                }),
+            }],
+        },
+    }
+}
+
+fn json_escape_string() -> goast::Fn {
+    // Returns a JSON-escaped string with surrounding quotes
+    // Uses fmt.Sprintf("%q", s) which produces a Go string literal that is JSON-compatible
+    let fmt_ty = goty::GoType::TFunc {
+        params: vec![goty::GoType::TString, goty::GoType::TString],
+        ret_ty: Box::new(goty::GoType::TString),
+    };
+    goast::Fn {
+        name: "json_escape_string".to_string(),
+        params: vec![("s".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "fmt.Sprintf".to_string(),
+                        ty: fmt_ty,
+                    }),
+                    args: vec![
+                        goast::Expr::String {
+                            value: "%q".to_string(),
+                            ty: goty::GoType::TString,
+                        },
+                        goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        },
+                    ],
+                    ty: goty::GoType::TString,
                 }),
             }],
         },

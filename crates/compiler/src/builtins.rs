@@ -20,6 +20,14 @@ pub(super) fn builtin_functions() -> IndexMap<String, tast::Ty> {
         make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TString),
     );
     funcs.insert(
+        "bool_to_json".to_string(),
+        make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TString),
+    );
+    funcs.insert(
+        "json_escape_string".to_string(),
+        make_fn_ty(vec![tast::Ty::TString], tast::Ty::TString),
+    );
+    funcs.insert(
         "bool_not".to_string(),
         make_fn_ty(vec![tast::Ty::TBool], tast::Ty::TBool),
     );

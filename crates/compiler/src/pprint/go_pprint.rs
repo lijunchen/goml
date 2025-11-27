@@ -659,9 +659,15 @@ impl Expr {
             Expr::Bool { value, ty: _ } => RcDoc::text(if *value { "true" } else { "false" }),
             Expr::Int { value, ty: _ } => RcDoc::as_string(value),
             Expr::Float { value, ty: _ } => RcDoc::as_string(value),
-            Expr::String { value, ty: _ } => RcDoc::text("\"")
-                .append(RcDoc::text(value))
-                .append(RcDoc::text("\"")),
+            Expr::String { value, ty: _ } => {
+                // Escape double quotes for Go string literals
+                // Note: backslash escape sequences like \n are preserved as-is since
+                // the AST stores them as literal characters that Go will interpret correctly
+                let escaped = value.replace('"', "\\\"");
+                RcDoc::text("\"")
+                    .append(RcDoc::text(escaped))
+                    .append(RcDoc::text("\""))
+            }
             Expr::Call { func, args, ty: _ } => {
                 let args_doc = if args.is_empty() {
                     RcDoc::nil()
