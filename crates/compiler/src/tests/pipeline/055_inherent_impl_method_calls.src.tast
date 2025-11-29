@@ -3,10 +3,10 @@ impl Shape{
     "Shape"
   }
   fn rename(self/1: Shape, suffix/2: string) -> string {
-    (string_add : (string, string) -> string)((impl_inherent_Shape_name : (Shape) -> string)((self/1 : Shape)), (suffix/2 : string))
+    (impl_inherent_Shape_name : (Shape) -> string)((self/1 : Shape)) + (suffix/2 : string)
   }
   fn join(self/3: Shape, left/4: string, right/5: string) -> string {
-    (string_add : (string, string) -> string)((left/4 : string), (string_add : (string, string) -> string)((impl_inherent_Shape_name : (Shape) -> string)((self/3 : Shape)), (right/5 : string)))
+    (left/4 : string) + (impl_inherent_Shape_name : (Shape) -> string)((self/3 : Shape)) + (right/5 : string)
   }
 }
 

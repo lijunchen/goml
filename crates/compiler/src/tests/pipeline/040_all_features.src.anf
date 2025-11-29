@@ -14,8 +14,8 @@ fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
   let with_count/8 = string_add(with_count_label/7, t38) in
   let with_flag_label/9 = string_add(with_count/8, ", toggled: ") in
   let t40 = bool_to_string(flag/5) in
-  let t39 = string_add(t40, ")") in
-  string_add(with_flag_label/9, t39)
+  let t39 = string_add(with_flag_label/9, t40) in
+  string_add(t39, ")")
 }
 
 fn impl_Describe_Record_int32_describe(self/10: Record__int32) -> string {
@@ -24,8 +24,8 @@ fn impl_Describe_Record_int32_describe(self/10: Record__int32) -> string {
       let x4 = Record__int32::Value._0(self/10) in
       let value/11 = x4 in
       let t42 = int32_to_string(value/11) in
-      let t41 = string_add(t42, ")") in
-      string_add("Value(", t41)
+      let t41 = string_add("Value(", t42) in
+      string_add(t41, ")")
     },
     Tag_1 => {
       let x5 = Record__int32::Pair._0(self/10) in
@@ -34,10 +34,10 @@ fn impl_Describe_Record_int32_describe(self/10: Record__int32) -> string {
       let before/12 = x5 in
       let t43 = int32_to_string(before/12) in
       let prefix/14 = string_add("Pair(", t43) in
+      let t45 = string_add(prefix/14, ", ") in
       let t46 = int32_to_string(after/13) in
-      let t45 = string_add(t46, ")") in
-      let t44 = string_add(", ", t45) in
-      string_add(prefix/14, t44)
+      let t44 = string_add(t45, t46) in
+      string_add(t44, ")")
     },
     Tag_2 => {
       "Empty"
@@ -50,8 +50,8 @@ fn impl_Describe_Record_string_describe(self/15: Record__string) -> string {
     Tag_0 => {
       let x7 = Record__string::Value._0(self/15) in
       let text/16 = x7 in
-      let t47 = string_add(text/16, ")") in
-      string_add("Value(", t47)
+      let t47 = string_add("Value(", text/16) in
+      string_add(t47, ")")
     },
     Tag_1 => {
       let x8 = Record__string::Pair._0(self/15) in
@@ -59,9 +59,9 @@ fn impl_Describe_Record_string_describe(self/15: Record__string) -> string {
       let after/18 = x9 in
       let before/17 = x8 in
       let prefix/19 = string_add("Pair(", before/17) in
-      let t49 = string_add(after/18, ")") in
-      let t48 = string_add(", ", t49) in
-      string_add(prefix/19, t48)
+      let t49 = string_add(prefix/19, ", ") in
+      let t48 = string_add(t49, after/18) in
+      string_add(t48, ")")
     },
     Tag_2 => {
       "Empty"
@@ -88,8 +88,8 @@ fn pair_join(parts/29: (string, string)) -> string {
   let x13 = mtmp11.1 in
   let right/31 = x13 in
   let left/30 = x12 in
-  let t51 = string_add(" -> ", right/31) in
-  string_add(left/30, t51)
+  let t51 = string_add(left/30, " -> ") in
+  string_add(t51, right/31)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {

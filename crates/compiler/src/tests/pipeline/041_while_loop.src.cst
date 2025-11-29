@@ -1,4 +1,4 @@
-FILE@0..901
+FILE@0..879
   FN@0..270
     FnKeyword@0..2 "fn"
     Whitespace@2..3 " "
@@ -487,7 +487,7 @@ FILE@0..901
           Whitespace@672..673 "\n"
       RBrace@673..674 "}"
       Whitespace@674..676 "\n\n"
-  FN@676..901
+  FN@676..879
     FnKeyword@676..678 "fn"
     Whitespace@678..679 " "
     Ident@679..683 "main"
@@ -495,7 +495,7 @@ FILE@0..901
       LParen@683..684 "("
       RParen@684..685 ")"
       Whitespace@685..686 " "
-    BLOCK@686..901
+    BLOCK@686..879
       LBrace@686..687 "{"
       Whitespace@687..690 "\n  "
       STMT_LET@690..715
@@ -536,7 +536,7 @@ FILE@0..901
             RParen@737..738 ")"
         Semi@738..739 ";"
         Whitespace@739..742 "\n  "
-      STMT_LET@742..818
+      STMT_LET@742..807
         LetKeyword@742..745 "let"
         Whitespace@745..746 " "
         PATTERN_WILDCARD@746..748
@@ -544,77 +544,65 @@ FILE@0..901
           Whitespace@747..748 " "
         Eq@748..749 "="
         Whitespace@749..750 " "
-        EXPR_CALL@750..814
+        EXPR_CALL@750..803
           EXPR_IDENT@750..764
             Ident@750..764 "string_println"
-          ARG_LIST@764..814
+          ARG_LIST@764..803
             LParen@764..765 "("
-            ARG@765..813
-              EXPR_CALL@765..813
-                EXPR_IDENT@765..775
-                  Ident@765..775 "string_add"
-                ARG_LIST@775..813
-                  LParen@775..776 "("
-                  ARG@776..790
-                    EXPR_STR@776..788
-                      Str@776..788 "\"sum_to(5)=\""
-                    Comma@788..789 ","
-                    Whitespace@789..790 " "
-                  ARG@790..812
-                    EXPR_CALL@790..812
-                      EXPR_IDENT@790..805
-                        Ident@790..805 "int32_to_string"
-                      ARG_LIST@805..812
-                        LParen@805..806 "("
-                        ARG@806..811
-                          EXPR_IDENT@806..811
-                            Ident@806..811 "first"
-                        RParen@811..812 ")"
-                  RParen@812..813 ")"
-            RParen@813..814 ")"
-        Semi@814..815 ";"
-        Whitespace@815..818 "\n  "
-      STMT_LET@818..896
-        LetKeyword@818..821 "let"
-        Whitespace@821..822 " "
-        PATTERN_WILDCARD@822..824
-          WildcardKeyword@822..823 "_"
-          Whitespace@823..824 " "
-        Eq@824..825 "="
-        Whitespace@825..826 " "
-        EXPR_CALL@826..892
-          EXPR_IDENT@826..840
-            Ident@826..840 "string_println"
-          ARG_LIST@840..892
-            LParen@840..841 "("
-            ARG@841..891
-              EXPR_CALL@841..891
-                EXPR_IDENT@841..851
-                  Ident@841..851 "string_add"
-                ARG_LIST@851..891
-                  LParen@851..852 "("
-                  ARG@852..868
-                    EXPR_STR@852..866
-                      Str@852..866 "\"sum_even(6)=\""
-                    Comma@866..867 ","
-                    Whitespace@867..868 " "
-                  ARG@868..890
-                    EXPR_CALL@868..890
-                      EXPR_IDENT@868..883
-                        Ident@868..883 "int32_to_string"
-                      ARG_LIST@883..890
-                        LParen@883..884 "("
-                        ARG@884..889
-                          EXPR_IDENT@884..889
-                            Ident@884..889 "evens"
-                        RParen@889..890 ")"
-                  RParen@890..891 ")"
-            RParen@891..892 ")"
-        Semi@892..893 ";"
-        Whitespace@893..896 "\n  "
-      EXPR_UNIT@896..899
-        LParen@896..897 "("
-        RParen@897..898 ")"
-        Whitespace@898..899 "\n"
-      RBrace@899..900 "}"
-      Whitespace@900..901 "\n"
+            ARG@765..802
+              EXPR_BINARY@765..802
+                EXPR_STR@765..778
+                  Str@765..777 "\"sum_to(5)=\""
+                  Whitespace@777..778 " "
+                Plus@778..779 "+"
+                Whitespace@779..780 " "
+                EXPR_CALL@780..802
+                  EXPR_IDENT@780..795
+                    Ident@780..795 "int32_to_string"
+                  ARG_LIST@795..802
+                    LParen@795..796 "("
+                    ARG@796..801
+                      EXPR_IDENT@796..801
+                        Ident@796..801 "first"
+                    RParen@801..802 ")"
+            RParen@802..803 ")"
+        Semi@803..804 ";"
+        Whitespace@804..807 "\n  "
+      STMT_LET@807..874
+        LetKeyword@807..810 "let"
+        Whitespace@810..811 " "
+        PATTERN_WILDCARD@811..813
+          WildcardKeyword@811..812 "_"
+          Whitespace@812..813 " "
+        Eq@813..814 "="
+        Whitespace@814..815 " "
+        EXPR_CALL@815..870
+          EXPR_IDENT@815..829
+            Ident@815..829 "string_println"
+          ARG_LIST@829..870
+            LParen@829..830 "("
+            ARG@830..869
+              EXPR_BINARY@830..869
+                EXPR_STR@830..845
+                  Str@830..844 "\"sum_even(6)=\""
+                  Whitespace@844..845 " "
+                Plus@845..846 "+"
+                Whitespace@846..847 " "
+                EXPR_CALL@847..869
+                  EXPR_IDENT@847..862
+                    Ident@847..862 "int32_to_string"
+                  ARG_LIST@862..869
+                    LParen@862..863 "("
+                    ARG@863..868
+                      EXPR_IDENT@863..868
+                        Ident@863..868 "evens"
+                    RParen@868..869 ")"
+            RParen@869..870 ")"
+        Semi@870..871 ";"
+        Whitespace@871..874 "\n  "
+      EXPR_UNIT@874..877
+        LParen@874..875 "("
+        RParen@875..876 ")"
+        Whitespace@876..877 "\n"
+      RBrace@877..878 "}"
+      Whitespace@878..879 "\n"

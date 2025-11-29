@@ -7,7 +7,7 @@ impl Display for Point{
 impl Display for Option[int32]{
   fn show(self/1: Option[int32]) -> string {
     match (self/1 : Option[int32]) {
-        Option::Some(value/2: int32) => (string_add : (string, string) -> string)("Some(", (string_add : (string, string) -> string)((int32_to_string : (int32) -> string)((value/2 : int32)), ")")),
+        Option::Some(value/2: int32) => "Some(" + (int32_to_string : (int32) -> string)((value/2 : int32)) + ")",
         Option::None => "None",
     }
   }

@@ -6,10 +6,10 @@ fn impl_TypeName_Point_type_name(self/0: Point) -> string {
   let x/1 = x1 in
   let t7 = int32_to_string(x/1) in
   let prefix/3 = string_add("Point(", t7) in
+  let t9 = string_add(prefix/3, ", ") in
   let t10 = int32_to_string(y/2) in
-  let t9 = string_add(t10, ")") in
-  let t8 = string_add(", ", t9) in
-  string_add(prefix/3, t8)
+  let t8 = string_add(t9, t10) in
+  string_add(t8, ")")
 }
 
 fn impl_TypeName_Shape_type_name(self/4: Shape) -> string {

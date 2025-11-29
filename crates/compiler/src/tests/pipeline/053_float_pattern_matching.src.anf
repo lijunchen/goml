@@ -28,11 +28,11 @@ fn compare(values/5: (float32, float64)) -> string {
   let limit64/9 = 5 in
   let less_left/10 = float32_less(left/6, limit32/8) in
   let less_right/11 = float64_less(right/7, limit64/9) in
-  let t10 = bool_to_string(less_left/10) in
-  let t9 = string_add("left<1?=", t10) in
+  let t11 = bool_to_string(less_left/10) in
+  let t10 = string_add("left<1?=", t11) in
+  let t9 = string_add(t10, ",right<5?=") in
   let t12 = bool_to_string(less_right/11) in
-  let t11 = string_add(",right<5?=", t12) in
-  string_add(t9, t11)
+  string_add(t9, t12)
 }
 
 fn main() -> unit {
@@ -44,15 +44,15 @@ fn main() -> unit {
   let third/17 = FloatEvent::Sample64("f64=", third_value/14) in
   let tuple/18 = (0.75, 4) in
   let tuple_other/19 = (1.5, 7.25) in
-  let t13 = summarize(first/15) in
-  let t15 = summarize(second/16) in
-  let t17 = summarize(third/17) in
+  let t16 = summarize(first/15) in
+  let t17 = summarize(second/16) in
+  let t15 = string_add(t16, t17) in
+  let t18 = summarize(third/17) in
+  let t14 = string_add(t15, t18) in
   let t19 = compare(tuple/18) in
+  let t13 = string_add(t14, t19) in
   let t20 = compare(tuple_other/19) in
-  let t18 = string_add(t19, t20) in
-  let t16 = string_add(t17, t18) in
-  let t14 = string_add(t15, t16) in
-  let message/20 = string_add(t13, t14) in
+  let message/20 = string_add(t13, t20) in
   let mtmp6 = string_println(message/20) in
   ()
 }

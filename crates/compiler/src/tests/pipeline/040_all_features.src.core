@@ -12,7 +12,7 @@ fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
   let with_count_label/7 = string_add(with_label/6, ", count: ") in
   let with_count/8 = string_add(with_count_label/7, int32_to_string(current/4)) in
   let with_flag_label/9 = string_add(with_count/8, ", toggled: ") in
-  string_add(with_flag_label/9, string_add(bool_to_string(flag/5), ")"))
+  string_add(string_add(with_flag_label/9, bool_to_string(flag/5)), ")")
 }
 
 fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
@@ -20,7 +20,7 @@ fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
     Record::Value(x4) => {
       let x4 = Record::Value._0(self/10) in
       let value/11 = x4 in
-      string_add("Value(", string_add(int32_to_string(value/11), ")"))
+      string_add(string_add("Value(", int32_to_string(value/11)), ")")
     },
     Record::Pair(x5, x6) => {
       let x5 = Record::Pair._0(self/10) in
@@ -28,7 +28,7 @@ fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
       let after/13 = x6 in
       let before/12 = x5 in
       let prefix/14 = string_add("Pair(", int32_to_string(before/12)) in
-      string_add(prefix/14, string_add(", ", string_add(int32_to_string(after/13), ")")))
+      string_add(string_add(string_add(prefix/14, ", "), int32_to_string(after/13)), ")")
     },
     Record::Empty => {
       "Empty"
@@ -41,7 +41,7 @@ fn impl_Describe_Record_string_describe(self/15: Record[string]) -> string {
     Record::Value(x7) => {
       let x7 = Record::Value._0(self/15) in
       let text/16 = x7 in
-      string_add("Value(", string_add(text/16, ")"))
+      string_add(string_add("Value(", text/16), ")")
     },
     Record::Pair(x8, x9) => {
       let x8 = Record::Pair._0(self/15) in
@@ -49,7 +49,7 @@ fn impl_Describe_Record_string_describe(self/15: Record[string]) -> string {
       let after/18 = x9 in
       let before/17 = x8 in
       let prefix/19 = string_add("Pair(", before/17) in
-      string_add(prefix/19, string_add(", ", string_add(after/18, ")")))
+      string_add(string_add(string_add(prefix/19, ", "), after/18), ")")
     },
     Record::Empty => {
       "Empty"
@@ -96,7 +96,7 @@ fn pair_join(parts/29: (string, string)) -> string {
   let x13 = mtmp11.1 in
   let right/31 = x13 in
   let left/30 = x12 in
-  string_add(left/30, string_add(" -> ", right/31))
+  string_add(string_add(left/30, " -> "), right/31)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {

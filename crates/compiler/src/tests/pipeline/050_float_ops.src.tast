@@ -1,11 +1,11 @@
 fn show32(label/0: string, value/1: float32) -> unit {
-  let message/2: string = (string_add : (string, string) -> string)((label/0 : string), (float32_to_string : (float32) -> string)((value/1 : float32))) in
+  let message/2: string = (label/0 : string) + (float32_to_string : (float32) -> string)((value/1 : float32)) in
   let _ : unit = (string_println : (string) -> unit)((message/2 : string)) in
   ()
 }
 
 fn show64(label/3: string, value/4: float64) -> unit {
-  let message/5: string = (string_add : (string, string) -> string)((label/3 : string), (float64_to_string : (float64) -> string)((value/4 : float64))) in
+  let message/5: string = (label/3 : string) + (float64_to_string : (float64) -> string)((value/4 : float64)) in
   let _ : unit = (string_println : (string) -> unit)((message/5 : string)) in
   ()
 }
@@ -40,10 +40,10 @@ fn main() -> unit {
   let _ : unit = (show32 : (string, float32) -> unit)("mid32=", (mid32/17 : float32)) in
   let _ : unit = (show32 : (string, float32) -> unit)("neg_end32=", (neg_end32/18 : float32)) in
   let _ : unit = (show32 : (string, float32) -> unit)("ratio32=", (ratio32/19 : float32)) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("less32=", (bool_to_string : (bool) -> string)((less32/20 : bool)))) in
+  let _ : unit = (string_println : (string) -> unit)("less32=" + (bool_to_string : (bool) -> string)((less32/20 : bool))) in
   let _ : unit = (show64 : (string, float64) -> unit)("energy=", (energy/24 : float64)) in
   let _ : unit = (show64 : (string, float64) -> unit)("neg_dx=", (neg_dx/25 : float64)) in
   let _ : unit = (show64 : (string, float64) -> unit)("adjusted=", (adjusted/26 : float64)) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("less64=", (bool_to_string : (bool) -> string)((less64/28 : bool)))) in
+  let _ : unit = (string_println : (string) -> unit)("less64=" + (bool_to_string : (bool) -> string)((less64/28 : bool))) in
   ()
 }

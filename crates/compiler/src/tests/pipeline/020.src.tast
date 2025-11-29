@@ -27,40 +27,40 @@ fn describe(shape/7: Shape[T]) -> int32 {
 
 fn point32_to_string(point/8: Point) -> string {
   let Point { x: x/9: int32, y: y/10: int32 } = (point/8 : Point) in
-  let with_x/11: string = (string_add : (string, string) -> string)("Point { x: ", (int32_to_string : (int32) -> string)((x/9 : int32))) in
-  let with_y_label/12: string = (string_add : (string, string) -> string)((with_x/11 : string), ", y: ") in
-  let with_y/13: string = (string_add : (string, string) -> string)((with_y_label/12 : string), (int32_to_string : (int32) -> string)((y/10 : int32))) in
-  (string_add : (string, string) -> string)((with_y/13 : string), " }")
+  let with_x/11: string = "Point { x: " + (int32_to_string : (int32) -> string)((x/9 : int32)) in
+  let with_y_label/12: string = (with_x/11 : string) + ", y: " in
+  let with_y/13: string = (with_y_label/12 : string) + (int32_to_string : (int32) -> string)((y/10 : int32)) in
+  (with_y/13 : string) + " }"
 }
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper[int32]) -> string {
   let Wrapper { value: value/15: int32 } = (wrapper/14 : Wrapper[int32]) in
-  let prefix/16: string = (string_add : (string, string) -> string)("Wrapper[int32] { value: ", (int32_to_string : (int32) -> string)((value/15 : int32))) in
-  (string_add : (string, string) -> string)((prefix/16 : string), " }")
+  let prefix/16: string = "Wrapper[int32] { value: " + (int32_to_string : (int32) -> string)((value/15 : int32)) in
+  (prefix/16 : string) + " }"
 }
 
 fn wrapper_unit_to_string(wrapper/17: Wrapper[unit]) -> string {
   let Wrapper { value: value/18: unit } = (wrapper/17 : Wrapper[unit]) in
-  let prefix/19: string = (string_add : (string, string) -> string)("Wrapper[unit] { value: ", (unit_to_string : (unit) -> string)((value/18 : unit))) in
-  (string_add : (string, string) -> string)((prefix/19 : string), " }")
+  let prefix/19: string = "Wrapper[unit] { value: " + (unit_to_string : (unit) -> string)((value/18 : unit)) in
+  (prefix/19 : string) + " }"
 }
 
 fn shape_int32_to_string(shape/20: Shape[int32]) -> string {
   match (shape/20 : Shape[int32]) {
-      Shape::Dot(point/21: Point) => let prefix/22: string = (string_add : (string, string) -> string)("Shape::Dot(", (point32_to_string : (Point) -> string)((point/21 : Point))) in
-        (string_add : (string, string) -> string)((prefix/22 : string), ")"),
-      Shape::Wrapped(wrapper/23: Wrapper[int32]) => let prefix/24: string = (string_add : (string, string) -> string)("Shape::Wrapped(", (wrapper_int32_to_string : (Wrapper[int32]) -> string)((wrapper/23 : Wrapper[int32]))) in
-        (string_add : (string, string) -> string)((prefix/24 : string), ")"),
+      Shape::Dot(point/21: Point) => let prefix/22: string = "Shape::Dot(" + (point32_to_string : (Point) -> string)((point/21 : Point)) in
+        (prefix/22 : string) + ")",
+      Shape::Wrapped(wrapper/23: Wrapper[int32]) => let prefix/24: string = "Shape::Wrapped(" + (wrapper_int32_to_string : (Wrapper[int32]) -> string)((wrapper/23 : Wrapper[int32])) in
+        (prefix/24 : string) + ")",
       Shape::Origin => "Shape::Origin",
   }
 }
 
 fn shape_unit_to_string(shape/25: Shape[unit]) -> string {
   match (shape/25 : Shape[unit]) {
-      Shape::Dot(point/26: Point) => let prefix/27: string = (string_add : (string, string) -> string)("Shape::Dot(", (point32_to_string : (Point) -> string)((point/26 : Point))) in
-        (string_add : (string, string) -> string)((prefix/27 : string), ")"),
-      Shape::Wrapped(wrapper/28: Wrapper[unit]) => let prefix/29: string = (string_add : (string, string) -> string)("Shape::Wrapped(", (wrapper_unit_to_string : (Wrapper[unit]) -> string)((wrapper/28 : Wrapper[unit]))) in
-        (string_add : (string, string) -> string)((prefix/29 : string), ")"),
+      Shape::Dot(point/26: Point) => let prefix/27: string = "Shape::Dot(" + (point32_to_string : (Point) -> string)((point/26 : Point)) in
+        (prefix/27 : string) + ")",
+      Shape::Wrapped(wrapper/28: Wrapper[unit]) => let prefix/29: string = "Shape::Wrapped(" + (wrapper_unit_to_string : (Wrapper[unit]) -> string)((wrapper/28 : Wrapper[unit])) in
+        (prefix/29 : string) + ")",
       Shape::Origin => "Shape::Origin",
   }
 }

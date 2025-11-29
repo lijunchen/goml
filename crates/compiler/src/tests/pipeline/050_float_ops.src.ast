@@ -1,11 +1,11 @@
 fn show32(label: string, value: float32) {
-    let message = string_add(label, float32_to_string(value)) in
+    let message = label + float32_to_string(value) in
     let _ = string_println(message) in
     ()
 }
 
 fn show64(label: string, value: float64) {
-    let message = string_add(label, float64_to_string(value)) in
+    let message = label + float64_to_string(value) in
     let _ = string_println(message) in
     ()
 }
@@ -40,11 +40,11 @@ fn main() {
     let _ = show32("mid32=", mid32) in
     let _ = show32("neg_end32=", neg_end32) in
     let _ = show32("ratio32=", ratio32) in
-    let _ = string_println(string_add("less32=", bool_to_string(less32))) in
+    let _ = string_println("less32=" + bool_to_string(less32)) in
     let _ = show64("energy=", energy) in
     let _ = show64("neg_dx=", neg_dx) in
     let _ = show64("adjusted=", adjusted) in
-    let _ = string_println(string_add("less64=", bool_to_string(less64))) in
+    let _ = string_println("less64=" + bool_to_string(less64)) in
     ()
 }
 

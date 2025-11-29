@@ -26,7 +26,7 @@ fn compare(values/5: (float32, float64)) -> string {
   let limit64/9 = 5 in
   let less_left/10 = float32_less(left/6, limit32/8) in
   let less_right/11 = float64_less(right/7, limit64/9) in
-  string_add(string_add("left<1?=", bool_to_string(less_left/10)), string_add(",right<5?=", bool_to_string(less_right/11)))
+  string_add(string_add(string_add("left<1?=", bool_to_string(less_left/10)), ",right<5?="), bool_to_string(less_right/11))
 }
 
 fn main() -> unit {
@@ -38,7 +38,7 @@ fn main() -> unit {
   let third/17 = FloatEvent::Sample64("f64=", third_value/14) in
   let tuple/18 = (0.75, 4) in
   let tuple_other/19 = (1.5, 7.25) in
-  let message/20 = string_add(summarize(first/15), string_add(summarize(second/16), string_add(summarize(third/17), string_add(compare(tuple/18), compare(tuple_other/19))))) in
+  let message/20 = string_add(string_add(string_add(string_add(summarize(first/15), summarize(second/16)), summarize(third/17)), compare(tuple/18)), compare(tuple_other/19)) in
   let mtmp6 = string_println(message/20) in
   ()
 }
