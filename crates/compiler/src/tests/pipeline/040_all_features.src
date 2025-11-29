@@ -24,21 +24,21 @@ impl Describe for Tracker {
         let Tracker { label: label, count: count, toggled: toggled } = self;
         let current = ref_get(count);
         let flag = ref_get(toggled);
-        let with_label = string_add("Tracker(", label);
-        let with_count_label = string_add(with_label, ", count: ");
-        let with_count = string_add(with_count_label, int32_to_string(current));
-        let with_flag_label = string_add(with_count, ", toggled: ");
-        string_add(with_flag_label, string_add(bool_to_string(flag), ")"))
+        let with_label = "Tracker(" + label;
+        let with_count_label = with_label + ", count: ";
+        let with_count = with_count_label + int32_to_string(current);
+        let with_flag_label = with_count + ", toggled: ";
+        with_flag_label + bool_to_string(flag) + ")"
     }
 }
 
 impl Describe for Record[int32] {
     fn describe(self: Record[int32]) -> string {
         match self {
-            Value(value) => string_add("Value(", string_add(int32_to_string(value), ")")),
+            Value(value) => "Value(" + int32_to_string(value) + ")",
             Pair(before, after) => {
-                let prefix = string_add("Pair(", int32_to_string(before));
-                string_add(prefix, string_add(", ", string_add(int32_to_string(after), ")")))
+                let prefix = "Pair(" + int32_to_string(before);
+                prefix + ", " + int32_to_string(after) + ")"
             },
             Empty => "Empty",
         }
@@ -48,10 +48,10 @@ impl Describe for Record[int32] {
 impl Describe for Record[string] {
     fn describe(self: Record[string]) -> string {
         match self {
-            Value(text) => string_add("Value(", string_add(text, ")")),
+            Value(text) => "Value(" + text + ")",
             Pair(before, after) => {
-                let prefix = string_add("Pair(", before);
-                string_add(prefix, string_add(", ", string_add(after, ")")))
+                let prefix = "Pair(" + before;
+                prefix + ", " + after + ")"
             },
             Empty => "Empty",
         }
@@ -70,7 +70,7 @@ fn map_maybe[T, U](value: Maybe[T], f: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total: int32) -> string {
-    string_add("total: ", int32_to_string(total))
+    "total: " + int32_to_string(total)
 }
 
 fn increment(value: int32) -> int32 {
@@ -83,7 +83,7 @@ fn triple(value: int32) -> int32 {
 
 fn pair_join(parts: (string, string)) -> string {
     let (left, right) = parts;
-    string_add(left, string_add(" -> ", right))
+    left + " -> " + right
 }
 
 fn run_transforms(value: int32, transforms: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -146,7 +146,7 @@ fn main() {
     let flipped_text = describe(flipped_record);
 
     let summary = match stringified {
-        Some(text) => string_add("Snapshot: ", text),
+        Some(text) => "Snapshot: " + text,
         None => "Snapshot: none",
     };
 

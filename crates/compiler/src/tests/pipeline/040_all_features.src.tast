@@ -3,20 +3,20 @@ impl Describe for Tracker{
     let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker) in
     let current/4: int32 = (ref_get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) in
     let flag/5: bool = (ref_get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool])) in
-    let with_label/6: string = (string_add : (string, string) -> string)("Tracker(", (label/1 : string)) in
-    let with_count_label/7: string = (string_add : (string, string) -> string)((with_label/6 : string), ", count: ") in
-    let with_count/8: string = (string_add : (string, string) -> string)((with_count_label/7 : string), (int32_to_string : (int32) -> string)((current/4 : int32))) in
-    let with_flag_label/9: string = (string_add : (string, string) -> string)((with_count/8 : string), ", toggled: ") in
-    (string_add : (string, string) -> string)((with_flag_label/9 : string), (string_add : (string, string) -> string)((bool_to_string : (bool) -> string)((flag/5 : bool)), ")"))
+    let with_label/6: string = "Tracker(" + (label/1 : string) in
+    let with_count_label/7: string = (with_label/6 : string) + ", count: " in
+    let with_count/8: string = (with_count_label/7 : string) + (int32_to_string : (int32) -> string)((current/4 : int32)) in
+    let with_flag_label/9: string = (with_count/8 : string) + ", toggled: " in
+    (with_flag_label/9 : string) + (bool_to_string : (bool) -> string)((flag/5 : bool)) + ")"
   }
 }
 
 impl Describe for Record[int32]{
   fn describe(self/10: Record[int32]) -> string {
     match (self/10 : Record[int32]) {
-        Record::Value(value/11: int32) => (string_add : (string, string) -> string)("Value(", (string_add : (string, string) -> string)((int32_to_string : (int32) -> string)((value/11 : int32)), ")")),
-        Record::Pair(before/12: int32, after/13: int32) => let prefix/14: string = (string_add : (string, string) -> string)("Pair(", (int32_to_string : (int32) -> string)((before/12 : int32))) in
-          (string_add : (string, string) -> string)((prefix/14 : string), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int32_to_string : (int32) -> string)((after/13 : int32)), ")"))),
+        Record::Value(value/11: int32) => "Value(" + (int32_to_string : (int32) -> string)((value/11 : int32)) + ")",
+        Record::Pair(before/12: int32, after/13: int32) => let prefix/14: string = "Pair(" + (int32_to_string : (int32) -> string)((before/12 : int32)) in
+          (prefix/14 : string) + ", " + (int32_to_string : (int32) -> string)((after/13 : int32)) + ")",
         Record::Empty => "Empty",
     }
   }
@@ -25,9 +25,9 @@ impl Describe for Record[int32]{
 impl Describe for Record[string]{
   fn describe(self/15: Record[string]) -> string {
     match (self/15 : Record[string]) {
-        Record::Value(text/16: string) => (string_add : (string, string) -> string)("Value(", (string_add : (string, string) -> string)((text/16 : string), ")")),
-        Record::Pair(before/17: string, after/18: string) => let prefix/19: string = (string_add : (string, string) -> string)("Pair(", (before/17 : string)) in
-          (string_add : (string, string) -> string)((prefix/19 : string), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((after/18 : string), ")"))),
+        Record::Value(text/16: string) => "Value(" + (text/16 : string) + ")",
+        Record::Pair(before/17: string, after/18: string) => let prefix/19: string = "Pair(" + (before/17 : string) in
+          (prefix/19 : string) + ", " + (after/18 : string) + ")",
         Record::Empty => "Empty",
     }
   }
@@ -49,7 +49,7 @@ fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total/26: int32) -> string {
-  (string_add : (string, string) -> string)("total: ", (int32_to_string : (int32) -> string)((total/26 : int32)))
+  "total: " + (int32_to_string : (int32) -> string)((total/26 : int32))
 }
 
 fn increment(value/27: int32) -> int32 {
@@ -62,7 +62,7 @@ fn triple(value/28: int32) -> int32 {
 
 fn pair_join(parts/29: (string, string)) -> string {
   let (left/30: string, right/31: string) = (parts/29 : (string, string)) in
-  (string_add : (string, string) -> string)((left/30 : string), (string_add : (string, string) -> string)(" -> ", (right/31 : string)))
+  (left/30 : string) + " -> " + (right/31 : string)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -115,7 +115,7 @@ fn main() -> unit {
   let bumped_text/71: string = (describe : (Record[int32]) -> string)((bumped_record/59 : Record[int32])) in
   let flipped_text/72: string = (describe : (Record[string]) -> string)((flipped_record/60 : Record[string])) in
   let summary/74: string = match (stringified/64 : Maybe[string]) {
-      Maybe::Some(text/73: string) => (string_add : (string, string) -> string)("Snapshot: ", (text/73 : string)),
+      Maybe::Some(text/73: string) => "Snapshot: " + (text/73 : string),
       Maybe::None => "Snapshot: none",
   } in
   let pair_text/75: string = (pair_join : ((string, string)) -> string)(((int32_to_string : (int32) -> string)((first_result/67 : int32)), (int32_to_string : (int32) -> string)((second_result/68 : int32)))) in

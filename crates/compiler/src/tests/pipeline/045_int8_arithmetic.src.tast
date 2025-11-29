@@ -11,12 +11,12 @@ fn c_value() -> int8 {
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)((label/0 : string), (int8_to_string : (int8) -> string)((value/1 : int8)))) in
+  let _ : unit = (string_println : (string) -> unit)((label/0 : string) + (int8_to_string : (int8) -> string)((value/1 : int8))) in
   ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)((label/2 : string), (bool_to_string : (bool) -> string)((value/3 : bool)))) in
+  let _ : unit = (string_println : (string) -> unit)((label/2 : string) + (bool_to_string : (bool) -> string)((value/3 : bool))) in
   ()
 }
 

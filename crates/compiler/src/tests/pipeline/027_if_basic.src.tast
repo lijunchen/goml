@@ -9,7 +9,7 @@ fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
 fn main() -> unit {
   let yes/3: int32 = (choose : (bool, int32, int32) -> int32)(true, 10, 99) in
   let no/4: int32 = (choose : (bool, int32, int32) -> int32)(false, 10, 99) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("yes=", (int32_to_string : (int32) -> string)((yes/3 : int32)))) in
-  let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("no=", (int32_to_string : (int32) -> string)((no/4 : int32)))) in
+  let _ : unit = (string_println : (string) -> unit)("yes=" + (int32_to_string : (int32) -> string)((yes/3 : int32))) in
+  let _ : unit = (string_println : (string) -> unit)("no=" + (int32_to_string : (int32) -> string)((no/4 : int32))) in
   ()
 }

@@ -6,11 +6,11 @@ impl Shape {
     }
 
     fn rename(self: Self, suffix: string) -> string {
-        string_add(self.name(), suffix)
+        self.name() + suffix
     }
 
     fn join(self: Self, left: string, right: string) -> string {
-        string_add(left, string_add(self.name(), right))
+        left + self.name() + right
     }
 }
 

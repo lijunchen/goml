@@ -344,7 +344,7 @@ fn looks_like_struct_literal(p: &mut Parser) -> bool {
 
 fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     match op {
-        T!['('] => Some((7, ())),
+        T!['('] => Some((21, ())),
         _ => None,
     }
 }

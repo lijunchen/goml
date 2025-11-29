@@ -15,8 +15,8 @@ trait TypeName {
 impl TypeName for Point {
     fn type_name(self: Self) -> string {
         let Point { x: x, y: y } = self;
-        let prefix = string_add("Point(", int32_to_string(x));
-        string_add(prefix, string_add(", ", string_add(int32_to_string(y), ")")))
+        let prefix = "Point(" + int32_to_string(x);
+        prefix + ", " + int32_to_string(y) + ")"
     }
 }
 
@@ -24,7 +24,7 @@ impl TypeName for Shape {
     fn type_name(self: Self) -> string {
         match self {
             Unit => "Unit",
-            Location(point) => string_add("Shape::", type_name(point)),
+            Location(point) => "Shape::" + type_name(point),
         }
     }
 }

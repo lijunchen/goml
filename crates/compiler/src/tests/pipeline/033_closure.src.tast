@@ -14,7 +14,7 @@ fn main() -> unit {
   let base/6: int32 = 5 in
   let add_base/8: (int32) -> int32 = |x/7: int32| => (x/7 : int32) + (base/6 : int32) in
   let result/9: int32 = (add_base/8 : (int32) -> int32)(7) in
-  let printer/13: (string, int32) -> unit = |prefix/10: string, value/11: int32| => let message/12: string = (string_add : (string, string) -> string)((prefix/10 : string), (int32_to_string : (int32) -> string)((value/11 : int32))) in
+  let printer/13: (string, int32) -> unit = |prefix/10: string, value/11: int32| => let message/12: string = (prefix/10 : string) + (int32_to_string : (int32) -> string)((value/11 : int32)) in
   (string_println : (string) -> unit)((message/12 : string)) in
   let _ : unit = (printer/13 : (string, int32) -> unit)("result: ", (result/9 : int32)) in
   let unused/15: (int32) -> int32 = |y/14: int32| => (y/14 : int32) + (result/9 : int32) in
@@ -28,7 +28,7 @@ fn main() -> unit {
       IntList::Nil => (string_println : (string) -> unit)("Empty list"),
       IntList::Cons(head/21: int32, tail/22: IntList) => let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((head/21 : int32))) in
         match (point/20 : Point) {
-            Point { x: x/23: int32, y: y/24: int32 } => let _ : unit = (string_println : (string) -> unit)((string_add : (string, string) -> string)("Point: (", (string_add : (string, string) -> string)((int32_to_string : (int32) -> string)((x/23 : int32)), (string_add : (string, string) -> string)(", ", (string_add : (string, string) -> string)((int32_to_string : (int32) -> string)((y/24 : int32)), ")"))))) in
+            Point { x: x/23: int32, y: y/24: int32 } => let _ : unit = (string_println : (string) -> unit)("Point: (" + (int32_to_string : (int32) -> string)((x/23 : int32)) + ", " + (int32_to_string : (int32) -> string)((y/24 : int32)) + ")") in
               (),
         },
   } in

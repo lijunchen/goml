@@ -24,7 +24,7 @@ fn main() {
     let base = 5 in
     let add_base = |x: int32| x + base in
     let result = add_base(7) in
-    let printer = |prefix: string, value: int32| let message = string_add(prefix, int32_to_string(value)) in
+    let printer = |prefix: string, value: int32| let message = prefix + int32_to_string(value) in
     string_println(message) in
     let _ = printer("result: ", result) in
     let unused = |y: int32| y + result in
@@ -41,7 +41,7 @@ fn main() {
         Nil => string_println("Empty list"),
         Cons(head, tail) => let _ = string_println(int32_to_string(head)) in
           match point {
-              Point { x: x, y: y } => let _ = string_println(string_add("Point: (", string_add(int32_to_string(x), string_add(", ", string_add(int32_to_string(y), ")"))))) in
+              Point { x: x, y: y } => let _ = string_println("Point: (" + int32_to_string(x) + ", " + int32_to_string(y) + ")") in
                 (),
           },
     } in

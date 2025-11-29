@@ -79,11 +79,11 @@ func compare(values__5 Tuple2_float32_float64) string {
     var limit64__9 float64 = 5
     var less_left__10 bool = left__6 < limit32__8
     var less_right__11 bool = right__7 < limit64__9
-    var t10 string = bool_to_string(less_left__10)
-    var t9 string = "left<1?=" + t10
+    var t11 string = bool_to_string(less_left__10)
+    var t10 string = "left<1?=" + t11
+    var t9 string = t10 + ",right<5?="
     var t12 string = bool_to_string(less_right__11)
-    var t11 string = ",right<5?=" + t12
-    ret22 = t9 + t11
+    ret22 = t9 + t12
     return ret22
 }
 
@@ -112,15 +112,15 @@ func main0() struct{} {
         _0: 1.5,
         _1: 7.25,
     }
-    var t13 string = summarize(first__15)
-    var t15 string = summarize(second__16)
-    var t17 string = summarize(third__17)
+    var t16 string = summarize(first__15)
+    var t17 string = summarize(second__16)
+    var t15 string = t16 + t17
+    var t18 string = summarize(third__17)
+    var t14 string = t15 + t18
     var t19 string = compare(tuple__18)
+    var t13 string = t14 + t19
     var t20 string = compare(tuple_other__19)
-    var t18 string = t19 + t20
-    var t16 string = t17 + t18
-    var t14 string = t15 + t16
-    var message__20 string = t13 + t14
+    var message__20 string = t13 + t20
     string_println(message__20)
     ret23 = struct{}{}
     return ret23

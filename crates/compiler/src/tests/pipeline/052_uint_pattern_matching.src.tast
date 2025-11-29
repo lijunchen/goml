@@ -39,13 +39,13 @@ fn match_struct(counter/4: Counter) -> bool {
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  (string_add : (string, string) -> string)((label/5 : string), (bool_to_string : (bool) -> string)((value/6 : bool)))
+  (label/5 : string) + (bool_to_string : (bool) -> string)((value/6 : bool))
 }
 
 fn main() -> unit {
   let counter/7: Counter = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/8: Counter = Counter { start: 12, end: 600000000 } in
-  let message/9: string = (string_add : (string, string) -> string)((report : (string, bool) -> string)("u8_hit=", (is_flag8 : (uint8) -> bool)(200)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u8_miss=", (is_flag8 : (uint8) -> bool)(15)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u16_hit=", (is_flag16 : (uint16) -> bool)(65000)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u16_miss=", (is_flag16 : (uint16) -> bool)(42)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u32_hit=", (is_flag32 : (uint32) -> bool)(1234567890)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u32_miss=", (is_flag32 : (uint32) -> bool)(99)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u64_hit=", (is_flag64 : (uint64) -> bool)(900000000)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",u64_miss=", (is_flag64 : (uint64) -> bool)(700000000)), (string_add : (string, string) -> string)((report : (string, bool) -> string)(",struct_first=", (match_struct : (Counter) -> bool)((counter/7 : Counter))), (report : (string, bool) -> string)(",struct_second=", (match_struct : (Counter) -> bool)((alt_counter/8 : Counter)))))))))))) in
+  let message/9: string = (report : (string, bool) -> string)("u8_hit=", (is_flag8 : (uint8) -> bool)(200)) + (report : (string, bool) -> string)(",u8_miss=", (is_flag8 : (uint8) -> bool)(15)) + (report : (string, bool) -> string)(",u16_hit=", (is_flag16 : (uint16) -> bool)(65000)) + (report : (string, bool) -> string)(",u16_miss=", (is_flag16 : (uint16) -> bool)(42)) + (report : (string, bool) -> string)(",u32_hit=", (is_flag32 : (uint32) -> bool)(1234567890)) + (report : (string, bool) -> string)(",u32_miss=", (is_flag32 : (uint32) -> bool)(99)) + (report : (string, bool) -> string)(",u64_hit=", (is_flag64 : (uint64) -> bool)(900000000)) + (report : (string, bool) -> string)(",u64_miss=", (is_flag64 : (uint64) -> bool)(700000000)) + (report : (string, bool) -> string)(",struct_first=", (match_struct : (Counter) -> bool)((counter/7 : Counter))) + (report : (string, bool) -> string)(",struct_second=", (match_struct : (Counter) -> bool)((alt_counter/8 : Counter))) in
   let _ : unit = (string_println : (string) -> unit)((message/9 : string)) in
   ()
 }

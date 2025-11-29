@@ -25,7 +25,7 @@ fn main() {
     let add_base = |x: int32| x + base;
     let result = add_base(7);
     let printer = |prefix: string, value: int32| {
-        let message = string_add(prefix, int32_to_string(value));
+        let message = prefix + int32_to_string(value);
         string_println(message)
     };
     let _ = printer("result: ", result);
@@ -46,7 +46,7 @@ fn main() {
                 let _ = string_println(int32_to_string(head));
                 match point {
                     Point { x: x, y: y } => {
-                        let _ = string_println(string_add("Point: (", string_add(int32_to_string(x), string_add(", ", string_add(int32_to_string(y), ")")))));
+                        let _ = string_println("Point: (" + int32_to_string(x) + ", " + int32_to_string(y) + ")");
                         ()
                     }
                 }

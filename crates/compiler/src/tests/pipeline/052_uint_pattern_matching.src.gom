@@ -111,35 +111,35 @@ func main0() struct{} {
         start: 12,
         end: 600000000,
     }
-    var t5 bool = is_flag8(200)
-    var t4 string = report("u8_hit=", t5)
-    var t8 bool = is_flag8(15)
-    var t7 string = report(",u8_miss=", t8)
-    var t11 bool = is_flag16(65000)
-    var t10 string = report(",u16_hit=", t11)
-    var t14 bool = is_flag16(42)
-    var t13 string = report(",u16_miss=", t14)
-    var t17 bool = is_flag32(1234567890)
-    var t16 string = report(",u32_hit=", t17)
-    var t20 bool = is_flag32(99)
-    var t19 string = report(",u32_miss=", t20)
-    var t23 bool = is_flag64(900000000)
-    var t22 string = report(",u64_hit=", t23)
-    var t26 bool = is_flag64(700000000)
-    var t25 string = report(",u64_miss=", t26)
+    var t13 bool = is_flag8(200)
+    var t12 string = report("u8_hit=", t13)
+    var t15 bool = is_flag8(15)
+    var t14 string = report(",u8_miss=", t15)
+    var t11 string = t12 + t14
+    var t17 bool = is_flag16(65000)
+    var t16 string = report(",u16_hit=", t17)
+    var t10 string = t11 + t16
+    var t19 bool = is_flag16(42)
+    var t18 string = report(",u16_miss=", t19)
+    var t9 string = t10 + t18
+    var t21 bool = is_flag32(1234567890)
+    var t20 string = report(",u32_hit=", t21)
+    var t8 string = t9 + t20
+    var t23 bool = is_flag32(99)
+    var t22 string = report(",u32_miss=", t23)
+    var t7 string = t8 + t22
+    var t25 bool = is_flag64(900000000)
+    var t24 string = report(",u64_hit=", t25)
+    var t6 string = t7 + t24
+    var t27 bool = is_flag64(700000000)
+    var t26 string = report(",u64_miss=", t27)
+    var t5 string = t6 + t26
     var t29 bool = match_struct(counter__7)
     var t28 string = report(",struct_first=", t29)
+    var t4 string = t5 + t28
     var t31 bool = match_struct(alt_counter__8)
     var t30 string = report(",struct_second=", t31)
-    var t27 string = t28 + t30
-    var t24 string = t25 + t27
-    var t21 string = t22 + t24
-    var t18 string = t19 + t21
-    var t15 string = t16 + t18
-    var t12 string = t13 + t15
-    var t9 string = t10 + t12
-    var t6 string = t7 + t9
-    var message__9 string = t4 + t6
+    var message__9 string = t4 + t30
     string_println(message__9)
     ret38 = struct{}{}
     return ret38

@@ -189,8 +189,8 @@ func impl_Describe_Tracker_describe(self__0 Tracker) string {
     var with_count__8 string = with_count_label__7 + t38
     var with_flag_label__9 string = with_count__8 + ", toggled: "
     var t40 string = bool_to_string(flag__5)
-    var t39 string = t40 + ")"
-    ret64 = with_flag_label__9 + t39
+    var t39 string = with_flag_label__9 + t40
+    ret64 = t39 + ")"
     return ret64
 }
 
@@ -201,8 +201,8 @@ func impl_Describe_Record_int32_describe(self__10 Record__int32) string {
         var x4 int32 = self__10._0
         var value__11 int32 = x4
         var t42 string = int32_to_string(value__11)
-        var t41 string = t42 + ")"
-        ret65 = "Value(" + t41
+        var t41 string = "Value(" + t42
+        ret65 = t41 + ")"
     case Record__int32_Pair:
         var x5 int32 = self__10._0
         var x6 int32 = self__10._1
@@ -210,10 +210,10 @@ func impl_Describe_Record_int32_describe(self__10 Record__int32) string {
         var before__12 int32 = x5
         var t43 string = int32_to_string(before__12)
         var prefix__14 string = "Pair(" + t43
+        var t45 string = prefix__14 + ", "
         var t46 string = int32_to_string(after__13)
-        var t45 string = t46 + ")"
-        var t44 string = ", " + t45
-        ret65 = prefix__14 + t44
+        var t44 string = t45 + t46
+        ret65 = t44 + ")"
     case Record__int32_Empty:
         ret65 = "Empty"
     }
@@ -226,17 +226,17 @@ func impl_Describe_Record_string_describe(self__15 Record__string) string {
     case Record__string_Value:
         var x7 string = self__15._0
         var text__16 string = x7
-        var t47 string = text__16 + ")"
-        ret66 = "Value(" + t47
+        var t47 string = "Value(" + text__16
+        ret66 = t47 + ")"
     case Record__string_Pair:
         var x8 string = self__15._0
         var x9 string = self__15._1
         var after__18 string = x9
         var before__17 string = x8
         var prefix__19 string = "Pair(" + before__17
-        var t49 string = after__18 + ")"
-        var t48 string = ", " + t49
-        ret66 = prefix__19 + t48
+        var t49 string = prefix__19 + ", "
+        var t48 string = t49 + after__18
+        ret66 = t48 + ")"
     case Record__string_Empty:
         ret66 = "Empty"
     }
@@ -269,8 +269,8 @@ func pair_join(parts__29 Tuple2_string_string) string {
     var x13 string = mtmp11._1
     var right__31 string = x13
     var left__30 string = x12
-    var t51 string = " -> " + right__31
-    ret70 = left__30 + t51
+    var t51 string = left__30 + " -> "
+    ret70 = t51 + right__31
     return ret70
 }
 

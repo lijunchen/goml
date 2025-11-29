@@ -44,7 +44,7 @@ fn match_struct(counter: Counter) -> bool {
 }
 
 fn report(label: string, value: bool) -> string {
-    string_add(label, bool_to_string(value))
+    label + bool_to_string(value)
 }
 
 fn main() {
@@ -56,7 +56,7 @@ fn main() {
         start: 12,
         end: 600000000
     } in
-    let message = string_add(report("u8_hit=", is_flag8(200)), string_add(report(",u8_miss=", is_flag8(15)), string_add(report(",u16_hit=", is_flag16(65000)), string_add(report(",u16_miss=", is_flag16(42)), string_add(report(",u32_hit=", is_flag32(1234567890)), string_add(report(",u32_miss=", is_flag32(99)), string_add(report(",u64_hit=", is_flag64(900000000)), string_add(report(",u64_miss=", is_flag64(700000000)), string_add(report(",struct_first=", match_struct(counter)), report(",struct_second=", match_struct(alt_counter))))))))))) in
+    let message = report("u8_hit=", is_flag8(200)) + report(",u8_miss=", is_flag8(15)) + report(",u16_hit=", is_flag16(65000)) + report(",u16_miss=", is_flag16(42)) + report(",u32_hit=", is_flag32(1234567890)) + report(",u32_miss=", is_flag32(99)) + report(",u64_hit=", is_flag64(900000000)) + report(",u64_miss=", is_flag64(700000000)) + report(",struct_first=", match_struct(counter)) + report(",struct_second=", match_struct(alt_counter)) in
     let _ = string_println(message) in
     ()
 }
