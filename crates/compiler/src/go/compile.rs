@@ -3,7 +3,7 @@ use ast::ast::Ident;
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
+    env::{EnumDef, ExternFunc, ExternType, Gensym, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     tast::{self},
 };

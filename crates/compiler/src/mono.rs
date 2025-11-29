@@ -1,6 +1,6 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::Ty;
-use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
+use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
 use crate::tast::{self};
