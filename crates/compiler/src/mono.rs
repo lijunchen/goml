@@ -1,8 +1,9 @@
+use crate::common::{self, Constructor, Prim};
 use crate::core::Ty;
-use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
+use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
-use crate::tast::{self, Constructor, Prim};
+use crate::tast::{self};
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -179,24 +180,6 @@ impl GlobalMonoEnv {
             tuple_types: liftenv.tuple_types,
             array_types: liftenv.array_types,
             ref_types: liftenv.ref_types,
-        }
-    }
-
-    pub fn to_type_env(&self) -> GlobalTypeEnv {
-        GlobalTypeEnv {
-            enums: self.enums.clone(),
-            structs: self.structs.clone(),
-            trait_defs: self.trait_defs.clone(),
-            overloaded_funcs_to_trait_name: self.overloaded_funcs_to_trait_name.clone(),
-            trait_impls: self.trait_impls.clone(),
-            inherent_impls: self.inherent_impls.clone(),
-            funcs: self.funcs.clone(),
-            extern_funcs: self.extern_funcs.clone(),
-            extern_types: self.extern_types.clone(),
-            closure_env_apply: self.closure_env_apply.clone(),
-            tuple_types: self.tuple_types.clone(),
-            array_types: self.array_types.clone(),
-            ref_types: self.ref_types.clone(),
         }
     }
 
@@ -426,7 +409,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
     match (constructor, new_ty) {
         (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
             let ident = Ident::new(name);
-            Constructor::Enum(tast::EnumConstructor {
+            Constructor::Enum(common::EnumConstructor {
                 type_name: ident,
                 variant: enum_constructor.variant.clone(),
                 index: enum_constructor.index,
@@ -434,7 +417,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
         }
         (Constructor::Enum(enum_constructor), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
-            Constructor::Enum(tast::EnumConstructor {
+            Constructor::Enum(common::EnumConstructor {
                 type_name: Ident::new(&base),
                 variant: enum_constructor.variant.clone(),
                 index: enum_constructor.index,
@@ -442,11 +425,11 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
         }
         (Constructor::Struct(_), Ty::TCon { name }) => {
             let ident = Ident::new(name);
-            Constructor::Struct(tast::StructConstructor { type_name: ident })
+            Constructor::Struct(common::StructConstructor { type_name: ident })
         }
         (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
-            Constructor::Struct(tast::StructConstructor {
+            Constructor::Struct(common::StructConstructor {
                 type_name: Ident::new(&base),
             })
         }
@@ -1083,8 +1066,8 @@ fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
 
 // Monomorphize Lift IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
-    let mut monoenv = GlobalMonoEnv::from_lift_env(genv);
+pub fn mono(liftenv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
+    let mut monoenv = GlobalMonoEnv::from_lift_env(liftenv);
     // Build original function map
     let mut orig_fns: IndexMap<String, LiftFn> = IndexMap::new();
     for f in file.toplevels.into_iter() {

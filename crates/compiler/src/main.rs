@@ -16,7 +16,7 @@ fn main() {
     let src = content;
     match compile(&file_path, &src) {
         Ok(compilation) => {
-            println!("{}", compilation.go.to_pretty(&compilation.genv, 120));
+            println!("{}", compilation.go.to_pretty(&compilation.goenv, 120));
         }
         Err(err) => {
             match &err {

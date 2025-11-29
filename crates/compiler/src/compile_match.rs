@@ -1,14 +1,14 @@
 use ast::ast::{BinaryOp, Ident, UnaryOp};
 
+use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
 use crate::mangle::{mangle_impl_name, mangle_inherent_name};
 use crate::tast::Arm;
-use crate::tast::Constructor;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
-use crate::tast::{self, File, Prim};
+use crate::tast::{self, File};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use text_size::TextRange;
 
@@ -318,7 +318,7 @@ fn compile_enum_case(
         .iter()
         .enumerate()
         .map(|(index, (variant, args))| ConstructorCase {
-            constructor: Constructor::Enum(tast::EnumConstructor {
+            constructor: Constructor::Enum(common::EnumConstructor {
                 type_name: name.clone(),
                 variant: variant.clone(),
                 index,
@@ -417,7 +417,7 @@ fn compile_struct_case(
         })
         .collect();
 
-    let constructor = Constructor::Struct(tast::StructConstructor {
+    let constructor = Constructor::Struct(common::StructConstructor {
         type_name: name.clone(),
     });
 
@@ -1590,7 +1590,7 @@ fn compile_expr(
                 .unwrap_or_else(|| panic!("Struct {} has no field {}", type_name.0, field_name));
             core::Expr::EConstrGet {
                 expr: Box::new(expr_core),
-                constructor: tast::Constructor::Struct(tast::StructConstructor { type_name }),
+                constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
                 field_index,
                 ty: ty.clone(),
             }

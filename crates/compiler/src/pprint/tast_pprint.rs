@@ -1,8 +1,8 @@
 use pretty::RcDoc;
 
 use crate::env::GlobalTypeEnv;
+use crate::pprint::common_pprint::constructor_to_doc;
 use crate::tast::ClosureParam;
-use crate::tast::Constructor;
 use crate::tast::Expr;
 use crate::tast::File;
 use crate::tast::Fn;
@@ -31,7 +31,7 @@ impl Item {
         match self {
             Self::ImplBlock(impl_block) => impl_block.to_doc(genv),
             Self::Fn(func) => func.to_doc(genv),
-            Self::ExternGo(ext) => ext.to_doc(genv),
+            Self::ExternGo(ext) => ext.to_doc(),
             Self::ExternType(ext) => ext.to_doc(genv),
         }
     }
@@ -45,7 +45,7 @@ impl Item {
 
 impl ImplBlock {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        let for_type = self.for_type.to_doc(genv);
+        let for_type = self.for_type.to_doc();
         let methods = RcDoc::intersperse(
             self.methods.iter().map(|method| method.to_doc(genv)),
             RcDoc::hardline(),
@@ -88,12 +88,12 @@ impl Fn {
                 RcDoc::text(name.clone())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
-                    .append(ty.to_doc(genv))
+                    .append(ty.to_doc())
             }),
             RcDoc::text(", "),
         );
 
-        let ret_ty = self.ret_ty.to_doc(genv);
+        let ret_ty = self.ret_ty.to_doc();
 
         let body = self.body.to_doc(genv);
 
@@ -122,13 +122,13 @@ impl Fn {
 }
 
 impl crate::tast::ExternGo {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
                 RcDoc::text(name.clone())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
-                    .append(ty.to_doc(genv))
+                    .append(ty.to_doc())
             }),
             RcDoc::text(", "),
         );
@@ -146,12 +146,12 @@ impl crate::tast::ExternGo {
             .append(RcDoc::space())
             .append(RcDoc::text("->"))
             .append(RcDoc::space())
-            .append(self.ret_ty.to_doc(genv))
+            .append(self.ret_ty.to_doc())
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
@@ -167,15 +167,15 @@ impl crate::tast::ExternType {
 }
 
 impl ClosureParam {
-    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         RcDoc::text(self.name.clone())
             .append(RcDoc::text(": "))
-            .append(self.ty.to_doc(genv))
+            .append(self.ty.to_doc())
     }
 }
 
 impl Ty {
-    pub fn to_doc(&self, _genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Self::TVar(x) => RcDoc::text(format!("{:?}", x)),
             Self::TUnit => RcDoc::text("unit"),
@@ -197,10 +197,10 @@ impl Ty {
                 if !typs.is_empty() {
                     let mut iter = typs.iter();
                     if let Some(first) = iter.next() {
-                        doc = doc.append(first.to_doc(_genv));
+                        doc = doc.append(first.to_doc());
                     }
                     for item in iter {
-                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc(_genv));
+                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc());
                     }
                 }
 
@@ -208,15 +208,15 @@ impl Ty {
             }
             Self::TCon { name } => RcDoc::text(name.clone()),
             Self::TApp { ty, args } => {
-                let mut doc = ty.to_doc(_genv);
+                let mut doc = ty.to_doc();
 
                 if !args.is_empty() {
                     let mut iter = args.iter();
                     if let Some(first) = iter.next() {
-                        doc = doc.append(RcDoc::text("[")).append(first.to_doc(_genv));
+                        doc = doc.append(RcDoc::text("[")).append(first.to_doc());
                     }
                     for item in iter {
-                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc(_genv));
+                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc());
                     }
                     doc = doc.append(RcDoc::text("]"));
                 }
@@ -224,12 +224,12 @@ impl Ty {
                 doc
             }
             Self::TArray { len, elem } => RcDoc::text("[")
-                .append(elem.to_doc(_genv))
+                .append(elem.to_doc())
                 .append(RcDoc::text("; "))
                 .append(RcDoc::as_string(len))
                 .append(RcDoc::text("]")),
             Self::TRef { elem } => RcDoc::text("Ref[")
-                .append(elem.to_doc(_genv))
+                .append(elem.to_doc())
                 .append(RcDoc::text("]")),
             Self::TFunc { params, ret_ty } => {
                 let mut doc = RcDoc::text("(");
@@ -237,23 +237,22 @@ impl Ty {
                 if !params.is_empty() {
                     let mut iter = params.iter();
                     if let Some(first) = iter.next() {
-                        doc = doc.append(first.to_doc(_genv));
+                        doc = doc.append(first.to_doc());
                     }
                     for item in iter {
-                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc(_genv));
+                        doc = doc.append(RcDoc::text(", ")).append(item.to_doc());
                     }
                 }
 
-                doc.append(RcDoc::text(") -> "))
-                    .append(ret_ty.to_doc(_genv))
+                doc.append(RcDoc::text(") -> ")).append(ret_ty.to_doc())
             }
             Self::TParam { name } => RcDoc::text(name.clone()),
         }
     }
 
-    pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
+    pub fn to_pretty(&self, width: usize) -> String {
         let mut w = Vec::new();
-        self.to_doc(genv).render(width, &mut w).unwrap();
+        self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
@@ -268,7 +267,7 @@ impl Expr {
             } => RcDoc::text("(")
                 .append(RcDoc::text(name.clone()))
                 .append(RcDoc::text(" : "))
-                .append(ty.to_doc(genv))
+                .append(ty.to_doc())
                 .append(RcDoc::text(")")),
 
             Self::EPrim { value, ty: _ } => RcDoc::text(value.to_string()),
@@ -276,78 +275,13 @@ impl Expr {
                 constructor,
                 args,
                 ty: _,
-            } => match constructor {
-                Constructor::Enum(enum_constructor) => {
-                    let name_doc = RcDoc::text(format!(
-                        "{}::{}",
-                        enum_constructor.type_name.0, enum_constructor.variant.0
-                    ));
-
-                    if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
-                            RcDoc::text(", "),
-                        );
-
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-                Constructor::Struct(struct_constructor) => {
-                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
-
-                    if let Some(struct_def) = genv.structs().get(&struct_constructor.type_name) {
-                        if struct_def.fields.is_empty() {
-                            name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
-                        } else if struct_def.fields.len() == args.len() {
-                            let fields_doc = RcDoc::intersperse(
-                                struct_def.fields.iter().zip(args.iter()).map(
-                                    |((fname, _), arg)| {
-                                        RcDoc::text(fname.0.clone())
-                                            .append(RcDoc::text(": "))
-                                            .append(arg.to_doc(genv))
-                                    },
-                                ),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::space())
-                                .append(RcDoc::text("{ "))
-                                .append(fields_doc)
-                                .append(RcDoc::text(" }"))
-                        } else if args.is_empty() {
-                            name_doc
-                        } else {
-                            let args_doc = RcDoc::intersperse(
-                                args.iter().map(|arg| arg.to_doc(genv)),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::text("("))
-                                .append(args_doc)
-                                .append(RcDoc::text(")"))
-                        }
-                    } else if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
-                            RcDoc::text(", "),
-                        );
-
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-            },
+            } => {
+                let args_docs = args.iter().map(|arg| arg.to_doc(genv));
+                let struct_def = constructor
+                    .as_struct()
+                    .and_then(|s| genv.structs().get(&s.type_name));
+                constructor_to_doc(constructor, args_docs, struct_def)
+            }
 
             Self::ETuple { items, ty: _ } => {
                 if items.is_empty() {
@@ -391,7 +325,7 @@ impl Expr {
                     RcDoc::text("||")
                 } else {
                     let list = RcDoc::intersperse(
-                        params.iter().map(|param| param.to_doc(genv)),
+                        params.iter().map(|param| param.to_doc()),
                         RcDoc::text(", "),
                     );
                     RcDoc::text("|").append(list).append(RcDoc::text("|"))
@@ -557,83 +491,19 @@ impl Pat {
             } => RcDoc::text(name.clone())
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())
-                .append(ty.to_doc(genv)),
+                .append(ty.to_doc()),
             Pat::PPrim { value, ty: _ } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,
                 args,
                 ty: _,
-            } => match constructor {
-                Constructor::Enum(enum_constructor) => {
-                    let name_doc = RcDoc::text(format!(
-                        "{}::{}",
-                        enum_constructor.type_name.0, enum_constructor.variant.0
-                    ));
-
-                    if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
-                            RcDoc::text(", "),
-                        );
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-                Constructor::Struct(struct_constructor) => {
-                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
-
-                    if let Some(struct_def) = genv.structs().get(&struct_constructor.type_name) {
-                        if struct_def.fields.is_empty() {
-                            name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
-                        } else if struct_def.fields.len() == args.len() {
-                            let fields_doc = RcDoc::intersperse(
-                                struct_def.fields.iter().zip(args.iter()).map(
-                                    |((fname, _), arg)| {
-                                        RcDoc::text(fname.0.clone())
-                                            .append(RcDoc::text(": "))
-                                            .append(arg.to_doc(genv))
-                                    },
-                                ),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::space())
-                                .append(RcDoc::text("{ "))
-                                .append(fields_doc)
-                                .append(RcDoc::text(" }"))
-                        } else if args.is_empty() {
-                            name_doc
-                        } else {
-                            let args_doc = RcDoc::intersperse(
-                                args.iter().map(|arg| arg.to_doc(genv)),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::text("("))
-                                .append(args_doc)
-                                .append(RcDoc::text(")"))
-                        }
-                    } else if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc(genv)),
-                            RcDoc::text(", "),
-                        );
-
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-            },
+            } => {
+                let args_docs = args.iter().map(|arg| arg.to_doc(genv));
+                let struct_def = constructor
+                    .as_struct()
+                    .and_then(|s| genv.structs().get(&s.type_name));
+                constructor_to_doc(constructor, args_docs, struct_def)
+            }
             Pat::PTuple { items, ty: _ } => {
                 if items.is_empty() {
                     RcDoc::text("()")
@@ -647,7 +517,7 @@ impl Pat {
             }
             Pat::PWild { ty } => RcDoc::text("_")
                 .append(RcDoc::text(" : "))
-                .append(ty.to_doc(genv)),
+                .append(ty.to_doc()),
         }
     }
     pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {

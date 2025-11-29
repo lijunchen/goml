@@ -1,0 +1,36 @@
+impl Point{
+  fn to_json(self/0: Point) -> string {
+    let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point) in
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("{", "\"x\":"), (int32_to_string : (int32) -> string)((x/1 : int32))), ","), "\"y\":"), (int32_to_string : (int32) -> string)((y/2 : int32))), "}")
+  }
+}
+
+impl Person{
+  fn to_json(self/3: Person) -> string {
+    let Person { name: name/4: string, age: age/5: int32, active: active/6: bool } = (self/3 : Person) in
+    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("{", "\"name\":"), (json_escape_string : (string) -> string)((name/4 : string))), ","), "\"age\":"), (int32_to_string : (int32) -> string)((age/5 : int32))), ","), "\"active\":"), (bool_to_json : (bool) -> string)((active/6 : bool))), "}")
+  }
+}
+
+impl Color{
+  fn to_json(self/7: Color) -> string {
+    match (self/7 : Color) {
+        Color::Red => "{\"tag\":\"Red\"}",
+        Color::Green => "{\"tag\":\"Green\"}",
+        Color::Blue => "{\"tag\":\"Blue\"}",
+        Color::Rgb(__field0/8: int32, __field1/9: int32, __field2/10: int32) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("{\"tag\":\"Rgb\",\"fields\":[", (int32_to_string : (int32) -> string)((__field0/8 : int32))), ","), (int32_to_string : (int32) -> string)((__field1/9 : int32))), ","), (int32_to_string : (int32) -> string)((__field2/10 : int32))), "]}"),
+    }
+  }
+}
+
+fn main() -> unit {
+  let p/11: Point = Point { x: 10, y: 20 } in
+  let person/12: Person = Person { name: "Alice", age: 30, active: true } in
+  let c1/13: Color = Color::Red in
+  let c2/14: Color = Color::Rgb(255, 128, 0) in
+  let _ : unit = (string_println : (string) -> unit)((impl_inherent_Point_to_json : (Point) -> string)((p/11 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((impl_inherent_Person_to_json : (Person) -> string)((person/12 : Person))) in
+  let _ : unit = (string_println : (string) -> unit)((impl_inherent_Color_to_json : (Color) -> string)((c1/13 : Color))) in
+  let _ : unit = (string_println : (string) -> unit)((impl_inherent_Color_to_json : (Color) -> string)((c2/14 : Color))) in
+  ()
+}

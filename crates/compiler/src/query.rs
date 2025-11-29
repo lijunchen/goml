@@ -45,25 +45,25 @@ pub fn hover_type(src: &str, line: u32, col: u32) -> Option<String> {
         Ok(ast) => ast,
         Err(_) => return None,
     };
-    let (tast, genv, _diagnostics) = crate::typer::check_file(ast);
+    let (tast, _genv, _diagnostics) = crate::typer::check_file(ast);
 
-    let ty = find_type(&genv, &tast, &range);
+    let ty = find_type(&tast, &range);
 
     ty.map(|node| node.to_string())
 }
 
-fn find_type(genv: &GlobalTypeEnv, tast: &tast::File, range: &rowan::TextRange) -> Option<String> {
+fn find_type(tast: &tast::File, range: &rowan::TextRange) -> Option<String> {
     for item in &tast.toplevels {
         match item {
             tast::Item::ImplBlock(impl_block) => {
                 for item in impl_block.methods.iter() {
-                    if let Some(t) = find_type_fn(genv, item, range) {
+                    if let Some(t) = find_type_fn(item, range) {
                         return Some(t.clone());
                     }
                 }
             }
             tast::Item::Fn(f) => {
-                if let Some(t) = find_type_fn(genv, f, range) {
+                if let Some(t) = find_type_fn(f, range) {
                     return Some(t.clone());
                 }
             }
@@ -74,15 +74,11 @@ fn find_type(genv: &GlobalTypeEnv, tast: &tast::File, range: &rowan::TextRange) 
     None
 }
 
-fn find_type_fn(genv: &GlobalTypeEnv, tast: &tast::Fn, range: &rowan::TextRange) -> Option<String> {
-    find_type_expr(genv, &tast.body, range)
+fn find_type_fn(tast: &tast::Fn, range: &rowan::TextRange) -> Option<String> {
+    find_type_expr(&tast.body, range)
 }
 
-fn find_type_expr(
-    genv: &GlobalTypeEnv,
-    tast: &tast::Expr,
-    range: &rowan::TextRange,
-) -> Option<String> {
+fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String> {
     match tast {
         tast::Expr::EVar {
             name: _,
@@ -90,7 +86,7 @@ fn find_type_expr(
             astptr,
         } => {
             if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
@@ -98,7 +94,7 @@ fn find_type_expr(
         tast::Expr::EConstr { .. } => None,
         tast::Expr::ETuple { items, ty: _ } | tast::Expr::EArray { items, ty: _ } => {
             for item in items {
-                if let Some(expr) = find_type_expr(genv, item, range) {
+                if let Some(expr) = find_type_expr(item, range) {
                     return Some(expr);
                 }
             }
@@ -114,10 +110,10 @@ fn find_type_expr(
                 if let Some(astptr) = param.astptr
                     && astptr.text_range().contains_range(*range)
                 {
-                    return Some(param.ty.to_pretty(genv, 80));
+                    return Some(param.ty.to_pretty(80));
                 }
             }
-            find_type_expr(genv, body, range)
+            find_type_expr(body, range)
         }
         tast::Expr::ELet {
             pat,
@@ -125,13 +121,13 @@ fn find_type_expr(
             body,
             ty: _,
         } => {
-            if let Some(expr) = find_type_pat(genv, pat, range) {
+            if let Some(expr) = find_type_pat(pat, range) {
                 return Some(expr);
             }
-            if let Some(expr) = find_type_expr(genv, value, range) {
+            if let Some(expr) = find_type_expr(value, range) {
                 return Some(expr);
             }
-            find_type_expr(genv, body, range)
+            find_type_expr(body, range)
         }
         tast::Expr::EMatch {
             expr,
@@ -139,21 +135,21 @@ fn find_type_expr(
             ty: _,
             astptr,
         } => {
-            if let Some(expr) = find_type_expr(genv, expr, range) {
+            if let Some(expr) = find_type_expr(expr, range) {
                 return Some(expr);
             }
             for arm in arms {
-                if let Some(expr) = find_type_pat(genv, &arm.pat, range) {
+                if let Some(expr) = find_type_pat(&arm.pat, range) {
                     return Some(expr);
                 }
-                if let Some(expr) = find_type_expr(genv, &arm.body, range) {
+                if let Some(expr) = find_type_expr(&arm.body, range) {
                     return Some(expr);
                 }
             }
             if let Some(astptr) = astptr
                 && astptr.text_range().contains_range(*range)
             {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
@@ -163,26 +159,26 @@ fn find_type_expr(
             else_branch,
             ty: _,
         } => {
-            if let Some(expr) = find_type_expr(genv, cond, range) {
+            if let Some(expr) = find_type_expr(cond, range) {
                 return Some(expr);
             }
-            if let Some(expr) = find_type_expr(genv, then_branch, range) {
+            if let Some(expr) = find_type_expr(then_branch, range) {
                 return Some(expr);
             }
-            find_type_expr(genv, else_branch, range)
+            find_type_expr(else_branch, range)
         }
         tast::Expr::EWhile { cond, body, ty: _ } => {
-            if let Some(expr) = find_type_expr(genv, cond, range) {
+            if let Some(expr) = find_type_expr(cond, range) {
                 return Some(expr);
             }
-            find_type_expr(genv, body, range)
+            find_type_expr(body, range)
         }
         tast::Expr::ECall { func, args, ty: _ } => {
-            if let Some(expr) = find_type_expr(genv, func, range) {
+            if let Some(expr) = find_type_expr(func, range) {
                 return Some(expr);
             }
             for arg in args {
-                if let Some(expr) = find_type_expr(genv, arg, range) {
+                if let Some(expr) = find_type_expr(arg, range) {
                     return Some(expr);
                 }
             }
@@ -191,21 +187,21 @@ fn find_type_expr(
         tast::Expr::EBinary {
             lhs, rhs, ty: _, ..
         } => {
-            if let Some(expr) = find_type_expr(genv, lhs, range) {
+            if let Some(expr) = find_type_expr(lhs, range) {
                 return Some(expr);
             }
-            if let Some(expr) = find_type_expr(genv, rhs, range) {
+            if let Some(expr) = find_type_expr(rhs, range) {
                 return Some(expr);
             }
             None
         }
-        tast::Expr::EUnary { expr, ty: _, .. } => find_type_expr(genv, expr, range),
+        tast::Expr::EUnary { expr, ty: _, .. } => find_type_expr(expr, range),
         tast::Expr::EProj {
             tuple,
             index: _,
             ty: _,
         } => {
-            if let Some(expr) = find_type_expr(genv, tuple, range) {
+            if let Some(expr) = find_type_expr(tuple, range) {
                 return Some(expr);
             }
             None
@@ -219,9 +215,9 @@ fn find_type_expr(
             if let Some(astptr) = astptr
                 && astptr.text_range().contains_range(*range)
             {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
-            if let Some(expr) = find_type_expr(genv, expr, range) {
+            if let Some(expr) = find_type_expr(expr, range) {
                 return Some(expr);
             }
             None
@@ -229,11 +225,7 @@ fn find_type_expr(
     }
 }
 
-fn find_type_pat(
-    genv: &GlobalTypeEnv,
-    tast: &tast::Pat,
-    range: &rowan::TextRange,
-) -> Option<String> {
+fn find_type_pat(tast: &tast::Pat, range: &rowan::TextRange) -> Option<String> {
     match tast {
         tast::Pat::PVar {
             name: _,
@@ -241,14 +233,14 @@ fn find_type_pat(
             astptr,
         } => {
             if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
         tast::Pat::PPrim { value: _, ty: _ } => None,
         tast::Pat::PConstr { args, .. } => {
             for arg in args {
-                if let Some(expr) = find_type_pat(genv, arg, range) {
+                if let Some(expr) = find_type_pat(arg, range) {
                     return Some(expr);
                 }
             }
@@ -256,7 +248,7 @@ fn find_type_pat(
         }
         tast::Pat::PTuple { items, ty: _ } => {
             for item in items {
-                if let Some(expr) = find_type_pat(genv, item, range) {
+                if let Some(expr) = find_type_pat(item, range) {
                     return Some(expr);
                 }
             }
@@ -481,7 +473,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
                 items.push(DotCompletionItem {
                     name: field_name.0.clone(),
                     kind: DotCompletionKind::Field,
-                    detail: Some(field_ty.to_pretty(genv, 80)),
+                    detail: Some(field_ty.to_pretty(80)),
                 });
             }
         }
@@ -496,7 +488,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
                 Some(DotCompletionItem {
                     name: method_name.0.clone(),
                     kind: DotCompletionKind::Method,
-                    detail: Some(method_ty.to_pretty(genv, 80)),
+                    detail: Some(method_ty.to_pretty(80)),
                 })
             } else {
                 None

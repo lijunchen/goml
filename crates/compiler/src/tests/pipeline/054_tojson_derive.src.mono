@@ -1,0 +1,54 @@
+fn impl_inherent_Point_to_json(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  string_add(string_add(string_add(string_add(string_add(string_add("{", "\"x\":"), int32_to_string(x/1)), ","), "\"y\":"), int32_to_string(y/2)), "}")
+}
+
+fn impl_inherent_Person_to_json(self/3: Person) -> string {
+  let mtmp3 = self/3 in
+  let x4 = Person.name(mtmp3) in
+  let x5 = Person.age(mtmp3) in
+  let x6 = Person.active(mtmp3) in
+  let active/6 = x6 in
+  let age/5 = x5 in
+  let name/4 = x4 in
+  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("{", "\"name\":"), json_escape_string(name/4)), ","), "\"age\":"), int32_to_string(age/5)), ","), "\"active\":"), bool_to_json(active/6)), "}")
+}
+
+fn impl_inherent_Color_to_json(self/7: Color) -> string {
+  match self/7 {
+    Color::Red => {
+      "{\"tag\":\"Red\"}"
+    },
+    Color::Green => {
+      "{\"tag\":\"Green\"}"
+    },
+    Color::Blue => {
+      "{\"tag\":\"Blue\"}"
+    },
+    Color::Rgb(x7, x8, x9) => {
+      let x7 = Color::Rgb._0(self/7) in
+      let x8 = Color::Rgb._1(self/7) in
+      let x9 = Color::Rgb._2(self/7) in
+      let __field2/10 = x9 in
+      let __field1/9 = x8 in
+      let __field0/8 = x7 in
+      string_add(string_add(string_add(string_add(string_add(string_add("{\"tag\":\"Rgb\",\"fields\":[", int32_to_string(__field0/8)), ","), int32_to_string(__field1/9)), ","), int32_to_string(__field2/10)), "]}")
+    },
+  }
+}
+
+fn main() -> unit {
+  let p/11 = Point { x: 10, y: 20 } in
+  let person/12 = Person { name: "Alice", age: 30, active: true } in
+  let c1/13 = Color::Red in
+  let c2/14 = Color::Rgb(255, 128, 0) in
+  let mtmp10 = string_println(impl_inherent_Point_to_json(p/11)) in
+  let mtmp11 = string_println(impl_inherent_Person_to_json(person/12)) in
+  let mtmp12 = string_println(impl_inherent_Color_to_json(c1/13)) in
+  let mtmp13 = string_println(impl_inherent_Color_to_json(c2/14)) in
+  ()
+}

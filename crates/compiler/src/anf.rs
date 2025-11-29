@@ -2,10 +2,11 @@ pub type Ty = crate::tast::Ty;
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 
+use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
 use crate::mono::{GlobalMonoEnv, MonoArm, MonoExpr, MonoFile};
-use crate::tast::{self, Constructor, Prim};
+use crate::tast::{self};
 
 #[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {
@@ -40,25 +41,6 @@ impl GlobalAnfEnv {
             tuple_types: monoenv.tuple_types,
             array_types: monoenv.array_types,
             ref_types: monoenv.ref_types,
-        }
-    }
-
-    // TODO: remove me, only for pprint
-    pub fn to_type_env(&self) -> crate::env::GlobalTypeEnv {
-        crate::env::GlobalTypeEnv {
-            enums: self.enums.clone(),
-            structs: self.structs.clone(),
-            trait_defs: self.trait_defs.clone(),
-            overloaded_funcs_to_trait_name: self.overloaded_funcs_to_trait_name.clone(),
-            trait_impls: self.trait_impls.clone(),
-            inherent_impls: self.inherent_impls.clone(),
-            funcs: self.funcs.clone(),
-            extern_types: self.extern_types.clone(),
-            tuple_types: self.tuple_types.clone(),
-            array_types: self.array_types.clone(),
-            ref_types: self.ref_types.clone(),
-            closure_env_apply: self.closure_env_apply.clone(),
-            extern_funcs: self.extern_funcs.clone(),
         }
     }
 

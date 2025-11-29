@@ -2,7 +2,7 @@ use pretty::RcDoc;
 
 use crate::{
     anf::{AExpr, Arm, CExpr, File, Fn, GlobalAnfEnv, ImmExpr},
-    tast::Constructor,
+    pprint::common_pprint::{constr_get_accessor_doc, constructor_to_doc},
 };
 
 impl File {
@@ -28,12 +28,12 @@ impl Fn {
                 RcDoc::text(name.clone())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
-                    .append(ty.to_doc(&anfenv.to_type_env()))
+                    .append(ty.to_doc())
             }),
             RcDoc::text(", "),
         );
 
-        let ret_ty = self.ret_ty.to_doc(&anfenv.to_type_env());
+        let ret_ty = self.ret_ty.to_doc();
 
         let body = self.body.to_doc(anfenv);
 
@@ -100,78 +100,13 @@ impl CExpr {
                 constructor,
                 args,
                 ty: _,
-            } => match constructor {
-                Constructor::Enum(enum_constructor) => {
-                    let name_doc = RcDoc::text(format!(
-                        "{}::{}",
-                        enum_constructor.type_name.0, enum_constructor.variant.0
-                    ));
-
-                    if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc()),
-                            RcDoc::text(", "),
-                        );
-
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-                Constructor::Struct(struct_constructor) => {
-                    let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
-
-                    if let Some(struct_def) = anfenv.structs().get(&struct_constructor.type_name) {
-                        if struct_def.fields.is_empty() {
-                            name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
-                        } else if struct_def.fields.len() == args.len() {
-                            let fields_doc = RcDoc::intersperse(
-                                struct_def.fields.iter().zip(args.iter()).map(
-                                    |((fname, _), arg)| {
-                                        RcDoc::text(fname.0.clone())
-                                            .append(RcDoc::text(": "))
-                                            .append(arg.to_doc())
-                                    },
-                                ),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::space())
-                                .append(RcDoc::text("{ "))
-                                .append(fields_doc)
-                                .append(RcDoc::text(" }"))
-                        } else if args.is_empty() {
-                            name_doc
-                        } else {
-                            let args_doc = RcDoc::intersperse(
-                                args.iter().map(|arg| arg.to_doc()),
-                                RcDoc::text(", "),
-                            );
-
-                            name_doc
-                                .append(RcDoc::text("("))
-                                .append(args_doc)
-                                .append(RcDoc::text(")"))
-                        }
-                    } else if args.is_empty() {
-                        name_doc
-                    } else {
-                        let args_doc = RcDoc::intersperse(
-                            args.iter().map(|arg| arg.to_doc()),
-                            RcDoc::text(", "),
-                        );
-
-                        name_doc
-                            .append(RcDoc::text("("))
-                            .append(args_doc)
-                            .append(RcDoc::text(")"))
-                    }
-                }
-            },
+            } => {
+                let args_docs = args.iter().map(|arg| arg.to_doc());
+                let struct_def = constructor
+                    .as_struct()
+                    .and_then(|s| anfenv.structs().get(&s.type_name));
+                constructor_to_doc(constructor, args_docs, struct_def)
+            }
             CExpr::ETuple { items, ty: _ } => {
                 if items.is_empty() {
                     RcDoc::text("()")
@@ -268,25 +203,10 @@ impl CExpr {
                 field_index,
                 ty: _,
             } => {
-                let accessor = match constructor {
-                    Constructor::Enum(enum_constructor) => RcDoc::text(format!(
-                        "{}::{}._{}",
-                        enum_constructor.type_name.0, enum_constructor.variant.0, field_index
-                    )),
-                    Constructor::Struct(struct_constructor) => {
-                        let field_name = anfenv
-                            .structs()
-                            .get(&struct_constructor.type_name)
-                            .and_then(|def| def.fields.get(*field_index))
-                            .map(|(fname, _)| fname.0.clone())
-                            .unwrap_or_else(|| format!("_{}", field_index));
-                        RcDoc::text(format!(
-                            "{}.{field}",
-                            struct_constructor.type_name.0,
-                            field = field_name
-                        ))
-                    }
-                };
+                let struct_def = constructor
+                    .as_struct()
+                    .and_then(|s| anfenv.structs().get(&s.type_name));
+                let accessor = constr_get_accessor_doc(constructor, *field_index, struct_def);
 
                 accessor
                     .append(RcDoc::text("("))

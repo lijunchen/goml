@@ -4,9 +4,10 @@ use ::ast::ast::Ident;
 use ast::ast;
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 
+use crate::common::{self, Prim};
 use crate::{
     env::{Constraint, GlobalTypeEnv, LocalTypeEnv},
-    tast::{self, Prim},
+    tast::{self},
     typer::{Typer, util::binary_supports_builtin},
 };
 
@@ -332,7 +333,7 @@ impl Typer {
             });
 
         let expected_arity = match &constructor {
-            tast::Constructor::Enum(enum_constructor) => genv
+            common::Constructor::Enum(enum_constructor) => genv
                 .enums()
                 .get(&enum_constructor.type_name)
                 .map(|def| def.variants[enum_constructor.index].1.len())
@@ -343,7 +344,7 @@ impl Typer {
                         constructor.name().0
                     )
                 }),
-            tast::Constructor::Struct(struct_constructor) => genv
+            common::Constructor::Struct(struct_constructor) => genv
                 .structs()
                 .get(&struct_constructor.type_name)
                 .map(|def| def.fields.len())
@@ -417,7 +418,7 @@ impl Typer {
             .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
 
         let struct_fields = match &constructor {
-            tast::Constructor::Struct(struct_constructor) => {
+            common::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
                 let struct_def = genv.structs().get(type_name).unwrap_or_else(|| {
                     panic!(
@@ -427,7 +428,7 @@ impl Typer {
                 });
                 struct_def.fields.clone()
             }
-            tast::Constructor::Enum { .. } => {
+            common::Constructor::Enum { .. } => {
                 panic!(
                     "Constructor {} refers to an enum, but a struct literal was used",
                     name.0
@@ -1370,7 +1371,7 @@ impl Typer {
                     });
 
                 let expected_arity = match &constructor {
-                    tast::Constructor::Enum(enum_constructor) => genv
+                    common::Constructor::Enum(enum_constructor) => genv
                         .enums()
                         .get(&enum_constructor.type_name)
                         .map(|def| def.variants[enum_constructor.index].1.len())
@@ -1381,7 +1382,7 @@ impl Typer {
                                 constructor.name().0
                             )
                         }),
-                    tast::Constructor::Struct(_) => {
+                    common::Constructor::Struct(_) => {
                         panic!(
                             "Struct {} patterns must use field syntax",
                             constructor.name().0

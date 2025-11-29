@@ -1,0 +1,84 @@
+fn impl_inherent_Point_to_json(self/0: Point) -> string {
+  let mtmp0 = self/0 in
+  let x1 = Point.x(mtmp0) in
+  let x2 = Point.y(mtmp0) in
+  let y/2 = x2 in
+  let x/1 = x1 in
+  let t18 = string_add("{", "\"x\":") in
+  let t19 = int32_to_string(x/1) in
+  let t17 = string_add(t18, t19) in
+  let t16 = string_add(t17, ",") in
+  let t15 = string_add(t16, "\"y\":") in
+  let t20 = int32_to_string(y/2) in
+  let t14 = string_add(t15, t20) in
+  string_add(t14, "}")
+}
+
+fn impl_inherent_Person_to_json(self/3: Person) -> string {
+  let mtmp3 = self/3 in
+  let x4 = Person.name(mtmp3) in
+  let x5 = Person.age(mtmp3) in
+  let x6 = Person.active(mtmp3) in
+  let active/6 = x6 in
+  let age/5 = x5 in
+  let name/4 = x4 in
+  let t28 = string_add("{", "\"name\":") in
+  let t29 = json_escape_string(name/4) in
+  let t27 = string_add(t28, t29) in
+  let t26 = string_add(t27, ",") in
+  let t25 = string_add(t26, "\"age\":") in
+  let t30 = int32_to_string(age/5) in
+  let t24 = string_add(t25, t30) in
+  let t23 = string_add(t24, ",") in
+  let t22 = string_add(t23, "\"active\":") in
+  let t31 = bool_to_json(active/6) in
+  let t21 = string_add(t22, t31) in
+  string_add(t21, "}")
+}
+
+fn impl_inherent_Color_to_json(self/7: Color) -> string {
+  match self/7 {
+    Tag_0 => {
+      "{\"tag\":\"Red\"}"
+    },
+    Tag_1 => {
+      "{\"tag\":\"Green\"}"
+    },
+    Tag_2 => {
+      "{\"tag\":\"Blue\"}"
+    },
+    Tag_3 => {
+      let x7 = Color::Rgb._0(self/7) in
+      let x8 = Color::Rgb._1(self/7) in
+      let x9 = Color::Rgb._2(self/7) in
+      let __field2/10 = x9 in
+      let __field1/9 = x8 in
+      let __field0/8 = x7 in
+      let t37 = int32_to_string(__field0/8) in
+      let t36 = string_add("{\"tag\":\"Rgb\",\"fields\":[", t37) in
+      let t35 = string_add(t36, ",") in
+      let t38 = int32_to_string(__field1/9) in
+      let t34 = string_add(t35, t38) in
+      let t33 = string_add(t34, ",") in
+      let t39 = int32_to_string(__field2/10) in
+      let t32 = string_add(t33, t39) in
+      string_add(t32, "]}")
+    },
+  }
+}
+
+fn main() -> unit {
+  let p/11 = Point { x: 10, y: 20 } in
+  let person/12 = Person { name: "Alice", age: 30, active: true } in
+  let c1/13 = Tag_0 in
+  let c2/14 = Color::Rgb(255, 128, 0) in
+  let t40 = impl_inherent_Point_to_json(p/11) in
+  let mtmp10 = string_println(t40) in
+  let t41 = impl_inherent_Person_to_json(person/12) in
+  let mtmp11 = string_println(t41) in
+  let t42 = impl_inherent_Color_to_json(c1/13) in
+  let mtmp12 = string_println(t42) in
+  let t43 = impl_inherent_Color_to_json(c2/14) in
+  let mtmp13 = string_println(t43) in
+  ()
+}
