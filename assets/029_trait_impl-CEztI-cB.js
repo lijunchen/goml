@@ -1,0 +1,41 @@
+const n = `struct Point { x: int32, y: int32 }
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string { "Point" }
+}
+
+impl Display for Option[int32] {
+    fn show(self: Option[int32]) -> string {
+        match self {
+            Some(value) => "Some(" + int32_to_string(value) + ")",
+            None => "None",
+        }
+    }
+}
+
+fn make_optional(flag: bool) -> Option[int32] {
+    if flag { Some(42) } else { None }
+}
+
+fn main() {
+    let point = Point { x: 1, y: 2 };
+    let some_number = make_optional(true);
+    let none_number = make_optional(false);
+    let _ = string_println(show(point));
+    let _ = string_println(show(some_number));
+    let _ = string_println(show(none_number));
+    ()
+}
+`;
+export {
+  n as default
+};

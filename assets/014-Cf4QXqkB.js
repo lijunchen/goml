@@ -1,0 +1,28 @@
+const t = `fn test_nested_match(x: (bool, bool), y: (bool, bool)) {
+  match x {
+    (true, false) => 
+      match y {
+        (false, true) => string_println("case1"),
+        _ => string_println("case2"),
+      },
+    _ => 
+      match y {
+        (false, true) => string_println("case3"),
+        _ => string_println("case4"),
+      },
+  }
+}
+
+
+
+fn main() {
+  let _ = test_nested_match((true, false), (false, true));
+  let _ = test_nested_match((true, false), (true, false));
+  let _ = test_nested_match((false, true), (false, true));
+  let _ = test_nested_match((false, true), (true, false));
+  ()
+}
+`;
+export {
+  t as default
+};

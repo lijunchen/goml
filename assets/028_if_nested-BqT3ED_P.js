@@ -1,0 +1,47 @@
+const n = `fn classify(x: int32) -> string {
+  if int32_less(x, 0) {
+    "negative"
+  } else {
+    if int32_less(0, x) {
+      "positive"
+    } else {
+      "zero"
+    }
+  }
+}
+
+fn triangle_type(a: int32, b: int32, c: int32) -> string {
+  if int32_less(a, b) {
+    if int32_less(b, c) {
+      "ascending"
+    } else {
+      "peak"
+    }
+  } else {
+    if int32_less(a, c) {
+      "valley"
+    } else {
+      "flat"
+    }
+  }
+}
+
+fn main() {
+  let first = classify(-42);
+  let second = classify(0);
+  let third = classify(17);
+  let shape1 = triangle_type(1, 2, 3);
+  let shape2 = triangle_type(3, 2, 1);
+  let shape3 = triangle_type(2, 3, 2);
+  let _ = string_println(first);
+  let _ = string_println(second);
+  let _ = string_println(third);
+  let _ = string_println(shape1);
+  let _ = string_println(shape2);
+  let _ = string_println(shape3);
+  ()
+}
+`;
+export {
+  n as default
+};
