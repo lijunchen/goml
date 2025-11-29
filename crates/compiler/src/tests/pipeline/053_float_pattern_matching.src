@@ -5,8 +5,8 @@ enum FloatEvent {
 
 fn summarize(event: FloatEvent) -> string {
     match event {
-        Sample32(label, value) => string_add(label, float32_to_string(value)),
-        Sample64(label, value) => string_add(label, float64_to_string(value)),
+        Sample32(label, value) => label + float32_to_string(value),
+        Sample64(label, value) => label + float64_to_string(value),
     }
 }
 
@@ -17,10 +17,7 @@ fn compare(values: (float32, float64)) -> string {
             let limit64: float64 = 5.0;
             let less_left = float32_less(left, limit32);
             let less_right = float64_less(right, limit64);
-            string_add(
-                string_add("left<1?=", bool_to_string(less_left)),
-                string_add(",right<5?=", bool_to_string(less_right)),
-            )
+            "left<1?=" + bool_to_string(less_left) + ",right<5?=" + bool_to_string(less_right)
         }
     }
 }
@@ -37,19 +34,11 @@ fn main() {
     let tuple: (float32, float64) = (0.75, 4.0);
     let tuple_other: (float32, float64) = (1.5, 7.25);
 
-    let message = string_add(
-        summarize(first),
-        string_add(
-            summarize(second),
-            string_add(
-                summarize(third),
-                string_add(
-                    compare(tuple),
-                    compare(tuple_other),
-                ),
-            ),
-        ),
-    );
+    let message = summarize(first)
+        + summarize(second)
+        + summarize(third)
+        + compare(tuple)
+        + compare(tuple_other);
 
     let _ = string_println(message);
     ()

@@ -5,7 +5,7 @@ struct Point {
 
 fn point32_to_string(p: Point) -> string {
   let Point {x : x, y: y} = p;
-  string_add("Point { x: ", string_add(int32_to_string(x), string_add(", y: ", string_add(int32_to_string(y), " }"))))
+  "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + " }"
 }
 
 enum Color {
@@ -30,7 +30,13 @@ struct Line {
 
 fn line_to_string(l: Line) -> string {
   let Line { from: from, to: to, color: color } = l;
-  string_add("Line { from: ", string_add(point32_to_string(from), string_add(", to: ", string_add(point32_to_string(to), string_add(", color: ", string_add(color_to_string(color), " }"))))))
+  "Line { from: "
+    + point32_to_string(from)
+    + ", to: "
+    + point32_to_string(to)
+    + ", color: "
+    + color_to_string(color)
+    + " }"
 }
 
 fn point_type(p: Point) -> string {

@@ -51,7 +51,7 @@ fn match_struct(pair: PairData) -> bool {
 }
 
 fn report(label: string, value: bool) -> string {
-    string_add(label, bool_to_string(value))
+    label + bool_to_string(value)
 }
 
 fn main() {
@@ -72,25 +72,7 @@ fn main() {
     let part8 = report(",struct_first=", pair_first);
     let part9 = report(",struct_second=", pair_second);
 
-    let message = string_add(
-        part1,
-        string_add(
-            part2,
-            string_add(
-                part3,
-                string_add(
-                    part4,
-                    string_add(
-                        part5,
-                        string_add(
-                            part6,
-                            string_add(part7, string_add(part8, part9)),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    );
+    let message = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9;
     let _ = string_println(message);
     ()
 }
