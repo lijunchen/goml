@@ -1,9 +1,9 @@
 use pretty::RcDoc;
 
 use crate::{
+    common::Constructor,
     core::{Arm, Expr, File, Fn},
     env::GlobalTypeEnv,
-    tast::Constructor,
 };
 
 impl File {

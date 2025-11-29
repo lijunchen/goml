@@ -1,5 +1,6 @@
 pub type Ty = crate::tast::Ty;
-use crate::tast::{self, Constructor, Prim};
+use crate::common::{Constructor, Prim};
+use crate::tast;
 
 #[derive(Debug, Clone)]
 pub struct File {

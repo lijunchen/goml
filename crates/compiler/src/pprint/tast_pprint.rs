@@ -1,8 +1,8 @@
 use pretty::RcDoc;
 
+use crate::common::Constructor;
 use crate::env::GlobalTypeEnv;
 use crate::tast::ClosureParam;
-use crate::tast::Constructor;
 use crate::tast::Expr;
 use crate::tast::File;
 use crate::tast::Fn;

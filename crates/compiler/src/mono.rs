@@ -1,8 +1,9 @@
+use crate::common::{self, Constructor, Prim};
 use crate::core::Ty;
 use crate::env::{EnumDef, ExternFunc, ExternType, GlobalTypeEnv, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
-use crate::tast::{self, Constructor, Prim};
+use crate::tast::{self};
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -426,7 +427,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
     match (constructor, new_ty) {
         (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
             let ident = Ident::new(name);
-            Constructor::Enum(tast::EnumConstructor {
+            Constructor::Enum(common::EnumConstructor {
                 type_name: ident,
                 variant: enum_constructor.variant.clone(),
                 index: enum_constructor.index,
@@ -434,7 +435,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
         }
         (Constructor::Enum(enum_constructor), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
-            Constructor::Enum(tast::EnumConstructor {
+            Constructor::Enum(common::EnumConstructor {
                 type_name: Ident::new(&base),
                 variant: enum_constructor.variant.clone(),
                 index: enum_constructor.index,
@@ -442,11 +443,11 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
         }
         (Constructor::Struct(_), Ty::TCon { name }) => {
             let ident = Ident::new(name);
-            Constructor::Struct(tast::StructConstructor { type_name: ident })
+            Constructor::Struct(common::StructConstructor { type_name: ident })
         }
         (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
-            Constructor::Struct(tast::StructConstructor {
+            Constructor::Struct(common::StructConstructor {
                 type_name: Ident::new(&base),
             })
         }

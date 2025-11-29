@@ -1,9 +1,9 @@
 use pretty::RcDoc;
 
 use crate::{
+    common::Constructor,
     env::GlobalTypeEnv,
     mono::{MonoArm, MonoExpr, MonoFile, MonoFn},
-    tast::Constructor,
 };
 
 impl MonoFile {

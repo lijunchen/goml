@@ -2,10 +2,11 @@ pub type Ty = crate::tast::Ty;
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 
+use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
 use crate::mono::{GlobalMonoEnv, MonoArm, MonoExpr, MonoFile};
-use crate::tast::{self, Constructor, Prim};
+use crate::tast::{self};
 
 #[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {

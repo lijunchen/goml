@@ -3,10 +3,11 @@ use indexmap::{IndexMap, IndexSet};
 use std::collections::HashMap;
 
 use crate::{
+    common::{self, Constructor, Prim, StructConstructor},
     core,
     env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
     mangle::decode_ty,
-    tast::{self, Constructor, Prim, StructConstructor, Ty},
+    tast::{self, Ty},
 };
 
 #[derive(Debug, Clone)]
@@ -888,7 +889,7 @@ fn instantiate_struct_field_ty(
 
 fn instantiate_enum_field_ty(
     state: &State<'_>,
-    constructor: &tast::EnumConstructor,
+    constructor: &common::EnumConstructor,
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {

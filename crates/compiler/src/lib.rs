@@ -1,5 +1,6 @@
 pub mod anf;
 pub mod builtins;
+pub mod common;
 pub mod compile_match;
 pub mod core;
 pub mod derive;

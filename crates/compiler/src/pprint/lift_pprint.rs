@@ -1,9 +1,9 @@
 use pretty::RcDoc;
 
 use crate::{
+    common::Constructor,
     env::GlobalTypeEnv,
     lift::{LiftArm, LiftExpr, LiftFile, LiftFn},
-    tast::Constructor,
 };
 
 impl LiftFile {

@@ -2,9 +2,10 @@ use ast::ast::Ident;
 
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
+    common::{Constructor, Prim},
     env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    tast::{self, Constructor, Prim},
+    tast::{self},
 };
 
 use indexmap::{IndexMap, IndexSet};

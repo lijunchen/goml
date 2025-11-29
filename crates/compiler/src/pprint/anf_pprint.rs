@@ -2,7 +2,7 @@ use pretty::RcDoc;
 
 use crate::{
     anf::{AExpr, Arm, CExpr, File, Fn, GlobalAnfEnv, ImmExpr},
-    tast::Constructor,
+    common::Constructor,
 };
 
 impl File {

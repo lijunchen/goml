@@ -7,9 +7,10 @@ use line_index::LineIndex;
 pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_functions, builtin_inherent_methods};
 use crate::{
+    common::{self, Constructor},
     core,
     mangle::encode_ty,
-    tast::{self, Constructor},
+    tast::{self},
 };
 use std::cell::Cell;
 
@@ -342,7 +343,7 @@ impl GlobalTypeEnv {
             }
         };
 
-        let constructor = Constructor::Enum(tast::EnumConstructor {
+        let constructor = Constructor::Enum(common::EnumConstructor {
             type_name: enum_name.clone(),
             variant: enum_def.variants[index].0.clone(),
             index,
@@ -379,7 +380,7 @@ impl GlobalTypeEnv {
                 }
             };
 
-            let constructor = Constructor::Struct(tast::StructConstructor {
+            let constructor = Constructor::Struct(common::StructConstructor {
                 type_name: struct_def.name.clone(),
             });
             (constructor, ctor_ty)
