@@ -1703,5 +1703,5 @@ fn test_type_gen() {
 
         func (_ Node) isTree() {}
     "#]]
-    .assert_eq(&dummy_file.to_pretty(&goenv.to_type_env(), 120));
+    .assert_eq(&dummy_file.to_pretty(&goenv, 120));
 }

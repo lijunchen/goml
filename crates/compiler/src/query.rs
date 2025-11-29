@@ -90,7 +90,7 @@ fn find_type_expr(
             astptr,
         } => {
             if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
@@ -114,7 +114,7 @@ fn find_type_expr(
                 if let Some(astptr) = param.astptr
                     && astptr.text_range().contains_range(*range)
                 {
-                    return Some(param.ty.to_pretty(genv, 80));
+                    return Some(param.ty.to_pretty(80));
                 }
             }
             find_type_expr(genv, body, range)
@@ -125,7 +125,7 @@ fn find_type_expr(
             body,
             ty: _,
         } => {
-            if let Some(expr) = find_type_pat(genv, pat, range) {
+            if let Some(expr) = find_type_pat(pat, range) {
                 return Some(expr);
             }
             if let Some(expr) = find_type_expr(genv, value, range) {
@@ -143,7 +143,7 @@ fn find_type_expr(
                 return Some(expr);
             }
             for arm in arms {
-                if let Some(expr) = find_type_pat(genv, &arm.pat, range) {
+                if let Some(expr) = find_type_pat(&arm.pat, range) {
                     return Some(expr);
                 }
                 if let Some(expr) = find_type_expr(genv, &arm.body, range) {
@@ -153,7 +153,7 @@ fn find_type_expr(
             if let Some(astptr) = astptr
                 && astptr.text_range().contains_range(*range)
             {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
@@ -219,7 +219,7 @@ fn find_type_expr(
             if let Some(astptr) = astptr
                 && astptr.text_range().contains_range(*range)
             {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             if let Some(expr) = find_type_expr(genv, expr, range) {
                 return Some(expr);
@@ -229,11 +229,7 @@ fn find_type_expr(
     }
 }
 
-fn find_type_pat(
-    genv: &GlobalTypeEnv,
-    tast: &tast::Pat,
-    range: &rowan::TextRange,
-) -> Option<String> {
+fn find_type_pat(tast: &tast::Pat, range: &rowan::TextRange) -> Option<String> {
     match tast {
         tast::Pat::PVar {
             name: _,
@@ -241,14 +237,14 @@ fn find_type_pat(
             astptr,
         } => {
             if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(genv, 80));
+                return Some(tast.get_ty().to_pretty(80));
             }
             None
         }
         tast::Pat::PPrim { value: _, ty: _ } => None,
         tast::Pat::PConstr { args, .. } => {
             for arg in args {
-                if let Some(expr) = find_type_pat(genv, arg, range) {
+                if let Some(expr) = find_type_pat(arg, range) {
                     return Some(expr);
                 }
             }
@@ -256,7 +252,7 @@ fn find_type_pat(
         }
         tast::Pat::PTuple { items, ty: _ } => {
             for item in items {
-                if let Some(expr) = find_type_pat(genv, item, range) {
+                if let Some(expr) = find_type_pat(item, range) {
                     return Some(expr);
                 }
             }
@@ -481,7 +477,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
                 items.push(DotCompletionItem {
                     name: field_name.0.clone(),
                     kind: DotCompletionKind::Field,
-                    detail: Some(field_ty.to_pretty(genv, 80)),
+                    detail: Some(field_ty.to_pretty(80)),
                 });
             }
         }
@@ -496,7 +492,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
                 Some(DotCompletionItem {
                     name: method_name.0.clone(),
                     kind: DotCompletionKind::Method,
-                    detail: Some(method_ty.to_pretty(genv, 80)),
+                    detail: Some(method_ty.to_pretty(80)),
                 })
             } else {
                 None

@@ -1084,8 +1084,8 @@ fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
 
 // Monomorphize Lift IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(genv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
-    let mut monoenv = GlobalMonoEnv::from_lift_env(genv);
+pub fn mono(liftenv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
+    let mut monoenv = GlobalMonoEnv::from_lift_env(liftenv);
     // Build original function map
     let mut orig_fns: IndexMap<String, LiftFn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
