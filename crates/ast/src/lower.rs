@@ -217,7 +217,10 @@ fn lower_struct(ctx: &mut LowerCtx, node: cst::Struct) -> Option<ast::StructDef>
     })
 }
 
-fn lower_struct_field(ctx: &mut LowerCtx, node: cst::StructField) -> Option<(ast::Ident, ast::Ty)> {
+fn lower_struct_field(
+    ctx: &mut LowerCtx,
+    node: cst::StructField,
+) -> Option<(ast::Ident, ast::TypeExpr)> {
     let name = node.lident()?.to_string();
     let ty = node.ty().and_then(|ty| lower_ty(ctx, ty))?;
     Some((ast::Ident(name), ty))
@@ -259,7 +262,7 @@ fn lower_trait_method(
         Vec::new()
     };
     let ret_ty = match node.return_type() {
-        None => ast::Ty::TUnit,
+        None => ast::TypeExpr::TUnit,
         Some(it) => match lower_ty(ctx, it) {
             Some(ty) => ty,
             None => {
@@ -303,7 +306,10 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
     })
 }
 
-fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<(ast::Ident, Vec<ast::Ty>)> {
+fn lower_variant(
+    ctx: &mut LowerCtx,
+    node: cst::Variant,
+) -> Option<(ast::Ident, Vec<ast::TypeExpr>)> {
     let name = node.uident().unwrap().to_string();
     let typs = match node.type_list() {
         None => vec![],
@@ -312,39 +318,39 @@ fn lower_variant(ctx: &mut LowerCtx, node: cst::Variant) -> Option<(ast::Ident, 
     Some((ast::Ident::new(&name), typs))
 }
 
-fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
+fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
     match node {
-        cst::Type::UnitTy(_) => Some(ast::Ty::TUnit),
-        cst::Type::BoolTy(_) => Some(ast::Ty::TBool),
-        cst::Type::Int8Ty(_) => Some(ast::Ty::TInt8),
-        cst::Type::Int16Ty(_) => Some(ast::Ty::TInt16),
-        cst::Type::Int32Ty(_) => Some(ast::Ty::TInt32),
-        cst::Type::Int64Ty(_) => Some(ast::Ty::TInt64),
-        cst::Type::Uint8Ty(_) => Some(ast::Ty::TUint8),
-        cst::Type::Uint16Ty(_) => Some(ast::Ty::TUint16),
-        cst::Type::Uint32Ty(_) => Some(ast::Ty::TUint32),
-        cst::Type::Uint64Ty(_) => Some(ast::Ty::TUint64),
-        cst::Type::Float32Ty(_) => Some(ast::Ty::TFloat32),
-        cst::Type::Float64Ty(_) => Some(ast::Ty::TFloat64),
-        cst::Type::StringTy(_) => Some(ast::Ty::TString),
+        cst::Type::UnitTy(_) => Some(ast::TypeExpr::TUnit),
+        cst::Type::BoolTy(_) => Some(ast::TypeExpr::TBool),
+        cst::Type::Int8Ty(_) => Some(ast::TypeExpr::TInt8),
+        cst::Type::Int16Ty(_) => Some(ast::TypeExpr::TInt16),
+        cst::Type::Int32Ty(_) => Some(ast::TypeExpr::TInt32),
+        cst::Type::Int64Ty(_) => Some(ast::TypeExpr::TInt64),
+        cst::Type::Uint8Ty(_) => Some(ast::TypeExpr::TUint8),
+        cst::Type::Uint16Ty(_) => Some(ast::TypeExpr::TUint16),
+        cst::Type::Uint32Ty(_) => Some(ast::TypeExpr::TUint32),
+        cst::Type::Uint64Ty(_) => Some(ast::TypeExpr::TUint64),
+        cst::Type::Float32Ty(_) => Some(ast::TypeExpr::TFloat32),
+        cst::Type::Float64Ty(_) => Some(ast::TypeExpr::TFloat64),
+        cst::Type::StringTy(_) => Some(ast::TypeExpr::TString),
         cst::Type::TupleTy(it) => {
             let typs = it
                 .type_list()?
                 .types()
                 .flat_map(|ty| lower_ty(ctx, ty))
                 .collect();
-            Some(ast::Ty::TTuple { typs })
+            Some(ast::TypeExpr::TTuple { typs })
         }
         cst::Type::TAppTy(it) => {
             let name = it.uident().unwrap().to_string();
-            let args: Vec<ast::Ty> = it
+            let args: Vec<ast::TypeExpr> = it
                 .type_param_list()
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
                 .unwrap_or_default();
 
             if name == "Ref" {
                 match args.len() {
-                    1 => Some(ast::Ty::TRef {
+                    1 => Some(ast::TypeExpr::TRef {
                         elem: Box::new(args.into_iter().next().unwrap()),
                     }),
                     0 => {
@@ -363,12 +369,12 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
                     }
                 }
             } else {
-                let base = ast::Ty::TCon { name };
+                let base = ast::TypeExpr::TCon { name };
 
                 if args.is_empty() {
                     Some(base)
                 } else {
-                    Some(ast::Ty::TApp {
+                    Some(ast::TypeExpr::TApp {
                         ty: Box::new(base),
                         args,
                     })
@@ -406,7 +412,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
                 }
             };
 
-            Some(ast::Ty::TArray {
+            Some(ast::TypeExpr::TArray {
                 len,
                 elem: Box::new(elem_ty),
             })
@@ -433,11 +439,11 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::Ty> {
             let ret_ty = lower_ty(ctx, ret_node)?;
 
             let params = match param_ty {
-                ast::Ty::TTuple { typs } => typs,
+                ast::TypeExpr::TTuple { typs } => typs,
                 other => vec![other],
             };
 
-            Some(ast::Ty::TFunc {
+            Some(ast::TypeExpr::TFunc {
                 params,
                 ret_ty: Box::new(ret_ty),
             })
@@ -687,7 +693,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
     }
 }
 
-fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Ident, ast::Ty)> {
+fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::Ident, ast::TypeExpr)> {
     let name = node.lident().unwrap().to_string();
     let ty = match node.ty().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,

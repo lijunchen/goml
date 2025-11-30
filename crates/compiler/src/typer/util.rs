@@ -152,49 +152,49 @@ pub(crate) fn validate_ty(
 }
 
 impl tast::Ty {
-    pub(crate) fn from_ast(ast_ty: &ast::Ty, tparams_env: &[ast::Ident]) -> Self {
+    pub(crate) fn from_ast(ast_ty: &ast::TypeExpr, tparams_env: &[ast::Ident]) -> Self {
         match ast_ty {
-            ast::Ty::TUnit => Self::TUnit,
-            ast::Ty::TBool => Self::TBool,
-            ast::Ty::TInt8 => Self::TInt8,
-            ast::Ty::TInt16 => Self::TInt16,
-            ast::Ty::TInt32 => Self::TInt32,
-            ast::Ty::TInt64 => Self::TInt64,
-            ast::Ty::TUint8 => Self::TUint8,
-            ast::Ty::TUint16 => Self::TUint16,
-            ast::Ty::TUint32 => Self::TUint32,
-            ast::Ty::TUint64 => Self::TUint64,
-            ast::Ty::TFloat32 => Self::TFloat32,
-            ast::Ty::TFloat64 => Self::TFloat64,
-            ast::Ty::TString => Self::TString,
-            ast::Ty::TTuple { typs } => Self::TTuple {
+            ast::TypeExpr::TUnit => Self::TUnit,
+            ast::TypeExpr::TBool => Self::TBool,
+            ast::TypeExpr::TInt8 => Self::TInt8,
+            ast::TypeExpr::TInt16 => Self::TInt16,
+            ast::TypeExpr::TInt32 => Self::TInt32,
+            ast::TypeExpr::TInt64 => Self::TInt64,
+            ast::TypeExpr::TUint8 => Self::TUint8,
+            ast::TypeExpr::TUint16 => Self::TUint16,
+            ast::TypeExpr::TUint32 => Self::TUint32,
+            ast::TypeExpr::TUint64 => Self::TUint64,
+            ast::TypeExpr::TFloat32 => Self::TFloat32,
+            ast::TypeExpr::TFloat64 => Self::TFloat64,
+            ast::TypeExpr::TString => Self::TString,
+            ast::TypeExpr::TTuple { typs } => Self::TTuple {
                 typs: typs
                     .iter()
                     .map(|ty| Self::from_ast(ty, tparams_env))
                     .collect(),
             },
-            ast::Ty::TCon { name } => {
+            ast::TypeExpr::TCon { name } => {
                 if tparams_env.iter().any(|param| param.0 == *name) {
                     Self::TParam { name: name.clone() }
                 } else {
                     Self::TCon { name: name.clone() }
                 }
             }
-            ast::Ty::TApp { ty, args } => Self::TApp {
+            ast::TypeExpr::TApp { ty, args } => Self::TApp {
                 ty: Box::new(Self::from_ast(ty, tparams_env)),
                 args: args
                     .iter()
                     .map(|ty| Self::from_ast(ty, tparams_env))
                     .collect(),
             },
-            ast::Ty::TArray { len, elem } => Self::TArray {
+            ast::TypeExpr::TArray { len, elem } => Self::TArray {
                 len: *len,
                 elem: Box::new(Self::from_ast(elem, tparams_env)),
             },
-            ast::Ty::TRef { elem } => Self::TRef {
+            ast::TypeExpr::TRef { elem } => Self::TRef {
                 elem: Box::new(Self::from_ast(elem, tparams_env)),
             },
-            ast::Ty::TFunc { params, ret_ty } => Self::TFunc {
+            ast::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {
                 params: params
                     .iter()
                     .map(|ty| Self::from_ast(ty, tparams_env))

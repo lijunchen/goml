@@ -1,6 +1,6 @@
 use crate::ast::{
     Arm, Attribute, ClosureParam, EnumDef, Expr, ExternGo, ExternType, File, Fn, Ident, ImplBlock,
-    Item, Pat, StructDef, TraitDef, TraitMethodSignature, Ty,
+    Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -15,7 +15,7 @@ fn attrs_doc(attrs: &[Attribute]) -> RcDoc<'_, ()> {
     }
 }
 
-impl Ty {
+impl TypeExpr {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Self::TUnit => RcDoc::text("unit"),

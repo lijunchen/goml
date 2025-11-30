@@ -671,7 +671,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         pat: &ast::Pat,
-        annotation: &Option<ast::Ty>,
+        annotation: &Option<ast::TypeExpr>,
         value: &ast::Expr,
         body: &ast::Expr,
     ) -> tast::Expr {
@@ -711,7 +711,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         pat: &ast::Pat,
-        annotation: &Option<ast::Ty>,
+        annotation: &Option<ast::TypeExpr>,
         value: &ast::Expr,
         body: &ast::Expr,
         expected: &tast::Ty,
