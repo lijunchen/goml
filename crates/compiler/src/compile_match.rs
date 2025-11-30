@@ -166,7 +166,8 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
                 .map(|t| substitute_ty_params(t, subst))
                 .collect(),
         },
-        Ty::TCon { name } => Ty::TCon { name: name.clone() },
+        Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
+        Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -219,7 +220,7 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
 
 fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     match ty {
-        Ty::TCon { name } => Some((Ident::new(name), Vec::new())),
+        Ty::TStruct { name } => Some((Ident::new(name), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());
@@ -1030,39 +1031,36 @@ fn compile_rows(
             panic!("Matching on floating point types is not supported")
         }
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
-        Ty::TCon { name } => {
+        Ty::TEnum { name } => {
             let ident = Ident::new(name);
-            if genv.enums().contains_key(&ident) {
-                compile_enum_case(
-                    genv,
-                    gensym,
-                    diagnostics,
-                    rows,
-                    &bvar,
-                    ty,
-                    &ident,
-                    match_range,
-                )
-            } else if genv.structs().contains_key(&ident) {
-                compile_struct_case(
-                    genv,
-                    gensym,
-                    diagnostics,
-                    rows,
-                    &bvar,
-                    ty,
-                    &ident,
-                    &[],
-                    match_range,
-                )
-            } else {
-                panic!("Unknown type constructor {} in match", name)
-            }
+            compile_enum_case(
+                genv,
+                gensym,
+                diagnostics,
+                rows,
+                &bvar,
+                ty,
+                &ident,
+                match_range,
+            )
         }
-        Ty::TApp { ty: base, args } => {
-            let name = base.get_constr_name_unsafe();
-            let ident = Ident::new(&name);
-            if genv.enums().contains_key(&ident) {
+        Ty::TStruct { name } => {
+            let ident = Ident::new(name);
+            compile_struct_case(
+                genv,
+                gensym,
+                diagnostics,
+                rows,
+                &bvar,
+                ty,
+                &ident,
+                &[],
+                match_range,
+            )
+        }
+        Ty::TApp { ty: base, args } => match base.as_ref() {
+            Ty::TEnum { name } => {
+                let ident = Ident::new(name);
                 compile_enum_case(
                     genv,
                     gensym,
@@ -1073,7 +1071,9 @@ fn compile_rows(
                     &ident,
                     match_range,
                 )
-            } else if genv.structs().contains_key(&ident) {
+            }
+            Ty::TStruct { name } => {
+                let ident = Ident::new(name);
                 compile_struct_case(
                     genv,
                     gensym,
@@ -1085,10 +1085,9 @@ fn compile_rows(
                     args,
                     match_range,
                 )
-            } else {
-                panic!("Unknown type constructor {} in match", name)
             }
-        }
+            _ => panic!("Expected TEnum or TStruct inside TApp, got {:?}", base),
+        },
         Ty::TTuple { typs } => compile_tuple_case(
             genv,
             gensym,

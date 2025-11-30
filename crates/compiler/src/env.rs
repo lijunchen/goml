@@ -218,7 +218,7 @@ impl GlobalTypeEnv {
                 self.record_extern_type_usage(ret_ty, package_path);
             }
             tast::Ty::TParam { .. } => {}
-            tast::Ty::TCon { name } => {
+            tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
                 self.assign_package_to_extern_type(name, package_path);
             }
             tast::Ty::TApp { ty, args } => {
@@ -317,7 +317,7 @@ impl GlobalTypeEnv {
         index: usize,
     ) -> (Constructor, tast::Ty) {
         let (_, fields) = &enum_def.variants[index];
-        let base = tast::Ty::TCon {
+        let base = tast::Ty::TEnum {
             name: enum_name.0.clone(),
         };
         let args: Vec<tast::Ty> = enum_def
@@ -353,7 +353,7 @@ impl GlobalTypeEnv {
 
     fn lookup_struct_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
         self.structs.get(constr).map(|struct_def| {
-            let base = tast::Ty::TCon {
+            let base = tast::Ty::TStruct {
                 name: struct_def.name.0.clone(),
             };
             let args: Vec<tast::Ty> = struct_def
@@ -543,7 +543,7 @@ impl GlobalTypeEnv {
                             self.collect_type(elem);
                         }
                     }
-                    tast::Ty::TCon { .. } => {}
+                    tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
                     tast::Ty::TApp { ty, args } => {
                         self.collect_type(ty.as_ref());
                         for arg in args {

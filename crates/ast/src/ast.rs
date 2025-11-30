@@ -155,7 +155,7 @@ impl UnaryOp {
 }
 
 #[derive(Debug, Clone)]
-pub enum Ty {
+pub enum TypeExpr {
     TUnit,
     TBool,
     TInt8,
@@ -169,18 +169,33 @@ pub enum Ty {
     TFloat32,
     TFloat64,
     TString,
-    TTuple { typs: Vec<Ty> },
-    TCon { name: String },
-    TApp { ty: Box<Ty>, args: Vec<Ty> },
-    TArray { len: usize, elem: Box<Ty> },
-    TRef { elem: Box<Ty> },
-    TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
+    TTuple {
+        typs: Vec<TypeExpr>,
+    },
+    TCon {
+        name: String,
+    },
+    TApp {
+        ty: Box<TypeExpr>,
+        args: Vec<TypeExpr>,
+    },
+    TArray {
+        len: usize,
+        elem: Box<TypeExpr>,
+    },
+    TRef {
+        elem: Box<TypeExpr>,
+    },
+    TFunc {
+        params: Vec<TypeExpr>,
+        ret_ty: Box<TypeExpr>,
+    },
 }
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
     pub name: Ident,
-    pub ty: Option<Ty>,
+    pub ty: Option<TypeExpr>,
     pub astptr: MySyntaxNodePtr,
 }
 
@@ -211,8 +226,8 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
-    pub params: Vec<(Ident, Ty)>,
-    pub ret_ty: Option<Ty>,
+    pub params: Vec<(Ident, TypeExpr)>,
+    pub ret_ty: Option<TypeExpr>,
     pub body: Expr,
 }
 
@@ -223,8 +238,8 @@ pub struct ExternGo {
     pub go_symbol: String,
     pub goml_name: Ident,
     pub explicit_go_symbol: bool,
-    pub params: Vec<(Ident, Ty)>,
-    pub ret_ty: Option<Ty>,
+    pub params: Vec<(Ident, TypeExpr)>,
+    pub ret_ty: Option<TypeExpr>,
 }
 
 #[derive(Debug, Clone)]
@@ -238,7 +253,7 @@ pub struct EnumDef {
     pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
-    pub variants: Vec<(Ident, Vec<Ty>)>,
+    pub variants: Vec<(Ident, Vec<TypeExpr>)>,
 }
 
 #[derive(Debug, Clone)]
@@ -246,7 +261,7 @@ pub struct StructDef {
     pub attrs: Vec<Attribute>,
     pub name: Ident,
     pub generics: Vec<Ident>,
-    pub fields: Vec<(Ident, Ty)>,
+    pub fields: Vec<(Ident, TypeExpr)>,
 }
 
 #[derive(Debug, Clone)]
@@ -259,15 +274,15 @@ pub struct TraitDef {
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
     pub name: Ident,
-    pub params: Vec<Ty>,
-    pub ret_ty: Ty,
+    pub params: Vec<TypeExpr>,
+    pub ret_ty: TypeExpr,
 }
 
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub trait_name: Option<Ident>,
-    pub for_type: Ty,
+    pub for_type: TypeExpr,
     pub methods: Vec<Fn>,
 }
 
@@ -306,7 +321,7 @@ pub enum Expr {
     },
     ELet {
         pat: Pat,
-        annotation: Option<Ty>,
+        annotation: Option<TypeExpr>,
         value: Box<Expr>,
         body: Box<Expr>,
     },

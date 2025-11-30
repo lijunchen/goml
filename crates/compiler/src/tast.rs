@@ -78,7 +78,8 @@ pub enum Ty {
     TFloat64,
     TString,
     TTuple { typs: Vec<Ty> },
-    TCon { name: String },
+    TEnum { name: String },
+    TStruct { name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
     TArray { len: usize, elem: Box<Ty> },
     TRef { elem: Box<Ty> },
@@ -104,7 +105,8 @@ impl std::fmt::Debug for Ty {
             Self::TFloat64 => write!(f, "TFloat64"),
             Self::TString => write!(f, "TString"),
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
-            Self::TCon { name } => write!(f, "TCon({})", name),
+            Self::TEnum { name } => write!(f, "TEnum({})", name),
+            Self::TStruct { name } => write!(f, "TStruct({})", name),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TRef { elem } => write!(f, "TRef({:?})", elem),
@@ -117,7 +119,7 @@ impl std::fmt::Debug for Ty {
 impl Ty {
     pub fn get_constr_name_unsafe(&self) -> String {
         match self {
-            Self::TCon { name } => name.clone(),
+            Self::TEnum { name } | Self::TStruct { name } => name.clone(),
             Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
             Self::TRef { .. } => "Ref".to_string(),
             _ => {
@@ -228,7 +230,8 @@ impl Prim {
             Ty::TString => self.expect_string(),
             Ty::TVar(_) => self,
             Ty::TTuple { .. }
-            | Ty::TCon { .. }
+            | Ty::TEnum { .. }
+            | Ty::TStruct { .. }
             | Ty::TApp { .. }
             | Ty::TArray { .. }
             | Ty::TRef { .. }

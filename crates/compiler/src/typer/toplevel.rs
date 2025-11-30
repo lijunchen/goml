@@ -41,7 +41,7 @@ fn define_enum(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, enum_def
         .map(|(vcon, typs)| {
             let typs = typs
                 .iter()
-                .map(|ast_ty| tast::Ty::from_ast(ast_ty, params_env))
+                .map(|ast_ty| tast::Ty::from_ast(genv, ast_ty, params_env))
                 .collect::<Vec<_>>();
             for ty in typs.iter() {
                 validate_ty(genv, diagnostics, ty, &tparam_names);
@@ -66,7 +66,7 @@ fn define_struct(
         .fields
         .iter()
         .map(|(fname, ast_ty)| {
-            let ty = tast::Ty::from_ast(ast_ty, &struct_def.generics);
+            let ty = tast::Ty::from_ast(genv, ast_ty, &struct_def.generics);
             validate_ty(genv, diagnostics, &ty, &tparam_names);
             (fname.clone(), ty)
         })
@@ -91,9 +91,9 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
 
         let param_tys = params
             .iter()
-            .map(|ast_ty| tast::Ty::from_ast(ast_ty, &[]))
+            .map(|ast_ty| tast::Ty::from_ast(genv, ast_ty, &[]))
             .collect::<Vec<_>>();
-        let ret_ty = tast::Ty::from_ast(ret_ty, &[]);
+        let ret_ty = tast::Ty::from_ast(genv, ret_ty, &[]);
         let fn_ty = tast::Ty::TFunc {
             params: param_tys,
             ret_ty: Box::new(ret_ty),
@@ -111,7 +111,7 @@ fn define_trait_impl(
     trait_name: &Ident,
 ) {
     let empty_tparams = HashSet::new();
-    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
     let trait_name_str = trait_name.0.clone();
     let trait_method_names: HashSet<String> = genv
@@ -179,14 +179,14 @@ fn define_trait_impl(
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_ast(ty, &m.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &m.generics);
                 validate_ty(genv, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_ast(ty, &m.generics);
+                let ret = tast::Ty::from_ast(genv, ty, &m.generics);
                 validate_ty(genv, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -296,7 +296,7 @@ fn define_inherent_impl(
     impl_block: &ast::ImplBlock,
 ) {
     let empty_tparams = HashSet::new();
-    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
@@ -321,14 +321,14 @@ fn define_inherent_impl(
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_ast(ty, &m.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &m.generics);
                 validate_ty(genv, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_ast(ty, &m.generics);
+                let ret = tast::Ty::from_ast(genv, ty, &m.generics);
                 validate_ty(genv, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -356,14 +356,14 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_ast(ty, &func.generics);
+            let ty = tast::Ty::from_ast(genv, ty, &func.generics);
             validate_ty(genv, diagnostics, &ty, &tparam_names);
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &func.ret_ty {
         Some(ty) => {
-            let ret = tast::Ty::from_ast(ty, &func.generics);
+            let ret = tast::Ty::from_ast(genv, ty, &func.generics);
             validate_ty(genv, diagnostics, &ret, &tparam_names);
             ret
         }
@@ -407,14 +407,14 @@ fn define_extern_go(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, ext
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_ast(ty, &[]);
+            let ty = tast::Ty::from_ast(genv, ty, &[]);
             validate_ty(genv, diagnostics, &ty, &HashSet::new());
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &ext.ret_ty {
         Some(ty) => {
-            let ret = tast::Ty::from_ast(ty, &[]);
+            let ret = tast::Ty::from_ast(genv, ty, &[]);
             validate_ty(genv, diagnostics, &ret, &HashSet::new());
             ret
         }
@@ -464,11 +464,12 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
                 .map(|ty| instantiate_self_ty(ty, self_ty))
                 .collect(),
         },
-        tast::Ty::TCon { name } => {
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => {
             if name == "Self" {
                 self_ty.clone()
             } else {
-                tast::Ty::TCon { name: name.clone() }
+                tast::Ty::TStruct { name: name.clone() }
             }
         }
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
@@ -587,7 +588,7 @@ fn check_fn(
     let param_types: Vec<(Ident, tast::Ty)> = f
         .params
         .iter()
-        .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(ty, &f.generics)))
+        .map(|(name, ty)| (name.clone(), tast::Ty::from_ast(genv, ty, &f.generics)))
         .collect();
     let new_params = param_types
         .iter()
@@ -595,7 +596,7 @@ fn check_fn(
         .collect::<Vec<_>>();
 
     let ret_ty = match &f.ret_ty {
-        Some(ty) => tast::Ty::from_ast(ty, &f.generics),
+        Some(ty) => tast::Ty::from_ast(genv, ty, &f.generics),
         None => tast::Ty::TUnit,
     };
 
@@ -623,7 +624,7 @@ fn check_impl_block(
     diagnostics: &mut Diagnostics,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
-    let for_ty = tast::Ty::from_ast(&impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
         let mut local_env = LocalTypeEnv::new();
@@ -631,7 +632,7 @@ fn check_impl_block(
             .params
             .iter()
             .map(|(name, ty)| {
-                let ty = tast::Ty::from_ast(ty, &f.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &f.generics);
                 let ty = instantiate_self_ty(&ty, &for_ty);
                 (name.clone(), ty)
             })
@@ -643,7 +644,7 @@ fn check_impl_block(
 
         let ret_ty = match &f.ret_ty {
             Some(ty) => {
-                let ty = tast::Ty::from_ast(ty, &f.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &f.generics);
                 instantiate_self_ty(&ty, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -675,7 +676,7 @@ fn check_impl_block(
 }
 
 fn check_extern_go(
-    _genv: &GlobalTypeEnv,
+    genv: &GlobalTypeEnv,
     _typer: &mut Typer,
     _diagnostics: &mut Diagnostics,
     ext: &ast::ExternGo,
@@ -683,10 +684,10 @@ fn check_extern_go(
     let params = ext
         .params
         .iter()
-        .map(|(name, ty)| (name.0.clone(), tast::Ty::from_ast(ty, &[])))
+        .map(|(name, ty)| (name.0.clone(), tast::Ty::from_ast(genv, ty, &[])))
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
-        Some(ty) => tast::Ty::from_ast(ty, &[]),
+        Some(ty) => tast::Ty::from_ast(genv, ty, &[]),
         None => tast::Ty::TUnit,
     };
     tast::ExternGo {

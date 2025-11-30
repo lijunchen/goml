@@ -108,7 +108,7 @@ fn derive_struct_tostring(
         name: Ident::new(TO_STRING_FN),
         generics: Vec::new(),
         params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&struct_def.name))],
-        ret_ty: Some(ast::Ty::TString),
+        ret_ty: Some(ast::TypeExpr::TString),
         body: build_struct_body(struct_def, attr_ptr),
     };
 
@@ -133,7 +133,7 @@ fn derive_enum_tostring(
         name: Ident::new(TO_STRING_FN),
         generics: Vec::new(),
         params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
-        ret_ty: Some(ast::Ty::TString),
+        ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_body(enum_def, attr_ptr),
     };
 
@@ -162,7 +162,7 @@ fn derive_struct_tojson(
         name: Ident::new(TO_JSON_FN),
         generics: Vec::new(),
         params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&struct_def.name))],
-        ret_ty: Some(ast::Ty::TString),
+        ret_ty: Some(ast::TypeExpr::TString),
         body: build_struct_json_body(struct_def, attr_ptr),
     };
 
@@ -187,7 +187,7 @@ fn derive_enum_tojson(
         name: Ident::new(TO_JSON_FN),
         generics: Vec::new(),
         params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
-        ret_ty: Some(ast::Ty::TString),
+        ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_json_body(enum_def, attr_ptr),
     };
 
@@ -452,8 +452,8 @@ fn concat_parts(parts: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     acc
 }
 
-fn call_to_string(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    if matches!(ty, Some(ast::Ty::TString)) {
+fn call_to_string(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    if matches!(ty, Some(ast::TypeExpr::TString)) {
         value
     } else {
         Expr::ECall {
@@ -467,26 +467,26 @@ fn call_to_string(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr)
     }
 }
 
-fn call_to_json(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr) -> Expr {
+fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     match ty {
         // String needs to be quoted and escaped in JSON
-        Some(ast::Ty::TString) => {
+        Some(ast::TypeExpr::TString) => {
             // Call json_escape_string(value) which wraps with quotes and escapes
             call_function("json_escape_string", vec![value], attr_ptr)
         }
         // Booleans are serialized as true/false (lowercase)
-        Some(ast::Ty::TBool) => call_function("bool_to_json", vec![value], attr_ptr),
+        Some(ast::TypeExpr::TBool) => call_function("bool_to_json", vec![value], attr_ptr),
         // Numbers can be serialized directly via to_string
-        Some(ast::Ty::TInt8)
-        | Some(ast::Ty::TInt16)
-        | Some(ast::Ty::TInt32)
-        | Some(ast::Ty::TInt64)
-        | Some(ast::Ty::TUint8)
-        | Some(ast::Ty::TUint16)
-        | Some(ast::Ty::TUint32)
-        | Some(ast::Ty::TUint64)
-        | Some(ast::Ty::TFloat32)
-        | Some(ast::Ty::TFloat64) => Expr::ECall {
+        Some(ast::TypeExpr::TInt8)
+        | Some(ast::TypeExpr::TInt16)
+        | Some(ast::TypeExpr::TInt32)
+        | Some(ast::TypeExpr::TInt64)
+        | Some(ast::TypeExpr::TUint8)
+        | Some(ast::TypeExpr::TUint16)
+        | Some(ast::TypeExpr::TUint32)
+        | Some(ast::TypeExpr::TUint64)
+        | Some(ast::TypeExpr::TFloat32)
+        | Some(ast::TypeExpr::TFloat64) => Expr::ECall {
             func: Box::new(Expr::EField {
                 expr: Box::new(value),
                 field: Ident::new(TO_STRING_FN),
@@ -495,7 +495,7 @@ fn call_to_json(value: Expr, ty: Option<&ast::Ty>, attr_ptr: &MySyntaxNodePtr) -
             args: Vec::new(),
         },
         // Unit serializes as null
-        Some(ast::Ty::TUnit) => Expr::EString {
+        Some(ast::TypeExpr::TUnit) => Expr::EString {
             value: "null".to_string(),
         },
         // For other types (user-defined structs/enums), call .to_json()
@@ -528,8 +528,8 @@ fn var_expr(name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Expr {
     }
 }
 
-fn ty_for_ident(name: &Ident) -> ast::Ty {
-    ast::Ty::TCon {
+fn ty_for_ident(name: &Ident) -> ast::TypeExpr {
+    ast::TypeExpr::TCon {
         name: name.0.clone(),
     }
 }

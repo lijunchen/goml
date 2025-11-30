@@ -22,7 +22,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             let inner = typs.iter().map(encode_ty).collect::<Vec<_>>().join("_");
             format!("Tuple_{}", inner)
         }
-        tast::Ty::TCon { name } => name.clone(),
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
         tast::Ty::TApp { ty, args } => {
             let base = ty.get_constr_name_unsafe();
             if args.is_empty() {
@@ -208,13 +208,15 @@ fn decode_range(tokens: &[&str], start: usize, end: usize) -> Result<tast::Ty, S
         }
         _ => {
             if start + 1 == end {
-                Ok(tast::Ty::TCon {
+                // Unknown type constructor - default to TStruct since it's more common
+                // The actual distinction will be made based on context
+                Ok(tast::Ty::TStruct {
                     name: head.to_string(),
                 })
             } else {
                 let args = decode_list(tokens, start + 1, end)?;
                 Ok(tast::Ty::TApp {
-                    ty: Box::new(tast::Ty::TCon {
+                    ty: Box::new(tast::Ty::TStruct {
                         name: head.to_string(),
                     }),
                     args,

@@ -206,7 +206,7 @@ impl Ty {
 
                 doc.append(RcDoc::text(")"))
             }
-            Self::TCon { name } => RcDoc::text(name.clone()),
+            Self::TEnum { name } | Self::TStruct { name } => RcDoc::text(name.clone()),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
 
