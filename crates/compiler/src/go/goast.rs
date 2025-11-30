@@ -294,7 +294,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                     .collect(),
             }
         }
-        tast::Ty::TCon { name } => goty::GoType::TName { name: name.clone() },
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
+            goty::GoType::TName { name: name.clone() }
+        }
         tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
                 unreachable!("generic types not supported in Go backend");
@@ -338,7 +340,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TFloat32 => "float32".to_string(),
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
-        tast::Ty::TCon { name } => name.clone(),
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),
         tast::Ty::TTuple { typs } => {
             let mut s = format!("Tuple{}", typs.len());

@@ -42,7 +42,7 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
                 }
             }
         }
-        tast::Ty::TCon { .. } => {}
+        tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
         tast::Ty::TApp { ty, args } => {
             if !occurs(diagnostics, var, ty.as_ref()) {
                 return false;
@@ -100,7 +100,8 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
                 .map(|t| substitute_ty_params(t, subst))
                 .collect(),
         },
-        tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -160,7 +161,7 @@ fn instantiate_struct_field_ty(
 
 fn decompose_struct_type(ty: &tast::Ty) -> Option<(Ident, Vec<tast::Ty>)> {
     match ty {
-        tast::Ty::TCon { name } => Some((Ident::new(name), Vec::new())),
+        tast::Ty::TStruct { name } => Some((Ident::new(name), Vec::new())),
         tast::Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());
@@ -193,7 +194,7 @@ impl Typer {
                 | tast::Ty::TString
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
-                tast::Ty::TCon { .. } => true,
+                tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => true,
                 tast::Ty::TApp { ty, args } => {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
@@ -376,7 +377,8 @@ impl Typer {
                 let typs = typs.iter().map(|ty| self.norm(ty)).collect();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+            tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.norm(ty)),
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
@@ -512,7 +514,8 @@ impl Typer {
                     return false;
                 }
             }
-            (tast::Ty::TCon { name: n1 }, tast::Ty::TCon { name: n2 }) => {
+            (tast::Ty::TEnum { name: n1 }, tast::Ty::TEnum { name: n2 })
+            | (tast::Ty::TStruct { name: n1 }, tast::Ty::TStruct { name: n2 }) => {
                 if n1 != n2 {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
@@ -617,7 +620,8 @@ impl Typer {
                     .collect::<Vec<_>>();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+            tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
             tast::Ty::TApp { ty, args } => {
                 let ty = self._go_inst_ty(ty, subst);
                 let args = args
@@ -691,7 +695,8 @@ impl Typer {
                     .collect();
                 tast::Ty::TTuple { typs }
             }
-            tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+            tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+            tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.subst_ty(diagnostics, ty)),
                 args: args

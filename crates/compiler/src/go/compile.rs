@@ -168,7 +168,7 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
             Constructor::Struct(struct_constructor) => {
                 let scrut_ty = imm_ty(expr);
                 let (ty_name, type_args) = match scrut_ty {
-                    tast::Ty::TCon { name } => (name, Vec::new()),
+                    tast::Ty::TStruct { name } => (name, Vec::new()),
                     tast::Ty::TApp { ty, args } => {
                         let base_name = ty.get_constr_name_unsafe();
                         (base_name, args)
@@ -385,7 +385,7 @@ fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> Stri
 
 fn variant_ty_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goty::GoType {
     let vname = lookup_variant_name(goenv, ty, index);
-    let ty = tast::Ty::TCon { name: vname };
+    let ty = tast::Ty::TStruct { name: vname };
     tast_ty_to_go_type(&ty)
 }
 
@@ -430,7 +430,8 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
                 .map(|t| substitute_ty_params(t, subst))
                 .collect(),
         },
-        tast::Ty::TCon { name } => tast::Ty::TCon { name: name.clone() },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -608,7 +609,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 Constructor::Struct(struct_constructor) => {
                     let scrut_ty = imm_ty(expr);
                     let (ty_name, type_args) = match scrut_ty {
-                        tast::Ty::TCon { name } => (name, Vec::new()),
+                        tast::Ty::TStruct { name } => (name, Vec::new()),
                         tast::Ty::TApp { ty, args } => {
                             let base_name = ty.get_constr_name_unsafe();
                             (base_name, args)
@@ -873,14 +874,7 @@ where
                 default: default_block,
             }]
         }
-        ty @ (tast::Ty::TCon { .. } | tast::Ty::TApp { .. }) => {
-            let type_name = ty.get_constr_name_unsafe();
-            if !goenv.enums().contains_key(&Ident::new(&type_name)) {
-                panic!(
-                    "unsupported scrutinee type {:?} for match in Go backend",
-                    ty
-                );
-            }
+        tast::Ty::TEnum { .. } => {
             let scrutinee_name = match scrutinee {
                 anf::ImmExpr::ImmVar { name, .. } => name.clone(),
                 _ => {
@@ -911,6 +905,46 @@ where
                 default: default_block,
             }]
         }
+        tast::Ty::TStruct { .. } => {
+            panic!("struct matches are not supported in Go backend")
+        }
+        tast::Ty::TApp { ty: base, .. } => match base.as_ref() {
+            tast::Ty::TEnum { .. } => {
+                let scrutinee_name = match scrutinee {
+                    anf::ImmExpr::ImmVar { name, .. } => name.clone(),
+                    _ => {
+                        unreachable!("expected scrutinee to be a variable after ANF lowering")
+                    }
+                };
+                let mut cases = Vec::new();
+                for arm in arms {
+                    if let anf::ImmExpr::ImmTag { index, ty } = &arm.lhs {
+                        let vty = variant_ty_by_index(goenv, ty, *index);
+                        cases.push((
+                            vty,
+                            goast::Block {
+                                stmts: build_branch(arm.body.clone()),
+                            },
+                        ));
+                    } else {
+                        panic!("expected ImmTag in enum match arm");
+                    }
+                }
+                let default_block = default.as_ref().map(|d| goast::Block {
+                    stmts: build_branch((**d).clone()),
+                });
+                vec![goast::Stmt::SwitchType {
+                    bind: Some(scrutinee_name),
+                    expr: compile_imm(goenv, scrutinee),
+                    cases,
+                    default: default_block,
+                }]
+            }
+            _ => panic!(
+                "unsupported scrutinee type TApp({:?}, ..) for match in Go backend",
+                base
+            ),
+        },
         _ => panic!("unsupported scrutinee type for match in Go backend"),
     }
 }
@@ -988,7 +1022,7 @@ fn compile_spawn_call(
 }
 
 fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
-    let tast::Ty::TCon { name } = closure_ty else {
+    let tast::Ty::TStruct { name } = closure_ty else {
         return None;
     };
 
@@ -1650,10 +1684,10 @@ fn test_type_gen() {
             (
                 Ident::new("Node"),
                 vec![
-                    tast::Ty::TCon {
+                    tast::Ty::TEnum {
                         name: "Tree".to_string(),
                     },
-                    tast::Ty::TCon {
+                    tast::Ty::TEnum {
                         name: "Tree".to_string(),
                     },
                 ],

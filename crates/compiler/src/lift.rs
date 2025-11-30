@@ -219,14 +219,14 @@ impl<'env> State<'env> {
 
     fn closure_struct_for_ty(&self, ty: &Ty) -> Option<String> {
         match ty {
-            Ty::TCon { name } => self.closure_types.contains_key(name).then(|| name.clone()),
+            Ty::TStruct { name } => self.closure_types.contains_key(name).then(|| name.clone()),
             _ => None,
         }
     }
 
     fn ty_contains_closure(&self, ty: &Ty) -> bool {
         match ty {
-            Ty::TCon { name } => self.closure_types.contains_key(name),
+            Ty::TStruct { name } => self.closure_types.contains_key(name),
             Ty::TTuple { typs } => typs.iter().any(|t| self.ty_contains_closure(t)),
             Ty::TArray { elem, .. } => self.ty_contains_closure(elem),
             Ty::TFunc { params, ret_ty } => {
@@ -374,7 +374,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 if let Some(struct_name) = entry.closure_struct.clone() {
                     LiftExpr::EVar {
                         name,
-                        ty: Ty::TCon { name: struct_name },
+                        ty: Ty::TStruct { name: struct_name },
                     }
                 } else {
                     LiftExpr::EVar {
@@ -414,7 +414,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                     for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
                     {
                         if let Some(struct_name) = closure_struct_name {
-                            struct_def.fields[index].1 = Ty::TCon { name: struct_name };
+                            struct_def.fields[index].1 = Ty::TStruct { name: struct_name };
                         }
                     }
                 }
@@ -571,7 +571,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 let mut call_args = Vec::with_capacity(args.len() + 1);
                 call_args.push(LiftExpr::EVar {
                     name: name.clone(),
-                    ty: Ty::TCon {
+                    ty: Ty::TStruct {
                         name: struct_name.clone(),
                     },
                 });
@@ -672,7 +672,7 @@ fn transform_closure(
     collect_captured(&body, &mut bound, &mut captured, scope);
 
     let struct_name = state.fresh_struct_name(sanitized_hint.as_deref());
-    let env_ty = Ty::TCon {
+    let env_ty = Ty::TStruct {
         name: struct_name.0.clone(),
     };
 
@@ -935,7 +935,7 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TFloat32
         | Ty::TFloat64
         | Ty::TString => ty.clone(),
-        Ty::TCon { .. } => ty.clone(),
+        Ty::TEnum { .. } | Ty::TStruct { .. } => ty.clone(),
         Ty::TVar { .. } => ty.clone(),
         Ty::TParam { name } => subst.get(name).cloned().unwrap_or_else(|| ty.clone()),
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
@@ -986,14 +986,14 @@ fn ty_contains_type_param(ty: &Ty) -> bool {
 fn resolve_type_arguments(base_name: &str, instance_ty: &Ty) -> Option<Vec<Ty>> {
     match instance_ty {
         Ty::TApp { ty, args } => {
-            if let Ty::TCon { name } = ty.as_ref()
+            if let Ty::TEnum { name } | Ty::TStruct { name } = ty.as_ref()
                 && name == base_name
             {
                 return Some(args.clone());
             }
             None
         }
-        Ty::TCon { name } => {
+        Ty::TEnum { name } | Ty::TStruct { name } => {
             let prefix = format!("{}__", base_name);
             let encoded = name.strip_prefix(&prefix)?;
             decode_encoded_type_list(encoded)

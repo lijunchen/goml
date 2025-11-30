@@ -503,7 +503,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
 
 fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
     match ty {
-        tast::Ty::TCon { name } => Some(name.as_str()),
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.as_str()),
         tast::Ty::TApp { ty, .. } => type_constructor_name(ty),
         tast::Ty::TRef { elem } => type_constructor_name(elem),
         _ => None,

@@ -149,7 +149,7 @@ impl Display for Point {
 
     expect_single_error(
         src,
-        "Trait Display implementation for TCon(Point) is missing method debug",
+        "Trait Display implementation for TStruct(Point) is missing method debug",
     );
 }
 
@@ -173,7 +173,7 @@ impl Display for Option[int32] {
 
     expect_single_error(
         src,
-        "Trait Display implementation for TApp(TCon(Option), [TInt32]) is missing method debug",
+        "Trait Display implementation for TApp(TEnum(Option), [TInt32]) is missing method debug",
     );
 }
 
@@ -196,7 +196,7 @@ impl Point {
         diagnostics
     );
 
-    let point_ty = tast::Ty::TCon {
+    let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
     };
     let new_ident = ::ast::ast::Ident("new".to_string());
@@ -238,7 +238,7 @@ impl Point {
         diagnostics
     );
 
-    let point_ty = tast::Ty::TCon {
+    let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
     };
     let encoded = encode_ty(&point_ty);

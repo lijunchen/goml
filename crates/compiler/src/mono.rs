@@ -353,7 +353,7 @@ impl GlobalMonoEnv {
                             self.collect_type(elem);
                         }
                     }
-                    tast::Ty::TCon { .. } => {}
+                    tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
                     tast::Ty::TApp { ty, args } => {
                         self.collect_type(ty.as_ref());
                         for arg in args {
@@ -397,7 +397,7 @@ fn has_tparam(ty: &Ty) -> bool {
         | Ty::TFloat64
         | Ty::TString => false,
         Ty::TTuple { typs } => typs.iter().any(has_tparam),
-        Ty::TCon { .. } => false,
+        Ty::TEnum { .. } | Ty::TStruct { .. } => false,
         Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
         Ty::TArray { elem, .. } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
@@ -407,7 +407,7 @@ fn has_tparam(ty: &Ty) -> bool {
 
 fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
     match (constructor, new_ty) {
-        (Constructor::Enum(enum_constructor), Ty::TCon { name }) => {
+        (Constructor::Enum(enum_constructor), Ty::TEnum { name }) => {
             let ident = Ident::new(name);
             Constructor::Enum(common::EnumConstructor {
                 type_name: ident,
@@ -423,7 +423,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
                 index: enum_constructor.index,
             })
         }
-        (Constructor::Struct(_), Ty::TCon { name }) => {
+        (Constructor::Struct(_), Ty::TStruct { name }) => {
             let ident = Ident::new(name);
             Constructor::Struct(common::StructConstructor { type_name: ident })
         }
@@ -463,7 +463,8 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs.iter().map(|t| subst_ty(t, s)).collect(),
         },
-        Ty::TCon { name } => Ty::TCon { name: name.clone() },
+        Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
+        Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(subst_ty(ty, s)),
             args: args.iter().map(|t| subst_ty(t, s)).collect(),
@@ -547,7 +548,8 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
             }
             Ok(())
         }
-        (Ty::TCon { name: ln }, Ty::TCon { name: rn }) => {
+        (Ty::TEnum { name: ln }, Ty::TEnum { name: rn })
+        | (Ty::TStruct { name: ln }, Ty::TStruct { name: rn }) => {
             if ln != rn {
                 return Err("type constructor mismatch".to_string());
             }
@@ -922,9 +924,14 @@ impl<'a> TypeMono<'a> {
             Ty::TApp { ty: base, args } if !args.is_empty() => {
                 let base_name = base.get_constr_name_unsafe();
                 let ident = Ident::new(&base_name);
-                if self.enum_base.contains_key(&ident) || self.struct_base.contains_key(&ident) {
+                if self.enum_base.contains_key(&ident) {
                     let new_u = self.ensure_instance(&base_name, args);
-                    Ty::TCon {
+                    Ty::TEnum {
+                        name: new_u.0.clone(),
+                    }
+                } else if self.struct_base.contains_key(&ident) {
+                    let new_u = self.ensure_instance(&base_name, args);
+                    Ty::TStruct {
                         name: new_u.0.clone(),
                     }
                 } else {
@@ -945,7 +952,8 @@ impl<'a> TypeMono<'a> {
                 params: params.iter().map(|t| self.collapse_type_apps(t)).collect(),
                 ret_ty: Box::new(self.collapse_type_apps(ret_ty)),
             },
-            Ty::TCon { name } => Ty::TCon { name: name.clone() },
+            Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
+            Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
             _ => ty.clone(),
         }
     }

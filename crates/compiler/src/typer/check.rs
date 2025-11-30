@@ -296,8 +296,16 @@ impl Typer {
         member: &Ident,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
-        let receiver_ty = tast::Ty::TCon {
-            name: type_name.0.clone(),
+        let receiver_ty = if genv.enums().contains_key(type_name) {
+            tast::Ty::TEnum {
+                name: type_name.0.clone(),
+            }
+        } else if genv.structs().contains_key(type_name) {
+            tast::Ty::TStruct {
+                name: type_name.0.clone(),
+            }
+        } else {
+            panic!("Type {} not found for member access", type_name.0);
         };
         if let Some((mangled_name, method_ty)) = genv.lookup_inherent_method(&receiver_ty, member) {
             let inst_ty = self.inst_ty(&method_ty);
@@ -571,7 +579,7 @@ impl Typer {
 
         for param in params.iter() {
             let param_ty = match &param.ty {
-                Some(ty) => tast::Ty::from_ast(ty, &current_tparams_env),
+                Some(ty) => tast::Ty::from_ast(genv, ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
             local_env.insert_var(&param.name, param_ty.clone());
@@ -623,7 +631,7 @@ impl Typer {
                     let annotated_ty = param
                         .ty
                         .as_ref()
-                        .map(|ty| tast::Ty::from_ast(ty, &current_tparams_env));
+                        .map(|ty| tast::Ty::from_ast(genv, ty, &current_tparams_env));
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
@@ -678,7 +686,7 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
             .as_ref()
-            .map(|ty| tast::Ty::from_ast(ty, &current_tparams_env));
+            .map(|ty| tast::Ty::from_ast(genv, ty, &current_tparams_env));
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
@@ -719,7 +727,7 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
             .as_ref()
-            .map(|ty| tast::Ty::from_ast(ty, &current_tparams_env));
+            .map(|ty| tast::Ty::from_ast(genv, ty, &current_tparams_env));
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
@@ -987,8 +995,16 @@ impl Typer {
                 member,
                 astptr,
             } => {
-                let receiver_ty = tast::Ty::TCon {
-                    name: type_name.0.clone(),
+                let receiver_ty = if genv.enums().contains_key(type_name) {
+                    tast::Ty::TEnum {
+                        name: type_name.0.clone(),
+                    }
+                } else if genv.structs().contains_key(type_name) {
+                    tast::Ty::TStruct {
+                        name: type_name.0.clone(),
+                    }
+                } else {
+                    panic!("Type {} not found for member access", type_name.0);
                 };
                 if let Some((mangled_name, method_ty)) =
                     genv.lookup_inherent_method(&receiver_ty, member)
