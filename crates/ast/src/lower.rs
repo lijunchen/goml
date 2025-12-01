@@ -348,37 +348,15 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
                 .unwrap_or_default();
 
-            if name == "Ref" {
-                match args.len() {
-                    1 => Some(ast::TypeExpr::TRef {
-                        elem: Box::new(args.into_iter().next().unwrap()),
-                    }),
-                    0 => {
-                        ctx.push_error(
-                            Some(it.syntax().text_range()),
-                            "Ref type missing element type",
-                        );
-                        None
-                    }
-                    _ => {
-                        ctx.push_error(
-                            Some(it.syntax().text_range()),
-                            "Ref type takes exactly one argument",
-                        );
-                        None
-                    }
-                }
-            } else {
-                let base = ast::TypeExpr::TCon { name };
+            let base = ast::TypeExpr::TCon { name };
 
-                if args.is_empty() {
-                    Some(base)
-                } else {
-                    Some(ast::TypeExpr::TApp {
-                        ty: Box::new(base),
-                        args,
-                    })
-                }
+            if args.is_empty() {
+                Some(base)
+            } else {
+                Some(ast::TypeExpr::TApp {
+                    ty: Box::new(base),
+                    args,
+                })
             }
         }
         cst::Type::ArrayTy(it) => {
