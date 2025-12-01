@@ -196,18 +196,26 @@ impl tast::Ty {
                     }
                 }
             }
-            ast::TypeExpr::TApp { ty, args } => Self::TApp {
-                ty: Box::new(Self::from_ast(genv, ty, tparams_env)),
-                args: args
-                    .iter()
-                    .map(|ty| Self::from_ast(genv, ty, tparams_env))
-                    .collect(),
-            },
+            ast::TypeExpr::TApp { ty, args } => {
+                // Special handling for Ref[T] - convert to TRef
+                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+                    && name == "Ref"
+                    && args.len() == 1
+                {
+                    return Self::TRef {
+                        elem: Box::new(Self::from_ast(genv, &args[0], tparams_env)),
+                    };
+                }
+                Self::TApp {
+                    ty: Box::new(Self::from_ast(genv, ty, tparams_env)),
+                    args: args
+                        .iter()
+                        .map(|ty| Self::from_ast(genv, ty, tparams_env))
+                        .collect(),
+                }
+            }
             ast::TypeExpr::TArray { len, elem } => Self::TArray {
                 len: *len,
-                elem: Box::new(Self::from_ast(genv, elem, tparams_env)),
-            },
-            ast::TypeExpr::TRef { elem } => Self::TRef {
                 elem: Box::new(Self::from_ast(genv, elem, tparams_env)),
             },
             ast::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {

@@ -183,9 +183,6 @@ pub enum TypeExpr {
         len: usize,
         elem: Box<TypeExpr>,
     },
-    TRef {
-        elem: Box<TypeExpr>,
-    },
     TFunc {
         params: Vec<TypeExpr>,
         ret_ty: Box<TypeExpr>,
