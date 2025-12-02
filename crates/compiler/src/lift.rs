@@ -32,7 +32,7 @@ impl GlobalLiftEnv {
         Self {
             enums: genv.enums,
             structs: genv.structs,
-            closure_env_apply: genv.closure_env_apply,
+            closure_env_apply: IndexMap::new(),
             trait_defs: genv.trait_defs,
             overloaded_funcs_to_trait_name: genv.overloaded_funcs_to_trait_name,
             trait_impls: genv.trait_impls,

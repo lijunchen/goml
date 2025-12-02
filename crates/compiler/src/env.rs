@@ -60,7 +60,6 @@ pub enum Constraint {
 pub struct GlobalTypeEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
@@ -84,7 +83,6 @@ impl GlobalTypeEnv {
         Self {
             enums: IndexMap::new(),
             structs: IndexMap::new(),
-            closure_env_apply: IndexMap::new(),
             funcs: builtin_functions(),
             extern_funcs: IndexMap::new(),
             extern_types: IndexMap::new(),
@@ -234,10 +232,6 @@ impl GlobalTypeEnv {
                 self.record_extern_type_usage(elem, package_path);
             }
         }
-    }
-
-    pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {
-        self.closure_env_apply.get(struct_name).map(|s| s.as_str())
     }
 
     pub fn get_trait_impl(
