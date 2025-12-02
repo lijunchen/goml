@@ -6,15 +6,22 @@ use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     core,
     env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
-    mangle::decode_ty,
+    mangle::{decode_ty, encode_ty, mangle_inherent_name},
     tast::{self, Ty},
 };
+
+const CLOSURE_ENV_PREFIX: &str = "closure_env_";
+const CLOSURE_APPLY_METHOD: &str = "apply";
+
+/// Checks if a struct name is a closure environment struct.
+pub fn is_closure_env_struct(struct_name: &str) -> bool {
+    struct_name.starts_with(CLOSURE_ENV_PREFIX)
+}
 
 #[derive(Debug, Clone)]
 pub struct GlobalLiftEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
@@ -32,7 +39,6 @@ impl GlobalLiftEnv {
         Self {
             enums: genv.enums,
             structs: genv.structs,
-            closure_env_apply: IndexMap::new(),
             trait_defs: genv.trait_defs,
             overloaded_funcs_to_trait_name: genv.overloaded_funcs_to_trait_name,
             trait_impls: genv.trait_impls,
@@ -44,10 +50,6 @@ impl GlobalLiftEnv {
             array_types: genv.array_types,
             ref_types: genv.ref_types,
         }
-    }
-    pub fn register_closure_apply(&mut self, struct_name: &Ident, apply_fn: String) {
-        self.closure_env_apply
-            .insert(struct_name.0.clone(), apply_fn);
     }
 
     pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
@@ -199,9 +201,9 @@ impl<'env> State<'env> {
 
     fn fresh_struct_name(&mut self, hint: Option<&str>) -> Ident {
         let name = if let Some(hint) = hint {
-            format!("closure_env_{}_{}", hint, self.next_id)
+            format!("{}{}_{}", CLOSURE_ENV_PREFIX, hint, self.next_id)
         } else {
-            format!("closure_env_{}", self.next_id)
+            format!("{}{}", CLOSURE_ENV_PREFIX, self.next_id)
         };
         self.next_id += 1;
         Ident::new(&name)
@@ -214,7 +216,6 @@ impl<'env> State<'env> {
                 apply_fn: apply_fn.clone(),
             },
         );
-        self.liftenv.register_closure_apply(struct_name, apply_fn);
     }
 
     fn closure_struct_for_ty(&self, ty: &Ty) -> Option<String> {
@@ -688,6 +689,9 @@ fn transform_closure(
         });
     }
 
+    // Use mangle_inherent_name to generate apply function name as an inherent method
+    let apply_fn_name = mangle_inherent_name(&env_ty, CLOSURE_APPLY_METHOD);
+
     let struct_def = StructDef {
         name: struct_name.clone(),
         generics: Vec::new(),
@@ -695,7 +699,6 @@ fn transform_closure(
     };
     state.liftenv.insert_struct(struct_def);
 
-    let apply_fn_name = state.gensym.gensym("__closure_apply");
     state.register_closure_type(&struct_name, apply_fn_name.clone());
 
     let mut fn_params = Vec::with_capacity(lowered_params.len() + 1);
@@ -729,21 +732,30 @@ fn transform_closure(
     // Store the new function (will be converted to LiftFn later in lambda_lift)
     state.new_functions.push(LiftFn {
         name: apply_fn_name.clone(),
-        params: fn_params,
+        params: fn_params.clone(),
         ret_ty: ret_ty.clone(),
         body: fn_body,
     });
 
-    let mut func_param_tys = Vec::with_capacity(param_tys.len() + 1);
-    func_param_tys.push(env_ty.clone());
-    func_param_tys.extend(param_tys.clone());
-    state.liftenv.funcs.insert(
-        apply_fn_name,
-        Ty::TFunc {
-            params: func_param_tys,
-            ret_ty: Box::new(ret_ty),
-        },
-    );
+    // Build the function type for the apply method
+    let func_param_tys: Vec<_> = fn_params.iter().map(|(_, ty)| ty.clone()).collect();
+    let apply_fn_ty = Ty::TFunc {
+        params: func_param_tys,
+        ret_ty: Box::new(ret_ty),
+    };
+
+    // Register the apply function both in funcs and as an inherent method
+    state
+        .liftenv
+        .funcs
+        .insert(apply_fn_name.clone(), apply_fn_ty.clone());
+
+    // Register as inherent method: (encoded_env_ty, "apply") -> (apply_fn_name, apply_fn_ty)
+    let key = (encode_ty(&env_ty), Ident::new(CLOSURE_APPLY_METHOD));
+    state
+        .liftenv
+        .inherent_impls
+        .insert(key, (apply_fn_name, apply_fn_ty));
 
     LiftExpr::EConstr {
         constructor: Constructor::Struct(StructConstructor {
