@@ -33,37 +33,37 @@ type closure_env_main_0 struct {
 }
 
 func child(signal__0 *ref_int32_x) struct{} {
-    var ret8 struct{}
-    ret8 = ref_set__Ref_int32(signal__0, 1)
-    return ret8
+    var ret7 struct{}
+    ret7 = ref_set__Ref_int32(signal__0, 1)
+    return ret7
 }
 
 func main0() struct{} {
-    var ret9 struct{}
+    var ret8 struct{}
     var signal__1 *ref_int32_x = ref__Ref_int32(0)
-    var t6 closure_env_main_0 = closure_env_main_0{
+    var t5 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    go __closure_apply4(t6)
-    var cond10 bool
+    go impl_inherent_closure_env_main_0_apply(t5)
+    var cond9 bool
     for {
-        var t7 int32 = ref_get__Ref_int32(signal__1)
-        cond10 = t7 < 1
-        if !cond10 {
+        var t6 int32 = ref_get__Ref_int32(signal__1)
+        cond9 = t6 < 1
+        if !cond9 {
             break
         }
     }
     string_println("main")
-    ret9 = struct{}{}
-    return ret9
+    ret8 = struct{}{}
+    return ret8
 }
 
-func __closure_apply4(env5 closure_env_main_0) struct{} {
-    var ret11 struct{}
-    var signal__1 *ref_int32_x = env5.signal_0
+func impl_inherent_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
+    var ret10 struct{}
+    var signal__1 *ref_int32_x = env4.signal_0
     child(signal__1)
-    ret11 = struct{}{}
-    return ret11
+    ret10 = struct{}{}
+    return ret10
 }
 
 func main() {

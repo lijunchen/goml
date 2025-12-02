@@ -11,8 +11,8 @@ fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
 }
 
 fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
-  let t10 = g/5(value/6) in
-  f/4(t10)
+  let t7 = g/5(value/6) in
+  f/4(t7)
 }
 
 fn main() -> unit {
@@ -20,31 +20,31 @@ fn main() -> unit {
   let first/8 = apply_once(local/7, 4) in
   let composed/9 = compose(double, increment, first/8) in
   let closure_apply/11 = closure_env_closure_apply_0 {} in
-  let closure_result/12 = __closure_apply4(closure_apply/11, composed/9) in
+  let closure_result/12 = impl_inherent_closure_env_closure_apply_0_apply(closure_apply/11, composed/9) in
   let global_invoker/15 = closure_env_global_invoker_1 {} in
-  let invoked_with_global/16 = __closure_apply6(global_invoker/15, double, 3) in
+  let invoked_with_global/16 = impl_inherent_closure_env_global_invoker_1_apply(global_invoker/15, double, 3) in
   let composer_closure/18 = closure_env_composer_closure_2 {} in
-  let composed_by_closure/19 = __closure_apply8(composer_closure/18, 5) in
+  let composed_by_closure/19 = impl_inherent_closure_env_composer_closure_2_apply(composer_closure/18, 5) in
   let printer/20 = string_println in
-  let t11 = int32_to_string(composed/9) in
-  let mtmp0 = printer/20(t11) in
-  let t12 = int32_to_string(closure_result/12) in
-  let mtmp1 = printer/20(t12) in
-  let t13 = int32_to_string(invoked_with_global/16) in
-  let mtmp2 = printer/20(t13) in
-  let t14 = int32_to_string(composed_by_closure/19) in
-  let mtmp3 = printer/20(t14) in
+  let t8 = int32_to_string(composed/9) in
+  let mtmp0 = printer/20(t8) in
+  let t9 = int32_to_string(closure_result/12) in
+  let mtmp1 = printer/20(t9) in
+  let t10 = int32_to_string(invoked_with_global/16) in
+  let mtmp2 = printer/20(t10) in
+  let t11 = int32_to_string(composed_by_closure/19) in
+  let mtmp3 = printer/20(t11) in
   ()
 }
 
-fn __closure_apply4(env5: closure_env_closure_apply_0, value/10: int32) -> int32 {
+fn impl_inherent_closure_env_closure_apply_0_apply(env4: closure_env_closure_apply_0, value/10: int32) -> int32 {
   apply_once(increment, value/10)
 }
 
-fn __closure_apply6(env7: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
+fn impl_inherent_closure_env_global_invoker_1_apply(env5: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
   apply_once(func_to_call/13, value/14)
 }
 
-fn __closure_apply8(env9: closure_env_composer_closure_2, value/17: int32) -> int32 {
+fn impl_inherent_closure_env_composer_closure_2_apply(env6: closure_env_composer_closure_2, value/17: int32) -> int32 {
   compose(double, increment, value/17)
 }

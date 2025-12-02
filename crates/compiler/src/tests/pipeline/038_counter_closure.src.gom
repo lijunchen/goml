@@ -46,7 +46,7 @@ type closure_env_reset_1 struct {
 }
 
 func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
-    var ret22 Tuple2_closure_env_next_0_closure_env_reset_1
+    var ret20 Tuple2_closure_env_next_0_closure_env_reset_1
     var cell__0 *ref_int32_x = ref__Ref_int32(0)
     var next__2 closure_env_next_0 = closure_env_next_0{
         cell_0: cell__0,
@@ -54,58 +54,58 @@ func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
     var reset__3 closure_env_reset_1 = closure_env_reset_1{
         cell_0: cell__0,
     }
-    ret22 = Tuple2_closure_env_next_0_closure_env_reset_1{
+    ret20 = Tuple2_closure_env_next_0_closure_env_reset_1{
         _0: next__2,
         _1: reset__3,
     }
-    return ret22
+    return ret20
 }
 
 func main0() struct{} {
-    var ret23 struct{}
+    var ret21 struct{}
     var counter__4 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
     var mtmp2 Tuple2_closure_env_next_0_closure_env_reset_1 = counter__4
     var x3 closure_env_next_0 = mtmp2._0
     var x4 closure_env_reset_1 = mtmp2._1
     var reset__6 closure_env_reset_1 = x4
     var next__5 closure_env_next_0 = x3
-    var first__7 int32 = __closure_apply13(next__5)
-    var second__8 int32 = __closure_apply13(next__5)
-    __closure_apply15(reset__6)
-    var third__9 int32 = __closure_apply13(next__5)
+    var first__7 int32 = impl_inherent_closure_env_next_0_apply(next__5)
+    var second__8 int32 = impl_inherent_closure_env_next_0_apply(next__5)
+    impl_inherent_closure_env_reset_1_apply(reset__6)
+    var third__9 int32 = impl_inherent_closure_env_next_0_apply(next__5)
     var new_counter__10 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
     var mtmp6 Tuple2_closure_env_next_0_closure_env_reset_1 = new_counter__10
     var x7 closure_env_next_0 = mtmp6._0
     var new_next__11 closure_env_next_0 = x7
-    var fourth__12 int32 = __closure_apply13(new_next__11)
-    var t17 string = int32_to_string(first__7)
+    var fourth__12 int32 = impl_inherent_closure_env_next_0_apply(new_next__11)
+    var t15 string = int32_to_string(first__7)
+    string_println(t15)
+    var t16 string = int32_to_string(second__8)
+    string_println(t16)
+    var t17 string = int32_to_string(third__9)
     string_println(t17)
-    var t18 string = int32_to_string(second__8)
+    var t18 string = int32_to_string(fourth__12)
     string_println(t18)
-    var t19 string = int32_to_string(third__9)
-    string_println(t19)
-    var t20 string = int32_to_string(fourth__12)
-    string_println(t20)
+    ret21 = struct{}{}
+    return ret21
+}
+
+func impl_inherent_closure_env_next_0_apply(env13 closure_env_next_0) int32 {
+    var ret22 int32
+    var cell__0 *ref_int32_x = env13.cell_0
+    var t19 int32 = ref_get__Ref_int32(cell__0)
+    var next__1 int32 = t19 + 1
+    ref_set__Ref_int32(cell__0, next__1)
+    ret22 = next__1
+    return ret22
+}
+
+func impl_inherent_closure_env_reset_1_apply(env14 closure_env_reset_1) struct{} {
+    var ret23 struct{}
+    var cell__0 *ref_int32_x = env14.cell_0
+    ref_set__Ref_int32(cell__0, 0)
     ret23 = struct{}{}
     return ret23
-}
-
-func __closure_apply13(env14 closure_env_next_0) int32 {
-    var ret24 int32
-    var cell__0 *ref_int32_x = env14.cell_0
-    var t21 int32 = ref_get__Ref_int32(cell__0)
-    var next__1 int32 = t21 + 1
-    ref_set__Ref_int32(cell__0, next__1)
-    ret24 = next__1
-    return ret24
-}
-
-func __closure_apply15(env16 closure_env_reset_1) struct{} {
-    var ret25 struct{}
-    var cell__0 *ref_int32_x = env16.cell_0
-    ref_set__Ref_int32(cell__0, 0)
-    ret25 = struct{}{}
-    return ret25
 }
 
 func main() {
