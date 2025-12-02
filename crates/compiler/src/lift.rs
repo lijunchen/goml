@@ -43,7 +43,11 @@ impl GlobalLiftEnv {
             overloaded_funcs_to_trait_name: genv.overloaded_funcs_to_trait_name,
             trait_impls: genv.trait_impls,
             inherent_impls: genv.inherent_impls,
-            funcs: genv.funcs,
+            funcs: genv
+                .funcs
+                .into_iter()
+                .map(|(name, scheme)| (name, scheme.ty))
+                .collect(),
             extern_funcs: genv.extern_funcs,
             extern_types: genv.extern_types,
             tuple_types: genv.tuple_types,

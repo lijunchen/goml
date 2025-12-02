@@ -6,7 +6,7 @@ use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
 use crate::{
-    env::{self, GlobalTypeEnv, LocalTypeEnv},
+    env::{self, FnScheme, GlobalTypeEnv, LocalTypeEnv},
     mangle::encode_ty,
     mangle::mangle_inherent_name,
     rename,
@@ -342,8 +342,14 @@ fn define_inherent_impl(
 
         let mangled_name = mangle_inherent_name(&for_ty, &method_name_str);
         let key = (encode_ty(&for_ty), method_name.clone());
-        genv.funcs
-            .insert(mangled_name.clone(), impl_method_ty.clone());
+        genv.funcs.insert(
+            mangled_name.clone(),
+            FnScheme {
+                type_params: vec![],
+                constraints: (),
+                ty: impl_method_ty.clone(),
+            },
+        );
         genv.inherent_impls
             .insert(key, (mangled_name, impl_method_ty));
     }
@@ -371,9 +377,13 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
     };
     genv.funcs.insert(
         name.0.clone(),
-        tast::Ty::TFunc {
-            params,
-            ret_ty: Box::new(ret),
+        FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: tast::Ty::TFunc {
+                params,
+                ret_ty: Box::new(ret),
+            },
         },
     );
 }
