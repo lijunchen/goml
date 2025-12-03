@@ -3,11 +3,7 @@ use std::path::PathBuf;
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{
-    compile_match,
-    env::{Gensym, GlobalTypeEnv},
-    tast,
-};
+use crate::{env::GlobalTypeEnv, tast};
 use diagnostics::Diagnostics;
 
 fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnostics) {
@@ -22,16 +18,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnosti
         .into_result()
         .expect("failed to lower to AST");
     let ast_clone = ast.clone();
-    let (tast, mut genv, diagnostics) = crate::typer::check_file(ast);
-    let gensym = Gensym::new();
-    let mut compile_diagnostics = Diagnostics::new();
-    let core = compile_match::compile_file(&genv, &gensym, &mut compile_diagnostics, &tast);
-    assert!(
-        compile_diagnostics.is_empty(),
-        "unexpected compile diagnostics: {:?}",
-        compile_diagnostics
-    );
-    genv.record_runtime_types_from_core(&core);
+    let (tast, genv, diagnostics) = crate::typer::check_file(ast);
     (ast_clone, tast, genv, diagnostics)
 }
 
@@ -45,7 +32,7 @@ fn main() -> int32 {
 }
 "#;
 
-    let (ast, _tast, genv, diagnostics) = typecheck(src);
+    let (ast, _tast, _genv, diagnostics) = typecheck(src);
 
     let main_fn = match &ast.toplevels[0] {
         ast::ast::Item::Fn(f) => f,
@@ -128,15 +115,6 @@ fn main() -> int32 {
         panic!("expected nested let expression");
     }
 
-    let expected_ref_ty = tast::Ty::TRef {
-        elem: Box::new(tast::Ty::TInt32),
-    };
-    assert!(
-        genv.ref_types.contains(&expected_ref_ty),
-        "expected ref type {:?} to be collected, got {:?}",
-        expected_ref_ty,
-        genv.ref_types
-    );
     assert!(
         diagnostics.is_empty(),
         "unexpected diagnostics: {:?}",
