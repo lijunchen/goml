@@ -1655,7 +1655,7 @@ fn lower_constructor_path_from_ident_expr(
     expr: &cst::IdentExpr,
 ) -> Option<ast::Path> {
     if let Some(path) = expr.path() {
-        lower_constructor_path_from_path(ctx, &path)
+        lower_path(ctx, &path)
     } else if let Some(token) = expr.ident_token() {
         Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
@@ -1672,7 +1672,7 @@ fn lower_constructor_path_from_constr_pat(
     pat: &cst::ConstrPat,
 ) -> Option<ast::Path> {
     if let Some(path) = pat.path() {
-        lower_constructor_path_from_path(ctx, &path)
+        lower_path(ctx, &path)
     } else if let Some(token) = pat.uident() {
         Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
@@ -1681,28 +1681,6 @@ fn lower_constructor_path_from_constr_pat(
             "Missing constructor name in pattern",
         );
         None
-    }
-}
-
-fn lower_constructor_path_from_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
-    let ast_path = lower_path(ctx, path)?;
-
-    match ast_path.len() {
-        len if len < 2 => {
-            ctx.push_error(
-                Some(path.syntax().text_range()),
-                "Constructor paths must include both the enum and variant name",
-            );
-            None
-        }
-        2 => Some(ast_path),
-        _ => {
-            ctx.push_error(
-                Some(path.syntax().text_range()),
-                "Constructor paths support only a single namespace segment, e.g. Type::Variant",
-            );
-            None
-        }
     }
 }
 

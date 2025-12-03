@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 
-use crate::{env::FnScheme, env::FnOrigin, mangle::encode_ty, tast};
+use crate::{env::FnOrigin, env::FnScheme, mangle::encode_ty, tast};
 
 pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
     let mut funcs = IndexMap::new();

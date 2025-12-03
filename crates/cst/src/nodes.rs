@@ -820,8 +820,13 @@ pub struct StructLiteralExpr {
 }
 
 impl StructLiteralExpr {
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+
+    /// For backwards compatibility - gets the last identifier from the path
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+        self.path()?.ident_tokens().last()
     }
 
     pub fn field_list(&self) -> Option<StructLiteralFieldList> {
@@ -1152,12 +1157,13 @@ pub struct IdentExpr {
 }
 
 impl IdentExpr {
-    pub fn ident_token(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
-    }
-
     pub fn path(&self) -> Option<Path> {
         support::child(&self.syntax)
+    }
+
+    /// For backwards compatibility - gets the last identifier from the path
+    pub fn ident_token(&self) -> Option<MySyntaxToken> {
+        self.path()?.ident_tokens().last()
     }
 }
 
@@ -1472,12 +1478,13 @@ pub struct ConstrPat {
 }
 
 impl ConstrPat {
-    pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
-    }
-
     pub fn path(&self) -> Option<Path> {
         support::child(&self.syntax)
+    }
+
+    /// For backwards compatibility - gets the last identifier from the path
+    pub fn uident(&self) -> Option<MySyntaxToken> {
+        self.path()?.ident_tokens().last()
     }
 
     pub fn patterns(&self) -> CstChildren<Pattern> {
@@ -1809,8 +1816,13 @@ pub struct TAppTy {
 }
 
 impl TAppTy {
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+
+    /// For backwards compatibility - gets the last identifier from the path
     pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+        self.path()?.ident_tokens().last()
     }
 
     pub fn type_param_list(&self) -> Option<TypeParamList> {
