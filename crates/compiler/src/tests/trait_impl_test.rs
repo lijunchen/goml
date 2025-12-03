@@ -237,12 +237,12 @@ impl Point {
         .get(&encoded)
         .expect("inherent impl registered");
 
-    let copy_ty = impl_def
+    let copy_scheme = impl_def
         .methods
         .get("copy")
         .expect("copy method registered");
 
-    match copy_ty {
+    match &copy_scheme.ty {
         tast::Ty::TFunc { params, ret_ty } => {
             assert_eq!(
                 params,
@@ -279,12 +279,12 @@ impl Point {
     assert_eq!(copy_fn.params[1].1, point_ty.clone());
     assert_eq!(copy_fn.ret_ty, point_ty.clone());
 
-    let origin_ty = impl_def
+    let origin_scheme = impl_def
         .methods
         .get("origin")
         .expect("origin method registered");
 
-    match origin_ty {
+    match &origin_scheme.ty {
         tast::Ty::TFunc { params, ret_ty } => {
             assert!(params.is_empty(), "origin should not take parameters");
             assert_eq!(**ret_ty, point_ty);

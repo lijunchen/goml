@@ -5,7 +5,10 @@ use std::collections::HashMap;
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     core,
-    env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, ImplDef, StructDef, TraitDef},
+    env::{
+        EnumDef, ExternFunc, ExternType, FnScheme, Gensym, GlobalTypeEnv, ImplDef, StructDef,
+        TraitDef,
+    },
     mangle::{decode_ty, encode_ty, mangle_inherent_name},
     tast::{self, Ty},
 };
@@ -749,9 +752,14 @@ fn transform_closure(
     // Register as inherent method: encoded_env_ty -> ImplDef with apply method
     let encoded_ty = encode_ty(&env_ty);
     let impl_def = state.liftenv.inherent_impls.entry(encoded_ty).or_default();
-    impl_def
-        .methods
-        .insert(CLOSURE_APPLY_METHOD.to_string(), apply_fn_ty);
+    impl_def.methods.insert(
+        CLOSURE_APPLY_METHOD.to_string(),
+        FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: apply_fn_ty,
+        },
+    );
 
     LiftExpr::EConstr {
         constructor: Constructor::Struct(StructConstructor {

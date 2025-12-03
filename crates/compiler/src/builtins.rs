@@ -478,9 +478,14 @@ pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef
     };
 
     let mut int32_impl = crate::env::ImplDef::default();
-    int32_impl
-        .methods
-        .insert("to_string".to_string(), method_ty);
+    int32_impl.methods.insert(
+        "to_string".to_string(),
+        crate::env::FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: method_ty,
+        },
+    );
     impls.insert(encode_ty(&int32_ty), int32_impl);
 
     impls

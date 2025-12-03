@@ -70,7 +70,7 @@ pub struct TraitDef {
 #[derive(Debug, Clone, Default)]
 pub struct ImplDef {
     pub params: Vec<Ident>,
-    pub methods: IndexMap<String, tast::Ty>,
+    pub methods: IndexMap<String, FnScheme>,
 }
 
 #[derive(Debug, Clone)]
@@ -273,7 +273,7 @@ impl GlobalTypeEnv {
         self.trait_impls
             .get(&key)
             .and_then(|impl_def| impl_def.methods.get(&func_name.0))
-            .cloned()
+            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
@@ -421,7 +421,7 @@ impl GlobalTypeEnv {
         self.inherent_impls
             .get(&encoded_ty)
             .and_then(|impl_def| impl_def.methods.get(&method.0))
-            .cloned()
+            .map(|scheme| scheme.ty.clone())
     }
 }
 

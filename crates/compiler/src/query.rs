@@ -521,10 +521,10 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
             impl_def
                 .methods
                 .iter()
-                .map(|(method_name, method_ty)| DotCompletionItem {
+                .map(|(method_name, method_scheme)| DotCompletionItem {
                     name: method_name.clone(),
                     kind: DotCompletionKind::Method,
-                    detail: Some(method_ty.to_pretty(80)),
+                    detail: Some(method_scheme.ty.to_pretty(80)),
                 })
                 .collect()
         } else {

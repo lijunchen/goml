@@ -141,7 +141,7 @@ fn define_trait_impl(
     let trait_method_names: HashSet<String> = trait_def.methods.keys().cloned().collect();
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
-    let mut impl_methods: IndexMap<String, tast::Ty> = IndexMap::new();
+    let mut impl_methods: IndexMap<String, env::FnScheme> = IndexMap::new();
 
     for m in impl_block.methods.iter() {
         let method_name = m.name.clone();
@@ -272,7 +272,14 @@ fn define_trait_impl(
         }
 
         if method_ok {
-            impl_methods.insert(method_name_str.clone(), impl_method_ty);
+            impl_methods.insert(
+                method_name_str.clone(),
+                env::FnScheme {
+                    type_params: vec![],
+                    constraints: (),
+                    ty: impl_method_ty,
+                },
+            );
         }
     }
 
@@ -310,7 +317,7 @@ fn define_inherent_impl(
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
 
     let encoded_ty = encode_ty(&for_ty);
-    let mut methods_to_add: IndexMap<String, tast::Ty> = IndexMap::new();
+    let mut methods_to_add: IndexMap<String, env::FnScheme> = IndexMap::new();
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
@@ -353,7 +360,14 @@ fn define_inherent_impl(
             ret_ty: Box::new(ret.clone()),
         };
 
-        methods_to_add.insert(method_name_str, impl_method_ty);
+        methods_to_add.insert(
+            method_name_str,
+            env::FnScheme {
+                type_params: vec![],
+                constraints: (),
+                ty: impl_method_ty,
+            },
+        );
     }
 
     // Insert or extend the impl def

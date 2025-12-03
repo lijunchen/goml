@@ -65,7 +65,7 @@ impl GlobalGoEnv {
         self.inherent_impls
             .get(&encoded_ty)
             .and_then(|impl_def| impl_def.methods.get("apply"))
-            .cloned()
+            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
