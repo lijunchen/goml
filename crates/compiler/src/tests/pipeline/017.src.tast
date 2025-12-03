@@ -18,10 +18,10 @@ impl ToString for (int32, int32){
 
 fn main() -> unit {
   let x/3: int32 = 123 in
-  let _ : unit = (string_println : (string) -> unit)((to_string : (int32) -> string)((x/3 : int32))) in
+  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/3 : int32))) in
   let x/4: bool = true in
-  let _ : unit = (string_println : (string) -> unit)((to_string : (bool) -> string)((x/4 : bool))) in
+  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/4 : bool))) in
   let x/5: (int32, int32) = (3, 4) in
-  let _ : unit = (string_println : (string) -> unit)((to_string : ((int32, int32)) -> string)((x/5 : (int32, int32)))) in
+  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/5 : (int32, int32)))) in
   ()
 }

@@ -25,8 +25,8 @@ fn main() -> unit {
   let point/4: Point = Point { x: 1, y: 2 } in
   let some_number/5: Option[int32] = (make_optional : (bool) -> Option[int32])(true) in
   let none_number/6: Option[int32] = (make_optional : (bool) -> Option[int32])(false) in
-  let _ : unit = (string_println : (string) -> unit)((show : (Point) -> string)((point/4 : Point))) in
-  let _ : unit = (string_println : (string) -> unit)((show : (Option[int32]) -> string)((some_number/5 : Option[int32]))) in
-  let _ : unit = (string_println : (string) -> unit)((show : (Option[int32]) -> string)((none_number/6 : Option[int32]))) in
+  let _ : unit = (string_println : (string) -> unit)((Display::show : (Self) -> string)((point/4 : Point))) in
+  let _ : unit = (string_println : (string) -> unit)((Display::show : (Self) -> string)((some_number/5 : Option[int32]))) in
+  let _ : unit = (string_println : (string) -> unit)((Display::show : (Self) -> string)((none_number/6 : Option[int32]))) in
   ()
 }

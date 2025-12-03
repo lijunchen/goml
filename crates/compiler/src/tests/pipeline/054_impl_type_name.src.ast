@@ -24,17 +24,17 @@ impl TypeName for Shape {
   fn type_name(self: Self) -> string {
       match self {
           Unit => "Unit",
-          Location(point) => "Shape::" + type_name(point),
+          Location(point) => "Shape::" + TypeName::type_name(point),
       }
   }
 }
 
 fn show_point(point: Point) -> string {
-    type_name(point)
+    TypeName::type_name(point)
 }
 
 fn show_shape(shape: Shape) -> string {
-    type_name(shape)
+    TypeName::type_name(shape)
 }
 
 fn main() -> unit {
