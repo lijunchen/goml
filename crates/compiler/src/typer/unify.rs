@@ -991,6 +991,20 @@ impl Typer {
                     astptr,
                 }
             }
+            tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                let ty = self.subst_ty(diagnostics, &ty);
+                tast::Expr::ETraitMethod {
+                    trait_name,
+                    method_name,
+                    ty: ty.clone(),
+                    astptr,
+                }
+            }
         }
     }
 }

@@ -449,6 +449,12 @@ pub enum Expr {
         ty: Ty,
         resolution: BinaryResolution,
     },
+    ETraitMethod {
+        trait_name: Ident,
+        method_name: Ident,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
 }
 
 impl Expr {
@@ -469,6 +475,7 @@ impl Expr {
             Self::EProj { ty, .. } => ty.clone(),
             Self::EField { ty, .. } => ty.clone(),
             Self::EBinary { ty, .. } => ty.clone(),
+            Self::ETraitMethod { ty, .. } => ty.clone(),
         }
     }
 }

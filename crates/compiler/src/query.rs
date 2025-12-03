@@ -222,6 +222,19 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
             }
             None
         }
+        tast::Expr::ETraitMethod {
+            trait_name: _,
+            method_name: _,
+            ty: _,
+            astptr,
+        } => {
+            if let Some(astptr) = astptr
+                && astptr.text_range().contains_range(*range)
+            {
+                return Some(tast.get_ty().to_pretty(80));
+            }
+            None
+        }
     }
 }
 
@@ -453,6 +466,11 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             }
             find_expr_in_expr(inner, ptr)
         }
+        tast::Expr::ETraitMethod {
+            astptr: Some(astptr),
+            ..
+        } if astptr == ptr => Some(expr),
+        tast::Expr::ETraitMethod { .. } => None,
     }
 }
 

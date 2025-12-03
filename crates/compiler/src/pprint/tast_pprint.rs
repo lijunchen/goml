@@ -471,6 +471,18 @@ impl Expr {
                 .to_doc(genv)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field_name.clone())),
+            Self::ETraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                ..
+            } => RcDoc::text("(")
+                .append(RcDoc::text(trait_name.0.clone()))
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(method_name.0.clone()))
+                .append(RcDoc::text(" : "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
         }
     }
 

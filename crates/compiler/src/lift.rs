@@ -23,7 +23,6 @@ pub struct GlobalLiftEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
     pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
     pub funcs: IndexMap<String, tast::Ty>,
@@ -37,7 +36,6 @@ impl GlobalLiftEnv {
             enums: genv.enums,
             structs: genv.structs,
             trait_defs: genv.trait_defs,
-            overloaded_funcs_to_trait_name: genv.overloaded_funcs_to_trait_name,
             trait_impls: genv.trait_impls,
             inherent_impls: genv.inherent_impls,
             funcs: genv

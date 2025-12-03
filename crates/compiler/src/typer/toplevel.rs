@@ -86,9 +86,6 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
         ret_ty,
     } in trait_def.method_sigs.iter()
     {
-        genv.overloaded_funcs_to_trait_name
-            .insert(method_name.0.clone(), trait_def.name.clone());
-
         let param_tys = params
             .iter()
             .map(|ast_ty| tast::Ty::from_ast(genv, ast_ty, &[]))
