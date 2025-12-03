@@ -6,8 +6,8 @@ use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     core,
     env::{
-        EnumDef, ExternFunc, ExternType, FnScheme, Gensym, GlobalTypeEnv, ImplDef, StructDef,
-        TraitDef,
+        EnumDef, ExternFunc, ExternType, FnOrigin, FnScheme, Gensym, GlobalTypeEnv, ImplDef,
+        StructDef, TraitDef,
     },
     mangle::{decode_ty, encode_ty, mangle_inherent_name},
     tast::{self, Ty},
@@ -758,6 +758,7 @@ fn transform_closure(
             type_params: vec![],
             constraints: (),
             ty: apply_fn_ty,
+            origin: FnOrigin::Compiler,
         },
     );
 

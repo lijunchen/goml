@@ -7,7 +7,7 @@ use indexmap::IndexMap;
 use parser::{Diagnostic, Diagnostics};
 
 use crate::{
-    env::{self, FnScheme, GlobalTypeEnv, LocalTypeEnv},
+    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, LocalTypeEnv},
     mangle::encode_ty,
     rename,
     tast::{self},
@@ -104,6 +104,7 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
                 type_params: vec![],
                 constraints: (),
                 ty: fn_ty,
+                origin: FnOrigin::User,
             },
         );
     }
@@ -278,6 +279,7 @@ fn define_trait_impl(
                     type_params: vec![],
                     constraints: (),
                     ty: impl_method_ty,
+                    origin: FnOrigin::User,
                 },
             );
         }
@@ -366,6 +368,7 @@ fn define_inherent_impl(
                 type_params: vec![],
                 constraints: (),
                 ty: impl_method_ty,
+                origin: FnOrigin::User,
             },
         );
     }
@@ -404,6 +407,7 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
                 params,
                 ret_ty: Box::new(ret),
             },
+            origin: FnOrigin::User,
         },
     );
 }

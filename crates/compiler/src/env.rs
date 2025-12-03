@@ -55,11 +55,25 @@ pub enum Constraint {
     },
 }
 
+/// Origin of a function definition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum FnOrigin {
+    /// User-defined function in source code
+    #[default]
+    User,
+    /// Built-in function provided by the runtime
+    Builtin,
+    /// Compiler-generated function (e.g., from lambda lifting)
+    Compiler,
+}
+
 #[derive(Debug, Clone)]
 pub struct FnScheme {
     pub type_params: Vec<String>,
     pub constraints: (), // placeholder for future use
     pub ty: tast::Ty,
+    /// Origin of this function (user-defined, builtin, or compiler-generated)
+    pub origin: FnOrigin,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -180,6 +194,7 @@ impl GlobalTypeEnv {
                 type_params: vec![],
                 constraints: (),
                 ty: ty.clone(),
+                origin: FnOrigin::User,
             },
         );
         self.record_extern_type_usage(&ty, &package_path);

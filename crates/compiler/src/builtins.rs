@@ -1,6 +1,6 @@
 use indexmap::IndexMap;
 
-use crate::{env::FnScheme, mangle::encode_ty, tast};
+use crate::{env::FnScheme, env::FnOrigin, mangle::encode_ty, tast};
 
 pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
     let mut funcs = IndexMap::new();
@@ -12,6 +12,7 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
             params,
             ret_ty: Box::new(ret),
         },
+        origin: FnOrigin::Builtin,
     };
 
     funcs.insert(
@@ -484,6 +485,7 @@ pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef
             type_params: vec![],
             constraints: (),
             ty: method_ty,
+            origin: FnOrigin::Builtin,
         },
     );
     impls.insert(encode_ty(&int32_ty), int32_impl);
