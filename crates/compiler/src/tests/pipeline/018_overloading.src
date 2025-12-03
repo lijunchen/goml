@@ -35,13 +35,13 @@ trait Output {
 
 impl Output for int32 {
     fn output(self: int32) -> unit {
-        string_println(to_string(self))
+        string_println(ToString::to_string(self))
     }
 }
 
 impl Output for bool {
     fn output(self: bool) -> unit {
-        string_println(to_string(self))
+        string_println(ToString::to_string(self))
     }
 }
 
@@ -52,13 +52,13 @@ fn id[T](x: T) -> T {
 fn main() {
     let a = id(1);
     let b = id(2);
-    let c = add(a, b);
-    let _ = output(c);
+    let c = Arith::add(a, b);
+    let _ = Output::output(c);
 
     let a = id(3);
     let b = id(4);
-    let c = less(a, b);
-    let _ = output(c);
+    let c = Arith::less(a, b);
+    let _ = Output::output(c);
 
     let _ = id("abc");
     let _ = id(true);

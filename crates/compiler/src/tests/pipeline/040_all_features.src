@@ -125,7 +125,7 @@ fn build_counter(label: string, start: int32) -> (Tracker, () -> Record[int32], 
 
 fn main() {
     let (tracker, snapshot, bump, flip) = build_counter("goml", 2);
-    let tracker_info = describe(tracker);
+    let tracker_info = Describe::describe(tracker);
     let first_record = snapshot();
     let bumped_record = bump(5);
     let flipped_record = flip();
@@ -141,9 +141,9 @@ fn main() {
     let second_result = array_get(results, 1);
     let order_check = int32_less(first_result, second_result) && true;
 
-    let first_text = describe(first_record);
-    let bumped_text = describe(bumped_record);
-    let flipped_text = describe(flipped_record);
+    let first_text = Describe::describe(first_record);
+    let bumped_text = Describe::describe(bumped_record);
+    let flipped_text = Describe::describe(flipped_record);
 
     let summary = match stringified {
         Some(text) => "Snapshot: " + text,
