@@ -3,12 +3,12 @@ use std::collections::HashSet;
 use ::ast::ast::{Ident, StructDef, TraitMethodSignature};
 use ast::ast;
 use diagnostics::{Severity, Stage};
+use indexmap::IndexMap;
 use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     env::{self, FnScheme, GlobalTypeEnv, LocalTypeEnv},
     mangle::encode_ty,
-    mangle::mangle_inherent_name,
     rename,
     tast::{self},
     typer::{
@@ -80,6 +80,8 @@ fn define_struct(
 }
 
 fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
+    let mut methods = IndexMap::new();
+
     for TraitMethodSignature {
         name: method_name,
         params,
@@ -96,9 +98,18 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
             ret_ty: Box::new(ret_ty),
         };
 
-        genv.trait_defs
-            .insert((trait_def.name.0.clone(), method_name.0.clone()), fn_ty);
+        methods.insert(
+            method_name.0.clone(),
+            FnScheme {
+                type_params: vec![],
+                constraints: (),
+                ty: fn_ty,
+            },
+        );
     }
+
+    genv.trait_defs
+        .insert(trait_def.name.0.clone(), env::TraitDef { methods });
 }
 
 fn define_trait_impl(
@@ -111,31 +122,26 @@ fn define_trait_impl(
     let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
     let trait_name_str = trait_name.0.clone();
-    let trait_method_names: HashSet<String> = genv
-        .trait_defs
-        .keys()
-        .filter_map(|(t_name, method_name)| {
-            if t_name == &trait_name_str {
-                Some(method_name.clone())
-            } else {
-                None
-            }
-        })
-        .collect();
 
-    if trait_method_names.is_empty() {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            format!(
-                "Trait {} is not defined, cannot implement it for {:?}",
-                trait_name_str, for_ty
-            ),
-        ));
-        return;
-    }
+    let trait_def = match genv.trait_defs.get(&trait_name_str) {
+        Some(def) => def.clone(),
+        None => {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {} is not defined, cannot implement it for {:?}",
+                    trait_name_str, for_ty
+                ),
+            ));
+            return;
+        }
+    };
+
+    let trait_method_names: HashSet<String> = trait_def.methods.keys().cloned().collect();
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
+    let mut impl_methods: IndexMap<String, tast::Ty> = IndexMap::new();
 
     for m in impl_block.methods.iter() {
         let method_name = m.name.clone();
@@ -165,10 +171,10 @@ fn define_trait_impl(
             continue;
         }
 
-        let trait_sig = genv
-            .trait_defs
-            .get(&(trait_name_str.clone(), method_name_str.clone()))
-            .cloned()
+        let trait_sig = trait_def
+            .methods
+            .get(&method_name_str)
+            .map(|scheme| scheme.ty.clone())
             .expect("trait method signature to exist");
 
         let tparam_names = type_param_name_set(&m.generics);
@@ -266,10 +272,7 @@ fn define_trait_impl(
         }
 
         if method_ok {
-            genv.trait_impls.insert(
-                (trait_name_str.clone(), encode_ty(&for_ty), method_name),
-                impl_method_ty,
-            );
+            impl_methods.insert(method_name_str.clone(), impl_method_ty);
         }
     }
 
@@ -285,6 +288,16 @@ fn define_trait_impl(
             ));
         }
     }
+
+    // Insert the impl block
+    let key = (trait_name_str, encode_ty(&for_ty));
+    genv.trait_impls.insert(
+        key,
+        env::ImplDef {
+            params: vec![],
+            methods: impl_methods,
+        },
+    );
 }
 
 fn define_inherent_impl(
@@ -295,6 +308,9 @@ fn define_inherent_impl(
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
+
+    let encoded_ty = encode_ty(&for_ty);
+    let mut methods_to_add: IndexMap<String, tast::Ty> = IndexMap::new();
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
@@ -337,19 +353,12 @@ fn define_inherent_impl(
             ret_ty: Box::new(ret.clone()),
         };
 
-        let mangled_name = mangle_inherent_name(&for_ty, &method_name_str);
-        let key = (encode_ty(&for_ty), method_name.clone());
-        genv.funcs.insert(
-            mangled_name.clone(),
-            FnScheme {
-                type_params: vec![],
-                constraints: (),
-                ty: impl_method_ty.clone(),
-            },
-        );
-        genv.inherent_impls
-            .insert(key, (mangled_name, impl_method_ty));
+        methods_to_add.insert(method_name_str, impl_method_ty);
     }
+
+    // Insert or extend the impl def
+    let impl_def = genv.inherent_impls.entry(encoded_ty).or_default();
+    impl_def.methods.extend(methods_to_add);
 }
 
 fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func: &ast::Fn) {

@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     core,
-    env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, StructDef},
+    env::{EnumDef, ExternFunc, ExternType, Gensym, GlobalTypeEnv, ImplDef, StructDef, TraitDef},
     mangle::{decode_ty, encode_ty, mangle_inherent_name},
     tast::{self, Ty},
 };
@@ -22,9 +22,9 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 pub struct GlobalLiftEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
-    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub trait_defs: IndexMap<String, TraitDef>,
+    pub trait_impls: IndexMap<(String, String), ImplDef>,
+    pub inherent_impls: IndexMap<String, ImplDef>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
@@ -746,12 +746,12 @@ fn transform_closure(
         .funcs
         .insert(apply_fn_name.clone(), apply_fn_ty.clone());
 
-    // Register as inherent method: (encoded_env_ty, "apply") -> (apply_fn_name, apply_fn_ty)
-    let key = (encode_ty(&env_ty), Ident::new(CLOSURE_APPLY_METHOD));
-    state
-        .liftenv
-        .inherent_impls
-        .insert(key, (apply_fn_name, apply_fn_ty));
+    // Register as inherent method: encoded_env_ty -> ImplDef with apply method
+    let encoded_ty = encode_ty(&env_ty);
+    let impl_def = state.liftenv.inherent_impls.entry(encoded_ty).or_default();
+    impl_def
+        .methods
+        .insert(CLOSURE_APPLY_METHOD.to_string(), apply_fn_ty);
 
     LiftExpr::EConstr {
         constructor: Constructor::Struct(StructConstructor {

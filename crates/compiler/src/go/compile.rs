@@ -3,10 +3,10 @@ use ast::ast::Ident;
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, ExternFunc, ExternType, Gensym, StructDef},
+    env::{EnumDef, ExternFunc, ExternType, Gensym, ImplDef, StructDef, TraitDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     lift::is_closure_env_struct,
-    mangle::encode_ty,
+    mangle::{encode_ty, mangle_inherent_name},
     tast::{self},
 };
 
@@ -20,9 +20,9 @@ use super::runtime;
 pub struct GlobalGoEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
-    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub trait_defs: IndexMap<String, TraitDef>,
+    pub trait_impls: IndexMap<(String, String), ImplDef>,
+    pub inherent_impls: IndexMap<String, ImplDef>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
@@ -50,8 +50,8 @@ impl GlobalGoEnv {
         &self.structs
     }
 
-    /// Lookup the apply method for a closure environment struct via inherent_impls.
-    pub fn closure_apply_method(&self, closure_ty: &tast::Ty) -> Option<(String, tast::Ty)> {
+    /// Lookup the apply method type for a closure environment struct via inherent_impls.
+    pub fn closure_apply_method(&self, closure_ty: &tast::Ty) -> Option<tast::Ty> {
         let tast::Ty::TStruct { name } = closure_ty else {
             return None;
         };
@@ -61,8 +61,11 @@ impl GlobalGoEnv {
                 closure_ty
             );
         }
-        let key = (encode_ty(closure_ty), Ident::new("apply"));
-        self.inherent_impls.get(&key).cloned()
+        let encoded_ty = encode_ty(closure_ty);
+        self.inherent_impls
+            .get(&encoded_ty)
+            .and_then(|impl_def| impl_def.methods.get("apply"))
+            .cloned()
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
@@ -1181,7 +1184,7 @@ fn compile_spawn_call(
 
 fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
     // Look up the apply method via inherent_impls
-    let (apply_name, fn_ty) = goenv.closure_apply_method(closure_ty)?;
+    let fn_ty = goenv.closure_apply_method(closure_ty)?;
 
     let tast::Ty::TFunc { params, ret_ty } = &fn_ty else {
         return None;
@@ -1190,6 +1193,8 @@ fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<C
     if params.first()? != closure_ty {
         return None;
     }
+
+    let apply_name = mangle_inherent_name(closure_ty, "apply");
 
     Some(ClosureApplyFn {
         name: apply_name,

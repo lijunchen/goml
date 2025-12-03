@@ -1,6 +1,6 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::Ty;
-use crate::env::{EnumDef, ExternFunc, ExternType, StructDef};
+use crate::env::{EnumDef, ExternFunc, ExternType, ImplDef, StructDef, TraitDef};
 use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
 use crate::tast::{self};
@@ -151,9 +151,9 @@ pub struct MonoArm {
 pub struct GlobalMonoEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
-    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub trait_defs: IndexMap<String, TraitDef>,
+    pub trait_impls: IndexMap<(String, String), ImplDef>,
+    pub inherent_impls: IndexMap<String, ImplDef>,
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,

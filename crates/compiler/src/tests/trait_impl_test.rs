@@ -6,7 +6,6 @@ use parser::{Diagnostics, syntax::MySyntaxNode};
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
     mangle::encode_ty,
-    mangle::mangle_inherent_name,
     tast,
 };
 
@@ -199,24 +198,14 @@ impl Point {
     let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
     };
-    let new_ident = ::ast::ast::Ident("new".to_string());
-    let origin_ident = ::ast::ast::Ident("origin".to_string());
-
-    let new_name = mangle_inherent_name(&point_ty, "new");
-    let origin_name = mangle_inherent_name(&point_ty, "origin");
-
-    assert!(genv.funcs.contains_key(&new_name));
-    assert!(genv.funcs.contains_key(&origin_name));
 
     let encoded = encode_ty(&point_ty);
-    assert!(
-        genv.inherent_impls
-            .contains_key(&(encoded.clone(), new_ident.clone()))
-    );
-    assert!(
-        genv.inherent_impls
-            .contains_key(&(encoded, origin_ident.clone()))
-    );
+    let impl_def = genv
+        .inherent_impls
+        .get(&encoded)
+        .expect("inherent impl exists");
+    assert!(impl_def.methods.contains_key("new"));
+    assert!(impl_def.methods.contains_key("origin"));
 }
 
 #[test]
@@ -242,18 +231,16 @@ impl Point {
         name: "Point".to_string(),
     };
     let encoded = encode_ty(&point_ty);
-    let copy_ident = ::ast::ast::Ident("copy".to_string());
 
-    let (copy_mangled, copy_ty) = genv
+    let impl_def = genv
         .inherent_impls
-        .get(&(encoded.clone(), copy_ident.clone()))
-        .expect("copy method registered");
+        .get(&encoded)
+        .expect("inherent impl registered");
 
-    assert_eq!(
-        copy_mangled,
-        &mangle_inherent_name(&point_ty, "copy"),
-        "unexpected mangled name for copy",
-    );
+    let copy_ty = impl_def
+        .methods
+        .get("copy")
+        .expect("copy method registered");
 
     match copy_ty {
         tast::Ty::TFunc { params, ret_ty } => {
@@ -270,12 +257,6 @@ impl Point {
         }
         other => panic!("expected copy to have function type, found {:?}", other),
     }
-
-    let copy_func_scheme = genv
-        .funcs
-        .get(copy_mangled)
-        .expect("copy function registered in funcs");
-    assert_eq!(&copy_func_scheme.ty, copy_ty);
 
     let impl_block = tast_file
         .toplevels
@@ -298,10 +279,9 @@ impl Point {
     assert_eq!(copy_fn.params[1].1, point_ty.clone());
     assert_eq!(copy_fn.ret_ty, point_ty.clone());
 
-    let origin_ident = ::ast::ast::Ident("origin".to_string());
-    let (_, origin_ty) = genv
-        .inherent_impls
-        .get(&(encoded, origin_ident))
+    let origin_ty = impl_def
+        .methods
+        .get("origin")
         .expect("origin method registered");
 
     match origin_ty {

@@ -1551,6 +1551,17 @@ fn compile_expr(
                     name: mangle_impl_name(trait_name, &for_ty, &method_name.0),
                     ty: method_ty.clone(),
                 }
+            } else if let tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty: method_ty,
+                ..
+            } = func.as_ref()
+            {
+                core::Expr::EVar {
+                    name: mangle_inherent_name(receiver_ty, &method_name.0),
+                    ty: method_ty.clone(),
+                }
             } else {
                 compile_expr(func, genv, gensym, diagnostics)
             };
@@ -1566,6 +1577,14 @@ fn compile_expr(
             // If it appears standalone, we can't resolve the implementation without knowing the self type
             panic!(
                 "ETraitMethod should only appear as the function in ECall, not standalone. Type: {:?}",
+                ty
+            );
+        }
+        EInherentMethod { ty, .. } => {
+            // EInherentMethod should only appear as the func of ECall
+            // If it appears standalone, we can't resolve the implementation without knowing the self type
+            panic!(
+                "EInherentMethod should only appear as the function in ECall, not standalone. Type: {:?}",
                 ty
             );
         }

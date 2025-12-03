@@ -319,10 +319,11 @@ impl Typer {
         } else {
             panic!("Type or trait {} not found for member access", type_name.0);
         };
-        if let Some((mangled_name, method_ty)) = genv.lookup_inherent_method(&receiver_ty, member) {
+        if let Some(method_ty) = genv.lookup_inherent_method(&receiver_ty, member) {
             let inst_ty = self.inst_ty(&method_ty);
-            tast::Expr::EVar {
-                name: mangled_name,
+            tast::Expr::EInherentMethod {
+                receiver_ty: receiver_ty.clone(),
+                method_name: member.clone(),
                 ty: inst_ty,
                 astptr: Some(*astptr),
             }
@@ -938,12 +939,12 @@ impl Typer {
                 field,
                 ..
             } => {
-                if let Some((receiver_tast, receiver_ty, mangled_name, method_ty)) = {
+                if let Some((receiver_tast, receiver_ty, method_ty)) = {
                     let receiver_tast =
                         self.infer_expr(genv, local_env, diagnostics, receiver_expr);
                     let receiver_ty = receiver_tast.get_ty();
                     genv.lookup_inherent_method(&receiver_ty, field)
-                        .map(|(name, ty)| (receiver_tast, receiver_ty, name, ty))
+                        .map(|ty| (receiver_tast, receiver_ty, ty))
                 } {
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
                     let mut arg_types = Vec::with_capacity(args.len() + 1);
@@ -967,8 +968,9 @@ impl Typer {
                     ));
 
                     tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: mangled_name,
+                        func: Box::new(tast::Expr::EInherentMethod {
+                            receiver_ty: receiver_ty.clone(),
+                            method_name: field.clone(),
                             ty: inst_method_ty,
                             astptr: None,
                         }),
@@ -1034,9 +1036,7 @@ impl Typer {
                 } else {
                     panic!("Type or trait {} not found for member access", type_name.0);
                 };
-                if let Some((mangled_name, method_ty)) =
-                    genv.lookup_inherent_method(&receiver_ty, member)
-                {
+                if let Some(method_ty) = genv.lookup_inherent_method(&receiver_ty, member) {
                     let inst_method_ty = self.inst_ty(&method_ty);
                     if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
                         if params.len() != args.len() {
@@ -1056,8 +1056,9 @@ impl Typer {
                         }
 
                         tast::Expr::ECall {
-                            func: Box::new(tast::Expr::EVar {
-                                name: mangled_name,
+                            func: Box::new(tast::Expr::EInherentMethod {
+                                receiver_ty: receiver_ty.clone(),
+                                method_name: member.clone(),
                                 ty: inst_method_ty,
                                 astptr: Some(*astptr),
                             }),

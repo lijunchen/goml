@@ -1005,6 +1005,21 @@ impl Typer {
                     astptr,
                 }
             }
+            tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                let receiver_ty = self.subst_ty(diagnostics, &receiver_ty);
+                let ty = self.subst_ty(diagnostics, &ty);
+                tast::Expr::EInherentMethod {
+                    receiver_ty,
+                    method_name,
+                    ty,
+                    astptr,
+                }
+            }
         }
     }
 }
