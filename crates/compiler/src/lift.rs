@@ -29,7 +29,6 @@ pub struct GlobalLiftEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
 }
@@ -50,7 +49,6 @@ impl GlobalLiftEnv {
                 .collect(),
             extern_funcs: genv.extern_funcs,
             extern_types: genv.extern_types,
-            tuple_types: genv.tuple_types,
             array_types: genv.array_types,
             ref_types: genv.ref_types,
         }

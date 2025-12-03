@@ -158,7 +158,6 @@ pub struct GlobalMonoEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
 }
@@ -175,7 +174,6 @@ impl GlobalMonoEnv {
             funcs: liftenv.funcs,
             extern_funcs: liftenv.extern_funcs,
             extern_types: liftenv.extern_types,
-            tuple_types: liftenv.tuple_types,
             array_types: liftenv.array_types,
             ref_types: liftenv.ref_types,
         }
@@ -215,9 +213,8 @@ impl GlobalMonoEnv {
         self.structs.retain(f);
     }
 
-    pub fn record_tuple_types_from_mono(&mut self, file: &MonoFile) {
+    pub fn record_runtime_types_from_mono(&mut self, file: &MonoFile) {
         struct TypeCollector {
-            tuples: IndexSet<tast::Ty>,
             arrays: IndexSet<tast::Ty>,
             refs: IndexSet<tast::Ty>,
         }
@@ -225,20 +222,16 @@ impl GlobalMonoEnv {
         impl TypeCollector {
             fn new() -> Self {
                 Self {
-                    tuples: IndexSet::new(),
                     arrays: IndexSet::new(),
                     refs: IndexSet::new(),
                 }
             }
 
-            fn finish(
-                mut self,
-                file: &MonoFile,
-            ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+            fn finish(mut self, file: &MonoFile) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
                 for item in &file.toplevels {
                     self.collect_fn(item);
                 }
-                (self.tuples, self.arrays, self.refs)
+                (self.arrays, self.refs)
             }
 
             fn collect_fn(&mut self, item: &MonoFn) {
@@ -335,10 +328,8 @@ impl GlobalMonoEnv {
             fn collect_type(&mut self, ty: &tast::Ty) {
                 match ty {
                     tast::Ty::TTuple { typs } => {
-                        if self.tuples.insert(ty.clone()) {
-                            for inner in typs {
-                                self.collect_type(inner);
-                            }
+                        for inner in typs {
+                            self.collect_type(inner);
                         }
                     }
                     tast::Ty::TArray { elem, .. } => {
@@ -369,8 +360,7 @@ impl GlobalMonoEnv {
             }
         }
 
-        let (tuples, arrays, refs) = TypeCollector::new().finish(file);
-        self.tuple_types = tuples;
+        let (arrays, refs) = TypeCollector::new().finish(file);
         self.array_types = arrays;
         self.ref_types = refs;
     }
@@ -1144,6 +1134,6 @@ pub fn mono(liftenv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv)
     m.monoenv.retain_structs(|_n, def| def.generics.is_empty());
 
     let result = MonoFile { toplevels: new_fns };
-    m.monoenv.record_tuple_types_from_mono(&result);
+    m.monoenv.record_runtime_types_from_mono(&result);
     (result, monoenv)
 }
