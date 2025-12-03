@@ -1534,23 +1534,25 @@ fn compile_expr(
             }
         }
         ECall { func, args, ty } => {
-            let core_func = compile_expr(func, genv, gensym, diagnostics);
             let args = args
                 .iter()
                 .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect::<Vec<_>>();
 
-            let func_expr = if let tast::Expr::EVar { name, .. } = func.as_ref()
-                && genv.overloaded_funcs_to_trait_name.contains_key(name)
+            let func_expr = if let tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ty: method_ty,
+                ..
+            } = func.as_ref()
             {
-                let trait_name = genv.overloaded_funcs_to_trait_name[name].clone();
                 let for_ty = args[0].get_ty();
                 core::Expr::EVar {
-                    name: mangle_impl_name(&trait_name, &for_ty, name),
-                    ty: core_func.get_ty(),
+                    name: mangle_impl_name(trait_name, &for_ty, &method_name.0),
+                    ty: method_ty.clone(),
                 }
             } else {
-                core_func
+                compile_expr(func, genv, gensym, diagnostics)
             };
 
             core::Expr::ECall {
@@ -1558,6 +1560,14 @@ fn compile_expr(
                 args,
                 ty: ty.clone(),
             }
+        }
+        ETraitMethod { ty, .. } => {
+            // ETraitMethod should only appear as the func of ECall
+            // If it appears standalone, we can't resolve the implementation without knowing the self type
+            panic!(
+                "ETraitMethod should only appear as the function in ECall, not standalone. Type: {:?}",
+                ty
+            );
         }
         EProj { tuple, index, ty } => {
             let tuple = compile_expr(tuple, genv, gensym, diagnostics);

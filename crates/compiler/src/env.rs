@@ -67,7 +67,6 @@ pub struct GlobalTypeEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
     pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
     pub funcs: IndexMap<String, FnScheme>,
@@ -90,10 +89,23 @@ impl GlobalTypeEnv {
             extern_funcs: IndexMap::new(),
             extern_types: IndexMap::new(),
             trait_defs: IndexMap::new(),
-            overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
             inherent_impls: builtin_inherent_methods(),
         }
+    }
+
+    /// Check if a name is a trait
+    pub fn is_trait(&self, name: &str) -> bool {
+        self.trait_defs
+            .keys()
+            .any(|(trait_name, _)| trait_name == name)
+    }
+
+    /// Lookup a trait method by trait name and method name
+    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
+        self.trait_defs
+            .get(&(trait_name.0.clone(), method_name.0.clone()))
+            .cloned()
     }
 
     pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {

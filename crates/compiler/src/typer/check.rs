@@ -8,7 +8,7 @@ use crate::common::{self, Prim};
 use crate::{
     env::{Constraint, GlobalTypeEnv, LocalTypeEnv},
     tast::{self},
-    typer::{Typer, util::binary_supports_builtin},
+    typer::Typer,
 };
 
 impl Typer {
@@ -296,6 +296,18 @@ impl Typer {
         member: &Ident,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
+        // First check if type_name is a trait
+        if let Some(method_ty) = genv.lookup_trait_method(type_name, member) {
+            let inst_ty = self.inst_ty(&method_ty);
+            return tast::Expr::ETraitMethod {
+                trait_name: type_name.clone(),
+                method_name: member.clone(),
+                ty: inst_ty,
+                astptr: Some(*astptr),
+            };
+        }
+
+        // Check if type_name is an enum or struct for inherent method lookup
         let receiver_ty = if genv.enums().contains_key(type_name) {
             tast::Ty::TEnum {
                 name: type_name.0.clone(),
@@ -305,7 +317,7 @@ impl Typer {
                 name: type_name.0.clone(),
             }
         } else {
-            panic!("Type {} not found for member access", type_name.0);
+            panic!("Type or trait {} not found for member access", type_name.0);
         };
         if let Some((mangled_name, method_ty)) = genv.lookup_inherent_method(&receiver_ty, member) {
             let inst_ty = self.inst_ty(&method_ty);
@@ -896,29 +908,6 @@ impl Typer {
                         args: args_tast,
                         ty: ret_ty,
                     }
-                } else if let Some(trait_name) =
-                    genv.overloaded_funcs_to_trait_name.get(&name.0).cloned()
-                {
-                    let ret_ty = self.fresh_ty_var();
-                    let call_site_func_ty = tast::Ty::TFunc {
-                        params: arg_types,
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    self.push_constraint(Constraint::Overloaded {
-                        op: name.clone(),
-                        trait_name,
-                        call_site_type: call_site_func_ty.clone(),
-                    });
-
-                    tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: name.0.clone(),
-                            ty: call_site_func_ty.clone(),
-                            astptr: Some(*astptr),
-                        }),
-                        args: args_tast,
-                        ty: ret_ty,
-                    }
                 } else if let Some(var_ty) = local_env.lookup_var(name) {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
@@ -995,6 +984,45 @@ impl Typer {
                 member,
                 astptr,
             } => {
+                // First check if type_name is a trait
+                if let Some(method_ty) = genv.lookup_trait_method(type_name, member) {
+                    let inst_method_ty = self.inst_ty(&method_ty);
+
+                    // Infer all arguments
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, arg);
+                        arg_types.push(arg_tast.get_ty());
+                        args_tast.push(arg_tast);
+                    }
+
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+
+                    // Add overloaded constraint for trait method resolution
+                    self.push_constraint(Constraint::Overloaded {
+                        op: member.clone(),
+                        trait_name: type_name.clone(),
+                        call_site_type: call_site_func_ty.clone(),
+                    });
+
+                    return tast::Expr::ECall {
+                        func: Box::new(tast::Expr::ETraitMethod {
+                            trait_name: type_name.clone(),
+                            method_name: member.clone(),
+                            ty: inst_method_ty,
+                            astptr: Some(*astptr),
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
+                    };
+                }
+
+                // Otherwise check if type_name is an enum or struct for inherent method
                 let receiver_ty = if genv.enums().contains_key(type_name) {
                     tast::Ty::TEnum {
                         name: type_name.0.clone(),
@@ -1004,7 +1032,7 @@ impl Typer {
                         name: type_name.0.clone(),
                     }
                 } else {
-                    panic!("Type {} not found for member access", type_name.0);
+                    panic!("Type or trait {} not found for member access", type_name.0);
                 };
                 if let Some((mangled_name, method_ty)) =
                     genv.lookup_inherent_method(&receiver_ty, member)
@@ -1081,16 +1109,15 @@ impl Typer {
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
         let expr_ty = expr_tast.get_ty();
-        let method_name = op.method_name();
-        let builtin_expr = match op {
+        match op {
             ast::UnaryOp::Not => {
                 self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
-                Some(tast::Expr::EUnary {
+                tast::Expr::EUnary {
                     op,
-                    expr: Box::new(expr_tast.clone()),
+                    expr: Box::new(expr_tast),
                     ty: tast::Ty::TBool,
                     resolution: tast::UnaryResolution::Builtin,
-                })
+                }
             }
             ast::UnaryOp::Neg => {
                 let target_ty = if is_numeric_ty(&expr_ty) {
@@ -1099,42 +1126,13 @@ impl Typer {
                     tast::Ty::TInt32
                 };
                 self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
-                Some(tast::Expr::EUnary {
+                tast::Expr::EUnary {
                     op,
-                    expr: Box::new(expr_tast.clone()),
+                    expr: Box::new(expr_tast),
                     ty: target_ty,
                     resolution: tast::UnaryResolution::Builtin,
-                })
+                }
             }
-        };
-
-        if let Some(expr) = builtin_expr {
-            return expr;
-        }
-
-        if let Some(trait_name) = genv
-            .overloaded_funcs_to_trait_name
-            .get(method_name)
-            .cloned()
-        {
-            let ret_ty = self.fresh_ty_var();
-            let call_site_type = tast::Ty::TFunc {
-                params: vec![expr_ty.clone()],
-                ret_ty: Box::new(ret_ty.clone()),
-            };
-            self.push_constraint(Constraint::Overloaded {
-                op: ast::Ident(method_name.to_string()),
-                trait_name: trait_name.clone(),
-                call_site_type,
-            });
-            tast::Expr::EUnary {
-                op,
-                expr: Box::new(expr_tast),
-                ty: ret_ty,
-                resolution: tast::UnaryResolution::Overloaded { trait_name },
-            }
-        } else {
-            panic!("Unsupported unary operator {:?}", op);
         }
     }
 
@@ -1151,32 +1149,6 @@ impl Typer {
         let rhs_tast = self.infer_expr(genv, local_env, diagnostics, rhs);
         let lhs_ty = lhs_tast.get_ty();
         let rhs_ty = rhs_tast.get_ty();
-        let method_name = op.method_name();
-
-        if let Some(trait_name) = genv
-            .overloaded_funcs_to_trait_name
-            .get(method_name)
-            .cloned()
-            && !binary_supports_builtin(op, &lhs_ty, &rhs_ty)
-        {
-            let ret_ty = self.fresh_ty_var();
-            let call_site_type = tast::Ty::TFunc {
-                params: vec![lhs_ty.clone(), rhs_ty.clone()],
-                ret_ty: Box::new(ret_ty.clone()),
-            };
-            self.push_constraint(Constraint::Overloaded {
-                op: ast::Ident(method_name.to_string()),
-                trait_name: trait_name.clone(),
-                call_site_type,
-            });
-            return tast::Expr::EBinary {
-                op,
-                lhs: Box::new(lhs_tast),
-                rhs: Box::new(rhs_tast),
-                ty: ret_ty,
-                resolution: tast::BinaryResolution::Overloaded { trait_name },
-            };
-        }
 
         let ret_ty = match op {
             ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
