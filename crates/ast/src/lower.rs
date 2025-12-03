@@ -342,7 +342,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
             Some(ast::TypeExpr::TTuple { typs })
         }
         cst::Type::TAppTy(it) => {
-            let name = it.uident().unwrap().to_string();
+            let name = it.path()?.ident_tokens().last()?.to_string();
             let args: Vec<ast::TypeExpr> = it
                 .type_param_list()
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
@@ -1139,7 +1139,7 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            let name = it.uident()?.to_string();
+            let name = it.path()?.ident_tokens().last()?.to_string();
             let fields = it
                 .field_list()
                 .map(|list| {
@@ -1354,7 +1354,8 @@ fn lower_expr_with_args(
                         })
                     }
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let Some(token) = ident_expr.ident_token() else {
+                        let Some(token) = ident_expr.path().and_then(|p| p.ident_tokens().last())
+                        else {
                             ctx.push_error(
                                 Some(ident_expr.syntax().text_range()),
                                 "Field access missing name",
@@ -1599,7 +1600,13 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::ConstrPat(it) => {
             if let Some(field_list) = it.field_list() {
-                let name = it.uident().unwrap().to_string();
+                let name = it
+                    .path()
+                    .unwrap()
+                    .ident_tokens()
+                    .last()
+                    .unwrap()
+                    .to_string();
                 let mut fields = Vec::new();
                 for field in field_list.fields() {
                     let Some(fname_token) = field.lident() else {
@@ -1656,8 +1663,6 @@ fn lower_constructor_path_from_ident_expr(
 ) -> Option<ast::Path> {
     if let Some(path) = expr.path() {
         lower_path(ctx, &path)
-    } else if let Some(token) = expr.ident_token() {
-        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
         ctx.push_error(
             Some(expr.syntax().text_range()),
@@ -1673,8 +1678,6 @@ fn lower_constructor_path_from_constr_pat(
 ) -> Option<ast::Path> {
     if let Some(path) = pat.path() {
         lower_path(ctx, &path)
-    } else if let Some(token) = pat.uident() {
-        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
     } else {
         ctx.push_error(
             Some(pat.syntax().text_range()),
