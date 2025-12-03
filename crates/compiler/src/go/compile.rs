@@ -27,8 +27,6 @@ pub struct GlobalGoEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub array_types: IndexSet<tast::Ty>,
-    pub ref_types: IndexSet<tast::Ty>,
 }
 
 impl GlobalGoEnv {
@@ -43,8 +41,6 @@ impl GlobalGoEnv {
             funcs: anfenv.funcs,
             extern_funcs: anfenv.extern_funcs,
             extern_types: anfenv.extern_types,
-            array_types: anfenv.array_types,
-            ref_types: anfenv.ref_types,
         }
     }
 
@@ -500,17 +496,24 @@ fn instantiate_struct_fields(
         .collect()
 }
 
-fn collect_tuple_types(file: &anf::File) -> IndexSet<tast::Ty> {
+fn collect_runtime_types(
+    file: &anf::File,
+) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
+        arrays: IndexSet<tast::Ty>,
+        refs: IndexSet<tast::Ty>,
     }
 
     impl Collector {
-        fn collect_file(mut self, file: &anf::File) -> IndexSet<tast::Ty> {
+        fn collect_file(
+            mut self,
+            file: &anf::File,
+        ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
             for item in &file.toplevels {
                 self.collect_fn(item);
             }
-            self.tuples
+            (self.tuples, self.arrays, self.refs)
         }
 
         fn collect_fn(&mut self, item: &anf::Fn) {
@@ -613,8 +616,15 @@ fn collect_tuple_types(file: &anf::File) -> IndexSet<tast::Ty> {
                         }
                     }
                 }
-                tast::Ty::TArray { elem, .. } | tast::Ty::TRef { elem } => {
-                    self.collect_type(elem);
+                tast::Ty::TArray { elem, .. } => {
+                    if self.arrays.insert(ty.clone()) {
+                        self.collect_type(elem);
+                    }
+                }
+                tast::Ty::TRef { elem } => {
+                    if self.refs.insert(ty.clone()) {
+                        self.collect_type(elem);
+                    }
                 }
                 tast::Ty::TApp { ty, args } => {
                     self.collect_type(ty);
@@ -635,6 +645,8 @@ fn collect_tuple_types(file: &anf::File) -> IndexSet<tast::Ty> {
 
     Collector {
         tuples: IndexSet::new(),
+        arrays: IndexSet::new(),
+        refs: IndexSet::new(),
     }
     .collect_file(file)
 }
@@ -1613,9 +1625,11 @@ pub fn go_file(
     let goenv = GlobalGoEnv::from_anf_env(anfenv);
     let mut all = Vec::new();
 
+    let (tuple_types, array_types, ref_types) = collect_runtime_types(&file);
+
     all.extend(runtime::make_runtime());
-    all.extend(runtime::make_array_runtime(&goenv.array_types));
-    all.extend(runtime::make_ref_runtime(&goenv.ref_types));
+    all.extend(runtime::make_array_runtime(&array_types));
+    all.extend(runtime::make_ref_runtime(&ref_types));
 
     if !goenv.extern_funcs.is_empty() || !goenv.extern_types.is_empty() {
         let mut existing_imports: IndexSet<String> = IndexSet::new();
@@ -1670,7 +1684,6 @@ pub fn go_file(
         }
     }
 
-    let tuple_types = collect_tuple_types(&file);
     for ty in tuple_types.iter() {
         match tuple_to_go_struct_type(ty) {
             goty::GoType::TStruct { name, fields } => {

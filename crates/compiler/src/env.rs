@@ -1,14 +1,13 @@
 use ast::ast::Ident;
 use diagnostics::{Diagnostics, Severity, Stage};
 use im::HashMap as ImHashMap;
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use line_index::LineIndex;
 
 pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_functions, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
-    core,
     mangle::encode_ty,
     tast::{self},
 };
@@ -74,8 +73,6 @@ pub struct GlobalTypeEnv {
     pub funcs: IndexMap<String, FnScheme>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub array_types: IndexSet<tast::Ty>,
-    pub ref_types: IndexSet<tast::Ty>,
 }
 
 impl Default for GlobalTypeEnv {
@@ -96,8 +93,6 @@ impl GlobalTypeEnv {
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
             inherent_impls: builtin_inherent_methods(),
-            array_types: IndexSet::new(),
-            ref_types: IndexSet::new(),
         }
     }
 
@@ -404,165 +399,6 @@ impl GlobalTypeEnv {
     ) -> Option<(String, tast::Ty)> {
         let key = (encode_ty(receiver_ty), method.clone());
         self.inherent_impls.get(&key).cloned()
-    }
-
-    pub fn record_runtime_types_from_core(&mut self, file: &core::File) {
-        struct TypeCollector {
-            arrays: IndexSet<tast::Ty>,
-            refs: IndexSet<tast::Ty>,
-        }
-
-        impl TypeCollector {
-            fn new() -> Self {
-                Self {
-                    arrays: IndexSet::new(),
-                    refs: IndexSet::new(),
-                }
-            }
-
-            fn finish(mut self, file: &core::File) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
-                for item in &file.toplevels {
-                    self.collect_fn(item);
-                }
-                (self.arrays, self.refs)
-            }
-
-            fn collect_fn(&mut self, item: &core::Fn) {
-                for (_, ty) in &item.params {
-                    self.collect_type(ty);
-                }
-                self.collect_type(&item.ret_ty);
-                self.collect_expr(&item.body);
-            }
-
-            fn collect_expr(&mut self, expr: &core::Expr) {
-                match expr {
-                    core::Expr::EVar { ty, .. } | core::Expr::EPrim { ty, .. } => {
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EConstr {
-                        constructor: _,
-                        args,
-                        ty,
-                    } => {
-                        for arg in args {
-                            self.collect_expr(arg);
-                        }
-                        self.collect_type(ty);
-                    }
-                    core::Expr::ETuple { items, ty } | core::Expr::EArray { items, ty } => {
-                        for item in items {
-                            self.collect_expr(item);
-                        }
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EClosure { params, body, ty } => {
-                        for param in params {
-                            self.collect_type(&param.get_ty());
-                        }
-                        self.collect_expr(body);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::ELet {
-                        value, body, ty, ..
-                    } => {
-                        self.collect_expr(value);
-                        self.collect_expr(body);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EMatch {
-                        expr,
-                        arms,
-                        default,
-                        ty,
-                    } => {
-                        self.collect_expr(expr);
-                        for arm in arms {
-                            self.collect_expr(&arm.lhs);
-                            self.collect_expr(&arm.body);
-                        }
-                        if let Some(default) = default {
-                            self.collect_expr(default);
-                        }
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EIf {
-                        cond,
-                        then_branch,
-                        else_branch,
-                        ty,
-                    } => {
-                        self.collect_expr(cond);
-                        self.collect_expr(then_branch);
-                        self.collect_expr(else_branch);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EWhile { cond, body, ty } => {
-                        self.collect_expr(cond);
-                        self.collect_expr(body);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EConstrGet {
-                        expr,
-                        constructor: _,
-                        ty,
-                        ..
-                    } => {
-                        self.collect_expr(expr);
-                        self.collect_type(ty);
-                    }
-                    core::Expr::ECall { func, args, ty } => {
-                        self.collect_expr(func);
-                        for arg in args {
-                            self.collect_expr(arg);
-                        }
-                        self.collect_type(ty);
-                    }
-                    core::Expr::EProj { tuple, ty, .. } => {
-                        self.collect_expr(tuple);
-                        self.collect_type(ty);
-                    }
-                }
-            }
-
-            fn collect_type(&mut self, ty: &tast::Ty) {
-                match ty {
-                    tast::Ty::TTuple { typs } => {
-                        for inner in typs {
-                            self.collect_type(inner);
-                        }
-                    }
-                    tast::Ty::TArray { elem, .. } => {
-                        if self.arrays.insert(ty.clone()) {
-                            self.collect_type(elem);
-                        }
-                    }
-                    tast::Ty::TRef { elem } => {
-                        if self.refs.insert(ty.clone()) {
-                            self.collect_type(elem);
-                        }
-                    }
-                    tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
-                    tast::Ty::TApp { ty, args } => {
-                        self.collect_type(ty.as_ref());
-                        for arg in args {
-                            self.collect_type(arg);
-                        }
-                    }
-                    tast::Ty::TFunc { params, ret_ty } => {
-                        for param in params {
-                            self.collect_type(param);
-                        }
-                        self.collect_type(ret_ty);
-                    }
-                    _ => {}
-                }
-            }
-        }
-
-        let (arrays, refs) = TypeCollector::new().finish(file);
-        self.array_types = arrays;
-        self.ref_types = refs;
     }
 }
 

@@ -1,5 +1,5 @@
 use ast::ast::Ident;
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexMap;
 use std::collections::HashMap;
 
 use crate::{
@@ -29,8 +29,6 @@ pub struct GlobalLiftEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub array_types: IndexSet<tast::Ty>,
-    pub ref_types: IndexSet<tast::Ty>,
 }
 
 impl GlobalLiftEnv {
@@ -49,8 +47,6 @@ impl GlobalLiftEnv {
                 .collect(),
             extern_funcs: genv.extern_funcs,
             extern_types: genv.extern_types,
-            array_types: genv.array_types,
-            ref_types: genv.ref_types,
         }
     }
 
