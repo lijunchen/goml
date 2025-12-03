@@ -820,8 +820,8 @@ pub struct StructLiteralExpr {
 }
 
 impl StructLiteralExpr {
-    pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
     }
 
     pub fn field_list(&self) -> Option<StructLiteralFieldList> {
@@ -1090,7 +1090,11 @@ impl CallExpr {
     pub fn l_name(&self) -> Option<String> {
         let node: Option<Expr> = support::child(&self.syntax);
         match node {
-            Some(Expr::IdentExpr(it)) => it.ident_token().map(|t| t.text().to_string()),
+            Some(Expr::IdentExpr(it)) => it
+                .path()?
+                .ident_tokens()
+                .last()
+                .map(|t| t.text().to_string()),
             _ => None,
         }
     }
@@ -1098,7 +1102,11 @@ impl CallExpr {
     pub fn u_name(&self) -> Option<String> {
         let node: Option<Expr> = support::child(&self.syntax);
         match node {
-            Some(Expr::IdentExpr(it)) => it.ident_token().map(|t| t.text().to_string()),
+            Some(Expr::IdentExpr(it)) => it
+                .path()?
+                .ident_tokens()
+                .last()
+                .map(|t| t.text().to_string()),
             _ => None,
         }
     }
@@ -1152,10 +1160,6 @@ pub struct IdentExpr {
 }
 
 impl IdentExpr {
-    pub fn ident_token(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
-    }
-
     pub fn path(&self) -> Option<Path> {
         support::child(&self.syntax)
     }
@@ -1472,10 +1476,6 @@ pub struct ConstrPat {
 }
 
 impl ConstrPat {
-    pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
-    }
-
     pub fn path(&self) -> Option<Path> {
         support::child(&self.syntax)
     }
@@ -1809,8 +1809,8 @@ pub struct TAppTy {
 }
 
 impl TAppTy {
-    pub fn uident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
     }
 
     pub fn type_param_list(&self) -> Option<TypeParamList> {

@@ -483,6 +483,18 @@ impl Expr {
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc())
                 .append(RcDoc::text(")")),
+            Self::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty,
+                ..
+            } => RcDoc::text("(")
+                .append(receiver_ty.to_doc())
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(method_name.0.clone()))
+                .append(RcDoc::text(" : "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
         }
     }
 

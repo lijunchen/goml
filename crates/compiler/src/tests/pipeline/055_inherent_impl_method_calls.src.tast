@@ -3,17 +3,17 @@ impl Shape{
     "Shape"
   }
   fn rename(self/1: Shape, suffix/2: string) -> string {
-    (impl_inherent_Shape_name : (Shape) -> string)((self/1 : Shape)) + (suffix/2 : string)
+    (Shape::name : (Shape) -> string)((self/1 : Shape)) + (suffix/2 : string)
   }
   fn join(self/3: Shape, left/4: string, right/5: string) -> string {
-    (left/4 : string) + (impl_inherent_Shape_name : (Shape) -> string)((self/3 : Shape)) + (right/5 : string)
+    (left/4 : string) + (Shape::name : (Shape) -> string)((self/3 : Shape)) + (right/5 : string)
   }
 }
 
 fn announce(shape/6: Shape) -> unit {
-  let base/7: string = (impl_inherent_Shape_name : (Shape) -> string)((shape/6 : Shape)) in
-  let with_suffix/8: string = (impl_inherent_Shape_rename : (Shape, string) -> string)((shape/6 : Shape), "!") in
-  let combined/9: string = (impl_inherent_Shape_join : (Shape, string, string) -> string)((shape/6 : Shape), (base/7 : string), (with_suffix/8 : string)) in
+  let base/7: string = (Shape::name : (Shape) -> string)((shape/6 : Shape)) in
+  let with_suffix/8: string = (Shape::rename : (Shape, string) -> string)((shape/6 : Shape), "!") in
+  let combined/9: string = (Shape::join : (Shape, string, string) -> string)((shape/6 : Shape), (base/7 : string), (with_suffix/8 : string)) in
   let _ : unit = (string_println : (string) -> unit)((combined/9 : string)) in
   ()
 }

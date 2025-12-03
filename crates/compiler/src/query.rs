@@ -235,6 +235,19 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
             }
             None
         }
+        tast::Expr::EInherentMethod {
+            receiver_ty: _,
+            method_name: _,
+            ty: _,
+            astptr,
+        } => {
+            if let Some(astptr) = astptr
+                && astptr.text_range().contains_range(*range)
+            {
+                return Some(tast.get_ty().to_pretty(80));
+            }
+            None
+        }
     }
 }
 
@@ -471,6 +484,11 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             ..
         } if astptr == ptr => Some(expr),
         tast::Expr::ETraitMethod { .. } => None,
+        tast::Expr::EInherentMethod {
+            astptr: Some(astptr),
+            ..
+        } if astptr == ptr => Some(expr),
+        tast::Expr::EInherentMethod { .. } => None,
     }
 }
 
@@ -498,21 +516,20 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     }
 
     let encoded = encode_ty(ty);
-    let mut methods: Vec<DotCompletionItem> = genv
-        .inherent_impls
-        .iter()
-        .filter_map(|((ty_key, method_name), (_, method_ty))| {
-            if ty_key == &encoded {
-                Some(DotCompletionItem {
-                    name: method_name.0.clone(),
+    let mut methods: Vec<DotCompletionItem> =
+        if let Some(impl_def) = genv.inherent_impls.get(&encoded) {
+            impl_def
+                .methods
+                .iter()
+                .map(|(method_name, method_scheme)| DotCompletionItem {
+                    name: method_name.clone(),
                     kind: DotCompletionKind::Method,
-                    detail: Some(method_ty.to_pretty(80)),
+                    detail: Some(method_scheme.ty.to_pretty(80)),
                 })
-            } else {
-                None
-            }
-        })
-        .collect();
+                .collect()
+        } else {
+            Vec::new()
+        };
     methods.sort_by(|a, b| a.name.cmp(&b.name));
     items.extend(methods);
 

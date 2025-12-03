@@ -342,7 +342,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
             Some(ast::TypeExpr::TTuple { typs })
         }
         cst::Type::TAppTy(it) => {
-            let name = it.uident().unwrap().to_string();
+            let name = it.path()?.ident_tokens().last()?.to_string();
             let args: Vec<ast::TypeExpr> = it
                 .type_param_list()
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
@@ -836,29 +836,13 @@ fn lower_expr_with_args(
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
-                        } else if let Some(type_ident) = constructor.parent_ident() {
-                            let type_member = ast::Expr::ETypeMember {
-                                type_name: type_ident.clone(),
-                                member: variant_ident,
-                                astptr,
-                            };
-                            let call = ast::Expr::ECall {
-                                func: Box::new(type_member),
-                                args,
-                            };
-                            apply_trailing_args(
-                                ctx,
-                                call,
-                                trailing_args,
-                                Some(it.syntax().text_range()),
-                            )
                         } else {
-                            let var_expr = ast::Expr::EVar {
-                                name: variant_ident,
+                            let path_expr = ast::Expr::EPath {
+                                path: constructor,
                                 astptr,
                             };
                             let call = ast::Expr::ECall {
-                                func: Box::new(var_expr),
+                                func: Box::new(path_expr),
                                 args,
                             };
                             apply_trailing_args(
@@ -994,8 +978,8 @@ fn lower_expr_with_args(
             };
 
             Some(ast::Expr::ECall {
-                func: Box::new(ast::Expr::EVar {
-                    name: ast::Ident("spawn".to_string()),
+                func: Box::new(ast::Expr::EPath {
+                    path: ast::Path::from_ident(ast::Ident("spawn".to_string())),
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 }),
                 args: vec![closure_arg],
@@ -1139,7 +1123,7 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            let name = it.uident()?.to_string();
+            let name = it.path()?.ident_tokens().last()?.to_string();
             let fields = it
                 .field_list()
                 .map(|list| {
@@ -1151,8 +1135,8 @@ fn lower_expr_with_args(
                                 .expr()
                                 .and_then(|expr| lower_expr(ctx, expr))
                                 .or_else(|| {
-                                    Some(ast::Expr::EVar {
-                                        name: ident.clone(),
+                                    Some(ast::Expr::EPath {
+                                        path: ast::Path::from_ident(ident.clone()),
                                         astptr: MySyntaxNodePtr::new(field.syntax()),
                                     })
                                 })?;
@@ -1189,16 +1173,9 @@ fn lower_expr_with_args(
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-            } else if let Some(type_ident) = constructor.parent_ident() {
-                let expr = ast::Expr::ETypeMember {
-                    type_name: type_ident.clone(),
-                    member: variant_ident,
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
-                };
-                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             } else {
-                let expr = ast::Expr::EVar {
-                    name: variant_ident,
+                let expr = ast::Expr::EPath {
+                    path: constructor,
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
@@ -1354,7 +1331,8 @@ fn lower_expr_with_args(
                         })
                     }
                     cst::Expr::IdentExpr(ident_expr) => {
-                        let Some(token) = ident_expr.ident_token() else {
+                        let Some(token) = ident_expr.path().and_then(|p| p.ident_tokens().last())
+                        else {
                             ctx.push_error(
                                 Some(ident_expr.syntax().text_range()),
                                 "Field access missing name",
@@ -1454,8 +1432,8 @@ fn apply_trailing_args(
     }
 
     match expr {
-        ast::Expr::EVar { name, astptr } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::EVar { name, astptr }),
+        ast::Expr::EPath { path, astptr } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EPath { path, astptr }),
             args: trailing_args,
         }),
         ast::Expr::ECall { func, args } => {
@@ -1483,18 +1461,6 @@ fn apply_trailing_args(
             func: Box::new(ast::Expr::EField {
                 expr,
                 field,
-                astptr,
-            }),
-            args: trailing_args,
-        }),
-        ast::Expr::ETypeMember {
-            type_name,
-            member,
-            astptr,
-        } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::ETypeMember {
-                type_name,
-                member,
                 astptr,
             }),
             args: trailing_args,
@@ -1599,7 +1565,13 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::ConstrPat(it) => {
             if let Some(field_list) = it.field_list() {
-                let name = it.uident().unwrap().to_string();
+                let name = it
+                    .path()
+                    .unwrap()
+                    .ident_tokens()
+                    .last()
+                    .unwrap()
+                    .to_string();
                 let mut fields = Vec::new();
                 for field in field_list.fields() {
                     let Some(fname_token) = field.lident() else {
@@ -1655,9 +1627,7 @@ fn lower_constructor_path_from_ident_expr(
     expr: &cst::IdentExpr,
 ) -> Option<ast::Path> {
     if let Some(path) = expr.path() {
-        lower_constructor_path_from_path(ctx, &path)
-    } else if let Some(token) = expr.ident_token() {
-        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
+        lower_path(ctx, &path)
     } else {
         ctx.push_error(
             Some(expr.syntax().text_range()),
@@ -1672,37 +1642,13 @@ fn lower_constructor_path_from_constr_pat(
     pat: &cst::ConstrPat,
 ) -> Option<ast::Path> {
     if let Some(path) = pat.path() {
-        lower_constructor_path_from_path(ctx, &path)
-    } else if let Some(token) = pat.uident() {
-        Some(ast::Path::from_ident(ast::Ident(token.to_string())))
+        lower_path(ctx, &path)
     } else {
         ctx.push_error(
             Some(pat.syntax().text_range()),
             "Missing constructor name in pattern",
         );
         None
-    }
-}
-
-fn lower_constructor_path_from_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
-    let ast_path = lower_path(ctx, path)?;
-
-    match ast_path.len() {
-        len if len < 2 => {
-            ctx.push_error(
-                Some(path.syntax().text_range()),
-                "Constructor paths must include both the enum and variant name",
-            );
-            None
-        }
-        2 => Some(ast_path),
-        _ => {
-            ctx.push_error(
-                Some(path.syntax().text_range()),
-                "Constructor paths support only a single namespace segment, e.g. Type::Variant",
-            );
-            None
-        }
     }
 }
 

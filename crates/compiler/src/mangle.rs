@@ -268,6 +268,27 @@ pub fn mangle_impl_name(trait_name: &ast::Ident, for_ty: &tast::Ty, method_name:
 }
 
 pub fn mangle_inherent_name(for_ty: &tast::Ty, method_name: &str) -> String {
-    let for_ty_str = encode_ty(for_ty);
-    format!("impl_inherent_{}_{}", for_ty_str, method_name)
+    // For primitive types, use the format "type_method" (e.g., int32_to_string)
+    // which matches the builtin function naming convention
+    match for_ty {
+        tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TBool
+        | tast::Ty::TString => {
+            let for_ty_str = encode_ty(for_ty);
+            format!("{}_{}", for_ty_str, method_name)
+        }
+        _ => {
+            let for_ty_str = encode_ty(for_ty);
+            format!("impl_inherent_{}_{}", for_ty_str, method_name)
+        }
+    }
 }

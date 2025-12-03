@@ -55,20 +55,45 @@ pub enum Constraint {
     },
 }
 
+/// Origin of a function definition.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum FnOrigin {
+    /// User-defined function in source code
+    #[default]
+    User,
+    /// Built-in function provided by the runtime
+    Builtin,
+    /// Compiler-generated function (e.g., from lambda lifting)
+    Compiler,
+}
+
 #[derive(Debug, Clone)]
 pub struct FnScheme {
     pub type_params: Vec<String>,
     pub constraints: (), // placeholder for future use
     pub ty: tast::Ty,
+    /// Origin of this function (user-defined, builtin, or compiler-generated)
+    pub origin: FnOrigin,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct TraitDef {
+    pub methods: IndexMap<String, FnScheme>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ImplDef {
+    pub params: Vec<Ident>,
+    pub methods: IndexMap<String, FnScheme>,
 }
 
 #[derive(Debug, Clone)]
 pub struct GlobalTypeEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<(String, String), tast::Ty>,
-    pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
-    pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
+    pub trait_defs: IndexMap<String, TraitDef>,
+    pub inherent_impls: IndexMap<String, ImplDef>,
+    pub trait_impls: IndexMap<(String, String), ImplDef>,
     pub funcs: IndexMap<String, FnScheme>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
@@ -96,16 +121,15 @@ impl GlobalTypeEnv {
 
     /// Check if a name is a trait
     pub fn is_trait(&self, name: &str) -> bool {
-        self.trait_defs
-            .keys()
-            .any(|(trait_name, _)| trait_name == name)
+        self.trait_defs.contains_key(name)
     }
 
     /// Lookup a trait method by trait name and method name
     pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
         self.trait_defs
-            .get(&(trait_name.0.clone(), method_name.0.clone()))
-            .cloned()
+            .get(&trait_name.0)
+            .and_then(|trait_def| trait_def.methods.get(&method_name.0))
+            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
@@ -170,6 +194,7 @@ impl GlobalTypeEnv {
                 type_params: vec![],
                 constraints: (),
                 ty: ty.clone(),
+                origin: FnOrigin::User,
             },
         );
         self.record_extern_type_usage(&ty, &package_path);
@@ -259,13 +284,11 @@ impl GlobalTypeEnv {
         type_name: &tast::Ty,
         func_name: &Ident,
     ) -> Option<tast::Ty> {
+        let key = (trait_name.0.clone(), encode_ty(type_name));
         self.trait_impls
-            .get(&(
-                trait_name.0.clone(),
-                encode_ty(type_name),
-                func_name.clone(),
-            ))
-            .cloned()
+            .get(&key)
+            .and_then(|impl_def| impl_def.methods.get(&func_name.0))
+            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
@@ -408,9 +431,12 @@ impl GlobalTypeEnv {
         &self,
         receiver_ty: &tast::Ty,
         method: &Ident,
-    ) -> Option<(String, tast::Ty)> {
-        let key = (encode_ty(receiver_ty), method.clone());
-        self.inherent_impls.get(&key).cloned()
+    ) -> Option<tast::Ty> {
+        let encoded_ty = encode_ty(receiver_ty);
+        self.inherent_impls
+            .get(&encoded_ty)
+            .and_then(|impl_def| impl_def.methods.get(&method.0))
+            .map(|scheme| scheme.ty.clone())
     }
 }
 

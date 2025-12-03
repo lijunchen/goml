@@ -2,7 +2,7 @@ use lexer::{T, TokenKind};
 
 use crate::{
     parser::{MarkerClosed, Parser},
-    path::parse_path,
+    path::parse_path_always,
     syntax::MySyntaxKind,
 };
 
@@ -67,22 +67,32 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
         }
         T![ident] | T![::] => {
             let m = p.open();
-            let has_namespace = parse_path(p);
-            if p.at(T!['(']) {
-                p.expect(T!['(']);
-                while p.at_any(PATTERN_FIRST) {
-                    let _ = pattern(p);
-                    p.eat(T![,]);
-                }
-                p.expect(T![')']);
-                p.close(m, MySyntaxKind::PATTERN_CONSTR)
-            } else if p.at(T!['{']) {
-                struct_pattern_field_list(p);
-                p.close(m, MySyntaxKind::PATTERN_CONSTR)
-            } else if has_namespace {
-                p.close(m, MySyntaxKind::PATTERN_CONSTR)
-            } else {
+            // Check if this looks like a simple variable pattern before consuming the path
+            // A variable pattern is a single lowercase identifier with no following `(` or `{`
+            let is_simple_var = p.at(T![ident]) && !matches!(p.nth(1), T![::] | T!['('] | T!['{']);
+
+            if is_simple_var {
+                // Simple variable pattern - just the identifier
+                p.expect(T![ident]);
                 p.close(m, MySyntaxKind::PATTERN_VARIABLE)
+            } else {
+                // Constructor pattern - always use PATH
+                parse_path_always(p);
+                if p.at(T!['(']) {
+                    p.expect(T!['(']);
+                    while p.at_any(PATTERN_FIRST) {
+                        let _ = pattern(p);
+                        p.eat(T![,]);
+                    }
+                    p.expect(T![')']);
+                    p.close(m, MySyntaxKind::PATTERN_CONSTR)
+                } else if p.at(T!['{']) {
+                    struct_pattern_field_list(p);
+                    p.close(m, MySyntaxKind::PATTERN_CONSTR)
+                } else {
+                    // Enum variant without arguments (like `Option::None`)
+                    p.close(m, MySyntaxKind::PATTERN_CONSTR)
+                }
             }
         }
         _ => unreachable!(),

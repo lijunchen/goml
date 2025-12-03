@@ -3,7 +3,7 @@ use lexer::{T, TokenKind};
 use crate::{
     expr::{EXPR_FIRST, expr},
     parser::{MarkerClosed, MarkerOpened, Parser},
-    path::parse_path,
+    path::parse_path_always,
     stmt,
     syntax::MySyntaxKind,
 };
@@ -582,7 +582,7 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(m, MySyntaxKind::TYPE_ARRAY)
         }
         T![ident] | T![::] => {
-            parse_path(p);
+            parse_path_always(p);
             if p.at(T!['[']) {
                 type_param_list(p);
             }

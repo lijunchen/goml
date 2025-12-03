@@ -96,7 +96,7 @@ impl TypeExpr {
 impl Expr {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
-            Self::EVar { name, astptr: _ } => RcDoc::text(name.0.clone()),
+            Self::EPath { path, astptr: _ } => RcDoc::text(path.display()),
 
             Self::EUnit => RcDoc::text("()"),
 
@@ -319,13 +319,6 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
-            Self::ETypeMember {
-                type_name,
-                member,
-                astptr: _,
-            } => RcDoc::text(type_name.0.clone())
-                .append(RcDoc::text("::"))
-                .append(RcDoc::text(member.0.clone())),
         }
     }
 

@@ -455,6 +455,12 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    EInherentMethod {
+        receiver_ty: Ty,
+        method_name: Ident,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
 }
 
 impl Expr {
@@ -476,6 +482,7 @@ impl Expr {
             Self::EField { ty, .. } => ty.clone(),
             Self::EBinary { ty, .. } => ty.clone(),
             Self::ETraitMethod { ty, .. } => ty.clone(),
+            Self::EInherentMethod { ty, .. } => ty.clone(),
         }
     }
 }

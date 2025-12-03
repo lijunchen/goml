@@ -1,7 +1,7 @@
 use crate::{
     file::{block, type_expr},
     parser::{MarkerClosed, Parser},
-    path::parse_path,
+    path::parse_path_always,
     syntax::MySyntaxKind,
 };
 use lexer::T;
@@ -94,7 +94,8 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
         // ExprName = 'name'
         T![ident] | T![::] => {
             let m = p.open();
-            parse_path(p);
+            // Always parse as a path - this creates a PATH node containing identifiers
+            parse_path_always(p);
             if looks_like_struct_literal(p) {
                 struct_literal_field_list(p);
                 p.close(m, MySyntaxKind::EXPR_STRUCT_LITERAL)

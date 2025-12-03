@@ -1,7 +1,6 @@
-use ast::ast::Ident;
 use indexmap::IndexMap;
 
-use crate::{env::FnScheme, mangle::encode_ty, tast};
+use crate::{env::FnOrigin, env::FnScheme, mangle::encode_ty, tast};
 
 pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
     let mut funcs = IndexMap::new();
@@ -13,6 +12,7 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
             params,
             ret_ty: Box::new(ret),
         },
+        origin: FnOrigin::Builtin,
     };
 
     funcs.insert(
@@ -469,22 +469,28 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
     funcs
 }
 
-pub(super) fn builtin_inherent_methods() -> IndexMap<(String, Ident), (String, tast::Ty)> {
-    let mut methods = IndexMap::new();
+pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef> {
+    let mut impls = IndexMap::new();
 
     let int32_ty = tast::Ty::TInt32;
-    let method_name = Ident("to_string".to_string());
     let method_ty = tast::Ty::TFunc {
         params: vec![int32_ty.clone()],
         ret_ty: Box::new(tast::Ty::TString),
     };
 
-    methods.insert(
-        (encode_ty(&int32_ty), method_name.clone()),
-        ("int32_to_string".to_string(), method_ty),
+    let mut int32_impl = crate::env::ImplDef::default();
+    int32_impl.methods.insert(
+        "to_string".to_string(),
+        crate::env::FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: method_ty,
+            origin: FnOrigin::Builtin,
+        },
     );
+    impls.insert(encode_ty(&int32_ty), int32_impl);
 
-    methods
+    impls
 }
 
 pub fn builtin_function_names() -> Vec<String> {

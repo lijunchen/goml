@@ -110,7 +110,8 @@ fn struct_with_generics() {
                     Colon@29..30 ":"
                     Whitespace@30..31 " "
                     TYPE_TAPP@31..32
-                      Ident@31..32 "T"
+                      PATH@31..32
+                        Ident@31..32 "T"
                   Comma@32..33 ","
                   Whitespace@33..34 "\n"
                   RBrace@34..35 "}"
@@ -125,8 +126,9 @@ fn struct_literal_expr() {
         expect![[r#"
             FILE@0..20
               EXPR_STRUCT_LITERAL@0..20
-                Ident@0..5 "Point"
-                Whitespace@5..6 " "
+                PATH@0..6
+                  Ident@0..5 "Point"
+                  Whitespace@5..6 " "
                 STRUCT_LITERAL_FIELD_LIST@6..20
                   LBrace@6..7 "{"
                   Whitespace@7..8 " "
@@ -156,8 +158,9 @@ fn struct_literal_expr_shorthand_field() {
         expect![[r#"
             FILE@0..14
               EXPR_STRUCT_LITERAL@0..14
-                Ident@0..5 "Point"
-                Whitespace@5..6 " "
+                PATH@0..6
+                  Ident@0..5 "Point"
+                  Whitespace@5..6 " "
                 STRUCT_LITERAL_FIELD_LIST@6..14
                   LBrace@6..7 "{"
                   Whitespace@7..8 " "
@@ -193,8 +196,9 @@ fn struct_pattern_shorthand() {
                     LetKeyword@12..15 "let"
                     Whitespace@15..16 " "
                     PATTERN_CONSTR@16..31
-                      Ident@16..21 "Point"
-                      Whitespace@21..22 " "
+                      PATH@16..22
+                        Ident@16..21 "Point"
+                        Whitespace@21..22 " "
                       STRUCT_PATTERN_FIELD_LIST@22..31
                         LBrace@22..23 "{"
                         Whitespace@23..24 " "
@@ -210,7 +214,8 @@ fn struct_pattern_shorthand() {
                     Eq@31..32 "="
                     Whitespace@32..33 " "
                     EXPR_IDENT@33..38
-                      Ident@33..38 "point"
+                      PATH@33..38
+                        Ident@33..38 "point"
                     Semi@38..39 ";"
                     Whitespace@39..40 " "
                   RBrace@40..41 "}""#]],

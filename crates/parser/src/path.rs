@@ -2,12 +2,17 @@ use crate::parser::Parser;
 use crate::syntax::MySyntaxKind;
 use lexer::T;
 
-pub fn parse_path(p: &mut Parser) -> bool {
+/// Parses a path (e.g., `A::B::C`).
+/// If `always_wrap` is true, always wraps the result in a PATH node.
+/// If `always_wrap` is false, only wraps when there are namespace separators (::).
+/// Returns true if a PATH node was created.
+pub fn parse_path_inner(p: &mut Parser, always_wrap: bool) -> bool {
     let current = p.peek();
     debug_assert!(matches!(current, T![ident] | T![::]));
 
-    let mut has_namespace = matches!(current, T![::]);
-    let should_wrap = has_namespace || matches!(current, T![ident]) && matches!(p.nth(1), T![::]);
+    let has_namespace = matches!(current, T![::]);
+    let should_wrap =
+        always_wrap || has_namespace || matches!(current, T![ident]) && matches!(p.nth(1), T![::]);
     let marker = if should_wrap { Some(p.open()) } else { None };
 
     if has_namespace {
@@ -25,7 +30,6 @@ pub fn parse_path(p: &mut Parser) -> bool {
     p.expect(T![ident]);
 
     while p.at(T![::]) {
-        has_namespace = true;
         p.expect(T![::]);
         if p.at(T![ident]) {
             p.expect(T![ident]);
@@ -35,7 +39,7 @@ pub fn parse_path(p: &mut Parser) -> bool {
         }
     }
 
-    if has_namespace {
+    if should_wrap {
         if let Some(m) = marker {
             p.close(m, MySyntaxKind::PATH);
         }
@@ -43,4 +47,17 @@ pub fn parse_path(p: &mut Parser) -> bool {
     } else {
         false
     }
+}
+
+/// Parses a path, only wrapping in a PATH node when there are namespace separators.
+/// Used for expressions where a simple identifier doesn't need wrapping.
+#[allow(dead_code)]
+pub fn parse_path(p: &mut Parser) -> bool {
+    parse_path_inner(p, false)
+}
+
+/// Parses a path, always wrapping in a PATH node.
+/// Used for type expressions and struct literals where we always expect a Path in the CST.
+pub fn parse_path_always(p: &mut Parser) -> bool {
+    parse_path_inner(p, true)
 }
