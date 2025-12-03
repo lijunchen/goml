@@ -56,7 +56,7 @@ fn main() -> int32 {
                     assert_eq!(args.len(), 1);
                     assert!(matches!(
                         func.as_ref(),
-                        ast::ast::Expr::EVar { name, .. } if name.0 == "ref"
+                        ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref".to_string())
                     ));
                     assert!(matches!(
                         args[0],
@@ -83,12 +83,12 @@ fn main() -> int32 {
             ast::ast::Expr::ECall { func, args } => {
                 assert!(matches!(
                     func.as_ref(),
-                    ast::ast::Expr::EVar { name, .. } if name.0 == "ref_set"
+                    ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_set".to_string())
                 ));
                 assert_eq!(args.len(), 2);
                 assert!(matches!(
                     args[0],
-                    ast::ast::Expr::EVar { ref name, .. } if name.0 == "r"
+                    ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
                 ));
                 assert!(matches!(
                     args[1],
@@ -101,12 +101,12 @@ fn main() -> int32 {
             ast::ast::Expr::ECall { func, args } => {
                 assert!(matches!(
                     func.as_ref(),
-                    ast::ast::Expr::EVar { name, .. } if name.0 == "ref_get"
+                    ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_get".to_string())
                 ));
                 assert_eq!(args.len(), 1);
                 assert!(matches!(
                     args[0],
-                    ast::ast::Expr::EVar { ref name, .. } if name.0 == "r"
+                    ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
                 ));
             }
             other => panic!("unexpected final body: {:?}", other),

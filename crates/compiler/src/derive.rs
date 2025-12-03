@@ -522,8 +522,8 @@ fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Exp
 }
 
 fn var_expr(name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    Expr::EVar {
-        name: name.clone(),
+    Expr::EPath {
+        path: ast::Path::from_ident(name.clone()),
         astptr: *attr_ptr,
     }
 }

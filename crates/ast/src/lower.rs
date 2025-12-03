@@ -836,29 +836,13 @@ fn lower_expr_with_args(
                                 trailing_args,
                                 Some(it.syntax().text_range()),
                             )
-                        } else if let Some(type_ident) = constructor.parent_ident() {
-                            let type_member = ast::Expr::ETypeMember {
-                                type_name: type_ident.clone(),
-                                member: variant_ident,
-                                astptr,
-                            };
-                            let call = ast::Expr::ECall {
-                                func: Box::new(type_member),
-                                args,
-                            };
-                            apply_trailing_args(
-                                ctx,
-                                call,
-                                trailing_args,
-                                Some(it.syntax().text_range()),
-                            )
                         } else {
-                            let var_expr = ast::Expr::EVar {
-                                name: variant_ident,
+                            let path_expr = ast::Expr::EPath {
+                                path: constructor,
                                 astptr,
                             };
                             let call = ast::Expr::ECall {
-                                func: Box::new(var_expr),
+                                func: Box::new(path_expr),
                                 args,
                             };
                             apply_trailing_args(
@@ -994,8 +978,8 @@ fn lower_expr_with_args(
             };
 
             Some(ast::Expr::ECall {
-                func: Box::new(ast::Expr::EVar {
-                    name: ast::Ident("spawn".to_string()),
+                func: Box::new(ast::Expr::EPath {
+                    path: ast::Path::from_ident(ast::Ident("spawn".to_string())),
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 }),
                 args: vec![closure_arg],
@@ -1151,8 +1135,8 @@ fn lower_expr_with_args(
                                 .expr()
                                 .and_then(|expr| lower_expr(ctx, expr))
                                 .or_else(|| {
-                                    Some(ast::Expr::EVar {
-                                        name: ident.clone(),
+                                    Some(ast::Expr::EPath {
+                                        path: ast::Path::from_ident(ident.clone()),
                                         astptr: MySyntaxNodePtr::new(field.syntax()),
                                     })
                                 })?;
@@ -1189,16 +1173,9 @@ fn lower_expr_with_args(
                     args: vec![],
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
-            } else if let Some(type_ident) = constructor.parent_ident() {
-                let expr = ast::Expr::ETypeMember {
-                    type_name: type_ident.clone(),
-                    member: variant_ident,
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
-                };
-                apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             } else {
-                let expr = ast::Expr::EVar {
-                    name: variant_ident,
+                let expr = ast::Expr::EPath {
+                    path: constructor,
                     astptr: MySyntaxNodePtr::new(it.syntax()),
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
@@ -1455,8 +1432,8 @@ fn apply_trailing_args(
     }
 
     match expr {
-        ast::Expr::EVar { name, astptr } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::EVar { name, astptr }),
+        ast::Expr::EPath { path, astptr } => Some(ast::Expr::ECall {
+            func: Box::new(ast::Expr::EPath { path, astptr }),
             args: trailing_args,
         }),
         ast::Expr::ECall { func, args } => {
@@ -1484,18 +1461,6 @@ fn apply_trailing_args(
             func: Box::new(ast::Expr::EField {
                 expr,
                 field,
-                astptr,
-            }),
-            args: trailing_args,
-        }),
-        ast::Expr::ETypeMember {
-            type_name,
-            member,
-            astptr,
-        } => Some(ast::Expr::ECall {
-            func: Box::new(ast::Expr::ETypeMember {
-                type_name,
-                member,
                 astptr,
             }),
             args: trailing_args,

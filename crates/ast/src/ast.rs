@@ -285,8 +285,8 @@ pub struct ImplBlock {
 
 #[derive(Debug, Clone)]
 pub enum Expr {
-    EVar {
-        name: Ident,
+    EPath {
+        path: Path,
         astptr: MySyntaxNodePtr,
     },
     EUnit,
@@ -360,11 +360,6 @@ pub enum Expr {
     EField {
         expr: Box<Expr>,
         field: Ident,
-        astptr: MySyntaxNodePtr,
-    },
-    ETypeMember {
-        type_name: Ident,
-        member: Ident,
         astptr: MySyntaxNodePtr,
     },
 }

@@ -122,19 +122,29 @@ impl Rename {
         global_funcs: &HashSet<String>,
     ) -> ast::Expr {
         match expr {
-            ast::Expr::EVar { name, astptr } => {
-                if let Some(new_name) = env.rfind(name) {
-                    ast::Expr::EVar {
-                        name: new_name.clone(),
-                        astptr: *astptr,
-                    }
-                } else if global_funcs.contains(&name.0) {
-                    ast::Expr::EVar {
-                        name: name.clone(),
-                        astptr: *astptr,
+            ast::Expr::EPath { path, astptr } => {
+                // Only single-segment paths can be local variables
+                if path.len() == 1 {
+                    let name = path.last_ident().unwrap();
+                    if let Some(new_name) = env.rfind(name) {
+                        ast::Expr::EPath {
+                            path: ast::Path::from_ident(new_name.clone()),
+                            astptr: *astptr,
+                        }
+                    } else if global_funcs.contains(&name.0) {
+                        ast::Expr::EPath {
+                            path: path.clone(),
+                            astptr: *astptr,
+                        }
+                    } else {
+                        panic!("Variable {} not found in environment", name.0);
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name.0);
+                    // Multi-segment paths (like Type::method) are kept as-is
+                    ast::Expr::EPath {
+                        path: path.clone(),
+                        astptr: *astptr,
+                    }
                 }
             }
             ast::Expr::EUnit => expr.clone(),
@@ -236,15 +246,16 @@ impl Rename {
             },
             ast::Expr::ECall { func, args } => {
                 let new_func = match func.as_ref() {
-                    ast::Expr::EVar { name, astptr } => {
+                    ast::Expr::EPath { path, astptr } if path.len() == 1 => {
+                        let name = path.last_ident().unwrap();
                         if let Some(new_name) = env.rfind(name) {
-                            ast::Expr::EVar {
-                                name: new_name.clone(),
+                            ast::Expr::EPath {
+                                path: ast::Path::from_ident(new_name.clone()),
                                 astptr: *astptr,
                             }
                         } else {
-                            ast::Expr::EVar {
-                                name: name.clone(),
+                            ast::Expr::EPath {
+                                path: path.clone(),
                                 astptr: *astptr,
                             }
                         }
@@ -280,15 +291,6 @@ impl Rename {
             } => ast::Expr::EField {
                 expr: Box::new(self.rename_expr(expr, env, global_funcs)),
                 field: field.clone(),
-                astptr: *astptr,
-            },
-            ast::Expr::ETypeMember {
-                type_name,
-                member,
-                astptr,
-            } => ast::Expr::ETypeMember {
-                type_name: type_name.clone(),
-                member: member.clone(),
                 astptr: *astptr,
             },
         }
