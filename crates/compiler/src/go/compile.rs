@@ -27,7 +27,6 @@ pub struct GlobalGoEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
 }
@@ -44,7 +43,6 @@ impl GlobalGoEnv {
             funcs: anfenv.funcs,
             extern_funcs: anfenv.extern_funcs,
             extern_types: anfenv.extern_types,
-            tuple_types: anfenv.tuple_types,
             array_types: anfenv.array_types,
             ref_types: anfenv.ref_types,
         }
@@ -502,7 +500,146 @@ fn instantiate_struct_fields(
         .collect()
 }
 
-fn tuple_to_go_struct_type(_goenv: &GlobalGoEnv, ty: &tast::Ty) -> goty::GoType {
+fn collect_tuple_types(file: &anf::File) -> IndexSet<tast::Ty> {
+    struct Collector {
+        tuples: IndexSet<tast::Ty>,
+    }
+
+    impl Collector {
+        fn collect_file(mut self, file: &anf::File) -> IndexSet<tast::Ty> {
+            for item in &file.toplevels {
+                self.collect_fn(item);
+            }
+            self.tuples
+        }
+
+        fn collect_fn(&mut self, item: &anf::Fn) {
+            for (_, ty) in &item.params {
+                self.collect_type(ty);
+            }
+            self.collect_type(&item.ret_ty);
+            self.collect_aexpr(&item.body);
+        }
+
+        fn collect_aexpr(&mut self, expr: &anf::AExpr) {
+            match expr {
+                anf::AExpr::ACExpr { expr } => self.collect_cexpr(expr),
+                anf::AExpr::ALet {
+                    value, body, ty, ..
+                } => {
+                    self.collect_cexpr(value);
+                    self.collect_aexpr(body);
+                    self.collect_type(ty);
+                }
+            }
+        }
+
+        fn collect_cexpr(&mut self, expr: &anf::CExpr) {
+            match expr {
+                anf::CExpr::CImm { imm } => self.collect_imm(imm),
+                anf::CExpr::EConstr { args, ty, .. }
+                | anf::CExpr::ETuple { items: args, ty }
+                | anf::CExpr::EArray { items: args, ty } => {
+                    for arg in args {
+                        self.collect_imm(arg);
+                    }
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EMatch {
+                    expr,
+                    arms,
+                    default,
+                    ty,
+                } => {
+                    self.collect_imm(expr);
+                    for arm in arms {
+                        self.collect_aexpr(&arm.body);
+                    }
+                    if let Some(default) = default {
+                        self.collect_aexpr(default);
+                    }
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EIf {
+                    cond,
+                    then,
+                    else_,
+                    ty,
+                } => {
+                    self.collect_imm(cond);
+                    self.collect_aexpr(then);
+                    self.collect_aexpr(else_);
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EWhile { cond, body, ty } => {
+                    self.collect_aexpr(cond);
+                    self.collect_aexpr(body);
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EConstrGet { expr, ty, .. } => {
+                    self.collect_imm(expr);
+                    self.collect_type(ty);
+                }
+                anf::CExpr::ECall { func, args, ty } => {
+                    self.collect_imm(func);
+                    for arg in args {
+                        self.collect_imm(arg);
+                    }
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EProj { tuple, ty, .. } => {
+                    self.collect_imm(tuple);
+                    self.collect_type(ty);
+                }
+            }
+        }
+
+        fn collect_imm(&mut self, imm: &anf::ImmExpr) {
+            match imm {
+                anf::ImmExpr::ImmVar { ty, .. }
+                | anf::ImmExpr::ImmPrim { ty, .. }
+                | anf::ImmExpr::ImmTag { ty, .. } => {
+                    self.collect_type(ty);
+                }
+            }
+        }
+
+        fn collect_type(&mut self, ty: &tast::Ty) {
+            match ty {
+                tast::Ty::TTuple { typs } => {
+                    if self.tuples.insert(ty.clone()) {
+                        for inner in typs {
+                            self.collect_type(inner);
+                        }
+                    }
+                }
+                tast::Ty::TArray { elem, .. } | tast::Ty::TRef { elem } => {
+                    self.collect_type(elem);
+                }
+                tast::Ty::TApp { ty, args } => {
+                    self.collect_type(ty);
+                    for arg in args {
+                        self.collect_type(arg);
+                    }
+                }
+                tast::Ty::TFunc { params, ret_ty } => {
+                    for param in params {
+                        self.collect_type(param);
+                    }
+                    self.collect_type(ret_ty);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    Collector {
+        tuples: IndexSet::new(),
+    }
+    .collect_file(file)
+}
+
+fn tuple_to_go_struct_type(ty: &tast::Ty) -> goty::GoType {
     if let tast::Ty::TTuple { typs } = ty {
         let name = go_type_name_for(ty);
         goty::GoType::TStruct {
@@ -568,7 +705,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
                 .collect();
             goast::Expr::StructLiteral {
-                ty: tuple_to_go_struct_type(goenv, ty),
+                ty: tuple_to_go_struct_type(ty),
                 fields,
             }
         }
@@ -1533,8 +1670,9 @@ pub fn go_file(
         }
     }
 
-    for ty in goenv.tuple_types.iter() {
-        match tuple_to_go_struct_type(&goenv, ty) {
+    let tuple_types = collect_tuple_types(&file);
+    for ty in tuple_types.iter() {
+        match tuple_to_go_struct_type(ty) {
             goty::GoType::TStruct { name, fields } => {
                 let fields = fields
                     .into_iter()

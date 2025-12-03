@@ -74,7 +74,6 @@ pub struct GlobalTypeEnv {
     pub funcs: IndexMap<String, FnScheme>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
 }
@@ -97,7 +96,6 @@ impl GlobalTypeEnv {
             overloaded_funcs_to_trait_name: IndexMap::new(),
             trait_impls: IndexMap::new(),
             inherent_impls: builtin_inherent_methods(),
-            tuple_types: IndexSet::new(),
             array_types: IndexSet::new(),
             ref_types: IndexSet::new(),
         }
@@ -408,9 +406,8 @@ impl GlobalTypeEnv {
         self.inherent_impls.get(&key).cloned()
     }
 
-    pub fn record_tuple_types_from_core(&mut self, file: &core::File) {
+    pub fn record_runtime_types_from_core(&mut self, file: &core::File) {
         struct TypeCollector {
-            tuples: IndexSet<tast::Ty>,
             arrays: IndexSet<tast::Ty>,
             refs: IndexSet<tast::Ty>,
         }
@@ -418,20 +415,16 @@ impl GlobalTypeEnv {
         impl TypeCollector {
             fn new() -> Self {
                 Self {
-                    tuples: IndexSet::new(),
                     arrays: IndexSet::new(),
                     refs: IndexSet::new(),
                 }
             }
 
-            fn finish(
-                mut self,
-                file: &core::File,
-            ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+            fn finish(mut self, file: &core::File) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
                 for item in &file.toplevels {
                     self.collect_fn(item);
                 }
-                (self.tuples, self.arrays, self.refs)
+                (self.arrays, self.refs)
             }
 
             fn collect_fn(&mut self, item: &core::Fn) {
@@ -535,10 +528,8 @@ impl GlobalTypeEnv {
             fn collect_type(&mut self, ty: &tast::Ty) {
                 match ty {
                     tast::Ty::TTuple { typs } => {
-                        if self.tuples.insert(ty.clone()) {
-                            for inner in typs {
-                                self.collect_type(inner);
-                            }
+                        for inner in typs {
+                            self.collect_type(inner);
                         }
                     }
                     tast::Ty::TArray { elem, .. } => {
@@ -569,8 +560,7 @@ impl GlobalTypeEnv {
             }
         }
 
-        let (tuples, arrays, refs) = TypeCollector::new().finish(file);
-        self.tuple_types = tuples;
+        let (arrays, refs) = TypeCollector::new().finish(file);
         self.array_types = arrays;
         self.ref_types = refs;
     }

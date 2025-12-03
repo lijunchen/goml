@@ -19,7 +19,6 @@ pub struct GlobalAnfEnv {
     pub funcs: IndexMap<String, tast::Ty>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
-    pub tuple_types: IndexSet<tast::Ty>,
     pub array_types: IndexSet<tast::Ty>,
     pub ref_types: IndexSet<tast::Ty>,
 }
@@ -36,7 +35,6 @@ impl GlobalAnfEnv {
             funcs: monoenv.funcs,
             extern_funcs: monoenv.extern_funcs,
             extern_types: monoenv.extern_types,
-            tuple_types: monoenv.tuple_types,
             array_types: monoenv.array_types,
             ref_types: monoenv.ref_types,
         }

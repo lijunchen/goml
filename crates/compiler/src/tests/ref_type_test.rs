@@ -31,7 +31,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnosti
         "unexpected compile diagnostics: {:?}",
         compile_diagnostics
     );
-    genv.record_tuple_types_from_core(&core);
+    genv.record_runtime_types_from_core(&core);
     (ast_clone, tast, genv, diagnostics)
 }
 
