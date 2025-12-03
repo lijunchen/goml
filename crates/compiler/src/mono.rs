@@ -151,7 +151,6 @@ pub struct MonoArm {
 pub struct GlobalMonoEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
@@ -169,7 +168,6 @@ impl GlobalMonoEnv {
         Self {
             enums: liftenv.enums,
             structs: liftenv.structs,
-            closure_env_apply: liftenv.closure_env_apply,
             trait_defs: liftenv.trait_defs,
             overloaded_funcs_to_trait_name: liftenv.overloaded_funcs_to_trait_name,
             trait_impls: liftenv.trait_impls,
@@ -885,7 +883,7 @@ impl<'a> TypeMono<'a> {
                 variants: new_variants,
             };
             self.monoenv.insert_enum(new_def);
-        } else if let Some(generic_def) = self.struct_base.get(&ident) {
+        } else if let Some(generic_def) = self.struct_base.get(&ident).cloned() {
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
             if generic_def.generics.len() != args.len() {
                 panic!(

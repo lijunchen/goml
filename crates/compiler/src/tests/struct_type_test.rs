@@ -69,7 +69,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
         .funcs
         .get("consume_wrapper")
         .expect("function type to be recorded");
-    if let tast::Ty::TFunc { params, ret_ty } = wrapper_fn {
+    if let tast::Ty::TFunc { params, ret_ty } = &wrapper_fn.ty {
         assert_eq!(params.len(), 1);
         assert_eq!(**ret_ty, tast::Ty::TUnit);
         let expected_param = tast::Ty::TApp {

@@ -271,11 +271,11 @@ impl Point {
         other => panic!("expected copy to have function type, found {:?}", other),
     }
 
-    let copy_func_ty = genv
+    let copy_func_scheme = genv
         .funcs
         .get(copy_mangled)
         .expect("copy function registered in funcs");
-    assert_eq!(copy_func_ty, copy_ty);
+    assert_eq!(&copy_func_scheme.ty, copy_ty);
 
     let impl_block = tast_file
         .toplevels

@@ -12,7 +12,6 @@ use crate::tast::{self};
 pub struct GlobalAnfEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
@@ -30,7 +29,6 @@ impl GlobalAnfEnv {
         GlobalAnfEnv {
             enums: monoenv.enums,
             structs: monoenv.structs,
-            closure_env_apply: monoenv.closure_env_apply,
             trait_defs: monoenv.trait_defs,
             overloaded_funcs_to_trait_name: monoenv.overloaded_funcs_to_trait_name,
             trait_impls: monoenv.trait_impls,

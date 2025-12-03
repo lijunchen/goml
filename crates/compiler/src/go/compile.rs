@@ -5,6 +5,8 @@ use crate::{
     common::{Constructor, Prim},
     env::{EnumDef, ExternFunc, ExternType, Gensym, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
+    lift::is_closure_env_struct,
+    mangle::encode_ty,
     tast::{self},
 };
 
@@ -18,7 +20,6 @@ use super::runtime;
 pub struct GlobalGoEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
@@ -36,7 +37,6 @@ impl GlobalGoEnv {
         Self {
             enums: anfenv.enums,
             structs: anfenv.structs,
-            closure_env_apply: anfenv.closure_env_apply,
             trait_defs: anfenv.trait_defs,
             overloaded_funcs_to_trait_name: anfenv.overloaded_funcs_to_trait_name,
             trait_impls: anfenv.trait_impls,
@@ -58,8 +58,19 @@ impl GlobalGoEnv {
         &self.structs
     }
 
-    pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {
-        self.closure_env_apply.get(struct_name).map(|s| s.as_str())
+    /// Lookup the apply method for a closure environment struct via inherent_impls.
+    pub fn closure_apply_method(&self, closure_ty: &tast::Ty) -> Option<(String, tast::Ty)> {
+        let tast::Ty::TStruct { name } = closure_ty else {
+            return None;
+        };
+        if !is_closure_env_struct(name) {
+            unreachable!(
+                "closure_apply_method called on non-closure environment struct {:?}",
+                closure_ty
+            );
+        }
+        let key = (encode_ty(closure_ty), Ident::new("apply"));
+        self.inherent_impls.get(&key).cloned()
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
@@ -1022,13 +1033,10 @@ fn compile_spawn_call(
 }
 
 fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
-    let tast::Ty::TStruct { name } = closure_ty else {
-        return None;
-    };
+    // Look up the apply method via inherent_impls
+    let (apply_name, fn_ty) = goenv.closure_apply_method(closure_ty)?;
 
-    let apply_name = goenv.closure_apply_fn(name)?;
-    let fn_ty = goenv.funcs.get(apply_name)?;
-    let tast::Ty::TFunc { params, ret_ty } = fn_ty else {
+    let tast::Ty::TFunc { params, ret_ty } = &fn_ty else {
         return None;
     };
 
@@ -1037,7 +1045,7 @@ fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<C
     }
 
     Some(ClosureApplyFn {
-        name: apply_name.to_string(),
+        name: apply_name,
         ty: fn_ty.clone(),
         ret_ty: (**ret_ty).clone(),
     })

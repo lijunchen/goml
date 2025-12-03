@@ -57,15 +57,21 @@ pub enum Constraint {
 }
 
 #[derive(Debug, Clone)]
+pub struct FnScheme {
+    pub type_params: Vec<String>,
+    pub constraints: (), // placeholder for future use
+    pub ty: tast::Ty,
+}
+
+#[derive(Debug, Clone)]
 pub struct GlobalTypeEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub closure_env_apply: IndexMap<String, String>,
     pub trait_defs: IndexMap<(String, String), tast::Ty>,
     pub overloaded_funcs_to_trait_name: IndexMap<String, Ident>,
     pub trait_impls: IndexMap<(String, String, Ident), tast::Ty>,
     pub inherent_impls: IndexMap<(String, Ident), (String, tast::Ty)>,
-    pub funcs: IndexMap<String, tast::Ty>,
+    pub funcs: IndexMap<String, FnScheme>,
     pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
     pub tuple_types: IndexSet<tast::Ty>,
@@ -84,7 +90,6 @@ impl GlobalTypeEnv {
         Self {
             enums: IndexMap::new(),
             structs: IndexMap::new(),
-            closure_env_apply: IndexMap::new(),
             funcs: builtin_functions(),
             extern_funcs: IndexMap::new(),
             extern_types: IndexMap::new(),
@@ -154,7 +159,14 @@ impl GlobalTypeEnv {
         go_name: String,
         ty: tast::Ty,
     ) {
-        self.funcs.insert(goml_name.clone(), ty.clone());
+        self.funcs.insert(
+            goml_name.clone(),
+            FnScheme {
+                type_params: vec![],
+                constraints: (),
+                ty: ty.clone(),
+            },
+        );
         self.record_extern_type_usage(&ty, &package_path);
         self.extern_funcs.insert(
             goml_name,
@@ -234,10 +246,6 @@ impl GlobalTypeEnv {
                 self.record_extern_type_usage(elem, package_path);
             }
         }
-    }
-
-    pub fn closure_apply_fn(&self, struct_name: &str) -> Option<&str> {
-        self.closure_env_apply.get(struct_name).map(|s| s.as_str())
     }
 
     pub fn get_trait_impl(
@@ -388,7 +396,7 @@ impl GlobalTypeEnv {
     }
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
-        self.funcs.get(func).cloned()
+        self.funcs.get(func).map(|scheme| scheme.ty.clone())
     }
 
     pub fn lookup_inherent_method(
