@@ -27,9 +27,9 @@ pub struct GlobalGoEnv {
 impl Default for GlobalGoEnv {
     fn default() -> Self {
         let genv = crate::env::GlobalTypeEnv::new();
-        let liftenv = crate::lift::GlobalLiftEnv::from_genv(genv.clone());
-        let monoenv = crate::mono::GlobalMonoEnv::from_lift_env(liftenv.clone());
-        let anfenv = GlobalAnfEnv::from_mono_env(monoenv);
+        let monoenv = crate::mono::GlobalMonoEnv::from_genv(genv.clone());
+        let liftenv = crate::lift::GlobalLiftEnv::from_monoenv(monoenv);
+        let anfenv = GlobalAnfEnv::from_lift_env(liftenv.clone());
         Self {
             genv,
             liftenv,
@@ -41,8 +41,8 @@ impl Default for GlobalGoEnv {
 
 impl GlobalGoEnv {
     pub fn from_anf_env(anfenv: GlobalAnfEnv) -> Self {
-        let liftenv = anfenv.monoenv.liftenv.clone();
-        let genv = liftenv.genv.clone();
+        let liftenv = anfenv.liftenv.clone();
+        let genv = liftenv.monoenv.genv.clone();
         Self {
             genv,
             liftenv,

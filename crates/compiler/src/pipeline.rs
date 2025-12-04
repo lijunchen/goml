@@ -101,9 +101,9 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
-    let (lifted_core, liftenv) = lift::lambda_lift(genv.clone(), &gensym, core.clone());
-    let (mono, monoenv) = mono::mono(liftenv.clone(), lifted_core.clone());
-    let (anf, anfenv) = anf::anf_file(monoenv.clone(), &gensym, mono.clone());
+    let (mono, monoenv) = mono::mono(genv.clone(), core.clone());
+    let (lifted_core, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
+    let (anf, anfenv) = anf::anf_file(liftenv.clone(), &gensym, lifted_core.clone());
     let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
 
     Ok(Compilation {

@@ -132,10 +132,10 @@ pub fn compile_to_mono(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (lifted, liftenv) = compiler::lift::lambda_lift(genv, &gensym, core);
+    let (mono, monoenv) = compiler::mono::mono(genv, core);
 
-    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
-    mono.to_pretty(&monoenv, 120)
+    let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
+    lifted.to_pretty(&liftenv, 120)
 }
 
 #[wasm_bindgen]
@@ -176,11 +176,11 @@ pub fn compile_to_anf(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (lifted, liftenv) = compiler::lift::lambda_lift(genv, &gensym, core);
+    let (mono, monoenv) = compiler::mono::mono(genv, core);
 
-    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
+    let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
 
-    let (anf, anfenv) = compiler::anf::anf_file(monoenv, &gensym, mono);
+    let (anf, anfenv) = compiler::anf::anf_file(liftenv, &gensym, lifted);
     anf.to_pretty(&anfenv, 120)
 }
 
@@ -222,11 +222,11 @@ pub fn compile_to_go(src: &str) -> String {
             .collect::<Vec<_>>()
             .join("\n");
     }
-    let (lifted, liftenv) = compiler::lift::lambda_lift(genv, &gensym, core);
+    let (mono, monoenv) = compiler::mono::mono(genv, core);
 
-    let (mono, monoenv) = compiler::mono::mono(liftenv, lifted);
+    let (lifted, liftenv) = compiler::lift::lambda_lift(monoenv, &gensym, mono);
 
-    let (anf, anfenv) = compiler::anf::anf_file(monoenv, &gensym, mono);
+    let (anf, anfenv) = compiler::anf::anf_file(liftenv, &gensym, lifted);
     let (go, goenv) = compiler::go::compile::go_file(anfenv, &gensym, anf);
     go.to_pretty(&goenv, 120)
 }

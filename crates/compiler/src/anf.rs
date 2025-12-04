@@ -4,28 +4,28 @@ use ast::ast::Ident;
 use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
-use crate::mono::{GlobalMonoEnv, MonoArm, MonoExpr, MonoFile};
+use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
 
 #[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {
-    pub monoenv: GlobalMonoEnv,
+    pub liftenv: GlobalLiftEnv,
 }
 
 impl GlobalAnfEnv {
-    pub fn from_mono_env(monoenv: GlobalMonoEnv) -> Self {
-        GlobalAnfEnv { monoenv }
+    pub fn from_lift_env(liftenv: GlobalLiftEnv) -> Self {
+        GlobalAnfEnv { liftenv }
     }
 
     pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
-        self.monoenv.enums()
+        self.liftenv.enums()
     }
 
     pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
-        self.monoenv.structs()
+        self.liftenv.structs()
     }
 
     pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
-        self.monoenv.get_struct(name)
+        self.liftenv.get_struct(name)
     }
 }
 
@@ -131,13 +131,13 @@ pub struct Arm {
     pub body: AExpr,
 }
 
-// Helper function to convert mono immediate expressions to ANF immediate expressions
-// Assumes the input MonoExpr is guaranteed to be an immediate variant.
-fn mono_imm_to_anf_imm(mono_imm: MonoExpr) -> ImmExpr {
-    match mono_imm {
-        MonoExpr::EVar { name, ty } => ImmExpr::ImmVar { name, ty },
-        MonoExpr::EPrim { value, ty } => ImmExpr::ImmPrim { value, ty },
-        MonoExpr::EConstr {
+// Helper function to convert lift immediate expressions to ANF immediate expressions
+// Assumes the input LiftExpr is guaranteed to be an immediate variant.
+fn lift_imm_to_anf_imm(lift_imm: LiftExpr) -> ImmExpr {
+    match lift_imm {
+        LiftExpr::EVar { name, ty } => ImmExpr::ImmVar { name, ty },
+        LiftExpr::EPrim { value, ty } => ImmExpr::ImmPrim { value, ty },
+        LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
             args,
             ty,
@@ -145,10 +145,10 @@ fn mono_imm_to_anf_imm(mono_imm: MonoExpr) -> ImmExpr {
             index: enum_constructor.enum_index(),
             ty,
         },
-        // Other MonoExpr variants are not immediate and should not appear as match arm LHS patterns.
+        // Other LiftExpr variants are not immediate and should not appear as match arm LHS patterns.
         _ => panic!(
             "Expected an immediate expression for match arm LHS, found {:?}",
-            mono_imm
+            lift_imm
         ),
     }
 }
@@ -181,8 +181,8 @@ fn compile_match_arms_to_anf<'a>(
     anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
     scrutinee: ImmExpr,
-    arms: Vec<MonoArm>,
-    default: Option<Box<MonoExpr>>,
+    arms: Vec<LiftArm>,
+    default: Option<Box<LiftExpr>>,
     body_ty: Ty,
     k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
 ) -> AExpr {
@@ -191,9 +191,9 @@ fn compile_match_arms_to_anf<'a>(
     // Process arms in original order to maintain sequence
     for arm in arms {
         match &arm.lhs {
-            MonoExpr::EVar { .. } | MonoExpr::EPrim { .. } => {
+            LiftExpr::EVar { .. } | LiftExpr::EPrim { .. } => {
                 // Immediate patterns can be converted directly
-                let anf_lhs = mono_imm_to_anf_imm(arm.lhs);
+                let anf_lhs = lift_imm_to_anf_imm(arm.lhs);
                 let anf_body = anf(
                     anfenv,
                     gensym,
@@ -205,7 +205,7 @@ fn compile_match_arms_to_anf<'a>(
                     body: anf_body,
                 });
             }
-            MonoExpr::EConstr {
+            LiftExpr::EConstr {
                 constructor: Constructor::Enum(enum_constructor),
                 args,
                 ty,
@@ -226,7 +226,7 @@ fn compile_match_arms_to_anf<'a>(
                     body: anf_body,
                 });
             }
-            MonoExpr::EConstr {
+            LiftExpr::EConstr {
                 constructor: Constructor::Enum(enum_constructor),
                 args: _args,
                 ty,
@@ -274,19 +274,19 @@ fn compile_match_arms_to_anf<'a>(
 fn anf<'a>(
     anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
-    e: MonoExpr,
+    e: LiftExpr,
     k: Box<dyn FnOnce(CExpr) -> AExpr + 'a>,
 ) -> AExpr {
     let e_ty = e.get_ty();
     match e {
-        MonoExpr::EVar { name, ty } => k(CExpr::CImm {
+        LiftExpr::EVar { name, ty } => k(CExpr::CImm {
             imm: ImmExpr::ImmVar { name, ty },
         }),
-        MonoExpr::EPrim { value, ty } => k(CExpr::CImm {
+        LiftExpr::EPrim { value, ty } => k(CExpr::CImm {
             imm: ImmExpr::ImmPrim { value, ty },
         }),
 
-        MonoExpr::EConstr {
+        LiftExpr::EConstr {
             constructor: Constructor::Enum(enum_constructor),
             args,
             ty: _,
@@ -299,7 +299,7 @@ fn anf<'a>(
                 },
             })
         }
-        MonoExpr::EConstr {
+        LiftExpr::EConstr {
             constructor,
             args,
             ty: _,
@@ -319,7 +319,7 @@ fn anf<'a>(
                 }),
             )
         }
-        MonoExpr::ETuple { items, ty: _ } => anf_list(
+        LiftExpr::ETuple { items, ty: _ } => anf_list(
             anfenv,
             gensym,
             &items,
@@ -330,7 +330,7 @@ fn anf<'a>(
                 })
             }),
         ),
-        MonoExpr::EArray { items, ty: _ } => anf_list(
+        LiftExpr::EArray { items, ty: _ } => anf_list(
             anfenv,
             gensym,
             &items,
@@ -341,7 +341,7 @@ fn anf<'a>(
                 })
             }),
         ),
-        MonoExpr::ELet {
+        LiftExpr::ELet {
             name,
             value,
             body,
@@ -357,7 +357,7 @@ fn anf<'a>(
                 ty: e_ty.clone(),
             }),
         ),
-        MonoExpr::EIf {
+        LiftExpr::EIf {
             cond,
             then_branch,
             else_branch,
@@ -392,7 +392,7 @@ fn anf<'a>(
                 }),
             )
         }
-        MonoExpr::EWhile { cond, body, ty: _ } => {
+        LiftExpr::EWhile { cond, body, ty: _ } => {
             let cond_mono = *cond;
             let body_mono = *body;
             let ty_clone = e_ty.clone();
@@ -414,7 +414,7 @@ fn anf<'a>(
                 ty: ty_clone,
             })
         }
-        MonoExpr::EMatch {
+        LiftExpr::EMatch {
             expr,
             arms,
             default,
@@ -427,7 +427,7 @@ fn anf<'a>(
                 compile_match_arms_to_anf(anfenv, gensym, imm_expr, arms, default, e_ty, k)
             }),
         ),
-        MonoExpr::EConstrGet {
+        LiftExpr::EConstrGet {
             expr,
             constructor,
             field_index,
@@ -445,7 +445,7 @@ fn anf<'a>(
                 })
             }),
         ),
-        MonoExpr::ECall { func, args, ty: _ } => {
+        LiftExpr::ECall { func, args, ty: _ } => {
             let call_ty = e_ty.clone();
             anf_imm(
                 anfenv,
@@ -468,7 +468,7 @@ fn anf<'a>(
                 }),
             )
         }
-        MonoExpr::EProj {
+        LiftExpr::EProj {
             tuple,
             index,
             ty: _,
@@ -490,12 +490,12 @@ fn anf<'a>(
 fn anf_imm<'a>(
     anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
-    e: MonoExpr,
+    e: LiftExpr,
     k: Box<dyn FnOnce(ImmExpr) -> AExpr + 'a>,
 ) -> AExpr {
     match e {
-        MonoExpr::EVar { name, ty } => k(ImmExpr::ImmVar { name, ty }),
-        MonoExpr::EPrim { value, ty } => k(ImmExpr::ImmPrim { value, ty }),
+        LiftExpr::EVar { name, ty } => k(ImmExpr::ImmVar { name, ty }),
+        LiftExpr::EPrim { value, ty } => k(ImmExpr::ImmPrim { value, ty }),
         _ => {
             let name = gensym.gensym("t");
             let ty = e.get_ty();
@@ -524,7 +524,7 @@ fn anf_imm<'a>(
 fn anf_list<'a>(
     anfenv: &'a GlobalAnfEnv,
     gensym: &'a Gensym,
-    es: &'a [MonoExpr],
+    es: &'a [LiftExpr],
     k: Box<dyn FnOnce(Vec<ImmExpr>) -> AExpr + 'a>,
 ) -> AExpr {
     if es.is_empty() {
@@ -551,17 +551,17 @@ fn anf_list<'a>(
     }
 }
 
-pub fn anf_file(monoenv: GlobalMonoEnv, gensym: &Gensym, file: MonoFile) -> (File, GlobalAnfEnv) {
-    let anfenv = GlobalAnfEnv::from_mono_env(monoenv);
+pub fn anf_file(liftenv: GlobalLiftEnv, gensym: &Gensym, file: LiftFile) -> (File, GlobalAnfEnv) {
+    let anfenv = GlobalAnfEnv::from_lift_env(liftenv);
     let mut toplevels = Vec::new();
-    for mono_fn in file.toplevels {
-        let name = mono_fn.name;
-        let params = mono_fn.params;
-        let ret_ty = mono_fn.ret_ty;
+    for lift_fn in file.toplevels {
+        let name = lift_fn.name;
+        let params = lift_fn.params;
+        let ret_ty = lift_fn.ret_ty;
         let body = anf(
             &anfenv,
             gensym,
-            mono_fn.body,
+            lift_fn.body,
             Box::new(|c| AExpr::ACExpr { expr: c }),
         );
         toplevels.push(Fn {

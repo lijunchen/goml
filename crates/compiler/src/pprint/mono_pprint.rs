@@ -239,6 +239,23 @@ impl MonoExpr {
                     .append(expr.to_doc(monoenv))
                     .append(RcDoc::text(")"))
             }
+            MonoExpr::EClosure {
+                params,
+                body,
+                ty: _,
+            } => {
+                let params_doc = RcDoc::intersperse(
+                    params.iter().map(|p| RcDoc::text(p.name.clone())),
+                    RcDoc::text(", "),
+                );
+                let body_doc = body.to_doc(monoenv);
+
+                RcDoc::text("|")
+                    .append(params_doc)
+                    .append(RcDoc::text("|"))
+                    .append(RcDoc::space())
+                    .append(body_doc)
+            }
         }
     }
 
