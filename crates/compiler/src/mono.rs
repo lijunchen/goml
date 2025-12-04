@@ -120,6 +120,7 @@ pub struct GlobalMonoEnv {
     pub genv: GlobalTypeEnv,
     pub extra_enums: IndexMap<Ident, EnumDef>,
     pub extra_structs: IndexMap<Ident, StructDef>,
+    pub extra_funcs: IndexMap<String, Ty>,
 }
 
 impl GlobalMonoEnv {
@@ -128,6 +129,7 @@ impl GlobalMonoEnv {
             genv,
             extra_enums: IndexMap::new(),
             extra_structs: IndexMap::new(),
+            extra_funcs: IndexMap::new(),
         }
     }
 
@@ -205,6 +207,14 @@ impl GlobalMonoEnv {
         self.extra_structs
             .get(name)
             .or_else(|| self.genv.structs().get(name))
+    }
+
+    pub fn get_func(&self, name: &str) -> Option<&Ty> {
+        self.extra_funcs.get(name)
+    }
+
+    pub fn insert_func(&mut self, name: String, ty: Ty) {
+        self.extra_funcs.insert(name, ty);
     }
 }
 
@@ -1006,13 +1016,21 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
     let mut m = TypeMono::new(&mut monoenv);
     let mut new_fns = Vec::new();
     for f in ctx.out.into_iter() {
-        let params = f
+        let params: Vec<(String, Ty)> = f
             .params
             .into_iter()
             .map(|(n, t)| (n, m.collapse_type_apps(&t)))
             .collect();
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_expr_types(f.body, &mut m);
+
+        // Store the function type in monoenv for use by later phases
+        let fn_ty = Ty::TFunc {
+            params: params.iter().map(|(_, t)| t.clone()).collect(),
+            ret_ty: Box::new(ret_ty.clone()),
+        };
+        m.monoenv.insert_func(f.name.clone(), fn_ty);
+
         new_fns.push(MonoFn {
             name: f.name,
             params,

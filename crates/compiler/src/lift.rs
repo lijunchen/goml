@@ -12,71 +12,6 @@ use crate::{
 const CLOSURE_ENV_PREFIX: &str = "closure_env_";
 const CLOSURE_APPLY_METHOD: &str = "apply";
 
-fn collapse_tapp_simple(ty: &Ty, monoenv: &GlobalMonoEnv) -> Ty {
-    match ty {
-        Ty::TApp { ty: base, args } if !args.is_empty() => {
-            let collapsed_args: Vec<Ty> = args
-                .iter()
-                .map(|a| collapse_tapp_simple(a, monoenv))
-                .collect();
-            let base_name = base.get_constr_name_unsafe();
-            let ident = Ident::new(&base_name);
-
-            // Check if this is an enum or struct and collapse to concrete type
-            if monoenv.genv.enums().contains_key(&ident) {
-                let suffix = collapsed_args
-                    .iter()
-                    .map(crate::mangle::encode_ty)
-                    .collect::<Vec<_>>()
-                    .join("_");
-                let new_name = format!("{}__{}", base_name, suffix);
-                Ty::TEnum { name: new_name }
-            } else if monoenv.genv.structs().contains_key(&ident) {
-                let suffix = collapsed_args
-                    .iter()
-                    .map(crate::mangle::encode_ty)
-                    .collect::<Vec<_>>()
-                    .join("_");
-                let new_name = format!("{}__{}", base_name, suffix);
-                Ty::TStruct { name: new_name }
-            } else {
-                Ty::TApp {
-                    ty: Box::new(collapse_tapp_simple(base, monoenv)),
-                    args: collapsed_args,
-                }
-            }
-        }
-        Ty::TApp { ty: base, args } => Ty::TApp {
-            ty: Box::new(collapse_tapp_simple(base, monoenv)),
-            args: args
-                .iter()
-                .map(|a| collapse_tapp_simple(a, monoenv))
-                .collect(),
-        },
-        Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|t| collapse_tapp_simple(t, monoenv))
-                .collect(),
-        },
-        Ty::TFunc { params, ret_ty } => Ty::TFunc {
-            params: params
-                .iter()
-                .map(|t| collapse_tapp_simple(t, monoenv))
-                .collect(),
-            ret_ty: Box::new(collapse_tapp_simple(ret_ty, monoenv)),
-        },
-        Ty::TArray { len, elem } => Ty::TArray {
-            len: *len,
-            elem: Box::new(collapse_tapp_simple(elem, monoenv)),
-        },
-        Ty::TRef { elem } => Ty::TRef {
-            elem: Box::new(collapse_tapp_simple(elem, monoenv)),
-        },
-        _ => ty.clone(),
-    }
-}
-
 /// Checks if a struct name is a closure environment struct.
 pub fn is_closure_env_struct(struct_name: &str) -> bool {
     struct_name.starts_with(CLOSURE_ENV_PREFIX)
@@ -138,12 +73,10 @@ impl GlobalLiftEnv {
     }
 
     pub fn get_func(&self, name: &str) -> Option<tast::Ty> {
-        self.extra_funcs.get(name).cloned().or_else(|| {
-            self.monoenv
-                .genv
-                .get_type_of_function(name)
-                .map(|ty| collapse_tapp_simple(&ty, &self.monoenv))
-        })
+        self.extra_funcs
+            .get(name)
+            .cloned()
+            .or_else(|| self.monoenv.get_func(name).cloned())
     }
 
     pub fn insert_func(&mut self, name: String, ty: tast::Ty) {
