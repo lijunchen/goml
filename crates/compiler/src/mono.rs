@@ -7,43 +7,6 @@ use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum MonoTy {
-    TUnit,
-    TBool,
-    TInt8,
-    TInt16,
-    TInt32,
-    TInt64,
-    TUint8,
-    TUint16,
-    TUint32,
-    TUint64,
-    TFloat32,
-    TFloat64,
-    TString,
-    TTuple {
-        typs: Vec<MonoTy>,
-    },
-    TCon {
-        name: String,
-    },
-    TArray {
-        len: usize,
-        elem: Box<MonoTy>,
-    },
-    TRef {
-        elem: Box<MonoTy>,
-    },
-    TParam {
-        name: String,
-    },
-    TFunc {
-        params: Vec<MonoTy>,
-        ret_ty: Box<MonoTy>,
-    },
-}
-
 #[derive(Debug, Clone)]
 pub struct MonoFile {
     pub toplevels: Vec<MonoFn>,

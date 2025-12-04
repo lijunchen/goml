@@ -1,11 +1,10 @@
 use ast::ast::Ident;
 use indexmap::IndexMap;
-use std::collections::HashMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
-    mangle::{decode_ty, encode_ty, mangle_inherent_name},
+    mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
     tast::{self, Ty},
 };
@@ -616,26 +615,12 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
             ty,
         } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
-            let expr_ty = expr.get_ty();
-            let instantiated_ty = match &constructor {
-                Constructor::Struct(struct_constructor) => instantiate_struct_field_ty(
-                    state,
-                    &struct_constructor.type_name,
-                    field_index,
-                    &expr_ty,
-                ),
-                Constructor::Enum(enum_constructor) => {
-                    instantiate_enum_field_ty(state, enum_constructor, field_index, &expr_ty)
+            let result_ty = match &constructor {
+                Constructor::Struct(sc) => {
+                    get_struct_field_ty(state, &sc.type_name, field_index).unwrap_or(ty)
                 }
+                Constructor::Enum(ec) => get_enum_field_ty(state, ec, field_index).unwrap_or(ty),
             };
-            let mut result_ty = ty;
-            if let Some(field_ty) = instantiated_ty
-                && (state.ty_contains_closure(&field_ty)
-                    || matches!(result_ty, Ty::TParam { .. })
-                    || ty_contains_type_param(&result_ty))
-            {
-                result_ty = field_ty;
-            }
             LiftExpr::EConstrGet {
                 expr,
                 constructor,
@@ -968,40 +953,16 @@ fn make_field_name(name: &str, index: usize) -> String {
     format!("{}_{}", base, index)
 }
 
-fn instantiate_struct_field_ty(
-    state: &State<'_>,
-    struct_name: &Ident,
-    field_index: usize,
-    instance_ty: &Ty,
-) -> Option<Ty> {
+fn get_struct_field_ty(state: &State<'_>, struct_name: &Ident, field_index: usize) -> Option<Ty> {
     let struct_def = state.liftenv.get_struct(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
-    if struct_def.generics.is_empty() {
-        return Some(raw_field_ty.clone());
-    }
-
-    let Some(args) = resolve_type_arguments(&struct_name.0, instance_ty) else {
-        return Some(raw_field_ty.clone());
-    };
-    if args.len() != struct_def.generics.len() {
-        return Some(raw_field_ty.clone());
-    }
-
-    let subst = struct_def
-        .generics
-        .iter()
-        .zip(args)
-        .map(|(g, arg)| (g.0.clone(), arg))
-        .collect::<HashMap<_, _>>();
-
-    Some(substitute_ty_params(raw_field_ty, &subst))
+    Some(raw_field_ty.clone())
 }
 
-fn instantiate_enum_field_ty(
+fn get_enum_field_ty(
     state: &State<'_>,
     constructor: &common::EnumConstructor,
     field_index: usize,
-    instance_ty: &Ty,
 ) -> Option<Ty> {
     let enum_def = state.liftenv.get_enum(&constructor.type_name)?;
     let (_, fields) = enum_def
@@ -1009,128 +970,5 @@ fn instantiate_enum_field_ty(
         .iter()
         .find(|(variant, _)| variant == &constructor.variant)?;
     let raw_field_ty = fields.get(field_index)?.clone();
-    if enum_def.generics.is_empty() {
-        return Some(raw_field_ty);
-    }
-
-    let Some(args) = resolve_type_arguments(&enum_def.name.0, instance_ty) else {
-        return Some(raw_field_ty);
-    };
-    if args.len() != enum_def.generics.len() {
-        return Some(raw_field_ty);
-    }
-
-    let subst = enum_def
-        .generics
-        .iter()
-        .zip(args)
-        .map(|(g, arg)| (g.0.clone(), arg))
-        .collect::<HashMap<_, _>>();
-
-    Some(substitute_ty_params(&raw_field_ty, &subst))
-}
-
-fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
-    match ty {
-        Ty::TUnit
-        | Ty::TBool
-        | Ty::TInt8
-        | Ty::TInt16
-        | Ty::TInt32
-        | Ty::TInt64
-        | Ty::TUint8
-        | Ty::TUint16
-        | Ty::TUint32
-        | Ty::TUint64
-        | Ty::TFloat32
-        | Ty::TFloat64
-        | Ty::TString => ty.clone(),
-        Ty::TEnum { .. } | Ty::TStruct { .. } => ty.clone(),
-        Ty::TVar { .. } => ty.clone(),
-        Ty::TParam { name } => subst.get(name).cloned().unwrap_or_else(|| ty.clone()),
-        Ty::TFunc { params, ret_ty } => Ty::TFunc {
-            params: params
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
-        },
-        Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-        Ty::TArray { len, elem } => Ty::TArray {
-            len: *len,
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        Ty::TRef { elem } => Ty::TRef {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        Ty::TApp { ty, args } => Ty::TApp {
-            ty: Box::new(substitute_ty_params(ty, subst)),
-            args: args
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-    }
-}
-
-fn ty_contains_type_param(ty: &Ty) -> bool {
-    match ty {
-        Ty::TParam { .. } => true,
-        Ty::TArray { elem, .. } | Ty::TRef { elem } => ty_contains_type_param(elem),
-        Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
-        Ty::TFunc { params, ret_ty } => {
-            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
-        }
-        Ty::TApp { ty, args } => {
-            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
-        }
-        _ => false,
-    }
-}
-
-fn resolve_type_arguments(base_name: &str, instance_ty: &Ty) -> Option<Vec<Ty>> {
-    match instance_ty {
-        Ty::TApp { ty, args } => {
-            if let Ty::TEnum { name } | Ty::TStruct { name } = ty.as_ref()
-                && name == base_name
-            {
-                return Some(args.clone());
-            }
-            None
-        }
-        Ty::TEnum { name } | Ty::TStruct { name } => {
-            let prefix = format!("{}__", base_name);
-            let encoded = name.strip_prefix(&prefix)?;
-            decode_encoded_type_list(encoded)
-        }
-        _ => None,
-    }
-}
-
-fn decode_encoded_type_list(encoded: &str) -> Option<Vec<Ty>> {
-    if encoded.is_empty() {
-        return Some(Vec::new());
-    }
-    let tokens: Vec<&str> = encoded.split('_').collect();
-    let mut items = Vec::new();
-    let mut cur = 0;
-    while cur < tokens.len() {
-        let mut found = None;
-        for mid in (cur + 1..=tokens.len()).rev() {
-            let slice = tokens[cur..mid].join("_");
-            if let Ok(ty) = decode_ty(&slice) {
-                items.push(ty);
-                found = Some(mid);
-                break;
-            }
-        }
-        let next = found?;
-        cur = next;
-    }
-    Some(items)
+    Some(raw_field_ty)
 }
