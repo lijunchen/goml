@@ -105,13 +105,18 @@ fn gather(record/38: Record__int32) -> Maybe__int32 {
   }
 }
 
-fn build_counter(label/41: string, start/42: int32) -> (Tracker, closure_env_snapshot_0, closure_env_bump_1, closure_env_flip_2) {
+fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
   let count/43 = ref(start/42) in
   let toggled/44 = ref(false) in
   let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
-  let snapshot/46 = closure_env_snapshot_0 { count_0: count/43 } in
-  let bump/49 = closure_env_bump_1 { count_0: count/43 } in
-  let flip/52 = closure_env_flip_2 { toggled_0: toggled/44 } in
+  let snapshot/46 = || Record__int32::Value(ref_get(count/43)) in
+  let bump/49 = |delta/47| let before/48 = ref_get(count/43) in
+  let mtmp17 = ref_set(count/43, int32_add(before/48, delta/47)) in
+  Record__int32::Pair(before/48, ref_get(count/43)) in
+  let flip/52 = || let before/50 = ref_get(toggled/44) in
+  let mtmp18 = ref_set(toggled/44, bool_not(before/50)) in
+  let after/51 = ref_get(toggled/44) in
+  Record__string::Pair(bool_to_string(before/50), bool_to_string(after/51)) in
   (tracker/45, snapshot/46, bump/49, flip/52)
 }
 
@@ -126,9 +131,9 @@ fn main() -> unit {
   let snapshot/54 = x21 in
   let tracker/53 = x20 in
   let tracker_info/57 = impl_Describe_Tracker_describe(tracker/53) in
-  let first_record/58 = impl_inherent_closure_env_snapshot_0_apply(snapshot/54) in
-  let bumped_record/59 = impl_inherent_closure_env_bump_1_apply(bump/55, 5) in
-  let flipped_record/60 = impl_inherent_closure_env_flip_2_apply(flip/56) in
+  let first_record/58 = snapshot/54() in
+  let bumped_record/59 = bump/55(5) in
+  let flipped_record/60 = flip/56() in
   let maybe_first/61 = gather(first_record/58) in
   let maybe_second/62 = gather(bumped_record/59) in
   let chosen/63 = choose__T_Maybe_int32(true, maybe_second/62, maybe_first/61) in
@@ -161,26 +166,6 @@ fn main() -> unit {
   let mtmp30 = string_println(pair_text/75) in
   let mtmp31 = string_println(bool_text/76) in
   ()
-}
-
-fn impl_inherent_closure_env_snapshot_0_apply(env32: closure_env_snapshot_0) -> Record__int32 {
-  let count/43 = closure_env_snapshot_0.count_0(env32) in
-  Record__int32::Value(ref_get(count/43))
-}
-
-fn impl_inherent_closure_env_bump_1_apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
-  let count/43 = closure_env_bump_1.count_0(env33) in
-  let before/48 = ref_get(count/43) in
-  let mtmp17 = ref_set(count/43, int32_add(before/48, delta/47)) in
-  Record__int32::Pair(before/48, ref_get(count/43))
-}
-
-fn impl_inherent_closure_env_flip_2_apply(env34: closure_env_flip_2) -> Record__string {
-  let toggled/44 = closure_env_flip_2.toggled_0(env34) in
-  let before/50 = ref_get(toggled/44) in
-  let mtmp18 = ref_set(toggled/44, bool_not(before/50)) in
-  let after/51 = ref_get(toggled/44) in
-  Record__string::Pair(bool_to_string(before/50), bool_to_string(after/51))
 }
 
 fn choose__T_Maybe_int32(flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {

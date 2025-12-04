@@ -299,7 +299,10 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         }
         tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
-                unreachable!("generic types not supported in Go backend");
+                unreachable!(
+                    "generic types not supported in Go backend: ty={:?}, args={:?}",
+                    ty, args
+                );
             }
             tast_ty_to_go_type(ty.as_ref())
         }

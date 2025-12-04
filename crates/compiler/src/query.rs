@@ -517,7 +517,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
 
     let encoded = encode_ty(ty);
     let mut methods: Vec<DotCompletionItem> =
-        if let Some(impl_def) = genv.inherent_impls.get(&encoded) {
+        if let Some(impl_def) = genv.trait_env.inherent_impls.get(&encoded) {
             impl_def
                 .methods
                 .iter()

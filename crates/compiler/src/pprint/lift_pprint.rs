@@ -95,7 +95,7 @@ impl LiftExpr {
                 Constructor::Struct(struct_constructor) => {
                     let name_doc = RcDoc::text(struct_constructor.type_name.0.clone());
 
-                    if let Some(struct_def) = liftenv.structs().get(&struct_constructor.type_name) {
+                    if let Some(struct_def) = liftenv.get_struct(&struct_constructor.type_name) {
                         if struct_def.fields.is_empty() {
                             name_doc.append(RcDoc::space()).append(RcDoc::text("{}"))
                         } else if struct_def.fields.len() == args.len() {
@@ -301,8 +301,7 @@ impl LiftExpr {
                     )),
                     Constructor::Struct(struct_constructor) => {
                         let field_name = liftenv
-                            .structs()
-                            .get(&struct_constructor.type_name)
+                            .get_struct(&struct_constructor.type_name)
                             .and_then(|def| def.fields.get(*field_index))
                             .map(|(fname, _)| fname.0.clone())
                             .unwrap_or_else(|| format!("_{}", field_index));

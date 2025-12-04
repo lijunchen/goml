@@ -389,68 +389,68 @@ func main0() struct{} {
     return ret71
 }
 
-func impl_inherent_closure_env_snapshot_0_apply(env32 closure_env_snapshot_0) Record__int32 {
-    var ret72 Record__int32
-    var count__43 *ref_int32_x = env32.count_0
-    var t54 int32 = ref_get__Ref_int32(count__43)
-    ret72 = Record__int32_Value{
-        _0: t54,
+func choose__T_Maybe_int32(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) Maybe__int32 {
+    var ret72 Maybe__int32
+    if flag__20 {
+        ret72 = when_true__21
+    } else {
+        ret72 = when_false__22
     }
     return ret72
 }
 
-func impl_inherent_closure_env_bump_1_apply(env33 closure_env_bump_1, delta__47 int32) Record__int32 {
-    var ret73 Record__int32
-    var count__43 *ref_int32_x = env33.count_0
-    var before__48 int32 = ref_get__Ref_int32(count__43)
-    var t55 int32 = before__48 + delta__47
-    ref_set__Ref_int32(count__43, t55)
-    var t56 int32 = ref_get__Ref_int32(count__43)
-    ret73 = Record__int32_Pair{
-        _0: before__48,
-        _1: t56,
-    }
-    return ret73
-}
-
-func impl_inherent_closure_env_flip_2_apply(env34 closure_env_flip_2) Record__string {
-    var ret74 Record__string
-    var toggled__44 *ref_bool_x = env34.toggled_0
-    var before__50 bool = ref_get__Ref_bool(toggled__44)
-    var t57 bool = !before__50
-    ref_set__Ref_bool(toggled__44, t57)
-    var after__51 bool = ref_get__Ref_bool(toggled__44)
-    var t58 string = bool_to_string(before__50)
-    var t59 string = bool_to_string(after__51)
-    ret74 = Record__string_Pair{
-        _0: t58,
-        _1: t59,
-    }
-    return ret74
-}
-
-func choose__T_Maybe_int32(flag__20 bool, when_true__21 Maybe__int32, when_false__22 Maybe__int32) Maybe__int32 {
-    var ret75 Maybe__int32
-    if flag__20 {
-        ret75 = when_true__21
-    } else {
-        ret75 = when_false__22
-    }
-    return ret75
-}
-
 func map_maybe__T_int32__U_string(value__23 Maybe__int32, f__24 func(int32) string) Maybe__string {
-    var ret76 Maybe__string
+    var ret73 Maybe__string
     switch value__23 := value__23.(type) {
     case Maybe__int32_Some:
         var x10 int32 = value__23._0
         var inner__25 int32 = x10
-        var t60 string = f__24(inner__25)
-        ret76 = Maybe__string_Some{
-            _0: t60,
+        var t54 string = f__24(inner__25)
+        ret73 = Maybe__string_Some{
+            _0: t54,
         }
     case Maybe__int32_None:
-        ret76 = Maybe__string_None{}
+        ret73 = Maybe__string_None{}
+    }
+    return ret73
+}
+
+func impl_inherent_closure_env_snapshot_0_apply(env32 closure_env_snapshot_0) Record__int32 {
+    var ret74 Record__int32
+    var count__43 *ref_int32_x = env32.count_0
+    var t55 int32 = ref_get__Ref_int32(count__43)
+    ret74 = Record__int32_Value{
+        _0: t55,
+    }
+    return ret74
+}
+
+func impl_inherent_closure_env_bump_1_apply(env33 closure_env_bump_1, delta__47 int32) Record__int32 {
+    var ret75 Record__int32
+    var count__43 *ref_int32_x = env33.count_0
+    var before__48 int32 = ref_get__Ref_int32(count__43)
+    var t56 int32 = before__48 + delta__47
+    ref_set__Ref_int32(count__43, t56)
+    var t57 int32 = ref_get__Ref_int32(count__43)
+    ret75 = Record__int32_Pair{
+        _0: before__48,
+        _1: t57,
+    }
+    return ret75
+}
+
+func impl_inherent_closure_env_flip_2_apply(env34 closure_env_flip_2) Record__string {
+    var ret76 Record__string
+    var toggled__44 *ref_bool_x = env34.toggled_0
+    var before__50 bool = ref_get__Ref_bool(toggled__44)
+    var t58 bool = !before__50
+    ref_set__Ref_bool(toggled__44, t58)
+    var after__51 bool = ref_get__Ref_bool(toggled__44)
+    var t59 string = bool_to_string(before__50)
+    var t60 string = bool_to_string(after__51)
+    ret76 = Record__string_Pair{
+        _0: t59,
+        _1: t60,
     }
     return ret76
 }

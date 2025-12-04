@@ -109,7 +109,8 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &ast::TraitDef) {
         );
     }
 
-    genv.trait_defs
+    genv.trait_env
+        .trait_defs
         .insert(trait_def.name.0.clone(), env::TraitDef { methods });
 }
 
@@ -124,7 +125,7 @@ fn define_trait_impl(
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
     let trait_name_str = trait_name.0.clone();
 
-    let trait_def = match genv.trait_defs.get(&trait_name_str) {
+    let trait_def = match genv.trait_env.trait_defs.get(&trait_name_str) {
         Some(def) => def.clone(),
         None => {
             diagnostics.push(Diagnostic::new(
@@ -300,7 +301,7 @@ fn define_trait_impl(
 
     // Insert the impl block
     let key = (trait_name_str, encode_ty(&for_ty));
-    genv.trait_impls.insert(
+    genv.trait_env.trait_impls.insert(
         key,
         env::ImplDef {
             params: vec![],
@@ -374,7 +375,7 @@ fn define_inherent_impl(
     }
 
     // Insert or extend the impl def
-    let impl_def = genv.inherent_impls.entry(encoded_ty).or_default();
+    let impl_def = genv.trait_env.inherent_impls.entry(encoded_ty).or_default();
     impl_def.methods.extend(methods_to_add);
 }
 
@@ -398,7 +399,7 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
         }
         None => tast::Ty::TUnit,
     };
-    genv.funcs.insert(
+    genv.value_env.funcs.insert(
         name.0.clone(),
         FnScheme {
             type_params: vec![],

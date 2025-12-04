@@ -201,6 +201,7 @@ impl Point {
 
     let encoded = encode_ty(&point_ty);
     let impl_def = genv
+        .trait_env
         .inherent_impls
         .get(&encoded)
         .expect("inherent impl exists");
@@ -233,6 +234,7 @@ impl Point {
     let encoded = encode_ty(&point_ty);
 
     let impl_def = genv
+        .trait_env
         .inherent_impls
         .get(&encoded)
         .expect("inherent impl registered");
@@ -245,8 +247,8 @@ impl Point {
     match &copy_scheme.ty {
         tast::Ty::TFunc { params, ret_ty } => {
             assert_eq!(
-                params,
-                &vec![point_ty.clone(), point_ty.clone()],
+                *params,
+                vec![point_ty.clone(), point_ty.clone()],
                 "copy params should be instantiated to Point",
             );
             assert_eq!(

@@ -230,6 +230,18 @@ fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     }
 }
 
+fn decompose_enum_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
+    match ty {
+        Ty::TEnum { name } => Some((Ident::new(name), Vec::new())),
+        Ty::TApp { ty: base, args } => {
+            let (type_name, mut collected) = decompose_enum_type(base)?;
+            collected.extend(args.iter().cloned());
+            Some((type_name, collected))
+        }
+        _ => None,
+    }
+}
+
 struct ConstructorCase {
     constructor: Constructor,
     vars: Vec<Variable>,
@@ -314,6 +326,14 @@ fn compile_enum_case(
         .unwrap_or_else(|| panic!("Enum {} not found", name.0));
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
+    let type_args = decompose_enum_type(&bvar.ty)
+        .map(|(_, args)| args)
+        .unwrap_or_default();
+    let mut subst = HashMap::new();
+    for (param, arg) in tydef.generics.iter().zip(type_args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
     let cases: Vec<ConstructorCase> = tydef
         .variants
         .iter()
@@ -328,7 +348,7 @@ fn compile_enum_case(
                 .iter()
                 .map(|arg_ty| Variable {
                     name: gensym.gensym("x"),
-                    ty: arg_ty.clone(),
+                    ty: substitute_ty_params(arg_ty, &subst),
                 })
                 .collect::<Vec<_>>(),
             rows: vec![],

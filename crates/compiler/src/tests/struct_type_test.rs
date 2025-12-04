@@ -66,6 +66,7 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
     );
 
     let wrapper_fn = genv
+        .value_env
         .funcs
         .get("consume_wrapper")
         .expect("function type to be recorded");

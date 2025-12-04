@@ -1,15 +1,11 @@
 use ast::ast::Ident;
 use indexmap::IndexMap;
-use std::collections::HashMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
-    core,
-    env::{
-        EnumDef, ExternFunc, ExternType, FnOrigin, FnScheme, Gensym, GlobalTypeEnv, ImplDef,
-        StructDef, TraitDef,
-    },
-    mangle::{decode_ty, encode_ty, mangle_inherent_name},
+    env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
+    mangle::{encode_ty, mangle_inherent_name},
+    mono::{GlobalMonoEnv, MonoExpr, MonoFile},
     tast::{self, Ty},
 };
 
@@ -23,48 +19,74 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 
 #[derive(Debug, Clone)]
 pub struct GlobalLiftEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub monoenv: GlobalMonoEnv,
+    pub extra_structs: IndexMap<Ident, StructDef>,
+    pub extra_inherent_impls: IndexMap<String, ImplDef>,
+    pub extra_funcs: IndexMap<String, tast::Ty>,
 }
 
 impl GlobalLiftEnv {
-    pub fn from_genv(genv: GlobalTypeEnv) -> Self {
+    pub fn from_monoenv(monoenv: GlobalMonoEnv) -> Self {
         Self {
-            enums: genv.enums,
-            structs: genv.structs,
-            trait_defs: genv.trait_defs,
-            trait_impls: genv.trait_impls,
-            inherent_impls: genv.inherent_impls,
-            funcs: genv
-                .funcs
-                .into_iter()
-                .map(|(name, scheme)| (name, scheme.ty))
-                .collect(),
-            extern_funcs: genv.extern_funcs,
-            extern_types: genv.extern_types,
+            monoenv,
+            extra_structs: IndexMap::new(),
+            extra_inherent_impls: IndexMap::new(),
+            extra_funcs: IndexMap::new(),
         }
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
-        &self.enums
+    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+        self.monoenv.enums()
+    }
+
+    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+        self.monoenv.get_enum(name)
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        self.structs.get_mut(name)
+        if self.extra_structs.contains_key(name) {
+            self.extra_structs.get_mut(name)
+        } else {
+            self.monoenv.struct_def_mut(name)
+        }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.structs.insert(def.name.clone(), def);
+        self.extra_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.monoenv.structs().chain(self.extra_structs.iter())
+    }
+
+    pub fn inherent_impls(&self) -> impl Iterator<Item = (&String, &ImplDef)> {
+        self.monoenv
+            .genv
+            .trait_env
+            .inherent_impls
+            .iter()
+            .chain(self.extra_inherent_impls.iter())
+    }
+
+    pub fn extra_inherent_impls_mut(&mut self) -> &mut IndexMap<String, ImplDef> {
+        &mut self.extra_inherent_impls
+    }
+
+    pub fn get_func(&self, name: &str) -> Option<tast::Ty> {
+        self.extra_funcs
+            .get(name)
+            .cloned()
+            .or_else(|| self.monoenv.get_func(name).cloned())
+    }
+
+    pub fn insert_func(&mut self, name: String, ty: tast::Ty) {
+        self.extra_funcs.insert(name, ty);
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.extra_structs
+            .get(name)
+            .or_else(|| self.monoenv.get_struct(name))
     }
 }
 
@@ -301,11 +323,11 @@ impl Scope {
 }
 
 pub fn lambda_lift(
-    genv: GlobalTypeEnv,
+    monoenv: GlobalMonoEnv,
     gensym: &Gensym,
-    file: core::File,
+    file: MonoFile,
 ) -> (LiftFile, GlobalLiftEnv) {
-    let mut liftenv = GlobalLiftEnv::from_genv(genv);
+    let mut liftenv = GlobalLiftEnv::from_monoenv(monoenv);
     let mut state = State::new(&mut liftenv, gensym);
     let mut toplevels = Vec::new();
 
@@ -344,7 +366,7 @@ pub fn lambda_lift(
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
             ret_ty: Box::new(ret_ty.clone()),
         };
-        state.liftenv.funcs.insert(f.name.clone(), fn_ty);
+        state.liftenv.insert_func(f.name.clone(), fn_ty);
 
         toplevels.push(LiftFn {
             name: f.name,
@@ -367,9 +389,9 @@ pub fn lambda_lift(
     (LiftFile { toplevels }, liftenv)
 }
 
-fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) -> LiftExpr {
+fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> LiftExpr {
     match expr {
-        core::Expr::EVar { name, ty } => {
+        MonoExpr::EVar { name, ty } => {
             if let Some(entry) = scope.get(&name) {
                 if let Some(struct_name) = entry.closure_struct.clone() {
                     LiftExpr::EVar {
@@ -382,7 +404,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                         ty: entry.ty.clone(),
                     }
                 }
-            } else if let Some(func_ty) = state.liftenv.funcs.get(&name) {
+            } else if let Some(func_ty) = state.liftenv.get_func(&name) {
                 LiftExpr::EVar {
                     name,
                     ty: func_ty.clone(),
@@ -391,8 +413,8 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 LiftExpr::EVar { name, ty }
             }
         }
-        core::Expr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
-        core::Expr::EConstr {
+        MonoExpr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
+        MonoExpr::EConstr {
             constructor,
             args,
             ty,
@@ -426,7 +448,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty,
             }
         }
-        core::Expr::ETuple { items, ty: _ } => {
+        MonoExpr::ETuple { items, ty: _ } => {
             let items = items
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
@@ -437,21 +459,21 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty: Ty::TTuple { typs },
             }
         }
-        core::Expr::EArray { items, ty } => {
+        MonoExpr::EArray { items, ty } => {
             let items = items
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
                 .collect();
             LiftExpr::EArray { items, ty }
         }
-        core::Expr::EClosure { params, body, ty } => {
+        MonoExpr::EClosure { params, body, ty } => {
             transform_closure(state, scope, params, *body, ty, None)
         }
-        core::Expr::ELet {
+        MonoExpr::ELet {
             name, value, body, ..
         } => {
             let value = match *value {
-                core::Expr::EClosure { params, body, ty } => {
+                MonoExpr::EClosure { params, body, ty } => {
                     transform_closure(state, scope, params, *body, ty, Some(name.clone()))
                 }
                 other => transform_expr(state, scope, other),
@@ -476,7 +498,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty: body_ty,
             }
         }
-        core::Expr::EMatch {
+        MonoExpr::EMatch {
             expr,
             arms,
             default,
@@ -498,7 +520,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty,
             }
         }
-        core::Expr::EIf {
+        MonoExpr::EIf {
             cond,
             then_branch,
             else_branch,
@@ -514,38 +536,24 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty,
             }
         }
-        core::Expr::EWhile { cond, body, ty } => {
+        MonoExpr::EWhile { cond, body, ty } => {
             let cond = Box::new(transform_expr(state, scope, *cond));
             let body = Box::new(transform_expr(state, scope, *body));
             LiftExpr::EWhile { cond, body, ty }
         }
-        core::Expr::EConstrGet {
+        MonoExpr::EConstrGet {
             expr,
             constructor,
             field_index,
             ty,
         } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
-            let expr_ty = expr.get_ty();
-            let instantiated_ty = match &constructor {
-                Constructor::Struct(struct_constructor) => instantiate_struct_field_ty(
-                    state,
-                    &struct_constructor.type_name,
-                    field_index,
-                    &expr_ty,
-                ),
-                Constructor::Enum(enum_constructor) => {
-                    instantiate_enum_field_ty(state, enum_constructor, field_index, &expr_ty)
+            let result_ty = match &constructor {
+                Constructor::Struct(sc) => {
+                    get_struct_field_ty(state, &sc.type_name, field_index).unwrap_or(ty)
                 }
+                Constructor::Enum(ec) => get_enum_field_ty(state, ec, field_index).unwrap_or(ty),
             };
-            let mut result_ty = ty;
-            if let Some(field_ty) = instantiated_ty
-                && (state.ty_contains_closure(&field_ty)
-                    || matches!(result_ty, Ty::TParam { .. })
-                    || ty_contains_type_param(&result_ty))
-            {
-                result_ty = field_ty;
-            }
             LiftExpr::EConstrGet {
                 expr,
                 constructor,
@@ -553,7 +561,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty: result_ty,
             }
         }
-        core::Expr::ECall { func, args, ty } => {
+        MonoExpr::ECall { func, args, ty } => {
             let func_expr = transform_expr(state, scope, *func);
             let args = args
                 .into_iter()
@@ -599,7 +607,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                 ty: call_ty,
             }
         }
-        core::Expr::EProj { tuple, index, ty } => {
+        MonoExpr::EProj { tuple, index, ty } => {
             let tuple = Box::new(transform_expr(state, scope, *tuple));
             let proj_ty = match tuple.get_ty() {
                 Ty::TTuple { typs } if index < typs.len() => typs[index].clone(),
@@ -618,7 +626,7 @@ fn transform_closure(
     state: &mut State<'_>,
     scope: &mut Scope,
     params: Vec<tast::ClosureParam>,
-    body: core::Expr,
+    body: MonoExpr,
     ty: Ty,
     name_hint: Option<String>,
 ) -> LiftExpr {
@@ -746,12 +754,15 @@ fn transform_closure(
     // Register the apply function both in funcs and as an inherent method
     state
         .liftenv
-        .funcs
-        .insert(apply_fn_name.clone(), apply_fn_ty.clone());
+        .insert_func(apply_fn_name.clone(), apply_fn_ty.clone());
 
     // Register as inherent method: encoded_env_ty -> ImplDef with apply method
     let encoded_ty = encode_ty(&env_ty);
-    let impl_def = state.liftenv.inherent_impls.entry(encoded_ty).or_default();
+    let impl_def = state
+        .liftenv
+        .extra_inherent_impls_mut()
+        .entry(encoded_ty)
+        .or_default();
     impl_def.methods.insert(
         CLOSURE_APPLY_METHOD.to_string(),
         FnScheme {
@@ -875,169 +886,22 @@ fn make_field_name(name: &str, index: usize) -> String {
     format!("{}_{}", base, index)
 }
 
-fn instantiate_struct_field_ty(
-    state: &State<'_>,
-    struct_name: &Ident,
-    field_index: usize,
-    instance_ty: &Ty,
-) -> Option<Ty> {
-    let struct_def = state.liftenv.structs().get(struct_name)?;
+fn get_struct_field_ty(state: &State<'_>, struct_name: &Ident, field_index: usize) -> Option<Ty> {
+    let struct_def = state.liftenv.get_struct(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
-    if struct_def.generics.is_empty() {
-        return Some(raw_field_ty.clone());
-    }
-
-    let Some(args) = resolve_type_arguments(&struct_name.0, instance_ty) else {
-        return Some(raw_field_ty.clone());
-    };
-    if args.len() != struct_def.generics.len() {
-        return Some(raw_field_ty.clone());
-    }
-
-    let subst = struct_def
-        .generics
-        .iter()
-        .zip(args)
-        .map(|(g, arg)| (g.0.clone(), arg))
-        .collect::<HashMap<_, _>>();
-
-    Some(substitute_ty_params(raw_field_ty, &subst))
+    Some(raw_field_ty.clone())
 }
 
-fn instantiate_enum_field_ty(
+fn get_enum_field_ty(
     state: &State<'_>,
     constructor: &common::EnumConstructor,
     field_index: usize,
-    instance_ty: &Ty,
 ) -> Option<Ty> {
-    let enum_def = state.liftenv.enums().get(&constructor.type_name)?;
+    let enum_def = state.liftenv.get_enum(&constructor.type_name)?;
     let (_, fields) = enum_def
         .variants
         .iter()
         .find(|(variant, _)| variant == &constructor.variant)?;
     let raw_field_ty = fields.get(field_index)?.clone();
-    if enum_def.generics.is_empty() {
-        return Some(raw_field_ty);
-    }
-
-    let Some(args) = resolve_type_arguments(&enum_def.name.0, instance_ty) else {
-        return Some(raw_field_ty);
-    };
-    if args.len() != enum_def.generics.len() {
-        return Some(raw_field_ty);
-    }
-
-    let subst = enum_def
-        .generics
-        .iter()
-        .zip(args)
-        .map(|(g, arg)| (g.0.clone(), arg))
-        .collect::<HashMap<_, _>>();
-
-    Some(substitute_ty_params(&raw_field_ty, &subst))
-}
-
-fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
-    match ty {
-        Ty::TUnit
-        | Ty::TBool
-        | Ty::TInt8
-        | Ty::TInt16
-        | Ty::TInt32
-        | Ty::TInt64
-        | Ty::TUint8
-        | Ty::TUint16
-        | Ty::TUint32
-        | Ty::TUint64
-        | Ty::TFloat32
-        | Ty::TFloat64
-        | Ty::TString => ty.clone(),
-        Ty::TEnum { .. } | Ty::TStruct { .. } => ty.clone(),
-        Ty::TVar { .. } => ty.clone(),
-        Ty::TParam { name } => subst.get(name).cloned().unwrap_or_else(|| ty.clone()),
-        Ty::TFunc { params, ret_ty } => Ty::TFunc {
-            params: params
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-            ret_ty: Box::new(substitute_ty_params(ret_ty, subst)),
-        },
-        Ty::TTuple { typs } => Ty::TTuple {
-            typs: typs
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-        Ty::TArray { len, elem } => Ty::TArray {
-            len: *len,
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        Ty::TRef { elem } => Ty::TRef {
-            elem: Box::new(substitute_ty_params(elem, subst)),
-        },
-        Ty::TApp { ty, args } => Ty::TApp {
-            ty: Box::new(substitute_ty_params(ty, subst)),
-            args: args
-                .iter()
-                .map(|t| substitute_ty_params(t, subst))
-                .collect(),
-        },
-    }
-}
-
-fn ty_contains_type_param(ty: &Ty) -> bool {
-    match ty {
-        Ty::TParam { .. } => true,
-        Ty::TArray { elem, .. } | Ty::TRef { elem } => ty_contains_type_param(elem),
-        Ty::TTuple { typs } => typs.iter().any(ty_contains_type_param),
-        Ty::TFunc { params, ret_ty } => {
-            params.iter().any(ty_contains_type_param) || ty_contains_type_param(ret_ty)
-        }
-        Ty::TApp { ty, args } => {
-            ty_contains_type_param(ty) || args.iter().any(ty_contains_type_param)
-        }
-        _ => false,
-    }
-}
-
-fn resolve_type_arguments(base_name: &str, instance_ty: &Ty) -> Option<Vec<Ty>> {
-    match instance_ty {
-        Ty::TApp { ty, args } => {
-            if let Ty::TEnum { name } | Ty::TStruct { name } = ty.as_ref()
-                && name == base_name
-            {
-                return Some(args.clone());
-            }
-            None
-        }
-        Ty::TEnum { name } | Ty::TStruct { name } => {
-            let prefix = format!("{}__", base_name);
-            let encoded = name.strip_prefix(&prefix)?;
-            decode_encoded_type_list(encoded)
-        }
-        _ => None,
-    }
-}
-
-fn decode_encoded_type_list(encoded: &str) -> Option<Vec<Ty>> {
-    if encoded.is_empty() {
-        return Some(Vec::new());
-    }
-    let tokens: Vec<&str> = encoded.split('_').collect();
-    let mut items = Vec::new();
-    let mut cur = 0;
-    while cur < tokens.len() {
-        let mut found = None;
-        for mid in (cur + 1..=tokens.len()).rev() {
-            let slice = tokens[cur..mid].join("_");
-            if let Ok(ty) = decode_ty(&slice) {
-                items.push(ty);
-                found = Some(mid);
-                break;
-            }
-        }
-        let next = found?;
-        cur = next;
-    }
-    Some(items)
+    Some(raw_field_ty)
 }

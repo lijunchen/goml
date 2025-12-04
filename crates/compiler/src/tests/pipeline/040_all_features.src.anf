@@ -182,32 +182,6 @@ fn main() -> unit {
   ()
 }
 
-fn impl_inherent_closure_env_snapshot_0_apply(env32: closure_env_snapshot_0) -> Record__int32 {
-  let count/43 = closure_env_snapshot_0.count_0(env32) in
-  let t54 = ref_get(count/43) in
-  Record__int32::Value(t54)
-}
-
-fn impl_inherent_closure_env_bump_1_apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
-  let count/43 = closure_env_bump_1.count_0(env33) in
-  let before/48 = ref_get(count/43) in
-  let t55 = int32_add(before/48, delta/47) in
-  let mtmp17 = ref_set(count/43, t55) in
-  let t56 = ref_get(count/43) in
-  Record__int32::Pair(before/48, t56)
-}
-
-fn impl_inherent_closure_env_flip_2_apply(env34: closure_env_flip_2) -> Record__string {
-  let toggled/44 = closure_env_flip_2.toggled_0(env34) in
-  let before/50 = ref_get(toggled/44) in
-  let t57 = bool_not(before/50) in
-  let mtmp18 = ref_set(toggled/44, t57) in
-  let after/51 = ref_get(toggled/44) in
-  let t58 = bool_to_string(before/50) in
-  let t59 = bool_to_string(after/51) in
-  Record__string::Pair(t58, t59)
-}
-
 fn choose__T_Maybe_int32(flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
   if flag/20 {
     when_true/21
@@ -221,11 +195,37 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
     Tag_0 => {
       let x10 = Maybe__int32::Some._0(value/23) in
       let inner/25 = x10 in
-      let t60 = f/24(inner/25) in
-      Maybe__string::Some(t60)
+      let t54 = f/24(inner/25) in
+      Maybe__string::Some(t54)
     },
     Tag_1 => {
       Tag_1
     },
   }
+}
+
+fn impl_inherent_closure_env_snapshot_0_apply(env32: closure_env_snapshot_0) -> Record__int32 {
+  let count/43 = closure_env_snapshot_0.count_0(env32) in
+  let t55 = ref_get(count/43) in
+  Record__int32::Value(t55)
+}
+
+fn impl_inherent_closure_env_bump_1_apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
+  let count/43 = closure_env_bump_1.count_0(env33) in
+  let before/48 = ref_get(count/43) in
+  let t56 = int32_add(before/48, delta/47) in
+  let mtmp17 = ref_set(count/43, t56) in
+  let t57 = ref_get(count/43) in
+  Record__int32::Pair(before/48, t57)
+}
+
+fn impl_inherent_closure_env_flip_2_apply(env34: closure_env_flip_2) -> Record__string {
+  let toggled/44 = closure_env_flip_2.toggled_0(env34) in
+  let before/50 = ref_get(toggled/44) in
+  let t58 = bool_not(before/50) in
+  let mtmp18 = ref_set(toggled/44, t58) in
+  let after/51 = ref_get(toggled/44) in
+  let t59 = bool_to_string(before/50) in
+  let t60 = bool_to_string(after/51) in
+  Record__string::Pair(t59, t60)
 }

@@ -104,7 +104,7 @@ impl CExpr {
                 let args_docs = args.iter().map(|arg| arg.to_doc());
                 let struct_def = constructor
                     .as_struct()
-                    .and_then(|s| anfenv.structs().get(&s.type_name));
+                    .and_then(|s| anfenv.get_struct(&s.type_name));
                 constructor_to_doc(constructor, args_docs, struct_def)
             }
             CExpr::ETuple { items, ty: _ } => {
@@ -205,7 +205,7 @@ impl CExpr {
             } => {
                 let struct_def = constructor
                     .as_struct()
-                    .and_then(|s| anfenv.structs().get(&s.type_name));
+                    .and_then(|s| anfenv.get_struct(&s.type_name));
                 let accessor = constr_get_accessor_doc(constructor, *field_index, struct_def);
 
                 accessor

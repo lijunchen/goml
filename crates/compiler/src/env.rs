@@ -87,49 +87,16 @@ pub struct ImplDef {
     pub methods: IndexMap<String, FnScheme>,
 }
 
-#[derive(Debug, Clone)]
-pub struct GlobalTypeEnv {
+#[derive(Debug, Clone, Default)]
+pub struct TypeEnv {
     pub enums: IndexMap<Ident, EnumDef>,
     pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub funcs: IndexMap<String, FnScheme>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
     pub extern_types: IndexMap<String, ExternType>,
 }
 
-impl Default for GlobalTypeEnv {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl GlobalTypeEnv {
+impl TypeEnv {
     pub fn new() -> Self {
-        Self {
-            enums: IndexMap::new(),
-            structs: IndexMap::new(),
-            funcs: builtin_functions(),
-            extern_funcs: IndexMap::new(),
-            extern_types: IndexMap::new(),
-            trait_defs: IndexMap::new(),
-            trait_impls: IndexMap::new(),
-            inherent_impls: builtin_inherent_methods(),
-        }
-    }
-
-    /// Check if a name is a trait
-    pub fn is_trait(&self, name: &str) -> bool {
-        self.trait_defs.contains_key(name)
-    }
-
-    /// Lookup a trait method by trait name and method name
-    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
-        self.trait_defs
-            .get(&trait_name.0)
-            .and_then(|trait_def| trait_def.methods.get(&method_name.0))
-            .map(|scheme| scheme.ty.clone())
+        Self::default()
     }
 
     pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
@@ -179,33 +146,6 @@ impl GlobalTypeEnv {
 
     pub fn insert_struct(&mut self, def: StructDef) {
         self.structs.insert(def.name.clone(), def);
-    }
-
-    pub fn register_extern_function(
-        &mut self,
-        goml_name: String,
-        package_path: String,
-        go_name: String,
-        ty: tast::Ty,
-    ) {
-        self.funcs.insert(
-            goml_name.clone(),
-            FnScheme {
-                type_params: vec![],
-                constraints: (),
-                ty: ty.clone(),
-                origin: FnOrigin::User,
-            },
-        );
-        self.record_extern_type_usage(&ty, &package_path);
-        self.extern_funcs.insert(
-            goml_name,
-            ExternFunc {
-                package_path,
-                go_name,
-                ty,
-            },
-        );
     }
 
     pub fn register_extern_type(&mut self, goml_name: String) {
@@ -276,19 +216,6 @@ impl GlobalTypeEnv {
                 self.record_extern_type_usage(elem, package_path);
             }
         }
-    }
-
-    pub fn get_trait_impl(
-        &self,
-        trait_name: &Ident,
-        type_name: &tast::Ty,
-        func_name: &Ident,
-    ) -> Option<tast::Ty> {
-        let key = (trait_name.0.clone(), encode_ty(type_name));
-        self.trait_impls
-            .get(&key)
-            .and_then(|impl_def| impl_def.methods.get(&func_name.0))
-            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
@@ -422,9 +349,46 @@ impl GlobalTypeEnv {
             (constructor, ctor_ty)
         })
     }
+}
 
-    pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
-        self.funcs.get(func).map(|scheme| scheme.ty.clone())
+#[derive(Debug, Clone, Default)]
+pub struct TraitEnv {
+    pub trait_defs: IndexMap<String, TraitDef>,
+    pub trait_impls: IndexMap<(String, String), ImplDef>,
+    pub inherent_impls: IndexMap<String, ImplDef>,
+}
+
+impl TraitEnv {
+    pub fn new() -> Self {
+        Self {
+            trait_defs: IndexMap::new(),
+            trait_impls: IndexMap::new(),
+            inherent_impls: builtin_inherent_methods(),
+        }
+    }
+
+    pub fn is_trait(&self, name: &str) -> bool {
+        self.trait_defs.contains_key(name)
+    }
+
+    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
+        self.trait_defs
+            .get(&trait_name.0)
+            .and_then(|trait_def| trait_def.methods.get(&method_name.0))
+            .map(|scheme| scheme.ty.clone())
+    }
+
+    pub fn get_trait_impl(
+        &self,
+        trait_name: &Ident,
+        type_name: &tast::Ty,
+        func_name: &Ident,
+    ) -> Option<tast::Ty> {
+        let key = (trait_name.0.clone(), encode_ty(type_name));
+        self.trait_impls
+            .get(&key)
+            .and_then(|impl_def| impl_def.methods.get(&func_name.0))
+            .map(|scheme| scheme.ty.clone())
     }
 
     pub fn lookup_inherent_method(
@@ -437,6 +401,161 @@ impl GlobalTypeEnv {
             .get(&encoded_ty)
             .and_then(|impl_def| impl_def.methods.get(&method.0))
             .map(|scheme| scheme.ty.clone())
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct ValueEnv {
+    pub funcs: IndexMap<String, FnScheme>,
+    pub extern_funcs: IndexMap<String, ExternFunc>,
+}
+
+impl ValueEnv {
+    pub fn new() -> Self {
+        Self {
+            funcs: builtin_functions(),
+            extern_funcs: IndexMap::new(),
+        }
+    }
+
+    pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
+        self.funcs.get(func).map(|scheme| scheme.ty.clone())
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct GlobalTypeEnv {
+    pub type_env: TypeEnv,
+    pub trait_env: TraitEnv,
+    pub value_env: ValueEnv,
+}
+
+impl Default for GlobalTypeEnv {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl GlobalTypeEnv {
+    pub fn new() -> Self {
+        Self {
+            type_env: TypeEnv::new(),
+            trait_env: TraitEnv::new(),
+            value_env: ValueEnv::new(),
+        }
+    }
+
+    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+        self.type_env.enums()
+    }
+
+    pub fn ensure_enum_placeholder(&mut self, name: Ident, generics: Vec<Ident>) -> &mut EnumDef {
+        self.type_env.ensure_enum_placeholder(name, generics)
+    }
+
+    pub fn insert_enum(&mut self, def: EnumDef) {
+        self.type_env.insert_enum(def)
+    }
+
+    pub fn retain_enums<F>(&mut self, f: F)
+    where
+        F: FnMut(&Ident, &mut EnumDef) -> bool,
+    {
+        self.type_env.retain_enums(f)
+    }
+
+    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+        self.type_env.structs()
+    }
+
+    pub fn ensure_struct_placeholder(
+        &mut self,
+        name: Ident,
+        generics: Vec<Ident>,
+    ) -> &mut StructDef {
+        self.type_env.ensure_struct_placeholder(name, generics)
+    }
+
+    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+        self.type_env.struct_def_mut(name)
+    }
+
+    pub fn insert_struct(&mut self, def: StructDef) {
+        self.type_env.insert_struct(def)
+    }
+
+    pub fn register_extern_type(&mut self, goml_name: String) {
+        self.type_env.register_extern_type(goml_name)
+    }
+
+    pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+        self.type_env.lookup_constructor(constr)
+    }
+
+    pub fn lookup_constructor_with_namespace(
+        &self,
+        enum_name: Option<&Ident>,
+        constr: &Ident,
+    ) -> Option<(Constructor, tast::Ty)> {
+        self.type_env
+            .lookup_constructor_with_namespace(enum_name, constr)
+    }
+
+    pub fn is_trait(&self, name: &str) -> bool {
+        self.trait_env.is_trait(name)
+    }
+
+    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
+        self.trait_env.lookup_trait_method(trait_name, method_name)
+    }
+
+    pub fn get_trait_impl(
+        &self,
+        trait_name: &Ident,
+        type_name: &tast::Ty,
+        func_name: &Ident,
+    ) -> Option<tast::Ty> {
+        self.trait_env
+            .get_trait_impl(trait_name, type_name, func_name)
+    }
+
+    pub fn lookup_inherent_method(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &Ident,
+    ) -> Option<tast::Ty> {
+        self.trait_env.lookup_inherent_method(receiver_ty, method)
+    }
+
+    pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
+        self.value_env.get_type_of_function(func)
+    }
+
+    pub fn register_extern_function(
+        &mut self,
+        goml_name: String,
+        package_path: String,
+        go_name: String,
+        ty: tast::Ty,
+    ) {
+        self.value_env.funcs.insert(
+            goml_name.clone(),
+            FnScheme {
+                type_params: vec![],
+                constraints: (),
+                ty: ty.clone(),
+                origin: FnOrigin::User,
+            },
+        );
+        self.type_env.record_extern_type_usage(&ty, &package_path);
+        self.value_env.extern_funcs.insert(
+            goml_name,
+            ExternFunc {
+                package_path,
+                go_name,
+                ty,
+            },
+        );
     }
 }
 

@@ -75,7 +75,7 @@ impl MonoExpr {
                 let args_docs = args.iter().map(|arg| arg.to_doc(monoenv));
                 let struct_def = constructor
                     .as_struct()
-                    .and_then(|s| monoenv.structs().get(&s.type_name));
+                    .and_then(|s| monoenv.get_struct(&s.type_name));
                 constructor_to_doc(constructor, args_docs, struct_def)
             }
 
@@ -231,13 +231,30 @@ impl MonoExpr {
             } => {
                 let struct_def = constructor
                     .as_struct()
-                    .and_then(|s| monoenv.structs().get(&s.type_name));
+                    .and_then(|s| monoenv.get_struct(&s.type_name));
                 let accessor = constr_get_accessor_doc(constructor, *field_index, struct_def);
 
                 accessor
                     .append(RcDoc::text("("))
                     .append(expr.to_doc(monoenv))
                     .append(RcDoc::text(")"))
+            }
+            MonoExpr::EClosure {
+                params,
+                body,
+                ty: _,
+            } => {
+                let params_doc = RcDoc::intersperse(
+                    params.iter().map(|p| RcDoc::text(p.name.clone())),
+                    RcDoc::text(", "),
+                );
+                let body_doc = body.to_doc(monoenv);
+
+                RcDoc::text("|")
+                    .append(params_doc)
+                    .append(RcDoc::text("|"))
+                    .append(RcDoc::space())
+                    .append(body_doc)
             }
         }
     }

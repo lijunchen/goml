@@ -1,49 +1,11 @@
 use crate::common::{self, Constructor, Prim};
-use crate::core::Ty;
-use crate::env::{EnumDef, ExternFunc, ExternType, ImplDef, StructDef, TraitDef};
-use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
+use crate::core::{self, Ty};
+use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::mangle::encode_ty;
-use crate::tast::{self};
+use crate::tast;
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
-
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub enum MonoTy {
-    TUnit,
-    TBool,
-    TInt8,
-    TInt16,
-    TInt32,
-    TInt64,
-    TUint8,
-    TUint16,
-    TUint32,
-    TUint64,
-    TFloat32,
-    TFloat64,
-    TString,
-    TTuple {
-        typs: Vec<MonoTy>,
-    },
-    TCon {
-        name: String,
-    },
-    TArray {
-        len: usize,
-        elem: Box<MonoTy>,
-    },
-    TRef {
-        elem: Box<MonoTy>,
-    },
-    TParam {
-        name: String,
-    },
-    TFunc {
-        params: Vec<MonoTy>,
-        ret_ty: Box<MonoTy>,
-    },
-}
 
 #[derive(Debug, Clone)]
 pub struct MonoFile {
@@ -115,6 +77,11 @@ pub enum MonoExpr {
         args: Vec<MonoExpr>,
         ty: Ty,
     },
+    EClosure {
+        params: Vec<tast::ClosureParam>,
+        body: Box<MonoExpr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<MonoExpr>,
         index: usize,
@@ -130,6 +97,7 @@ impl MonoExpr {
             MonoExpr::EConstr { ty, .. } => ty.clone(),
             MonoExpr::ETuple { ty, .. } => ty.clone(),
             MonoExpr::EArray { ty, .. } => ty.clone(),
+            MonoExpr::EClosure { ty, .. } => ty.clone(),
             MonoExpr::ELet { ty, .. } => ty.clone(),
             MonoExpr::EMatch { ty, .. } => ty.clone(),
             MonoExpr::EIf { ty, .. } => ty.clone(),
@@ -149,62 +117,104 @@ pub struct MonoArm {
 
 #[derive(Debug, Clone)]
 pub struct GlobalMonoEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub genv: GlobalTypeEnv,
+    pub extra_enums: IndexMap<Ident, EnumDef>,
+    pub extra_structs: IndexMap<Ident, StructDef>,
+    pub extra_funcs: IndexMap<String, Ty>,
 }
 
 impl GlobalMonoEnv {
-    pub fn from_lift_env(liftenv: GlobalLiftEnv) -> Self {
+    pub fn from_genv(genv: GlobalTypeEnv) -> Self {
         Self {
-            enums: liftenv.enums,
-            structs: liftenv.structs,
-            trait_defs: liftenv.trait_defs,
-            trait_impls: liftenv.trait_impls,
-            inherent_impls: liftenv.inherent_impls,
-            funcs: liftenv.funcs,
-            extern_funcs: liftenv.extern_funcs,
-            extern_types: liftenv.extern_types,
+            genv,
+            extra_enums: IndexMap::new(),
+            extra_structs: IndexMap::new(),
+            extra_funcs: IndexMap::new(),
         }
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
-        &self.enums
+    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+        self.genv
+            .enums()
+            .iter()
+            .chain(self.extra_enums.iter())
+            .filter(|(_, def)| def.generics.is_empty())
+    }
+
+    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+        self.extra_enums
+            .get(name)
+            .or_else(|| self.genv.enums().get(name))
+            .filter(|def| def.generics.is_empty())
+    }
+
+    pub fn enums_cloned(&self) -> IndexMap<Ident, EnumDef> {
+        let mut result = self.genv.enums().clone();
+        result.extend(self.extra_enums.clone());
+        result
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        self.structs.get_mut(name)
+        if self.extra_structs.contains_key(name) {
+            self.extra_structs.get_mut(name)
+        } else {
+            self.genv.struct_def_mut(name)
+        }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.structs.insert(def.name.clone(), def);
+        self.extra_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.genv
+            .structs()
+            .iter()
+            .chain(self.extra_structs.iter())
+            .filter(|(_, def)| def.generics.is_empty())
+    }
+
+    pub fn structs_cloned(&self) -> IndexMap<Ident, StructDef> {
+        let mut result: IndexMap<Ident, StructDef> = self
+            .genv
+            .structs()
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        result.extend(self.extra_structs.clone());
+        result
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
-        self.enums.insert(def.name.clone(), def);
+        self.extra_enums.insert(def.name.clone(), def);
     }
 
-    pub fn retain_enums<F>(&mut self, f: F)
+    pub fn retain_enums<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut EnumDef) -> bool,
     {
-        self.enums.retain(f);
+        self.extra_enums.retain(&mut f);
     }
 
-    pub fn retain_structs<F>(&mut self, f: F)
+    pub fn retain_structs<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut StructDef) -> bool,
     {
-        self.structs.retain(f);
+        self.extra_structs.retain(&mut f);
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.extra_structs
+            .get(name)
+            .or_else(|| self.genv.structs().get(name))
+    }
+
+    pub fn get_func(&self, name: &str) -> Option<&Ty> {
+        self.extra_funcs.get(name)
+    }
+
+    pub fn insert_func(&mut self, name: String, ty: Ty) {
+        self.extra_funcs.insert(name, ty);
     }
 }
 
@@ -267,7 +277,7 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
     }
 }
 
-fn fn_is_generic(f: &LiftFn) -> bool {
+fn fn_is_generic(f: &core::Fn) -> bool {
     f.params.iter().any(|(_, t)| has_tparam(t)) || has_tparam(&f.ret_ty)
 }
 
@@ -310,6 +320,14 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
             params: params.iter().map(|t| subst_ty(t, s)).collect(),
             ret_ty: Box::new(subst_ty(ret_ty, s)),
         },
+    }
+}
+
+fn subst_closure_param(param: &tast::ClosureParam, s: &Subst) -> tast::ClosureParam {
+    tast::ClosureParam {
+        name: param.name.clone(),
+        ty: subst_ty(&param.ty, s),
+        astptr: param.astptr,
     }
 }
 
@@ -426,7 +444,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 
 // State used during transformation
 struct Ctx {
-    orig_fns: IndexMap<String, LiftFn>,
+    orig_fns: IndexMap<String, core::Fn>,
     // map (orig_name, subst_key) -> spec_name
     instances: IndexMap<(String, String), String>,
     queued: IndexSet<(String, String)>,
@@ -435,7 +453,7 @@ struct Ctx {
 }
 
 impl Ctx {
-    fn new(orig_fns: IndexMap<String, LiftFn>) -> Self {
+    fn new(orig_fns: IndexMap<String, core::Fn>) -> Self {
         Self {
             orig_fns,
             instances: IndexMap::new(),
@@ -464,20 +482,20 @@ impl Ctx {
 }
 
 // Transform an expression under a given substitution; queue any needed instances
-fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
+fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
-        LiftExpr::EVar { name, ty } => MonoExpr::EVar {
+        core::Expr::EVar { name, ty } => MonoExpr::EVar {
             name,
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EPrim { value, ty } => {
+        core::Expr::EPrim { value, ty } => {
             let ty = subst_ty(&ty, s);
             MonoExpr::EPrim {
                 value: value.coerce(&ty),
                 ty,
             }
         }
-        LiftExpr::EConstr {
+        core::Expr::EConstr {
             constructor,
             args,
             ty,
@@ -490,15 +508,26 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        LiftExpr::ETuple { items, ty } => MonoExpr::ETuple {
+        core::Expr::ETuple { items, ty } => MonoExpr::ETuple {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EArray { items, ty } => MonoExpr::EArray {
+        core::Expr::EArray { items, ty } => MonoExpr::EArray {
             items: items.iter().map(|a| mono_expr(ctx, a, s)).collect(),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::ELet {
+        core::Expr::EClosure { params, body, ty } => {
+            let new_params: Vec<tast::ClosureParam> =
+                params.iter().map(|p| subst_closure_param(p, s)).collect();
+            let new_body = mono_expr(ctx, &body, s);
+            let new_ty = subst_ty(&ty, s);
+            MonoExpr::EClosure {
+                params: new_params,
+                body: Box::new(new_body),
+                ty: new_ty,
+            }
+        }
+        core::Expr::ELet {
             name,
             value,
             body,
@@ -509,7 +538,7 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
             body: Box::new(mono_expr(ctx, &body, s)),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EMatch {
+        core::Expr::EMatch {
             expr,
             arms,
             default,
@@ -526,7 +555,7 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
             default: default.map(|d| Box::new(mono_expr(ctx, &d, s))),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EIf {
+        core::Expr::EIf {
             cond,
             then_branch,
             else_branch,
@@ -537,12 +566,12 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
             else_branch: Box::new(mono_expr(ctx, &else_branch, s)),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EWhile { cond, body, ty } => MonoExpr::EWhile {
+        core::Expr::EWhile { cond, body, ty } => MonoExpr::EWhile {
             cond: Box::new(mono_expr(ctx, &cond, s)),
             body: Box::new(mono_expr(ctx, &body, s)),
             ty: subst_ty(&ty, s),
         },
-        LiftExpr::EConstrGet {
+        core::Expr::EConstrGet {
             expr,
             constructor,
             field_index,
@@ -558,7 +587,7 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
                 ty: subst_ty(&ty, s),
             }
         }
-        LiftExpr::ECall { func, args, ty } => {
+        core::Expr::ECall { func, args, ty } => {
             let new_func = mono_expr(ctx, &func, s);
             let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
             let new_ty = subst_ty(&ty, s);
@@ -631,7 +660,7 @@ fn mono_expr(ctx: &mut Ctx, e: &LiftExpr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        LiftExpr::EProj { tuple, index, ty } => MonoExpr::EProj {
+        core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
             tuple: Box::new(mono_expr(ctx, &tuple, s)),
             index,
             ty: subst_ty(&ty, s),
@@ -651,8 +680,8 @@ struct TypeMono<'a> {
 
 impl<'a> TypeMono<'a> {
     fn new(monoenv: &'a mut GlobalMonoEnv) -> Self {
-        let enum_base = monoenv.enums().clone();
-        let struct_base = monoenv.structs().clone();
+        let enum_base = monoenv.enums_cloned();
+        let struct_base = monoenv.structs_cloned();
         Self {
             monoenv,
             map: IndexMap::new(),
@@ -784,12 +813,30 @@ impl<'a> TypeMono<'a> {
             },
             Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
             Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
+            Ty::TArray { len, elem } => Ty::TArray {
+                len: *len,
+                elem: Box::new(self.collapse_type_apps(elem)),
+            },
+            Ty::TRef { elem } => Ty::TRef {
+                elem: Box::new(self.collapse_type_apps(elem)),
+            },
             _ => ty.clone(),
         }
     }
 }
 
-fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
+fn rewrite_closure_param_types(
+    param: &tast::ClosureParam,
+    m: &mut TypeMono<'_>,
+) -> tast::ClosureParam {
+    tast::ClosureParam {
+        name: param.name.clone(),
+        ty: m.collapse_type_apps(&param.ty),
+        astptr: param.astptr,
+    }
+}
+
+fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
     match e {
         MonoExpr::EVar { name, ty } => MonoExpr::EVar {
             name,
@@ -829,6 +876,19 @@ fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
                 .collect(),
             ty: m.collapse_type_apps(&ty),
         },
+        MonoExpr::EClosure { params, body, ty } => {
+            let new_params: Vec<tast::ClosureParam> = params
+                .iter()
+                .map(|p| rewrite_closure_param_types(p, m))
+                .collect();
+            let new_body = rewrite_expr_types(*body, m);
+            let new_ty = m.collapse_type_apps(&ty);
+            MonoExpr::EClosure {
+                params: new_params,
+                body: Box::new(new_body),
+                ty: new_ty,
+            }
+        }
         MonoExpr::ELet {
             name,
             value,
@@ -902,12 +962,12 @@ fn rewrite_expr_types<'a>(e: MonoExpr, m: &mut TypeMono<'a>) -> MonoExpr {
     }
 }
 
-// Monomorphize Lift IR by specializing generic functions per concrete call site.
+// Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
-pub fn mono(liftenv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv) {
-    let mut monoenv = GlobalMonoEnv::from_lift_env(liftenv);
+pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) {
+    let mut monoenv = GlobalMonoEnv::from_genv(genv);
     // Build original function map
-    let mut orig_fns: IndexMap<String, LiftFn> = IndexMap::new();
+    let mut orig_fns: IndexMap<String, core::Fn> = IndexMap::new();
     for f in file.toplevels.into_iter() {
         orig_fns.insert(f.name.clone(), f);
     }
@@ -956,13 +1016,21 @@ pub fn mono(liftenv: GlobalLiftEnv, file: LiftFile) -> (MonoFile, GlobalMonoEnv)
     let mut m = TypeMono::new(&mut monoenv);
     let mut new_fns = Vec::new();
     for f in ctx.out.into_iter() {
-        let params = f
+        let params: Vec<(String, Ty)> = f
             .params
             .into_iter()
             .map(|(n, t)| (n, m.collapse_type_apps(&t)))
             .collect();
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_expr_types(f.body, &mut m);
+
+        // Store the function type in monoenv for use by later phases
+        let fn_ty = Ty::TFunc {
+            params: params.iter().map(|(_, t)| t.clone()).collect(),
+            ret_ty: Box::new(ret_ty.clone()),
+        };
+        m.monoenv.insert_func(f.name.clone(), fn_ty);
+
         new_fns.push(MonoFn {
             name: f.name,
             params,
