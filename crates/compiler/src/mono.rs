@@ -1,9 +1,8 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::Ty;
-use crate::env::{EnumDef, ExternFunc, ExternType, ImplDef, StructDef, TraitDef};
+use crate::env::{EnumDef, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftExpr, LiftFile, LiftFn};
 use crate::mangle::encode_ty;
-use crate::tast::{self};
 use ast::ast::Ident;
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -149,62 +148,85 @@ pub struct MonoArm {
 
 #[derive(Debug, Clone)]
 pub struct GlobalMonoEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub liftenv: GlobalLiftEnv,
+    pub extra_enums: IndexMap<Ident, EnumDef>,
+    pub extra_structs: IndexMap<Ident, StructDef>,
 }
 
 impl GlobalMonoEnv {
     pub fn from_lift_env(liftenv: GlobalLiftEnv) -> Self {
         Self {
-            enums: liftenv.enums,
-            structs: liftenv.structs,
-            trait_defs: liftenv.trait_defs,
-            trait_impls: liftenv.trait_impls,
-            inherent_impls: liftenv.inherent_impls,
-            funcs: liftenv.funcs,
-            extern_funcs: liftenv.extern_funcs,
-            extern_types: liftenv.extern_types,
+            liftenv,
+            extra_enums: IndexMap::new(),
+            extra_structs: IndexMap::new(),
         }
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
-        &self.enums
+    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+        self.liftenv
+            .enums()
+            .iter()
+            .chain(self.extra_enums.iter())
+            .filter(|(_, def)| def.generics.is_empty())
+    }
+
+    pub fn enums_cloned(&self) -> IndexMap<Ident, EnumDef> {
+        let mut result = self.liftenv.enums().clone();
+        result.extend(self.extra_enums.clone());
+        result
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        self.structs.get_mut(name)
+        if self.extra_structs.contains_key(name) {
+            self.extra_structs.get_mut(name)
+        } else {
+            self.liftenv.struct_def_mut(name)
+        }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.structs.insert(def.name.clone(), def);
+        self.extra_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.liftenv
+            .structs()
+            .chain(self.extra_structs.iter())
+            .filter(|(_, def)| def.generics.is_empty())
+    }
+
+    pub fn structs_cloned(&self) -> IndexMap<Ident, StructDef> {
+        let mut result: IndexMap<Ident, StructDef> = self
+            .liftenv
+            .structs()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect();
+        result.extend(self.extra_structs.clone());
+        result
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
-        self.enums.insert(def.name.clone(), def);
+        self.extra_enums.insert(def.name.clone(), def);
     }
 
-    pub fn retain_enums<F>(&mut self, f: F)
+    pub fn retain_enums<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut EnumDef) -> bool,
     {
-        self.enums.retain(f);
+        self.extra_enums.retain(&mut f);
     }
 
-    pub fn retain_structs<F>(&mut self, f: F)
+    pub fn retain_structs<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut StructDef) -> bool,
     {
-        self.structs.retain(f);
+        self.extra_structs.retain(&mut f);
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.extra_structs
+            .get(name)
+            .or_else(|| self.liftenv.get_struct(name))
     }
 }
 
@@ -651,8 +673,8 @@ struct TypeMono<'a> {
 
 impl<'a> TypeMono<'a> {
     fn new(monoenv: &'a mut GlobalMonoEnv) -> Self {
-        let enum_base = monoenv.enums().clone();
-        let struct_base = monoenv.structs().clone();
+        let enum_base = monoenv.enums_cloned();
+        let struct_base = monoenv.structs_cloned();
         Self {
             monoenv,
             map: IndexMap::new(),

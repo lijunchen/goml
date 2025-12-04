@@ -201,7 +201,8 @@ impl Point {
 
     let encoded = encode_ty(&point_ty);
     let impl_def = genv
-        .trait_env.inherent_impls
+        .trait_env
+        .inherent_impls
         .get(&encoded)
         .expect("inherent impl exists");
     assert!(impl_def.methods.contains_key("new"));
@@ -233,7 +234,8 @@ impl Point {
     let encoded = encode_ty(&point_ty);
 
     let impl_def = genv
-        .trait_env.inherent_impls
+        .trait_env
+        .inherent_impls
         .get(&encoded)
         .expect("inherent impl registered");
 

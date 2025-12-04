@@ -1,41 +1,31 @@
 pub type Ty = crate::tast::Ty;
 use ast::ast::Ident;
-use indexmap::IndexMap;
 
 use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
-use crate::env::{EnumDef, ExternFunc, ExternType, ImplDef, StructDef, TraitDef};
+use crate::env::{EnumDef, StructDef};
 use crate::mono::{GlobalMonoEnv, MonoArm, MonoExpr, MonoFile};
-use crate::tast::{self};
 
 #[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub monoenv: GlobalMonoEnv,
 }
 
 impl GlobalAnfEnv {
     pub fn from_mono_env(monoenv: GlobalMonoEnv) -> Self {
-        GlobalAnfEnv {
-            enums: monoenv.enums,
-            structs: monoenv.structs,
-            trait_defs: monoenv.trait_defs,
-            trait_impls: monoenv.trait_impls,
-            inherent_impls: monoenv.inherent_impls,
-            funcs: monoenv.funcs,
-            extern_funcs: monoenv.extern_funcs,
-            extern_types: monoenv.extern_types,
-        }
+        GlobalAnfEnv { monoenv }
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+        self.monoenv.enums()
+    }
+
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.monoenv.structs()
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.monoenv.get_struct(name)
     }
 }
 

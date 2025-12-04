@@ -3,9 +3,9 @@ use ast::ast::Ident;
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, ExternFunc, ExternType, Gensym, ImplDef, StructDef, TraitDef},
+    env::{EnumDef, Gensym, GlobalTypeEnv, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    lift::is_closure_env_struct,
+    lift::{GlobalLiftEnv, is_closure_env_struct},
     mangle::{encode_ty, mangle_inherent_name},
     tast::{self},
 };
@@ -16,38 +16,47 @@ use std::collections::HashMap;
 use super::goty;
 use super::runtime;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct GlobalGoEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub genv: GlobalTypeEnv,
+    pub liftenv: GlobalLiftEnv,
+    pub anfenv: GlobalAnfEnv,
+    pub extra_enums: IndexMap<Ident, EnumDef>,
+}
+
+impl Default for GlobalGoEnv {
+    fn default() -> Self {
+        let genv = crate::env::GlobalTypeEnv::new();
+        let liftenv = crate::lift::GlobalLiftEnv::from_genv(genv.clone());
+        let monoenv = crate::mono::GlobalMonoEnv::from_lift_env(liftenv.clone());
+        let anfenv = GlobalAnfEnv::from_mono_env(monoenv);
+        Self {
+            genv,
+            liftenv,
+            anfenv,
+            extra_enums: IndexMap::new(),
+        }
+    }
 }
 
 impl GlobalGoEnv {
     pub fn from_anf_env(anfenv: GlobalAnfEnv) -> Self {
+        let liftenv = anfenv.monoenv.liftenv.clone();
+        let genv = liftenv.genv.clone();
         Self {
-            enums: anfenv.enums,
-            structs: anfenv.structs,
-            trait_defs: anfenv.trait_defs,
-            trait_impls: anfenv.trait_impls,
-            inherent_impls: anfenv.inherent_impls,
-            funcs: anfenv.funcs,
-            extern_funcs: anfenv.extern_funcs,
-            extern_types: anfenv.extern_types,
+            genv,
+            liftenv,
+            anfenv,
+            extra_enums: IndexMap::new(),
         }
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
-        &self.enums
+    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+        self.anfenv.enums().chain(self.extra_enums.iter())
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.anfenv.structs()
     }
 
     /// Lookup the apply method type for a closure environment struct via inherent_impls.
@@ -62,14 +71,23 @@ impl GlobalGoEnv {
             );
         }
         let encoded_ty = encode_ty(closure_ty);
-        self.inherent_impls
-            .get(&encoded_ty)
-            .and_then(|impl_def| impl_def.methods.get("apply"))
+        self.liftenv
+            .inherent_impls()
+            .find(|(k, _)| *k == &encoded_ty)
+            .and_then(|(_, impl_def)| impl_def.methods.get("apply"))
             .map(|scheme| scheme.ty.clone())
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
-        self.enums.insert(def.name.clone(), def);
+        self.extra_enums.insert(def.name.clone(), def);
+    }
+
+    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+        self.enums().find(|(k, _)| *k == name).map(|(_, v)| v)
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.anfenv.get_struct(name)
     }
 }
 
@@ -166,8 +184,7 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
                 let def = goenv
-                    .enums()
-                    .get(&enum_constructor.type_name)
+                    .get_enum(&enum_constructor.type_name)
                     .expect("unknown enum in EConstrGet");
                 def.variants[enum_constructor.index].1[*field_index].clone()
             }
@@ -358,7 +375,7 @@ fn compile_builtin_call(
 fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
-    for (_ename, edef) in goenv.enums().iter() {
+    for (_ename, edef) in goenv.enums() {
         if edef
             .variants
             .iter()
@@ -379,7 +396,7 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
 
 fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
-    if let Some(def) = goenv.enums().get(&Ident::new(&name)) {
+    if let Some(def) = goenv.get_enum(&Ident::new(&name)) {
         let (vname, _fields) = &def.variants[index];
         return variant_struct_name(goenv, &name, &vname.0);
     }
@@ -472,8 +489,7 @@ fn instantiate_struct_fields(
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
     let struct_def = goenv
-        .structs()
-        .get(type_name)
+        .get_struct(type_name)
         .unwrap_or_else(|| panic!("Unknown struct {}", type_name.0));
 
     if struct_def.generics.len() != type_args.len() {
@@ -691,8 +707,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
             Constructor::Struct(struct_constructor) => {
                 let go_ty = tast_ty_to_go_type(ty);
                 let struct_def = goenv
-                    .structs()
-                    .get(&struct_constructor.type_name)
+                    .get_struct(&struct_constructor.type_name)
                     .unwrap_or_else(|| panic!("unknown struct {}", struct_constructor.type_name.0));
                 if struct_def.fields.len() != args.len() {
                     panic!(
@@ -757,8 +772,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
             match constructor {
                 Constructor::Enum(enum_constructor) => {
                     let def = goenv
-                        .enums()
-                        .get(&enum_constructor.type_name)
+                        .get_enum(&enum_constructor.type_name)
                         .expect("unknown enum in EConstrGet");
                     let field_ty = def.variants[enum_constructor.index].1[*field_index].clone();
                     goast::Expr::FieldAccess {
@@ -875,7 +889,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     ty: tast_ty_to_go_type(ty),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                && let Some(extern_fn) = goenv.extern_funcs.get(name)
+                && let Some(extern_fn) = goenv.genv.value_env.extern_funcs.get(name)
             {
                 let alias = go_package_alias(&extern_fn.package_path);
                 goast::Expr::Call {
@@ -1634,7 +1648,8 @@ pub fn go_file(
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
 
-    if !goenv.extern_funcs.is_empty() || !goenv.extern_types.is_empty() {
+    if !goenv.genv.value_env.extern_funcs.is_empty() || !goenv.genv.type_env.extern_types.is_empty()
+    {
         let mut existing_imports: IndexSet<String> = IndexSet::new();
         for item in &all {
             if let goast::Item::Import(import_decl) = item {
@@ -1645,7 +1660,7 @@ pub fn go_file(
         }
 
         let mut extra_specs = Vec::new();
-        for extern_fn in goenv.extern_funcs.values() {
+        for extern_fn in goenv.genv.value_env.extern_funcs.values() {
             if existing_imports.insert(extern_fn.package_path.clone()) {
                 extra_specs.push(goast::ImportSpec {
                     alias: None,
@@ -1653,7 +1668,7 @@ pub fn go_file(
                 });
             }
         }
-        for extern_ty in goenv.extern_types.values() {
+        for extern_ty in goenv.genv.type_env.extern_types.values() {
             if let Some(package_path) = &extern_ty.package_path
                 && existing_imports.insert(package_path.clone())
             {
@@ -1740,7 +1755,7 @@ pub fn go_file(
 
 fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
-    for (name, def) in goenv.structs().iter() {
+    for (name, def) in goenv.structs() {
         let has_type_param = name.0.contains("TParam")
             || !def.generics.is_empty()
             || def
@@ -1766,7 +1781,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         }));
     }
 
-    for (name, def) in goenv.enums().iter() {
+    for (name, def) in goenv.enums() {
         // Skip generating Go types for generic-specialized enums whose fields still contain type parameters
         let has_type_param = name.0.contains("TParam")
             || def
@@ -1816,7 +1831,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         }
     }
 
-    for (name, ext) in goenv.extern_types.iter() {
+    for (name, ext) in goenv.genv.type_env.extern_types.iter() {
         if let Some(package_path) = &ext.package_path {
             let alias = go_package_alias(package_path);
             let go_ty = goty::GoType::TName {

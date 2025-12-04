@@ -5,10 +5,7 @@ use std::collections::HashMap;
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     core,
-    env::{
-        EnumDef, ExternFunc, ExternType, FnOrigin, FnScheme, Gensym, GlobalTypeEnv, ImplDef,
-        StructDef, TraitDef,
-    },
+    env::{EnumDef, FnOrigin, FnScheme, Gensym, GlobalTypeEnv, ImplDef, StructDef},
     mangle::{decode_ty, encode_ty, mangle_inherent_name},
     tast::{self, Ty},
 };
@@ -23,49 +20,69 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 
 #[derive(Debug, Clone)]
 pub struct GlobalLiftEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
-    pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
-    pub funcs: IndexMap<String, tast::Ty>,
-    pub extern_funcs: IndexMap<String, ExternFunc>,
-    pub extern_types: IndexMap<String, ExternType>,
+    pub genv: GlobalTypeEnv,
+    pub extra_structs: IndexMap<Ident, StructDef>,
+    pub extra_inherent_impls: IndexMap<String, ImplDef>,
+    pub extra_funcs: IndexMap<String, tast::Ty>,
 }
 
 impl GlobalLiftEnv {
     pub fn from_genv(genv: GlobalTypeEnv) -> Self {
         Self {
-            enums: genv.type_env.enums,
-            structs: genv.type_env.structs,
-            trait_defs: genv.trait_env.trait_defs,
-            trait_impls: genv.trait_env.trait_impls,
-            inherent_impls: genv.trait_env.inherent_impls,
-            funcs: genv
-                .value_env
-                .funcs
-                .into_iter()
-                .map(|(name, scheme)| (name, scheme.ty))
-                .collect(),
-            extern_funcs: genv.value_env.extern_funcs,
-            extern_types: genv.type_env.extern_types,
+            genv,
+            extra_structs: IndexMap::new(),
+            extra_inherent_impls: IndexMap::new(),
+            extra_funcs: IndexMap::new(),
         }
     }
 
     pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
-        &self.enums
+        self.genv.enums()
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        self.structs.get_mut(name)
+        if self.extra_structs.contains_key(name) {
+            self.extra_structs.get_mut(name)
+        } else {
+            self.genv.struct_def_mut(name)
+        }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.structs.insert(def.name.clone(), def);
+        self.extra_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
-        &self.structs
+    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+        self.genv.structs().iter().chain(self.extra_structs.iter())
+    }
+
+    pub fn inherent_impls(&self) -> impl Iterator<Item = (&String, &ImplDef)> {
+        self.genv
+            .trait_env
+            .inherent_impls
+            .iter()
+            .chain(self.extra_inherent_impls.iter())
+    }
+
+    pub fn extra_inherent_impls_mut(&mut self) -> &mut IndexMap<String, ImplDef> {
+        &mut self.extra_inherent_impls
+    }
+
+    pub fn get_func(&self, name: &str) -> Option<tast::Ty> {
+        self.extra_funcs
+            .get(name)
+            .cloned()
+            .or_else(|| self.genv.get_type_of_function(name))
+    }
+
+    pub fn insert_func(&mut self, name: String, ty: tast::Ty) {
+        self.extra_funcs.insert(name, ty);
+    }
+
+    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+        self.extra_structs
+            .get(name)
+            .or_else(|| self.genv.structs().get(name))
     }
 }
 
@@ -345,7 +362,7 @@ pub fn lambda_lift(
             params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
             ret_ty: Box::new(ret_ty.clone()),
         };
-        state.liftenv.funcs.insert(f.name.clone(), fn_ty);
+        state.liftenv.insert_func(f.name.clone(), fn_ty);
 
         toplevels.push(LiftFn {
             name: f.name,
@@ -383,7 +400,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: core::Expr) ->
                         ty: entry.ty.clone(),
                     }
                 }
-            } else if let Some(func_ty) = state.liftenv.funcs.get(&name) {
+            } else if let Some(func_ty) = state.liftenv.get_func(&name) {
                 LiftExpr::EVar {
                     name,
                     ty: func_ty.clone(),
@@ -747,12 +764,15 @@ fn transform_closure(
     // Register the apply function both in funcs and as an inherent method
     state
         .liftenv
-        .funcs
-        .insert(apply_fn_name.clone(), apply_fn_ty.clone());
+        .insert_func(apply_fn_name.clone(), apply_fn_ty.clone());
 
     // Register as inherent method: encoded_env_ty -> ImplDef with apply method
     let encoded_ty = encode_ty(&env_ty);
-    let impl_def = state.liftenv.inherent_impls.entry(encoded_ty).or_default();
+    let impl_def = state
+        .liftenv
+        .extra_inherent_impls_mut()
+        .entry(encoded_ty)
+        .or_default();
     impl_def.methods.insert(
         CLOSURE_APPLY_METHOD.to_string(),
         FnScheme {
@@ -882,7 +902,7 @@ fn instantiate_struct_field_ty(
     field_index: usize,
     instance_ty: &Ty,
 ) -> Option<Ty> {
-    let struct_def = state.liftenv.structs().get(struct_name)?;
+    let struct_def = state.liftenv.get_struct(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     if struct_def.generics.is_empty() {
         return Some(raw_field_ty.clone());
