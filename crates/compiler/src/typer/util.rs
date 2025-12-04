@@ -78,7 +78,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if genv.extern_types.contains_key(name) {
+            } else if genv.type_env.extern_types.contains_key(name) {
                 // Extern types do not have generics.
             } else {
                 diagnostics.push(Diagnostic::new(
@@ -122,7 +122,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if genv.extern_types.contains_key(&base_name) {
+            } else if genv.type_env.extern_types.contains_key(&base_name) {
                 if !args.is_empty() {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
@@ -185,7 +185,7 @@ impl tast::Ty {
                     if genv.enums().contains_key(&ident) {
                         Self::TEnum { name: name.clone() }
                     } else if genv.structs().contains_key(&ident)
-                        || genv.extern_types.contains_key(name)
+                        || genv.type_env.extern_types.contains_key(name)
                     {
                         Self::TStruct { name: name.clone() }
                     } else {

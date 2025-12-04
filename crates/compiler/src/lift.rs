@@ -36,18 +36,19 @@ pub struct GlobalLiftEnv {
 impl GlobalLiftEnv {
     pub fn from_genv(genv: GlobalTypeEnv) -> Self {
         Self {
-            enums: genv.enums,
-            structs: genv.structs,
-            trait_defs: genv.trait_defs,
-            trait_impls: genv.trait_impls,
-            inherent_impls: genv.inherent_impls,
+            enums: genv.type_env.enums,
+            structs: genv.type_env.structs,
+            trait_defs: genv.trait_env.trait_defs,
+            trait_impls: genv.trait_env.trait_impls,
+            inherent_impls: genv.trait_env.inherent_impls,
             funcs: genv
+                .value_env
                 .funcs
                 .into_iter()
                 .map(|(name, scheme)| (name, scheme.ty))
                 .collect(),
-            extern_funcs: genv.extern_funcs,
-            extern_types: genv.extern_types,
+            extern_funcs: genv.value_env.extern_funcs,
+            extern_types: genv.type_env.extern_types,
         }
     }
 
