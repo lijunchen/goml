@@ -10,7 +10,7 @@ use crate::{
     tast::{self},
 };
 
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexSet;
 use std::collections::HashMap;
 
 use super::goty;
@@ -20,8 +20,6 @@ use super::runtime;
 pub struct GlobalGoEnv {
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
-    pub anfenv: GlobalAnfEnv,
-    pub extra_enums: IndexMap<Ident, EnumDef>,
 }
 
 impl Default for GlobalGoEnv {
@@ -29,13 +27,7 @@ impl Default for GlobalGoEnv {
         let genv = crate::env::GlobalTypeEnv::new();
         let monoenv = crate::mono::GlobalMonoEnv::from_genv(genv.clone());
         let liftenv = crate::lift::GlobalLiftEnv::from_monoenv(monoenv);
-        let anfenv = GlobalAnfEnv::from_lift_env(liftenv.clone());
-        Self {
-            genv,
-            liftenv,
-            anfenv,
-            extra_enums: IndexMap::new(),
-        }
+        Self { genv, liftenv }
     }
 }
 
@@ -43,20 +35,15 @@ impl GlobalGoEnv {
     pub fn from_anf_env(anfenv: GlobalAnfEnv) -> Self {
         let liftenv = anfenv.liftenv.clone();
         let genv = liftenv.monoenv.genv.clone();
-        Self {
-            genv,
-            liftenv,
-            anfenv,
-            extra_enums: IndexMap::new(),
-        }
+        Self { genv, liftenv }
     }
 
     pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
-        self.anfenv.enums().chain(self.extra_enums.iter())
+        self.liftenv.enums()
     }
 
     pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
-        self.anfenv.structs()
+        self.liftenv.structs()
     }
 
     /// Lookup the apply method type for a closure environment struct via inherent_impls.
@@ -78,16 +65,12 @@ impl GlobalGoEnv {
             .map(|scheme| scheme.ty.clone())
     }
 
-    pub fn insert_enum(&mut self, def: EnumDef) {
-        self.extra_enums.insert(def.name.clone(), def);
-    }
-
     pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
         self.enums().find(|(k, _)| *k == name).map(|(_, v)| v)
     }
 
     pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
-        self.anfenv.get_struct(name)
+        self.liftenv.get_struct(name)
     }
 }
 
@@ -1844,57 +1827,4 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         }
     }
     defs
-}
-
-#[test]
-fn test_type_gen() {
-    use crate::env::EnumDef;
-    use expect_test::expect;
-
-    let mut goenv = GlobalGoEnv::default();
-    goenv.insert_enum(EnumDef {
-        name: Ident::new("Tree"),
-        generics: vec![],
-        variants: vec![
-            (Ident::new("Empty"), vec![]),
-            (Ident::new("Leaf"), vec![tast::Ty::TInt32]),
-            (
-                Ident::new("Node"),
-                vec![
-                    tast::Ty::TEnum {
-                        name: "Tree".to_string(),
-                    },
-                    tast::Ty::TEnum {
-                        name: "Tree".to_string(),
-                    },
-                ],
-            ),
-        ],
-    });
-
-    let item = gen_type_definition(&goenv);
-    let dummy_file = goast::File { toplevels: item };
-    expect![[r#"
-        type Tree interface {
-            isTree()
-        }
-
-        type Empty struct {}
-
-        func (_ Empty) isTree() {}
-
-        type Leaf struct {
-            _0 int32
-        }
-
-        func (_ Leaf) isTree() {}
-
-        type Node struct {
-            _0 Tree
-            _1 Tree
-        }
-
-        func (_ Node) isTree() {}
-    "#]]
-    .assert_eq(&dummy_file.to_pretty(&goenv, 120));
 }
