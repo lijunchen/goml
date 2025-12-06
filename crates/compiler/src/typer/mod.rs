@@ -7,7 +7,7 @@ mod toplevel;
 mod unify;
 mod util;
 
-pub use toplevel::check_file;
+pub use toplevel::{check_file, check_file_with_env};
 
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,

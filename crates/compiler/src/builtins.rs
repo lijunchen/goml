@@ -1,11 +1,79 @@
-use indexmap::IndexMap;
+use std::{path::Path, sync::OnceLock};
 
-use crate::{env::FnOrigin, env::FnScheme, mangle::encode_ty, tast};
+use crate::derive;
+use ::ast::{ast, lower};
+use cst::cst::{CstNode, File as CstFile};
+use indexmap::{IndexMap, IndexSet};
+use parser::{self, syntax::MySyntaxNode};
 
-pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
-    let mut funcs = IndexMap::new();
+use crate::{
+    env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
+    mangle::encode_ty,
+    tast, typer,
+};
 
-    let make_fn_scheme = |params: Vec<tast::Ty>, ret: tast::Ty| FnScheme {
+/// The embedded builtin.gom source code
+const BUILTIN_GOM: &str = include_str!("builtin.gom");
+
+static BUILTIN_AST: OnceLock<ast::File> = OnceLock::new();
+static BUILTIN_GENV: OnceLock<GlobalTypeEnv> = OnceLock::new();
+
+fn parse_builtin_ast() -> ast::File {
+    let path = Path::new("builtin.gom");
+    let parse_result = parser::parse(path, BUILTIN_GOM);
+    if parse_result.has_errors() {
+        panic!(
+            "Failed to parse builtin.gom: {:?}",
+            parse_result.into_diagnostics()
+        );
+    }
+
+    let root = MySyntaxNode::new_root(parse_result.green_node);
+    let cst = CstFile::cast(root).expect("failed to cast CST file");
+    let lower_result = lower::lower(cst);
+    let ast_file = lower_result
+        .into_result()
+        .expect("failed to lower builtin.gom AST");
+
+    match derive::expand(ast_file) {
+        Ok(ast) => ast,
+        Err(diags) => panic!("Failed to expand builtin.gom: {:?}", diags),
+    }
+}
+
+fn builtin_ast() -> ast::File {
+    BUILTIN_AST.get_or_init(parse_builtin_ast).clone()
+}
+
+fn build_builtin_env() -> GlobalTypeEnv {
+    let ast = builtin_ast();
+
+    let base_env = GlobalTypeEnv {
+        type_env: TypeEnv::new(),
+        trait_env: TraitEnv::new(),
+        value_env: ValueEnv {
+            funcs: IndexMap::new(),
+            extern_funcs: IndexMap::new(),
+        },
+    };
+
+    let (_tast, mut genv, diagnostics) = typer::check_file_with_env(ast, base_env);
+    if diagnostics.has_errors() {
+        panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
+    }
+
+    add_array_builtins(&mut genv.value_env.funcs);
+    add_ref_builtins(&mut genv.value_env.funcs);
+
+    genv
+}
+
+pub(crate) fn builtin_env() -> GlobalTypeEnv {
+    BUILTIN_GENV.get_or_init(build_builtin_env).clone()
+}
+
+fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {
+    FnScheme {
         type_params: vec![],
         constraints: (),
         ty: tast::Ty::TFunc {
@@ -13,399 +81,10 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
             ret_ty: Box::new(ret),
         },
         origin: FnOrigin::Builtin,
-    };
+    }
+}
 
-    funcs.insert(
-        "unit_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUnit], tast::Ty::TString),
-    );
-    funcs.insert(
-        "bool_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TBool], tast::Ty::TString),
-    );
-    funcs.insert(
-        "bool_to_json".to_string(),
-        make_fn_scheme(vec![tast::Ty::TBool], tast::Ty::TString),
-    );
-    funcs.insert(
-        "json_escape_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TString], tast::Ty::TString),
-    );
-    funcs.insert(
-        "bool_not".to_string(),
-        make_fn_scheme(vec![tast::Ty::TBool], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "bool_and".to_string(),
-        make_fn_scheme(vec![tast::Ty::TBool, tast::Ty::TBool], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "bool_or".to_string(),
-        make_fn_scheme(vec![tast::Ty::TBool, tast::Ty::TBool], tast::Ty::TBool),
-    );
-
-    funcs.insert(
-        "int16_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16], tast::Ty::TString),
-    );
-    funcs.insert(
-        "int16_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16], tast::Ty::TInt16),
-    );
-    funcs.insert(
-        "int16_add".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16, tast::Ty::TInt16], tast::Ty::TInt16),
-    );
-    funcs.insert(
-        "int16_sub".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16, tast::Ty::TInt16], tast::Ty::TInt16),
-    );
-    funcs.insert(
-        "int16_mul".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16, tast::Ty::TInt16], tast::Ty::TInt16),
-    );
-    funcs.insert(
-        "int16_div".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16, tast::Ty::TInt16], tast::Ty::TInt16),
-    );
-    funcs.insert(
-        "int16_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt16, tast::Ty::TInt16], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "int32_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32], tast::Ty::TString),
-    );
-    funcs.insert(
-        "int32_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int32_add".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int32_sub".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int32_mul".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int32_div".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TInt32),
-    );
-    funcs.insert(
-        "int32_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt32, tast::Ty::TInt32], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "int64_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64], tast::Ty::TString),
-    );
-    funcs.insert(
-        "int64_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64], tast::Ty::TInt64),
-    );
-    funcs.insert(
-        "int64_add".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64, tast::Ty::TInt64], tast::Ty::TInt64),
-    );
-    funcs.insert(
-        "int64_sub".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64, tast::Ty::TInt64], tast::Ty::TInt64),
-    );
-    funcs.insert(
-        "int64_mul".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64, tast::Ty::TInt64], tast::Ty::TInt64),
-    );
-    funcs.insert(
-        "int64_div".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64, tast::Ty::TInt64], tast::Ty::TInt64),
-    );
-    funcs.insert(
-        "int64_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt64, tast::Ty::TInt64], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "int8_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8], tast::Ty::TString),
-    );
-    funcs.insert(
-        "int8_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8], tast::Ty::TInt8),
-    );
-    funcs.insert(
-        "int8_add".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
-    );
-    funcs.insert(
-        "int8_sub".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
-    );
-    funcs.insert(
-        "int8_mul".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
-    );
-    funcs.insert(
-        "int8_div".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TInt8),
-    );
-    funcs.insert(
-        "int8_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TInt8, tast::Ty::TInt8], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "uint8_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8], tast::Ty::TString),
-    );
-    funcs.insert(
-        "uint8_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8], tast::Ty::TUint8),
-    );
-    funcs.insert(
-        "uint8_add".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
-    );
-    funcs.insert(
-        "uint8_sub".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
-    );
-    funcs.insert(
-        "uint8_mul".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
-    );
-    funcs.insert(
-        "uint8_div".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TUint8),
-    );
-    funcs.insert(
-        "uint8_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint8, tast::Ty::TUint8], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "uint16_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint16], tast::Ty::TString),
-    );
-    funcs.insert(
-        "uint16_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint16], tast::Ty::TUint16),
-    );
-    funcs.insert(
-        "uint16_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint16, tast::Ty::TUint16],
-            tast::Ty::TUint16,
-        ),
-    );
-    funcs.insert(
-        "uint16_sub".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint16, tast::Ty::TUint16],
-            tast::Ty::TUint16,
-        ),
-    );
-    funcs.insert(
-        "uint16_mul".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint16, tast::Ty::TUint16],
-            tast::Ty::TUint16,
-        ),
-    );
-    funcs.insert(
-        "uint16_div".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint16, tast::Ty::TUint16],
-            tast::Ty::TUint16,
-        ),
-    );
-    funcs.insert(
-        "uint16_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint16, tast::Ty::TUint16], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "uint32_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint32], tast::Ty::TString),
-    );
-    funcs.insert(
-        "uint32_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint32], tast::Ty::TUint32),
-    );
-    funcs.insert(
-        "uint32_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint32, tast::Ty::TUint32],
-            tast::Ty::TUint32,
-        ),
-    );
-    funcs.insert(
-        "uint32_sub".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint32, tast::Ty::TUint32],
-            tast::Ty::TUint32,
-        ),
-    );
-    funcs.insert(
-        "uint32_mul".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint32, tast::Ty::TUint32],
-            tast::Ty::TUint32,
-        ),
-    );
-    funcs.insert(
-        "uint32_div".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint32, tast::Ty::TUint32],
-            tast::Ty::TUint32,
-        ),
-    );
-    funcs.insert(
-        "uint32_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint32, tast::Ty::TUint32], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "uint64_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint64], tast::Ty::TString),
-    );
-    funcs.insert(
-        "uint64_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint64], tast::Ty::TUint64),
-    );
-    funcs.insert(
-        "float32_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TFloat32], tast::Ty::TString),
-    );
-    funcs.insert(
-        "float32_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TFloat32], tast::Ty::TFloat32),
-    );
-    funcs.insert(
-        "float32_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
-            tast::Ty::TFloat32,
-        ),
-    );
-    funcs.insert(
-        "float32_sub".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
-            tast::Ty::TFloat32,
-        ),
-    );
-    funcs.insert(
-        "float32_mul".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
-            tast::Ty::TFloat32,
-        ),
-    );
-    funcs.insert(
-        "float32_div".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
-            tast::Ty::TFloat32,
-        ),
-    );
-    funcs.insert(
-        "float32_less".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat32, tast::Ty::TFloat32],
-            tast::Ty::TBool,
-        ),
-    );
-    funcs.insert(
-        "float64_to_string".to_string(),
-        make_fn_scheme(vec![tast::Ty::TFloat64], tast::Ty::TString),
-    );
-    funcs.insert(
-        "float64_neg".to_string(),
-        make_fn_scheme(vec![tast::Ty::TFloat64], tast::Ty::TFloat64),
-    );
-    funcs.insert(
-        "float64_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
-            tast::Ty::TFloat64,
-        ),
-    );
-    funcs.insert(
-        "float64_sub".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
-            tast::Ty::TFloat64,
-        ),
-    );
-    funcs.insert(
-        "float64_mul".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
-            tast::Ty::TFloat64,
-        ),
-    );
-    funcs.insert(
-        "float64_div".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
-            tast::Ty::TFloat64,
-        ),
-    );
-    funcs.insert(
-        "float64_less".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFloat64, tast::Ty::TFloat64],
-            tast::Ty::TBool,
-        ),
-    );
-    funcs.insert(
-        "uint64_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint64, tast::Ty::TUint64],
-            tast::Ty::TUint64,
-        ),
-    );
-    funcs.insert(
-        "uint64_sub".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint64, tast::Ty::TUint64],
-            tast::Ty::TUint64,
-        ),
-    );
-    funcs.insert(
-        "uint64_mul".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint64, tast::Ty::TUint64],
-            tast::Ty::TUint64,
-        ),
-    );
-    funcs.insert(
-        "uint64_div".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TUint64, tast::Ty::TUint64],
-            tast::Ty::TUint64,
-        ),
-    );
-    funcs.insert(
-        "uint64_less".to_string(),
-        make_fn_scheme(vec![tast::Ty::TUint64, tast::Ty::TUint64], tast::Ty::TBool),
-    );
-    funcs.insert(
-        "string_add".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TString, tast::Ty::TString],
-            tast::Ty::TString,
-        ),
-    );
-    funcs.insert(
-        "string_print".to_string(),
-        make_fn_scheme(vec![tast::Ty::TString], tast::Ty::TUnit),
-    );
-    funcs.insert(
-        "string_println".to_string(),
-        make_fn_scheme(vec![tast::Ty::TString], tast::Ty::TUnit),
-    );
-
+fn add_array_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     let array_elem_param = tast::Ty::TParam {
         name: "T".to_string(),
     };
@@ -427,7 +106,9 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
             array_ty,
         ),
     );
+}
 
+fn add_ref_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     let ref_elem_param = tast::Ty::TParam {
         name: "T".to_string(),
     };
@@ -454,19 +135,6 @@ pub(super) fn builtin_functions() -> IndexMap<String, FnScheme> {
             tast::Ty::TUnit,
         ),
     );
-
-    funcs.insert(
-        "spawn".to_string(),
-        make_fn_scheme(
-            vec![tast::Ty::TFunc {
-                params: Vec::new(),
-                ret_ty: Box::new(tast::Ty::TUnit),
-            }],
-            tast::Ty::TUnit,
-        ),
-    );
-
-    funcs
 }
 
 pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef> {
@@ -494,5 +162,17 @@ pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef
 }
 
 pub fn builtin_function_names() -> Vec<String> {
-    builtin_functions().into_keys().collect()
+    let mut names: IndexSet<String> = IndexSet::new();
+
+    for item in builtin_ast().toplevels.iter() {
+        if let ast::Item::ExternBuiltin(ext) = item {
+            names.insert(ext.name.0.clone());
+        }
+    }
+
+    for name in ["array_get", "array_set", "ref", "ref_get", "ref_set"] {
+        names.insert(name.to_string());
+    }
+
+    names.into_iter().collect()
 }

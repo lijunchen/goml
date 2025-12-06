@@ -123,11 +123,34 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
         p.close(m, MySyntaxKind::EXTERN);
         return;
     }
+
+    // Builtin declaration syntax: `extern fn name(params) -> ret`
+    if p.at(T![fn]) {
+        p.expect(T![fn]);
+        if p.at(T![ident]) {
+            p.advance();
+        } else {
+            p.advance_with_error("expected a function name");
+        }
+        if p.at(T!['(']) {
+            param_list(p);
+        } else {
+            p.advance_with_error("expected parameter list");
+        }
+        if p.eat(T![->]) {
+            type_expr(p);
+        }
+        p.close(m, MySyntaxKind::EXTERN);
+        return;
+    }
+
     if p.at(T![str]) {
         p.advance();
     } else {
         p.advance_with_error("expected a language string");
     }
+
+    // Standard format: extern "go" "package" [symbol] name/type ...
     if p.at(T![str]) {
         p.advance();
     } else {

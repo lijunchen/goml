@@ -85,6 +85,7 @@ impl Rename {
             ast::Item::Fn(func) => ast::Item::Fn(self.rename_fn(func, global_funcs)),
             ast::Item::ExternGo(ext) => ast::Item::ExternGo(ext.clone()),
             ast::Item::ExternType(ext) => ast::Item::ExternType(ext.clone()),
+            ast::Item::ExternBuiltin(ext) => ast::Item::ExternBuiltin(ext.clone()),
         }
     }
 
