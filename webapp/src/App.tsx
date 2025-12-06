@@ -14,14 +14,16 @@ interface DotCompletionItem {
 }
 
 const loadDemos = async () => {
-  const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*.gom', {
+  const modules = import.meta.glob('../../crates/compiler/src/tests/pipeline/*/main.gom', {
     query: '?raw',
     import: 'default'
   });
 
   const loadedEntries = await Promise.all(
     Object.entries(modules).map(async ([path, loader]) => {
-      const name = path.split('/').pop()?.replace('.gom', '') || 'unknown';
+      // Extract folder name from path like "../../crates/compiler/src/tests/pipeline/000/main.gom"
+      const parts = path.split('/');
+      const name = parts[parts.length - 2] || 'unknown';
       const content = await loader() as string;
       return [name, content] as const;
     })

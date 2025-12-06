@@ -135,10 +135,11 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
     let mut case_paths = Vec::new();
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
-        if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
-        {
-            case_paths.push(entry.path());
+        if entry.file_type()?.is_dir() {
+            let main_gom = entry.path().join("main.gom");
+            if main_gom.exists() {
+                case_paths.push(main_gom);
+            }
         }
     }
 
