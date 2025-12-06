@@ -40,10 +40,15 @@ The file extension for goml source files is `.gom`.
 - We use expect-test, there are two basic commands:
   - `cargo test` run test to match golden snapshots
   - `env UPDATE_EXPECT=1 cargo test` to update snapshots
-- Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures in `crates/compiler/src/tests/examples/` when relevant.
-- You can pick some cases in crates/compiler/src/tests/pipeline, and use cargo run to quick check a test case, such as: `cargo run -- crates/compiler/src/tests/pipeline/001.gom`.
-- `crates/compiler/src/tests/pipeline/*.gom` is input file. You should NEVER modify other files in crates/compiler/src/tests/pipeline, the only way to update them is by command: `env UPDATE_EXPECT=1 cargo test`.
-- When I ask you to “add pipeline tests”, create a new `xxx.gom` file under `crates/compiler/src/tests/pipeline`.
+- Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures when relevant.
+- Each pipeline test case is in its own directory under `crates/compiler/src/tests/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
+- Each test directory contains:
+  - `main.gom` - the input source file
+  - `main.gom.cst`, `main.gom.ast`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
+  - `main.gom.out` - expected execution output
+- You can quick check a test case with: `cargo run -- crates/compiler/src/tests/pipeline/001/main.gom`
+- You should NEVER manually modify the generated files (`.cst`, `.ast`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
+- When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
