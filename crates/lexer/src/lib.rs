@@ -73,6 +73,66 @@ impl<'a> Iterator for Lexer<'a> {
     }
 }
 
+fn lex_multiline_str(lex: &mut logos::Lexer<TokenKind>) -> Option<()> {
+    let bytes = lex.remainder().as_bytes();
+
+    let mut consumed = 0usize;
+    while consumed < bytes.len() && bytes[consumed] != b'\n' {
+        consumed += 1;
+    }
+
+    if consumed >= bytes.len() {
+        return None;
+    }
+
+    // Include the newline separating the first and second lines.
+    consumed += 1;
+    let mut lines = 1usize;
+
+    loop {
+        let line_start = consumed;
+        if line_start >= bytes.len() {
+            break;
+        }
+
+        let mut idx = line_start;
+        while idx < bytes.len() && (bytes[idx] == b' ' || bytes[idx] == b'\t') {
+            idx += 1;
+        }
+
+        if idx + 1 >= bytes.len() || bytes[idx] != b'\\' || bytes[idx + 1] != b'\\' {
+            // The previous line was the last multiline string line; trim the
+            // trailing newline that brought us here.
+            if lines >= 2 {
+                consumed = line_start.saturating_sub(1);
+                break;
+            }
+            return None;
+        }
+
+        idx += 2;
+        while idx < bytes.len() && bytes[idx] != b'\n' {
+            idx += 1;
+        }
+
+        lines += 1;
+        if idx >= bytes.len() {
+            consumed = idx;
+            break;
+        }
+
+        // Keep the newline between string lines.
+        consumed = idx + 1;
+    }
+
+    if lines < 2 {
+        return None;
+    }
+
+    lex.bump(consumed);
+    Some(())
+}
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Logos)]
 pub enum TokenKind {
     #[token("(")]
@@ -254,6 +314,8 @@ pub enum TokenKind {
 
     #[regex(r#""([^"\\\x00-\x1F]|\\(["\\bnfrt/]|u[a-fA-F0-9]{4}))*""#)]
     Str,
+    #[regex(r"\\{2}", lex_multiline_str, priority = 2)]
+    MultilineStr,
 
     #[regex(r"[ \t\r\n]+")]
     Whitespace,
@@ -334,6 +396,7 @@ impl std::fmt::Display for TokenKind {
             Self::Float => "float",
             Self::Int => "int",
             Self::Str => "str",
+            Self::MultilineStr => "multiline_str",
             Self::Whitespace => "whitespace",
             Self::Comment => "comment",
             Self::Error => "unknown token",
@@ -404,6 +467,7 @@ macro_rules! T {
     [float] => { $crate::TokenKind::Float };
     [int] => { $crate::TokenKind::Int };
     [str] => { $crate::TokenKind::Str };
+    [multiline_str] => { $crate::TokenKind::MultilineStr };
     [whitespace] => { $crate::TokenKind::Whitespace };
     [comment] => { $crate::TokenKind::Comment };
     [error] => { $crate::TokenKind::Error };

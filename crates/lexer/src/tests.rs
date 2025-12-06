@@ -165,6 +165,44 @@ fn lexes_ref_builtins() {
 }
 
 #[test]
+fn lexes_multiline_string() {
+    check(
+        "let s = \\\\hello\n    \\\\world",
+        expect![[r#"
+            [
+                {kind: LetKeyword, text: "let"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "s"},
+                {kind: Whitespace, text: " "},
+                {kind: Eq, text: "="},
+                {kind: Whitespace, text: " "},
+                {kind: MultilineStr, text: "\\\\hello\n    \\\\world"},
+            ]
+        "#]],
+    )
+}
+
+#[test]
+fn lexes_multiline_string_with_trailing_tokens() {
+    check(
+        "let s = \\\\hello\n    \\\\world\n    ;",
+        expect![[r#"
+            [
+                {kind: LetKeyword, text: "let"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "s"},
+                {kind: Whitespace, text: " "},
+                {kind: Eq, text: "="},
+                {kind: Whitespace, text: " "},
+                {kind: MultilineStr, text: "\\\\hello\n    \\\\world"},
+                {kind: Whitespace, text: "\n    "},
+                {kind: Semi, text: ";"},
+            ]
+        "#]],
+    )
+}
+
+#[test]
 fn lexes_int8_keyword() {
     check(
         "int8",
