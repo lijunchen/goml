@@ -477,6 +477,43 @@ fn define_extern_type(
     genv.register_extern_type(ext.goml_name.0.clone());
 }
 
+fn define_extern_builtin(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    ext: &ast::ExternBuiltin,
+) {
+    let params = ext
+        .params
+        .iter()
+        .map(|(_, ty)| {
+            let ty = tast::Ty::from_ast(genv, ty, &[]);
+            validate_ty(genv, diagnostics, &ty, &HashSet::new());
+            ty
+        })
+        .collect::<Vec<_>>();
+    let ret_ty = match &ext.ret_ty {
+        Some(ty) => {
+            let ty = tast::Ty::from_ast(genv, ty, &[]);
+            validate_ty(genv, diagnostics, &ty, &HashSet::new());
+            ty
+        }
+        None => tast::Ty::TUnit,
+    };
+
+    genv.value_env.funcs.insert(
+        ext.name.0.clone(),
+        FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: tast::Ty::TFunc {
+                params,
+                ret_ty: Box::new(ret_ty),
+            },
+            origin: FnOrigin::Builtin,
+        },
+    );
+}
+
 fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
@@ -554,12 +591,20 @@ pub fn collect_typedefs(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics,
             ast::Item::Fn(func) => define_function(genv, diagnostics, func),
             ast::Item::ExternGo(ext) => define_extern_go(genv, diagnostics, ext),
             ast::Item::ExternType(ext) => define_extern_type(genv, diagnostics, ext),
+            ast::Item::ExternBuiltin(ext) => define_extern_builtin(genv, diagnostics, ext),
         }
     }
 }
 
 pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    let mut genv = env::GlobalTypeEnv::new();
+    check_file_with_env(ast, env::GlobalTypeEnv::new())
+}
+
+pub fn check_file_with_env(
+    ast: ast::File,
+    genv: env::GlobalTypeEnv,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    let mut genv = genv;
     let ast = rename::Rename::default().rename_file(ast);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &ast);
@@ -601,6 +646,8 @@ pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostic
                     ext,
                 )));
             }
+            // ExternBuiltin is handled during GlobalTypeEnv initialization
+            ast::Item::ExternBuiltin(_) => (),
         }
     }
 

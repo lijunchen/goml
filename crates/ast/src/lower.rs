@@ -141,6 +141,29 @@ fn lower_attributes(list: Option<cst::AttributeList>) -> Vec<ast::Attribute> {
     .unwrap_or_default()
 }
 
+fn attribute_path<'a>(attr: &'a ast::Attribute) -> Option<&'a str> {
+    let trimmed = attr.text.trim();
+    let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
+    let name_part = match inner.find('(') {
+        Some(idx) => inner[..idx].trim(),
+        None => inner,
+    };
+    if name_part.is_empty() {
+        None
+    } else {
+        Some(name_part)
+    }
+}
+
+fn find_attribute<'a>(attrs: &'a [ast::Attribute], target: &str) -> Option<&'a ast::Attribute> {
+    attrs.iter().find(|attr| {
+        attribute_path(attr)
+            .and_then(|path| path.split("::").last())
+            .map(|segment| segment == target)
+            .unwrap_or(false)
+    })
+}
+
 fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
     match node {
         cst::Item::Enum(it) => Some(ast::Item::EnumDef(lower_enum(ctx, it)?)),
@@ -479,6 +502,48 @@ fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
 
 fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let attrs = lower_attributes(node.attributes());
+
+    if let Some(attr) = find_attribute(&attrs, "builtin") {
+        if node.type_keyword().is_some() {
+            ctx.push_error(
+                Some(attr.ast.text_range()),
+                "Builtin extern declarations cannot declare types",
+            );
+            return None;
+        }
+
+        if let Some(lang_token) = node.lang() {
+            ctx.push_error(
+                Some(lang_token.text_range()),
+                "Builtin extern declarations should not specify a language string",
+            );
+        }
+
+        let Some(name_token) = node.lident() else {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Extern builtin declaration is missing function name",
+            );
+            return None;
+        };
+        let name = name_token.to_string();
+        let params = node
+            .param_list()
+            .map(|list| {
+                list.params()
+                    .flat_map(|param| lower_param(ctx, param))
+                    .collect()
+            })
+            .unwrap_or_default();
+        let ret_ty = node.return_type().and_then(|ty| lower_ty(ctx, ty));
+        return Some(ast::Item::ExternBuiltin(ast::ExternBuiltin {
+            attrs,
+            name: ast::Ident(name),
+            params,
+            ret_ty,
+        }));
+    }
+
     if node.type_keyword().is_some() && node.lang().is_none() {
         let Some(name_token) = node.uident() else {
             ctx.push_error(
@@ -507,10 +572,11 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     let Some(lang) = lang else {
         ctx.push_error(
             Some(node.syntax().text_range()),
-            "Extern declaration is missing language string",
+            "Extern declaration is missing language string; builtin externs should use `#[builtin] extern fn`.",
         );
         return None;
     };
+
     if lang.as_str() != "go" {
         ctx.push_error(
             Some(node.syntax().text_range()),

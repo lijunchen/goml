@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternGo, ExternType, File, Fn, Ident, ImplBlock,
-    Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File, Fn,
+    Ident, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -701,6 +701,38 @@ impl ExternType {
     }
 }
 
+impl ExternBuiltin {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let params_doc = RcDoc::intersperse(
+            self.params.iter().map(|(name, ty)| {
+                RcDoc::text(name.0.clone())
+                    .append(RcDoc::text(":"))
+                    .append(RcDoc::space())
+                    .append(ty.to_doc())
+            }),
+            RcDoc::text(", "),
+        );
+
+        let ret_ty_doc = if let Some(ret_ty) = &self.ret_ty {
+            RcDoc::text(" -> ").append(ret_ty.to_doc())
+        } else {
+            RcDoc::nil()
+        };
+
+        attrs_doc(&self.attrs).append(
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("fn"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.name.0.clone()))
+                .append(RcDoc::text("("))
+                .append(params_doc)
+                .append(RcDoc::text(")"))
+                .append(ret_ty_doc),
+        )
+    }
+}
+
 impl File {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         RcDoc::concat(self.toplevels.iter().map(|item| {
@@ -727,6 +759,7 @@ impl Item {
             Item::Fn(func) => func.to_doc(),
             Item::ExternGo(ext) => ext.to_doc(),
             Item::ExternType(ext) => ext.to_doc(),
+            Item::ExternBuiltin(ext) => ext.to_doc(),
         }
     }
 

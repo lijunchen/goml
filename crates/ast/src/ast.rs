@@ -216,6 +216,7 @@ pub enum Item {
     Fn(Fn),
     ExternGo(ExternGo),
     ExternType(ExternType),
+    ExternBuiltin(ExternBuiltin),
 }
 
 #[derive(Debug, Clone)]
@@ -243,6 +244,14 @@ pub struct ExternGo {
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
     pub goml_name: Ident,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExternBuiltin {
+    pub attrs: Vec<Attribute>,
+    pub name: Ident,
+    pub params: Vec<(Ident, TypeExpr)>,
+    pub ret_ty: Option<TypeExpr>,
 }
 
 #[derive(Debug, Clone)]

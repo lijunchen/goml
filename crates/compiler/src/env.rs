@@ -5,7 +5,7 @@ use indexmap::IndexMap;
 use line_index::LineIndex;
 
 pub use super::builtins::builtin_function_names;
-use super::builtins::{builtin_functions, builtin_inherent_methods};
+use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
     mangle::encode_ty,
@@ -412,10 +412,7 @@ pub struct ValueEnv {
 
 impl ValueEnv {
     pub fn new() -> Self {
-        Self {
-            funcs: builtin_functions(),
-            extern_funcs: IndexMap::new(),
-        }
+        Self::default()
     }
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
@@ -430,18 +427,25 @@ pub struct GlobalTypeEnv {
     pub value_env: ValueEnv,
 }
 
-impl Default for GlobalTypeEnv {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl GlobalTypeEnv {
     pub fn new() -> Self {
+        builtin_env()
+    }
+
+    /// Create an empty GlobalTypeEnv without any builtins.
+    /// This is used during the initial parsing of builtin.gom to avoid recursion.
+    pub fn new_empty() -> Self {
         Self {
             type_env: TypeEnv::new(),
-            trait_env: TraitEnv::new(),
-            value_env: ValueEnv::new(),
+            trait_env: TraitEnv {
+                trait_defs: IndexMap::new(),
+                trait_impls: IndexMap::new(),
+                inherent_impls: IndexMap::new(),
+            },
+            value_env: ValueEnv {
+                funcs: IndexMap::new(),
+                extern_funcs: IndexMap::new(),
+            },
         }
     }
 
