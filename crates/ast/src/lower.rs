@@ -879,6 +879,35 @@ fn lower_expr_with_args(
                 value: value.to_string(),
             })
         }
+        cst::Expr::MultilineStrExpr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "MultilineStrExpr has no value",
+                );
+                return None;
+            };
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to string literal",
+                );
+                return None;
+            }
+            let text = token.to_string();
+            let lines: Vec<&str> = text.lines().collect();
+            let mut parts = Vec::with_capacity(lines.len());
+            for line in lines {
+                let trimmed = line.trim_start_matches([' ', '\t']);
+                let Some(rest) = trimmed.strip_prefix("\\\\") else {
+                    ctx.push_error(Some(token.text_range()), "Invalid multiline string content");
+                    return None;
+                };
+                parts.push(rest);
+            }
+            let value = parts.join("\n");
+            Some(ast::Expr::EString { value })
+        }
         cst::Expr::CallExpr(it) => {
             let args: Vec<ast::Expr> = it
                 .arg_list()

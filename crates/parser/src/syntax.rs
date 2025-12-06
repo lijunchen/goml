@@ -64,6 +64,7 @@ pub enum MySyntaxKind {
     Float,
     Int,
     Str,
+    MultilineStr,
     Whitespace,
     Comment,
 
@@ -119,6 +120,7 @@ pub enum MySyntaxKind {
     EXPR_INT,
     EXPR_FLOAT,
     EXPR_STR,
+    EXPR_MULTILINE_STR,
     EXPR_ARRAY_LITERAL,
     EXPR_TUPLE,
     EXPR_CALL,

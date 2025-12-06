@@ -658,6 +658,7 @@ pub enum Expr {
     IntExpr(IntExpr),
     FloatExpr(FloatExpr),
     StrExpr(StrExpr),
+    MultilineStrExpr(MultilineStrExpr),
     CallExpr(CallExpr),
     StructLiteralExpr(StructLiteralExpr),
     ArrayLiteralExpr(ArrayLiteralExpr),
@@ -681,6 +682,7 @@ impl CstNode for Expr {
                 | EXPR_INT
                 | EXPR_FLOAT
                 | EXPR_STR
+                | EXPR_MULTILINE_STR
                 | EXPR_CALL
                 | EXPR_STRUCT_LITERAL
                 | EXPR_ARRAY_LITERAL
@@ -701,6 +703,7 @@ impl CstNode for Expr {
             EXPR_INT => Expr::IntExpr(IntExpr { syntax }),
             EXPR_FLOAT => Expr::FloatExpr(FloatExpr { syntax }),
             EXPR_STR => Expr::StrExpr(StrExpr { syntax }),
+            EXPR_MULTILINE_STR => Expr::MultilineStrExpr(MultilineStrExpr { syntax }),
             EXPR_CALL => Expr::CallExpr(CallExpr { syntax }),
             EXPR_STRUCT_LITERAL => Expr::StructLiteralExpr(StructLiteralExpr { syntax }),
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
@@ -724,6 +727,7 @@ impl CstNode for Expr {
             Self::IntExpr(it) => &it.syntax,
             Self::FloatExpr(it) => &it.syntax,
             Self::StrExpr(it) => &it.syntax,
+            Self::MultilineStrExpr(it) => &it.syntax,
             Self::CallExpr(it) => &it.syntax,
             Self::StructLiteralExpr(it) => &it.syntax,
             Self::ArrayLiteralExpr(it) => &it.syntax,
@@ -811,6 +815,22 @@ impl StrExpr {
 
 impl_cst_node_simple!(StrExpr, MySyntaxKind::EXPR_STR);
 impl_display_via_syntax!(StrExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct MultilineStrExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl MultilineStrExpr {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::MultilineStr)
+    }
+}
+
+impl_cst_node_simple!(MultilineStrExpr, MySyntaxKind::EXPR_MULTILINE_STR);
+impl_display_via_syntax!(MultilineStrExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

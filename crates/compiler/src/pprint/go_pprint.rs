@@ -8,6 +8,22 @@ use crate::go::{
     },
     goty::GoType,
 };
+
+fn escape_go_string(value: &str) -> String {
+    let mut escaped = String::new();
+    for ch in value.chars() {
+        match ch {
+            '"' => escaped.push_str("\\\""),
+            '\\' => escaped.push_str("\\\\"),
+            '\n' => escaped.push_str("\\n"),
+            '\r' => escaped.push_str("\\r"),
+            '\t' => escaped.push_str("\\t"),
+            other => escaped.push(other),
+        }
+    }
+    escaped
+}
+
 fn go_type_name(ty: &GoType) -> String {
     match ty {
         GoType::TVoid => "void".to_string(),
@@ -659,15 +675,9 @@ impl Expr {
             Expr::Bool { value, ty: _ } => RcDoc::text(if *value { "true" } else { "false" }),
             Expr::Int { value, ty: _ } => RcDoc::as_string(value),
             Expr::Float { value, ty: _ } => RcDoc::as_string(value),
-            Expr::String { value, ty: _ } => {
-                // Escape double quotes for Go string literals
-                // Note: backslash escape sequences like \n are preserved as-is since
-                // the AST stores them as literal characters that Go will interpret correctly
-                let escaped = value.replace('"', "\\\"");
-                RcDoc::text("\"")
-                    .append(RcDoc::text(escaped))
-                    .append(RcDoc::text("\""))
-            }
+            Expr::String { value, ty: _ } => RcDoc::text("\"")
+                .append(RcDoc::text(escape_go_string(value)))
+                .append(RcDoc::text("\"")),
             Expr::Call { func, args, ty: _ } => {
                 let args_doc = if args.is_empty() {
                     RcDoc::nil()
