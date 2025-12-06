@@ -1,0 +1,23 @@
+const n = `fn my_int_equal(x: int32, y: int32) -> bool {
+    bool_and(
+        bool_not(int32_less(x, y)),
+        bool_not(int32_less(y, x)),
+    )
+}
+
+fn sum(n: int32) -> int32 {
+    if my_int_equal(n, 1) {
+        1
+    } else {
+        n + sum(n - 1)
+    }
+}
+
+fn main() {
+    string_println(int32_to_string(sum(100)))
+    
+}
+`;
+export {
+  n as default
+};

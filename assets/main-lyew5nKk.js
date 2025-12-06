@@ -1,0 +1,32 @@
+const n = `struct Shape {}
+
+impl Shape {
+    fn name(self: Self) -> string {
+        "Shape"
+    }
+
+    fn rename(self: Self, suffix: string) -> string {
+        self.name() + suffix
+    }
+
+    fn join(self: Self, left: string, right: string) -> string {
+        left + self.name() + right
+    }
+}
+
+fn announce(shape: Shape) -> unit {
+    let base = shape.name();
+    let with_suffix = shape.rename("!");
+    let combined = shape.join(base, with_suffix);
+    let _ = string_println(combined);
+    ()
+}
+
+fn main() -> unit {
+    let shape = Shape {};
+    announce(shape);
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,16 @@
+const n = `fn make_array() -> [int32; 3] {
+    [1, 2, 3]
+}
+
+fn main() {
+    let arr = make_array();
+    let inline = [4, 5, 6];
+    let _ = string_print("array literal");
+    let _ = arr;
+    let _ = inline;
+    ()
+}
+`;
+export {
+  n as default
+};

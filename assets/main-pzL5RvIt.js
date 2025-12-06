@@ -1,0 +1,38 @@
+const n = `trait ToString {
+    fn to_string(Self) -> string;
+}
+
+impl ToString for int32 {
+    fn to_string(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl ToString for bool  {
+    fn to_string(self: bool) -> string {
+        bool_to_string(self)
+    }
+}
+
+impl ToString for (int32, int32) {
+  fn to_string(self: (int32, int32)) -> string {
+    "(?, ?)"
+  }
+}
+
+fn main() {
+    let x = 123;
+    let _ = string_println(ToString::to_string(x));
+
+    let x = true;
+    let _ = string_println(ToString::to_string(x));
+
+    let x = (3, 4);
+    let _ = string_println(ToString::to_string(x));
+
+    ()
+}
+`;
+export {
+  n as default
+};
