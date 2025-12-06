@@ -8,8 +8,10 @@ In goml, top-level functions must have fully explicit type signatures, and only 
 
 The generated Go code does not include generics — goml performs monomorphization by instantiating its own generic function calls. The generated code also does not contain Go closures — goml applies lambda lifting by performing lambda lifting (via lambda lifting) on its local functions.
 
+The file extension for goml source files is `.gom`.
+
 ## Project Snapshot
-- Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → typed AST → Core → Mono → ANF` before emitting Go (`crates/compiler/src/go`).
+- Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → typed AST → Core -> Mono -> Lift → ANF` before emitting Go (`crates/compiler/src/go`).
 - The CLI driver in `crates/compiler/src/main.rs` prints generated Go; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
 - The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
 
@@ -39,9 +41,9 @@ The generated Go code does not include generics — goml performs monomorphizati
   - `cargo test` run test to match golden snapshots
   - `env UPDATE_EXPECT=1 cargo test` to update snapshots
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures in `crates/compiler/src/tests/examples/` when relevant.
-- You can pick some cases in crates/compiler/src/tests/pipeline, and use cargo run to quick check a test case, such as: `cargo run -- crates/compiler/src/tests/pipeline/001.src`.
-- `crates/compiler/src/tests/pipeline/*.src` is input file. You should NEVER modify other files in crates/compiler/src/tests/pipeline, the only way to update them is by command: `env UPDATE_EXPECT=1 cargo test`.
-- When I ask you to “add pipeline tests”, create a new `xxx.src` file under `crates/compiler/src/tests/pipeline`.
+- You can pick some cases in crates/compiler/src/tests/pipeline, and use cargo run to quick check a test case, such as: `cargo run -- crates/compiler/src/tests/pipeline/001.gom`.
+- `crates/compiler/src/tests/pipeline/*.gom` is input file. You should NEVER modify other files in crates/compiler/src/tests/pipeline, the only way to update them is by command: `env UPDATE_EXPECT=1 cargo test`.
+- When I ask you to “add pipeline tests”, create a new `xxx.gom` file under `crates/compiler/src/tests/pipeline`.
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.

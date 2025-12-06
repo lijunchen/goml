@@ -57,7 +57,7 @@ fn main() -> unit {
 }
 "#;
 
-    let path = PathBuf::from("ref_runtime.gom");
+    let path = PathBuf::from("ref_runtime.go");
     let compilation = pipeline::compile(&path, src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
@@ -136,7 +136,7 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
         {
             case_paths.push(entry.path());
         }
@@ -191,7 +191,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     let core_filename = p.with_file_name(format!("{}.core", filename));
     let mono_filename = p.with_file_name(format!("{}.mono", filename));
     let anf_filename = p.with_file_name(format!("{}.anf", filename));
-    let go_filename = p.with_file_name(format!("{}.gom", filename));
+    let go_filename = p.with_file_name(format!("{}.go", filename));
     let result_filename = p.with_file_name(format!("{}.out", filename));
 
     let input = std::fs::read_to_string(&p)?;
@@ -246,7 +246,7 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
         {
             let p = entry.path();
             println!("Testing diagnostics: {}", p.display());
@@ -304,7 +304,7 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
         {
             let p = entry.path();
             println!("Testing compile diagnostics: {}", p.display());
@@ -359,7 +359,7 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         if entry.file_type()?.is_file()
-            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("src")
+            && entry.path().extension().and_then(std::ffi::OsStr::to_str) == Some("gom")
         {
             let p = entry.path();
             println!("Testing typer diagnostics: {}", p.display());
