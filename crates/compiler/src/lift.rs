@@ -20,18 +20,18 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct GlobalLiftEnv {
     pub monoenv: GlobalMonoEnv,
-    pub extra_structs: IndexMap<Ident, StructDef>,
-    pub extra_inherent_impls: IndexMap<String, ImplDef>,
-    pub extra_funcs: IndexMap<String, tast::Ty>,
+    pub lifted_structs: IndexMap<Ident, StructDef>,
+    pub lifted_inherent_impls: IndexMap<String, ImplDef>,
+    pub lifted_funcs: IndexMap<String, tast::Ty>,
 }
 
 impl GlobalLiftEnv {
     pub fn from_monoenv(monoenv: GlobalMonoEnv) -> Self {
         Self {
             monoenv,
-            extra_structs: IndexMap::new(),
-            extra_inherent_impls: IndexMap::new(),
-            extra_funcs: IndexMap::new(),
+            lifted_structs: IndexMap::new(),
+            lifted_inherent_impls: IndexMap::new(),
+            lifted_funcs: IndexMap::new(),
         }
     }
 
@@ -44,19 +44,19 @@ impl GlobalLiftEnv {
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        if self.extra_structs.contains_key(name) {
-            self.extra_structs.get_mut(name)
+        if self.lifted_structs.contains_key(name) {
+            self.lifted_structs.get_mut(name)
         } else {
             self.monoenv.struct_def_mut(name)
         }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.extra_structs.insert(def.name.clone(), def);
+        self.lifted_structs.insert(def.name.clone(), def);
     }
 
     pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
-        self.monoenv.structs().chain(self.extra_structs.iter())
+        self.monoenv.structs().chain(self.lifted_structs.iter())
     }
 
     pub fn inherent_impls(&self) -> impl Iterator<Item = (&String, &ImplDef)> {
@@ -65,26 +65,26 @@ impl GlobalLiftEnv {
             .trait_env
             .inherent_impls
             .iter()
-            .chain(self.extra_inherent_impls.iter())
+            .chain(self.lifted_inherent_impls.iter())
     }
 
-    pub fn extra_inherent_impls_mut(&mut self) -> &mut IndexMap<String, ImplDef> {
-        &mut self.extra_inherent_impls
+    pub fn lifted_inherent_impls_mut(&mut self) -> &mut IndexMap<String, ImplDef> {
+        &mut self.lifted_inherent_impls
     }
 
     pub fn get_func(&self, name: &str) -> Option<tast::Ty> {
-        self.extra_funcs
+        self.lifted_funcs
             .get(name)
             .cloned()
             .or_else(|| self.monoenv.get_func(name).cloned())
     }
 
     pub fn insert_func(&mut self, name: String, ty: tast::Ty) {
-        self.extra_funcs.insert(name, ty);
+        self.lifted_funcs.insert(name, ty);
     }
 
     pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
-        self.extra_structs
+        self.lifted_structs
             .get(name)
             .or_else(|| self.monoenv.get_struct(name))
     }
@@ -760,7 +760,7 @@ fn transform_closure(
     let encoded_ty = encode_ty(&env_ty);
     let impl_def = state
         .liftenv
-        .extra_inherent_impls_mut()
+        .lifted_inherent_impls_mut()
         .entry(encoded_ty)
         .or_default();
     impl_def.methods.insert(

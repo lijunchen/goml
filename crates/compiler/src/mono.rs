@@ -118,18 +118,18 @@ pub struct MonoArm {
 #[derive(Debug, Clone)]
 pub struct GlobalMonoEnv {
     pub genv: GlobalTypeEnv,
-    pub extra_enums: IndexMap<Ident, EnumDef>,
-    pub extra_structs: IndexMap<Ident, StructDef>,
-    pub extra_funcs: IndexMap<String, Ty>,
+    pub mono_enums: IndexMap<Ident, EnumDef>,
+    pub mono_structs: IndexMap<Ident, StructDef>,
+    pub mono_funcs: IndexMap<String, Ty>,
 }
 
 impl GlobalMonoEnv {
     pub fn from_genv(genv: GlobalTypeEnv) -> Self {
         Self {
             genv,
-            extra_enums: IndexMap::new(),
-            extra_structs: IndexMap::new(),
-            extra_funcs: IndexMap::new(),
+            mono_enums: IndexMap::new(),
+            mono_structs: IndexMap::new(),
+            mono_funcs: IndexMap::new(),
         }
     }
 
@@ -137,12 +137,12 @@ impl GlobalMonoEnv {
         self.genv
             .enums()
             .iter()
-            .chain(self.extra_enums.iter())
+            .chain(self.mono_enums.iter())
             .filter(|(_, def)| def.generics.is_empty())
     }
 
     pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
-        self.extra_enums
+        self.mono_enums
             .get(name)
             .or_else(|| self.genv.enums().get(name))
             .filter(|def| def.generics.is_empty())
@@ -150,27 +150,27 @@ impl GlobalMonoEnv {
 
     pub fn enums_cloned(&self) -> IndexMap<Ident, EnumDef> {
         let mut result = self.genv.enums().clone();
-        result.extend(self.extra_enums.clone());
+        result.extend(self.mono_enums.clone());
         result
     }
 
     pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
-        if self.extra_structs.contains_key(name) {
-            self.extra_structs.get_mut(name)
+        if self.mono_structs.contains_key(name) {
+            self.mono_structs.get_mut(name)
         } else {
             self.genv.struct_def_mut(name)
         }
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {
-        self.extra_structs.insert(def.name.clone(), def);
+        self.mono_structs.insert(def.name.clone(), def);
     }
 
     pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
         self.genv
             .structs()
             .iter()
-            .chain(self.extra_structs.iter())
+            .chain(self.mono_structs.iter())
             .filter(|(_, def)| def.generics.is_empty())
     }
 
@@ -181,40 +181,40 @@ impl GlobalMonoEnv {
             .iter()
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
-        result.extend(self.extra_structs.clone());
+        result.extend(self.mono_structs.clone());
         result
     }
 
     pub fn insert_enum(&mut self, def: EnumDef) {
-        self.extra_enums.insert(def.name.clone(), def);
+        self.mono_enums.insert(def.name.clone(), def);
     }
 
     pub fn retain_enums<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut EnumDef) -> bool,
     {
-        self.extra_enums.retain(&mut f);
+        self.mono_enums.retain(&mut f);
     }
 
     pub fn retain_structs<F>(&mut self, mut f: F)
     where
         F: FnMut(&Ident, &mut StructDef) -> bool,
     {
-        self.extra_structs.retain(&mut f);
+        self.mono_structs.retain(&mut f);
     }
 
     pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
-        self.extra_structs
+        self.mono_structs
             .get(name)
             .or_else(|| self.genv.structs().get(name))
     }
 
     pub fn get_func(&self, name: &str) -> Option<&Ty> {
-        self.extra_funcs.get(name)
+        self.mono_funcs.get(name)
     }
 
     pub fn insert_func(&mut self, name: String, ty: Ty) {
-        self.extra_funcs.insert(name, ty);
+        self.mono_funcs.insert(name, ty);
     }
 }
 
