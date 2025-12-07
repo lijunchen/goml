@@ -6,12 +6,12 @@ extern "go" "time" duration(nanos: int32) -> Duration
 
 fn main() {
     let counter = ref(0) in
-    let _ = spawn(|| while ref_get(counter) < 10 {
-          let _ = string_println("hello") in
-          let _ = sleep(duration(1000)) in
-          let _ = ref_set(counter, ref_get(counter) + 1) in
-          ()
-      }) in
+    let _ = go || while ref_get(counter) < 10 {
+        let _ = string_println("hello") in
+        let _ = sleep(duration(1000)) in
+        let _ = ref_set(counter, ref_get(counter) + 1) in
+        ()
+    } in
     while ref_get(counter) < 10 {
         ()
     }

@@ -4,8 +4,7 @@ fn child(signal: Ref[int32]) -> unit {
 
 fn main() -> unit {
     let signal = ref(0) in
-    let _ = spawn(|| let _ = child(signal) in
-      ()) in
+    let _ = go || child(signal) in
     let _ = while ref_get(signal) < 1 {
         ()
     } in

@@ -4,18 +4,17 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = ref(0) in
-  let t5 = closure_env_main_0 { signal_0: signal/1 } in
-  let mtmp1 = spawn(t5) in
-  let mtmp2 = while let t6 = ref_get(signal/1) in
-  (t6 < 1) {
+  let t4 = closure_env_main_0 { signal_0: signal/1 } in
+  let mtmp0 = go t4 in
+  let mtmp1 = while let t5 = ref_get(signal/1) in
+  (t5 < 1) {
     ()
   } in
-  let mtmp3 = string_println("main") in
+  let mtmp2 = string_println("main") in
   ()
 }
 
-fn impl_inherent_closure_env_main_0_apply(env4: closure_env_main_0) -> unit {
-  let signal/1 = closure_env_main_0.signal_0(env4) in
-  let mtmp0 = child(signal/1) in
-  ()
+fn impl_inherent_closure_env_main_0_apply(env3: closure_env_main_0) -> unit {
+  let signal/1 = closure_env_main_0.signal_0(env3) in
+  child(signal/1)
 }

@@ -1,7 +1,7 @@
 fn main() -> unit {
   let counter/0 = ref(0) in
   let t5 = closure_env_main_0 { counter_0: counter/0 } in
-  let mtmp3 = spawn(t5) in
+  let mtmp3 = go t5 in
   while let t6 = ref_get(counter/0) in
   (t6 < 10) {
     ()
