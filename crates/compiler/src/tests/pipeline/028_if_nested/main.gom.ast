@@ -1,8 +1,8 @@
 fn classify(x: int32) -> string {
-    if int32_less(x, 0) {
+    if x < 0 {
         "negative"
     } else {
-        if int32_less(0, x) {
+        if 0 < x {
             "positive"
         } else {
             "zero"
@@ -11,14 +11,14 @@ fn classify(x: int32) -> string {
 }
 
 fn triangle_type(a: int32, b: int32, c: int32) -> string {
-    if int32_less(a, b) {
-        if int32_less(b, c) {
+    if a < b {
+        if b < c {
             "ascending"
         } else {
             "peak"
         }
     } else {
-        if int32_less(a, c) {
+        if a < c {
             "valley"
         } else {
             "flat"

@@ -1,12 +1,12 @@
 fn sum_to(limit: int32) -> int32 {
     let acc = ref(0) in
     let i = ref(0) in
-    let _ = (while int32_less(ref_get(i), limit) {
+    let _ = while ref_get(i) < limit {
         let current = ref_get(i) in
         let _ = ref_set(acc, ref_get(acc) + current) in
         let _ = ref_set(i, current + 1) in
         ()
-    }) in
+    } in
     ref_get(acc)
 }
 
@@ -14,7 +14,7 @@ fn sum_even(limit: int32) -> int32 {
     let acc = ref(0) in
     let i = ref(0) in
     let is_even = ref(true) in
-    let _ = (while int32_less(ref_get(i), limit) {
+    let _ = while ref_get(i) < limit {
         let current = ref_get(i) in
         let _ = ref_set(i, current + 1) in
         let add_now = ref_get(is_even) in
@@ -24,7 +24,7 @@ fn sum_even(limit: int32) -> int32 {
         } else {
             ()
         }
-    }) in
+    } in
     ref_get(acc)
 }
 

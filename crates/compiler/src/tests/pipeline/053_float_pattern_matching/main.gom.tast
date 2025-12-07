@@ -9,8 +9,8 @@ fn compare(values/5: (float32, float64)) -> string {
   match (values/5 : (float32, float64)) {
       (left/6: float32, right/7: float64) => let limit32/8: float32 = 1 in
         let limit64/9: float64 = 5 in
-        let less_left/10: bool = (float32_less : (float32, float32) -> bool)((left/6 : float32), (limit32/8 : float32)) in
-        let less_right/11: bool = (float64_less : (float64, float64) -> bool)((right/7 : float64), (limit64/9 : float64)) in
+        let less_left/10: bool = (left/6 : float32) < (limit32/8 : float32) in
+        let less_right/11: bool = (right/7 : float64) < (limit64/9 : float64) in
         "left<1?=" + (bool_to_string : (bool) -> string)((less_left/10 : bool)) + ",right<5?=" + (bool_to_string : (bool) -> string)((less_right/11 : bool)),
   }
 }

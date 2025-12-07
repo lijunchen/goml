@@ -28,7 +28,7 @@ fn main() -> unit {
   let mid32/17 = lerp32(start32/13, end32/14, half/15) in
   let neg_end32/18 = (-end32/14) in
   let ratio32/19 = (end32/14 / scale/16) in
-  let less32/20 = float32_less(start32/13, end32/14) in
+  let less32/20 = (start32/13 < end32/14) in
   let dx/21 = 6.5 in
   let dy/22 = 3.5 in
   let quarter/23 = 0.25 in
@@ -36,7 +36,7 @@ fn main() -> unit {
   let neg_dx/25 = (-dx/21) in
   let adjusted/26 = ((energy/24 + dy/22) - (dx/21 * quarter/23)) in
   let threshold/27 = 4 in
-  let less64/28 = float64_less(adjusted/26, threshold/27) in
+  let less64/28 = (adjusted/26 < threshold/27) in
   let mtmp2 = show32("mid32=", mid32/17) in
   let mtmp3 = show32("neg_end32=", neg_end32/18) in
   let mtmp4 = show32("ratio32=", ratio32/19) in

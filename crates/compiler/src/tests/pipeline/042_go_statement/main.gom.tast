@@ -6,7 +6,7 @@ fn main() -> unit {
   let signal/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let _ : unit = (spawn : (() -> unit) -> unit)(|| => let _ : unit = (child : (Ref[int32]) -> unit)((signal/1 : Ref[int32])) in
   ()) in
-  let _ : unit = while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((signal/1 : Ref[int32])), 1) {
+  let _ : unit = while (ref_get : (Ref[int32]) -> int32)((signal/1 : Ref[int32])) < 1 {
       ()
   } in
   let _ : unit = (string_println : (string) -> unit)("main") in
