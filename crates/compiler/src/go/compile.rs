@@ -267,19 +267,6 @@ const DIV_BUILTINS: &[&str] = &[
     "float64_div",
 ];
 
-const LESS_BUILTINS: &[&str] = &[
-    "int8_less",
-    "int16_less",
-    "int32_less",
-    "int64_less",
-    "uint8_less",
-    "uint16_less",
-    "uint32_less",
-    "uint64_less",
-    "float32_less",
-    "float64_less",
-];
-
 fn builtin_unary_operator(name: &str) -> Option<goast::UnaryOp> {
     if name == "bool_not" {
         return Some(goast::UnaryOp::Not);
@@ -291,12 +278,6 @@ fn builtin_unary_operator(name: &str) -> Option<goast::UnaryOp> {
 }
 
 fn builtin_binary_operator(name: &str) -> Option<goast::BinaryOp> {
-    if name == "bool_and" {
-        return Some(goast::BinaryOp::And);
-    }
-    if name == "bool_or" {
-        return Some(goast::BinaryOp::Or);
-    }
     if ADD_BUILTINS.contains(&name) {
         return Some(goast::BinaryOp::Add);
     }
@@ -308,9 +289,6 @@ fn builtin_binary_operator(name: &str) -> Option<goast::BinaryOp> {
     }
     if DIV_BUILTINS.contains(&name) {
         return Some(goast::BinaryOp::Div);
-    }
-    if LESS_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Less);
     }
     None
 }
@@ -826,6 +804,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 BinaryOp::Div => goast::BinaryOp::Div,
                 BinaryOp::And => goast::BinaryOp::And,
                 BinaryOp::Or => goast::BinaryOp::Or,
+                BinaryOp::Less => goast::BinaryOp::Less,
             };
             goast::Expr::BinaryOp {
                 op: go_op,

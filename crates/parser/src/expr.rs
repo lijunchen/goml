@@ -117,7 +117,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                 p.expect(T![')']);
                 p.close(m, MySyntaxKind::EXPR_UNIT)
             } else {
-                expect_expr_with_message(p, "expected an expression in tuple literal");
+                expect_expr_with_message(p, "expected an expression in paren or tuple literal");
                 if p.at(T![,]) {
                     while p.at(T![,]) {
                         p.expect(T![,]);
@@ -129,7 +129,7 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
                     p.close(m, MySyntaxKind::EXPR_TUPLE)
                 } else {
                     p.expect(T![')']);
-                    p.close(m, MySyntaxKind::EXPR_TUPLE)
+                    p.close(m, MySyntaxKind::EXPR_PAREN)
                 }
             }
         }
@@ -367,6 +367,7 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
+        T![<] => Some((11, 12)),
         T![+] | T![-] => Some((13, 14)),
         T![*] | T![/] => Some((15, 16)),
         T![.] => Some((23, 24)),

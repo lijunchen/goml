@@ -667,6 +667,7 @@ pub enum Expr {
     WhileExpr(WhileExpr),
     IdentExpr(IdentExpr),
     TupleExpr(TupleExpr),
+    ParenExpr(ParenExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
     ClosureExpr(ClosureExpr),
@@ -689,6 +690,7 @@ impl CstNode for Expr {
                 | EXPR_MATCH
                 | EXPR_IDENT
                 | EXPR_TUPLE
+                | EXPR_PAREN
                 | EXPR_BINARY
                 | EXPR_PREFIX
                 | EXPR_CLOSURE
@@ -711,6 +713,7 @@ impl CstNode for Expr {
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
             EXPR_IDENT => Expr::IdentExpr(IdentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
+            EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
@@ -736,6 +739,7 @@ impl CstNode for Expr {
             Self::WhileExpr(it) => &it.syntax,
             Self::IdentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
+            Self::ParenExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
@@ -1207,6 +1211,22 @@ impl_display_via_syntax!(TupleExpr);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ParenExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ParenExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ParenExpr, MySyntaxKind::EXPR_PAREN);
+impl_display_via_syntax!(ParenExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct BinaryExpr {
     pub(crate) syntax: MySyntaxNode,
 }
@@ -1227,6 +1247,7 @@ impl BinaryExpr {
                         | MySyntaxKind::Slash
                         | MySyntaxKind::AndAnd
                         | MySyntaxKind::OrOr
+                        | MySyntaxKind::Less
                         | MySyntaxKind::Dot
                 ) {
                     Some(token)

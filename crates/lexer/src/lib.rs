@@ -201,6 +201,9 @@ pub enum TokenKind {
     #[token("!")]
     Bang,
 
+    #[token("<")]
+    Less,
+
     #[token("#")]
     Pound,
 
@@ -358,6 +361,7 @@ impl std::fmt::Display for TokenKind {
             Self::OrOr => "||",
             Self::Pipe => "|",
             Self::Bang => "!",
+            Self::Less => "<",
             Self::Pound => "#",
             Self::ExternKeyword => "extern",
             Self::EnumKeyword => "enum",
@@ -429,6 +433,7 @@ macro_rules! T {
     [||] => { $crate::TokenKind::OrOr };
     [|] => { $crate::TokenKind::Pipe };
     [!] => { $crate::TokenKind::Bang };
+    [<] => { $crate::TokenKind::Less };
     [#] => { $crate::TokenKind::Pound };
     [extern] => { $crate::TokenKind::ExternKeyword };
     [fn] => { $crate::TokenKind::FnKeyword };

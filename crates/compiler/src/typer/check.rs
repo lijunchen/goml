@@ -1150,7 +1150,7 @@ impl Typer {
         let rhs_ty = rhs_tast.get_ty();
 
         let ret_ty = match op {
-            ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
+            ast::BinaryOp::And | ast::BinaryOp::Or | ast::BinaryOp::Less => tast::Ty::TBool,
             _ => self.fresh_ty_var(),
         };
 
@@ -1166,6 +1166,10 @@ impl Typer {
             ast::BinaryOp::And | ast::BinaryOp::Or => {
                 self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
                 self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
+            }
+            ast::BinaryOp::Less => {
+                // Less operator: lhs and rhs must have same type (numeric types)
+                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), rhs_ty.clone()));
             }
         }
 

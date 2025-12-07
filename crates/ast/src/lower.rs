@@ -1287,6 +1287,13 @@ fn lower_expr_with_args(
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
             Some(ast::Expr::ETuple { items })
         }
+        cst::Expr::ParenExpr(it) => {
+            // Parenthesized expression - just unwrap and process the inner expression
+            let inner = it
+                .expr()
+                .and_then(|expr| lower_expr_with_args(ctx, expr, trailing_args))?;
+            Some(inner)
+        }
         cst::Expr::PrefixExpr(it) => {
             let expr = match it
                 .expr()
@@ -1396,6 +1403,14 @@ fn lower_expr_with_args(
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Or,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Less => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Less,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
