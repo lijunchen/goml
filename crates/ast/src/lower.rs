@@ -1381,6 +1381,46 @@ fn lower_expr_with_args(
                         rhs: Box::new(rhs),
                     })
                 }
+                MySyntaxKind::Greater => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Greater,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::LessEq => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::LessEq,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::GreaterEq => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::GreaterEq,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::EqEq => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Eq,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::NotEq => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::NotEq,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
                 MySyntaxKind::Dot => match rhs_cst {
                     cst::Expr::IntExpr(int_expr) => {
                         let Some(token) = int_expr.value() else {

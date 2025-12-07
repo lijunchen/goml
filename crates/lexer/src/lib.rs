@@ -204,6 +204,21 @@ pub enum TokenKind {
     #[token("<")]
     Less,
 
+    #[token(">")]
+    Greater,
+
+    #[token(">=")]
+    GreaterEq,
+
+    #[token("<=")]
+    LessEq,
+
+    #[token("==")]
+    EqEq,
+
+    #[token("!=")]
+    NotEq,
+
     #[token("#")]
     Pound,
 
@@ -362,6 +377,11 @@ impl std::fmt::Display for TokenKind {
             Self::Pipe => "|",
             Self::Bang => "!",
             Self::Less => "<",
+            Self::Greater => ">",
+            Self::GreaterEq => ">=",
+            Self::LessEq => "<=",
+            Self::EqEq => "==",
+            Self::NotEq => "!=",
             Self::Pound => "#",
             Self::ExternKeyword => "extern",
             Self::EnumKeyword => "enum",
@@ -434,6 +454,11 @@ macro_rules! T {
     [|] => { $crate::TokenKind::Pipe };
     [!] => { $crate::TokenKind::Bang };
     [<] => { $crate::TokenKind::Less };
+    [>] => { $crate::TokenKind::Greater };
+    [>=] => { $crate::TokenKind::GreaterEq };
+    [<=] => { $crate::TokenKind::LessEq };
+    [==] => { $crate::TokenKind::EqEq };
+    [!=] => { $crate::TokenKind::NotEq };
     [#] => { $crate::TokenKind::Pound };
     [extern] => { $crate::TokenKind::ExternKeyword };
     [fn] => { $crate::TokenKind::FnKeyword };

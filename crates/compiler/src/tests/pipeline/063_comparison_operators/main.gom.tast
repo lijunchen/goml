@@ -1,0 +1,62 @@
+fn test_int_comparisons() -> unit {
+  let a/0: int32 = 10 in
+  let b/1: int32 = 20 in
+  let c/2: int32 = 10 in
+  let less/3: bool = (a/0 : int32) < (b/1 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 < 20: " + (bool_to_string : (bool) -> string)((less/3 : bool))) in
+  let greater/4: bool = (b/1 : int32) > (a/0 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("20 > 10: " + (bool_to_string : (bool) -> string)((greater/4 : bool))) in
+  let less_eq1/5: bool = (a/0 : int32) <= (b/1 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 <= 20: " + (bool_to_string : (bool) -> string)((less_eq1/5 : bool))) in
+  let less_eq2/6: bool = (a/0 : int32) <= (c/2 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 <= 10: " + (bool_to_string : (bool) -> string)((less_eq2/6 : bool))) in
+  let greater_eq1/7: bool = (b/1 : int32) >= (a/0 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("20 >= 10: " + (bool_to_string : (bool) -> string)((greater_eq1/7 : bool))) in
+  let greater_eq2/8: bool = (c/2 : int32) >= (a/0 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 >= 10: " + (bool_to_string : (bool) -> string)((greater_eq2/8 : bool))) in
+  let eq1/9: bool = (a/0 : int32) == (c/2 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 == 10: " + (bool_to_string : (bool) -> string)((eq1/9 : bool))) in
+  let eq2/10: bool = (a/0 : int32) == (b/1 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 == 20: " + (bool_to_string : (bool) -> string)((eq2/10 : bool))) in
+  let neq1/11: bool = (a/0 : int32) != (b/1 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 != 20: " + (bool_to_string : (bool) -> string)((neq1/11 : bool))) in
+  let neq2/12: bool = (a/0 : int32) != (c/2 : int32) in
+  let _ : unit = (string_println : (string) -> unit)("10 != 10: " + (bool_to_string : (bool) -> string)((neq2/12 : bool))) in
+  ()
+}
+
+fn test_float_comparisons() -> unit {
+  let x/13: float64 = 3.14 in
+  let y/14: float64 = 2.71 in
+  let z/15: float64 = 3.14 in
+  let less/16: bool = (y/14 : float64) < (x/13 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("2.71 < 3.14: " + (bool_to_string : (bool) -> string)((less/16 : bool))) in
+  let greater/17: bool = (x/13 : float64) > (y/14 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 > 2.71: " + (bool_to_string : (bool) -> string)((greater/17 : bool))) in
+  let less_eq1/18: bool = (y/14 : float64) <= (x/13 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("2.71 <= 3.14: " + (bool_to_string : (bool) -> string)((less_eq1/18 : bool))) in
+  let less_eq2/19: bool = (x/13 : float64) <= (z/15 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 <= 3.14: " + (bool_to_string : (bool) -> string)((less_eq2/19 : bool))) in
+  let greater_eq1/20: bool = (x/13 : float64) >= (y/14 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 >= 2.71: " + (bool_to_string : (bool) -> string)((greater_eq1/20 : bool))) in
+  let greater_eq2/21: bool = (z/15 : float64) >= (x/13 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 >= 3.14: " + (bool_to_string : (bool) -> string)((greater_eq2/21 : bool))) in
+  let eq1/22: bool = (x/13 : float64) == (z/15 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 == 3.14: " + (bool_to_string : (bool) -> string)((eq1/22 : bool))) in
+  let eq2/23: bool = (x/13 : float64) == (y/14 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 == 2.71: " + (bool_to_string : (bool) -> string)((eq2/23 : bool))) in
+  let neq1/24: bool = (x/13 : float64) != (y/14 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 != 2.71: " + (bool_to_string : (bool) -> string)((neq1/24 : bool))) in
+  let neq2/25: bool = (x/13 : float64) != (z/15 : float64) in
+  let _ : unit = (string_println : (string) -> unit)("3.14 != 3.14: " + (bool_to_string : (bool) -> string)((neq2/25 : bool))) in
+  ()
+}
+
+fn main() -> unit {
+  let _ : unit = (string_println : (string) -> unit)("=== Integer Comparisons ===") in
+  let _ : unit = (test_int_comparisons : () -> unit)() in
+  let _ : unit = (string_println : (string) -> unit)("") in
+  let _ : unit = (string_println : (string) -> unit)("=== Float Comparisons ===") in
+  let _ : unit = (test_float_comparisons : () -> unit)() in
+  ()
+}

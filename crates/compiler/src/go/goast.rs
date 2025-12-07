@@ -205,6 +205,11 @@ pub enum BinaryOp {
     Mul,
     Div,
     Less,
+    Greater,
+    LessEq,
+    GreaterEq,
+    Eq,
+    NotEq,
     And,
     Or,
 }

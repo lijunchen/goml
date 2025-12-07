@@ -107,6 +107,11 @@ pub enum BinaryOp {
     And,
     Or,
     Less,
+    Greater,
+    LessEq,
+    GreaterEq,
+    Eq,
+    NotEq,
 }
 
 impl BinaryOp {
@@ -119,6 +124,11 @@ impl BinaryOp {
             Self::And => "&&",
             Self::Or => "||",
             Self::Less => "<",
+            Self::Greater => ">",
+            Self::LessEq => "<=",
+            Self::GreaterEq => ">=",
+            Self::Eq => "==",
+            Self::NotEq => "!=",
         }
     }
 
@@ -131,6 +141,11 @@ impl BinaryOp {
             Self::And => "and",
             Self::Or => "or",
             Self::Less => "less",
+            Self::Greater => "greater",
+            Self::LessEq => "less_eq",
+            Self::GreaterEq => "greater_eq",
+            Self::Eq => "eq",
+            Self::NotEq => "not_eq",
         }
     }
 }

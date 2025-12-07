@@ -1248,6 +1248,11 @@ impl BinaryExpr {
                         | MySyntaxKind::AndAnd
                         | MySyntaxKind::OrOr
                         | MySyntaxKind::Less
+                        | MySyntaxKind::Greater
+                        | MySyntaxKind::LessEq
+                        | MySyntaxKind::GreaterEq
+                        | MySyntaxKind::EqEq
+                        | MySyntaxKind::NotEq
                         | MySyntaxKind::Dot
                 ) {
                     Some(token)
