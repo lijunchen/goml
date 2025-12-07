@@ -4,7 +4,7 @@ fn impl_inherent_Point_to_json(self/0: Point) -> string {
   let x2 = Point.y(mtmp0) in
   let y/2 = x2 in
   let x/1 = x1 in
-  string_add(string_add(string_add(string_add(string_add(string_add("{", "\"x\":"), int32_to_string(x/1)), ","), "\"y\":"), int32_to_string(y/2)), "}")
+  (((((("{" + "\"x\":") + int32_to_string(x/1)) + ",") + "\"y\":") + int32_to_string(y/2)) + "}")
 }
 
 fn impl_inherent_Person_to_json(self/3: Person) -> string {
@@ -15,7 +15,7 @@ fn impl_inherent_Person_to_json(self/3: Person) -> string {
   let active/6 = x6 in
   let age/5 = x5 in
   let name/4 = x4 in
-  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("{", "\"name\":"), json_escape_string(name/4)), ","), "\"age\":"), int32_to_string(age/5)), ","), "\"active\":"), bool_to_json(active/6)), "}")
+  ((((((((("{" + "\"name\":") + json_escape_string(name/4)) + ",") + "\"age\":") + int32_to_string(age/5)) + ",") + "\"active\":") + bool_to_json(active/6)) + "}")
 }
 
 fn impl_inherent_Color_to_json(self/7: Color) -> string {
@@ -36,7 +36,7 @@ fn impl_inherent_Color_to_json(self/7: Color) -> string {
       let __field2/10 = x9 in
       let __field1/9 = x8 in
       let __field0/8 = x7 in
-      string_add(string_add(string_add(string_add(string_add(string_add("{\"tag\":\"Rgb\",\"fields\":[", int32_to_string(__field0/8)), ","), int32_to_string(__field1/9)), ","), int32_to_string(__field2/10)), "]}")
+      (((((("{\"tag\":\"Rgb\",\"fields\":[" + int32_to_string(__field0/8)) + ",") + int32_to_string(__field1/9)) + ",") + int32_to_string(__field2/10)) + "]}")
     },
   }
 }

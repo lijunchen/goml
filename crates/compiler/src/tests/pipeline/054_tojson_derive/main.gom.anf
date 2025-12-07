@@ -4,14 +4,14 @@ fn impl_inherent_Point_to_json(self/0: Point) -> string {
   let x2 = Point.y(mtmp0) in
   let y/2 = x2 in
   let x/1 = x1 in
-  let t18 = string_add("{", "\"x\":") in
+  let t18 = ("{" + "\"x\":") in
   let t19 = int32_to_string(x/1) in
-  let t17 = string_add(t18, t19) in
-  let t16 = string_add(t17, ",") in
-  let t15 = string_add(t16, "\"y\":") in
+  let t17 = (t18 + t19) in
+  let t16 = (t17 + ",") in
+  let t15 = (t16 + "\"y\":") in
   let t20 = int32_to_string(y/2) in
-  let t14 = string_add(t15, t20) in
-  string_add(t14, "}")
+  let t14 = (t15 + t20) in
+  (t14 + "}")
 }
 
 fn impl_inherent_Person_to_json(self/3: Person) -> string {
@@ -22,18 +22,18 @@ fn impl_inherent_Person_to_json(self/3: Person) -> string {
   let active/6 = x6 in
   let age/5 = x5 in
   let name/4 = x4 in
-  let t28 = string_add("{", "\"name\":") in
+  let t28 = ("{" + "\"name\":") in
   let t29 = json_escape_string(name/4) in
-  let t27 = string_add(t28, t29) in
-  let t26 = string_add(t27, ",") in
-  let t25 = string_add(t26, "\"age\":") in
+  let t27 = (t28 + t29) in
+  let t26 = (t27 + ",") in
+  let t25 = (t26 + "\"age\":") in
   let t30 = int32_to_string(age/5) in
-  let t24 = string_add(t25, t30) in
-  let t23 = string_add(t24, ",") in
-  let t22 = string_add(t23, "\"active\":") in
+  let t24 = (t25 + t30) in
+  let t23 = (t24 + ",") in
+  let t22 = (t23 + "\"active\":") in
   let t31 = bool_to_json(active/6) in
-  let t21 = string_add(t22, t31) in
-  string_add(t21, "}")
+  let t21 = (t22 + t31) in
+  (t21 + "}")
 }
 
 fn impl_inherent_Color_to_json(self/7: Color) -> string {
@@ -55,14 +55,14 @@ fn impl_inherent_Color_to_json(self/7: Color) -> string {
       let __field1/9 = x8 in
       let __field0/8 = x7 in
       let t37 = int32_to_string(__field0/8) in
-      let t36 = string_add("{\"tag\":\"Rgb\",\"fields\":[", t37) in
-      let t35 = string_add(t36, ",") in
+      let t36 = ("{\"tag\":\"Rgb\",\"fields\":[" + t37) in
+      let t35 = (t36 + ",") in
       let t38 = int32_to_string(__field1/9) in
-      let t34 = string_add(t35, t38) in
-      let t33 = string_add(t34, ",") in
+      let t34 = (t35 + t38) in
+      let t33 = (t34 + ",") in
       let t39 = int32_to_string(__field2/10) in
-      let t32 = string_add(t33, t39) in
-      string_add(t32, "]}")
+      let t32 = (t33 + t39) in
+      (t32 + "]}")
     },
   }
 }

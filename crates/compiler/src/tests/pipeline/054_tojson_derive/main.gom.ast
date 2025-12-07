@@ -7,7 +7,7 @@ struct Point {
 impl Point {
   fn to_json(self: Point) -> string {
       let Point { x: x, y: y } = self in
-      string_add(string_add(string_add(string_add(string_add(string_add("{", "\"x\":"), x.to_string()), ","), "\"y\":"), y.to_string()), "}")
+      "{" + "\"x\":" + x.to_string() + "," + "\"y\":" + y.to_string() + "}"
   }
 }
 
@@ -21,7 +21,7 @@ struct Person {
 impl Person {
   fn to_json(self: Person) -> string {
       let Person { name: name, age: age, active: active } = self in
-      string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("{", "\"name\":"), json_escape_string(name)), ","), "\"age\":"), age.to_string()), ","), "\"active\":"), bool_to_json(active)), "}")
+      "{" + "\"name\":" + json_escape_string(name) + "," + "\"age\":" + age.to_string() + "," + "\"active\":" + bool_to_json(active) + "}"
   }
 }
 
@@ -39,7 +39,7 @@ impl Color {
           Color::Red => "{\"tag\":\"Red\"}",
           Color::Green => "{\"tag\":\"Green\"}",
           Color::Blue => "{\"tag\":\"Blue\"}",
-          Color::Rgb(__field0, __field1, __field2) => string_add(string_add(string_add(string_add(string_add(string_add("{\"tag\":\"Rgb\",\"fields\":[", __field0.to_string()), ","), __field1.to_string()), ","), __field2.to_string()), "]}"),
+          Color::Rgb(__field0, __field1, __field2) => "{\"tag\":\"Rgb\",\"fields\":[" + __field0.to_string() + "," + __field1.to_string() + "," + __field2.to_string() + "]}",
       }
   }
 }

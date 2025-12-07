@@ -11,7 +11,7 @@ impl Color{
 impl Point{
   fn to_string(self/1: Point) -> string {
     let Point { x: x/2: int32, y: y/3: int32, color: color/4: Color } = (self/1 : Point) in
-    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Point { ", "x: "), (int32::to_string : (int32) -> string)((x/2 : int32))), ", "), "y: "), (int32::to_string : (int32) -> string)((y/3 : int32))), ", "), "color: "), (Color::to_string : (Color) -> string)((color/4 : Color))), " }")
+    "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/2 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/3 : int32)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/4 : Color)) + " }"
   }
 }
 
@@ -24,7 +24,7 @@ impl Point{
 impl Line{
   fn to_string(self/8: Line) -> string {
     let Line { from: from/9: Point, to: to/10: Point, color: color/11: Color } = (self/8 : Line) in
-    (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("Line { ", "from: "), (Point::to_string : (Point) -> string)((from/9 : Point))), ", "), "to: "), (Point::to_string : (Point) -> string)((to/10 : Point))), ", "), "color: "), (Color::to_string : (Color) -> string)((color/11 : Color))), " }")
+    "Line { " + "from: " + (Point::to_string : (Point) -> string)((from/9 : Point)) + ", " + "to: " + (Point::to_string : (Point) -> string)((to/10 : Point)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/11 : Color)) + " }"
   }
 }
 
@@ -38,7 +38,7 @@ impl LineList{
   fn to_string(self/15: LineList) -> string {
     match (self/15 : LineList) {
         LineList::Nil => "LineList::Nil",
-        LineList::Cons(__field0/16: Line, __field1/17: LineList) => (string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)((string_add : (string, string) -> string)("LineList::Cons(", (Line::to_string : (Line) -> string)((__field0/16 : Line))), ", "), (LineList::to_string : (LineList) -> string)((__field1/17 : LineList))), ")"),
+        LineList::Cons(__field0/16: Line, __field1/17: LineList) => "LineList::Cons(" + (Line::to_string : (Line) -> string)((__field0/16 : Line)) + ", " + (LineList::to_string : (LineList) -> string)((__field1/17 : LineList)) + ")",
     }
   }
 }

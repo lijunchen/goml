@@ -20,7 +20,7 @@ fn impl_inherent_Point_to_string(self/1: Point) -> string {
   let color/4 = x3 in
   let y/3 = x2 in
   let x/2 = x1 in
-  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), int32_to_string(x/2)), ", "), "y: "), int32_to_string(y/3)), ", "), "color: "), impl_inherent_Color_to_string(color/4)), " }")
+  ((((((((("Point { " + "x: ") + int32_to_string(x/2)) + ", ") + "y: ") + int32_to_string(y/3)) + ", ") + "color: ") + impl_inherent_Color_to_string(color/4)) + " }")
 }
 
 fn impl_inherent_Point_new(x/5: int32, y/6: int32, color/7: Color) -> Point {
@@ -35,7 +35,7 @@ fn impl_inherent_Line_to_string(self/8: Line) -> string {
   let color/11 = x7 in
   let to/10 = x6 in
   let from/9 = x5 in
-  string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Line { ", "from: "), impl_inherent_Point_to_string(from/9)), ", "), "to: "), impl_inherent_Point_to_string(to/10)), ", "), "color: "), impl_inherent_Color_to_string(color/11)), " }")
+  ((((((((("Line { " + "from: ") + impl_inherent_Point_to_string(from/9)) + ", ") + "to: ") + impl_inherent_Point_to_string(to/10)) + ", ") + "color: ") + impl_inherent_Color_to_string(color/11)) + " }")
 }
 
 fn impl_inherent_Line_new(from/12: Point, to/13: Point, color/14: Color) -> Line {
@@ -52,7 +52,7 @@ fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
       let x9 = LineList::Cons._1(self/15) in
       let __field1/17 = x9 in
       let __field0/16 = x8 in
-      string_add(string_add(string_add(string_add("LineList::Cons(", impl_inherent_Line_to_string(__field0/16)), ", "), impl_inherent_LineList_to_string(__field1/17)), ")")
+      (((("LineList::Cons(" + impl_inherent_Line_to_string(__field0/16)) + ", ") + impl_inherent_LineList_to_string(__field1/17)) + ")")
     },
   }
 }
