@@ -1,0 +1,102 @@
+fn test_int_comparisons() -> unit {
+  let a/0 = 10 in
+  let b/1 = 20 in
+  let c/2 = 10 in
+  let less/3 = (a/0 < b/1) in
+  let t26 = bool_to_string(less/3) in
+  let t25 = ("10 < 20: " + t26) in
+  let mtmp0 = string_println(t25) in
+  let greater/4 = (b/1 > a/0) in
+  let t28 = bool_to_string(greater/4) in
+  let t27 = ("20 > 10: " + t28) in
+  let mtmp1 = string_println(t27) in
+  let less_eq1/5 = (a/0 <= b/1) in
+  let t30 = bool_to_string(less_eq1/5) in
+  let t29 = ("10 <= 20: " + t30) in
+  let mtmp2 = string_println(t29) in
+  let less_eq2/6 = (a/0 <= c/2) in
+  let t32 = bool_to_string(less_eq2/6) in
+  let t31 = ("10 <= 10: " + t32) in
+  let mtmp3 = string_println(t31) in
+  let greater_eq1/7 = (b/1 >= a/0) in
+  let t34 = bool_to_string(greater_eq1/7) in
+  let t33 = ("20 >= 10: " + t34) in
+  let mtmp4 = string_println(t33) in
+  let greater_eq2/8 = (c/2 >= a/0) in
+  let t36 = bool_to_string(greater_eq2/8) in
+  let t35 = ("10 >= 10: " + t36) in
+  let mtmp5 = string_println(t35) in
+  let eq1/9 = (a/0 == c/2) in
+  let t38 = bool_to_string(eq1/9) in
+  let t37 = ("10 == 10: " + t38) in
+  let mtmp6 = string_println(t37) in
+  let eq2/10 = (a/0 == b/1) in
+  let t40 = bool_to_string(eq2/10) in
+  let t39 = ("10 == 20: " + t40) in
+  let mtmp7 = string_println(t39) in
+  let neq1/11 = (a/0 != b/1) in
+  let t42 = bool_to_string(neq1/11) in
+  let t41 = ("10 != 20: " + t42) in
+  let mtmp8 = string_println(t41) in
+  let neq2/12 = (a/0 != c/2) in
+  let t44 = bool_to_string(neq2/12) in
+  let t43 = ("10 != 10: " + t44) in
+  let mtmp9 = string_println(t43) in
+  ()
+}
+
+fn test_float_comparisons() -> unit {
+  let x/13 = 3.14 in
+  let y/14 = 2.71 in
+  let z/15 = 3.14 in
+  let less/16 = (y/14 < x/13) in
+  let t46 = bool_to_string(less/16) in
+  let t45 = ("2.71 < 3.14: " + t46) in
+  let mtmp10 = string_println(t45) in
+  let greater/17 = (x/13 > y/14) in
+  let t48 = bool_to_string(greater/17) in
+  let t47 = ("3.14 > 2.71: " + t48) in
+  let mtmp11 = string_println(t47) in
+  let less_eq1/18 = (y/14 <= x/13) in
+  let t50 = bool_to_string(less_eq1/18) in
+  let t49 = ("2.71 <= 3.14: " + t50) in
+  let mtmp12 = string_println(t49) in
+  let less_eq2/19 = (x/13 <= z/15) in
+  let t52 = bool_to_string(less_eq2/19) in
+  let t51 = ("3.14 <= 3.14: " + t52) in
+  let mtmp13 = string_println(t51) in
+  let greater_eq1/20 = (x/13 >= y/14) in
+  let t54 = bool_to_string(greater_eq1/20) in
+  let t53 = ("3.14 >= 2.71: " + t54) in
+  let mtmp14 = string_println(t53) in
+  let greater_eq2/21 = (z/15 >= x/13) in
+  let t56 = bool_to_string(greater_eq2/21) in
+  let t55 = ("3.14 >= 3.14: " + t56) in
+  let mtmp15 = string_println(t55) in
+  let eq1/22 = (x/13 == z/15) in
+  let t58 = bool_to_string(eq1/22) in
+  let t57 = ("3.14 == 3.14: " + t58) in
+  let mtmp16 = string_println(t57) in
+  let eq2/23 = (x/13 == y/14) in
+  let t60 = bool_to_string(eq2/23) in
+  let t59 = ("3.14 == 2.71: " + t60) in
+  let mtmp17 = string_println(t59) in
+  let neq1/24 = (x/13 != y/14) in
+  let t62 = bool_to_string(neq1/24) in
+  let t61 = ("3.14 != 2.71: " + t62) in
+  let mtmp18 = string_println(t61) in
+  let neq2/25 = (x/13 != z/15) in
+  let t64 = bool_to_string(neq2/25) in
+  let t63 = ("3.14 != 3.14: " + t64) in
+  let mtmp19 = string_println(t63) in
+  ()
+}
+
+fn main() -> unit {
+  let mtmp20 = string_println("=== Integer Comparisons ===") in
+  let mtmp21 = test_int_comparisons() in
+  let mtmp22 = string_println("") in
+  let mtmp23 = string_println("=== Float Comparisons ===") in
+  let mtmp24 = test_float_comparisons() in
+  ()
+}
