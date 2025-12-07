@@ -1,23 +1,23 @@
 fn show32(label/0: string, value/1: float32) -> unit {
-  let message/2 = string_add(label/0, float32_to_string(value/1)) in
+  let message/2 = (label/0 + float32_to_string(value/1)) in
   let mtmp0 = string_println(message/2) in
   ()
 }
 
 fn show64(label/3: string, value/4: float64) -> unit {
-  let message/5 = string_add(label/3, float64_to_string(value/4)) in
+  let message/5 = (label/3 + float64_to_string(value/4)) in
   let mtmp1 = string_println(message/5) in
   ()
 }
 
 fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
-  let delta/9 = float32_sub(b/7, a/6) in
-  float32_add(a/6, float32_mul(delta/9, weight/8))
+  let delta/9 = (b/7 - a/6) in
+  (a/6 + (delta/9 * weight/8))
 }
 
 fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
-  let sum/12 = float64_add(float64_mul(x/10, x/10), float64_mul(y/11, y/11)) in
-  float64_div(sum/12, 2)
+  let sum/12 = ((x/10 * x/10) + (y/11 * y/11)) in
+  (sum/12 / 2)
 }
 
 fn main() -> unit {
@@ -27,23 +27,23 @@ fn main() -> unit {
   let scale/16 = 2 in
   let mid32/17 = lerp32(start32/13, end32/14, half/15) in
   let neg_end32/18 = float32_neg(end32/14) in
-  let ratio32/19 = float32_div(end32/14, scale/16) in
+  let ratio32/19 = (end32/14 / scale/16) in
   let less32/20 = float32_less(start32/13, end32/14) in
   let dx/21 = 6.5 in
   let dy/22 = 3.5 in
   let quarter/23 = 0.25 in
   let energy/24 = midpoint_energy(dx/21, dy/22) in
   let neg_dx/25 = float64_neg(dx/21) in
-  let adjusted/26 = float64_sub(float64_add(energy/24, dy/22), float64_mul(dx/21, quarter/23)) in
+  let adjusted/26 = ((energy/24 + dy/22) - (dx/21 * quarter/23)) in
   let threshold/27 = 4 in
   let less64/28 = float64_less(adjusted/26, threshold/27) in
   let mtmp2 = show32("mid32=", mid32/17) in
   let mtmp3 = show32("neg_end32=", neg_end32/18) in
   let mtmp4 = show32("ratio32=", ratio32/19) in
-  let mtmp5 = string_println(string_add("less32=", bool_to_string(less32/20))) in
+  let mtmp5 = string_println(("less32=" + bool_to_string(less32/20))) in
   let mtmp6 = show64("energy=", energy/24) in
   let mtmp7 = show64("neg_dx=", neg_dx/25) in
   let mtmp8 = show64("adjusted=", adjusted/26) in
-  let mtmp9 = string_println(string_add("less64=", bool_to_string(less64/28))) in
+  let mtmp9 = string_println(("less64=" + bool_to_string(less64/28))) in
   ()
 }

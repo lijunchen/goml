@@ -4,13 +4,13 @@ fn impl_inherent_Shape_name(self/0: Shape) -> string {
 
 fn impl_inherent_Shape_rename(self/1: Shape, suffix/2: string) -> string {
   let t2 = impl_inherent_Shape_name(self/1) in
-  string_add(t2, suffix/2)
+  (t2 + suffix/2)
 }
 
 fn impl_inherent_Shape_join(self/3: Shape, left/4: string, right/5: string) -> string {
   let t4 = impl_inherent_Shape_name(self/3) in
-  let t3 = string_add(left/4, t4) in
-  string_add(t3, right/5)
+  let t3 = (left/4 + t4) in
+  (t3 + right/5)
 }
 
 fn announce(shape/6: Shape) -> unit {

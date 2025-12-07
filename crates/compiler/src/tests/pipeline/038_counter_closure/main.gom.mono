@@ -1,6 +1,6 @@
 fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = ref(0) in
-  let next/2 = || let next/1 = int32_add(ref_get(cell/0), 1) in
+  let next/2 = || let next/1 = (ref_get(cell/0) + 1) in
   let mtmp0 = ref_set(cell/0, next/1) in
   next/1 in
   let reset/3 = || let mtmp1 = ref_set(cell/0, 0) in

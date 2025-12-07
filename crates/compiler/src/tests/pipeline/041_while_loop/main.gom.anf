@@ -5,9 +5,9 @@ fn sum_to(limit/0: int32) -> int32 {
   int32_less(t9, limit/0) {
     let current/3 = ref_get(i/2) in
     let t11 = ref_get(acc/1) in
-    let t10 = int32_add(t11, current/3) in
+    let t10 = (t11 + current/3) in
     let mtmp0 = ref_set(acc/1, t10) in
-    let t12 = int32_add(current/3, 1) in
+    let t12 = (current/3 + 1) in
     let mtmp1 = ref_set(i/2, t12) in
     ()
   } in
@@ -22,14 +22,14 @@ fn sum_even(limit/4: int32) -> int32 {
   let t13 = while let t14 = ref_get(i/6) in
   int32_less(t14, limit/4) {
     let current/8 = ref_get(i/6) in
-    let t15 = int32_add(current/8, 1) in
+    let t15 = (current/8 + 1) in
     let mtmp3 = ref_set(i/6, t15) in
     let add_now/9 = ref_get(is_even/7) in
     let t16 = bool_not(add_now/9) in
     let mtmp4 = ref_set(is_even/7, t16) in
     if add_now/9 {
       let t18 = ref_get(acc/5) in
-      let t17 = int32_add(t18, current/8) in
+      let t17 = (t18 + current/8) in
       ref_set(acc/5, t17)
     } else {
       ()
@@ -43,10 +43,10 @@ fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
   let t20 = int32_to_string(first/10) in
-  let t19 = string_add("sum_to(5)=", t20) in
+  let t19 = ("sum_to(5)=" + t20) in
   let mtmp6 = string_println(t19) in
   let t22 = int32_to_string(evens/11) in
-  let t21 = string_add("sum_even(6)=", t22) in
+  let t21 = ("sum_even(6)=" + t22) in
   let mtmp7 = string_println(t21) in
   ()
 }
