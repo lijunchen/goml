@@ -159,6 +159,7 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EUnary { ty, .. }
         | anf::CExpr::EBinary { ty, .. }
         | anf::CExpr::ECall { ty, .. }
+        | anf::CExpr::EGo { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
         // For EConstrGet, compute field type from the scrutinee's data constructor
         anf::CExpr::EConstrGet {
@@ -445,6 +446,10 @@ fn collect_runtime_types(
                     }
                     self.collect_type(ty);
                 }
+                anf::CExpr::EGo { closure, ty } => {
+                    self.collect_imm(closure);
+                    self.collect_type(ty);
+                }
                 anf::CExpr::EProj { tuple, ty, .. } => {
                     self.collect_imm(tuple);
                     self.collect_type(ty);
@@ -599,6 +604,9 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
         } => panic!("EIf should be lowered to  goast::Stmt::If in compile_aexpr"),
         anf::CExpr::EWhile { .. } => {
             panic!("EWhile should be lowered to goast::Stmt::Loop in compile_aexpr")
+        }
+        anf::CExpr::EGo { .. } => {
+            panic!("EGo should be handled as a statement, not as an expression")
         }
         anf::CExpr::EConstrGet {
             expr,
@@ -989,12 +997,11 @@ fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::St
         | anf::CExpr::EUnary { .. }
         | anf::CExpr::EBinary { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
-        anf::CExpr::ECall { func, args, .. } => {
-            if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                vec![spawn.stmt]
-            } else {
-                vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
-            }
+        anf::CExpr::ECall { .. } => {
+            vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
+        }
+        anf::CExpr::EGo { closure, .. } => {
+            vec![compile_go(goenv, closure)]
         }
         anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
             panic!("control-flow expressions should be handled before compile_cexpr_effect")
@@ -1008,49 +1015,22 @@ struct ClosureApplyFn {
     ret_ty: tast::Ty,
 }
 
-struct SpawnCompilation {
-    stmt: goast::Stmt,
-    result_ty: goty::GoType,
-    result_expr: goast::Expr,
-}
-
-fn compile_spawn_call(
-    goenv: &GlobalGoEnv,
-    func: &anf::ImmExpr,
-    args: &[anf::ImmExpr],
-) -> Option<SpawnCompilation> {
-    let anf::ImmExpr::ImmVar { name, .. } = func else {
-        return None;
-    };
-    if name != "spawn" {
-        return None;
-    }
-
-    if args.len() != 1 {
-        return None;
-    }
-    let closure_env = &args[0];
-
-    let closure_ty = imm_ty(closure_env);
-    let apply = find_closure_apply_fn(goenv, &closure_ty)?;
+fn compile_go(goenv: &GlobalGoEnv, closure: &anf::ImmExpr) -> goast::Stmt {
+    let closure_ty = imm_ty(closure);
+    let apply = find_closure_apply_fn(goenv, &closure_ty)
+        .expect("go statement closure must have an apply method");
 
     let apply_call = anf::CExpr::ECall {
         func: anf::ImmExpr::ImmVar {
             name: apply.name.clone(),
             ty: apply.ty.clone(),
         },
-        args: vec![closure_env.clone()],
+        args: vec![closure.clone()],
         ty: apply.ret_ty.clone(),
     };
 
     let call_expr = compile_cexpr(goenv, &apply_call);
-    Some(SpawnCompilation {
-        stmt: goast::Stmt::Go { call: call_expr },
-        result_ty: goty::GoType::TUnit,
-        result_expr: goast::Expr::Unit {
-            ty: goty::GoType::TUnit,
-        },
-    })
+    goast::Stmt::Go { call: call_expr }
 }
 
 fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
@@ -1129,24 +1109,23 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        out.push(spawn.stmt);
-                        out.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        out.extend(compile_aexpr_effect(goenv, gensym, *body));
-                        return out;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    out.extend(compile_aexpr_effect(goenv, gensym, *body));
+                    return out;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
@@ -1256,20 +1235,21 @@ fn compile_aexpr_assign(
                 value: compile_cexpr(goenv, &other),
             }],
             anf::CExpr::ECall { func, args, ty } => {
-                if let Some(spawn) = compile_spawn_call(goenv, &func, &args) {
-                    vec![
-                        spawn.stmt,
-                        goast::Stmt::Assignment {
-                            name: target.to_string(),
-                            value: spawn.result_expr,
-                        },
-                    ]
-                } else {
-                    vec![goast::Stmt::Assignment {
+                vec![goast::Stmt::Assignment {
+                    name: target.to_string(),
+                    value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
+                }]
+            }
+            anf::CExpr::EGo { closure, .. } => {
+                vec![
+                    compile_go(goenv, &closure),
+                    goast::Stmt::Assignment {
                         name: target.to_string(),
-                        value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
-                    }]
-                }
+                        value: goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        },
+                    },
+                ]
             }
         },
         AExpr::ALet {
@@ -1297,24 +1277,23 @@ fn compile_aexpr_assign(
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        out.push(spawn.stmt);
-                        out.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
-                        return out;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
+                    return out;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
@@ -1410,24 +1389,23 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        stmts.push(spawn.stmt);
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        stmts.extend(compile_aexpr(goenv, gensym, *body));
-                        return stmts;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    stmts.push(compile_go(goenv, closure));
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    stmts.extend(compile_aexpr(goenv, gensym, *body));
+                    return stmts;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    stmts.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {

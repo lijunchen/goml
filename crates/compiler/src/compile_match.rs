@@ -1363,6 +1363,10 @@ fn compile_expr(
             body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
+        EGo { expr, ty } => core::Expr::EGo {
+            expr: Box::new(compile_expr(expr, genv, gensym, diagnostics)),
+            ty: ty.clone(),
+        },
         EUnary {
             op,
             expr,

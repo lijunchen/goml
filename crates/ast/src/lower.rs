@@ -1033,51 +1033,17 @@ fn lower_expr_with_args(
             }
 
             let Some(inner) = it.expr() else {
-                ctx.push_error(Some(it.syntax().text_range()), "go expression missing body");
-                return None;
-            };
-
-            if !matches!(&inner, cst::Expr::CallExpr(_)) {
                 ctx.push_error(
-                    Some(inner.syntax().text_range()),
-                    "go expression expects a call expression",
+                    Some(it.syntax().text_range()),
+                    "go statement missing expression",
                 );
                 return None;
-            }
-
-            let call_expr = lower_expr(ctx, inner)?;
-
-            let wrap_in_closure = |call: ast::Expr| ast::Expr::EClosure {
-                params: Vec::new(),
-                body: Box::new(ast::Expr::ELet {
-                    pat: ast::Pat::PWild,
-                    annotation: None,
-                    value: Box::new(call),
-                    body: Box::new(ast::Expr::EUnit),
-                }),
             };
 
-            let closure_arg = match call_expr {
-                ast::Expr::ECall { func, args } => {
-                    if args.is_empty() {
-                        if let ast::Expr::EClosure { params, body } = *func {
-                            ast::Expr::EClosure { params, body }
-                        } else {
-                            wrap_in_closure(ast::Expr::ECall { func, args })
-                        }
-                    } else {
-                        wrap_in_closure(ast::Expr::ECall { func, args })
-                    }
-                }
-                other => wrap_in_closure(other),
-            };
+            let expr = lower_expr(ctx, inner)?;
 
-            Some(ast::Expr::ECall {
-                func: Box::new(ast::Expr::EPath {
-                    path: ast::Path::from_ident(ast::Ident("spawn".to_string())),
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
-                }),
-                args: vec![closure_arg],
+            Some(ast::Expr::EGo {
+                expr: Box::new(expr),
             })
         }
         cst::Expr::IfExpr(it) => {

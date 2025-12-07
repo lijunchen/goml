@@ -269,6 +269,10 @@ impl LiftExpr {
                     .group()
             }
 
+            LiftExpr::EGo { expr, ty: _ } => RcDoc::text("go")
+                .append(RcDoc::space())
+                .append(expr.to_doc(liftenv)),
+
             LiftExpr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(liftenv);
                 RcDoc::text("(")

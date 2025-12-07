@@ -153,6 +153,10 @@ pub enum LiftExpr {
         body: Box<LiftExpr>,
         ty: Ty,
     },
+    EGo {
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<LiftExpr>,
         constructor: Constructor,
@@ -194,6 +198,7 @@ impl LiftExpr {
             LiftExpr::EMatch { ty, .. } => ty.clone(),
             LiftExpr::EIf { ty, .. } => ty.clone(),
             LiftExpr::EWhile { ty, .. } => ty.clone(),
+            LiftExpr::EGo { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
             LiftExpr::EUnary { ty, .. } => ty.clone(),
             LiftExpr::EBinary { ty, .. } => ty.clone(),
@@ -555,6 +560,10 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
             let body = Box::new(transform_expr(state, scope, *body));
             LiftExpr::EWhile { cond, body, ty }
         }
+        MonoExpr::EGo { expr, ty } => {
+            let expr = Box::new(transform_expr(state, scope, *expr));
+            LiftExpr::EGo { expr, ty }
+        }
         MonoExpr::EConstrGet {
             expr,
             constructor,
@@ -868,6 +877,9 @@ fn collect_captured(
         LiftExpr::EWhile { cond, body, .. } => {
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope);
+        }
+        LiftExpr::EGo { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
         }
         LiftExpr::EConstrGet { expr, .. } => {
             collect_captured(expr, bound, captured, scope);

@@ -921,6 +921,14 @@ impl Typer {
                     ty: ty.clone(),
                 }
             }
+            tast::Expr::EGo { expr, ty } => {
+                let ty = self.subst_ty(diagnostics, &ty);
+                let expr = Box::new(self.subst(diagnostics, *expr));
+                tast::Expr::EGo {
+                    expr,
+                    ty: ty.clone(),
+                }
+            }
             tast::Expr::ECall { func, args, ty } => {
                 let ty = self.subst_ty(diagnostics, &ty);
                 let func = Box::new(self.subst(diagnostics, *func));

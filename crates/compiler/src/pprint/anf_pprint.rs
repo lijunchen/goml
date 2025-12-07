@@ -245,6 +245,9 @@ impl CExpr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
+            CExpr::EGo { closure, ty: _ } => RcDoc::text("go")
+                .append(RcDoc::text(" "))
+                .append(closure.to_doc()),
             CExpr::EProj {
                 tuple,
                 index,

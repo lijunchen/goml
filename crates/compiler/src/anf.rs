@@ -108,6 +108,10 @@ pub enum CExpr {
         args: Vec<ImmExpr>,
         ty: Ty,
     },
+    EGo {
+        closure: Box<ImmExpr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<ImmExpr>,
         index: usize,
@@ -177,6 +181,7 @@ fn cexpr_tast_ty(e: &CExpr) -> Ty {
         | CExpr::EUnary { ty, .. }
         | CExpr::EBinary { ty, .. }
         | CExpr::ECall { ty, .. }
+        | CExpr::EGo { ty, .. }
         | CExpr::EProj { ty, .. }
         | CExpr::EConstrGet { ty, .. } => ty.clone(),
     }
@@ -428,6 +433,17 @@ fn anf<'a>(
                 ty: ty_clone,
             })
         }
+        LiftExpr::EGo { expr, ty: _ } => anf_imm(
+            anfenv,
+            gensym,
+            *expr,
+            Box::new(move |closure| {
+                k(CExpr::EGo {
+                    closure: Box::new(closure),
+                    ty: e_ty.clone(),
+                })
+            }),
+        ),
         LiftExpr::EMatch {
             expr,
             arms,
@@ -746,6 +762,10 @@ pub mod anf_renamer {
             anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
                 func: rename_imm(func),
                 args: args.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EGo { closure, ty } => anf::CExpr::EGo {
+                closure: Box::new(rename_imm(*closure)),
                 ty,
             },
             anf::CExpr::EProj { tuple, index, ty } => anf::CExpr::EProj {

@@ -82,6 +82,7 @@ impl Typer {
             ast::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
+            ast::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             ast::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, func, args)
             }
@@ -851,6 +852,27 @@ impl Typer {
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
             body: Box::new(body_tast),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_go_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr: &ast::Expr,
+    ) -> tast::Expr {
+        let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        // go expression expects a closure () -> unit
+        let closure_ty = tast::Ty::TFunc {
+            params: vec![],
+            ret_ty: Box::new(tast::Ty::TUnit),
+        };
+        self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), closure_ty));
+
+        tast::Expr::EGo {
+            expr: Box::new(expr_tast),
             ty: tast::Ty::TUnit,
         }
     }

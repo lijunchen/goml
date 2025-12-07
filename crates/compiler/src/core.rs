@@ -68,6 +68,10 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
+    EGo {
+        expr: Box<Expr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<Expr>,
         constructor: Constructor,
@@ -110,6 +114,7 @@ impl Expr {
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),
             Expr::EWhile { ty, .. } => ty.clone(),
+            Expr::EGo { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::EUnary { ty, .. } => ty.clone(),
             Expr::EBinary { ty, .. } => ty.clone(),

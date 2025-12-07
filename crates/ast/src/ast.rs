@@ -352,6 +352,9 @@ pub enum Expr {
         cond: Box<Expr>,
         body: Box<Expr>,
     },
+    EGo {
+        expr: Box<Expr>,
+    },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,

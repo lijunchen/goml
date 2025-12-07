@@ -231,6 +231,10 @@ impl Expr {
                     .group()
             }
 
+            Expr::EGo { expr, ty: _ } => RcDoc::text("go")
+                .append(RcDoc::space())
+                .append(expr.to_doc(genv)),
+
             Expr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(genv);
                 RcDoc::text("(")

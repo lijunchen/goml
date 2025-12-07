@@ -420,6 +420,10 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
+    EGo {
+        expr: Box<Expr>,
+        ty: Ty,
+    },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,
@@ -476,6 +480,7 @@ impl Expr {
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
             Self::EWhile { ty, .. } => ty.clone(),
+            Self::EGo { ty, .. } => ty.clone(),
             Self::ECall { ty, .. } => ty.clone(),
             Self::EUnary { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),

@@ -288,6 +288,10 @@ impl Expr {
                     .group()
             }
 
+            Self::EGo { expr } => RcDoc::text("go")
+                .append(RcDoc::space())
+                .append(expr.to_doc()),
+
             Self::ECall { func, args } => {
                 let func_doc = func.to_doc();
                 if args.is_empty() {

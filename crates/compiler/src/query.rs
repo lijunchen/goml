@@ -173,6 +173,7 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
             }
             find_type_expr(body, range)
         }
+        tast::Expr::EGo { expr, ty: _ } => find_type_expr(expr, range),
         tast::Expr::ECall { func, args, ty: _ } => {
             if let Some(expr) = find_type_expr(func, range) {
                 return Some(expr);
@@ -448,6 +449,7 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             }
             find_expr_in_expr(body, ptr)
         }
+        tast::Expr::EGo { expr, .. } => find_expr_in_expr(expr, ptr),
         tast::Expr::ECall { func, args, .. } => {
             if let Some(expr) = find_expr_in_expr(func, ptr) {
                 return Some(expr);
