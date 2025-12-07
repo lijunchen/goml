@@ -367,7 +367,8 @@ fn infix_binding_power(op: TokenKind) -> Option<(u8, u8)> {
     match op {
         T![||] => Some((1, 2)),
         T![&&] => Some((3, 4)),
-        T![<] => Some((11, 12)),
+        T![==] | T![!=] => Some((9, 10)),
+        T![<] | T![>] | T![<=] | T![>=] => Some((11, 12)),
         T![+] | T![-] => Some((13, 14)),
         T![*] | T![/] => Some((15, 16)),
         T![.] => Some((23, 24)),

@@ -679,6 +679,11 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 BinaryOp::And => goast::BinaryOp::And,
                 BinaryOp::Or => goast::BinaryOp::Or,
                 BinaryOp::Less => goast::BinaryOp::Less,
+                BinaryOp::Greater => goast::BinaryOp::Greater,
+                BinaryOp::LessEq => goast::BinaryOp::LessEq,
+                BinaryOp::GreaterEq => goast::BinaryOp::GreaterEq,
+                BinaryOp::Eq => goast::BinaryOp::Eq,
+                BinaryOp::NotEq => goast::BinaryOp::NotEq,
             };
             goast::Expr::BinaryOp {
                 op: go_op,

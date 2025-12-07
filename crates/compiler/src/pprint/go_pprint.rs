@@ -830,6 +830,11 @@ impl BinaryOp {
             BinaryOp::Mul => RcDoc::text("*"),
             BinaryOp::Div => RcDoc::text("/"),
             BinaryOp::Less => RcDoc::text("<"),
+            BinaryOp::Greater => RcDoc::text(">"),
+            BinaryOp::LessEq => RcDoc::text("<="),
+            BinaryOp::GreaterEq => RcDoc::text(">="),
+            BinaryOp::Eq => RcDoc::text("=="),
+            BinaryOp::NotEq => RcDoc::text("!="),
             BinaryOp::And => RcDoc::text("&&"),
             BinaryOp::Or => RcDoc::text("||"),
         }
