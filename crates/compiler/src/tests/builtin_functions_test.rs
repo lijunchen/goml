@@ -42,109 +42,36 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
-    match env.get_type_of_function("int8_add") {
+    // Binary operations are now handled as BinaryExpr nodes, not builtin functions
+    // Check that int8_neg (unary) still exists as a function
+    match env.get_type_of_function("int8_neg") {
+        Some(tast::Ty::TFunc { params, ret_ty }) => {
+            assert_eq!(params.len(), 1);
+            assert!(matches!(params[0], tast::Ty::TInt8));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt8));
+        }
+        other => panic!(
+            "expected int8_neg to have a function type signature, got {:?}",
+            other
+        ),
+    }
+
+    // Check that less comparison still exists as a function
+    match env.get_type_of_function("int8_less") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {
             assert_eq!(params.len(), 2);
             assert!(matches!(params[0], tast::Ty::TInt8));
             assert!(matches!(params[1], tast::Ty::TInt8));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt8));
+            assert!(matches!(ret_ty.as_ref(), tast::Ty::TBool));
         }
         other => panic!(
-            "expected int8_add to have a function type signature, got {:?}",
+            "expected int8_less to have a function type signature, got {:?}",
             other
         ),
     }
 
-    match env.get_type_of_function("uint8_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TUint8));
-            assert!(matches!(params[1], tast::Ty::TUint8));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint8));
-        }
-        other => panic!(
-            "expected uint8_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("int16_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TInt16));
-            assert!(matches!(params[1], tast::Ty::TInt16));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt16));
-        }
-        other => panic!(
-            "expected int16_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("uint16_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TUint16));
-            assert!(matches!(params[1], tast::Ty::TUint16));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint16));
-        }
-        other => panic!(
-            "expected uint16_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("int32_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TInt32));
-            assert!(matches!(params[1], tast::Ty::TInt32));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt32));
-        }
-        other => panic!(
-            "expected int32_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("uint32_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TUint32));
-            assert!(matches!(params[1], tast::Ty::TUint32));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint32));
-        }
-        other => panic!(
-            "expected uint32_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("int64_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TInt64));
-            assert!(matches!(params[1], tast::Ty::TInt64));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt64));
-        }
-        other => panic!(
-            "expected int64_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
-
-    match env.get_type_of_function("uint64_add") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 2);
-            assert!(matches!(params[0], tast::Ty::TUint64));
-            assert!(matches!(params[1], tast::Ty::TUint64));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TUint64));
-        }
-        other => panic!(
-            "expected uint64_add to have a function type signature, got {:?}",
-            other
-        ),
-    }
+    // Binary operations (add, sub, mul, div, and, or) are now handled as BinaryExpr nodes,
+    // not builtin functions, so we don't check for them here.
 
     match env.get_type_of_function("bool_not") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {

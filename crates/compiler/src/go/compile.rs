@@ -156,6 +156,7 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
         | anf::CExpr::EWhile { ty, .. }
+        | anf::CExpr::EBinary { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
         // For EConstrGet, compute field type from the scrutinee's data constructor
@@ -583,6 +584,11 @@ fn collect_runtime_types(
                     self.collect_imm(expr);
                     self.collect_type(ty);
                 }
+                anf::CExpr::EBinary { lhs, rhs, ty, .. } => {
+                    self.collect_imm(lhs);
+                    self.collect_imm(rhs);
+                    self.collect_type(ty);
+                }
                 anf::CExpr::ECall { func, args, ty } => {
                     self.collect_imm(func);
                     for arg in args {
@@ -792,6 +798,23 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                         ty: tast_ty_to_go_type(field_ty),
                     }
                 }
+            }
+        }
+        anf::CExpr::EBinary { op, lhs, rhs, ty } => {
+            use ast::ast::BinaryOp;
+            let go_op = match op {
+                BinaryOp::Add => goast::BinaryOp::Add,
+                BinaryOp::Sub => goast::BinaryOp::Sub,
+                BinaryOp::Mul => goast::BinaryOp::Mul,
+                BinaryOp::Div => goast::BinaryOp::Div,
+                BinaryOp::And => goast::BinaryOp::And,
+                BinaryOp::Or => goast::BinaryOp::Or,
+            };
+            goast::Expr::BinaryOp {
+                op: go_op,
+                lhs: Box::new(compile_imm(goenv, lhs)),
+                rhs: Box::new(compile_imm(goenv, rhs)),
+                ty: tast_ty_to_go_type(ty),
             }
         }
         anf::CExpr::ECall { func, args, ty } => {
@@ -1114,6 +1137,7 @@ fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::St
         | anf::CExpr::ETuple { .. }
         | anf::CExpr::EArray { .. }
         | anf::CExpr::EConstrGet { .. }
+        | anf::CExpr::EBinary { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
         anf::CExpr::ECall { func, args, .. } => {
             if let Some(spawn) = compile_spawn_call(goenv, func, args) {
@@ -1373,6 +1397,7 @@ fn compile_aexpr_assign(
             other @ (anf::CExpr::CImm { .. }
             | anf::CExpr::EConstr { .. }
             | anf::CExpr::EConstrGet { .. }
+            | anf::CExpr::EBinary { .. }
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {

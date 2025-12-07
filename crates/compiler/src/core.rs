@@ -2,6 +2,8 @@ pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
 use crate::tast;
 
+pub use ast::ast::BinaryOp;
+
 #[derive(Debug, Clone)]
 pub struct File {
     pub toplevels: Vec<Fn>,
@@ -72,6 +74,12 @@ pub enum Expr {
         field_index: usize,
         ty: Ty,
     },
+    EBinary {
+        op: BinaryOp,
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+        ty: Ty,
+    },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,
@@ -98,6 +106,7 @@ impl Expr {
             Expr::EIf { ty, .. } => ty.clone(),
             Expr::EWhile { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
+            Expr::EBinary { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),
         }

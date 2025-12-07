@@ -204,6 +204,22 @@ impl MonoExpr {
                     .group()
             }
 
+            MonoExpr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty: _,
+            } => {
+                let lhs_doc = lhs.to_doc(monoenv);
+                let rhs_doc = rhs.to_doc(monoenv);
+                RcDoc::text("(")
+                    .append(lhs_doc)
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(op.symbol()))
+                    .append(RcDoc::space())
+                    .append(rhs_doc)
+                    .append(RcDoc::text(")"))
+            }
             MonoExpr::ECall { func, args, ty: _ } => {
                 let args_doc = RcDoc::intersperse(
                     args.iter().map(|arg| arg.to_doc(monoenv)),

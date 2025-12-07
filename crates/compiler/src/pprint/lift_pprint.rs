@@ -269,6 +269,22 @@ impl LiftExpr {
                     .group()
             }
 
+            LiftExpr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty: _,
+            } => {
+                let lhs_doc = lhs.to_doc(liftenv);
+                let rhs_doc = rhs.to_doc(liftenv);
+                RcDoc::text("(")
+                    .append(lhs_doc)
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(op.symbol()))
+                    .append(RcDoc::space())
+                    .append(rhs_doc)
+                    .append(RcDoc::text(")"))
+            }
             LiftExpr::ECall { func, args, ty: _ } => {
                 let args_doc = RcDoc::intersperse(
                     args.iter().map(|arg| arg.to_doc(liftenv)),
