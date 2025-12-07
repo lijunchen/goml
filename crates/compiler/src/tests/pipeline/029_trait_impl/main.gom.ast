@@ -3,9 +3,9 @@ struct Point {
     y: int32,
 }
 
-enum Option[T] {
-    Some(T),
-    None
+enum Maybe[T] {
+    Just(T),
+    Nothing
 }
 
 trait Display {
@@ -18,20 +18,20 @@ impl Display for Point {
   }
 }
 
-impl Display for Option[int32] {
-  fn show(self: Option[int32]) -> string {
+impl Display for Maybe[int32] {
+  fn show(self: Maybe[int32]) -> string {
       match self {
-          Some(value) => "Some(" + int32_to_string(value) + ")",
-          None => "None",
+          Just(value) => "Just(" + int32_to_string(value) + ")",
+          Nothing => "Nothing",
       }
   }
 }
 
-fn make_optional(flag: bool) -> Option[int32] {
+fn make_maybe(flag: bool) -> Maybe[int32] {
     if flag {
-        Some(42)
+        Just(42)
     } else {
-        None
+        Nothing
     }
 }
 
@@ -40,8 +40,8 @@ fn main() {
         x: 1,
         y: 2
     } in
-    let some_number = make_optional(true) in
-    let none_number = make_optional(false) in
+    let some_number = make_maybe(true) in
+    let none_number = make_maybe(false) in
     let _ = string_println(Display::show(point)) in
     let _ = string_println(Display::show(some_number)) in
     let _ = string_println(Display::show(none_number)) in

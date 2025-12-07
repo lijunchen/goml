@@ -2,33 +2,33 @@ fn impl_Display_Point_show(self/0: Point) -> string {
   "Point"
 }
 
-fn impl_Display_Option_int32_show(self/1: Option[int32]) -> string {
+fn impl_Display_Maybe_int32_show(self/1: Maybe[int32]) -> string {
   match self/1 {
-    Option::Some(x0) => {
-      let x0 = Option::Some._0(self/1) in
+    Maybe::Just(x0) => {
+      let x0 = Maybe::Just._0(self/1) in
       let value/2 = x0 in
-      (("Some(" + int32_to_string(value/2)) + ")")
+      (("Just(" + int32_to_string(value/2)) + ")")
     },
-    Option::None => {
-      "None"
+    Maybe::Nothing => {
+      "Nothing"
     },
   }
 }
 
-fn make_optional(flag/3: bool) -> Option[int32] {
+fn make_maybe(flag/3: bool) -> Maybe[int32] {
   if flag/3 {
-      Option::Some(42)
+      Maybe::Just(42)
   } else {
-      Option::None
+      Maybe::Nothing
   }
 }
 
 fn main() -> unit {
   let point/4 = Point { x: 1, y: 2 } in
-  let some_number/5 = make_optional(true) in
-  let none_number/6 = make_optional(false) in
+  let some_number/5 = make_maybe(true) in
+  let none_number/6 = make_maybe(false) in
   let mtmp1 = string_println(impl_Display_Point_show(point/4)) in
-  let mtmp2 = string_println(impl_Display_Option_int32_show(some_number/5)) in
-  let mtmp3 = string_println(impl_Display_Option_int32_show(none_number/6)) in
+  let mtmp2 = string_println(impl_Display_Maybe_int32_show(some_number/5)) in
+  let mtmp3 = string_println(impl_Display_Maybe_int32_show(none_number/6)) in
   ()
 }

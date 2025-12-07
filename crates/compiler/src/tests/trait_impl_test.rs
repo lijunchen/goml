@@ -155,9 +155,9 @@ impl Display for Point {
 #[test]
 fn impl_for_generic_type_reports_missing_method_diagnostic() {
     let src = r#"
-enum Option[T] {
-    Some(T),
-    None,
+enum Maybe[T] {
+    Just(T),
+    Nothing,
 }
 
 trait Display {
@@ -165,14 +165,14 @@ trait Display {
     fn debug(Self) -> string;
 }
 
-impl Display for Option[int32] {
-    fn show(self: Option[int32]) -> string { "value" }
+impl Display for Maybe[int32] {
+    fn show(self: Maybe[int32]) -> string { "value" }
 }
 "#;
 
     expect_single_error(
         src,
-        "Trait Display implementation for TApp(TEnum(Option), [TInt32]) is missing method debug",
+        "Trait Display implementation for TApp(TEnum(Maybe), [TInt32]) is missing method debug",
     );
 }
 
