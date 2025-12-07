@@ -5,14 +5,14 @@ fn summarize(event/0: FloatEvent) -> string {
       let x1 = FloatEvent::Sample32._1(event/0) in
       let value/2 = x1 in
       let label/1 = x0 in
-      string_add(label/1, float32_to_string(value/2))
+      (label/1 + float32_to_string(value/2))
     },
     FloatEvent::Sample64(x2, x3) => {
       let x2 = FloatEvent::Sample64._0(event/0) in
       let x3 = FloatEvent::Sample64._1(event/0) in
       let value/4 = x3 in
       let label/3 = x2 in
-      string_add(label/3, float64_to_string(value/4))
+      (label/3 + float64_to_string(value/4))
     },
   }
 }
@@ -24,9 +24,9 @@ fn compare(values/5: (float32, float64)) -> string {
   let left/6 = x4 in
   let limit32/8 = 1 in
   let limit64/9 = 5 in
-  let less_left/10 = float32_less(left/6, limit32/8) in
-  let less_right/11 = float64_less(right/7, limit64/9) in
-  string_add(string_add(string_add("left<1?=", bool_to_string(less_left/10)), ",right<5?="), bool_to_string(less_right/11))
+  let less_left/10 = (left/6 < limit32/8) in
+  let less_right/11 = (right/7 < limit64/9) in
+  ((("left<1?=" + bool_to_string(less_left/10)) + ",right<5?=") + bool_to_string(less_right/11))
 }
 
 fn main() -> unit {
@@ -38,7 +38,7 @@ fn main() -> unit {
   let third/17 = FloatEvent::Sample64("f64=", third_value/14) in
   let tuple/18 = (0.75, 4) in
   let tuple_other/19 = (1.5, 7.25) in
-  let message/20 = string_add(string_add(string_add(string_add(summarize(first/15), summarize(second/16)), summarize(third/17)), compare(tuple/18)), compare(tuple_other/19)) in
+  let message/20 = ((((summarize(first/15) + summarize(second/16)) + summarize(third/17)) + compare(tuple/18)) + compare(tuple_other/19)) in
   let mtmp6 = string_println(message/20) in
   ()
 }

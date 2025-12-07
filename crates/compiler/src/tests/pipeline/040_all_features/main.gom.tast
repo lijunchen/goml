@@ -110,7 +110,7 @@ fn main() -> unit {
   let results/66: [int32; 2] = (run_transforms : (int32, [(int32) -> int32; 2]) -> [int32; 2])(4, (transforms/65 : [(int32) -> int32; 2])) in
   let first_result/67: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 0) in
   let second_result/68: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 1) in
-  let order_check/69: bool = (int32_less : (int32, int32) -> bool)((first_result/67 : int32), (second_result/68 : int32)) && true in
+  let order_check/69: bool = (first_result/67 : int32) < (second_result/68 : int32) && true in
   let first_text/70: string = (Describe::describe : (Self) -> string)((first_record/58 : Record[int32])) in
   let bumped_text/71: string = (Describe::describe : (Self) -> string)((bumped_record/59 : Record[int32])) in
   let flipped_text/72: string = (Describe::describe : (Self) -> string)((flipped_record/60 : Record[string])) in

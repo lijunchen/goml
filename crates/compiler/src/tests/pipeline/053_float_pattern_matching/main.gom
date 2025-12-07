@@ -15,8 +15,8 @@ fn compare(values: (float32, float64)) -> string {
         (left, right) => {
             let limit32: float32 = 1.0;
             let limit64: float64 = 5.0;
-            let less_left = float32_less(left, limit32);
-            let less_right = float64_less(right, limit64);
+            let less_left = left < limit32;
+            let less_right = right < limit64;
             "left<1?=" + bool_to_string(less_left) + ",right<5?=" + bool_to_string(less_right)
         }
     }

@@ -7,7 +7,7 @@ fn int_list_length(xs/2: List__int32) -> int32 {
       let x2 = List__int32::Cons._0(xs/2) in
       let x3 = List__int32::Cons._1(xs/2) in
       let tail/3 = x3 in
-      int32_add(1, int_list_length(tail/3))
+      (1 + int_list_length(tail/3))
     },
   }
 }
@@ -43,7 +43,7 @@ fn list_length__T_int32(xs/0: List__int32) -> int32 {
       let x0 = List__int32::Cons._0(xs/0) in
       let x1 = List__int32::Cons._1(xs/0) in
       let tail/1 = x1 in
-      int32_add(1, list_length__T_int32(tail/1))
+      (1 + list_length__T_int32(tail/1))
     },
   }
 }
@@ -57,7 +57,7 @@ fn list_length__T_unit(xs/0: List__unit) -> int32 {
       let x0 = List__unit::Cons._0(xs/0) in
       let x1 = List__unit::Cons._1(xs/0) in
       let tail/1 = x1 in
-      int32_add(1, list_length__T_unit(tail/1))
+      (1 + list_length__T_unit(tail/1))
     },
   }
 }
@@ -71,7 +71,7 @@ fn list_length__T_bool(xs/0: List__bool) -> int32 {
       let x0 = List__bool::Cons._0(xs/0) in
       let x1 = List__bool::Cons._1(xs/0) in
       let tail/1 = x1 in
-      int32_add(1, list_length__T_bool(tail/1))
+      (1 + list_length__T_bool(tail/1))
     },
   }
 }

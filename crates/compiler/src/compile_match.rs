@@ -1,4 +1,4 @@
-use ast::ast::{BinaryOp, Ident, UnaryOp};
+use ast::ast::Ident;
 
 use crate::common::{self, Constructor, Prim};
 use crate::core;
@@ -1185,99 +1185,6 @@ pub fn compile_file(
     core::File { toplevels }
 }
 
-fn builtin_function_for(
-    op: BinaryOp,
-    lhs_ty: &Ty,
-    rhs_ty: &Ty,
-    _result_ty: &Ty,
-) -> Option<&'static str> {
-    match op {
-        BinaryOp::Add => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int32_add"),
-            (Ty::TInt8, Ty::TInt8) => Some("int8_add"),
-            (Ty::TInt16, Ty::TInt16) => Some("int16_add"),
-            (Ty::TInt64, Ty::TInt64) => Some("int64_add"),
-            (Ty::TUint8, Ty::TUint8) => Some("uint8_add"),
-            (Ty::TUint16, Ty::TUint16) => Some("uint16_add"),
-            (Ty::TUint32, Ty::TUint32) => Some("uint32_add"),
-            (Ty::TUint64, Ty::TUint64) => Some("uint64_add"),
-            (Ty::TFloat32, Ty::TFloat32) => Some("float32_add"),
-            (Ty::TFloat64, Ty::TFloat64) => Some("float64_add"),
-            (Ty::TString, Ty::TString) => Some("string_add"),
-            _ => None,
-        },
-        BinaryOp::Sub => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int32_sub"),
-            (Ty::TInt8, Ty::TInt8) => Some("int8_sub"),
-            (Ty::TInt16, Ty::TInt16) => Some("int16_sub"),
-            (Ty::TInt64, Ty::TInt64) => Some("int64_sub"),
-            (Ty::TUint8, Ty::TUint8) => Some("uint8_sub"),
-            (Ty::TUint16, Ty::TUint16) => Some("uint16_sub"),
-            (Ty::TUint32, Ty::TUint32) => Some("uint32_sub"),
-            (Ty::TUint64, Ty::TUint64) => Some("uint64_sub"),
-            (Ty::TFloat32, Ty::TFloat32) => Some("float32_sub"),
-            (Ty::TFloat64, Ty::TFloat64) => Some("float64_sub"),
-            _ => None,
-        },
-        BinaryOp::Mul => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int32_mul"),
-            (Ty::TInt8, Ty::TInt8) => Some("int8_mul"),
-            (Ty::TInt16, Ty::TInt16) => Some("int16_mul"),
-            (Ty::TInt64, Ty::TInt64) => Some("int64_mul"),
-            (Ty::TUint8, Ty::TUint8) => Some("uint8_mul"),
-            (Ty::TUint16, Ty::TUint16) => Some("uint16_mul"),
-            (Ty::TUint32, Ty::TUint32) => Some("uint32_mul"),
-            (Ty::TUint64, Ty::TUint64) => Some("uint64_mul"),
-            (Ty::TFloat32, Ty::TFloat32) => Some("float32_mul"),
-            (Ty::TFloat64, Ty::TFloat64) => Some("float64_mul"),
-            _ => None,
-        },
-        BinaryOp::Div => match (lhs_ty, rhs_ty) {
-            (Ty::TInt32, Ty::TInt32) => Some("int32_div"),
-            (Ty::TInt8, Ty::TInt8) => Some("int8_div"),
-            (Ty::TInt16, Ty::TInt16) => Some("int16_div"),
-            (Ty::TInt64, Ty::TInt64) => Some("int64_div"),
-            (Ty::TUint8, Ty::TUint8) => Some("uint8_div"),
-            (Ty::TUint16, Ty::TUint16) => Some("uint16_div"),
-            (Ty::TUint32, Ty::TUint32) => Some("uint32_div"),
-            (Ty::TUint64, Ty::TUint64) => Some("uint64_div"),
-            (Ty::TFloat32, Ty::TFloat32) => Some("float32_div"),
-            (Ty::TFloat64, Ty::TFloat64) => Some("float64_div"),
-            _ => None,
-        },
-        BinaryOp::And => match (lhs_ty, rhs_ty) {
-            (Ty::TBool, Ty::TBool) => Some("bool_and"),
-            _ => None,
-        },
-        BinaryOp::Or => match (lhs_ty, rhs_ty) {
-            (Ty::TBool, Ty::TBool) => Some("bool_or"),
-            _ => None,
-        },
-    }
-}
-
-fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Option<&'static str> {
-    match op {
-        UnaryOp::Neg => match arg_ty {
-            Ty::TInt8 => Some("int8_neg"),
-            Ty::TInt16 => Some("int16_neg"),
-            Ty::TInt32 => Some("int32_neg"),
-            Ty::TInt64 => Some("int64_neg"),
-            Ty::TUint8 => Some("uint8_neg"),
-            Ty::TUint16 => Some("uint16_neg"),
-            Ty::TUint32 => Some("uint32_neg"),
-            Ty::TUint64 => Some("uint64_neg"),
-            Ty::TFloat32 => Some("float32_neg"),
-            Ty::TFloat64 => Some("float64_neg"),
-            _ => None,
-        },
-        UnaryOp::Not => match arg_ty {
-            Ty::TBool => Some("bool_not"),
-            _ => None,
-        },
-    }
-}
-
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -1456,6 +1363,10 @@ fn compile_expr(
             body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
+        EGo { expr, ty } => core::Expr::EGo {
+            expr: Box::new(compile_expr(expr, genv, gensym, diagnostics)),
+            ty: ty.clone(),
+        },
         EUnary {
             op,
             expr,
@@ -1463,28 +1374,13 @@ fn compile_expr(
             resolution,
         } => {
             let arg = compile_expr(expr, genv, gensym, diagnostics);
-            let arg_ty = arg.get_ty();
 
             match resolution {
-                tast::UnaryResolution::Builtin => {
-                    let func = builtin_unary_function_for(*op, &arg_ty, ty).unwrap_or_else(|| {
-                        panic!(
-                            "Unsupported builtin unary operator {:?} for type {:?}",
-                            op, arg_ty
-                        )
-                    });
-                    core::Expr::ECall {
-                        func: Box::new(core::Expr::EVar {
-                            name: func.to_string(),
-                            ty: Ty::TFunc {
-                                params: vec![arg_ty.clone()],
-                                ret_ty: Box::new(ty.clone()),
-                            },
-                        }),
-                        args: vec![arg],
-                        ty: ty.clone(),
-                    }
-                }
+                tast::UnaryResolution::Builtin => core::Expr::EUnary {
+                    op: *op,
+                    expr: Box::new(arg),
+                    ty: ty.clone(),
+                },
                 tast::UnaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = arg.get_ty();
@@ -1510,35 +1406,21 @@ fn compile_expr(
             ty,
             resolution,
         } => {
-            let args = vec![
-                compile_expr(lhs, genv, gensym, diagnostics),
-                compile_expr(rhs, genv, gensym, diagnostics),
-            ];
-            let param_tys: Vec<_> = args.iter().map(|arg| arg.get_ty()).collect();
+            let lhs_expr = compile_expr(lhs, genv, gensym, diagnostics);
+            let rhs_expr = compile_expr(rhs, genv, gensym, diagnostics);
 
             match resolution {
-                tast::BinaryResolution::Builtin => {
-                    let func = builtin_function_for(*op, &param_tys[0], &param_tys[1], ty)
-                        .unwrap_or_else(|| {
-                            panic!("Unsupported builtin operator {:?} for type {:?}", op, ty)
-                        });
-                    core::Expr::ECall {
-                        func: Box::new(core::Expr::EVar {
-                            name: func.to_string(),
-                            ty: Ty::TFunc {
-                                params: param_tys,
-                                ret_ty: Box::new(ty.clone()),
-                            },
-                        }),
-                        args,
-                        ty: ty.clone(),
-                    }
-                }
+                tast::BinaryResolution::Builtin => core::Expr::EBinary {
+                    op: *op,
+                    lhs: Box::new(lhs_expr),
+                    rhs: Box::new(rhs_expr),
+                    ty: ty.clone(),
+                },
                 tast::BinaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
-                    let self_ty = args[0].get_ty();
+                    let self_ty = lhs_expr.get_ty();
                     let func_name = mangle_impl_name(trait_name, &self_ty, method);
-                    let param_tys = args.iter().map(|arg| arg.get_ty()).collect();
+                    let param_tys = vec![lhs_expr.get_ty(), rhs_expr.get_ty()];
                     core::Expr::ECall {
                         func: Box::new(core::Expr::EVar {
                             name: func_name,
@@ -1547,7 +1429,7 @@ fn compile_expr(
                                 ret_ty: Box::new(ty.clone()),
                             },
                         }),
-                        args,
+                        args: vec![lhs_expr, rhs_expr],
                         ty: ty.clone(),
                     }
                 }

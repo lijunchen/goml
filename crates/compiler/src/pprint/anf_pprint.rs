@@ -213,6 +213,29 @@ impl CExpr {
                     .append(expr.to_doc())
                     .append(RcDoc::text(")"))
             }
+            CExpr::EUnary { op, expr, ty: _ } => {
+                let expr_doc = expr.to_doc();
+                RcDoc::text("(")
+                    .append(RcDoc::text(op.symbol()))
+                    .append(expr_doc)
+                    .append(RcDoc::text(")"))
+            }
+            CExpr::EBinary {
+                op,
+                lhs,
+                rhs,
+                ty: _,
+            } => {
+                let lhs_doc = lhs.to_doc();
+                let rhs_doc = rhs.to_doc();
+                RcDoc::text("(")
+                    .append(lhs_doc)
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(op.symbol()))
+                    .append(RcDoc::space())
+                    .append(rhs_doc)
+                    .append(RcDoc::text(")"))
+            }
             CExpr::ECall { func, args, ty: _ } => {
                 let args_doc =
                     RcDoc::intersperse(args.iter().map(|arg| arg.to_doc()), RcDoc::text(", "));
@@ -222,6 +245,9 @@ impl CExpr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
+            CExpr::EGo { closure, ty: _ } => RcDoc::text("go")
+                .append(RcDoc::text(" "))
+                .append(closure.to_doc()),
             CExpr::EProj {
                 tuple,
                 index,

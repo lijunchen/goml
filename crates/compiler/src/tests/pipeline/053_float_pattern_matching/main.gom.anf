@@ -6,7 +6,7 @@ fn summarize(event/0: FloatEvent) -> string {
       let value/2 = x1 in
       let label/1 = x0 in
       let t7 = float32_to_string(value/2) in
-      string_add(label/1, t7)
+      (label/1 + t7)
     },
     Tag_1 => {
       let x2 = FloatEvent::Sample64._0(event/0) in
@@ -14,7 +14,7 @@ fn summarize(event/0: FloatEvent) -> string {
       let value/4 = x3 in
       let label/3 = x2 in
       let t8 = float64_to_string(value/4) in
-      string_add(label/3, t8)
+      (label/3 + t8)
     },
   }
 }
@@ -26,13 +26,13 @@ fn compare(values/5: (float32, float64)) -> string {
   let left/6 = x4 in
   let limit32/8 = 1 in
   let limit64/9 = 5 in
-  let less_left/10 = float32_less(left/6, limit32/8) in
-  let less_right/11 = float64_less(right/7, limit64/9) in
+  let less_left/10 = (left/6 < limit32/8) in
+  let less_right/11 = (right/7 < limit64/9) in
   let t11 = bool_to_string(less_left/10) in
-  let t10 = string_add("left<1?=", t11) in
-  let t9 = string_add(t10, ",right<5?=") in
+  let t10 = ("left<1?=" + t11) in
+  let t9 = (t10 + ",right<5?=") in
   let t12 = bool_to_string(less_right/11) in
-  string_add(t9, t12)
+  (t9 + t12)
 }
 
 fn main() -> unit {
@@ -46,13 +46,13 @@ fn main() -> unit {
   let tuple_other/19 = (1.5, 7.25) in
   let t16 = summarize(first/15) in
   let t17 = summarize(second/16) in
-  let t15 = string_add(t16, t17) in
+  let t15 = (t16 + t17) in
   let t18 = summarize(third/17) in
-  let t14 = string_add(t15, t18) in
+  let t14 = (t15 + t18) in
   let t19 = compare(tuple/18) in
-  let t13 = string_add(t14, t19) in
+  let t13 = (t14 + t19) in
   let t20 = compare(tuple_other/19) in
-  let message/20 = string_add(t13, t20) in
+  let message/20 = (t13 + t20) in
   let mtmp6 = string_println(message/20) in
   ()
 }

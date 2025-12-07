@@ -1,12 +1,12 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let i/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
-  let _ : (unit) = (while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])), (limit/0 : int32)) {
-        let current/3: int32 = (ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) in
-        let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32])) + (current/3 : int32)) in
-        let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (current/3 : int32) + 1) in
-        ()
-    }) in
+  let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) < (limit/0 : int32) {
+      let current/3: int32 = (ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32])) in
+      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32])) + (current/3 : int32)) in
+      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (current/3 : int32) + 1) in
+      ()
+  } in
   (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32]))
 }
 
@@ -14,17 +14,17 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let i/6: Ref[int32] = (ref : (int32) -> Ref[int32])(0) in
   let is_even/7: Ref[bool] = (ref : (bool) -> Ref[bool])(true) in
-  let _ : (unit) = (while (int32_less : (int32, int32) -> bool)((ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])), (limit/4 : int32)) {
-        let current/8: int32 = (ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])) in
-        let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/6 : Ref[int32]), (current/8 : int32) + 1) in
-        let add_now/9: bool = (ref_get : (Ref[bool]) -> bool)((is_even/7 : Ref[bool])) in
-        let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((is_even/7 : Ref[bool]), !(add_now/9 : bool)) in
-        if (add_now/9 : bool) {
-            (ref_set : (Ref[int32], int32) -> unit)((acc/5 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32])) + (current/8 : int32))
-        } else {
-            ()
-        }
-    }) in
+  let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])) < (limit/4 : int32) {
+      let current/8: int32 = (ref_get : (Ref[int32]) -> int32)((i/6 : Ref[int32])) in
+      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/6 : Ref[int32]), (current/8 : int32) + 1) in
+      let add_now/9: bool = (ref_get : (Ref[bool]) -> bool)((is_even/7 : Ref[bool])) in
+      let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((is_even/7 : Ref[bool]), !(add_now/9 : bool)) in
+      if (add_now/9 : bool) {
+          (ref_set : (Ref[int32], int32) -> unit)((acc/5 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32])) + (current/8 : int32))
+      } else {
+          ()
+      }
+  } in
   (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32]))
 }
 

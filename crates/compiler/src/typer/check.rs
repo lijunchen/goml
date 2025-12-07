@@ -82,6 +82,7 @@ impl Typer {
             ast::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
+            ast::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             ast::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, func, args)
             }
@@ -855,6 +856,27 @@ impl Typer {
         }
     }
 
+    fn infer_go_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr: &ast::Expr,
+    ) -> tast::Expr {
+        let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
+        // go expression expects a closure () -> unit
+        let closure_ty = tast::Ty::TFunc {
+            params: vec![],
+            ret_ty: Box::new(tast::Ty::TUnit),
+        };
+        self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), closure_ty));
+
+        tast::Expr::EGo {
+            expr: Box::new(expr_tast),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
     fn infer_call_expr(
         &mut self,
         genv: &GlobalTypeEnv,
@@ -1124,16 +1146,11 @@ impl Typer {
                 }
             }
             ast::UnaryOp::Neg => {
-                let target_ty = if is_numeric_ty(&expr_ty) {
-                    expr_ty.clone()
-                } else {
-                    tast::Ty::TInt32
-                };
-                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), expr_ty.clone()));
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
-                    ty: target_ty,
+                    ty: expr_ty,
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
@@ -1155,7 +1172,7 @@ impl Typer {
         let rhs_ty = rhs_tast.get_ty();
 
         let ret_ty = match op {
-            ast::BinaryOp::And | ast::BinaryOp::Or => tast::Ty::TBool,
+            ast::BinaryOp::And | ast::BinaryOp::Or | ast::BinaryOp::Less => tast::Ty::TBool,
             _ => self.fresh_ty_var(),
         };
 
@@ -1171,6 +1188,10 @@ impl Typer {
             ast::BinaryOp::And | ast::BinaryOp::Or => {
                 self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
                 self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
+            }
+            ast::BinaryOp::Less => {
+                // Less operator: lhs and rhs must have same type (numeric types)
+                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), rhs_ty.clone()));
             }
         }
 

@@ -139,7 +139,7 @@ fn main() {
     let results = run_transforms(4, transforms);
     let first_result = array_get(results, 0);
     let second_result = array_get(results, 1);
-    let order_check = int32_less(first_result, second_result) && true;
+    let order_check = first_result < second_result && true;
 
     let first_text = Describe::describe(first_record);
     let bumped_text = Describe::describe(bumped_record);

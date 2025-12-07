@@ -3,6 +3,7 @@ use indexmap::IndexMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
+    core::{BinaryOp, UnaryOp},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
     mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
@@ -152,10 +153,25 @@ pub enum LiftExpr {
         body: Box<LiftExpr>,
         ty: Ty,
     },
+    EGo {
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
     EConstrGet {
         expr: Box<LiftExpr>,
         constructor: Constructor,
         field_index: usize,
+        ty: Ty,
+    },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
+    EBinary {
+        op: BinaryOp,
+        lhs: Box<LiftExpr>,
+        rhs: Box<LiftExpr>,
         ty: Ty,
     },
     ECall {
@@ -182,7 +198,10 @@ impl LiftExpr {
             LiftExpr::EMatch { ty, .. } => ty.clone(),
             LiftExpr::EIf { ty, .. } => ty.clone(),
             LiftExpr::EWhile { ty, .. } => ty.clone(),
+            LiftExpr::EGo { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
+            LiftExpr::EUnary { ty, .. } => ty.clone(),
+            LiftExpr::EBinary { ty, .. } => ty.clone(),
             LiftExpr::ECall { ty, .. } => ty.clone(),
             LiftExpr::EProj { ty, .. } => ty.clone(),
         }
@@ -541,6 +560,10 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
             let body = Box::new(transform_expr(state, scope, *body));
             LiftExpr::EWhile { cond, body, ty }
         }
+        MonoExpr::EGo { expr, ty } => {
+            let expr = Box::new(transform_expr(state, scope, *expr));
+            LiftExpr::EGo { expr, ty }
+        }
         MonoExpr::EConstrGet {
             expr,
             constructor,
@@ -560,6 +583,15 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 field_index,
                 ty: result_ty,
             }
+        }
+        MonoExpr::EUnary { op, expr, ty } => {
+            let expr = Box::new(transform_expr(state, scope, *expr));
+            LiftExpr::EUnary { op, expr, ty }
+        }
+        MonoExpr::EBinary { op, lhs, rhs, ty } => {
+            let lhs = Box::new(transform_expr(state, scope, *lhs));
+            let rhs = Box::new(transform_expr(state, scope, *rhs));
+            LiftExpr::EBinary { op, lhs, rhs, ty }
         }
         MonoExpr::ECall { func, args, ty } => {
             let func_expr = transform_expr(state, scope, *func);
@@ -846,8 +878,18 @@ fn collect_captured(
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope);
         }
+        LiftExpr::EGo { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
+        }
         LiftExpr::EConstrGet { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
+        }
+        LiftExpr::EUnary { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
+        }
+        LiftExpr::EBinary { lhs, rhs, .. } => {
+            collect_captured(lhs, bound, captured, scope);
+            collect_captured(rhs, bound, captured, scope);
         }
         LiftExpr::ECall { func, args, .. } => {
             collect_captured(func, bound, captured, scope);

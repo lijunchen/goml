@@ -1,12 +1,12 @@
 fn my_int_equal(x/0: int32, y/1: int32) -> bool {
-  bool_and(bool_not(int32_less(x/0, y/1)), bool_not(int32_less(y/1, x/0)))
+  ((!(x/0 < y/1)) && (!(y/1 < x/0)))
 }
 
 fn sum(n/2: int32) -> int32 {
   if my_int_equal(n/2, 1) {
       1
   } else {
-      int32_add(n/2, sum(int32_sub(n/2, 1)))
+      (n/2 + sum((n/2 - 1)))
   }
 }
 

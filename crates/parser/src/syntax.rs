@@ -26,6 +26,7 @@ pub enum MySyntaxKind {
     OrOr,
     Pipe,
     Bang,
+    Less,
     Pound,
     ExternKeyword,
     FnKeyword,

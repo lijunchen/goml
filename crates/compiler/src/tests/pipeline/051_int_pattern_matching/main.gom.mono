@@ -82,7 +82,7 @@ fn match_struct(pair/5: PairData) -> bool {
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-  string_add(label/6, bool_to_string(value/7))
+  (label/6 + bool_to_string(value/7))
 }
 
 fn main() -> unit {
@@ -101,7 +101,7 @@ fn main() -> unit {
   let part7/20 = report(",tuple_miss=", tuple_result_miss/11) in
   let part8/21 = report(",struct_first=", pair_first/12) in
   let part9/22 = report(",struct_second=", pair_second/13) in
-  let message/23 = string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(part1/14, part2/15), part3/16), part4/17), part5/18), part6/19), part7/20), part8/21), part9/22) in
+  let message/23 = ((((((((part1/14 + part2/15) + part3/16) + part4/17) + part5/18) + part6/19) + part7/20) + part8/21) + part9/22) in
   let mtmp4 = string_println(message/23) in
   ()
 }

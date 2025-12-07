@@ -1,17 +1,16 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1 = ref(0) in
   let i/2 = ref(0) in
-  let t8 = while let t9 = ref_get(i/2) in
-  int32_less(t9, limit/0) {
+  let mtmp2 = while let t8 = ref_get(i/2) in
+  (t8 < limit/0) {
     let current/3 = ref_get(i/2) in
-    let t11 = ref_get(acc/1) in
-    let t10 = int32_add(t11, current/3) in
-    let mtmp0 = ref_set(acc/1, t10) in
-    let t12 = int32_add(current/3, 1) in
-    let mtmp1 = ref_set(i/2, t12) in
+    let t10 = ref_get(acc/1) in
+    let t9 = (t10 + current/3) in
+    let mtmp0 = ref_set(acc/1, t9) in
+    let t11 = (current/3 + 1) in
+    let mtmp1 = ref_set(i/2, t11) in
     ()
   } in
-  let mtmp2 = (t8) in
   ref_get(acc/1)
 }
 
@@ -19,34 +18,33 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5 = ref(0) in
   let i/6 = ref(0) in
   let is_even/7 = ref(true) in
-  let t13 = while let t14 = ref_get(i/6) in
-  int32_less(t14, limit/4) {
+  let mtmp5 = while let t12 = ref_get(i/6) in
+  (t12 < limit/4) {
     let current/8 = ref_get(i/6) in
-    let t15 = int32_add(current/8, 1) in
-    let mtmp3 = ref_set(i/6, t15) in
+    let t13 = (current/8 + 1) in
+    let mtmp3 = ref_set(i/6, t13) in
     let add_now/9 = ref_get(is_even/7) in
-    let t16 = bool_not(add_now/9) in
-    let mtmp4 = ref_set(is_even/7, t16) in
+    let t14 = (!add_now/9) in
+    let mtmp4 = ref_set(is_even/7, t14) in
     if add_now/9 {
-      let t18 = ref_get(acc/5) in
-      let t17 = int32_add(t18, current/8) in
-      ref_set(acc/5, t17)
+      let t16 = ref_get(acc/5) in
+      let t15 = (t16 + current/8) in
+      ref_set(acc/5, t15)
     } else {
       ()
     }
   } in
-  let mtmp5 = (t13) in
   ref_get(acc/5)
 }
 
 fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let t20 = int32_to_string(first/10) in
-  let t19 = string_add("sum_to(5)=", t20) in
-  let mtmp6 = string_println(t19) in
-  let t22 = int32_to_string(evens/11) in
-  let t21 = string_add("sum_even(6)=", t22) in
-  let mtmp7 = string_println(t21) in
+  let t18 = int32_to_string(first/10) in
+  let t17 = ("sum_to(5)=" + t18) in
+  let mtmp6 = string_println(t17) in
+  let t20 = int32_to_string(evens/11) in
+  let t19 = ("sum_even(6)=" + t20) in
+  let mtmp7 = string_println(t19) in
   ()
 }

@@ -20,18 +20,18 @@ fn impl_inherent_Point_to_string(self/1: Point) -> string {
   let color/4 = x3 in
   let y/3 = x2 in
   let x/2 = x1 in
-  let t18 = string_add("Point { ", "x: ") in
+  let t18 = ("Point { " + "x: ") in
   let t19 = int32_to_string(x/2) in
-  let t17 = string_add(t18, t19) in
-  let t16 = string_add(t17, ", ") in
-  let t15 = string_add(t16, "y: ") in
+  let t17 = (t18 + t19) in
+  let t16 = (t17 + ", ") in
+  let t15 = (t16 + "y: ") in
   let t20 = int32_to_string(y/3) in
-  let t14 = string_add(t15, t20) in
-  let t13 = string_add(t14, ", ") in
-  let t12 = string_add(t13, "color: ") in
+  let t14 = (t15 + t20) in
+  let t13 = (t14 + ", ") in
+  let t12 = (t13 + "color: ") in
   let t21 = impl_inherent_Color_to_string(color/4) in
-  let t11 = string_add(t12, t21) in
-  string_add(t11, " }")
+  let t11 = (t12 + t21) in
+  (t11 + " }")
 }
 
 fn impl_inherent_Point_new(x/5: int32, y/6: int32, color/7: Color) -> Point {
@@ -46,18 +46,18 @@ fn impl_inherent_Line_to_string(self/8: Line) -> string {
   let color/11 = x7 in
   let to/10 = x6 in
   let from/9 = x5 in
-  let t29 = string_add("Line { ", "from: ") in
+  let t29 = ("Line { " + "from: ") in
   let t30 = impl_inherent_Point_to_string(from/9) in
-  let t28 = string_add(t29, t30) in
-  let t27 = string_add(t28, ", ") in
-  let t26 = string_add(t27, "to: ") in
+  let t28 = (t29 + t30) in
+  let t27 = (t28 + ", ") in
+  let t26 = (t27 + "to: ") in
   let t31 = impl_inherent_Point_to_string(to/10) in
-  let t25 = string_add(t26, t31) in
-  let t24 = string_add(t25, ", ") in
-  let t23 = string_add(t24, "color: ") in
+  let t25 = (t26 + t31) in
+  let t24 = (t25 + ", ") in
+  let t23 = (t24 + "color: ") in
   let t32 = impl_inherent_Color_to_string(color/11) in
-  let t22 = string_add(t23, t32) in
-  string_add(t22, " }")
+  let t22 = (t23 + t32) in
+  (t22 + " }")
 }
 
 fn impl_inherent_Line_new(from/12: Point, to/13: Point, color/14: Color) -> Line {
@@ -75,11 +75,11 @@ fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
       let __field1/17 = x9 in
       let __field0/16 = x8 in
       let t36 = impl_inherent_Line_to_string(__field0/16) in
-      let t35 = string_add("LineList::Cons(", t36) in
-      let t34 = string_add(t35, ", ") in
+      let t35 = ("LineList::Cons(" + t36) in
+      let t34 = (t35 + ", ") in
       let t37 = impl_inherent_LineList_to_string(__field1/17) in
-      let t33 = string_add(t34, t37) in
-      string_add(t33, ")")
+      let t33 = (t34 + t37) in
+      (t33 + ")")
     },
   }
 }

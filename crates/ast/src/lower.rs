@@ -141,7 +141,7 @@ fn lower_attributes(list: Option<cst::AttributeList>) -> Vec<ast::Attribute> {
     .unwrap_or_default()
 }
 
-fn attribute_path<'a>(attr: &'a ast::Attribute) -> Option<&'a str> {
+fn attribute_path(attr: &ast::Attribute) -> Option<&str> {
     let trimmed = attr.text.trim();
     let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
     let name_part = match inner.find('(') {
@@ -1033,51 +1033,17 @@ fn lower_expr_with_args(
             }
 
             let Some(inner) = it.expr() else {
-                ctx.push_error(Some(it.syntax().text_range()), "go expression missing body");
-                return None;
-            };
-
-            if !matches!(&inner, cst::Expr::CallExpr(_)) {
                 ctx.push_error(
-                    Some(inner.syntax().text_range()),
-                    "go expression expects a call expression",
+                    Some(it.syntax().text_range()),
+                    "go statement missing expression",
                 );
                 return None;
-            }
-
-            let call_expr = lower_expr(ctx, inner)?;
-
-            let wrap_in_closure = |call: ast::Expr| ast::Expr::EClosure {
-                params: Vec::new(),
-                body: Box::new(ast::Expr::ELet {
-                    pat: ast::Pat::PWild,
-                    annotation: None,
-                    value: Box::new(call),
-                    body: Box::new(ast::Expr::EUnit),
-                }),
             };
 
-            let closure_arg = match call_expr {
-                ast::Expr::ECall { func, args } => {
-                    if args.is_empty() {
-                        if let ast::Expr::EClosure { params, body } = *func {
-                            ast::Expr::EClosure { params, body }
-                        } else {
-                            wrap_in_closure(ast::Expr::ECall { func, args })
-                        }
-                    } else {
-                        wrap_in_closure(ast::Expr::ECall { func, args })
-                    }
-                }
-                other => wrap_in_closure(other),
-            };
+            let expr = lower_expr(ctx, inner)?;
 
-            Some(ast::Expr::ECall {
-                func: Box::new(ast::Expr::EPath {
-                    path: ast::Path::from_ident(ast::Ident("spawn".to_string())),
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
-                }),
-                args: vec![closure_arg],
+            Some(ast::Expr::EGo {
+                expr: Box::new(expr),
             })
         }
         cst::Expr::IfExpr(it) => {
@@ -1287,6 +1253,13 @@ fn lower_expr_with_args(
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
             Some(ast::Expr::ETuple { items })
         }
+        cst::Expr::ParenExpr(it) => {
+            // Parenthesized expression - just unwrap and process the inner expression
+            let inner = it
+                .expr()
+                .and_then(|expr| lower_expr_with_args(ctx, expr, trailing_args))?;
+            Some(inner)
+        }
         cst::Expr::PrefixExpr(it) => {
             let expr = match it
                 .expr()
@@ -1396,6 +1369,14 @@ fn lower_expr_with_args(
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
                         op: ast::BinaryOp::Or,
+                        lhs: Box::new(lhs),
+                        rhs: Box::new(rhs),
+                    })
+                }
+                MySyntaxKind::Less => {
+                    let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
+                    Some(ast::Expr::EBinary {
+                        op: ast::BinaryOp::Less,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })

@@ -1,21 +1,21 @@
 fn main() -> unit {
   let start8/0 = 200 in
   let add8/1 = 55 in
-  let sum8/2 = uint8_add(start8/0, add8/1) in
-  let neg8/3 = uint8_neg(start8/0) in
+  let sum8/2 = (start8/0 + add8/1) in
+  let neg8/3 = (-start8/0) in
   let start16/4 = 50000 in
   let add16/5 = 12000 in
-  let sum16/6 = uint16_add(start16/4, add16/5) in
-  let diff16/7 = uint16_sub(sum16/6, start16/4) in
+  let sum16/6 = (start16/4 + add16/5) in
+  let diff16/7 = (sum16/6 - start16/4) in
   let start32/8 = 3000000000 in
   let add32/9 = 123456789 in
-  let sum32/10 = uint32_add(start32/8, add32/9) in
-  let neg32/11 = uint32_neg(add32/9) in
+  let sum32/10 = (start32/8 + add32/9) in
+  let neg32/11 = (-add32/9) in
   let start64/12 = 6000000000 in
   let add64/13 = 4000000000 in
-  let sum64/14 = uint64_add(start64/12, add64/13) in
-  let diff64/15 = uint64_sub(sum64/14, add64/13) in
-  let message/16 = string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(uint8_to_string(sum8/2), ", "), uint8_to_string(neg8/3)), "; "), uint16_to_string(diff16/7)), "; "), uint32_to_string(neg32/11)), "; "), uint64_to_string(diff64/15)) in
+  let sum64/14 = (start64/12 + add64/13) in
+  let diff64/15 = (sum64/14 - add64/13) in
+  let message/16 = ((((((((uint8_to_string(sum8/2) + ", ") + uint8_to_string(neg8/3)) + "; ") + uint16_to_string(diff16/7)) + "; ") + uint32_to_string(neg32/11)) + "; ") + uint64_to_string(diff64/15)) in
   let mtmp0 = string_println(message/16) in
   ()
 }

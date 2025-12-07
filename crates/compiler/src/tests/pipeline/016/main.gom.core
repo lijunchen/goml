@@ -7,7 +7,7 @@ fn list_length(xs/0: List[T]) -> int32 {
       let x0 = List::Cons._0(xs/0) in
       let x1 = List::Cons._1(xs/0) in
       let tail/1 = x1 in
-      int32_add(1, list_length(tail/1))
+      (1 + list_length(tail/1))
     },
   }
 }
@@ -21,7 +21,7 @@ fn int_list_length(xs/2: List[int32]) -> int32 {
       let x2 = List::Cons._0(xs/2) in
       let x3 = List::Cons._1(xs/2) in
       let tail/3 = x3 in
-      int32_add(1, int_list_length(tail/3))
+      (1 + int_list_length(tail/3))
     },
   }
 }

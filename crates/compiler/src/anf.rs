@@ -2,6 +2,7 @@ pub type Ty = crate::tast::Ty;
 use ast::ast::Ident;
 
 use crate::common::{Constructor, Prim};
+use crate::core::{BinaryOp, UnaryOp};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
@@ -91,9 +92,24 @@ pub enum CExpr {
         field_index: usize,
         ty: Ty,
     },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<ImmExpr>,
+        ty: Ty,
+    },
+    EBinary {
+        op: BinaryOp,
+        lhs: Box<ImmExpr>,
+        rhs: Box<ImmExpr>,
+        ty: Ty,
+    },
     ECall {
         func: ImmExpr,
         args: Vec<ImmExpr>,
+        ty: Ty,
+    },
+    EGo {
+        closure: Box<ImmExpr>,
         ty: Ty,
     },
     EProj {
@@ -162,7 +178,10 @@ fn cexpr_tast_ty(e: &CExpr) -> Ty {
         | CExpr::EMatch { ty, .. }
         | CExpr::EIf { ty, .. }
         | CExpr::EWhile { ty, .. }
+        | CExpr::EUnary { ty, .. }
+        | CExpr::EBinary { ty, .. }
         | CExpr::ECall { ty, .. }
+        | CExpr::EGo { ty, .. }
         | CExpr::EProj { ty, .. }
         | CExpr::EConstrGet { ty, .. } => ty.clone(),
     }
@@ -414,6 +433,17 @@ fn anf<'a>(
                 ty: ty_clone,
             })
         }
+        LiftExpr::EGo { expr, ty: _ } => anf_imm(
+            anfenv,
+            gensym,
+            *expr,
+            Box::new(move |closure| {
+                k(CExpr::EGo {
+                    closure: Box::new(closure),
+                    ty: e_ty.clone(),
+                })
+            }),
+        ),
         LiftExpr::EMatch {
             expr,
             arms,
@@ -445,6 +475,51 @@ fn anf<'a>(
                 })
             }),
         ),
+        LiftExpr::EUnary { op, expr, ty: _ } => {
+            let op_copy = op;
+            anf_imm(
+                anfenv,
+                gensym,
+                *expr,
+                Box::new(move |expr_imm| {
+                    k(CExpr::EUnary {
+                        op: op_copy,
+                        expr: Box::new(expr_imm),
+                        ty: e_ty,
+                    })
+                }),
+            )
+        }
+        LiftExpr::EBinary {
+            op,
+            lhs,
+            rhs,
+            ty: _,
+        } => {
+            let op_copy = op;
+            anf_imm(
+                anfenv,
+                gensym,
+                *lhs,
+                Box::new(move |lhs_imm| {
+                    let op_copy = op_copy;
+                    let e_ty = e_ty.clone();
+                    anf_imm(
+                        anfenv,
+                        gensym,
+                        *rhs,
+                        Box::new(move |rhs_imm| {
+                            k(CExpr::EBinary {
+                                op: op_copy,
+                                lhs: Box::new(lhs_imm),
+                                rhs: Box::new(rhs_imm),
+                                ty: e_ty.clone(),
+                            })
+                        }),
+                    )
+                }),
+            )
+        }
         LiftExpr::ECall { func, args, ty: _ } => {
             let call_ty = e_ty.clone();
             anf_imm(
@@ -673,9 +748,24 @@ pub mod anf_renamer {
                 field_index,
                 ty,
             },
+            anf::CExpr::EUnary { op, expr, ty } => anf::CExpr::EUnary {
+                op,
+                expr: Box::new(rename_imm(*expr)),
+                ty,
+            },
+            anf::CExpr::EBinary { op, lhs, rhs, ty } => anf::CExpr::EBinary {
+                op,
+                lhs: Box::new(rename_imm(*lhs)),
+                rhs: Box::new(rename_imm(*rhs)),
+                ty,
+            },
             anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
                 func: rename_imm(func),
                 args: args.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EGo { closure, ty } => anf::CExpr::EGo {
+                closure: Box::new(rename_imm(*closure)),
                 ty,
             },
             anf::CExpr::EProj { tuple, index, ty } => anf::CExpr::EProj {

@@ -156,7 +156,10 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
         | anf::CExpr::EWhile { ty, .. }
+        | anf::CExpr::EUnary { ty, .. }
+        | anf::CExpr::EBinary { ty, .. }
         | anf::CExpr::ECall { ty, .. }
+        | anf::CExpr::EGo { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
         // For EConstrGet, compute field type from the scrutinee's data constructor
         anf::CExpr::EConstrGet {
@@ -197,162 +200,6 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         },
     };
     tast_ty_to_go_type(&t)
-}
-
-const NEG_BUILTINS: &[&str] = &[
-    "int8_neg",
-    "int16_neg",
-    "int32_neg",
-    "int64_neg",
-    "uint8_neg",
-    "uint16_neg",
-    "uint32_neg",
-    "uint64_neg",
-    "float32_neg",
-    "float64_neg",
-];
-
-const ADD_BUILTINS: &[&str] = &[
-    "int8_add",
-    "int16_add",
-    "int32_add",
-    "int64_add",
-    "uint8_add",
-    "uint16_add",
-    "uint32_add",
-    "uint64_add",
-    "float32_add",
-    "float64_add",
-    "string_add",
-];
-
-const SUB_BUILTINS: &[&str] = &[
-    "int8_sub",
-    "int16_sub",
-    "int32_sub",
-    "int64_sub",
-    "uint8_sub",
-    "uint16_sub",
-    "uint32_sub",
-    "uint64_sub",
-    "float32_sub",
-    "float64_sub",
-];
-
-const MUL_BUILTINS: &[&str] = &[
-    "int8_mul",
-    "int16_mul",
-    "int32_mul",
-    "int64_mul",
-    "uint8_mul",
-    "uint16_mul",
-    "uint32_mul",
-    "uint64_mul",
-    "float32_mul",
-    "float64_mul",
-];
-
-const DIV_BUILTINS: &[&str] = &[
-    "int8_div",
-    "int16_div",
-    "int32_div",
-    "int64_div",
-    "uint8_div",
-    "uint16_div",
-    "uint32_div",
-    "uint64_div",
-    "float32_div",
-    "float64_div",
-];
-
-const LESS_BUILTINS: &[&str] = &[
-    "int8_less",
-    "int16_less",
-    "int32_less",
-    "int64_less",
-    "uint8_less",
-    "uint16_less",
-    "uint32_less",
-    "uint64_less",
-    "float32_less",
-    "float64_less",
-];
-
-fn builtin_unary_operator(name: &str) -> Option<goast::UnaryOp> {
-    if name == "bool_not" {
-        return Some(goast::UnaryOp::Not);
-    }
-    if NEG_BUILTINS.contains(&name) {
-        return Some(goast::UnaryOp::Neg);
-    }
-    None
-}
-
-fn builtin_binary_operator(name: &str) -> Option<goast::BinaryOp> {
-    if name == "bool_and" {
-        return Some(goast::BinaryOp::And);
-    }
-    if name == "bool_or" {
-        return Some(goast::BinaryOp::Or);
-    }
-    if ADD_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Add);
-    }
-    if SUB_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Sub);
-    }
-    if MUL_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Mul);
-    }
-    if DIV_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Div);
-    }
-    if LESS_BUILTINS.contains(&name) {
-        return Some(goast::BinaryOp::Less);
-    }
-    None
-}
-
-fn compile_builtin_call(
-    name: &str,
-    args: Vec<goast::Expr>,
-    ty: &tast::Ty,
-) -> Result<goast::Expr, Vec<goast::Expr>> {
-    if let Some(op) = builtin_unary_operator(name) {
-        let mut args = args.into_iter();
-        let arg = args
-            .next()
-            .unwrap_or_else(|| panic!("builtin {} expects 1 argument", name));
-        if args.next().is_some() {
-            panic!("builtin {} expects 1 argument", name);
-        }
-        return Ok(goast::Expr::UnaryOp {
-            op,
-            expr: Box::new(arg),
-            ty: tast_ty_to_go_type(ty),
-        });
-    }
-
-    if let Some(op) = builtin_binary_operator(name) {
-        let mut args = args.into_iter();
-        let lhs = args
-            .next()
-            .unwrap_or_else(|| panic!("builtin {} expects 2 arguments", name));
-        let rhs = args
-            .next()
-            .unwrap_or_else(|| panic!("builtin {} expects 2 arguments", name));
-        if args.next().is_some() {
-            panic!("builtin {} expects 2 arguments", name);
-        }
-        return Ok(goast::Expr::BinaryOp {
-            op,
-            lhs: Box::new(lhs),
-            rhs: Box::new(rhs),
-            ty: tast_ty_to_go_type(ty),
-        });
-    }
-
-    Err(args)
 }
 
 fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
@@ -583,11 +430,24 @@ fn collect_runtime_types(
                     self.collect_imm(expr);
                     self.collect_type(ty);
                 }
+                anf::CExpr::EUnary { expr, ty, .. } => {
+                    self.collect_imm(expr);
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EBinary { lhs, rhs, ty, .. } => {
+                    self.collect_imm(lhs);
+                    self.collect_imm(rhs);
+                    self.collect_type(ty);
+                }
                 anf::CExpr::ECall { func, args, ty } => {
                     self.collect_imm(func);
                     for arg in args {
                         self.collect_imm(arg);
                     }
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EGo { closure, ty } => {
+                    self.collect_imm(closure);
                     self.collect_type(ty);
                 }
                 anf::CExpr::EProj { tuple, ty, .. } => {
@@ -745,6 +605,9 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
         anf::CExpr::EWhile { .. } => {
             panic!("EWhile should be lowered to goast::Stmt::Loop in compile_aexpr")
         }
+        anf::CExpr::EGo { .. } => {
+            panic!("EGo should be handled as a statement, not as an expression")
+        }
         anf::CExpr::EConstrGet {
             expr,
             constructor,
@@ -794,21 +657,38 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 }
             }
         }
-        anf::CExpr::ECall { func, args, ty } => {
-            let mut compiled_args: Option<Vec<_>> = None;
-            if let anf::ImmExpr::ImmVar { name, .. } = &func {
-                let args_exprs = args
-                    .iter()
-                    .map(|arg| compile_imm(goenv, arg))
-                    .collect::<Vec<_>>();
-                match compile_builtin_call(name, args_exprs, ty) {
-                    Ok(expr) => return expr,
-                    Err(args_exprs) => compiled_args = Some(args_exprs),
-                }
+        anf::CExpr::EUnary { op, expr, ty } => {
+            use ast::ast::UnaryOp;
+            let go_op = match op {
+                UnaryOp::Neg => goast::UnaryOp::Neg,
+                UnaryOp::Not => goast::UnaryOp::Not,
+            };
+            goast::Expr::UnaryOp {
+                op: go_op,
+                expr: Box::new(compile_imm(goenv, expr)),
+                ty: tast_ty_to_go_type(ty),
             }
-
-            let compiled_args = compiled_args
-                .unwrap_or_else(|| args.iter().map(|arg| compile_imm(goenv, arg)).collect());
+        }
+        anf::CExpr::EBinary { op, lhs, rhs, ty } => {
+            use ast::ast::BinaryOp;
+            let go_op = match op {
+                BinaryOp::Add => goast::BinaryOp::Add,
+                BinaryOp::Sub => goast::BinaryOp::Sub,
+                BinaryOp::Mul => goast::BinaryOp::Mul,
+                BinaryOp::Div => goast::BinaryOp::Div,
+                BinaryOp::And => goast::BinaryOp::And,
+                BinaryOp::Or => goast::BinaryOp::Or,
+                BinaryOp::Less => goast::BinaryOp::Less,
+            };
+            goast::Expr::BinaryOp {
+                op: go_op,
+                lhs: Box::new(compile_imm(goenv, lhs)),
+                rhs: Box::new(compile_imm(goenv, rhs)),
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        anf::CExpr::ECall { func, args, ty } => {
+            let compiled_args = args.iter().map(|arg| compile_imm(goenv, arg)).collect();
             let func_ty = tast_ty_to_go_type(&imm_ty(func));
 
             if let anf::ImmExpr::ImmVar { name, .. } = &func
@@ -1114,13 +994,14 @@ fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::St
         | anf::CExpr::ETuple { .. }
         | anf::CExpr::EArray { .. }
         | anf::CExpr::EConstrGet { .. }
+        | anf::CExpr::EUnary { .. }
+        | anf::CExpr::EBinary { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
-        anf::CExpr::ECall { func, args, .. } => {
-            if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                vec![spawn.stmt]
-            } else {
-                vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
-            }
+        anf::CExpr::ECall { .. } => {
+            vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
+        }
+        anf::CExpr::EGo { closure, .. } => {
+            vec![compile_go(goenv, closure)]
         }
         anf::CExpr::EMatch { .. } | anf::CExpr::EIf { .. } | anf::CExpr::EWhile { .. } => {
             panic!("control-flow expressions should be handled before compile_cexpr_effect")
@@ -1134,49 +1015,22 @@ struct ClosureApplyFn {
     ret_ty: tast::Ty,
 }
 
-struct SpawnCompilation {
-    stmt: goast::Stmt,
-    result_ty: goty::GoType,
-    result_expr: goast::Expr,
-}
-
-fn compile_spawn_call(
-    goenv: &GlobalGoEnv,
-    func: &anf::ImmExpr,
-    args: &[anf::ImmExpr],
-) -> Option<SpawnCompilation> {
-    let anf::ImmExpr::ImmVar { name, .. } = func else {
-        return None;
-    };
-    if name != "spawn" {
-        return None;
-    }
-
-    if args.len() != 1 {
-        return None;
-    }
-    let closure_env = &args[0];
-
-    let closure_ty = imm_ty(closure_env);
-    let apply = find_closure_apply_fn(goenv, &closure_ty)?;
+fn compile_go(goenv: &GlobalGoEnv, closure: &anf::ImmExpr) -> goast::Stmt {
+    let closure_ty = imm_ty(closure);
+    let apply = find_closure_apply_fn(goenv, &closure_ty)
+        .expect("go statement closure must have an apply method");
 
     let apply_call = anf::CExpr::ECall {
         func: anf::ImmExpr::ImmVar {
             name: apply.name.clone(),
             ty: apply.ty.clone(),
         },
-        args: vec![closure_env.clone()],
+        args: vec![closure.clone()],
         ty: apply.ret_ty.clone(),
     };
 
     let call_expr = compile_cexpr(goenv, &apply_call);
-    Some(SpawnCompilation {
-        stmt: goast::Stmt::Go { call: call_expr },
-        result_ty: goty::GoType::TUnit,
-        result_expr: goast::Expr::Unit {
-            ty: goty::GoType::TUnit,
-        },
-    })
+    goast::Stmt::Go { call: call_expr }
 }
 
 fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<ClosureApplyFn> {
@@ -1255,24 +1109,23 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        out.push(spawn.stmt);
-                        out.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        out.extend(compile_aexpr_effect(goenv, gensym, *body));
-                        return out;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    out.extend(compile_aexpr_effect(goenv, gensym, *body));
+                    return out;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
@@ -1373,6 +1226,8 @@ fn compile_aexpr_assign(
             other @ (anf::CExpr::CImm { .. }
             | anf::CExpr::EConstr { .. }
             | anf::CExpr::EConstrGet { .. }
+            | anf::CExpr::EUnary { .. }
+            | anf::CExpr::EBinary { .. }
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
@@ -1380,20 +1235,21 @@ fn compile_aexpr_assign(
                 value: compile_cexpr(goenv, &other),
             }],
             anf::CExpr::ECall { func, args, ty } => {
-                if let Some(spawn) = compile_spawn_call(goenv, &func, &args) {
-                    vec![
-                        spawn.stmt,
-                        goast::Stmt::Assignment {
-                            name: target.to_string(),
-                            value: spawn.result_expr,
-                        },
-                    ]
-                } else {
-                    vec![goast::Stmt::Assignment {
+                vec![goast::Stmt::Assignment {
+                    name: target.to_string(),
+                    value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
+                }]
+            }
+            anf::CExpr::EGo { closure, .. } => {
+                vec![
+                    compile_go(goenv, &closure),
+                    goast::Stmt::Assignment {
                         name: target.to_string(),
-                        value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
-                    }]
-                }
+                        value: goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        },
+                    },
+                ]
             }
         },
         AExpr::ALet {
@@ -1421,24 +1277,23 @@ fn compile_aexpr_assign(
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        out.push(spawn.stmt);
-                        out.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
-                        return out;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    out.extend(compile_aexpr_assign(goenv, gensym, target, *body));
+                    return out;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    out.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
@@ -1534,24 +1389,23 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
                         AExpr::ACExpr { expr: complex },
                     ));
                 }
-                ref simple @ anf::CExpr::ECall {
-                    ref func, ref args, ..
-                } => {
-                    if let Some(spawn) = compile_spawn_call(goenv, func, args) {
-                        stmts.push(spawn.stmt);
-                        stmts.push(goast::Stmt::VarDecl {
-                            name: name.clone(),
-                            ty: spawn.result_ty.clone(),
-                            value: Some(spawn.result_expr),
-                        });
-                        stmts.extend(compile_aexpr(goenv, gensym, *body));
-                        return stmts;
-                    }
-
+                anf::CExpr::EGo { ref closure, .. } => {
+                    stmts.push(compile_go(goenv, closure));
                     stmts.push(goast::Stmt::VarDecl {
                         name: name.clone(),
-                        ty: cexpr_ty(goenv, simple),
-                        value: Some(compile_cexpr(goenv, simple)),
+                        ty: goty::GoType::TUnit,
+                        value: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    });
+                    stmts.extend(compile_aexpr(goenv, gensym, *body));
+                    return stmts;
+                }
+                simple @ anf::CExpr::ECall { .. } => {
+                    stmts.push(goast::Stmt::VarDecl {
+                        name: name.clone(),
+                        ty: cexpr_ty(goenv, &simple),
+                        value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {

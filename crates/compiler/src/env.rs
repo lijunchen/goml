@@ -427,6 +427,12 @@ pub struct GlobalTypeEnv {
     pub value_env: ValueEnv,
 }
 
+impl Default for GlobalTypeEnv {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GlobalTypeEnv {
     pub fn new() -> Self {
         builtin_env()

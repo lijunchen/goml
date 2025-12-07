@@ -106,6 +106,7 @@ pub enum BinaryOp {
     Div,
     And,
     Or,
+    Less,
 }
 
 impl BinaryOp {
@@ -117,6 +118,7 @@ impl BinaryOp {
             Self::Div => "/",
             Self::And => "&&",
             Self::Or => "||",
+            Self::Less => "<",
         }
     }
 
@@ -128,6 +130,7 @@ impl BinaryOp {
             Self::Div => "div",
             Self::And => "and",
             Self::Or => "or",
+            Self::Less => "less",
         }
     }
 }
@@ -348,6 +351,9 @@ pub enum Expr {
     EWhile {
         cond: Box<Expr>,
         body: Box<Expr>,
+    },
+    EGo {
+        expr: Box<Expr>,
     },
     ECall {
         func: Box<Expr>,

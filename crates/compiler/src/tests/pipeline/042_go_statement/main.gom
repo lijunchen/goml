@@ -4,8 +4,8 @@ fn child(signal: Ref[int32]) -> unit {
 
 fn main() -> unit {
     let signal = ref(0);
-    go child(signal);
-    while int32_less(ref_get(signal), 1) {
+    go || { child(signal) };
+    while ref_get(signal) < 1 {
         ()
     };
     string_println("main");

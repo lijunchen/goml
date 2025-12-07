@@ -25,7 +25,7 @@ struct Point {
 impl Point {
   fn to_string(self: Point) -> string {
       let Point { x: x, y: y, color: color } = self in
-      string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), x.to_string()), ", "), "y: "), y.to_string()), ", "), "color: "), color.to_string()), " }")
+      "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + ", " + "color: " + color.to_string() + " }"
   }
 }
 
@@ -49,7 +49,7 @@ struct Line {
 impl Line {
   fn to_string(self: Line) -> string {
       let Line { from: from, to: to, color: color } = self in
-      string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add(string_add("Line { ", "from: "), from.to_string()), ", "), "to: "), to.to_string()), ", "), "color: "), color.to_string()), " }")
+      "Line { " + "from: " + from.to_string() + ", " + "to: " + to.to_string() + ", " + "color: " + color.to_string() + " }"
   }
 }
 
@@ -73,7 +73,7 @@ impl LineList {
   fn to_string(self: LineList) -> string {
       match self {
           LineList::Nil => "LineList::Nil",
-          LineList::Cons(__field0, __field1) => string_add(string_add(string_add(string_add("LineList::Cons(", __field0.to_string()), ", "), __field1.to_string()), ")"),
+          LineList::Cons(__field0, __field1) => "LineList::Cons(" + __field0.to_string() + ", " + __field1.to_string() + ")",
       }
   }
 }

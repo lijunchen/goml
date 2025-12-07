@@ -425,6 +425,9 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
+            Self::EGo { expr, .. } => RcDoc::text("go")
+                .append(RcDoc::space())
+                .append(expr.to_doc(genv)),
             Self::EBinary {
                 op,
                 lhs,

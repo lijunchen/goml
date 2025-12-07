@@ -1,9 +1,9 @@
 fn classify(x/0: int32) -> string {
-  let t6 = int32_less(x/0, 0) in
+  let t6 = (x/0 < 0) in
   if t6 {
     "negative"
   } else {
-    let t7 = int32_less(0, x/0) in
+    let t7 = (0 < x/0) in
     if t7 {
       "positive"
     } else {
@@ -13,16 +13,16 @@ fn classify(x/0: int32) -> string {
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
-  let t8 = int32_less(a/1, b/2) in
+  let t8 = (a/1 < b/2) in
   if t8 {
-    let t9 = int32_less(b/2, c/3) in
+    let t9 = (b/2 < c/3) in
     if t9 {
       "ascending"
     } else {
       "peak"
     }
   } else {
-    let t10 = int32_less(a/1, c/3) in
+    let t10 = (a/1 < c/3) in
     if t10 {
       "valley"
     } else {
@@ -32,7 +32,7 @@ fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
 }
 
 fn main() -> unit {
-  let t11 = int32_neg(42) in
+  let t11 = (-42) in
   let first/4 = classify(t11) in
   let second/5 = classify(0) in
   let third/6 = classify(17) in

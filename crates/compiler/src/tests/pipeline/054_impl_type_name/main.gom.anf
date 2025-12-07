@@ -5,11 +5,11 @@ fn impl_TypeName_Point_type_name(self/0: Point) -> string {
   let y/2 = x2 in
   let x/1 = x1 in
   let t7 = int32_to_string(x/1) in
-  let prefix/3 = string_add("Point(", t7) in
-  let t9 = string_add(prefix/3, ", ") in
+  let prefix/3 = ("Point(" + t7) in
+  let t9 = (prefix/3 + ", ") in
   let t10 = int32_to_string(y/2) in
-  let t8 = string_add(t9, t10) in
-  string_add(t8, ")")
+  let t8 = (t9 + t10) in
+  (t8 + ")")
 }
 
 fn impl_TypeName_Shape_type_name(self/4: Shape) -> string {
@@ -21,7 +21,7 @@ fn impl_TypeName_Shape_type_name(self/4: Shape) -> string {
       let x3 = Shape::Location._0(self/4) in
       let point/5 = x3 in
       let t11 = impl_TypeName_Point_type_name(point/5) in
-      string_add("Shape::", t11)
+      ("Shape::" + t11)
     },
   }
 }

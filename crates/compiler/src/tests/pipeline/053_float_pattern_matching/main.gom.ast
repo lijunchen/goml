@@ -14,8 +14,8 @@ fn compare(values: (float32, float64)) -> string {
     match values {
         (left, right) => let limit32: float32 = 1 in
           let limit64: float64 = 5 in
-          let less_left = float32_less(left, limit32) in
-          let less_right = float64_less(right, limit64) in
+          let less_left = left < limit32 in
+          let less_right = right < limit64 in
           "left<1?=" + bool_to_string(less_left) + ",right<5?=" + bool_to_string(less_right),
     }
 }

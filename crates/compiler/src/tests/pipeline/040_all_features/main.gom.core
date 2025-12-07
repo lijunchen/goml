@@ -8,11 +8,11 @@ fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
   let label/1 = x1 in
   let current/4 = ref_get(count/2) in
   let flag/5 = ref_get(toggled/3) in
-  let with_label/6 = string_add("Tracker(", label/1) in
-  let with_count_label/7 = string_add(with_label/6, ", count: ") in
-  let with_count/8 = string_add(with_count_label/7, int32_to_string(current/4)) in
-  let with_flag_label/9 = string_add(with_count/8, ", toggled: ") in
-  string_add(string_add(with_flag_label/9, bool_to_string(flag/5)), ")")
+  let with_label/6 = ("Tracker(" + label/1) in
+  let with_count_label/7 = (with_label/6 + ", count: ") in
+  let with_count/8 = (with_count_label/7 + int32_to_string(current/4)) in
+  let with_flag_label/9 = (with_count/8 + ", toggled: ") in
+  ((with_flag_label/9 + bool_to_string(flag/5)) + ")")
 }
 
 fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
@@ -20,15 +20,15 @@ fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
     Record::Value(x4) => {
       let x4 = Record::Value._0(self/10) in
       let value/11 = x4 in
-      string_add(string_add("Value(", int32_to_string(value/11)), ")")
+      (("Value(" + int32_to_string(value/11)) + ")")
     },
     Record::Pair(x5, x6) => {
       let x5 = Record::Pair._0(self/10) in
       let x6 = Record::Pair._1(self/10) in
       let after/13 = x6 in
       let before/12 = x5 in
-      let prefix/14 = string_add("Pair(", int32_to_string(before/12)) in
-      string_add(string_add(string_add(prefix/14, ", "), int32_to_string(after/13)), ")")
+      let prefix/14 = ("Pair(" + int32_to_string(before/12)) in
+      (((prefix/14 + ", ") + int32_to_string(after/13)) + ")")
     },
     Record::Empty => {
       "Empty"
@@ -41,15 +41,15 @@ fn impl_Describe_Record_string_describe(self/15: Record[string]) -> string {
     Record::Value(x7) => {
       let x7 = Record::Value._0(self/15) in
       let text/16 = x7 in
-      string_add(string_add("Value(", text/16), ")")
+      (("Value(" + text/16) + ")")
     },
     Record::Pair(x8, x9) => {
       let x8 = Record::Pair._0(self/15) in
       let x9 = Record::Pair._1(self/15) in
       let after/18 = x9 in
       let before/17 = x8 in
-      let prefix/19 = string_add("Pair(", before/17) in
-      string_add(string_add(string_add(prefix/19, ", "), after/18), ")")
+      let prefix/19 = ("Pair(" + before/17) in
+      (((prefix/19 + ", ") + after/18) + ")")
     },
     Record::Empty => {
       "Empty"
@@ -79,15 +79,15 @@ fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
 }
 
 fn format_total(total/26: int32) -> string {
-  string_add("total: ", int32_to_string(total/26))
+  ("total: " + int32_to_string(total/26))
 }
 
 fn increment(value/27: int32) -> int32 {
-  int32_add(value/27, 1)
+  (value/27 + 1)
 }
 
 fn triple(value/28: int32) -> int32 {
-  int32_mul(value/28, 3)
+  (value/28 * 3)
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
@@ -96,7 +96,7 @@ fn pair_join(parts/29: (string, string)) -> string {
   let x13 = mtmp11.1 in
   let right/31 = x13 in
   let left/30 = x12 in
-  string_add(string_add(left/30, " -> "), right/31)
+  ((left/30 + " -> ") + right/31)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -132,10 +132,10 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[in
   let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
   let snapshot/46 = || => Record::Value(ref_get(count/43)) in
   let bump/49 = |delta/47: int32| => let before/48 = ref_get(count/43) in
-  let mtmp17 = ref_set(count/43, int32_add(before/48, delta/47)) in
+  let mtmp17 = ref_set(count/43, (before/48 + delta/47)) in
   Record::Pair(before/48, ref_get(count/43)) in
   let flip/52 = || => let before/50 = ref_get(toggled/44) in
-  let mtmp18 = ref_set(toggled/44, bool_not(before/50)) in
+  let mtmp18 = ref_set(toggled/44, (!before/50)) in
   let after/51 = ref_get(toggled/44) in
   Record::Pair(bool_to_string(before/50), bool_to_string(after/51)) in
   (tracker/45, snapshot/46, bump/49, flip/52)
@@ -163,7 +163,7 @@ fn main() -> unit {
   let results/66 = run_transforms(4, transforms/65) in
   let first_result/67 = array_get(results/66, 0) in
   let second_result/68 = array_get(results/66, 1) in
-  let order_check/69 = bool_and(int32_less(first_result/67, second_result/68), true) in
+  let order_check/69 = ((first_result/67 < second_result/68) && true) in
   let first_text/70 = impl_Describe_Record_int32_describe(first_record/58) in
   let bumped_text/71 = impl_Describe_Record_int32_describe(bumped_record/59) in
   let flipped_text/72 = impl_Describe_Record_string_describe(flipped_record/60) in
@@ -171,7 +171,7 @@ fn main() -> unit {
     Maybe::Some(x24) => {
       let x24 = Maybe::Some._0(stringified/64) in
       let text/73 = x24 in
-      string_add("Snapshot: ", text/73)
+      ("Snapshot: " + text/73)
     },
     Maybe::None => {
       "Snapshot: none"

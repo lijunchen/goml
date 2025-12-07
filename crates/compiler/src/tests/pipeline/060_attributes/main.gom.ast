@@ -7,7 +7,7 @@ struct Point {
 impl Point {
   fn to_string(self: Point) -> string {
       let Point { x: x, y: y } = self in
-      string_add(string_add(string_add(string_add(string_add(string_add("Point { ", "x: "), x.to_string()), ", "), "y: "), y.to_string()), " }")
+      "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + " }"
   }
 }
 
@@ -22,8 +22,8 @@ impl Message {
   fn to_string(self: Message) -> string {
       match self {
           Message::Quit => "Message::Quit",
-          Message::Move(__field0, __field1) => string_add(string_add(string_add(string_add("Message::Move(", __field0.to_string()), ", "), __field1.to_string()), ")"),
-          Message::Write(__field0) => string_add(string_add("Message::Write(", __field0), ")"),
+          Message::Move(__field0, __field1) => "Message::Move(" + __field0.to_string() + ", " + __field1.to_string() + ")",
+          Message::Write(__field0) => "Message::Write(" + __field0 + ")",
       }
   }
 }

@@ -245,6 +245,9 @@ impl Rename {
                 cond: Box::new(self.rename_expr(cond, env, global_funcs)),
                 body: Box::new(self.rename_expr(body, env, global_funcs)),
             },
+            ast::Expr::EGo { expr } => ast::Expr::EGo {
+                expr: Box::new(self.rename_expr(expr, env, global_funcs)),
+            },
             ast::Expr::ECall { func, args } => {
                 let new_func = match func.as_ref() {
                     ast::Expr::EPath { path, astptr } if path.len() == 1 => {
