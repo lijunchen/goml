@@ -141,7 +141,7 @@ fn lower_attributes(list: Option<cst::AttributeList>) -> Vec<ast::Attribute> {
     .unwrap_or_default()
 }
 
-fn attribute_path<'a>(attr: &'a ast::Attribute) -> Option<&'a str> {
+fn attribute_path(attr: &ast::Attribute) -> Option<&str> {
     let trimmed = attr.text.trim();
     let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
     let name_part = match inner.find('(') {

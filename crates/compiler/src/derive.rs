@@ -9,7 +9,6 @@ const TO_STRING_TRAIT: &str = "ToString";
 const TO_STRING_FN: &str = "to_string";
 const TO_JSON_TRAIT: &str = "ToJson";
 const TO_JSON_FN: &str = "to_json";
-const STRING_ADD_FN: &str = "string_add";
 const SELF_PARAM_NAME: &str = "self";
 
 pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
@@ -441,13 +440,17 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
     }
 }
 
-fn concat_parts(parts: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
+fn concat_parts(parts: Vec<Expr>, _attr_ptr: &MySyntaxNodePtr) -> Expr {
     let mut iter = parts.into_iter();
     let mut acc = iter.next().unwrap_or(Expr::EString {
         value: String::new(),
     });
     for part in iter {
-        acc = call_string_add(acc, part, attr_ptr);
+        acc = Expr::EBinary {
+            op: ast::BinaryOp::Add,
+            lhs: Box::new(acc),
+            rhs: Box::new(part),
+        };
     }
     acc
 }
@@ -508,10 +511,6 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
             args: Vec::new(),
         },
     }
-}
-
-fn call_string_add(lhs: Expr, rhs: Expr, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    call_function(STRING_ADD_FN, vec![lhs, rhs], attr_ptr)
 }
 
 fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
