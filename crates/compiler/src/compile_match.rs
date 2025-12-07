@@ -183,6 +183,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
             len: *len,
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        Ty::TVec { elem } => Ty::TVec {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         Ty::TRef { elem } => Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
@@ -1119,6 +1122,7 @@ fn compile_rows(
             match_range,
         ),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
+        Ty::TVec { .. } => panic!("Matching on Vec types is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
         Ty::TRef { .. } => panic!("Matching on reference types is not supported"),

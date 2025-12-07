@@ -33,6 +33,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             }
         }
         tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty(elem)),
+        tast::Ty::TVec { elem } => format!("Vec_{}", encode_ty(elem)),
         tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty(elem)),
         tast::Ty::TFunc { params, ret_ty } => {
             let p = params.iter().map(encode_ty).collect::<Vec<_>>().join("_");

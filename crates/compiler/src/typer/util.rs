@@ -40,6 +40,9 @@ pub(crate) fn validate_ty(
             }
             validate_ty(genv, diagnostics, ret_ty.as_ref(), tparams);
         }
+        tast::Ty::TVec { elem } => {
+            validate_ty(genv, diagnostics, elem, tparams);
+        }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
                 diagnostics.push(Diagnostic::new(
@@ -203,6 +206,15 @@ impl tast::Ty {
                     && args.len() == 1
                 {
                     return Self::TRef {
+                        elem: Box::new(Self::from_ast(genv, &args[0], tparams_env)),
+                    };
+                }
+                // Special handling for Vec[T] - convert to TVec
+                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+                    && name == "Vec"
+                    && args.len() == 1
+                {
+                    return Self::TVec {
                         elem: Box::new(Self::from_ast(genv, &args[0], tparams_env)),
                     };
                 }

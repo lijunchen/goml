@@ -64,6 +64,7 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
     add_array_builtins(&mut genv.value_env.funcs);
     add_ref_builtins(&mut genv.value_env.funcs);
+    add_vec_builtins(&mut genv.value_env.funcs);
 
     genv
 }
@@ -137,6 +138,43 @@ fn add_ref_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
+fn add_vec_builtins(funcs: &mut IndexMap<String, FnScheme>) {
+    let vec_elem_param = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    // Vec[T] is now a built-in type TVec { elem: T }
+    let vec_ty = tast::Ty::TVec {
+        elem: Box::new(vec_elem_param.clone()),
+    };
+
+    // vec_new() -> Vec[T]
+    funcs.insert(
+        "vec_new".to_string(),
+        make_fn_scheme(vec![], vec_ty.clone()),
+    );
+
+    // vec_push(vec: Vec[T], elem: T) -> Vec[T]
+    funcs.insert(
+        "vec_push".to_string(),
+        make_fn_scheme(vec![vec_ty.clone(), vec_elem_param.clone()], vec_ty.clone()),
+    );
+
+    // vec_get(vec: Vec[T], index: int32) -> T
+    funcs.insert(
+        "vec_get".to_string(),
+        make_fn_scheme(
+            vec![vec_ty.clone(), tast::Ty::TInt32],
+            vec_elem_param.clone(),
+        ),
+    );
+
+    // vec_len(vec: Vec[T]) -> int32
+    funcs.insert(
+        "vec_len".to_string(),
+        make_fn_scheme(vec![vec_ty.clone()], tast::Ty::TInt32),
+    );
+}
+
 pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
 
@@ -170,7 +208,17 @@ pub fn builtin_function_names() -> Vec<String> {
         }
     }
 
-    for name in ["array_get", "array_set", "ref", "ref_get", "ref_set"] {
+    for name in [
+        "array_get",
+        "array_set",
+        "ref",
+        "ref_get",
+        "ref_set",
+        "vec_new",
+        "vec_push",
+        "vec_get",
+        "vec_len",
+    ] {
         names.insert(name.to_string());
     }
 

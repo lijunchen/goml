@@ -258,6 +258,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TEnum { .. } | Ty::TStruct { .. } => false,
         Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
         Ty::TArray { elem, .. } => has_tparam(elem),
+        Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
         Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
     }
@@ -329,6 +330,9 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         },
         Ty::TArray { len, elem } => Ty::TArray {
             len: *len,
+            elem: Box::new(subst_ty(elem, s)),
+        },
+        Ty::TVec { elem } => Ty::TVec {
             elem: Box::new(subst_ty(elem, s)),
         },
         Ty::TRef { elem } => Ty::TRef {

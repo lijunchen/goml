@@ -212,6 +212,9 @@ impl TypeEnv {
             tast::Ty::TArray { elem, .. } => {
                 self.record_extern_type_usage(elem, package_path);
             }
+            tast::Ty::TVec { elem } => {
+                self.record_extern_type_usage(elem, package_path);
+            }
             tast::Ty::TRef { elem } => {
                 self.record_extern_type_usage(elem, package_path);
             }

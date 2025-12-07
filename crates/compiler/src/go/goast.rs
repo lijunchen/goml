@@ -299,9 +299,8 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                     .collect(),
             }
         }
-        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
-            goty::GoType::TName { name: name.clone() }
-        }
+        tast::Ty::TEnum { name } => goty::GoType::TName { name: name.clone() },
+        tast::Ty::TStruct { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
                 unreachable!(
@@ -313,6 +312,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         }
         tast::Ty::TArray { len, elem } => goty::GoType::TArray {
             len: *len,
+            elem: Box::new(tast_ty_to_go_type(elem)),
+        },
+        tast::Ty::TVec { elem } => goty::GoType::TSlice {
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
         tast::Ty::TRef { elem } => {
@@ -361,6 +363,10 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TArray { len, elem } => format!(
             "Array{}_{}",
             len,
+            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
+        ),
+        tast::Ty::TVec { elem } => format!(
+            "Vec_{}",
             go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
         ),
         tast::Ty::TRef { elem } => format!(
