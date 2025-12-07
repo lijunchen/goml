@@ -1124,16 +1124,11 @@ impl Typer {
                 }
             }
             ast::UnaryOp::Neg => {
-                let target_ty = if is_numeric_ty(&expr_ty) {
-                    expr_ty.clone()
-                } else {
-                    tast::Ty::TInt32
-                };
-                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), target_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), expr_ty.clone()));
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
-                    ty: target_ty,
+                    ty: expr_ty,
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }

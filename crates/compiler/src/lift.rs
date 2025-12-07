@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
-    core::BinaryOp,
+    core::{BinaryOp, UnaryOp},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
     mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
@@ -159,6 +159,11 @@ pub enum LiftExpr {
         field_index: usize,
         ty: Ty,
     },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
     EBinary {
         op: BinaryOp,
         lhs: Box<LiftExpr>,
@@ -190,6 +195,7 @@ impl LiftExpr {
             LiftExpr::EIf { ty, .. } => ty.clone(),
             LiftExpr::EWhile { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
+            LiftExpr::EUnary { ty, .. } => ty.clone(),
             LiftExpr::EBinary { ty, .. } => ty.clone(),
             LiftExpr::ECall { ty, .. } => ty.clone(),
             LiftExpr::EProj { ty, .. } => ty.clone(),
@@ -569,6 +575,10 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 ty: result_ty,
             }
         }
+        MonoExpr::EUnary { op, expr, ty } => {
+            let expr = Box::new(transform_expr(state, scope, *expr));
+            LiftExpr::EUnary { op, expr, ty }
+        }
         MonoExpr::EBinary { op, lhs, rhs, ty } => {
             let lhs = Box::new(transform_expr(state, scope, *lhs));
             let rhs = Box::new(transform_expr(state, scope, *rhs));
@@ -860,6 +870,9 @@ fn collect_captured(
             collect_captured(body, bound, captured, scope);
         }
         LiftExpr::EConstrGet { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
+        }
+        LiftExpr::EUnary { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }
         LiftExpr::EBinary { lhs, rhs, .. } => {

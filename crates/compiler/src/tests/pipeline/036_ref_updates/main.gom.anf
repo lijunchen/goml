@@ -7,7 +7,7 @@ fn bump(cell/0: Ref[int32]) -> int32 {
 
 fn flip(flag/1: Ref[bool]) -> bool {
   let current/2 = ref_get(flag/1) in
-  let t13 = bool_not(current/2) in
+  let t13 = (!current/2) in
   let mtmp1 = ref_set(flag/1, t13) in
   ref_get(flag/1)
 }
@@ -65,7 +65,7 @@ fn main() -> unit {
   let alias_total/20 = alias_bump(counter/12) in
   let pair_total/21 = pair_sum() in
   let reassigned/22 = reassign_nested(nested/14) in
-  let bool_check/23 = bool_not(false) in
+  let bool_check/23 = (!false) in
   let t30 = ref_get(counter/12) in
   let t29 = (bumped/15 + t30) in
   let t28 = int32_to_string(t29) in

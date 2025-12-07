@@ -213,6 +213,13 @@ impl CExpr {
                     .append(expr.to_doc())
                     .append(RcDoc::text(")"))
             }
+            CExpr::EUnary { op, expr, ty: _ } => {
+                let expr_doc = expr.to_doc();
+                RcDoc::text("(")
+                    .append(RcDoc::text(op.symbol()))
+                    .append(expr_doc)
+                    .append(RcDoc::text(")"))
+            }
             CExpr::EBinary {
                 op,
                 lhs,

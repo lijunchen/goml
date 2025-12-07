@@ -269,6 +269,13 @@ impl LiftExpr {
                     .group()
             }
 
+            LiftExpr::EUnary { op, expr, ty: _ } => {
+                let expr_doc = expr.to_doc(liftenv);
+                RcDoc::text("(")
+                    .append(RcDoc::text(op.symbol()))
+                    .append(expr_doc)
+                    .append(RcDoc::text(")"))
+            }
             LiftExpr::EBinary {
                 op,
                 lhs,

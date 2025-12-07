@@ -18,7 +18,7 @@ fn sum_even(limit/4: int32) -> int32 {
       let current/8 = ref_get(i/6) in
       let mtmp3 = ref_set(i/6, (current/8 + 1)) in
       let add_now/9 = ref_get(is_even/7) in
-      let mtmp4 = ref_set(is_even/7, bool_not(add_now/9)) in
+      let mtmp4 = ref_set(is_even/7, (!add_now/9)) in
       if add_now/9 {
           ref_set(acc/5, (ref_get(acc/5) + current/8))
       } else {

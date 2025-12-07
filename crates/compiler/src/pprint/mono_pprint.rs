@@ -204,6 +204,13 @@ impl MonoExpr {
                     .group()
             }
 
+            MonoExpr::EUnary { op, expr, ty: _ } => {
+                let expr_doc = expr.to_doc(monoenv);
+                RcDoc::text("(")
+                    .append(RcDoc::text(op.symbol()))
+                    .append(expr_doc)
+                    .append(RcDoc::text(")"))
+            }
             MonoExpr::EBinary {
                 op,
                 lhs,

@@ -2,7 +2,7 @@ pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
 use crate::tast;
 
-pub use ast::ast::BinaryOp;
+pub use ast::ast::{BinaryOp, UnaryOp};
 
 #[derive(Debug, Clone)]
 pub struct File {
@@ -74,6 +74,11 @@ pub enum Expr {
         field_index: usize,
         ty: Ty,
     },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<Expr>,
+        ty: Ty,
+    },
     EBinary {
         op: BinaryOp,
         lhs: Box<Expr>,
@@ -106,6 +111,7 @@ impl Expr {
             Expr::EIf { ty, .. } => ty.clone(),
             Expr::EWhile { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
+            Expr::EUnary { ty, .. } => ty.clone(),
             Expr::EBinary { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),

@@ -231,6 +231,13 @@ impl Expr {
                     .group()
             }
 
+            Expr::EUnary { op, expr, ty: _ } => {
+                let expr_doc = expr.to_doc(genv);
+                RcDoc::text("(")
+                    .append(RcDoc::text(op.symbol()))
+                    .append(expr_doc)
+                    .append(RcDoc::text(")"))
+            }
             Expr::EBinary {
                 op,
                 lhs,

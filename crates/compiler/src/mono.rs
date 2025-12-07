@@ -1,5 +1,5 @@
 use crate::common::{self, Constructor, Prim};
-use crate::core::{self, BinaryOp, Ty};
+use crate::core::{self, BinaryOp, Ty, UnaryOp};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::mangle::encode_ty;
 use crate::tast;
@@ -72,6 +72,11 @@ pub enum MonoExpr {
         field_index: usize,
         ty: Ty,
     },
+    EUnary {
+        op: UnaryOp,
+        expr: Box<MonoExpr>,
+        ty: Ty,
+    },
     EBinary {
         op: BinaryOp,
         lhs: Box<MonoExpr>,
@@ -109,6 +114,7 @@ impl MonoExpr {
             MonoExpr::EIf { ty, .. } => ty.clone(),
             MonoExpr::EWhile { ty, .. } => ty.clone(),
             MonoExpr::EConstrGet { ty, .. } => ty.clone(),
+            MonoExpr::EUnary { ty, .. } => ty.clone(),
             MonoExpr::EBinary { ty, .. } => ty.clone(),
             MonoExpr::ECall { ty, .. } => ty.clone(),
             MonoExpr::EProj { ty, .. } => ty.clone(),
@@ -594,6 +600,11 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: subst_ty(&ty, s),
             }
         }
+        core::Expr::EUnary { op, expr, ty } => MonoExpr::EUnary {
+            op,
+            expr: Box::new(mono_expr(ctx, &expr, s)),
+            ty: subst_ty(&ty, s),
+        },
         core::Expr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
             op,
             lhs: Box::new(mono_expr(ctx, &lhs, s)),
@@ -962,6 +973,11 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
                 ty: m.collapse_type_apps(&ty),
             }
         }
+        MonoExpr::EUnary { op, expr, ty } => MonoExpr::EUnary {
+            op,
+            expr: Box::new(rewrite_expr_types(*expr, m)),
+            ty: m.collapse_type_apps(&ty),
+        },
         MonoExpr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
             op,
             lhs: Box::new(rewrite_expr_types(*lhs, m)),

@@ -156,6 +156,7 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EMatch { ty, .. }
         | anf::CExpr::EIf { ty, .. }
         | anf::CExpr::EWhile { ty, .. }
+        | anf::CExpr::EUnary { ty, .. }
         | anf::CExpr::EBinary { ty, .. }
         | anf::CExpr::ECall { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
@@ -584,6 +585,10 @@ fn collect_runtime_types(
                     self.collect_imm(expr);
                     self.collect_type(ty);
                 }
+                anf::CExpr::EUnary { expr, ty, .. } => {
+                    self.collect_imm(expr);
+                    self.collect_type(ty);
+                }
                 anf::CExpr::EBinary { lhs, rhs, ty, .. } => {
                     self.collect_imm(lhs);
                     self.collect_imm(rhs);
@@ -798,6 +803,18 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                         ty: tast_ty_to_go_type(field_ty),
                     }
                 }
+            }
+        }
+        anf::CExpr::EUnary { op, expr, ty } => {
+            use ast::ast::UnaryOp;
+            let go_op = match op {
+                UnaryOp::Neg => goast::UnaryOp::Neg,
+                UnaryOp::Not => goast::UnaryOp::Not,
+            };
+            goast::Expr::UnaryOp {
+                op: go_op,
+                expr: Box::new(compile_imm(goenv, expr)),
+                ty: tast_ty_to_go_type(ty),
             }
         }
         anf::CExpr::EBinary { op, lhs, rhs, ty } => {
@@ -1137,6 +1154,7 @@ fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::St
         | anf::CExpr::ETuple { .. }
         | anf::CExpr::EArray { .. }
         | anf::CExpr::EConstrGet { .. }
+        | anf::CExpr::EUnary { .. }
         | anf::CExpr::EBinary { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
         anf::CExpr::ECall { func, args, .. } => {
@@ -1397,6 +1415,7 @@ fn compile_aexpr_assign(
             other @ (anf::CExpr::CImm { .. }
             | anf::CExpr::EConstr { .. }
             | anf::CExpr::EConstrGet { .. }
+            | anf::CExpr::EUnary { .. }
             | anf::CExpr::EBinary { .. }
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }

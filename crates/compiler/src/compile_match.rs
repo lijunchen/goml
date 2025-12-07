@@ -1,4 +1,4 @@
-use ast::ast::{Ident, UnaryOp};
+use ast::ast::Ident;
 
 use crate::common::{self, Constructor, Prim};
 use crate::core;
@@ -1185,28 +1185,6 @@ pub fn compile_file(
     core::File { toplevels }
 }
 
-fn builtin_unary_function_for(op: UnaryOp, arg_ty: &Ty, _result_ty: &Ty) -> Option<&'static str> {
-    match op {
-        UnaryOp::Neg => match arg_ty {
-            Ty::TInt8 => Some("int8_neg"),
-            Ty::TInt16 => Some("int16_neg"),
-            Ty::TInt32 => Some("int32_neg"),
-            Ty::TInt64 => Some("int64_neg"),
-            Ty::TUint8 => Some("uint8_neg"),
-            Ty::TUint16 => Some("uint16_neg"),
-            Ty::TUint32 => Some("uint32_neg"),
-            Ty::TUint64 => Some("uint64_neg"),
-            Ty::TFloat32 => Some("float32_neg"),
-            Ty::TFloat64 => Some("float64_neg"),
-            _ => None,
-        },
-        UnaryOp::Not => match arg_ty {
-            Ty::TBool => Some("bool_not"),
-            _ => None,
-        },
-    }
-}
-
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -1392,28 +1370,13 @@ fn compile_expr(
             resolution,
         } => {
             let arg = compile_expr(expr, genv, gensym, diagnostics);
-            let arg_ty = arg.get_ty();
 
             match resolution {
-                tast::UnaryResolution::Builtin => {
-                    let func = builtin_unary_function_for(*op, &arg_ty, ty).unwrap_or_else(|| {
-                        panic!(
-                            "Unsupported builtin unary operator {:?} for type {:?}",
-                            op, arg_ty
-                        )
-                    });
-                    core::Expr::ECall {
-                        func: Box::new(core::Expr::EVar {
-                            name: func.to_string(),
-                            ty: Ty::TFunc {
-                                params: vec![arg_ty.clone()],
-                                ret_ty: Box::new(ty.clone()),
-                            },
-                        }),
-                        args: vec![arg],
-                        ty: ty.clone(),
-                    }
-                }
+                tast::UnaryResolution::Builtin => core::Expr::EUnary {
+                    op: *op,
+                    expr: Box::new(arg),
+                    ty: ty.clone(),
+                },
                 tast::UnaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = arg.get_ty();

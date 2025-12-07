@@ -42,19 +42,8 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
-    // Binary operations are now handled as BinaryExpr nodes, not builtin functions
-    // Check that int8_neg (unary) still exists as a function
-    match env.get_type_of_function("int8_neg") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 1);
-            assert!(matches!(params[0], tast::Ty::TInt8));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TInt8));
-        }
-        other => panic!(
-            "expected int8_neg to have a function type signature, got {:?}",
-            other
-        ),
-    }
+    // Binary and unary operations are now handled as BinaryExpr and UnaryExpr nodes,
+    // not builtin functions
 
     // Check that less comparison still exists as a function
     match env.get_type_of_function("int8_less") {
@@ -70,20 +59,9 @@ fn env_registers_builtin_function_signatures() {
         ),
     }
 
-    // Binary operations (add, sub, mul, div, and, or) are now handled as BinaryExpr nodes,
-    // not builtin functions, so we don't check for them here.
-
-    match env.get_type_of_function("bool_not") {
-        Some(tast::Ty::TFunc { params, ret_ty }) => {
-            assert_eq!(params.len(), 1);
-            assert!(matches!(params[0], tast::Ty::TBool));
-            assert!(matches!(ret_ty.as_ref(), tast::Ty::TBool));
-        }
-        other => panic!(
-            "expected bool_not to have a function type signature, got {:?}",
-            other
-        ),
-    }
+    // Binary and unary operations (add, sub, mul, div, and, or, neg, not) are now
+    // handled as BinaryExpr and UnaryExpr nodes, not builtin functions,
+    // so we don't check for them here.
 
     match env.get_type_of_function("bool_and") {
         Some(tast::Ty::TFunc { params, ret_ty }) => {

@@ -135,7 +135,7 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[in
   let mtmp17 = ref_set(count/43, (before/48 + delta/47)) in
   Record::Pair(before/48, ref_get(count/43)) in
   let flip/52 = || => let before/50 = ref_get(toggled/44) in
-  let mtmp18 = ref_set(toggled/44, bool_not(before/50)) in
+  let mtmp18 = ref_set(toggled/44, (!before/50)) in
   let after/51 = ref_get(toggled/44) in
   Record::Pair(bool_to_string(before/50), bool_to_string(after/51)) in
   (tracker/45, snapshot/46, bump/49, flip/52)
