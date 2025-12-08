@@ -300,6 +300,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             len: *len,
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
@@ -486,7 +489,11 @@ fn collect_runtime_types(
                         self.collect_type(elem);
                     }
                 }
+                tast::Ty::TStruct { name: _ } => {
+                    // Vec types are handled as slices, no special collection needed
+                }
                 tast::Ty::TApp { ty, args } => {
+                    // Vec types are handled as slices, no special collection needed
                     self.collect_type(ty);
                     for arg in args {
                         self.collect_type(arg);
@@ -755,6 +762,70 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
+                }
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && (*name == "vec_new"
+                    || *name == "vec_push"
+                    || *name == "vec_get"
+                    || *name == "vec_len")
+            {
+                // Use Go's native slice operations directly
+                match name.as_str() {
+                    "vec_new" => {
+                        // vec_new() -> nil (empty slice)
+                        goast::Expr::Nil {
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    "vec_push" => {
+                        // vec_push(v, elem) -> append(v, elem)
+                        goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "append".to_string(),
+                                ty: func_ty,
+                            }),
+                            args: compiled_args,
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    "vec_get" => {
+                        // vec_get(v, index) -> v[index]
+                        let mut args_iter = compiled_args.into_iter();
+                        let v_arg = args_iter.next().unwrap();
+                        let index_arg = args_iter.next().unwrap();
+                        goast::Expr::Index {
+                            array: Box::new(v_arg),
+                            index: Box::new(index_arg),
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    "vec_len" => {
+                        // vec_len(v) -> int32(len(v))
+                        let mut args_iter = compiled_args.into_iter();
+                        let v_arg = args_iter.next().unwrap();
+                        goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "int32".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TInt32],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "len".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![tast_ty_to_go_type(&imm_ty(&args[0]))],
+                                        ret_ty: Box::new(goty::GoType::TInt32),
+                                    },
+                                }),
+                                args: vec![v_arg],
+                                ty: goty::GoType::TInt32,
+                            }],
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    _ => unreachable!(),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
                 && let Some(extern_fn) = goenv.genv.value_env.extern_funcs.get(name)
@@ -1598,6 +1669,10 @@ pub fn go_file(
 fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in goenv.structs() {
+        // Skip Vec types - they are translated to Go slices, not structs
+        if name.0 == "Vec" || name.0.starts_with("Vec__") {
+            continue;
+        }
         let has_type_param = name.0.contains("TParam")
             || !def.generics.is_empty()
             || def

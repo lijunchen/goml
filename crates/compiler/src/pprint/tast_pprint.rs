@@ -228,6 +228,9 @@ impl Ty {
                 .append(RcDoc::text("; "))
                 .append(RcDoc::as_string(len))
                 .append(RcDoc::text("]")),
+            Self::TVec { elem } => RcDoc::text("Vec[")
+                .append(elem.to_doc())
+                .append(RcDoc::text("]")),
             Self::TRef { elem } => RcDoc::text("Ref[")
                 .append(elem.to_doc())
                 .append(RcDoc::text("]")),

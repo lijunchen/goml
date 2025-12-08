@@ -555,6 +555,9 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
             len: *len,
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },

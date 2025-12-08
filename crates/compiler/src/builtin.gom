@@ -1,6 +1,10 @@
 // Builtin function declarations for goml.
 // These functions are implemented by the runtime and injected into the initial GlobalTypeEnv.
 
+// Vec type - a special builtin struct that translates to Go slice
+#[builtin]
+struct Vec[T] {}
+
 // Unit type
 #[builtin]
 extern fn unit_to_string(value: unit) -> string

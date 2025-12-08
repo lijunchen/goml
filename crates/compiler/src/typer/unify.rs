@@ -58,6 +58,11 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
                 return false;
             }
         }
+        tast::Ty::TVec { elem } => {
+            if !occurs(diagnostics, var, elem) {
+                return false;
+            }
+        }
         tast::Ty::TRef { elem } => {
             if !occurs(diagnostics, var, elem) {
                 return false;
@@ -115,6 +120,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
         tast::Ty::TArray { len, elem } => tast::Ty::TArray {
             len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
@@ -199,6 +207,7 @@ impl Typer {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
                 tast::Ty::TArray { elem, .. } => is_concrete(elem),
+                tast::Ty::TVec { elem } => is_concrete(elem),
                 tast::Ty::TRef { elem } => is_concrete(elem),
                 tast::Ty::TFunc { params, ret_ty } => {
                     params.iter().all(is_concrete) && is_concrete(ret_ty)
@@ -387,6 +396,9 @@ impl Typer {
                 len: *len,
                 elem: Box::new(self.norm(elem)),
             },
+            tast::Ty::TVec { elem } => tast::Ty::TVec {
+                elem: Box::new(self.norm(elem)),
+            },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.norm(elem)),
             },
@@ -480,6 +492,11 @@ impl Typer {
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
+                if !self.unify(diagnostics, elem1, elem2) {
+                    return false;
+                }
+            }
+            (tast::Ty::TVec { elem: elem1 }, tast::Ty::TVec { elem: elem2 }) => {
                 if !self.unify(diagnostics, elem1, elem2) {
                     return false;
                 }
@@ -637,6 +654,9 @@ impl Typer {
                 len: *len,
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
+            tast::Ty::TVec { elem } => tast::Ty::TVec {
+                elem: Box::new(self._go_inst_ty(elem, subst)),
+            },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
@@ -706,6 +726,9 @@ impl Typer {
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
+                elem: Box::new(self.subst_ty(diagnostics, elem)),
+            },
+            tast::Ty::TVec { elem } => tast::Ty::TVec {
                 elem: Box::new(self.subst_ty(diagnostics, elem)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {

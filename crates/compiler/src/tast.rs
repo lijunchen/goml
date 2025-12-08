@@ -82,6 +82,7 @@ pub enum Ty {
     TStruct { name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
     TArray { len: usize, elem: Box<Ty> },
+    TVec { elem: Box<Ty> },
     TRef { elem: Box<Ty> },
     TParam { name: String },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
@@ -109,6 +110,7 @@ impl std::fmt::Debug for Ty {
             Self::TStruct { name } => write!(f, "TStruct({})", name),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
+            Self::TVec { elem } => write!(f, "TVec({:?})", elem),
             Self::TRef { elem } => write!(f, "TRef({:?})", elem),
             Self::TParam { name } => write!(f, "TParam({})", name),
             Self::TFunc { params, ret_ty } => write!(f, "TFunc({:?}, {:?})", params, ret_ty),
@@ -121,6 +123,7 @@ impl Ty {
         match self {
             Self::TEnum { name } | Self::TStruct { name } => name.clone(),
             Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
+            Self::TVec { .. } => "Vec".to_string(),
             Self::TRef { .. } => "Ref".to_string(),
             _ => {
                 panic!("Expected a constructor type, got: {:?}", self)
@@ -234,6 +237,7 @@ impl Prim {
             | Ty::TStruct { .. }
             | Ty::TApp { .. }
             | Ty::TArray { .. }
+            | Ty::TVec { .. }
             | Ty::TRef { .. }
             | Ty::TParam { .. }
             | Ty::TFunc { .. } => panic!(
