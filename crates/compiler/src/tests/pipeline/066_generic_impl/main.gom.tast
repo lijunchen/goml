@@ -1,0 +1,21 @@
+impl Point[U, V]{
+  fn new(x/0: U, y/1: V) -> Point[U, V] {
+    Point { x: (x/0 : U), y: (y/1 : V) }
+  }
+  fn swap(self/2: Point[U, V]) -> Point[V, U] {
+    Point { x: (self/2 : Point[U, V]).y, y: (self/2 : Point[U, V]).x }
+  }
+  fn get_x(self/3: Point[U, V]) -> U {
+    (self/3 : Point[U, V]).x
+  }
+}
+
+fn main() -> unit {
+  let p1/4: Point[int32, string] = (Point::new : (int32, string) -> Point[int32, string])(10, "hello") in
+  let p2/5: Point[string, string] = (Point::new : (string, string) -> Point[string, string])("goml", "lang") in
+  let p3/6: Point[string, int32] = (Point[int32, string]::swap : (Point[int32, string]) -> Point[string, int32])((p1/4 : Point[int32, string])) in
+  let x/7: int32 = (p3/6 : Point[string, int32]).y in
+  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((x/7 : int32))) in
+  let x2/8: string = (Point[string, string]::get_x : (Point[string, string]) -> string)((p2/5 : Point[string, string])) in
+  (string_println : (string) -> unit)((x2/8 : string))
+}
