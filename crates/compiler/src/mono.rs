@@ -297,11 +297,31 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
 }
 
 fn fn_is_generic(f: &core::Fn) -> bool {
-    f.params.iter().any(|(_, t)| has_tparam(t)) || has_tparam(&f.ret_ty)
+    !f.generics.is_empty() || f.params.iter().any(|(_, t)| has_tparam(t)) || has_tparam(&f.ret_ty)
+}
+
+// Parse inherent method name to extract base type and method name
+// Format: impl_inherent_<BaseType>_[type_args...]_<method_name>
+// Returns: Some((base_type, method_name))
+fn parse_inherent_method_name(fname: &str) -> Option<(&str, &str)> {
+    let parts: Vec<&str> = fname.split('_').collect();
+
+    // Minimum: ["impl", "inherent", "Type", "method"]
+    if parts.len() < 4 {
+        return None;
+    }
+
+    if parts[0] != "impl" || parts[1] != "inherent" {
+        return None;
+    }
+
+    let base_type = parts[2];
+    let method_name = parts.last()?;
+
+    Some((base_type, method_name))
 }
 
 type Subst = IndexMap<String, Ty>;
-
 fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
     match ty {
         Ty::TParam { name } => s.get(name).cloned().unwrap_or_else(|| ty.clone()),
@@ -472,16 +492,34 @@ struct Ctx {
     queued: IndexSet<(String, String)>,
     out: Vec<MonoFn>,
     work: VecDeque<(String, Subst, String)>,
+    // Index for inherent methods: (base_type, method_name) -> generic_func_name
+    // Example: ("Point", "new") -> "impl_inherent_Point_TParam_U_TParam_V_new"
+    inherent_method_index: IndexMap<(String, String), String>,
 }
 
 impl Ctx {
     fn new(orig_fns: IndexMap<String, core::Fn>) -> Self {
+        let mut inherent_method_index = IndexMap::new();
+
+        // Build index for generic inherent methods
+        for (fname, f) in orig_fns.iter() {
+            if !f.generics.is_empty() && fname.starts_with("impl_inherent_") {
+                if let Some((base_type, method_name)) = parse_inherent_method_name(fname) {
+                    inherent_method_index.insert(
+                        (base_type.to_string(), method_name.to_string()),
+                        fname.clone(),
+                    );
+                }
+            }
+        }
+
         Self {
             orig_fns,
             instances: IndexMap::new(),
             queued: IndexSet::new(),
             out: Vec::new(),
             work: VecDeque::new(),
+            inherent_method_index,
         }
     }
 
@@ -641,7 +679,17 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             };
 
             // If function is not in current file (runtime/built-in), leave as is
-            let Some(callee) = ctx.orig_fns.get(func_name) else {
+            // For inherent methods, try to find generic version if exact match fails
+            let callee_opt = ctx.orig_fns.get(func_name).or_else(|| {
+                // Use index to find generic inherent method
+                parse_inherent_method_name(func_name).and_then(|(base_type, method_name)| {
+                    ctx.inherent_method_index
+                        .get(&(base_type.to_string(), method_name.to_string()))
+                        .and_then(|generic_fname| ctx.orig_fns.get(generic_fname))
+                })
+            });
+
+            let Some(callee) = callee_opt else {
                 return MonoExpr::ECall {
                     func: Box::new(new_func),
                     args: new_args,
@@ -657,6 +705,8 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 };
             }
 
+            let generic_func_name = callee.name.clone();
+
             // Derive concrete substitution for this call by unifying callee param/ret with arg/call types
             let mut call_subst: Subst = IndexMap::new();
             let callee_param_tys = callee.params.iter().map(|(_, t)| t).collect::<Vec<_>>();
@@ -665,14 +715,14 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 if let Err(e) = unify(pt, at, &mut call_subst) {
                     panic!(
                         "monomorphization unification failed for {}: {}",
-                        func_name, e
+                        generic_func_name, e
                     );
                 }
             }
             if let Err(e) = unify(&callee.ret_ty, &new_ty, &mut call_subst) {
                 panic!(
                     "monomorphization return type unification failed for {}: {}",
-                    func_name, e
+                    generic_func_name, e
                 );
             }
 
@@ -687,7 +737,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 };
             }
 
-            let spec = ctx.ensure_instance(func_name, call_subst);
+            let spec = ctx.ensure_instance(&generic_func_name, call_subst);
             MonoExpr::ECall {
                 func: Box::new(MonoExpr::EVar {
                     name: spec,

@@ -21,6 +21,7 @@ pub enum Item {
 
 #[derive(Debug)]
 pub struct ImplBlock {
+    pub generics: Vec<String>,
     pub trait_name: Option<Ident>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,

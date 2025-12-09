@@ -306,6 +306,17 @@ fn lower_trait_method(
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
     let attrs = lower_attributes(node.attributes());
+    let generics: Vec<ast::Ident> = node
+        .generic_list()
+        .map(|list| {
+            list.generics()
+                .flat_map(|x| {
+                    let name = x.uident().unwrap().to_string();
+                    Some(ast::Ident::new(&name))
+                })
+                .collect()
+        })
+        .unwrap_or_default();
     let trait_name = node.uident().map(|token| token.to_string());
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
@@ -323,6 +334,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
         .collect();
     Some(ast::ImplBlock {
         attrs,
+        generics,
         trait_name: trait_name.map(|name| ast::Ident::new(&name)),
         for_type,
         methods,

@@ -113,6 +113,7 @@ fn derive_struct_tostring(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
+        generics: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
@@ -138,6 +139,7 @@ fn derive_enum_tostring(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
+        generics: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
@@ -167,6 +169,7 @@ fn derive_struct_tojson(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
+        generics: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
@@ -192,6 +195,7 @@ fn derive_enum_tojson(
 
     Ok(ImplBlock {
         attrs: Vec::new(),
+        generics: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],

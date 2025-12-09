@@ -305,6 +305,7 @@ pub struct TraitMethodSignature {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
+    pub generics: Vec<Ident>,
     pub trait_name: Option<Ident>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,

@@ -400,10 +400,29 @@ impl TraitEnv {
         method: &Ident,
     ) -> Option<tast::Ty> {
         let encoded_ty = encode_ty(receiver_ty);
-        self.inherent_impls
+
+        // First try exact match
+        if let Some(scheme) = self
+            .inherent_impls
             .get(&encoded_ty)
             .and_then(|impl_def| impl_def.methods.get(&method.0))
-            .map(|scheme| scheme.ty.clone())
+        {
+            return Some(scheme.ty.clone());
+        }
+
+        // For generic types (TApp), try looking up by base constructor name
+        if let tast::Ty::TApp { ty, .. } = receiver_ty {
+            let base_name = ty.get_constr_name_unsafe();
+            if let Some(scheme) = self
+                .inherent_impls
+                .get(&base_name)
+                .and_then(|impl_def| impl_def.methods.get(&method.0))
+            {
+                return Some(scheme.ty.clone());
+            }
+        }
+
+        None
     }
 }
 

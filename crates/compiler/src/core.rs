@@ -12,6 +12,7 @@ pub struct File {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub name: String,
+    pub generics: Vec<String>,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
     pub body: Expr,

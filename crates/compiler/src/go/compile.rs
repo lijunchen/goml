@@ -1669,10 +1669,6 @@ pub fn go_file(
 fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
     let mut defs = Vec::new();
     for (name, def) in goenv.structs() {
-        // Skip Vec types - they are translated to Go slices, not structs
-        if name.0 == "Vec" || name.0.starts_with("Vec__") {
-            continue;
-        }
         let has_type_param = name.0.contains("TParam")
             || !def.generics.is_empty()
             || def

@@ -1158,6 +1158,7 @@ pub fn compile_file(
 
                     let f = core::Fn {
                         name: func_name,
+                        generics: impl_block.generics.clone(),
                         params: m
                             .params
                             .iter()
@@ -1173,6 +1174,7 @@ pub fn compile_file(
             tast::Item::Fn(f) => {
                 toplevels.push(core::Fn {
                     name: f.name.clone(),
+                    generics: vec![],
                     params: f
                         .params
                         .iter()

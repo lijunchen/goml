@@ -572,16 +572,26 @@ impl TraitMethodSignature {
 
 impl ImplBlock {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let mut base = RcDoc::text("impl");
+
+        if !self.generics.is_empty() {
+            base = base
+                .append(RcDoc::text("["))
+                .append(RcDoc::intersperse(
+                    self.generics.iter().map(|g| RcDoc::text(&g.0)),
+                    RcDoc::text(", "),
+                ))
+                .append(RcDoc::text("]"));
+        }
+
         let header = if let Some(trait_name) = &self.trait_name {
-            RcDoc::text("impl")
-                .append(RcDoc::space())
+            base.append(RcDoc::space())
                 .append(RcDoc::text(&trait_name.0))
                 .append(RcDoc::text(" for "))
                 .append(self.for_type.to_doc())
                 .append(RcDoc::text(" {"))
         } else {
-            RcDoc::text("impl")
-                .append(RcDoc::space())
+            base.append(RcDoc::space())
                 .append(self.for_type.to_doc())
                 .append(RcDoc::text(" {"))
         };
