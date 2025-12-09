@@ -315,11 +315,17 @@ fn define_inherent_impl(
     diagnostics: &mut Diagnostics,
     impl_block: &ast::ImplBlock,
 ) {
-    let empty_tparams = HashSet::new();
-    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
-    validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
+    // Combine impl generics with method generics for type parameter validation
+    let impl_tparams = type_param_name_set(&impl_block.generics);
+    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &impl_block.generics);
+    validate_ty(genv, diagnostics, &for_ty, &impl_tparams);
 
-    let encoded_ty = encode_ty(&for_ty);
+    // For generic impl blocks, use base constructor name; for non-generic, use full encoded type
+    let key = if !impl_block.generics.is_empty() {
+        for_ty.get_constr_name_unsafe()
+    } else {
+        encode_ty(&for_ty)
+    };
     let mut methods_to_add: IndexMap<String, env::FnScheme> = IndexMap::new();
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
@@ -339,19 +345,23 @@ fn define_inherent_impl(
             continue;
         }
 
-        let tparam_names = type_param_name_set(&m.generics);
+        // Combine impl generics and method generics
+        let mut all_generics = impl_block.generics.clone();
+        all_generics.extend(m.generics.clone());
+        let tparam_names = type_param_name_set(&all_generics);
+
         let params = m
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_ast(genv, ty, &m.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &all_generics);
                 validate_ty(genv, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_ast(genv, ty, &m.generics);
+                let ret = tast::Ty::from_ast(genv, ty, &all_generics);
                 validate_ty(genv, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -363,10 +373,13 @@ fn define_inherent_impl(
             ret_ty: Box::new(ret.clone()),
         };
 
+        // Store impl generics as type parameters for the method scheme
+        let type_params: Vec<String> = impl_block.generics.iter().map(|g| g.0.clone()).collect();
+
         methods_to_add.insert(
             method_name_str,
             env::FnScheme {
-                type_params: vec![],
+                type_params,
                 constraints: (),
                 ty: impl_method_ty,
                 origin: FnOrigin::User,
@@ -375,7 +388,7 @@ fn define_inherent_impl(
     }
 
     // Insert or extend the impl def
-    let impl_def = genv.trait_env.inherent_impls.entry(encoded_ty).or_default();
+    let impl_def = genv.trait_env.inherent_impls.entry(key).or_default();
     impl_def.methods.extend(methods_to_add);
 }
 
@@ -709,15 +722,20 @@ fn check_impl_block(
     diagnostics: &mut Diagnostics,
     impl_block: &ast::ImplBlock,
 ) -> tast::ImplBlock {
-    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_ast(genv, &impl_block.for_type, &impl_block.generics);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
         let mut local_env = LocalTypeEnv::new();
+
+        // Combine impl generics and method generics
+        let mut all_generics = impl_block.generics.clone();
+        all_generics.extend(f.generics.clone());
+
         let param_types: Vec<(Ident, tast::Ty)> = f
             .params
             .iter()
             .map(|(name, ty)| {
-                let ty = tast::Ty::from_ast(genv, ty, &f.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &all_generics);
                 let ty = instantiate_self_ty(&ty, &for_ty);
                 (name.clone(), ty)
             })
@@ -729,13 +747,13 @@ fn check_impl_block(
 
         let ret_ty = match &f.ret_ty {
             Some(ty) => {
-                let ty = tast::Ty::from_ast(genv, ty, &f.generics);
+                let ty = tast::Ty::from_ast(genv, ty, &all_generics);
                 instantiate_self_ty(&ty, &for_ty)
             }
             None => tast::Ty::TUnit,
         };
 
-        local_env.set_tparams_env(&f.generics);
+        local_env.set_tparams_env(&all_generics);
         local_env.push_scope();
         for (name, ty) in param_types.iter() {
             local_env.insert_var(name, ty.clone());
@@ -753,7 +771,9 @@ fn check_impl_block(
         });
     }
     let trait_name = impl_block.trait_name.clone();
+    let generics: Vec<String> = impl_block.generics.iter().map(|g| g.0.clone()).collect();
     tast::ImplBlock {
+        generics,
         trait_name,
         for_type: for_ty,
         methods: typed_methods,

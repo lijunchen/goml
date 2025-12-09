@@ -285,6 +285,10 @@ impl Impl {
         support::child(&self.syntax)
     }
 
+    pub fn generic_list(&self) -> Option<GenericList> {
+        support::child(&self.syntax)
+    }
+
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }

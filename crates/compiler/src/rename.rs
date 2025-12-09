@@ -74,6 +74,7 @@ impl Rename {
             ast::Item::TraitDef(_) => item.clone(),
             ast::Item::ImplBlock(i) => ast::Item::ImplBlock(ast::ImplBlock {
                 attrs: i.attrs.clone(),
+                generics: i.generics.clone(),
                 trait_name: i.trait_name.clone(),
                 for_type: i.for_type.clone(),
                 methods: i

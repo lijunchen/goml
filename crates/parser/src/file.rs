@@ -223,6 +223,9 @@ fn impl_block(p: &mut Parser) {
 
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
+    if p.at(T!['[']) {
+        generic_list(p);
+    }
     let has_trait = p.at(T![ident]) && matches!(p.nth(1), T![for]);
     if has_trait {
         p.expect(T![ident]);
