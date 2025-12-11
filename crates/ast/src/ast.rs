@@ -7,14 +7,6 @@ impl Ident {
     pub fn new(name: &str) -> Self {
         Self(name.to_string())
     }
-
-    pub fn starts_with_uppercase(&self) -> bool {
-        self.0
-            .chars()
-            .next()
-            .map(|c| c.is_uppercase())
-            .unwrap_or(false)
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
