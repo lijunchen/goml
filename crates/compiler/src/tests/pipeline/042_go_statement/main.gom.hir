@@ -1,0 +1,13 @@
+fn child(local_0: Ref[int32]) -> () {
+  ref_set(local_0, 1)
+}
+
+fn main() -> () {
+  let local_0 = ref(0) in
+  let _ = go || => child(local_0) in
+  let _ = while ref_get(local_0) < 1 {
+    ()
+  } in
+  let _ = string_println("main") in
+  ()
+}

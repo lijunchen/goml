@@ -1,0 +1,23 @@
+struct Point[T0, T1] { x: T0, y: T1 }
+
+impl Point[T2, T3] {
+  fn item_26(local_0: T2, local_1: T3) -> Point[T2, T3] {
+    Point { x: local_0, y: local_1 }
+  }
+  fn item_27(local_0: Point[T2, T3]) -> Point[T3, T2] {
+    Point { x: local_0.y, y: local_0.x }
+  }
+  fn item_28(local_0: Point[T2, T3]) -> T2 {
+    local_0.x
+  }
+}
+
+fn main() -> () {
+  let local_0: Point[int32, string] = Point::new(10, "hello") in
+  let local_1: Point[string, string] = Point::new("goml", "lang") in
+  let local_2: Point[string, int32] = local_0.swap() in
+  let local_3: int32 = local_2.y in
+  let _ = string_println(int32_to_string(local_3)) in
+  let local_4: string = local_1.get_x() in
+  string_println(local_4)
+}

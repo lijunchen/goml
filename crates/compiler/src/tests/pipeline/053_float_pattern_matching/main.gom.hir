@@ -1,0 +1,32 @@
+enum FloatEvent { Sample32(string, float32), Sample64(string, float64) }
+
+fn summarize(local_0: FloatEvent) -> string {
+  match local_0 {
+    FloatEvent::Sample32(local_1, local_2) => local_1 + float32_to_string(local_2),
+    FloatEvent::Sample64(local_3, local_4) => local_3 + float64_to_string(local_4),
+  }
+}
+
+fn compare(local_0: (float32, float64)) -> string {
+  match local_0 {
+    (local_1, local_2) => let local_3: float32 = 1 in
+    let local_4: float64 = 5 in
+    let local_5 = local_1 < local_3 in
+    let local_6 = local_2 < local_4 in
+    "left<1?=" + bool_to_string(local_5) + ",right<5?=" + bool_to_string(local_6),
+  }
+}
+
+fn main() -> () {
+  let local_0: float32 = 0.5 in
+  let local_1: float32 = 2.25 in
+  let local_2: float64 = 9.5 in
+  let local_3 = FloatEvent::Sample32("f32=", local_0) in
+  let local_4 = FloatEvent::Sample32("f32_b=", local_1) in
+  let local_5 = FloatEvent::Sample64("f64=", local_2) in
+  let local_6: (float32, float64) = (0.75, 4) in
+  let local_7: (float32, float64) = (1.5, 7.25) in
+  let local_8 = summarize(local_3) + summarize(local_4) + summarize(local_5) + compare(local_6) + compare(local_7) in
+  let _ = string_println(local_8) in
+  ()
+}

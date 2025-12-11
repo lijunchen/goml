@@ -1,0 +1,43 @@
+fn a_value() -> int8 {
+  90
+}
+
+fn b_value() -> int8 {
+  -20
+}
+
+fn c_value() -> int8 {
+  3
+}
+
+fn show_int8(local_0: string, local_1: int8) -> () {
+  let _ = string_println(local_0 + int8_to_string(local_1)) in
+  ()
+}
+
+fn show_bool(local_0: string, local_1: bool) -> () {
+  let _ = string_println(local_0 + bool_to_string(local_1)) in
+  ()
+}
+
+fn main() -> () {
+  let local_0 = a_value() in
+  let local_1 = b_value() in
+  let local_2 = c_value() in
+  let local_3 = local_0 + local_1 in
+  let local_4 = local_0 - local_2 in
+  let local_5 = local_1 * local_2 in
+  let local_6 = local_0 / local_2 in
+  let local_7 = -local_1 in
+  let local_8 = local_1 < local_0 in
+  let _ = show_int8("a=", local_0) in
+  let _ = show_int8("b=", local_1) in
+  let _ = show_int8("c=", local_2) in
+  let _ = show_int8("sum=", local_3) in
+  let _ = show_int8("diff=", local_4) in
+  let _ = show_int8("prod=", local_5) in
+  let _ = show_int8("quot=", local_6) in
+  let _ = show_int8("neg=", local_7) in
+  let _ = show_bool("b<a=", local_8) in
+  ()
+}

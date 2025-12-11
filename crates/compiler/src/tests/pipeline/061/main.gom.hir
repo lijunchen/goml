@@ -1,0 +1,61 @@
+enum Color { Red, Green, Blue }
+
+impl Color {
+  fn item_26(local_0: Color) -> string {
+    match local_0 {
+      Color::Red => "Color::Red",
+      Color::Green => "Color::Green",
+      Color::Blue => "Color::Blue",
+    }
+  }
+}
+
+struct Point { x: int32, y: int32, color: Color }
+
+impl Point {
+  fn item_27(local_0: Point) -> string {
+    let Point { x: local_1, y: local_2, color: local_3 } = local_0 in
+    "Point { " + "x: " + local_1.to_string() + ", " + "y: " + local_2.to_string() + ", " + "color: " + local_3.to_string() + " }"
+  }
+}
+
+impl Point {
+  fn item_28(local_0: int32, local_1: int32, local_2: Color) -> Point {
+    Point { x: local_0, y: local_1, color: local_2 }
+  }
+}
+
+struct Line { from: Point, to: Point, color: Color }
+
+impl Line {
+  fn item_29(local_0: Line) -> string {
+    let Line { from: local_1, to: local_2, color: local_3 } = local_0 in
+    "Line { " + "from: " + local_1.to_string() + ", " + "to: " + local_2.to_string() + ", " + "color: " + local_3.to_string() + " }"
+  }
+}
+
+impl Line {
+  fn item_30(local_0: Point, local_1: Point, local_2: Color) -> Line {
+    Line { from: local_0, to: local_1, color: local_2 }
+  }
+}
+
+enum LineList { Nil, Cons(Line, LineList) }
+
+impl LineList {
+  fn item_31(local_0: LineList) -> string {
+    match local_0 {
+      LineList::Nil => "LineList::Nil",
+      LineList::Cons(local_1, local_2) => "LineList::Cons(" + local_1.to_string() + ", " + local_2.to_string() + ")",
+    }
+  }
+}
+
+fn main() -> () {
+  let local_0 = Point::new(10, 20, Color::Red) in
+  let local_1 = Point::new(30, 40, Color::Green) in
+  let local_2 = Line::new(local_0, local_1, Color::Blue) in
+  let local_3 = LineList::Cons(local_2, LineList::Nil) in
+  let _ = string_println(local_3.to_string()) in
+  ()
+}

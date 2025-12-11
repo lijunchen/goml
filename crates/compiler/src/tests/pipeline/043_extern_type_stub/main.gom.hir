@@ -1,0 +1,33 @@
+extern type Time
+
+extern type Duration
+
+extern "go" "time" unix(local_0: int32, local_1: int32) -> Time
+
+extern "go" "time" duration(local_0: int32) -> Duration
+
+extern "go" "fmt" format_time(local_0: string, local_1: Time) -> string
+
+extern "go" "fmt" format_duration(local_0: string, local_1: Duration) -> string
+
+fn describe_epoch() -> string {
+  let local_0 = unix(946684800, 500000000) in
+  format_time("epoch snapshot => %v", local_0)
+}
+
+fn describe_planned_launch() -> string {
+  let local_0 = unix(1709294730, 250000000) in
+  format_time("planned launch => %v", local_0)
+}
+
+fn describe_duration() -> string {
+  let local_0 = duration(1500000000) in
+  format_duration("parsed duration => %v", local_0)
+}
+
+fn main() -> () {
+  let _ = string_println(describe_epoch()) in
+  let _ = string_println(describe_planned_launch()) in
+  let _ = string_println(describe_duration()) in
+  ()
+}

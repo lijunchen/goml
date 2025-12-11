@@ -1,0 +1,40 @@
+struct Point { x: int32, y: int32 }
+
+enum Maybe[T0] { Just(T0), Nothing }
+
+trait Display {
+  fn item_25() -> string
+}
+
+impl Display for Point {
+  fn item_28(local_0: Point) -> string {
+    "Point"
+  }
+}
+
+impl Display for Maybe[int32] {
+  fn item_29(local_0: Maybe[int32]) -> string {
+    match local_0 {
+      Maybe::Just(local_1) => "Just(" + int32_to_string(local_1) + ")",
+      Maybe::Nothing => "Nothing",
+    }
+  }
+}
+
+fn make_maybe(local_0: bool) -> Maybe[int32] {
+  if local_0 {
+    Maybe::Just(42)
+  } else {
+    Maybe::Nothing
+  }
+}
+
+fn main() -> () {
+  let local_0 = Point { x: 1, y: 2 } in
+  let local_1 = make_maybe(true) in
+  let local_2 = make_maybe(false) in
+  let _ = string_println(Display::show(local_0)) in
+  let _ = string_println(Display::show(local_1)) in
+  let _ = string_println(Display::show(local_2)) in
+  ()
+}

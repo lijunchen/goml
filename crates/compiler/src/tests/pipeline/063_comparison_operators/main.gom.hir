@@ -1,0 +1,62 @@
+fn test_int_comparisons() -> () {
+  let local_0: int32 = 10 in
+  let local_1: int32 = 20 in
+  let local_2: int32 = 10 in
+  let local_3 = local_0 < local_1 in
+  let _ = string_println("10 < 20: " + bool_to_string(local_3)) in
+  let local_4 = local_1 > local_0 in
+  let _ = string_println("20 > 10: " + bool_to_string(local_4)) in
+  let local_5 = local_0 <= local_1 in
+  let _ = string_println("10 <= 20: " + bool_to_string(local_5)) in
+  let local_6 = local_0 <= local_2 in
+  let _ = string_println("10 <= 10: " + bool_to_string(local_6)) in
+  let local_7 = local_1 >= local_0 in
+  let _ = string_println("20 >= 10: " + bool_to_string(local_7)) in
+  let local_8 = local_2 >= local_0 in
+  let _ = string_println("10 >= 10: " + bool_to_string(local_8)) in
+  let local_9 = local_0 == local_2 in
+  let _ = string_println("10 == 10: " + bool_to_string(local_9)) in
+  let local_10 = local_0 == local_1 in
+  let _ = string_println("10 == 20: " + bool_to_string(local_10)) in
+  let local_11 = local_0 != local_1 in
+  let _ = string_println("10 != 20: " + bool_to_string(local_11)) in
+  let local_12 = local_0 != local_2 in
+  let _ = string_println("10 != 10: " + bool_to_string(local_12)) in
+  ()
+}
+
+fn test_float_comparisons() -> () {
+  let local_0: float64 = 3.14 in
+  let local_1: float64 = 2.71 in
+  let local_2: float64 = 3.14 in
+  let local_3 = local_1 < local_0 in
+  let _ = string_println("2.71 < 3.14: " + bool_to_string(local_3)) in
+  let local_4 = local_0 > local_1 in
+  let _ = string_println("3.14 > 2.71: " + bool_to_string(local_4)) in
+  let local_5 = local_1 <= local_0 in
+  let _ = string_println("2.71 <= 3.14: " + bool_to_string(local_5)) in
+  let local_6 = local_0 <= local_2 in
+  let _ = string_println("3.14 <= 3.14: " + bool_to_string(local_6)) in
+  let local_7 = local_0 >= local_1 in
+  let _ = string_println("3.14 >= 2.71: " + bool_to_string(local_7)) in
+  let local_8 = local_2 >= local_0 in
+  let _ = string_println("3.14 >= 3.14: " + bool_to_string(local_8)) in
+  let local_9 = local_0 == local_2 in
+  let _ = string_println("3.14 == 3.14: " + bool_to_string(local_9)) in
+  let local_10 = local_0 == local_1 in
+  let _ = string_println("3.14 == 2.71: " + bool_to_string(local_10)) in
+  let local_11 = local_0 != local_1 in
+  let _ = string_println("3.14 != 2.71: " + bool_to_string(local_11)) in
+  let local_12 = local_0 != local_2 in
+  let _ = string_println("3.14 != 3.14: " + bool_to_string(local_12)) in
+  ()
+}
+
+fn main() -> () {
+  let _ = string_println("=== Integer Comparisons ===") in
+  let _ = test_int_comparisons() in
+  let _ = string_println("") in
+  let _ = string_println("=== Float Comparisons ===") in
+  let _ = test_float_comparisons() in
+  ()
+}

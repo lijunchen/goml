@@ -1,0 +1,23 @@
+enum Color { Red, Green }
+
+enum Signal { Red, Yellow }
+
+fn color_is_red(local_0: Color) -> bool {
+  match local_0 {
+    Color::Red => true,
+    Color::Green => false,
+  }
+}
+
+fn toggle_signal(local_0: Signal) -> Signal {
+  match local_0 {
+    Signal::Red => Signal::Yellow,
+    Signal::Yellow => Signal::Red,
+  }
+}
+
+fn main() -> Signal {
+  let local_0 = Color::Red in
+  let _ = color_is_red(local_0) in
+  toggle_signal(Signal::Red)
+}

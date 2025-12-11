@@ -1,0 +1,18 @@
+enum T { A, B(bool, bool) }
+
+fn test(local_0: T) -> () {
+  match local_0 {
+    T::A => string_print(int32_to_string(1)),
+    T::B(false, false) => string_print(int32_to_string(2)),
+    T::B(false, true) => string_print(int32_to_string(3)),
+    _ => string_print(int32_to_string(4)),
+  }
+}
+
+fn main() -> () {
+  let _ = test(T::B(true, true)) in
+  let _ = test(T::B(false, true)) in
+  let _ = test(T::B(false, false)) in
+  let _ = test(T::A) in
+  ()
+}

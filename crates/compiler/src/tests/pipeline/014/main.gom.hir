@@ -1,0 +1,20 @@
+fn test_nested_match(local_0: (bool, bool), local_1: (bool, bool)) -> () {
+  match local_0 {
+    (true, false) => match local_1 {
+      (false, true) => string_println("case1"),
+      _ => string_println("case2"),
+    },
+    _ => match local_1 {
+      (false, true) => string_println("case3"),
+      _ => string_println("case4"),
+    },
+  }
+}
+
+fn main() -> () {
+  let _ = test_nested_match((true, false), (false, true)) in
+  let _ = test_nested_match((true, false), (true, false)) in
+  let _ = test_nested_match((false, true), (false, true)) in
+  let _ = test_nested_match((false, true), (true, false)) in
+  ()
+}

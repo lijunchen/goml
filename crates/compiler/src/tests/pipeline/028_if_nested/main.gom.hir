@@ -1,0 +1,43 @@
+fn classify(local_0: int32) -> string {
+  if local_0 < 0 {
+    "negative"
+  } else {
+    if 0 < local_0 {
+      "positive"
+    } else {
+      "zero"
+    }
+  }
+}
+
+fn triangle_type(local_0: int32, local_1: int32, local_2: int32) -> string {
+  if local_0 < local_1 {
+    if local_1 < local_2 {
+      "ascending"
+    } else {
+      "peak"
+    }
+  } else {
+    if local_0 < local_2 {
+      "valley"
+    } else {
+      "flat"
+    }
+  }
+}
+
+fn main() -> () {
+  let local_0 = classify(-42) in
+  let local_1 = classify(0) in
+  let local_2 = classify(17) in
+  let local_3 = triangle_type(1, 2, 3) in
+  let local_4 = triangle_type(3, 2, 1) in
+  let local_5 = triangle_type(2, 3, 2) in
+  let _ = string_println(local_0) in
+  let _ = string_println(local_1) in
+  let _ = string_println(local_2) in
+  let _ = string_println(local_3) in
+  let _ = string_println(local_4) in
+  let _ = string_println(local_5) in
+  ()
+}

@@ -1,0 +1,41 @@
+fn match_int(local_0: int32) -> int32 {
+  match local_0 {
+    0 => 10,
+    1 => 20,
+    _ => 30,
+  }
+}
+
+fn wildcard_first(local_0: int32) -> int32 {
+  match local_0 {
+    _ => 40,
+    0 => 50,
+  }
+}
+
+fn wildcard_middle(local_0: int32) -> int32 {
+  match local_0 {
+    2 => 90,
+    _ => 100,
+    3 => 110,
+  }
+}
+
+fn repeated(local_0: int32) -> int32 {
+  match local_0 {
+    1 => 60,
+    1 => 70,
+    _ => 80,
+  }
+}
+
+fn main() -> () {
+  let _ = string_println(int32_to_string(match_int(0))) in
+  let _ = string_println(int32_to_string(match_int(5))) in
+  let _ = string_println(int32_to_string(wildcard_first(0))) in
+  let _ = string_println(int32_to_string(wildcard_first(2))) in
+  let _ = string_println(int32_to_string(wildcard_middle(2))) in
+  let _ = string_println(int32_to_string(wildcard_middle(3))) in
+  let _ = string_println(int32_to_string(repeated(1))) in
+  string_println(int32_to_string(repeated(3)))
+}

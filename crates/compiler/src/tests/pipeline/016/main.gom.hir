@@ -1,0 +1,37 @@
+enum List[T0] { Nil, Cons(T0, List[T0]) }
+
+fn list_length[T1](local_0: List[T1]) -> int32 {
+  match local_0 {
+    List::Nil => 0,
+    List::Cons(_, local_1) => 1 + list_length(local_1),
+  }
+}
+
+fn int_list_length(local_0: List[int32]) -> int32 {
+  match local_0 {
+    List::Nil => 0,
+    List::Cons(_, local_1) => 1 + int_list_length(local_1),
+  }
+}
+
+fn main() -> () {
+  let local_0 = List::Cons(1, List::Nil) in
+  let local_1 = list_length(local_0) in
+  let _ = string_println(int32_to_string(local_1)) in
+  let local_2 = List::Cons(1, List::Cons(2, List::Nil)) in
+  let local_3 = list_length(local_2) in
+  let _ = string_println(int32_to_string(local_3)) in
+  let local_4 = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil))) in
+  let local_5 = int_list_length(local_4) in
+  let _ = string_println(int32_to_string(local_5)) in
+  let local_6 = List::Cons((), List::Nil) in
+  let local_7 = list_length(local_6) in
+  let _ = string_println(int32_to_string(local_7)) in
+  let local_8 = List::Cons((), List::Cons((), List::Nil)) in
+  let local_9 = list_length(local_8) in
+  let _ = string_println(int32_to_string(local_9)) in
+  let local_10 = List::Cons(true, List::Cons(false, List::Nil)) in
+  let local_11 = list_length(local_10) in
+  let _ = string_println(int32_to_string(local_11)) in
+  ()
+}

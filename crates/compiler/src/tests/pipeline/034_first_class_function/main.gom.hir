@@ -1,0 +1,33 @@
+fn double(local_0: int32) -> int32 {
+  local_0 * 2
+}
+
+fn increment(local_0: int32) -> int32 {
+  local_0 + 1
+}
+
+fn apply_once(local_0: fn(int32) -> int32, local_1: int32) -> int32 {
+  local_0(local_1)
+}
+
+fn compose(local_0: fn(int32) -> int32, local_1: fn(int32) -> int32, local_2: int32) -> int32 {
+  local_0(local_1(local_2))
+}
+
+fn main() -> () {
+  let local_0 = double in
+  let local_1 = apply_once(local_0, 4) in
+  let local_2 = compose(double, increment, local_1) in
+  let local_4 = |local_3| => apply_once(increment, local_3) in
+  let local_5 = local_4(local_2) in
+  let local_8 = |local_6, local_7| => apply_once(local_6, local_7) in
+  let local_9 = local_8(double, 3) in
+  let local_11 = |local_10| => compose(double, increment, local_10) in
+  let local_12 = local_11(5) in
+  let local_13 = string_println in
+  let _ = local_13(int32_to_string(local_2)) in
+  let _ = local_13(int32_to_string(local_5)) in
+  let _ = local_13(int32_to_string(local_9)) in
+  let _ = local_13(int32_to_string(local_12)) in
+  ()
+}

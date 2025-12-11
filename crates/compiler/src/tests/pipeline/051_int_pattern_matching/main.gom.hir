@@ -1,0 +1,73 @@
+struct PairData { head: int32, tail: int64 }
+
+fn is_special8(local_0: int8) -> bool {
+  match local_0 {
+    5 => true,
+    7 => true,
+    _ => false,
+  }
+}
+
+fn is_special16(local_0: int16) -> bool {
+  match local_0 {
+    1024 => true,
+    2048 => true,
+    _ => false,
+  }
+}
+
+fn is_special32(local_0: int32) -> bool {
+  match local_0 {
+    4096 => true,
+    8192 => true,
+    _ => false,
+  }
+}
+
+fn is_special64(local_0: int64) -> bool {
+  match local_0 {
+    16384 => true,
+    32768 => true,
+    _ => false,
+  }
+}
+
+fn match_tuple(local_0: (int8, int16)) -> bool {
+  match local_0 {
+    (1, 2) => true,
+    _ => false,
+  }
+}
+
+fn match_struct(local_0: PairData) -> bool {
+  match local_0 {
+    PairData { head: 100, tail: 200 } => true,
+    PairData { head: _, tail: 300 } => true,
+    _ => false,
+  }
+}
+
+fn report(local_0: string, local_1: bool) -> string {
+  local_0 + bool_to_string(local_1)
+}
+
+fn main() -> () {
+  let local_0: int8 = 1 in
+  let local_1: int16 = 2 in
+  let local_2 = match_tuple((local_0, local_1)) in
+  let local_3 = match_tuple((3, 4)) in
+  let local_4 = match_struct(PairData { head: 100, tail: 200 }) in
+  let local_5 = match_struct(PairData { head: 10, tail: 300 }) in
+  let local_6 = report("int8=", is_special8(5)) in
+  let local_7 = report(",int16=", is_special16(1024)) in
+  let local_8 = report(",int32=", is_special32(8192)) in
+  let local_9 = report(",int64_a=", is_special64(16384)) in
+  let local_10 = report(",int64_b=", is_special64(32768)) in
+  let local_11 = report(",tuple_hit=", local_2) in
+  let local_12 = report(",tuple_miss=", local_3) in
+  let local_13 = report(",struct_first=", local_4) in
+  let local_14 = report(",struct_second=", local_5) in
+  let local_15 = local_6 + local_7 + local_8 + local_9 + local_10 + local_11 + local_12 + local_13 + local_14 in
+  let _ = string_println(local_15) in
+  ()
+}

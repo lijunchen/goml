@@ -1,0 +1,15 @@
+fn my_int_equal(local_0: int32, local_1: int32) -> bool {
+  !local_0 < local_1 && !local_1 < local_0
+}
+
+fn sum(local_0: int32) -> int32 {
+  if my_int_equal(local_0, 1) {
+    1
+  } else {
+    local_0 + sum(local_0 - 1)
+  }
+}
+
+fn main() -> () {
+  string_println(int32_to_string(sum(100)))
+}
