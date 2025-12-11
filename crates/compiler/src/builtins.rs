@@ -45,6 +45,11 @@ fn builtin_ast() -> ast::File {
     BUILTIN_AST.get_or_init(parse_builtin_ast).clone()
 }
 
+/// Get the builtin AST for use in HIR lowering or other passes
+pub fn get_builtin_ast() -> ast::File {
+    builtin_ast()
+}
+
 fn build_builtin_env() -> GlobalTypeEnv {
     let ast = builtin_ast();
 
