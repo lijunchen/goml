@@ -44,8 +44,7 @@ pub enum HirType {
     Generic(GenericParamId),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct HirTypeId(pub u32);
+pub type HirTypeId = la_arena::Idx<HirType>;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BuiltinType {
@@ -69,8 +68,7 @@ pub struct HirFile {
     pub items: Vec<HirItemId>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct HirItemId(pub u32);
+pub type HirItemId = la_arena::Idx<HirItem>;
 
 #[derive(Debug, Clone)]
 pub enum HirItem {
@@ -176,8 +174,7 @@ pub struct HirExternBuiltin {
     pub astptr: Option<MySyntaxNodePtr>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct HirExprId(pub u32);
+pub type HirExprId = la_arena::Idx<HirExpr>;
 
 #[derive(Debug, Clone)]
 pub struct HirExpr {
@@ -281,8 +278,7 @@ pub enum HirExprKind {
     },
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct HirPatId(pub u32);
+pub type HirPatId = la_arena::Idx<HirPat>;
 
 #[derive(Debug, Clone)]
 pub struct HirPat {

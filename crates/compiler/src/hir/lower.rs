@@ -9,10 +9,10 @@ use super::symbol_table::{GenericTable, SymbolTable};
 
 #[derive(Debug, Default, Clone)]
 pub struct HirTables {
-    pub items: Vec<HirItem>,
-    pub exprs: Vec<HirExpr>,
-    pub pats: Vec<HirPat>,
-    pub types: Vec<HirType>,
+    pub items: la_arena::Arena<HirItem>,
+    pub exprs: la_arena::Arena<HirExpr>,
+    pub pats: la_arena::Arena<HirPat>,
+    pub types: la_arena::Arena<HirType>,
 }
 
 #[derive(Debug)]
@@ -1586,27 +1586,19 @@ impl LowerCtx {
     }
 
     fn push_expr(&mut self, kind: HirExprKind, astptr: Option<MySyntaxNodePtr>) -> HirExprId {
-        let id = HirExprId(self.tables.exprs.len() as u32);
-        self.tables.exprs.push(HirExpr { kind, astptr });
-        id
+        self.tables.exprs.alloc(HirExpr { kind, astptr })
     }
 
     fn push_pat(&mut self, kind: HirPatKind, astptr: Option<MySyntaxNodePtr>) -> HirPatId {
-        let id = HirPatId(self.tables.pats.len() as u32);
-        self.tables.pats.push(HirPat { kind, astptr });
-        id
+        self.tables.pats.alloc(HirPat { kind, astptr })
     }
 
     fn push_type(&mut self, ty: HirType) -> HirTypeId {
-        let id = HirTypeId(self.tables.types.len() as u32);
-        self.tables.types.push(ty);
-        id
+        self.tables.types.alloc(ty)
     }
 
     fn push_item(&mut self, item: HirItem) -> HirItemId {
-        let id = HirItemId(self.tables.items.len() as u32);
-        self.tables.items.push(item);
-        id
+        self.tables.items.alloc(item)
     }
 
     fn alloc_item_id(&mut self) -> ItemId {
