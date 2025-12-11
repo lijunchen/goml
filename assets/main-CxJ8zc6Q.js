@@ -1,0 +1,54 @@
+const n = `struct Point {
+    x: int32,
+    y: int32,
+}
+
+enum Shape {
+    Unit,
+    Location(Point),
+}
+
+trait TypeName {
+    fn type_name(Self) -> string;
+}
+
+impl TypeName for Point {
+    fn type_name(self: Self) -> string {
+        let Point { x: x, y: y } = self;
+        let prefix = "Point(" + int32_to_string(x);
+        prefix + ", " + int32_to_string(y) + ")"
+    }
+}
+
+impl TypeName for Shape {
+    fn type_name(self: Self) -> string {
+        match self {
+            Unit => "Unit",
+            Location(point) => "Shape::" + TypeName::type_name(point),
+        }
+    }
+}
+
+fn show_point(point: Point) -> string {
+    TypeName::type_name(point)
+}
+
+fn show_shape(shape: Shape) -> string {
+    TypeName::type_name(shape)
+}
+
+fn main() -> unit {
+    let point = Point { x: 7, y: 9 };
+    let _ = string_println(show_point(point));
+
+    let unit_shape = Unit;
+    let _ = string_println(show_shape(unit_shape));
+
+    let location_shape = Location(Point { x: 1, y: 2 });
+    let _ = string_println(show_shape(location_shape));
+    ()
+}
+`;
+export {
+  n as default
+};
