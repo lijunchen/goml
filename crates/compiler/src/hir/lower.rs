@@ -9,10 +9,10 @@ use super::symbol_table::{GenericTable, SymbolTable};
 
 #[derive(Debug, Default, Clone)]
 pub struct HirTables {
-    pub items: Vec<HirItem>,
-    pub exprs: Vec<HirExpr>,
-    pub pats: Vec<HirPat>,
-    pub types: Vec<HirType>,
+    pub items: la_arena::Arena<HirItem>,
+    pub exprs: la_arena::Arena<HirExpr>,
+    pub pats: la_arena::Arena<HirPat>,
+    pub types: la_arena::Arena<HirType>,
 }
 
 #[derive(Debug)]
@@ -31,29 +31,31 @@ impl HirLowerResult {
 
 pub fn lower_file(file: ast::File) -> HirLowerResult {
     let mut ctx = LowerCtx::new();
-    ctx.pre_scan(&file);
-    let hir_file = ctx.lower_file(file);
+    let mut diagnostics = Diagnostics::new();
+    ctx.pre_scan(&file, &mut diagnostics);
+    let hir_file = ctx.lower_file(file, &mut diagnostics);
 
     HirLowerResult {
         file: hir_file,
         tables: ctx.tables,
         symbols: ctx.symbols,
-        diagnostics: ctx.diagnostics,
+        diagnostics,
     }
 }
 
 pub fn lower_file_with_builtins(builtins: ast::File, file: ast::File) -> HirLowerResult {
     let mut ctx = LowerCtx::new();
-    ctx.register_builtin_types();
-    ctx.pre_scan(&builtins);
-    ctx.pre_scan(&file);
-    let hir_file = ctx.lower_file(file);
+    let mut diagnostics = Diagnostics::new();
+    ctx.register_builtin_types(&mut diagnostics);
+    ctx.pre_scan(&builtins, &mut diagnostics);
+    ctx.pre_scan(&file, &mut diagnostics);
+    let hir_file = ctx.lower_file(file, &mut diagnostics);
 
     HirLowerResult {
         file: hir_file,
         tables: ctx.tables,
         symbols: ctx.symbols,
-        diagnostics: ctx.diagnostics,
+        diagnostics,
     }
 }
 
@@ -66,7 +68,6 @@ enum TypeKind {
 
 struct LowerCtx {
     stage: Stage,
-    diagnostics: Diagnostics,
     symbols: SymbolTable,
     tables: HirTables,
 
@@ -88,7 +89,6 @@ impl LowerCtx {
     fn new() -> Self {
         Self {
             stage: Stage::other("hir"),
-            diagnostics: Diagnostics::new(),
             symbols: SymbolTable::default(),
             tables: HirTables::default(),
             next_item_id: 0,
@@ -105,42 +105,42 @@ impl LowerCtx {
         }
     }
 
-    fn pre_scan(&mut self, file: &ast::File) {
+    fn pre_scan(&mut self, file: &ast::File, diagnostics: &mut Diagnostics) {
         for item in &file.toplevels {
             match item {
                 ast::Item::Fn(func) => {
                     let name = func.name.0.clone();
                     let item_id = self.alloc_item_id();
-                    self.insert_value_item(name, item_id);
+                    self.insert_value_item(name, item_id, diagnostics);
                 }
                 ast::Item::ExternGo(ext) => {
                     let name = ext.goml_name.0.clone();
                     let item_id = self.alloc_item_id();
-                    self.insert_value_item(name, item_id);
+                    self.insert_value_item(name, item_id, diagnostics);
                 }
                 ast::Item::ExternBuiltin(ext) => {
                     let name = ext.name.0.clone();
                     let item_id = self.alloc_item_id();
-                    self.insert_value_item(name, item_id);
+                    self.insert_value_item(name, item_id, diagnostics);
                 }
-                ast::Item::StructDef(def) => self.pre_scan_struct(def),
-                ast::Item::EnumDef(def) => self.pre_scan_enum(def),
-                ast::Item::TraitDef(def) => self.pre_scan_trait(def),
+                ast::Item::StructDef(def) => self.pre_scan_struct(def, diagnostics),
+                ast::Item::EnumDef(def) => self.pre_scan_enum(def, diagnostics),
+                ast::Item::TraitDef(def) => self.pre_scan_trait(def, diagnostics),
                 ast::Item::ImplBlock(block) => self.pre_scan_impl(block),
                 ast::Item::ExternType(ext) => {
                     let name = ext.goml_name.0.clone();
                     let type_id = self.alloc_type_id();
-                    self.insert_type(name, type_id);
+                    self.insert_type(name, type_id, diagnostics);
                     self.type_kinds.insert(type_id, TypeKind::ExternType);
                 }
             }
         }
     }
 
-    fn pre_scan_struct(&mut self, def: &ast::StructDef) {
+    fn pre_scan_struct(&mut self, def: &ast::StructDef, diagnostics: &mut Diagnostics) {
         let name = def.name.0.clone();
         let type_id = self.alloc_type_id();
-        self.insert_type(name.clone(), type_id);
+        self.insert_type(name.clone(), type_id, diagnostics);
         self.type_kinds.insert(type_id, TypeKind::Struct);
 
         let mut field_map = HashMap::new();
@@ -149,7 +149,10 @@ impl LowerCtx {
             let field_name = field_ident.0.clone();
             let field_id = self.alloc_field_id();
             if field_map.insert(field_name.clone(), field_id).is_some() {
-                self.push_error(format!("duplicate field `{}` in struct", field_name));
+                self.push_error(
+                    format!("duplicate field `{}` in struct", field_name),
+                    diagnostics,
+                );
             }
             order.push(field_name);
         }
@@ -170,10 +173,10 @@ impl LowerCtx {
             .push(ctor_id);
     }
 
-    fn pre_scan_enum(&mut self, def: &ast::EnumDef) {
+    fn pre_scan_enum(&mut self, def: &ast::EnumDef, diagnostics: &mut Diagnostics) {
         let name = def.name.0.clone();
         let type_id = self.alloc_type_id();
-        self.insert_type(name.clone(), type_id);
+        self.insert_type(name.clone(), type_id, diagnostics);
         self.type_kinds.insert(type_id, TypeKind::Enum);
 
         for (variant_name, _) in &def.variants {
@@ -192,10 +195,10 @@ impl LowerCtx {
         }
     }
 
-    fn pre_scan_trait(&mut self, def: &ast::TraitDef) {
+    fn pre_scan_trait(&mut self, def: &ast::TraitDef, diagnostics: &mut Diagnostics) {
         let name = def.name.0.clone();
         let trait_id = self.alloc_trait_id();
-        self.insert_trait(name, trait_id);
+        self.insert_trait(name, trait_id, diagnostics);
 
         for sig in &def.method_sigs {
             let item_id = self.alloc_item_id();
@@ -211,15 +214,15 @@ impl LowerCtx {
 
     /// Register built-in generic types (Ref, Vec) and functions that are not defined in AST
     /// These are added dynamically by the compiler in builtins.rs
-    fn register_builtin_types(&mut self) {
+    fn register_builtin_types(&mut self, diagnostics: &mut Diagnostics) {
         // Register Ref[T] as an extern type
         let ref_type_id = self.alloc_type_id();
-        self.insert_type("Ref".to_string(), ref_type_id);
+        self.insert_type("Ref".to_string(), ref_type_id, diagnostics);
         self.type_kinds.insert(ref_type_id, TypeKind::ExternType);
 
         // Register Vec[T] as an extern type
         let vec_type_id = self.alloc_type_id();
-        self.insert_type("Vec".to_string(), vec_type_id);
+        self.insert_type("Vec".to_string(), vec_type_id, diagnostics);
         self.type_kinds.insert(vec_type_id, TypeKind::ExternType);
 
         // Register dynamically-added builtin functions (from add_ref_builtins, add_vec_builtins, add_array_builtins)
@@ -236,29 +239,29 @@ impl LowerCtx {
         ];
         for name in builtin_funcs {
             let item_id = self.alloc_item_id();
-            self.insert_value_item(name.to_string(), item_id);
+            self.insert_value_item(name.to_string(), item_id, diagnostics);
         }
     }
 
-    fn lower_file(&mut self, file: ast::File) -> HirFile {
+    fn lower_file(&mut self, file: ast::File, diagnostics: &mut Diagnostics) -> HirFile {
         let mut items = Vec::new();
         for item in file.toplevels {
-            if let Some(hir_item) = self.lower_item(item) {
+            if let Some(hir_item) = self.lower_item(item, diagnostics) {
                 items.push(hir_item);
             }
         }
         HirFile { items }
     }
 
-    fn lower_item(&mut self, item: ast::Item) -> Option<HirItemId> {
+    fn lower_item(&mut self, item: ast::Item, diagnostics: &mut Diagnostics) -> Option<HirItemId> {
         match item {
-            ast::Item::Fn(func) => self.lower_fn(func, None, None),
-            ast::Item::StructDef(def) => self.lower_struct(def),
-            ast::Item::EnumDef(def) => self.lower_enum(def),
-            ast::Item::TraitDef(def) => self.lower_trait(def),
-            ast::Item::ImplBlock(block) => self.lower_impl(block),
-            ast::Item::ExternGo(ext) => self.lower_extern_go(ext),
-            ast::Item::ExternBuiltin(ext) => self.lower_extern_builtin(ext),
+            ast::Item::Fn(func) => self.lower_fn(func, None, None, diagnostics),
+            ast::Item::StructDef(def) => self.lower_struct(def, diagnostics),
+            ast::Item::EnumDef(def) => self.lower_enum(def, diagnostics),
+            ast::Item::TraitDef(def) => self.lower_trait(def, diagnostics),
+            ast::Item::ImplBlock(block) => self.lower_impl(block, diagnostics),
+            ast::Item::ExternGo(ext) => self.lower_extern_go(ext, diagnostics),
+            ast::Item::ExternBuiltin(ext) => self.lower_extern_builtin(ext, diagnostics),
             ast::Item::ExternType(ext) => self.lower_extern_type(ext),
         }
     }
@@ -268,6 +271,7 @@ impl LowerCtx {
         func: ast::Fn,
         parent_generics: Option<&GenericTable>,
         impl_item_id: Option<ItemId>,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirItemId> {
         let item_id = impl_item_id.unwrap_or_else(|| {
             match self.symbols.globals.value_items.get(&func.name.0) {
@@ -286,7 +290,7 @@ impl LowerCtx {
 
         let mut params = Vec::new();
         for (ident, ty_expr) in func.params {
-            let ty_id = match self.lower_type_expr(&ty_expr, &generics_table) {
+            let ty_id = match self.lower_type_expr(&ty_expr, &generics_table, diagnostics) {
                 Some(id) => id,
                 None => {
                     // Use unit type as placeholder if type lowering fails
@@ -300,21 +304,18 @@ impl LowerCtx {
 
         let ret_ty = match func.ret_ty {
             Some(ty) => self
-                .lower_type_expr(&ty, &generics_table)
+                .lower_type_expr(&ty, &generics_table, diagnostics)
                 .unwrap_or_else(|| self.push_type(HirType::Builtin(BuiltinType::Unit))),
             None => self.push_type(HirType::Builtin(BuiltinType::Unit)),
         };
 
-        let mut diag = std::mem::take(&mut self.diagnostics);
-        let body = match self.lower_expr(&func.body, &generics_table, &mut diag) {
+        let body = match self.lower_expr(&func.body, &generics_table, diagnostics) {
             Some(id) => id,
             None => {
-                self.diagnostics = diag;
                 self.symbols.locals.exit_scope();
                 return None;
             }
         };
-        self.diagnostics = diag;
 
         self.symbols.locals.exit_scope();
 
@@ -330,11 +331,15 @@ impl LowerCtx {
         Some(self.push_item(HirItem::Fn(hir_fn)))
     }
 
-    fn lower_struct(&mut self, def: ast::StructDef) -> Option<HirItemId> {
+    fn lower_struct(
+        &mut self,
+        def: ast::StructDef,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let type_id = match self.symbols.globals.types.get(&def.name.0) {
             Some(id) => *id,
             None => {
-                self.push_error(format!("unknown struct `{}`", def.name.0));
+                self.push_error(format!("unknown struct `{}`", def.name.0), diagnostics);
                 return None;
             }
         };
@@ -347,11 +352,14 @@ impl LowerCtx {
             let field_id = match field_map.and_then(|m| m.get(&ident.0)) {
                 Some(id) => *id,
                 None => {
-                    self.push_error(format!("unknown field `{}` on struct", ident.0));
+                    self.push_error(
+                        format!("unknown field `{}` on struct", ident.0),
+                        diagnostics,
+                    );
                     continue;
                 }
             };
-            let ty_id = match self.lower_type_expr(&ty_expr, &generic_table) {
+            let ty_id = match self.lower_type_expr(&ty_expr, &generic_table, diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -368,11 +376,15 @@ impl LowerCtx {
         Some(self.push_item(HirItem::Struct(hir_struct)))
     }
 
-    fn lower_enum(&mut self, def: ast::EnumDef) -> Option<HirItemId> {
+    fn lower_enum(
+        &mut self,
+        def: ast::EnumDef,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let type_id = match self.symbols.globals.types.get(&def.name.0) {
             Some(id) => *id,
             None => {
-                self.push_error(format!("unknown enum `{}`", def.name.0));
+                self.push_error(format!("unknown enum `{}`", def.name.0), diagnostics);
                 return None;
             }
         };
@@ -389,17 +401,17 @@ impl LowerCtx {
             {
                 Some(id) => *id,
                 None => {
-                    self.push_error(format!(
-                        "missing constructor id for variant `{}`",
-                        variant_ident.0
-                    ));
+                    self.push_error(
+                        format!("missing constructor id for variant `{}`", variant_ident.0),
+                        diagnostics,
+                    );
                     continue;
                 }
             };
 
             let mut payload_ids = Vec::new();
             for ty_expr in payload {
-                if let Some(id) = self.lower_type_expr(&ty_expr, &generic_table) {
+                if let Some(id) = self.lower_type_expr(&ty_expr, &generic_table, diagnostics) {
                     payload_ids.push(id);
                 }
             }
@@ -421,11 +433,15 @@ impl LowerCtx {
         Some(self.push_item(HirItem::Enum(hir_enum)))
     }
 
-    fn lower_trait(&mut self, def: ast::TraitDef) -> Option<HirItemId> {
+    fn lower_trait(
+        &mut self,
+        def: ast::TraitDef,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let trait_id = match self.symbols.globals.traits.get(&def.name.0) {
             Some(id) => *id,
             None => {
-                self.push_error(format!("unknown trait `{}`", def.name.0));
+                self.push_error(format!("unknown trait `{}`", def.name.0), diagnostics);
                 return None;
             }
         };
@@ -441,11 +457,11 @@ impl LowerCtx {
             let params = sig
                 .params
                 .iter()
-                .filter_map(|ty| self.lower_type_expr(ty, &GenericTable::new()))
+                .filter_map(|ty| self.lower_type_expr(ty, &GenericTable::new(), diagnostics))
                 .collect();
 
             let ret_ty = self
-                .lower_type_expr(&sig.ret_ty, &GenericTable::new())
+                .lower_type_expr(&sig.ret_ty, &GenericTable::new(), diagnostics)
                 .unwrap_or_else(|| self.push_type(HirType::Builtin(BuiltinType::Unit)));
 
             methods.push(HirTraitMethodSig {
@@ -465,7 +481,11 @@ impl LowerCtx {
         Some(self.push_item(HirItem::Trait(hir_trait)))
     }
 
-    fn lower_impl(&mut self, block: ast::ImplBlock) -> Option<HirItemId> {
+    fn lower_impl(
+        &mut self,
+        block: ast::ImplBlock,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let impl_id = if self.impl_cursor < self.symbols.globals.impls.len() {
             let id = self.symbols.globals.impls[self.impl_cursor];
             self.impl_cursor += 1;
@@ -476,7 +496,7 @@ impl LowerCtx {
 
         let (impl_generics, generics_table) = self.extend_generics(None, &block.generics);
 
-        let for_type = match self.lower_type_expr(&block.for_type, &generics_table) {
+        let for_type = match self.lower_type_expr(&block.for_type, &generics_table, diagnostics) {
             Some(id) => id,
             None => return None,
         };
@@ -484,7 +504,8 @@ impl LowerCtx {
         let mut method_ids = Vec::new();
         for method in block.methods {
             let fn_item_id = self.alloc_item_id();
-            if let Some(hir_fn_id) = self.lower_fn(method, Some(&generics_table), Some(fn_item_id))
+            if let Some(hir_fn_id) =
+                self.lower_fn(method, Some(&generics_table), Some(fn_item_id), diagnostics)
             {
                 method_ids.push(hir_fn_id);
             }
@@ -494,7 +515,10 @@ impl LowerCtx {
             let trait_id = match self.symbols.globals.traits.get(&trait_ident.0) {
                 Some(id) => *id,
                 None => {
-                    self.push_error(format!("unknown trait `{}` in impl", trait_ident.0));
+                    self.push_error(
+                        format!("unknown trait `{}` in impl", trait_ident.0),
+                        diagnostics,
+                    );
                     return None;
                 }
             };
@@ -521,7 +545,11 @@ impl LowerCtx {
         }
     }
 
-    fn lower_extern_go(&mut self, ext: ast::ExternGo) -> Option<HirItemId> {
+    fn lower_extern_go(
+        &mut self,
+        ext: ast::ExternGo,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let item_id = match self.symbols.globals.value_items.get(&ext.goml_name.0) {
             Some(id) => *id,
             None => self.alloc_item_id(),
@@ -532,7 +560,7 @@ impl LowerCtx {
 
         let mut params = Vec::new();
         for (ident, ty_expr) in ext.params {
-            let ty_id = match self.lower_type_expr(&ty_expr, &GenericTable::new()) {
+            let ty_id = match self.lower_type_expr(&ty_expr, &GenericTable::new(), diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -544,7 +572,7 @@ impl LowerCtx {
 
         let ret_ty = match ext.ret_ty {
             Some(ty) => self
-                .lower_type_expr(&ty, &GenericTable::new())
+                .lower_type_expr(&ty, &GenericTable::new(), diagnostics)
                 .unwrap_or_else(|| self.push_type(HirType::Builtin(BuiltinType::Unit))),
             None => self.push_type(HirType::Builtin(BuiltinType::Unit)),
         };
@@ -562,7 +590,11 @@ impl LowerCtx {
         Some(self.push_item(HirItem::ExternGo(extern_go)))
     }
 
-    fn lower_extern_builtin(&mut self, ext: ast::ExternBuiltin) -> Option<HirItemId> {
+    fn lower_extern_builtin(
+        &mut self,
+        ext: ast::ExternBuiltin,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirItemId> {
         let item_id = match self.symbols.globals.value_items.get(&ext.name.0) {
             Some(id) => *id,
             None => self.alloc_item_id(),
@@ -573,7 +605,7 @@ impl LowerCtx {
 
         let mut params = Vec::new();
         for (ident, ty_expr) in ext.params {
-            let ty_id = match self.lower_type_expr(&ty_expr, &GenericTable::new()) {
+            let ty_id = match self.lower_type_expr(&ty_expr, &GenericTable::new(), diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -585,7 +617,7 @@ impl LowerCtx {
 
         let ret_ty = match ext.ret_ty {
             Some(ty) => self
-                .lower_type_expr(&ty, &GenericTable::new())
+                .lower_type_expr(&ty, &GenericTable::new(), diagnostics)
                 .unwrap_or_else(|| self.push_type(HirType::Builtin(BuiltinType::Unit))),
             None => self.push_type(HirType::Builtin(BuiltinType::Unit)),
         };
@@ -618,11 +650,11 @@ impl LowerCtx {
         &mut self,
         expr: &ast::Expr,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         match expr {
             ast::Expr::EPath { path, astptr } => {
-                self.lower_path_expr(path, Some(*astptr), generics, diag)
+                self.lower_path_expr(path, Some(*astptr), generics, diagnostics)
             }
             ast::Expr::EUnit => Some(self.push_expr(HirExprKind::Unit, None)),
             ast::Expr::EBool { value } => Some(self.push_expr(HirExprKind::Bool(*value), None)),
@@ -634,22 +666,22 @@ impl LowerCtx {
                 Some(self.push_expr(HirExprKind::String(value.clone()), None))
             }
             ast::Expr::EConstr { constructor, args } => {
-                self.lower_constructor_expr(constructor, args, None, generics, diag)
+                self.lower_constructor_expr(constructor, args, None, generics, diagnostics)
             }
             ast::Expr::EStructLiteral { name, fields } => {
-                self.lower_struct_literal(name, fields, None, generics, diag)
+                self.lower_struct_literal(name, fields, None, generics, diagnostics)
             }
             ast::Expr::ETuple { items } => {
                 let elems = items
                     .iter()
-                    .filter_map(|e| self.lower_expr(e, generics, diag))
+                    .filter_map(|e| self.lower_expr(e, generics, diagnostics))
                     .collect();
                 Some(self.push_expr(HirExprKind::Tuple(elems), None))
             }
             ast::Expr::EArray { items } => {
                 let elems = items
                     .iter()
-                    .filter_map(|e| self.lower_expr(e, generics, diag))
+                    .filter_map(|e| self.lower_expr(e, generics, diagnostics))
                     .collect();
                 Some(self.push_expr(HirExprKind::Array(elems), None))
             }
@@ -659,15 +691,15 @@ impl LowerCtx {
                 value,
                 body,
             } => {
-                let value_id = self.lower_expr(value, generics, diag)?;
+                let value_id = self.lower_expr(value, generics, diagnostics)?;
                 let annotation_id = match annotation {
-                    Some(ty) => self.lower_type_expr(ty, generics),
+                    Some(ty) => self.lower_type_expr(ty, generics, diagnostics),
                     None => None,
                 };
 
                 self.symbols.locals.enter_scope();
-                let pat_id = self.lower_pat(pat, generics, diag)?;
-                let body_id = self.lower_expr(body, generics, diag)?;
+                let pat_id = self.lower_pat(pat, generics, diagnostics)?;
+                let body_id = self.lower_expr(body, generics, diagnostics)?;
                 self.symbols.locals.exit_scope();
 
                 Some(self.push_expr(
@@ -688,10 +720,10 @@ impl LowerCtx {
                     locals.push(local_id);
                     if let Some(ty) = &param.ty {
                         // resolve the type to surface errors early; result unused in HIR
-                        let _ = self.lower_type_expr(ty, generics);
+                        let _ = self.lower_type_expr(ty, generics, diagnostics);
                     }
                 }
-                let body_id = self.lower_expr(body, generics, diag)?;
+                let body_id = self.lower_expr(body, generics, diagnostics)?;
                 self.symbols.locals.exit_scope();
                 Some(self.push_expr(
                     HirExprKind::Closure {
@@ -702,12 +734,12 @@ impl LowerCtx {
                 ))
             }
             ast::Expr::EMatch { expr, arms, astptr } => {
-                let scrutinee = self.lower_expr(expr, generics, diag)?;
+                let scrutinee = self.lower_expr(expr, generics, diagnostics)?;
                 let mut hir_arms = Vec::new();
                 for arm in arms {
                     self.symbols.locals.enter_scope();
-                    let pat_id = self.lower_pat(&arm.pat, generics, diag)?;
-                    let body_id = self.lower_expr(&arm.body, generics, diag)?;
+                    let pat_id = self.lower_pat(&arm.pat, generics, diagnostics)?;
+                    let body_id = self.lower_expr(&arm.body, generics, diagnostics)?;
                     self.symbols.locals.exit_scope();
                     hir_arms.push(HirArm {
                         pat: pat_id,
@@ -728,9 +760,9 @@ impl LowerCtx {
                 then_branch,
                 else_branch,
             } => {
-                let cond_id = self.lower_expr(cond, generics, diag)?;
-                let then_id = self.lower_expr(then_branch, generics, diag)?;
-                let else_id = self.lower_expr(else_branch, generics, diag)?;
+                let cond_id = self.lower_expr(cond, generics, diagnostics)?;
+                let then_id = self.lower_expr(then_branch, generics, diagnostics)?;
+                let else_id = self.lower_expr(else_branch, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::If {
                         cond: cond_id,
@@ -741,8 +773,8 @@ impl LowerCtx {
                 ))
             }
             ast::Expr::EWhile { cond, body } => {
-                let cond_id = self.lower_expr(cond, generics, diag)?;
-                let body_id = self.lower_expr(body, generics, diag)?;
+                let cond_id = self.lower_expr(cond, generics, diagnostics)?;
+                let body_id = self.lower_expr(body, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::While {
                         cond: cond_id,
@@ -752,19 +784,19 @@ impl LowerCtx {
                 ))
             }
             ast::Expr::EGo { expr } => {
-                let expr_id = self.lower_expr(expr, generics, diag)?;
+                let expr_id = self.lower_expr(expr, generics, diagnostics)?;
                 Some(self.push_expr(HirExprKind::Go { expr: expr_id }, None))
             }
             ast::Expr::ECall { func, args } => {
-                let callee = self.lower_expr(func, generics, diag)?;
+                let callee = self.lower_expr(func, generics, diagnostics)?;
                 let args = args
                     .iter()
-                    .filter_map(|arg| self.lower_expr(arg, generics, diag))
+                    .filter_map(|arg| self.lower_expr(arg, generics, diagnostics))
                     .collect();
                 Some(self.push_expr(HirExprKind::Call { callee, args }, None))
             }
             ast::Expr::EUnary { op, expr } => {
-                let expr_id = self.lower_expr(expr, generics, diag)?;
+                let expr_id = self.lower_expr(expr, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::Unary {
                         op: *op,
@@ -774,8 +806,8 @@ impl LowerCtx {
                 ))
             }
             ast::Expr::EBinary { op, lhs, rhs } => {
-                let lhs_id = self.lower_expr(lhs, generics, diag)?;
-                let rhs_id = self.lower_expr(rhs, generics, diag)?;
+                let lhs_id = self.lower_expr(lhs, generics, diagnostics)?;
+                let rhs_id = self.lower_expr(rhs, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::Binary {
                         op: *op,
@@ -786,7 +818,7 @@ impl LowerCtx {
                 ))
             }
             ast::Expr::EProj { tuple, index } => {
-                let expr_id = self.lower_expr(tuple, generics, diag)?;
+                let expr_id = self.lower_expr(tuple, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::Projection {
                         expr: expr_id,
@@ -800,7 +832,7 @@ impl LowerCtx {
                 field,
                 astptr,
             } => {
-                let expr_id = self.lower_expr(expr, generics, diag)?;
+                let expr_id = self.lower_expr(expr, generics, diagnostics)?;
                 Some(self.push_expr(
                     HirExprKind::Field {
                         expr: expr_id,
@@ -818,12 +850,12 @@ impl LowerCtx {
         fields: &Vec<(ast::Ident, ast::Expr)>,
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         let type_id = match self.symbols.globals.types.get(&name.0) {
             Some(id) => *id,
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("unknown struct `{}`", name.0),
@@ -835,7 +867,7 @@ impl LowerCtx {
         let field_map = match self.symbols.fields.map.get(&type_id).cloned() {
             Some(map) => map,
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("struct `{}` has no recorded fields", name.0),
@@ -849,7 +881,7 @@ impl LowerCtx {
             let field_id = match field_map.get(&ident.0) {
                 Some(id) => *id,
                 None => {
-                    diag.push(Diagnostic::new(
+                    diagnostics.push(Diagnostic::new(
                         self.stage.clone(),
                         Severity::Error,
                         format!("unknown field `{}` on struct `{}`", ident.0, name.0),
@@ -857,7 +889,7 @@ impl LowerCtx {
                     continue;
                 }
             };
-            let expr_id = match self.lower_expr(expr, generics, diag) {
+            let expr_id = match self.lower_expr(expr, generics, diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -879,29 +911,29 @@ impl LowerCtx {
         args: &[ast::Expr],
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         let segments: Vec<&ast::Ident> = constructor.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "empty constructor path",
                 ));
                 None
             }
-            1 => self.lower_bare_constructor(&segments[0].0, args, astptr, generics, diag),
+            1 => self.lower_bare_constructor(&segments[0].0, args, astptr, generics, diagnostics),
             2 => self.lower_qualified_constructor(
                 &segments[0].0,
                 &segments[1].0,
                 args,
                 astptr,
                 generics,
-                diag,
+                diagnostics,
             ),
             _ => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "unsupported nested constructor path",
@@ -917,21 +949,21 @@ impl LowerCtx {
         args: &[ast::Expr],
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         if let Some(ctors) = self.symbols.globals.ctor_by_name.get(name) {
             if ctors.len() == 1 {
                 let ctor_id = ctors[0];
                 let args = args
                     .iter()
-                    .filter_map(|e| self.lower_expr(e, generics, diag))
+                    .filter_map(|e| self.lower_expr(e, generics, diagnostics))
                     .collect();
                 return Some(self.push_expr(HirExprKind::EnumCtor { ctor_id, args }, astptr));
             }
 
             let args = args
                 .iter()
-                .filter_map(|e| self.lower_expr(e, generics, diag))
+                .filter_map(|e| self.lower_expr(e, generics, diagnostics))
                 .collect();
             return Some(self.push_expr(
                 HirExprKind::UnresolvedEnumCtor {
@@ -945,11 +977,11 @@ impl LowerCtx {
         // Struct constructor fallback using positional fields.
         if let Some(type_id) = self.symbols.globals.types.get(name) {
             if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                return self.lower_struct_ctor(*type_id, args, astptr, generics, diag);
+                return self.lower_struct_ctor(*type_id, args, astptr, generics, diagnostics);
             }
         }
 
-        diag.push(Diagnostic::new(
+        diagnostics.push(Diagnostic::new(
             self.stage.clone(),
             Severity::Error,
             format!("unresolved constructor `{}`", name),
@@ -964,12 +996,12 @@ impl LowerCtx {
         args: &[ast::Expr],
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         let type_id = match self.symbols.globals.types.get(type_name) {
             Some(id) => *id,
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("unknown type `{}` in constructor path", type_name),
@@ -988,7 +1020,7 @@ impl LowerCtx {
                 {
                     Some(id) => *id,
                     None => {
-                        diag.push(Diagnostic::new(
+                        diagnostics.push(Diagnostic::new(
                             self.stage.clone(),
                             Severity::Error,
                             format!("unknown variant `{}` on enum", variant_name),
@@ -998,13 +1030,15 @@ impl LowerCtx {
                 };
                 let args = args
                     .iter()
-                    .filter_map(|e| self.lower_expr(e, generics, diag))
+                    .filter_map(|e| self.lower_expr(e, generics, diagnostics))
                     .collect();
                 Some(self.push_expr(HirExprKind::EnumCtor { ctor_id, args }, astptr))
             }
-            Some(TypeKind::Struct) => self.lower_struct_ctor(type_id, args, astptr, generics, diag),
+            Some(TypeKind::Struct) => {
+                self.lower_struct_ctor(type_id, args, astptr, generics, diagnostics)
+            }
             Some(TypeKind::ExternType) | None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "constructors not supported for this type",
@@ -1020,12 +1054,12 @@ impl LowerCtx {
         args: &[ast::Expr],
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         let order = match self.struct_field_order.get(&type_id) {
             Some(order) => order.clone(),
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "missing field order for struct constructor",
@@ -1035,7 +1069,7 @@ impl LowerCtx {
         };
 
         if order.len() != args.len() {
-            diag.push(Diagnostic::new(
+            diagnostics.push(Diagnostic::new(
                 self.stage.clone(),
                 Severity::Error,
                 format!(
@@ -1050,7 +1084,7 @@ impl LowerCtx {
         let field_map = match self.symbols.fields.map.get(&type_id).cloned() {
             Some(map) => map,
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "struct has no recorded fields",
@@ -1064,7 +1098,7 @@ impl LowerCtx {
             let field_id = match field_map.get(field_name) {
                 Some(id) => *id,
                 None => {
-                    diag.push(Diagnostic::new(
+                    diagnostics.push(Diagnostic::new(
                         self.stage.clone(),
                         Severity::Error,
                         format!(
@@ -1075,7 +1109,7 @@ impl LowerCtx {
                     continue;
                 }
             };
-            let expr_id = match self.lower_expr(arg_expr, generics, diag) {
+            let expr_id = match self.lower_expr(arg_expr, generics, diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -1090,12 +1124,12 @@ impl LowerCtx {
         path: &ast::Path,
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
         let segments: Vec<&ast::Ident> = path.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "empty path expression",
@@ -1130,7 +1164,7 @@ impl LowerCtx {
                     ));
                 }
 
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("unresolved identifier `{}`", name),
@@ -1154,7 +1188,7 @@ impl LowerCtx {
                             &[],
                             astptr,
                             generics,
-                            diag,
+                            diagnostics,
                         );
                     }
                 }
@@ -1171,7 +1205,7 @@ impl LowerCtx {
                 Some(self.push_expr(HirExprKind::GlobalItem(item_id), astptr))
             }
             _ => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "unsupported nested path expression",
@@ -1185,7 +1219,7 @@ impl LowerCtx {
         &mut self,
         pat: &ast::Pat,
         generics: &GenericTable,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         match pat {
             ast::Pat::PVar { name, .. } => {
@@ -1199,13 +1233,13 @@ impl LowerCtx {
                 Some(self.push_pat(HirPatKind::String(value.clone()), None))
             }
             ast::Pat::PConstr { constructor, args } => {
-                self.lower_pat_constructor(constructor, args, None, diag)
+                self.lower_pat_constructor(constructor, args, None, diagnostics)
             }
             ast::Pat::PStruct { name, fields } => {
                 let type_id = match self.symbols.globals.types.get(&name.0) {
                     Some(id) => *id,
                     None => {
-                        diag.push(Diagnostic::new(
+                        diagnostics.push(Diagnostic::new(
                             self.stage.clone(),
                             Severity::Error,
                             format!("unknown struct `{}` in pattern", name.0),
@@ -1216,7 +1250,7 @@ impl LowerCtx {
                 let field_map = match self.symbols.fields.map.get(&type_id).cloned() {
                     Some(map) => map,
                     None => {
-                        diag.push(Diagnostic::new(
+                        diagnostics.push(Diagnostic::new(
                             self.stage.clone(),
                             Severity::Error,
                             "struct pattern has no recorded fields",
@@ -1230,7 +1264,7 @@ impl LowerCtx {
                     let field_id = match field_map.get(&ident.0) {
                         Some(id) => *id,
                         None => {
-                            diag.push(Diagnostic::new(
+                            diagnostics.push(Diagnostic::new(
                                 self.stage.clone(),
                                 Severity::Error,
                                 format!("unknown field `{}` in struct pattern", ident.0),
@@ -1238,7 +1272,7 @@ impl LowerCtx {
                             continue;
                         }
                     };
-                    let pat_id = match self.lower_pat(pat, generics, diag) {
+                    let pat_id = match self.lower_pat(pat, generics, diagnostics) {
                         Some(id) => id,
                         None => continue,
                     };
@@ -1256,7 +1290,7 @@ impl LowerCtx {
             ast::Pat::PTuple { pats } => {
                 let items = pats
                     .iter()
-                    .filter_map(|p| self.lower_pat(p, generics, diag))
+                    .filter_map(|p| self.lower_pat(p, generics, diagnostics))
                     .collect();
                 Some(self.push_pat(HirPatKind::Tuple(items), None))
             }
@@ -1269,12 +1303,12 @@ impl LowerCtx {
         constructor: &ast::Path,
         args: &[ast::Pat],
         astptr: Option<MySyntaxNodePtr>,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         let segments: Vec<&ast::Ident> = constructor.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "empty constructor pattern",
@@ -1288,7 +1322,7 @@ impl LowerCtx {
                         let ctor_id = ctors[0];
                         let args = args
                             .iter()
-                            .filter_map(|p| self.lower_pat(p, &GenericTable::new(), diag))
+                            .filter_map(|p| self.lower_pat(p, &GenericTable::new(), diagnostics))
                             .collect();
                         return Some(self.push_pat(HirPatKind::Enum { ctor_id, args }, astptr));
                     }
@@ -1300,11 +1334,11 @@ impl LowerCtx {
                 // Struct positional pattern
                 if let Some(type_id) = self.symbols.globals.types.get(name) {
                     if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                        return self.lower_struct_pat(*type_id, args, astptr, diag);
+                        return self.lower_struct_pat(*type_id, args, astptr, diagnostics);
                     }
                 }
 
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("unknown constructor `{}` in pattern", name),
@@ -1314,10 +1348,10 @@ impl LowerCtx {
             2 => {
                 let ty = &segments[0].0;
                 let variant = &segments[1].0;
-                self.lower_qualified_pat_constructor(ty, variant, args, astptr, diag)
+                self.lower_qualified_pat_constructor(ty, variant, args, astptr, diagnostics)
             }
             _ => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "unsupported nested constructor pattern",
@@ -1333,12 +1367,12 @@ impl LowerCtx {
         variant_name: &str,
         args: &[ast::Pat],
         astptr: Option<MySyntaxNodePtr>,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         let type_id = match self.symbols.globals.types.get(type_name) {
             Some(id) => *id,
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     format!("unknown type `{}` in pattern", type_name),
@@ -1357,7 +1391,7 @@ impl LowerCtx {
                 {
                     Some(id) => *id,
                     None => {
-                        diag.push(Diagnostic::new(
+                        diagnostics.push(Diagnostic::new(
                             self.stage.clone(),
                             Severity::Error,
                             format!("unknown variant `{}` on enum `{}`", variant_name, type_name),
@@ -1367,13 +1401,13 @@ impl LowerCtx {
                 };
                 let args = args
                     .iter()
-                    .filter_map(|p| self.lower_pat(p, &GenericTable::new(), diag))
+                    .filter_map(|p| self.lower_pat(p, &GenericTable::new(), diagnostics))
                     .collect();
                 Some(self.push_pat(HirPatKind::Enum { ctor_id, args }, astptr))
             }
-            Some(TypeKind::Struct) => self.lower_struct_pat(type_id, args, astptr, diag),
+            Some(TypeKind::Struct) => self.lower_struct_pat(type_id, args, astptr, diagnostics),
             Some(TypeKind::ExternType) | None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "constructors not supported for this type in pattern",
@@ -1388,12 +1422,12 @@ impl LowerCtx {
         type_id: TypeId,
         args: &[ast::Pat],
         astptr: Option<MySyntaxNodePtr>,
-        diag: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         let order = match self.struct_field_order.get(&type_id) {
             Some(order) => order.clone(),
             None => {
-                diag.push(Diagnostic::new(
+                diagnostics.push(Diagnostic::new(
                     self.stage.clone(),
                     Severity::Error,
                     "missing field order for struct pattern",
@@ -1403,7 +1437,7 @@ impl LowerCtx {
         };
 
         if order.len() != args.len() {
-            diag.push(Diagnostic::new(
+            diagnostics.push(Diagnostic::new(
                 self.stage.clone(),
                 Severity::Error,
                 format!(
@@ -1427,7 +1461,7 @@ impl LowerCtx {
             {
                 Some(id) => id,
                 None => {
-                    diag.push(Diagnostic::new(
+                    diagnostics.push(Diagnostic::new(
                         self.stage.clone(),
                         Severity::Error,
                         format!("unknown field `{}` in struct pattern", field_name),
@@ -1435,7 +1469,7 @@ impl LowerCtx {
                     continue;
                 }
             };
-            let pat_id = match self.lower_pat(pat_expr, &GenericTable::new(), diag) {
+            let pat_id = match self.lower_pat(pat_expr, &GenericTable::new(), diagnostics) {
                 Some(id) => id,
                 None => continue,
             };
@@ -1449,6 +1483,7 @@ impl LowerCtx {
         &mut self,
         ty: &ast::TypeExpr,
         generics: &GenericTable,
+        diagnostics: &mut Diagnostics,
     ) -> Option<HirTypeId> {
         match ty {
             ast::TypeExpr::TUnit => Some(self.push_type(HirType::Builtin(BuiltinType::Unit))),
@@ -1467,7 +1502,7 @@ impl LowerCtx {
             ast::TypeExpr::TTuple { typs } => {
                 let mut elems = Vec::new();
                 for t in typs {
-                    if let Some(id) = self.lower_type_expr(t, generics) {
+                    if let Some(id) = self.lower_type_expr(t, generics, diagnostics) {
                         elems.push(id);
                     }
                 }
@@ -1480,7 +1515,7 @@ impl LowerCtx {
                 if let Some(type_id) = self.symbols.globals.types.get(name) {
                     return Some(self.push_type(HirType::Named(*type_id, Vec::new())));
                 }
-                self.push_error(format!("unknown type `{}`", name));
+                self.push_error(format!("unknown type `{}`", name), diagnostics);
                 None
             }
             ast::TypeExpr::TApp { ty, args } => {
@@ -1488,7 +1523,7 @@ impl LowerCtx {
                     if let Some(type_id) = self.symbols.globals.types.get(name).copied() {
                         let mut args_ids = Vec::new();
                         for a in args {
-                            if let Some(id) = self.lower_type_expr(a, generics) {
+                            if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
                                 args_ids.push(id);
                             }
                         }
@@ -1496,10 +1531,10 @@ impl LowerCtx {
                     }
                 }
 
-                let base = self.lower_type_expr(ty, generics)?;
+                let base = self.lower_type_expr(ty, generics, diagnostics)?;
                 let mut args_lowered = Vec::new();
                 for a in args {
-                    if let Some(id) = self.lower_type_expr(a, generics) {
+                    if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
                         args_lowered.push(id);
                     }
                 }
@@ -1509,7 +1544,7 @@ impl LowerCtx {
                 }))
             }
             ast::TypeExpr::TArray { len, elem } => {
-                let elem_id = self.lower_type_expr(elem, generics)?;
+                let elem_id = self.lower_type_expr(elem, generics, diagnostics)?;
                 Some(self.push_type(HirType::Array {
                     elem: elem_id,
                     len: *len,
@@ -1518,11 +1553,11 @@ impl LowerCtx {
             ast::TypeExpr::TFunc { params, ret_ty } => {
                 let mut param_ids = Vec::new();
                 for p in params {
-                    if let Some(id) = self.lower_type_expr(p, generics) {
+                    if let Some(id) = self.lower_type_expr(p, generics, diagnostics) {
                         param_ids.push(id);
                     }
                 }
-                let ret = self.lower_type_expr(ret_ty, generics)?;
+                let ret = self.lower_type_expr(ret_ty, generics, diagnostics)?;
                 Some(self.push_type(HirType::Func {
                     params: param_ids,
                     ret,
@@ -1551,27 +1586,19 @@ impl LowerCtx {
     }
 
     fn push_expr(&mut self, kind: HirExprKind, astptr: Option<MySyntaxNodePtr>) -> HirExprId {
-        let id = HirExprId(self.tables.exprs.len() as u32);
-        self.tables.exprs.push(HirExpr { kind, astptr });
-        id
+        self.tables.exprs.alloc(HirExpr { kind, astptr })
     }
 
     fn push_pat(&mut self, kind: HirPatKind, astptr: Option<MySyntaxNodePtr>) -> HirPatId {
-        let id = HirPatId(self.tables.pats.len() as u32);
-        self.tables.pats.push(HirPat { kind, astptr });
-        id
+        self.tables.pats.alloc(HirPat { kind, astptr })
     }
 
     fn push_type(&mut self, ty: HirType) -> HirTypeId {
-        let id = HirTypeId(self.tables.types.len() as u32);
-        self.tables.types.push(ty);
-        id
+        self.tables.types.alloc(ty)
     }
 
     fn push_item(&mut self, item: HirItem) -> HirItemId {
-        let id = HirItemId(self.tables.items.len() as u32);
-        self.tables.items.push(item);
-        id
+        self.tables.items.alloc(item)
     }
 
     fn alloc_item_id(&mut self) -> ItemId {
@@ -1616,41 +1643,50 @@ impl LowerCtx {
         id
     }
 
-    fn insert_value_item(&mut self, name: String, id: ItemId) {
+    fn insert_value_item(&mut self, name: String, id: ItemId, diagnostics: &mut Diagnostics) {
         if let Some(existing) = self.symbols.globals.value_items.get(&name) {
-            self.push_error(format!(
-                "duplicate value item `{}` (existing id {:?}, new id {:?})",
-                name, existing, id
-            ));
+            self.push_error(
+                format!(
+                    "duplicate value item `{}` (existing id {:?}, new id {:?})",
+                    name, existing, id
+                ),
+                diagnostics,
+            );
             return;
         }
         self.symbols.globals.value_items.insert(name, id);
     }
 
-    fn insert_type(&mut self, name: String, id: TypeId) {
+    fn insert_type(&mut self, name: String, id: TypeId, diagnostics: &mut Diagnostics) {
         if let Some(existing) = self.symbols.globals.types.get(&name) {
-            self.push_error(format!(
-                "duplicate type `{}` (existing id {:?}, new id {:?})",
-                name, existing, id
-            ));
+            self.push_error(
+                format!(
+                    "duplicate type `{}` (existing id {:?}, new id {:?})",
+                    name, existing, id
+                ),
+                diagnostics,
+            );
             return;
         }
         self.symbols.globals.types.insert(name, id);
     }
 
-    fn insert_trait(&mut self, name: String, id: TraitId) {
+    fn insert_trait(&mut self, name: String, id: TraitId, diagnostics: &mut Diagnostics) {
         if let Some(existing) = self.symbols.globals.traits.get(&name) {
-            self.push_error(format!(
-                "duplicate trait `{}` (existing id {:?}, new id {:?})",
-                name, existing, id
-            ));
+            self.push_error(
+                format!(
+                    "duplicate trait `{}` (existing id {:?}, new id {:?})",
+                    name, existing, id
+                ),
+                diagnostics,
+            );
             return;
         }
         self.symbols.globals.traits.insert(name, id);
     }
 
-    fn push_error(&mut self, message: impl Into<String>) {
+    fn push_error(&mut self, message: impl Into<String>, diagnostics: &mut Diagnostics) {
         let diagnostic = Diagnostic::new(self.stage.clone(), Severity::Error, message);
-        self.diagnostics.push(diagnostic);
+        diagnostics.push(diagnostic);
     }
 }
