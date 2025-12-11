@@ -1,141 +1,141 @@
-struct Tracker { label: string, count: Ref[int32], toggled: Ref[bool] }
+struct Tracker { label: string, count: Ref[int32], toggled: Ref[bool] } /*item#0*/
 
-enum Record[T0] { Value(T0), Pair(T0, T0), Empty }
+enum Record[T0] { Value(T0), Pair(T0, T0), Empty } /*item#1*/
 
-enum Maybe[T1] { Some(T1), None }
+enum Maybe[T1] { Some(T1), None } /*item#2*/
 
 trait Describe {
   fn item_25() -> string
-}
+} /*item#3*/
 
 impl Describe for Tracker {
   fn item_36(local_0: Tracker) -> string {
-    let Tracker { label: local_1, count: local_2, toggled: local_3 } = local_0 in
-    let local_4 = ref_get(local_2) in
-    let local_5 = ref_get(local_3) in
-    let local_6 = "Tracker(" + local_1 in
-    let local_7 = local_6 + ", count: " in
-    let local_8 = local_7 + int32_to_string(local_4) in
-    let local_9 = local_8 + ", toggled: " in
-    local_9 + bool_to_string(local_5) + ")"
-  }
-}
+    let Tracker { label: local_1 /*#0*/, count: local_2 /*#1*/, toggled: local_3 /*#2*/ } /*#3*/ = local_0 /*#0*/ in
+    let local_4 /*#4*/ = ref_get /*#1*/(local_2 /*#2*/) /*#3*/ in
+    let local_5 /*#5*/ = ref_get /*#4*/(local_3 /*#5*/) /*#6*/ in
+    let local_6 /*#6*/ = "Tracker(" /*#7*/ + local_1 /*#8*/ /*#9*/ in
+    let local_7 /*#7*/ = local_6 /*#10*/ + ", count: " /*#11*/ /*#12*/ in
+    let local_8 /*#8*/ = local_7 /*#13*/ + int32_to_string /*#14*/(local_4 /*#15*/) /*#16*/ /*#17*/ in
+    let local_9 /*#9*/ = local_8 /*#18*/ + ", toggled: " /*#19*/ /*#20*/ in
+    local_9 /*#21*/ + bool_to_string /*#22*/(local_5 /*#23*/) /*#24*/ /*#25*/ + ")" /*#26*/ /*#27*/ /*#28*/ /*#29*/ /*#30*/ /*#31*/ /*#32*/ /*#33*/ /*#34*/
+  } /*item#4*/
+} /*item#5*/
 
 impl Describe for Record[int32] {
   fn item_37(local_0: Record[int32]) -> string {
-    match local_0 {
-      Record::Value(local_1) => "Value(" + int32_to_string(local_1) + ")",
-      Record::Pair(local_2, local_3) => let local_4 = "Pair(" + int32_to_string(local_2) in
-      local_4 + ", " + int32_to_string(local_3) + ")",
-      Record::Empty => "Empty",
-    }
-  }
-}
+    match local_0 /*#35*/ {
+      Record::Value(local_1 /*#10*/) /*#11*/ => "Value(" /*#36*/ + int32_to_string /*#37*/(local_1 /*#38*/) /*#39*/ /*#40*/ + ")" /*#41*/ /*#42*/,
+      Record::Pair(local_2 /*#12*/, local_3 /*#13*/) /*#14*/ => let local_4 /*#15*/ = "Pair(" /*#43*/ + int32_to_string /*#44*/(local_2 /*#45*/) /*#46*/ /*#47*/ in
+      local_4 /*#48*/ + ", " /*#49*/ /*#50*/ + int32_to_string /*#51*/(local_3 /*#52*/) /*#53*/ /*#54*/ + ")" /*#55*/ /*#56*/ /*#57*/,
+      Record::Empty /*#16*/ => "Empty" /*#58*/,
+    } /*#59*/
+  } /*item#6*/
+} /*item#7*/
 
 impl Describe for Record[string] {
   fn item_38(local_0: Record[string]) -> string {
-    match local_0 {
-      Record::Value(local_1) => "Value(" + local_1 + ")",
-      Record::Pair(local_2, local_3) => let local_4 = "Pair(" + local_2 in
-      local_4 + ", " + local_3 + ")",
-      Record::Empty => "Empty",
-    }
-  }
-}
+    match local_0 /*#60*/ {
+      Record::Value(local_1 /*#17*/) /*#18*/ => "Value(" /*#61*/ + local_1 /*#62*/ /*#63*/ + ")" /*#64*/ /*#65*/,
+      Record::Pair(local_2 /*#19*/, local_3 /*#20*/) /*#21*/ => let local_4 /*#22*/ = "Pair(" /*#66*/ + local_2 /*#67*/ /*#68*/ in
+      local_4 /*#69*/ + ", " /*#70*/ /*#71*/ + local_3 /*#72*/ /*#73*/ + ")" /*#74*/ /*#75*/ /*#76*/,
+      Record::Empty /*#23*/ => "Empty" /*#77*/,
+    } /*#78*/
+  } /*item#8*/
+} /*item#9*/
 
 fn choose[T2](local_0: bool, local_1: T2, local_2: T2) -> T2 {
-  if local_0 {
-    local_1
+  if local_0 /*#79*/ {
+    local_1 /*#80*/
   } else {
-    local_2
-  }
-}
+    local_2 /*#81*/
+  } /*#82*/
+} /*item#10*/
 
 fn map_maybe[T3, T4](local_0: Maybe[T3], local_1: fn(T3) -> T4) -> Maybe[T4] {
-  match local_0 {
-    Maybe::Some(local_2) => Maybe::Some(local_1(local_2)),
-    Maybe::None => Maybe::None,
-  }
-}
+  match local_0 /*#83*/ {
+    Maybe::Some(local_2 /*#24*/) /*#25*/ => Maybe::Some(local_1 /*#84*/(local_2 /*#85*/) /*#86*/) /*#87*/,
+    Maybe::None /*#26*/ => Maybe::None /*#88*/,
+  } /*#89*/
+} /*item#11*/
 
 fn format_total(local_0: int32) -> string {
-  "total: " + int32_to_string(local_0)
-}
+  "total: " /*#90*/ + int32_to_string /*#91*/(local_0 /*#92*/) /*#93*/ /*#94*/
+} /*item#12*/
 
 fn increment(local_0: int32) -> int32 {
-  local_0 + 1
-}
+  local_0 /*#95*/ + 1 /*#96*/ /*#97*/
+} /*item#13*/
 
 fn triple(local_0: int32) -> int32 {
-  local_0 * 3
-}
+  local_0 /*#98*/ * 3 /*#99*/ /*#100*/
+} /*item#14*/
 
 fn pair_join(local_0: (string, string)) -> string {
-  let (local_1, local_2) = local_0 in
-  local_1 + " -> " + local_2
-}
+  let (local_1 /*#27*/, local_2 /*#28*/) /*#29*/ = local_0 /*#101*/ in
+  local_1 /*#102*/ + " -> " /*#103*/ /*#104*/ + local_2 /*#105*/ /*#106*/ /*#107*/
+} /*item#15*/
 
 fn run_transforms(local_0: int32, local_1: [fn(int32) -> int32; 2]) -> [int32; 2] {
-  let local_2 = array_get(local_1, 0) in
-  let local_3 = array_get(local_1, 1) in
-  let local_4 = local_2(local_0) in
-  let local_5 = local_3(local_4) in
-  array_set([local_4, local_0], 1, local_5)
-}
+  let local_2 /*#30*/ = array_get /*#108*/(local_1 /*#109*/, 0 /*#110*/) /*#111*/ in
+  let local_3 /*#31*/ = array_get /*#112*/(local_1 /*#113*/, 1 /*#114*/) /*#115*/ in
+  let local_4 /*#32*/ = local_2 /*#116*/(local_0 /*#117*/) /*#118*/ in
+  let local_5 /*#33*/ = local_3 /*#119*/(local_4 /*#120*/) /*#121*/ in
+  array_set /*#122*/([local_4 /*#123*/, local_0 /*#124*/] /*#125*/, 1 /*#126*/, local_5 /*#127*/) /*#128*/ /*#129*/ /*#130*/ /*#131*/ /*#132*/
+} /*item#16*/
 
 fn gather(local_0: Record[int32]) -> Maybe[int32] {
-  match local_0 {
-    Record::Value(local_1) => Maybe::Some(local_1),
-    Record::Pair(_, local_2) => Maybe::Some(local_2),
-    Record::Empty => Maybe::None,
-  }
-}
+  match local_0 /*#133*/ {
+    Record::Value(local_1 /*#34*/) /*#35*/ => Maybe::Some(local_1 /*#134*/) /*#135*/,
+    Record::Pair(_ /*#36*/, local_2 /*#37*/) /*#38*/ => Maybe::Some(local_2 /*#136*/) /*#137*/,
+    Record::Empty /*#39*/ => Maybe::None /*#138*/,
+  } /*#139*/
+} /*item#17*/
 
 fn build_counter(local_0: string, local_1: int32) -> (Tracker, fn() -> Record[int32], fn(int32) -> Record[int32], fn() -> Record[string]) {
-  let local_2 = ref(local_1) in
-  let local_3 = ref(false) in
-  let local_4 = Tracker { label: local_0, count: local_2, toggled: local_3 } in
-  let local_5 = || => Record::Value(ref_get(local_2)) in
-  let local_8 = |local_6| => let local_7 = ref_get(local_2) in
-  let _ = ref_set(local_2, local_7 + local_6) in
-  Record::Pair(local_7, ref_get(local_2)) in
-  let local_11 = || => let local_9 = ref_get(local_3) in
-  let _ = ref_set(local_3, !local_9) in
-  let local_10 = ref_get(local_3) in
-  Record::Pair(bool_to_string(local_9), bool_to_string(local_10)) in
-  (local_4, local_5, local_8, local_11)
-}
+  let local_2 /*#40*/ = ref /*#140*/(local_1 /*#141*/) /*#142*/ in
+  let local_3 /*#41*/ = ref /*#143*/(false /*#144*/) /*#145*/ in
+  let local_4 /*#42*/ = Tracker { label: local_0 /*#146*/, count: local_2 /*#147*/, toggled: local_3 /*#148*/ } /*#149*/ in
+  let local_5 /*#43*/ = || => Record::Value(ref_get /*#150*/(local_2 /*#151*/) /*#152*/) /*#153*/ /*#154*/ in
+  let local_8 /*#46*/ = |local_6| => let local_7 /*#44*/ = ref_get /*#155*/(local_2 /*#156*/) /*#157*/ in
+  let _ /*#45*/ = ref_set /*#158*/(local_2 /*#159*/, local_7 /*#160*/ + local_6 /*#161*/ /*#162*/) /*#163*/ in
+  Record::Pair(local_7 /*#164*/, ref_get /*#165*/(local_2 /*#166*/) /*#167*/) /*#168*/ /*#169*/ /*#170*/ /*#171*/ in
+  let local_11 /*#50*/ = || => let local_9 /*#47*/ = ref_get /*#172*/(local_3 /*#173*/) /*#174*/ in
+  let _ /*#48*/ = ref_set /*#175*/(local_3 /*#176*/, !local_9 /*#177*/ /*#178*/) /*#179*/ in
+  let local_10 /*#49*/ = ref_get /*#180*/(local_3 /*#181*/) /*#182*/ in
+  Record::Pair(bool_to_string /*#183*/(local_9 /*#184*/) /*#185*/, bool_to_string /*#186*/(local_10 /*#187*/) /*#188*/) /*#189*/ /*#190*/ /*#191*/ /*#192*/ /*#193*/ in
+  (local_4 /*#194*/, local_5 /*#195*/, local_8 /*#196*/, local_11 /*#197*/) /*#198*/ /*#199*/ /*#200*/ /*#201*/ /*#202*/ /*#203*/ /*#204*/
+} /*item#18*/
 
 fn main() -> () {
-  let (local_0, local_1, local_2, local_3) = build_counter("goml", 2) in
-  let local_4 = Describe::describe(local_0) in
-  let local_5 = local_1() in
-  let local_6 = local_2(5) in
-  let local_7 = local_3() in
-  let local_8 = gather(local_5) in
-  let local_9 = gather(local_6) in
-  let local_10 = choose(true, local_9, local_8) in
-  let local_11 = map_maybe(local_10, format_total) in
-  let local_12 = [increment, triple] in
-  let local_13 = run_transforms(4, local_12) in
-  let local_14 = array_get(local_13, 0) in
-  let local_15 = array_get(local_13, 1) in
-  let local_16 = local_14 < local_15 && true in
-  let local_17 = Describe::describe(local_5) in
-  let local_18 = Describe::describe(local_6) in
-  let local_19 = Describe::describe(local_7) in
-  let local_21 = match local_11 {
-    Maybe::Some(local_20) => "Snapshot: " + local_20,
-    Maybe::None => "Snapshot: none",
-  } in
-  let local_22 = pair_join((int32_to_string(local_14), int32_to_string(local_15))) in
-  let local_23 = bool_to_string(local_16) in
-  let _ = string_println(local_4) in
-  let _ = string_println(local_17) in
-  let _ = string_println(local_18) in
-  let _ = string_println(local_19) in
-  let _ = string_println(local_21) in
-  let _ = string_println(local_22) in
-  let _ = string_println(local_23) in
-  ()
-}
+  let (local_0 /*#51*/, local_1 /*#52*/, local_2 /*#53*/, local_3 /*#54*/) /*#55*/ = build_counter /*#205*/("goml" /*#206*/, 2 /*#207*/) /*#208*/ in
+  let local_4 /*#56*/ = Describe::describe /*#209*/(local_0 /*#210*/) /*#211*/ in
+  let local_5 /*#57*/ = local_1 /*#212*/() /*#213*/ in
+  let local_6 /*#58*/ = local_2 /*#214*/(5 /*#215*/) /*#216*/ in
+  let local_7 /*#59*/ = local_3 /*#217*/() /*#218*/ in
+  let local_8 /*#60*/ = gather /*#219*/(local_5 /*#220*/) /*#221*/ in
+  let local_9 /*#61*/ = gather /*#222*/(local_6 /*#223*/) /*#224*/ in
+  let local_10 /*#62*/ = choose /*#225*/(true /*#226*/, local_9 /*#227*/, local_8 /*#228*/) /*#229*/ in
+  let local_11 /*#63*/ = map_maybe /*#230*/(local_10 /*#231*/, format_total /*#232*/) /*#233*/ in
+  let local_12 /*#64*/ = [increment /*#234*/, triple /*#235*/] /*#236*/ in
+  let local_13 /*#65*/ = run_transforms /*#237*/(4 /*#238*/, local_12 /*#239*/) /*#240*/ in
+  let local_14 /*#66*/ = array_get /*#241*/(local_13 /*#242*/, 0 /*#243*/) /*#244*/ in
+  let local_15 /*#67*/ = array_get /*#245*/(local_13 /*#246*/, 1 /*#247*/) /*#248*/ in
+  let local_16 /*#68*/ = local_14 /*#249*/ < local_15 /*#250*/ /*#251*/ && true /*#252*/ /*#253*/ in
+  let local_17 /*#69*/ = Describe::describe /*#254*/(local_5 /*#255*/) /*#256*/ in
+  let local_18 /*#70*/ = Describe::describe /*#257*/(local_6 /*#258*/) /*#259*/ in
+  let local_19 /*#71*/ = Describe::describe /*#260*/(local_7 /*#261*/) /*#262*/ in
+  let local_21 /*#75*/ = match local_11 /*#263*/ {
+    Maybe::Some(local_20 /*#72*/) /*#73*/ => "Snapshot: " /*#264*/ + local_20 /*#265*/ /*#266*/,
+    Maybe::None /*#74*/ => "Snapshot: none" /*#267*/,
+  } /*#268*/ in
+  let local_22 /*#76*/ = pair_join /*#269*/((int32_to_string /*#270*/(local_14 /*#271*/) /*#272*/, int32_to_string /*#273*/(local_15 /*#274*/) /*#275*/) /*#276*/) /*#277*/ in
+  let local_23 /*#77*/ = bool_to_string /*#278*/(local_16 /*#279*/) /*#280*/ in
+  let _ /*#78*/ = string_println /*#281*/(local_4 /*#282*/) /*#283*/ in
+  let _ /*#79*/ = string_println /*#284*/(local_17 /*#285*/) /*#286*/ in
+  let _ /*#80*/ = string_println /*#287*/(local_18 /*#288*/) /*#289*/ in
+  let _ /*#81*/ = string_println /*#290*/(local_19 /*#291*/) /*#292*/ in
+  let _ /*#82*/ = string_println /*#293*/(local_21 /*#294*/) /*#295*/ in
+  let _ /*#83*/ = string_println /*#296*/(local_22 /*#297*/) /*#298*/ in
+  let _ /*#84*/ = string_println /*#299*/(local_23 /*#300*/) /*#301*/ in
+  () /*#302*/ /*#303*/ /*#304*/ /*#305*/ /*#306*/ /*#307*/ /*#308*/ /*#309*/ /*#310*/ /*#311*/ /*#312*/ /*#313*/ /*#314*/ /*#315*/ /*#316*/ /*#317*/ /*#318*/ /*#319*/ /*#320*/ /*#321*/ /*#322*/ /*#323*/ /*#324*/ /*#325*/ /*#326*/ /*#327*/ /*#328*/ /*#329*/
+} /*item#19*/

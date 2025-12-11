@@ -1,40 +1,40 @@
-struct Point { x: int32, y: int32 }
+struct Point { x: int32, y: int32 } /*item#0*/
 
-enum Maybe[T0] { Just(T0), Nothing }
+enum Maybe[T0] { Just(T0), Nothing } /*item#1*/
 
 trait Display {
   fn item_25() -> string
-}
+} /*item#2*/
 
 impl Display for Point {
   fn item_28(local_0: Point) -> string {
-    "Point"
-  }
-}
+    "Point" /*#0*/
+  } /*item#3*/
+} /*item#4*/
 
 impl Display for Maybe[int32] {
   fn item_29(local_0: Maybe[int32]) -> string {
-    match local_0 {
-      Maybe::Just(local_1) => "Just(" + int32_to_string(local_1) + ")",
-      Maybe::Nothing => "Nothing",
-    }
-  }
-}
+    match local_0 /*#1*/ {
+      Maybe::Just(local_1 /*#0*/) /*#1*/ => "Just(" /*#2*/ + int32_to_string /*#3*/(local_1 /*#4*/) /*#5*/ /*#6*/ + ")" /*#7*/ /*#8*/,
+      Maybe::Nothing /*#2*/ => "Nothing" /*#9*/,
+    } /*#10*/
+  } /*item#5*/
+} /*item#6*/
 
 fn make_maybe(local_0: bool) -> Maybe[int32] {
-  if local_0 {
-    Maybe::Just(42)
+  if local_0 /*#11*/ {
+    Maybe::Just(42 /*#12*/) /*#13*/
   } else {
-    Maybe::Nothing
-  }
-}
+    Maybe::Nothing /*#14*/
+  } /*#15*/
+} /*item#7*/
 
 fn main() -> () {
-  let local_0 = Point { x: 1, y: 2 } in
-  let local_1 = make_maybe(true) in
-  let local_2 = make_maybe(false) in
-  let _ = string_println(Display::show(local_0)) in
-  let _ = string_println(Display::show(local_1)) in
-  let _ = string_println(Display::show(local_2)) in
-  ()
-}
+  let local_0 /*#3*/ = Point { x: 1 /*#16*/, y: 2 /*#17*/ } /*#18*/ in
+  let local_1 /*#4*/ = make_maybe /*#19*/(true /*#20*/) /*#21*/ in
+  let local_2 /*#5*/ = make_maybe /*#22*/(false /*#23*/) /*#24*/ in
+  let _ /*#6*/ = string_println /*#25*/(Display::show /*#26*/(local_0 /*#27*/) /*#28*/) /*#29*/ in
+  let _ /*#7*/ = string_println /*#30*/(Display::show /*#31*/(local_1 /*#32*/) /*#33*/) /*#34*/ in
+  let _ /*#8*/ = string_println /*#35*/(Display::show /*#36*/(local_2 /*#37*/) /*#38*/) /*#39*/ in
+  () /*#40*/ /*#41*/ /*#42*/ /*#43*/ /*#44*/ /*#45*/ /*#46*/
+} /*item#8*/

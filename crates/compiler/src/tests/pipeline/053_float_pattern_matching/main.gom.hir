@@ -1,32 +1,32 @@
-enum FloatEvent { Sample32(string, float32), Sample64(string, float64) }
+enum FloatEvent { Sample32(string, float32), Sample64(string, float64) } /*item#0*/
 
 fn summarize(local_0: FloatEvent) -> string {
-  match local_0 {
-    FloatEvent::Sample32(local_1, local_2) => local_1 + float32_to_string(local_2),
-    FloatEvent::Sample64(local_3, local_4) => local_3 + float64_to_string(local_4),
-  }
-}
+  match local_0 /*#0*/ {
+    FloatEvent::Sample32(local_1 /*#0*/, local_2 /*#1*/) /*#2*/ => local_1 /*#1*/ + float32_to_string /*#2*/(local_2 /*#3*/) /*#4*/ /*#5*/,
+    FloatEvent::Sample64(local_3 /*#3*/, local_4 /*#4*/) /*#5*/ => local_3 /*#6*/ + float64_to_string /*#7*/(local_4 /*#8*/) /*#9*/ /*#10*/,
+  } /*#11*/
+} /*item#1*/
 
 fn compare(local_0: (float32, float64)) -> string {
-  match local_0 {
-    (local_1, local_2) => let local_3: float32 = 1 in
-    let local_4: float64 = 5 in
-    let local_5 = local_1 < local_3 in
-    let local_6 = local_2 < local_4 in
-    "left<1?=" + bool_to_string(local_5) + ",right<5?=" + bool_to_string(local_6),
-  }
-}
+  match local_0 /*#12*/ {
+    (local_1 /*#6*/, local_2 /*#7*/) /*#8*/ => let local_3 /*#9*/: float32 = 1 /*#13*/ in
+    let local_4 /*#10*/: float64 = 5 /*#14*/ in
+    let local_5 /*#11*/ = local_1 /*#15*/ < local_3 /*#16*/ /*#17*/ in
+    let local_6 /*#12*/ = local_2 /*#18*/ < local_4 /*#19*/ /*#20*/ in
+    "left<1?=" /*#21*/ + bool_to_string /*#22*/(local_5 /*#23*/) /*#24*/ /*#25*/ + ",right<5?=" /*#26*/ /*#27*/ + bool_to_string /*#28*/(local_6 /*#29*/) /*#30*/ /*#31*/ /*#32*/ /*#33*/ /*#34*/ /*#35*/,
+  } /*#36*/
+} /*item#2*/
 
 fn main() -> () {
-  let local_0: float32 = 0.5 in
-  let local_1: float32 = 2.25 in
-  let local_2: float64 = 9.5 in
-  let local_3 = FloatEvent::Sample32("f32=", local_0) in
-  let local_4 = FloatEvent::Sample32("f32_b=", local_1) in
-  let local_5 = FloatEvent::Sample64("f64=", local_2) in
-  let local_6: (float32, float64) = (0.75, 4) in
-  let local_7: (float32, float64) = (1.5, 7.25) in
-  let local_8 = summarize(local_3) + summarize(local_4) + summarize(local_5) + compare(local_6) + compare(local_7) in
-  let _ = string_println(local_8) in
-  ()
-}
+  let local_0 /*#13*/: float32 = 0.5 /*#37*/ in
+  let local_1 /*#14*/: float32 = 2.25 /*#38*/ in
+  let local_2 /*#15*/: float64 = 9.5 /*#39*/ in
+  let local_3 /*#16*/ = FloatEvent::Sample32("f32=" /*#40*/, local_0 /*#41*/) /*#42*/ in
+  let local_4 /*#17*/ = FloatEvent::Sample32("f32_b=" /*#43*/, local_1 /*#44*/) /*#45*/ in
+  let local_5 /*#18*/ = FloatEvent::Sample64("f64=" /*#46*/, local_2 /*#47*/) /*#48*/ in
+  let local_6 /*#19*/: (float32, float64) = (0.75 /*#49*/, 4 /*#50*/) /*#51*/ in
+  let local_7 /*#20*/: (float32, float64) = (1.5 /*#52*/, 7.25 /*#53*/) /*#54*/ in
+  let local_8 /*#21*/ = summarize /*#55*/(local_3 /*#56*/) /*#57*/ + summarize /*#58*/(local_4 /*#59*/) /*#60*/ /*#61*/ + summarize /*#62*/(local_5 /*#63*/) /*#64*/ /*#65*/ + compare /*#66*/(local_6 /*#67*/) /*#68*/ /*#69*/ + compare /*#70*/(local_7 /*#71*/) /*#72*/ /*#73*/ in
+  let _ /*#22*/ = string_println /*#74*/(local_8 /*#75*/) /*#76*/ in
+  () /*#77*/ /*#78*/ /*#79*/ /*#80*/ /*#81*/ /*#82*/ /*#83*/ /*#84*/ /*#85*/ /*#86*/ /*#87*/
+} /*item#3*/

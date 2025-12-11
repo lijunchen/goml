@@ -1,20 +1,20 @@
 fn test_nested_match(local_0: (bool, bool), local_1: (bool, bool)) -> () {
-  match local_0 {
-    (true, false) => match local_1 {
-      (false, true) => string_println("case1"),
-      _ => string_println("case2"),
-    },
-    _ => match local_1 {
-      (false, true) => string_println("case3"),
-      _ => string_println("case4"),
-    },
-  }
-}
+  match local_0 /*#0*/ {
+    (true /*#0*/, false /*#1*/) /*#2*/ => match local_1 /*#1*/ {
+      (false /*#3*/, true /*#4*/) /*#5*/ => string_println /*#2*/("case1" /*#3*/) /*#4*/,
+      _ /*#6*/ => string_println /*#5*/("case2" /*#6*/) /*#7*/,
+    } /*#8*/,
+    _ /*#7*/ => match local_1 /*#9*/ {
+      (false /*#8*/, true /*#9*/) /*#10*/ => string_println /*#10*/("case3" /*#11*/) /*#12*/,
+      _ /*#11*/ => string_println /*#13*/("case4" /*#14*/) /*#15*/,
+    } /*#16*/,
+  } /*#17*/
+} /*item#0*/
 
 fn main() -> () {
-  let _ = test_nested_match((true, false), (false, true)) in
-  let _ = test_nested_match((true, false), (true, false)) in
-  let _ = test_nested_match((false, true), (false, true)) in
-  let _ = test_nested_match((false, true), (true, false)) in
-  ()
-}
+  let _ /*#12*/ = test_nested_match /*#18*/((true /*#19*/, false /*#20*/) /*#21*/, (false /*#22*/, true /*#23*/) /*#24*/) /*#25*/ in
+  let _ /*#13*/ = test_nested_match /*#26*/((true /*#27*/, false /*#28*/) /*#29*/, (true /*#30*/, false /*#31*/) /*#32*/) /*#33*/ in
+  let _ /*#14*/ = test_nested_match /*#34*/((false /*#35*/, true /*#36*/) /*#37*/, (false /*#38*/, true /*#39*/) /*#40*/) /*#41*/ in
+  let _ /*#15*/ = test_nested_match /*#42*/((false /*#43*/, true /*#44*/) /*#45*/, (true /*#46*/, false /*#47*/) /*#48*/) /*#49*/ in
+  () /*#50*/ /*#51*/ /*#52*/ /*#53*/ /*#54*/
+} /*item#1*/

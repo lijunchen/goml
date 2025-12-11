@@ -1,57 +1,57 @@
 fn bump(local_0: Ref[int32]) -> int32 {
-  let _ = ref_set(local_0, ref_get(local_0) + 1) in
-  ref_get(local_0)
-}
+  let _ /*#0*/ = ref_set /*#0*/(local_0 /*#1*/, ref_get /*#2*/(local_0 /*#3*/) /*#4*/ + 1 /*#5*/ /*#6*/) /*#7*/ in
+  ref_get /*#8*/(local_0 /*#9*/) /*#10*/ /*#11*/
+} /*item#0*/
 
 fn flip(local_0: Ref[bool]) -> bool {
-  let local_1 = ref_get(local_0) in
-  let _ = ref_set(local_0, !local_1) in
-  ref_get(local_0)
-}
+  let local_1 /*#1*/ = ref_get /*#12*/(local_0 /*#13*/) /*#14*/ in
+  let _ /*#2*/ = ref_set /*#15*/(local_0 /*#16*/, !local_1 /*#17*/ /*#18*/) /*#19*/ in
+  ref_get /*#20*/(local_0 /*#21*/) /*#22*/ /*#23*/ /*#24*/
+} /*item#1*/
 
 fn nested_total(local_0: Ref[Ref[int32]]) -> int32 {
-  let local_1 = ref_get(local_0) in
-  let local_2 = ref_get(local_1) in
-  let _ = ref_set(local_1, local_2 + 2) in
-  local_2 + ref_get(local_1)
-}
+  let local_1 /*#3*/ = ref_get /*#25*/(local_0 /*#26*/) /*#27*/ in
+  let local_2 /*#4*/ = ref_get /*#28*/(local_1 /*#29*/) /*#30*/ in
+  let _ /*#5*/ = ref_set /*#31*/(local_1 /*#32*/, local_2 /*#33*/ + 2 /*#34*/ /*#35*/) /*#36*/ in
+  local_2 /*#37*/ + ref_get /*#38*/(local_1 /*#39*/) /*#40*/ /*#41*/ /*#42*/ /*#43*/ /*#44*/
+} /*item#2*/
 
 fn alias_bump(local_0: Ref[int32]) -> int32 {
-  let local_1 = local_0 in
-  let _ = ref_set(local_1, ref_get(local_1) + 5) in
-  ref_get(local_1)
-}
+  let local_1 /*#6*/ = local_0 /*#45*/ in
+  let _ /*#7*/ = ref_set /*#46*/(local_1 /*#47*/, ref_get /*#48*/(local_1 /*#49*/) /*#50*/ + 5 /*#51*/ /*#52*/) /*#53*/ in
+  ref_get /*#54*/(local_1 /*#55*/) /*#56*/ /*#57*/ /*#58*/
+} /*item#3*/
 
 fn pair_sum() -> int32 {
-  let local_0 = ref(4) in
-  let local_1 = ref(6) in
-  let _ = ref_set(local_0, ref_get(local_0) + ref_get(local_1)) in
-  ref_get(local_0) + ref_get(local_1)
-}
+  let local_0 /*#8*/ = ref /*#59*/(4 /*#60*/) /*#61*/ in
+  let local_1 /*#9*/ = ref /*#62*/(6 /*#63*/) /*#64*/ in
+  let _ /*#10*/ = ref_set /*#65*/(local_0 /*#66*/, ref_get /*#67*/(local_0 /*#68*/) /*#69*/ + ref_get /*#70*/(local_1 /*#71*/) /*#72*/ /*#73*/) /*#74*/ in
+  ref_get /*#75*/(local_0 /*#76*/) /*#77*/ + ref_get /*#78*/(local_1 /*#79*/) /*#80*/ /*#81*/ /*#82*/ /*#83*/ /*#84*/
+} /*item#4*/
 
 fn reassign_nested(local_0: Ref[Ref[int32]]) -> int32 {
-  let local_1 = ref_get(local_0) in
-  let _ = ref_set(local_1, ref_get(local_1) + 7) in
-  ref_get(local_1)
-}
+  let local_1 /*#11*/ = ref_get /*#85*/(local_0 /*#86*/) /*#87*/ in
+  let _ /*#12*/ = ref_set /*#88*/(local_1 /*#89*/, ref_get /*#90*/(local_1 /*#91*/) /*#92*/ + 7 /*#93*/ /*#94*/) /*#95*/ in
+  ref_get /*#96*/(local_1 /*#97*/) /*#98*/ /*#99*/ /*#100*/
+} /*item#5*/
 
 fn main() -> () {
-  let local_0 = ref(39) in
-  let local_1 = ref(false) in
-  let local_2 = ref(ref(3)) in
-  let local_3 = bump(local_0) in
-  let local_4 = flip(local_1) in
-  let local_5 = flip(local_1) in
-  let local_6 = ref_get(local_2) in
-  let _ = ref_set(local_6, ref_get(local_6) + local_3) in
-  let local_7 = nested_total(local_2) in
-  let local_8 = alias_bump(local_0) in
-  let local_9 = pair_sum() in
-  let local_10 = reassign_nested(local_2) in
-  let local_11 = !false in
-  let _ = string_println(int32_to_string(local_3 + ref_get(local_0))) in
-  let _ = string_println(int32_to_string(local_7 + local_8 + local_10)) in
-  let _ = string_println(int32_to_string(local_9)) in
-  let _ = string_println(bool_to_string(local_4 && local_5 && local_11)) in
-  ()
-}
+  let local_0 /*#13*/ = ref /*#101*/(39 /*#102*/) /*#103*/ in
+  let local_1 /*#14*/ = ref /*#104*/(false /*#105*/) /*#106*/ in
+  let local_2 /*#15*/ = ref /*#107*/(ref /*#108*/(3 /*#109*/) /*#110*/) /*#111*/ in
+  let local_3 /*#16*/ = bump /*#112*/(local_0 /*#113*/) /*#114*/ in
+  let local_4 /*#17*/ = flip /*#115*/(local_1 /*#116*/) /*#117*/ in
+  let local_5 /*#18*/ = flip /*#118*/(local_1 /*#119*/) /*#120*/ in
+  let local_6 /*#19*/ = ref_get /*#121*/(local_2 /*#122*/) /*#123*/ in
+  let _ /*#20*/ = ref_set /*#124*/(local_6 /*#125*/, ref_get /*#126*/(local_6 /*#127*/) /*#128*/ + local_3 /*#129*/ /*#130*/) /*#131*/ in
+  let local_7 /*#21*/ = nested_total /*#132*/(local_2 /*#133*/) /*#134*/ in
+  let local_8 /*#22*/ = alias_bump /*#135*/(local_0 /*#136*/) /*#137*/ in
+  let local_9 /*#23*/ = pair_sum /*#138*/() /*#139*/ in
+  let local_10 /*#24*/ = reassign_nested /*#140*/(local_2 /*#141*/) /*#142*/ in
+  let local_11 /*#25*/ = !false /*#143*/ /*#144*/ in
+  let _ /*#26*/ = string_println /*#145*/(int32_to_string /*#146*/(local_3 /*#147*/ + ref_get /*#148*/(local_0 /*#149*/) /*#150*/ /*#151*/) /*#152*/) /*#153*/ in
+  let _ /*#27*/ = string_println /*#154*/(int32_to_string /*#155*/(local_7 /*#156*/ + local_8 /*#157*/ /*#158*/ + local_10 /*#159*/ /*#160*/) /*#161*/) /*#162*/ in
+  let _ /*#28*/ = string_println /*#163*/(int32_to_string /*#164*/(local_9 /*#165*/) /*#166*/) /*#167*/ in
+  let _ /*#29*/ = string_println /*#168*/(bool_to_string /*#169*/(local_4 /*#170*/ && local_5 /*#171*/ /*#172*/ && local_11 /*#173*/ /*#174*/) /*#175*/) /*#176*/ in
+  () /*#177*/ /*#178*/ /*#179*/ /*#180*/ /*#181*/ /*#182*/ /*#183*/ /*#184*/ /*#185*/ /*#186*/ /*#187*/ /*#188*/ /*#189*/ /*#190*/ /*#191*/ /*#192*/ /*#193*/ /*#194*/
+} /*item#6*/

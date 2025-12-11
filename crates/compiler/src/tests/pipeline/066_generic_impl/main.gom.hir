@@ -1,23 +1,23 @@
-struct Point[T0, T1] { x: T0, y: T1 }
+struct Point[T0, T1] { x: T0, y: T1 } /*item#0*/
 
 impl Point[T2, T3] {
   fn item_26(local_0: T2, local_1: T3) -> Point[T2, T3] {
-    Point { x: local_0, y: local_1 }
-  }
+    Point { x: local_0 /*#0*/, y: local_1 /*#1*/ } /*#2*/
+  } /*item#1*/
   fn item_27(local_0: Point[T2, T3]) -> Point[T3, T2] {
-    Point { x: local_0.y, y: local_0.x }
-  }
+    Point { x: local_0 /*#3*/.y /*#4*/, y: local_0 /*#5*/.x /*#6*/ } /*#7*/
+  } /*item#2*/
   fn item_28(local_0: Point[T2, T3]) -> T2 {
-    local_0.x
-  }
-}
+    local_0 /*#8*/.x /*#9*/
+  } /*item#3*/
+} /*item#4*/
 
 fn main() -> () {
-  let local_0: Point[int32, string] = Point::new(10, "hello") in
-  let local_1: Point[string, string] = Point::new("goml", "lang") in
-  let local_2: Point[string, int32] = local_0.swap() in
-  let local_3: int32 = local_2.y in
-  let _ = string_println(int32_to_string(local_3)) in
-  let local_4: string = local_1.get_x() in
-  string_println(local_4)
-}
+  let local_0 /*#0*/: Point[int32, string] = Point::new /*#10*/(10 /*#11*/, "hello" /*#12*/) /*#13*/ in
+  let local_1 /*#1*/: Point[string, string] = Point::new /*#14*/("goml" /*#15*/, "lang" /*#16*/) /*#17*/ in
+  let local_2 /*#2*/: Point[string, int32] = local_0 /*#18*/.swap /*#19*/() /*#20*/ in
+  let local_3 /*#3*/: int32 = local_2 /*#21*/.y /*#22*/ in
+  let _ /*#4*/ = string_println /*#23*/(int32_to_string /*#24*/(local_3 /*#25*/) /*#26*/) /*#27*/ in
+  let local_4 /*#5*/: string = local_1 /*#28*/.get_x /*#29*/() /*#30*/ in
+  string_println /*#31*/(local_4 /*#32*/) /*#33*/ /*#34*/ /*#35*/ /*#36*/ /*#37*/ /*#38*/ /*#39*/
+} /*item#5*/

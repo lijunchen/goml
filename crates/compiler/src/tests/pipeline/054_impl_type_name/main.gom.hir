@@ -1,42 +1,42 @@
-struct Point { x: int32, y: int32 }
+struct Point { x: int32, y: int32 } /*item#0*/
 
-enum Shape { Unit, Location(Point) }
+enum Shape { Unit, Location(Point) } /*item#1*/
 
 trait TypeName {
   fn item_25() -> string
-}
+} /*item#2*/
 
 impl TypeName for Point {
   fn item_29(local_0: ()) -> string {
-    let Point { x: local_1, y: local_2 } = local_0 in
-    let local_3 = "Point(" + int32_to_string(local_1) in
-    local_3 + ", " + int32_to_string(local_2) + ")"
-  }
-}
+    let Point { x: local_1 /*#0*/, y: local_2 /*#1*/ } /*#2*/ = local_0 /*#0*/ in
+    let local_3 /*#3*/ = "Point(" /*#1*/ + int32_to_string /*#2*/(local_1 /*#3*/) /*#4*/ /*#5*/ in
+    local_3 /*#6*/ + ", " /*#7*/ /*#8*/ + int32_to_string /*#9*/(local_2 /*#10*/) /*#11*/ /*#12*/ + ")" /*#13*/ /*#14*/ /*#15*/ /*#16*/
+  } /*item#3*/
+} /*item#4*/
 
 impl TypeName for Shape {
   fn item_30(local_0: ()) -> string {
-    match local_0 {
-      Shape::Unit => "Unit",
-      Shape::Location(local_1) => "Shape::" + TypeName::type_name(local_1),
-    }
-  }
-}
+    match local_0 /*#17*/ {
+      Shape::Unit /*#4*/ => "Unit" /*#18*/,
+      Shape::Location(local_1 /*#5*/) /*#6*/ => "Shape::" /*#19*/ + TypeName::type_name /*#20*/(local_1 /*#21*/) /*#22*/ /*#23*/,
+    } /*#24*/
+  } /*item#5*/
+} /*item#6*/
 
 fn show_point(local_0: Point) -> string {
-  TypeName::type_name(local_0)
-}
+  TypeName::type_name /*#25*/(local_0 /*#26*/) /*#27*/
+} /*item#7*/
 
 fn show_shape(local_0: Shape) -> string {
-  TypeName::type_name(local_0)
-}
+  TypeName::type_name /*#28*/(local_0 /*#29*/) /*#30*/
+} /*item#8*/
 
 fn main() -> () {
-  let local_0 = Point { x: 7, y: 9 } in
-  let _ = string_println(show_point(local_0)) in
-  let local_1 = Shape::Unit in
-  let _ = string_println(show_shape(local_1)) in
-  let local_2 = Shape::Location(Point { x: 1, y: 2 }) in
-  let _ = string_println(show_shape(local_2)) in
-  ()
-}
+  let local_0 /*#7*/ = Point { x: 7 /*#31*/, y: 9 /*#32*/ } /*#33*/ in
+  let _ /*#8*/ = string_println /*#34*/(show_point /*#35*/(local_0 /*#36*/) /*#37*/) /*#38*/ in
+  let local_1 /*#9*/ = Shape::Unit /*#39*/ in
+  let _ /*#10*/ = string_println /*#40*/(show_shape /*#41*/(local_1 /*#42*/) /*#43*/) /*#44*/ in
+  let local_2 /*#11*/ = Shape::Location(Point { x: 1 /*#45*/, y: 2 /*#46*/ } /*#47*/) /*#48*/ in
+  let _ /*#12*/ = string_println /*#49*/(show_shape /*#50*/(local_2 /*#51*/) /*#52*/) /*#53*/ in
+  () /*#54*/ /*#55*/ /*#56*/ /*#57*/ /*#58*/ /*#59*/ /*#60*/
+} /*item#9*/

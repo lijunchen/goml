@@ -1,57 +1,57 @@
-enum IntList { Nil, Cons(int32, IntList) }
+enum IntList { Nil, Cons(int32, IntList) } /*item#0*/
 
 fn print_int_list(local_0: IntList) -> () {
-  match local_0 {
-    IntList::Nil => string_print("Nil"),
-    IntList::Cons(local_1, local_2) => let _ = string_print("Cons") in
-    let _ = string_print("(") in
-    let _ = string_print(int32_to_string(local_1)) in
-    let _ = string_print(", ") in
-    let _ = print_int_list(local_2) in
-    let _ = string_print(")") in
-    (),
-  }
-}
+  match local_0 /*#0*/ {
+    IntList::Nil /*#0*/ => string_print /*#1*/("Nil" /*#2*/) /*#3*/,
+    IntList::Cons(local_1 /*#1*/, local_2 /*#2*/) /*#3*/ => let _ /*#4*/ = string_print /*#4*/("Cons" /*#5*/) /*#6*/ in
+    let _ /*#5*/ = string_print /*#7*/("(" /*#8*/) /*#9*/ in
+    let _ /*#6*/ = string_print /*#10*/(int32_to_string /*#11*/(local_1 /*#12*/) /*#13*/) /*#14*/ in
+    let _ /*#7*/ = string_print /*#15*/(", " /*#16*/) /*#17*/ in
+    let _ /*#8*/ = print_int_list /*#18*/(local_2 /*#19*/) /*#20*/ in
+    let _ /*#9*/ = string_print /*#21*/(")" /*#22*/) /*#23*/ in
+    () /*#24*/ /*#25*/ /*#26*/ /*#27*/ /*#28*/ /*#29*/ /*#30*/,
+  } /*#31*/
+} /*item#1*/
 
 fn int_list_rev_aux(local_0: IntList, local_1: IntList) -> IntList {
-  match local_0 {
-    IntList::Nil => local_1,
-    IntList::Cons(local_2, local_3) => int_list_rev_aux(local_3, IntList::Cons(local_2, local_1)),
-  }
-}
+  match local_0 /*#32*/ {
+    IntList::Nil /*#10*/ => local_1 /*#33*/,
+    IntList::Cons(local_2 /*#11*/, local_3 /*#12*/) /*#13*/ => int_list_rev_aux /*#34*/(local_3 /*#35*/, IntList::Cons(local_2 /*#36*/, local_1 /*#37*/) /*#38*/) /*#39*/,
+  } /*#40*/
+} /*item#2*/
 
 fn int_list_rev(local_0: IntList) -> IntList {
-  int_list_rev_aux(local_0, IntList::Nil)
-}
+  int_list_rev_aux /*#41*/(local_0 /*#42*/, IntList::Nil /*#43*/) /*#44*/
+} /*item#3*/
 
 fn int_list_length(local_0: IntList) -> int32 {
-  match local_0 {
-    IntList::Nil => 0,
-    IntList::Cons(_, local_1) => 1 + int_list_length(local_1),
-  }
-}
+  match local_0 /*#45*/ {
+    IntList::Nil /*#14*/ => 0 /*#46*/,
+    IntList::Cons(_ /*#15*/, local_1 /*#16*/) /*#17*/ => 1 /*#47*/ + int_list_length /*#48*/(local_1 /*#49*/) /*#50*/ /*#51*/,
+  } /*#52*/
+} /*item#4*/
 
 fn print_int_list_length(local_0: IntList) -> () {
-  let _ = string_print("Length: ") in
-  let _ = string_println(int32_to_string(int_list_length(local_0))) in
-  ()
-}
+  let _ /*#18*/ = string_print /*#53*/("Length: " /*#54*/) /*#55*/ in
+  let _ /*#19*/ = string_println /*#56*/(int32_to_string /*#57*/(int_list_length /*#58*/(local_0 /*#59*/) /*#60*/) /*#61*/) /*#62*/ in
+  () /*#63*/ /*#64*/ /*#65*/
+} /*item#5*/
 
 fn main() -> () {
-  let local_0 = IntList::Nil in
-  let _ = print_int_list(local_0) in
-  let _ = string_println("") in
-  let _ = print_int_list_length(local_0) in
-  let local_1 = IntList::Cons(1, IntList::Nil) in
-  let _ = print_int_list(local_1) in
-  let _ = string_println("") in
-  let _ = print_int_list_length(local_1) in
-  let local_2 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
-  let _ = print_int_list(local_2) in
-  let _ = string_println("") in
-  let _ = print_int_list_length(local_2) in
-  let local_3 = int_list_rev(local_2) in
-  let _ = print_int_list(local_3) in
-  let _ = string_println("") in
-  ()
-}
+  let local_0 /*#20*/ = IntList::Nil /*#66*/ in
+  let _ /*#21*/ = print_int_list /*#67*/(local_0 /*#68*/) /*#69*/ in
+  let _ /*#22*/ = string_println /*#70*/("" /*#71*/) /*#72*/ in
+  let _ /*#23*/ = print_int_list_length /*#73*/(local_0 /*#74*/) /*#75*/ in
+  let local_1 /*#24*/ = IntList::Cons(1 /*#76*/, IntList::Nil /*#77*/) /*#78*/ in
+  let _ /*#25*/ = print_int_list /*#79*/(local_1 /*#80*/) /*#81*/ in
+  let _ /*#26*/ = string_println /*#82*/("" /*#83*/) /*#84*/ in
+  let _ /*#27*/ = print_int_list_length /*#85*/(local_1 /*#86*/) /*#87*/ in
+  let local_2 /*#28*/ = IntList::Cons(1 /*#88*/, IntList::Cons(2 /*#89*/, IntList::Cons(3 /*#90*/, IntList::Nil /*#91*/) /*#92*/) /*#93*/) /*#94*/ in
+  let _ /*#29*/ = print_int_list /*#95*/(local_2 /*#96*/) /*#97*/ in
+  let _ /*#30*/ = string_println /*#98*/("" /*#99*/) /*#100*/ in
+  let _ /*#31*/ = print_int_list_length /*#101*/(local_2 /*#102*/) /*#103*/ in
+  let local_3 /*#32*/ = int_list_rev /*#104*/(local_2 /*#105*/) /*#106*/ in
+  let _ /*#33*/ = print_int_list /*#107*/(local_3 /*#108*/) /*#109*/ in
+  let _ /*#34*/ = string_println /*#110*/("" /*#111*/) /*#112*/ in
+  () /*#113*/ /*#114*/ /*#115*/ /*#116*/ /*#117*/ /*#118*/ /*#119*/ /*#120*/ /*#121*/ /*#122*/ /*#123*/ /*#124*/ /*#125*/ /*#126*/ /*#127*/ /*#128*/
+} /*item#6*/

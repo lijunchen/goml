@@ -1,26 +1,26 @@
 fn make_counter() -> (fn() -> int32, fn() -> ()) {
-  let local_0 = ref(0) in
-  let local_2 = || => let local_1 = ref_get(local_0) + 1 in
-  let _ = ref_set(local_0, local_1) in
-  local_1 in
-  let local_3 = || => let _ = ref_set(local_0, 0) in
-  () in
-  (local_2, local_3)
-}
+  let local_0 /*#0*/ = ref /*#0*/(0 /*#1*/) /*#2*/ in
+  let local_2 /*#3*/ = || => let local_1 /*#1*/ = ref_get /*#3*/(local_0 /*#4*/) /*#5*/ + 1 /*#6*/ /*#7*/ in
+  let _ /*#2*/ = ref_set /*#8*/(local_0 /*#9*/, local_1 /*#10*/) /*#11*/ in
+  local_1 /*#12*/ /*#13*/ /*#14*/ /*#15*/ in
+  let local_3 /*#5*/ = || => let _ /*#4*/ = ref_set /*#16*/(local_0 /*#17*/, 0 /*#18*/) /*#19*/ in
+  () /*#20*/ /*#21*/ /*#22*/ in
+  (local_2 /*#23*/, local_3 /*#24*/) /*#25*/ /*#26*/ /*#27*/ /*#28*/
+} /*item#0*/
 
 fn main() -> () {
-  let local_0 = make_counter() in
-  let (local_1, local_2) = local_0 in
-  let local_3 = local_1() in
-  let local_4 = local_1() in
-  let _ = local_2() in
-  let local_5 = local_1() in
-  let local_6 = make_counter() in
-  let (local_7, _) = local_6 in
-  let local_8 = local_7() in
-  let _ = string_println(int32_to_string(local_3)) in
-  let _ = string_println(int32_to_string(local_4)) in
-  let _ = string_println(int32_to_string(local_5)) in
-  let _ = string_println(int32_to_string(local_8)) in
-  ()
-}
+  let local_0 /*#6*/ = make_counter /*#29*/() /*#30*/ in
+  let (local_1 /*#7*/, local_2 /*#8*/) /*#9*/ = local_0 /*#31*/ in
+  let local_3 /*#10*/ = local_1 /*#32*/() /*#33*/ in
+  let local_4 /*#11*/ = local_1 /*#34*/() /*#35*/ in
+  let _ /*#12*/ = local_2 /*#36*/() /*#37*/ in
+  let local_5 /*#13*/ = local_1 /*#38*/() /*#39*/ in
+  let local_6 /*#14*/ = make_counter /*#40*/() /*#41*/ in
+  let (local_7 /*#15*/, _ /*#16*/) /*#17*/ = local_6 /*#42*/ in
+  let local_8 /*#18*/ = local_7 /*#43*/() /*#44*/ in
+  let _ /*#19*/ = string_println /*#45*/(int32_to_string /*#46*/(local_3 /*#47*/) /*#48*/) /*#49*/ in
+  let _ /*#20*/ = string_println /*#50*/(int32_to_string /*#51*/(local_4 /*#52*/) /*#53*/) /*#54*/ in
+  let _ /*#21*/ = string_println /*#55*/(int32_to_string /*#56*/(local_5 /*#57*/) /*#58*/) /*#59*/ in
+  let _ /*#22*/ = string_println /*#60*/(int32_to_string /*#61*/(local_8 /*#62*/) /*#63*/) /*#64*/ in
+  () /*#65*/ /*#66*/ /*#67*/ /*#68*/ /*#69*/ /*#70*/ /*#71*/ /*#72*/ /*#73*/ /*#74*/ /*#75*/ /*#76*/ /*#77*/ /*#78*/
+} /*item#1*/

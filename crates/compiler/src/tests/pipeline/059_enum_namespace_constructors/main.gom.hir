@@ -1,23 +1,23 @@
-enum Color { Red, Green }
+enum Color { Red, Green } /*item#0*/
 
-enum Signal { Red, Yellow }
+enum Signal { Red, Yellow } /*item#1*/
 
 fn color_is_red(local_0: Color) -> bool {
-  match local_0 {
-    Color::Red => true,
-    Color::Green => false,
-  }
-}
+  match local_0 /*#0*/ {
+    Color::Red /*#0*/ => true /*#1*/,
+    Color::Green /*#1*/ => false /*#2*/,
+  } /*#3*/
+} /*item#2*/
 
 fn toggle_signal(local_0: Signal) -> Signal {
-  match local_0 {
-    Signal::Red => Signal::Yellow,
-    Signal::Yellow => Signal::Red,
-  }
-}
+  match local_0 /*#4*/ {
+    Signal::Red /*#2*/ => Signal::Yellow /*#5*/,
+    Signal::Yellow /*#3*/ => Signal::Red /*#6*/,
+  } /*#7*/
+} /*item#3*/
 
 fn main() -> Signal {
-  let local_0 = Color::Red in
-  let _ = color_is_red(local_0) in
-  toggle_signal(Signal::Red)
-}
+  let local_0 /*#4*/ = Color::Red /*#8*/ in
+  let _ /*#5*/ = color_is_red /*#9*/(local_0 /*#10*/) /*#11*/ in
+  toggle_signal /*#12*/(Signal::Red /*#13*/) /*#14*/ /*#15*/ /*#16*/
+} /*item#4*/

@@ -1,87 +1,87 @@
-struct Point { x: int32, y: int32 }
+struct Point { x: int32, y: int32 } /*item#0*/
 
-struct Wrapper[T0] { value: T0 }
+struct Wrapper[T0] { value: T0 } /*item#1*/
 
-enum Shape[T1] { Dot(Point), Wrapped(Wrapper[T1]), Origin }
+enum Shape[T1] { Dot(Point), Wrapped(Wrapper[T1]), Origin } /*item#2*/
 
 fn bounce_int(local_0: Shape[int32]) -> Shape[int32] {
-  match local_0 {
-    Shape::Dot(local_1) => Shape::Dot(local_1),
-    Shape::Wrapped(local_2) => Shape::Wrapped(local_2),
-    Shape::Origin => Shape::Origin,
-  }
-}
+  match local_0 /*#0*/ {
+    Shape::Dot(local_1 /*#0*/) /*#1*/ => Shape::Dot(local_1 /*#1*/) /*#2*/,
+    Shape::Wrapped(local_2 /*#2*/) /*#3*/ => Shape::Wrapped(local_2 /*#3*/) /*#4*/,
+    Shape::Origin /*#4*/ => Shape::Origin /*#5*/,
+  } /*#6*/
+} /*item#3*/
 
 fn wrap_unit(local_0: Wrapper[()]) -> Shape[()] {
-  Shape::Wrapped(local_0)
-}
+  Shape::Wrapped(local_0 /*#7*/) /*#8*/
+} /*item#4*/
 
 fn pick(local_0: bool, local_1: Point, local_2: Wrapper[int32]) -> Shape[int32] {
-  match local_0 {
-    true => Shape::Dot(local_1),
-    false => Shape::Wrapped(local_2),
-  }
-}
+  match local_0 /*#9*/ {
+    true /*#5*/ => Shape::Dot(local_1 /*#10*/) /*#11*/,
+    false /*#6*/ => Shape::Wrapped(local_2 /*#12*/) /*#13*/,
+  } /*#14*/
+} /*item#5*/
 
 fn describe[T2](local_0: Shape[T2]) -> int32 {
-  match local_0 {
-    Shape::Dot(_) => 1,
-    Shape::Wrapped(_) => 2,
-    Shape::Origin => 0,
-  }
-}
+  match local_0 /*#15*/ {
+    Shape::Dot(_ /*#7*/) /*#8*/ => 1 /*#16*/,
+    Shape::Wrapped(_ /*#9*/) /*#10*/ => 2 /*#17*/,
+    Shape::Origin /*#11*/ => 0 /*#18*/,
+  } /*#19*/
+} /*item#6*/
 
 fn point32_to_string(local_0: Point) -> string {
-  let Point { x: local_1, y: local_2 } = local_0 in
-  let local_3 = "Point { x: " + int32_to_string(local_1) in
-  let local_4 = local_3 + ", y: " in
-  let local_5 = local_4 + int32_to_string(local_2) in
-  local_5 + " }"
-}
+  let Point { x: local_1 /*#12*/, y: local_2 /*#13*/ } /*#14*/ = local_0 /*#20*/ in
+  let local_3 /*#15*/ = "Point { x: " /*#21*/ + int32_to_string /*#22*/(local_1 /*#23*/) /*#24*/ /*#25*/ in
+  let local_4 /*#16*/ = local_3 /*#26*/ + ", y: " /*#27*/ /*#28*/ in
+  let local_5 /*#17*/ = local_4 /*#29*/ + int32_to_string /*#30*/(local_2 /*#31*/) /*#32*/ /*#33*/ in
+  local_5 /*#34*/ + " }" /*#35*/ /*#36*/ /*#37*/ /*#38*/ /*#39*/ /*#40*/
+} /*item#7*/
 
 fn wrapper_int32_to_string(local_0: Wrapper[int32]) -> string {
-  let Wrapper { value: local_1 } = local_0 in
-  let local_2 = "Wrapper[int32] { value: " + int32_to_string(local_1) in
-  local_2 + " }"
-}
+  let Wrapper { value: local_1 /*#18*/ } /*#19*/ = local_0 /*#41*/ in
+  let local_2 /*#20*/ = "Wrapper[int32] { value: " /*#42*/ + int32_to_string /*#43*/(local_1 /*#44*/) /*#45*/ /*#46*/ in
+  local_2 /*#47*/ + " }" /*#48*/ /*#49*/ /*#50*/ /*#51*/
+} /*item#8*/
 
 fn wrapper_unit_to_string(local_0: Wrapper[()]) -> string {
-  let Wrapper { value: local_1 } = local_0 in
-  let local_2 = "Wrapper[unit] { value: " + unit_to_string(local_1) in
-  local_2 + " }"
-}
+  let Wrapper { value: local_1 /*#21*/ } /*#22*/ = local_0 /*#52*/ in
+  let local_2 /*#23*/ = "Wrapper[unit] { value: " /*#53*/ + unit_to_string /*#54*/(local_1 /*#55*/) /*#56*/ /*#57*/ in
+  local_2 /*#58*/ + " }" /*#59*/ /*#60*/ /*#61*/ /*#62*/
+} /*item#9*/
 
 fn shape_int32_to_string(local_0: Shape[int32]) -> string {
-  match local_0 {
-    Shape::Dot(local_1) => let local_2 = "Shape::Dot(" + point32_to_string(local_1) in
-    local_2 + ")",
-    Shape::Wrapped(local_3) => let local_4 = "Shape::Wrapped(" + wrapper_int32_to_string(local_3) in
-    local_4 + ")",
-    Shape::Origin => "Shape::Origin",
-  }
-}
+  match local_0 /*#63*/ {
+    Shape::Dot(local_1 /*#24*/) /*#25*/ => let local_2 /*#26*/ = "Shape::Dot(" /*#64*/ + point32_to_string /*#65*/(local_1 /*#66*/) /*#67*/ /*#68*/ in
+    local_2 /*#69*/ + ")" /*#70*/ /*#71*/ /*#72*/,
+    Shape::Wrapped(local_3 /*#27*/) /*#28*/ => let local_4 /*#29*/ = "Shape::Wrapped(" /*#73*/ + wrapper_int32_to_string /*#74*/(local_3 /*#75*/) /*#76*/ /*#77*/ in
+    local_4 /*#78*/ + ")" /*#79*/ /*#80*/ /*#81*/,
+    Shape::Origin /*#30*/ => "Shape::Origin" /*#82*/,
+  } /*#83*/
+} /*item#10*/
 
 fn shape_unit_to_string(local_0: Shape[()]) -> string {
-  match local_0 {
-    Shape::Dot(local_1) => let local_2 = "Shape::Dot(" + point32_to_string(local_1) in
-    local_2 + ")",
-    Shape::Wrapped(local_3) => let local_4 = "Shape::Wrapped(" + wrapper_unit_to_string(local_3) in
-    local_4 + ")",
-    Shape::Origin => "Shape::Origin",
-  }
-}
+  match local_0 /*#84*/ {
+    Shape::Dot(local_1 /*#31*/) /*#32*/ => let local_2 /*#33*/ = "Shape::Dot(" /*#85*/ + point32_to_string /*#86*/(local_1 /*#87*/) /*#88*/ /*#89*/ in
+    local_2 /*#90*/ + ")" /*#91*/ /*#92*/ /*#93*/,
+    Shape::Wrapped(local_3 /*#34*/) /*#35*/ => let local_4 /*#36*/ = "Shape::Wrapped(" /*#94*/ + wrapper_unit_to_string /*#95*/(local_3 /*#96*/) /*#97*/ /*#98*/ in
+    local_4 /*#99*/ + ")" /*#100*/ /*#101*/ /*#102*/,
+    Shape::Origin /*#37*/ => "Shape::Origin" /*#103*/,
+  } /*#104*/
+} /*item#11*/
 
 fn main() -> () {
-  let _ = string_println(point32_to_string(Point::Point(3, 4))) in
-  let _ = string_println(wrapper_int32_to_string(Wrapper::Wrapper(7))) in
-  let _ = string_println(wrapper_unit_to_string(Wrapper::Wrapper(()))) in
-  let local_0 = bounce_int(Shape::Origin) in
-  let _ = string_println(shape_int32_to_string(Shape::Dot(Point::Point(3, 4)))) in
-  let _ = string_println(shape_int32_to_string(Shape::Wrapped(Wrapper::Wrapper(7)))) in
-  let _ = string_println(shape_int32_to_string(local_0)) in
-  let _ = string_println(shape_unit_to_string(Shape::Dot(Point::Point(3, 4)))) in
-  let _ = string_println(shape_unit_to_string(Shape::Wrapped(Wrapper::Wrapper(())))) in
-  let _ = string_println(shape_unit_to_string(Shape::Origin)) in
-  let _ = describe(bounce_int(Shape::Origin)) in
-  string_println("struct enums!")
-}
+  let _ /*#38*/ = string_println /*#105*/(point32_to_string /*#106*/(Point::Point(3 /*#107*/, 4 /*#108*/) /*#109*/) /*#110*/) /*#111*/ in
+  let _ /*#39*/ = string_println /*#112*/(wrapper_int32_to_string /*#113*/(Wrapper::Wrapper(7 /*#114*/) /*#115*/) /*#116*/) /*#117*/ in
+  let _ /*#40*/ = string_println /*#118*/(wrapper_unit_to_string /*#119*/(Wrapper::Wrapper(() /*#120*/) /*#121*/) /*#122*/) /*#123*/ in
+  let local_0 /*#41*/ = bounce_int /*#124*/(Shape::Origin /*#125*/) /*#126*/ in
+  let _ /*#42*/ = string_println /*#127*/(shape_int32_to_string /*#128*/(Shape::Dot(Point::Point(3 /*#129*/, 4 /*#130*/) /*#131*/) /*#132*/) /*#133*/) /*#134*/ in
+  let _ /*#43*/ = string_println /*#135*/(shape_int32_to_string /*#136*/(Shape::Wrapped(Wrapper::Wrapper(7 /*#137*/) /*#138*/) /*#139*/) /*#140*/) /*#141*/ in
+  let _ /*#44*/ = string_println /*#142*/(shape_int32_to_string /*#143*/(local_0 /*#144*/) /*#145*/) /*#146*/ in
+  let _ /*#45*/ = string_println /*#147*/(shape_unit_to_string /*#148*/(Shape::Dot(Point::Point(3 /*#149*/, 4 /*#150*/) /*#151*/) /*#152*/) /*#153*/) /*#154*/ in
+  let _ /*#46*/ = string_println /*#155*/(shape_unit_to_string /*#156*/(Shape::Wrapped(Wrapper::Wrapper(() /*#157*/) /*#158*/) /*#159*/) /*#160*/) /*#161*/ in
+  let _ /*#47*/ = string_println /*#162*/(shape_unit_to_string /*#163*/(Shape::Origin /*#164*/) /*#165*/) /*#166*/ in
+  let _ /*#48*/ = describe /*#167*/(bounce_int /*#168*/(Shape::Origin /*#169*/) /*#170*/) /*#171*/ in
+  string_println /*#172*/("struct enums!" /*#173*/) /*#174*/ /*#175*/ /*#176*/ /*#177*/ /*#178*/ /*#179*/ /*#180*/ /*#181*/ /*#182*/ /*#183*/ /*#184*/ /*#185*/
+} /*item#12*/
