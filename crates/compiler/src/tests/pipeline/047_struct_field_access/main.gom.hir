@@ -1,0 +1,15 @@
+struct Point { x: int32, y: int32 }
+
+fn make_point(local_0: int32) -> Point {
+  Point { x: local_0, y: local_0 + 1 }
+}
+
+fn sum_point(local_0: Point) -> int32 {
+  local_0.x + local_0.y
+}
+
+fn main() -> int32 {
+  let local_0 = make_point(5) in
+  let local_1 = Point { x: local_0.x + 1, y: local_0.y - 2 } in
+  local_1.x + sum_point(local_1)
+}

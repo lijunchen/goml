@@ -1,0 +1,40 @@
+fn match_mixed_pair(local_0: (int32, string)) -> int32 {
+  match local_0 {
+    (0, "zero") => 1,
+    (0, _) => 2,
+    (1, "one") => 3,
+    (_, "zero") => 4,
+    _ => 5,
+  }
+}
+
+enum Mixed { OnlyInt(int32), OnlyStr(string), Both(int32, string) }
+
+fn match_mixed_enum(local_0: Mixed) -> int32 {
+  match local_0 {
+    Mixed::OnlyInt(0) => 6,
+    Mixed::OnlyInt(_) => 7,
+    Mixed::OnlyStr("zero") => 8,
+    Mixed::OnlyStr(_) => 9,
+    Mixed::Both(0, "zero") => 10,
+    Mixed::Both(0, _) => 11,
+    Mixed::Both(_, "zero") => 12,
+    Mixed::Both(_, _) => 13,
+  }
+}
+
+fn main() -> () {
+  let _ = string_println(int32_to_string(match_mixed_pair((0, "zero")))) in
+  let _ = string_println(int32_to_string(match_mixed_pair((0, "other")))) in
+  let _ = string_println(int32_to_string(match_mixed_pair((1, "one")))) in
+  let _ = string_println(int32_to_string(match_mixed_pair((2, "zero")))) in
+  let _ = string_println(int32_to_string(match_mixed_pair((2, "two")))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::OnlyInt(0)))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::OnlyInt(5)))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::OnlyStr("zero")))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::OnlyStr("hello")))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::Both(0, "zero")))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::Both(0, "hello")))) in
+  let _ = string_println(int32_to_string(match_mixed_enum(Mixed::Both(2, "zero")))) in
+  string_println(int32_to_string(match_mixed_enum(Mixed::Both(3, "three"))))
+}

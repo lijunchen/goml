@@ -1,0 +1,25 @@
+enum option[T0] { some(T0), none }
+
+struct point { x: int32, y: int32 }
+
+fn make_some(local_0: int32) -> option[int32] {
+  option::some(local_0)
+}
+
+fn build_point(local_0: int32, local_1: int32) -> point {
+  point { x: local_0, y: local_1 }
+}
+
+fn magnitude(local_0: point) -> int32 {
+  let point { x: local_1, y: local_2 } = local_0 in
+  local_1 + local_2
+}
+
+fn main() -> int32 {
+  let option::some(local_0) = make_some(5) in
+  let local_1 = build_point(local_0, 7) in
+  match option::some(local_1.x) {
+    option::some(local_2) => local_2 + magnitude(local_1),
+    option::none => 0,
+  }
+}

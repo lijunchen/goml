@@ -1,0 +1,53 @@
+struct Counter { start: uint32, end: uint64 }
+
+fn is_flag8(local_0: uint8) -> bool {
+  match local_0 {
+    0 => true,
+    200 => true,
+    _ => false,
+  }
+}
+
+fn is_flag16(local_0: uint16) -> bool {
+  match local_0 {
+    1024 => true,
+    65000 => true,
+    _ => false,
+  }
+}
+
+fn is_flag32(local_0: uint32) -> bool {
+  match local_0 {
+    4000000000 => true,
+    1234567890 => true,
+    _ => false,
+  }
+}
+
+fn is_flag64(local_0: uint64) -> bool {
+  match local_0 {
+    900000000 => true,
+    600000000 => true,
+    _ => false,
+  }
+}
+
+fn match_struct(local_0: Counter) -> bool {
+  match local_0 {
+    Counter { start: 4000000000, end: 900000000 } => true,
+    Counter { start: _, end: 600000000 } => true,
+    _ => false,
+  }
+}
+
+fn report(local_0: string, local_1: bool) -> string {
+  local_0 + bool_to_string(local_1)
+}
+
+fn main() -> () {
+  let local_0 = Counter { start: 4000000000, end: 900000000 } in
+  let local_1 = Counter { start: 12, end: 600000000 } in
+  let local_2 = report("u8_hit=", is_flag8(200)) + report(",u8_miss=", is_flag8(15)) + report(",u16_hit=", is_flag16(65000)) + report(",u16_miss=", is_flag16(42)) + report(",u32_hit=", is_flag32(1234567890)) + report(",u32_miss=", is_flag32(99)) + report(",u64_hit=", is_flag64(900000000)) + report(",u64_miss=", is_flag64(700000000)) + report(",struct_first=", match_struct(local_0)) + report(",struct_second=", match_struct(local_1)) in
+  let _ = string_println(local_2) in
+  ()
+}

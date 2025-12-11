@@ -1,0 +1,19 @@
+fn main() -> () {
+  let local_0 = (true, false) in
+  let local_1 = match local_0 {
+    (false, false) => (true, true),
+    (false, true) => (true, false),
+    (true, false) => (false, true),
+    (true, true) => (false, false),
+  } in
+  let local_3 = match local_1 {
+    (_, local_2) => local_2,
+  } in
+  let local_4 = match (true, local_3) {
+    (false, false) => string_print(int32_to_string(0)),
+    (false, true) => string_print(int32_to_string(1)),
+    (true, false) => string_print(int32_to_string(2)),
+    (true, true) => string_print(int32_to_string(3)),
+  } in
+  string_print(unit_to_string(local_4))
+}

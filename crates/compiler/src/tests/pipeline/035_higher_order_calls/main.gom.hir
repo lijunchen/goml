@@ -1,0 +1,29 @@
+fn double(local_0: int32) -> int32 {
+  local_0 * 2
+}
+
+fn increment(local_0: int32) -> int32 {
+  local_0 + 1
+}
+
+fn chooser(local_0: bool) -> fn(int32) -> int32 {
+  if local_0 {
+    double
+  } else {
+    increment
+  }
+}
+
+fn main() -> () {
+  let local_0 = [double, increment] in
+  let local_1 = array_get(local_0, 0) in
+  let local_2 = array_get(local_0, 1) in
+  let _ = string_println(int32_to_string(local_2(local_1(10)))) in
+  let local_3 = chooser(true) in
+  let local_4 = local_3(5) in
+  let local_5 = chooser(false)(5) in
+  let local_6 = string_println in
+  let _ = local_6(int32_to_string(local_4)) in
+  let _ = local_6(int32_to_string(local_5)) in
+  ()
+}

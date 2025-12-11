@@ -1,0 +1,33 @@
+struct Point { x: int32, y: int32 }
+
+impl Point {
+  fn item_26(local_0: Point) -> string {
+    let Point { x: local_1, y: local_2 } = local_0 in
+    "Point { " + "x: " + local_1.to_string() + ", " + "y: " + local_2.to_string() + " }"
+  }
+}
+
+enum Message { Quit, Move(int32, int32), Write(string) }
+
+impl Message {
+  fn item_27(local_0: Message) -> string {
+    match local_0 {
+      Message::Quit => "Message::Quit",
+      Message::Move(local_1, local_2) => "Message::Move(" + local_1.to_string() + ", " + local_2.to_string() + ")",
+      Message::Write(local_3) => "Message::Write(" + local_3 + ")",
+    }
+  }
+}
+
+fn main() -> () {
+  let local_0 = Point { x: 4, y: 7 } in
+  let local_1 = local_0.to_string() in
+  let local_2 = Message::Move(1, 2).to_string() in
+  let local_3 = Message::Write("done").to_string() in
+  let local_4 = Message::Quit.to_string() in
+  let _ = string_println(local_1) in
+  let _ = string_println(local_2) in
+  let _ = string_println(local_3) in
+  let _ = string_println(local_4) in
+  ()
+}

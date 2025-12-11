@@ -1,0 +1,41 @@
+fn test() -> () {
+  let local_0 = 3 in
+  let local_1 = 5 in
+  let local_3 = |local_2| => local_2 * local_0 * local_1 in
+  let _ = string_println(int32_to_string(local_3(2))) in
+  string_println(int32_to_string(local_3(3)))
+}
+
+fn call_int_id(local_0: fn(int32) -> int32, local_1: int32) -> int32 {
+  local_0(local_1)
+}
+
+enum IntList { Nil, Cons(int32, IntList) }
+
+struct Point { x: int32, y: int32 }
+
+fn main() -> () {
+  let local_0 = 5 in
+  let local_2 = |local_1| => local_1 + local_0 in
+  let local_3 = local_2(7) in
+  let local_7 = |local_4, local_5| => let local_6 = local_4 + int32_to_string(local_5) in
+  string_println(local_6) in
+  let _ = local_7("result: ", local_3) in
+  let local_9 = |local_8| => local_8 + local_3 in
+  let local_11 = |local_10| => local_10 * 2 in
+  let local_12 = local_11(3) in
+  let _ = string_println(int32_to_string(local_12)) in
+  let _ = test() in
+  let local_13 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
+  let local_14 = Point { x: 10, y: 20 } in
+  let local_19 = || => match local_13 {
+    IntList::Nil => string_println("Empty list"),
+    IntList::Cons(local_15, local_16) => let _ = string_println(int32_to_string(local_15)) in
+    match local_14 {
+      Point { x: local_17, y: local_18 } => let _ = string_println("Point: (" + int32_to_string(local_17) + ", " + int32_to_string(local_18) + ")") in
+      (),
+    },
+  } in
+  let _ = local_19() in
+  ()
+}

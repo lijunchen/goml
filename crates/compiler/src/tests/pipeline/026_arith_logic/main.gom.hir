@@ -1,0 +1,36 @@
+fn show_int(local_0: string, local_1: int32) -> () {
+  let _ = string_println(local_0 + int32_to_string(local_1)) in
+  ()
+}
+
+fn show_bool(local_0: string, local_1: bool) -> () {
+  let _ = string_println(local_0 + bool_to_string(local_1)) in
+  ()
+}
+
+fn main() -> () {
+  let local_0 = 10 in
+  let local_1 = local_0 + 5 in
+  let local_2 = local_1 - 3 in
+  let local_3 = local_2 * 2 in
+  let local_4 = local_3 / 4 in
+  let _ = show_int("sum=", local_1) in
+  let _ = show_int("diff=", local_2) in
+  let _ = show_int("prod=", local_3) in
+  let _ = show_int("quot=", local_4) in
+  let local_5 = true && false in
+  let local_6 = true || false in
+  let local_7 = !false in
+  let local_8 = !local_5 && match local_1 + local_3 * local_0 - local_3 / 2 {
+    0 => false,
+    _ => true,
+  } || !match local_2 - local_4 + local_0 - local_1 / 2 {
+    0 => false,
+    _ => true,
+  } in
+  let _ = show_bool("and=", local_5) in
+  let _ = show_bool("or=", local_6) in
+  let _ = show_bool("not=", local_7) in
+  let _ = show_bool("mixed=", local_8) in
+  ()
+}

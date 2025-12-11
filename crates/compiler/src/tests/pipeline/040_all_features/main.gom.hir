@@ -1,0 +1,141 @@
+struct Tracker { label: string, count: Ref[int32], toggled: Ref[bool] }
+
+enum Record[T0] { Value(T0), Pair(T0, T0), Empty }
+
+enum Maybe[T1] { Some(T1), None }
+
+trait Describe {
+  fn item_25() -> string
+}
+
+impl Describe for Tracker {
+  fn item_36(local_0: Tracker) -> string {
+    let Tracker { label: local_1, count: local_2, toggled: local_3 } = local_0 in
+    let local_4 = ref_get(local_2) in
+    let local_5 = ref_get(local_3) in
+    let local_6 = "Tracker(" + local_1 in
+    let local_7 = local_6 + ", count: " in
+    let local_8 = local_7 + int32_to_string(local_4) in
+    let local_9 = local_8 + ", toggled: " in
+    local_9 + bool_to_string(local_5) + ")"
+  }
+}
+
+impl Describe for Record[int32] {
+  fn item_37(local_0: Record[int32]) -> string {
+    match local_0 {
+      Record::Value(local_1) => "Value(" + int32_to_string(local_1) + ")",
+      Record::Pair(local_2, local_3) => let local_4 = "Pair(" + int32_to_string(local_2) in
+      local_4 + ", " + int32_to_string(local_3) + ")",
+      Record::Empty => "Empty",
+    }
+  }
+}
+
+impl Describe for Record[string] {
+  fn item_38(local_0: Record[string]) -> string {
+    match local_0 {
+      Record::Value(local_1) => "Value(" + local_1 + ")",
+      Record::Pair(local_2, local_3) => let local_4 = "Pair(" + local_2 in
+      local_4 + ", " + local_3 + ")",
+      Record::Empty => "Empty",
+    }
+  }
+}
+
+fn choose[T2](local_0: bool, local_1: T2, local_2: T2) -> T2 {
+  if local_0 {
+    local_1
+  } else {
+    local_2
+  }
+}
+
+fn map_maybe[T3, T4](local_0: Maybe[T3], local_1: fn(T3) -> T4) -> Maybe[T4] {
+  match local_0 {
+    Maybe::Some(local_2) => Maybe::Some(local_1(local_2)),
+    Maybe::None => Maybe::None,
+  }
+}
+
+fn format_total(local_0: int32) -> string {
+  "total: " + int32_to_string(local_0)
+}
+
+fn increment(local_0: int32) -> int32 {
+  local_0 + 1
+}
+
+fn triple(local_0: int32) -> int32 {
+  local_0 * 3
+}
+
+fn pair_join(local_0: (string, string)) -> string {
+  let (local_1, local_2) = local_0 in
+  local_1 + " -> " + local_2
+}
+
+fn run_transforms(local_0: int32, local_1: [fn(int32) -> int32; 2]) -> [int32; 2] {
+  let local_2 = array_get(local_1, 0) in
+  let local_3 = array_get(local_1, 1) in
+  let local_4 = local_2(local_0) in
+  let local_5 = local_3(local_4) in
+  array_set([local_4, local_0], 1, local_5)
+}
+
+fn gather(local_0: Record[int32]) -> Maybe[int32] {
+  match local_0 {
+    Record::Value(local_1) => Maybe::Some(local_1),
+    Record::Pair(_, local_2) => Maybe::Some(local_2),
+    Record::Empty => Maybe::None,
+  }
+}
+
+fn build_counter(local_0: string, local_1: int32) -> (Tracker, fn() -> Record[int32], fn(int32) -> Record[int32], fn() -> Record[string]) {
+  let local_2 = ref(local_1) in
+  let local_3 = ref(false) in
+  let local_4 = Tracker { label: local_0, count: local_2, toggled: local_3 } in
+  let local_5 = || => Record::Value(ref_get(local_2)) in
+  let local_8 = |local_6| => let local_7 = ref_get(local_2) in
+  let _ = ref_set(local_2, local_7 + local_6) in
+  Record::Pair(local_7, ref_get(local_2)) in
+  let local_11 = || => let local_9 = ref_get(local_3) in
+  let _ = ref_set(local_3, !local_9) in
+  let local_10 = ref_get(local_3) in
+  Record::Pair(bool_to_string(local_9), bool_to_string(local_10)) in
+  (local_4, local_5, local_8, local_11)
+}
+
+fn main() -> () {
+  let (local_0, local_1, local_2, local_3) = build_counter("goml", 2) in
+  let local_4 = Describe::describe(local_0) in
+  let local_5 = local_1() in
+  let local_6 = local_2(5) in
+  let local_7 = local_3() in
+  let local_8 = gather(local_5) in
+  let local_9 = gather(local_6) in
+  let local_10 = choose(true, local_9, local_8) in
+  let local_11 = map_maybe(local_10, format_total) in
+  let local_12 = [increment, triple] in
+  let local_13 = run_transforms(4, local_12) in
+  let local_14 = array_get(local_13, 0) in
+  let local_15 = array_get(local_13, 1) in
+  let local_16 = local_14 < local_15 && true in
+  let local_17 = Describe::describe(local_5) in
+  let local_18 = Describe::describe(local_6) in
+  let local_19 = Describe::describe(local_7) in
+  let local_21 = match local_11 {
+    Maybe::Some(local_20) => "Snapshot: " + local_20,
+    Maybe::None => "Snapshot: none",
+  } in
+  let local_22 = pair_join((int32_to_string(local_14), int32_to_string(local_15))) in
+  let local_23 = bool_to_string(local_16) in
+  let _ = string_println(local_4) in
+  let _ = string_println(local_17) in
+  let _ = string_println(local_18) in
+  let _ = string_println(local_19) in
+  let _ = string_println(local_21) in
+  let _ = string_println(local_22) in
+  let _ = string_println(local_23) in
+  ()
+}

@@ -1,0 +1,49 @@
+fn show32(local_0: string, local_1: float32) -> () {
+  let local_2 = local_0 + float32_to_string(local_1) in
+  let _ = string_println(local_2) in
+  ()
+}
+
+fn show64(local_0: string, local_1: float64) -> () {
+  let local_2 = local_0 + float64_to_string(local_1) in
+  let _ = string_println(local_2) in
+  ()
+}
+
+fn lerp32(local_0: float32, local_1: float32, local_2: float32) -> float32 {
+  let local_3 = local_1 - local_0 in
+  local_0 + local_3 * local_2
+}
+
+fn midpoint_energy(local_0: float64, local_1: float64) -> float64 {
+  let local_2 = local_0 * local_0 + local_1 * local_1 in
+  local_2 / 2
+}
+
+fn main() -> () {
+  let local_0: float32 = 1.25 in
+  let local_1: float32 = 5.75 in
+  let local_2: float32 = 0.5 in
+  let local_3: float32 = 2 in
+  let local_4 = lerp32(local_0, local_1, local_2) in
+  let local_5 = -local_1 in
+  let local_6 = local_1 / local_3 in
+  let local_7 = local_0 < local_1 in
+  let local_8: float64 = 6.5 in
+  let local_9: float64 = 3.5 in
+  let local_10: float64 = 0.25 in
+  let local_11: float64 = midpoint_energy(local_8, local_9) in
+  let local_12 = -local_8 in
+  let local_13: float64 = local_11 + local_9 - local_8 * local_10 in
+  let local_14: float64 = 4 in
+  let local_15 = local_13 < local_14 in
+  let _ = show32("mid32=", local_4) in
+  let _ = show32("neg_end32=", local_5) in
+  let _ = show32("ratio32=", local_6) in
+  let _ = string_println("less32=" + bool_to_string(local_7)) in
+  let _ = show64("energy=", local_11) in
+  let _ = show64("neg_dx=", local_12) in
+  let _ = show64("adjusted=", local_13) in
+  let _ = string_println("less64=" + bool_to_string(local_15)) in
+  ()
+}

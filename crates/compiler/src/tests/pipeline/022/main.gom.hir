@@ -1,0 +1,31 @@
+fn match_string(local_0: string) -> int32 {
+  match local_0 {
+    "hello" => 1,
+    "world" => 2,
+    _ => 3,
+  }
+}
+
+fn wildcard_position(local_0: string) -> int32 {
+  match local_0 {
+    _ => 4,
+    "world" => 5,
+  }
+}
+
+fn repeated_string(local_0: string) -> int32 {
+  match local_0 {
+    "hello" => 6,
+    "hello" => 7,
+    _ => 8,
+  }
+}
+
+fn main() -> () {
+  let _ = string_println(int32_to_string(match_string("hello"))) in
+  let _ = string_println(int32_to_string(match_string("planet"))) in
+  let _ = string_println(int32_to_string(wildcard_position("world"))) in
+  let _ = string_println(int32_to_string(wildcard_position("sun"))) in
+  let _ = string_println(int32_to_string(repeated_string("hello"))) in
+  string_println(int32_to_string(repeated_string("mars")))
+}
