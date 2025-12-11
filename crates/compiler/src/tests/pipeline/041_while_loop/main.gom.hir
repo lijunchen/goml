@@ -1,37 +1,37 @@
 fn sum_to(local_0: int32) -> int32 {
-  let local_1 = ref(0) in
-  let local_2 = ref(0) in
-  let _ = while ref_get(local_2) < local_0 {
-    let local_3 = ref_get(local_2) in
-    let _ = ref_set(local_1, ref_get(local_1) + local_3) in
-    let _ = ref_set(local_2, local_3 + 1) in
-    ()
-  } in
-  ref_get(local_1)
-}
+  let local_1 /*#0*/ = ref /*#0*/(0 /*#1*/) /*#2*/ in
+  let local_2 /*#1*/ = ref /*#3*/(0 /*#4*/) /*#5*/ in
+  let _ /*#5*/ = while ref_get /*#6*/(local_2 /*#7*/) /*#8*/ < local_0 /*#9*/ /*#10*/ {
+    let local_3 /*#2*/ = ref_get /*#11*/(local_2 /*#12*/) /*#13*/ in
+    let _ /*#3*/ = ref_set /*#14*/(local_1 /*#15*/, ref_get /*#16*/(local_1 /*#17*/) /*#18*/ + local_3 /*#19*/ /*#20*/) /*#21*/ in
+    let _ /*#4*/ = ref_set /*#22*/(local_2 /*#23*/, local_3 /*#24*/ + 1 /*#25*/ /*#26*/) /*#27*/ in
+    () /*#28*/ /*#29*/ /*#30*/ /*#31*/
+  } /*#32*/ in
+  ref_get /*#33*/(local_1 /*#34*/) /*#35*/ /*#36*/ /*#37*/ /*#38*/
+} /*item#0*/
 
 fn sum_even(local_0: int32) -> int32 {
-  let local_1 = ref(0) in
-  let local_2 = ref(0) in
-  let local_3 = ref(true) in
-  let _ = while ref_get(local_2) < local_0 {
-    let local_4 = ref_get(local_2) in
-    let _ = ref_set(local_2, local_4 + 1) in
-    let local_5 = ref_get(local_3) in
-    let _ = ref_set(local_3, !local_5) in
-    if local_5 {
-      ref_set(local_1, ref_get(local_1) + local_4)
+  let local_1 /*#6*/ = ref /*#39*/(0 /*#40*/) /*#41*/ in
+  let local_2 /*#7*/ = ref /*#42*/(0 /*#43*/) /*#44*/ in
+  let local_3 /*#8*/ = ref /*#45*/(true /*#46*/) /*#47*/ in
+  let _ /*#13*/ = while ref_get /*#48*/(local_2 /*#49*/) /*#50*/ < local_0 /*#51*/ /*#52*/ {
+    let local_4 /*#9*/ = ref_get /*#53*/(local_2 /*#54*/) /*#55*/ in
+    let _ /*#10*/ = ref_set /*#56*/(local_2 /*#57*/, local_4 /*#58*/ + 1 /*#59*/ /*#60*/) /*#61*/ in
+    let local_5 /*#11*/ = ref_get /*#62*/(local_3 /*#63*/) /*#64*/ in
+    let _ /*#12*/ = ref_set /*#65*/(local_3 /*#66*/, !local_5 /*#67*/ /*#68*/) /*#69*/ in
+    if local_5 /*#70*/ {
+      ref_set /*#71*/(local_1 /*#72*/, ref_get /*#73*/(local_1 /*#74*/) /*#75*/ + local_4 /*#76*/ /*#77*/) /*#78*/
     } else {
-      ()
-    }
-  } in
-  ref_get(local_1)
-}
+      () /*#79*/
+    } /*#80*/ /*#81*/ /*#82*/ /*#83*/ /*#84*/
+  } /*#85*/ in
+  ref_get /*#86*/(local_1 /*#87*/) /*#88*/ /*#89*/ /*#90*/ /*#91*/ /*#92*/
+} /*item#1*/
 
 fn main() -> () {
-  let local_0 = sum_to(5) in
-  let local_1 = sum_even(6) in
-  let _ = string_println("sum_to(5)=" + int32_to_string(local_0)) in
-  let _ = string_println("sum_even(6)=" + int32_to_string(local_1)) in
-  ()
-}
+  let local_0 /*#14*/ = sum_to /*#93*/(5 /*#94*/) /*#95*/ in
+  let local_1 /*#15*/ = sum_even /*#96*/(6 /*#97*/) /*#98*/ in
+  let _ /*#16*/ = string_println /*#99*/("sum_to(5)=" /*#100*/ + int32_to_string /*#101*/(local_0 /*#102*/) /*#103*/ /*#104*/) /*#105*/ in
+  let _ /*#17*/ = string_println /*#106*/("sum_even(6)=" /*#107*/ + int32_to_string /*#108*/(local_1 /*#109*/) /*#110*/ /*#111*/) /*#112*/ in
+  () /*#113*/ /*#114*/ /*#115*/ /*#116*/ /*#117*/
+} /*item#2*/

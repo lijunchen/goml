@@ -1,61 +1,61 @@
-enum Color { Red, Green, Blue }
+enum Color { Red, Green, Blue } /*item#0*/
 
 impl Color {
   fn item_26(local_0: Color) -> string {
-    match local_0 {
-      Color::Red => "Color::Red",
-      Color::Green => "Color::Green",
-      Color::Blue => "Color::Blue",
-    }
-  }
-}
+    match local_0 /*#0*/ {
+      Color::Red /*#0*/ => "Color::Red" /*#1*/,
+      Color::Green /*#1*/ => "Color::Green" /*#2*/,
+      Color::Blue /*#2*/ => "Color::Blue" /*#3*/,
+    } /*#4*/
+  } /*item#1*/
+} /*item#2*/
 
-struct Point { x: int32, y: int32, color: Color }
+struct Point { x: int32, y: int32, color: Color } /*item#3*/
 
 impl Point {
   fn item_27(local_0: Point) -> string {
-    let Point { x: local_1, y: local_2, color: local_3 } = local_0 in
-    "Point { " + "x: " + local_1.to_string() + ", " + "y: " + local_2.to_string() + ", " + "color: " + local_3.to_string() + " }"
-  }
-}
+    let Point { x: local_1 /*#3*/, y: local_2 /*#4*/, color: local_3 /*#5*/ } /*#6*/ = local_0 /*#5*/ in
+    "Point { " /*#6*/ + "x: " /*#7*/ /*#8*/ + local_1 /*#9*/.to_string /*#10*/() /*#11*/ /*#12*/ + ", " /*#13*/ /*#14*/ + "y: " /*#15*/ /*#16*/ + local_2 /*#17*/.to_string /*#18*/() /*#19*/ /*#20*/ + ", " /*#21*/ /*#22*/ + "color: " /*#23*/ /*#24*/ + local_3 /*#25*/.to_string /*#26*/() /*#27*/ /*#28*/ + " }" /*#29*/ /*#30*/ /*#31*/
+  } /*item#4*/
+} /*item#5*/
 
 impl Point {
   fn item_28(local_0: int32, local_1: int32, local_2: Color) -> Point {
-    Point { x: local_0, y: local_1, color: local_2 }
-  }
-}
+    Point { x: local_0 /*#32*/, y: local_1 /*#33*/, color: local_2 /*#34*/ } /*#35*/
+  } /*item#6*/
+} /*item#7*/
 
-struct Line { from: Point, to: Point, color: Color }
+struct Line { from: Point, to: Point, color: Color } /*item#8*/
 
 impl Line {
   fn item_29(local_0: Line) -> string {
-    let Line { from: local_1, to: local_2, color: local_3 } = local_0 in
-    "Line { " + "from: " + local_1.to_string() + ", " + "to: " + local_2.to_string() + ", " + "color: " + local_3.to_string() + " }"
-  }
-}
+    let Line { from: local_1 /*#7*/, to: local_2 /*#8*/, color: local_3 /*#9*/ } /*#10*/ = local_0 /*#36*/ in
+    "Line { " /*#37*/ + "from: " /*#38*/ /*#39*/ + local_1 /*#40*/.to_string /*#41*/() /*#42*/ /*#43*/ + ", " /*#44*/ /*#45*/ + "to: " /*#46*/ /*#47*/ + local_2 /*#48*/.to_string /*#49*/() /*#50*/ /*#51*/ + ", " /*#52*/ /*#53*/ + "color: " /*#54*/ /*#55*/ + local_3 /*#56*/.to_string /*#57*/() /*#58*/ /*#59*/ + " }" /*#60*/ /*#61*/ /*#62*/
+  } /*item#9*/
+} /*item#10*/
 
 impl Line {
   fn item_30(local_0: Point, local_1: Point, local_2: Color) -> Line {
-    Line { from: local_0, to: local_1, color: local_2 }
-  }
-}
+    Line { from: local_0 /*#63*/, to: local_1 /*#64*/, color: local_2 /*#65*/ } /*#66*/
+  } /*item#11*/
+} /*item#12*/
 
-enum LineList { Nil, Cons(Line, LineList) }
+enum LineList { Nil, Cons(Line, LineList) } /*item#13*/
 
 impl LineList {
   fn item_31(local_0: LineList) -> string {
-    match local_0 {
-      LineList::Nil => "LineList::Nil",
-      LineList::Cons(local_1, local_2) => "LineList::Cons(" + local_1.to_string() + ", " + local_2.to_string() + ")",
-    }
-  }
-}
+    match local_0 /*#67*/ {
+      LineList::Nil /*#11*/ => "LineList::Nil" /*#68*/,
+      LineList::Cons(local_1 /*#12*/, local_2 /*#13*/) /*#14*/ => "LineList::Cons(" /*#69*/ + local_1 /*#70*/.to_string /*#71*/() /*#72*/ /*#73*/ + ", " /*#74*/ /*#75*/ + local_2 /*#76*/.to_string /*#77*/() /*#78*/ /*#79*/ + ")" /*#80*/ /*#81*/,
+    } /*#82*/
+  } /*item#14*/
+} /*item#15*/
 
 fn main() -> () {
-  let local_0 = Point::new(10, 20, Color::Red) in
-  let local_1 = Point::new(30, 40, Color::Green) in
-  let local_2 = Line::new(local_0, local_1, Color::Blue) in
-  let local_3 = LineList::Cons(local_2, LineList::Nil) in
-  let _ = string_println(local_3.to_string()) in
-  ()
-}
+  let local_0 /*#15*/ = Point::new /*#83*/(10 /*#84*/, 20 /*#85*/, Color::Red /*#86*/) /*#87*/ in
+  let local_1 /*#16*/ = Point::new /*#88*/(30 /*#89*/, 40 /*#90*/, Color::Green /*#91*/) /*#92*/ in
+  let local_2 /*#17*/ = Line::new /*#93*/(local_0 /*#94*/, local_1 /*#95*/, Color::Blue /*#96*/) /*#97*/ in
+  let local_3 /*#18*/ = LineList::Cons(local_2 /*#98*/, LineList::Nil /*#99*/) /*#100*/ in
+  let _ /*#19*/ = string_println /*#101*/(local_3 /*#102*/.to_string /*#103*/() /*#104*/) /*#105*/ in
+  () /*#106*/ /*#107*/ /*#108*/ /*#109*/ /*#110*/ /*#111*/
+} /*item#16*/

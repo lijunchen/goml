@@ -143,7 +143,7 @@ impl HirFile {
         RcDoc::intersperse(
             self.items.iter().map(|&item_id| {
                 let item = &ctx.tables.items[item_id];
-                item.to_doc(ctx)
+                item.to_doc_with_id(ctx, item_id)
             }),
             RcDoc::hardline().append(RcDoc::hardline()),
         )
@@ -163,6 +163,14 @@ impl HirItem {
             HirItem::ExternType(e) => e.to_doc(ctx),
             HirItem::ExternBuiltin(e) => e.to_doc(ctx),
         }
+    }
+
+    pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirItemId) -> RcDoc<'a, ()> {
+        let base_doc = self.to_doc(ctx);
+        base_doc.append(RcDoc::text(format!(
+            " /*item#{}*/",
+            id.into_raw().into_u32()
+        )))
     }
 }
 
@@ -192,7 +200,7 @@ impl HirFn {
         );
 
         let ret_ty = ctx.tables.types[self.ret_ty].to_doc(ctx);
-        let body = ctx.tables.exprs[self.body].to_doc(ctx);
+        let body = ctx.tables.exprs[self.body].to_doc_with_id(ctx, self.body);
 
         RcDoc::text("fn")
             .append(RcDoc::space())
@@ -372,7 +380,7 @@ impl HirImpl {
         let methods = RcDoc::intersperse(
             self.methods.iter().map(|&item_id| {
                 let item = &ctx.tables.items[item_id];
-                item.to_doc(ctx)
+                item.to_doc_with_id(ctx, item_id)
             }),
             RcDoc::hardline(),
         );
@@ -400,7 +408,7 @@ impl HirImplInherent {
         let methods = RcDoc::intersperse(
             self.methods.iter().map(|&item_id| {
                 let item = &ctx.tables.items[item_id];
-                item.to_doc(ctx)
+                item.to_doc_with_id(ctx, item_id)
             }),
             RcDoc::hardline(),
         );
@@ -593,6 +601,12 @@ impl HirExpr {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         self.kind.to_doc(ctx)
     }
+
+    pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirExprId) -> RcDoc<'a, ()> {
+        self.kind
+            .to_doc(ctx)
+            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
+    }
 }
 
 impl HirExprKind {
@@ -613,8 +627,9 @@ impl HirExprKind {
                     name_doc
                 } else {
                     let args_doc = RcDoc::intersperse(
-                        args.iter()
-                            .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        args.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
                         RcDoc::text(", "),
                     );
                     name_doc
@@ -628,8 +643,9 @@ impl HirExprKind {
                     RcDoc::text(name.clone())
                 } else {
                     let args_doc = RcDoc::intersperse(
-                        args.iter()
-                            .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        args.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
                         RcDoc::text(", "),
                     );
                     RcDoc::text(name.clone())
@@ -644,7 +660,7 @@ impl HirExprKind {
                     fields.iter().map(|(field_id, expr_id)| {
                         RcDoc::text(ctx.get_field_name(*field_id))
                             .append(RcDoc::text(": "))
-                            .append(ctx.tables.exprs[*expr_id].to_doc(ctx))
+                            .append(ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id))
                     }),
                     RcDoc::text(", "),
                 );
@@ -661,9 +677,9 @@ impl HirExprKind {
                     RcDoc::text("()")
                 } else {
                     let items_doc = RcDoc::intersperse(
-                        items
-                            .iter()
-                            .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        items.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
                         RcDoc::text(", "),
                     );
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
@@ -674,9 +690,9 @@ impl HirExprKind {
                     RcDoc::text("[]")
                 } else {
                     let items_doc = RcDoc::intersperse(
-                        items
-                            .iter()
-                            .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        items.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
                         RcDoc::text(", "),
                     );
                     RcDoc::text("[").append(items_doc).append(RcDoc::text("]"))
@@ -688,9 +704,9 @@ impl HirExprKind {
                 body,
                 annotation,
             } => {
-                let pat_doc = ctx.tables.pats[*pat].to_doc(ctx);
-                let value_doc = ctx.tables.exprs[*value].to_doc(ctx);
-                let body_doc = ctx.tables.exprs[*body].to_doc(ctx);
+                let pat_doc = ctx.tables.pats[*pat].to_doc_with_id(ctx, *pat);
+                let value_doc = ctx.tables.exprs[*value].to_doc_with_id(ctx, *value);
+                let body_doc = ctx.tables.exprs[*body].to_doc_with_id(ctx, *body);
 
                 let mut let_doc = RcDoc::text("let").append(RcDoc::space()).append(pat_doc);
 
@@ -721,7 +737,7 @@ impl HirExprKind {
                     );
                     RcDoc::text("|").append(list).append(RcDoc::text("|"))
                 };
-                let body_doc = ctx.tables.exprs[*body].to_doc(ctx);
+                let body_doc = ctx.tables.exprs[*body].to_doc_with_id(ctx, *body);
 
                 params_doc
                     .append(RcDoc::space())
@@ -731,7 +747,7 @@ impl HirExprKind {
                     .group()
             }
             HirExprKind::Match { scrutinee, arms } => {
-                let scrutinee_doc = ctx.tables.exprs[*scrutinee].to_doc(ctx);
+                let scrutinee_doc = ctx.tables.exprs[*scrutinee].to_doc_with_id(ctx, *scrutinee);
                 let arms_doc =
                     RcDoc::intersperse(arms.iter().map(|arm| arm.to_doc(ctx)), RcDoc::hardline());
 
@@ -749,9 +765,9 @@ impl HirExprKind {
                 then_branch,
                 else_branch,
             } => {
-                let cond_doc = ctx.tables.exprs[*cond].to_doc(ctx);
-                let then_doc = ctx.tables.exprs[*then_branch].to_doc(ctx);
-                let else_doc = ctx.tables.exprs[*else_branch].to_doc(ctx);
+                let cond_doc = ctx.tables.exprs[*cond].to_doc_with_id(ctx, *cond);
+                let then_doc = ctx.tables.exprs[*then_branch].to_doc_with_id(ctx, *then_branch);
+                let else_doc = ctx.tables.exprs[*else_branch].to_doc_with_id(ctx, *else_branch);
 
                 RcDoc::text("if")
                     .append(RcDoc::space())
@@ -770,8 +786,8 @@ impl HirExprKind {
                     .append(RcDoc::text("}"))
             }
             HirExprKind::While { cond, body } => {
-                let cond_doc = ctx.tables.exprs[*cond].to_doc(ctx);
-                let body_doc = ctx.tables.exprs[*body].to_doc(ctx);
+                let cond_doc = ctx.tables.exprs[*cond].to_doc_with_id(ctx, *cond);
+                let body_doc = ctx.tables.exprs[*body].to_doc_with_id(ctx, *body);
 
                 RcDoc::text("while")
                     .append(RcDoc::space())
@@ -783,14 +799,14 @@ impl HirExprKind {
                     .append(RcDoc::text("}"))
             }
             HirExprKind::Go { expr } => {
-                let expr_doc = ctx.tables.exprs[*expr].to_doc(ctx);
+                let expr_doc = ctx.tables.exprs[*expr].to_doc_with_id(ctx, *expr);
                 RcDoc::text("go").append(RcDoc::space()).append(expr_doc)
             }
             HirExprKind::Call { callee, args } => {
-                let callee_doc = ctx.tables.exprs[*callee].to_doc(ctx);
+                let callee_doc = ctx.tables.exprs[*callee].to_doc_with_id(ctx, *callee);
                 let args_doc = RcDoc::intersperse(
                     args.iter()
-                        .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)),
                     RcDoc::text(", "),
                 );
 
@@ -806,10 +822,10 @@ impl HirExprKind {
                 explicit_trait,
                 explicit_type,
             } => {
-                let recv_doc = ctx.tables.exprs[*recv].to_doc(ctx);
+                let recv_doc = ctx.tables.exprs[*recv].to_doc_with_id(ctx, *recv);
                 let args_doc = RcDoc::intersperse(
                     args.iter()
-                        .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc(ctx)),
+                        .map(|expr_id| ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)),
                     RcDoc::text(", "),
                 );
 
@@ -836,7 +852,7 @@ impl HirExprKind {
                     ast::ast::UnaryOp::Neg => "-",
                     ast::ast::UnaryOp::Not => "!",
                 };
-                let expr_doc = ctx.tables.exprs[*expr].to_doc(ctx);
+                let expr_doc = ctx.tables.exprs[*expr].to_doc_with_id(ctx, *expr);
                 RcDoc::text(op_str).append(expr_doc)
             }
             HirExprKind::Binary { op, lhs, rhs } => {
@@ -854,8 +870,8 @@ impl HirExprKind {
                     ast::ast::BinaryOp::Eq => "==",
                     ast::ast::BinaryOp::NotEq => "!=",
                 };
-                let lhs_doc = ctx.tables.exprs[*lhs].to_doc(ctx);
-                let rhs_doc = ctx.tables.exprs[*rhs].to_doc(ctx);
+                let lhs_doc = ctx.tables.exprs[*lhs].to_doc_with_id(ctx, *lhs);
+                let rhs_doc = ctx.tables.exprs[*rhs].to_doc_with_id(ctx, *rhs);
 
                 lhs_doc
                     .append(RcDoc::space())
@@ -864,13 +880,13 @@ impl HirExprKind {
                     .append(rhs_doc)
             }
             HirExprKind::Projection { expr, index } => {
-                let expr_doc = ctx.tables.exprs[*expr].to_doc(ctx);
+                let expr_doc = ctx.tables.exprs[*expr].to_doc_with_id(ctx, *expr);
                 expr_doc
                     .append(RcDoc::text("."))
                     .append(RcDoc::text(index.to_string()))
             }
             HirExprKind::Field { expr, field_name } => {
-                let expr_doc = ctx.tables.exprs[*expr].to_doc(ctx);
+                let expr_doc = ctx.tables.exprs[*expr].to_doc_with_id(ctx, *expr);
                 expr_doc
                     .append(RcDoc::text("."))
                     .append(RcDoc::text(field_name.clone()))
@@ -881,8 +897,8 @@ impl HirExprKind {
 
 impl HirArm {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
-        let pat_doc = ctx.tables.pats[self.pat].to_doc(ctx);
-        let body_doc = ctx.tables.exprs[self.body].to_doc(ctx);
+        let pat_doc = ctx.tables.pats[self.pat].to_doc_with_id(ctx, self.pat);
+        let body_doc = ctx.tables.exprs[self.body].to_doc_with_id(ctx, self.body);
 
         pat_doc
             .append(RcDoc::space())
@@ -898,6 +914,12 @@ impl HirArm {
 impl HirPat {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         self.kind.to_doc(ctx)
+    }
+
+    pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirPatId) -> RcDoc<'a, ()> {
+        self.kind
+            .to_doc(ctx)
+            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
     }
 }
 
@@ -917,7 +939,7 @@ impl HirPatKind {
                     let items_doc = RcDoc::intersperse(
                         items
                             .iter()
-                            .map(|pat_id| ctx.tables.pats[*pat_id].to_doc(ctx)),
+                            .map(|pat_id| ctx.tables.pats[*pat_id].to_doc_with_id(ctx, *pat_id)),
                         RcDoc::text(", "),
                     );
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
@@ -929,7 +951,7 @@ impl HirPatKind {
                     fields.iter().map(|(field_id, pat_id)| {
                         RcDoc::text(ctx.get_field_name(*field_id))
                             .append(RcDoc::text(": "))
-                            .append(ctx.tables.pats[*pat_id].to_doc(ctx))
+                            .append(ctx.tables.pats[*pat_id].to_doc_with_id(ctx, *pat_id))
                     }),
                     RcDoc::text(", "),
                 );
@@ -950,7 +972,7 @@ impl HirPatKind {
                 } else {
                     let args_doc = RcDoc::intersperse(
                         args.iter()
-                            .map(|pat_id| ctx.tables.pats[*pat_id].to_doc(ctx)),
+                            .map(|pat_id| ctx.tables.pats[*pat_id].to_doc_with_id(ctx, *pat_id)),
                         RcDoc::text(", "),
                     );
                     name_doc

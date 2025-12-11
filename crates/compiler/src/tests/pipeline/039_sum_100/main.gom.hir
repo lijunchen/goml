@@ -1,15 +1,15 @@
 fn my_int_equal(local_0: int32, local_1: int32) -> bool {
-  !local_0 < local_1 && !local_1 < local_0
-}
+  !local_0 /*#0*/ < local_1 /*#1*/ /*#2*/ /*#3*/ && !local_1 /*#4*/ < local_0 /*#5*/ /*#6*/ /*#7*/ /*#8*/
+} /*item#0*/
 
 fn sum(local_0: int32) -> int32 {
-  if my_int_equal(local_0, 1) {
-    1
+  if my_int_equal /*#9*/(local_0 /*#10*/, 1 /*#11*/) /*#12*/ {
+    1 /*#13*/
   } else {
-    local_0 + sum(local_0 - 1)
-  }
-}
+    local_0 /*#14*/ + sum /*#15*/(local_0 /*#16*/ - 1 /*#17*/ /*#18*/) /*#19*/ /*#20*/
+  } /*#21*/
+} /*item#1*/
 
 fn main() -> () {
-  string_println(int32_to_string(sum(100)))
-}
+  string_println /*#22*/(int32_to_string /*#23*/(sum /*#24*/(100 /*#25*/) /*#26*/) /*#27*/) /*#28*/
+} /*item#2*/

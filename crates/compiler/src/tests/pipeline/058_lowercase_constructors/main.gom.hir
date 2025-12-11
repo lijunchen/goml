@@ -1,25 +1,25 @@
-enum option[T0] { some(T0), none }
+enum option[T0] { some(T0), none } /*item#0*/
 
-struct point { x: int32, y: int32 }
+struct point { x: int32, y: int32 } /*item#1*/
 
 fn make_some(local_0: int32) -> option[int32] {
-  option::some(local_0)
-}
+  option::some(local_0 /*#0*/) /*#1*/
+} /*item#2*/
 
 fn build_point(local_0: int32, local_1: int32) -> point {
-  point { x: local_0, y: local_1 }
-}
+  point { x: local_0 /*#2*/, y: local_1 /*#3*/ } /*#4*/
+} /*item#3*/
 
 fn magnitude(local_0: point) -> int32 {
-  let point { x: local_1, y: local_2 } = local_0 in
-  local_1 + local_2
-}
+  let point { x: local_1 /*#0*/, y: local_2 /*#1*/ } /*#2*/ = local_0 /*#5*/ in
+  local_1 /*#6*/ + local_2 /*#7*/ /*#8*/ /*#9*/
+} /*item#4*/
 
 fn main() -> int32 {
-  let option::some(local_0) = make_some(5) in
-  let local_1 = build_point(local_0, 7) in
-  match option::some(local_1.x) {
-    option::some(local_2) => local_2 + magnitude(local_1),
-    option::none => 0,
-  }
-}
+  let option::some(local_0 /*#3*/) /*#4*/ = make_some /*#10*/(5 /*#11*/) /*#12*/ in
+  let local_1 /*#5*/ = build_point /*#13*/(local_0 /*#14*/, 7 /*#15*/) /*#16*/ in
+  match option::some(local_1 /*#17*/.x /*#18*/) /*#19*/ {
+    option::some(local_2 /*#6*/) /*#7*/ => local_2 /*#20*/ + magnitude /*#21*/(local_1 /*#22*/) /*#23*/ /*#24*/,
+    option::none /*#8*/ => 0 /*#25*/,
+  } /*#26*/ /*#27*/ /*#28*/
+} /*item#5*/

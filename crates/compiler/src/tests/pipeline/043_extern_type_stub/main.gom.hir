@@ -1,33 +1,33 @@
-extern type Time
+extern type Time /*item#0*/
 
-extern type Duration
+extern type Duration /*item#1*/
 
-extern "go" "time" unix(local_0: int32, local_1: int32) -> Time
+extern "go" "time" unix(local_0: int32, local_1: int32) -> Time /*item#2*/
 
-extern "go" "time" duration(local_0: int32) -> Duration
+extern "go" "time" duration(local_0: int32) -> Duration /*item#3*/
 
-extern "go" "fmt" format_time(local_0: string, local_1: Time) -> string
+extern "go" "fmt" format_time(local_0: string, local_1: Time) -> string /*item#4*/
 
-extern "go" "fmt" format_duration(local_0: string, local_1: Duration) -> string
+extern "go" "fmt" format_duration(local_0: string, local_1: Duration) -> string /*item#5*/
 
 fn describe_epoch() -> string {
-  let local_0 = unix(946684800, 500000000) in
-  format_time("epoch snapshot => %v", local_0)
-}
+  let local_0 /*#0*/ = unix /*#0*/(946684800 /*#1*/, 500000000 /*#2*/) /*#3*/ in
+  format_time /*#4*/("epoch snapshot => %v" /*#5*/, local_0 /*#6*/) /*#7*/ /*#8*/
+} /*item#6*/
 
 fn describe_planned_launch() -> string {
-  let local_0 = unix(1709294730, 250000000) in
-  format_time("planned launch => %v", local_0)
-}
+  let local_0 /*#1*/ = unix /*#9*/(1709294730 /*#10*/, 250000000 /*#11*/) /*#12*/ in
+  format_time /*#13*/("planned launch => %v" /*#14*/, local_0 /*#15*/) /*#16*/ /*#17*/
+} /*item#7*/
 
 fn describe_duration() -> string {
-  let local_0 = duration(1500000000) in
-  format_duration("parsed duration => %v", local_0)
-}
+  let local_0 /*#2*/ = duration /*#18*/(1500000000 /*#19*/) /*#20*/ in
+  format_duration /*#21*/("parsed duration => %v" /*#22*/, local_0 /*#23*/) /*#24*/ /*#25*/
+} /*item#8*/
 
 fn main() -> () {
-  let _ = string_println(describe_epoch()) in
-  let _ = string_println(describe_planned_launch()) in
-  let _ = string_println(describe_duration()) in
-  ()
-}
+  let _ /*#3*/ = string_println /*#26*/(describe_epoch /*#27*/() /*#28*/) /*#29*/ in
+  let _ /*#4*/ = string_println /*#30*/(describe_planned_launch /*#31*/() /*#32*/) /*#33*/ in
+  let _ /*#5*/ = string_println /*#34*/(describe_duration /*#35*/() /*#36*/) /*#37*/ in
+  () /*#38*/ /*#39*/ /*#40*/ /*#41*/
+} /*item#9*/

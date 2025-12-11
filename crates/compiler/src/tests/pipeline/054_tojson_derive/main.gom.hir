@@ -1,42 +1,42 @@
-struct Point { x: int32, y: int32 }
+struct Point { x: int32, y: int32 } /*item#0*/
 
 impl Point {
   fn item_26(local_0: Point) -> string {
-    let Point { x: local_1, y: local_2 } = local_0 in
-    "{" + "\"x\":" + local_1.to_string() + "," + "\"y\":" + local_2.to_string() + "}"
-  }
-}
+    let Point { x: local_1 /*#0*/, y: local_2 /*#1*/ } /*#2*/ = local_0 /*#0*/ in
+    "{" /*#1*/ + "\"x\":" /*#2*/ /*#3*/ + local_1 /*#4*/.to_string /*#5*/() /*#6*/ /*#7*/ + "," /*#8*/ /*#9*/ + "\"y\":" /*#10*/ /*#11*/ + local_2 /*#12*/.to_string /*#13*/() /*#14*/ /*#15*/ + "}" /*#16*/ /*#17*/ /*#18*/
+  } /*item#1*/
+} /*item#2*/
 
-struct Person { name: string, age: int32, active: bool }
+struct Person { name: string, age: int32, active: bool } /*item#3*/
 
 impl Person {
   fn item_27(local_0: Person) -> string {
-    let Person { name: local_1, age: local_2, active: local_3 } = local_0 in
-    "{" + "\"name\":" + json_escape_string(local_1) + "," + "\"age\":" + local_2.to_string() + "," + "\"active\":" + bool_to_json(local_3) + "}"
-  }
-}
+    let Person { name: local_1 /*#3*/, age: local_2 /*#4*/, active: local_3 /*#5*/ } /*#6*/ = local_0 /*#19*/ in
+    "{" /*#20*/ + "\"name\":" /*#21*/ /*#22*/ + json_escape_string /*#23*/(local_1 /*#24*/) /*#25*/ /*#26*/ + "," /*#27*/ /*#28*/ + "\"age\":" /*#29*/ /*#30*/ + local_2 /*#31*/.to_string /*#32*/() /*#33*/ /*#34*/ + "," /*#35*/ /*#36*/ + "\"active\":" /*#37*/ /*#38*/ + bool_to_json /*#39*/(local_3 /*#40*/) /*#41*/ /*#42*/ + "}" /*#43*/ /*#44*/ /*#45*/
+  } /*item#4*/
+} /*item#5*/
 
-enum Color { Red, Green, Blue, Rgb(int32, int32, int32) }
+enum Color { Red, Green, Blue, Rgb(int32, int32, int32) } /*item#6*/
 
 impl Color {
   fn item_28(local_0: Color) -> string {
-    match local_0 {
-      Color::Red => "{\"tag\":\"Red\"}",
-      Color::Green => "{\"tag\":\"Green\"}",
-      Color::Blue => "{\"tag\":\"Blue\"}",
-      Color::Rgb(local_1, local_2, local_3) => "{\"tag\":\"Rgb\",\"fields\":[" + local_1.to_string() + "," + local_2.to_string() + "," + local_3.to_string() + "]}",
-    }
-  }
-}
+    match local_0 /*#46*/ {
+      Color::Red /*#7*/ => "{\"tag\":\"Red\"}" /*#47*/,
+      Color::Green /*#8*/ => "{\"tag\":\"Green\"}" /*#48*/,
+      Color::Blue /*#9*/ => "{\"tag\":\"Blue\"}" /*#49*/,
+      Color::Rgb(local_1 /*#10*/, local_2 /*#11*/, local_3 /*#12*/) /*#13*/ => "{\"tag\":\"Rgb\",\"fields\":[" /*#50*/ + local_1 /*#51*/.to_string /*#52*/() /*#53*/ /*#54*/ + "," /*#55*/ /*#56*/ + local_2 /*#57*/.to_string /*#58*/() /*#59*/ /*#60*/ + "," /*#61*/ /*#62*/ + local_3 /*#63*/.to_string /*#64*/() /*#65*/ /*#66*/ + "]}" /*#67*/ /*#68*/,
+    } /*#69*/
+  } /*item#7*/
+} /*item#8*/
 
 fn main() -> () {
-  let local_0 = Point { x: 10, y: 20 } in
-  let local_1 = Person { name: "Alice", age: 30, active: true } in
-  let local_2 = Color::Red in
-  let local_3 = Color::Rgb(255, 128, 0) in
-  let _ = string_println(local_0.to_json()) in
-  let _ = string_println(local_1.to_json()) in
-  let _ = string_println(local_2.to_json()) in
-  let _ = string_println(local_3.to_json()) in
-  ()
-}
+  let local_0 /*#14*/ = Point { x: 10 /*#70*/, y: 20 /*#71*/ } /*#72*/ in
+  let local_1 /*#15*/ = Person { name: "Alice" /*#73*/, age: 30 /*#74*/, active: true /*#75*/ } /*#76*/ in
+  let local_2 /*#16*/ = Color::Red /*#77*/ in
+  let local_3 /*#17*/ = Color::Rgb(255 /*#78*/, 128 /*#79*/, 0 /*#80*/) /*#81*/ in
+  let _ /*#18*/ = string_println /*#82*/(local_0 /*#83*/.to_json /*#84*/() /*#85*/) /*#86*/ in
+  let _ /*#19*/ = string_println /*#87*/(local_1 /*#88*/.to_json /*#89*/() /*#90*/) /*#91*/ in
+  let _ /*#20*/ = string_println /*#92*/(local_2 /*#93*/.to_json /*#94*/() /*#95*/) /*#96*/ in
+  let _ /*#21*/ = string_println /*#97*/(local_3 /*#98*/.to_json /*#99*/() /*#100*/) /*#101*/ in
+  () /*#102*/ /*#103*/ /*#104*/ /*#105*/ /*#106*/ /*#107*/ /*#108*/ /*#109*/ /*#110*/
+} /*item#9*/

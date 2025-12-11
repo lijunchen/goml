@@ -1,33 +1,33 @@
 fn double(local_0: int32) -> int32 {
-  local_0 * 2
-}
+  local_0 /*#0*/ * 2 /*#1*/ /*#2*/
+} /*item#0*/
 
 fn increment(local_0: int32) -> int32 {
-  local_0 + 1
-}
+  local_0 /*#3*/ + 1 /*#4*/ /*#5*/
+} /*item#1*/
 
 fn apply_once(local_0: fn(int32) -> int32, local_1: int32) -> int32 {
-  local_0(local_1)
-}
+  local_0 /*#6*/(local_1 /*#7*/) /*#8*/
+} /*item#2*/
 
 fn compose(local_0: fn(int32) -> int32, local_1: fn(int32) -> int32, local_2: int32) -> int32 {
-  local_0(local_1(local_2))
-}
+  local_0 /*#9*/(local_1 /*#10*/(local_2 /*#11*/) /*#12*/) /*#13*/
+} /*item#3*/
 
 fn main() -> () {
-  let local_0 = double in
-  let local_1 = apply_once(local_0, 4) in
-  let local_2 = compose(double, increment, local_1) in
-  let local_4 = |local_3| => apply_once(increment, local_3) in
-  let local_5 = local_4(local_2) in
-  let local_8 = |local_6, local_7| => apply_once(local_6, local_7) in
-  let local_9 = local_8(double, 3) in
-  let local_11 = |local_10| => compose(double, increment, local_10) in
-  let local_12 = local_11(5) in
-  let local_13 = string_println in
-  let _ = local_13(int32_to_string(local_2)) in
-  let _ = local_13(int32_to_string(local_5)) in
-  let _ = local_13(int32_to_string(local_9)) in
-  let _ = local_13(int32_to_string(local_12)) in
-  ()
-}
+  let local_0 /*#0*/ = double /*#14*/ in
+  let local_1 /*#1*/ = apply_once /*#15*/(local_0 /*#16*/, 4 /*#17*/) /*#18*/ in
+  let local_2 /*#2*/ = compose /*#19*/(double /*#20*/, increment /*#21*/, local_1 /*#22*/) /*#23*/ in
+  let local_4 /*#3*/ = |local_3| => apply_once /*#24*/(increment /*#25*/, local_3 /*#26*/) /*#27*/ /*#28*/ in
+  let local_5 /*#4*/ = local_4 /*#29*/(local_2 /*#30*/) /*#31*/ in
+  let local_8 /*#5*/ = |local_6, local_7| => apply_once /*#32*/(local_6 /*#33*/, local_7 /*#34*/) /*#35*/ /*#36*/ in
+  let local_9 /*#6*/ = local_8 /*#37*/(double /*#38*/, 3 /*#39*/) /*#40*/ in
+  let local_11 /*#7*/ = |local_10| => compose /*#41*/(double /*#42*/, increment /*#43*/, local_10 /*#44*/) /*#45*/ /*#46*/ in
+  let local_12 /*#8*/ = local_11 /*#47*/(5 /*#48*/) /*#49*/ in
+  let local_13 /*#9*/ = string_println /*#50*/ in
+  let _ /*#10*/ = local_13 /*#51*/(int32_to_string /*#52*/(local_2 /*#53*/) /*#54*/) /*#55*/ in
+  let _ /*#11*/ = local_13 /*#56*/(int32_to_string /*#57*/(local_5 /*#58*/) /*#59*/) /*#60*/ in
+  let _ /*#12*/ = local_13 /*#61*/(int32_to_string /*#62*/(local_9 /*#63*/) /*#64*/) /*#65*/ in
+  let _ /*#13*/ = local_13 /*#66*/(int32_to_string /*#67*/(local_12 /*#68*/) /*#69*/) /*#70*/ in
+  () /*#71*/ /*#72*/ /*#73*/ /*#74*/ /*#75*/ /*#76*/ /*#77*/ /*#78*/ /*#79*/ /*#80*/ /*#81*/ /*#82*/ /*#83*/ /*#84*/ /*#85*/
+} /*item#4*/
