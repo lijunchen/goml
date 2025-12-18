@@ -1,53 +1,53 @@
-struct Counter { start: uint32, end: uint64 } /*item#0*/
+struct Counter { start: uint32, end: uint64 } ITEM0
 
-fn is_flag8(local_0: uint8) -> bool {
-  match local_0 /*#0*/ {
-    0 /*#0*/ => true /*#1*/,
-    200 /*#1*/ => true /*#2*/,
-    _ /*#2*/ => false /*#3*/,
-  } /*#4*/
-} /*item#1*/
+fn is_flag8(#0: uint8) -> bool {
+  match #0 ϵ0 {
+    0 ρ0 => true ϵ1,
+    200 ρ1 => true ϵ2,
+    _ ρ2 => false ϵ3,
+  } ϵ4
+} ITEM1
 
-fn is_flag16(local_0: uint16) -> bool {
-  match local_0 /*#5*/ {
-    1024 /*#3*/ => true /*#6*/,
-    65000 /*#4*/ => true /*#7*/,
-    _ /*#5*/ => false /*#8*/,
-  } /*#9*/
-} /*item#2*/
+fn is_flag16(#0: uint16) -> bool {
+  match #0 ϵ5 {
+    1024 ρ3 => true ϵ6,
+    65000 ρ4 => true ϵ7,
+    _ ρ5 => false ϵ8,
+  } ϵ9
+} ITEM2
 
-fn is_flag32(local_0: uint32) -> bool {
-  match local_0 /*#10*/ {
-    4000000000 /*#6*/ => true /*#11*/,
-    1234567890 /*#7*/ => true /*#12*/,
-    _ /*#8*/ => false /*#13*/,
-  } /*#14*/
-} /*item#3*/
+fn is_flag32(#0: uint32) -> bool {
+  match #0 ϵ10 {
+    4000000000 ρ6 => true ϵ11,
+    1234567890 ρ7 => true ϵ12,
+    _ ρ8 => false ϵ13,
+  } ϵ14
+} ITEM3
 
-fn is_flag64(local_0: uint64) -> bool {
-  match local_0 /*#15*/ {
-    900000000 /*#9*/ => true /*#16*/,
-    600000000 /*#10*/ => true /*#17*/,
-    _ /*#11*/ => false /*#18*/,
-  } /*#19*/
-} /*item#4*/
+fn is_flag64(#0: uint64) -> bool {
+  match #0 ϵ15 {
+    900000000 ρ9 => true ϵ16,
+    600000000 ρ10 => true ϵ17,
+    _ ρ11 => false ϵ18,
+  } ϵ19
+} ITEM4
 
-fn match_struct(local_0: Counter) -> bool {
-  match local_0 /*#20*/ {
-    Counter { start: 4000000000 /*#12*/, end: 900000000 /*#13*/ } /*#14*/ => true /*#21*/,
-    Counter { start: _ /*#15*/, end: 600000000 /*#16*/ } /*#17*/ => true /*#22*/,
-    _ /*#18*/ => false /*#23*/,
-  } /*#24*/
-} /*item#5*/
+fn match_struct(#0: Counter) -> bool {
+  match #0 ϵ20 {
+    Counter { start: 4000000000 ρ12, end: 900000000 ρ13 } ρ14 => true ϵ21,
+    Counter { start: _ ρ15, end: 600000000 ρ16 } ρ17 => true ϵ22,
+    _ ρ18 => false ϵ23,
+  } ϵ24
+} ITEM5
 
-fn report(local_0: string, local_1: bool) -> string {
-  local_0 /*#25*/ + bool_to_string /*#26*/(local_1 /*#27*/) /*#28*/ /*#29*/
-} /*item#6*/
+fn report(#0: string, #1: bool) -> string {
+  #0 ϵ25 + bool_to_string ϵ26(#1 ϵ27) ϵ28 ϵ29
+} ITEM6
 
 fn main() -> () {
-  let local_0 /*#19*/ = Counter { start: 4000000000 /*#30*/, end: 900000000 /*#31*/ } /*#32*/ in
-  let local_1 /*#20*/ = Counter { start: 12 /*#33*/, end: 600000000 /*#34*/ } /*#35*/ in
-  let local_2 /*#21*/ = report /*#36*/("u8_hit=" /*#37*/, is_flag8 /*#38*/(200 /*#39*/) /*#40*/) /*#41*/ + report /*#42*/(",u8_miss=" /*#43*/, is_flag8 /*#44*/(15 /*#45*/) /*#46*/) /*#47*/ /*#48*/ + report /*#49*/(",u16_hit=" /*#50*/, is_flag16 /*#51*/(65000 /*#52*/) /*#53*/) /*#54*/ /*#55*/ + report /*#56*/(",u16_miss=" /*#57*/, is_flag16 /*#58*/(42 /*#59*/) /*#60*/) /*#61*/ /*#62*/ + report /*#63*/(",u32_hit=" /*#64*/, is_flag32 /*#65*/(1234567890 /*#66*/) /*#67*/) /*#68*/ /*#69*/ + report /*#70*/(",u32_miss=" /*#71*/, is_flag32 /*#72*/(99 /*#73*/) /*#74*/) /*#75*/ /*#76*/ + report /*#77*/(",u64_hit=" /*#78*/, is_flag64 /*#79*/(900000000 /*#80*/) /*#81*/) /*#82*/ /*#83*/ + report /*#84*/(",u64_miss=" /*#85*/, is_flag64 /*#86*/(700000000 /*#87*/) /*#88*/) /*#89*/ /*#90*/ + report /*#91*/(",struct_first=" /*#92*/, match_struct /*#93*/(local_0 /*#94*/) /*#95*/) /*#96*/ /*#97*/ + report /*#98*/(",struct_second=" /*#99*/, match_struct /*#100*/(local_1 /*#101*/) /*#102*/) /*#103*/ /*#104*/ in
-  let _ /*#22*/ = string_println /*#105*/(local_2 /*#106*/) /*#107*/ in
-  () /*#108*/ /*#109*/ /*#110*/ /*#111*/ /*#112*/
-} /*item#7*/
+  let #0 ρ19 = Counter { start: 4000000000 ϵ30, end: 900000000 ϵ31 } ϵ32 in
+  let #1 ρ20 = Counter { start: 12 ϵ33, end: 600000000 ϵ34 } ϵ35 in
+  let #2 ρ21 = report ϵ36("u8_hit=" ϵ37, is_flag8 ϵ38(200 ϵ39) ϵ40) ϵ41 + report ϵ42(",u8_miss=" ϵ43, is_flag8 ϵ44(15 ϵ45) ϵ46) ϵ47 ϵ48 + report ϵ49(",u16_hit=" ϵ50, is_flag16 ϵ51(65000 ϵ52) ϵ53) ϵ54 ϵ55 + report ϵ56(",u16_miss=" ϵ57, is_flag16 ϵ58(42 ϵ59) ϵ60) ϵ61 ϵ62 + report ϵ63(",u32_hit=" ϵ64, is_flag32 ϵ65(1234567890 ϵ66) ϵ67) ϵ68 ϵ69 + report ϵ70(",u32_miss=" ϵ71, is_flag32 ϵ72(99 ϵ73) ϵ74) ϵ75 ϵ76 + report ϵ77(",u64_hit=" ϵ78, is_flag64 ϵ79(900000000 ϵ80) ϵ81) ϵ82 ϵ83 + report ϵ84(",u64_miss=" ϵ85, is_flag64 ϵ86(700000000 ϵ87) ϵ88) ϵ89 ϵ90 + report ϵ91(",struct_first=" ϵ92, match_struct ϵ93(#0 ϵ94) ϵ95) ϵ96 ϵ97 + report ϵ98(",struct_second=" ϵ99, match_struct ϵ100(#1 ϵ101) ϵ102) ϵ103 ϵ104 in
+  let _ ρ22 = string_println ϵ105(#2 ϵ106) ϵ107 in
+  () ϵ108 ϵ109 ϵ110 ϵ111 ϵ112
+} ITEM7

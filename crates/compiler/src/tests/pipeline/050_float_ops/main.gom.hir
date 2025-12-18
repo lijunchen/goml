@@ -1,49 +1,49 @@
-fn show32(local_0: string, local_1: float32) -> () {
-  let local_2 /*#0*/ = local_0 /*#0*/ + float32_to_string /*#1*/(local_1 /*#2*/) /*#3*/ /*#4*/ in
-  let _ /*#1*/ = string_println /*#5*/(local_2 /*#6*/) /*#7*/ in
-  () /*#8*/ /*#9*/ /*#10*/
-} /*item#0*/
+fn show32(#0: string, #1: float32) -> () {
+  let #2 ρ0 = #0 ϵ0 + float32_to_string ϵ1(#1 ϵ2) ϵ3 ϵ4 in
+  let _ ρ1 = string_println ϵ5(#2 ϵ6) ϵ7 in
+  () ϵ8 ϵ9 ϵ10
+} ITEM0
 
-fn show64(local_0: string, local_1: float64) -> () {
-  let local_2 /*#2*/ = local_0 /*#11*/ + float64_to_string /*#12*/(local_1 /*#13*/) /*#14*/ /*#15*/ in
-  let _ /*#3*/ = string_println /*#16*/(local_2 /*#17*/) /*#18*/ in
-  () /*#19*/ /*#20*/ /*#21*/
-} /*item#1*/
+fn show64(#0: string, #1: float64) -> () {
+  let #2 ρ2 = #0 ϵ11 + float64_to_string ϵ12(#1 ϵ13) ϵ14 ϵ15 in
+  let _ ρ3 = string_println ϵ16(#2 ϵ17) ϵ18 in
+  () ϵ19 ϵ20 ϵ21
+} ITEM1
 
-fn lerp32(local_0: float32, local_1: float32, local_2: float32) -> float32 {
-  let local_3 /*#4*/ = local_1 /*#22*/ - local_0 /*#23*/ /*#24*/ in
-  local_0 /*#25*/ + local_3 /*#26*/ * local_2 /*#27*/ /*#28*/ /*#29*/ /*#30*/
-} /*item#2*/
+fn lerp32(#0: float32, #1: float32, #2: float32) -> float32 {
+  let #3 ρ4 = #1 ϵ22 - #0 ϵ23 ϵ24 in
+  #0 ϵ25 + #3 ϵ26 * #2 ϵ27 ϵ28 ϵ29 ϵ30
+} ITEM2
 
-fn midpoint_energy(local_0: float64, local_1: float64) -> float64 {
-  let local_2 /*#5*/ = local_0 /*#31*/ * local_0 /*#32*/ /*#33*/ + local_1 /*#34*/ * local_1 /*#35*/ /*#36*/ /*#37*/ in
-  local_2 /*#38*/ / 2 /*#39*/ /*#40*/ /*#41*/
-} /*item#3*/
+fn midpoint_energy(#0: float64, #1: float64) -> float64 {
+  let #2 ρ5 = #0 ϵ31 * #0 ϵ32 ϵ33 + #1 ϵ34 * #1 ϵ35 ϵ36 ϵ37 in
+  #2 ϵ38 / 2 ϵ39 ϵ40 ϵ41
+} ITEM3
 
 fn main() -> () {
-  let local_0 /*#6*/: float32 = 1.25 /*#42*/ in
-  let local_1 /*#7*/: float32 = 5.75 /*#43*/ in
-  let local_2 /*#8*/: float32 = 0.5 /*#44*/ in
-  let local_3 /*#9*/: float32 = 2 /*#45*/ in
-  let local_4 /*#10*/ = lerp32 /*#46*/(local_0 /*#47*/, local_1 /*#48*/, local_2 /*#49*/) /*#50*/ in
-  let local_5 /*#11*/ = -local_1 /*#51*/ /*#52*/ in
-  let local_6 /*#12*/ = local_1 /*#53*/ / local_3 /*#54*/ /*#55*/ in
-  let local_7 /*#13*/ = local_0 /*#56*/ < local_1 /*#57*/ /*#58*/ in
-  let local_8 /*#14*/: float64 = 6.5 /*#59*/ in
-  let local_9 /*#15*/: float64 = 3.5 /*#60*/ in
-  let local_10 /*#16*/: float64 = 0.25 /*#61*/ in
-  let local_11 /*#17*/: float64 = midpoint_energy /*#62*/(local_8 /*#63*/, local_9 /*#64*/) /*#65*/ in
-  let local_12 /*#18*/ = -local_8 /*#66*/ /*#67*/ in
-  let local_13 /*#19*/: float64 = local_11 /*#68*/ + local_9 /*#69*/ /*#70*/ - local_8 /*#71*/ * local_10 /*#72*/ /*#73*/ /*#74*/ in
-  let local_14 /*#20*/: float64 = 4 /*#75*/ in
-  let local_15 /*#21*/ = local_13 /*#76*/ < local_14 /*#77*/ /*#78*/ in
-  let _ /*#22*/ = show32 /*#79*/("mid32=" /*#80*/, local_4 /*#81*/) /*#82*/ in
-  let _ /*#23*/ = show32 /*#83*/("neg_end32=" /*#84*/, local_5 /*#85*/) /*#86*/ in
-  let _ /*#24*/ = show32 /*#87*/("ratio32=" /*#88*/, local_6 /*#89*/) /*#90*/ in
-  let _ /*#25*/ = string_println /*#91*/("less32=" /*#92*/ + bool_to_string /*#93*/(local_7 /*#94*/) /*#95*/ /*#96*/) /*#97*/ in
-  let _ /*#26*/ = show64 /*#98*/("energy=" /*#99*/, local_11 /*#100*/) /*#101*/ in
-  let _ /*#27*/ = show64 /*#102*/("neg_dx=" /*#103*/, local_12 /*#104*/) /*#105*/ in
-  let _ /*#28*/ = show64 /*#106*/("adjusted=" /*#107*/, local_13 /*#108*/) /*#109*/ in
-  let _ /*#29*/ = string_println /*#110*/("less64=" /*#111*/ + bool_to_string /*#112*/(local_15 /*#113*/) /*#114*/ /*#115*/) /*#116*/ in
-  () /*#117*/ /*#118*/ /*#119*/ /*#120*/ /*#121*/ /*#122*/ /*#123*/ /*#124*/ /*#125*/ /*#126*/ /*#127*/ /*#128*/ /*#129*/ /*#130*/ /*#131*/ /*#132*/ /*#133*/ /*#134*/ /*#135*/ /*#136*/ /*#137*/ /*#138*/ /*#139*/ /*#140*/ /*#141*/
-} /*item#4*/
+  let #0 ρ6: float32 = 1.25 ϵ42 in
+  let #1 ρ7: float32 = 5.75 ϵ43 in
+  let #2 ρ8: float32 = 0.5 ϵ44 in
+  let #3 ρ9: float32 = 2 ϵ45 in
+  let #4 ρ10 = lerp32 ϵ46(#0 ϵ47, #1 ϵ48, #2 ϵ49) ϵ50 in
+  let #5 ρ11 = -#1 ϵ51 ϵ52 in
+  let #6 ρ12 = #1 ϵ53 / #3 ϵ54 ϵ55 in
+  let #7 ρ13 = #0 ϵ56 < #1 ϵ57 ϵ58 in
+  let #8 ρ14: float64 = 6.5 ϵ59 in
+  let #9 ρ15: float64 = 3.5 ϵ60 in
+  let #10 ρ16: float64 = 0.25 ϵ61 in
+  let #11 ρ17: float64 = midpoint_energy ϵ62(#8 ϵ63, #9 ϵ64) ϵ65 in
+  let #12 ρ18 = -#8 ϵ66 ϵ67 in
+  let #13 ρ19: float64 = #11 ϵ68 + #9 ϵ69 ϵ70 - #8 ϵ71 * #10 ϵ72 ϵ73 ϵ74 in
+  let #14 ρ20: float64 = 4 ϵ75 in
+  let #15 ρ21 = #13 ϵ76 < #14 ϵ77 ϵ78 in
+  let _ ρ22 = show32 ϵ79("mid32=" ϵ80, #4 ϵ81) ϵ82 in
+  let _ ρ23 = show32 ϵ83("neg_end32=" ϵ84, #5 ϵ85) ϵ86 in
+  let _ ρ24 = show32 ϵ87("ratio32=" ϵ88, #6 ϵ89) ϵ90 in
+  let _ ρ25 = string_println ϵ91("less32=" ϵ92 + bool_to_string ϵ93(#7 ϵ94) ϵ95 ϵ96) ϵ97 in
+  let _ ρ26 = show64 ϵ98("energy=" ϵ99, #11 ϵ100) ϵ101 in
+  let _ ρ27 = show64 ϵ102("neg_dx=" ϵ103, #12 ϵ104) ϵ105 in
+  let _ ρ28 = show64 ϵ106("adjusted=" ϵ107, #13 ϵ108) ϵ109 in
+  let _ ρ29 = string_println ϵ110("less64=" ϵ111 + bool_to_string ϵ112(#15 ϵ113) ϵ114 ϵ115) ϵ116 in
+  () ϵ117 ϵ118 ϵ119 ϵ120 ϵ121 ϵ122 ϵ123 ϵ124 ϵ125 ϵ126 ϵ127 ϵ128 ϵ129 ϵ130 ϵ131 ϵ132 ϵ133 ϵ134 ϵ135 ϵ136 ϵ137 ϵ138 ϵ139 ϵ140 ϵ141
+} ITEM4

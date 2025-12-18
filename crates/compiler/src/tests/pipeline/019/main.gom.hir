@@ -1,65 +1,65 @@
-struct Point { x: int32, y: int32 } /*item#0*/
+struct Point { x: int32, y: int32 } ITEM0
 
-struct Wrapper[T0] { value: T0 } /*item#1*/
+struct Wrapper[T0] { value: T0 } ITEM1
 
 fn make_point() -> Point {
-  Point { x: 0 /*#0*/, y: 0 /*#1*/ } /*#2*/
-} /*item#2*/
+  Point { x: 0 ϵ0, y: 0 ϵ1 } ϵ2
+} ITEM2
 
-fn flip(local_0: Point) -> Point {
-  let Point { x: local_1 /*#0*/, y: local_2 /*#1*/ } /*#2*/ = local_0 /*#3*/ in
-  Point { y: local_1 /*#4*/, x: local_2 /*#5*/ } /*#6*/ /*#7*/
-} /*item#3*/
+fn flip(#0: Point) -> Point {
+  let Point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ3 in
+  Point { y: #1 ϵ4, x: #2 ϵ5 } ϵ6 ϵ7
+} ITEM3
 
-fn wrap_int(local_0: int32) -> Wrapper[int32] {
-  Wrapper { value: local_0 /*#8*/ } /*#9*/
-} /*item#4*/
+fn wrap_int(#0: int32) -> Wrapper[int32] {
+  Wrapper { value: #0 ϵ8 } ϵ9
+} ITEM4
 
-fn x_add_1(local_0: Point) -> Point {
-  let Point { x: local_1 /*#3*/, y: local_2 /*#4*/ } /*#5*/ = local_0 /*#10*/ in
-  Point { x: local_1 /*#11*/ + 1 /*#12*/ /*#13*/, y: local_2 /*#14*/ } /*#15*/ /*#16*/
-} /*item#5*/
+fn x_add_1(#0: Point) -> Point {
+  let Point { x: #1 ρ3, y: #2 ρ4 } ρ5 = #0 ϵ10 in
+  Point { x: #1 ϵ11 + 1 ϵ12 ϵ13, y: #2 ϵ14 } ϵ15 ϵ16
+} ITEM5
 
-fn get_x(local_0: Point) -> int32 {
-  let Point { x: local_1 /*#6*/, y: local_2 /*#7*/ } /*#8*/ = local_0 /*#17*/ in
-  local_1 /*#18*/ /*#19*/
-} /*item#6*/
+fn get_x(#0: Point) -> int32 {
+  let Point { x: #1 ρ6, y: #2 ρ7 } ρ8 = #0 ϵ17 in
+  #1 ϵ18 ϵ19
+} ITEM6
 
-fn get_y(local_0: Point) -> int32 {
-  let Point { x: local_1 /*#9*/, y: local_2 /*#10*/ } /*#11*/ = local_0 /*#20*/ in
-  local_2 /*#21*/ /*#22*/
-} /*item#7*/
+fn get_y(#0: Point) -> int32 {
+  let Point { x: #1 ρ9, y: #2 ρ10 } ρ11 = #0 ϵ20 in
+  #2 ϵ21 ϵ22
+} ITEM7
 
-fn point32_to_string(local_0: Point) -> string {
-  let Point { x: local_1 /*#12*/, y: local_2 /*#13*/ } /*#14*/ = local_0 /*#23*/ in
-  "Point { x: " /*#24*/ + int32_to_string /*#25*/(local_1 /*#26*/) /*#27*/ /*#28*/ + ", y: " /*#29*/ /*#30*/ + int32_to_string /*#31*/(local_2 /*#32*/) /*#33*/ /*#34*/ + "}" /*#35*/ /*#36*/ /*#37*/
-} /*item#8*/
+fn point32_to_string(#0: Point) -> string {
+  let Point { x: #1 ρ12, y: #2 ρ13 } ρ14 = #0 ϵ23 in
+  "Point { x: " ϵ24 + int32_to_string ϵ25(#1 ϵ26) ϵ27 ϵ28 + ", y: " ϵ29 ϵ30 + int32_to_string ϵ31(#2 ϵ32) ϵ33 ϵ34 + "}" ϵ35 ϵ36 ϵ37
+} ITEM8
 
-fn point32_to_string2(local_0: Point) -> string {
-  let Point { x: local_1 /*#15*/, y: local_2 /*#16*/ } /*#17*/ = local_0 /*#38*/ in
-  "Point { x: " /*#39*/ + int32_to_string /*#40*/(local_1 /*#41*/) /*#42*/ /*#43*/ + ", y: " /*#44*/ /*#45*/ + int32_to_string /*#46*/(local_2 /*#47*/) /*#48*/ /*#49*/ + "}" /*#50*/ /*#51*/ /*#52*/
-} /*item#9*/
+fn point32_to_string2(#0: Point) -> string {
+  let Point { x: #1 ρ15, y: #2 ρ16 } ρ17 = #0 ϵ38 in
+  "Point { x: " ϵ39 + int32_to_string ϵ40(#1 ϵ41) ϵ42 ϵ43 + ", y: " ϵ44 ϵ45 + int32_to_string ϵ46(#2 ϵ47) ϵ48 ϵ49 + "}" ϵ50 ϵ51 ϵ52
+} ITEM9
 
-fn point32_to_string3(local_0: Point) -> string {
-  let Point { x: local_1 /*#18*/, y: local_2 /*#19*/ } /*#20*/ = local_0 /*#53*/ in
-  "Point { x: " /*#54*/ + int32_to_string /*#55*/(local_1 /*#56*/) /*#57*/ /*#58*/ + ", y: " /*#59*/ /*#60*/ + int32_to_string /*#61*/(local_2 /*#62*/) /*#63*/ /*#64*/ + "}" /*#65*/ /*#66*/ /*#67*/
-} /*item#10*/
+fn point32_to_string3(#0: Point) -> string {
+  let Point { x: #1 ρ18, y: #2 ρ19 } ρ20 = #0 ϵ53 in
+  "Point { x: " ϵ54 + int32_to_string ϵ55(#1 ϵ56) ϵ57 ϵ58 + ", y: " ϵ59 ϵ60 + int32_to_string ϵ61(#2 ϵ62) ϵ63 ϵ64 + "}" ϵ65 ϵ66 ϵ67
+} ITEM10
 
-fn point32_to_string4(local_0: Point) -> string {
-  let Point { x: local_1 /*#21*/, y: local_2 /*#22*/ } /*#23*/ = local_0 /*#68*/ in
-  "Point { x: " /*#69*/ + int32_to_string /*#70*/(local_1 /*#71*/) /*#72*/ /*#73*/ + ", y: " /*#74*/ /*#75*/ + int32_to_string /*#76*/(local_2 /*#77*/) /*#78*/ /*#79*/ + "}" /*#80*/ /*#81*/ /*#82*/
-} /*item#11*/
+fn point32_to_string4(#0: Point) -> string {
+  let Point { x: #1 ρ21, y: #2 ρ22 } ρ23 = #0 ϵ68 in
+  "Point { x: " ϵ69 + int32_to_string ϵ70(#1 ϵ71) ϵ72 ϵ73 + ", y: " ϵ74 ϵ75 + int32_to_string ϵ76(#2 ϵ77) ϵ78 ϵ79 + "}" ϵ80 ϵ81 ϵ82
+} ITEM11
 
 fn main() -> () {
-  let local_0 /*#24*/ = make_point /*#83*/() /*#84*/ in
-  let _ /*#25*/ = string_println /*#85*/(point32_to_string /*#86*/(local_0 /*#87*/) /*#88*/) /*#89*/ in
-  let local_1 /*#26*/ = flip /*#90*/(Point { y: 2 /*#91*/, x: 1 /*#92*/ } /*#93*/) /*#94*/ in
-  let _ /*#27*/ = string_println /*#95*/(point32_to_string2 /*#96*/(local_1 /*#97*/) /*#98*/) /*#99*/ in
-  let local_2 /*#28*/ = wrap_int /*#100*/(3 /*#101*/) /*#102*/ in
-  let local_3 /*#29*/ = Wrapper { value: local_1 /*#103*/ } /*#104*/ in
-  let local_4 /*#30*/ = x_add_1 /*#105*/(local_0 /*#106*/) /*#107*/ in
-  let _ /*#31*/ = string_println /*#108*/(point32_to_string3 /*#109*/(local_4 /*#110*/) /*#111*/) /*#112*/ in
-  let local_5 /*#32*/ = flip /*#113*/(x_add_1 /*#114*/(local_0 /*#115*/) /*#116*/) /*#117*/ in
-  let _ /*#33*/ = string_println /*#118*/(point32_to_string4 /*#119*/(local_5 /*#120*/) /*#121*/) /*#122*/ in
-  () /*#123*/ /*#124*/ /*#125*/ /*#126*/ /*#127*/ /*#128*/ /*#129*/ /*#130*/ /*#131*/ /*#132*/ /*#133*/
-} /*item#12*/
+  let #0 ρ24 = make_point ϵ83() ϵ84 in
+  let _ ρ25 = string_println ϵ85(point32_to_string ϵ86(#0 ϵ87) ϵ88) ϵ89 in
+  let #1 ρ26 = flip ϵ90(Point { y: 2 ϵ91, x: 1 ϵ92 } ϵ93) ϵ94 in
+  let _ ρ27 = string_println ϵ95(point32_to_string2 ϵ96(#1 ϵ97) ϵ98) ϵ99 in
+  let #2 ρ28 = wrap_int ϵ100(3 ϵ101) ϵ102 in
+  let #3 ρ29 = Wrapper { value: #1 ϵ103 } ϵ104 in
+  let #4 ρ30 = x_add_1 ϵ105(#0 ϵ106) ϵ107 in
+  let _ ρ31 = string_println ϵ108(point32_to_string3 ϵ109(#4 ϵ110) ϵ111) ϵ112 in
+  let #5 ρ32 = flip ϵ113(x_add_1 ϵ114(#0 ϵ115) ϵ116) ϵ117 in
+  let _ ρ33 = string_println ϵ118(point32_to_string4 ϵ119(#5 ϵ120) ϵ121) ϵ122 in
+  () ϵ123 ϵ124 ϵ125 ϵ126 ϵ127 ϵ128 ϵ129 ϵ130 ϵ131 ϵ132 ϵ133
+} ITEM12

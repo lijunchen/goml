@@ -1,61 +1,61 @@
-enum Color { Red, Green, Blue } /*item#0*/
+enum Color { Red, Green, Blue } ITEM0
 
 impl Color {
-  fn item_26(local_0: Color) -> string {
-    match local_0 /*#0*/ {
-      Color::Red /*#0*/ => "Color::Red" /*#1*/,
-      Color::Green /*#1*/ => "Color::Green" /*#2*/,
-      Color::Blue /*#2*/ => "Color::Blue" /*#3*/,
-    } /*#4*/
-  } /*item#1*/
-} /*item#2*/
+  fn item_26(#0: Color) -> string {
+    match #0 ϵ0 {
+      Color::Red ρ0 => "Color::Red" ϵ1,
+      Color::Green ρ1 => "Color::Green" ϵ2,
+      Color::Blue ρ2 => "Color::Blue" ϵ3,
+    } ϵ4
+  } ITEM1
+} ITEM2
 
-struct Point { x: int32, y: int32, color: Color } /*item#3*/
-
-impl Point {
-  fn item_27(local_0: Point) -> string {
-    let Point { x: local_1 /*#3*/, y: local_2 /*#4*/, color: local_3 /*#5*/ } /*#6*/ = local_0 /*#5*/ in
-    "Point { " /*#6*/ + "x: " /*#7*/ /*#8*/ + local_1 /*#9*/.to_string /*#10*/() /*#11*/ /*#12*/ + ", " /*#13*/ /*#14*/ + "y: " /*#15*/ /*#16*/ + local_2 /*#17*/.to_string /*#18*/() /*#19*/ /*#20*/ + ", " /*#21*/ /*#22*/ + "color: " /*#23*/ /*#24*/ + local_3 /*#25*/.to_string /*#26*/() /*#27*/ /*#28*/ + " }" /*#29*/ /*#30*/ /*#31*/
-  } /*item#4*/
-} /*item#5*/
+struct Point { x: int32, y: int32, color: Color } ITEM3
 
 impl Point {
-  fn item_28(local_0: int32, local_1: int32, local_2: Color) -> Point {
-    Point { x: local_0 /*#32*/, y: local_1 /*#33*/, color: local_2 /*#34*/ } /*#35*/
-  } /*item#6*/
-} /*item#7*/
+  fn item_27(#0: Point) -> string {
+    let Point { x: #1 ρ3, y: #2 ρ4, color: #3 ρ5 } ρ6 = #0 ϵ5 in
+    "Point { " ϵ6 + "x: " ϵ7 ϵ8 + #1 ϵ9.to_string ϵ10() ϵ11 ϵ12 + ", " ϵ13 ϵ14 + "y: " ϵ15 ϵ16 + #2 ϵ17.to_string ϵ18() ϵ19 ϵ20 + ", " ϵ21 ϵ22 + "color: " ϵ23 ϵ24 + #3 ϵ25.to_string ϵ26() ϵ27 ϵ28 + " }" ϵ29 ϵ30 ϵ31
+  } ITEM4
+} ITEM5
 
-struct Line { from: Point, to: Point, color: Color } /*item#8*/
+impl Point {
+  fn item_28(#0: int32, #1: int32, #2: Color) -> Point {
+    Point { x: #0 ϵ32, y: #1 ϵ33, color: #2 ϵ34 } ϵ35
+  } ITEM6
+} ITEM7
+
+struct Line { from: Point, to: Point, color: Color } ITEM8
 
 impl Line {
-  fn item_29(local_0: Line) -> string {
-    let Line { from: local_1 /*#7*/, to: local_2 /*#8*/, color: local_3 /*#9*/ } /*#10*/ = local_0 /*#36*/ in
-    "Line { " /*#37*/ + "from: " /*#38*/ /*#39*/ + local_1 /*#40*/.to_string /*#41*/() /*#42*/ /*#43*/ + ", " /*#44*/ /*#45*/ + "to: " /*#46*/ /*#47*/ + local_2 /*#48*/.to_string /*#49*/() /*#50*/ /*#51*/ + ", " /*#52*/ /*#53*/ + "color: " /*#54*/ /*#55*/ + local_3 /*#56*/.to_string /*#57*/() /*#58*/ /*#59*/ + " }" /*#60*/ /*#61*/ /*#62*/
-  } /*item#9*/
-} /*item#10*/
+  fn item_29(#0: Line) -> string {
+    let Line { from: #1 ρ7, to: #2 ρ8, color: #3 ρ9 } ρ10 = #0 ϵ36 in
+    "Line { " ϵ37 + "from: " ϵ38 ϵ39 + #1 ϵ40.to_string ϵ41() ϵ42 ϵ43 + ", " ϵ44 ϵ45 + "to: " ϵ46 ϵ47 + #2 ϵ48.to_string ϵ49() ϵ50 ϵ51 + ", " ϵ52 ϵ53 + "color: " ϵ54 ϵ55 + #3 ϵ56.to_string ϵ57() ϵ58 ϵ59 + " }" ϵ60 ϵ61 ϵ62
+  } ITEM9
+} ITEM10
 
 impl Line {
-  fn item_30(local_0: Point, local_1: Point, local_2: Color) -> Line {
-    Line { from: local_0 /*#63*/, to: local_1 /*#64*/, color: local_2 /*#65*/ } /*#66*/
-  } /*item#11*/
-} /*item#12*/
+  fn item_30(#0: Point, #1: Point, #2: Color) -> Line {
+    Line { from: #0 ϵ63, to: #1 ϵ64, color: #2 ϵ65 } ϵ66
+  } ITEM11
+} ITEM12
 
-enum LineList { Nil, Cons(Line, LineList) } /*item#13*/
+enum LineList { Nil, Cons(Line, LineList) } ITEM13
 
 impl LineList {
-  fn item_31(local_0: LineList) -> string {
-    match local_0 /*#67*/ {
-      LineList::Nil /*#11*/ => "LineList::Nil" /*#68*/,
-      LineList::Cons(local_1 /*#12*/, local_2 /*#13*/) /*#14*/ => "LineList::Cons(" /*#69*/ + local_1 /*#70*/.to_string /*#71*/() /*#72*/ /*#73*/ + ", " /*#74*/ /*#75*/ + local_2 /*#76*/.to_string /*#77*/() /*#78*/ /*#79*/ + ")" /*#80*/ /*#81*/,
-    } /*#82*/
-  } /*item#14*/
-} /*item#15*/
+  fn item_31(#0: LineList) -> string {
+    match #0 ϵ67 {
+      LineList::Nil ρ11 => "LineList::Nil" ϵ68,
+      LineList::Cons(#1 ρ12, #2 ρ13) ρ14 => "LineList::Cons(" ϵ69 + #1 ϵ70.to_string ϵ71() ϵ72 ϵ73 + ", " ϵ74 ϵ75 + #2 ϵ76.to_string ϵ77() ϵ78 ϵ79 + ")" ϵ80 ϵ81,
+    } ϵ82
+  } ITEM14
+} ITEM15
 
 fn main() -> () {
-  let local_0 /*#15*/ = Point::new /*#83*/(10 /*#84*/, 20 /*#85*/, Color::Red /*#86*/) /*#87*/ in
-  let local_1 /*#16*/ = Point::new /*#88*/(30 /*#89*/, 40 /*#90*/, Color::Green /*#91*/) /*#92*/ in
-  let local_2 /*#17*/ = Line::new /*#93*/(local_0 /*#94*/, local_1 /*#95*/, Color::Blue /*#96*/) /*#97*/ in
-  let local_3 /*#18*/ = LineList::Cons(local_2 /*#98*/, LineList::Nil /*#99*/) /*#100*/ in
-  let _ /*#19*/ = string_println /*#101*/(local_3 /*#102*/.to_string /*#103*/() /*#104*/) /*#105*/ in
-  () /*#106*/ /*#107*/ /*#108*/ /*#109*/ /*#110*/ /*#111*/
-} /*item#16*/
+  let #0 ρ15 = Point::new ϵ83(10 ϵ84, 20 ϵ85, Color::Red ϵ86) ϵ87 in
+  let #1 ρ16 = Point::new ϵ88(30 ϵ89, 40 ϵ90, Color::Green ϵ91) ϵ92 in
+  let #2 ρ17 = Line::new ϵ93(#0 ϵ94, #1 ϵ95, Color::Blue ϵ96) ϵ97 in
+  let #3 ρ18 = LineList::Cons(#2 ϵ98, LineList::Nil ϵ99) ϵ100 in
+  let _ ρ19 = string_println ϵ101(#3 ϵ102.to_string ϵ103() ϵ104) ϵ105 in
+  () ϵ106 ϵ107 ϵ108 ϵ109 ϵ110 ϵ111
+} ITEM16
