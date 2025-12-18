@@ -1,13 +1,13 @@
 fn test() -> () {
-  let #0 ρ0 = 3 ϵ0 in
-  let #1 ρ1 = 5 ϵ1 in
-  let #3 ρ2 = |#2| => #2 ϵ2 * #0 ϵ3 ϵ4 * #1 ϵ5 ϵ6 ϵ7 in
-  let _ ρ3 = string_println ϵ8(int32_to_string ϵ9(#3 ϵ10(2 ϵ11) ϵ12) ϵ13) ϵ14 in
-  string_println ϵ15(int32_to_string ϵ16(#3 ϵ17(3 ϵ18) ϵ19) ϵ20) ϵ21 ϵ22 ϵ23 ϵ24 ϵ25
+  let #0 ρ0 = 3 ϵ0 ϵ1;
+  let #1 ρ1 = 5 ϵ2 ϵ3;
+  let #3 ρ2 = |#2| => #2 ϵ4 * #0 ϵ5 ϵ6 * #1 ϵ7 ϵ8 ϵ9 ϵ10;
+  let _ ρ3 = string_println ϵ11(int32_to_string ϵ12(#3 ϵ13(2 ϵ14) ϵ15) ϵ16) ϵ17 ϵ18;
+  string_println ϵ19(int32_to_string ϵ20(#3 ϵ21(3 ϵ22) ϵ23) ϵ24) ϵ25
 } ITEM0
 
 fn call_int_id(#0: fn(int32) -> int32, #1: int32) -> int32 {
-  #0 ϵ26(#1 ϵ27) ϵ28
+  #0 ϵ27(#1 ϵ28)
 } ITEM1
 
 enum IntList { Nil, Cons(int32, IntList) } ITEM2
@@ -15,27 +15,33 @@ enum IntList { Nil, Cons(int32, IntList) } ITEM2
 struct Point { x: int32, y: int32 } ITEM3
 
 fn main() -> () {
-  let #0 ρ4 = 5 ϵ29 in
-  let #2 ρ5 = |#1| => #1 ϵ30 + #0 ϵ31 ϵ32 ϵ33 in
-  let #3 ρ6 = #2 ϵ34(7 ϵ35) ϵ36 in
-  let #7 ρ8 = |#4, #5| => let #6 ρ7 = #4 ϵ37 + int32_to_string ϵ38(#5 ϵ39) ϵ40 ϵ41 in
-  string_println ϵ42(#6 ϵ43) ϵ44 ϵ45 ϵ46 in
-  let _ ρ9 = #7 ϵ47("result: " ϵ48, #3 ϵ49) ϵ50 in
-  let #9 ρ10 = |#8| => #8 ϵ51 + #3 ϵ52 ϵ53 ϵ54 in
-  let #11 ρ11 = |#10| => #10 ϵ55 * 2 ϵ56 ϵ57 ϵ58 in
-  let #12 ρ12 = #11 ϵ59(3 ϵ60) ϵ61 in
-  let _ ρ13 = string_println ϵ62(int32_to_string ϵ63(#12 ϵ64) ϵ65) ϵ66 in
-  let _ ρ14 = test ϵ67() ϵ68 in
-  let #13 ρ15 = IntList::Cons(1 ϵ69, IntList::Cons(2 ϵ70, IntList::Cons(3 ϵ71, IntList::Nil ϵ72) ϵ73) ϵ74) ϵ75 in
-  let #14 ρ16 = Point { x: 10 ϵ76, y: 20 ϵ77 } ϵ78 in
-  let #19 ρ26 = || => match #13 ϵ79 {
-    IntList::Nil ρ17 => string_println ϵ80("Empty list" ϵ81) ϵ82,
-    IntList::Cons(#15 ρ18, #16 ρ19) ρ20 => let _ ρ21 = string_println ϵ83(int32_to_string ϵ84(#15 ϵ85) ϵ86) ϵ87 in
-    match #14 ϵ88 {
-      Point { x: #17 ρ22, y: #18 ρ23 } ρ24 => let _ ρ25 = string_println ϵ89("Point: (" ϵ90 + int32_to_string ϵ91(#17 ϵ92) ϵ93 ϵ94 + ", " ϵ95 ϵ96 + int32_to_string ϵ97(#18 ϵ98) ϵ99 ϵ100 + ")" ϵ101 ϵ102) ϵ103 in
-      () ϵ104 ϵ105,
-    } ϵ106 ϵ107,
-  } ϵ108 ϵ109 in
-  let _ ρ27 = #19 ϵ110() ϵ111 in
-  () ϵ112 ϵ113 ϵ114 ϵ115 ϵ116 ϵ117 ϵ118 ϵ119 ϵ120 ϵ121 ϵ122 ϵ123 ϵ124 ϵ125 ϵ126
+  let #0 ρ4 = 5 ϵ30 ϵ31;
+  let #2 ρ5 = |#1| => #1 ϵ32 + #0 ϵ33 ϵ34 ϵ35 ϵ36;
+  let #3 ρ6 = #2 ϵ37(7 ϵ38) ϵ39 ϵ40;
+  let #7 ρ8 = |#4, #5| => {
+    let #6 ρ7 = #4 ϵ41 + int32_to_string ϵ42(#5 ϵ43) ϵ44 ϵ45 ϵ46;
+    string_println ϵ47(#6 ϵ48) ϵ49
+  } ϵ50 ϵ51 ϵ52;
+  let _ ρ9 = #7 ϵ53("result: " ϵ54, #3 ϵ55) ϵ56 ϵ57;
+  let #9 ρ10 = |#8| => #8 ϵ58 + #3 ϵ59 ϵ60 ϵ61 ϵ62;
+  let #11 ρ11 = |#10| => #10 ϵ63 * 2 ϵ64 ϵ65 ϵ66 ϵ67;
+  let #12 ρ12 = #11 ϵ68(3 ϵ69) ϵ70 ϵ71;
+  let _ ρ13 = string_println ϵ72(int32_to_string ϵ73(#12 ϵ74) ϵ75) ϵ76 ϵ77;
+  let _ ρ14 = test ϵ78() ϵ79 ϵ80;
+  let #13 ρ15 = IntList::Cons(1 ϵ81, IntList::Cons(2 ϵ82, IntList::Cons(3 ϵ83, IntList::Nil ϵ84) ϵ85) ϵ86) ϵ87 ϵ88;
+  let #14 ρ16 = Point { x: 10 ϵ89, y: 20 ϵ90 } ϵ91 ϵ92;
+  let #19 ρ26 = || => match #13 ϵ93 {
+    IntList::Nil ρ17 => string_println ϵ94("Empty list" ϵ95) ϵ96,
+    IntList::Cons(#15 ρ18, #16 ρ19) ρ20 => {
+      let _ ρ21 = string_println ϵ97(int32_to_string ϵ98(#15 ϵ99) ϵ100) ϵ101 ϵ102;
+      match #14 ϵ103 {
+        Point { x: #17 ρ22, y: #18 ρ23 } ρ24 => {
+          let _ ρ25 = string_println ϵ104("Point: (" ϵ105 + int32_to_string ϵ106(#17 ϵ107) ϵ108 ϵ109 + ", " ϵ110 ϵ111 + int32_to_string ϵ112(#18 ϵ113) ϵ114 ϵ115 + ")" ϵ116 ϵ117) ϵ118 ϵ119;
+          () ϵ120
+        } ϵ121,
+      } ϵ122
+    } ϵ123,
+  } ϵ124 ϵ125 ϵ126;
+  let _ ρ27 = #19 ϵ127() ϵ128 ϵ129;
+  () ϵ130
 } ITEM4

@@ -1,31 +1,31 @@
 fn match_string(s/0: string) -> int32 {
-  match (s/0 : string) {
-      "hello" => 1,
-      "world" => 2,
-      _ : string => 3,
-  }
+    match (s/0 : string) {
+        "hello" => 1,
+        "world" => 2,
+        _ : string => 3,
+    };
 }
 
 fn wildcard_position(s/1: string) -> int32 {
-  match (s/1 : string) {
-      _ : string => 4,
-      "world" => 5,
-  }
+    match (s/1 : string) {
+        _ : string => 4,
+        "world" => 5,
+    };
 }
 
 fn repeated_string(s/2: string) -> int32 {
-  match (s/2 : string) {
-      "hello" => 6,
-      "hello" => 7,
-      _ : string => 8,
-  }
+    match (s/2 : string) {
+        "hello" => 6,
+        "hello" => 7,
+        _ : string => 8,
+    };
 }
 
 fn main() -> unit {
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_string : (string) -> int32)("hello"))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_string : (string) -> int32)("planet"))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_position : (string) -> int32)("world"))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_position : (string) -> int32)("sun"))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated_string : (string) -> int32)("hello"))) in
-  (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated_string : (string) -> int32)("mars")))
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_string : (string) -> int32)("hello")));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_string : (string) -> int32)("planet")));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_position : (string) -> int32)("world")));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_position : (string) -> int32)("sun")));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated_string : (string) -> int32)("hello")));
+    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated_string : (string) -> int32)("mars")));
 }

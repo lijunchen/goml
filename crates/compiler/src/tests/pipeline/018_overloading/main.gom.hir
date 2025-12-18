@@ -5,10 +5,10 @@ trait Arith {
 
 impl Arith for int32 {
   fn item_31(#0: int32, #1: int32) -> int32 {
-    #0 ϵ0 + #1 ϵ1 ϵ2
+    #0 ϵ0 + #1 ϵ1
   } ITEM1
   fn item_32(#0: int32, #1: int32) -> bool {
-    #0 ϵ3 < #1 ϵ4 ϵ5
+    #0 ϵ3 < #1 ϵ4
   } ITEM2
 } ITEM3
 
@@ -18,13 +18,13 @@ trait ToString {
 
 impl ToString for int32 {
   fn item_33(#0: int32) -> string {
-    int32_to_string ϵ6(#0 ϵ7) ϵ8
+    int32_to_string ϵ6(#0 ϵ7)
   } ITEM5
 } ITEM6
 
 impl ToString for bool {
   fn item_34(#0: bool) -> string {
-    bool_to_string ϵ9(#0 ϵ10) ϵ11
+    bool_to_string ϵ9(#0 ϵ10)
   } ITEM7
 } ITEM8
 
@@ -34,30 +34,30 @@ trait Output {
 
 impl Output for int32 {
   fn item_35(#0: int32) -> () {
-    string_println ϵ12(ToString::to_string ϵ13(#0 ϵ14) ϵ15) ϵ16
+    string_println ϵ12(ToString::to_string ϵ13(#0 ϵ14) ϵ15)
   } ITEM10
 } ITEM11
 
 impl Output for bool {
   fn item_37(#0: bool) -> () {
-    string_println ϵ17(ToString::to_string ϵ18(#0 ϵ19) ϵ20) ϵ21
+    string_println ϵ17(ToString::to_string ϵ18(#0 ϵ19) ϵ20)
   } ITEM12
 } ITEM13
 
 fn id[T0](#0: T0) -> T0 {
-  #0 ϵ22
+  #0
 } ITEM14
 
 fn main() -> () {
-  let #0 ρ0 = id ϵ23(1 ϵ24) ϵ25 in
-  let #1 ρ1 = id ϵ26(2 ϵ27) ϵ28 in
-  let #2 ρ2 = Arith::add ϵ29(#0 ϵ30, #1 ϵ31) ϵ32 in
-  let _ ρ3 = Output::output ϵ33(#2 ϵ34) ϵ35 in
-  let #3 ρ4 = id ϵ36(3 ϵ37) ϵ38 in
-  let #4 ρ5 = id ϵ39(4 ϵ40) ϵ41 in
-  let #5 ρ6 = Arith::less ϵ42(#3 ϵ43, #4 ϵ44) ϵ45 in
-  let _ ρ7 = Output::output ϵ46(#5 ϵ47) ϵ48 in
-  let _ ρ8 = id ϵ49("abc" ϵ50) ϵ51 in
-  let _ ρ9 = id ϵ52(true ϵ53) ϵ54 in
-  () ϵ55 ϵ56 ϵ57 ϵ58 ϵ59 ϵ60 ϵ61 ϵ62 ϵ63 ϵ64 ϵ65
+  let #0 ρ0 = id ϵ23(1 ϵ24) ϵ25 ϵ26;
+  let #1 ρ1 = id ϵ27(2 ϵ28) ϵ29 ϵ30;
+  let #2 ρ2 = Arith::add ϵ31(#0 ϵ32, #1 ϵ33) ϵ34 ϵ35;
+  let _ ρ3 = Output::output ϵ36(#2 ϵ37) ϵ38 ϵ39;
+  let #3 ρ4 = id ϵ40(3 ϵ41) ϵ42 ϵ43;
+  let #4 ρ5 = id ϵ44(4 ϵ45) ϵ46 ϵ47;
+  let #5 ρ6 = Arith::less ϵ48(#3 ϵ49, #4 ϵ50) ϵ51 ϵ52;
+  let _ ρ7 = Output::output ϵ53(#5 ϵ54) ϵ55 ϵ56;
+  let _ ρ8 = id ϵ57("abc" ϵ58) ϵ59 ϵ60;
+  let _ ρ9 = id ϵ61(true ϵ62) ϵ63 ϵ64;
+  () ϵ65
 } ITEM15

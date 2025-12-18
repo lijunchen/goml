@@ -5,7 +5,7 @@ fn is_special8(#0: int8) -> bool {
     5 ρ0 => true ϵ1,
     7 ρ1 => true ϵ2,
     _ ρ2 => false ϵ3,
-  } ϵ4
+  }
 } ITEM1
 
 fn is_special16(#0: int16) -> bool {
@@ -13,7 +13,7 @@ fn is_special16(#0: int16) -> bool {
     1024 ρ3 => true ϵ6,
     2048 ρ4 => true ϵ7,
     _ ρ5 => false ϵ8,
-  } ϵ9
+  }
 } ITEM2
 
 fn is_special32(#0: int32) -> bool {
@@ -21,7 +21,7 @@ fn is_special32(#0: int32) -> bool {
     4096 ρ6 => true ϵ11,
     8192 ρ7 => true ϵ12,
     _ ρ8 => false ϵ13,
-  } ϵ14
+  }
 } ITEM3
 
 fn is_special64(#0: int64) -> bool {
@@ -29,14 +29,14 @@ fn is_special64(#0: int64) -> bool {
     16384 ρ9 => true ϵ16,
     32768 ρ10 => true ϵ17,
     _ ρ11 => false ϵ18,
-  } ϵ19
+  }
 } ITEM4
 
 fn match_tuple(#0: (int8, int16)) -> bool {
   match #0 ϵ20 {
     (1 ρ12, 2 ρ13) ρ14 => true ϵ21,
     _ ρ15 => false ϵ22,
-  } ϵ23
+  }
 } ITEM5
 
 fn match_struct(#0: PairData) -> bool {
@@ -44,30 +44,30 @@ fn match_struct(#0: PairData) -> bool {
     PairData { head: 100 ρ16, tail: 200 ρ17 } ρ18 => true ϵ25,
     PairData { head: _ ρ19, tail: 300 ρ20 } ρ21 => true ϵ26,
     _ ρ22 => false ϵ27,
-  } ϵ28
+  }
 } ITEM6
 
 fn report(#0: string, #1: bool) -> string {
-  #0 ϵ29 + bool_to_string ϵ30(#1 ϵ31) ϵ32 ϵ33
+  #0 ϵ29 + bool_to_string ϵ30(#1 ϵ31) ϵ32
 } ITEM7
 
 fn main() -> () {
-  let #0 ρ23: int8 = 1 ϵ34 in
-  let #1 ρ24: int16 = 2 ϵ35 in
-  let #2 ρ25 = match_tuple ϵ36((#0 ϵ37, #1 ϵ38) ϵ39) ϵ40 in
-  let #3 ρ26 = match_tuple ϵ41((3 ϵ42, 4 ϵ43) ϵ44) ϵ45 in
-  let #4 ρ27 = match_struct ϵ46(PairData { head: 100 ϵ47, tail: 200 ϵ48 } ϵ49) ϵ50 in
-  let #5 ρ28 = match_struct ϵ51(PairData { head: 10 ϵ52, tail: 300 ϵ53 } ϵ54) ϵ55 in
-  let #6 ρ29 = report ϵ56("int8=" ϵ57, is_special8 ϵ58(5 ϵ59) ϵ60) ϵ61 in
-  let #7 ρ30 = report ϵ62(",int16=" ϵ63, is_special16 ϵ64(1024 ϵ65) ϵ66) ϵ67 in
-  let #8 ρ31 = report ϵ68(",int32=" ϵ69, is_special32 ϵ70(8192 ϵ71) ϵ72) ϵ73 in
-  let #9 ρ32 = report ϵ74(",int64_a=" ϵ75, is_special64 ϵ76(16384 ϵ77) ϵ78) ϵ79 in
-  let #10 ρ33 = report ϵ80(",int64_b=" ϵ81, is_special64 ϵ82(32768 ϵ83) ϵ84) ϵ85 in
-  let #11 ρ34 = report ϵ86(",tuple_hit=" ϵ87, #2 ϵ88) ϵ89 in
-  let #12 ρ35 = report ϵ90(",tuple_miss=" ϵ91, #3 ϵ92) ϵ93 in
-  let #13 ρ36 = report ϵ94(",struct_first=" ϵ95, #4 ϵ96) ϵ97 in
-  let #14 ρ37 = report ϵ98(",struct_second=" ϵ99, #5 ϵ100) ϵ101 in
-  let #15 ρ38 = #6 ϵ102 + #7 ϵ103 ϵ104 + #8 ϵ105 ϵ106 + #9 ϵ107 ϵ108 + #10 ϵ109 ϵ110 + #11 ϵ111 ϵ112 + #12 ϵ113 ϵ114 + #13 ϵ115 ϵ116 + #14 ϵ117 ϵ118 in
-  let _ ρ39 = string_println ϵ119(#15 ϵ120) ϵ121 in
-  () ϵ122 ϵ123 ϵ124 ϵ125 ϵ126 ϵ127 ϵ128 ϵ129 ϵ130 ϵ131 ϵ132 ϵ133 ϵ134 ϵ135 ϵ136 ϵ137 ϵ138 ϵ139
+  let #0 ρ23: int8 = 1 ϵ34 ϵ35;
+  let #1 ρ24: int16 = 2 ϵ36 ϵ37;
+  let #2 ρ25 = match_tuple ϵ38((#0 ϵ39, #1 ϵ40) ϵ41) ϵ42 ϵ43;
+  let #3 ρ26 = match_tuple ϵ44((3 ϵ45, 4 ϵ46) ϵ47) ϵ48 ϵ49;
+  let #4 ρ27 = match_struct ϵ50(PairData { head: 100 ϵ51, tail: 200 ϵ52 } ϵ53) ϵ54 ϵ55;
+  let #5 ρ28 = match_struct ϵ56(PairData { head: 10 ϵ57, tail: 300 ϵ58 } ϵ59) ϵ60 ϵ61;
+  let #6 ρ29 = report ϵ62("int8=" ϵ63, is_special8 ϵ64(5 ϵ65) ϵ66) ϵ67 ϵ68;
+  let #7 ρ30 = report ϵ69(",int16=" ϵ70, is_special16 ϵ71(1024 ϵ72) ϵ73) ϵ74 ϵ75;
+  let #8 ρ31 = report ϵ76(",int32=" ϵ77, is_special32 ϵ78(8192 ϵ79) ϵ80) ϵ81 ϵ82;
+  let #9 ρ32 = report ϵ83(",int64_a=" ϵ84, is_special64 ϵ85(16384 ϵ86) ϵ87) ϵ88 ϵ89;
+  let #10 ρ33 = report ϵ90(",int64_b=" ϵ91, is_special64 ϵ92(32768 ϵ93) ϵ94) ϵ95 ϵ96;
+  let #11 ρ34 = report ϵ97(",tuple_hit=" ϵ98, #2 ϵ99) ϵ100 ϵ101;
+  let #12 ρ35 = report ϵ102(",tuple_miss=" ϵ103, #3 ϵ104) ϵ105 ϵ106;
+  let #13 ρ36 = report ϵ107(",struct_first=" ϵ108, #4 ϵ109) ϵ110 ϵ111;
+  let #14 ρ37 = report ϵ112(",struct_second=" ϵ113, #5 ϵ114) ϵ115 ϵ116;
+  let #15 ρ38 = #6 ϵ117 + #7 ϵ118 ϵ119 + #8 ϵ120 ϵ121 + #9 ϵ122 ϵ123 + #10 ϵ124 ϵ125 + #11 ϵ126 ϵ127 + #12 ϵ128 ϵ129 + #13 ϵ130 ϵ131 + #14 ϵ132 ϵ133 ϵ134;
+  let _ ρ39 = string_println ϵ135(#15 ϵ136) ϵ137 ϵ138;
+  () ϵ139
 } ITEM8

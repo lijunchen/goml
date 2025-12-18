@@ -3,23 +3,23 @@ enum option[T0] { some(T0), none } ITEM0
 struct point { x: int32, y: int32 } ITEM1
 
 fn make_some(#0: int32) -> option[int32] {
-  option::some(#0 ϵ0) ϵ1
+  option::some(#0 ϵ0)
 } ITEM2
 
 fn build_point(#0: int32, #1: int32) -> point {
-  point { x: #0 ϵ2, y: #1 ϵ3 } ϵ4
+  point { x: #0 ϵ2, y: #1 ϵ3 }
 } ITEM3
 
 fn magnitude(#0: point) -> int32 {
-  let point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ5 in
-  #1 ϵ6 + #2 ϵ7 ϵ8 ϵ9
+  let point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ5 ϵ6;
+  #1 ϵ7 + #2 ϵ8 ϵ9
 } ITEM4
 
 fn main() -> int32 {
-  let option::some(#0 ρ3) ρ4 = make_some ϵ10(5 ϵ11) ϵ12 in
-  let #1 ρ5 = build_point ϵ13(#0 ϵ14, 7 ϵ15) ϵ16 in
-  match option::some(#1 ϵ17.x ϵ18) ϵ19 {
-    option::some(#2 ρ6) ρ7 => #2 ϵ20 + magnitude ϵ21(#1 ϵ22) ϵ23 ϵ24,
-    option::none ρ8 => 0 ϵ25,
-  } ϵ26 ϵ27 ϵ28
+  let option::some(#0 ρ3) ρ4 = make_some ϵ11(5 ϵ12) ϵ13 ϵ14;
+  let #1 ρ5 = build_point ϵ15(#0 ϵ16, 7 ϵ17) ϵ18 ϵ19;
+  match option::some(#1 ϵ20.x ϵ21) ϵ22 {
+    option::some(#2 ρ6) ρ7 => #2 ϵ23 + magnitude ϵ24(#1 ϵ25) ϵ26 ϵ27,
+    option::none ρ8 => 0 ϵ28,
+  } ϵ29
 } ITEM5

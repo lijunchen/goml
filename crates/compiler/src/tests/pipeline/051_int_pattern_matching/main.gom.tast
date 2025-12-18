@@ -1,71 +1,71 @@
 fn is_special8(value/0: int8) -> bool {
-  match (value/0 : int8) {
-      5 => true,
-      7 => true,
-      _ : int8 => false,
-  }
+    match (value/0 : int8) {
+        5 => true,
+        7 => true,
+        _ : int8 => false,
+    };
 }
 
 fn is_special16(value/1: int16) -> bool {
-  match (value/1 : int16) {
-      1024 => true,
-      2048 => true,
-      _ : int16 => false,
-  }
+    match (value/1 : int16) {
+        1024 => true,
+        2048 => true,
+        _ : int16 => false,
+    };
 }
 
 fn is_special32(value/2: int32) -> bool {
-  match (value/2 : int32) {
-      4096 => true,
-      8192 => true,
-      _ : int32 => false,
-  }
+    match (value/2 : int32) {
+        4096 => true,
+        8192 => true,
+        _ : int32 => false,
+    };
 }
 
 fn is_special64(value/3: int64) -> bool {
-  match (value/3 : int64) {
-      16384 => true,
-      32768 => true,
-      _ : int64 => false,
-  }
+    match (value/3 : int64) {
+        16384 => true,
+        32768 => true,
+        _ : int64 => false,
+    };
 }
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
-  match (values/4 : (int8, int16)) {
-      (1, 2) => true,
-      _ : (int8, int16) => false,
-  }
+    match (values/4 : (int8, int16)) {
+        (1, 2) => true,
+        _ : (int8, int16) => false,
+    };
 }
 
 fn match_struct(pair/5: PairData) -> bool {
-  match (pair/5 : PairData) {
-      PairData { head: 100, tail: 200 } => true,
-      PairData { head: _ : int32, tail: 300 } => true,
-      _ : PairData => false,
-  }
+    match (pair/5 : PairData) {
+        PairData { head: 100, tail: 200 } => true,
+        PairData { head: _ : int32, tail: 300 } => true,
+        _ : PairData => false,
+    };
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-  (label/6 : string) + (bool_to_string : (bool) -> string)((value/7 : bool))
+    (label/6 : string) + (bool_to_string : (bool) -> string)((value/7 : bool));
 }
 
 fn main() -> unit {
-  let tuple_first/8: int8 = 1 in
-  let tuple_second/9: int16 = 2 in
-  let tuple_result_hit/10: bool = (match_tuple : ((int8, int16)) -> bool)(((tuple_first/8 : int8), (tuple_second/9 : int16))) in
-  let tuple_result_miss/11: bool = (match_tuple : ((int8, int16)) -> bool)((3, 4)) in
-  let pair_first/12: bool = (match_struct : (PairData) -> bool)(PairData { head: 100, tail: 200 }) in
-  let pair_second/13: bool = (match_struct : (PairData) -> bool)(PairData { head: 10, tail: 300 }) in
-  let part1/14: string = (report : (string, bool) -> string)("int8=", (is_special8 : (int8) -> bool)(5)) in
-  let part2/15: string = (report : (string, bool) -> string)(",int16=", (is_special16 : (int16) -> bool)(1024)) in
-  let part3/16: string = (report : (string, bool) -> string)(",int32=", (is_special32 : (int32) -> bool)(8192)) in
-  let part4/17: string = (report : (string, bool) -> string)(",int64_a=", (is_special64 : (int64) -> bool)(16384)) in
-  let part5/18: string = (report : (string, bool) -> string)(",int64_b=", (is_special64 : (int64) -> bool)(32768)) in
-  let part6/19: string = (report : (string, bool) -> string)(",tuple_hit=", (tuple_result_hit/10 : bool)) in
-  let part7/20: string = (report : (string, bool) -> string)(",tuple_miss=", (tuple_result_miss/11 : bool)) in
-  let part8/21: string = (report : (string, bool) -> string)(",struct_first=", (pair_first/12 : bool)) in
-  let part9/22: string = (report : (string, bool) -> string)(",struct_second=", (pair_second/13 : bool)) in
-  let message/23: string = (part1/14 : string) + (part2/15 : string) + (part3/16 : string) + (part4/17 : string) + (part5/18 : string) + (part6/19 : string) + (part7/20 : string) + (part8/21 : string) + (part9/22 : string) in
-  let _ : unit = (string_println : (string) -> unit)((message/23 : string)) in
-  ()
+    let tuple_first/8: int8 = 1;
+    let tuple_second/9: int16 = 2;
+    let tuple_result_hit/10: bool = (match_tuple : ((int8, int16)) -> bool)(((tuple_first/8 : int8), (tuple_second/9 : int16)));
+    let tuple_result_miss/11: bool = (match_tuple : ((int8, int16)) -> bool)((3, 4));
+    let pair_first/12: bool = (match_struct : (PairData) -> bool)(PairData { head: 100, tail: 200 });
+    let pair_second/13: bool = (match_struct : (PairData) -> bool)(PairData { head: 10, tail: 300 });
+    let part1/14: string = (report : (string, bool) -> string)("int8=", (is_special8 : (int8) -> bool)(5));
+    let part2/15: string = (report : (string, bool) -> string)(",int16=", (is_special16 : (int16) -> bool)(1024));
+    let part3/16: string = (report : (string, bool) -> string)(",int32=", (is_special32 : (int32) -> bool)(8192));
+    let part4/17: string = (report : (string, bool) -> string)(",int64_a=", (is_special64 : (int64) -> bool)(16384));
+    let part5/18: string = (report : (string, bool) -> string)(",int64_b=", (is_special64 : (int64) -> bool)(32768));
+    let part6/19: string = (report : (string, bool) -> string)(",tuple_hit=", (tuple_result_hit/10 : bool));
+    let part7/20: string = (report : (string, bool) -> string)(",tuple_miss=", (tuple_result_miss/11 : bool));
+    let part8/21: string = (report : (string, bool) -> string)(",struct_first=", (pair_first/12 : bool));
+    let part9/22: string = (report : (string, bool) -> string)(",struct_second=", (pair_second/13 : bool));
+    let message/23: string = (part1/14 : string) + (part2/15 : string) + (part3/16 : string) + (part4/17 : string) + (part5/18 : string) + (part6/19 : string) + (part7/20 : string) + (part8/21 : string) + (part9/22 : string);
+    let _ : unit = (string_println : (string) -> unit)((message/23 : string));
+    ();
 }

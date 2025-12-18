@@ -3,55 +3,57 @@ enum IntList { Nil, Cons(int32, IntList) } ITEM0
 fn print_int_list(#0: IntList) -> () {
   match #0 ϵ0 {
     IntList::Nil ρ0 => string_print ϵ1("Nil" ϵ2) ϵ3,
-    IntList::Cons(#1 ρ1, #2 ρ2) ρ3 => let _ ρ4 = string_print ϵ4("Cons" ϵ5) ϵ6 in
-    let _ ρ5 = string_print ϵ7("(" ϵ8) ϵ9 in
-    let _ ρ6 = string_print ϵ10(int32_to_string ϵ11(#1 ϵ12) ϵ13) ϵ14 in
-    let _ ρ7 = string_print ϵ15(", " ϵ16) ϵ17 in
-    let _ ρ8 = print_int_list ϵ18(#2 ϵ19) ϵ20 in
-    let _ ρ9 = string_print ϵ21(")" ϵ22) ϵ23 in
-    () ϵ24 ϵ25 ϵ26 ϵ27 ϵ28 ϵ29 ϵ30,
-  } ϵ31
+    IntList::Cons(#1 ρ1, #2 ρ2) ρ3 => {
+      let _ ρ4 = string_print ϵ4("Cons" ϵ5) ϵ6 ϵ7;
+      let _ ρ5 = string_print ϵ8("(" ϵ9) ϵ10 ϵ11;
+      let _ ρ6 = string_print ϵ12(int32_to_string ϵ13(#1 ϵ14) ϵ15) ϵ16 ϵ17;
+      let _ ρ7 = string_print ϵ18(", " ϵ19) ϵ20 ϵ21;
+      let _ ρ8 = print_int_list ϵ22(#2 ϵ23) ϵ24 ϵ25;
+      let _ ρ9 = string_print ϵ26(")" ϵ27) ϵ28 ϵ29;
+      () ϵ30
+    } ϵ31,
+  }
 } ITEM1
 
 fn int_list_rev_aux(#0: IntList, #1: IntList) -> IntList {
-  match #0 ϵ32 {
-    IntList::Nil ρ10 => #1 ϵ33,
-    IntList::Cons(#2 ρ11, #3 ρ12) ρ13 => int_list_rev_aux ϵ34(#3 ϵ35, IntList::Cons(#2 ϵ36, #1 ϵ37) ϵ38) ϵ39,
-  } ϵ40
+  match #0 ϵ33 {
+    IntList::Nil ρ10 => #1 ϵ34,
+    IntList::Cons(#2 ρ11, #3 ρ12) ρ13 => int_list_rev_aux ϵ35(#3 ϵ36, IntList::Cons(#2 ϵ37, #1 ϵ38) ϵ39) ϵ40,
+  }
 } ITEM2
 
 fn int_list_rev(#0: IntList) -> IntList {
-  int_list_rev_aux ϵ41(#0 ϵ42, IntList::Nil ϵ43) ϵ44
+  int_list_rev_aux ϵ42(#0 ϵ43, IntList::Nil ϵ44)
 } ITEM3
 
 fn int_list_length(#0: IntList) -> int32 {
-  match #0 ϵ45 {
-    IntList::Nil ρ14 => 0 ϵ46,
-    IntList::Cons(_ ρ15, #1 ρ16) ρ17 => 1 ϵ47 + int_list_length ϵ48(#1 ϵ49) ϵ50 ϵ51,
-  } ϵ52
+  match #0 ϵ46 {
+    IntList::Nil ρ14 => 0 ϵ47,
+    IntList::Cons(_ ρ15, #1 ρ16) ρ17 => 1 ϵ48 + int_list_length ϵ49(#1 ϵ50) ϵ51 ϵ52,
+  }
 } ITEM4
 
 fn print_int_list_length(#0: IntList) -> () {
-  let _ ρ18 = string_print ϵ53("Length: " ϵ54) ϵ55 in
-  let _ ρ19 = string_println ϵ56(int32_to_string ϵ57(int_list_length ϵ58(#0 ϵ59) ϵ60) ϵ61) ϵ62 in
-  () ϵ63 ϵ64 ϵ65
+  let _ ρ18 = string_print ϵ54("Length: " ϵ55) ϵ56 ϵ57;
+  let _ ρ19 = string_println ϵ58(int32_to_string ϵ59(int_list_length ϵ60(#0 ϵ61) ϵ62) ϵ63) ϵ64 ϵ65;
+  () ϵ66
 } ITEM5
 
 fn main() -> () {
-  let #0 ρ20 = IntList::Nil ϵ66 in
-  let _ ρ21 = print_int_list ϵ67(#0 ϵ68) ϵ69 in
-  let _ ρ22 = string_println ϵ70("" ϵ71) ϵ72 in
-  let _ ρ23 = print_int_list_length ϵ73(#0 ϵ74) ϵ75 in
-  let #1 ρ24 = IntList::Cons(1 ϵ76, IntList::Nil ϵ77) ϵ78 in
-  let _ ρ25 = print_int_list ϵ79(#1 ϵ80) ϵ81 in
-  let _ ρ26 = string_println ϵ82("" ϵ83) ϵ84 in
-  let _ ρ27 = print_int_list_length ϵ85(#1 ϵ86) ϵ87 in
-  let #2 ρ28 = IntList::Cons(1 ϵ88, IntList::Cons(2 ϵ89, IntList::Cons(3 ϵ90, IntList::Nil ϵ91) ϵ92) ϵ93) ϵ94 in
-  let _ ρ29 = print_int_list ϵ95(#2 ϵ96) ϵ97 in
-  let _ ρ30 = string_println ϵ98("" ϵ99) ϵ100 in
-  let _ ρ31 = print_int_list_length ϵ101(#2 ϵ102) ϵ103 in
-  let #3 ρ32 = int_list_rev ϵ104(#2 ϵ105) ϵ106 in
-  let _ ρ33 = print_int_list ϵ107(#3 ϵ108) ϵ109 in
-  let _ ρ34 = string_println ϵ110("" ϵ111) ϵ112 in
-  () ϵ113 ϵ114 ϵ115 ϵ116 ϵ117 ϵ118 ϵ119 ϵ120 ϵ121 ϵ122 ϵ123 ϵ124 ϵ125 ϵ126 ϵ127 ϵ128
+  let #0 ρ20 = IntList::Nil ϵ68 ϵ69;
+  let _ ρ21 = print_int_list ϵ70(#0 ϵ71) ϵ72 ϵ73;
+  let _ ρ22 = string_println ϵ74("" ϵ75) ϵ76 ϵ77;
+  let _ ρ23 = print_int_list_length ϵ78(#0 ϵ79) ϵ80 ϵ81;
+  let #1 ρ24 = IntList::Cons(1 ϵ82, IntList::Nil ϵ83) ϵ84 ϵ85;
+  let _ ρ25 = print_int_list ϵ86(#1 ϵ87) ϵ88 ϵ89;
+  let _ ρ26 = string_println ϵ90("" ϵ91) ϵ92 ϵ93;
+  let _ ρ27 = print_int_list_length ϵ94(#1 ϵ95) ϵ96 ϵ97;
+  let #2 ρ28 = IntList::Cons(1 ϵ98, IntList::Cons(2 ϵ99, IntList::Cons(3 ϵ100, IntList::Nil ϵ101) ϵ102) ϵ103) ϵ104 ϵ105;
+  let _ ρ29 = print_int_list ϵ106(#2 ϵ107) ϵ108 ϵ109;
+  let _ ρ30 = string_println ϵ110("" ϵ111) ϵ112 ϵ113;
+  let _ ρ31 = print_int_list_length ϵ114(#2 ϵ115) ϵ116 ϵ117;
+  let #3 ρ32 = int_list_rev ϵ118(#2 ϵ119) ϵ120 ϵ121;
+  let _ ρ33 = print_int_list ϵ122(#3 ϵ123) ϵ124 ϵ125;
+  let _ ρ34 = string_println ϵ126("" ϵ127) ϵ128 ϵ129;
+  () ϵ130
 } ITEM6

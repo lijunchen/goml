@@ -2,8 +2,8 @@ struct Point { x: int32, y: int32 } ITEM0
 
 impl Point {
   fn item_26(#0: Point) -> string {
-    let Point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ0 in
-    "{" ϵ1 + "\"x\":" ϵ2 ϵ3 + #1 ϵ4.to_string ϵ5() ϵ6 ϵ7 + "," ϵ8 ϵ9 + "\"y\":" ϵ10 ϵ11 + #2 ϵ12.to_string ϵ13() ϵ14 ϵ15 + "}" ϵ16 ϵ17 ϵ18
+    let Point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ0 ϵ1;
+    "{" ϵ2 + "\"x\":" ϵ3 ϵ4 + #1 ϵ5.to_string ϵ6() ϵ7 ϵ8 + "," ϵ9 ϵ10 + "\"y\":" ϵ11 ϵ12 + #2 ϵ13.to_string ϵ14() ϵ15 ϵ16 + "}" ϵ17 ϵ18
   } ITEM1
 } ITEM2
 
@@ -11,8 +11,8 @@ struct Person { name: string, age: int32, active: bool } ITEM3
 
 impl Person {
   fn item_27(#0: Person) -> string {
-    let Person { name: #1 ρ3, age: #2 ρ4, active: #3 ρ5 } ρ6 = #0 ϵ19 in
-    "{" ϵ20 + "\"name\":" ϵ21 ϵ22 + json_escape_string ϵ23(#1 ϵ24) ϵ25 ϵ26 + "," ϵ27 ϵ28 + "\"age\":" ϵ29 ϵ30 + #2 ϵ31.to_string ϵ32() ϵ33 ϵ34 + "," ϵ35 ϵ36 + "\"active\":" ϵ37 ϵ38 + bool_to_json ϵ39(#3 ϵ40) ϵ41 ϵ42 + "}" ϵ43 ϵ44 ϵ45
+    let Person { name: #1 ρ3, age: #2 ρ4, active: #3 ρ5 } ρ6 = #0 ϵ20 ϵ21;
+    "{" ϵ22 + "\"name\":" ϵ23 ϵ24 + json_escape_string ϵ25(#1 ϵ26) ϵ27 ϵ28 + "," ϵ29 ϵ30 + "\"age\":" ϵ31 ϵ32 + #2 ϵ33.to_string ϵ34() ϵ35 ϵ36 + "," ϵ37 ϵ38 + "\"active\":" ϵ39 ϵ40 + bool_to_json ϵ41(#3 ϵ42) ϵ43 ϵ44 + "}" ϵ45 ϵ46
   } ITEM4
 } ITEM5
 
@@ -20,23 +20,23 @@ enum Color { Red, Green, Blue, Rgb(int32, int32, int32) } ITEM6
 
 impl Color {
   fn item_28(#0: Color) -> string {
-    match #0 ϵ46 {
-      Color::Red ρ7 => "{\"tag\":\"Red\"}" ϵ47,
-      Color::Green ρ8 => "{\"tag\":\"Green\"}" ϵ48,
-      Color::Blue ρ9 => "{\"tag\":\"Blue\"}" ϵ49,
-      Color::Rgb(#1 ρ10, #2 ρ11, #3 ρ12) ρ13 => "{\"tag\":\"Rgb\",\"fields\":[" ϵ50 + #1 ϵ51.to_string ϵ52() ϵ53 ϵ54 + "," ϵ55 ϵ56 + #2 ϵ57.to_string ϵ58() ϵ59 ϵ60 + "," ϵ61 ϵ62 + #3 ϵ63.to_string ϵ64() ϵ65 ϵ66 + "]}" ϵ67 ϵ68,
-    } ϵ69
+    match #0 ϵ48 {
+      Color::Red ρ7 => "{\"tag\":\"Red\"}" ϵ49,
+      Color::Green ρ8 => "{\"tag\":\"Green\"}" ϵ50,
+      Color::Blue ρ9 => "{\"tag\":\"Blue\"}" ϵ51,
+      Color::Rgb(#1 ρ10, #2 ρ11, #3 ρ12) ρ13 => "{\"tag\":\"Rgb\",\"fields\":[" ϵ52 + #1 ϵ53.to_string ϵ54() ϵ55 ϵ56 + "," ϵ57 ϵ58 + #2 ϵ59.to_string ϵ60() ϵ61 ϵ62 + "," ϵ63 ϵ64 + #3 ϵ65.to_string ϵ66() ϵ67 ϵ68 + "]}" ϵ69 ϵ70,
+    }
   } ITEM7
 } ITEM8
 
 fn main() -> () {
-  let #0 ρ14 = Point { x: 10 ϵ70, y: 20 ϵ71 } ϵ72 in
-  let #1 ρ15 = Person { name: "Alice" ϵ73, age: 30 ϵ74, active: true ϵ75 } ϵ76 in
-  let #2 ρ16 = Color::Red ϵ77 in
-  let #3 ρ17 = Color::Rgb(255 ϵ78, 128 ϵ79, 0 ϵ80) ϵ81 in
-  let _ ρ18 = string_println ϵ82(#0 ϵ83.to_json ϵ84() ϵ85) ϵ86 in
-  let _ ρ19 = string_println ϵ87(#1 ϵ88.to_json ϵ89() ϵ90) ϵ91 in
-  let _ ρ20 = string_println ϵ92(#2 ϵ93.to_json ϵ94() ϵ95) ϵ96 in
-  let _ ρ21 = string_println ϵ97(#3 ϵ98.to_json ϵ99() ϵ100) ϵ101 in
-  () ϵ102 ϵ103 ϵ104 ϵ105 ϵ106 ϵ107 ϵ108 ϵ109 ϵ110
+  let #0 ρ14 = Point { x: 10 ϵ72, y: 20 ϵ73 } ϵ74 ϵ75;
+  let #1 ρ15 = Person { name: "Alice" ϵ76, age: 30 ϵ77, active: true ϵ78 } ϵ79 ϵ80;
+  let #2 ρ16 = Color::Red ϵ81 ϵ82;
+  let #3 ρ17 = Color::Rgb(255 ϵ83, 128 ϵ84, 0 ϵ85) ϵ86 ϵ87;
+  string_println ϵ88(#0 ϵ89.to_json ϵ90() ϵ91) ϵ92;
+  string_println ϵ93(#1 ϵ94.to_json ϵ95() ϵ96) ϵ97;
+  string_println ϵ98(#2 ϵ99.to_json ϵ100() ϵ101) ϵ102;
+  string_println ϵ103(#3 ϵ104.to_json ϵ105() ϵ106) ϵ107;
+  () ϵ108
 } ITEM9

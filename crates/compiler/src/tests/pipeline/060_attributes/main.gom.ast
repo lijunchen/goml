@@ -6,8 +6,8 @@ struct Point {
 
 impl Point {
   fn to_string(self: Point) -> string {
-      let Point { x: x, y: y } = self in
-      "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + " }"
+    let Point { x: x, y: y } = self;
+    "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + " }";
   }
 }
 
@@ -20,27 +20,27 @@ enum Message {
 
 impl Message {
   fn to_string(self: Message) -> string {
-      match self {
-          Message::Quit => "Message::Quit",
-          Message::Move(__field0, __field1) => "Message::Move(" + __field0.to_string() + ", " + __field1.to_string() + ")",
-          Message::Write(__field0) => "Message::Write(" + __field0 + ")",
-      }
+    match self {
+        Message::Quit => "Message::Quit",
+        Message::Move(__field0, __field1) => "Message::Move(" + __field0.to_string() + ", " + __field1.to_string() + ")",
+        Message::Write(__field0) => "Message::Write(" + __field0 + ")",
+    }
   }
 }
 
 fn main() -> unit {
-    let point = Point {
-        x: 4,
-        y: 7
-    } in
-    let summary = point.to_string() in
-    let mv = Message::Move(1, 2).to_string() in
-    let text = Message::Write("done").to_string() in
-    let exit = Message::Quit.to_string() in
-    let _ = string_println(summary) in
-    let _ = string_println(mv) in
-    let _ = string_println(text) in
-    let _ = string_println(exit) in
-    ()
+  let point = Point {
+      x: 4,
+      y: 7
+  };
+  let summary = point.to_string();
+  let mv = Message::Move(1, 2).to_string();
+  let text = Message::Write("done").to_string();
+  let exit = Message::Quit.to_string();
+  string_println(summary);
+  string_println(mv);
+  string_println(text);
+  string_println(exit);
+  ();
 }
 

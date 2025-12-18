@@ -11,23 +11,23 @@ extern "go" "fmt" format_time(#0: string, #1: Time) -> string ITEM4
 extern "go" "fmt" format_duration(#0: string, #1: Duration) -> string ITEM5
 
 fn describe_epoch() -> string {
-  let #0 ρ0 = unix ϵ0(946684800 ϵ1, 500000000 ϵ2) ϵ3 in
-  format_time ϵ4("epoch snapshot => %v" ϵ5, #0 ϵ6) ϵ7 ϵ8
+  let #0 ρ0 = unix ϵ0(946684800 ϵ1, 500000000 ϵ2) ϵ3 ϵ4;
+  format_time ϵ5("epoch snapshot => %v" ϵ6, #0 ϵ7) ϵ8
 } ITEM6
 
 fn describe_planned_launch() -> string {
-  let #0 ρ1 = unix ϵ9(1709294730 ϵ10, 250000000 ϵ11) ϵ12 in
-  format_time ϵ13("planned launch => %v" ϵ14, #0 ϵ15) ϵ16 ϵ17
+  let #0 ρ1 = unix ϵ10(1709294730 ϵ11, 250000000 ϵ12) ϵ13 ϵ14;
+  format_time ϵ15("planned launch => %v" ϵ16, #0 ϵ17) ϵ18
 } ITEM7
 
 fn describe_duration() -> string {
-  let #0 ρ2 = duration ϵ18(1500000000 ϵ19) ϵ20 in
-  format_duration ϵ21("parsed duration => %v" ϵ22, #0 ϵ23) ϵ24 ϵ25
+  let #0 ρ2 = duration ϵ20(1500000000 ϵ21) ϵ22 ϵ23;
+  format_duration ϵ24("parsed duration => %v" ϵ25, #0 ϵ26) ϵ27
 } ITEM8
 
 fn main() -> () {
-  let _ ρ3 = string_println ϵ26(describe_epoch ϵ27() ϵ28) ϵ29 in
-  let _ ρ4 = string_println ϵ30(describe_planned_launch ϵ31() ϵ32) ϵ33 in
-  let _ ρ5 = string_println ϵ34(describe_duration ϵ35() ϵ36) ϵ37 in
-  () ϵ38 ϵ39 ϵ40 ϵ41
+  string_println ϵ29(describe_epoch ϵ30() ϵ31) ϵ32;
+  string_println ϵ33(describe_planned_launch ϵ34() ϵ35) ϵ36;
+  string_println ϵ37(describe_duration ϵ38() ϵ39) ϵ40;
+  () ϵ41
 } ITEM9

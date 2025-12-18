@@ -10,132 +10,140 @@ trait Describe {
 
 impl Describe for Tracker {
   fn item_36(#0: Tracker) -> string {
-    let Tracker { label: #1 ρ0, count: #2 ρ1, toggled: #3 ρ2 } ρ3 = #0 ϵ0 in
-    let #4 ρ4 = ref_get ϵ1(#2 ϵ2) ϵ3 in
-    let #5 ρ5 = ref_get ϵ4(#3 ϵ5) ϵ6 in
-    let #6 ρ6 = "Tracker(" ϵ7 + #1 ϵ8 ϵ9 in
-    let #7 ρ7 = #6 ϵ10 + ", count: " ϵ11 ϵ12 in
-    let #8 ρ8 = #7 ϵ13 + int32_to_string ϵ14(#4 ϵ15) ϵ16 ϵ17 in
-    let #9 ρ9 = #8 ϵ18 + ", toggled: " ϵ19 ϵ20 in
-    #9 ϵ21 + bool_to_string ϵ22(#5 ϵ23) ϵ24 ϵ25 + ")" ϵ26 ϵ27 ϵ28 ϵ29 ϵ30 ϵ31 ϵ32 ϵ33 ϵ34
+    let Tracker { label: #1 ρ0, count: #2 ρ1, toggled: #3 ρ2 } ρ3 = #0 ϵ0 ϵ1;
+    let #4 ρ4 = ref_get ϵ2(#2 ϵ3) ϵ4 ϵ5;
+    let #5 ρ5 = ref_get ϵ6(#3 ϵ7) ϵ8 ϵ9;
+    let #6 ρ6 = "Tracker(" ϵ10 + #1 ϵ11 ϵ12 ϵ13;
+    let #7 ρ7 = #6 ϵ14 + ", count: " ϵ15 ϵ16 ϵ17;
+    let #8 ρ8 = #7 ϵ18 + int32_to_string ϵ19(#4 ϵ20) ϵ21 ϵ22 ϵ23;
+    let #9 ρ9 = #8 ϵ24 + ", toggled: " ϵ25 ϵ26 ϵ27;
+    #9 ϵ28 + bool_to_string ϵ29(#5 ϵ30) ϵ31 ϵ32 + ")" ϵ33 ϵ34
   } ITEM4
 } ITEM5
 
 impl Describe for Record[int32] {
   fn item_37(#0: Record[int32]) -> string {
-    match #0 ϵ35 {
-      Record::Value(#1 ρ10) ρ11 => "Value(" ϵ36 + int32_to_string ϵ37(#1 ϵ38) ϵ39 ϵ40 + ")" ϵ41 ϵ42,
-      Record::Pair(#2 ρ12, #3 ρ13) ρ14 => let #4 ρ15 = "Pair(" ϵ43 + int32_to_string ϵ44(#2 ϵ45) ϵ46 ϵ47 in
-      #4 ϵ48 + ", " ϵ49 ϵ50 + int32_to_string ϵ51(#3 ϵ52) ϵ53 ϵ54 + ")" ϵ55 ϵ56 ϵ57,
-      Record::Empty ρ16 => "Empty" ϵ58,
-    } ϵ59
+    match #0 ϵ36 {
+      Record::Value(#1 ρ10) ρ11 => "Value(" ϵ37 + int32_to_string ϵ38(#1 ϵ39) ϵ40 ϵ41 + ")" ϵ42 ϵ43,
+      Record::Pair(#2 ρ12, #3 ρ13) ρ14 => {
+        let #4 ρ15 = "Pair(" ϵ44 + int32_to_string ϵ45(#2 ϵ46) ϵ47 ϵ48 ϵ49;
+        #4 ϵ50 + ", " ϵ51 ϵ52 + int32_to_string ϵ53(#3 ϵ54) ϵ55 ϵ56 + ")" ϵ57 ϵ58
+      } ϵ59,
+      Record::Empty ρ16 => "Empty" ϵ60,
+    }
   } ITEM6
 } ITEM7
 
 impl Describe for Record[string] {
   fn item_38(#0: Record[string]) -> string {
-    match #0 ϵ60 {
-      Record::Value(#1 ρ17) ρ18 => "Value(" ϵ61 + #1 ϵ62 ϵ63 + ")" ϵ64 ϵ65,
-      Record::Pair(#2 ρ19, #3 ρ20) ρ21 => let #4 ρ22 = "Pair(" ϵ66 + #2 ϵ67 ϵ68 in
-      #4 ϵ69 + ", " ϵ70 ϵ71 + #3 ϵ72 ϵ73 + ")" ϵ74 ϵ75 ϵ76,
-      Record::Empty ρ23 => "Empty" ϵ77,
-    } ϵ78
+    match #0 ϵ62 {
+      Record::Value(#1 ρ17) ρ18 => "Value(" ϵ63 + #1 ϵ64 ϵ65 + ")" ϵ66 ϵ67,
+      Record::Pair(#2 ρ19, #3 ρ20) ρ21 => {
+        let #4 ρ22 = "Pair(" ϵ68 + #2 ϵ69 ϵ70 ϵ71;
+        #4 ϵ72 + ", " ϵ73 ϵ74 + #3 ϵ75 ϵ76 + ")" ϵ77 ϵ78
+      } ϵ79,
+      Record::Empty ρ23 => "Empty" ϵ80,
+    }
   } ITEM8
 } ITEM9
 
 fn choose[T2](#0: bool, #1: T2, #2: T2) -> T2 {
-  if #0 ϵ79 {
-    #1 ϵ80
+  if #0 ϵ82 {
+    #1 ϵ83
   } else {
-    #2 ϵ81
-  } ϵ82
+    #2 ϵ84
+  }
 } ITEM10
 
 fn map_maybe[T3, T4](#0: Maybe[T3], #1: fn(T3) -> T4) -> Maybe[T4] {
-  match #0 ϵ83 {
-    Maybe::Some(#2 ρ24) ρ25 => Maybe::Some(#1 ϵ84(#2 ϵ85) ϵ86) ϵ87,
-    Maybe::None ρ26 => Maybe::None ϵ88,
-  } ϵ89
+  match #0 ϵ86 {
+    Maybe::Some(#2 ρ24) ρ25 => Maybe::Some(#1 ϵ87(#2 ϵ88) ϵ89) ϵ90,
+    Maybe::None ρ26 => Maybe::None ϵ91,
+  }
 } ITEM11
 
 fn format_total(#0: int32) -> string {
-  "total: " ϵ90 + int32_to_string ϵ91(#0 ϵ92) ϵ93 ϵ94
+  "total: " ϵ93 + int32_to_string ϵ94(#0 ϵ95) ϵ96
 } ITEM12
 
 fn increment(#0: int32) -> int32 {
-  #0 ϵ95 + 1 ϵ96 ϵ97
+  #0 ϵ98 + 1 ϵ99
 } ITEM13
 
 fn triple(#0: int32) -> int32 {
-  #0 ϵ98 * 3 ϵ99 ϵ100
+  #0 ϵ101 * 3 ϵ102
 } ITEM14
 
 fn pair_join(#0: (string, string)) -> string {
-  let (#1 ρ27, #2 ρ28) ρ29 = #0 ϵ101 in
-  #1 ϵ102 + " -> " ϵ103 ϵ104 + #2 ϵ105 ϵ106 ϵ107
+  let (#1 ρ27, #2 ρ28) ρ29 = #0 ϵ104 ϵ105;
+  #1 ϵ106 + " -> " ϵ107 ϵ108 + #2 ϵ109 ϵ110
 } ITEM15
 
 fn run_transforms(#0: int32, #1: [fn(int32) -> int32; 2]) -> [int32; 2] {
-  let #2 ρ30 = array_get ϵ108(#1 ϵ109, 0 ϵ110) ϵ111 in
-  let #3 ρ31 = array_get ϵ112(#1 ϵ113, 1 ϵ114) ϵ115 in
-  let #4 ρ32 = #2 ϵ116(#0 ϵ117) ϵ118 in
-  let #5 ρ33 = #3 ϵ119(#4 ϵ120) ϵ121 in
-  array_set ϵ122([#4 ϵ123, #0 ϵ124] ϵ125, 1 ϵ126, #5 ϵ127) ϵ128 ϵ129 ϵ130 ϵ131 ϵ132
+  let #2 ρ30 = array_get ϵ112(#1 ϵ113, 0 ϵ114) ϵ115 ϵ116;
+  let #3 ρ31 = array_get ϵ117(#1 ϵ118, 1 ϵ119) ϵ120 ϵ121;
+  let #4 ρ32 = #2 ϵ122(#0 ϵ123) ϵ124 ϵ125;
+  let #5 ρ33 = #3 ϵ126(#4 ϵ127) ϵ128 ϵ129;
+  array_set ϵ130([#4 ϵ131, #0 ϵ132] ϵ133, 1 ϵ134, #5 ϵ135) ϵ136
 } ITEM16
 
 fn gather(#0: Record[int32]) -> Maybe[int32] {
-  match #0 ϵ133 {
-    Record::Value(#1 ρ34) ρ35 => Maybe::Some(#1 ϵ134) ϵ135,
-    Record::Pair(_ ρ36, #2 ρ37) ρ38 => Maybe::Some(#2 ϵ136) ϵ137,
-    Record::Empty ρ39 => Maybe::None ϵ138,
-  } ϵ139
+  match #0 ϵ138 {
+    Record::Value(#1 ρ34) ρ35 => Maybe::Some(#1 ϵ139) ϵ140,
+    Record::Pair(_ ρ36, #2 ρ37) ρ38 => Maybe::Some(#2 ϵ141) ϵ142,
+    Record::Empty ρ39 => Maybe::None ϵ143,
+  }
 } ITEM17
 
 fn build_counter(#0: string, #1: int32) -> (Tracker, fn() -> Record[int32], fn(int32) -> Record[int32], fn() -> Record[string]) {
-  let #2 ρ40 = ref ϵ140(#1 ϵ141) ϵ142 in
-  let #3 ρ41 = ref ϵ143(false ϵ144) ϵ145 in
-  let #4 ρ42 = Tracker { label: #0 ϵ146, count: #2 ϵ147, toggled: #3 ϵ148 } ϵ149 in
-  let #5 ρ43 = || => Record::Value(ref_get ϵ150(#2 ϵ151) ϵ152) ϵ153 ϵ154 in
-  let #8 ρ46 = |#6| => let #7 ρ44 = ref_get ϵ155(#2 ϵ156) ϵ157 in
-  let _ ρ45 = ref_set ϵ158(#2 ϵ159, #7 ϵ160 + #6 ϵ161 ϵ162) ϵ163 in
-  Record::Pair(#7 ϵ164, ref_get ϵ165(#2 ϵ166) ϵ167) ϵ168 ϵ169 ϵ170 ϵ171 in
-  let #11 ρ50 = || => let #9 ρ47 = ref_get ϵ172(#3 ϵ173) ϵ174 in
-  let _ ρ48 = ref_set ϵ175(#3 ϵ176, !#9 ϵ177 ϵ178) ϵ179 in
-  let #10 ρ49 = ref_get ϵ180(#3 ϵ181) ϵ182 in
-  Record::Pair(bool_to_string ϵ183(#9 ϵ184) ϵ185, bool_to_string ϵ186(#10 ϵ187) ϵ188) ϵ189 ϵ190 ϵ191 ϵ192 ϵ193 in
-  (#4 ϵ194, #5 ϵ195, #8 ϵ196, #11 ϵ197) ϵ198 ϵ199 ϵ200 ϵ201 ϵ202 ϵ203 ϵ204
+  let #2 ρ40 = ref ϵ145(#1 ϵ146) ϵ147 ϵ148;
+  let #3 ρ41 = ref ϵ149(false ϵ150) ϵ151 ϵ152;
+  let #4 ρ42 = Tracker { label: #0 ϵ153, count: #2 ϵ154, toggled: #3 ϵ155 } ϵ156 ϵ157;
+  let #5 ρ43 = || => Record::Value(ref_get ϵ158(#2 ϵ159) ϵ160) ϵ161 ϵ162 ϵ163;
+  let #8 ρ46 = |#6| => {
+    let #7 ρ44 = ref_get ϵ164(#2 ϵ165) ϵ166 ϵ167;
+    let _ ρ45 = ref_set ϵ168(#2 ϵ169, #7 ϵ170 + #6 ϵ171 ϵ172) ϵ173 ϵ174;
+    Record::Pair(#7 ϵ175, ref_get ϵ176(#2 ϵ177) ϵ178) ϵ179
+  } ϵ180 ϵ181 ϵ182;
+  let #11 ρ50 = || => {
+    let #9 ρ47 = ref_get ϵ183(#3 ϵ184) ϵ185 ϵ186;
+    let _ ρ48 = ref_set ϵ187(#3 ϵ188, !#9 ϵ189 ϵ190) ϵ191 ϵ192;
+    let #10 ρ49 = ref_get ϵ193(#3 ϵ194) ϵ195 ϵ196;
+    Record::Pair(bool_to_string ϵ197(#9 ϵ198) ϵ199, bool_to_string ϵ200(#10 ϵ201) ϵ202) ϵ203
+  } ϵ204 ϵ205 ϵ206;
+  (#4 ϵ207, #5 ϵ208, #8 ϵ209, #11 ϵ210) ϵ211
 } ITEM18
 
 fn main() -> () {
-  let (#0 ρ51, #1 ρ52, #2 ρ53, #3 ρ54) ρ55 = build_counter ϵ205("goml" ϵ206, 2 ϵ207) ϵ208 in
-  let #4 ρ56 = Describe::describe ϵ209(#0 ϵ210) ϵ211 in
-  let #5 ρ57 = #1 ϵ212() ϵ213 in
-  let #6 ρ58 = #2 ϵ214(5 ϵ215) ϵ216 in
-  let #7 ρ59 = #3 ϵ217() ϵ218 in
-  let #8 ρ60 = gather ϵ219(#5 ϵ220) ϵ221 in
-  let #9 ρ61 = gather ϵ222(#6 ϵ223) ϵ224 in
-  let #10 ρ62 = choose ϵ225(true ϵ226, #9 ϵ227, #8 ϵ228) ϵ229 in
-  let #11 ρ63 = map_maybe ϵ230(#10 ϵ231, format_total ϵ232) ϵ233 in
-  let #12 ρ64 = [increment ϵ234, triple ϵ235] ϵ236 in
-  let #13 ρ65 = run_transforms ϵ237(4 ϵ238, #12 ϵ239) ϵ240 in
-  let #14 ρ66 = array_get ϵ241(#13 ϵ242, 0 ϵ243) ϵ244 in
-  let #15 ρ67 = array_get ϵ245(#13 ϵ246, 1 ϵ247) ϵ248 in
-  let #16 ρ68 = #14 ϵ249 < #15 ϵ250 ϵ251 && true ϵ252 ϵ253 in
-  let #17 ρ69 = Describe::describe ϵ254(#5 ϵ255) ϵ256 in
-  let #18 ρ70 = Describe::describe ϵ257(#6 ϵ258) ϵ259 in
-  let #19 ρ71 = Describe::describe ϵ260(#7 ϵ261) ϵ262 in
-  let #21 ρ75 = match #11 ϵ263 {
-    Maybe::Some(#20 ρ72) ρ73 => "Snapshot: " ϵ264 + #20 ϵ265 ϵ266,
-    Maybe::None ρ74 => "Snapshot: none" ϵ267,
-  } ϵ268 in
-  let #22 ρ76 = pair_join ϵ269((int32_to_string ϵ270(#14 ϵ271) ϵ272, int32_to_string ϵ273(#15 ϵ274) ϵ275) ϵ276) ϵ277 in
-  let #23 ρ77 = bool_to_string ϵ278(#16 ϵ279) ϵ280 in
-  let _ ρ78 = string_println ϵ281(#4 ϵ282) ϵ283 in
-  let _ ρ79 = string_println ϵ284(#17 ϵ285) ϵ286 in
-  let _ ρ80 = string_println ϵ287(#18 ϵ288) ϵ289 in
-  let _ ρ81 = string_println ϵ290(#19 ϵ291) ϵ292 in
-  let _ ρ82 = string_println ϵ293(#21 ϵ294) ϵ295 in
-  let _ ρ83 = string_println ϵ296(#22 ϵ297) ϵ298 in
-  let _ ρ84 = string_println ϵ299(#23 ϵ300) ϵ301 in
-  () ϵ302 ϵ303 ϵ304 ϵ305 ϵ306 ϵ307 ϵ308 ϵ309 ϵ310 ϵ311 ϵ312 ϵ313 ϵ314 ϵ315 ϵ316 ϵ317 ϵ318 ϵ319 ϵ320 ϵ321 ϵ322 ϵ323 ϵ324 ϵ325 ϵ326 ϵ327 ϵ328 ϵ329
+  let (#0 ρ51, #1 ρ52, #2 ρ53, #3 ρ54) ρ55 = build_counter ϵ213("goml" ϵ214, 2 ϵ215) ϵ216 ϵ217;
+  let #4 ρ56 = Describe::describe ϵ218(#0 ϵ219) ϵ220 ϵ221;
+  let #5 ρ57 = #1 ϵ222() ϵ223 ϵ224;
+  let #6 ρ58 = #2 ϵ225(5 ϵ226) ϵ227 ϵ228;
+  let #7 ρ59 = #3 ϵ229() ϵ230 ϵ231;
+  let #8 ρ60 = gather ϵ232(#5 ϵ233) ϵ234 ϵ235;
+  let #9 ρ61 = gather ϵ236(#6 ϵ237) ϵ238 ϵ239;
+  let #10 ρ62 = choose ϵ240(true ϵ241, #9 ϵ242, #8 ϵ243) ϵ244 ϵ245;
+  let #11 ρ63 = map_maybe ϵ246(#10 ϵ247, format_total ϵ248) ϵ249 ϵ250;
+  let #12 ρ64 = [increment ϵ251, triple ϵ252] ϵ253 ϵ254;
+  let #13 ρ65 = run_transforms ϵ255(4 ϵ256, #12 ϵ257) ϵ258 ϵ259;
+  let #14 ρ66 = array_get ϵ260(#13 ϵ261, 0 ϵ262) ϵ263 ϵ264;
+  let #15 ρ67 = array_get ϵ265(#13 ϵ266, 1 ϵ267) ϵ268 ϵ269;
+  let #16 ρ68 = #14 ϵ270 < #15 ϵ271 ϵ272 && true ϵ273 ϵ274 ϵ275;
+  let #17 ρ69 = Describe::describe ϵ276(#5 ϵ277) ϵ278 ϵ279;
+  let #18 ρ70 = Describe::describe ϵ280(#6 ϵ281) ϵ282 ϵ283;
+  let #19 ρ71 = Describe::describe ϵ284(#7 ϵ285) ϵ286 ϵ287;
+  let #21 ρ75 = match #11 ϵ288 {
+    Maybe::Some(#20 ρ72) ρ73 => "Snapshot: " ϵ289 + #20 ϵ290 ϵ291,
+    Maybe::None ρ74 => "Snapshot: none" ϵ292,
+  } ϵ293 ϵ294;
+  let #22 ρ76 = pair_join ϵ295((int32_to_string ϵ296(#14 ϵ297) ϵ298, int32_to_string ϵ299(#15 ϵ300) ϵ301) ϵ302) ϵ303 ϵ304;
+  let #23 ρ77 = bool_to_string ϵ305(#16 ϵ306) ϵ307 ϵ308;
+  let _ ρ78 = string_println ϵ309(#4 ϵ310) ϵ311 ϵ312;
+  let _ ρ79 = string_println ϵ313(#17 ϵ314) ϵ315 ϵ316;
+  let _ ρ80 = string_println ϵ317(#18 ϵ318) ϵ319 ϵ320;
+  let _ ρ81 = string_println ϵ321(#19 ϵ322) ϵ323 ϵ324;
+  let _ ρ82 = string_println ϵ325(#21 ϵ326) ϵ327 ϵ328;
+  let _ ρ83 = string_println ϵ329(#22 ϵ330) ϵ331 ϵ332;
+  let _ ρ84 = string_println ϵ333(#23 ϵ334) ϵ335 ϵ336;
+  () ϵ337
 } ITEM19

@@ -4,29 +4,29 @@ trait ToString {
 
 impl ToString for int32 {
   fn to_string(self: int32) -> string {
-      int32_to_string(self)
+    int32_to_string(self);
   }
 }
 
 impl ToString for bool {
   fn to_string(self: bool) -> string {
-      bool_to_string(self)
+    bool_to_string(self);
   }
 }
 
 impl ToString for (int32, int32) {
   fn to_string(self: (int32, int32)) -> string {
-      "(?, ?)"
+    "(?, ?)";
   }
 }
 
 fn main() {
-    let x = 123 in
-    let _ = string_println(ToString::to_string(x)) in
-    let x = true in
-    let _ = string_println(ToString::to_string(x)) in
-    let x = (3, 4) in
-    let _ = string_println(ToString::to_string(x)) in
-    ()
+  let x = 123;
+  let _ = string_println(ToString::to_string(x));
+  let x = true;
+  let _ = string_println(ToString::to_string(x));
+  let x = (3, 4);
+  let _ = string_println(ToString::to_string(x));
+  ();
 }
 

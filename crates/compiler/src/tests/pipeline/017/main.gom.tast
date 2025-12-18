@@ -1,27 +1,27 @@
 impl ToString for int32{
   fn to_string(self/0: int32) -> string {
-    (int32_to_string : (int32) -> string)((self/0 : int32))
+      (int32_to_string : (int32) -> string)((self/0 : int32));
   }
 }
 
 impl ToString for bool{
   fn to_string(self/1: bool) -> string {
-    (bool_to_string : (bool) -> string)((self/1 : bool))
+      (bool_to_string : (bool) -> string)((self/1 : bool));
   }
 }
 
 impl ToString for (int32, int32){
   fn to_string(self/2: (int32, int32)) -> string {
-    "(?, ?)"
+      "(?, ?)";
   }
 }
 
 fn main() -> unit {
-  let x/3: int32 = 123 in
-  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/3 : int32))) in
-  let x/4: bool = true in
-  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/4 : bool))) in
-  let x/5: (int32, int32) = (3, 4) in
-  let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/5 : (int32, int32)))) in
-  ()
+    let x/3: int32 = 123;
+    let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/3 : int32)));
+    let x/4: bool = true;
+    let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/4 : bool)));
+    let x/5: (int32, int32) = (3, 4);
+    let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((x/5 : (int32, int32))));
+    ();
 }

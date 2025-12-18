@@ -9,18 +9,18 @@ fn bounce_int(#0: Shape[int32]) -> Shape[int32] {
     Shape::Dot(#1 ρ0) ρ1 => Shape::Dot(#1 ϵ1) ϵ2,
     Shape::Wrapped(#2 ρ2) ρ3 => Shape::Wrapped(#2 ϵ3) ϵ4,
     Shape::Origin ρ4 => Shape::Origin ϵ5,
-  } ϵ6
+  }
 } ITEM3
 
 fn wrap_unit(#0: Wrapper[()]) -> Shape[()] {
-  Shape::Wrapped(#0 ϵ7) ϵ8
+  Shape::Wrapped(#0 ϵ7)
 } ITEM4
 
 fn pick(#0: bool, #1: Point, #2: Wrapper[int32]) -> Shape[int32] {
   match #0 ϵ9 {
     true ρ5 => Shape::Dot(#1 ϵ10) ϵ11,
     false ρ6 => Shape::Wrapped(#2 ϵ12) ϵ13,
-  } ϵ14
+  }
 } ITEM5
 
 fn describe[T2](#0: Shape[T2]) -> int32 {
@@ -28,60 +28,68 @@ fn describe[T2](#0: Shape[T2]) -> int32 {
     Shape::Dot(_ ρ7) ρ8 => 1 ϵ16,
     Shape::Wrapped(_ ρ9) ρ10 => 2 ϵ17,
     Shape::Origin ρ11 => 0 ϵ18,
-  } ϵ19
+  }
 } ITEM6
 
 fn point32_to_string(#0: Point) -> string {
-  let Point { x: #1 ρ12, y: #2 ρ13 } ρ14 = #0 ϵ20 in
-  let #3 ρ15 = "Point { x: " ϵ21 + int32_to_string ϵ22(#1 ϵ23) ϵ24 ϵ25 in
-  let #4 ρ16 = #3 ϵ26 + ", y: " ϵ27 ϵ28 in
-  let #5 ρ17 = #4 ϵ29 + int32_to_string ϵ30(#2 ϵ31) ϵ32 ϵ33 in
-  #5 ϵ34 + " }" ϵ35 ϵ36 ϵ37 ϵ38 ϵ39 ϵ40
+  let Point { x: #1 ρ12, y: #2 ρ13 } ρ14 = #0 ϵ20 ϵ21;
+  let #3 ρ15 = "Point { x: " ϵ22 + int32_to_string ϵ23(#1 ϵ24) ϵ25 ϵ26 ϵ27;
+  let #4 ρ16 = #3 ϵ28 + ", y: " ϵ29 ϵ30 ϵ31;
+  let #5 ρ17 = #4 ϵ32 + int32_to_string ϵ33(#2 ϵ34) ϵ35 ϵ36 ϵ37;
+  #5 ϵ38 + " }" ϵ39 ϵ40
 } ITEM7
 
 fn wrapper_int32_to_string(#0: Wrapper[int32]) -> string {
-  let Wrapper { value: #1 ρ18 } ρ19 = #0 ϵ41 in
-  let #2 ρ20 = "Wrapper[int32] { value: " ϵ42 + int32_to_string ϵ43(#1 ϵ44) ϵ45 ϵ46 in
-  #2 ϵ47 + " }" ϵ48 ϵ49 ϵ50 ϵ51
+  let Wrapper { value: #1 ρ18 } ρ19 = #0 ϵ42 ϵ43;
+  let #2 ρ20 = "Wrapper[int32] { value: " ϵ44 + int32_to_string ϵ45(#1 ϵ46) ϵ47 ϵ48 ϵ49;
+  #2 ϵ50 + " }" ϵ51 ϵ52
 } ITEM8
 
 fn wrapper_unit_to_string(#0: Wrapper[()]) -> string {
-  let Wrapper { value: #1 ρ21 } ρ22 = #0 ϵ52 in
-  let #2 ρ23 = "Wrapper[unit] { value: " ϵ53 + unit_to_string ϵ54(#1 ϵ55) ϵ56 ϵ57 in
-  #2 ϵ58 + " }" ϵ59 ϵ60 ϵ61 ϵ62
+  let Wrapper { value: #1 ρ21 } ρ22 = #0 ϵ54 ϵ55;
+  let #2 ρ23 = "Wrapper[unit] { value: " ϵ56 + unit_to_string ϵ57(#1 ϵ58) ϵ59 ϵ60 ϵ61;
+  #2 ϵ62 + " }" ϵ63 ϵ64
 } ITEM9
 
 fn shape_int32_to_string(#0: Shape[int32]) -> string {
-  match #0 ϵ63 {
-    Shape::Dot(#1 ρ24) ρ25 => let #2 ρ26 = "Shape::Dot(" ϵ64 + point32_to_string ϵ65(#1 ϵ66) ϵ67 ϵ68 in
-    #2 ϵ69 + ")" ϵ70 ϵ71 ϵ72,
-    Shape::Wrapped(#3 ρ27) ρ28 => let #4 ρ29 = "Shape::Wrapped(" ϵ73 + wrapper_int32_to_string ϵ74(#3 ϵ75) ϵ76 ϵ77 in
-    #4 ϵ78 + ")" ϵ79 ϵ80 ϵ81,
-    Shape::Origin ρ30 => "Shape::Origin" ϵ82,
-  } ϵ83
+  match #0 ϵ66 {
+    Shape::Dot(#1 ρ24) ρ25 => {
+      let #2 ρ26 = "Shape::Dot(" ϵ67 + point32_to_string ϵ68(#1 ϵ69) ϵ70 ϵ71 ϵ72;
+      #2 ϵ73 + ")" ϵ74 ϵ75
+    } ϵ76,
+    Shape::Wrapped(#3 ρ27) ρ28 => {
+      let #4 ρ29 = "Shape::Wrapped(" ϵ77 + wrapper_int32_to_string ϵ78(#3 ϵ79) ϵ80 ϵ81 ϵ82;
+      #4 ϵ83 + ")" ϵ84 ϵ85
+    } ϵ86,
+    Shape::Origin ρ30 => "Shape::Origin" ϵ87,
+  }
 } ITEM10
 
 fn shape_unit_to_string(#0: Shape[()]) -> string {
-  match #0 ϵ84 {
-    Shape::Dot(#1 ρ31) ρ32 => let #2 ρ33 = "Shape::Dot(" ϵ85 + point32_to_string ϵ86(#1 ϵ87) ϵ88 ϵ89 in
-    #2 ϵ90 + ")" ϵ91 ϵ92 ϵ93,
-    Shape::Wrapped(#3 ρ34) ρ35 => let #4 ρ36 = "Shape::Wrapped(" ϵ94 + wrapper_unit_to_string ϵ95(#3 ϵ96) ϵ97 ϵ98 in
-    #4 ϵ99 + ")" ϵ100 ϵ101 ϵ102,
-    Shape::Origin ρ37 => "Shape::Origin" ϵ103,
-  } ϵ104
+  match #0 ϵ89 {
+    Shape::Dot(#1 ρ31) ρ32 => {
+      let #2 ρ33 = "Shape::Dot(" ϵ90 + point32_to_string ϵ91(#1 ϵ92) ϵ93 ϵ94 ϵ95;
+      #2 ϵ96 + ")" ϵ97 ϵ98
+    } ϵ99,
+    Shape::Wrapped(#3 ρ34) ρ35 => {
+      let #4 ρ36 = "Shape::Wrapped(" ϵ100 + wrapper_unit_to_string ϵ101(#3 ϵ102) ϵ103 ϵ104 ϵ105;
+      #4 ϵ106 + ")" ϵ107 ϵ108
+    } ϵ109,
+    Shape::Origin ρ37 => "Shape::Origin" ϵ110,
+  }
 } ITEM11
 
 fn main() -> () {
-  let _ ρ38 = string_println ϵ105(point32_to_string ϵ106(Point::Point(3 ϵ107, 4 ϵ108) ϵ109) ϵ110) ϵ111 in
-  let _ ρ39 = string_println ϵ112(wrapper_int32_to_string ϵ113(Wrapper::Wrapper(7 ϵ114) ϵ115) ϵ116) ϵ117 in
-  let _ ρ40 = string_println ϵ118(wrapper_unit_to_string ϵ119(Wrapper::Wrapper(() ϵ120) ϵ121) ϵ122) ϵ123 in
-  let #0 ρ41 = bounce_int ϵ124(Shape::Origin ϵ125) ϵ126 in
-  let _ ρ42 = string_println ϵ127(shape_int32_to_string ϵ128(Shape::Dot(Point::Point(3 ϵ129, 4 ϵ130) ϵ131) ϵ132) ϵ133) ϵ134 in
-  let _ ρ43 = string_println ϵ135(shape_int32_to_string ϵ136(Shape::Wrapped(Wrapper::Wrapper(7 ϵ137) ϵ138) ϵ139) ϵ140) ϵ141 in
-  let _ ρ44 = string_println ϵ142(shape_int32_to_string ϵ143(#0 ϵ144) ϵ145) ϵ146 in
-  let _ ρ45 = string_println ϵ147(shape_unit_to_string ϵ148(Shape::Dot(Point::Point(3 ϵ149, 4 ϵ150) ϵ151) ϵ152) ϵ153) ϵ154 in
-  let _ ρ46 = string_println ϵ155(shape_unit_to_string ϵ156(Shape::Wrapped(Wrapper::Wrapper(() ϵ157) ϵ158) ϵ159) ϵ160) ϵ161 in
-  let _ ρ47 = string_println ϵ162(shape_unit_to_string ϵ163(Shape::Origin ϵ164) ϵ165) ϵ166 in
-  let _ ρ48 = describe ϵ167(bounce_int ϵ168(Shape::Origin ϵ169) ϵ170) ϵ171 in
-  string_println ϵ172("struct enums!" ϵ173) ϵ174 ϵ175 ϵ176 ϵ177 ϵ178 ϵ179 ϵ180 ϵ181 ϵ182 ϵ183 ϵ184 ϵ185
+  let _ ρ38 = string_println ϵ112(point32_to_string ϵ113(Point::Point(3 ϵ114, 4 ϵ115) ϵ116) ϵ117) ϵ118 ϵ119;
+  let _ ρ39 = string_println ϵ120(wrapper_int32_to_string ϵ121(Wrapper::Wrapper(7 ϵ122) ϵ123) ϵ124) ϵ125 ϵ126;
+  let _ ρ40 = string_println ϵ127(wrapper_unit_to_string ϵ128(Wrapper::Wrapper(() ϵ129) ϵ130) ϵ131) ϵ132 ϵ133;
+  let #0 ρ41 = bounce_int ϵ134(Shape::Origin ϵ135) ϵ136 ϵ137;
+  let _ ρ42 = string_println ϵ138(shape_int32_to_string ϵ139(Shape::Dot(Point::Point(3 ϵ140, 4 ϵ141) ϵ142) ϵ143) ϵ144) ϵ145 ϵ146;
+  let _ ρ43 = string_println ϵ147(shape_int32_to_string ϵ148(Shape::Wrapped(Wrapper::Wrapper(7 ϵ149) ϵ150) ϵ151) ϵ152) ϵ153 ϵ154;
+  let _ ρ44 = string_println ϵ155(shape_int32_to_string ϵ156(#0 ϵ157) ϵ158) ϵ159 ϵ160;
+  let _ ρ45 = string_println ϵ161(shape_unit_to_string ϵ162(Shape::Dot(Point::Point(3 ϵ163, 4 ϵ164) ϵ165) ϵ166) ϵ167) ϵ168 ϵ169;
+  let _ ρ46 = string_println ϵ170(shape_unit_to_string ϵ171(Shape::Wrapped(Wrapper::Wrapper(() ϵ172) ϵ173) ϵ174) ϵ175) ϵ176 ϵ177;
+  let _ ρ47 = string_println ϵ178(shape_unit_to_string ϵ179(Shape::Origin ϵ180) ϵ181) ϵ182 ϵ183;
+  let _ ρ48 = describe ϵ184(bounce_int ϵ185(Shape::Origin ϵ186) ϵ187) ϵ188 ϵ189;
+  string_println ϵ190("struct enums!" ϵ191) ϵ192
 } ITEM12

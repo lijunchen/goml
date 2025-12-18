@@ -1,20 +1,20 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
-  match (x/0 : (bool, bool)) {
-      (true, false) => match (y/1 : (bool, bool)) {
-            (false, true) => (string_println : (string) -> unit)("case1"),
-            _ : (bool, bool) => (string_println : (string) -> unit)("case2"),
-        },
-      _ : (bool, bool) => match (y/1 : (bool, bool)) {
-            (false, true) => (string_println : (string) -> unit)("case3"),
-            _ : (bool, bool) => (string_println : (string) -> unit)("case4"),
-        },
-  }
+    match (x/0 : (bool, bool)) {
+        (true, false) => match (y/1 : (bool, bool)) {
+              (false, true) => (string_println : (string) -> unit)("case1"),
+              _ : (bool, bool) => (string_println : (string) -> unit)("case2"),
+          },
+        _ : (bool, bool) => match (y/1 : (bool, bool)) {
+              (false, true) => (string_println : (string) -> unit)("case3"),
+              _ : (bool, bool) => (string_println : (string) -> unit)("case4"),
+          },
+    };
 }
 
 fn main() -> unit {
-  let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (false, true)) in
-  let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (true, false)) in
-  let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (false, true)) in
-  let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (true, false)) in
-  ()
+    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (false, true));
+    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (true, false));
+    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (false, true));
+    let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (true, false));
+    ();
 }

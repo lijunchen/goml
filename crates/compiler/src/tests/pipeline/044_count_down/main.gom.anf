@@ -1,7 +1,7 @@
 fn main() -> unit {
   let counter/0 = ref(0) in
   let t5 = closure_env_main_0 { counter_0: counter/0 } in
-  let mtmp3 = go t5 in
+  let _wild3 = go t5 in
   while let t6 = ref_get(counter/0) in
   (t6 < 10) {
     ()
@@ -12,12 +12,12 @@ fn impl_inherent_closure_env_main_0_apply(env4: closure_env_main_0) -> unit {
   let counter/0 = closure_env_main_0.counter_0(env4) in
   while let t7 = ref_get(counter/0) in
   (t7 < 10) {
-    let mtmp0 = string_println("hello") in
+    let _wild0 = string_println("hello") in
     let t8 = duration(1000) in
-    let mtmp1 = sleep(t8) in
+    let _wild1 = sleep(t8) in
     let t10 = ref_get(counter/0) in
     let t9 = (t10 + 1) in
-    let mtmp2 = ref_set(counter/0, t9) in
+    let _wild2 = ref_set(counter/0, t9) in
     ()
   }
 }

@@ -1,41 +1,41 @@
 fn match_int(n/0: int32) -> int32 {
-  match (n/0 : int32) {
-      0 => 10,
-      1 => 20,
-      _ : int32 => 30,
-  }
+    match (n/0 : int32) {
+        0 => 10,
+        1 => 20,
+        _ : int32 => 30,
+    };
 }
 
 fn wildcard_first(n/1: int32) -> int32 {
-  match (n/1 : int32) {
-      _ : int32 => 40,
-      0 => 50,
-  }
+    match (n/1 : int32) {
+        _ : int32 => 40,
+        0 => 50,
+    };
 }
 
 fn wildcard_middle(n/2: int32) -> int32 {
-  match (n/2 : int32) {
-      2 => 90,
-      _ : int32 => 100,
-      3 => 110,
-  }
+    match (n/2 : int32) {
+        2 => 90,
+        _ : int32 => 100,
+        3 => 110,
+    };
 }
 
 fn repeated(n/3: int32) -> int32 {
-  match (n/3 : int32) {
-      1 => 60,
-      1 => 70,
-      _ : int32 => 80,
-  }
+    match (n/3 : int32) {
+        1 => 60,
+        1 => 70,
+        _ : int32 => 80,
+    };
 }
 
 fn main() -> unit {
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_int : (int32) -> int32)(0))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_int : (int32) -> int32)(5))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_first : (int32) -> int32)(0))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_first : (int32) -> int32)(2))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_middle : (int32) -> int32)(2))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_middle : (int32) -> int32)(3))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated : (int32) -> int32)(1))) in
-  (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated : (int32) -> int32)(3)))
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_int : (int32) -> int32)(0)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((match_int : (int32) -> int32)(5)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_first : (int32) -> int32)(0)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_first : (int32) -> int32)(2)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_middle : (int32) -> int32)(2)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((wildcard_middle : (int32) -> int32)(3)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated : (int32) -> int32)(1)));
+    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((repeated : (int32) -> int32)(3)));
 }

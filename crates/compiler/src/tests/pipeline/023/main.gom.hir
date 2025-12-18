@@ -5,7 +5,7 @@ fn match_mixed_pair(#0: (int32, string)) -> int32 {
     (1 ρ6, "one" ρ7) ρ8 => 3 ϵ3,
     (_ ρ9, "zero" ρ10) ρ11 => 4 ϵ4,
     _ ρ12 => 5 ϵ5,
-  } ϵ6
+  }
 } ITEM0
 
 enum Mixed { OnlyInt(int32), OnlyStr(string), Both(int32, string) } ITEM1
@@ -20,21 +20,21 @@ fn match_mixed_enum(#0: Mixed) -> int32 {
     Mixed::Both(0 ρ24, _ ρ25) ρ26 => 11 ϵ13,
     Mixed::Both(_ ρ27, "zero" ρ28) ρ29 => 12 ϵ14,
     Mixed::Both(_ ρ30, _ ρ31) ρ32 => 13 ϵ15,
-  } ϵ16
+  }
 } ITEM2
 
 fn main() -> () {
-  let _ ρ33 = string_println ϵ17(int32_to_string ϵ18(match_mixed_pair ϵ19((0 ϵ20, "zero" ϵ21) ϵ22) ϵ23) ϵ24) ϵ25 in
-  let _ ρ34 = string_println ϵ26(int32_to_string ϵ27(match_mixed_pair ϵ28((0 ϵ29, "other" ϵ30) ϵ31) ϵ32) ϵ33) ϵ34 in
-  let _ ρ35 = string_println ϵ35(int32_to_string ϵ36(match_mixed_pair ϵ37((1 ϵ38, "one" ϵ39) ϵ40) ϵ41) ϵ42) ϵ43 in
-  let _ ρ36 = string_println ϵ44(int32_to_string ϵ45(match_mixed_pair ϵ46((2 ϵ47, "zero" ϵ48) ϵ49) ϵ50) ϵ51) ϵ52 in
-  let _ ρ37 = string_println ϵ53(int32_to_string ϵ54(match_mixed_pair ϵ55((2 ϵ56, "two" ϵ57) ϵ58) ϵ59) ϵ60) ϵ61 in
-  let _ ρ38 = string_println ϵ62(int32_to_string ϵ63(match_mixed_enum ϵ64(Mixed::OnlyInt(0 ϵ65) ϵ66) ϵ67) ϵ68) ϵ69 in
-  let _ ρ39 = string_println ϵ70(int32_to_string ϵ71(match_mixed_enum ϵ72(Mixed::OnlyInt(5 ϵ73) ϵ74) ϵ75) ϵ76) ϵ77 in
-  let _ ρ40 = string_println ϵ78(int32_to_string ϵ79(match_mixed_enum ϵ80(Mixed::OnlyStr("zero" ϵ81) ϵ82) ϵ83) ϵ84) ϵ85 in
-  let _ ρ41 = string_println ϵ86(int32_to_string ϵ87(match_mixed_enum ϵ88(Mixed::OnlyStr("hello" ϵ89) ϵ90) ϵ91) ϵ92) ϵ93 in
-  let _ ρ42 = string_println ϵ94(int32_to_string ϵ95(match_mixed_enum ϵ96(Mixed::Both(0 ϵ97, "zero" ϵ98) ϵ99) ϵ100) ϵ101) ϵ102 in
-  let _ ρ43 = string_println ϵ103(int32_to_string ϵ104(match_mixed_enum ϵ105(Mixed::Both(0 ϵ106, "hello" ϵ107) ϵ108) ϵ109) ϵ110) ϵ111 in
-  let _ ρ44 = string_println ϵ112(int32_to_string ϵ113(match_mixed_enum ϵ114(Mixed::Both(2 ϵ115, "zero" ϵ116) ϵ117) ϵ118) ϵ119) ϵ120 in
-  string_println ϵ121(int32_to_string ϵ122(match_mixed_enum ϵ123(Mixed::Both(3 ϵ124, "three" ϵ125) ϵ126) ϵ127) ϵ128) ϵ129 ϵ130 ϵ131 ϵ132 ϵ133 ϵ134 ϵ135 ϵ136 ϵ137 ϵ138 ϵ139 ϵ140 ϵ141
+  let _ ρ33 = string_println ϵ17(int32_to_string ϵ18(match_mixed_pair ϵ19((0 ϵ20, "zero" ϵ21) ϵ22) ϵ23) ϵ24) ϵ25 ϵ26;
+  let _ ρ34 = string_println ϵ27(int32_to_string ϵ28(match_mixed_pair ϵ29((0 ϵ30, "other" ϵ31) ϵ32) ϵ33) ϵ34) ϵ35 ϵ36;
+  let _ ρ35 = string_println ϵ37(int32_to_string ϵ38(match_mixed_pair ϵ39((1 ϵ40, "one" ϵ41) ϵ42) ϵ43) ϵ44) ϵ45 ϵ46;
+  let _ ρ36 = string_println ϵ47(int32_to_string ϵ48(match_mixed_pair ϵ49((2 ϵ50, "zero" ϵ51) ϵ52) ϵ53) ϵ54) ϵ55 ϵ56;
+  let _ ρ37 = string_println ϵ57(int32_to_string ϵ58(match_mixed_pair ϵ59((2 ϵ60, "two" ϵ61) ϵ62) ϵ63) ϵ64) ϵ65 ϵ66;
+  let _ ρ38 = string_println ϵ67(int32_to_string ϵ68(match_mixed_enum ϵ69(Mixed::OnlyInt(0 ϵ70) ϵ71) ϵ72) ϵ73) ϵ74 ϵ75;
+  let _ ρ39 = string_println ϵ76(int32_to_string ϵ77(match_mixed_enum ϵ78(Mixed::OnlyInt(5 ϵ79) ϵ80) ϵ81) ϵ82) ϵ83 ϵ84;
+  let _ ρ40 = string_println ϵ85(int32_to_string ϵ86(match_mixed_enum ϵ87(Mixed::OnlyStr("zero" ϵ88) ϵ89) ϵ90) ϵ91) ϵ92 ϵ93;
+  let _ ρ41 = string_println ϵ94(int32_to_string ϵ95(match_mixed_enum ϵ96(Mixed::OnlyStr("hello" ϵ97) ϵ98) ϵ99) ϵ100) ϵ101 ϵ102;
+  let _ ρ42 = string_println ϵ103(int32_to_string ϵ104(match_mixed_enum ϵ105(Mixed::Both(0 ϵ106, "zero" ϵ107) ϵ108) ϵ109) ϵ110) ϵ111 ϵ112;
+  let _ ρ43 = string_println ϵ113(int32_to_string ϵ114(match_mixed_enum ϵ115(Mixed::Both(0 ϵ116, "hello" ϵ117) ϵ118) ϵ119) ϵ120) ϵ121 ϵ122;
+  let _ ρ44 = string_println ϵ123(int32_to_string ϵ124(match_mixed_enum ϵ125(Mixed::Both(2 ϵ126, "zero" ϵ127) ϵ128) ϵ129) ϵ130) ϵ131 ϵ132;
+  string_println ϵ133(int32_to_string ϵ134(match_mixed_enum ϵ135(Mixed::Both(3 ϵ136, "three" ϵ137) ϵ138) ϵ139) ϵ140) ϵ141
 } ITEM3

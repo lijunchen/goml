@@ -1,34 +1,34 @@
 impl TypeName for Point{
   fn type_name(self/0: Point) -> string {
-    let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point) in
-    let prefix/3: string = "Point(" + (int32_to_string : (int32) -> string)((x/1 : int32)) in
-    (prefix/3 : string) + ", " + (int32_to_string : (int32) -> string)((y/2 : int32)) + ")"
+      let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point);
+      let prefix/3: string = "Point(" + (int32_to_string : (int32) -> string)((x/1 : int32));
+      (prefix/3 : string) + ", " + (int32_to_string : (int32) -> string)((y/2 : int32)) + ")";
   }
 }
 
 impl TypeName for Shape{
   fn type_name(self/4: Shape) -> string {
-    match (self/4 : Shape) {
-        Shape::Unit => "Unit",
-        Shape::Location(point/5: Point) => "Shape::" + (TypeName::type_name : (Self) -> string)((point/5 : Point)),
-    }
+      match (self/4 : Shape) {
+          Shape::Unit => "Unit",
+          Shape::Location(point/5: Point) => "Shape::" + (TypeName::type_name : (Self) -> string)((point/5 : Point)),
+      };
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  (TypeName::type_name : (Self) -> string)((point/6 : Point))
+    (TypeName::type_name : (Self) -> string)((point/6 : Point));
 }
 
 fn show_shape(shape/7: Shape) -> string {
-  (TypeName::type_name : (Self) -> string)((shape/7 : Shape))
+    (TypeName::type_name : (Self) -> string)((shape/7 : Shape));
 }
 
 fn main() -> unit {
-  let point/8: Point = Point { x: 7, y: 9 } in
-  let _ : unit = (string_println : (string) -> unit)((show_point : (Point) -> string)((point/8 : Point))) in
-  let unit_shape/9: Shape = Shape::Unit in
-  let _ : unit = (string_println : (string) -> unit)((show_shape : (Shape) -> string)((unit_shape/9 : Shape))) in
-  let location_shape/10: Shape = Shape::Location(Point { x: 1, y: 2 }) in
-  let _ : unit = (string_println : (string) -> unit)((show_shape : (Shape) -> string)((location_shape/10 : Shape))) in
-  ()
+    let point/8: Point = Point { x: 7, y: 9 };
+    let _ : unit = (string_println : (string) -> unit)((show_point : (Point) -> string)((point/8 : Point)));
+    let unit_shape/9: Shape = Shape::Unit;
+    let _ : unit = (string_println : (string) -> unit)((show_shape : (Shape) -> string)((unit_shape/9 : Shape)));
+    let location_shape/10: Shape = Shape::Location(Point { x: 1, y: 2 });
+    let _ : unit = (string_println : (string) -> unit)((show_shape : (Shape) -> string)((location_shape/10 : Shape)));
+    ();
 }

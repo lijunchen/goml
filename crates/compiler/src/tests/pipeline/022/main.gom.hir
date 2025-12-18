@@ -3,14 +3,14 @@ fn match_string(#0: string) -> int32 {
     "hello" ρ0 => 1 ϵ1,
     "world" ρ1 => 2 ϵ2,
     _ ρ2 => 3 ϵ3,
-  } ϵ4
+  }
 } ITEM0
 
 fn wildcard_position(#0: string) -> int32 {
   match #0 ϵ5 {
     _ ρ3 => 4 ϵ6,
     "world" ρ4 => 5 ϵ7,
-  } ϵ8
+  }
 } ITEM1
 
 fn repeated_string(#0: string) -> int32 {
@@ -18,14 +18,14 @@ fn repeated_string(#0: string) -> int32 {
     "hello" ρ5 => 6 ϵ10,
     "hello" ρ6 => 7 ϵ11,
     _ ρ7 => 8 ϵ12,
-  } ϵ13
+  }
 } ITEM2
 
 fn main() -> () {
-  let _ ρ8 = string_println ϵ14(int32_to_string ϵ15(match_string ϵ16("hello" ϵ17) ϵ18) ϵ19) ϵ20 in
-  let _ ρ9 = string_println ϵ21(int32_to_string ϵ22(match_string ϵ23("planet" ϵ24) ϵ25) ϵ26) ϵ27 in
-  let _ ρ10 = string_println ϵ28(int32_to_string ϵ29(wildcard_position ϵ30("world" ϵ31) ϵ32) ϵ33) ϵ34 in
-  let _ ρ11 = string_println ϵ35(int32_to_string ϵ36(wildcard_position ϵ37("sun" ϵ38) ϵ39) ϵ40) ϵ41 in
-  let _ ρ12 = string_println ϵ42(int32_to_string ϵ43(repeated_string ϵ44("hello" ϵ45) ϵ46) ϵ47) ϵ48 in
-  string_println ϵ49(int32_to_string ϵ50(repeated_string ϵ51("mars" ϵ52) ϵ53) ϵ54) ϵ55 ϵ56 ϵ57 ϵ58 ϵ59 ϵ60
+  let _ ρ8 = string_println ϵ14(int32_to_string ϵ15(match_string ϵ16("hello" ϵ17) ϵ18) ϵ19) ϵ20 ϵ21;
+  let _ ρ9 = string_println ϵ22(int32_to_string ϵ23(match_string ϵ24("planet" ϵ25) ϵ26) ϵ27) ϵ28 ϵ29;
+  let _ ρ10 = string_println ϵ30(int32_to_string ϵ31(wildcard_position ϵ32("world" ϵ33) ϵ34) ϵ35) ϵ36 ϵ37;
+  let _ ρ11 = string_println ϵ38(int32_to_string ϵ39(wildcard_position ϵ40("sun" ϵ41) ϵ42) ϵ43) ϵ44 ϵ45;
+  let _ ρ12 = string_println ϵ46(int32_to_string ϵ47(repeated_string ϵ48("hello" ϵ49) ϵ50) ϵ51) ϵ52 ϵ53;
+  string_println ϵ54(int32_to_string ϵ55(repeated_string ϵ56("mars" ϵ57) ϵ58) ϵ59) ϵ60
 } ITEM3

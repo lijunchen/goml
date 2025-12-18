@@ -6,7 +6,7 @@ impl Color {
       Color::Red ρ0 => "Color::Red" ϵ1,
       Color::Green ρ1 => "Color::Green" ϵ2,
       Color::Blue ρ2 => "Color::Blue" ϵ3,
-    } ϵ4
+    }
   } ITEM1
 } ITEM2
 
@@ -14,14 +14,14 @@ struct Point { x: int32, y: int32, color: Color } ITEM3
 
 impl Point {
   fn item_27(#0: Point) -> string {
-    let Point { x: #1 ρ3, y: #2 ρ4, color: #3 ρ5 } ρ6 = #0 ϵ5 in
-    "Point { " ϵ6 + "x: " ϵ7 ϵ8 + #1 ϵ9.to_string ϵ10() ϵ11 ϵ12 + ", " ϵ13 ϵ14 + "y: " ϵ15 ϵ16 + #2 ϵ17.to_string ϵ18() ϵ19 ϵ20 + ", " ϵ21 ϵ22 + "color: " ϵ23 ϵ24 + #3 ϵ25.to_string ϵ26() ϵ27 ϵ28 + " }" ϵ29 ϵ30 ϵ31
+    let Point { x: #1 ρ3, y: #2 ρ4, color: #3 ρ5 } ρ6 = #0 ϵ5 ϵ6;
+    "Point { " ϵ7 + "x: " ϵ8 ϵ9 + #1 ϵ10.to_string ϵ11() ϵ12 ϵ13 + ", " ϵ14 ϵ15 + "y: " ϵ16 ϵ17 + #2 ϵ18.to_string ϵ19() ϵ20 ϵ21 + ", " ϵ22 ϵ23 + "color: " ϵ24 ϵ25 + #3 ϵ26.to_string ϵ27() ϵ28 ϵ29 + " }" ϵ30 ϵ31
   } ITEM4
 } ITEM5
 
 impl Point {
   fn item_28(#0: int32, #1: int32, #2: Color) -> Point {
-    Point { x: #0 ϵ32, y: #1 ϵ33, color: #2 ϵ34 } ϵ35
+    Point { x: #0 ϵ33, y: #1 ϵ34, color: #2 ϵ35 }
   } ITEM6
 } ITEM7
 
@@ -29,14 +29,14 @@ struct Line { from: Point, to: Point, color: Color } ITEM8
 
 impl Line {
   fn item_29(#0: Line) -> string {
-    let Line { from: #1 ρ7, to: #2 ρ8, color: #3 ρ9 } ρ10 = #0 ϵ36 in
-    "Line { " ϵ37 + "from: " ϵ38 ϵ39 + #1 ϵ40.to_string ϵ41() ϵ42 ϵ43 + ", " ϵ44 ϵ45 + "to: " ϵ46 ϵ47 + #2 ϵ48.to_string ϵ49() ϵ50 ϵ51 + ", " ϵ52 ϵ53 + "color: " ϵ54 ϵ55 + #3 ϵ56.to_string ϵ57() ϵ58 ϵ59 + " }" ϵ60 ϵ61 ϵ62
+    let Line { from: #1 ρ7, to: #2 ρ8, color: #3 ρ9 } ρ10 = #0 ϵ37 ϵ38;
+    "Line { " ϵ39 + "from: " ϵ40 ϵ41 + #1 ϵ42.to_string ϵ43() ϵ44 ϵ45 + ", " ϵ46 ϵ47 + "to: " ϵ48 ϵ49 + #2 ϵ50.to_string ϵ51() ϵ52 ϵ53 + ", " ϵ54 ϵ55 + "color: " ϵ56 ϵ57 + #3 ϵ58.to_string ϵ59() ϵ60 ϵ61 + " }" ϵ62 ϵ63
   } ITEM9
 } ITEM10
 
 impl Line {
   fn item_30(#0: Point, #1: Point, #2: Color) -> Line {
-    Line { from: #0 ϵ63, to: #1 ϵ64, color: #2 ϵ65 } ϵ66
+    Line { from: #0 ϵ65, to: #1 ϵ66, color: #2 ϵ67 }
   } ITEM11
 } ITEM12
 
@@ -44,18 +44,18 @@ enum LineList { Nil, Cons(Line, LineList) } ITEM13
 
 impl LineList {
   fn item_31(#0: LineList) -> string {
-    match #0 ϵ67 {
-      LineList::Nil ρ11 => "LineList::Nil" ϵ68,
-      LineList::Cons(#1 ρ12, #2 ρ13) ρ14 => "LineList::Cons(" ϵ69 + #1 ϵ70.to_string ϵ71() ϵ72 ϵ73 + ", " ϵ74 ϵ75 + #2 ϵ76.to_string ϵ77() ϵ78 ϵ79 + ")" ϵ80 ϵ81,
-    } ϵ82
+    match #0 ϵ69 {
+      LineList::Nil ρ11 => "LineList::Nil" ϵ70,
+      LineList::Cons(#1 ρ12, #2 ρ13) ρ14 => "LineList::Cons(" ϵ71 + #1 ϵ72.to_string ϵ73() ϵ74 ϵ75 + ", " ϵ76 ϵ77 + #2 ϵ78.to_string ϵ79() ϵ80 ϵ81 + ")" ϵ82 ϵ83,
+    }
   } ITEM14
 } ITEM15
 
 fn main() -> () {
-  let #0 ρ15 = Point::new ϵ83(10 ϵ84, 20 ϵ85, Color::Red ϵ86) ϵ87 in
-  let #1 ρ16 = Point::new ϵ88(30 ϵ89, 40 ϵ90, Color::Green ϵ91) ϵ92 in
-  let #2 ρ17 = Line::new ϵ93(#0 ϵ94, #1 ϵ95, Color::Blue ϵ96) ϵ97 in
-  let #3 ρ18 = LineList::Cons(#2 ϵ98, LineList::Nil ϵ99) ϵ100 in
-  let _ ρ19 = string_println ϵ101(#3 ϵ102.to_string ϵ103() ϵ104) ϵ105 in
-  () ϵ106 ϵ107 ϵ108 ϵ109 ϵ110 ϵ111
+  let #0 ρ15 = Point::new ϵ85(10 ϵ86, 20 ϵ87, Color::Red ϵ88) ϵ89 ϵ90;
+  let #1 ρ16 = Point::new ϵ91(30 ϵ92, 40 ϵ93, Color::Green ϵ94) ϵ95 ϵ96;
+  let #2 ρ17 = Line::new ϵ97(#0 ϵ98, #1 ϵ99, Color::Blue ϵ100) ϵ101 ϵ102;
+  let #3 ρ18 = LineList::Cons(#2 ϵ103, LineList::Nil ϵ104) ϵ105 ϵ106;
+  string_println ϵ107(#3 ϵ108.to_string ϵ109() ϵ110) ϵ111;
+  () ϵ112
 } ITEM16

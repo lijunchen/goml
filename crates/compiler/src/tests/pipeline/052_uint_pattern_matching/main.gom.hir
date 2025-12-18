@@ -5,7 +5,7 @@ fn is_flag8(#0: uint8) -> bool {
     0 ρ0 => true ϵ1,
     200 ρ1 => true ϵ2,
     _ ρ2 => false ϵ3,
-  } ϵ4
+  }
 } ITEM1
 
 fn is_flag16(#0: uint16) -> bool {
@@ -13,7 +13,7 @@ fn is_flag16(#0: uint16) -> bool {
     1024 ρ3 => true ϵ6,
     65000 ρ4 => true ϵ7,
     _ ρ5 => false ϵ8,
-  } ϵ9
+  }
 } ITEM2
 
 fn is_flag32(#0: uint32) -> bool {
@@ -21,7 +21,7 @@ fn is_flag32(#0: uint32) -> bool {
     4000000000 ρ6 => true ϵ11,
     1234567890 ρ7 => true ϵ12,
     _ ρ8 => false ϵ13,
-  } ϵ14
+  }
 } ITEM3
 
 fn is_flag64(#0: uint64) -> bool {
@@ -29,7 +29,7 @@ fn is_flag64(#0: uint64) -> bool {
     900000000 ρ9 => true ϵ16,
     600000000 ρ10 => true ϵ17,
     _ ρ11 => false ϵ18,
-  } ϵ19
+  }
 } ITEM4
 
 fn match_struct(#0: Counter) -> bool {
@@ -37,17 +37,17 @@ fn match_struct(#0: Counter) -> bool {
     Counter { start: 4000000000 ρ12, end: 900000000 ρ13 } ρ14 => true ϵ21,
     Counter { start: _ ρ15, end: 600000000 ρ16 } ρ17 => true ϵ22,
     _ ρ18 => false ϵ23,
-  } ϵ24
+  }
 } ITEM5
 
 fn report(#0: string, #1: bool) -> string {
-  #0 ϵ25 + bool_to_string ϵ26(#1 ϵ27) ϵ28 ϵ29
+  #0 ϵ25 + bool_to_string ϵ26(#1 ϵ27) ϵ28
 } ITEM6
 
 fn main() -> () {
-  let #0 ρ19 = Counter { start: 4000000000 ϵ30, end: 900000000 ϵ31 } ϵ32 in
-  let #1 ρ20 = Counter { start: 12 ϵ33, end: 600000000 ϵ34 } ϵ35 in
-  let #2 ρ21 = report ϵ36("u8_hit=" ϵ37, is_flag8 ϵ38(200 ϵ39) ϵ40) ϵ41 + report ϵ42(",u8_miss=" ϵ43, is_flag8 ϵ44(15 ϵ45) ϵ46) ϵ47 ϵ48 + report ϵ49(",u16_hit=" ϵ50, is_flag16 ϵ51(65000 ϵ52) ϵ53) ϵ54 ϵ55 + report ϵ56(",u16_miss=" ϵ57, is_flag16 ϵ58(42 ϵ59) ϵ60) ϵ61 ϵ62 + report ϵ63(",u32_hit=" ϵ64, is_flag32 ϵ65(1234567890 ϵ66) ϵ67) ϵ68 ϵ69 + report ϵ70(",u32_miss=" ϵ71, is_flag32 ϵ72(99 ϵ73) ϵ74) ϵ75 ϵ76 + report ϵ77(",u64_hit=" ϵ78, is_flag64 ϵ79(900000000 ϵ80) ϵ81) ϵ82 ϵ83 + report ϵ84(",u64_miss=" ϵ85, is_flag64 ϵ86(700000000 ϵ87) ϵ88) ϵ89 ϵ90 + report ϵ91(",struct_first=" ϵ92, match_struct ϵ93(#0 ϵ94) ϵ95) ϵ96 ϵ97 + report ϵ98(",struct_second=" ϵ99, match_struct ϵ100(#1 ϵ101) ϵ102) ϵ103 ϵ104 in
-  let _ ρ22 = string_println ϵ105(#2 ϵ106) ϵ107 in
-  () ϵ108 ϵ109 ϵ110 ϵ111 ϵ112
+  let #0 ρ19 = Counter { start: 4000000000 ϵ30, end: 900000000 ϵ31 } ϵ32 ϵ33;
+  let #1 ρ20 = Counter { start: 12 ϵ34, end: 600000000 ϵ35 } ϵ36 ϵ37;
+  let #2 ρ21 = report ϵ38("u8_hit=" ϵ39, is_flag8 ϵ40(200 ϵ41) ϵ42) ϵ43 + report ϵ44(",u8_miss=" ϵ45, is_flag8 ϵ46(15 ϵ47) ϵ48) ϵ49 ϵ50 + report ϵ51(",u16_hit=" ϵ52, is_flag16 ϵ53(65000 ϵ54) ϵ55) ϵ56 ϵ57 + report ϵ58(",u16_miss=" ϵ59, is_flag16 ϵ60(42 ϵ61) ϵ62) ϵ63 ϵ64 + report ϵ65(",u32_hit=" ϵ66, is_flag32 ϵ67(1234567890 ϵ68) ϵ69) ϵ70 ϵ71 + report ϵ72(",u32_miss=" ϵ73, is_flag32 ϵ74(99 ϵ75) ϵ76) ϵ77 ϵ78 + report ϵ79(",u64_hit=" ϵ80, is_flag64 ϵ81(900000000 ϵ82) ϵ83) ϵ84 ϵ85 + report ϵ86(",u64_miss=" ϵ87, is_flag64 ϵ88(700000000 ϵ89) ϵ90) ϵ91 ϵ92 + report ϵ93(",struct_first=" ϵ94, match_struct ϵ95(#0 ϵ96) ϵ97) ϵ98 ϵ99 + report ϵ100(",struct_second=" ϵ101, match_struct ϵ102(#1 ϵ103) ϵ104) ϵ105 ϵ106 ϵ107;
+  let _ ρ22 = string_println ϵ108(#2 ϵ109) ϵ110 ϵ111;
+  () ϵ112
 } ITEM7
