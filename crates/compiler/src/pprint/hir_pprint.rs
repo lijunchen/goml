@@ -197,7 +197,17 @@ impl HirFn {
         );
 
         let ret_ty = ctx.tables.types[self.ret_ty].to_doc(ctx);
-        let body = ctx.tables.exprs[self.body].to_doc_with_id(ctx, self.body);
+        let body = match ctx.tables.exprs[self.body].kind {
+            HirExprKind::Block { .. } => ctx.tables.exprs[self.body].to_doc(ctx),
+            _ => RcDoc::text("{")
+                .append(
+                    RcDoc::hardline()
+                        .append(ctx.tables.exprs[self.body].to_doc(ctx))
+                        .nest(2),
+                )
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
+        };
 
         RcDoc::text("fn")
             .append(RcDoc::space())
@@ -211,10 +221,7 @@ impl HirFn {
             .append(RcDoc::space())
             .append(ret_ty)
             .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(RcDoc::hardline().append(body).nest(2))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+            .append(body)
     }
 }
 
@@ -698,12 +705,10 @@ impl HirExprKind {
             HirExprKind::Let {
                 pat,
                 value,
-                body,
                 annotation,
             } => {
                 let pat_doc = ctx.tables.pats[*pat].to_doc_with_id(ctx, *pat);
                 let value_doc = ctx.tables.exprs[*value].to_doc_with_id(ctx, *value);
-                let body_doc = ctx.tables.exprs[*body].to_doc_with_id(ctx, *body);
 
                 let mut let_doc = RcDoc::text("let").append(RcDoc::space()).append(pat_doc);
 
@@ -718,11 +723,26 @@ impl HirExprKind {
                     .append(RcDoc::text("="))
                     .append(RcDoc::space())
                     .append(value_doc)
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("in"))
-                    .append(RcDoc::hardline())
-                    .append(body_doc)
                     .group()
+            }
+            HirExprKind::Block { exprs } => {
+                if exprs.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let exprs_doc = RcDoc::intersperse(
+                        exprs.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
+                        RcDoc::text(";").append(RcDoc::hardline()),
+                    );
+                    RcDoc::text("{")
+                        .append(RcDoc::hardline())
+                        .append(exprs_doc)
+                        .nest(2)
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                        .group()
+                }
             }
             HirExprKind::Closure { params, body } => {
                 let params_doc = if params.is_empty() {

@@ -405,7 +405,10 @@ pub enum Expr {
     ELet {
         pat: Pat,
         value: Box<Expr>,
-        body: Box<Expr>,
+        ty: Ty,
+    },
+    EBlock {
+        exprs: Vec<Expr>,
         ty: Ty,
     },
     EMatch {
@@ -482,6 +485,7 @@ impl Expr {
             Self::EArray { ty, .. } => ty.clone(),
             Self::EClosure { ty, .. } => ty.clone(),
             Self::ELet { ty, .. } => ty.clone(),
+            Self::EBlock { ty, .. } => ty.clone(),
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
             Self::EWhile { ty, .. } => ty.clone(),

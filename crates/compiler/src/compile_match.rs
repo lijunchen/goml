@@ -70,19 +70,26 @@ fn move_variable_patterns(row: &mut Row) {
             ty,
             astptr: _,
         } => {
-            row.body = ELet {
-                pat: Pat::PVar {
-                    name: name.clone(),
-                    ty: ty.clone(),
-                    astptr: None,
-                },
-                value: Box::new(EVar {
-                    name: col.var.clone(),
-                    ty: col.pat.get_ty(),
-                    astptr: None,
-                }),
-                ty: row.body.get_ty(),
-                body: Box::new(row.body.clone()),
+            let old_body = row.body.clone();
+            let old_body_ty = old_body.get_ty();
+            row.body = EBlock {
+                exprs: vec![
+                    ELet {
+                        pat: Pat::PVar {
+                            name: name.clone(),
+                            ty: ty.clone(),
+                            astptr: None,
+                        },
+                        value: Box::new(EVar {
+                            name: col.var.clone(),
+                            ty: col.pat.get_ty(),
+                            astptr: None,
+                        }),
+                        ty: Ty::TUnit,
+                    },
+                    old_body,
+                ],
+                ty: old_body_ty,
             };
             false
         }
@@ -1191,6 +1198,106 @@ pub fn compile_file(
     core::File { toplevels }
 }
 
+/// Compile a block of TAST expressions into Core nested ELet chain
+fn compile_block_exprs(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    exprs: &[Expr],
+    ty: &Ty,
+) -> core::Expr {
+    if exprs.is_empty() {
+        return core::eunit();
+    }
+
+    if exprs.len() == 1 {
+        return compile_expr(&exprs[0], genv, gensym, diagnostics);
+    }
+
+    // Compile to nested ELet in Core
+    let first = &exprs[0];
+    let rest = &exprs[1..];
+
+    match first {
+        ELet {
+            pat:
+                Pat::PVar {
+                    name,
+                    ty: pat_ty,
+                    astptr: _,
+                },
+            value,
+            ty: _,
+        } => {
+            let core_value = compile_expr(value, genv, gensym, diagnostics);
+            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
+            core::Expr::ELet {
+                name: name.clone(),
+                value: Box::new(core_value),
+                body: Box::new(core_body),
+                ty: pat_ty.clone(),
+            }
+        }
+        ELet { pat, value, ty: _ } => {
+            // Complex pattern: needs pattern matching
+            let core_value = compile_expr(value, genv, gensym, diagnostics);
+            let x = gensym.gensym("mtmp");
+            let body_expr = Expr::EBlock {
+                exprs: rest.to_vec(),
+                ty: ty.clone(),
+            };
+            let rows = vec![
+                Row {
+                    columns: vec![Column {
+                        var: x.clone(),
+                        pat: pat.clone(),
+                    }],
+                    body: body_expr,
+                },
+                Row {
+                    columns: vec![Column {
+                        var: x.clone(),
+                        pat: Pat::PWild { ty: pat.get_ty() },
+                    }],
+                    body: ECall {
+                        func: Box::new(Expr::EVar {
+                            name: "missing".to_string(),
+                            ty: Ty::TFunc {
+                                params: vec![Ty::TString],
+                                ret_ty: Box::new(ty.clone()),
+                            },
+                            astptr: None,
+                        }),
+                        args: vec![Expr::EPrim {
+                            value: Prim::string("".to_string()),
+                            ty: Ty::TString,
+                        }],
+                        ty: ty.clone(),
+                    },
+                },
+            ];
+            core::Expr::ELet {
+                name: x,
+                value: Box::new(core_value),
+                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
+                ty: ty.clone(),
+            }
+        }
+        _ => {
+            // Non-let expression: wrap in wildcard let
+            let core_value = compile_expr(first, genv, gensym, diagnostics);
+            let x = gensym.gensym("_wild");
+            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
+            core::Expr::ELet {
+                name: x,
+                value: Box::new(core_value),
+                body: Box::new(core_body),
+                ty: first.get_ty(),
+            }
+        }
+    }
+}
+
 fn compile_expr(
     e: &Expr,
     genv: &GlobalTypeEnv,
@@ -1267,29 +1374,31 @@ fn compile_expr(
                     astptr: _,
                 },
             value,
-            body,
-            ty,
-        } => core::Expr::ELet {
-            name: name.clone(),
-            value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
-            body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
-            ty: ty.clone(),
-        },
-        ELet {
-            pat,
-            value,
-            body,
             ty,
         } => {
+            // ELet with simple var pattern and no body - just produces unit
+            core::Expr::ELet {
+                name: name.clone(),
+                value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
+                body: Box::new(core::eunit()),
+                ty: ty.clone(),
+            }
+        }
+        ELet { pat, value, ty } => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
+            // A standalone ELet with a complex pattern - needs pattern match
+            // but has no body, just returns unit
             let rows = vec![
                 Row {
                     columns: vec![Column {
                         var: x.clone(),
                         pat: pat.clone(),
                     }],
-                    body: *body.clone(),
+                    body: Expr::EPrim {
+                        value: Prim::unit(),
+                        ty: Ty::TUnit,
+                    },
                 },
                 Row {
                     columns: vec![Column {
@@ -1301,7 +1410,7 @@ fn compile_expr(
                             name: "missing".to_string(),
                             ty: Ty::TFunc {
                                 params: vec![Ty::TString],
-                                ret_ty: Box::new(body.get_ty()),
+                                ret_ty: Box::new(Ty::TUnit),
                             },
                             astptr: None,
                         }),
@@ -1309,7 +1418,7 @@ fn compile_expr(
                             value: Prim::string("".to_string()),
                             ty: Ty::TString,
                         }],
-                        ty: body.get_ty(),
+                        ty: Ty::TUnit,
                     },
                 },
             ];
@@ -1320,6 +1429,7 @@ fn compile_expr(
                 ty: ty.clone(),
             }
         }
+        EBlock { exprs, ty } => compile_block_exprs(genv, gensym, diagnostics, exprs, ty),
         EMatch {
             expr,
             arms,

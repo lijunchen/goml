@@ -214,8 +214,11 @@ pub enum HirExprKind {
     Let {
         pat: HirPatId,
         value: HirExprId,
-        body: HirExprId,
         annotation: Option<HirTypeId>,
+    },
+
+    Block {
+        exprs: Vec<HirExprId>,
     },
 
     Closure {

@@ -39,12 +39,20 @@ fn main() -> int32 {
         other => panic!("expected function, got {:?}", other),
     };
 
-    let first_let = match &main_fn.body {
+    // The function body is now an EBlock containing the statements
+    let exprs = match &main_fn.body {
+        ast::ast::Expr::EBlock { exprs } => exprs,
+        other => panic!("unexpected main body, expected EBlock: {:?}", other),
+    };
+
+    assert_eq!(exprs.len(), 3, "expected 3 expressions in block");
+
+    // First expression: let r = ref(1)
+    match &exprs[0] {
         ast::ast::Expr::ELet {
             pat,
             annotation,
             value,
-            body,
         } => {
             assert!(annotation.is_none());
             match pat {
@@ -65,54 +73,50 @@ fn main() -> int32 {
                 }
                 other => panic!("unexpected first let value: {:?}", other),
             }
-            body
         }
-        other => panic!("unexpected main body: {:?}", other),
-    };
+        other => panic!("expected first ELet, got {:?}", other),
+    }
 
-    if let ast::ast::Expr::ELet {
-        pat,
-        annotation,
-        value,
-        body,
-    } = first_let.as_ref()
-    {
-        assert!(annotation.is_none());
-        assert!(matches!(pat, ast::ast::Pat::PWild));
-        match value.as_ref() {
-            ast::ast::Expr::ECall { func, args } => {
-                assert!(matches!(
-                    func.as_ref(),
-                    ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_set".to_string())
-                ));
-                assert_eq!(args.len(), 2);
-                assert!(matches!(
-                    args[0],
-                    ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
-                ));
-                assert!(matches!(
-                    args[1],
-                    ast::ast::Expr::EInt { value: ref v } if v == "2"
-                ));
+    // Second expression: let _ = ref_set(r, 2)
+    match &exprs[1] {
+        ast::ast::Expr::ELet { pat, value, .. } => {
+            assert!(matches!(pat, ast::ast::Pat::PWild));
+            match value.as_ref() {
+                ast::ast::Expr::ECall { func, args } => {
+                    assert!(matches!(
+                        func.as_ref(),
+                        ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_set".to_string())
+                    ));
+                    assert_eq!(args.len(), 2);
+                    assert!(matches!(
+                        args[0],
+                        ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
+                    ));
+                    assert!(matches!(
+                        args[1],
+                        ast::ast::Expr::EInt { value: ref v } if v == "2"
+                    ));
+                }
+                other => panic!("unexpected second let value: {:?}", other),
             }
-            other => panic!("unexpected assignment value: {:?}", other),
         }
-        match body.as_ref() {
-            ast::ast::Expr::ECall { func, args } => {
-                assert!(matches!(
-                    func.as_ref(),
-                    ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_get".to_string())
-                ));
-                assert_eq!(args.len(), 1);
-                assert!(matches!(
-                    args[0],
-                    ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
-                ));
-            }
-            other => panic!("unexpected final body: {:?}", other),
+        other => panic!("unexpected second expression, expected ELet: {:?}", other),
+    }
+
+    // Third expression: ref_get(r)
+    match &exprs[2] {
+        ast::ast::Expr::ECall { func, args } => {
+            assert!(matches!(
+                func.as_ref(),
+                ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_get".to_string())
+            ));
+            assert_eq!(args.len(), 1);
+            assert!(matches!(
+                args[0],
+                ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
+            ));
         }
-    } else {
-        panic!("expected nested let expression");
+        other => panic!("unexpected third expression: {:?}", other),
     }
 
     assert!(

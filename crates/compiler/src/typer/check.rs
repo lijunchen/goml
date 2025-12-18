@@ -69,8 +69,10 @@ impl Typer {
                 pat,
                 annotation,
                 value,
-                body,
-            } => self.infer_let_expr(genv, local_env, diagnostics, pat, annotation, value, body),
+            } => self.infer_let_expr(genv, local_env, diagnostics, pat, annotation, value),
+            ast::Expr::EBlock { exprs } => {
+                self.infer_block_expr(genv, local_env, diagnostics, exprs)
+            }
             ast::Expr::EMatch { expr, arms, astptr } => {
                 self.infer_match_expr(genv, local_env, diagnostics, expr, arms, astptr)
             }
@@ -179,7 +181,6 @@ impl Typer {
                 pat,
                 annotation,
                 value,
-                body,
             } => self.check_let_expr(
                 genv,
                 local_env,
@@ -187,9 +188,11 @@ impl Typer {
                 pat,
                 annotation,
                 value,
-                body,
                 expected,
             ),
+            ast::Expr::EBlock { exprs } => {
+                self.check_block_expr(genv, local_env, diagnostics, exprs, expected)
+            }
             ast::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
             {
                 let expected_elem_tys = match expected {
@@ -698,7 +701,6 @@ impl Typer {
         pat: &ast::Pat,
         annotation: &Option<ast::TypeExpr>,
         value: &ast::Expr,
-        body: &ast::Expr,
     ) -> tast::Expr {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
@@ -716,16 +718,62 @@ impl Typer {
             (tast, ty)
         };
 
-        local_env.push_scope();
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
-        let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        local_env.pop_scope();
-        let body_ty = body_tast.get_ty();
+        // ELet without body returns unit type
         tast::Expr::ELet {
             pat: pat_tast,
             value: Box::new(value_tast),
-            body: Box::new(body_tast),
-            ty: body_ty.clone(),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_block_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        exprs: &[ast::Expr],
+    ) -> tast::Expr {
+        if exprs.is_empty() {
+            return tast::Expr::EPrim {
+                value: Prim::unit(),
+                ty: tast::Ty::TUnit,
+            };
+        }
+
+        local_env.push_scope();
+        let result = self.infer_block_exprs(genv, local_env, diagnostics, exprs);
+        local_env.pop_scope();
+        result
+    }
+
+    fn infer_block_exprs(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        exprs: &[ast::Expr],
+    ) -> tast::Expr {
+        if exprs.is_empty() {
+            return tast::Expr::EPrim {
+                value: Prim::unit(),
+                ty: tast::Ty::TUnit,
+            };
+        }
+
+        let mut tast_exprs = Vec::new();
+        for expr in exprs {
+            let tast_expr = self.infer_expr(genv, local_env, diagnostics, expr);
+            tast_exprs.push(tast_expr);
+        }
+
+        let ty = tast_exprs
+            .last()
+            .map(|e| e.get_ty())
+            .unwrap_or(tast::Ty::TUnit);
+        tast::Expr::EBlock {
+            exprs: tast_exprs,
+            ty,
         }
     }
 
@@ -738,8 +786,7 @@ impl Typer {
         pat: &ast::Pat,
         annotation: &Option<ast::TypeExpr>,
         value: &ast::Expr,
-        body: &ast::Expr,
-        expected: &tast::Ty,
+        _expected: &tast::Ty,
     ) -> tast::Expr {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
@@ -757,17 +804,74 @@ impl Typer {
             (tast, ty)
         };
 
-        local_env.push_scope();
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
-        let body_tast = self.check_expr(genv, local_env, diagnostics, body, expected);
-        local_env.pop_scope();
-        let body_ty = body_tast.get_ty();
+        // Standalone ELet returns unit
 
         tast::Expr::ELet {
             pat: pat_tast,
             value: Box::new(value_tast),
-            body: Box::new(body_tast),
-            ty: body_ty,
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn check_block_expr(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        exprs: &[ast::Expr],
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        if exprs.is_empty() {
+            return tast::Expr::EPrim {
+                value: Prim::unit(),
+                ty: tast::Ty::TUnit,
+            };
+        }
+
+        local_env.push_scope();
+        let result = self.check_block_exprs(genv, local_env, diagnostics, exprs, expected);
+        local_env.pop_scope();
+        result
+    }
+
+    fn check_block_exprs(
+        &mut self,
+        genv: &GlobalTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        exprs: &[ast::Expr],
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        if exprs.is_empty() {
+            return tast::Expr::EPrim {
+                value: Prim::unit(),
+                ty: tast::Ty::TUnit,
+            };
+        }
+
+        // For check mode, we infer all expressions except the last one
+        // which we check against expected
+        let mut tast_exprs = Vec::new();
+        let len = exprs.len();
+        for (i, expr) in exprs.iter().enumerate() {
+            let tast_expr = if i == len - 1 {
+                // Last expression: check against expected type
+                self.check_expr(genv, local_env, diagnostics, expr, expected)
+            } else {
+                // Not last: just infer
+                self.infer_expr(genv, local_env, diagnostics, expr)
+            };
+            tast_exprs.push(tast_expr);
+        }
+
+        let ty = tast_exprs
+            .last()
+            .map(|e| e.get_ty())
+            .unwrap_or(tast::Ty::TUnit);
+        tast::Expr::EBlock {
+            exprs: tast_exprs,
+            ty,
         }
     }
 

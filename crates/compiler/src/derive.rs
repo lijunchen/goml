@@ -238,26 +238,30 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
     });
 
     let body = concat_parts(parts, attr_ptr);
-    Expr::ELet {
-        pat: Pat::PStruct {
-            name: struct_def.name.clone(),
-            fields: struct_def
-                .fields
-                .iter()
-                .map(|(field_name, _)| {
-                    (
-                        field_name.clone(),
-                        Pat::PVar {
-                            name: field_name.clone(),
-                            astptr: *attr_ptr,
-                        },
-                    )
-                })
-                .collect(),
-        },
-        annotation: None,
-        value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
-        body: Box::new(body),
+    Expr::EBlock {
+        exprs: vec![
+            Expr::ELet {
+                pat: Pat::PStruct {
+                    name: struct_def.name.clone(),
+                    fields: struct_def
+                        .fields
+                        .iter()
+                        .map(|(field_name, _)| {
+                            (
+                                field_name.clone(),
+                                Pat::PVar {
+                                    name: field_name.clone(),
+                                    astptr: *attr_ptr,
+                                },
+                            )
+                        })
+                        .collect(),
+                },
+                annotation: None,
+                value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
+            },
+            body,
+        ],
     }
 }
 
@@ -359,26 +363,30 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
     });
 
     let body = concat_parts(parts, attr_ptr);
-    Expr::ELet {
-        pat: Pat::PStruct {
-            name: struct_def.name.clone(),
-            fields: struct_def
-                .fields
-                .iter()
-                .map(|(field_name, _)| {
-                    (
-                        field_name.clone(),
-                        Pat::PVar {
-                            name: field_name.clone(),
-                            astptr: *attr_ptr,
-                        },
-                    )
-                })
-                .collect(),
-        },
-        annotation: None,
-        value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
-        body: Box::new(body),
+    Expr::EBlock {
+        exprs: vec![
+            Expr::ELet {
+                pat: Pat::PStruct {
+                    name: struct_def.name.clone(),
+                    fields: struct_def
+                        .fields
+                        .iter()
+                        .map(|(field_name, _)| {
+                            (
+                                field_name.clone(),
+                                Pat::PVar {
+                                    name: field_name.clone(),
+                                    astptr: *attr_ptr,
+                                },
+                            )
+                        })
+                        .collect(),
+                },
+                annotation: None,
+                value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
+            },
+            body,
+        ],
     }
 }
 

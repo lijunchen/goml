@@ -208,8 +208,11 @@ fn use_closure(x: int32) -> int32 {
     };
 
     let closure_expr = match &func.body {
-        tast::Expr::ELet { value, .. } => value,
-        _ => panic!("expected let binding in function body"),
+        tast::Expr::EBlock { exprs, .. } => match &exprs[0] {
+            tast::Expr::ELet { value, .. } => value,
+            _ => panic!("expected let binding in block"),
+        },
+        _ => panic!("expected block in function body"),
     };
 
     let tast::Expr::EClosure {
@@ -255,8 +258,11 @@ fn wrap[T](value: T) -> T {
     };
 
     let closure_expr = match &func.body {
-        tast::Expr::ELet { value, .. } => value,
-        _ => panic!("expected let binding in function body"),
+        tast::Expr::EBlock { exprs, .. } => match &exprs[0] {
+            tast::Expr::ELet { value, .. } => value,
+            _ => panic!("expected let binding in block"),
+        },
+        _ => panic!("expected block in function body"),
     };
 
     let tast::Expr::EClosure { params, ty, .. } = &**closure_expr else {

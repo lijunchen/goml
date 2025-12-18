@@ -108,10 +108,13 @@ impl Fn {
             .append(RcDoc::space())
             .append(ret_ty)
             .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(RcDoc::hardline().append(body).nest(2))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+            .append(match &self.body {
+                Expr::EBlock { .. } => body,
+                _ => RcDoc::text("{")
+                    .append(RcDoc::hardline().append(body).nest(2))
+                    .append(RcDoc::hardline())
+                    .append(RcDoc::text("}")),
+            })
     }
 
     pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
@@ -342,23 +345,31 @@ impl Expr {
                     .group()
             }
 
-            Self::ELet {
-                pat,
-                value,
-                body,
-                ty: _,
-            } => RcDoc::text("let")
+            Self::ELet { pat, value, ty: _ } => RcDoc::text("let")
                 .append(RcDoc::space())
                 .append(pat.to_doc(genv))
                 .append(RcDoc::space())
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
                 .append(value.to_doc(genv))
-                .append(RcDoc::space())
-                .append(RcDoc::text("in"))
-                .append(RcDoc::hardline())
-                .append(body.to_doc(genv))
                 .group(),
+
+            Self::EBlock { exprs, ty: _ } => {
+                if exprs.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
+                        RcDoc::hardline()
+                            .append(e.to_doc(genv))
+                            .append(RcDoc::text(";"))
+                    }));
+                    RcDoc::text("{")
+                        .append(exprs_doc.nest(4))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                        .group()
+                }
+            }
 
             Self::EMatch {
                 expr,
