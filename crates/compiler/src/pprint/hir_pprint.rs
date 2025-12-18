@@ -106,7 +106,7 @@ impl<'a> HirPrintCtx<'a> {
         self.local_names
             .get(&id)
             .cloned()
-            .unwrap_or_else(|| format!("local_{}", id.0))
+            .unwrap_or_else(|| format!("#{}", id.0))
     }
 
     pub fn get_generic_name(&self, id: GenericParamId) -> String {
@@ -167,10 +167,7 @@ impl HirItem {
 
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirItemId) -> RcDoc<'a, ()> {
         let base_doc = self.to_doc(ctx);
-        base_doc.append(RcDoc::text(format!(
-            " /*item#{}*/",
-            id.into_raw().into_u32()
-        )))
+        base_doc.append(RcDoc::text(format!(" ITEM{}", id.into_raw().into_u32())))
     }
 }
 
@@ -200,7 +197,17 @@ impl HirFn {
         );
 
         let ret_ty = ctx.tables.types[self.ret_ty].to_doc(ctx);
-        let body = ctx.tables.exprs[self.body].to_doc_with_id(ctx, self.body);
+        let body = match ctx.tables.exprs[self.body].kind {
+            HirExprKind::Block { .. } => ctx.tables.exprs[self.body].to_doc(ctx),
+            _ => RcDoc::text("{")
+                .append(
+                    RcDoc::hardline()
+                        .append(ctx.tables.exprs[self.body].to_doc(ctx))
+                        .nest(2),
+                )
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}")),
+        };
 
         RcDoc::text("fn")
             .append(RcDoc::space())
@@ -214,10 +221,7 @@ impl HirFn {
             .append(RcDoc::space())
             .append(ret_ty)
             .append(RcDoc::space())
-            .append(RcDoc::text("{"))
-            .append(RcDoc::hardline().append(body).nest(2))
-            .append(RcDoc::hardline())
-            .append(RcDoc::text("}"))
+            .append(body)
     }
 }
 
@@ -605,7 +609,7 @@ impl HirExpr {
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirExprId) -> RcDoc<'a, ()> {
         self.kind
             .to_doc(ctx)
-            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
+            .append(RcDoc::text(format!(" ϵ{}", id.into_raw().into_u32())))
     }
 }
 
@@ -701,12 +705,10 @@ impl HirExprKind {
             HirExprKind::Let {
                 pat,
                 value,
-                body,
                 annotation,
             } => {
                 let pat_doc = ctx.tables.pats[*pat].to_doc_with_id(ctx, *pat);
                 let value_doc = ctx.tables.exprs[*value].to_doc_with_id(ctx, *value);
-                let body_doc = ctx.tables.exprs[*body].to_doc_with_id(ctx, *body);
 
                 let mut let_doc = RcDoc::text("let").append(RcDoc::space()).append(pat_doc);
 
@@ -721,11 +723,26 @@ impl HirExprKind {
                     .append(RcDoc::text("="))
                     .append(RcDoc::space())
                     .append(value_doc)
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("in"))
-                    .append(RcDoc::hardline())
-                    .append(body_doc)
                     .group()
+            }
+            HirExprKind::Block { exprs } => {
+                if exprs.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let exprs_doc = RcDoc::intersperse(
+                        exprs.iter().map(|expr_id| {
+                            ctx.tables.exprs[*expr_id].to_doc_with_id(ctx, *expr_id)
+                        }),
+                        RcDoc::text(";").append(RcDoc::hardline()),
+                    );
+                    RcDoc::text("{")
+                        .append(RcDoc::hardline())
+                        .append(exprs_doc)
+                        .nest(2)
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                        .group()
+                }
             }
             HirExprKind::Closure { params, body } => {
                 let params_doc = if params.is_empty() {
@@ -919,7 +936,7 @@ impl HirPat {
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirPatId) -> RcDoc<'a, ()> {
         self.kind
             .to_doc(ctx)
-            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
+            .append(RcDoc::text(format!(" ρ{}", id.into_raw().into_u32())))
     }
 }
 

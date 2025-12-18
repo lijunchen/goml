@@ -1,32 +1,34 @@
-enum FloatEvent { Sample32(string, float32), Sample64(string, float64) } /*item#0*/
+enum FloatEvent { Sample32(string, float32), Sample64(string, float64) } ITEM0
 
-fn summarize(local_0: FloatEvent) -> string {
-  match local_0 /*#0*/ {
-    FloatEvent::Sample32(local_1 /*#0*/, local_2 /*#1*/) /*#2*/ => local_1 /*#1*/ + float32_to_string /*#2*/(local_2 /*#3*/) /*#4*/ /*#5*/,
-    FloatEvent::Sample64(local_3 /*#3*/, local_4 /*#4*/) /*#5*/ => local_3 /*#6*/ + float64_to_string /*#7*/(local_4 /*#8*/) /*#9*/ /*#10*/,
-  } /*#11*/
-} /*item#1*/
+fn summarize(#0: FloatEvent) -> string {
+  match #0 ϵ0 {
+    FloatEvent::Sample32(#1 ρ0, #2 ρ1) ρ2 => #1 ϵ1 + float32_to_string ϵ2(#2 ϵ3) ϵ4 ϵ5,
+    FloatEvent::Sample64(#3 ρ3, #4 ρ4) ρ5 => #3 ϵ6 + float64_to_string ϵ7(#4 ϵ8) ϵ9 ϵ10,
+  }
+} ITEM1
 
-fn compare(local_0: (float32, float64)) -> string {
-  match local_0 /*#12*/ {
-    (local_1 /*#6*/, local_2 /*#7*/) /*#8*/ => let local_3 /*#9*/: float32 = 1 /*#13*/ in
-    let local_4 /*#10*/: float64 = 5 /*#14*/ in
-    let local_5 /*#11*/ = local_1 /*#15*/ < local_3 /*#16*/ /*#17*/ in
-    let local_6 /*#12*/ = local_2 /*#18*/ < local_4 /*#19*/ /*#20*/ in
-    "left<1?=" /*#21*/ + bool_to_string /*#22*/(local_5 /*#23*/) /*#24*/ /*#25*/ + ",right<5?=" /*#26*/ /*#27*/ + bool_to_string /*#28*/(local_6 /*#29*/) /*#30*/ /*#31*/ /*#32*/ /*#33*/ /*#34*/ /*#35*/,
-  } /*#36*/
-} /*item#2*/
+fn compare(#0: (float32, float64)) -> string {
+  match #0 ϵ12 {
+    (#1 ρ6, #2 ρ7) ρ8 => {
+      let #3 ρ9: float32 = 1 ϵ13 ϵ14;
+      let #4 ρ10: float64 = 5 ϵ15 ϵ16;
+      let #5 ρ11 = #1 ϵ17 < #3 ϵ18 ϵ19 ϵ20;
+      let #6 ρ12 = #2 ϵ21 < #4 ϵ22 ϵ23 ϵ24;
+      "left<1?=" ϵ25 + bool_to_string ϵ26(#5 ϵ27) ϵ28 ϵ29 + ",right<5?=" ϵ30 ϵ31 + bool_to_string ϵ32(#6 ϵ33) ϵ34 ϵ35
+    } ϵ36,
+  }
+} ITEM2
 
 fn main() -> () {
-  let local_0 /*#13*/: float32 = 0.5 /*#37*/ in
-  let local_1 /*#14*/: float32 = 2.25 /*#38*/ in
-  let local_2 /*#15*/: float64 = 9.5 /*#39*/ in
-  let local_3 /*#16*/ = FloatEvent::Sample32("f32=" /*#40*/, local_0 /*#41*/) /*#42*/ in
-  let local_4 /*#17*/ = FloatEvent::Sample32("f32_b=" /*#43*/, local_1 /*#44*/) /*#45*/ in
-  let local_5 /*#18*/ = FloatEvent::Sample64("f64=" /*#46*/, local_2 /*#47*/) /*#48*/ in
-  let local_6 /*#19*/: (float32, float64) = (0.75 /*#49*/, 4 /*#50*/) /*#51*/ in
-  let local_7 /*#20*/: (float32, float64) = (1.5 /*#52*/, 7.25 /*#53*/) /*#54*/ in
-  let local_8 /*#21*/ = summarize /*#55*/(local_3 /*#56*/) /*#57*/ + summarize /*#58*/(local_4 /*#59*/) /*#60*/ /*#61*/ + summarize /*#62*/(local_5 /*#63*/) /*#64*/ /*#65*/ + compare /*#66*/(local_6 /*#67*/) /*#68*/ /*#69*/ + compare /*#70*/(local_7 /*#71*/) /*#72*/ /*#73*/ in
-  let _ /*#22*/ = string_println /*#74*/(local_8 /*#75*/) /*#76*/ in
-  () /*#77*/ /*#78*/ /*#79*/ /*#80*/ /*#81*/ /*#82*/ /*#83*/ /*#84*/ /*#85*/ /*#86*/ /*#87*/
-} /*item#3*/
+  let #0 ρ13: float32 = 0.5 ϵ38 ϵ39;
+  let #1 ρ14: float32 = 2.25 ϵ40 ϵ41;
+  let #2 ρ15: float64 = 9.5 ϵ42 ϵ43;
+  let #3 ρ16 = FloatEvent::Sample32("f32=" ϵ44, #0 ϵ45) ϵ46 ϵ47;
+  let #4 ρ17 = FloatEvent::Sample32("f32_b=" ϵ48, #1 ϵ49) ϵ50 ϵ51;
+  let #5 ρ18 = FloatEvent::Sample64("f64=" ϵ52, #2 ϵ53) ϵ54 ϵ55;
+  let #6 ρ19: (float32, float64) = (0.75 ϵ56, 4 ϵ57) ϵ58 ϵ59;
+  let #7 ρ20: (float32, float64) = (1.5 ϵ60, 7.25 ϵ61) ϵ62 ϵ63;
+  let #8 ρ21 = summarize ϵ64(#3 ϵ65) ϵ66 + summarize ϵ67(#4 ϵ68) ϵ69 ϵ70 + summarize ϵ71(#5 ϵ72) ϵ73 ϵ74 + compare ϵ75(#6 ϵ76) ϵ77 ϵ78 + compare ϵ79(#7 ϵ80) ϵ81 ϵ82 ϵ83;
+  let _ ρ22 = string_println ϵ84(#8 ϵ85) ϵ86 ϵ87;
+  () ϵ88
+} ITEM3

@@ -1,41 +1,47 @@
 fn test() -> () {
-  let local_0 /*#0*/ = 3 /*#0*/ in
-  let local_1 /*#1*/ = 5 /*#1*/ in
-  let local_3 /*#2*/ = |local_2| => local_2 /*#2*/ * local_0 /*#3*/ /*#4*/ * local_1 /*#5*/ /*#6*/ /*#7*/ in
-  let _ /*#3*/ = string_println /*#8*/(int32_to_string /*#9*/(local_3 /*#10*/(2 /*#11*/) /*#12*/) /*#13*/) /*#14*/ in
-  string_println /*#15*/(int32_to_string /*#16*/(local_3 /*#17*/(3 /*#18*/) /*#19*/) /*#20*/) /*#21*/ /*#22*/ /*#23*/ /*#24*/ /*#25*/
-} /*item#0*/
+  let #0 ρ0 = 3 ϵ0 ϵ1;
+  let #1 ρ1 = 5 ϵ2 ϵ3;
+  let #3 ρ2 = |#2| => #2 ϵ4 * #0 ϵ5 ϵ6 * #1 ϵ7 ϵ8 ϵ9 ϵ10;
+  let _ ρ3 = string_println ϵ11(int32_to_string ϵ12(#3 ϵ13(2 ϵ14) ϵ15) ϵ16) ϵ17 ϵ18;
+  string_println ϵ19(int32_to_string ϵ20(#3 ϵ21(3 ϵ22) ϵ23) ϵ24) ϵ25
+} ITEM0
 
-fn call_int_id(local_0: fn(int32) -> int32, local_1: int32) -> int32 {
-  local_0 /*#26*/(local_1 /*#27*/) /*#28*/
-} /*item#1*/
+fn call_int_id(#0: fn(int32) -> int32, #1: int32) -> int32 {
+  #0 ϵ27(#1 ϵ28)
+} ITEM1
 
-enum IntList { Nil, Cons(int32, IntList) } /*item#2*/
+enum IntList { Nil, Cons(int32, IntList) } ITEM2
 
-struct Point { x: int32, y: int32 } /*item#3*/
+struct Point { x: int32, y: int32 } ITEM3
 
 fn main() -> () {
-  let local_0 /*#4*/ = 5 /*#29*/ in
-  let local_2 /*#5*/ = |local_1| => local_1 /*#30*/ + local_0 /*#31*/ /*#32*/ /*#33*/ in
-  let local_3 /*#6*/ = local_2 /*#34*/(7 /*#35*/) /*#36*/ in
-  let local_7 /*#8*/ = |local_4, local_5| => let local_6 /*#7*/ = local_4 /*#37*/ + int32_to_string /*#38*/(local_5 /*#39*/) /*#40*/ /*#41*/ in
-  string_println /*#42*/(local_6 /*#43*/) /*#44*/ /*#45*/ /*#46*/ in
-  let _ /*#9*/ = local_7 /*#47*/("result: " /*#48*/, local_3 /*#49*/) /*#50*/ in
-  let local_9 /*#10*/ = |local_8| => local_8 /*#51*/ + local_3 /*#52*/ /*#53*/ /*#54*/ in
-  let local_11 /*#11*/ = |local_10| => local_10 /*#55*/ * 2 /*#56*/ /*#57*/ /*#58*/ in
-  let local_12 /*#12*/ = local_11 /*#59*/(3 /*#60*/) /*#61*/ in
-  let _ /*#13*/ = string_println /*#62*/(int32_to_string /*#63*/(local_12 /*#64*/) /*#65*/) /*#66*/ in
-  let _ /*#14*/ = test /*#67*/() /*#68*/ in
-  let local_13 /*#15*/ = IntList::Cons(1 /*#69*/, IntList::Cons(2 /*#70*/, IntList::Cons(3 /*#71*/, IntList::Nil /*#72*/) /*#73*/) /*#74*/) /*#75*/ in
-  let local_14 /*#16*/ = Point { x: 10 /*#76*/, y: 20 /*#77*/ } /*#78*/ in
-  let local_19 /*#26*/ = || => match local_13 /*#79*/ {
-    IntList::Nil /*#17*/ => string_println /*#80*/("Empty list" /*#81*/) /*#82*/,
-    IntList::Cons(local_15 /*#18*/, local_16 /*#19*/) /*#20*/ => let _ /*#21*/ = string_println /*#83*/(int32_to_string /*#84*/(local_15 /*#85*/) /*#86*/) /*#87*/ in
-    match local_14 /*#88*/ {
-      Point { x: local_17 /*#22*/, y: local_18 /*#23*/ } /*#24*/ => let _ /*#25*/ = string_println /*#89*/("Point: (" /*#90*/ + int32_to_string /*#91*/(local_17 /*#92*/) /*#93*/ /*#94*/ + ", " /*#95*/ /*#96*/ + int32_to_string /*#97*/(local_18 /*#98*/) /*#99*/ /*#100*/ + ")" /*#101*/ /*#102*/) /*#103*/ in
-      () /*#104*/ /*#105*/,
-    } /*#106*/ /*#107*/,
-  } /*#108*/ /*#109*/ in
-  let _ /*#27*/ = local_19 /*#110*/() /*#111*/ in
-  () /*#112*/ /*#113*/ /*#114*/ /*#115*/ /*#116*/ /*#117*/ /*#118*/ /*#119*/ /*#120*/ /*#121*/ /*#122*/ /*#123*/ /*#124*/ /*#125*/ /*#126*/
-} /*item#4*/
+  let #0 ρ4 = 5 ϵ30 ϵ31;
+  let #2 ρ5 = |#1| => #1 ϵ32 + #0 ϵ33 ϵ34 ϵ35 ϵ36;
+  let #3 ρ6 = #2 ϵ37(7 ϵ38) ϵ39 ϵ40;
+  let #7 ρ8 = |#4, #5| => {
+    let #6 ρ7 = #4 ϵ41 + int32_to_string ϵ42(#5 ϵ43) ϵ44 ϵ45 ϵ46;
+    string_println ϵ47(#6 ϵ48) ϵ49
+  } ϵ50 ϵ51 ϵ52;
+  let _ ρ9 = #7 ϵ53("result: " ϵ54, #3 ϵ55) ϵ56 ϵ57;
+  let #9 ρ10 = |#8| => #8 ϵ58 + #3 ϵ59 ϵ60 ϵ61 ϵ62;
+  let #11 ρ11 = |#10| => #10 ϵ63 * 2 ϵ64 ϵ65 ϵ66 ϵ67;
+  let #12 ρ12 = #11 ϵ68(3 ϵ69) ϵ70 ϵ71;
+  let _ ρ13 = string_println ϵ72(int32_to_string ϵ73(#12 ϵ74) ϵ75) ϵ76 ϵ77;
+  let _ ρ14 = test ϵ78() ϵ79 ϵ80;
+  let #13 ρ15 = IntList::Cons(1 ϵ81, IntList::Cons(2 ϵ82, IntList::Cons(3 ϵ83, IntList::Nil ϵ84) ϵ85) ϵ86) ϵ87 ϵ88;
+  let #14 ρ16 = Point { x: 10 ϵ89, y: 20 ϵ90 } ϵ91 ϵ92;
+  let #19 ρ26 = || => match #13 ϵ93 {
+    IntList::Nil ρ17 => string_println ϵ94("Empty list" ϵ95) ϵ96,
+    IntList::Cons(#15 ρ18, #16 ρ19) ρ20 => {
+      let _ ρ21 = string_println ϵ97(int32_to_string ϵ98(#15 ϵ99) ϵ100) ϵ101 ϵ102;
+      match #14 ϵ103 {
+        Point { x: #17 ρ22, y: #18 ρ23 } ρ24 => {
+          let _ ρ25 = string_println ϵ104("Point: (" ϵ105 + int32_to_string ϵ106(#17 ϵ107) ϵ108 ϵ109 + ", " ϵ110 ϵ111 + int32_to_string ϵ112(#18 ϵ113) ϵ114 ϵ115 + ")" ϵ116 ϵ117) ϵ118 ϵ119;
+          () ϵ120
+        } ϵ121,
+      } ϵ122
+    } ϵ123,
+  } ϵ124 ϵ125 ϵ126;
+  let _ ρ27 = #19 ϵ127() ϵ128 ϵ129;
+  () ϵ130
+} ITEM4

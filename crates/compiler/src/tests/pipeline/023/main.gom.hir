@@ -1,40 +1,40 @@
-fn match_mixed_pair(local_0: (int32, string)) -> int32 {
-  match local_0 /*#0*/ {
-    (0 /*#0*/, "zero" /*#1*/) /*#2*/ => 1 /*#1*/,
-    (0 /*#3*/, _ /*#4*/) /*#5*/ => 2 /*#2*/,
-    (1 /*#6*/, "one" /*#7*/) /*#8*/ => 3 /*#3*/,
-    (_ /*#9*/, "zero" /*#10*/) /*#11*/ => 4 /*#4*/,
-    _ /*#12*/ => 5 /*#5*/,
-  } /*#6*/
-} /*item#0*/
+fn match_mixed_pair(#0: (int32, string)) -> int32 {
+  match #0 ϵ0 {
+    (0 ρ0, "zero" ρ1) ρ2 => 1 ϵ1,
+    (0 ρ3, _ ρ4) ρ5 => 2 ϵ2,
+    (1 ρ6, "one" ρ7) ρ8 => 3 ϵ3,
+    (_ ρ9, "zero" ρ10) ρ11 => 4 ϵ4,
+    _ ρ12 => 5 ϵ5,
+  }
+} ITEM0
 
-enum Mixed { OnlyInt(int32), OnlyStr(string), Both(int32, string) } /*item#1*/
+enum Mixed { OnlyInt(int32), OnlyStr(string), Both(int32, string) } ITEM1
 
-fn match_mixed_enum(local_0: Mixed) -> int32 {
-  match local_0 /*#7*/ {
-    Mixed::OnlyInt(0 /*#13*/) /*#14*/ => 6 /*#8*/,
-    Mixed::OnlyInt(_ /*#15*/) /*#16*/ => 7 /*#9*/,
-    Mixed::OnlyStr("zero" /*#17*/) /*#18*/ => 8 /*#10*/,
-    Mixed::OnlyStr(_ /*#19*/) /*#20*/ => 9 /*#11*/,
-    Mixed::Both(0 /*#21*/, "zero" /*#22*/) /*#23*/ => 10 /*#12*/,
-    Mixed::Both(0 /*#24*/, _ /*#25*/) /*#26*/ => 11 /*#13*/,
-    Mixed::Both(_ /*#27*/, "zero" /*#28*/) /*#29*/ => 12 /*#14*/,
-    Mixed::Both(_ /*#30*/, _ /*#31*/) /*#32*/ => 13 /*#15*/,
-  } /*#16*/
-} /*item#2*/
+fn match_mixed_enum(#0: Mixed) -> int32 {
+  match #0 ϵ7 {
+    Mixed::OnlyInt(0 ρ13) ρ14 => 6 ϵ8,
+    Mixed::OnlyInt(_ ρ15) ρ16 => 7 ϵ9,
+    Mixed::OnlyStr("zero" ρ17) ρ18 => 8 ϵ10,
+    Mixed::OnlyStr(_ ρ19) ρ20 => 9 ϵ11,
+    Mixed::Both(0 ρ21, "zero" ρ22) ρ23 => 10 ϵ12,
+    Mixed::Both(0 ρ24, _ ρ25) ρ26 => 11 ϵ13,
+    Mixed::Both(_ ρ27, "zero" ρ28) ρ29 => 12 ϵ14,
+    Mixed::Both(_ ρ30, _ ρ31) ρ32 => 13 ϵ15,
+  }
+} ITEM2
 
 fn main() -> () {
-  let _ /*#33*/ = string_println /*#17*/(int32_to_string /*#18*/(match_mixed_pair /*#19*/((0 /*#20*/, "zero" /*#21*/) /*#22*/) /*#23*/) /*#24*/) /*#25*/ in
-  let _ /*#34*/ = string_println /*#26*/(int32_to_string /*#27*/(match_mixed_pair /*#28*/((0 /*#29*/, "other" /*#30*/) /*#31*/) /*#32*/) /*#33*/) /*#34*/ in
-  let _ /*#35*/ = string_println /*#35*/(int32_to_string /*#36*/(match_mixed_pair /*#37*/((1 /*#38*/, "one" /*#39*/) /*#40*/) /*#41*/) /*#42*/) /*#43*/ in
-  let _ /*#36*/ = string_println /*#44*/(int32_to_string /*#45*/(match_mixed_pair /*#46*/((2 /*#47*/, "zero" /*#48*/) /*#49*/) /*#50*/) /*#51*/) /*#52*/ in
-  let _ /*#37*/ = string_println /*#53*/(int32_to_string /*#54*/(match_mixed_pair /*#55*/((2 /*#56*/, "two" /*#57*/) /*#58*/) /*#59*/) /*#60*/) /*#61*/ in
-  let _ /*#38*/ = string_println /*#62*/(int32_to_string /*#63*/(match_mixed_enum /*#64*/(Mixed::OnlyInt(0 /*#65*/) /*#66*/) /*#67*/) /*#68*/) /*#69*/ in
-  let _ /*#39*/ = string_println /*#70*/(int32_to_string /*#71*/(match_mixed_enum /*#72*/(Mixed::OnlyInt(5 /*#73*/) /*#74*/) /*#75*/) /*#76*/) /*#77*/ in
-  let _ /*#40*/ = string_println /*#78*/(int32_to_string /*#79*/(match_mixed_enum /*#80*/(Mixed::OnlyStr("zero" /*#81*/) /*#82*/) /*#83*/) /*#84*/) /*#85*/ in
-  let _ /*#41*/ = string_println /*#86*/(int32_to_string /*#87*/(match_mixed_enum /*#88*/(Mixed::OnlyStr("hello" /*#89*/) /*#90*/) /*#91*/) /*#92*/) /*#93*/ in
-  let _ /*#42*/ = string_println /*#94*/(int32_to_string /*#95*/(match_mixed_enum /*#96*/(Mixed::Both(0 /*#97*/, "zero" /*#98*/) /*#99*/) /*#100*/) /*#101*/) /*#102*/ in
-  let _ /*#43*/ = string_println /*#103*/(int32_to_string /*#104*/(match_mixed_enum /*#105*/(Mixed::Both(0 /*#106*/, "hello" /*#107*/) /*#108*/) /*#109*/) /*#110*/) /*#111*/ in
-  let _ /*#44*/ = string_println /*#112*/(int32_to_string /*#113*/(match_mixed_enum /*#114*/(Mixed::Both(2 /*#115*/, "zero" /*#116*/) /*#117*/) /*#118*/) /*#119*/) /*#120*/ in
-  string_println /*#121*/(int32_to_string /*#122*/(match_mixed_enum /*#123*/(Mixed::Both(3 /*#124*/, "three" /*#125*/) /*#126*/) /*#127*/) /*#128*/) /*#129*/ /*#130*/ /*#131*/ /*#132*/ /*#133*/ /*#134*/ /*#135*/ /*#136*/ /*#137*/ /*#138*/ /*#139*/ /*#140*/ /*#141*/
-} /*item#3*/
+  let _ ρ33 = string_println ϵ17(int32_to_string ϵ18(match_mixed_pair ϵ19((0 ϵ20, "zero" ϵ21) ϵ22) ϵ23) ϵ24) ϵ25 ϵ26;
+  let _ ρ34 = string_println ϵ27(int32_to_string ϵ28(match_mixed_pair ϵ29((0 ϵ30, "other" ϵ31) ϵ32) ϵ33) ϵ34) ϵ35 ϵ36;
+  let _ ρ35 = string_println ϵ37(int32_to_string ϵ38(match_mixed_pair ϵ39((1 ϵ40, "one" ϵ41) ϵ42) ϵ43) ϵ44) ϵ45 ϵ46;
+  let _ ρ36 = string_println ϵ47(int32_to_string ϵ48(match_mixed_pair ϵ49((2 ϵ50, "zero" ϵ51) ϵ52) ϵ53) ϵ54) ϵ55 ϵ56;
+  let _ ρ37 = string_println ϵ57(int32_to_string ϵ58(match_mixed_pair ϵ59((2 ϵ60, "two" ϵ61) ϵ62) ϵ63) ϵ64) ϵ65 ϵ66;
+  let _ ρ38 = string_println ϵ67(int32_to_string ϵ68(match_mixed_enum ϵ69(Mixed::OnlyInt(0 ϵ70) ϵ71) ϵ72) ϵ73) ϵ74 ϵ75;
+  let _ ρ39 = string_println ϵ76(int32_to_string ϵ77(match_mixed_enum ϵ78(Mixed::OnlyInt(5 ϵ79) ϵ80) ϵ81) ϵ82) ϵ83 ϵ84;
+  let _ ρ40 = string_println ϵ85(int32_to_string ϵ86(match_mixed_enum ϵ87(Mixed::OnlyStr("zero" ϵ88) ϵ89) ϵ90) ϵ91) ϵ92 ϵ93;
+  let _ ρ41 = string_println ϵ94(int32_to_string ϵ95(match_mixed_enum ϵ96(Mixed::OnlyStr("hello" ϵ97) ϵ98) ϵ99) ϵ100) ϵ101 ϵ102;
+  let _ ρ42 = string_println ϵ103(int32_to_string ϵ104(match_mixed_enum ϵ105(Mixed::Both(0 ϵ106, "zero" ϵ107) ϵ108) ϵ109) ϵ110) ϵ111 ϵ112;
+  let _ ρ43 = string_println ϵ113(int32_to_string ϵ114(match_mixed_enum ϵ115(Mixed::Both(0 ϵ116, "hello" ϵ117) ϵ118) ϵ119) ϵ120) ϵ121 ϵ122;
+  let _ ρ44 = string_println ϵ123(int32_to_string ϵ124(match_mixed_enum ϵ125(Mixed::Both(2 ϵ126, "zero" ϵ127) ϵ128) ϵ129) ϵ130) ϵ131 ϵ132;
+  string_println ϵ133(int32_to_string ϵ134(match_mixed_enum ϵ135(Mixed::Both(3 ϵ136, "three" ϵ137) ϵ138) ϵ139) ϵ140) ϵ141
+} ITEM3

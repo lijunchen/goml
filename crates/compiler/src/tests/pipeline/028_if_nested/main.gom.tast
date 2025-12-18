@@ -1,43 +1,63 @@
 fn classify(x/0: int32) -> string {
-  if (x/0 : int32) < 0 {
-      "negative"
-  } else {
-      if 0 < (x/0 : int32) {
-          "positive"
-      } else {
-          "zero"
-      }
-  }
+    if (x/0 : int32) < 0 {
+        {
+            "negative";
+        }
+    } else {
+        {
+            if 0 < (x/0 : int32) {
+                {
+                    "positive";
+                }
+            } else {
+                {
+                    "zero";
+                }
+            };
+        }
+    };
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
-  if (a/1 : int32) < (b/2 : int32) {
-      if (b/2 : int32) < (c/3 : int32) {
-          "ascending"
-      } else {
-          "peak"
-      }
-  } else {
-      if (a/1 : int32) < (c/3 : int32) {
-          "valley"
-      } else {
-          "flat"
-      }
-  }
+    if (a/1 : int32) < (b/2 : int32) {
+        {
+            if (b/2 : int32) < (c/3 : int32) {
+                {
+                    "ascending";
+                }
+            } else {
+                {
+                    "peak";
+                }
+            };
+        }
+    } else {
+        {
+            if (a/1 : int32) < (c/3 : int32) {
+                {
+                    "valley";
+                }
+            } else {
+                {
+                    "flat";
+                }
+            };
+        }
+    };
 }
 
 fn main() -> unit {
-  let first/4: string = (classify : (int32) -> string)(-42) in
-  let second/5: string = (classify : (int32) -> string)(0) in
-  let third/6: string = (classify : (int32) -> string)(17) in
-  let shape1/7: string = (triangle_type : (int32, int32, int32) -> string)(1, 2, 3) in
-  let shape2/8: string = (triangle_type : (int32, int32, int32) -> string)(3, 2, 1) in
-  let shape3/9: string = (triangle_type : (int32, int32, int32) -> string)(2, 3, 2) in
-  let _ : unit = (string_println : (string) -> unit)((first/4 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((second/5 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((third/6 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((shape1/7 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((shape2/8 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((shape3/9 : string)) in
-  ()
+    let first/4: string = (classify : (int32) -> string)(-42);
+    let second/5: string = (classify : (int32) -> string)(0);
+    let third/6: string = (classify : (int32) -> string)(17);
+    let shape1/7: string = (triangle_type : (int32, int32, int32) -> string)(1, 2, 3);
+    let shape2/8: string = (triangle_type : (int32, int32, int32) -> string)(3, 2, 1);
+    let shape3/9: string = (triangle_type : (int32, int32, int32) -> string)(2, 3, 2);
+    let _ : unit = (string_println : (string) -> unit)((first/4 : string));
+    let _ : unit = (string_println : (string) -> unit)((second/5 : string));
+    let _ : unit = (string_println : (string) -> unit)((third/6 : string));
+    let _ : unit = (string_println : (string) -> unit)((shape1/7 : string));
+    let _ : unit = (string_println : (string) -> unit)((shape2/8 : string));
+    let _ : unit = (string_println : (string) -> unit)((shape3/9 : string));
+    ();
 }

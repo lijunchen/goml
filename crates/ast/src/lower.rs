@@ -672,20 +672,26 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
 }
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let mut result = match node.expr() {
-        Some(expr) => lower_expr(ctx, expr)?,
-        None => ast::Expr::EUnit,
-    };
+    let mut exprs: Vec<ast::Expr> = Vec::new();
 
-    let mut stmts: Vec<cst::Stmt> = node.stmts().collect();
-    while let Some(stmt) = stmts.pop() {
-        result = lower_stmt(ctx, stmt, result);
+    for stmt in node.stmts() {
+        if let Some(expr) = lower_stmt(ctx, stmt) {
+            exprs.push(expr);
+        }
     }
 
-    Some(result)
+    if let Some(tail_expr) = node.expr() {
+        if let Some(expr) = lower_expr(ctx, tail_expr) {
+            exprs.push(expr);
+        }
+    } else {
+        exprs.push(ast::Expr::EUnit);
+    }
+
+    Some(ast::Expr::EBlock { exprs })
 }
 
-fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr {
+fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
     match stmt {
         cst::Stmt::LetStmt(it) => {
             let pattern = match it.pattern() {
@@ -695,13 +701,10 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
                         Some(it.syntax().text_range()),
                         "Let statement missing pattern",
                     );
-                    return body;
+                    return None;
                 }
             };
-            let pat = match lower_pat(ctx, pattern) {
-                Some(pat) => pat,
-                None => return body,
-            };
+            let pat = lower_pat(ctx, pattern)?;
             let value_node = match it.value() {
                 Some(value) => value,
                 None => {
@@ -709,20 +712,16 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
                         Some(it.syntax().text_range()),
                         "Let statement missing value",
                     );
-                    return body;
+                    return None;
                 }
             };
             let annotation = it.ty().and_then(|ty| lower_ty(ctx, ty));
-            let value = match lower_expr(ctx, value_node) {
-                Some(expr) => expr,
-                None => return body,
-            };
-            ast::Expr::ELet {
+            let value = lower_expr(ctx, value_node)?;
+            Some(ast::Expr::ELet {
                 pat,
                 annotation,
                 value: Box::new(value),
-                body: Box::new(body),
-            }
+            })
         }
         cst::Stmt::ExprStmt(it) => {
             let expr_node = match it.expr() {
@@ -732,19 +731,10 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt, body: ast::Expr) -> ast::Expr
                         Some(it.syntax().text_range()),
                         "Expression statement missing expression",
                     );
-                    return body;
+                    return None;
                 }
             };
-            let value = match lower_expr(ctx, expr_node) {
-                Some(expr) => expr,
-                None => return body,
-            };
-            ast::Expr::ELet {
-                pat: ast::Pat::PWild,
-                annotation: None,
-                value: Box::new(value),
-                body: Box::new(body),
-            }
+            lower_expr(ctx, expr_node)
         }
     }
 }

@@ -4,10 +4,10 @@ fn child(signal/0: Ref[int32]) -> unit {
 
 fn main() -> unit {
   let signal/1 = ref(0) in
-  let mtmp0 = go || child(signal/1) in
-  let mtmp1 = while (ref_get(signal/1) < 1) {
+  let _wild0 = go || child(signal/1) in
+  let _wild1 = while (ref_get(signal/1) < 1) {
       ()
   } in
-  let mtmp2 = string_println("main") in
+  let _wild2 = string_println("main") in
   ()
 }

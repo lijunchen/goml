@@ -118,16 +118,20 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
         tast::Expr::ELet {
             pat,
             value,
-            body,
             ty: _,
         } => {
             if let Some(expr) = find_type_pat(pat, range) {
                 return Some(expr);
             }
-            if let Some(expr) = find_type_expr(value, range) {
-                return Some(expr);
+            find_type_expr(value, range)
+        }
+        tast::Expr::EBlock { exprs, ty: _ } => {
+            for expr in exprs {
+                if let Some(result) = find_type_expr(expr, range) {
+                    return Some(result);
+                }
             }
-            find_type_expr(body, range)
+            None
         }
         tast::Expr::EMatch {
             expr,
@@ -402,11 +406,14 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             items.iter().find_map(|item| find_expr_in_expr(item, ptr))
         }
         tast::Expr::EClosure { body, .. } => find_expr_in_expr(body, ptr),
-        tast::Expr::ELet { value, body, .. } => {
-            if let Some(expr) = find_expr_in_expr(value, ptr) {
-                return Some(expr);
+        tast::Expr::ELet { value, .. } => find_expr_in_expr(value, ptr),
+        tast::Expr::EBlock { exprs, .. } => {
+            for e in exprs {
+                if let Some(found) = find_expr_in_expr(e, ptr) {
+                    return Some(found);
+                }
             }
-            find_expr_in_expr(body, ptr)
+            None
         }
         tast::Expr::EMatch {
             expr: scrutinee,

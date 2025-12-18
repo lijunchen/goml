@@ -62,62 +62,62 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
 
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-== AST ==
-fn main() -> unit {
-    string_println("hello")
-}
+        == AST ==
+        fn main() -> unit {
+          string_println("hello");
+        }
 
 
 
-== Typed AST ==
-fn main() -> unit {
-  (string_println : (string) -> unit)("hello")
-}
+        == Typed AST ==
+        fn main() -> unit {
+            (string_println : (string) -> unit)("hello");
+        }
 
-== Core ==
-fn main() -> unit {
-  string_println("hello")
-}
+        == Core ==
+        fn main() -> unit {
+          string_println("hello")
+        }
 
-== Mono ==
-fn main() -> unit {
-  string_println("hello")
-}
+        == Mono ==
+        fn main() -> unit {
+          string_println("hello")
+        }
 
-== Lifted ==
-fn main() -> unit {
-  string_println("hello")
-}
+        == Lifted ==
+        fn main() -> unit {
+          string_println("hello")
+        }
 
-== ANF ==
-fn main() -> unit {
-  string_println("hello")
-}
+        == ANF ==
+        fn main() -> unit {
+          string_println("hello")
+        }
 
-== Go ==
-package main
+        == Go ==
+        package main
 
-import (
-    "fmt"
-)
+        import (
+            "fmt"
+        )
 
-func string_println(s string) struct{} {
-    fmt.Println(s)
-    return struct{}{}
-}
+        func string_println(s string) struct{} {
+            fmt.Println(s)
+            return struct{}{}
+        }
 
-func main0() struct{} {
-    var ret0 struct{}
-    ret0 = string_println("hello")
-    return ret0
-}
+        func main0() struct{} {
+            var ret0 struct{}
+            ret0 = string_println("hello")
+            return ret0
+        }
 
-func main() {
-    main0()
-}
+        func main() {
+            main0()
+        }
 
-hello
-"#]]
+        hello
+    "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
 

@@ -689,7 +689,6 @@ impl LowerCtx {
                 pat,
                 annotation,
                 value,
-                body,
             } => {
                 let value_id = self.lower_expr(value, generics, diagnostics)?;
                 let annotation_id = match annotation {
@@ -699,14 +698,12 @@ impl LowerCtx {
 
                 self.symbols.locals.enter_scope();
                 let pat_id = self.lower_pat(pat, generics, diagnostics)?;
-                let body_id = self.lower_expr(body, generics, diagnostics)?;
                 self.symbols.locals.exit_scope();
 
                 Some(self.push_expr(
                     HirExprKind::Let {
                         pat: pat_id,
                         value: value_id,
-                        body: body_id,
                         annotation: annotation_id,
                     },
                     None,
@@ -841,7 +838,67 @@ impl LowerCtx {
                     Some(*astptr),
                 ))
             }
+            ast::Expr::EBlock { exprs } => self.lower_block_exprs(exprs, generics, diagnostics),
         }
+    }
+
+    fn lower_block_exprs(
+        &mut self,
+        exprs: &[ast::Expr],
+        generics: &GenericTable,
+        diagnostics: &mut Diagnostics,
+    ) -> Option<HirExprId> {
+        if exprs.is_empty() {
+            return Some(self.push_expr(HirExprKind::Unit, None));
+        }
+
+        if exprs.len() == 1 {
+            return self.lower_expr(&exprs[0], generics, diagnostics);
+        }
+
+        // Lower all expressions in the block, creating scopes for let bindings
+        let mut hir_exprs = Vec::new();
+        let mut scope_depth = 0;
+
+        for expr in exprs {
+            match expr {
+                ast::Expr::ELet {
+                    pat,
+                    annotation,
+                    value,
+                } => {
+                    let value_id = self.lower_expr(value, generics, diagnostics)?;
+                    let annotation_id = match annotation {
+                        Some(ty) => self.lower_type_expr(ty, generics, diagnostics),
+                        None => None,
+                    };
+
+                    self.symbols.locals.enter_scope();
+                    scope_depth += 1;
+                    let pat_id = self.lower_pat(pat, generics, diagnostics)?;
+
+                    hir_exprs.push(self.push_expr(
+                        HirExprKind::Let {
+                            pat: pat_id,
+                            value: value_id,
+                            annotation: annotation_id,
+                        },
+                        None,
+                    ));
+                }
+                _ => {
+                    let expr_id = self.lower_expr(expr, generics, diagnostics)?;
+                    hir_exprs.push(expr_id);
+                }
+            }
+        }
+
+        // Exit all scopes we entered
+        for _ in 0..scope_depth {
+            self.symbols.locals.exit_scope();
+        }
+
+        Some(self.push_expr(HirExprKind::Block { exprs: hir_exprs }, None))
     }
 
     fn lower_struct_literal(

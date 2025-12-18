@@ -1,131 +1,145 @@
 impl Describe for Tracker{
   fn describe(self/0: Tracker) -> string {
-    let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker) in
-    let current/4: int32 = (ref_get : (Ref[int32]) -> int32)((count/2 : Ref[int32])) in
-    let flag/5: bool = (ref_get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool])) in
-    let with_label/6: string = "Tracker(" + (label/1 : string) in
-    let with_count_label/7: string = (with_label/6 : string) + ", count: " in
-    let with_count/8: string = (with_count_label/7 : string) + (int32_to_string : (int32) -> string)((current/4 : int32)) in
-    let with_flag_label/9: string = (with_count/8 : string) + ", toggled: " in
-    (with_flag_label/9 : string) + (bool_to_string : (bool) -> string)((flag/5 : bool)) + ")"
+      let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker);
+      let current/4: int32 = (ref_get : (Ref[int32]) -> int32)((count/2 : Ref[int32]));
+      let flag/5: bool = (ref_get : (Ref[bool]) -> bool)((toggled/3 : Ref[bool]));
+      let with_label/6: string = "Tracker(" + (label/1 : string);
+      let with_count_label/7: string = (with_label/6 : string) + ", count: ";
+      let with_count/8: string = (with_count_label/7 : string) + (int32_to_string : (int32) -> string)((current/4 : int32));
+      let with_flag_label/9: string = (with_count/8 : string) + ", toggled: ";
+      (with_flag_label/9 : string) + (bool_to_string : (bool) -> string)((flag/5 : bool)) + ")";
   }
 }
 
 impl Describe for Record[int32]{
   fn describe(self/10: Record[int32]) -> string {
-    match (self/10 : Record[int32]) {
-        Record::Value(value/11: int32) => "Value(" + (int32_to_string : (int32) -> string)((value/11 : int32)) + ")",
-        Record::Pair(before/12: int32, after/13: int32) => let prefix/14: string = "Pair(" + (int32_to_string : (int32) -> string)((before/12 : int32)) in
-          (prefix/14 : string) + ", " + (int32_to_string : (int32) -> string)((after/13 : int32)) + ")",
-        Record::Empty => "Empty",
-    }
+      match (self/10 : Record[int32]) {
+          Record::Value(value/11: int32) => "Value(" + (int32_to_string : (int32) -> string)((value/11 : int32)) + ")",
+          Record::Pair(before/12: int32, after/13: int32) => {
+                let prefix/14: string = "Pair(" + (int32_to_string : (int32) -> string)((before/12 : int32));
+                (prefix/14 : string) + ", " + (int32_to_string : (int32) -> string)((after/13 : int32)) + ")";
+            },
+          Record::Empty => "Empty",
+      };
   }
 }
 
 impl Describe for Record[string]{
   fn describe(self/15: Record[string]) -> string {
-    match (self/15 : Record[string]) {
-        Record::Value(text/16: string) => "Value(" + (text/16 : string) + ")",
-        Record::Pair(before/17: string, after/18: string) => let prefix/19: string = "Pair(" + (before/17 : string) in
-          (prefix/19 : string) + ", " + (after/18 : string) + ")",
-        Record::Empty => "Empty",
-    }
+      match (self/15 : Record[string]) {
+          Record::Value(text/16: string) => "Value(" + (text/16 : string) + ")",
+          Record::Pair(before/17: string, after/18: string) => {
+                let prefix/19: string = "Pair(" + (before/17 : string);
+                (prefix/19 : string) + ", " + (after/18 : string) + ")";
+            },
+          Record::Empty => "Empty",
+      };
   }
 }
 
 fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
-  if (flag/20 : bool) {
-      (when_true/21 : T)
-  } else {
-      (when_false/22 : T)
-  }
+    if (flag/20 : bool) {
+        {
+            (when_true/21 : T);
+        }
+    } else {
+        {
+            (when_false/22 : T);
+        }
+    };
 }
 
 fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
-  match (value/23 : Maybe[T]) {
-      Maybe::Some(inner/25: T) => Maybe::Some((f/24 : (T) -> U)((inner/25 : T))),
-      Maybe::None => Maybe::None,
-  }
+    match (value/23 : Maybe[T]) {
+        Maybe::Some(inner/25: T) => Maybe::Some((f/24 : (T) -> U)((inner/25 : T))),
+        Maybe::None => Maybe::None,
+    };
 }
 
 fn format_total(total/26: int32) -> string {
-  "total: " + (int32_to_string : (int32) -> string)((total/26 : int32))
+    "total: " + (int32_to_string : (int32) -> string)((total/26 : int32));
 }
 
 fn increment(value/27: int32) -> int32 {
-  (value/27 : int32) + 1
+    (value/27 : int32) + 1;
 }
 
 fn triple(value/28: int32) -> int32 {
-  (value/28 : int32) * 3
+    (value/28 : int32) * 3;
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
-  let (left/30: string, right/31: string) = (parts/29 : (string, string)) in
-  (left/30 : string) + " -> " + (right/31 : string)
+    let (left/30: string, right/31: string) = (parts/29 : (string, string));
+    (left/30 : string) + " -> " + (right/31 : string);
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-  let first/34: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 0) in
-  let second/35: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 1) in
-  let first_result/36: int32 = (first/34 : (int32) -> int32)((value/32 : int32)) in
-  let second_result/37: int32 = (second/35 : (int32) -> int32)((first_result/36 : int32)) in
-  (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32))
+    let first/34: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 0);
+    let second/35: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 1);
+    let first_result/36: int32 = (first/34 : (int32) -> int32)((value/32 : int32));
+    let second_result/37: int32 = (second/35 : (int32) -> int32)((first_result/36 : int32));
+    (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32));
 }
 
 fn gather(record/38: Record[int32]) -> Maybe[int32] {
-  match (record/38 : Record[int32]) {
-      Record::Value(value/39: int32) => Maybe::Some((value/39 : int32)),
-      Record::Pair(_ : int32, after/40: int32) => Maybe::Some((after/40 : int32)),
-      Record::Empty => Maybe::None,
-  }
+    match (record/38 : Record[int32]) {
+        Record::Value(value/39: int32) => Maybe::Some((value/39 : int32)),
+        Record::Pair(_ : int32, after/40: int32) => Maybe::Some((after/40 : int32)),
+        Record::Empty => Maybe::None,
+    };
 }
 
 fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
-  let count/43: Ref[int32] = (ref : (int32) -> Ref[int32])((start/42 : int32)) in
-  let toggled/44: Ref[bool] = (ref : (bool) -> Ref[bool])(false) in
-  let tracker/45: Tracker = Tracker { label: (label/41 : string), count: (count/43 : Ref[int32]), toggled: (toggled/44 : Ref[bool]) } in
-  let snapshot/46: () -> Record[int32] = || => Record::Value((ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32]))) in
-  let bump/49: (int32) -> Record[int32] = |delta/47: int32| => let before/48: int32 = (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((count/43 : Ref[int32]), (before/48 : int32) + (delta/47 : int32)) in
-  Record::Pair((before/48 : int32), (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32]))) in
-  let flip/52: () -> Record[string] = || => let before/50: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool])) in
-  let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((toggled/44 : Ref[bool]), !(before/50 : bool)) in
-  let after/51: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool])) in
-  Record::Pair((bool_to_string : (bool) -> string)((before/50 : bool)), (bool_to_string : (bool) -> string)((after/51 : bool))) in
-  ((tracker/45 : Tracker), (snapshot/46 : () -> Record[int32]), (bump/49 : (int32) -> Record[int32]), (flip/52 : () -> Record[string]))
+    let count/43: Ref[int32] = (ref : (int32) -> Ref[int32])((start/42 : int32));
+    let toggled/44: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
+    let tracker/45: Tracker = Tracker { label: (label/41 : string), count: (count/43 : Ref[int32]), toggled: (toggled/44 : Ref[bool]) };
+    let snapshot/46: () -> Record[int32] = || => {
+        Record::Value((ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])));
+    };
+    let bump/49: (int32) -> Record[int32] = |delta/47: int32| => {
+        let before/48: int32 = (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32]));
+        let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((count/43 : Ref[int32]), (before/48 : int32) + (delta/47 : int32));
+        Record::Pair((before/48 : int32), (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])));
+    };
+    let flip/52: () -> Record[string] = || => {
+        let before/50: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool]));
+        let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((toggled/44 : Ref[bool]), !(before/50 : bool));
+        let after/51: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool]));
+        Record::Pair((bool_to_string : (bool) -> string)((before/50 : bool)), (bool_to_string : (bool) -> string)((after/51 : bool)));
+    };
+    ((tracker/45 : Tracker), (snapshot/46 : () -> Record[int32]), (bump/49 : (int32) -> Record[int32]), (flip/52 : () -> Record[string]));
 }
 
 fn main() -> unit {
-  let (tracker/53: Tracker, snapshot/54: () -> Record[int32], bump/55: (int32) -> Record[int32], flip/56: () -> Record[string]) = (build_counter : (string, int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]))("goml", 2) in
-  let tracker_info/57: string = (Describe::describe : (Self) -> string)((tracker/53 : Tracker)) in
-  let first_record/58: Record[int32] = (snapshot/54 : () -> Record[int32])() in
-  let bumped_record/59: Record[int32] = (bump/55 : (int32) -> Record[int32])(5) in
-  let flipped_record/60: Record[string] = (flip/56 : () -> Record[string])() in
-  let maybe_first/61: Maybe[int32] = (gather : (Record[int32]) -> Maybe[int32])((first_record/58 : Record[int32])) in
-  let maybe_second/62: Maybe[int32] = (gather : (Record[int32]) -> Maybe[int32])((bumped_record/59 : Record[int32])) in
-  let chosen/63: Maybe[int32] = (choose : (bool, Maybe[int32], Maybe[int32]) -> Maybe[int32])(true, (maybe_second/62 : Maybe[int32]), (maybe_first/61 : Maybe[int32])) in
-  let stringified/64: Maybe[string] = (map_maybe : (Maybe[int32], (int32) -> string) -> Maybe[string])((chosen/63 : Maybe[int32]), (format_total : (int32) -> string)) in
-  let transforms/65: [(int32) -> int32; 2] = [(increment : (int32) -> int32), (triple : (int32) -> int32)] in
-  let results/66: [int32; 2] = (run_transforms : (int32, [(int32) -> int32; 2]) -> [int32; 2])(4, (transforms/65 : [(int32) -> int32; 2])) in
-  let first_result/67: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 0) in
-  let second_result/68: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 1) in
-  let order_check/69: bool = (first_result/67 : int32) < (second_result/68 : int32) && true in
-  let first_text/70: string = (Describe::describe : (Self) -> string)((first_record/58 : Record[int32])) in
-  let bumped_text/71: string = (Describe::describe : (Self) -> string)((bumped_record/59 : Record[int32])) in
-  let flipped_text/72: string = (Describe::describe : (Self) -> string)((flipped_record/60 : Record[string])) in
-  let summary/74: string = match (stringified/64 : Maybe[string]) {
-      Maybe::Some(text/73: string) => "Snapshot: " + (text/73 : string),
-      Maybe::None => "Snapshot: none",
-  } in
-  let pair_text/75: string = (pair_join : ((string, string)) -> string)(((int32_to_string : (int32) -> string)((first_result/67 : int32)), (int32_to_string : (int32) -> string)((second_result/68 : int32)))) in
-  let bool_text/76: string = (bool_to_string : (bool) -> string)((order_check/69 : bool)) in
-  let _ : unit = (string_println : (string) -> unit)((tracker_info/57 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((first_text/70 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((bumped_text/71 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((flipped_text/72 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((summary/74 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((pair_text/75 : string)) in
-  let _ : unit = (string_println : (string) -> unit)((bool_text/76 : string)) in
-  ()
+    let (tracker/53: Tracker, snapshot/54: () -> Record[int32], bump/55: (int32) -> Record[int32], flip/56: () -> Record[string]) = (build_counter : (string, int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]))("goml", 2);
+    let tracker_info/57: string = (Describe::describe : (Self) -> string)((tracker/53 : Tracker));
+    let first_record/58: Record[int32] = (snapshot/54 : () -> Record[int32])();
+    let bumped_record/59: Record[int32] = (bump/55 : (int32) -> Record[int32])(5);
+    let flipped_record/60: Record[string] = (flip/56 : () -> Record[string])();
+    let maybe_first/61: Maybe[int32] = (gather : (Record[int32]) -> Maybe[int32])((first_record/58 : Record[int32]));
+    let maybe_second/62: Maybe[int32] = (gather : (Record[int32]) -> Maybe[int32])((bumped_record/59 : Record[int32]));
+    let chosen/63: Maybe[int32] = (choose : (bool, Maybe[int32], Maybe[int32]) -> Maybe[int32])(true, (maybe_second/62 : Maybe[int32]), (maybe_first/61 : Maybe[int32]));
+    let stringified/64: Maybe[string] = (map_maybe : (Maybe[int32], (int32) -> string) -> Maybe[string])((chosen/63 : Maybe[int32]), (format_total : (int32) -> string));
+    let transforms/65: [(int32) -> int32; 2] = [(increment : (int32) -> int32), (triple : (int32) -> int32)];
+    let results/66: [int32; 2] = (run_transforms : (int32, [(int32) -> int32; 2]) -> [int32; 2])(4, (transforms/65 : [(int32) -> int32; 2]));
+    let first_result/67: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 0);
+    let second_result/68: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 1);
+    let order_check/69: bool = (first_result/67 : int32) < (second_result/68 : int32) && true;
+    let first_text/70: string = (Describe::describe : (Self) -> string)((first_record/58 : Record[int32]));
+    let bumped_text/71: string = (Describe::describe : (Self) -> string)((bumped_record/59 : Record[int32]));
+    let flipped_text/72: string = (Describe::describe : (Self) -> string)((flipped_record/60 : Record[string]));
+    let summary/74: string = match (stringified/64 : Maybe[string]) {
+        Maybe::Some(text/73: string) => "Snapshot: " + (text/73 : string),
+        Maybe::None => "Snapshot: none",
+    };
+    let pair_text/75: string = (pair_join : ((string, string)) -> string)(((int32_to_string : (int32) -> string)((first_result/67 : int32)), (int32_to_string : (int32) -> string)((second_result/68 : int32))));
+    let bool_text/76: string = (bool_to_string : (bool) -> string)((order_check/69 : bool));
+    let _ : unit = (string_println : (string) -> unit)((tracker_info/57 : string));
+    let _ : unit = (string_println : (string) -> unit)((first_text/70 : string));
+    let _ : unit = (string_println : (string) -> unit)((bumped_text/71 : string));
+    let _ : unit = (string_println : (string) -> unit)((flipped_text/72 : string));
+    let _ : unit = (string_println : (string) -> unit)((summary/74 : string));
+    let _ : unit = (string_println : (string) -> unit)((pair_text/75 : string));
+    let _ : unit = (string_println : (string) -> unit)((bool_text/76 : string));
+    ();
 }

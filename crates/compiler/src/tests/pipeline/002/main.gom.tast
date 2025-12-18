@@ -1,19 +1,19 @@
 fn main() -> unit {
-  let a/0: (bool, bool) = (true, false) in
-  let b/1: (bool, bool) = match (a/0 : (bool, bool)) {
-      (false, false) => (true, true),
-      (false, true) => (true, false),
-      (true, false) => (false, true),
-      (true, true) => (false, false),
-  } in
-  let b_1/3: bool = match (b/1 : (bool, bool)) {
-      (_ : bool, w/2: bool) => (w/2 : bool),
-  } in
-  let c/4: unit = match (true, (b_1/3 : bool)) {
-      (false, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(0)),
-      (false, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(1)),
-      (true, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(2)),
-      (true, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(3)),
-  } in
-  (string_print : (string) -> unit)((unit_to_string : (unit) -> string)((c/4 : unit)))
+    let a/0: (bool, bool) = (true, false);
+    let b/1: (bool, bool) = match (a/0 : (bool, bool)) {
+        (false, false) => (true, true),
+        (false, true) => (true, false),
+        (true, false) => (false, true),
+        (true, true) => (false, false),
+    };
+    let b_1/3: bool = match (b/1 : (bool, bool)) {
+        (_ : bool, w/2: bool) => (w/2 : bool),
+    };
+    let c/4: unit = match (true, (b_1/3 : bool)) {
+        (false, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(0)),
+        (false, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(1)),
+        (true, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(2)),
+        (true, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(3)),
+    };
+    (string_print : (string) -> unit)((unit_to_string : (unit) -> string)((c/4 : unit)));
 }

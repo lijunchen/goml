@@ -1,16 +1,16 @@
 fn test(t/0: T) -> unit {
-  match (t/0 : T) {
-      T::A => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(1)),
-      T::B(false, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(2)),
-      T::B(false, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(3)),
-      _ : T => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(4)),
-  }
+    match (t/0 : T) {
+        T::A => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(1)),
+        T::B(false, false) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(2)),
+        T::B(false, true) => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(3)),
+        _ : T => (string_print : (string) -> unit)((int32_to_string : (int32) -> string)(4)),
+    };
 }
 
 fn main() -> unit {
-  let _ : unit = (test : (T) -> unit)(T::B(true, true)) in
-  let _ : unit = (test : (T) -> unit)(T::B(false, true)) in
-  let _ : unit = (test : (T) -> unit)(T::B(false, false)) in
-  let _ : unit = (test : (T) -> unit)(T::A) in
-  ()
+    let _ : unit = (test : (T) -> unit)(T::B(true, true));
+    let _ : unit = (test : (T) -> unit)(T::B(false, true));
+    let _ : unit = (test : (T) -> unit)(T::B(false, false));
+    let _ : unit = (test : (T) -> unit)(T::A);
+    ();
 }

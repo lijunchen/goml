@@ -1,15 +1,15 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])((arr/0 : [int32; 3]), 1, 42)
+    (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])((arr/0 : [int32; 3]), 1, 42);
 }
 
 fn read_array(arr/1: [int32; 3]) -> int32 {
-  (array_get : ([int32; 18446744073709551615], int32) -> int32)((arr/1 : [int32; 3]), 1)
+    (array_get : ([int32; 18446744073709551615], int32) -> int32)((arr/1 : [int32; 3]), 1);
 }
 
 fn main() -> unit {
-  let arr/2: [int32; 3] = [1, 2, 3] in
-  let updated/3: [int32; 3] = (update_array : ([int32; 3]) -> [int32; 3])((arr/2 : [int32; 3])) in
-  let value/4: int32 = (read_array : ([int32; 3]) -> int32)((updated/3 : [int32; 3])) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((value/4 : int32))) in
-  ()
+    let arr/2: [int32; 3] = [1, 2, 3];
+    let updated/3: [int32; 3] = (update_array : ([int32; 3]) -> [int32; 3])((arr/2 : [int32; 3]));
+    let value/4: int32 = (read_array : ([int32; 3]) -> int32)((updated/3 : [int32; 3]));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((value/4 : int32)));
+    ();
 }

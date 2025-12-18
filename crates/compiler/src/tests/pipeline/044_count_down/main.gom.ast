@@ -5,15 +5,21 @@ extern "go" "time" sleep(d: Duration) -> unit
 extern "go" "time" duration(nanos: int32) -> Duration
 
 fn main() {
-    let counter = ref(0) in
-    let _ = go || while ref_get(counter) < 10 {
-        let _ = string_println("hello") in
-        let _ = sleep(duration(1000)) in
-        let _ = ref_set(counter, ref_get(counter) + 1) in
-        ()
-    } in
-    while ref_get(counter) < 10 {
-        ()
-    }
+  let counter = ref(0);
+  go || {
+      while ref_get(counter) < 10 {
+          {
+              string_println("hello");
+              sleep(duration(1000));
+              ref_set(counter, ref_get(counter) + 1);
+              ();
+          }
+      };
+  };
+  while ref_get(counter) < 10 {
+      {
+          ();
+      }
+  };
 }
 

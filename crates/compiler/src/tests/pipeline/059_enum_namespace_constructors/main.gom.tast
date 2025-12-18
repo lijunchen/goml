@@ -1,19 +1,19 @@
 fn color_is_red(color/0: Color) -> bool {
-  match (color/0 : Color) {
-      Color::Red => true,
-      Color::Green => false,
-  }
+    match (color/0 : Color) {
+        Color::Red => true,
+        Color::Green => false,
+    };
 }
 
 fn toggle_signal(signal/1: Signal) -> Signal {
-  match (signal/1 : Signal) {
-      Signal::Red => Signal::Yellow,
-      Signal::Yellow => Signal::Red,
-  }
+    match (signal/1 : Signal) {
+        Signal::Red => Signal::Yellow,
+        Signal::Yellow => Signal::Red,
+    };
 }
 
 fn main() -> Signal {
-  let current/2: Color = Color::Red in
-  let _ : bool = (color_is_red : (Color) -> bool)((current/2 : Color)) in
-  (toggle_signal : (Signal) -> Signal)(Signal::Red)
+    let current/2: Color = Color::Red;
+    let _ : bool = (color_is_red : (Color) -> bool)((current/2 : Color));
+    (toggle_signal : (Signal) -> Signal)(Signal::Red);
 }

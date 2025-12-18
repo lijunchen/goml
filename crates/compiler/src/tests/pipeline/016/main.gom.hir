@@ -1,37 +1,37 @@
-enum List[T0] { Nil, Cons(T0, List[T0]) } /*item#0*/
+enum List[T0] { Nil, Cons(T0, List[T0]) } ITEM0
 
-fn list_length[T1](local_0: List[T1]) -> int32 {
-  match local_0 /*#0*/ {
-    List::Nil /*#0*/ => 0 /*#1*/,
-    List::Cons(_ /*#1*/, local_1 /*#2*/) /*#3*/ => 1 /*#2*/ + list_length /*#3*/(local_1 /*#4*/) /*#5*/ /*#6*/,
-  } /*#7*/
-} /*item#1*/
+fn list_length[T1](#0: List[T1]) -> int32 {
+  match #0 ϵ0 {
+    List::Nil ρ0 => 0 ϵ1,
+    List::Cons(_ ρ1, #1 ρ2) ρ3 => 1 ϵ2 + list_length ϵ3(#1 ϵ4) ϵ5 ϵ6,
+  }
+} ITEM1
 
-fn int_list_length(local_0: List[int32]) -> int32 {
-  match local_0 /*#8*/ {
-    List::Nil /*#4*/ => 0 /*#9*/,
-    List::Cons(_ /*#5*/, local_1 /*#6*/) /*#7*/ => 1 /*#10*/ + int_list_length /*#11*/(local_1 /*#12*/) /*#13*/ /*#14*/,
-  } /*#15*/
-} /*item#2*/
+fn int_list_length(#0: List[int32]) -> int32 {
+  match #0 ϵ8 {
+    List::Nil ρ4 => 0 ϵ9,
+    List::Cons(_ ρ5, #1 ρ6) ρ7 => 1 ϵ10 + int_list_length ϵ11(#1 ϵ12) ϵ13 ϵ14,
+  }
+} ITEM2
 
 fn main() -> () {
-  let local_0 /*#8*/ = List::Cons(1 /*#16*/, List::Nil /*#17*/) /*#18*/ in
-  let local_1 /*#9*/ = list_length /*#19*/(local_0 /*#20*/) /*#21*/ in
-  let _ /*#10*/ = string_println /*#22*/(int32_to_string /*#23*/(local_1 /*#24*/) /*#25*/) /*#26*/ in
-  let local_2 /*#11*/ = List::Cons(1 /*#27*/, List::Cons(2 /*#28*/, List::Nil /*#29*/) /*#30*/) /*#31*/ in
-  let local_3 /*#12*/ = list_length /*#32*/(local_2 /*#33*/) /*#34*/ in
-  let _ /*#13*/ = string_println /*#35*/(int32_to_string /*#36*/(local_3 /*#37*/) /*#38*/) /*#39*/ in
-  let local_4 /*#14*/ = List::Cons(0 /*#40*/, List::Cons(1 /*#41*/, List::Cons(2 /*#42*/, List::Nil /*#43*/) /*#44*/) /*#45*/) /*#46*/ in
-  let local_5 /*#15*/ = int_list_length /*#47*/(local_4 /*#48*/) /*#49*/ in
-  let _ /*#16*/ = string_println /*#50*/(int32_to_string /*#51*/(local_5 /*#52*/) /*#53*/) /*#54*/ in
-  let local_6 /*#17*/ = List::Cons(() /*#55*/, List::Nil /*#56*/) /*#57*/ in
-  let local_7 /*#18*/ = list_length /*#58*/(local_6 /*#59*/) /*#60*/ in
-  let _ /*#19*/ = string_println /*#61*/(int32_to_string /*#62*/(local_7 /*#63*/) /*#64*/) /*#65*/ in
-  let local_8 /*#20*/ = List::Cons(() /*#66*/, List::Cons(() /*#67*/, List::Nil /*#68*/) /*#69*/) /*#70*/ in
-  let local_9 /*#21*/ = list_length /*#71*/(local_8 /*#72*/) /*#73*/ in
-  let _ /*#22*/ = string_println /*#74*/(int32_to_string /*#75*/(local_9 /*#76*/) /*#77*/) /*#78*/ in
-  let local_10 /*#23*/ = List::Cons(true /*#79*/, List::Cons(false /*#80*/, List::Nil /*#81*/) /*#82*/) /*#83*/ in
-  let local_11 /*#24*/ = list_length /*#84*/(local_10 /*#85*/) /*#86*/ in
-  let _ /*#25*/ = string_println /*#87*/(int32_to_string /*#88*/(local_11 /*#89*/) /*#90*/) /*#91*/ in
-  () /*#92*/ /*#93*/ /*#94*/ /*#95*/ /*#96*/ /*#97*/ /*#98*/ /*#99*/ /*#100*/ /*#101*/ /*#102*/ /*#103*/ /*#104*/ /*#105*/ /*#106*/ /*#107*/ /*#108*/ /*#109*/ /*#110*/
-} /*item#3*/
+  let #0 ρ8 = List::Cons(1 ϵ16, List::Nil ϵ17) ϵ18 ϵ19;
+  let #1 ρ9 = list_length ϵ20(#0 ϵ21) ϵ22 ϵ23;
+  let _ ρ10 = string_println ϵ24(int32_to_string ϵ25(#1 ϵ26) ϵ27) ϵ28 ϵ29;
+  let #2 ρ11 = List::Cons(1 ϵ30, List::Cons(2 ϵ31, List::Nil ϵ32) ϵ33) ϵ34 ϵ35;
+  let #3 ρ12 = list_length ϵ36(#2 ϵ37) ϵ38 ϵ39;
+  let _ ρ13 = string_println ϵ40(int32_to_string ϵ41(#3 ϵ42) ϵ43) ϵ44 ϵ45;
+  let #4 ρ14 = List::Cons(0 ϵ46, List::Cons(1 ϵ47, List::Cons(2 ϵ48, List::Nil ϵ49) ϵ50) ϵ51) ϵ52 ϵ53;
+  let #5 ρ15 = int_list_length ϵ54(#4 ϵ55) ϵ56 ϵ57;
+  let _ ρ16 = string_println ϵ58(int32_to_string ϵ59(#5 ϵ60) ϵ61) ϵ62 ϵ63;
+  let #6 ρ17 = List::Cons(() ϵ64, List::Nil ϵ65) ϵ66 ϵ67;
+  let #7 ρ18 = list_length ϵ68(#6 ϵ69) ϵ70 ϵ71;
+  let _ ρ19 = string_println ϵ72(int32_to_string ϵ73(#7 ϵ74) ϵ75) ϵ76 ϵ77;
+  let #8 ρ20 = List::Cons(() ϵ78, List::Cons(() ϵ79, List::Nil ϵ80) ϵ81) ϵ82 ϵ83;
+  let #9 ρ21 = list_length ϵ84(#8 ϵ85) ϵ86 ϵ87;
+  let _ ρ22 = string_println ϵ88(int32_to_string ϵ89(#9 ϵ90) ϵ91) ϵ92 ϵ93;
+  let #10 ρ23 = List::Cons(true ϵ94, List::Cons(false ϵ95, List::Nil ϵ96) ϵ97) ϵ98 ϵ99;
+  let #11 ρ24 = list_length ϵ100(#10 ϵ101) ϵ102 ϵ103;
+  let _ ρ25 = string_println ϵ104(int32_to_string ϵ105(#11 ϵ106) ϵ107) ϵ108 ϵ109;
+  () ϵ110
+} ITEM3

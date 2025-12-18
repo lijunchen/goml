@@ -6,8 +6,8 @@ struct Point {
 
 impl Point {
   fn to_json(self: Point) -> string {
-      let Point { x: x, y: y } = self in
-      "{" + "\"x\":" + x.to_string() + "," + "\"y\":" + y.to_string() + "}"
+    let Point { x: x, y: y } = self;
+    "{" + "\"x\":" + x.to_string() + "," + "\"y\":" + y.to_string() + "}";
   }
 }
 
@@ -20,8 +20,8 @@ struct Person {
 
 impl Person {
   fn to_json(self: Person) -> string {
-      let Person { name: name, age: age, active: active } = self in
-      "{" + "\"name\":" + json_escape_string(name) + "," + "\"age\":" + age.to_string() + "," + "\"active\":" + bool_to_json(active) + "}"
+    let Person { name: name, age: age, active: active } = self;
+    "{" + "\"name\":" + json_escape_string(name) + "," + "\"age\":" + age.to_string() + "," + "\"active\":" + bool_to_json(active) + "}";
   }
 }
 
@@ -35,31 +35,31 @@ enum Color {
 
 impl Color {
   fn to_json(self: Color) -> string {
-      match self {
-          Color::Red => "{\"tag\":\"Red\"}",
-          Color::Green => "{\"tag\":\"Green\"}",
-          Color::Blue => "{\"tag\":\"Blue\"}",
-          Color::Rgb(__field0, __field1, __field2) => "{\"tag\":\"Rgb\",\"fields\":[" + __field0.to_string() + "," + __field1.to_string() + "," + __field2.to_string() + "]}",
-      }
+    match self {
+        Color::Red => "{\"tag\":\"Red\"}",
+        Color::Green => "{\"tag\":\"Green\"}",
+        Color::Blue => "{\"tag\":\"Blue\"}",
+        Color::Rgb(__field0, __field1, __field2) => "{\"tag\":\"Rgb\",\"fields\":[" + __field0.to_string() + "," + __field1.to_string() + "," + __field2.to_string() + "]}",
+    }
   }
 }
 
 fn main() -> unit {
-    let p = Point {
-        x: 10,
-        y: 20
-    } in
-    let person = Person {
-        name: "Alice",
-        age: 30,
-        active: true
-    } in
-    let c1 = Color::Red in
-    let c2 = Color::Rgb(255, 128, 0) in
-    let _ = string_println(p.to_json()) in
-    let _ = string_println(person.to_json()) in
-    let _ = string_println(c1.to_json()) in
-    let _ = string_println(c2.to_json()) in
-    ()
+  let p = Point {
+      x: 10,
+      y: 20
+  };
+  let person = Person {
+      name: "Alice",
+      age: 30,
+      active: true
+  };
+  let c1 = Color::Red;
+  let c2 = Color::Rgb(255, 128, 0);
+  string_println(p.to_json());
+  string_println(person.to_json());
+  string_println(c1.to_json());
+  string_println(c2.to_json());
+  ();
 }
 

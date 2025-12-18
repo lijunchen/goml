@@ -7,11 +7,11 @@ enum Color {
 
 impl Color {
   fn to_string(self: Color) -> string {
-      match self {
-          Color::Red => "Color::Red",
-          Color::Green => "Color::Green",
-          Color::Blue => "Color::Blue",
-      }
+    match self {
+        Color::Red => "Color::Red",
+        Color::Green => "Color::Green",
+        Color::Blue => "Color::Blue",
+    }
   }
 }
 
@@ -24,18 +24,18 @@ struct Point {
 
 impl Point {
   fn to_string(self: Point) -> string {
-      let Point { x: x, y: y, color: color } = self in
-      "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + ", " + "color: " + color.to_string() + " }"
+    let Point { x: x, y: y, color: color } = self;
+    "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + ", " + "color: " + color.to_string() + " }";
   }
 }
 
 impl Point {
   fn new(x: int32, y: int32, color: Color) -> Point {
-      Point {
-          x: x,
-          y: y,
-          color: color
-      }
+    Point {
+        x: x,
+        y: y,
+        color: color
+    };
   }
 }
 
@@ -48,18 +48,18 @@ struct Line {
 
 impl Line {
   fn to_string(self: Line) -> string {
-      let Line { from: from, to: to, color: color } = self in
-      "Line { " + "from: " + from.to_string() + ", " + "to: " + to.to_string() + ", " + "color: " + color.to_string() + " }"
+    let Line { from: from, to: to, color: color } = self;
+    "Line { " + "from: " + from.to_string() + ", " + "to: " + to.to_string() + ", " + "color: " + color.to_string() + " }";
   }
 }
 
 impl Line {
   fn new(from: Point, to: Point, color: Color) -> Line {
-      Line {
-          from: from,
-          to: to,
-          color: color
-      }
+    Line {
+        from: from,
+        to: to,
+        color: color
+    };
   }
 }
 
@@ -71,19 +71,19 @@ enum LineList {
 
 impl LineList {
   fn to_string(self: LineList) -> string {
-      match self {
-          LineList::Nil => "LineList::Nil",
-          LineList::Cons(__field0, __field1) => "LineList::Cons(" + __field0.to_string() + ", " + __field1.to_string() + ")",
-      }
+    match self {
+        LineList::Nil => "LineList::Nil",
+        LineList::Cons(__field0, __field1) => "LineList::Cons(" + __field0.to_string() + ", " + __field1.to_string() + ")",
+    }
   }
 }
 
 fn main() {
-    let from = Point::new(10, 20, Color::Red) in
-    let to = Point::new(30, 40, Color::Green) in
-    let line = Line::new(from, to, Color::Blue) in
-    let lines = LineList::Cons(line, LineList::Nil) in
-    let _ = string_println(lines.to_string()) in
-    ()
+  let from = Point::new(10, 20, Color::Red);
+  let to = Point::new(30, 40, Color::Green);
+  let line = Line::new(from, to, Color::Blue);
+  let lines = LineList::Cons(line, LineList::Nil);
+  string_println(lines.to_string());
+  ();
 }
 

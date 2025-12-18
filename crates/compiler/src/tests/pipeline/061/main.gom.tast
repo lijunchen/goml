@@ -10,27 +10,27 @@ impl Color{
 
 impl Point{
   fn to_string(self/1: Point) -> string {
-    let Point { x: x/2: int32, y: y/3: int32, color: color/4: Color } = (self/1 : Point) in
-    "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/2 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/3 : int32)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/4 : Color)) + " }"
+      let Point { x: x/2: int32, y: y/3: int32, color: color/4: Color } = (self/1 : Point);
+      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/2 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/3 : int32)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/4 : Color)) + " }";
   }
 }
 
 impl Point{
   fn new(x/5: int32, y/6: int32, color/7: Color) -> Point {
-    Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) }
+      Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) };
   }
 }
 
 impl Line{
   fn to_string(self/8: Line) -> string {
-    let Line { from: from/9: Point, to: to/10: Point, color: color/11: Color } = (self/8 : Line) in
-    "Line { " + "from: " + (Point::to_string : (Point) -> string)((from/9 : Point)) + ", " + "to: " + (Point::to_string : (Point) -> string)((to/10 : Point)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/11 : Color)) + " }"
+      let Line { from: from/9: Point, to: to/10: Point, color: color/11: Color } = (self/8 : Line);
+      "Line { " + "from: " + (Point::to_string : (Point) -> string)((from/9 : Point)) + ", " + "to: " + (Point::to_string : (Point) -> string)((to/10 : Point)) + ", " + "color: " + (Color::to_string : (Color) -> string)((color/11 : Color)) + " }";
   }
 }
 
 impl Line{
   fn new(from/12: Point, to/13: Point, color/14: Color) -> Line {
-    Line { from: (from/12 : Point), to: (to/13 : Point), color: (color/14 : Color) }
+      Line { from: (from/12 : Point), to: (to/13 : Point), color: (color/14 : Color) };
   }
 }
 
@@ -44,10 +44,10 @@ impl LineList{
 }
 
 fn main() -> unit {
-  let from/18: Point = (Point::new : (int32, int32, Color) -> Point)(10, 20, Color::Red) in
-  let to/19: Point = (Point::new : (int32, int32, Color) -> Point)(30, 40, Color::Green) in
-  let line/20: Line = (Line::new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue) in
-  let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil) in
-  let _ : unit = (string_println : (string) -> unit)((LineList::to_string : (LineList) -> string)((lines/21 : LineList))) in
-  ()
+    let from/18: Point = (Point::new : (int32, int32, Color) -> Point)(10, 20, Color::Red);
+    let to/19: Point = (Point::new : (int32, int32, Color) -> Point)(30, 40, Color::Green);
+    let line/20: Line = (Line::new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue);
+    let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil);
+    (string_println : (string) -> unit)((LineList::to_string : (LineList) -> string)((lines/21 : LineList)));
+    ();
 }

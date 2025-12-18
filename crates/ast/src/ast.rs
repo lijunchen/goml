@@ -340,7 +340,6 @@ pub enum Expr {
         pat: Pat,
         annotation: Option<TypeExpr>,
         value: Box<Expr>,
-        body: Box<Expr>,
     },
     EClosure {
         params: Vec<ClosureParam>,
@@ -384,6 +383,9 @@ pub enum Expr {
         expr: Box<Expr>,
         field: Ident,
         astptr: MySyntaxNodePtr,
+    },
+    EBlock {
+        exprs: Vec<Expr>,
     },
 }
 

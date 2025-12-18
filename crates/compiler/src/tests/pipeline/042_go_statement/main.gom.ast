@@ -1,14 +1,18 @@
 fn child(signal: Ref[int32]) -> unit {
-    ref_set(signal, 1)
+  ref_set(signal, 1);
 }
 
 fn main() -> unit {
-    let signal = ref(0) in
-    let _ = go || child(signal) in
-    let _ = while ref_get(signal) < 1 {
-        ()
-    } in
-    let _ = string_println("main") in
-    ()
+  let signal = ref(0);
+  go || {
+      child(signal);
+  };
+  while ref_get(signal) < 1 {
+      {
+          ();
+      }
+  };
+  string_println("main");
+  ();
 }
 

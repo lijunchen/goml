@@ -1,42 +1,42 @@
-struct Point { x: int32, y: int32 } /*item#0*/
+struct Point { x: int32, y: int32 } ITEM0
 
 impl Point {
-  fn item_26(local_0: Point) -> string {
-    let Point { x: local_1 /*#0*/, y: local_2 /*#1*/ } /*#2*/ = local_0 /*#0*/ in
-    "{" /*#1*/ + "\"x\":" /*#2*/ /*#3*/ + local_1 /*#4*/.to_string /*#5*/() /*#6*/ /*#7*/ + "," /*#8*/ /*#9*/ + "\"y\":" /*#10*/ /*#11*/ + local_2 /*#12*/.to_string /*#13*/() /*#14*/ /*#15*/ + "}" /*#16*/ /*#17*/ /*#18*/
-  } /*item#1*/
-} /*item#2*/
+  fn item_26(#0: Point) -> string {
+    let Point { x: #1 ρ0, y: #2 ρ1 } ρ2 = #0 ϵ0 ϵ1;
+    "{" ϵ2 + "\"x\":" ϵ3 ϵ4 + #1 ϵ5.to_string ϵ6() ϵ7 ϵ8 + "," ϵ9 ϵ10 + "\"y\":" ϵ11 ϵ12 + #2 ϵ13.to_string ϵ14() ϵ15 ϵ16 + "}" ϵ17 ϵ18
+  } ITEM1
+} ITEM2
 
-struct Person { name: string, age: int32, active: bool } /*item#3*/
+struct Person { name: string, age: int32, active: bool } ITEM3
 
 impl Person {
-  fn item_27(local_0: Person) -> string {
-    let Person { name: local_1 /*#3*/, age: local_2 /*#4*/, active: local_3 /*#5*/ } /*#6*/ = local_0 /*#19*/ in
-    "{" /*#20*/ + "\"name\":" /*#21*/ /*#22*/ + json_escape_string /*#23*/(local_1 /*#24*/) /*#25*/ /*#26*/ + "," /*#27*/ /*#28*/ + "\"age\":" /*#29*/ /*#30*/ + local_2 /*#31*/.to_string /*#32*/() /*#33*/ /*#34*/ + "," /*#35*/ /*#36*/ + "\"active\":" /*#37*/ /*#38*/ + bool_to_json /*#39*/(local_3 /*#40*/) /*#41*/ /*#42*/ + "}" /*#43*/ /*#44*/ /*#45*/
-  } /*item#4*/
-} /*item#5*/
+  fn item_27(#0: Person) -> string {
+    let Person { name: #1 ρ3, age: #2 ρ4, active: #3 ρ5 } ρ6 = #0 ϵ20 ϵ21;
+    "{" ϵ22 + "\"name\":" ϵ23 ϵ24 + json_escape_string ϵ25(#1 ϵ26) ϵ27 ϵ28 + "," ϵ29 ϵ30 + "\"age\":" ϵ31 ϵ32 + #2 ϵ33.to_string ϵ34() ϵ35 ϵ36 + "," ϵ37 ϵ38 + "\"active\":" ϵ39 ϵ40 + bool_to_json ϵ41(#3 ϵ42) ϵ43 ϵ44 + "}" ϵ45 ϵ46
+  } ITEM4
+} ITEM5
 
-enum Color { Red, Green, Blue, Rgb(int32, int32, int32) } /*item#6*/
+enum Color { Red, Green, Blue, Rgb(int32, int32, int32) } ITEM6
 
 impl Color {
-  fn item_28(local_0: Color) -> string {
-    match local_0 /*#46*/ {
-      Color::Red /*#7*/ => "{\"tag\":\"Red\"}" /*#47*/,
-      Color::Green /*#8*/ => "{\"tag\":\"Green\"}" /*#48*/,
-      Color::Blue /*#9*/ => "{\"tag\":\"Blue\"}" /*#49*/,
-      Color::Rgb(local_1 /*#10*/, local_2 /*#11*/, local_3 /*#12*/) /*#13*/ => "{\"tag\":\"Rgb\",\"fields\":[" /*#50*/ + local_1 /*#51*/.to_string /*#52*/() /*#53*/ /*#54*/ + "," /*#55*/ /*#56*/ + local_2 /*#57*/.to_string /*#58*/() /*#59*/ /*#60*/ + "," /*#61*/ /*#62*/ + local_3 /*#63*/.to_string /*#64*/() /*#65*/ /*#66*/ + "]}" /*#67*/ /*#68*/,
-    } /*#69*/
-  } /*item#7*/
-} /*item#8*/
+  fn item_28(#0: Color) -> string {
+    match #0 ϵ48 {
+      Color::Red ρ7 => "{\"tag\":\"Red\"}" ϵ49,
+      Color::Green ρ8 => "{\"tag\":\"Green\"}" ϵ50,
+      Color::Blue ρ9 => "{\"tag\":\"Blue\"}" ϵ51,
+      Color::Rgb(#1 ρ10, #2 ρ11, #3 ρ12) ρ13 => "{\"tag\":\"Rgb\",\"fields\":[" ϵ52 + #1 ϵ53.to_string ϵ54() ϵ55 ϵ56 + "," ϵ57 ϵ58 + #2 ϵ59.to_string ϵ60() ϵ61 ϵ62 + "," ϵ63 ϵ64 + #3 ϵ65.to_string ϵ66() ϵ67 ϵ68 + "]}" ϵ69 ϵ70,
+    }
+  } ITEM7
+} ITEM8
 
 fn main() -> () {
-  let local_0 /*#14*/ = Point { x: 10 /*#70*/, y: 20 /*#71*/ } /*#72*/ in
-  let local_1 /*#15*/ = Person { name: "Alice" /*#73*/, age: 30 /*#74*/, active: true /*#75*/ } /*#76*/ in
-  let local_2 /*#16*/ = Color::Red /*#77*/ in
-  let local_3 /*#17*/ = Color::Rgb(255 /*#78*/, 128 /*#79*/, 0 /*#80*/) /*#81*/ in
-  let _ /*#18*/ = string_println /*#82*/(local_0 /*#83*/.to_json /*#84*/() /*#85*/) /*#86*/ in
-  let _ /*#19*/ = string_println /*#87*/(local_1 /*#88*/.to_json /*#89*/() /*#90*/) /*#91*/ in
-  let _ /*#20*/ = string_println /*#92*/(local_2 /*#93*/.to_json /*#94*/() /*#95*/) /*#96*/ in
-  let _ /*#21*/ = string_println /*#97*/(local_3 /*#98*/.to_json /*#99*/() /*#100*/) /*#101*/ in
-  () /*#102*/ /*#103*/ /*#104*/ /*#105*/ /*#106*/ /*#107*/ /*#108*/ /*#109*/ /*#110*/
-} /*item#9*/
+  let #0 ρ14 = Point { x: 10 ϵ72, y: 20 ϵ73 } ϵ74 ϵ75;
+  let #1 ρ15 = Person { name: "Alice" ϵ76, age: 30 ϵ77, active: true ϵ78 } ϵ79 ϵ80;
+  let #2 ρ16 = Color::Red ϵ81 ϵ82;
+  let #3 ρ17 = Color::Rgb(255 ϵ83, 128 ϵ84, 0 ϵ85) ϵ86 ϵ87;
+  string_println ϵ88(#0 ϵ89.to_json ϵ90() ϵ91) ϵ92;
+  string_println ϵ93(#1 ϵ94.to_json ϵ95() ϵ96) ϵ97;
+  string_println ϵ98(#2 ϵ99.to_json ϵ100() ϵ101) ϵ102;
+  string_println ϵ103(#3 ϵ104.to_json ϵ105() ϵ106) ϵ107;
+  () ϵ108
+} ITEM9

@@ -1,57 +1,57 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((cell/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((cell/0 : Ref[int32])) + 1) in
-  (ref_get : (Ref[int32]) -> int32)((cell/0 : Ref[int32]))
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((cell/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((cell/0 : Ref[int32])) + 1);
+    (ref_get : (Ref[int32]) -> int32)((cell/0 : Ref[int32]));
 }
 
 fn flip(flag/1: Ref[bool]) -> bool {
-  let current/2: bool = (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool])) in
-  let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((flag/1 : Ref[bool]), !(current/2 : bool)) in
-  (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool]))
+    let current/2: bool = (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool]));
+    let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((flag/1 : Ref[bool]), !(current/2 : bool));
+    (ref_get : (Ref[bool]) -> bool)((flag/1 : Ref[bool]));
 }
 
 fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
-  let inner/4: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((cell/3 : Ref[Ref[int32]])) in
-  let before/5: int32 = (ref_get : (Ref[int32]) -> int32)((inner/4 : Ref[int32])) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/4 : Ref[int32]), (before/5 : int32) + 2) in
-  (before/5 : int32) + (ref_get : (Ref[int32]) -> int32)((inner/4 : Ref[int32]))
+    let inner/4: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((cell/3 : Ref[Ref[int32]]));
+    let before/5: int32 = (ref_get : (Ref[int32]) -> int32)((inner/4 : Ref[int32]));
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/4 : Ref[int32]), (before/5 : int32) + 2);
+    (before/5 : int32) + (ref_get : (Ref[int32]) -> int32)((inner/4 : Ref[int32]));
 }
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
-  let alias/7: Ref[int32] = (cell/6 : Ref[int32]) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((alias/7 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((alias/7 : Ref[int32])) + 5) in
-  (ref_get : (Ref[int32]) -> int32)((alias/7 : Ref[int32]))
+    let alias/7: Ref[int32] = (cell/6 : Ref[int32]);
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((alias/7 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((alias/7 : Ref[int32])) + 5);
+    (ref_get : (Ref[int32]) -> int32)((alias/7 : Ref[int32]));
 }
 
 fn pair_sum() -> int32 {
-  let first/8: Ref[int32] = (ref : (int32) -> Ref[int32])(4) in
-  let second/9: Ref[int32] = (ref : (int32) -> Ref[int32])(6) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((first/8 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((first/8 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((second/9 : Ref[int32]))) in
-  (ref_get : (Ref[int32]) -> int32)((first/8 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((second/9 : Ref[int32]))
+    let first/8: Ref[int32] = (ref : (int32) -> Ref[int32])(4);
+    let second/9: Ref[int32] = (ref : (int32) -> Ref[int32])(6);
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((first/8 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((first/8 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((second/9 : Ref[int32])));
+    (ref_get : (Ref[int32]) -> int32)((first/8 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((second/9 : Ref[int32]));
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
-  let inner/11: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((nested/10 : Ref[Ref[int32]])) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/11 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((inner/11 : Ref[int32])) + 7) in
-  (ref_get : (Ref[int32]) -> int32)((inner/11 : Ref[int32]))
+    let inner/11: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((nested/10 : Ref[Ref[int32]]));
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/11 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((inner/11 : Ref[int32])) + 7);
+    (ref_get : (Ref[int32]) -> int32)((inner/11 : Ref[int32]));
 }
 
 fn main() -> unit {
-  let counter/12: Ref[int32] = (ref : (int32) -> Ref[int32])(39) in
-  let toggler/13: Ref[bool] = (ref : (bool) -> Ref[bool])(false) in
-  let nested/14: Ref[Ref[int32]] = (ref : (Ref[int32]) -> Ref[Ref[int32]])((ref : (int32) -> Ref[int32])(3)) in
-  let bumped/15: int32 = (bump : (Ref[int32]) -> int32)((counter/12 : Ref[int32])) in
-  let flipped/16: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool])) in
-  let flipped_again/17: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool])) in
-  let inner/18: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((nested/14 : Ref[Ref[int32]])) in
-  let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/18 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((inner/18 : Ref[int32])) + (bumped/15 : int32)) in
-  let nested_total_val/19: int32 = (nested_total : (Ref[Ref[int32]]) -> int32)((nested/14 : Ref[Ref[int32]])) in
-  let alias_total/20: int32 = (alias_bump : (Ref[int32]) -> int32)((counter/12 : Ref[int32])) in
-  let pair_total/21: int32 = (pair_sum : () -> int32)() in
-  let reassigned/22: int32 = (reassign_nested : (Ref[Ref[int32]]) -> int32)((nested/14 : Ref[Ref[int32]])) in
-  let bool_check/23: bool = !false in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((bumped/15 : int32) + (ref_get : (Ref[int32]) -> int32)((counter/12 : Ref[int32])))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((nested_total_val/19 : int32) + (alias_total/20 : int32) + (reassigned/22 : int32))) in
-  let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((pair_total/21 : int32))) in
-  let _ : unit = (string_println : (string) -> unit)((bool_to_string : (bool) -> string)((flipped/16 : bool) && (flipped_again/17 : bool) && (bool_check/23 : bool))) in
-  ()
+    let counter/12: Ref[int32] = (ref : (int32) -> Ref[int32])(39);
+    let toggler/13: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
+    let nested/14: Ref[Ref[int32]] = (ref : (Ref[int32]) -> Ref[Ref[int32]])((ref : (int32) -> Ref[int32])(3));
+    let bumped/15: int32 = (bump : (Ref[int32]) -> int32)((counter/12 : Ref[int32]));
+    let flipped/16: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool]));
+    let flipped_again/17: bool = (flip : (Ref[bool]) -> bool)((toggler/13 : Ref[bool]));
+    let inner/18: Ref[int32] = (ref_get : (Ref[Ref[int32]]) -> Ref[int32])((nested/14 : Ref[Ref[int32]]));
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((inner/18 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((inner/18 : Ref[int32])) + (bumped/15 : int32));
+    let nested_total_val/19: int32 = (nested_total : (Ref[Ref[int32]]) -> int32)((nested/14 : Ref[Ref[int32]]));
+    let alias_total/20: int32 = (alias_bump : (Ref[int32]) -> int32)((counter/12 : Ref[int32]));
+    let pair_total/21: int32 = (pair_sum : () -> int32)();
+    let reassigned/22: int32 = (reassign_nested : (Ref[Ref[int32]]) -> int32)((nested/14 : Ref[Ref[int32]]));
+    let bool_check/23: bool = !false;
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((bumped/15 : int32) + (ref_get : (Ref[int32]) -> int32)((counter/12 : Ref[int32]))));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((nested_total_val/19 : int32) + (alias_total/20 : int32) + (reassigned/22 : int32)));
+    let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((pair_total/21 : int32)));
+    let _ : unit = (string_println : (string) -> unit)((bool_to_string : (bool) -> string)((flipped/16 : bool) && (flipped_again/17 : bool) && (bool_check/23 : bool)));
+    ();
 }

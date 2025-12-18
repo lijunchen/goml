@@ -198,7 +198,6 @@ impl Expr {
                 pat,
                 annotation,
                 value,
-                body,
             } => {
                 let base_pat_doc = pat.to_doc();
                 let pat_doc = if let Some(ty) = annotation {
@@ -214,10 +213,6 @@ impl Expr {
                     .append(RcDoc::text("="))
                     .append(RcDoc::space())
                     .append(value.to_doc())
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("in"))
-                    .append(RcDoc::hardline())
-                    .append(body.to_doc())
                     .group()
             }
 
@@ -323,6 +318,22 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
+            Self::EBlock { exprs } => {
+                if exprs.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
+                        RcDoc::hardline()
+                            .append(e.to_doc())
+                            .append(RcDoc::text(";"))
+                    }));
+                    RcDoc::text("{")
+                        .append(exprs_doc.nest(4))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                        .group()
+                }
+            }
         }
     }
 
@@ -644,10 +655,28 @@ impl Fn {
                 .append(RcDoc::text(")"))
                 .append(ret_ty_doc)
                 .append(RcDoc::space())
-                .append(RcDoc::text("{"))
-                .append(RcDoc::hardline().append(self.body.to_doc()).nest(4))
-                .append(RcDoc::hardline())
-                .append(RcDoc::text("}")),
+                .append(match &self.body {
+                    Expr::EBlock { exprs } => {
+                        if exprs.is_empty() {
+                            RcDoc::text("{}")
+                        } else {
+                            let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
+                                RcDoc::hardline()
+                                    .append(e.to_doc())
+                                    .append(RcDoc::text(";"))
+                            }));
+                            RcDoc::text("{")
+                                .append(exprs_doc.nest(2))
+                                .append(RcDoc::hardline())
+                                .append(RcDoc::text("}"))
+                                .group()
+                        }
+                    }
+                    _ => RcDoc::text("{")
+                        .append(RcDoc::hardline().append(self.body.to_doc()).nest(2))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}")),
+                }),
         )
     }
 

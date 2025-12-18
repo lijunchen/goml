@@ -878,22 +878,23 @@ impl Typer {
                     captures,
                 }
             }
-            tast::Expr::ELet {
-                pat,
-                value,
-                body,
-                ty,
-            } => {
+            tast::Expr::ELet { pat, value, ty } => {
                 let ty = self.subst_ty(diagnostics, &ty);
                 let pat = self.subst_pat(diagnostics, pat);
                 let value = Box::new(self.subst(diagnostics, *value));
-                let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::ELet {
                     pat,
                     value,
-                    body,
                     ty: ty.clone(),
                 }
+            }
+            tast::Expr::EBlock { exprs, ty } => {
+                let ty = self.subst_ty(diagnostics, &ty);
+                let exprs = exprs
+                    .into_iter()
+                    .map(|e| self.subst(diagnostics, e))
+                    .collect();
+                tast::Expr::EBlock { exprs, ty }
             }
             tast::Expr::EMatch {
                 expr,
