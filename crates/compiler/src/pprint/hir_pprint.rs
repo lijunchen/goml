@@ -106,7 +106,7 @@ impl<'a> HirPrintCtx<'a> {
         self.local_names
             .get(&id)
             .cloned()
-            .unwrap_or_else(|| format!("local_{}", id.0))
+            .unwrap_or_else(|| format!("#{}", id.0))
     }
 
     pub fn get_generic_name(&self, id: GenericParamId) -> String {
@@ -167,10 +167,7 @@ impl HirItem {
 
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirItemId) -> RcDoc<'a, ()> {
         let base_doc = self.to_doc(ctx);
-        base_doc.append(RcDoc::text(format!(
-            " /*item#{}*/",
-            id.into_raw().into_u32()
-        )))
+        base_doc.append(RcDoc::text(format!(" ITEM{}", id.into_raw().into_u32())))
     }
 }
 
@@ -605,7 +602,7 @@ impl HirExpr {
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirExprId) -> RcDoc<'a, ()> {
         self.kind
             .to_doc(ctx)
-            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
+            .append(RcDoc::text(format!(" ϵ{}", id.into_raw().into_u32())))
     }
 }
 
@@ -919,7 +916,7 @@ impl HirPat {
     pub fn to_doc_with_id<'a>(&self, ctx: &HirPrintCtx<'a>, id: HirPatId) -> RcDoc<'a, ()> {
         self.kind
             .to_doc(ctx)
-            .append(RcDoc::text(format!(" /*#{}*/", id.into_raw().into_u32())))
+            .append(RcDoc::text(format!(" ρ{}", id.into_raw().into_u32())))
     }
 }
 
