@@ -320,7 +320,7 @@ impl LowerCtx {
         self.symbols.locals.exit_scope();
 
         let hir_fn = HirFn {
-            name: item_id,
+            fn_id: item_id,
             generics: fn_generics,
             params,
             ret_ty,
@@ -523,7 +523,7 @@ impl LowerCtx {
                 }
             };
 
-            let hir_impl = HirImpl {
+            let hir_impl = HirImplTrait {
                 impl_id,
                 trait_id,
                 for_type,
@@ -532,7 +532,7 @@ impl LowerCtx {
                 astptr: None,
             };
 
-            Some(self.push_item(HirItem::Impl(hir_impl)))
+            Some(self.push_item(HirItem::ImplTrait(hir_impl)))
         } else {
             let hir_impl = HirImplInherent {
                 impl_id,
@@ -1383,6 +1383,11 @@ impl LowerCtx {
                             .collect();
                         return Some(self.push_pat(HirPatKind::Enum { ctor_id, args }, astptr));
                     }
+                    diagnostics.push(Diagnostic::new(
+                        self.stage.clone(),
+                        Severity::Error,
+                        "ambiguous constructor patterns not supported yet",
+                    ));
                     return Some(
                         self.push_pat(HirPatKind::UnresolvedVariant(name.clone()), astptr),
                     );

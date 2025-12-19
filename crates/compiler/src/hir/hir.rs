@@ -76,7 +76,7 @@ pub enum HirItem {
     Struct(HirStruct),
     Enum(HirEnum),
     Trait(HirTrait),
-    Impl(HirImpl),
+    ImplTrait(HirImplTrait),
     ImplInherent(HirImplInherent),
     ExternGo(HirExternGo),
     ExternType(HirExternType),
@@ -85,7 +85,7 @@ pub enum HirItem {
 
 #[derive(Debug, Clone)]
 pub struct HirFn {
-    pub name: ItemId,
+    pub fn_id: ItemId,
     pub generics: Vec<GenericParamId>,
     pub params: Vec<(LocalId, HirTypeId)>,
     pub ret_ty: HirTypeId,
@@ -132,7 +132,7 @@ pub struct HirTraitMethodSig {
 }
 
 #[derive(Debug, Clone)]
-pub struct HirImpl {
+pub struct HirImplTrait {
     pub impl_id: ImplId,
     pub trait_id: TraitId,
     pub for_type: HirTypeId,

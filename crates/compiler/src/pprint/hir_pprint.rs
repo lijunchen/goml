@@ -157,7 +157,7 @@ impl HirItem {
             HirItem::Struct(s) => s.to_doc(ctx),
             HirItem::Enum(e) => e.to_doc(ctx),
             HirItem::Trait(t) => t.to_doc(ctx),
-            HirItem::Impl(i) => i.to_doc(ctx),
+            HirItem::ImplTrait(i) => i.to_doc(ctx),
             HirItem::ImplInherent(i) => i.to_doc(ctx),
             HirItem::ExternGo(e) => e.to_doc(ctx),
             HirItem::ExternType(e) => e.to_doc(ctx),
@@ -173,7 +173,7 @@ impl HirItem {
 
 impl HirFn {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
-        let name = ctx.get_item_name(self.name);
+        let name = ctx.get_item_name(self.fn_id);
 
         let generics = if self.generics.is_empty() {
             RcDoc::nil()
@@ -364,7 +364,7 @@ impl HirTraitMethodSig {
     }
 }
 
-impl HirImpl {
+impl HirImplTrait {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let trait_name = ctx.get_trait_name(self.trait_id);
         let for_type = ctx.tables.types[self.for_type].to_doc(ctx);
