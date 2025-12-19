@@ -4,7 +4,7 @@ use ast::ast;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
-use super::hir::*;
+use super::ir::*;
 use super::symbol_table::{GenericTable, SymbolTable};
 
 #[derive(Debug, Default, Clone)]
@@ -496,10 +496,7 @@ impl LowerCtx {
 
         let (impl_generics, generics_table) = self.extend_generics(None, &block.generics);
 
-        let for_type = match self.lower_type_expr(&block.for_type, &generics_table, diagnostics) {
-            Some(id) => id,
-            None => return None,
-        };
+        let for_type = self.lower_type_expr(&block.for_type, &generics_table, diagnostics)?;
 
         let mut method_ids = Vec::new();
         for method in block.methods {
@@ -1032,10 +1029,10 @@ impl LowerCtx {
         }
 
         // Struct constructor fallback using positional fields.
-        if let Some(type_id) = self.symbols.globals.types.get(name) {
-            if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                return self.lower_struct_ctor(*type_id, args, astptr, generics, diagnostics);
-            }
+        if let Some(type_id) = self.symbols.globals.types.get(name)
+            && self.type_kinds.get(type_id) == Some(&TypeKind::Struct)
+        {
+            return self.lower_struct_ctor(*type_id, args, astptr, generics, diagnostics);
         }
 
         diagnostics.push(Diagnostic::new(
@@ -1232,22 +1229,21 @@ impl LowerCtx {
                 let ty_name = &segments[0].0;
                 let method_or_variant = &segments[1].0;
 
-                if let Some(type_id) = self.symbols.globals.types.get(ty_name) {
-                    if self
+                if let Some(type_id) = self.symbols.globals.types.get(ty_name)
+                    && self
                         .symbols
                         .globals
                         .ctors
                         .contains_key(&(*type_id, method_or_variant.clone()))
-                    {
-                        return self.lower_qualified_constructor(
-                            ty_name,
-                            method_or_variant,
-                            &[],
-                            astptr,
-                            generics,
-                            diagnostics,
-                        );
-                    }
+                {
+                    return self.lower_qualified_constructor(
+                        ty_name,
+                        method_or_variant,
+                        &[],
+                        astptr,
+                        generics,
+                        diagnostics,
+                    );
                 }
 
                 let full_name = format!("{}::{}", ty_name, method_or_variant);
@@ -1275,7 +1271,7 @@ impl LowerCtx {
     fn lower_pat(
         &mut self,
         pat: &ast::Pat,
-        generics: &GenericTable,
+        _generics: &GenericTable,
         diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         match pat {
@@ -1329,7 +1325,7 @@ impl LowerCtx {
                             continue;
                         }
                     };
-                    let pat_id = match self.lower_pat(pat, generics, diagnostics) {
+                    let pat_id = match self.lower_pat(pat, _generics, diagnostics) {
                         Some(id) => id,
                         None => continue,
                     };
@@ -1347,7 +1343,7 @@ impl LowerCtx {
             ast::Pat::PTuple { pats } => {
                 let items = pats
                     .iter()
-                    .filter_map(|p| self.lower_pat(p, generics, diagnostics))
+                    .filter_map(|p| self.lower_pat(p, _generics, diagnostics))
                     .collect();
                 Some(self.push_pat(HirPatKind::Tuple(items), None))
             }
@@ -1394,10 +1390,10 @@ impl LowerCtx {
                 }
 
                 // Struct positional pattern
-                if let Some(type_id) = self.symbols.globals.types.get(name) {
-                    if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                        return self.lower_struct_pat(*type_id, args, astptr, diagnostics);
-                    }
+                if let Some(type_id) = self.symbols.globals.types.get(name)
+                    && self.type_kinds.get(type_id) == Some(&TypeKind::Struct)
+                {
+                    return self.lower_struct_pat(*type_id, args, astptr, diagnostics);
                 }
 
                 diagnostics.push(Diagnostic::new(
@@ -1581,16 +1577,16 @@ impl LowerCtx {
                 None
             }
             ast::TypeExpr::TApp { ty, args } => {
-                if let ast::TypeExpr::TCon { name } = ty.as_ref() {
-                    if let Some(type_id) = self.symbols.globals.types.get(name).copied() {
-                        let mut args_ids = Vec::new();
-                        for a in args {
-                            if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
-                                args_ids.push(id);
-                            }
+                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+                    && let Some(type_id) = self.symbols.globals.types.get(name).copied()
+                {
+                    let mut args_ids = Vec::new();
+                    for a in args {
+                        if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
+                            args_ids.push(id);
                         }
-                        return Some(self.push_type(HirType::Named(type_id, args_ids)));
                     }
+                    return Some(self.push_type(HirType::Named(type_id, args_ids)));
                 }
 
                 let base = self.lower_type_expr(ty, generics, diagnostics)?;

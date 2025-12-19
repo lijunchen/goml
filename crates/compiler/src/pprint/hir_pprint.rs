@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use pretty::RcDoc;
 
 use crate::hir::{
-    hir::*,
+    ir::*,
     lower::{HirLowerResult, HirTables},
     symbol_table::SymbolTable,
 };

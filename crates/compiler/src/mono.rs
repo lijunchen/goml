@@ -503,14 +503,13 @@ impl Ctx {
 
         // Build index for generic inherent methods
         for (fname, f) in orig_fns.iter() {
-            if !f.generics.is_empty() && fname.starts_with("impl_inherent_") {
-                if let Some((base_type, method_name)) = parse_inherent_method_name(fname) {
+            if !f.generics.is_empty() && fname.starts_with("impl_inherent_")
+                && let Some((base_type, method_name)) = parse_inherent_method_name(fname) {
                     inherent_method_index.insert(
                         (base_type.to_string(), method_name.to_string()),
                         fname.clone(),
                     );
                 }
-            }
         }
 
         Self {
