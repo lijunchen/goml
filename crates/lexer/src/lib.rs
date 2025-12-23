@@ -324,8 +324,40 @@ pub enum TokenKind {
     #[regex("[A-Za-z][A-Za-z_0-9]*")]
     Ident,
 
+    // Suffixed float literals (higher priority than generic Float)
+    #[regex(r"[0-9]+\.[0-9]+f32", priority = 3)]
+    Float32Lit,
+
+    #[regex(r"[0-9]+\.[0-9]+f64", priority = 3)]
+    Float64Lit,
+
     #[regex(r"[0-9]+\.[0-9]+", priority = 2)]
     Float,
+
+    // Suffixed integer literals (higher priority than generic Int)
+    #[regex(r"[0-9]+i8", priority = 3)]
+    Int8Lit,
+
+    #[regex(r"[0-9]+i16", priority = 3)]
+    Int16Lit,
+
+    #[regex(r"[0-9]+i32", priority = 3)]
+    Int32Lit,
+
+    #[regex(r"[0-9]+i64", priority = 3)]
+    Int64Lit,
+
+    #[regex(r"[0-9]+u8", priority = 3)]
+    UInt8Lit,
+
+    #[regex(r"[0-9]+u16", priority = 3)]
+    UInt16Lit,
+
+    #[regex(r"[0-9]+u32", priority = 3)]
+    UInt32Lit,
+
+    #[regex(r"[0-9]+u64", priority = 3)]
+    UInt64Lit,
 
     #[regex("[0-9]+")]
     Int,
@@ -418,7 +450,17 @@ impl std::fmt::Display for TokenKind {
             Self::ArrayKeyword => "array",
             Self::Ident => "ident",
             Self::Float => "float",
+            Self::Float32Lit => "float32_lit",
+            Self::Float64Lit => "float64_lit",
             Self::Int => "int",
+            Self::Int8Lit => "int8_lit",
+            Self::Int16Lit => "int16_lit",
+            Self::Int32Lit => "int32_lit",
+            Self::Int64Lit => "int64_lit",
+            Self::UInt8Lit => "uint8_lit",
+            Self::UInt16Lit => "uint16_lit",
+            Self::UInt32Lit => "uint32_lit",
+            Self::UInt64Lit => "uint64_lit",
             Self::Str => "str",
             Self::MultilineStr => "multiline_str",
             Self::Whitespace => "whitespace",
@@ -495,7 +537,17 @@ macro_rules! T {
     [array] => { $crate::TokenKind::ArrayKeyword };
     [ident] => { $crate::TokenKind::Ident };
     [float] => { $crate::TokenKind::Float };
+    [float32_lit] => { $crate::TokenKind::Float32Lit };
+    [float64_lit] => { $crate::TokenKind::Float64Lit };
     [int] => { $crate::TokenKind::Int };
+    [int8_lit] => { $crate::TokenKind::Int8Lit };
+    [int16_lit] => { $crate::TokenKind::Int16Lit };
+    [int32_lit] => { $crate::TokenKind::Int32Lit };
+    [int64_lit] => { $crate::TokenKind::Int64Lit };
+    [uint8_lit] => { $crate::TokenKind::UInt8Lit };
+    [uint16_lit] => { $crate::TokenKind::UInt16Lit };
+    [uint32_lit] => { $crate::TokenKind::UInt32Lit };
+    [uint64_lit] => { $crate::TokenKind::UInt64Lit };
     [str] => { $crate::TokenKind::Str };
     [multiline_str] => { $crate::TokenKind::MultilineStr };
     [whitespace] => { $crate::TokenKind::Whitespace };

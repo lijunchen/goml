@@ -835,6 +835,134 @@ fn lower_expr_with_args(
             }
             Some(ast::Expr::EInt { value })
         }
+        cst::Expr::Int8Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Int8Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EInt8 { value })
+        }
+        cst::Expr::Int16Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Int16Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EInt16 { value })
+        }
+        cst::Expr::Int32Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Int32Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EInt32 { value })
+        }
+        cst::Expr::Int64Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Int64Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EInt64 { value })
+        }
+        cst::Expr::UInt8Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "UInt8Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("u8").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EUInt8 { value })
+        }
+        cst::Expr::UInt16Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "UInt16Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("u16").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EUInt16 { value })
+        }
+        cst::Expr::UInt32Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "UInt32Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("u32").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EUInt32 { value })
+        }
+        cst::Expr::UInt64Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "UInt64Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to integer literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EUInt64 { value })
+        }
         cst::Expr::FloatExpr(it) => {
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "FloatExpr has no value");
@@ -859,6 +987,38 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EFloat { value })
+        }
+        cst::Expr::Float32Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Float32Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("f32").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to float literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EFloat32 { value })
+        }
+        cst::Expr::Float64Expr(it) => {
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "Float64Expr has no value");
+                return None;
+            };
+            let text = token.to_string();
+            let value = text.strip_suffix("f64").unwrap_or(&text).to_string();
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to float literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EFloat64 { value })
         }
         cst::Expr::StrExpr(it) => {
             let Some(token) = it.value() else {
@@ -1667,6 +1827,46 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         cst::Pattern::IntPat(it) => Some(ast::Pat::PInt {
             value: it.value()?.to_string(),
         }),
+        cst::Pattern::Int8Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
+            Some(ast::Pat::PInt8 { value })
+        }
+        cst::Pattern::Int16Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
+            Some(ast::Pat::PInt16 { value })
+        }
+        cst::Pattern::Int32Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
+            Some(ast::Pat::PInt32 { value })
+        }
+        cst::Pattern::Int64Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
+            Some(ast::Pat::PInt64 { value })
+        }
+        cst::Pattern::UInt8Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("u8").unwrap_or(&text).to_string();
+            Some(ast::Pat::PUInt8 { value })
+        }
+        cst::Pattern::UInt16Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("u16").unwrap_or(&text).to_string();
+            Some(ast::Pat::PUInt16 { value })
+        }
+        cst::Pattern::UInt32Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("u32").unwrap_or(&text).to_string();
+            Some(ast::Pat::PUInt32 { value })
+        }
+        cst::Pattern::UInt64Pat(it) => {
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
+            Some(ast::Pat::PUInt64 { value })
+        }
         cst::Pattern::StringPat(it) => {
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "StringPat has no value");

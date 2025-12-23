@@ -658,7 +658,37 @@ impl LowerCtx {
             ast::Expr::EInt { value } => {
                 Some(self.push_expr(HirExprKind::Int(value.clone()), None))
             }
+            ast::Expr::EInt8 { value } => {
+                Some(self.push_expr(HirExprKind::Int8(value.clone()), None))
+            }
+            ast::Expr::EInt16 { value } => {
+                Some(self.push_expr(HirExprKind::Int16(value.clone()), None))
+            }
+            ast::Expr::EInt32 { value } => {
+                Some(self.push_expr(HirExprKind::Int32(value.clone()), None))
+            }
+            ast::Expr::EInt64 { value } => {
+                Some(self.push_expr(HirExprKind::Int64(value.clone()), None))
+            }
+            ast::Expr::EUInt8 { value } => {
+                Some(self.push_expr(HirExprKind::UInt8(value.clone()), None))
+            }
+            ast::Expr::EUInt16 { value } => {
+                Some(self.push_expr(HirExprKind::UInt16(value.clone()), None))
+            }
+            ast::Expr::EUInt32 { value } => {
+                Some(self.push_expr(HirExprKind::UInt32(value.clone()), None))
+            }
+            ast::Expr::EUInt64 { value } => {
+                Some(self.push_expr(HirExprKind::UInt64(value.clone()), None))
+            }
             ast::Expr::EFloat { value } => Some(self.push_expr(HirExprKind::Float(*value), None)),
+            ast::Expr::EFloat32 { value } => {
+                Some(self.push_expr(HirExprKind::Float32(value.clone()), None))
+            }
+            ast::Expr::EFloat64 { value } => {
+                Some(self.push_expr(HirExprKind::Float64(value.clone()), None))
+            }
             ast::Expr::EString { value } => {
                 Some(self.push_expr(HirExprKind::String(value.clone()), None))
             }
@@ -1282,6 +1312,28 @@ impl LowerCtx {
             ast::Pat::PUnit => Some(self.push_pat(HirPatKind::Unit, None)),
             ast::Pat::PBool { value } => Some(self.push_pat(HirPatKind::Bool(*value), None)),
             ast::Pat::PInt { value } => Some(self.push_pat(HirPatKind::Int(value.clone()), None)),
+            ast::Pat::PInt8 { value } => Some(self.push_pat(HirPatKind::Int8(value.clone()), None)),
+            ast::Pat::PInt16 { value } => {
+                Some(self.push_pat(HirPatKind::Int16(value.clone()), None))
+            }
+            ast::Pat::PInt32 { value } => {
+                Some(self.push_pat(HirPatKind::Int32(value.clone()), None))
+            }
+            ast::Pat::PInt64 { value } => {
+                Some(self.push_pat(HirPatKind::Int64(value.clone()), None))
+            }
+            ast::Pat::PUInt8 { value } => {
+                Some(self.push_pat(HirPatKind::UInt8(value.clone()), None))
+            }
+            ast::Pat::PUInt16 { value } => {
+                Some(self.push_pat(HirPatKind::UInt16(value.clone()), None))
+            }
+            ast::Pat::PUInt32 { value } => {
+                Some(self.push_pat(HirPatKind::UInt32(value.clone()), None))
+            }
+            ast::Pat::PUInt64 { value } => {
+                Some(self.push_pat(HirPatKind::UInt64(value.clone()), None))
+            }
             ast::Pat::PString { value } => {
                 Some(self.push_pat(HirPatKind::String(value.clone()), None))
             }

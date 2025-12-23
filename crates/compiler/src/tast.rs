@@ -147,32 +147,6 @@ impl Prim {
         Prim::String { value }
     }
 
-    pub fn from_int_literal(value: i128, ty: &Ty) -> Self {
-        match ty {
-            Ty::TInt8 => Prim::Int8 { value: value as i8 },
-            Ty::TInt16 => Prim::Int16 {
-                value: value as i16,
-            },
-            Ty::TInt32 => Prim::Int32 {
-                value: value as i32,
-            },
-            Ty::TInt64 => Prim::Int64 {
-                value: value as i64,
-            },
-            Ty::TUint8 => Prim::UInt8 { value: value as u8 },
-            Ty::TUint16 => Prim::UInt16 {
-                value: value as u16,
-            },
-            Ty::TUint32 => Prim::UInt32 {
-                value: value as u32,
-            },
-            Ty::TUint64 => Prim::UInt64 {
-                value: value as u64,
-            },
-            _ => panic!("Unsupported integer literal type {:?}", ty),
-        }
-    }
-
     pub fn zero_for_int_ty(ty: &Ty) -> Self {
         match ty {
             Ty::TInt8 => Prim::Int8 { value: 0 },
