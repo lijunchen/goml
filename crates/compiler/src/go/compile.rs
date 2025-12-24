@@ -95,23 +95,72 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
         };
     }
 
-    if let Some(signed_value) = value.as_signed() {
+    if let Some(v) = value.as_int8() {
         return goast::Expr::Int {
-            value: signed_value.to_string(),
+            value: v.to_string(),
             ty: tast_ty_to_go_type(ty),
         };
     }
 
-    if let Some(unsigned_value) = value.as_unsigned() {
+    if let Some(v) = value.as_int16() {
         return goast::Expr::Int {
-            value: unsigned_value.to_string(),
+            value: v.to_string(),
             ty: tast_ty_to_go_type(ty),
         };
     }
 
-    if let Some(float_value) = value.as_float() {
+    if let Some(v) = value.as_int32() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_int64() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_uint8() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_uint16() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_uint32() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_uint64() {
+        return goast::Expr::Int {
+            value: v.to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_float32() {
         return goast::Expr::Float {
-            value: float_value,
+            value: v as f64,
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
+    if let Some(v) = value.as_float64() {
+        return goast::Expr::Float {
+            value: v,
             ty: tast_ty_to_go_type(ty),
         };
     }
@@ -858,6 +907,90 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
     }
 }
 
+fn compile_int_match_branch<F, E>(
+    goenv: &GlobalGoEnv,
+    scrutinee: &anf::ImmExpr,
+    arms: &[anf::Arm],
+    default: &Option<Box<anf::AExpr>>,
+    build_branch: &mut F,
+    extract: E,
+) -> Vec<goast::Stmt>
+where
+    F: FnMut(anf::AExpr) -> Vec<goast::Stmt>,
+    E: Fn(&Prim) -> Option<String>,
+{
+    let mut cases = Vec::new();
+    for arm in arms {
+        if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
+            if let Some(v) = extract(value) {
+                cases.push((
+                    goast::Expr::Int {
+                        value: v,
+                        ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                    },
+                    goast::Block {
+                        stmts: build_branch(arm.body.clone()),
+                    },
+                ));
+            } else {
+                panic!("expected integer primitive in match arm");
+            }
+        } else {
+            panic!("expected primitive literal in integer match arm");
+        }
+    }
+    let default_block = default.as_ref().map(|d| goast::Block {
+        stmts: build_branch((**d).clone()),
+    });
+    vec![goast::Stmt::SwitchExpr {
+        expr: compile_imm(goenv, scrutinee),
+        cases,
+        default: default_block,
+    }]
+}
+
+fn compile_float_match_branch<F, E>(
+    goenv: &GlobalGoEnv,
+    scrutinee: &anf::ImmExpr,
+    arms: &[anf::Arm],
+    default: &Option<Box<anf::AExpr>>,
+    build_branch: &mut F,
+    extract: E,
+) -> Vec<goast::Stmt>
+where
+    F: FnMut(anf::AExpr) -> Vec<goast::Stmt>,
+    E: Fn(&Prim) -> Option<f64>,
+{
+    let mut cases = Vec::new();
+    for arm in arms {
+        if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
+            if let Some(v) = extract(value) {
+                cases.push((
+                    goast::Expr::Float {
+                        value: v,
+                        ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
+                    },
+                    goast::Block {
+                        stmts: build_branch(arm.body.clone()),
+                    },
+                ));
+            } else {
+                panic!("expected float primitive in match arm");
+            }
+        } else {
+            panic!("expected primitive literal in float match arm");
+        }
+    }
+    let default_block = default.as_ref().map(|d| goast::Block {
+        stmts: build_branch((**d).clone()),
+    });
+    vec![goast::Stmt::SwitchExpr {
+        expr: compile_imm(goenv, scrutinee),
+        cases,
+        default: default_block,
+    }]
+}
+
 fn compile_match_branches<F>(
     goenv: &GlobalGoEnv,
     scrutinee: &anf::ImmExpr,
@@ -908,55 +1041,55 @@ where
                 default: default_block,
             }]
         }
-        tast::Ty::TInt32
-        | tast::Ty::TInt8
-        | tast::Ty::TInt16
-        | tast::Ty::TInt64
-        | tast::Ty::TUint8
-        | tast::Ty::TUint16
-        | tast::Ty::TUint32
-        | tast::Ty::TUint64
-        | tast::Ty::TFloat32
-        | tast::Ty::TFloat64 => {
-            let mut cases = Vec::new();
-            for arm in arms {
-                if let anf::ImmExpr::ImmPrim { value, .. } = &arm.lhs {
-                    let case_expr = if let Some(signed) = value.as_signed() {
-                        goast::Expr::Int {
-                            value: signed.to_string(),
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        }
-                    } else if let Some(unsigned) = value.as_unsigned() {
-                        goast::Expr::Int {
-                            value: unsigned.to_string(),
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        }
-                    } else if let Some(float_value) = value.as_float() {
-                        goast::Expr::Float {
-                            value: float_value,
-                            ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
-                        }
-                    } else {
-                        panic!("expected numeric primitive in match arm");
-                    };
-                    cases.push((
-                        case_expr,
-                        goast::Block {
-                            stmts: build_branch(arm.body.clone()),
-                        },
-                    ));
-                } else {
-                    panic!("expected primitive literal in numeric match arm");
-                }
-            }
-            let default_block = default.as_ref().map(|d| goast::Block {
-                stmts: build_branch((**d).clone()),
-            });
-            vec![goast::Stmt::SwitchExpr {
-                expr: compile_imm(goenv, scrutinee),
-                cases,
-                default: default_block,
-            }]
+        tast::Ty::TInt8 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_int8().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TInt16 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_int16().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TInt32 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_int32().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TInt64 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_int64().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TUint8 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_uint8().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TUint16 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_uint16().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TUint32 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_uint32().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TUint64 => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_uint64().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TFloat32 => {
+            compile_float_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_float32().map(|x| x as f64)
+            })
+        }
+        tast::Ty::TFloat64 => {
+            compile_float_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_float64()
+            })
         }
         tast::Ty::TString => {
             let mut cases = Vec::new();

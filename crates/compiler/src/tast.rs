@@ -134,6 +134,7 @@ impl Ty {
 }
 
 impl EqUnifyValue for Ty {}
+
 impl Prim {
     pub fn unit() -> Self {
         Prim::Unit { value: () }
@@ -171,106 +172,6 @@ impl Prim {
         }
     }
 
-    pub fn coerce(self, ty: &Ty) -> Self {
-        match ty {
-            Ty::TUnit => self.expect_unit(),
-            Ty::TBool => self.expect_bool(),
-            Ty::TInt8 => Prim::Int8 {
-                value: self.into_signed_value() as i8,
-            },
-            Ty::TInt16 => Prim::Int16 {
-                value: self.into_signed_value() as i16,
-            },
-            Ty::TInt32 => Prim::Int32 {
-                value: self.into_signed_value() as i32,
-            },
-            Ty::TInt64 => Prim::Int64 {
-                value: self.into_signed_value() as i64,
-            },
-            Ty::TUint8 => Prim::UInt8 {
-                value: self.into_unsigned_value() as u8,
-            },
-            Ty::TUint16 => Prim::UInt16 {
-                value: self.into_unsigned_value() as u16,
-            },
-            Ty::TUint32 => Prim::UInt32 {
-                value: self.into_unsigned_value() as u32,
-            },
-            Ty::TUint64 => Prim::UInt64 {
-                value: self.into_unsigned_value() as u64,
-            },
-            Ty::TFloat32 => Prim::Float32 {
-                value: self.into_float_value() as f32,
-            },
-            Ty::TFloat64 => Prim::Float64 {
-                value: self.into_float_value(),
-            },
-            Ty::TString => self.expect_string(),
-            Ty::TVar(_) => self,
-            Ty::TTuple { .. }
-            | Ty::TEnum { .. }
-            | Ty::TStruct { .. }
-            | Ty::TApp { .. }
-            | Ty::TArray { .. }
-            | Ty::TVec { .. }
-            | Ty::TRef { .. }
-            | Ty::TParam { .. }
-            | Ty::TFunc { .. } => panic!(
-                "Cannot coerce primitive literal {:?} to non-primitive type {:?}",
-                self, ty
-            ),
-        }
-    }
-
-    fn expect_unit(self) -> Self {
-        match self {
-            Prim::Unit { .. } => Prim::Unit { value: () },
-            other => panic!("Expected unit primitive, got {:?}", other),
-        }
-    }
-
-    fn expect_bool(self) -> Self {
-        match self {
-            Prim::Bool { value } => Prim::Bool { value },
-            other => panic!("Expected bool primitive, got {:?}", other),
-        }
-    }
-
-    fn expect_string(self) -> Self {
-        match self {
-            Prim::String { value } => Prim::String { value },
-            other => panic!("Expected string primitive, got {:?}", other),
-        }
-    }
-
-    fn into_signed_value(self) -> i128 {
-        match self {
-            Prim::Int8 { value } => value as i128,
-            Prim::Int16 { value } => value as i128,
-            Prim::Int32 { value } => value as i128,
-            Prim::Int64 { value } => value as i128,
-            other => panic!("Expected signed integer primitive, got {:?}", other),
-        }
-    }
-
-    fn into_unsigned_value(self) -> u128 {
-        match self {
-            Prim::UInt8 { value } => value as u128,
-            Prim::UInt16 { value } => value as u128,
-            Prim::UInt32 { value } => value as u128,
-            Prim::UInt64 { value } => value as u128,
-            other => panic!("Expected unsigned integer primitive, got {:?}", other),
-        }
-    }
-
-    fn into_float_value(self) -> f64 {
-        match self {
-            Prim::Float32 { value } => value as f64,
-            Prim::Float64 { value } => value,
-            other => panic!("Expected float primitive, got {:?}", other),
-        }
-    }
-
     pub fn as_bool(&self) -> Option<bool> {
         if let Prim::Bool { value } = self {
             Some(*value)
@@ -279,31 +180,83 @@ impl Prim {
         }
     }
 
-    pub fn as_signed(&self) -> Option<i128> {
-        match self {
-            Prim::Int8 { value } => Some(*value as i128),
-            Prim::Int16 { value } => Some(*value as i128),
-            Prim::Int32 { value } => Some(*value as i128),
-            Prim::Int64 { value } => Some(*value as i128),
-            _ => None,
+    pub fn as_int8(&self) -> Option<i8> {
+        if let Prim::Int8 { value } = self {
+            Some(*value)
+        } else {
+            None
         }
     }
 
-    pub fn as_unsigned(&self) -> Option<u128> {
-        match self {
-            Prim::UInt8 { value } => Some(*value as u128),
-            Prim::UInt16 { value } => Some(*value as u128),
-            Prim::UInt32 { value } => Some(*value as u128),
-            Prim::UInt64 { value } => Some(*value as u128),
-            _ => None,
+    pub fn as_int16(&self) -> Option<i16> {
+        if let Prim::Int16 { value } = self {
+            Some(*value)
+        } else {
+            None
         }
     }
 
-    pub fn as_float(&self) -> Option<f64> {
-        match self {
-            Prim::Float32 { value } => Some(*value as f64),
-            Prim::Float64 { value } => Some(*value),
-            _ => None,
+    pub fn as_int32(&self) -> Option<i32> {
+        if let Prim::Int32 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_int64(&self) -> Option<i64> {
+        if let Prim::Int64 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_uint8(&self) -> Option<u8> {
+        if let Prim::UInt8 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_uint16(&self) -> Option<u16> {
+        if let Prim::UInt16 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_uint32(&self) -> Option<u32> {
+        if let Prim::UInt32 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_uint64(&self) -> Option<u64> {
+        if let Prim::UInt64 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_float32(&self) -> Option<f32> {
+        if let Prim::Float32 { value } = self {
+            Some(*value)
+        } else {
+            None
+        }
+    }
+
+    pub fn as_float64(&self) -> Option<f64> {
+        if let Prim::Float64 { value } = self {
+            Some(*value)
+        } else {
+            None
         }
     }
 
