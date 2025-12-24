@@ -9,10 +9,9 @@ use parser::{Diagnostic, Diagnostics};
 use crate::{
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, LocalTypeEnv},
     mangle::encode_ty,
-    rename,
     tast::{self},
     typer::{
-        Typer,
+        Typer, rename,
         util::{type_param_name_set, validate_ty},
     },
 };

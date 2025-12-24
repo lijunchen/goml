@@ -3,6 +3,7 @@ use ena::unify::InPlaceUnificationTable;
 use crate::{env::Constraint, tast::TypeVar};
 
 mod check;
+mod rename;
 mod toplevel;
 mod unify;
 mod util;

@@ -13,7 +13,6 @@ pub mod mono;
 pub mod pipeline;
 pub mod pprint;
 pub mod query;
-pub mod rename;
 pub mod tast;
 pub mod typer;
 
