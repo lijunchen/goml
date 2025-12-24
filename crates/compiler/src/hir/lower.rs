@@ -4,7 +4,7 @@ use ast::ast;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
-use super::hir::*;
+use super::ir::*;
 use super::symbol_table::{GenericTable, SymbolTable};
 
 #[derive(Debug, Default, Clone)]
@@ -320,7 +320,7 @@ impl LowerCtx {
         self.symbols.locals.exit_scope();
 
         let hir_fn = HirFn {
-            name: item_id,
+            fn_id: item_id,
             generics: fn_generics,
             params,
             ret_ty,
@@ -496,10 +496,7 @@ impl LowerCtx {
 
         let (impl_generics, generics_table) = self.extend_generics(None, &block.generics);
 
-        let for_type = match self.lower_type_expr(&block.for_type, &generics_table, diagnostics) {
-            Some(id) => id,
-            None => return None,
-        };
+        let for_type = self.lower_type_expr(&block.for_type, &generics_table, diagnostics)?;
 
         let mut method_ids = Vec::new();
         for method in block.methods {
@@ -523,7 +520,7 @@ impl LowerCtx {
                 }
             };
 
-            let hir_impl = HirImpl {
+            let hir_impl = HirImplTrait {
                 impl_id,
                 trait_id,
                 for_type,
@@ -532,7 +529,7 @@ impl LowerCtx {
                 astptr: None,
             };
 
-            Some(self.push_item(HirItem::Impl(hir_impl)))
+            Some(self.push_item(HirItem::ImplTrait(hir_impl)))
         } else {
             let hir_impl = HirImplInherent {
                 impl_id,
@@ -661,7 +658,37 @@ impl LowerCtx {
             ast::Expr::EInt { value } => {
                 Some(self.push_expr(HirExprKind::Int(value.clone()), None))
             }
+            ast::Expr::EInt8 { value } => {
+                Some(self.push_expr(HirExprKind::Int8(value.clone()), None))
+            }
+            ast::Expr::EInt16 { value } => {
+                Some(self.push_expr(HirExprKind::Int16(value.clone()), None))
+            }
+            ast::Expr::EInt32 { value } => {
+                Some(self.push_expr(HirExprKind::Int32(value.clone()), None))
+            }
+            ast::Expr::EInt64 { value } => {
+                Some(self.push_expr(HirExprKind::Int64(value.clone()), None))
+            }
+            ast::Expr::EUInt8 { value } => {
+                Some(self.push_expr(HirExprKind::UInt8(value.clone()), None))
+            }
+            ast::Expr::EUInt16 { value } => {
+                Some(self.push_expr(HirExprKind::UInt16(value.clone()), None))
+            }
+            ast::Expr::EUInt32 { value } => {
+                Some(self.push_expr(HirExprKind::UInt32(value.clone()), None))
+            }
+            ast::Expr::EUInt64 { value } => {
+                Some(self.push_expr(HirExprKind::UInt64(value.clone()), None))
+            }
             ast::Expr::EFloat { value } => Some(self.push_expr(HirExprKind::Float(*value), None)),
+            ast::Expr::EFloat32 { value } => {
+                Some(self.push_expr(HirExprKind::Float32(value.clone()), None))
+            }
+            ast::Expr::EFloat64 { value } => {
+                Some(self.push_expr(HirExprKind::Float64(value.clone()), None))
+            }
             ast::Expr::EString { value } => {
                 Some(self.push_expr(HirExprKind::String(value.clone()), None))
             }
@@ -1032,10 +1059,10 @@ impl LowerCtx {
         }
 
         // Struct constructor fallback using positional fields.
-        if let Some(type_id) = self.symbols.globals.types.get(name) {
-            if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                return self.lower_struct_ctor(*type_id, args, astptr, generics, diagnostics);
-            }
+        if let Some(type_id) = self.symbols.globals.types.get(name)
+            && self.type_kinds.get(type_id) == Some(&TypeKind::Struct)
+        {
+            return self.lower_struct_ctor(*type_id, args, astptr, generics, diagnostics);
         }
 
         diagnostics.push(Diagnostic::new(
@@ -1232,22 +1259,21 @@ impl LowerCtx {
                 let ty_name = &segments[0].0;
                 let method_or_variant = &segments[1].0;
 
-                if let Some(type_id) = self.symbols.globals.types.get(ty_name) {
-                    if self
+                if let Some(type_id) = self.symbols.globals.types.get(ty_name)
+                    && self
                         .symbols
                         .globals
                         .ctors
                         .contains_key(&(*type_id, method_or_variant.clone()))
-                    {
-                        return self.lower_qualified_constructor(
-                            ty_name,
-                            method_or_variant,
-                            &[],
-                            astptr,
-                            generics,
-                            diagnostics,
-                        );
-                    }
+                {
+                    return self.lower_qualified_constructor(
+                        ty_name,
+                        method_or_variant,
+                        &[],
+                        astptr,
+                        generics,
+                        diagnostics,
+                    );
                 }
 
                 let full_name = format!("{}::{}", ty_name, method_or_variant);
@@ -1275,7 +1301,7 @@ impl LowerCtx {
     fn lower_pat(
         &mut self,
         pat: &ast::Pat,
-        generics: &GenericTable,
+        _generics: &GenericTable,
         diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
         match pat {
@@ -1286,6 +1312,28 @@ impl LowerCtx {
             ast::Pat::PUnit => Some(self.push_pat(HirPatKind::Unit, None)),
             ast::Pat::PBool { value } => Some(self.push_pat(HirPatKind::Bool(*value), None)),
             ast::Pat::PInt { value } => Some(self.push_pat(HirPatKind::Int(value.clone()), None)),
+            ast::Pat::PInt8 { value } => Some(self.push_pat(HirPatKind::Int8(value.clone()), None)),
+            ast::Pat::PInt16 { value } => {
+                Some(self.push_pat(HirPatKind::Int16(value.clone()), None))
+            }
+            ast::Pat::PInt32 { value } => {
+                Some(self.push_pat(HirPatKind::Int32(value.clone()), None))
+            }
+            ast::Pat::PInt64 { value } => {
+                Some(self.push_pat(HirPatKind::Int64(value.clone()), None))
+            }
+            ast::Pat::PUInt8 { value } => {
+                Some(self.push_pat(HirPatKind::UInt8(value.clone()), None))
+            }
+            ast::Pat::PUInt16 { value } => {
+                Some(self.push_pat(HirPatKind::UInt16(value.clone()), None))
+            }
+            ast::Pat::PUInt32 { value } => {
+                Some(self.push_pat(HirPatKind::UInt32(value.clone()), None))
+            }
+            ast::Pat::PUInt64 { value } => {
+                Some(self.push_pat(HirPatKind::UInt64(value.clone()), None))
+            }
             ast::Pat::PString { value } => {
                 Some(self.push_pat(HirPatKind::String(value.clone()), None))
             }
@@ -1329,7 +1377,7 @@ impl LowerCtx {
                             continue;
                         }
                     };
-                    let pat_id = match self.lower_pat(pat, generics, diagnostics) {
+                    let pat_id = match self.lower_pat(pat, _generics, diagnostics) {
                         Some(id) => id,
                         None => continue,
                     };
@@ -1347,7 +1395,7 @@ impl LowerCtx {
             ast::Pat::PTuple { pats } => {
                 let items = pats
                     .iter()
-                    .filter_map(|p| self.lower_pat(p, generics, diagnostics))
+                    .filter_map(|p| self.lower_pat(p, _generics, diagnostics))
                     .collect();
                 Some(self.push_pat(HirPatKind::Tuple(items), None))
             }
@@ -1383,16 +1431,21 @@ impl LowerCtx {
                             .collect();
                         return Some(self.push_pat(HirPatKind::Enum { ctor_id, args }, astptr));
                     }
+                    diagnostics.push(Diagnostic::new(
+                        self.stage.clone(),
+                        Severity::Error,
+                        "ambiguous constructor patterns not supported yet",
+                    ));
                     return Some(
                         self.push_pat(HirPatKind::UnresolvedVariant(name.clone()), astptr),
                     );
                 }
 
                 // Struct positional pattern
-                if let Some(type_id) = self.symbols.globals.types.get(name) {
-                    if self.type_kinds.get(type_id) == Some(&TypeKind::Struct) {
-                        return self.lower_struct_pat(*type_id, args, astptr, diagnostics);
-                    }
+                if let Some(type_id) = self.symbols.globals.types.get(name)
+                    && self.type_kinds.get(type_id) == Some(&TypeKind::Struct)
+                {
+                    return self.lower_struct_pat(*type_id, args, astptr, diagnostics);
                 }
 
                 diagnostics.push(Diagnostic::new(
@@ -1576,16 +1629,16 @@ impl LowerCtx {
                 None
             }
             ast::TypeExpr::TApp { ty, args } => {
-                if let ast::TypeExpr::TCon { name } = ty.as_ref() {
-                    if let Some(type_id) = self.symbols.globals.types.get(name).copied() {
-                        let mut args_ids = Vec::new();
-                        for a in args {
-                            if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
-                                args_ids.push(id);
-                            }
+                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+                    && let Some(type_id) = self.symbols.globals.types.get(name).copied()
+                {
+                    let mut args_ids = Vec::new();
+                    for a in args {
+                        if let Some(id) = self.lower_type_expr(a, generics, diagnostics) {
+                            args_ids.push(id);
                         }
-                        return Some(self.push_type(HirType::Named(type_id, args_ids)));
                     }
+                    return Some(self.push_type(HirType::Named(type_id, args_ids)));
                 }
 
                 let base = self.lower_type_expr(ty, generics, diagnostics)?;

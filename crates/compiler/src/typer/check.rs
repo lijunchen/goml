@@ -38,6 +38,62 @@ impl Typer {
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
+            ast::Expr::EInt8 { value } => {
+                let ty = tast::Ty::TInt8;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EInt16 { value } => {
+                let ty = tast::Ty::TInt16;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EInt32 { value } => {
+                let ty = tast::Ty::TInt32;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EInt64 { value } => {
+                let ty = tast::Ty::TInt64;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EUInt8 { value } => {
+                let ty = tast::Ty::TUint8;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EUInt16 { value } => {
+                let ty = tast::Ty::TUint16;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EUInt32 { value } => {
+                let ty = tast::Ty::TUint32;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EUInt64 { value } => {
+                let ty = tast::Ty::TUint64;
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
+                tast::Expr::EPrim { value: prim, ty }
+            }
             ast::Expr::EFloat { value } => {
                 self.ensure_float_literal_fits(diagnostics, *value, &tast::Ty::TFloat64);
                 let ty = tast::Ty::TFloat64;
@@ -45,6 +101,20 @@ impl Typer {
                     value: Prim::from_float_literal(*value, &ty),
                     ty,
                 }
+            }
+            ast::Expr::EFloat32 { value } => {
+                let ty = tast::Ty::TFloat32;
+                let prim = self
+                    .parse_float_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or(Prim::Float32 { value: 0.0 });
+                tast::Expr::EPrim { value: prim, ty }
+            }
+            ast::Expr::EFloat64 { value } => {
+                let ty = tast::Ty::TFloat64;
+                let prim = self
+                    .parse_float_literal_with_ty(diagnostics, value, &ty)
+                    .unwrap_or(Prim::Float64 { value: 0.0 });
+                tast::Expr::EPrim { value: prim, ty }
             }
             ast::Expr::EString { value } => tast::Expr::EPrim {
                 value: Prim::string(value.clone()),
@@ -114,34 +184,6 @@ impl Typer {
         expected: &tast::Ty,
     ) -> tast::Expr {
         let expr_tast = match e {
-            ast::Expr::EInt { value } => {
-                if let Some(target_ty) = integer_literal_target(expected) {
-                    let prim = self
-                        .parse_integer_literal_with_ty(diagnostics, value, &target_ty)
-                        .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
-                    tast::Expr::EPrim {
-                        value: prim,
-                        ty: target_ty,
-                    }
-                } else {
-                    let ty = tast::Ty::TInt32;
-                    let prim = self
-                        .parse_integer_literal_with_ty(diagnostics, value, &ty)
-                        .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
-                    tast::Expr::EPrim { value: prim, ty }
-                }
-            }
-            ast::Expr::EFloat { value } => {
-                if let Some(target_ty) = float_literal_target(expected) {
-                    self.ensure_float_literal_fits(diagnostics, *value, &target_ty);
-                    tast::Expr::EPrim {
-                        value: Prim::from_float_literal(*value, &target_ty),
-                        ty: target_ty,
-                    }
-                } else {
-                    self.infer_expr(genv, local_env, diagnostics, e)
-                }
-            }
             ast::Expr::EUnary {
                 op: ast::UnaryOp::Neg,
                 expr: inner,
@@ -1404,6 +1446,30 @@ impl Typer {
             ast::Pat::PUnit => self.check_pat_unit(),
             ast::Pat::PBool { value } => self.check_pat_bool(*value),
             ast::Pat::PInt { value } => self.check_pat_int(diagnostics, value, ty),
+            ast::Pat::PInt8 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TInt8, ty)
+            }
+            ast::Pat::PInt16 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TInt16, ty)
+            }
+            ast::Pat::PInt32 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TInt32, ty)
+            }
+            ast::Pat::PInt64 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TInt64, ty)
+            }
+            ast::Pat::PUInt8 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TUint8, ty)
+            }
+            ast::Pat::PUInt16 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TUint16, ty)
+            }
+            ast::Pat::PUInt32 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TUint32, ty)
+            }
+            ast::Pat::PUInt64 { value } => {
+                self.check_pat_typed_int(diagnostics, value, &tast::Ty::TUint64, ty)
+            }
             ast::Pat::PString { value } => self.check_pat_string(value, ty),
             ast::Pat::PConstr { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
@@ -1462,6 +1528,26 @@ impl Typer {
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
+        }
+    }
+
+    fn check_pat_typed_int(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        literal_ty: &tast::Ty,
+        expected_ty: &tast::Ty,
+    ) -> tast::Pat {
+        let prim = self
+            .parse_integer_literal_with_ty(diagnostics, value, literal_ty)
+            .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
+        self.push_constraint(Constraint::TypeEqual(
+            literal_ty.clone(),
+            expected_ty.clone(),
+        ));
+        tast::Pat::PPrim {
+            value: prim,
+            ty: literal_ty.clone(),
         }
     }
 
@@ -1665,14 +1751,6 @@ fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
     }
 }
 
-fn float_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
-    if is_float_ty(expected) {
-        Some(expected.clone())
-    } else {
-        None
-    }
-}
-
 fn is_integer_ty(ty: &tast::Ty) -> bool {
     matches!(
         ty,
@@ -1835,6 +1913,34 @@ impl Typer {
                 // Any finite f64 literal fits.
             }
             _ => {}
+        }
+    }
+
+    fn parse_float_literal_with_ty(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        literal: &str,
+        ty: &tast::Ty,
+    ) -> Option<Prim> {
+        match literal.parse::<f64>() {
+            Ok(value) => {
+                self.ensure_float_literal_fits(diagnostics, value, ty);
+                match ty {
+                    tast::Ty::TFloat32 => Some(Prim::Float32 {
+                        value: value as f32,
+                    }),
+                    tast::Ty::TFloat64 => Some(Prim::Float64 { value }),
+                    _ => None,
+                }
+            }
+            Err(_) => {
+                diagnostics.push(Diagnostic::new(
+                    diagnostics::Stage::Typer,
+                    diagnostics::Severity::Error,
+                    format!("Invalid float literal: {}", literal),
+                ));
+                None
+            }
         }
     }
 }

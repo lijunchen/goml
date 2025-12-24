@@ -503,13 +503,14 @@ impl Ctx {
 
         // Build index for generic inherent methods
         for (fname, f) in orig_fns.iter() {
-            if !f.generics.is_empty() && fname.starts_with("impl_inherent_") {
-                if let Some((base_type, method_name)) = parse_inherent_method_name(fname) {
-                    inherent_method_index.insert(
-                        (base_type.to_string(), method_name.to_string()),
-                        fname.clone(),
-                    );
-                }
+            if !f.generics.is_empty()
+                && fname.starts_with("impl_inherent_")
+                && let Some((base_type, method_name)) = parse_inherent_method_name(fname)
+            {
+                inherent_method_index.insert(
+                    (base_type.to_string(), method_name.to_string()),
+                    fname.clone(),
+                );
             }
         }
 
@@ -550,10 +551,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         },
         core::Expr::EPrim { value, ty } => {
             let ty = subst_ty(&ty, s);
-            MonoExpr::EPrim {
-                value: value.coerce(&ty),
-                ty,
-            }
+            MonoExpr::EPrim { value, ty }
         }
         core::Expr::EConstr {
             constructor,
@@ -931,10 +929,7 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
         },
         MonoExpr::EPrim { value, ty } => {
             let ty = m.collapse_type_apps(&ty);
-            MonoExpr::EPrim {
-                value: value.coerce(&ty),
-                ty,
-            }
+            MonoExpr::EPrim { value, ty }
         }
         MonoExpr::EConstr {
             constructor,

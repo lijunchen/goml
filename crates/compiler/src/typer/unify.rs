@@ -758,7 +758,6 @@ impl Typer {
             }
             tast::Pat::PPrim { value, ty } => {
                 let ty = self.subst_ty(diagnostics, &ty);
-                let value = value.coerce(&ty);
                 tast::Pat::PPrim {
                     value,
                     ty: ty.clone(),
@@ -810,7 +809,6 @@ impl Typer {
             }
             tast::Expr::EPrim { value, ty } => {
                 let ty = self.subst_ty(diagnostics, &ty);
-                let value = value.coerce(&ty);
                 tast::Expr::EPrim { value, ty }
             }
             tast::Expr::EConstr {

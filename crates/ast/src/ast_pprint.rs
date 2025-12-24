@@ -109,7 +109,17 @@ impl Expr {
             }
 
             Self::EInt { value } => RcDoc::text(value.clone()),
+            Self::EInt8 { value } => RcDoc::text(format!("{}i8", value)),
+            Self::EInt16 { value } => RcDoc::text(format!("{}i16", value)),
+            Self::EInt32 { value } => RcDoc::text(format!("{}i32", value)),
+            Self::EInt64 { value } => RcDoc::text(format!("{}i64", value)),
+            Self::EUInt8 { value } => RcDoc::text(format!("{}u8", value)),
+            Self::EUInt16 { value } => RcDoc::text(format!("{}u16", value)),
+            Self::EUInt32 { value } => RcDoc::text(format!("{}u32", value)),
+            Self::EUInt64 { value } => RcDoc::text(format!("{}u64", value)),
             Self::EFloat { value } => RcDoc::text(value.to_string()),
+            Self::EFloat32 { value } => RcDoc::text(format!("{}f32", value)),
+            Self::EFloat64 { value } => RcDoc::text(format!("{}f64", value)),
             Self::EString { value } => RcDoc::text(format!("{:?}", value)),
 
             Self::EConstr { constructor, args } => {
@@ -357,6 +367,14 @@ impl Pat {
                 }
             }
             Pat::PInt { value } => RcDoc::text(value.clone()),
+            Pat::PInt8 { value } => RcDoc::text(format!("{}i8", value)),
+            Pat::PInt16 { value } => RcDoc::text(format!("{}i16", value)),
+            Pat::PInt32 { value } => RcDoc::text(format!("{}i32", value)),
+            Pat::PInt64 { value } => RcDoc::text(format!("{}i64", value)),
+            Pat::PUInt8 { value } => RcDoc::text(format!("{}u8", value)),
+            Pat::PUInt16 { value } => RcDoc::text(format!("{}u16", value)),
+            Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
+            Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
             Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
             Pat::PConstr { constructor, args } => {
                 let prefix = RcDoc::text(constructor.display());

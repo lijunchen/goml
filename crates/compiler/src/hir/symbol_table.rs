@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use super::hir::{CtorId, FieldId, GenericParamId, ImplId, ItemId, LocalId, TraitId, TypeId};
+use super::ir::{CtorId, FieldId, GenericParamId, ImplId, ItemId, LocalId, TraitId, TypeId};
 
 #[derive(Debug, Default)]
 pub struct SymbolTable {

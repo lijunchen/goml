@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use pretty::RcDoc;
 
 use crate::hir::{
-    hir::*,
+    ir::*,
     lower::{HirLowerResult, HirTables},
     symbol_table::SymbolTable,
 };
@@ -157,7 +157,7 @@ impl HirItem {
             HirItem::Struct(s) => s.to_doc(ctx),
             HirItem::Enum(e) => e.to_doc(ctx),
             HirItem::Trait(t) => t.to_doc(ctx),
-            HirItem::Impl(i) => i.to_doc(ctx),
+            HirItem::ImplTrait(i) => i.to_doc(ctx),
             HirItem::ImplInherent(i) => i.to_doc(ctx),
             HirItem::ExternGo(e) => e.to_doc(ctx),
             HirItem::ExternType(e) => e.to_doc(ctx),
@@ -173,7 +173,7 @@ impl HirItem {
 
 impl HirFn {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
-        let name = ctx.get_item_name(self.name);
+        let name = ctx.get_item_name(self.fn_id);
 
         let generics = if self.generics.is_empty() {
             RcDoc::nil()
@@ -364,7 +364,7 @@ impl HirTraitMethodSig {
     }
 }
 
-impl HirImpl {
+impl HirImplTrait {
     pub fn to_doc<'a>(&self, ctx: &HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let trait_name = ctx.get_trait_name(self.trait_id);
         let for_type = ctx.tables.types[self.for_type].to_doc(ctx);
@@ -621,7 +621,17 @@ impl HirExprKind {
             HirExprKind::Unit => RcDoc::text("()"),
             HirExprKind::Bool(b) => RcDoc::text(b.to_string()),
             HirExprKind::Int(s) => RcDoc::text(s.clone()),
+            HirExprKind::Int8(s) => RcDoc::text(format!("{}i8", s)),
+            HirExprKind::Int16(s) => RcDoc::text(format!("{}i16", s)),
+            HirExprKind::Int32(s) => RcDoc::text(format!("{}i32", s)),
+            HirExprKind::Int64(s) => RcDoc::text(format!("{}i64", s)),
+            HirExprKind::UInt8(s) => RcDoc::text(format!("{}u8", s)),
+            HirExprKind::UInt16(s) => RcDoc::text(format!("{}u16", s)),
+            HirExprKind::UInt32(s) => RcDoc::text(format!("{}u32", s)),
+            HirExprKind::UInt64(s) => RcDoc::text(format!("{}u64", s)),
             HirExprKind::Float(f) => RcDoc::text(f.to_string()),
+            HirExprKind::Float32(s) => RcDoc::text(format!("{}f32", s)),
+            HirExprKind::Float64(s) => RcDoc::text(format!("{}f64", s)),
             HirExprKind::String(s) => RcDoc::text(format!("\"{}\"", s.escape_default())),
             HirExprKind::EnumCtor { ctor_id, args } => {
                 let (type_name, variant_name) = ctx.get_ctor_name(*ctor_id);
@@ -947,6 +957,14 @@ impl HirPatKind {
             HirPatKind::Unit => RcDoc::text("()"),
             HirPatKind::Bool(b) => RcDoc::text(b.to_string()),
             HirPatKind::Int(s) => RcDoc::text(s.clone()),
+            HirPatKind::Int8(s) => RcDoc::text(format!("{}i8", s)),
+            HirPatKind::Int16(s) => RcDoc::text(format!("{}i16", s)),
+            HirPatKind::Int32(s) => RcDoc::text(format!("{}i32", s)),
+            HirPatKind::Int64(s) => RcDoc::text(format!("{}i64", s)),
+            HirPatKind::UInt8(s) => RcDoc::text(format!("{}u8", s)),
+            HirPatKind::UInt16(s) => RcDoc::text(format!("{}u16", s)),
+            HirPatKind::UInt32(s) => RcDoc::text(format!("{}u32", s)),
+            HirPatKind::UInt64(s) => RcDoc::text(format!("{}u64", s)),
             HirPatKind::String(s) => RcDoc::text(format!("\"{}\"", s.escape_default())),
             HirPatKind::Var(id) => RcDoc::text(ctx.get_local_name(*id)),
             HirPatKind::Tuple(items) => {

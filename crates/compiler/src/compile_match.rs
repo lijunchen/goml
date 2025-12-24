@@ -666,7 +666,7 @@ fn compile_int_case(
                 ty,
                 Ty::TInt8,
                 match_range,
-                |prim| prim.as_signed().map(|value| value as i8),
+                |prim| prim.as_int8(),
                 |value| Prim::Int8 { value },
             );
         }
@@ -680,7 +680,7 @@ fn compile_int_case(
                 ty,
                 Ty::TInt16,
                 match_range,
-                |prim| prim.as_signed().map(|value| value as i16),
+                |prim| prim.as_int16(),
                 |value| Prim::Int16 { value },
             );
         }
@@ -694,7 +694,7 @@ fn compile_int_case(
                 ty,
                 Ty::TInt32,
                 match_range,
-                |prim| prim.as_signed().map(|value| value as i32),
+                |prim| prim.as_int32(),
                 |value| Prim::Int32 { value },
             );
         }
@@ -708,7 +708,7 @@ fn compile_int_case(
                 ty,
                 Ty::TInt64,
                 match_range,
-                |prim| prim.as_signed().map(|value| value as i64),
+                |prim| prim.as_int64(),
                 |value| Prim::Int64 { value },
             );
         }
@@ -722,7 +722,7 @@ fn compile_int_case(
                 ty,
                 Ty::TUint8,
                 match_range,
-                |prim| prim.as_unsigned().map(|value| value as u8),
+                |prim| prim.as_uint8(),
                 |value| Prim::UInt8 { value },
             );
         }
@@ -736,7 +736,7 @@ fn compile_int_case(
                 ty,
                 Ty::TUint16,
                 match_range,
-                |prim| prim.as_unsigned().map(|value| value as u16),
+                |prim| prim.as_uint16(),
                 |value| Prim::UInt16 { value },
             );
         }
@@ -750,7 +750,7 @@ fn compile_int_case(
                 ty,
                 Ty::TUint32,
                 match_range,
-                |prim| prim.as_unsigned().map(|value| value as u32),
+                |prim| prim.as_uint32(),
                 |value| Prim::UInt32 { value },
             );
         }
@@ -764,7 +764,7 @@ fn compile_int_case(
                 ty,
                 Ty::TUint64,
                 match_range,
-                |prim| prim.as_unsigned().map(|value| value as u64),
+                |prim| prim.as_uint64(),
                 |value| Prim::UInt64 { value },
             );
         }
