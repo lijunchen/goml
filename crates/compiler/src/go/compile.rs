@@ -1,9 +1,8 @@
-use ast::ast::Ident;
-
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
     env::{EnumDef, Gensym, GlobalTypeEnv, StructDef},
+    fir::{self, Ident},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     mangle::{encode_ty, mangle_inherent_name},
@@ -714,10 +713,9 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
             }
         }
         anf::CExpr::EUnary { op, expr, ty } => {
-            use ast::ast::UnaryOp;
             let go_op = match op {
-                UnaryOp::Neg => goast::UnaryOp::Neg,
-                UnaryOp::Not => goast::UnaryOp::Not,
+                fir::UnaryOp::Neg => goast::UnaryOp::Neg,
+                fir::UnaryOp::Not => goast::UnaryOp::Not,
             };
             goast::Expr::UnaryOp {
                 op: go_op,
@@ -726,20 +724,19 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
             }
         }
         anf::CExpr::EBinary { op, lhs, rhs, ty } => {
-            use ast::ast::BinaryOp;
             let go_op = match op {
-                BinaryOp::Add => goast::BinaryOp::Add,
-                BinaryOp::Sub => goast::BinaryOp::Sub,
-                BinaryOp::Mul => goast::BinaryOp::Mul,
-                BinaryOp::Div => goast::BinaryOp::Div,
-                BinaryOp::And => goast::BinaryOp::And,
-                BinaryOp::Or => goast::BinaryOp::Or,
-                BinaryOp::Less => goast::BinaryOp::Less,
-                BinaryOp::Greater => goast::BinaryOp::Greater,
-                BinaryOp::LessEq => goast::BinaryOp::LessEq,
-                BinaryOp::GreaterEq => goast::BinaryOp::GreaterEq,
-                BinaryOp::Eq => goast::BinaryOp::Eq,
-                BinaryOp::NotEq => goast::BinaryOp::NotEq,
+                fir::BinaryOp::Add => goast::BinaryOp::Add,
+                fir::BinaryOp::Sub => goast::BinaryOp::Sub,
+                fir::BinaryOp::Mul => goast::BinaryOp::Mul,
+                fir::BinaryOp::Div => goast::BinaryOp::Div,
+                fir::BinaryOp::And => goast::BinaryOp::And,
+                fir::BinaryOp::Or => goast::BinaryOp::Or,
+                fir::BinaryOp::Less => goast::BinaryOp::Less,
+                fir::BinaryOp::Greater => goast::BinaryOp::Greater,
+                fir::BinaryOp::LessEq => goast::BinaryOp::LessEq,
+                fir::BinaryOp::GreaterEq => goast::BinaryOp::GreaterEq,
+                fir::BinaryOp::Eq => goast::BinaryOp::Eq,
+                fir::BinaryOp::NotEq => goast::BinaryOp::NotEq,
             };
             goast::Expr::BinaryOp {
                 op: go_op,

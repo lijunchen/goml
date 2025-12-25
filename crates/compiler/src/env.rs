@@ -1,4 +1,3 @@
-use ast::ast::Ident;
 use diagnostics::{Diagnostics, Severity, Stage};
 use im::HashMap as ImHashMap;
 use indexmap::IndexMap;
@@ -8,6 +7,7 @@ pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
+    fir::Ident,
     mangle::encode_ty,
     tast::{self},
 };

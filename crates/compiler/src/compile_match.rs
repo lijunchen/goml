@@ -1,8 +1,7 @@
-use ast::ast::Ident;
-
 use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
+use crate::fir::Ident;
 use crate::mangle::{mangle_impl_name, mangle_inherent_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};

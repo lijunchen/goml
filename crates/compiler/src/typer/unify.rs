@@ -2,10 +2,10 @@ use std::collections::HashMap;
 
 use crate::{
     env::{Constraint, GlobalTypeEnv},
+    fir::Ident,
     tast::{self, TypeVar},
     typer::Typer,
 };
-use ast::ast::Ident;
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
