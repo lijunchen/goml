@@ -1,8 +1,7 @@
 pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
+use crate::fir::{BinaryOp, UnaryOp};
 use crate::tast;
-
-pub use ast::ast::{BinaryOp, UnaryOp};
 
 #[derive(Debug, Clone)]
 pub struct File {

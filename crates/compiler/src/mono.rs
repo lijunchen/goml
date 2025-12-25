@@ -1,9 +1,9 @@
 use crate::common::{self, Constructor, Prim};
-use crate::core::{self, BinaryOp, Ty, UnaryOp};
+use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
+use crate::fir::{BinaryOp, Ident, UnaryOp};
 use crate::mangle::encode_ty;
-use crate::tast;
-use ast::ast::Ident;
+use crate::tast::{self};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 

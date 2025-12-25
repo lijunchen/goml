@@ -3,7 +3,7 @@ use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, mangle::encode_ty, tast};
+use crate::{env::GlobalTypeEnv, fir, mangle::encode_ty, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 
@@ -115,11 +115,7 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
             }
             find_type_expr(body, range)
         }
-        tast::Expr::ELet {
-            pat,
-            value,
-            ty: _,
-        } => {
+        tast::Expr::ELet { pat, value, ty: _ } => {
             if let Some(expr) = find_type_pat(pat, range) {
                 return Some(expr);
             }
@@ -512,7 +508,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     let mut items = Vec::new();
 
     if let Some(name) = type_constructor_name(ty) {
-        let uident = ast::ast::Ident::new(name);
+        let uident = fir::Ident::new(name);
         if let Some(struct_def) = genv.structs().get(&uident) {
             for (field_name, field_ty) in &struct_def.fields {
                 items.push(DotCompletionItem {

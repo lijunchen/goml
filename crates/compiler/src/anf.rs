@@ -1,10 +1,9 @@
 pub type Ty = crate::tast::Ty;
-use ast::ast::Ident;
 
 use crate::common::{Constructor, Prim};
-use crate::core::{BinaryOp, UnaryOp};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
+use crate::fir::{BinaryOp, Ident, UnaryOp};
 use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
 
 #[derive(Debug, Clone)]

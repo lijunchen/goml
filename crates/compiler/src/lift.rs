@@ -1,10 +1,9 @@
-use ast::ast::Ident;
 use indexmap::IndexMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
-    core::{BinaryOp, UnaryOp},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
+    fir::{BinaryOp, Ident, UnaryOp},
     mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
     tast::{self, Ty},

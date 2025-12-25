@@ -1,6 +1,4 @@
-use ast::ast::Ident;
-
-use crate::{env::GlobalTypeEnv, tast};
+use crate::{env::GlobalTypeEnv, fir, tast};
 
 #[test]
 fn env_registers_builtin_function_signatures() {
@@ -156,7 +154,7 @@ fn env_does_not_register_legacy_int_aliases() {
 #[test]
 fn env_registers_builtin_int32_inherent_to_string() {
     let env = GlobalTypeEnv::new();
-    let method = Ident("to_string".to_string());
+    let method = fir::Ident("to_string".to_string());
 
     match env.lookup_inherent_method(&tast::Ty::TInt32, &method) {
         Some(tast::Ty::TFunc { params, ret_ty }) => {

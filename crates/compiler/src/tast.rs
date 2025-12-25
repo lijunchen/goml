@@ -1,8 +1,10 @@
-use ast::ast::{BinaryOp, Ident, UnaryOp};
 use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
-use crate::common::{Constructor, Prim};
+use crate::{
+    common::{Constructor, Prim},
+    fir::{BinaryOp, Ident, UnaryOp},
+};
 
 pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
 

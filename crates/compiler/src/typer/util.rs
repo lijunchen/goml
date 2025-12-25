@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use crate::{
     env::GlobalTypeEnv,
+    fir,
     tast::{self},
 };
-use ast::ast;
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
@@ -56,7 +56,7 @@ pub(crate) fn validate_ty(
             if name == "Self" {
                 return;
             }
-            let ident = ast::Ident::new(name);
+            let ident = fir::Ident::new(name);
             if let Some(enum_def) = genv.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
                     diagnostics.push(Diagnostic::new(
@@ -97,7 +97,7 @@ pub(crate) fn validate_ty(
             }
 
             let base_name = ty.get_constr_name_unsafe();
-            let ident = ast::Ident::new(&base_name);
+            let ident = fir::Ident::new(&base_name);
 
             if let Some(enum_def) = genv.enums().get(&ident) {
                 let expected = enum_def.generics.len();
@@ -155,36 +155,36 @@ pub(crate) fn validate_ty(
 }
 
 impl tast::Ty {
-    pub(crate) fn from_ast(
+    pub(crate) fn from_fir(
         genv: &GlobalTypeEnv,
-        ast_ty: &ast::TypeExpr,
-        tparams_env: &[ast::Ident],
+        fir_ty: &fir::TypeExpr,
+        tparams_env: &[fir::Ident],
     ) -> Self {
-        match ast_ty {
-            ast::TypeExpr::TUnit => Self::TUnit,
-            ast::TypeExpr::TBool => Self::TBool,
-            ast::TypeExpr::TInt8 => Self::TInt8,
-            ast::TypeExpr::TInt16 => Self::TInt16,
-            ast::TypeExpr::TInt32 => Self::TInt32,
-            ast::TypeExpr::TInt64 => Self::TInt64,
-            ast::TypeExpr::TUint8 => Self::TUint8,
-            ast::TypeExpr::TUint16 => Self::TUint16,
-            ast::TypeExpr::TUint32 => Self::TUint32,
-            ast::TypeExpr::TUint64 => Self::TUint64,
-            ast::TypeExpr::TFloat32 => Self::TFloat32,
-            ast::TypeExpr::TFloat64 => Self::TFloat64,
-            ast::TypeExpr::TString => Self::TString,
-            ast::TypeExpr::TTuple { typs } => Self::TTuple {
+        match fir_ty {
+            fir::TypeExpr::TUnit => Self::TUnit,
+            fir::TypeExpr::TBool => Self::TBool,
+            fir::TypeExpr::TInt8 => Self::TInt8,
+            fir::TypeExpr::TInt16 => Self::TInt16,
+            fir::TypeExpr::TInt32 => Self::TInt32,
+            fir::TypeExpr::TInt64 => Self::TInt64,
+            fir::TypeExpr::TUint8 => Self::TUint8,
+            fir::TypeExpr::TUint16 => Self::TUint16,
+            fir::TypeExpr::TUint32 => Self::TUint32,
+            fir::TypeExpr::TUint64 => Self::TUint64,
+            fir::TypeExpr::TFloat32 => Self::TFloat32,
+            fir::TypeExpr::TFloat64 => Self::TFloat64,
+            fir::TypeExpr::TString => Self::TString,
+            fir::TypeExpr::TTuple { typs } => Self::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::from_ast(genv, ty, tparams_env))
+                    .map(|ty| Self::from_fir(genv, ty, tparams_env))
                     .collect(),
             },
-            ast::TypeExpr::TCon { name } => {
+            fir::TypeExpr::TCon { name } => {
                 if tparams_env.iter().any(|param| param.0 == *name) {
                     Self::TParam { name: name.clone() }
                 } else {
-                    let ident = ast::Ident::new(name);
+                    let ident = fir::Ident::new(name);
                     if genv.enums().contains_key(&ident) {
                         Self::TEnum { name: name.clone() }
                     } else if genv.structs().contains_key(&ident)
@@ -192,55 +192,51 @@ impl tast::Ty {
                     {
                         Self::TStruct { name: name.clone() }
                     } else {
-                        // Unknown types (e.g., `Self`, unbound type parameters, or truly
-                        // unknown types) are represented as TStruct here. Validation in
-                        // `validate_ty` will report appropriate diagnostics for invalid uses.
+                        // FIXME
                         Self::TStruct { name: name.clone() }
                     }
                 }
             }
-            ast::TypeExpr::TApp { ty, args } => {
-                // Special handling for Ref[T] - convert to TRef
-                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+            fir::TypeExpr::TApp { ty, args } => {
+                if let fir::TypeExpr::TCon { name } = ty.as_ref()
                     && name == "Ref"
                     && args.len() == 1
                 {
                     return Self::TRef {
-                        elem: Box::new(Self::from_ast(genv, &args[0], tparams_env)),
+                        elem: Box::new(Self::from_fir(genv, &args[0], tparams_env)),
                     };
                 }
-                // Special handling for Vec[T] - convert to TVec
-                if let ast::TypeExpr::TCon { name } = ty.as_ref()
+                if let fir::TypeExpr::TCon { name } = ty.as_ref()
                     && name == "Vec"
                     && args.len() == 1
                 {
                     return Self::TVec {
-                        elem: Box::new(Self::from_ast(genv, &args[0], tparams_env)),
+                        elem: Box::new(Self::from_fir(genv, &args[0], tparams_env)),
                     };
                 }
                 Self::TApp {
-                    ty: Box::new(Self::from_ast(genv, ty, tparams_env)),
+                    ty: Box::new(Self::from_fir(genv, ty, tparams_env)),
                     args: args
                         .iter()
-                        .map(|ty| Self::from_ast(genv, ty, tparams_env))
+                        .map(|ty| Self::from_fir(genv, ty, tparams_env))
                         .collect(),
                 }
             }
-            ast::TypeExpr::TArray { len, elem } => Self::TArray {
+            fir::TypeExpr::TArray { len, elem } => Self::TArray {
                 len: *len,
-                elem: Box::new(Self::from_ast(genv, elem, tparams_env)),
+                elem: Box::new(Self::from_fir(genv, elem, tparams_env)),
             },
-            ast::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {
+            fir::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {
                 params: params
                     .iter()
-                    .map(|ty| Self::from_ast(genv, ty, tparams_env))
+                    .map(|ty| Self::from_fir(genv, ty, tparams_env))
                     .collect(),
-                ret_ty: Box::new(Self::from_ast(genv, ret_ty, tparams_env)),
+                ret_ty: Box::new(Self::from_fir(genv, ret_ty, tparams_env)),
             },
         }
     }
 }
 
-pub(crate) fn type_param_name_set(tparams: &[ast::Ident]) -> HashSet<String> {
+pub(crate) fn type_param_name_set(tparams: &[fir::Ident]) -> HashSet<String> {
     tparams.iter().map(|param| param.0.clone()).collect()
 }
