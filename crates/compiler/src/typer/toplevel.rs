@@ -11,7 +11,7 @@ use crate::{
     mangle::encode_ty,
     tast::{self},
     typer::{
-        Typer, rename,
+        Typer, name_resolution,
         util::{type_param_name_set, validate_ty},
     },
 };
@@ -638,7 +638,7 @@ pub fn check_file_with_env(
     genv: env::GlobalTypeEnv,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = genv;
-    let ast = rename::Rename::default().rename_file(ast);
+    let ast = name_resolution::NameResolution::default().resolve_file(ast);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &ast);
     let mut typer = Typer::new();
