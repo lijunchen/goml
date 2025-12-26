@@ -1,6 +1,6 @@
 use crate::{
     go::{
-        goast::{self, BinaryOp, ImportDecl, ImportSpec, Item, Package},
+        goast::{self, GoBinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
     },
     mangle::encode_ty,
@@ -184,7 +184,7 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             body: goast::Block {
                 stmts: vec![goast::Stmt::Return {
                     expr: Some(goast::Expr::UnaryOp {
-                        op: goast::UnaryOp::AddrOf,
+                        op: goast::GoUnaryOp::AddrOf,
                         expr: Box::new(goast::Expr::StructLiteral {
                             fields: vec![(
                                 "value".to_string(),
@@ -526,7 +526,7 @@ fn missing() -> goast::Fn {
                         },
                     }),
                     args: vec![goast::Expr::BinaryOp {
-                        op: BinaryOp::Add,
+                        op: GoBinaryOp::Add,
                         lhs: Box::new(goast::Expr::String {
                             value: "missing: ".to_string(),
                             ty: goty::GoType::TString,

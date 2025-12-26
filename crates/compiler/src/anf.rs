@@ -3,8 +3,9 @@ pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
-use crate::fir::{BinaryOp, Ident, UnaryOp};
 use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
+use crate::tast::Ident;
+use common_defs::{BinaryOp, UnaryOp};
 
 #[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {

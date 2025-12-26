@@ -1,10 +1,10 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::fir::Ident;
 use crate::mangle::{mangle_impl_name, mangle_inherent_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
+use crate::tast::Ident;
 use crate::tast::Pat::{self, *};
 use crate::tast::Ty;
 use crate::tast::{self, File};
@@ -229,7 +229,7 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
 
 fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     match ty {
-        Ty::TStruct { name } => Some((Ident::new(name), Vec::new())),
+        Ty::TStruct { name } => Some((Ident(name.clone()), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());
@@ -241,7 +241,7 @@ fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
 
 fn decompose_enum_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     match ty {
-        Ty::TEnum { name } => Some((Ident::new(name), Vec::new())),
+        Ty::TEnum { name } => Some((Ident(name.clone()), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_enum_type(base)?;
             collected.extend(args.iter().cloned());

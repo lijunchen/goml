@@ -308,11 +308,11 @@ impl NameResolution {
                 }
             }
             ast::Expr::EUnary { op, expr } => fir::Expr::EUnary {
-                op: (*op).into(),
+                op: *op,
                 expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
             },
             ast::Expr::EBinary { op, lhs, rhs } => fir::Expr::EBinary {
-                op: (*op).into(),
+                op: *op,
                 lhs: Box::new(self.resolve_expr(lhs, env, global_funcs)),
                 rhs: Box::new(self.resolve_expr(rhs, env, global_funcs)),
             },

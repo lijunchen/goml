@@ -2,8 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     env::{Constraint, GlobalTypeEnv},
-    fir::Ident,
-    tast::{self, TypeVar},
+    tast::{self, Ident, TypeVar},
     typer::Typer,
 };
 use diagnostics::{Severity, Stage};

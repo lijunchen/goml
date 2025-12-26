@@ -119,108 +119,6 @@ impl From<&ast::Path> for Path {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum BinaryOp {
-    Add,
-    Sub,
-    Mul,
-    Div,
-    And,
-    Or,
-    Less,
-    Greater,
-    LessEq,
-    GreaterEq,
-    Eq,
-    NotEq,
-}
-
-impl BinaryOp {
-    pub fn symbol(self) -> &'static str {
-        match self {
-            Self::Add => "+",
-            Self::Sub => "-",
-            Self::Mul => "*",
-            Self::Div => "/",
-            Self::And => "&&",
-            Self::Or => "||",
-            Self::Less => "<",
-            Self::Greater => ">",
-            Self::LessEq => "<=",
-            Self::GreaterEq => ">=",
-            Self::Eq => "==",
-            Self::NotEq => "!=",
-        }
-    }
-
-    pub fn method_name(self) -> &'static str {
-        match self {
-            Self::Add => "add",
-            Self::Sub => "sub",
-            Self::Mul => "mul",
-            Self::Div => "div",
-            Self::And => "and",
-            Self::Or => "or",
-            Self::Less => "less",
-            Self::Greater => "greater",
-            Self::LessEq => "less_eq",
-            Self::GreaterEq => "greater_eq",
-            Self::Eq => "eq",
-            Self::NotEq => "not_eq",
-        }
-    }
-}
-
-impl From<ast::BinaryOp> for BinaryOp {
-    fn from(op: ast::BinaryOp) -> Self {
-        match op {
-            ast::BinaryOp::Add => BinaryOp::Add,
-            ast::BinaryOp::Sub => BinaryOp::Sub,
-            ast::BinaryOp::Mul => BinaryOp::Mul,
-            ast::BinaryOp::Div => BinaryOp::Div,
-            ast::BinaryOp::And => BinaryOp::And,
-            ast::BinaryOp::Or => BinaryOp::Or,
-            ast::BinaryOp::Less => BinaryOp::Less,
-            ast::BinaryOp::Greater => BinaryOp::Greater,
-            ast::BinaryOp::LessEq => BinaryOp::LessEq,
-            ast::BinaryOp::GreaterEq => BinaryOp::GreaterEq,
-            ast::BinaryOp::Eq => BinaryOp::Eq,
-            ast::BinaryOp::NotEq => BinaryOp::NotEq,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum UnaryOp {
-    Neg,
-    Not,
-}
-
-impl UnaryOp {
-    pub fn symbol(self) -> &'static str {
-        match self {
-            Self::Neg => "-",
-            Self::Not => "!",
-        }
-    }
-
-    pub fn method_name(self) -> &'static str {
-        match self {
-            Self::Neg => "neg",
-            Self::Not => "not",
-        }
-    }
-}
-
-impl From<ast::UnaryOp> for UnaryOp {
-    fn from(op: ast::UnaryOp) -> Self {
-        match op {
-            ast::UnaryOp::Neg => UnaryOp::Neg,
-            ast::UnaryOp::Not => UnaryOp::Not,
-        }
-    }
-}
-
 #[derive(Debug, Clone)]
 pub enum TypeExpr {
     TUnit,
@@ -587,11 +485,11 @@ pub enum Expr {
         args: Vec<Expr>,
     },
     EUnary {
-        op: UnaryOp,
+        op: common_defs::UnaryOp,
         expr: Box<Expr>,
     },
     EBinary {
-        op: BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
     },

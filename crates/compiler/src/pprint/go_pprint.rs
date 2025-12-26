@@ -3,8 +3,8 @@ use pretty::RcDoc;
 use crate::go::{
     compile::GlobalGoEnv,
     goast::{
-        BinaryOp, Block, Expr, Field, File, Fn, ImportDecl, ImportSpec, Interface, Item, Method,
-        MethodElem, Package, Receiver, Stmt, Struct, TypeAlias, UnaryOp,
+        Block, Expr, Field, File, Fn, GoBinaryOp, GoUnaryOp, ImportDecl, ImportSpec, Interface,
+        Item, Method, MethodElem, Package, Receiver, Stmt, Struct, TypeAlias,
     },
     goty::GoType,
 };
@@ -811,32 +811,32 @@ impl Expr {
     }
 }
 
-impl UnaryOp {
+impl GoUnaryOp {
     fn doc(&self) -> RcDoc<'_, ()> {
         match self {
-            UnaryOp::Neg => RcDoc::text("-"),
-            UnaryOp::Not => RcDoc::text("!"),
-            UnaryOp::AddrOf => RcDoc::text("&"),
-            UnaryOp::Deref => RcDoc::text("*"),
+            GoUnaryOp::Neg => RcDoc::text("-"),
+            GoUnaryOp::Not => RcDoc::text("!"),
+            GoUnaryOp::AddrOf => RcDoc::text("&"),
+            GoUnaryOp::Deref => RcDoc::text("*"),
         }
     }
 }
 
-impl BinaryOp {
+impl GoBinaryOp {
     fn doc(&self) -> RcDoc<'_, ()> {
         match self {
-            BinaryOp::Add => RcDoc::text("+"),
-            BinaryOp::Sub => RcDoc::text("-"),
-            BinaryOp::Mul => RcDoc::text("*"),
-            BinaryOp::Div => RcDoc::text("/"),
-            BinaryOp::Less => RcDoc::text("<"),
-            BinaryOp::Greater => RcDoc::text(">"),
-            BinaryOp::LessEq => RcDoc::text("<="),
-            BinaryOp::GreaterEq => RcDoc::text(">="),
-            BinaryOp::Eq => RcDoc::text("=="),
-            BinaryOp::NotEq => RcDoc::text("!="),
-            BinaryOp::And => RcDoc::text("&&"),
-            BinaryOp::Or => RcDoc::text("||"),
+            GoBinaryOp::Add => RcDoc::text("+"),
+            GoBinaryOp::Sub => RcDoc::text("-"),
+            GoBinaryOp::Mul => RcDoc::text("*"),
+            GoBinaryOp::Div => RcDoc::text("/"),
+            GoBinaryOp::Less => RcDoc::text("<"),
+            GoBinaryOp::Greater => RcDoc::text(">"),
+            GoBinaryOp::LessEq => RcDoc::text("<="),
+            GoBinaryOp::GreaterEq => RcDoc::text(">="),
+            GoBinaryOp::Eq => RcDoc::text("=="),
+            GoBinaryOp::NotEq => RcDoc::text("!="),
+            GoBinaryOp::And => RcDoc::text("&&"),
+            GoBinaryOp::Or => RcDoc::text("||"),
         }
     }
 }

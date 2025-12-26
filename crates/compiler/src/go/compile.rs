@@ -2,11 +2,10 @@ use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
     env::{EnumDef, Gensym, GlobalTypeEnv, StructDef},
-    fir::{self, Ident},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     mangle::{encode_ty, mangle_inherent_name},
-    tast::{self},
+    tast::{self, Ident},
 };
 
 use indexmap::IndexSet;
@@ -714,8 +713,8 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
         }
         anf::CExpr::EUnary { op, expr, ty } => {
             let go_op = match op {
-                fir::UnaryOp::Neg => goast::UnaryOp::Neg,
-                fir::UnaryOp::Not => goast::UnaryOp::Not,
+                common_defs::UnaryOp::Neg => goast::GoUnaryOp::Neg,
+                common_defs::UnaryOp::Not => goast::GoUnaryOp::Not,
             };
             goast::Expr::UnaryOp {
                 op: go_op,
@@ -725,18 +724,18 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
         }
         anf::CExpr::EBinary { op, lhs, rhs, ty } => {
             let go_op = match op {
-                fir::BinaryOp::Add => goast::BinaryOp::Add,
-                fir::BinaryOp::Sub => goast::BinaryOp::Sub,
-                fir::BinaryOp::Mul => goast::BinaryOp::Mul,
-                fir::BinaryOp::Div => goast::BinaryOp::Div,
-                fir::BinaryOp::And => goast::BinaryOp::And,
-                fir::BinaryOp::Or => goast::BinaryOp::Or,
-                fir::BinaryOp::Less => goast::BinaryOp::Less,
-                fir::BinaryOp::Greater => goast::BinaryOp::Greater,
-                fir::BinaryOp::LessEq => goast::BinaryOp::LessEq,
-                fir::BinaryOp::GreaterEq => goast::BinaryOp::GreaterEq,
-                fir::BinaryOp::Eq => goast::BinaryOp::Eq,
-                fir::BinaryOp::NotEq => goast::BinaryOp::NotEq,
+                common_defs::BinaryOp::Add => goast::GoBinaryOp::Add,
+                common_defs::BinaryOp::Sub => goast::GoBinaryOp::Sub,
+                common_defs::BinaryOp::Mul => goast::GoBinaryOp::Mul,
+                common_defs::BinaryOp::Div => goast::GoBinaryOp::Div,
+                common_defs::BinaryOp::And => goast::GoBinaryOp::And,
+                common_defs::BinaryOp::Or => goast::GoBinaryOp::Or,
+                common_defs::BinaryOp::Less => goast::GoBinaryOp::Less,
+                common_defs::BinaryOp::Greater => goast::GoBinaryOp::Greater,
+                common_defs::BinaryOp::LessEq => goast::GoBinaryOp::LessEq,
+                common_defs::BinaryOp::GreaterEq => goast::GoBinaryOp::GreaterEq,
+                common_defs::BinaryOp::Eq => goast::GoBinaryOp::Eq,
+                common_defs::BinaryOp::NotEq => goast::GoBinaryOp::NotEq,
             };
             goast::Expr::BinaryOp {
                 op: go_op,
@@ -1369,7 +1368,7 @@ fn compile_while(
 
     let mut loop_body = compile_aexpr_assign(goenv, gensym, &cond_var, cond);
     let not_cond = goast::Expr::UnaryOp {
-        op: goast::UnaryOp::Not,
+        op: goast::GoUnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
             name: cond_var.clone(),
             ty: goty::GoType::TBool,

@@ -1,9 +1,8 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
-use crate::fir::{BinaryOp, Ident, UnaryOp};
 use crate::mangle::encode_ty;
-use crate::tast::{self};
+use crate::tast::{self, Ident};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
@@ -77,12 +76,12 @@ pub enum MonoExpr {
         ty: Ty,
     },
     EUnary {
-        op: UnaryOp,
+        op: common_defs::UnaryOp,
         expr: Box<MonoExpr>,
         ty: Ty,
     },
     EBinary {
-        op: BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: Box<MonoExpr>,
         rhs: Box<MonoExpr>,
         ty: Ty,

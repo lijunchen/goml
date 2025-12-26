@@ -127,12 +127,12 @@ pub enum Expr {
         ty: goty::GoType,
     },
     UnaryOp {
-        op: UnaryOp,
+        op: GoUnaryOp,
         expr: Box<Expr>,
         ty: goty::GoType,
     },
     BinaryOp {
-        op: BinaryOp,
+        op: GoBinaryOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
         ty: goty::GoType,
@@ -191,7 +191,7 @@ impl Expr {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum UnaryOp {
+pub enum GoUnaryOp {
     Neg,
     Not,
     AddrOf,
@@ -199,7 +199,7 @@ pub enum UnaryOp {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub enum BinaryOp {
+pub enum GoBinaryOp {
     Add,
     Sub,
     Mul,

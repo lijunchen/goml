@@ -1,6 +1,6 @@
 use expect_test::{Expect, expect};
 
-use crate::{env::GlobalTypeEnv, fir, tast};
+use crate::{env::GlobalTypeEnv, tast};
 
 fn expect_function_types(env: &GlobalTypeEnv, names: &[&str], expected: Expect) {
     let mut lines = Vec::new();
@@ -64,7 +64,7 @@ fn env_does_not_register_legacy_int_aliases() {
 #[test]
 fn env_registers_builtin_int32_inherent_to_string() {
     let env = GlobalTypeEnv::new();
-    let method = fir::Ident("to_string".to_string());
+    let method = tast::Ident("to_string".to_string());
 
     let result = env.lookup_inherent_method(&tast::Ty::TInt32, &method);
     expect![[r#"

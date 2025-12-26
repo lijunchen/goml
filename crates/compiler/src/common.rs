@@ -1,4 +1,4 @@
-use crate::fir::Ident;
+use crate::tast::Ident;
 
 #[derive(Debug, Clone)]
 pub enum Prim {
