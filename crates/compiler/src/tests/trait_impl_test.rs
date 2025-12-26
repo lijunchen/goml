@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use cst::cst::CstNode;
+use expect_test::{Expect, expect};
 use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{
@@ -23,21 +24,10 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     crate::typer::check_file(ast)
 }
 
-fn expect_single_error(src: &str, expected: &str) {
+fn expect_diagnostics(src: &str, expected: Expect) {
     let (_, _genv, diagnostics) = typecheck(src);
     let diagnostics = format_typer_diagnostics(&diagnostics);
-    assert_eq!(
-        diagnostics.len(),
-        1,
-        "expected exactly one diagnostic, got {:?}",
-        diagnostics
-    );
-    assert!(
-        diagnostics[0].contains(expected),
-        "expected diagnostic to contain `{}`, got `{}`",
-        expected,
-        diagnostics[0]
-    );
+    expected.assert_debug_eq(&diagnostics);
 }
 
 #[test]
@@ -52,7 +42,14 @@ impl Display for int32 {
 }
 "#;
 
-    expect_single_error(src, "Trait Display::show expected return type");
+    expect_diagnostics(
+        src,
+        expect![[r#"
+            [
+                "Trait Display::show expected return type TString but found TBool",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -67,7 +64,14 @@ impl Display for int32 {
 }
 "#;
 
-    expect_single_error(src, "Trait Display::show parameter 0 expected type");
+    expect_diagnostics(
+        src,
+        expect![[r#"
+            [
+                "Trait Display::show parameter 0 expected type TInt32 but found TBool",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -82,7 +86,14 @@ impl Add for int32 {
 }
 "#;
 
-    expect_single_error(src, "Trait Add::add expects 2 parameters but impl has 1");
+    expect_diagnostics(
+        src,
+        expect![[r#"
+            [
+                "Trait Add::add expects 2 parameters but impl has 1",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -98,9 +109,13 @@ impl Display for int32 {
 }
 "#;
 
-    expect_single_error(
+    expect_diagnostics(
         src,
-        "Trait Display implementation for TInt32 is missing method debug",
+        expect![[r#"
+            [
+                "Trait Display implementation for TInt32 is missing method debug",
+            ]
+        "#]],
     );
 }
 
@@ -117,7 +132,14 @@ impl Display for int32 {
 }
 "#;
 
-    expect_single_error(src, "Method extra is not declared in trait Display");
+    expect_diagnostics(
+        src,
+        expect![[r#"
+            [
+                "Method extra is not declared in trait Display",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -128,7 +150,14 @@ impl Unknown for int32 {
 }
 "#;
 
-    expect_single_error(src, "Trait Unknown is not defined");
+    expect_diagnostics(
+        src,
+        expect![[r#"
+            [
+                "Trait Unknown is not defined, cannot implement it for TInt32",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -146,9 +175,13 @@ impl Display for Point {
 }
 "#;
 
-    expect_single_error(
+    expect_diagnostics(
         src,
-        "Trait Display implementation for TStruct(Point) is missing method debug",
+        expect![[r#"
+            [
+                "Trait Display implementation for TStruct(Point) is missing method debug",
+            ]
+        "#]],
     );
 }
 
@@ -170,9 +203,13 @@ impl Display for Maybe[int32] {
 }
 "#;
 
-    expect_single_error(
+    expect_diagnostics(
         src,
-        "Trait Display implementation for TApp(TEnum(Maybe), [TInt32]) is missing method debug",
+        expect![[r#"
+            [
+                "Trait Display implementation for TApp(TEnum(Maybe), [TInt32]) is missing method debug",
+            ]
+        "#]],
     );
 }
 
@@ -189,11 +226,8 @@ impl Point {
 
     let (_tast, genv, diagnostics) = typecheck(src);
     let diagnostics = format_typer_diagnostics(&diagnostics);
-    assert!(
-        diagnostics.is_empty(),
-        "unexpected diagnostics: {:?}",
-        diagnostics
-    );
+    let mut lines = Vec::new();
+    lines.push(format!("diagnostics={diagnostics:?}"));
 
     let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
@@ -205,8 +239,14 @@ impl Point {
         .inherent_impls
         .get(&encoded)
         .expect("inherent impl exists");
-    assert!(impl_def.methods.contains_key("new"));
-    assert!(impl_def.methods.contains_key("origin"));
+    let mut method_names: Vec<_> = impl_def.methods.keys().cloned().collect();
+    method_names.sort();
+    lines.push(format!("methods={method_names:?}"));
+
+    expect![[r#"
+        diagnostics=[]
+        methods=["new", "origin"]"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -222,11 +262,8 @@ impl Point {
 
     let (tast_file, genv, diagnostics) = typecheck(src);
     let diagnostics = format_typer_diagnostics(&diagnostics);
-    assert!(
-        diagnostics.is_empty(),
-        "unexpected diagnostics: {:?}",
-        diagnostics
-    );
+    let mut lines = Vec::new();
+    lines.push(format!("diagnostics={diagnostics:?}"));
 
     let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
@@ -243,22 +280,7 @@ impl Point {
         .methods
         .get("copy")
         .expect("copy method registered");
-
-    match &copy_scheme.ty {
-        tast::Ty::TFunc { params, ret_ty } => {
-            assert_eq!(
-                *params,
-                vec![point_ty.clone(), point_ty.clone()],
-                "copy params should be instantiated to Point",
-            );
-            assert_eq!(
-                **ret_ty,
-                point_ty.clone(),
-                "copy return type should be instantiated to Point",
-            );
-        }
-        other => panic!("expected copy to have function type, found {:?}", other),
-    }
+    lines.push(format!("copy_scheme={:?}", copy_scheme.ty));
 
     let impl_block = tast_file
         .toplevels
@@ -277,20 +299,20 @@ impl Point {
         .iter()
         .find(|f| f.name == "copy")
         .expect("copy method present in tast");
-    assert_eq!(copy_fn.params[0].1, point_ty.clone());
-    assert_eq!(copy_fn.params[1].1, point_ty.clone());
-    assert_eq!(copy_fn.ret_ty, point_ty.clone());
+    lines.push(format!("copy_fn.params={:?}", copy_fn.params));
+    lines.push(format!("copy_fn.ret_ty={:?}", copy_fn.ret_ty));
 
     let origin_scheme = impl_def
         .methods
         .get("origin")
         .expect("origin method registered");
+    lines.push(format!("origin_scheme={:?}", origin_scheme.ty));
 
-    match &origin_scheme.ty {
-        tast::Ty::TFunc { params, ret_ty } => {
-            assert!(params.is_empty(), "origin should not take parameters");
-            assert_eq!(**ret_ty, point_ty);
-        }
-        other => panic!("expected origin to have function type, found {:?}", other),
-    }
+    expect![[r#"
+        diagnostics=[]
+        copy_scheme=TFunc([TStruct(Point), TStruct(Point)], TStruct(Point))
+        copy_fn.params=[("self/0", TStruct(Point)), ("other/1", TStruct(Point))]
+        copy_fn.ret_ty=TStruct(Point)
+        origin_scheme=TFunc([], TStruct(Point))"#]]
+    .assert_eq(&lines.join("\n"));
 }

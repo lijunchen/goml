@@ -1,9 +1,13 @@
 use std::path::PathBuf;
 
 use cst::cst::CstNode;
+use expect_test::{Expect, expect};
 use parser::{Diagnostics, syntax::MySyntaxNode};
 
-use crate::{env::GlobalTypeEnv, fir, tast};
+use crate::{
+    env::{GlobalTypeEnv, StructDef},
+    fir, tast,
+};
 
 fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     let path = PathBuf::from("test_structs.gom");
@@ -17,6 +21,24 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
         .into_result()
         .expect("failed to lower to AST");
     crate::typer::check_file(ast)
+}
+
+fn snapshot_structs_and_enums(point: &StructDef, wrapper: &StructDef) -> String {
+    let mut lines = Vec::new();
+    lines.push(format!("Point.generics={:?}", point.generics));
+    lines.push(format!("Point.fields={:?}", point.fields));
+    lines.push(format!("Wrapper.generics={:?}", wrapper.generics));
+    lines.push(format!("Wrapper.fields={:?}", wrapper.fields));
+    lines.join("\n")
+}
+
+fn expect_typer_error(src: &str, expected: Expect) {
+    let (_tast, _genv, diagnostics) = typecheck(src);
+    let messages: Vec<String> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect();
+    expected.assert_debug_eq(&messages);
 }
 
 #[test]
@@ -42,48 +64,26 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
         .structs()
         .get(&fir::Ident::new("Point"))
         .expect("Point struct to be recorded");
-    assert!(point.generics.is_empty());
-    assert_eq!(point.fields.len(), 2);
-    assert_eq!(point.fields[0].0.0, "x");
-    assert_eq!(point.fields[0].1, tast::Ty::TInt32);
-    assert_eq!(point.fields[1].0.0, "y");
-    assert_eq!(point.fields[1].1, tast::Ty::TInt32);
-
     let wrapper = genv
         .structs()
         .get(&fir::Ident::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
-    assert_eq!(wrapper.generics.len(), 1);
-    assert_eq!(wrapper.generics[0].0, "T");
-    assert_eq!(wrapper.fields.len(), 1);
-    assert_eq!(wrapper.fields[0].0.0, "value");
-    assert_eq!(
-        wrapper.fields[0].1,
-        tast::Ty::TParam {
-            name: "T".to_string(),
-        }
-    );
-
     let wrapper_fn = genv
         .value_env
         .funcs
         .get("consume_wrapper")
         .expect("function type to be recorded");
-    if let tast::Ty::TFunc { params, ret_ty } = &wrapper_fn.ty {
-        assert_eq!(params.len(), 1);
-        assert_eq!(**ret_ty, tast::Ty::TUnit);
-        let expected_param = tast::Ty::TApp {
-            ty: Box::new(tast::Ty::TStruct {
-                name: "Wrapper".to_string(),
-            }),
-            args: vec![tast::Ty::TParam {
-                name: "T".to_string(),
-            }],
-        };
-        assert_eq!(params[0], expected_param);
-    } else {
-        panic!("expected consume_wrapper to have function type");
-    }
+    let mut lines = Vec::new();
+    lines.push(snapshot_structs_and_enums(point, wrapper));
+    lines.push(format!("consume_wrapper={:?}", wrapper_fn.ty));
+
+    expect![[r#"
+        Point.generics=[]
+        Point.fields=[(Ident("x"), TInt32), (Ident("y"), TInt32)]
+        Wrapper.generics=[Ident("T")]
+        Wrapper.fields=[(Ident("value"), TParam(T))]
+        consume_wrapper=TFunc([TApp(TStruct(Wrapper), [TParam(T)])], TUnit)"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -111,38 +111,14 @@ enum Shape[T] {
         .enums()
         .get(&fir::Ident::new("Shape"))
         .expect("Shape enum to be recorded");
-    assert_eq!(shape.generics.len(), 1);
-    assert_eq!(shape.generics[0].0, "T");
-    assert_eq!(shape.variants.len(), 3);
+    let mut lines = Vec::new();
+    lines.push(format!("Shape.generics={:?}", shape.generics));
+    lines.push(format!("Shape.variants={:?}", shape.variants));
 
-    let dot = &shape.variants[0];
-    assert_eq!(dot.0.0, "Dot");
-    assert_eq!(dot.1.len(), 1);
-    assert_eq!(
-        dot.1[0],
-        tast::Ty::TStruct {
-            name: "Point".to_string(),
-        }
-    );
-
-    let wrapped = &shape.variants[1];
-    assert_eq!(wrapped.0.0, "Wrapped");
-    assert_eq!(wrapped.1.len(), 1);
-    assert_eq!(
-        wrapped.1[0],
-        tast::Ty::TApp {
-            ty: Box::new(tast::Ty::TStruct {
-                name: "Wrapper".to_string(),
-            }),
-            args: vec![tast::Ty::TParam {
-                name: "T".to_string(),
-            }],
-        }
-    );
-
-    let origin = &shape.variants[2];
-    assert_eq!(origin.0.0, "Origin");
-    assert!(origin.1.is_empty());
+    expect![[r#"
+        Shape.generics=[Ident("T")]
+        Shape.variants=[(Ident("Dot"), [TStruct(Point)]), (Ident("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (Ident("Origin"), [])]"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -165,29 +141,18 @@ enum List {
         .structs()
         .get(&fir::Ident::new("Node"))
         .expect("Node struct to be recorded");
-    assert_eq!(node.fields.len(), 2);
-    assert_eq!(node.fields[1].0.0, "next");
-    assert_eq!(
-        node.fields[1].1,
-        tast::Ty::TEnum {
-            name: "List".to_string(),
-        }
-    );
-
     let list = genv
         .enums()
         .get(&fir::Ident::new("List"))
         .expect("List enum to be recorded");
-    assert_eq!(list.variants.len(), 2);
-    let cons = &list.variants[0];
-    assert_eq!(cons.0.0, "Cons");
-    assert_eq!(cons.1.len(), 1);
-    assert_eq!(
-        cons.1[0],
-        tast::Ty::TStruct {
-            name: "Node".to_string(),
-        }
-    );
+    let mut lines = Vec::new();
+    lines.push(format!("Node.fields={:?}", node.fields));
+    lines.push(format!("List.variants={:?}", list.variants));
+
+    expect![[r#"
+        Node.fields=[(Ident("value"), TInt32), (Ident("next"), TEnum(List))]
+        List.variants=[(Ident("Cons"), [TStruct(Node)]), (Ident("Nil"), [])]"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -224,20 +189,16 @@ fn use_closure(x: int32) -> int32 {
         panic!("expected closure expression");
     };
 
-    assert_eq!(params.len(), 1);
-    assert_eq!(params[0].ty, tast::Ty::TInt32);
+    let mut lines = Vec::new();
+    lines.push(format!("params={:?}", params));
+    lines.push(format!("body={:?}", body));
+    lines.push(format!("ty={:?}", ty));
 
-    assert!(matches!(**body, tast::Expr::EBinary { .. }));
-
-    let tast::Ty::TFunc {
-        params: func_params,
-        ret_ty,
-    } = ty
-    else {
-        panic!("expected closure type to be a function");
-    };
-    assert_eq!(func_params.as_slice(), &[tast::Ty::TInt32]);
-    assert_eq!(**ret_ty, tast::Ty::TInt32);
+    expect![[r#"
+        params=[ClosureParam { name: "y/1", ty: TInt32, astptr: Some(SyntaxNodePtr { kind: CLOSURE_PARAM, range: 52..53 }) }]
+        body=EBinary { op: Add, lhs: EVar { name: "y/1", ty: TInt32, astptr: Some(SyntaxNodePtr { kind: EXPR_IDENT, range: 55..57 }) }, rhs: EVar { name: "x/0", ty: TInt32, astptr: Some(SyntaxNodePtr { kind: EXPR_IDENT, range: 59..60 }) }, ty: TInt32, resolution: Builtin }
+        ty=TFunc([TInt32], TInt32)"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -268,36 +229,14 @@ fn wrap[T](value: T) -> T {
         panic!("expected closure expression");
     };
 
-    assert_eq!(params.len(), 1);
-    let expected = tast::Ty::TParam {
-        name: "T".to_string(),
-    };
-    assert_eq!(params[0].ty, expected);
+    let mut lines = Vec::new();
+    lines.push(format!("params={:?}", params));
+    lines.push(format!("ty={:?}", ty));
 
-    let tast::Ty::TFunc {
-        params: func_params,
-        ret_ty,
-    } = ty
-    else {
-        panic!("expected closure type to be a function");
-    };
-    assert_eq!(func_params.as_slice(), std::slice::from_ref(&expected));
-    assert_eq!(**ret_ty, expected);
-}
-
-fn assert_typer_error(src: &str, expected_message: &str) {
-    let (_tast, _genv, diagnostics) = typecheck(src);
-    let messages: Vec<String> = diagnostics
-        .iter()
-        .map(|diagnostic| diagnostic.message().to_string())
-        .collect();
-    assert!(
-        messages
-            .iter()
-            .any(|message| message.contains(expected_message)),
-        "expected diagnostics to contain `{expected_message}`, but were: {:?}",
-        messages
-    );
+    expect![[r#"
+        params=[ClosureParam { name: "x/1", ty: TParam(T), astptr: Some(SyntaxNodePtr { kind: CLOSURE_PARAM, range: 43..47 }) }]
+        ty=TFunc([TParam(T)], TParam(T))"#]]
+    .assert_eq(&lines.join("\n"));
 }
 
 #[test]
@@ -310,7 +249,14 @@ struct Wrapper[T] {
 fn bad(value: Wrapper[int32, int32]) -> unit { () }
 "#;
 
-    assert_typer_error(src, "Type Wrapper expects 1 type arguments, but got 2");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Type Wrapper expects 1 type arguments, but got 2",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -319,7 +265,14 @@ fn unknown_type_constructor_reports_error() {
 fn bad(p: Undefined) -> unit { () }
 "#;
 
-    assert_typer_error(src, "Unknown type constructor Undefined");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor Undefined",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -332,7 +285,14 @@ struct Wrapper[T] {
 fn bad[T](value: Wrapper[U]) -> unit { () }
 "#;
 
-    assert_typer_error(src, "Unknown type constructor U");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor U",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -347,7 +307,14 @@ enum Problem {
 }
 "#;
 
-    assert_typer_error(src, "Type Wrapper expects 1 type arguments, but got 2");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Type Wrapper expects 1 type arguments, but got 2",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -358,7 +325,14 @@ enum Problem {
 }
 "#;
 
-    assert_typer_error(src, "Unknown type constructor MissingStruct");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor MissingStruct",
+            ]
+        "#]],
+    );
 }
 
 #[test]
@@ -373,5 +347,12 @@ enum Problem[T] {
 }
 "#;
 
-    assert_typer_error(src, "Unknown type constructor U");
+    expect_typer_error(
+        src,
+        expect![[r#"
+            [
+                "Unknown type constructor U",
+            ]
+        "#]],
+    );
 }

@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use cst::cst::CstNode;
+use expect_test::expect;
 use parser::syntax::MySyntaxNode;
 
 use crate::{env::GlobalTypeEnv, tast};
@@ -20,6 +21,60 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnosti
     let ast_clone = ast.clone();
     let (tast, genv, diagnostics) = crate::typer::check_file(ast);
     (ast_clone, tast, genv, diagnostics)
+}
+
+fn describe_pat(pat: &ast::ast::Pat) -> String {
+    match pat {
+        ast::ast::Pat::PVar { name, .. } => name.0.clone(),
+        ast::ast::Pat::PWild => "_".to_string(),
+        other => format!("{other:?}"),
+    }
+}
+
+fn describe_path(path: &ast::ast::Path) -> String {
+    path.last_ident()
+        .map(|ident| ident.0.clone())
+        .unwrap_or_default()
+}
+
+fn describe_expr(expr: &ast::ast::Expr) -> String {
+    match expr {
+        ast::ast::Expr::ELet {
+            pat,
+            annotation,
+            value,
+        } => {
+            let annotation = annotation
+                .as_ref()
+                .map(|ty| format!(": {ty:?}"))
+                .unwrap_or_default();
+            format!(
+                "let {}{} = {}",
+                describe_pat(pat),
+                annotation,
+                describe_expr(value)
+            )
+        }
+        ast::ast::Expr::ECall { func, args } => {
+            let args = args
+                .iter()
+                .map(describe_expr)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("call {}({})", describe_expr(func), args)
+        }
+        ast::ast::Expr::EPath { path, .. } => describe_path(path),
+        ast::ast::Expr::EInt { value } => value.clone(),
+        ast::ast::Expr::EBlock { exprs } => format!(
+            "block [{}]",
+            exprs
+                .iter()
+                .map(describe_expr)
+                .collect::<Vec<_>>()
+                .join("; ")
+        ),
+        other => format!("{other:?}"),
+    }
 }
 
 #[test]
@@ -45,88 +100,28 @@ fn main() -> int32 {
         other => panic!("unexpected main body, expected EBlock: {:?}", other),
     };
 
-    assert_eq!(exprs.len(), 3, "expected 3 expressions in block");
-
-    // First expression: let r = ref(1)
-    match &exprs[0] {
-        ast::ast::Expr::ELet {
-            pat,
-            annotation,
-            value,
-        } => {
-            assert!(annotation.is_none());
-            match pat {
-                ast::ast::Pat::PVar { name, .. } => assert_eq!(name.0, "r"),
-                other => panic!("unexpected first let pattern: {:?}", other),
-            }
-            match value.as_ref() {
-                ast::ast::Expr::ECall { func, args } => {
-                    assert_eq!(args.len(), 1);
-                    assert!(matches!(
-                        func.as_ref(),
-                        ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref".to_string())
-                    ));
-                    assert!(matches!(
-                        args[0],
-                        ast::ast::Expr::EInt { value: ref v } if v == "1"
-                    ));
-                }
-                other => panic!("unexpected first let value: {:?}", other),
-            }
-        }
-        other => panic!("expected first ELet, got {:?}", other),
+    let mut lines = Vec::new();
+    lines.push(format!("expr_count={}", exprs.len()));
+    for (index, expr) in exprs.iter().enumerate() {
+        lines.push(format!("expr{index}={}", describe_expr(expr)));
     }
-
-    // Second expression: let _ = ref_set(r, 2)
-    match &exprs[1] {
-        ast::ast::Expr::ELet { pat, value, .. } => {
-            assert!(matches!(pat, ast::ast::Pat::PWild));
-            match value.as_ref() {
-                ast::ast::Expr::ECall { func, args } => {
-                    assert!(matches!(
-                        func.as_ref(),
-                        ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_set".to_string())
-                    ));
-                    assert_eq!(args.len(), 2);
-                    assert!(matches!(
-                        args[0],
-                        ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
-                    ));
-                    assert!(matches!(
-                        args[1],
-                        ast::ast::Expr::EInt { value: ref v } if v == "2"
-                    ));
-                }
-                other => panic!("unexpected second let value: {:?}", other),
-            }
-        }
-        other => panic!("unexpected second expression, expected ELet: {:?}", other),
-    }
-
-    // Third expression: ref_get(r)
-    match &exprs[2] {
-        ast::ast::Expr::ECall { func, args } => {
-            assert!(matches!(
-                func.as_ref(),
-                ast::ast::Expr::EPath { path, .. } if path.last_ident().map(|i| &i.0) == Some(&"ref_get".to_string())
-            ));
-            assert_eq!(args.len(), 1);
-            assert!(matches!(
-                args[0],
-                ast::ast::Expr::EPath { ref path, .. } if path.last_ident().map(|i| &i.0) == Some(&"r".to_string())
-            ));
-        }
-        other => panic!("unexpected third expression: {:?}", other),
-    }
-
-    assert!(
-        diagnostics.is_empty(),
-        "unexpected diagnostics: {:?}",
-        diagnostics
-    );
+    let messages: Vec<String> = diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.message().to_string())
+        .collect();
+    lines.push(format!("diagnostics={messages:?}"));
 
     let ref_ty = tast::Ty::TRef {
         elem: Box::new(tast::Ty::TInt32),
     };
-    assert_eq!(ref_ty.get_constr_name_unsafe(), "Ref");
+    lines.push(format!("ref_constr={}", ref_ty.get_constr_name_unsafe()));
+
+    expect![[r#"
+        expr_count=3
+        expr0=let r = call ref(1)
+        expr1=let _ = call ref_set(r, 2)
+        expr2=call ref_get(r)
+        diagnostics=[]
+        ref_constr=Ref"#]]
+    .assert_eq(&lines.join("\n"));
 }

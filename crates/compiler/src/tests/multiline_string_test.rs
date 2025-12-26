@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use super::*;
+use expect_test::expect;
 
 #[test]
 fn multiline_string_prints_lines() -> anyhow::Result<()> {
@@ -20,7 +21,11 @@ fn main() -> unit {
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
     let go_output = execute_go_source(&go_source)?;
 
-    assert_eq!(go_output, "first line\nsecond line\n");
+    expect![[r#"
+        first line
+        second line
+    "#]]
+    .assert_eq(&go_output);
 
     Ok(())
 }
