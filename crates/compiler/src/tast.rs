@@ -1,10 +1,16 @@
 use ena::unify::{EqUnifyValue, UnifyKey};
 use parser::syntax::MySyntaxNodePtr;
 
-use crate::{
-    common::{Constructor, Prim},
-    fir::{BinaryOp, Ident, UnaryOp},
-};
+use crate::common::{Constructor, Prim};
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Ident(pub String);
+
+impl Ident {
+    pub fn new(name: &str) -> Self {
+        Ident(name.to_string())
+    }
+}
 
 pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
 
@@ -367,7 +373,7 @@ pub enum Expr {
         ty: Ty,
     },
     EUnary {
-        op: UnaryOp,
+        op: common_defs::UnaryOp,
         expr: Box<Expr>,
         ty: Ty,
         resolution: UnaryResolution,
@@ -384,7 +390,7 @@ pub enum Expr {
         astptr: Option<MySyntaxNodePtr>,
     },
     EBinary {
-        op: BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
         ty: Ty,

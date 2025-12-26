@@ -270,12 +270,12 @@ pub enum HirExprKind {
     },
 
     Unary {
-        op: ast::ast::UnaryOp,
+        op: common_defs::UnaryOp,
         expr: HirExprId,
     },
 
     Binary {
-        op: ast::ast::BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: HirExprId,
         rhs: HirExprId,
     },

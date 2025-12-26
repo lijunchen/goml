@@ -876,26 +876,26 @@ impl HirExprKind {
             }
             HirExprKind::Unary { op, expr } => {
                 let op_str = match op {
-                    ast::ast::UnaryOp::Neg => "-",
-                    ast::ast::UnaryOp::Not => "!",
+                    common_defs::UnaryOp::Neg => "-",
+                    common_defs::UnaryOp::Not => "!",
                 };
                 let expr_doc = ctx.tables.exprs[*expr].to_doc_with_id(ctx, *expr);
                 RcDoc::text(op_str).append(expr_doc)
             }
             HirExprKind::Binary { op, lhs, rhs } => {
                 let op_str = match op {
-                    ast::ast::BinaryOp::Add => "+",
-                    ast::ast::BinaryOp::Sub => "-",
-                    ast::ast::BinaryOp::Mul => "*",
-                    ast::ast::BinaryOp::Div => "/",
-                    ast::ast::BinaryOp::And => "&&",
-                    ast::ast::BinaryOp::Or => "||",
-                    ast::ast::BinaryOp::Less => "<",
-                    ast::ast::BinaryOp::Greater => ">",
-                    ast::ast::BinaryOp::LessEq => "<=",
-                    ast::ast::BinaryOp::GreaterEq => ">=",
-                    ast::ast::BinaryOp::Eq => "==",
-                    ast::ast::BinaryOp::NotEq => "!=",
+                    common_defs::BinaryOp::Add => "+",
+                    common_defs::BinaryOp::Sub => "-",
+                    common_defs::BinaryOp::Mul => "*",
+                    common_defs::BinaryOp::Div => "/",
+                    common_defs::BinaryOp::And => "&&",
+                    common_defs::BinaryOp::Or => "||",
+                    common_defs::BinaryOp::Less => "<",
+                    common_defs::BinaryOp::Greater => ">",
+                    common_defs::BinaryOp::LessEq => "<=",
+                    common_defs::BinaryOp::GreaterEq => ">=",
+                    common_defs::BinaryOp::Eq => "==",
+                    common_defs::BinaryOp::NotEq => "!=",
                 };
                 let lhs_doc = ctx.tables.exprs[*lhs].to_doc_with_id(ctx, *lhs);
                 let rhs_doc = ctx.tables.exprs[*rhs].to_doc_with_id(ctx, *rhs);

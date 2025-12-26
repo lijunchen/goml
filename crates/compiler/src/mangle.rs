@@ -1,4 +1,4 @@
-use crate::{fir, tast};
+use crate::tast;
 
 pub fn encode_ty(ty: &tast::Ty) -> String {
     match ty {
@@ -262,7 +262,7 @@ fn decode_next(tokens: &[&str], start: usize, end: usize) -> Result<(tast::Ty, u
     Err("failed to decode type component".to_string())
 }
 
-pub fn mangle_impl_name(trait_name: &fir::Ident, for_ty: &tast::Ty, method_name: &str) -> String {
+pub fn mangle_impl_name(trait_name: &tast::Ident, for_ty: &tast::Ty, method_name: &str) -> String {
     let for_ty_str = encode_ty(for_ty);
     format!("impl_{}_{}_{}", trait_name.0, for_ty_str, method_name)
 }

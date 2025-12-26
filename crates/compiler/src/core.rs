@@ -1,6 +1,5 @@
 pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
-use crate::fir::{BinaryOp, UnaryOp};
 use crate::tast;
 
 #[derive(Debug, Clone)]
@@ -79,12 +78,12 @@ pub enum Expr {
         ty: Ty,
     },
     EUnary {
-        op: UnaryOp,
+        op: common_defs::UnaryOp,
         expr: Box<Expr>,
         ty: Ty,
     },
     EBinary {
-        op: BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
         ty: Ty,

@@ -3,10 +3,9 @@ use indexmap::IndexMap;
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
-    fir::{BinaryOp, Ident, UnaryOp},
     mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
-    tast::{self, Ty},
+    tast::{self, Ident, Ty},
 };
 
 const CLOSURE_ENV_PREFIX: &str = "closure_env_";
@@ -163,12 +162,12 @@ pub enum LiftExpr {
         ty: Ty,
     },
     EUnary {
-        op: UnaryOp,
+        op: common_defs::UnaryOp,
         expr: Box<LiftExpr>,
         ty: Ty,
     },
     EBinary {
-        op: BinaryOp,
+        op: common_defs::BinaryOp,
         lhs: Box<LiftExpr>,
         rhs: Box<LiftExpr>,
         ty: Ty,

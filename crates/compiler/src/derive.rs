@@ -459,7 +459,7 @@ fn concat_parts(parts: Vec<Expr>, _attr_ptr: &MySyntaxNodePtr) -> Expr {
     });
     for part in iter {
         acc = Expr::EBinary {
-            op: ast::BinaryOp::Add,
+            op: common_defs::BinaryOp::Add,
             lhs: Box::new(acc),
             rhs: Box::new(part),
         };

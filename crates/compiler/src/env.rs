@@ -7,9 +7,8 @@ pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
-    fir::Ident,
     mangle::encode_ty,
-    tast::{self},
+    tast::{self, Ident},
 };
 use std::cell::Cell;
 
@@ -526,8 +525,8 @@ impl GlobalTypeEnv {
 
     pub fn lookup_constructor_with_namespace(
         &self,
-        enum_name: Option<&Ident>,
-        constr: &Ident,
+        enum_name: Option<&tast::Ident>,
+        constr: &tast::Ident,
     ) -> Option<(Constructor, tast::Ty)> {
         self.type_env
             .lookup_constructor_with_namespace(enum_name, constr)

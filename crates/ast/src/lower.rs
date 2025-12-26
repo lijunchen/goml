@@ -1445,11 +1445,11 @@ fn lower_expr_with_args(
             };
             let unary = match op_token.kind() {
                 MySyntaxKind::Minus => ast::Expr::EUnary {
-                    op: ast::UnaryOp::Neg,
+                    op: common_defs::UnaryOp::Neg,
                     expr: Box::new(expr),
                 },
                 MySyntaxKind::Bang => ast::Expr::EUnary {
-                    op: ast::UnaryOp::Not,
+                    op: common_defs::UnaryOp::Not,
                     expr: Box::new(expr),
                 },
                 kind => {
@@ -1490,7 +1490,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Plus => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Add,
+                        op: common_defs::BinaryOp::Add,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1498,7 +1498,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Minus => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Sub,
+                        op: common_defs::BinaryOp::Sub,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1506,7 +1506,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Star => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Mul,
+                        op: common_defs::BinaryOp::Mul,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1514,7 +1514,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Slash => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Div,
+                        op: common_defs::BinaryOp::Div,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1522,7 +1522,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::AndAnd => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::And,
+                        op: common_defs::BinaryOp::And,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1530,7 +1530,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::OrOr => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Or,
+                        op: common_defs::BinaryOp::Or,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1538,7 +1538,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Less => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Less,
+                        op: common_defs::BinaryOp::Less,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1546,7 +1546,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::Greater => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Greater,
+                        op: common_defs::BinaryOp::Greater,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1554,7 +1554,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::LessEq => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::LessEq,
+                        op: common_defs::BinaryOp::LessEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1562,7 +1562,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::GreaterEq => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::GreaterEq,
+                        op: common_defs::BinaryOp::GreaterEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1570,7 +1570,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::EqEq => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::Eq,
+                        op: common_defs::BinaryOp::Eq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })
@@ -1578,7 +1578,7 @@ fn lower_expr_with_args(
                 MySyntaxKind::NotEq => {
                     let rhs = lower_expr_with_args(ctx, rhs_cst, trailing_args)?;
                     Some(ast::Expr::EBinary {
-                        op: ast::BinaryOp::NotEq,
+                        op: common_defs::BinaryOp::NotEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
                     })

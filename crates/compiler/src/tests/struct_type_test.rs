@@ -6,7 +6,7 @@ use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{
     env::{GlobalTypeEnv, StructDef},
-    fir, tast,
+    tast,
 };
 
 fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
@@ -62,11 +62,11 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     let point = genv
         .structs()
-        .get(&fir::Ident::new("Point"))
+        .get(&tast::Ident::new("Point"))
         .expect("Point struct to be recorded");
     let wrapper = genv
         .structs()
-        .get(&fir::Ident::new("Wrapper"))
+        .get(&tast::Ident::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
     let wrapper_fn = genv
         .value_env
@@ -109,7 +109,7 @@ enum Shape[T] {
 
     let shape = genv
         .enums()
-        .get(&fir::Ident::new("Shape"))
+        .get(&tast::Ident::new("Shape"))
         .expect("Shape enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Shape.generics={:?}", shape.generics));
@@ -139,11 +139,11 @@ enum List {
 
     let node = genv
         .structs()
-        .get(&fir::Ident::new("Node"))
+        .get(&tast::Ident::new("Node"))
         .expect("Node struct to be recorded");
     let list = genv
         .enums()
-        .get(&fir::Ident::new("List"))
+        .get(&tast::Ident::new("List"))
         .expect("List enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Node.fields={:?}", node.fields));
