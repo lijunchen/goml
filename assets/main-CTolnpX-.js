@@ -1,0 +1,24 @@
+const n = `fn main() {
+    let a = 10;
+    let f1 = |x: int32| {
+        let b = 20;
+        let f2 = |y: int32| {
+            let c = 30;
+            let f3 = |z: int32| {
+                let d = 40;
+                let f4 = |w: int32| {
+                    a + b + c + d + x + y + z + w
+                };
+                f4(4)
+            };
+            f3(3)
+        };
+        f2(2)
+    };
+    let result = f1(1);
+    string_println(int32_to_string(result))
+}
+`;
+export {
+  n as default
+};

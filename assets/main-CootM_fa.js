@@ -1,0 +1,82 @@
+const t = `struct PairData {
+    head: int32,
+    tail: int64,
+}
+
+fn is_special8(value: int8) -> bool {
+    match value {
+        5i8 => true,
+        7i8 => true,
+        _ => false,
+    }
+}
+
+fn is_special16(value: int16) -> bool {
+    match value {
+        1024i16 => true,
+        2048i16 => true,
+        _ => false,
+    }
+}
+
+fn is_special32(value: int32) -> bool {
+    match value {
+        4096i32 => true,
+        8192i32 => true,
+        _ => false,
+    }
+}
+
+fn is_special64(value: int64) -> bool {
+    match value {
+        16384i64 => true,
+        32768i64 => true,
+        _ => false,
+    }
+}
+
+fn match_tuple(values: (int8, int16)) -> bool {
+    match values {
+        (1i8, 2i16) => true,
+        _ => false,
+    }
+}
+
+fn match_struct(pair: PairData) -> bool {
+    match pair {
+        PairData { head: 100i32, tail: 200i64 } => true,
+        PairData { head: _, tail: 300i64 } => true,
+        _ => false,
+    }
+}
+
+fn report(label: string, value: bool) -> string {
+    label + bool_to_string(value)
+}
+
+fn main() {
+    let tuple_first: int8 = 1i8;
+    let tuple_second: int16 = 2i16;
+    let tuple_result_hit = match_tuple((tuple_first, tuple_second));
+    let tuple_result_miss = match_tuple((3i8, 4i16));
+    let pair_first = match_struct(PairData { head: 100i32, tail: 200i64 });
+    let pair_second = match_struct(PairData { head: 10i32, tail: 300i64 });
+
+    let part1 = report("int8=", is_special8(5i8));
+    let part2 = report(",int16=", is_special16(1024i16));
+    let part3 = report(",int32=", is_special32(8192i32));
+    let part4 = report(",int64_a=", is_special64(16384i64));
+    let part5 = report(",int64_b=", is_special64(32768i64));
+    let part6 = report(",tuple_hit=", tuple_result_hit);
+    let part7 = report(",tuple_miss=", tuple_result_miss);
+    let part8 = report(",struct_first=", pair_first);
+    let part9 = report(",struct_second=", pair_second);
+
+    let message = part1 + part2 + part3 + part4 + part5 + part6 + part7 + part8 + part9;
+    let _ = string_println(message);
+    ()
+}
+`;
+export {
+  t as default
+};
