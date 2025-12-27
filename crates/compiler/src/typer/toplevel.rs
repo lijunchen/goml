@@ -6,18 +6,20 @@ use indexmap::IndexMap;
 use parser::{Diagnostic, Diagnostics};
 
 use crate::{
-    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, LocalTypeEnv},
+    env::{self, FnOrigin, FnScheme, GlobalTypeEnv},
     fir::{self},
     mangle::encode_ty,
     tast::{self},
     typer::{
-        Typer, name_resolution,
+        Typer,
+        localenv::LocalTypeEnv,
+        name_resolution,
         util::{type_param_name_set, validate_ty},
     },
 };
 
-fn predeclare_types(genv: &mut GlobalTypeEnv, ast: &fir::File) {
-    for item in ast.toplevels.iter() {
+fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::File) {
+    for item in fir.toplevels.iter() {
         match item {
             fir::Item::EnumDef(enum_def) => {
                 genv.ensure_enum_placeholder(
@@ -634,10 +636,10 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     instantiate_self_ty(ty, self_ty)
 }
 
-pub fn collect_typedefs(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, ast: &fir::File) {
-    predeclare_types(genv, ast);
+pub fn collect_typedefs(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, fir: &fir::File) {
+    predeclare_types(genv, fir);
 
-    for item in ast.toplevels.iter() {
+    for item in fir.toplevels.iter() {
         match item {
             fir::Item::EnumDef(enum_def) => define_enum(genv, diagnostics, enum_def),
             fir::Item::StructDef(struct_def) => define_struct(genv, diagnostics, struct_def),
@@ -666,12 +668,12 @@ pub fn check_file_with_env(
     genv: env::GlobalTypeEnv,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = genv;
-    let ast = name_resolution::NameResolution::default().resolve_file(ast);
+    let (fir, fir_table) = name_resolution::NameResolution::default().resolve_file(ast);
+    let mut typer = Typer::new(fir_table);
     let mut diagnostics = Diagnostics::new();
-    collect_typedefs(&mut genv, &mut diagnostics, &ast);
-    let mut typer = Typer::new();
+    collect_typedefs(&mut genv, &mut diagnostics, &fir);
     let mut typed_toplevel_tasts = vec![];
-    for item in ast.toplevels.iter() {
+    for item in fir.toplevels.iter() {
         match item {
             fir::Item::EnumDef(..) => (),
             fir::Item::StructDef(..) => (),

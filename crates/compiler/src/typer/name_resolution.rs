@@ -2,9 +2,25 @@ use std::cell::Cell;
 use std::collections::HashSet;
 
 use ast::ast;
+use la_arena::Idx;
 
 use crate::env;
 use crate::fir;
+
+pub struct FirTable {
+    pub local: la_arena::Arena<u32>,
+    pub local_name_map: la_arena::ArenaMap<Idx<u32>, fir::Ident>,
+}
+
+#[allow(clippy::new_without_default)]
+impl FirTable {
+    pub fn new() -> Self {
+        Self {
+            local: la_arena::Arena::new(),
+            local_name_map: la_arena::ArenaMap::new(),
+        }
+    }
+}
 
 #[derive(Default)]
 pub struct NameResolution {
@@ -43,7 +59,7 @@ impl NameResolution {
         fir::Ident(new_name)
     }
 
-    pub fn resolve_file(&self, ast: ast::File) -> fir::File {
+    pub fn resolve_file(&self, ast: ast::File) -> (fir::File, FirTable) {
         let mut global_funcs: HashSet<String> = env::builtin_function_names().into_iter().collect();
         for item in ast.toplevels.iter() {
             match item {
@@ -58,13 +74,16 @@ impl NameResolution {
             }
         }
 
-        fir::File {
-            toplevels: ast
-                .toplevels
-                .iter()
-                .map(|it| self.resolve_item(it, &global_funcs))
-                .collect(),
-        }
+        (
+            fir::File {
+                toplevels: ast
+                    .toplevels
+                    .iter()
+                    .map(|it| self.resolve_item(it, &global_funcs))
+                    .collect(),
+            },
+            FirTable::new(),
+        )
     }
 
     pub fn resolve_item(&self, item: &ast::Item, global_funcs: &HashSet<String>) -> fir::Item {

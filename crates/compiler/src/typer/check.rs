@@ -4,8 +4,9 @@ use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 
 use crate::common::{self, Prim};
 use crate::fir::{self};
+use crate::typer::localenv::LocalTypeEnv;
 use crate::{
-    env::{Constraint, GlobalTypeEnv, LocalTypeEnv},
+    env::{Constraint, GlobalTypeEnv},
     tast::{self},
     typer::Typer,
 };
