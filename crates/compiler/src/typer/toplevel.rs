@@ -23,18 +23,21 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::File) {
         match item {
             fir::Item::EnumDef(enum_def) => {
                 genv.ensure_enum_placeholder(
-                    tast::Ident(enum_def.name.0.clone()),
+                    tast::Ident(enum_def.name.to_ident_name()),
                     enum_def
                         .generics
                         .iter()
-                        .map(|i| tast::Ident(i.0.clone()))
+                        .map(|i| tast::Ident(i.to_ident_name()))
                         .collect(),
                 );
             }
             fir::Item::StructDef(fir::StructDef { name, generics, .. }) => {
                 genv.ensure_struct_placeholder(
-                    tast::Ident(name.0.clone()),
-                    generics.iter().map(|i| tast::Ident(i.0.clone())).collect(),
+                    tast::Ident(name.to_ident_name()),
+                    generics
+                        .iter()
+                        .map(|i| tast::Ident(i.to_ident_name()))
+                        .collect(),
                 );
             }
             _ => {}
@@ -46,7 +49,7 @@ fn define_enum(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, enum_def
     let params_env: Vec<tast::Ident> = enum_def
         .generics
         .iter()
-        .map(|i| tast::Ident(i.0.clone()))
+        .map(|i| tast::Ident(i.to_ident_name()))
         .collect();
     let tparam_names = type_param_name_set(&enum_def.generics);
 
@@ -61,15 +64,15 @@ fn define_enum(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, enum_def
             for ty in typs.iter() {
                 validate_ty(genv, diagnostics, ty, &tparam_names);
             }
-            (tast::Ident(vcon.0.clone()), typs)
+            (tast::Ident(vcon.to_ident_name()), typs)
         })
         .collect();
     genv.insert_enum(env::EnumDef {
-        name: tast::Ident(enum_def.name.0.clone()),
+        name: tast::Ident(enum_def.name.to_ident_name()),
         generics: enum_def
             .generics
             .iter()
-            .map(|i| tast::Ident(i.0.clone()))
+            .map(|i| tast::Ident(i.to_ident_name()))
             .collect(),
         variants,
     });
@@ -83,7 +86,7 @@ fn define_struct(
     let params_env: Vec<tast::Ident> = struct_def
         .generics
         .iter()
-        .map(|i| tast::Ident(i.0.clone()))
+        .map(|i| tast::Ident(i.to_ident_name()))
         .collect();
     let tparam_names = type_param_name_set(&struct_def.generics);
     let fields = struct_def
@@ -92,16 +95,16 @@ fn define_struct(
         .map(|(fname, ast_ty)| {
             let ty = tast::Ty::from_fir(genv, ast_ty, &params_env);
             validate_ty(genv, diagnostics, &ty, &tparam_names);
-            (tast::Ident(fname.0.clone()), ty)
+            (tast::Ident(fname.to_ident_name()), ty)
         })
         .collect();
 
     genv.insert_struct(env::StructDef {
-        name: tast::Ident(struct_def.name.0.clone()),
+        name: tast::Ident(struct_def.name.to_ident_name()),
         generics: struct_def
             .generics
             .iter()
-            .map(|i| tast::Ident(i.0.clone()))
+            .map(|i| tast::Ident(i.to_ident_name()))
             .collect(),
         fields,
     });
@@ -127,7 +130,7 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &fir::TraitDef) {
         };
 
         methods.insert(
-            method_name.0.clone(),
+            method_name.to_ident_name(),
             FnScheme {
                 type_params: vec![],
                 constraints: (),
@@ -139,7 +142,7 @@ fn define_trait(genv: &mut GlobalTypeEnv, trait_def: &fir::TraitDef) {
 
     genv.trait_env
         .trait_defs
-        .insert(trait_def.name.0.clone(), env::TraitDef { methods });
+        .insert(trait_def.name.to_ident_name(), env::TraitDef { methods });
 }
 
 fn define_trait_impl(
@@ -151,7 +154,7 @@ fn define_trait_impl(
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_fir(genv, &impl_block.for_type, &[]);
     validate_ty(genv, diagnostics, &for_ty, &empty_tparams);
-    let trait_name_str = trait_name.0.clone();
+    let trait_name_str = trait_name.to_ident_name();
 
     let trait_def = match genv.trait_env.trait_defs.get(&trait_name_str) {
         Some(def) => def.clone(),
@@ -175,7 +178,7 @@ fn define_trait_impl(
 
     for m in impl_block.methods.iter() {
         let method_name = m.name.clone();
-        let method_name_str = method_name.0.clone();
+        let method_name_str = method_name.to_ident_name();
 
         if !trait_method_names.contains(&method_name_str) {
             diagnostics.push(Diagnostic::new(
@@ -211,7 +214,7 @@ fn define_trait_impl(
         let generics_tast: Vec<tast::Ident> = m
             .generics
             .iter()
-            .map(|g| tast::Ident(g.0.clone()))
+            .map(|g| tast::Ident(g.to_ident_name()))
             .collect();
         let params = m
             .params
@@ -353,7 +356,7 @@ fn define_inherent_impl(
     let impl_generics_tast: Vec<tast::Ident> = impl_block
         .generics
         .iter()
-        .map(|g| tast::Ident(g.0.clone()))
+        .map(|g| tast::Ident(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_fir(genv, &impl_block.for_type, &impl_generics_tast);
     validate_ty(genv, diagnostics, &for_ty, &impl_tparams);
@@ -369,7 +372,7 @@ fn define_inherent_impl(
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
         let method_name = m.name.clone();
-        let method_name_str = method_name.0.clone();
+        let method_name_str = method_name.to_ident_name();
 
         if !implemented_methods.insert(method_name_str.clone()) {
             diagnostics.push(Diagnostic::new(
@@ -389,7 +392,7 @@ fn define_inherent_impl(
         let tparam_names = type_param_name_set(&all_generics);
         let all_generics_tast: Vec<tast::Ident> = all_generics
             .iter()
-            .map(|g| tast::Ident(g.0.clone()))
+            .map(|g| tast::Ident(g.to_ident_name()))
             .collect();
 
         let params = m
@@ -416,7 +419,11 @@ fn define_inherent_impl(
         };
 
         // Store impl generics as type parameters for the method scheme
-        let type_params: Vec<String> = impl_block.generics.iter().map(|g| g.0.clone()).collect();
+        let type_params: Vec<String> = impl_block
+            .generics
+            .iter()
+            .map(|g| g.to_ident_name())
+            .collect();
 
         methods_to_add.insert(
             method_name_str,
@@ -440,7 +447,7 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
     let generics_tast: Vec<tast::Ident> = func
         .generics
         .iter()
-        .map(|g| tast::Ident(g.0.clone()))
+        .map(|g| tast::Ident(g.to_ident_name()))
         .collect();
     let params = func
         .params
@@ -460,7 +467,7 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
         None => tast::Ty::TUnit,
     };
     genv.value_env.funcs.insert(
-        name.0.clone(),
+        name.to_ident_name(),
         FnScheme {
             type_params: vec![],
             constraints: (),
@@ -522,7 +529,7 @@ fn define_extern_go(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, ext
     };
     let go_name = go_symbol_name(&ext.go_symbol);
     genv.register_extern_function(
-        ext.goml_name.0.clone(),
+        ext.goml_name.to_ident_name(),
         ext.package_path.clone(),
         go_name,
         fn_ty,
@@ -534,7 +541,7 @@ fn define_extern_type(
     _diagnostics: &mut Diagnostics,
     ext: &fir::ExternType,
 ) {
-    genv.register_extern_type(ext.goml_name.0.clone());
+    genv.register_extern_type(ext.goml_name.to_ident_name());
 }
 
 fn define_extern_builtin(
@@ -561,7 +568,7 @@ fn define_extern_builtin(
     };
 
     genv.value_env.funcs.insert(
-        ext.name.0.clone(),
+        ext.name.to_ident_name(),
         FnScheme {
             type_params: vec![],
             constraints: (),
@@ -733,14 +740,14 @@ fn check_fn(
     let tparams: Vec<tast::Ident> = f
         .generics
         .iter()
-        .map(|g| tast::Ident(g.0.clone()))
+        .map(|g| tast::Ident(g.to_ident_name()))
         .collect();
     let param_types: Vec<(tast::Ident, tast::Ty)> = f
         .params
         .iter()
         .map(|(name, ty)| {
             (
-                tast::Ident(name.0.clone()),
+                tast::Ident(name.to_ident_name()),
                 tast::Ty::from_fir(genv, ty, &tparams),
             )
         })
@@ -766,7 +773,7 @@ fn check_fn(
     typer.solve(genv, diagnostics);
     let typed_body = typer.subst(diagnostics, typed_body);
     tast::Fn {
-        name: f.name.0.clone(),
+        name: f.name.to_ident_name(),
         params: new_params,
         ret_ty,
         body: typed_body,
@@ -782,7 +789,7 @@ fn check_impl_block(
     let impl_generics_tast: Vec<tast::Ident> = impl_block
         .generics
         .iter()
-        .map(|g| tast::Ident(g.0.clone()))
+        .map(|g| tast::Ident(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_fir(genv, &impl_block.for_type, &impl_generics_tast);
     let mut typed_methods = Vec::new();
@@ -794,7 +801,7 @@ fn check_impl_block(
         all_generics.extend(f.generics.clone());
         let all_generics_tast: Vec<tast::Ident> = all_generics
             .iter()
-            .map(|g| tast::Ident(g.0.clone()))
+            .map(|g| tast::Ident(g.to_ident_name()))
             .collect();
 
         let param_types: Vec<(tast::Ident, tast::Ty)> = f
@@ -803,12 +810,12 @@ fn check_impl_block(
             .map(|(name, ty)| {
                 let ty = tast::Ty::from_fir(genv, ty, &all_generics_tast);
                 let ty = instantiate_self_ty(&ty, &for_ty);
-                (tast::Ident(name.0.clone()), ty)
+                (tast::Ident(name.to_ident_name()), ty)
             })
             .collect();
         let new_params = param_types
             .iter()
-            .map(|(name, ty)| (name.0.clone(), ty.clone()))
+            .map(|(name, ty)| (name.0.to_string(), ty.clone()))
             .collect::<Vec<_>>();
 
         let ret_ty = match &f.ret_ty {
@@ -821,7 +828,7 @@ fn check_impl_block(
 
         let tparams: Vec<tast::Ident> = all_generics
             .iter()
-            .map(|g| tast::Ident(g.0.clone()))
+            .map(|g| tast::Ident(g.to_ident_name()))
             .collect();
         local_env.set_tparams_env(&tparams);
         local_env.push_scope();
@@ -834,17 +841,21 @@ fn check_impl_block(
         typer.solve(genv, diagnostics);
         let typed_body = typer.subst(diagnostics, typed_body);
         typed_methods.push(tast::Fn {
-            name: f.name.0.clone(),
+            name: f.name.to_ident_name(),
             params: new_params,
             ret_ty,
             body: typed_body,
         });
     }
     let trait_name = impl_block.trait_name.clone();
-    let generics: Vec<String> = impl_block.generics.iter().map(|g| g.0.clone()).collect();
+    let generics: Vec<String> = impl_block
+        .generics
+        .iter()
+        .map(|g| g.to_ident_name())
+        .collect();
     tast::ImplBlock {
         generics,
-        trait_name: trait_name.map(|t| tast::Ident(t.0)),
+        trait_name: trait_name.map(|t| tast::Ident(t.to_ident_name())),
         for_type: for_ty,
         methods: typed_methods,
     }
@@ -859,14 +870,14 @@ fn check_extern_go(
     let params = ext
         .params
         .iter()
-        .map(|(name, ty)| (name.0.clone(), tast::Ty::from_fir(genv, ty, &[])))
+        .map(|(name, ty)| (name.to_ident_name(), tast::Ty::from_fir(genv, ty, &[])))
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
         Some(ty) => tast::Ty::from_fir(genv, ty, &[]),
         None => tast::Ty::TUnit,
     };
     tast::ExternGo {
-        goml_name: ext.goml_name.0.clone(),
+        goml_name: ext.goml_name.to_ident_name(),
         go_name: go_symbol_name(&ext.go_symbol),
         package_path: ext.package_path.clone(),
         params,
@@ -879,8 +890,8 @@ fn check_extern_type(
     _diagnostics: &mut Diagnostics,
     ext: &fir::ExternType,
 ) -> tast::ExternType {
-    genv.register_extern_type(ext.goml_name.0.clone());
+    genv.register_extern_type(ext.goml_name.to_ident_name());
     tast::ExternType {
-        goml_name: ext.goml_name.0.clone(),
+        goml_name: ext.goml_name.to_ident_name(),
     }
 }

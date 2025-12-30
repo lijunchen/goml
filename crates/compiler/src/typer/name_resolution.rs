@@ -6,6 +6,7 @@ use la_arena::Idx;
 
 use crate::env;
 use crate::fir;
+use crate::fir::Ident;
 
 pub struct FirTable {
     pub local: la_arena::Arena<u32>,
@@ -28,9 +29,9 @@ pub struct NameResolution {
 }
 
 #[derive(Debug)]
-struct NameResolutionEnv(im::Vector<(ast::Ident, fir::Ident)>);
+struct ResolveLocalEnv(im::Vector<(ast::Ident, fir::Ident)>);
 
-impl NameResolutionEnv {
+impl ResolveLocalEnv {
     pub fn new() -> Self {
         Self(im::Vector::new())
     }
@@ -54,9 +55,9 @@ impl NameResolutionEnv {
 
 impl NameResolution {
     fn fresh_name(&self, name: &str) -> fir::Ident {
-        let new_name = format!("{}/{}", name, self.counter.get());
+        let ret = fir::Ident::new(self.counter.get() as i32, name);
         self.counter.set(self.counter.get() + 1);
-        fir::Ident(new_name)
+        ret
     }
 
     pub fn resolve_file(&self, ast: ast::File) -> (fir::File, FirTable) {
@@ -93,8 +94,8 @@ impl NameResolution {
             ast::Item::TraitDef(t) => fir::Item::TraitDef(t.into()),
             ast::Item::ImplBlock(i) => fir::Item::ImplBlock(fir::ImplBlock {
                 attrs: i.attrs.iter().map(|a| a.into()).collect(),
-                generics: i.generics.iter().map(|g| g.into()).collect(),
-                trait_name: i.trait_name.as_ref().map(|t| t.into()),
+                generics: i.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
+                trait_name: i.trait_name.as_ref().map(|t| Ident::new(-1, &t.0)),
                 for_type: (&i.for_type).into(),
                 methods: i
                     .methods
@@ -118,7 +119,7 @@ impl NameResolution {
             ret_ty,
             body,
         } = func;
-        let mut env = NameResolutionEnv::new();
+        let mut env = ResolveLocalEnv::new();
         for param in params {
             env.add(&param.0, self.fresh_name(&param.0.0));
         }
@@ -128,8 +129,8 @@ impl NameResolution {
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
-            name: name.into(),
-            generics: generics.iter().map(|g| g.into()).collect(),
+            name: Ident::new(-1, &name.0),
+            generics: generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| t.into()),
             body: self.resolve_expr(body, &mut env, global_funcs),
@@ -139,7 +140,7 @@ impl NameResolution {
     fn resolve_expr(
         &self,
         expr: &ast::Expr,
-        env: &mut NameResolutionEnv,
+        env: &mut ResolveLocalEnv,
         global_funcs: &HashSet<String>,
     ) -> fir::Expr {
         match expr {
@@ -215,12 +216,12 @@ impl NameResolution {
                     .collect(),
             },
             ast::Expr::EStructLiteral { name, fields } => fir::Expr::EStructLiteral {
-                name: name.into(),
+                name: Ident::new(-1, &name.0),
                 fields: fields
                     .iter()
                     .map(|(field_name, expr)| {
                         (
-                            field_name.into(),
+                            Ident::new(-1, &field_name.0),
                             self.resolve_expr(expr, env, global_funcs),
                         )
                     })
@@ -345,7 +346,7 @@ impl NameResolution {
                 astptr,
             } => fir::Expr::EField {
                 expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
-                field: field.into(),
+                field: Ident::new(-1, &field.0),
                 astptr: *astptr,
             },
             ast::Expr::EBlock { exprs } => {
@@ -358,7 +359,7 @@ impl NameResolution {
         }
     }
 
-    fn resolve_pat(&self, pat: &ast::Pat, env: &mut NameResolutionEnv) -> fir::Pat {
+    fn resolve_pat(&self, pat: &ast::Pat, env: &mut ResolveLocalEnv) -> fir::Pat {
         match pat {
             ast::Pat::PVar { name, astptr } => {
                 let newname = self.fresh_name(&name.0);
@@ -410,10 +411,10 @@ impl NameResolution {
             ast::Pat::PStruct { name, fields } => {
                 let new_fields = fields
                     .iter()
-                    .map(|(fname, pat)| (fname.into(), self.resolve_pat(pat, env)))
+                    .map(|(fname, pat)| (Ident::new(-1, &fname.0), self.resolve_pat(pat, env)))
                     .collect();
                 fir::Pat::PStruct {
-                    name: name.into(),
+                    name: Ident::new(-1, &name.0),
                     fields: new_fields,
                 }
             }
@@ -424,13 +425,11 @@ impl NameResolution {
             ast::Pat::PWild => fir::Pat::PWild,
         }
     }
-}
 
-impl NameResolution {
     fn resolve_closure_param(
         &self,
         param: &ast::ClosureParam,
-        env: &mut NameResolutionEnv,
+        env: &mut ResolveLocalEnv,
     ) -> fir::ClosureParam {
         let new_name = self.fresh_name(&param.name.0);
         env.add(&param.name, new_name.clone());

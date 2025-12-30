@@ -2,23 +2,24 @@ use ast::ast;
 use parser::syntax::MySyntaxNodePtr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ident(pub String);
-
-impl From<&ast::Ident> for Ident {
-    fn from(ident: &ast::Ident) -> Self {
-        Ident(ident.0.clone())
-    }
-}
-
-impl From<ast::Ident> for Ident {
-    fn from(ident: ast::Ident) -> Self {
-        Ident(ident.0)
-    }
+pub struct Ident {
+    id: i32,
+    hint: String,
 }
 
 impl Ident {
-    pub fn new(name: &str) -> Self {
-        Self(name.to_string())
+    pub fn new(id: i32, hint: &str) -> Self {
+        Ident {
+            id,
+            hint: hint.to_string(),
+        }
+    }
+
+    pub fn to_ident_name(&self) -> String {
+        if self.id < 0 {
+            return self.hint.clone();
+        }
+        format!("{}/{}", self.hint, self.id)
     }
 }
 
@@ -40,7 +41,7 @@ impl PathSegment {
 impl From<&ast::PathSegment> for PathSegment {
     fn from(seg: &ast::PathSegment) -> Self {
         PathSegment {
-            ident: (&seg.ident).into(),
+            ident: Ident::new(-1, &seg.ident.0),
         }
     }
 }
@@ -105,7 +106,7 @@ impl Path {
     pub fn display(&self) -> String {
         self.segments
             .iter()
-            .map(|segment| segment.ident.0.clone())
+            .map(|segment| segment.ident.to_ident_name())
             .collect::<Vec<_>>()
             .join("::")
     }
@@ -256,12 +257,12 @@ impl From<&ast::ExternGo> for ExternGo {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             package_path: ext.package_path.clone(),
             go_symbol: ext.go_symbol.clone(),
-            goml_name: (&ext.goml_name).into(),
+            goml_name: Ident::new(-1, &ext.goml_name.0),
             explicit_go_symbol: ext.explicit_go_symbol,
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (i.into(), t.into()))
+                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -278,7 +279,7 @@ impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: (&ext.goml_name).into(),
+            goml_name: Ident::new(-1, &ext.goml_name.0),
         }
     }
 }
@@ -295,11 +296,11 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
     fn from(ext: &ast::ExternBuiltin) -> Self {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            name: (&ext.name).into(),
+            name: Ident::new(-1, &ext.name.0),
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (i.into(), t.into()))
+                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -318,12 +319,12 @@ impl From<&ast::EnumDef> for EnumDef {
     fn from(e: &ast::EnumDef) -> Self {
         EnumDef {
             attrs: e.attrs.iter().map(|a| a.into()).collect(),
-            name: (&e.name).into(),
-            generics: e.generics.iter().map(|g| g.into()).collect(),
+            name: Ident::new(-1, &e.name.0),
+            generics: e.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| (i.into(), tys.iter().map(|t| t.into()).collect()))
+                .map(|(i, tys)| (Ident::new(-1, &i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
         }
     }
@@ -341,9 +342,13 @@ impl From<&ast::StructDef> for StructDef {
     fn from(s: &ast::StructDef) -> Self {
         StructDef {
             attrs: s.attrs.iter().map(|a| a.into()).collect(),
-            name: (&s.name).into(),
-            generics: s.generics.iter().map(|g| g.into()).collect(),
-            fields: s.fields.iter().map(|(i, t)| (i.into(), t.into())).collect(),
+            name: Ident::new(-1, &s.name.0),
+            generics: s.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
+            fields: s
+                .fields
+                .iter()
+                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
+                .collect(),
         }
     }
 }
@@ -359,7 +364,7 @@ impl From<&ast::TraitDef> for TraitDef {
     fn from(t: &ast::TraitDef) -> Self {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
-            name: (&t.name).into(),
+            name: Ident::new(-1, &t.name.0),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -375,7 +380,7 @@ pub struct TraitMethodSignature {
 impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
-            name: (&m.name).into(),
+            name: Ident::new(-1, &m.name.0),
             params: m.params.iter().map(|p| p.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }

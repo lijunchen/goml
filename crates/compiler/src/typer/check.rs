@@ -314,21 +314,21 @@ impl Typer {
         if path.len() == 1 {
             // Single segment path: variable or global function
             let name = path.last_ident().unwrap();
-            if let Some(ty) = local_env.lookup_var(&tast::Ident(name.0.clone())) {
+            if let Some(ty) = local_env.lookup_var(&tast::Ident(name.to_ident_name())) {
                 tast::Expr::EVar {
-                    name: name.0.clone(),
+                    name: name.to_ident_name(),
                     ty: ty.clone(),
                     astptr: Some(*astptr),
                 }
-            } else if let Some(func_ty) = genv.get_type_of_function(&name.0) {
+            } else if let Some(func_ty) = genv.get_type_of_function(&name.to_ident_name()) {
                 let inst_ty = self.inst_ty(&func_ty);
                 tast::Expr::EVar {
-                    name: name.0.clone(),
+                    name: name.to_ident_name(),
                     ty: inst_ty,
                     astptr: Some(*astptr),
                 }
             } else {
-                panic!("Variable {} not found in environment", name.0);
+                panic!("Variable {} not found in environment", name.to_ident_name());
             }
         } else {
             // Multi-segment path: Type::member
@@ -347,45 +347,55 @@ impl Typer {
     ) -> tast::Expr {
         // First check if type_name is a trait
         if let Some(method_ty) = genv.lookup_trait_method(
-            &tast::Ident(type_name.0.clone()),
-            &tast::Ident(member.0.clone()),
+            &tast::Ident(type_name.to_ident_name()),
+            &tast::Ident(member.to_ident_name()),
         ) {
             let inst_ty = self.inst_ty(&method_ty);
             return tast::Expr::ETraitMethod {
-                trait_name: tast::Ident(type_name.0.clone()),
-                method_name: tast::Ident(member.0.clone()),
+                trait_name: tast::Ident(type_name.to_ident_name()),
+                method_name: tast::Ident(member.to_ident_name()),
                 ty: inst_ty,
                 astptr: Some(*astptr),
             };
         }
 
         // Check if type_name is an enum or struct for inherent method lookup
-        let receiver_ty = if genv.enums().contains_key(&tast::Ident(type_name.0.clone())) {
+        let receiver_ty = if genv
+            .enums()
+            .contains_key(&tast::Ident(type_name.to_ident_name()))
+        {
             tast::Ty::TEnum {
-                name: type_name.0.clone(),
+                name: type_name.to_ident_name(),
             }
         } else if genv
             .structs()
-            .contains_key(&tast::Ident(type_name.0.clone()))
+            .contains_key(&tast::Ident(type_name.to_ident_name()))
         {
             tast::Ty::TStruct {
-                name: type_name.0.clone(),
+                name: type_name.to_ident_name(),
             }
         } else {
-            panic!("Type or trait {} not found for member access", type_name.0);
+            panic!(
+                "Type or trait {} not found for member access",
+                type_name.to_ident_name()
+            );
         };
         if let Some(method_ty) =
-            genv.lookup_inherent_method(&receiver_ty, &tast::Ident(member.0.clone()))
+            genv.lookup_inherent_method(&receiver_ty, &tast::Ident(member.to_ident_name()))
         {
             let inst_ty = self.inst_ty(&method_ty);
             tast::Expr::EInherentMethod {
                 receiver_ty: receiver_ty.clone(),
-                method_name: tast::Ident(member.0.clone()),
+                method_name: tast::Ident(member.to_ident_name()),
                 ty: inst_ty,
                 astptr: Some(*astptr),
             }
         } else {
-            panic!("Method {} not found for type {}", member.0, type_name.0);
+            panic!(
+                "Method {} not found for type {}",
+                member.to_ident_name(),
+                type_name.to_ident_name()
+            );
         }
     }
 
@@ -403,8 +413,8 @@ impl Typer {
         let enum_name = constructor_path.parent_ident();
         let (constructor, constr_ty) = genv
             .lookup_constructor_with_namespace(
-                enum_name.map(|e| tast::Ident(e.0.clone())).as_ref(),
-                &tast::Ident(variant_ident.0.clone()),
+                enum_name.map(|e| tast::Ident(e.to_ident_name())).as_ref(),
+                &tast::Ident(variant_ident.to_ident_name()),
             )
             .unwrap_or_else(|| {
                 panic!(
@@ -495,8 +505,13 @@ impl Typer {
         fields: &[(fir::Ident, fir::Expr)],
     ) -> tast::Expr {
         let (constructor, constr_ty) = genv
-            .lookup_constructor(&tast::Ident(name.0.clone()))
-            .unwrap_or_else(|| panic!("Constructor {} not found in environment", name.0));
+            .lookup_constructor(&tast::Ident(name.to_ident_name()))
+            .unwrap_or_else(|| {
+                panic!(
+                    "Constructor {} not found in environment",
+                    name.to_ident_name()
+                )
+            });
 
         let struct_fields = match &constructor {
             common::Constructor::Struct(struct_constructor) => {
@@ -504,7 +519,8 @@ impl Typer {
                 let struct_def = genv.structs().get(type_name).unwrap_or_else(|| {
                     panic!(
                         "Struct {} not found when checking literal {}",
-                        type_name.0, name.0
+                        type_name.0,
+                        name.to_ident_name()
                     )
                 });
                 struct_def.fields.clone()
@@ -512,7 +528,7 @@ impl Typer {
             common::Constructor::Enum { .. } => {
                 panic!(
                     "Constructor {} refers to an enum, but a struct literal was used",
-                    name.0
+                    name.to_ident_name()
                 )
             }
         };
@@ -526,7 +542,7 @@ impl Typer {
         if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
             panic!(
                 "Constructor {} expects {} fields, but got {}",
-                name.0,
+                name.to_ident_name(),
                 param_tys.len(),
                 struct_fields.len()
             );
@@ -540,17 +556,19 @@ impl Typer {
         let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
         for (field_name, expr) in fields.iter() {
             let idx = field_positions
-                .get(&tast::Ident(field_name.0.clone()))
+                .get(&tast::Ident(field_name.to_ident_name()))
                 .unwrap_or_else(|| {
                     panic!(
                         "Unknown field {} on struct literal {}",
-                        field_name.0, name.0
+                        field_name.to_ident_name(),
+                        name.to_ident_name()
                     )
                 });
             if ordered_args[*idx].is_some() {
                 panic!(
                     "Duplicate field {} in struct literal {}",
-                    field_name.0, name.0
+                    field_name.to_ident_name(),
+                    name.to_ident_name()
                 );
             }
             let field_expr = if let Some(expected_ty) = param_tys.get(*idx) {
@@ -564,7 +582,11 @@ impl Typer {
         for (idx, slot) in ordered_args.iter().enumerate() {
             if slot.is_none() {
                 let missing = &struct_fields[idx].0;
-                panic!("Missing field {} in struct literal {}", missing.0, name.0);
+                panic!(
+                    "Missing field {} in struct literal {}",
+                    missing.0,
+                    name.to_ident_name()
+                );
             }
         }
 
@@ -657,10 +679,10 @@ impl Typer {
                 Some(ty) => tast::Ty::from_fir(genv, ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
-            local_env.insert_var(&tast::Ident(param.name.0.clone()), param_ty.clone());
+            local_env.insert_var(&tast::Ident(param.name.to_ident_name()), param_ty.clone());
             param_tys.push(param_ty.clone());
             params_tast.push(tast::ClosureParam {
-                name: param.name.0.clone(),
+                name: param.name.to_ident_name(),
                 ty: param_ty,
                 astptr: Some(param.astptr),
             });
@@ -719,10 +741,11 @@ impl Typer {
                         None => expected_param_ty.clone(),
                     };
 
-                    local_env.insert_var(&tast::Ident(param.name.0.clone()), param_ty.clone());
+                    local_env
+                        .insert_var(&tast::Ident(param.name.to_ident_name()), param_ty.clone());
                     param_tys.push(param_ty.clone());
                     params_tast.push(tast::ClosureParam {
-                        name: param.name.0.clone(),
+                        name: param.name.to_ident_name(),
                         ty: param_ty,
                         astptr: Some(param.astptr),
                     });
@@ -1055,7 +1078,7 @@ impl Typer {
                     arg_types.push(arg_tast.get_ty());
                     args_tast.push(arg_tast);
                 }
-                if let Some(func_ty) = genv.get_type_of_function(&name.0) {
+                if let Some(func_ty) = genv.get_type_of_function(&name.to_ident_name()) {
                     let inst_ty = self.inst_ty(&func_ty);
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
@@ -1071,7 +1094,7 @@ impl Typer {
                         }
                     }
 
-                    let ret_ty = if name.0 == "ref" && args_tast.len() == 1 {
+                    let ret_ty = if name.to_ident_name() == "ref" && args_tast.len() == 1 {
                         tast::Ty::TRef {
                             elem: Box::new(args_tast[0].get_ty()),
                         }
@@ -1088,14 +1111,16 @@ impl Typer {
                     ));
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
-                            name: name.0.clone(),
+                            name: name.to_ident_name(),
                             ty: inst_ty,
                             astptr: Some(*astptr),
                         }),
                         args: args_tast,
                         ty: ret_ty,
                     }
-                } else if let Some(var_ty) = local_env.lookup_var(&tast::Ident(name.0.clone())) {
+                } else if let Some(var_ty) =
+                    local_env.lookup_var(&tast::Ident(name.to_ident_name()))
+                {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
@@ -1108,7 +1133,7 @@ impl Typer {
 
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
-                            name: name.0.clone(),
+                            name: name.to_ident_name(),
                             ty: var_ty.clone(),
                             astptr: Some(*astptr),
                         }),
@@ -1116,7 +1141,7 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name.0);
+                    panic!("Variable {} not found in environment", name.to_ident_name());
                 }
             }
             fir::Expr::EPath { path, astptr } => {
@@ -1125,8 +1150,8 @@ impl Typer {
                 let member = path.last_ident().unwrap();
                 // First check if type_name is a trait
                 if let Some(method_ty) = genv.lookup_trait_method(
-                    &tast::Ident(type_name.0.clone()),
-                    &tast::Ident(member.0.clone()),
+                    &tast::Ident(type_name.to_ident_name()),
+                    &tast::Ident(member.to_ident_name()),
                 ) {
                     let inst_method_ty = self.inst_ty(&method_ty);
 
@@ -1147,15 +1172,15 @@ impl Typer {
 
                     // Add overloaded constraint for trait method resolution
                     self.push_constraint(Constraint::Overloaded {
-                        op: tast::Ident(member.0.clone()),
-                        trait_name: tast::Ident(type_name.0.clone()),
+                        op: tast::Ident(member.to_ident_name()),
+                        trait_name: tast::Ident(type_name.to_ident_name()),
                         call_site_type: call_site_func_ty.clone(),
                     });
 
                     return tast::Expr::ECall {
                         func: Box::new(tast::Expr::ETraitMethod {
-                            trait_name: tast::Ident(type_name.0.clone()),
-                            method_name: tast::Ident(member.0.clone()),
+                            trait_name: tast::Ident(type_name.to_ident_name()),
+                            method_name: tast::Ident(member.to_ident_name()),
                             ty: inst_method_ty,
                             astptr: Some(*astptr),
                         }),
@@ -1165,29 +1190,35 @@ impl Typer {
                 }
 
                 // Otherwise check if type_name is an enum or struct for inherent method
-                let receiver_ty = if genv.enums().contains_key(&tast::Ident(type_name.0.clone())) {
+                let receiver_ty = if genv
+                    .enums()
+                    .contains_key(&tast::Ident(type_name.to_ident_name()))
+                {
                     tast::Ty::TEnum {
-                        name: type_name.0.clone(),
+                        name: type_name.to_ident_name(),
                     }
                 } else if genv
                     .structs()
-                    .contains_key(&tast::Ident(type_name.0.clone()))
+                    .contains_key(&tast::Ident(type_name.to_ident_name()))
                 {
                     tast::Ty::TStruct {
-                        name: type_name.0.clone(),
+                        name: type_name.to_ident_name(),
                     }
                 } else {
-                    panic!("Type or trait {} not found for member access", type_name.0);
+                    panic!(
+                        "Type or trait {} not found for member access",
+                        type_name.to_ident_name()
+                    );
                 };
                 if let Some(method_ty) =
-                    genv.lookup_inherent_method(&receiver_ty, &tast::Ident(member.0.clone()))
+                    genv.lookup_inherent_method(&receiver_ty, &tast::Ident(member.to_ident_name()))
                 {
                     let inst_method_ty = self.inst_ty(&method_ty);
                     if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
                         if params.len() != args.len() {
                             panic!(
                                 "Method {} expects {} arguments but got {}",
-                                member.0,
+                                member.to_ident_name(),
                                 params.len(),
                                 args.len()
                             );
@@ -1203,7 +1234,7 @@ impl Typer {
                         tast::Expr::ECall {
                             func: Box::new(tast::Expr::EInherentMethod {
                                 receiver_ty: receiver_ty.clone(),
-                                method_name: tast::Ident(member.0.clone()),
+                                method_name: tast::Ident(member.to_ident_name()),
                                 ty: inst_method_ty,
                                 astptr: Some(*astptr),
                             }),
@@ -1211,10 +1242,18 @@ impl Typer {
                             ty: (*ret_ty).clone(),
                         }
                     } else {
-                        panic!("Type member {}::{} is not callable", type_name.0, member.0);
+                        panic!(
+                            "Type member {}::{} is not callable",
+                            type_name.to_ident_name(),
+                            member.to_ident_name()
+                        );
                     }
                 } else {
-                    panic!("Method {} not found for type {}", member.0, type_name.0);
+                    panic!(
+                        "Method {} not found for type {}",
+                        member.to_ident_name(),
+                        type_name.to_ident_name()
+                    );
                 }
             }
             fir::Expr::EField {
@@ -1226,7 +1265,7 @@ impl Typer {
                     let receiver_tast =
                         self.infer_expr(genv, local_env, diagnostics, receiver_expr);
                     let receiver_ty = receiver_tast.get_ty();
-                    genv.lookup_inherent_method(&receiver_ty, &tast::Ident(field.0.clone()))
+                    genv.lookup_inherent_method(&receiver_ty, &tast::Ident(field.to_ident_name()))
                         .map(|ty| (receiver_tast, receiver_ty, ty))
                 } {
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
@@ -1253,7 +1292,7 @@ impl Typer {
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EInherentMethod {
                             receiver_ty: receiver_ty.clone(),
-                            method_name: tast::Ident(field.0.clone()),
+                            method_name: tast::Ident(field.to_ident_name()),
                             ty: inst_method_ty,
                             astptr: None,
                         }),
@@ -1261,7 +1300,11 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
-                    panic!("Method {} not found for type {:?}", field.0, receiver_expr);
+                    panic!(
+                        "Method {} not found for type {:?}",
+                        field.to_ident_name(),
+                        receiver_expr
+                    );
                 }
             }
             _ => {
@@ -1442,13 +1485,13 @@ impl Typer {
         let result_ty = self.fresh_ty_var();
         self.push_constraint(Constraint::StructFieldAccess {
             expr_ty: base_ty.clone(),
-            field: tast::Ident(field.0.clone()),
+            field: tast::Ident(field.to_ident_name()),
             result_ty: result_ty.clone(),
         });
 
         tast::Expr::EField {
             expr: Box::new(base_tast),
-            field_name: field.0.clone(),
+            field_name: field.to_ident_name(),
             ty: result_ty,
             astptr: Some(*astptr),
         }
@@ -1466,7 +1509,7 @@ impl Typer {
             fir::Pat::PVar { name, astptr } => self.check_pat_var(
                 local_env,
                 diagnostics,
-                &tast::Ident(name.0.clone()),
+                &tast::Ident(name.to_ident_name()),
                 astptr,
                 ty,
             ),
@@ -1607,9 +1650,9 @@ impl Typer {
                     .lookup_constructor_with_namespace(
                         enum_name
                             .as_ref()
-                            .map(|ident| tast::Ident(ident.0.clone()))
+                            .map(|ident| tast::Ident(ident.to_ident_name()))
                             .as_ref(),
-                        &tast::Ident(variant_ident.0.clone()),
+                        &tast::Ident(variant_ident.to_ident_name()),
                     )
                     .unwrap_or_else(|| {
                         panic!(
@@ -1672,15 +1715,18 @@ impl Typer {
                 let struct_fields = {
                     let struct_def = genv
                         .structs()
-                        .get(&tast::Ident(name.0.clone()))
+                        .get(&tast::Ident(name.to_ident_name()))
                         .unwrap_or_else(|| {
-                            panic!("Struct {} not found when checking pattern", name.0)
+                            panic!(
+                                "Struct {} not found when checking pattern",
+                                name.to_ident_name()
+                            )
                         });
                     let expected_len = struct_def.fields.len();
                     if expected_len != fields.len() {
                         panic!(
                             "Struct pattern {} expects {} fields, but got {}",
-                            name.0,
+                            name.to_ident_name(),
                             expected_len,
                             fields.len()
                         );
@@ -1690,15 +1736,22 @@ impl Typer {
 
                 let mut field_map: HashMap<String, &fir::Pat> = HashMap::new();
                 for (fname, pat) in fields.iter() {
-                    if field_map.insert(fname.0.clone(), pat).is_some() {
-                        panic!("Struct pattern {} has duplicate field {}", name.0, fname.0);
+                    if field_map.insert(fname.to_ident_name(), pat).is_some() {
+                        panic!(
+                            "Struct pattern {} has duplicate field {}",
+                            name.to_ident_name(),
+                            fname.to_ident_name()
+                        );
                     }
                 }
 
                 let (constructor, constr_ty) = genv
-                    .lookup_constructor(&tast::Ident(name.0.clone()))
+                    .lookup_constructor(&tast::Ident(name.to_ident_name()))
                     .unwrap_or_else(|| {
-                        panic!("Struct {} not found when checking constructor", name.0)
+                        panic!(
+                            "Struct {} not found when checking constructor",
+                            name.to_ident_name()
+                        )
                     });
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
@@ -1710,7 +1763,7 @@ impl Typer {
                 if param_tys.len() != struct_fields.len() {
                     panic!(
                         "Constructor {} expects {} fields, but got {}",
-                        name.0,
+                        name.to_ident_name(),
                         param_tys.len(),
                         struct_fields.len()
                     );
@@ -1719,7 +1772,11 @@ impl Typer {
                 let mut args_tast = Vec::new();
                 for (idx, (field_name, _)) in struct_fields.iter().enumerate() {
                     let pat_ast = field_map.remove(&field_name.0).unwrap_or_else(|| {
-                        panic!("Struct pattern {} missing field {}", name.0, field_name.0)
+                        panic!(
+                            "Struct pattern {} missing field {}",
+                            name.to_ident_name(),
+                            field_name.0
+                        )
                     });
                     let expected_ty = param_tys.get(idx).unwrap_or_else(|| {
                         panic!("Missing instantiated type for field {}", field_name.0)
@@ -1731,7 +1788,11 @@ impl Typer {
 
                 if !field_map.is_empty() {
                     let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
-                    panic!("Struct pattern {} has unknown fields: {}", name.0, extra);
+                    panic!(
+                        "Struct pattern {} has unknown fields: {}",
+                        name.to_ident_name(),
+                        extra
+                    );
                 }
 
                 self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
