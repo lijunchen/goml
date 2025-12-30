@@ -1,0 +1,27 @@
+const n = `fn main() {
+  let start16: int16 = 300i16;
+  let delta16: int16 = 45i16;
+  let sum16 = start16 + delta16;
+  let flipped16 = -start16;
+
+  let base32: int32 = 100000i32;
+  let more32: int32 = 200000i32;
+  let sum32 = base32 + more32;
+  let diff32 = sum32 - base32;
+
+  let big64: int64 = 5000000000i64;
+  let step64: int64 = 2000000000i64;
+  let remain64 = big64 - step64;
+  let neg64 = -step64;
+
+  let message = int16_to_string(sum16)
+    + ", " + int16_to_string(flipped16)
+    + "; " + int32_to_string(diff32)
+    + "; " + int64_to_string(remain64)
+    + "; " + int64_to_string(neg64);
+  string_println(message);
+}
+`;
+export {
+  n as default
+};

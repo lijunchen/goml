@@ -1,0 +1,37 @@
+const n = `fn double(x: int32) -> int32 {
+    x * 2
+}
+
+fn increment(x: int32) -> int32 {
+    x + 1
+}
+
+fn apply_once(f: (int32) -> int32, value: int32) -> int32 {
+    f(value)
+}
+
+fn compose(f: (int32) -> int32, g: (int32) -> int32, value: int32) -> int32 {
+    f(g(value))
+}
+
+fn main() {
+    let local = double;
+    let first = apply_once(local, 4);
+    let composed = compose(double, increment, first);
+    let closure_apply = |value: int32| apply_once(increment, value);
+    let closure_result = closure_apply(composed);
+    let global_invoker = |func_to_call: (int32) -> int32, value: int32| apply_once(func_to_call, value);
+    let invoked_with_global = global_invoker(double, 3);
+    let composer_closure = |value: int32| compose(double, increment, value);
+    let composed_by_closure = composer_closure(5);
+    let printer = string_println;
+    let _ = printer(int32_to_string(composed));
+    let _ = printer(int32_to_string(closure_result));
+    let _ = printer(int32_to_string(invoked_with_global));
+    let _ = printer(int32_to_string(composed_by_closure));
+    ()
+}
+`;
+export {
+  n as default
+};

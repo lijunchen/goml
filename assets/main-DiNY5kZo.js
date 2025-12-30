@@ -1,0 +1,33 @@
+const n = `fn double(x: int32) -> int32 {
+    x * 2
+}
+
+fn increment(x: int32) -> int32 {
+    x + 1
+}
+
+fn chooser(flag: bool) -> (int32) -> int32 {
+    if flag {
+        double
+    } else {
+        increment
+    }
+}
+
+fn main() {
+    let xs = [double, increment];
+    let f = array_get(xs, 0);
+    let g = array_get(xs, 1);
+    let _ = string_println(int32_to_string(g(f(10))));
+    let chosen = chooser(true);
+    let applied = chosen(5);
+    let direct = chooser(false)(5);
+    let printer = string_println;
+    let _ = printer(int32_to_string(applied));
+    let _ = printer(int32_to_string(direct));
+    ()
+}
+`;
+export {
+  n as default
+};

@@ -1,0 +1,14 @@
+const n = `fn fib(x: int32) -> int32 {
+  match x < 2 {
+    false => fib(x - 1) + fib(x - 2),
+    true => 1,
+  }
+}
+
+fn main() {
+    string_print(int32_to_string(fib(10)))
+}
+`;
+export {
+  n as default
+};
