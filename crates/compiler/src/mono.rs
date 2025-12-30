@@ -2,7 +2,7 @@ use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
 use crate::mangle::encode_ty;
-use crate::tast::{self, Ident};
+use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
 
@@ -135,8 +135,8 @@ pub struct MonoArm {
 #[derive(Debug, Clone)]
 pub struct GlobalMonoEnv {
     pub genv: GlobalTypeEnv,
-    pub mono_enums: IndexMap<Ident, EnumDef>,
-    pub mono_structs: IndexMap<Ident, StructDef>,
+    pub mono_enums: IndexMap<TastIdent, EnumDef>,
+    pub mono_structs: IndexMap<TastIdent, StructDef>,
     pub mono_funcs: IndexMap<String, Ty>,
 }
 
@@ -150,7 +150,7 @@ impl GlobalMonoEnv {
         }
     }
 
-    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+    pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
         self.genv
             .enums()
             .iter()
@@ -158,20 +158,20 @@ impl GlobalMonoEnv {
             .filter(|(_, def)| def.generics.is_empty())
     }
 
-    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+    pub fn get_enum(&self, name: &TastIdent) -> Option<&EnumDef> {
         self.mono_enums
             .get(name)
             .or_else(|| self.genv.enums().get(name))
             .filter(|def| def.generics.is_empty())
     }
 
-    pub fn enums_cloned(&self) -> IndexMap<Ident, EnumDef> {
+    pub fn enums_cloned(&self) -> IndexMap<TastIdent, EnumDef> {
         let mut result = self.genv.enums().clone();
         result.extend(self.mono_enums.clone());
         result
     }
 
-    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+    pub fn struct_def_mut(&mut self, name: &TastIdent) -> Option<&mut StructDef> {
         if self.mono_structs.contains_key(name) {
             self.mono_structs.get_mut(name)
         } else {
@@ -183,7 +183,7 @@ impl GlobalMonoEnv {
         self.mono_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+    pub fn structs(&self) -> impl Iterator<Item = (&TastIdent, &StructDef)> {
         self.genv
             .structs()
             .iter()
@@ -191,8 +191,8 @@ impl GlobalMonoEnv {
             .filter(|(_, def)| def.generics.is_empty())
     }
 
-    pub fn structs_cloned(&self) -> IndexMap<Ident, StructDef> {
-        let mut result: IndexMap<Ident, StructDef> = self
+    pub fn structs_cloned(&self) -> IndexMap<TastIdent, StructDef> {
+        let mut result: IndexMap<TastIdent, StructDef> = self
             .genv
             .structs()
             .iter()
@@ -208,19 +208,19 @@ impl GlobalMonoEnv {
 
     pub fn retain_enums<F>(&mut self, mut f: F)
     where
-        F: FnMut(&Ident, &mut EnumDef) -> bool,
+        F: FnMut(&TastIdent, &mut EnumDef) -> bool,
     {
         self.mono_enums.retain(&mut f);
     }
 
     pub fn retain_structs<F>(&mut self, mut f: F)
     where
-        F: FnMut(&Ident, &mut StructDef) -> bool,
+        F: FnMut(&TastIdent, &mut StructDef) -> bool,
     {
         self.mono_structs.retain(&mut f);
     }
 
-    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+    pub fn get_struct(&self, name: &TastIdent) -> Option<&StructDef> {
         self.mono_structs
             .get(name)
             .or_else(|| self.genv.structs().get(name))
@@ -266,7 +266,7 @@ fn has_tparam(ty: &Ty) -> bool {
 fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructor {
     match (constructor, new_ty) {
         (Constructor::Enum(enum_constructor), Ty::TEnum { name }) => {
-            let ident = Ident::new(name);
+            let ident = TastIdent::new(name);
             Constructor::Enum(common::EnumConstructor {
                 type_name: ident,
                 variant: enum_constructor.variant.clone(),
@@ -276,19 +276,19 @@ fn update_constructor_type(constructor: &Constructor, new_ty: &Ty) -> Constructo
         (Constructor::Enum(enum_constructor), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
             Constructor::Enum(common::EnumConstructor {
-                type_name: Ident::new(&base),
+                type_name: TastIdent::new(&base),
                 variant: enum_constructor.variant.clone(),
                 index: enum_constructor.index,
             })
         }
         (Constructor::Struct(_), Ty::TStruct { name }) => {
-            let ident = Ident::new(name);
+            let ident = TastIdent::new(name);
             Constructor::Struct(common::StructConstructor { type_name: ident })
         }
         (Constructor::Struct(_), Ty::TApp { ty, .. }) => {
             let base = ty.get_constr_name_unsafe();
             Constructor::Struct(common::StructConstructor {
-                type_name: Ident::new(&base),
+                type_name: TastIdent::new(&base),
             })
         }
         _ => constructor.clone(),
@@ -756,10 +756,10 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
 struct TypeMono<'a> {
     monoenv: &'a mut GlobalMonoEnv,
     // map generic (name, args) to new concrete Ident
-    map: IndexMap<(String, Vec<Ty>), Ident>,
+    map: IndexMap<(String, Vec<Ty>), TastIdent>,
     // snapshot of original generic enum defs
-    enum_base: IndexMap<Ident, EnumDef>,
-    struct_base: IndexMap<Ident, StructDef>,
+    enum_base: IndexMap<TastIdent, EnumDef>,
+    struct_base: IndexMap<TastIdent, StructDef>,
 }
 
 impl<'a> TypeMono<'a> {
@@ -774,7 +774,7 @@ impl<'a> TypeMono<'a> {
         }
     }
 
-    fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> Ident {
+    fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> TastIdent {
         let key = (name.to_string(), args.to_vec());
         if let Some(u) = self.map.get(&key) {
             return u.clone();
@@ -788,10 +788,10 @@ impl<'a> TypeMono<'a> {
                 args.iter().map(encode_ty).collect::<Vec<_>>().join("__")
             )
         };
-        let new_name = Ident::new(&format!("{}{}", name, suffix));
+        let new_name = TastIdent::new(&format!("{}{}", name, suffix));
         self.map.insert(key.clone(), new_name.clone());
 
-        let ident = Ident::new(name);
+        let ident = TastIdent::new(name);
 
         if let Some(generic_def) = self.enum_base.get(&ident) {
             // Build substitution from generics to args
@@ -809,7 +809,7 @@ impl<'a> TypeMono<'a> {
             }
 
             // Substitute variant field types and also collapse nested enum/struct apps
-            let mut new_variants: Vec<(Ident, Vec<Ty>)> = Vec::new();
+            let mut new_variants: Vec<(TastIdent, Vec<Ty>)> = Vec::new();
             // Clone needed data to limit immutable borrow scope
             let variants = generic_def.variants.clone();
             for (vname, vfields) in variants.into_iter() {
@@ -866,7 +866,7 @@ impl<'a> TypeMono<'a> {
         match ty {
             Ty::TApp { ty: base, args } if !args.is_empty() => {
                 let base_name = base.get_constr_name_unsafe();
-                let ident = Ident::new(&base_name);
+                let ident = TastIdent::new(&base_name);
                 if self.enum_base.contains_key(&ident) {
                     let new_u = self.ensure_instance(&base_name, args);
                     Ty::TEnum {

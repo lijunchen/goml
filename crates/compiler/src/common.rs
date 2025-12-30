@@ -1,4 +1,4 @@
-use crate::tast::Ident;
+use crate::tast::TastIdent;
 
 #[derive(Debug, Clone)]
 pub enum Prim {
@@ -39,8 +39,8 @@ impl std::fmt::Display for Prim {
 
 #[derive(Debug, Clone)]
 pub struct EnumConstructor {
-    pub type_name: Ident,
-    pub variant: Ident,
+    pub type_name: TastIdent,
+    pub variant: TastIdent,
     pub index: usize,
 }
 
@@ -52,7 +52,7 @@ impl EnumConstructor {
 
 #[derive(Debug, Clone)]
 pub struct StructConstructor {
-    pub type_name: Ident,
+    pub type_name: TastIdent,
 }
 
 #[derive(Debug, Clone)]
@@ -62,14 +62,14 @@ pub enum Constructor {
 }
 
 impl Constructor {
-    pub fn name(&self) -> &Ident {
+    pub fn name(&self) -> &TastIdent {
         match self {
             Constructor::Enum(constructor) => &constructor.variant,
             Constructor::Struct(constructor) => &constructor.type_name,
         }
     }
 
-    pub fn type_name(&self) -> &Ident {
+    pub fn type_name(&self) -> &TastIdent {
         match self {
             Constructor::Enum(constructor) => &constructor.type_name,
             Constructor::Struct(constructor) => &constructor.type_name,

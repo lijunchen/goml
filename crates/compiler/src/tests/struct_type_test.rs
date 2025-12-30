@@ -62,11 +62,11 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     let point = genv
         .structs()
-        .get(&tast::Ident::new("Point"))
+        .get(&tast::TastIdent::new("Point"))
         .expect("Point struct to be recorded");
     let wrapper = genv
         .structs()
-        .get(&tast::Ident::new("Wrapper"))
+        .get(&tast::TastIdent::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
     let wrapper_fn = genv
         .value_env
@@ -109,7 +109,7 @@ enum Shape[T] {
 
     let shape = genv
         .enums()
-        .get(&tast::Ident::new("Shape"))
+        .get(&tast::TastIdent::new("Shape"))
         .expect("Shape enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Shape.generics={:?}", shape.generics));
@@ -139,11 +139,11 @@ enum List {
 
     let node = genv
         .structs()
-        .get(&tast::Ident::new("Node"))
+        .get(&tast::TastIdent::new("Node"))
         .expect("Node struct to be recorded");
     let list = genv
         .enums()
-        .get(&tast::Ident::new("List"))
+        .get(&tast::TastIdent::new("List"))
         .expect("List enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Node.fields={:?}", node.fields));

@@ -7,22 +7,22 @@ use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
     mangle::encode_ty,
-    tast::{self, Ident},
+    tast::{self, TastIdent},
 };
 use std::cell::Cell;
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub variants: Vec<(Ident, Vec<tast::Ty>)>,
+    pub name: TastIdent,
+    pub generics: Vec<TastIdent>,
+    pub variants: Vec<(TastIdent, Vec<tast::Ty>)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct StructDef {
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub fields: Vec<(Ident, tast::Ty)>,
+    pub name: TastIdent,
+    pub generics: Vec<TastIdent>,
+    pub fields: Vec<(TastIdent, tast::Ty)>,
 }
 
 #[derive(Debug, Clone)]
@@ -42,13 +42,13 @@ pub struct ExternType {
 pub enum Constraint {
     TypeEqual(tast::Ty, tast::Ty),
     Overloaded {
-        op: Ident,
-        trait_name: Ident,
+        op: TastIdent,
+        trait_name: TastIdent,
         call_site_type: tast::Ty,
     },
     StructFieldAccess {
         expr_ty: tast::Ty,
-        field: Ident,
+        field: TastIdent,
         result_ty: tast::Ty,
     },
 }
@@ -81,14 +81,14 @@ pub struct TraitDef {
 
 #[derive(Debug, Clone, Default)]
 pub struct ImplDef {
-    pub params: Vec<Ident>,
+    pub params: Vec<TastIdent>,
     pub methods: IndexMap<String, FnScheme>,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct TypeEnv {
-    pub enums: IndexMap<Ident, EnumDef>,
-    pub structs: IndexMap<Ident, StructDef>,
+    pub enums: IndexMap<TastIdent, EnumDef>,
+    pub structs: IndexMap<TastIdent, StructDef>,
     pub extern_types: IndexMap<String, ExternType>,
 }
 
@@ -97,11 +97,11 @@ impl TypeEnv {
         Self::default()
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+    pub fn enums(&self) -> &IndexMap<TastIdent, EnumDef> {
         &self.enums
     }
 
-    pub fn ensure_enum_placeholder(&mut self, name: Ident, generics: Vec<Ident>) -> &mut EnumDef {
+    pub fn ensure_enum_placeholder(&mut self, name: TastIdent, generics: Vec<TastIdent>) -> &mut EnumDef {
         self.enums.entry(name.clone()).or_insert_with(|| EnumDef {
             name,
             generics,
@@ -115,19 +115,19 @@ impl TypeEnv {
 
     pub fn retain_enums<F>(&mut self, f: F)
     where
-        F: FnMut(&Ident, &mut EnumDef) -> bool,
+        F: FnMut(&TastIdent, &mut EnumDef) -> bool,
     {
         self.enums.retain(f);
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+    pub fn structs(&self) -> &IndexMap<TastIdent, StructDef> {
         &self.structs
     }
 
     pub fn ensure_struct_placeholder(
         &mut self,
-        name: Ident,
-        generics: Vec<Ident>,
+        name: TastIdent,
+        generics: Vec<TastIdent>,
     ) -> &mut StructDef {
         self.structs
             .entry(name.clone())
@@ -138,7 +138,7 @@ impl TypeEnv {
             })
     }
 
-    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+    pub fn struct_def_mut(&mut self, name: &TastIdent) -> Option<&mut StructDef> {
         self.structs.get_mut(name)
     }
 
@@ -219,14 +219,14 @@ impl TypeEnv {
         }
     }
 
-    pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+    pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
         self.lookup_constructor_with_namespace(None, constr)
     }
 
     pub fn lookup_constructor_with_namespace(
         &self,
-        enum_name: Option<&Ident>,
-        constr: &Ident,
+        enum_name: Option<&TastIdent>,
+        constr: &TastIdent,
     ) -> Option<(Constructor, tast::Ty)> {
         match enum_name {
             Some(enum_name) => self.lookup_enum_constructor_in(enum_name, constr),
@@ -236,7 +236,7 @@ impl TypeEnv {
         }
     }
 
-    fn lookup_enum_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+    fn lookup_enum_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
         let mut found: Option<(Constructor, tast::Ty)> = None;
         for (enum_name, enum_def) in self.enums.iter() {
             if let Some(candidate) = Self::enum_constructor_info(enum_name, enum_def, constr) {
@@ -254,8 +254,8 @@ impl TypeEnv {
 
     fn lookup_enum_constructor_in(
         &self,
-        enum_name: &Ident,
-        constr: &Ident,
+        enum_name: &TastIdent,
+        constr: &TastIdent,
     ) -> Option<(Constructor, tast::Ty)> {
         self.enums
             .get(enum_name)
@@ -263,9 +263,9 @@ impl TypeEnv {
     }
 
     fn enum_constructor_info(
-        enum_name: &Ident,
+        enum_name: &TastIdent,
         enum_def: &EnumDef,
-        constr: &Ident,
+        constr: &TastIdent,
     ) -> Option<(Constructor, tast::Ty)> {
         enum_def
             .variants
@@ -276,7 +276,7 @@ impl TypeEnv {
     }
 
     fn build_enum_constructor(
-        enum_name: &Ident,
+        enum_name: &TastIdent,
         enum_def: &EnumDef,
         index: usize,
     ) -> (Constructor, tast::Ty) {
@@ -315,7 +315,7 @@ impl TypeEnv {
         (constructor, ctor_ty)
     }
 
-    fn lookup_struct_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+    fn lookup_struct_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
         self.structs.get(constr).map(|struct_def| {
             let base = tast::Ty::TStruct {
                 name: struct_def.name.0.clone(),
@@ -372,7 +372,7 @@ impl TraitEnv {
         self.trait_defs.contains_key(name)
     }
 
-    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
+    pub fn lookup_trait_method(&self, trait_name: &TastIdent, method_name: &TastIdent) -> Option<tast::Ty> {
         self.trait_defs
             .get(&trait_name.0)
             .and_then(|trait_def| trait_def.methods.get(&method_name.0))
@@ -381,9 +381,9 @@ impl TraitEnv {
 
     pub fn get_trait_impl(
         &self,
-        trait_name: &Ident,
+        trait_name: &TastIdent,
         type_name: &tast::Ty,
-        func_name: &Ident,
+        func_name: &TastIdent,
     ) -> Option<tast::Ty> {
         let key = (trait_name.0.clone(), encode_ty(type_name));
         self.trait_impls
@@ -395,7 +395,7 @@ impl TraitEnv {
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
-        method: &Ident,
+        method: &TastIdent,
     ) -> Option<tast::Ty> {
         let encoded_ty = encode_ty(receiver_ty);
 
@@ -475,11 +475,11 @@ impl GlobalTypeEnv {
         }
     }
 
-    pub fn enums(&self) -> &IndexMap<Ident, EnumDef> {
+    pub fn enums(&self) -> &IndexMap<TastIdent, EnumDef> {
         self.type_env.enums()
     }
 
-    pub fn ensure_enum_placeholder(&mut self, name: Ident, generics: Vec<Ident>) -> &mut EnumDef {
+    pub fn ensure_enum_placeholder(&mut self, name: TastIdent, generics: Vec<TastIdent>) -> &mut EnumDef {
         self.type_env.ensure_enum_placeholder(name, generics)
     }
 
@@ -489,24 +489,24 @@ impl GlobalTypeEnv {
 
     pub fn retain_enums<F>(&mut self, f: F)
     where
-        F: FnMut(&Ident, &mut EnumDef) -> bool,
+        F: FnMut(&TastIdent, &mut EnumDef) -> bool,
     {
         self.type_env.retain_enums(f)
     }
 
-    pub fn structs(&self) -> &IndexMap<Ident, StructDef> {
+    pub fn structs(&self) -> &IndexMap<TastIdent, StructDef> {
         self.type_env.structs()
     }
 
     pub fn ensure_struct_placeholder(
         &mut self,
-        name: Ident,
-        generics: Vec<Ident>,
+        name: TastIdent,
+        generics: Vec<TastIdent>,
     ) -> &mut StructDef {
         self.type_env.ensure_struct_placeholder(name, generics)
     }
 
-    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+    pub fn struct_def_mut(&mut self, name: &TastIdent) -> Option<&mut StructDef> {
         self.type_env.struct_def_mut(name)
     }
 
@@ -518,14 +518,14 @@ impl GlobalTypeEnv {
         self.type_env.register_extern_type(goml_name)
     }
 
-    pub fn lookup_constructor(&self, constr: &Ident) -> Option<(Constructor, tast::Ty)> {
+    pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
         self.type_env.lookup_constructor(constr)
     }
 
     pub fn lookup_constructor_with_namespace(
         &self,
-        enum_name: Option<&tast::Ident>,
-        constr: &tast::Ident,
+        enum_name: Option<&tast::TastIdent>,
+        constr: &tast::TastIdent,
     ) -> Option<(Constructor, tast::Ty)> {
         self.type_env
             .lookup_constructor_with_namespace(enum_name, constr)
@@ -535,15 +535,15 @@ impl GlobalTypeEnv {
         self.trait_env.is_trait(name)
     }
 
-    pub fn lookup_trait_method(&self, trait_name: &Ident, method_name: &Ident) -> Option<tast::Ty> {
+    pub fn lookup_trait_method(&self, trait_name: &TastIdent, method_name: &TastIdent) -> Option<tast::Ty> {
         self.trait_env.lookup_trait_method(trait_name, method_name)
     }
 
     pub fn get_trait_impl(
         &self,
-        trait_name: &Ident,
+        trait_name: &TastIdent,
         type_name: &tast::Ty,
-        func_name: &Ident,
+        func_name: &TastIdent,
     ) -> Option<tast::Ty> {
         self.trait_env
             .get_trait_impl(trait_name, type_name, func_name)
@@ -552,7 +552,7 @@ impl GlobalTypeEnv {
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
-        method: &Ident,
+        method: &TastIdent,
     ) -> Option<tast::Ty> {
         self.trait_env.lookup_inherent_method(receiver_ty, method)
     }

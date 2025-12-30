@@ -5,7 +5,7 @@ use crate::{
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     mangle::{encode_ty, mangle_inherent_name},
-    tast::{self, Ident},
+    tast::{self, TastIdent},
 };
 
 use indexmap::IndexSet;
@@ -36,11 +36,11 @@ impl GlobalGoEnv {
         Self { genv, liftenv }
     }
 
-    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+    pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
         self.liftenv.enums()
     }
 
-    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+    pub fn structs(&self) -> impl Iterator<Item = (&TastIdent, &StructDef)> {
         self.liftenv.structs()
     }
 
@@ -63,11 +63,11 @@ impl GlobalGoEnv {
             .map(|scheme| scheme.ty.clone())
     }
 
-    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+    pub fn get_enum(&self, name: &TastIdent) -> Option<&EnumDef> {
         self.enums().find(|(k, _)| *k == name).map(|(_, v)| v)
     }
 
-    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+    pub fn get_struct(&self, name: &TastIdent) -> Option<&StructDef> {
         self.liftenv.get_struct(name)
     }
 }
@@ -273,7 +273,7 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
 
 fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> String {
     let name = ty.get_constr_name_unsafe();
-    if let Some(def) = goenv.get_enum(&Ident::new(&name)) {
+    if let Some(def) = goenv.get_enum(&TastIdent::new(&name)) {
         let (vname, _fields) = &def.variants[index];
         return variant_struct_name(goenv, &name, &vname.0);
     }
@@ -365,7 +365,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 
 fn instantiate_struct_fields(
     goenv: &GlobalGoEnv,
-    type_name: &Ident,
+    type_name: &TastIdent,
     type_args: &[tast::Ty],
 ) -> Vec<(String, tast::Ty)> {
     let struct_def = goenv

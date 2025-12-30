@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::{
     env::{Constraint, GlobalTypeEnv},
-    tast::{self, Ident, TypeVar},
+    tast::{self, TastIdent, TypeVar},
     typer::Typer,
 };
 use diagnostics::{Severity, Stage};
@@ -140,7 +140,7 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 fn instantiate_struct_field_ty(
     struct_def: &crate::env::StructDef,
     type_args: &[tast::Ty],
-    field: &Ident,
+    field: &TastIdent,
 ) -> tast::Ty {
     const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
     if struct_def.generics.len() != type_args.len() {
@@ -166,9 +166,9 @@ fn instantiate_struct_field_ty(
     }
 }
 
-fn decompose_struct_type(ty: &tast::Ty) -> Option<(Ident, Vec<tast::Ty>)> {
+fn decompose_struct_type(ty: &tast::Ty) -> Option<(TastIdent, Vec<tast::Ty>)> {
     match ty {
-        tast::Ty::TStruct { name } => Some((Ident::new(name), Vec::new())),
+        tast::Ty::TStruct { name } => Some((TastIdent::new(name), Vec::new())),
         tast::Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());

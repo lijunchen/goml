@@ -508,7 +508,7 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     let mut items = Vec::new();
 
     if let Some(name) = type_constructor_name(ty) {
-        let uident = tast::Ident(name.to_string());
+        let uident = tast::TastIdent(name.to_string());
         if let Some(struct_def) = genv.structs().get(&uident) {
             for (field_name, field_ty) in &struct_def.fields {
                 items.push(DotCompletionItem {

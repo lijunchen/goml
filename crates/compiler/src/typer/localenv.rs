@@ -1,13 +1,13 @@
 use im::HashMap as ImHashMap;
 use indexmap::IndexMap;
 
-use crate::tast::{self, Ident};
+use crate::tast::{self, TastIdent};
 
 #[derive(Debug, Clone)]
 pub struct LocalTypeEnv {
-    scopes: Vec<ImHashMap<Ident, tast::Ty>>,
-    tparams_env: Vec<Ident>,
-    capture_stack: Vec<IndexMap<Ident, tast::Ty>>,
+    scopes: Vec<ImHashMap<TastIdent, tast::Ty>>,
+    tparams_env: Vec<TastIdent>,
+    capture_stack: Vec<IndexMap<TastIdent, tast::Ty>>,
 }
 
 impl Default for LocalTypeEnv {
@@ -36,13 +36,13 @@ impl LocalTypeEnv {
         self.scopes.pop();
     }
 
-    pub fn insert_var(&mut self, name: &Ident, ty: tast::Ty) {
+    pub fn insert_var(&mut self, name: &TastIdent, ty: tast::Ty) {
         if let Some(scope) = self.scopes.last_mut() {
             scope.insert(name.clone(), ty);
         }
     }
 
-    pub fn lookup_var(&mut self, name: &Ident) -> Option<tast::Ty> {
+    pub fn lookup_var(&mut self, name: &TastIdent) -> Option<tast::Ty> {
         for (depth, scope) in self.scopes.iter().enumerate().rev() {
             if let Some(ty) = scope.get(name) {
                 if depth + 1 < self.scopes.len()
@@ -56,7 +56,7 @@ impl LocalTypeEnv {
         None
     }
 
-    pub fn set_tparams_env(&mut self, params: &[Ident]) {
+    pub fn set_tparams_env(&mut self, params: &[TastIdent]) {
         self.tparams_env = params.to_vec();
     }
 
@@ -64,7 +64,7 @@ impl LocalTypeEnv {
         self.tparams_env.clear();
     }
 
-    pub fn current_tparams_env(&self) -> Vec<Ident> {
+    pub fn current_tparams_env(&self) -> Vec<TastIdent> {
         self.tparams_env.clone()
     }
 
