@@ -101,7 +101,11 @@ impl TypeEnv {
         &self.enums
     }
 
-    pub fn ensure_enum_placeholder(&mut self, name: TastIdent, generics: Vec<TastIdent>) -> &mut EnumDef {
+    pub fn ensure_enum_placeholder(
+        &mut self,
+        name: TastIdent,
+        generics: Vec<TastIdent>,
+    ) -> &mut EnumDef {
         self.enums.entry(name.clone()).or_insert_with(|| EnumDef {
             name,
             generics,
@@ -372,7 +376,11 @@ impl TraitEnv {
         self.trait_defs.contains_key(name)
     }
 
-    pub fn lookup_trait_method(&self, trait_name: &TastIdent, method_name: &TastIdent) -> Option<tast::Ty> {
+    pub fn lookup_trait_method(
+        &self,
+        trait_name: &TastIdent,
+        method_name: &TastIdent,
+    ) -> Option<tast::Ty> {
         self.trait_defs
             .get(&trait_name.0)
             .and_then(|trait_def| trait_def.methods.get(&method_name.0))
@@ -479,7 +487,11 @@ impl GlobalTypeEnv {
         self.type_env.enums()
     }
 
-    pub fn ensure_enum_placeholder(&mut self, name: TastIdent, generics: Vec<TastIdent>) -> &mut EnumDef {
+    pub fn ensure_enum_placeholder(
+        &mut self,
+        name: TastIdent,
+        generics: Vec<TastIdent>,
+    ) -> &mut EnumDef {
         self.type_env.ensure_enum_placeholder(name, generics)
     }
 
@@ -535,7 +547,11 @@ impl GlobalTypeEnv {
         self.trait_env.is_trait(name)
     }
 
-    pub fn lookup_trait_method(&self, trait_name: &TastIdent, method_name: &TastIdent) -> Option<tast::Ty> {
+    pub fn lookup_trait_method(
+        &self,
+        trait_name: &TastIdent,
+        method_name: &TastIdent,
+    ) -> Option<tast::Ty> {
         self.trait_env.lookup_trait_method(trait_name, method_name)
     }
 

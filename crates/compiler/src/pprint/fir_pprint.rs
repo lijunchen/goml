@@ -1,6 +1,6 @@
 use crate::fir::{
-    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File, Fn,
-    FirIdent, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File,
+    FirIdent, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 

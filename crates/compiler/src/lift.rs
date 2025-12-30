@@ -926,7 +926,11 @@ fn make_field_name(name: &str, index: usize) -> String {
     format!("{}_{}", base, index)
 }
 
-fn get_struct_field_ty(state: &State<'_>, struct_name: &TastIdent, field_index: usize) -> Option<Ty> {
+fn get_struct_field_ty(
+    state: &State<'_>,
+    struct_name: &TastIdent,
+    field_index: usize,
+) -> Option<Ty> {
     let struct_def = state.liftenv.get_struct(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     Some(raw_field_ty.clone())
