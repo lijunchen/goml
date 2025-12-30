@@ -4,8 +4,8 @@ use crate::env::{Gensym, GlobalTypeEnv, StructDef};
 use crate::mangle::{mangle_impl_name, mangle_inherent_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
-use crate::tast::Ident;
 use crate::tast::Pat::{self, *};
+use crate::tast::TastIdent;
 use crate::tast::Ty;
 use crate::tast::{self, File};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
@@ -227,9 +227,9 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
         .collect()
 }
 
-fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
+fn decompose_struct_type(ty: &Ty) -> Option<(TastIdent, Vec<Ty>)> {
     match ty {
-        Ty::TStruct { name } => Some((Ident(name.clone()), Vec::new())),
+        Ty::TStruct { name } => Some((TastIdent(name.clone()), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_struct_type(base)?;
             collected.extend(args.iter().cloned());
@@ -239,9 +239,9 @@ fn decompose_struct_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
     }
 }
 
-fn decompose_enum_type(ty: &Ty) -> Option<(Ident, Vec<Ty>)> {
+fn decompose_enum_type(ty: &Ty) -> Option<(TastIdent, Vec<Ty>)> {
     match ty {
-        Ty::TEnum { name } => Some((Ident(name.clone()), Vec::new())),
+        Ty::TEnum { name } => Some((TastIdent(name.clone()), Vec::new())),
         Ty::TApp { ty: base, args } => {
             let (type_name, mut collected) = decompose_enum_type(base)?;
             collected.extend(args.iter().cloned());
@@ -325,7 +325,7 @@ fn compile_enum_case(
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
-    name: &Ident,
+    name: &TastIdent,
     match_range: Option<TextRange>,
 ) -> core::Expr {
     let tydef = genv
@@ -419,7 +419,7 @@ fn compile_struct_case(
     rows: Vec<Row>,
     bvar: &Variable,
     ty: &Ty,
-    name: &Ident,
+    name: &TastIdent,
     type_args: &[Ty],
     match_range: Option<TextRange>,
 ) -> core::Expr {
@@ -1061,7 +1061,7 @@ fn compile_rows(
         }
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TEnum { name } => {
-            let ident = Ident::new(name);
+            let ident = TastIdent::new(name);
             compile_enum_case(
                 genv,
                 gensym,
@@ -1074,7 +1074,7 @@ fn compile_rows(
             )
         }
         Ty::TStruct { name } => {
-            let ident = Ident::new(name);
+            let ident = TastIdent::new(name);
             compile_struct_case(
                 genv,
                 gensym,
@@ -1089,7 +1089,7 @@ fn compile_rows(
         }
         Ty::TApp { ty: base, args } => match base.as_ref() {
             Ty::TEnum { name } => {
-                let ident = Ident::new(name);
+                let ident = TastIdent::new(name);
                 compile_enum_case(
                     genv,
                     gensym,
@@ -1102,7 +1102,7 @@ fn compile_rows(
                 )
             }
             Ty::TStruct { name } => {
-                let ident = Ident::new(name);
+                let ident = TastIdent::new(name);
                 compile_struct_case(
                     genv,
                     gensym,

@@ -4,11 +4,11 @@ use parser::syntax::MySyntaxNodePtr;
 use crate::common::{Constructor, Prim};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ident(pub String);
+pub struct TastIdent(pub String);
 
-impl Ident {
+impl TastIdent {
     pub fn new(name: &str) -> Self {
-        Ident(name.to_string())
+        TastIdent(name.to_string())
     }
 }
 
@@ -30,7 +30,7 @@ pub enum Item {
 #[derive(Debug)]
 pub struct ImplBlock {
     pub generics: Vec<String>,
-    pub trait_name: Option<Ident>,
+    pub trait_name: Option<TastIdent>,
     pub for_type: Ty,
     pub methods: Vec<Fn>,
 }
@@ -282,13 +282,13 @@ pub struct TypeVar(u32);
 #[derive(Debug, Clone)]
 pub enum BinaryResolution {
     Builtin,
-    Overloaded { trait_name: Ident },
+    Overloaded { trait_name: TastIdent },
 }
 
 #[derive(Debug, Clone)]
 pub enum UnaryResolution {
     Builtin,
-    Overloaded { trait_name: Ident },
+    Overloaded { trait_name: TastIdent },
 }
 
 impl UnifyKey for TypeVar {
@@ -397,14 +397,14 @@ pub enum Expr {
         resolution: BinaryResolution,
     },
     ETraitMethod {
-        trait_name: Ident,
-        method_name: Ident,
+        trait_name: TastIdent,
+        method_name: TastIdent,
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
     EInherentMethod {
         receiver_ty: Ty,
-        method_name: Ident,
+        method_name: TastIdent,
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },

@@ -1,6 +1,6 @@
 use crate::fir::{
-    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File, Fn,
-    Ident, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File,
+    FirIdent, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -140,7 +140,7 @@ impl Expr {
 
             Self::EStructLiteral { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.to_ident_name())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
@@ -152,12 +152,12 @@ impl Expr {
                                 RcDoc::text(",").append(RcDoc::hardline())
                             };
                             prefix
-                                .append(RcDoc::text(&fname.0))
+                                .append(RcDoc::text(fname.to_ident_name()))
                                 .append(RcDoc::text(": "))
                                 .append(expr.to_doc())
                         }));
 
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.to_ident_name())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{"))
                         .append(fields_doc.nest(4))
@@ -327,7 +327,7 @@ impl Expr {
             Self::EField { expr, field, .. } => expr
                 .to_doc()
                 .append(RcDoc::text("."))
-                .append(RcDoc::text(field.0.clone())),
+                .append(RcDoc::text(field.to_ident_name())),
             Self::EBlock { exprs } => {
                 if exprs.is_empty() {
                     RcDoc::text("{}")
@@ -357,7 +357,7 @@ impl Expr {
 impl Pat {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
-            Pat::PVar { name, astptr: _ } => RcDoc::text(name.0.clone()),
+            Pat::PVar { name, astptr: _ } => RcDoc::text(name.to_ident_name()),
             Pat::PUnit => RcDoc::text("()"),
             Pat::PBool { value } => {
                 if *value {
@@ -392,19 +392,19 @@ impl Pat {
             }
             Pat::PStruct { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.to_ident_name())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
                     let fields_doc = RcDoc::intersperse(
                         fields.iter().map(|(fname, pat)| {
-                            RcDoc::text(fname.0.clone())
+                            RcDoc::text(fname.to_ident_name())
                                 .append(RcDoc::text(": "))
                                 .append(pat.to_doc())
                         }),
                         RcDoc::text(", "),
                     );
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.to_ident_name())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{ "))
                         .append(fields_doc)
@@ -453,13 +453,13 @@ impl Arm {
     }
 }
 
-fn generics_to_doc(generics: &[Ident]) -> RcDoc<'_, ()> {
+fn generics_to_doc(generics: &[FirIdent]) -> RcDoc<'_, ()> {
     if generics.is_empty() {
         RcDoc::nil()
     } else {
         RcDoc::text("[")
             .append(RcDoc::intersperse(
-                generics.iter().map(|g| RcDoc::text(g.0.clone())),
+                generics.iter().map(|g| RcDoc::text(g.to_ident_name())),
                 RcDoc::text(", "),
             ))
             .append(RcDoc::text("]"))
@@ -470,7 +470,7 @@ impl EnumDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("enum")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0))
+            .append(RcDoc::text(self.name.to_ident_name()))
             .append(generics_to_doc(&self.generics));
 
         let variants_doc =
@@ -480,7 +480,7 @@ impl EnumDef {
                 } else {
                     RcDoc::text(",").append(RcDoc::hardline())
                 }
-                .append(RcDoc::text(&name.0));
+                .append(RcDoc::text(name.to_ident_name()));
 
                 if types.is_empty() {
                     variant
@@ -517,12 +517,12 @@ impl StructDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("struct")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0))
+            .append(RcDoc::text(self.name.to_ident_name()))
             .append(generics_to_doc(&self.generics));
 
         let fields_doc = RcDoc::concat(self.fields.iter().map(|(name, ty)| {
             RcDoc::hardline()
-                .append(RcDoc::text(&name.0))
+                .append(RcDoc::text(name.to_ident_name()))
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())
                 .append(ty.to_doc())
@@ -550,7 +550,7 @@ impl TraitDef {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("trait")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0));
+            .append(RcDoc::text(self.name.to_ident_name()));
 
         let methods_doc = RcDoc::intersperse(
             self.method_sigs.iter().map(|sig| sig.to_doc()),
@@ -577,7 +577,7 @@ impl TraitMethodSignature {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0))
+            .append(RcDoc::text(self.name.to_ident_name()))
             .append(RcDoc::text("("));
 
         let params_doc =
@@ -607,7 +607,7 @@ impl ImplBlock {
             base = base
                 .append(RcDoc::text("["))
                 .append(RcDoc::intersperse(
-                    self.generics.iter().map(|g| RcDoc::text(&g.0)),
+                    self.generics.iter().map(|g| RcDoc::text(g.to_ident_name())),
                     RcDoc::text(", "),
                 ))
                 .append(RcDoc::text("]"));
@@ -615,7 +615,7 @@ impl ImplBlock {
 
         let header = if let Some(trait_name) = &self.trait_name {
             base.append(RcDoc::space())
-                .append(RcDoc::text(&trait_name.0))
+                .append(RcDoc::text(trait_name.to_ident_name()))
                 .append(RcDoc::text(" for "))
                 .append(self.for_type.to_doc())
                 .append(RcDoc::text(" {"))
@@ -649,12 +649,12 @@ impl Fn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
-            .append(RcDoc::text(&self.name.0))
+            .append(RcDoc::text(self.name.to_ident_name()))
             .append(RcDoc::text("("));
 
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.0.clone())
+                RcDoc::text(name.to_ident_name())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
                     .append(ty.to_doc())
@@ -709,7 +709,7 @@ impl ExternGo {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.0.clone())
+                RcDoc::text(name.to_ident_name())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
                     .append(ty.to_doc())
@@ -734,7 +734,7 @@ impl ExternGo {
                 RcDoc::nil()
             })
             .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.0.clone()))
+            .append(RcDoc::text(self.goml_name.to_ident_name()))
             .append(RcDoc::text("("))
             .append(params_doc)
             .append(RcDoc::text(")"))
@@ -757,7 +757,7 @@ impl ExternType {
                 .append(RcDoc::space())
                 .append(RcDoc::text("type"))
                 .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.0.clone())),
+                .append(RcDoc::text(self.goml_name.to_ident_name())),
         )
     }
 }
@@ -766,7 +766,7 @@ impl ExternBuiltin {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.0.clone())
+                RcDoc::text(name.to_ident_name())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
                     .append(ty.to_doc())
@@ -785,7 +785,7 @@ impl ExternBuiltin {
                 .append(RcDoc::space())
                 .append(RcDoc::text("fn"))
                 .append(RcDoc::space())
-                .append(RcDoc::text(self.name.0.clone()))
+                .append(RcDoc::text(self.name.to_ident_name()))
                 .append(RcDoc::text("("))
                 .append(params_doc)
                 .append(RcDoc::text(")"))
@@ -833,7 +833,7 @@ impl Item {
 
 impl ClosureParam {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let mut doc = RcDoc::text(self.name.0.clone());
+        let mut doc = RcDoc::text(self.name.to_ident_name());
         if let Some(ty) = &self.ty {
             doc = doc.append(RcDoc::text(": ")).append(ty.to_doc());
         }

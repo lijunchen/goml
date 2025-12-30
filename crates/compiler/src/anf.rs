@@ -4,7 +4,7 @@ use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
 use crate::lift::{GlobalLiftEnv, LiftArm, LiftExpr, LiftFile};
-use crate::tast::Ident;
+use crate::tast::TastIdent;
 use common_defs::{BinaryOp, UnaryOp};
 
 #[derive(Debug, Clone)]
@@ -17,15 +17,15 @@ impl GlobalAnfEnv {
         GlobalAnfEnv { liftenv }
     }
 
-    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+    pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
         self.liftenv.enums()
     }
 
-    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+    pub fn structs(&self) -> impl Iterator<Item = (&TastIdent, &StructDef)> {
         self.liftenv.structs()
     }
 
-    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+    pub fn get_struct(&self, name: &TastIdent) -> Option<&StructDef> {
         self.liftenv.get_struct(name)
     }
 }

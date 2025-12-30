@@ -56,7 +56,7 @@ pub(crate) fn validate_ty(
             if name == "Self" {
                 return;
             }
-            let ident = tast::Ident::new(name);
+            let ident = tast::TastIdent::new(name);
             if let Some(enum_def) = genv.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
                     diagnostics.push(Diagnostic::new(
@@ -97,7 +97,7 @@ pub(crate) fn validate_ty(
             }
 
             let base_name = ty.get_constr_name_unsafe();
-            let ident = tast::Ident::new(&base_name);
+            let ident = tast::TastIdent::new(&base_name);
 
             if let Some(enum_def) = genv.enums().get(&ident) {
                 let expected = enum_def.generics.len();
@@ -158,7 +158,7 @@ impl tast::Ty {
     pub(crate) fn from_fir(
         genv: &GlobalTypeEnv,
         fir_ty: &fir::TypeExpr,
-        tparams_env: &[tast::Ident],
+        tparams_env: &[tast::TastIdent],
     ) -> Self {
         match fir_ty {
             fir::TypeExpr::TUnit => Self::TUnit,
@@ -184,7 +184,7 @@ impl tast::Ty {
                 if tparams_env.iter().any(|param| param.0 == *name) {
                     Self::TParam { name: name.clone() }
                 } else {
-                    let ident = tast::Ident::new(name);
+                    let ident = tast::TastIdent::new(name);
                     if genv.enums().contains_key(&ident) {
                         Self::TEnum { name: name.clone() }
                     } else if genv.structs().contains_key(&ident)
@@ -237,6 +237,6 @@ impl tast::Ty {
     }
 }
 
-pub(crate) fn type_param_name_set(tparams: &[fir::Ident]) -> HashSet<String> {
-    tparams.iter().map(|param| param.0.clone()).collect()
+pub(crate) fn type_param_name_set(tparams: &[fir::FirIdent]) -> HashSet<String> {
+    tparams.iter().map(|param| param.to_ident_name()).collect()
 }

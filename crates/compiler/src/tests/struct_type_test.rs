@@ -62,11 +62,11 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     let point = genv
         .structs()
-        .get(&tast::Ident::new("Point"))
+        .get(&tast::TastIdent::new("Point"))
         .expect("Point struct to be recorded");
     let wrapper = genv
         .structs()
-        .get(&tast::Ident::new("Wrapper"))
+        .get(&tast::TastIdent::new("Wrapper"))
         .expect("Wrapper struct to be recorded");
     let wrapper_fn = genv
         .value_env
@@ -79,9 +79,9 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     expect![[r#"
         Point.generics=[]
-        Point.fields=[(Ident("x"), TInt32), (Ident("y"), TInt32)]
-        Wrapper.generics=[Ident("T")]
-        Wrapper.fields=[(Ident("value"), TParam(T))]
+        Point.fields=[(TastIdent("x"), TInt32), (TastIdent("y"), TInt32)]
+        Wrapper.generics=[TastIdent("T")]
+        Wrapper.fields=[(TastIdent("value"), TParam(T))]
         consume_wrapper=TFunc([TApp(TStruct(Wrapper), [TParam(T)])], TUnit)"#]]
     .assert_eq(&lines.join("\n"));
 }
@@ -109,15 +109,15 @@ enum Shape[T] {
 
     let shape = genv
         .enums()
-        .get(&tast::Ident::new("Shape"))
+        .get(&tast::TastIdent::new("Shape"))
         .expect("Shape enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Shape.generics={:?}", shape.generics));
     lines.push(format!("Shape.variants={:?}", shape.variants));
 
     expect![[r#"
-        Shape.generics=[Ident("T")]
-        Shape.variants=[(Ident("Dot"), [TStruct(Point)]), (Ident("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (Ident("Origin"), [])]"#]]
+        Shape.generics=[TastIdent("T")]
+        Shape.variants=[(TastIdent("Dot"), [TStruct(Point)]), (TastIdent("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (TastIdent("Origin"), [])]"#]]
     .assert_eq(&lines.join("\n"));
 }
 
@@ -139,19 +139,19 @@ enum List {
 
     let node = genv
         .structs()
-        .get(&tast::Ident::new("Node"))
+        .get(&tast::TastIdent::new("Node"))
         .expect("Node struct to be recorded");
     let list = genv
         .enums()
-        .get(&tast::Ident::new("List"))
+        .get(&tast::TastIdent::new("List"))
         .expect("List enum to be recorded");
     let mut lines = Vec::new();
     lines.push(format!("Node.fields={:?}", node.fields));
     lines.push(format!("List.variants={:?}", list.variants));
 
     expect![[r#"
-        Node.fields=[(Ident("value"), TInt32), (Ident("next"), TEnum(List))]
-        List.variants=[(Ident("Cons"), [TStruct(Node)]), (Ident("Nil"), [])]"#]]
+        Node.fields=[(TastIdent("value"), TInt32), (TastIdent("next"), TEnum(List))]
+        List.variants=[(TastIdent("Cons"), [TStruct(Node)]), (TastIdent("Nil"), [])]"#]]
     .assert_eq(&lines.join("\n"));
 }
 

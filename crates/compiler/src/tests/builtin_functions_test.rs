@@ -64,7 +64,7 @@ fn env_does_not_register_legacy_int_aliases() {
 #[test]
 fn env_registers_builtin_int32_inherent_to_string() {
     let env = GlobalTypeEnv::new();
-    let method = tast::Ident("to_string".to_string());
+    let method = tast::TastIdent("to_string".to_string());
 
     let result = env.lookup_inherent_method(&tast::Ty::TInt32, &method);
     expect![[r#"

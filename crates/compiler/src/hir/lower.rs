@@ -930,8 +930,8 @@ impl LowerCtx {
 
     fn lower_struct_literal(
         &mut self,
-        name: &ast::Ident,
-        fields: &Vec<(ast::Ident, ast::Expr)>,
+        name: &ast::AstIdent,
+        fields: &Vec<(ast::AstIdent, ast::Expr)>,
         astptr: Option<MySyntaxNodePtr>,
         generics: &GenericTable,
         diagnostics: &mut Diagnostics,
@@ -997,7 +997,7 @@ impl LowerCtx {
         generics: &GenericTable,
         diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
-        let segments: Vec<&ast::Ident> = constructor.segments.iter().map(|s| &s.ident).collect();
+        let segments: Vec<&ast::AstIdent> = constructor.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
                 diagnostics.push(Diagnostic::new(
@@ -1210,7 +1210,7 @@ impl LowerCtx {
         generics: &GenericTable,
         diagnostics: &mut Diagnostics,
     ) -> Option<HirExprId> {
-        let segments: Vec<&ast::Ident> = path.segments.iter().map(|s| &s.ident).collect();
+        let segments: Vec<&ast::AstIdent> = path.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
                 diagnostics.push(Diagnostic::new(
@@ -1410,7 +1410,7 @@ impl LowerCtx {
         astptr: Option<MySyntaxNodePtr>,
         diagnostics: &mut Diagnostics,
     ) -> Option<HirPatId> {
-        let segments: Vec<&ast::Ident> = constructor.segments.iter().map(|s| &s.ident).collect();
+        let segments: Vec<&ast::AstIdent> = constructor.segments.iter().map(|s| &s.ident).collect();
         match segments.len() {
             0 => {
                 diagnostics.push(Diagnostic::new(
@@ -1679,7 +1679,7 @@ impl LowerCtx {
     fn extend_generics(
         &mut self,
         base: Option<&GenericTable>,
-        params: &[ast::Ident],
+        params: &[ast::AstIdent],
     ) -> (Vec<GenericParamId>, GenericTable) {
         let mut table = base.cloned().unwrap_or_else(GenericTable::new);
         let mut ids = Vec::new();

@@ -1,9 +1,9 @@
 use parser::syntax::MySyntaxNodePtr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ident(pub String);
+pub struct AstIdent(pub String);
 
-impl Ident {
+impl AstIdent {
     pub fn new(name: &str) -> Self {
         Self(name.to_string())
     }
@@ -11,15 +11,15 @@ impl Ident {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathSegment {
-    pub ident: Ident,
+    pub ident: AstIdent,
 }
 
 impl PathSegment {
-    pub fn new(ident: Ident) -> Self {
+    pub fn new(ident: AstIdent) -> Self {
         Self { ident }
     }
 
-    pub fn ident(&self) -> &Ident {
+    pub fn ident(&self) -> &AstIdent {
         &self.ident
     }
 }
@@ -34,12 +34,12 @@ impl Path {
         Self { segments }
     }
 
-    pub fn from_idents(idents: Vec<Ident>) -> Self {
+    pub fn from_idents(idents: Vec<AstIdent>) -> Self {
         let segments = idents.into_iter().map(PathSegment::new).collect();
         Self { segments }
     }
 
-    pub fn from_ident(ident: Ident) -> Self {
+    pub fn from_ident(ident: AstIdent) -> Self {
         Self {
             segments: vec![PathSegment::new(ident)],
         }
@@ -61,7 +61,7 @@ impl Path {
         self.segments.last()
     }
 
-    pub fn last_ident(&self) -> Option<&Ident> {
+    pub fn last_ident(&self) -> Option<&AstIdent> {
         self.last().map(|segment| segment.ident())
     }
 
@@ -73,7 +73,7 @@ impl Path {
         }
     }
 
-    pub fn parent_ident(&self) -> Option<&Ident> {
+    pub fn parent_ident(&self) -> Option<&AstIdent> {
         if self.segments.len() > 1 {
             Some(self.segments[self.segments.len() - 2].ident())
         } else {
@@ -127,7 +127,7 @@ pub enum TypeExpr {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub name: Ident,
+    pub name: AstIdent,
     pub ty: Option<TypeExpr>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -158,9 +158,9 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub name: AstIdent,
+    pub generics: Vec<AstIdent>,
+    pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Expr,
 }
@@ -170,52 +170,52 @@ pub struct ExternGo {
     pub attrs: Vec<Attribute>,
     pub package_path: String,
     pub go_symbol: String,
-    pub goml_name: Ident,
+    pub goml_name: AstIdent,
     pub explicit_go_symbol: bool,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
-    pub goml_name: Ident,
+    pub goml_name: AstIdent,
 }
 
 #[derive(Debug, Clone)]
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub name: AstIdent,
+    pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub variants: Vec<(Ident, Vec<TypeExpr>)>,
+    pub name: AstIdent,
+    pub generics: Vec<AstIdent>,
+    pub variants: Vec<(AstIdent, Vec<TypeExpr>)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct StructDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub fields: Vec<(Ident, TypeExpr)>,
+    pub name: AstIdent,
+    pub generics: Vec<AstIdent>,
+    pub fields: Vec<(AstIdent, TypeExpr)>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
+    pub name: AstIdent,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
-    pub name: Ident,
+    pub name: AstIdent,
     pub params: Vec<TypeExpr>,
     pub ret_ty: TypeExpr,
 }
@@ -223,8 +223,8 @@ pub struct TraitMethodSignature {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
-    pub generics: Vec<Ident>,
-    pub trait_name: Option<Ident>,
+    pub generics: Vec<AstIdent>,
+    pub trait_name: Option<AstIdent>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,
 }
@@ -283,8 +283,8 @@ pub enum Expr {
         args: Vec<Expr>,
     },
     EStructLiteral {
-        name: Ident,
-        fields: Vec<(Ident, Expr)>,
+        name: AstIdent,
+        fields: Vec<(AstIdent, Expr)>,
     },
     ETuple {
         items: Vec<Expr>,
@@ -337,7 +337,7 @@ pub enum Expr {
     },
     EField {
         expr: Box<Expr>,
-        field: Ident,
+        field: AstIdent,
         astptr: MySyntaxNodePtr,
     },
     EBlock {
@@ -354,7 +354,7 @@ pub struct Arm {
 #[derive(Debug, Clone)]
 pub enum Pat {
     PVar {
-        name: Ident,
+        name: AstIdent,
         astptr: MySyntaxNodePtr,
     },
     PUnit,
@@ -396,8 +396,8 @@ pub enum Pat {
         args: Vec<Pat>,
     },
     PStruct {
-        name: Ident,
-        fields: Vec<(Ident, Pat)>,
+        name: AstIdent,
+        fields: Vec<(AstIdent, Pat)>,
     },
     PTuple {
         pats: Vec<Pat>,

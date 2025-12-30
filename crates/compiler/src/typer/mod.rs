@@ -3,6 +3,7 @@ use ena::unify::InPlaceUnificationTable;
 use crate::{env::Constraint, tast::TypeVar};
 
 mod check;
+mod localenv;
 mod name_resolution;
 mod toplevel;
 mod unify;
@@ -13,19 +14,15 @@ pub use toplevel::{check_file, check_file_with_env};
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
-}
-
-impl Default for Typer {
-    fn default() -> Self {
-        Self::new()
-    }
+    pub fir_table: name_resolution::FirTable,
 }
 
 impl Typer {
-    pub fn new() -> Self {
+    pub fn new(fir_table: name_resolution::FirTable) -> Self {
         Self {
             uni: InPlaceUnificationTable::new(),
             constraints: Vec::new(),
+            fir_table,
         }
     }
 

@@ -5,7 +5,7 @@ use crate::{
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
     mangle::{encode_ty, mangle_inherent_name},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
-    tast::{self, Ident, Ty},
+    tast::{self, TastIdent, Ty},
 };
 
 const CLOSURE_ENV_PREFIX: &str = "closure_env_";
@@ -19,7 +19,7 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 #[derive(Debug, Clone)]
 pub struct GlobalLiftEnv {
     pub monoenv: GlobalMonoEnv,
-    pub lifted_structs: IndexMap<Ident, StructDef>,
+    pub lifted_structs: IndexMap<TastIdent, StructDef>,
     pub lifted_inherent_impls: IndexMap<String, ImplDef>,
     pub lifted_funcs: IndexMap<String, tast::Ty>,
 }
@@ -34,15 +34,15 @@ impl GlobalLiftEnv {
         }
     }
 
-    pub fn enums(&self) -> impl Iterator<Item = (&Ident, &EnumDef)> {
+    pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
         self.monoenv.enums()
     }
 
-    pub fn get_enum(&self, name: &Ident) -> Option<&EnumDef> {
+    pub fn get_enum(&self, name: &TastIdent) -> Option<&EnumDef> {
         self.monoenv.get_enum(name)
     }
 
-    pub fn struct_def_mut(&mut self, name: &Ident) -> Option<&mut StructDef> {
+    pub fn struct_def_mut(&mut self, name: &TastIdent) -> Option<&mut StructDef> {
         if self.lifted_structs.contains_key(name) {
             self.lifted_structs.get_mut(name)
         } else {
@@ -54,7 +54,7 @@ impl GlobalLiftEnv {
         self.lifted_structs.insert(def.name.clone(), def);
     }
 
-    pub fn structs(&self) -> impl Iterator<Item = (&Ident, &StructDef)> {
+    pub fn structs(&self) -> impl Iterator<Item = (&TastIdent, &StructDef)> {
         self.monoenv.structs().chain(self.lifted_structs.iter())
     }
 
@@ -82,7 +82,7 @@ impl GlobalLiftEnv {
         self.lifted_funcs.insert(name, ty);
     }
 
-    pub fn get_struct(&self, name: &Ident) -> Option<&StructDef> {
+    pub fn get_struct(&self, name: &TastIdent) -> Option<&StructDef> {
         self.lifted_structs
             .get(name)
             .or_else(|| self.monoenv.get_struct(name))
@@ -237,17 +237,17 @@ impl<'env> State<'env> {
         }
     }
 
-    fn fresh_struct_name(&mut self, hint: Option<&str>) -> Ident {
+    fn fresh_struct_name(&mut self, hint: Option<&str>) -> TastIdent {
         let name = if let Some(hint) = hint {
             format!("{}{}_{}", CLOSURE_ENV_PREFIX, hint, self.next_id)
         } else {
             format!("{}{}", CLOSURE_ENV_PREFIX, self.next_id)
         };
         self.next_id += 1;
-        Ident::new(&name)
+        TastIdent::new(&name)
     }
 
-    fn register_closure_type(&mut self, struct_name: &Ident, apply_fn: String) {
+    fn register_closure_type(&mut self, struct_name: &TastIdent, apply_fn: String) {
         self.closure_types.insert(
             struct_name.0.clone(),
             ClosureTypeInfo {
@@ -719,7 +719,7 @@ fn transform_closure(
 
     for (index, (name, field_ty)) in captured.iter().enumerate() {
         let field_name = make_field_name(name, index);
-        struct_fields.push((Ident(field_name), field_ty.clone()));
+        struct_fields.push((TastIdent(field_name), field_ty.clone()));
         captured_args.push(LiftExpr::EVar {
             name: name.clone(),
             ty: field_ty.clone(),
@@ -926,7 +926,11 @@ fn make_field_name(name: &str, index: usize) -> String {
     format!("{}_{}", base, index)
 }
 
-fn get_struct_field_ty(state: &State<'_>, struct_name: &Ident, field_index: usize) -> Option<Ty> {
+fn get_struct_field_ty(
+    state: &State<'_>,
+    struct_name: &TastIdent,
+    field_index: usize,
+) -> Option<Ty> {
     let struct_def = state.liftenv.get_struct(struct_name)?;
     let (_, raw_field_ty) = struct_def.fields.get(field_index)?;
     Some(raw_field_ty.clone())
