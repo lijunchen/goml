@@ -79,9 +79,9 @@ fn consume_wrapper[T](value: Wrapper[T]) -> unit { () }
 
     expect![[r#"
         Point.generics=[]
-        Point.fields=[(Ident("x"), TInt32), (Ident("y"), TInt32)]
-        Wrapper.generics=[Ident("T")]
-        Wrapper.fields=[(Ident("value"), TParam(T))]
+        Point.fields=[(TastIdent("x"), TInt32), (TastIdent("y"), TInt32)]
+        Wrapper.generics=[TastIdent("T")]
+        Wrapper.fields=[(TastIdent("value"), TParam(T))]
         consume_wrapper=TFunc([TApp(TStruct(Wrapper), [TParam(T)])], TUnit)"#]]
     .assert_eq(&lines.join("\n"));
 }
@@ -116,8 +116,8 @@ enum Shape[T] {
     lines.push(format!("Shape.variants={:?}", shape.variants));
 
     expect![[r#"
-        Shape.generics=[Ident("T")]
-        Shape.variants=[(Ident("Dot"), [TStruct(Point)]), (Ident("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (Ident("Origin"), [])]"#]]
+        Shape.generics=[TastIdent("T")]
+        Shape.variants=[(TastIdent("Dot"), [TStruct(Point)]), (TastIdent("Wrapped"), [TApp(TStruct(Wrapper), [TParam(T)])]), (TastIdent("Origin"), [])]"#]]
     .assert_eq(&lines.join("\n"));
 }
 
@@ -150,8 +150,8 @@ enum List {
     lines.push(format!("List.variants={:?}", list.variants));
 
     expect![[r#"
-        Node.fields=[(Ident("value"), TInt32), (Ident("next"), TEnum(List))]
-        List.variants=[(Ident("Cons"), [TStruct(Node)]), (Ident("Nil"), [])]"#]]
+        Node.fields=[(TastIdent("value"), TInt32), (TastIdent("next"), TEnum(List))]
+        List.variants=[(TastIdent("Cons"), [TStruct(Node)]), (TastIdent("Nil"), [])]"#]]
     .assert_eq(&lines.join("\n"));
 }
 
