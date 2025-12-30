@@ -29,7 +29,7 @@ pub struct NameResolution {
 }
 
 #[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::Ident, fir::FirIdent)>);
+struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::FirIdent)>);
 
 impl ResolveLocalEnv {
     pub fn new() -> Self {
@@ -41,11 +41,11 @@ impl ResolveLocalEnv {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::Ident, new_name: fir::FirIdent) {
+    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::FirIdent) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::Ident) -> Option<&fir::FirIdent> {
+    pub fn rfind(&self, key: &ast::AstIdent) -> Option<&fir::FirIdent> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)

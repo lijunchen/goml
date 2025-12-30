@@ -1,5 +1,5 @@
 use ::ast::ast::{
-    self, Arm, Attribute, EnumDef, Expr, Ident, ImplBlock, Item, Pat, Path, StructDef,
+    self, Arm, AstIdent, Attribute, EnumDef, Expr, ImplBlock, Item, Pat, Path, StructDef,
 };
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -104,9 +104,12 @@ fn derive_struct_tostring(
 
     let method = ast::Fn {
         attrs: Vec::new(),
-        name: Ident::new(TO_STRING_FN),
+        name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
-        params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&struct_def.name))],
+        params: vec![(
+            AstIdent::new(SELF_PARAM_NAME),
+            ty_for_ident(&struct_def.name),
+        )],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_struct_body(struct_def, attr_ptr),
     };
@@ -130,9 +133,9 @@ fn derive_enum_tostring(
 
     let method = ast::Fn {
         attrs: Vec::new(),
-        name: Ident::new(TO_STRING_FN),
+        name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
-        params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
+        params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_body(enum_def, attr_ptr),
     };
@@ -160,9 +163,12 @@ fn derive_struct_tojson(
 
     let method = ast::Fn {
         attrs: Vec::new(),
-        name: Ident::new(TO_JSON_FN),
+        name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
-        params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&struct_def.name))],
+        params: vec![(
+            AstIdent::new(SELF_PARAM_NAME),
+            ty_for_ident(&struct_def.name),
+        )],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_struct_json_body(struct_def, attr_ptr),
     };
@@ -186,9 +192,9 @@ fn derive_enum_tojson(
 
     let method = ast::Fn {
         attrs: Vec::new(),
-        name: Ident::new(TO_JSON_FN),
+        name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
-        params: vec![(Ident::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
+        params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_json_body(enum_def, attr_ptr),
     };
@@ -258,7 +264,7 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
                         .collect(),
                 },
                 annotation: None,
-                value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
+                value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
             },
             body,
         ],
@@ -266,7 +272,7 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
 }
 
 fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    let expr = Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr));
+    let expr = Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr));
     let arms: Vec<Arm> = enum_def
         .variants
         .iter()
@@ -284,8 +290,8 @@ fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                     },
                 }
             } else {
-                let bindings: Vec<Ident> = (0..fields.len())
-                    .map(|idx| Ident::new(&format!("__field{}", idx)))
+                let bindings: Vec<AstIdent> = (0..fields.len())
+                    .map(|idx| AstIdent::new(&format!("__field{}", idx)))
                     .collect();
                 let args = bindings
                     .iter()
@@ -383,7 +389,7 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
                         .collect(),
                 },
                 annotation: None,
-                value: Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr)),
+                value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
             },
             body,
         ],
@@ -391,7 +397,7 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
 }
 
 fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    let expr = Box::new(var_expr(&Ident::new(SELF_PARAM_NAME), attr_ptr));
+    let expr = Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr));
     let arms: Vec<Arm> = enum_def
         .variants
         .iter()
@@ -408,8 +414,8 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                     },
                 }
             } else {
-                let bindings: Vec<Ident> = (0..fields.len())
-                    .map(|idx| Ident::new(&format!("__field{}", idx)))
+                let bindings: Vec<AstIdent> = (0..fields.len())
+                    .map(|idx| AstIdent::new(&format!("__field{}", idx)))
                     .collect();
                 let args = bindings
                     .iter()
@@ -474,7 +480,7 @@ fn call_to_string(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNo
         Expr::ECall {
             func: Box::new(Expr::EField {
                 expr: Box::new(value),
-                field: Ident::new(TO_STRING_FN),
+                field: AstIdent::new(TO_STRING_FN),
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
@@ -504,7 +510,7 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
         | Some(ast::TypeExpr::TFloat64) => Expr::ECall {
             func: Box::new(Expr::EField {
                 expr: Box::new(value),
-                field: Ident::new(TO_STRING_FN),
+                field: AstIdent::new(TO_STRING_FN),
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
@@ -517,7 +523,7 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
         _ => Expr::ECall {
             func: Box::new(Expr::EField {
                 expr: Box::new(value),
-                field: Ident::new(TO_JSON_FN),
+                field: AstIdent::new(TO_JSON_FN),
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
@@ -527,25 +533,25 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
 
 fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::ECall {
-        func: Box::new(var_expr(&Ident::new(name), attr_ptr)),
+        func: Box::new(var_expr(&AstIdent::new(name), attr_ptr)),
         args,
     }
 }
 
-fn var_expr(name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Expr {
+fn var_expr(name: &AstIdent, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::EPath {
         path: ast::Path::from_ident(name.clone()),
         astptr: *attr_ptr,
     }
 }
 
-fn ty_for_ident(name: &Ident) -> ast::TypeExpr {
+fn ty_for_ident(name: &AstIdent) -> ast::TypeExpr {
     ast::TypeExpr::TCon {
         name: name.0.clone(),
     }
 }
 
-fn generic_not_supported(kind: &str, name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Diagnostic {
+fn generic_not_supported(kind: &str, name: &AstIdent, attr_ptr: &MySyntaxNodePtr) -> Diagnostic {
     Diagnostic::new(
         Stage::other(DERIVE_STAGE),
         Severity::Error,
@@ -557,7 +563,11 @@ fn generic_not_supported(kind: &str, name: &Ident, attr_ptr: &MySyntaxNodePtr) -
     .with_range(attr_ptr.text_range())
 }
 
-fn generic_not_supported_json(kind: &str, name: &Ident, attr_ptr: &MySyntaxNodePtr) -> Diagnostic {
+fn generic_not_supported_json(
+    kind: &str,
+    name: &AstIdent,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Diagnostic {
     Diagnostic::new(
         Stage::other(DERIVE_STAGE),
         Severity::Error,

@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType, File, Fn,
-    Ident, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, AstIdent, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType,
+    File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -453,7 +453,7 @@ impl Arm {
     }
 }
 
-fn generics_to_doc(generics: &[Ident]) -> RcDoc<'_, ()> {
+fn generics_to_doc(generics: &[AstIdent]) -> RcDoc<'_, ()> {
     if generics.is_empty() {
         RcDoc::nil()
     } else {
