@@ -2,14 +2,14 @@ use ast::ast;
 use parser::syntax::MySyntaxNodePtr;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct Ident {
+pub struct FirIdent {
     id: i32,
     hint: String,
 }
 
-impl Ident {
+impl FirIdent {
     pub fn new(id: i32, hint: &str) -> Self {
-        Ident {
+        FirIdent {
             id,
             hint: hint.to_string(),
         }
@@ -25,15 +25,15 @@ impl Ident {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathSegment {
-    pub ident: Ident,
+    pub ident: FirIdent,
 }
 
 impl PathSegment {
-    pub fn new(ident: Ident) -> Self {
+    pub fn new(ident: FirIdent) -> Self {
         Self { ident }
     }
 
-    pub fn ident(&self) -> &Ident {
+    pub fn ident(&self) -> &FirIdent {
         &self.ident
     }
 }
@@ -41,7 +41,7 @@ impl PathSegment {
 impl From<&ast::PathSegment> for PathSegment {
     fn from(seg: &ast::PathSegment) -> Self {
         PathSegment {
-            ident: Ident::new(-1, &seg.ident.0),
+            ident: FirIdent::new(-1, &seg.ident.0),
         }
     }
 }
@@ -56,12 +56,12 @@ impl Path {
         Self { segments }
     }
 
-    pub fn from_idents(idents: Vec<Ident>) -> Self {
+    pub fn from_idents(idents: Vec<FirIdent>) -> Self {
         let segments = idents.into_iter().map(PathSegment::new).collect();
         Self { segments }
     }
 
-    pub fn from_ident(ident: Ident) -> Self {
+    pub fn from_ident(ident: FirIdent) -> Self {
         Self {
             segments: vec![PathSegment::new(ident)],
         }
@@ -83,7 +83,7 @@ impl Path {
         self.segments.last()
     }
 
-    pub fn last_ident(&self) -> Option<&Ident> {
+    pub fn last_ident(&self) -> Option<&FirIdent> {
         self.last().map(|segment| segment.ident())
     }
 
@@ -95,7 +95,7 @@ impl Path {
         }
     }
 
-    pub fn parent_ident(&self) -> Option<&Ident> {
+    pub fn parent_ident(&self) -> Option<&FirIdent> {
         if self.segments.len() > 1 {
             Some(self.segments[self.segments.len() - 2].ident())
         } else {
@@ -193,7 +193,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub name: Ident,
+    pub name: FirIdent,
     pub ty: Option<TypeExpr>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -233,9 +233,9 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub name: FirIdent,
+    pub generics: Vec<FirIdent>,
+    pub params: Vec<(FirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Expr,
 }
@@ -245,9 +245,9 @@ pub struct ExternGo {
     pub attrs: Vec<Attribute>,
     pub package_path: String,
     pub go_symbol: String,
-    pub goml_name: Ident,
+    pub goml_name: FirIdent,
     pub explicit_go_symbol: bool,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub params: Vec<(FirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
@@ -257,12 +257,12 @@ impl From<&ast::ExternGo> for ExternGo {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             package_path: ext.package_path.clone(),
             go_symbol: ext.go_symbol.clone(),
-            goml_name: Ident::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::new(-1, &ext.goml_name.0),
             explicit_go_symbol: ext.explicit_go_symbol,
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -272,14 +272,14 @@ impl From<&ast::ExternGo> for ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
-    pub goml_name: Ident,
+    pub goml_name: FirIdent,
 }
 
 impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: Ident::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::new(-1, &ext.goml_name.0),
         }
     }
 }
@@ -287,8 +287,8 @@ impl From<&ast::ExternType> for ExternType {
 #[derive(Debug, Clone)]
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub params: Vec<(Ident, TypeExpr)>,
+    pub name: FirIdent,
+    pub params: Vec<(FirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
@@ -296,11 +296,11 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
     fn from(ext: &ast::ExternBuiltin) -> Self {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            name: Ident::new(-1, &ext.name.0),
+            name: FirIdent::new(-1, &ext.name.0),
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -310,21 +310,26 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
 #[derive(Debug, Clone)]
 pub struct EnumDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub variants: Vec<(Ident, Vec<TypeExpr>)>,
+    pub name: FirIdent,
+    pub generics: Vec<FirIdent>,
+    pub variants: Vec<(FirIdent, Vec<TypeExpr>)>,
 }
 
 impl From<&ast::EnumDef> for EnumDef {
     fn from(e: &ast::EnumDef) -> Self {
         EnumDef {
             attrs: e.attrs.iter().map(|a| a.into()).collect(),
-            name: Ident::new(-1, &e.name.0),
-            generics: e.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
+            name: FirIdent::new(-1, &e.name.0),
+            generics: e.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| (Ident::new(-1, &i.0), tys.iter().map(|t| t.into()).collect()))
+                .map(|(i, tys)| {
+                    (
+                        FirIdent::new(-1, &i.0),
+                        tys.iter().map(|t| t.into()).collect(),
+                    )
+                })
                 .collect(),
         }
     }
@@ -333,21 +338,21 @@ impl From<&ast::EnumDef> for EnumDef {
 #[derive(Debug, Clone)]
 pub struct StructDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
-    pub generics: Vec<Ident>,
-    pub fields: Vec<(Ident, TypeExpr)>,
+    pub name: FirIdent,
+    pub generics: Vec<FirIdent>,
+    pub fields: Vec<(FirIdent, TypeExpr)>,
 }
 
 impl From<&ast::StructDef> for StructDef {
     fn from(s: &ast::StructDef) -> Self {
         StructDef {
             attrs: s.attrs.iter().map(|a| a.into()).collect(),
-            name: Ident::new(-1, &s.name.0),
-            generics: s.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
+            name: FirIdent::new(-1, &s.name.0),
+            generics: s.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
             fields: s
                 .fields
                 .iter()
-                .map(|(i, t)| (Ident::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
                 .collect(),
         }
     }
@@ -356,7 +361,7 @@ impl From<&ast::StructDef> for StructDef {
 #[derive(Debug, Clone)]
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
-    pub name: Ident,
+    pub name: FirIdent,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -364,7 +369,7 @@ impl From<&ast::TraitDef> for TraitDef {
     fn from(t: &ast::TraitDef) -> Self {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
-            name: Ident::new(-1, &t.name.0),
+            name: FirIdent::new(-1, &t.name.0),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -372,7 +377,7 @@ impl From<&ast::TraitDef> for TraitDef {
 
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
-    pub name: Ident,
+    pub name: FirIdent,
     pub params: Vec<TypeExpr>,
     pub ret_ty: TypeExpr,
 }
@@ -380,7 +385,7 @@ pub struct TraitMethodSignature {
 impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
-            name: Ident::new(-1, &m.name.0),
+            name: FirIdent::new(-1, &m.name.0),
             params: m.params.iter().map(|p| p.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }
@@ -390,8 +395,8 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
-    pub generics: Vec<Ident>,
-    pub trait_name: Option<Ident>,
+    pub generics: Vec<FirIdent>,
+    pub trait_name: Option<FirIdent>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,
 }
@@ -450,8 +455,8 @@ pub enum Expr {
         args: Vec<Expr>,
     },
     EStructLiteral {
-        name: Ident,
-        fields: Vec<(Ident, Expr)>,
+        name: FirIdent,
+        fields: Vec<(FirIdent, Expr)>,
     },
     ETuple {
         items: Vec<Expr>,
@@ -504,7 +509,7 @@ pub enum Expr {
     },
     EField {
         expr: Box<Expr>,
-        field: Ident,
+        field: FirIdent,
         astptr: MySyntaxNodePtr,
     },
     EBlock {
@@ -521,7 +526,7 @@ pub struct Arm {
 #[derive(Debug, Clone)]
 pub enum Pat {
     PVar {
-        name: Ident,
+        name: FirIdent,
         astptr: MySyntaxNodePtr,
     },
     PUnit,
@@ -563,8 +568,8 @@ pub enum Pat {
         args: Vec<Pat>,
     },
     PStruct {
-        name: Ident,
-        fields: Vec<(Ident, Pat)>,
+        name: FirIdent,
+        fields: Vec<(FirIdent, Pat)>,
     },
     PTuple {
         pats: Vec<Pat>,

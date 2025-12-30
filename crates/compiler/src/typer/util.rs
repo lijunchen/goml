@@ -237,6 +237,6 @@ impl tast::Ty {
     }
 }
 
-pub(crate) fn type_param_name_set(tparams: &[fir::Ident]) -> HashSet<String> {
+pub(crate) fn type_param_name_set(tparams: &[fir::FirIdent]) -> HashSet<String> {
     tparams.iter().map(|param| param.to_ident_name()).collect()
 }

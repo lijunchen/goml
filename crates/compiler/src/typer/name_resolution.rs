@@ -6,11 +6,11 @@ use la_arena::Idx;
 
 use crate::env;
 use crate::fir;
-use crate::fir::Ident;
+use crate::fir::FirIdent;
 
 pub struct FirTable {
     pub local: la_arena::Arena<u32>,
-    pub local_name_map: la_arena::ArenaMap<Idx<u32>, fir::Ident>,
+    pub local_name_map: la_arena::ArenaMap<Idx<u32>, fir::FirIdent>,
 }
 
 #[allow(clippy::new_without_default)]
@@ -29,7 +29,7 @@ pub struct NameResolution {
 }
 
 #[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::Ident, fir::Ident)>);
+struct ResolveLocalEnv(im::Vector<(ast::Ident, fir::FirIdent)>);
 
 impl ResolveLocalEnv {
     pub fn new() -> Self {
@@ -41,11 +41,11 @@ impl ResolveLocalEnv {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::Ident, new_name: fir::Ident) {
+    pub fn add(&mut self, name: &ast::Ident, new_name: fir::FirIdent) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::Ident) -> Option<&fir::Ident> {
+    pub fn rfind(&self, key: &ast::Ident) -> Option<&fir::FirIdent> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)
@@ -54,8 +54,8 @@ impl ResolveLocalEnv {
 }
 
 impl NameResolution {
-    fn fresh_name(&self, name: &str) -> fir::Ident {
-        let ret = fir::Ident::new(self.counter.get() as i32, name);
+    fn fresh_name(&self, name: &str) -> fir::FirIdent {
+        let ret = fir::FirIdent::new(self.counter.get() as i32, name);
         self.counter.set(self.counter.get() + 1);
         ret
     }
@@ -94,8 +94,8 @@ impl NameResolution {
             ast::Item::TraitDef(t) => fir::Item::TraitDef(t.into()),
             ast::Item::ImplBlock(i) => fir::Item::ImplBlock(fir::ImplBlock {
                 attrs: i.attrs.iter().map(|a| a.into()).collect(),
-                generics: i.generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
-                trait_name: i.trait_name.as_ref().map(|t| Ident::new(-1, &t.0)),
+                generics: i.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+                trait_name: i.trait_name.as_ref().map(|t| FirIdent::new(-1, &t.0)),
                 for_type: (&i.for_type).into(),
                 methods: i
                     .methods
@@ -129,8 +129,8 @@ impl NameResolution {
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
-            name: Ident::new(-1, &name.0),
-            generics: generics.iter().map(|g| Ident::new(-1, &g.0)).collect(),
+            name: FirIdent::new(-1, &name.0),
+            generics: generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| t.into()),
             body: self.resolve_expr(body, &mut env, global_funcs),
@@ -216,12 +216,12 @@ impl NameResolution {
                     .collect(),
             },
             ast::Expr::EStructLiteral { name, fields } => fir::Expr::EStructLiteral {
-                name: Ident::new(-1, &name.0),
+                name: FirIdent::new(-1, &name.0),
                 fields: fields
                     .iter()
                     .map(|(field_name, expr)| {
                         (
-                            Ident::new(-1, &field_name.0),
+                            FirIdent::new(-1, &field_name.0),
                             self.resolve_expr(expr, env, global_funcs),
                         )
                     })
@@ -346,7 +346,7 @@ impl NameResolution {
                 astptr,
             } => fir::Expr::EField {
                 expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
-                field: Ident::new(-1, &field.0),
+                field: FirIdent::new(-1, &field.0),
                 astptr: *astptr,
             },
             ast::Expr::EBlock { exprs } => {
@@ -411,10 +411,10 @@ impl NameResolution {
             ast::Pat::PStruct { name, fields } => {
                 let new_fields = fields
                     .iter()
-                    .map(|(fname, pat)| (Ident::new(-1, &fname.0), self.resolve_pat(pat, env)))
+                    .map(|(fname, pat)| (FirIdent::new(-1, &fname.0), self.resolve_pat(pat, env)))
                     .collect();
                 fir::Pat::PStruct {
-                    name: Ident::new(-1, &name.0),
+                    name: FirIdent::new(-1, &name.0),
                     fields: new_fields,
                 }
             }

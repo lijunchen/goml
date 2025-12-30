@@ -149,7 +149,7 @@ fn define_trait_impl(
     genv: &mut GlobalTypeEnv,
     diagnostics: &mut Diagnostics,
     impl_block: &fir::ImplBlock,
-    trait_name: &fir::Ident,
+    trait_name: &fir::FirIdent,
 ) {
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_fir(genv, &impl_block.for_type, &[]);

@@ -341,8 +341,8 @@ impl Typer {
     fn infer_type_member_expr(
         &mut self,
         genv: &GlobalTypeEnv,
-        type_name: &fir::Ident,
-        member: &fir::Ident,
+        type_name: &fir::FirIdent,
+        member: &fir::FirIdent,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
         // First check if type_name is a trait
@@ -501,8 +501,8 @@ impl Typer {
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        name: &fir::Ident,
-        fields: &[(fir::Ident, fir::Expr)],
+        name: &fir::FirIdent,
+        fields: &[(fir::FirIdent, fir::Expr)],
     ) -> tast::Expr {
         let (constructor, constr_ty) = genv
             .lookup_constructor(&tast::Ident(name.to_ident_name()))
@@ -1477,7 +1477,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         expr: &fir::Expr,
-        field: &fir::Ident,
+        field: &fir::FirIdent,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, diagnostics, expr);
