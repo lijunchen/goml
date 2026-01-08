@@ -649,7 +649,7 @@ impl Fn {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
-            .append(RcDoc::text(self.name.to_ident_name()))
+            .append(RcDoc::text(&self.name))
             .append(RcDoc::text("("));
 
         let params_doc = RcDoc::intersperse(
