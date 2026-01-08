@@ -150,7 +150,7 @@ impl NameResolution {
                     let name = path.last_ident().unwrap();
                     if let Some(new_name) = env.rfind(name) {
                         fir::Expr::EPath {
-                            path: fir::Path::from_ident(new_name.clone()),
+                            path: fir::Path::from_ident(new_name.to_ident_name()),
                             astptr: *astptr,
                         }
                     } else if global_funcs.contains(&name.0) {
@@ -306,7 +306,7 @@ impl NameResolution {
                         let name = path.last_ident().unwrap();
                         if let Some(new_name) = env.rfind(name) {
                             fir::Expr::EPath {
-                                path: fir::Path::from_ident(new_name.clone()),
+                                path: fir::Path::from_ident(new_name.to_ident_name()),
                                 astptr: *astptr,
                             }
                         } else {

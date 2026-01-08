@@ -25,23 +25,23 @@ impl FirIdent {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathSegment {
-    pub ident: FirIdent,
+    pub seg: String,
 }
 
 impl PathSegment {
-    pub fn new(ident: FirIdent) -> Self {
-        Self { ident }
+    pub fn new(seg: String) -> Self {
+        Self { seg }
     }
 
-    pub fn ident(&self) -> &FirIdent {
-        &self.ident
+    pub fn seg(&self) -> &String {
+        &self.seg
     }
 }
 
 impl From<&ast::PathSegment> for PathSegment {
     fn from(seg: &ast::PathSegment) -> Self {
         PathSegment {
-            ident: FirIdent::new(-1, &seg.ident.0),
+            seg: seg.ident.0.clone(),
         }
     }
 }
@@ -56,12 +56,12 @@ impl Path {
         Self { segments }
     }
 
-    pub fn from_idents(idents: Vec<FirIdent>) -> Self {
+    pub fn from_idents(idents: Vec<String>) -> Self {
         let segments = idents.into_iter().map(PathSegment::new).collect();
         Self { segments }
     }
 
-    pub fn from_ident(ident: FirIdent) -> Self {
+    pub fn from_ident(ident: String) -> Self {
         Self {
             segments: vec![PathSegment::new(ident)],
         }
@@ -83,8 +83,8 @@ impl Path {
         self.segments.last()
     }
 
-    pub fn last_ident(&self) -> Option<&FirIdent> {
-        self.last().map(|segment| segment.ident())
+    pub fn last_ident(&self) -> Option<&String> {
+        self.last().map(|segment| segment.seg())
     }
 
     pub fn namespace_segments(&self) -> &[PathSegment] {
@@ -95,9 +95,9 @@ impl Path {
         }
     }
 
-    pub fn parent_ident(&self) -> Option<&FirIdent> {
+    pub fn parent_ident(&self) -> Option<&String> {
         if self.segments.len() > 1 {
-            Some(self.segments[self.segments.len() - 2].ident())
+            Some(self.segments[self.segments.len() - 2].seg())
         } else {
             None
         }
@@ -106,7 +106,7 @@ impl Path {
     pub fn display(&self) -> String {
         self.segments
             .iter()
-            .map(|segment| segment.ident.to_ident_name())
+            .map(|segment| segment.seg.clone())
             .collect::<Vec<_>>()
             .join("::")
     }
