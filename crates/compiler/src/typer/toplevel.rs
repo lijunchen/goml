@@ -177,8 +177,7 @@ fn define_trait_impl(
     let mut impl_methods: IndexMap<String, env::FnScheme> = IndexMap::new();
 
     for m in impl_block.methods.iter() {
-        let method_name = m.name.clone();
-        let method_name_str = method_name.to_ident_name();
+        let method_name_str = m.name.clone();
 
         if !trait_method_names.contains(&method_name_str) {
             diagnostics.push(Diagnostic::new(
@@ -371,8 +370,7 @@ fn define_inherent_impl(
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
-        let method_name = m.name.clone();
-        let method_name_str = method_name.to_ident_name();
+        let method_name_str = m.name.clone();
 
         if !implemented_methods.insert(method_name_str.clone()) {
             diagnostics.push(Diagnostic::new(
@@ -467,7 +465,7 @@ fn define_function(genv: &mut GlobalTypeEnv, diagnostics: &mut Diagnostics, func
         None => tast::Ty::TUnit,
     };
     genv.value_env.funcs.insert(
-        name.to_ident_name(),
+        name,
         FnScheme {
             type_params: vec![],
             constraints: (),
@@ -773,7 +771,7 @@ fn check_fn(
     typer.solve(genv, diagnostics);
     let typed_body = typer.subst(diagnostics, typed_body);
     tast::Fn {
-        name: f.name.to_ident_name(),
+        name: f.name.clone(),
         params: new_params,
         ret_ty,
         body: typed_body,
@@ -841,7 +839,7 @@ fn check_impl_block(
         typer.solve(genv, diagnostics);
         let typed_body = typer.subst(diagnostics, typed_body);
         typed_methods.push(tast::Fn {
-            name: f.name.to_ident_name(),
+            name: f.name.clone(),
             params: new_params,
             ret_ty,
             body: typed_body,

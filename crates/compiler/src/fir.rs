@@ -233,7 +233,7 @@ pub enum Item {
 #[derive(Debug, Clone)]
 pub struct Fn {
     pub attrs: Vec<Attribute>,
-    pub name: FirIdent,
+    pub name: String,
     pub generics: Vec<FirIdent>,
     pub params: Vec<(FirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,

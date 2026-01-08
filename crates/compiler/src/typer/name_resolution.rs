@@ -129,7 +129,7 @@ impl NameResolution {
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &name.0),
+            name: name.0.clone(),
             generics: generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| t.into()),
