@@ -96,6 +96,10 @@ impl FirTable {
         &self.defs[id.0 as usize]
     }
 
+    pub fn def_mut(&mut self, id: DefId) -> &mut Def {
+        &mut self.defs[id.0 as usize]
+    }
+
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
         let idx = self.exprs.alloc(expr);
         ExprId(idx.into_raw().into_u32())
@@ -117,25 +121,128 @@ impl FirTable {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FirIdent {
-    id: i32,
-    hint: String,
+#[derive(Debug, Clone)]
+pub enum FirIdent {
+    Name(String),
+    Fresh { id: u32, hint: String },
 }
 
 impl FirIdent {
-    pub fn new(id: i32, hint: &str) -> Self {
-        FirIdent {
+    pub fn name(s: impl Into<String>) -> Self {
+        FirIdent::Name(s.into())
+    }
+
+    pub fn fresh(id: u32, hint: impl Into<String>) -> Self {
+        FirIdent::Fresh {
             id,
-            hint: hint.to_string(),
+            hint: hint.into(),
         }
     }
 
     pub fn to_ident_name(&self) -> String {
-        if self.id < 0 {
-            return self.hint.clone();
+        match self {
+            FirIdent::Name(s) => s.clone(),
+            FirIdent::Fresh { id, hint } => format!("{}/{}", hint, id),
         }
-        format!("{}/{}", self.hint, self.id)
+    }
+
+    pub fn hint(&self) -> &str {
+        match self {
+            FirIdent::Name(s) => s,
+            FirIdent::Fresh { hint, .. } => hint,
+        }
+    }
+}
+
+impl PartialEq for FirIdent {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (FirIdent::Name(a), FirIdent::Name(b)) => a == b,
+            (FirIdent::Fresh { id: a, .. }, FirIdent::Fresh { id: b, .. }) => a == b,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for FirIdent {}
+
+impl std::hash::Hash for FirIdent {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            FirIdent::Name(s) => {
+                0u8.hash(state);
+                s.hash(state);
+            }
+            FirIdent::Fresh { id, .. } => {
+                1u8.hash(state);
+                id.hash(state);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BuiltinId {
+    ArrayGet,
+    ArraySet,
+    Ref,
+    RefGet,
+    RefSet,
+    VecNew,
+    VecPush,
+    VecGet,
+    VecLen,
+    Named(u32),
+}
+
+impl BuiltinId {
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "array_get" => Some(BuiltinId::ArrayGet),
+            "array_set" => Some(BuiltinId::ArraySet),
+            "ref" => Some(BuiltinId::Ref),
+            "ref_get" => Some(BuiltinId::RefGet),
+            "ref_set" => Some(BuiltinId::RefSet),
+            "vec_new" => Some(BuiltinId::VecNew),
+            "vec_push" => Some(BuiltinId::VecPush),
+            "vec_get" => Some(BuiltinId::VecGet),
+            "vec_len" => Some(BuiltinId::VecLen),
+            _ => None,
+        }
+    }
+
+    pub fn to_name(&self) -> String {
+        match self {
+            BuiltinId::ArrayGet => "array_get".to_string(),
+            BuiltinId::ArraySet => "array_set".to_string(),
+            BuiltinId::Ref => "ref".to_string(),
+            BuiltinId::RefGet => "ref_get".to_string(),
+            BuiltinId::RefSet => "ref_set".to_string(),
+            BuiltinId::VecNew => "vec_new".to_string(),
+            BuiltinId::VecPush => "vec_push".to_string(),
+            BuiltinId::VecGet => "vec_get".to_string(),
+            BuiltinId::VecLen => "vec_len".to_string(),
+            BuiltinId::Named(id) => format!("builtin/{}", id),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum NameRef {
+    Local(LocalId),
+    Def(DefId),
+    Builtin(BuiltinId),
+    Unresolved(Path),
+}
+
+impl NameRef {
+    pub fn display(&self, fir_table: &FirTable) -> String {
+        match self {
+            NameRef::Local(id) => fir_table.local_ident_name(*id),
+            NameRef::Def(id) => id.to_debug_string(),
+            NameRef::Builtin(id) => id.to_name(),
+            NameRef::Unresolved(path) => path.display(),
+        }
     }
 }
 
@@ -373,12 +480,12 @@ impl From<&ast::ExternGo> for ExternGo {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             package_path: ext.package_path.clone(),
             go_symbol: ext.go_symbol.clone(),
-            goml_name: FirIdent::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::name(&ext.goml_name.0),
             explicit_go_symbol: ext.explicit_go_symbol,
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -395,7 +502,7 @@ impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: FirIdent::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::name(&ext.goml_name.0),
         }
     }
 }
@@ -412,11 +519,11 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
     fn from(ext: &ast::ExternBuiltin) -> Self {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &ext.name.0),
+            name: FirIdent::name(&ext.name.0),
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -435,17 +542,12 @@ impl From<&ast::EnumDef> for EnumDef {
     fn from(e: &ast::EnumDef) -> Self {
         EnumDef {
             attrs: e.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &e.name.0),
-            generics: e.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+            name: FirIdent::name(&e.name.0),
+            generics: e.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| {
-                    (
-                        FirIdent::new(-1, &i.0),
-                        tys.iter().map(|t| t.into()).collect(),
-                    )
-                })
+                .map(|(i, tys)| (FirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
         }
     }
@@ -463,12 +565,12 @@ impl From<&ast::StructDef> for StructDef {
     fn from(s: &ast::StructDef) -> Self {
         StructDef {
             attrs: s.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &s.name.0),
-            generics: s.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+            name: FirIdent::name(&s.name.0),
+            generics: s.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             fields: s
                 .fields
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
         }
     }
@@ -485,7 +587,7 @@ impl From<&ast::TraitDef> for TraitDef {
     fn from(t: &ast::TraitDef) -> Self {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &t.name.0),
+            name: FirIdent::name(&t.name.0),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -501,7 +603,7 @@ pub struct TraitMethodSignature {
 impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
-            name: FirIdent::new(-1, &m.name.0),
+            name: FirIdent::name(&m.name.0),
             params: m.params.iter().map(|p| p.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }
@@ -519,11 +621,9 @@ pub struct ImplBlock {
 
 #[derive(Debug, Clone)]
 pub enum Expr {
-    EPath {
-        path: Path,
-    },
-    EVar {
-        name: LocalId,
+    ENameRef {
+        res: NameRef,
+        hint: String,
         astptr: Option<MySyntaxNodePtr>,
     },
     EUnit,

@@ -129,9 +129,7 @@ impl TypeExpr {
 impl Expr {
     pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
-            fir::Expr::EPath { path } => RcDoc::text(path.display()),
-
-            fir::Expr::EVar { name, .. } => RcDoc::text(name.to_debug_string()),
+            fir::Expr::ENameRef { res, .. } => RcDoc::text(res.display(ctx.fir_table)),
 
             fir::Expr::EUnit => RcDoc::text("()"),
 
