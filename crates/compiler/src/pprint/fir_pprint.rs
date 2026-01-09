@@ -235,12 +235,11 @@ impl Expr {
                     params.iter().map(|param| param.to_doc()),
                     RcDoc::text(", "),
                 );
-                let body_expr = ctx.fir_table.body(*body).expr;
 
                 RcDoc::text("|")
                     .append(params_doc)
                     .append(RcDoc::text("| "))
-                    .append(ctx.expr_to_doc(body_expr))
+                    .append(ctx.expr_to_doc(*body))
             }
             fir::Expr::ELet {
                 pat,
@@ -704,8 +703,7 @@ impl Fn {
         } else {
             RcDoc::nil()
         };
-        let body_expr = ctx.fir_table.body(self.body).expr;
-        let body = ctx.fir_table.expr(body_expr);
+        let body = ctx.fir_table.expr(self.body);
         attrs_doc(&self.attrs).append(
             header
                 .append(params_doc)
@@ -730,7 +728,7 @@ impl Fn {
                         }
                     }
                     _ => RcDoc::text("{")
-                        .append(RcDoc::hardline().append(ctx.expr_to_doc(body_expr)).nest(2))
+                        .append(RcDoc::hardline().append(ctx.expr_to_doc(self.body)).nest(2))
                         .append(RcDoc::hardline())
                         .append(RcDoc::text("}")),
                 }),

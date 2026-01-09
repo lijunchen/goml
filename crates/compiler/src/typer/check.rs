@@ -656,7 +656,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         params: &[fir::ClosureParam],
-        body: fir::BodyId,
+        body: fir::ExprId,
     ) -> tast::Expr {
         local_env.begin_closure();
         let mut params_tast = Vec::new();
@@ -678,8 +678,7 @@ impl Typer {
             });
         }
 
-        let body_expr = self.fir_table.body(body).expr;
-        let body_tast = self.infer_expr(genv, local_env, diagnostics, body_expr);
+        let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         let body_ty = body_tast.get_ty();
         let captures = local_env.end_closure(&self.fir_table);
 
@@ -702,7 +701,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         params: &[fir::ClosureParam],
-        body: fir::BodyId,
+        body: fir::ExprId,
         expected: &tast::Ty,
     ) -> tast::Expr {
         match expected {
@@ -742,14 +741,8 @@ impl Typer {
                     });
                 }
 
-                let body_expr = self.fir_table.body(body).expr;
-                let body_tast = self.check_expr(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    body_expr,
-                    expected_ret.as_ref(),
-                );
+                let body_tast =
+                    self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(&self.fir_table);
 

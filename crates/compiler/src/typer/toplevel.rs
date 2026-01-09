@@ -779,8 +779,7 @@ fn check_fn(
     for (id, _, ty) in param_types.iter() {
         local_env.insert_var(*id, ty.clone());
     }
-    let body_expr = typer.fir_table.body(f.body).expr;
-    let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, body_expr, &ret_ty);
+    let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, f.body, &ret_ty);
     local_env.pop_scope();
     local_env.clear_tparams_env();
     typer.solve(genv, diagnostics);
@@ -853,8 +852,7 @@ fn check_impl_block(
         for (id, _, ty) in param_types.iter() {
             local_env.insert_var(*id, ty.clone());
         }
-        let body_expr = typer.fir_table.body(f.body).expr;
-        let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, body_expr, &ret_ty);
+        let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, f.body, &ret_ty);
         local_env.pop_scope();
         local_env.clear_tparams_env();
         typer.solve(genv, diagnostics);

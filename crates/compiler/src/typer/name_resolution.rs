@@ -137,10 +137,7 @@ impl NameResolution {
             generics: generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| t.into()),
-            body: {
-                let body_expr = self.resolve_expr(body, &mut env, global_funcs, fir_table);
-                fir_table.alloc_body(fir::Body { expr: body_expr })
-            },
+            body: self.resolve_expr(body, &mut env, global_funcs, fir_table),
         }
     }
 
@@ -258,13 +255,10 @@ impl NameResolution {
                     .collect();
                 let new_body_expr =
                     self.resolve_expr(body, &mut closure_env, global_funcs, fir_table);
-                let body_id = fir_table.alloc_body(fir::Body {
-                    expr: new_body_expr,
-                });
 
                 fir_table.alloc_expr(fir::Expr::EClosure {
                     params: new_params,
-                    body: body_id,
+                    body: new_body_expr,
                 })
             }
             ast::Expr::ELet {

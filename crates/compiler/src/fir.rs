@@ -16,19 +16,6 @@ impl DefId {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct BodyId(pub u32);
-
-impl BodyId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
-    pub fn to_debug_string(self) -> String {
-        format!("body/{}", self.0)
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub u32);
 
 impl LocalId {
@@ -71,7 +58,6 @@ impl PatId {
 pub struct FirTable {
     local_hints: Vec<String>,
     defs: Vec<Def>,
-    bodies: Vec<Body>,
     exprs: Arena<Expr>,
     pats: Arena<Pat>,
 }
@@ -81,7 +67,6 @@ impl FirTable {
         Self {
             local_hints: Vec::new(),
             defs: Vec::new(),
-            bodies: Vec::new(),
             exprs: Arena::new(),
             pats: Arena::new(),
         }
@@ -109,16 +94,6 @@ impl FirTable {
 
     pub fn def(&self, id: DefId) -> &Def {
         &self.defs[id.0 as usize]
-    }
-
-    pub fn alloc_body(&mut self, body: Body) -> BodyId {
-        let id = self.bodies.len() as u32;
-        self.bodies.push(body);
-        BodyId(id)
-    }
-
-    pub fn body(&self, id: BodyId) -> &Body {
-        &self.bodies[id.0 as usize]
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
@@ -378,7 +353,7 @@ pub struct Fn {
     pub generics: Vec<FirIdent>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
-    pub body: BodyId,
+    pub body: ExprId,
 }
 
 #[derive(Debug, Clone)]
@@ -615,7 +590,7 @@ pub enum Expr {
     },
     EClosure {
         params: Vec<ClosureParam>,
-        body: BodyId,
+        body: ExprId,
     },
     EMatch {
         expr: ExprId,
@@ -717,9 +692,4 @@ pub enum Pat {
         pats: Vec<PatId>,
     },
     PWild,
-}
-
-#[derive(Debug, Clone)]
-pub struct Body {
-    pub expr: ExprId,
 }
