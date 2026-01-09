@@ -98,7 +98,7 @@ impl Expr {
         match self {
             Self::EPath { path, astptr: _ } => RcDoc::text(path.display()),
 
-            Self::EVar { name, astptr: _ } => RcDoc::text(name.to_ident_name()),
+            Self::EVar { name, astptr: _ } => RcDoc::text(name.to_debug_string()),
 
             Self::EUnit => RcDoc::text("()"),
 
@@ -359,7 +359,7 @@ impl Expr {
 impl Pat {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
-            Pat::PVar { name, astptr: _ } => RcDoc::text(name.to_ident_name()),
+            Pat::PVar { name, astptr: _ } => RcDoc::text(name.to_debug_string()),
             Pat::PUnit => RcDoc::text("()"),
             Pat::PBool { value } => {
                 if *value {
@@ -656,7 +656,7 @@ impl Fn {
 
         let params_doc = RcDoc::intersperse(
             self.params.iter().map(|(name, ty)| {
-                RcDoc::text(name.to_ident_name())
+                RcDoc::text(name.to_debug_string())
                     .append(RcDoc::text(":"))
                     .append(RcDoc::space())
                     .append(ty.to_doc())
@@ -835,7 +835,7 @@ impl Item {
 
 impl ClosureParam {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        let mut doc = RcDoc::text(self.name.to_ident_name());
+        let mut doc = RcDoc::text(self.name.to_debug_string());
         if let Some(ty) = &self.ty {
             doc = doc.append(RcDoc::text(": ")).append(ty.to_doc());
         }

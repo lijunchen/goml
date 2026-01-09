@@ -6,24 +6,13 @@ use crate::env;
 use crate::fir;
 use crate::fir::FirIdent;
 
-pub struct FirTable {
-    pub local: la_arena::Arena<FirIdent>,
-}
-
-#[allow(clippy::new_without_default)]
-impl FirTable {
-    pub fn new() -> Self {
-        Self {
-            local: la_arena::Arena::new(),
-        }
-    }
-}
+pub type FirTable = fir::FirTable;
 
 #[derive(Default)]
 pub struct NameResolution {}
 
 #[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::FirIdent)>);
+struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::LocalId)>);
 
 impl ResolveLocalEnv {
     pub fn new() -> Self {
@@ -35,24 +24,21 @@ impl ResolveLocalEnv {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::FirIdent) {
+    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::LocalId) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::AstIdent) -> Option<&fir::FirIdent> {
+    pub fn rfind(&self, key: &ast::AstIdent) -> Option<fir::LocalId> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)
-            .map(|(_, new_name)| new_name)
+            .map(|(_, new_name)| *new_name)
     }
 }
 
 impl NameResolution {
-    fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::FirIdent {
-        let next_id = fir_table.local.len() as i32;
-        let ret = FirIdent::new(next_id, name);
-        fir_table.local.alloc(ret.clone());
-        ret
+    fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::LocalId {
+        fir_table.fresh_local(name)
     }
 
     pub fn resolve_file(&self, ast: ast::File) -> (fir::File, FirTable) {
@@ -128,7 +114,7 @@ impl NameResolution {
         }
         let new_params = params
             .iter()
-            .map(|param| (env.rfind(&param.0).unwrap().clone(), (&param.1).into()))
+            .map(|param| (env.rfind(&param.0).unwrap(), (&param.1).into()))
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
@@ -155,7 +141,7 @@ impl NameResolution {
                     let name = path.last_ident().unwrap();
                     if let Some(new_name) = env.rfind(name) {
                         fir::Expr::EVar {
-                            name: new_name.clone(),
+                            name: new_name,
                             astptr: *astptr,
                         }
                     } else {
@@ -309,7 +295,7 @@ impl NameResolution {
                         let name = path.last_ident().unwrap();
                         if let Some(new_name) = env.rfind(name) {
                             fir::Expr::EVar {
-                                name: new_name.clone(),
+                                name: new_name,
                                 astptr: *astptr,
                             }
                         } else {
@@ -371,7 +357,7 @@ impl NameResolution {
         match pat {
             ast::Pat::PVar { name, astptr } => {
                 let newname = self.fresh_name(&name.0, fir_table);
-                env.add(name, newname.clone());
+                env.add(name, newname);
                 fir::Pat::PVar {
                     name: newname,
                     astptr: *astptr,
@@ -452,7 +438,7 @@ impl NameResolution {
         fir_table: &mut FirTable,
     ) -> fir::ClosureParam {
         let new_name = self.fresh_name(&param.name.0, fir_table);
-        env.add(&param.name, new_name.clone());
+        env.add(&param.name, new_name);
         fir::ClosureParam {
             name: new_name,
             ty: param.ty.as_ref().map(|t| t.into()),

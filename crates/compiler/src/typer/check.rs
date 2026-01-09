@@ -24,15 +24,16 @@ impl Typer {
                 self.infer_path_expr(genv, local_env, diagnostics, path, astptr)
             }
             fir::Expr::EVar { name, astptr } => {
-                let name_ident = tast::TastIdent(name.to_ident_name());
+                let name_str = self.fir_table.local_ident_name(*name);
+                let name_ident = tast::TastIdent(name_str.clone());
                 if let Some(ty) = local_env.lookup_var(&name_ident) {
                     tast::Expr::EVar {
-                        name: name.to_ident_name(),
+                        name: name_str,
                         ty: ty.clone(),
                         astptr: Some(*astptr),
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name.to_ident_name());
+                    panic!("Variable {} not found in environment", name_str);
                 }
             }
             fir::Expr::EUnit => tast::Expr::EPrim {
@@ -664,17 +665,15 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
 
         for param in params.iter() {
+            let name_str = self.fir_table.local_ident_name(param.name);
             let param_ty = match &param.ty {
                 Some(ty) => tast::Ty::from_fir(genv, ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
-            local_env.insert_var(
-                &tast::TastIdent(param.name.to_ident_name()),
-                param_ty.clone(),
-            );
+            local_env.insert_var(&tast::TastIdent(name_str.clone()), param_ty.clone());
             param_tys.push(param_ty.clone());
             params_tast.push(tast::ClosureParam {
-                name: param.name.to_ident_name(),
+                name: name_str,
                 ty: param_ty,
                 astptr: Some(param.astptr),
             });
@@ -717,6 +716,7 @@ impl Typer {
                 let current_tparams_env = local_env.current_tparams_env();
 
                 for (param, expected_param_ty) in params.iter().zip(expected_params.iter()) {
+                    let name_str = self.fir_table.local_ident_name(param.name);
                     let annotated_ty = param
                         .ty
                         .as_ref()
@@ -733,13 +733,10 @@ impl Typer {
                         None => expected_param_ty.clone(),
                     };
 
-                    local_env.insert_var(
-                        &tast::TastIdent(param.name.to_ident_name()),
-                        param_ty.clone(),
-                    );
+                    local_env.insert_var(&tast::TastIdent(name_str.clone()), param_ty.clone());
                     param_tys.push(param_ty.clone());
                     params_tast.push(tast::ClosureParam {
-                        name: param.name.to_ident_name(),
+                        name: name_str,
                         ty: param_ty,
                         astptr: Some(param.astptr),
                     });
@@ -1071,7 +1068,8 @@ impl Typer {
                     args_tast.push(arg_tast);
                 }
 
-                let name_ident = tast::TastIdent(name.to_ident_name());
+                let name_str = self.fir_table.local_ident_name(*name);
+                let name_ident = tast::TastIdent(name_str.clone());
                 if let Some(var_ty) = local_env.lookup_var(&name_ident) {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
@@ -1085,7 +1083,7 @@ impl Typer {
 
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
-                            name: name.to_ident_name(),
+                            name: name_str,
                             ty: var_ty.clone(),
                             astptr: Some(*astptr),
                         }),
@@ -1093,7 +1091,7 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name.to_ident_name());
+                    panic!("Variable {} not found in environment", name_str);
                 }
             }
             fir::Expr::EPath { path, astptr } if path.len() == 1 => {
@@ -1498,7 +1496,7 @@ impl Typer {
             fir::Pat::PVar { name, astptr } => self.check_pat_var(
                 local_env,
                 diagnostics,
-                &tast::TastIdent(name.to_ident_name()),
+                &tast::TastIdent(self.fir_table.local_ident_name(*name)),
                 astptr,
                 ty,
             ),

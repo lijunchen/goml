@@ -1,6 +1,46 @@
 use ast::ast;
 use parser::syntax::MySyntaxNodePtr;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LocalId(pub u32);
+
+impl LocalId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("local/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct FirTable {
+    local_hints: Vec<String>,
+}
+
+impl FirTable {
+    pub fn new() -> Self {
+        Self {
+            local_hints: Vec::new(),
+        }
+    }
+
+    pub fn fresh_local(&mut self, hint: &str) -> LocalId {
+        let id = self.local_hints.len() as u32;
+        self.local_hints.push(hint.to_string());
+        LocalId(id)
+    }
+
+    pub fn local_hint(&self, id: LocalId) -> &str {
+        &self.local_hints[id.0 as usize]
+    }
+
+    pub fn local_ident_name(&self, id: LocalId) -> String {
+        format!("{}/{}", self.local_hint(id), id.0)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct FirIdent {
     id: i32,
@@ -193,7 +233,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub name: FirIdent,
+    pub name: LocalId,
     pub ty: Option<TypeExpr>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -235,7 +275,7 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
     pub generics: Vec<FirIdent>,
-    pub params: Vec<(FirIdent, TypeExpr)>,
+    pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: Expr,
 }
@@ -408,7 +448,7 @@ pub enum Expr {
         astptr: MySyntaxNodePtr,
     },
     EVar {
-        name: FirIdent,
+        name: LocalId,
         astptr: MySyntaxNodePtr,
     },
     EUnit,
@@ -530,7 +570,7 @@ pub struct Arm {
 #[derive(Debug, Clone)]
 pub enum Pat {
     PVar {
-        name: FirIdent,
+        name: LocalId,
         astptr: MySyntaxNodePtr,
     },
     PUnit,

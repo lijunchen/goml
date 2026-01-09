@@ -745,7 +745,7 @@ fn check_fn(
         .iter()
         .map(|(name, ty)| {
             (
-                tast::TastIdent(name.to_ident_name()),
+                tast::TastIdent(typer.fir_table.local_ident_name(*name)),
                 tast::Ty::from_fir(genv, ty, &tparams),
             )
         })
@@ -808,7 +808,7 @@ fn check_impl_block(
             .map(|(name, ty)| {
                 let ty = tast::Ty::from_fir(genv, ty, &all_generics_tast);
                 let ty = instantiate_self_ty(&ty, &for_ty);
-                (tast::TastIdent(name.to_ident_name()), ty)
+                (tast::TastIdent(typer.fir_table.local_ident_name(*name)), ty)
             })
             .collect();
         let new_params = param_types
