@@ -25,8 +25,7 @@ impl Typer {
             }
             fir::Expr::EVar { name, astptr } => {
                 let name_str = self.fir_table.local_ident_name(*name);
-                let name_ident = tast::TastIdent(name_str.clone());
-                if let Some(ty) = local_env.lookup_var(&name_ident) {
+                if let Some(ty) = local_env.lookup_var(*name) {
                     tast::Expr::EVar {
                         name: name_str,
                         ty: ty.clone(),
@@ -670,7 +669,7 @@ impl Typer {
                 Some(ty) => tast::Ty::from_fir(genv, ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
-            local_env.insert_var(&tast::TastIdent(name_str.clone()), param_ty.clone());
+            local_env.insert_var(param.name, param_ty.clone());
             param_tys.push(param_ty.clone());
             params_tast.push(tast::ClosureParam {
                 name: name_str,
@@ -681,7 +680,7 @@ impl Typer {
 
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         let body_ty = body_tast.get_ty();
-        let captures = local_env.end_closure();
+        let captures = local_env.end_closure(&self.fir_table);
 
         let closure_ty = tast::Ty::TFunc {
             params: param_tys,
@@ -733,7 +732,7 @@ impl Typer {
                         None => expected_param_ty.clone(),
                     };
 
-                    local_env.insert_var(&tast::TastIdent(name_str.clone()), param_ty.clone());
+                    local_env.insert_var(param.name, param_ty.clone());
                     param_tys.push(param_ty.clone());
                     params_tast.push(tast::ClosureParam {
                         name: name_str,
@@ -745,7 +744,7 @@ impl Typer {
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
                 let body_ty = body_tast.get_ty();
-                let captures = local_env.end_closure();
+                let captures = local_env.end_closure(&self.fir_table);
 
                 tast::Expr::EClosure {
                     params: params_tast,
@@ -1069,8 +1068,7 @@ impl Typer {
                 }
 
                 let name_str = self.fir_table.local_ident_name(*name);
-                let name_ident = tast::TastIdent(name_str.clone());
-                if let Some(var_ty) = local_env.lookup_var(&name_ident) {
+                if let Some(var_ty) = local_env.lookup_var(*name) {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
@@ -1493,13 +1491,9 @@ impl Typer {
         ty: &tast::Ty,
     ) -> tast::Pat {
         match pat {
-            fir::Pat::PVar { name, astptr } => self.check_pat_var(
-                local_env,
-                diagnostics,
-                &tast::TastIdent(self.fir_table.local_ident_name(*name)),
-                astptr,
-                ty,
-            ),
+            fir::Pat::PVar { name, astptr } => {
+                self.check_pat_var(local_env, diagnostics, *name, astptr, ty)
+            }
             fir::Pat::PUnit => self.check_pat_unit(),
             fir::Pat::PBool { value } => self.check_pat_bool(*value),
             fir::Pat::PInt { value } => self.check_pat_int(diagnostics, value, ty),
@@ -1545,13 +1539,14 @@ impl Typer {
         &mut self,
         local_env: &mut LocalTypeEnv,
         _diagnostics: &mut Diagnostics,
-        name: &tast::TastIdent,
+        name: fir::LocalId,
         astptr: &MySyntaxNodePtr,
         ty: &tast::Ty,
     ) -> tast::Pat {
         local_env.insert_var(name, ty.clone());
+        let name_str = self.fir_table.local_ident_name(name);
         tast::Pat::PVar {
-            name: name.0.clone(),
+            name: name_str,
             ty: ty.clone(),
             astptr: Some(*astptr),
         }

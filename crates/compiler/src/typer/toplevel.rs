@@ -740,19 +740,18 @@ fn check_fn(
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
-    let param_types: Vec<(tast::TastIdent, tast::Ty)> = f
+    let param_types: Vec<(fir::LocalId, String, tast::Ty)> = f
         .params
         .iter()
         .map(|(name, ty)| {
-            (
-                tast::TastIdent(typer.fir_table.local_ident_name(*name)),
-                tast::Ty::from_fir(genv, ty, &tparams),
-            )
+            let name_str = typer.fir_table.local_ident_name(*name);
+            let ty = tast::Ty::from_fir(genv, ty, &tparams);
+            (*name, name_str, ty)
         })
         .collect();
     let new_params = param_types
         .iter()
-        .map(|(name, ty)| (name.0.clone(), ty.clone()))
+        .map(|(_, name_str, ty)| (name_str.clone(), ty.clone()))
         .collect::<Vec<_>>();
 
     let ret_ty = match &f.ret_ty {
@@ -762,8 +761,8 @@ fn check_fn(
 
     local_env.set_tparams_env(&tparams);
     local_env.push_scope();
-    for (name, ty) in param_types.iter() {
-        local_env.insert_var(name, ty.clone());
+    for (id, _, ty) in param_types.iter() {
+        local_env.insert_var(*id, ty.clone());
     }
     let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
     local_env.pop_scope();
@@ -802,18 +801,19 @@ fn check_impl_block(
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
 
-        let param_types: Vec<(tast::TastIdent, tast::Ty)> = f
+        let param_types: Vec<(fir::LocalId, String, tast::Ty)> = f
             .params
             .iter()
             .map(|(name, ty)| {
                 let ty = tast::Ty::from_fir(genv, ty, &all_generics_tast);
                 let ty = instantiate_self_ty(&ty, &for_ty);
-                (tast::TastIdent(typer.fir_table.local_ident_name(*name)), ty)
+                let name_str = typer.fir_table.local_ident_name(*name);
+                (*name, name_str, ty)
             })
             .collect();
         let new_params = param_types
             .iter()
-            .map(|(name, ty)| (name.0.to_string(), ty.clone()))
+            .map(|(_, name_str, ty)| (name_str.clone(), ty.clone()))
             .collect::<Vec<_>>();
 
         let ret_ty = match &f.ret_ty {
@@ -830,8 +830,8 @@ fn check_impl_block(
             .collect();
         local_env.set_tparams_env(&tparams);
         local_env.push_scope();
-        for (name, ty) in param_types.iter() {
-            local_env.insert_var(name, ty.clone());
+        for (id, _, ty) in param_types.iter() {
+            local_env.insert_var(*id, ty.clone());
         }
         let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
         local_env.pop_scope();
