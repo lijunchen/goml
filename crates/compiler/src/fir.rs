@@ -1,25 +1,293 @@
 use ast::ast;
+use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DefId(pub u32);
+
+impl DefId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("def/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct LocalId(pub u32);
+
+impl LocalId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("local/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ExprId(pub u32);
+
+impl ExprId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("expr/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PatId(pub u32);
+
+impl PatId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("pat/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ConstructorId(pub u32);
+
+impl ConstructorId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("ctor/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Constructor {
+    EnumVariant { enum_def: DefId, variant_idx: usize },
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct FirIdent {
-    id: i32,
-    hint: String,
+pub enum ConstructorRef {
+    Unresolved(Path),
+    Resolved(ConstructorId),
+}
+
+impl ConstructorRef {
+    pub fn display(&self, _fir_table: &FirTable) -> String {
+        match self {
+            ConstructorRef::Unresolved(path) => path.display(),
+            ConstructorRef::Resolved(id) => id.to_debug_string(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct FirTable {
+    local_hints: Vec<String>,
+    defs: Vec<Def>,
+    exprs: Arena<Expr>,
+    pats: Arena<Pat>,
+    constructors: Arena<Constructor>,
+}
+
+impl FirTable {
+    pub fn new() -> Self {
+        Self {
+            local_hints: Vec::new(),
+            defs: Vec::new(),
+            exprs: Arena::new(),
+            pats: Arena::new(),
+            constructors: Arena::new(),
+        }
+    }
+
+    pub fn fresh_local(&mut self, hint: &str) -> LocalId {
+        let id = self.local_hints.len() as u32;
+        self.local_hints.push(hint.to_string());
+        LocalId(id)
+    }
+
+    pub fn local_hint(&self, id: LocalId) -> &str {
+        &self.local_hints[id.0 as usize]
+    }
+
+    pub fn local_ident_name(&self, id: LocalId) -> String {
+        format!("{}/{}", self.local_hint(id), id.0)
+    }
+
+    pub fn alloc_def(&mut self, def: Def) -> DefId {
+        let id = self.defs.len() as u32;
+        self.defs.push(def);
+        DefId(id)
+    }
+
+    pub fn def(&self, id: DefId) -> &Def {
+        &self.defs[id.0 as usize]
+    }
+
+    pub fn def_mut(&mut self, id: DefId) -> &mut Def {
+        &mut self.defs[id.0 as usize]
+    }
+
+    pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
+        let idx = self.exprs.alloc(expr);
+        ExprId(idx.into_raw().into_u32())
+    }
+
+    pub fn expr(&self, id: ExprId) -> &Expr {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.exprs[idx]
+    }
+
+    pub fn alloc_pat(&mut self, pat: Pat) -> PatId {
+        let idx = self.pats.alloc(pat);
+        PatId(idx.into_raw().into_u32())
+    }
+
+    pub fn pat(&self, id: PatId) -> &Pat {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.pats[idx]
+    }
+
+    pub fn alloc_constructor(&mut self, ctor: Constructor) -> ConstructorId {
+        let idx = self.constructors.alloc(ctor);
+        ConstructorId(idx.into_raw().into_u32())
+    }
+
+    pub fn constructor(&self, id: ConstructorId) -> &Constructor {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.constructors[idx]
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum FirIdent {
+    Name(String),
+    Fresh { id: u32, hint: String },
 }
 
 impl FirIdent {
-    pub fn new(id: i32, hint: &str) -> Self {
-        FirIdent {
+    pub fn name(s: impl Into<String>) -> Self {
+        FirIdent::Name(s.into())
+    }
+
+    pub fn fresh(id: u32, hint: impl Into<String>) -> Self {
+        FirIdent::Fresh {
             id,
-            hint: hint.to_string(),
+            hint: hint.into(),
         }
     }
 
     pub fn to_ident_name(&self) -> String {
-        if self.id < 0 {
-            return self.hint.clone();
+        match self {
+            FirIdent::Name(s) => s.clone(),
+            FirIdent::Fresh { id, hint } => format!("{}/{}", hint, id),
         }
-        format!("{}/{}", self.hint, self.id)
+    }
+
+    pub fn hint(&self) -> &str {
+        match self {
+            FirIdent::Name(s) => s,
+            FirIdent::Fresh { hint, .. } => hint,
+        }
+    }
+}
+
+impl PartialEq for FirIdent {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (FirIdent::Name(a), FirIdent::Name(b)) => a == b,
+            (FirIdent::Fresh { id: a, .. }, FirIdent::Fresh { id: b, .. }) => a == b,
+            _ => false,
+        }
+    }
+}
+
+impl Eq for FirIdent {}
+
+impl std::hash::Hash for FirIdent {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        match self {
+            FirIdent::Name(s) => {
+                0u8.hash(state);
+                s.hash(state);
+            }
+            FirIdent::Fresh { id, .. } => {
+                1u8.hash(state);
+                id.hash(state);
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BuiltinId {
+    ArrayGet,
+    ArraySet,
+    Ref,
+    RefGet,
+    RefSet,
+    VecNew,
+    VecPush,
+    VecGet,
+    VecLen,
+    Named(u32),
+}
+
+impl BuiltinId {
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "array_get" => Some(BuiltinId::ArrayGet),
+            "array_set" => Some(BuiltinId::ArraySet),
+            "ref" => Some(BuiltinId::Ref),
+            "ref_get" => Some(BuiltinId::RefGet),
+            "ref_set" => Some(BuiltinId::RefSet),
+            "vec_new" => Some(BuiltinId::VecNew),
+            "vec_push" => Some(BuiltinId::VecPush),
+            "vec_get" => Some(BuiltinId::VecGet),
+            "vec_len" => Some(BuiltinId::VecLen),
+            _ => None,
+        }
+    }
+
+    pub fn to_name(&self) -> String {
+        match self {
+            BuiltinId::ArrayGet => "array_get".to_string(),
+            BuiltinId::ArraySet => "array_set".to_string(),
+            BuiltinId::Ref => "ref".to_string(),
+            BuiltinId::RefGet => "ref_get".to_string(),
+            BuiltinId::RefSet => "ref_set".to_string(),
+            BuiltinId::VecNew => "vec_new".to_string(),
+            BuiltinId::VecPush => "vec_push".to_string(),
+            BuiltinId::VecGet => "vec_get".to_string(),
+            BuiltinId::VecLen => "vec_len".to_string(),
+            BuiltinId::Named(id) => format!("builtin/{}", id),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum NameRef {
+    Local(LocalId),
+    Def(DefId),
+    Builtin(BuiltinId),
+    Unresolved(Path),
+}
+
+impl NameRef {
+    pub fn display(&self, fir_table: &FirTable) -> String {
+        match self {
+            NameRef::Local(id) => fir_table.local_ident_name(*id),
+            NameRef::Def(id) => id.to_debug_string(),
+            NameRef::Builtin(id) => id.to_name(),
+            NameRef::Unresolved(path) => path.display(),
+        }
     }
 }
 
@@ -193,7 +461,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
 
 #[derive(Debug, Clone)]
 pub struct ClosureParam {
-    pub name: FirIdent,
+    pub name: LocalId,
     pub ty: Option<TypeExpr>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -215,11 +483,11 @@ impl From<&ast::Attribute> for Attribute {
 
 #[derive(Debug, Clone)]
 pub struct File {
-    pub toplevels: Vec<Item>,
+    pub toplevels: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
-pub enum Item {
+pub enum Def {
     EnumDef(EnumDef),
     StructDef(StructDef),
     TraitDef(TraitDef),
@@ -235,9 +503,9 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
     pub generics: Vec<FirIdent>,
-    pub params: Vec<(FirIdent, TypeExpr)>,
+    pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
-    pub body: Expr,
+    pub body: ExprId,
 }
 
 #[derive(Debug, Clone)]
@@ -257,12 +525,12 @@ impl From<&ast::ExternGo> for ExternGo {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             package_path: ext.package_path.clone(),
             go_symbol: ext.go_symbol.clone(),
-            goml_name: FirIdent::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::name(&ext.goml_name.0),
             explicit_go_symbol: ext.explicit_go_symbol,
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -279,7 +547,7 @@ impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: FirIdent::new(-1, &ext.goml_name.0),
+            goml_name: FirIdent::name(&ext.goml_name.0),
         }
     }
 }
@@ -296,11 +564,11 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
     fn from(ext: &ast::ExternBuiltin) -> Self {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &ext.name.0),
+            name: FirIdent::name(&ext.name.0),
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -313,24 +581,21 @@ pub struct EnumDef {
     pub name: FirIdent,
     pub generics: Vec<FirIdent>,
     pub variants: Vec<(FirIdent, Vec<TypeExpr>)>,
+    pub variant_ctors: Vec<ConstructorId>,
 }
 
 impl From<&ast::EnumDef> for EnumDef {
     fn from(e: &ast::EnumDef) -> Self {
         EnumDef {
             attrs: e.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &e.name.0),
-            generics: e.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+            name: FirIdent::name(&e.name.0),
+            generics: e.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| {
-                    (
-                        FirIdent::new(-1, &i.0),
-                        tys.iter().map(|t| t.into()).collect(),
-                    )
-                })
+                .map(|(i, tys)| (FirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
+            variant_ctors: Vec::new(),
         }
     }
 }
@@ -347,12 +612,12 @@ impl From<&ast::StructDef> for StructDef {
     fn from(s: &ast::StructDef) -> Self {
         StructDef {
             attrs: s.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &s.name.0),
-            generics: s.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+            name: FirIdent::name(&s.name.0),
+            generics: s.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             fields: s
                 .fields
                 .iter()
-                .map(|(i, t)| (FirIdent::new(-1, &i.0), t.into()))
+                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
                 .collect(),
         }
     }
@@ -369,7 +634,7 @@ impl From<&ast::TraitDef> for TraitDef {
     fn from(t: &ast::TraitDef) -> Self {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::new(-1, &t.name.0),
+            name: FirIdent::name(&t.name.0),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -385,7 +650,7 @@ pub struct TraitMethodSignature {
 impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
-            name: FirIdent::new(-1, &m.name.0),
+            name: FirIdent::name(&m.name.0),
             params: m.params.iter().map(|p| p.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }
@@ -398,14 +663,15 @@ pub struct ImplBlock {
     pub generics: Vec<FirIdent>,
     pub trait_name: Option<FirIdent>,
     pub for_type: TypeExpr,
-    pub methods: Vec<Fn>,
+    pub methods: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Expr {
-    EPath {
-        path: Path,
-        astptr: MySyntaxNodePtr,
+    ENameRef {
+        res: NameRef,
+        hint: String,
+        astptr: Option<MySyntaxNodePtr>,
     },
     EUnit,
     EBool {
@@ -451,82 +717,80 @@ pub enum Expr {
         value: String,
     },
     EConstr {
-        constructor: Path,
-        args: Vec<Expr>,
+        constructor: ConstructorRef,
+        args: Vec<ExprId>,
     },
     EStructLiteral {
         name: FirIdent,
-        fields: Vec<(FirIdent, Expr)>,
+        fields: Vec<(FirIdent, ExprId)>,
     },
     ETuple {
-        items: Vec<Expr>,
+        items: Vec<ExprId>,
     },
     EArray {
-        items: Vec<Expr>,
+        items: Vec<ExprId>,
     },
     ELet {
-        pat: Pat,
+        pat: PatId,
         annotation: Option<TypeExpr>,
-        value: Box<Expr>,
+        value: ExprId,
     },
     EClosure {
         params: Vec<ClosureParam>,
-        body: Box<Expr>,
+        body: ExprId,
     },
     EMatch {
-        expr: Box<Expr>,
+        expr: ExprId,
         arms: Vec<Arm>,
-        astptr: MySyntaxNodePtr,
     },
     EIf {
-        cond: Box<Expr>,
-        then_branch: Box<Expr>,
-        else_branch: Box<Expr>,
+        cond: ExprId,
+        then_branch: ExprId,
+        else_branch: ExprId,
     },
     EWhile {
-        cond: Box<Expr>,
-        body: Box<Expr>,
+        cond: ExprId,
+        body: ExprId,
     },
     EGo {
-        expr: Box<Expr>,
+        expr: ExprId,
     },
     ECall {
-        func: Box<Expr>,
-        args: Vec<Expr>,
+        func: ExprId,
+        args: Vec<ExprId>,
     },
     EUnary {
         op: common_defs::UnaryOp,
-        expr: Box<Expr>,
+        expr: ExprId,
     },
     EBinary {
         op: common_defs::BinaryOp,
-        lhs: Box<Expr>,
-        rhs: Box<Expr>,
+        lhs: ExprId,
+        rhs: ExprId,
     },
     EProj {
-        tuple: Box<Expr>,
+        tuple: ExprId,
         index: usize,
     },
     EField {
-        expr: Box<Expr>,
+        expr: ExprId,
         field: FirIdent,
-        astptr: MySyntaxNodePtr,
     },
     EBlock {
-        exprs: Vec<Expr>,
+        exprs: Vec<ExprId>,
     },
 }
 
 #[derive(Debug, Clone)]
 pub struct Arm {
-    pub pat: Pat,
-    pub body: Expr,
+    pub pat: PatId,
+    pub body: ExprId,
 }
 
 #[derive(Debug, Clone)]
 pub enum Pat {
     PVar {
-        name: FirIdent,
+        name: LocalId,
         astptr: MySyntaxNodePtr,
     },
     PUnit,
@@ -564,15 +828,136 @@ pub enum Pat {
         value: String,
     },
     PConstr {
-        constructor: Path,
-        args: Vec<Pat>,
+        constructor: ConstructorRef,
+        args: Vec<PatId>,
     },
     PStruct {
         name: FirIdent,
-        fields: Vec<(FirIdent, Pat)>,
+        fields: Vec<(FirIdent, PatId)>,
     },
     PTuple {
-        pats: Vec<Pat>,
+        pats: Vec<PatId>,
     },
     PWild,
+}
+
+use std::collections::HashMap;
+
+#[derive(Debug, Clone)]
+pub struct ConstructorResolutionError {
+    pub path: Path,
+    pub kind: ConstructorResolutionErrorKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum ConstructorResolutionErrorKind {
+    NotFound,
+    Ambiguous(Vec<ConstructorId>),
+}
+
+pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResolutionError> {
+    let mut errors = Vec::new();
+    let mut full_name_index: HashMap<String, ConstructorId> = HashMap::new();
+    let mut short_name_index: HashMap<String, Vec<ConstructorId>> = HashMap::new();
+
+    for def_id in 0..fir_table.defs.len() {
+        let def_id = DefId(def_id as u32);
+        if let Def::EnumDef(enum_def) = fir_table.def(def_id) {
+            let enum_name = enum_def.name.to_ident_name();
+            for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
+                if variant_idx < enum_def.variant_ctors.len() {
+                    let ctor_id = enum_def.variant_ctors[variant_idx];
+                    let variant_ident = variant_name.to_ident_name();
+                    let full_name = format!("{}::{}", enum_name, variant_ident);
+                    full_name_index.insert(full_name, ctor_id);
+                    short_name_index
+                        .entry(variant_ident)
+                        .or_default()
+                        .push(ctor_id);
+                }
+            }
+        }
+    }
+
+    let expr_count = fir_table.exprs.len();
+    for i in 0..expr_count {
+        let expr_id = ExprId(i as u32);
+        let expr = fir_table.expr(expr_id).clone();
+        if let Expr::EConstr { constructor, args } = expr {
+            if let ConstructorRef::Unresolved(path) = &constructor {
+                let resolved = resolve_constructor_path(
+                    path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                );
+                let new_expr = Expr::EConstr {
+                    constructor: resolved,
+                    args,
+                };
+                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
+                fir_table.exprs[idx] = new_expr;
+            }
+        }
+    }
+
+    let pat_count = fir_table.pats.len();
+    for i in 0..pat_count {
+        let pat_id = PatId(i as u32);
+        let pat = fir_table.pat(pat_id).clone();
+        if let Pat::PConstr { constructor, args } = pat {
+            if let ConstructorRef::Unresolved(path) = &constructor {
+                let resolved = resolve_constructor_path(
+                    path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                );
+                let new_pat = Pat::PConstr {
+                    constructor: resolved,
+                    args,
+                };
+                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
+                fir_table.pats[idx] = new_pat;
+            }
+        }
+    }
+
+    errors
+}
+
+fn resolve_constructor_path(
+    path: &Path,
+    full_name_index: &HashMap<String, ConstructorId>,
+    short_name_index: &HashMap<String, Vec<ConstructorId>>,
+    errors: &mut Vec<ConstructorResolutionError>,
+) -> ConstructorRef {
+    let path_str = path.display();
+
+    if let Some(&ctor_id) = full_name_index.get(&path_str) {
+        return ConstructorRef::Resolved(ctor_id);
+    }
+
+    if path.segments.len() == 1 {
+        let short_name = &path.segments[0].seg;
+        if let Some(ctors) = short_name_index.get(short_name) {
+            match ctors.len() {
+                0 => {}
+                1 => return ConstructorRef::Resolved(ctors[0]),
+                _ => {
+                    errors.push(ConstructorResolutionError {
+                        path: path.clone(),
+                        kind: ConstructorResolutionErrorKind::Ambiguous(ctors.clone()),
+                    });
+                    return ConstructorRef::Unresolved(path.clone());
+                }
+            }
+        }
+    }
+
+    errors.push(ConstructorResolutionError {
+        path: path.clone(),
+        kind: ConstructorResolutionErrorKind::NotFound,
+    });
+    ConstructorRef::Unresolved(path.clone())
 }

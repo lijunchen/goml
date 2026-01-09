@@ -1,35 +1,18 @@
-use std::cell::Cell;
-use std::collections::HashSet;
+use std::collections::HashMap;
 
 use ast::ast;
-use la_arena::Idx;
 
 use crate::env;
 use crate::fir;
 use crate::fir::FirIdent;
 
-pub struct FirTable {
-    pub local: la_arena::Arena<u32>,
-    pub local_name_map: la_arena::ArenaMap<Idx<u32>, fir::FirIdent>,
-}
-
-#[allow(clippy::new_without_default)]
-impl FirTable {
-    pub fn new() -> Self {
-        Self {
-            local: la_arena::Arena::new(),
-            local_name_map: la_arena::ArenaMap::new(),
-        }
-    }
-}
+pub type FirTable = fir::FirTable;
 
 #[derive(Default)]
-pub struct NameResolution {
-    counter: Cell<u32>,
-}
+pub struct NameResolution {}
 
 #[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::FirIdent)>);
+struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::LocalId)>);
 
 impl ResolveLocalEnv {
     pub fn new() -> Self {
@@ -41,76 +24,176 @@ impl ResolveLocalEnv {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::FirIdent) {
+    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::LocalId) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::AstIdent) -> Option<&fir::FirIdent> {
+    pub fn rfind(&self, key: &ast::AstIdent) -> Option<fir::LocalId> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)
-            .map(|(_, new_name)| new_name)
+            .map(|(_, new_name)| *new_name)
+    }
+}
+
+struct ResolutionContext {
+    builtin_names: HashMap<String, fir::BuiltinId>,
+    def_names: HashMap<String, fir::DefId>,
+}
+
+impl ResolutionContext {
+    fn resolve_name(
+        &self,
+        name: &str,
+        local_env: &ResolveLocalEnv,
+        ast_ident: &ast::AstIdent,
+    ) -> fir::NameRef {
+        if let Some(local_id) = local_env.rfind(ast_ident) {
+            return fir::NameRef::Local(local_id);
+        }
+
+        if let Some(&def_id) = self.def_names.get(name) {
+            return fir::NameRef::Def(def_id);
+        }
+
+        if let Some(&builtin_id) = self.builtin_names.get(name) {
+            return fir::NameRef::Builtin(builtin_id);
+        }
+
+        fir::NameRef::Unresolved(fir::Path::from_ident(name.to_string()))
     }
 }
 
 impl NameResolution {
-    fn fresh_name(&self, name: &str) -> fir::FirIdent {
-        let ret = fir::FirIdent::new(self.counter.get() as i32, name);
-        self.counter.set(self.counter.get() + 1);
-        ret
+    fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::LocalId {
+        fir_table.fresh_local(name)
     }
 
     pub fn resolve_file(&self, ast: ast::File) -> (fir::File, FirTable) {
-        let mut global_funcs: HashSet<String> = env::builtin_function_names().into_iter().collect();
-        for item in ast.toplevels.iter() {
-            match item {
-                ast::Item::Fn(func) => {
-                    global_funcs.insert(func.name.0.clone());
-                }
-                ast::Item::ExternGo(ext) => {
-                    global_funcs.insert(ext.goml_name.0.clone());
-                }
-                ast::Item::ExternType(_) => {}
-                _ => {}
+        let mut fir_table = FirTable::new();
+
+        let mut builtin_names = HashMap::new();
+        for name in env::builtin_function_names() {
+            if let Some(id) = fir::BuiltinId::from_name(&name) {
+                builtin_names.insert(name, id);
             }
         }
 
-        (
-            fir::File {
-                toplevels: ast
-                    .toplevels
-                    .iter()
-                    .map(|it| self.resolve_item(it, &global_funcs))
-                    .collect(),
-            },
-            FirTable::new(),
-        )
-    }
+        let mut def_names = HashMap::new();
+        let mut toplevels = Vec::new();
 
-    pub fn resolve_item(&self, item: &ast::Item, global_funcs: &HashSet<String>) -> fir::Item {
-        match item {
-            ast::Item::EnumDef(e) => fir::Item::EnumDef(e.into()),
-            ast::Item::StructDef(s) => fir::Item::StructDef(s.into()),
-            ast::Item::TraitDef(t) => fir::Item::TraitDef(t.into()),
-            ast::Item::ImplBlock(i) => fir::Item::ImplBlock(fir::ImplBlock {
-                attrs: i.attrs.iter().map(|a| a.into()).collect(),
-                generics: i.generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
-                trait_name: i.trait_name.as_ref().map(|t| FirIdent::new(-1, &t.0)),
-                for_type: (&i.for_type).into(),
-                methods: i
-                    .methods
-                    .iter()
-                    .map(|m| self.resolve_fn(m, global_funcs))
-                    .collect(),
-            }),
-            ast::Item::Fn(func) => fir::Item::Fn(self.resolve_fn(func, global_funcs)),
-            ast::Item::ExternGo(ext) => fir::Item::ExternGo(ext.into()),
-            ast::Item::ExternType(ext) => fir::Item::ExternType(ext.into()),
-            ast::Item::ExternBuiltin(ext) => fir::Item::ExternBuiltin(ext.into()),
+        for item in ast.toplevels.iter() {
+            let def_id = match item {
+                ast::Item::Fn(func) => {
+                    let id = fir_table.alloc_def(fir::Def::Fn(fir::Fn {
+                        attrs: Vec::new(),
+                        name: func.name.0.clone(),
+                        generics: Vec::new(),
+                        params: Vec::new(),
+                        ret_ty: None,
+                        body: fir::ExprId(0),
+                    }));
+                    def_names.insert(func.name.0.clone(), id);
+                    id
+                }
+                ast::Item::ExternGo(ext) => {
+                    let id = fir_table.alloc_def(fir::Def::ExternGo(ext.into()));
+                    def_names.insert(ext.goml_name.0.clone(), id);
+                    id
+                }
+                ast::Item::ExternBuiltin(ext) => {
+                    let id = fir_table.alloc_def(fir::Def::ExternBuiltin(ext.into()));
+                    def_names.insert(ext.name.0.clone(), id);
+                    id
+                }
+                ast::Item::EnumDef(e) => {
+                    let enum_def_id = fir_table.alloc_def(fir::Def::EnumDef(e.into()));
+                    let variant_count = e.variants.len();
+                    let mut variant_ctors = Vec::with_capacity(variant_count);
+                    for variant_idx in 0..variant_count {
+                        let ctor_id = fir_table.alloc_constructor(fir::Constructor::EnumVariant {
+                            enum_def: enum_def_id,
+                            variant_idx,
+                        });
+                        variant_ctors.push(ctor_id);
+                    }
+                    if let fir::Def::EnumDef(enum_def) = fir_table.def_mut(enum_def_id) {
+                        enum_def.variant_ctors = variant_ctors;
+                    }
+                    enum_def_id
+                }
+                ast::Item::StructDef(s) => fir_table.alloc_def(fir::Def::StructDef(s.into())),
+                ast::Item::TraitDef(t) => fir_table.alloc_def(fir::Def::TraitDef(t.into())),
+                ast::Item::ImplBlock(_i) => {
+                    fir_table.alloc_def(fir::Def::ImplBlock(fir::ImplBlock {
+                        attrs: Vec::new(),
+                        generics: Vec::new(),
+                        trait_name: None,
+                        for_type: fir::TypeExpr::TUnit,
+                        methods: Vec::new(),
+                    }))
+                }
+                ast::Item::ExternType(ext) => fir_table.alloc_def(fir::Def::ExternType(ext.into())),
+            };
+            toplevels.push(def_id);
         }
+
+        let ctx = ResolutionContext {
+            builtin_names,
+            def_names,
+        };
+
+        let mut toplevels_idx = 0;
+        for item in ast.toplevels.iter() {
+            match item {
+                ast::Item::Fn(func) => {
+                    let def_id = toplevels[toplevels_idx];
+                    toplevels_idx += 1;
+                    let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table);
+                    *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
+                }
+                ast::Item::ImplBlock(i) => {
+                    let def_id = toplevels[toplevels_idx];
+                    toplevels_idx += 1;
+                    let methods = i
+                        .methods
+                        .iter()
+                        .map(|m| self.resolve_fn_def(m, &ctx, &mut fir_table))
+                        .collect();
+                    let impl_block = fir::ImplBlock {
+                        attrs: i.attrs.iter().map(|a| a.into()).collect(),
+                        generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+                        trait_name: i.trait_name.as_ref().map(|t| FirIdent::name(&t.0)),
+                        for_type: (&i.for_type).into(),
+                        methods,
+                    };
+                    *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
+                }
+                _ => {
+                    toplevels_idx += 1;
+                }
+            }
+        }
+
+        (fir::File { toplevels }, fir_table)
     }
 
-    pub fn resolve_fn(&self, func: &ast::Fn, global_funcs: &HashSet<String>) -> fir::Fn {
+    fn resolve_fn_def(
+        &self,
+        func: &ast::Fn,
+        ctx: &ResolutionContext,
+        fir_table: &mut FirTable,
+    ) -> fir::DefId {
+        let func = self.resolve_fn(func, ctx, fir_table);
+        fir_table.alloc_def(fir::Def::Fn(func))
+    }
+
+    fn resolve_fn(
+        &self,
+        func: &ast::Fn,
+        ctx: &ResolutionContext,
+        fir_table: &mut FirTable,
+    ) -> fir::Fn {
         let ast::Fn {
             attrs,
             name,
@@ -121,19 +204,19 @@ impl NameResolution {
         } = func;
         let mut env = ResolveLocalEnv::new();
         for param in params {
-            env.add(&param.0, self.fresh_name(&param.0.0));
+            env.add(&param.0, self.fresh_name(&param.0.0, fir_table));
         }
         let new_params = params
             .iter()
-            .map(|param| (env.rfind(&param.0).unwrap().clone(), (&param.1).into()))
+            .map(|param| (env.rfind(&param.0).unwrap(), (&param.1).into()))
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
             name: name.0.clone(),
-            generics: generics.iter().map(|g| FirIdent::new(-1, &g.0)).collect(),
+            generics: generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             params: new_params,
             ret_ty: ret_ty.as_ref().map(|t| t.into()),
-            body: self.resolve_expr(body, &mut env, global_funcs),
+            body: self.resolve_expr(body, &mut env, ctx, fir_table),
         }
     }
 
@@ -141,288 +224,317 @@ impl NameResolution {
         &self,
         expr: &ast::Expr,
         env: &mut ResolveLocalEnv,
-        global_funcs: &HashSet<String>,
-    ) -> fir::Expr {
+        ctx: &ResolutionContext,
+        fir_table: &mut FirTable,
+    ) -> fir::ExprId {
         match expr {
             ast::Expr::EPath { path, astptr } => {
-                // Only single-segment paths can be local variables
                 if path.len() == 1 {
-                    let name = path.last_ident().unwrap();
-                    if let Some(new_name) = env.rfind(name) {
-                        fir::Expr::EPath {
-                            path: fir::Path::from_ident(new_name.to_ident_name()),
-                            astptr: *astptr,
-                        }
-                    } else if global_funcs.contains(&name.0) {
-                        fir::Expr::EPath {
-                            path: path.into(),
-                            astptr: *astptr,
-                        }
-                    } else {
-                        panic!("Variable {} not found in environment", name.0);
-                    }
+                    let ident = path.last_ident().unwrap();
+                    let name_str = &ident.0;
+                    let res = ctx.resolve_name(name_str, env, ident);
+                    fir_table.alloc_expr(fir::Expr::ENameRef {
+                        res,
+                        hint: name_str.clone(),
+                        astptr: Some(*astptr),
+                    })
                 } else {
-                    // Multi-segment paths (like Type::method) are kept as-is
-                    fir::Expr::EPath {
-                        path: path.into(),
-                        astptr: *astptr,
-                    }
+                    fir_table.alloc_expr(fir::Expr::ENameRef {
+                        res: fir::NameRef::Unresolved(path.into()),
+                        hint: path.display(),
+                        astptr: Some(*astptr),
+                    })
                 }
             }
-            ast::Expr::EUnit => fir::Expr::EUnit,
-            ast::Expr::EBool { value } => fir::Expr::EBool { value: *value },
-            ast::Expr::EInt { value } => fir::Expr::EInt {
+            ast::Expr::EUnit => fir_table.alloc_expr(fir::Expr::EUnit),
+            ast::Expr::EBool { value } => fir_table.alloc_expr(fir::Expr::EBool { value: *value }),
+            ast::Expr::EInt { value } => fir_table.alloc_expr(fir::Expr::EInt {
                 value: value.clone(),
-            },
-            ast::Expr::EInt8 { value } => fir::Expr::EInt8 {
+            }),
+            ast::Expr::EInt8 { value } => fir_table.alloc_expr(fir::Expr::EInt8 {
                 value: value.clone(),
-            },
-            ast::Expr::EInt16 { value } => fir::Expr::EInt16 {
+            }),
+            ast::Expr::EInt16 { value } => fir_table.alloc_expr(fir::Expr::EInt16 {
                 value: value.clone(),
-            },
-            ast::Expr::EInt32 { value } => fir::Expr::EInt32 {
+            }),
+            ast::Expr::EInt32 { value } => fir_table.alloc_expr(fir::Expr::EInt32 {
                 value: value.clone(),
-            },
-            ast::Expr::EInt64 { value } => fir::Expr::EInt64 {
+            }),
+            ast::Expr::EInt64 { value } => fir_table.alloc_expr(fir::Expr::EInt64 {
                 value: value.clone(),
-            },
-            ast::Expr::EUInt8 { value } => fir::Expr::EUInt8 {
+            }),
+            ast::Expr::EUInt8 { value } => fir_table.alloc_expr(fir::Expr::EUInt8 {
                 value: value.clone(),
-            },
-            ast::Expr::EUInt16 { value } => fir::Expr::EUInt16 {
+            }),
+            ast::Expr::EUInt16 { value } => fir_table.alloc_expr(fir::Expr::EUInt16 {
                 value: value.clone(),
-            },
-            ast::Expr::EUInt32 { value } => fir::Expr::EUInt32 {
+            }),
+            ast::Expr::EUInt32 { value } => fir_table.alloc_expr(fir::Expr::EUInt32 {
                 value: value.clone(),
-            },
-            ast::Expr::EUInt64 { value } => fir::Expr::EUInt64 {
+            }),
+            ast::Expr::EUInt64 { value } => fir_table.alloc_expr(fir::Expr::EUInt64 {
                 value: value.clone(),
-            },
-            ast::Expr::EFloat { value } => fir::Expr::EFloat { value: *value },
-            ast::Expr::EFloat32 { value } => fir::Expr::EFloat32 {
+            }),
+            ast::Expr::EFloat { value } => {
+                fir_table.alloc_expr(fir::Expr::EFloat { value: *value })
+            }
+            ast::Expr::EFloat32 { value } => fir_table.alloc_expr(fir::Expr::EFloat32 {
                 value: value.clone(),
-            },
-            ast::Expr::EFloat64 { value } => fir::Expr::EFloat64 {
+            }),
+            ast::Expr::EFloat64 { value } => fir_table.alloc_expr(fir::Expr::EFloat64 {
                 value: value.clone(),
-            },
-            ast::Expr::EString { value } => fir::Expr::EString {
+            }),
+            ast::Expr::EString { value } => fir_table.alloc_expr(fir::Expr::EString {
                 value: value.clone(),
-            },
-            ast::Expr::EConstr { constructor, args } => fir::Expr::EConstr {
-                constructor: constructor.into(),
-                args: args
+            }),
+            ast::Expr::EConstr { constructor, args } => {
+                let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_expr(arg, env, global_funcs))
-                    .collect(),
-            },
-            ast::Expr::EStructLiteral { name, fields } => fir::Expr::EStructLiteral {
-                name: FirIdent::new(-1, &name.0),
-                fields: fields
+                    .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
+                    .collect();
+                fir_table.alloc_expr(fir::Expr::EConstr {
+                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
+                    args: new_args,
+                })
+            }
+            ast::Expr::EStructLiteral { name, fields } => {
+                let new_fields = fields
                     .iter()
                     .map(|(field_name, expr)| {
                         (
-                            FirIdent::new(-1, &field_name.0),
-                            self.resolve_expr(expr, env, global_funcs),
+                            FirIdent::name(&field_name.0),
+                            self.resolve_expr(expr, env, ctx, fir_table),
                         )
                     })
-                    .collect(),
-            },
-            ast::Expr::ETuple { items } => fir::Expr::ETuple {
-                items: items
+                    .collect();
+                fir_table.alloc_expr(fir::Expr::EStructLiteral {
+                    name: FirIdent::name(&name.0),
+                    fields: new_fields,
+                })
+            }
+            ast::Expr::ETuple { items } => {
+                let new_items = items
                     .iter()
-                    .map(|item| self.resolve_expr(item, env, global_funcs))
-                    .collect(),
-            },
-            ast::Expr::EArray { items } => fir::Expr::EArray {
-                items: items
+                    .map(|item| self.resolve_expr(item, env, ctx, fir_table))
+                    .collect();
+                fir_table.alloc_expr(fir::Expr::ETuple { items: new_items })
+            }
+            ast::Expr::EArray { items } => {
+                let new_items = items
                     .iter()
-                    .map(|item| self.resolve_expr(item, env, global_funcs))
-                    .collect(),
-            },
+                    .map(|item| self.resolve_expr(item, env, ctx, fir_table))
+                    .collect();
+                fir_table.alloc_expr(fir::Expr::EArray { items: new_items })
+            }
             ast::Expr::EClosure { params, body } => {
                 let mut closure_env = env.enter_scope();
                 let new_params = params
                     .iter()
-                    .map(|param| self.resolve_closure_param(param, &mut closure_env))
+                    .map(|param| self.resolve_closure_param(param, &mut closure_env, fir_table))
                     .collect();
-                let new_body = self.resolve_expr(body, &mut closure_env, global_funcs);
+                let new_body_expr = self.resolve_expr(body, &mut closure_env, ctx, fir_table);
 
-                fir::Expr::EClosure {
+                fir_table.alloc_expr(fir::Expr::EClosure {
                     params: new_params,
-                    body: Box::new(new_body),
-                }
+                    body: new_body_expr,
+                })
             }
             ast::Expr::ELet {
                 pat,
                 annotation,
                 value,
             } => {
-                let new_value = self.resolve_expr(value, env, global_funcs);
-                let new_pat = self.resolve_pat(pat, env);
-                fir::Expr::ELet {
+                let new_value = self.resolve_expr(value, env, ctx, fir_table);
+                let new_pat = self.resolve_pat(pat, env, fir_table);
+                fir_table.alloc_expr(fir::Expr::ELet {
                     pat: new_pat,
                     annotation: annotation.as_ref().map(|t| t.into()),
-                    value: Box::new(new_value),
-                }
+                    value: new_value,
+                })
             }
-            ast::Expr::EMatch { expr, arms, astptr } => {
-                let new_expr = self.resolve_expr(expr, env, global_funcs);
+            ast::Expr::EMatch {
+                expr,
+                arms,
+                astptr: _,
+            } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
                 let new_arms = arms
                     .iter()
                     .map(|arm| {
-                        let new_pat = self.resolve_pat(&arm.pat, env);
-                        let new_body = self.resolve_expr(&arm.body, env, global_funcs);
+                        let new_pat = self.resolve_pat(&arm.pat, env, fir_table);
+                        let new_body = self.resolve_expr(&arm.body, env, ctx, fir_table);
                         fir::Arm {
                             pat: new_pat,
                             body: new_body,
                         }
                     })
                     .collect();
-                fir::Expr::EMatch {
-                    expr: Box::new(new_expr),
+                fir_table.alloc_expr(fir::Expr::EMatch {
+                    expr: new_expr,
                     arms: new_arms,
-                    astptr: *astptr,
-                }
+                })
             }
             ast::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
-            } => fir::Expr::EIf {
-                cond: Box::new(self.resolve_expr(cond, env, global_funcs)),
-                then_branch: Box::new(self.resolve_expr(then_branch, env, global_funcs)),
-                else_branch: Box::new(self.resolve_expr(else_branch, env, global_funcs)),
-            },
-            ast::Expr::EWhile { cond, body } => fir::Expr::EWhile {
-                cond: Box::new(self.resolve_expr(cond, env, global_funcs)),
-                body: Box::new(self.resolve_expr(body, env, global_funcs)),
-            },
-            ast::Expr::EGo { expr } => fir::Expr::EGo {
-                expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
-            },
+            } => {
+                let new_cond = self.resolve_expr(cond, env, ctx, fir_table);
+                let new_then = self.resolve_expr(then_branch, env, ctx, fir_table);
+                let new_else = self.resolve_expr(else_branch, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EIf {
+                    cond: new_cond,
+                    then_branch: new_then,
+                    else_branch: new_else,
+                })
+            }
+            ast::Expr::EWhile { cond, body } => {
+                let new_cond = self.resolve_expr(cond, env, ctx, fir_table);
+                let new_body = self.resolve_expr(body, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EWhile {
+                    cond: new_cond,
+                    body: new_body,
+                })
+            }
+            ast::Expr::EGo { expr } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EGo { expr: new_expr })
+            }
             ast::Expr::ECall { func, args } => {
-                let new_func = match func.as_ref() {
-                    ast::Expr::EPath { path, astptr } if path.len() == 1 => {
-                        let name = path.last_ident().unwrap();
-                        if let Some(new_name) = env.rfind(name) {
-                            fir::Expr::EPath {
-                                path: fir::Path::from_ident(new_name.to_ident_name()),
-                                astptr: *astptr,
-                            }
-                        } else {
-                            fir::Expr::EPath {
-                                path: path.into(),
-                                astptr: *astptr,
-                            }
-                        }
-                    }
-                    _ => self.resolve_expr(func, env, global_funcs),
-                };
+                let new_func = self.resolve_expr(func, env, ctx, fir_table);
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_expr(arg, env, global_funcs))
+                    .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
                     .collect();
-                fir::Expr::ECall {
-                    func: Box::new(new_func),
+                fir_table.alloc_expr(fir::Expr::ECall {
+                    func: new_func,
                     args: new_args,
-                }
+                })
             }
-            ast::Expr::EUnary { op, expr } => fir::Expr::EUnary {
-                op: *op,
-                expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
-            },
-            ast::Expr::EBinary { op, lhs, rhs } => fir::Expr::EBinary {
-                op: *op,
-                lhs: Box::new(self.resolve_expr(lhs, env, global_funcs)),
-                rhs: Box::new(self.resolve_expr(rhs, env, global_funcs)),
-            },
-            ast::Expr::EProj { tuple, index } => fir::Expr::EProj {
-                tuple: Box::new(self.resolve_expr(tuple, env, global_funcs)),
-                index: *index,
-            },
+            ast::Expr::EUnary { op, expr } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EUnary {
+                    op: *op,
+                    expr: new_expr,
+                })
+            }
+            ast::Expr::EBinary { op, lhs, rhs } => {
+                let new_lhs = self.resolve_expr(lhs, env, ctx, fir_table);
+                let new_rhs = self.resolve_expr(rhs, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EBinary {
+                    op: *op,
+                    lhs: new_lhs,
+                    rhs: new_rhs,
+                })
+            }
+            ast::Expr::EProj { tuple, index } => {
+                let new_tuple = self.resolve_expr(tuple, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EProj {
+                    tuple: new_tuple,
+                    index: *index,
+                })
+            }
             ast::Expr::EField {
                 expr,
                 field,
-                astptr,
-            } => fir::Expr::EField {
-                expr: Box::new(self.resolve_expr(expr, env, global_funcs)),
-                field: FirIdent::new(-1, &field.0),
-                astptr: *astptr,
-            },
+                astptr: _,
+            } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
+                fir_table.alloc_expr(fir::Expr::EField {
+                    expr: new_expr,
+                    field: FirIdent::name(&field.0),
+                })
+            }
             ast::Expr::EBlock { exprs } => {
                 let new_exprs = exprs
                     .iter()
-                    .map(|e| self.resolve_expr(e, env, global_funcs))
+                    .map(|e| self.resolve_expr(e, env, ctx, fir_table))
                     .collect();
-                fir::Expr::EBlock { exprs: new_exprs }
+                fir_table.alloc_expr(fir::Expr::EBlock { exprs: new_exprs })
             }
         }
     }
 
-    fn resolve_pat(&self, pat: &ast::Pat, env: &mut ResolveLocalEnv) -> fir::Pat {
+    fn resolve_pat(
+        &self,
+        pat: &ast::Pat,
+        env: &mut ResolveLocalEnv,
+        fir_table: &mut FirTable,
+    ) -> fir::PatId {
         match pat {
             ast::Pat::PVar { name, astptr } => {
-                let newname = self.fresh_name(&name.0);
-                env.add(name, newname.clone());
-                fir::Pat::PVar {
+                let newname = self.fresh_name(&name.0, fir_table);
+                env.add(name, newname);
+                fir_table.alloc_pat(fir::Pat::PVar {
                     name: newname,
                     astptr: *astptr,
-                }
+                })
             }
-            ast::Pat::PUnit => fir::Pat::PUnit,
-            ast::Pat::PBool { value } => fir::Pat::PBool { value: *value },
-            ast::Pat::PInt { value } => fir::Pat::PInt {
+            ast::Pat::PUnit => fir_table.alloc_pat(fir::Pat::PUnit),
+            ast::Pat::PBool { value } => fir_table.alloc_pat(fir::Pat::PBool { value: *value }),
+            ast::Pat::PInt { value } => fir_table.alloc_pat(fir::Pat::PInt {
                 value: value.clone(),
-            },
-            ast::Pat::PInt8 { value } => fir::Pat::PInt8 {
+            }),
+            ast::Pat::PInt8 { value } => fir_table.alloc_pat(fir::Pat::PInt8 {
                 value: value.clone(),
-            },
-            ast::Pat::PInt16 { value } => fir::Pat::PInt16 {
+            }),
+            ast::Pat::PInt16 { value } => fir_table.alloc_pat(fir::Pat::PInt16 {
                 value: value.clone(),
-            },
-            ast::Pat::PInt32 { value } => fir::Pat::PInt32 {
+            }),
+            ast::Pat::PInt32 { value } => fir_table.alloc_pat(fir::Pat::PInt32 {
                 value: value.clone(),
-            },
-            ast::Pat::PInt64 { value } => fir::Pat::PInt64 {
+            }),
+            ast::Pat::PInt64 { value } => fir_table.alloc_pat(fir::Pat::PInt64 {
                 value: value.clone(),
-            },
-            ast::Pat::PUInt8 { value } => fir::Pat::PUInt8 {
+            }),
+            ast::Pat::PUInt8 { value } => fir_table.alloc_pat(fir::Pat::PUInt8 {
                 value: value.clone(),
-            },
-            ast::Pat::PUInt16 { value } => fir::Pat::PUInt16 {
+            }),
+            ast::Pat::PUInt16 { value } => fir_table.alloc_pat(fir::Pat::PUInt16 {
                 value: value.clone(),
-            },
-            ast::Pat::PUInt32 { value } => fir::Pat::PUInt32 {
+            }),
+            ast::Pat::PUInt32 { value } => fir_table.alloc_pat(fir::Pat::PUInt32 {
                 value: value.clone(),
-            },
-            ast::Pat::PUInt64 { value } => fir::Pat::PUInt64 {
+            }),
+            ast::Pat::PUInt64 { value } => fir_table.alloc_pat(fir::Pat::PUInt64 {
                 value: value.clone(),
-            },
-            ast::Pat::PString { value } => fir::Pat::PString {
+            }),
+            ast::Pat::PString { value } => fir_table.alloc_pat(fir::Pat::PString {
                 value: value.clone(),
-            },
+            }),
             ast::Pat::PConstr { constructor, args } => {
-                let new_args = args.iter().map(|arg| self.resolve_pat(arg, env)).collect();
-                fir::Pat::PConstr {
-                    constructor: constructor.into(),
+                let new_args = args
+                    .iter()
+                    .map(|arg| self.resolve_pat(arg, env, fir_table))
+                    .collect();
+                fir_table.alloc_pat(fir::Pat::PConstr {
+                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
                     args: new_args,
-                }
+                })
             }
             ast::Pat::PStruct { name, fields } => {
                 let new_fields = fields
                     .iter()
-                    .map(|(fname, pat)| (FirIdent::new(-1, &fname.0), self.resolve_pat(pat, env)))
+                    .map(|(fname, pat)| {
+                        (
+                            FirIdent::name(&fname.0),
+                            self.resolve_pat(pat, env, fir_table),
+                        )
+                    })
                     .collect();
-                fir::Pat::PStruct {
-                    name: FirIdent::new(-1, &name.0),
+                fir_table.alloc_pat(fir::Pat::PStruct {
+                    name: FirIdent::name(&name.0),
                     fields: new_fields,
-                }
+                })
             }
             ast::Pat::PTuple { pats } => {
-                let new_pats = pats.iter().map(|pat| self.resolve_pat(pat, env)).collect();
-                fir::Pat::PTuple { pats: new_pats }
+                let new_pats = pats
+                    .iter()
+                    .map(|pat| self.resolve_pat(pat, env, fir_table))
+                    .collect();
+                fir_table.alloc_pat(fir::Pat::PTuple { pats: new_pats })
             }
-            ast::Pat::PWild => fir::Pat::PWild,
+            ast::Pat::PWild => fir_table.alloc_pat(fir::Pat::PWild),
         }
     }
 
@@ -430,9 +542,10 @@ impl NameResolution {
         &self,
         param: &ast::ClosureParam,
         env: &mut ResolveLocalEnv,
+        fir_table: &mut FirTable,
     ) -> fir::ClosureParam {
-        let new_name = self.fresh_name(&param.name.0);
-        env.add(&param.name, new_name.clone());
+        let new_name = self.fresh_name(&param.name.0, fir_table);
+        env.add(&param.name, new_name);
         fir::ClosureParam {
             name: new_name,
             ty: param.ty.as_ref().map(|t| t.into()),

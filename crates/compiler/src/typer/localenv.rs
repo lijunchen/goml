@@ -1,13 +1,14 @@
 use im::HashMap as ImHashMap;
 use indexmap::IndexMap;
 
+use crate::fir::LocalId;
 use crate::tast::{self, TastIdent};
 
 #[derive(Debug, Clone)]
 pub struct LocalTypeEnv {
-    scopes: Vec<ImHashMap<TastIdent, tast::Ty>>,
+    scopes: Vec<ImHashMap<LocalId, tast::Ty>>,
     tparams_env: Vec<TastIdent>,
-    capture_stack: Vec<IndexMap<TastIdent, tast::Ty>>,
+    capture_stack: Vec<IndexMap<LocalId, tast::Ty>>,
 }
 
 impl Default for LocalTypeEnv {
@@ -36,19 +37,19 @@ impl LocalTypeEnv {
         self.scopes.pop();
     }
 
-    pub fn insert_var(&mut self, name: &TastIdent, ty: tast::Ty) {
+    pub fn insert_var(&mut self, name: LocalId, ty: tast::Ty) {
         if let Some(scope) = self.scopes.last_mut() {
-            scope.insert(name.clone(), ty);
+            scope.insert(name, ty);
         }
     }
 
-    pub fn lookup_var(&mut self, name: &TastIdent) -> Option<tast::Ty> {
+    pub fn lookup_var(&mut self, name: LocalId) -> Option<tast::Ty> {
         for (depth, scope) in self.scopes.iter().enumerate().rev() {
-            if let Some(ty) = scope.get(name) {
+            if let Some(ty) = scope.get(&name) {
                 if depth + 1 < self.scopes.len()
                     && let Some(captures) = self.capture_stack.last_mut()
                 {
-                    captures.entry(name.clone()).or_insert_with(|| ty.clone());
+                    captures.entry(name).or_insert_with(|| ty.clone());
                 }
                 return Some(ty.clone());
             }
@@ -73,13 +74,13 @@ impl LocalTypeEnv {
         self.push_scope();
     }
 
-    pub fn end_closure(&mut self) -> Vec<(String, tast::Ty)> {
+    pub fn end_closure(&mut self, fir_table: &crate::fir::FirTable) -> Vec<(String, tast::Ty)> {
         let captured = self
             .capture_stack
             .pop()
             .unwrap_or_default()
             .into_iter()
-            .map(|(name, ty)| (name.0, ty))
+            .map(|(id, ty)| (fir_table.local_ident_name(id), ty))
             .collect();
         self.pop_scope();
         captured

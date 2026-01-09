@@ -33,6 +33,7 @@ The file extension for goml source files is `.gom`.
 - CI locally: cargo check, test, fmt, clippy.
 
 ## Coding Style & Naming Conventions
+- do not write any comments, instead, write clear and self-explanatory code
 - Rust (edition 2024): format with `rustfmt`; deny clippy warnings. Use snake_case for functions/modules, CamelCase for types, SCREAMING_SNAKE_CASE for consts.
 - TypeScript/React: 2‑space indent; PascalCase components; named exports preferred. Lint with `pnpm -C webapp lint`.
 - Keep modules small and focused; avoid cross‑crate leakage—public APIs live in each crate’s `lib.rs`.
