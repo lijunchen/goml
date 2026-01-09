@@ -1,5 +1,32 @@
 use ast::ast;
+use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct DefId(pub u32);
+
+impl DefId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("def/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct BodyId(pub u32);
+
+impl BodyId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("body/{}", self.0)
+    }
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub u32);
@@ -14,15 +41,49 @@ impl LocalId {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ExprId(pub u32);
+
+impl ExprId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("expr/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PatId(pub u32);
+
+impl PatId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("pat/{}", self.0)
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct FirTable {
     local_hints: Vec<String>,
+    defs: Vec<Def>,
+    bodies: Vec<Body>,
+    exprs: Arena<Expr>,
+    pats: Arena<Pat>,
 }
 
 impl FirTable {
     pub fn new() -> Self {
         Self {
             local_hints: Vec::new(),
+            defs: Vec::new(),
+            bodies: Vec::new(),
+            exprs: Arena::new(),
+            pats: Arena::new(),
         }
     }
 
@@ -38,6 +99,46 @@ impl FirTable {
 
     pub fn local_ident_name(&self, id: LocalId) -> String {
         format!("{}/{}", self.local_hint(id), id.0)
+    }
+
+    pub fn alloc_def(&mut self, def: Def) -> DefId {
+        let id = self.defs.len() as u32;
+        self.defs.push(def);
+        DefId(id)
+    }
+
+    pub fn def(&self, id: DefId) -> &Def {
+        &self.defs[id.0 as usize]
+    }
+
+    pub fn alloc_body(&mut self, body: Body) -> BodyId {
+        let id = self.bodies.len() as u32;
+        self.bodies.push(body);
+        BodyId(id)
+    }
+
+    pub fn body(&self, id: BodyId) -> &Body {
+        &self.bodies[id.0 as usize]
+    }
+
+    pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
+        let idx = self.exprs.alloc(expr);
+        ExprId(idx.into_raw().into_u32())
+    }
+
+    pub fn expr(&self, id: ExprId) -> &Expr {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.exprs[idx]
+    }
+
+    pub fn alloc_pat(&mut self, pat: Pat) -> PatId {
+        let idx = self.pats.alloc(pat);
+        PatId(idx.into_raw().into_u32())
+    }
+
+    pub fn pat(&self, id: PatId) -> &Pat {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.pats[idx]
     }
 }
 
@@ -255,11 +356,11 @@ impl From<&ast::Attribute> for Attribute {
 
 #[derive(Debug, Clone)]
 pub struct File {
-    pub toplevels: Vec<Item>,
+    pub toplevels: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
-pub enum Item {
+pub enum Def {
     EnumDef(EnumDef),
     StructDef(StructDef),
     TraitDef(TraitDef),
@@ -277,7 +378,7 @@ pub struct Fn {
     pub generics: Vec<FirIdent>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
-    pub body: Expr,
+    pub body: BodyId,
 }
 
 #[derive(Debug, Clone)]
@@ -438,18 +539,17 @@ pub struct ImplBlock {
     pub generics: Vec<FirIdent>,
     pub trait_name: Option<FirIdent>,
     pub for_type: TypeExpr,
-    pub methods: Vec<Fn>,
+    pub methods: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
 pub enum Expr {
     EPath {
         path: Path,
-        astptr: MySyntaxNodePtr,
     },
     EVar {
         name: LocalId,
-        astptr: MySyntaxNodePtr,
+        astptr: Option<MySyntaxNodePtr>,
     },
     EUnit,
     EBool {
@@ -496,75 +596,73 @@ pub enum Expr {
     },
     EConstr {
         constructor: Path,
-        args: Vec<Expr>,
+        args: Vec<ExprId>,
     },
     EStructLiteral {
         name: FirIdent,
-        fields: Vec<(FirIdent, Expr)>,
+        fields: Vec<(FirIdent, ExprId)>,
     },
     ETuple {
-        items: Vec<Expr>,
+        items: Vec<ExprId>,
     },
     EArray {
-        items: Vec<Expr>,
+        items: Vec<ExprId>,
     },
     ELet {
-        pat: Pat,
+        pat: PatId,
         annotation: Option<TypeExpr>,
-        value: Box<Expr>,
+        value: ExprId,
     },
     EClosure {
         params: Vec<ClosureParam>,
-        body: Box<Expr>,
+        body: BodyId,
     },
     EMatch {
-        expr: Box<Expr>,
+        expr: ExprId,
         arms: Vec<Arm>,
-        astptr: MySyntaxNodePtr,
     },
     EIf {
-        cond: Box<Expr>,
-        then_branch: Box<Expr>,
-        else_branch: Box<Expr>,
+        cond: ExprId,
+        then_branch: ExprId,
+        else_branch: ExprId,
     },
     EWhile {
-        cond: Box<Expr>,
-        body: Box<Expr>,
+        cond: ExprId,
+        body: ExprId,
     },
     EGo {
-        expr: Box<Expr>,
+        expr: ExprId,
     },
     ECall {
-        func: Box<Expr>,
-        args: Vec<Expr>,
+        func: ExprId,
+        args: Vec<ExprId>,
     },
     EUnary {
         op: common_defs::UnaryOp,
-        expr: Box<Expr>,
+        expr: ExprId,
     },
     EBinary {
         op: common_defs::BinaryOp,
-        lhs: Box<Expr>,
-        rhs: Box<Expr>,
+        lhs: ExprId,
+        rhs: ExprId,
     },
     EProj {
-        tuple: Box<Expr>,
+        tuple: ExprId,
         index: usize,
     },
     EField {
-        expr: Box<Expr>,
+        expr: ExprId,
         field: FirIdent,
-        astptr: MySyntaxNodePtr,
     },
     EBlock {
-        exprs: Vec<Expr>,
+        exprs: Vec<ExprId>,
     },
 }
 
 #[derive(Debug, Clone)]
 pub struct Arm {
-    pub pat: Pat,
-    pub body: Expr,
+    pub pat: PatId,
+    pub body: ExprId,
 }
 
 #[derive(Debug, Clone)]
@@ -609,14 +707,19 @@ pub enum Pat {
     },
     PConstr {
         constructor: Path,
-        args: Vec<Pat>,
+        args: Vec<PatId>,
     },
     PStruct {
         name: FirIdent,
-        fields: Vec<(FirIdent, Pat)>,
+        fields: Vec<(FirIdent, PatId)>,
     },
     PTuple {
-        pats: Vec<Pat>,
+        pats: Vec<PatId>,
     },
     PWild,
+}
+
+#[derive(Debug, Clone)]
+pub struct Body {
+    pub expr: ExprId,
 }
