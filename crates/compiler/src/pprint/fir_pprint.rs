@@ -156,7 +156,7 @@ impl Expr {
             fir::Expr::EString { value } => RcDoc::text(format!("{:?}", value)),
 
             fir::Expr::EConstr { constructor, args } => {
-                let prefix = RcDoc::text(constructor.display());
+                let prefix = RcDoc::text(constructor.display(ctx.fir_table));
 
                 if args.is_empty() {
                     prefix
@@ -412,7 +412,7 @@ impl Pat {
             fir::Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
             fir::Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
             fir::Pat::PConstr { constructor, args } => {
-                let prefix = RcDoc::text(constructor.display());
+                let prefix = RcDoc::text(constructor.display(ctx.fir_table));
 
                 if args.is_empty() {
                     prefix

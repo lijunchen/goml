@@ -434,9 +434,31 @@ impl Typer {
         genv: &GlobalTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        constructor_path: &fir::Path,
+        constructor_ref: &fir::ConstructorRef,
         args: &[fir::ExprId],
     ) -> tast::Expr {
+        let constructor_path = match constructor_ref {
+            fir::ConstructorRef::Resolved(ctor_id) => {
+                let ctor = self.fir_table.constructor(*ctor_id);
+                match ctor {
+                    fir::Constructor::EnumVariant {
+                        enum_def,
+                        variant_idx,
+                    } => {
+                        if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def) {
+                            let enum_name = enum_def_data.name.to_ident_name();
+                            let variant_name =
+                                enum_def_data.variants[*variant_idx].0.to_ident_name();
+                            fir::Path::from_idents(vec![enum_name, variant_name])
+                        } else {
+                            panic!("Constructor points to non-enum DefId");
+                        }
+                    }
+                }
+            }
+            fir::ConstructorRef::Unresolved(path) => path.clone(),
+        };
+
         let variant_ident = constructor_path
             .last_ident()
             .unwrap_or_else(|| panic!("Constructor path missing final segment"));
@@ -1245,7 +1267,13 @@ impl Typer {
                             ty: ret_ty,
                         }
                     } else {
-                        self.infer_constructor_expr(genv, local_env, diagnostics, &path, args)
+                        self.infer_constructor_expr(
+                            genv,
+                            local_env,
+                            diagnostics,
+                            &fir::ConstructorRef::Unresolved(path.clone()),
+                            args,
+                        )
                     }
                 } else {
                     let type_name = path.parent_ident().unwrap();
@@ -1727,9 +1755,33 @@ impl Typer {
         let kind = pat_node.clone();
         match kind {
             fir::Pat::PConstr {
-                constructor: constructor_path,
+                constructor: constructor_ref,
                 args,
             } => {
+                let constructor_path = match &constructor_ref {
+                    fir::ConstructorRef::Resolved(ctor_id) => {
+                        let ctor = self.fir_table.constructor(*ctor_id);
+                        match ctor {
+                            fir::Constructor::EnumVariant {
+                                enum_def,
+                                variant_idx,
+                            } => {
+                                if let fir::Def::EnumDef(enum_def_data) =
+                                    self.fir_table.def(*enum_def)
+                                {
+                                    let enum_name = enum_def_data.name.to_ident_name();
+                                    let variant_name =
+                                        enum_def_data.variants[*variant_idx].0.to_ident_name();
+                                    fir::Path::from_idents(vec![enum_name, variant_name])
+                                } else {
+                                    panic!("Constructor points to non-enum DefId");
+                                }
+                            }
+                        }
+                    }
+                    fir::ConstructorRef::Unresolved(path) => path.clone(),
+                };
+
                 let variant_ident = constructor_path
                     .last_ident()
                     .unwrap_or_else(|| panic!("Constructor path missing final segment"));

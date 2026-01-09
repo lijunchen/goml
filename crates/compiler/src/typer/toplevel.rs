@@ -688,7 +688,8 @@ pub fn check_file_with_env(
     genv: env::GlobalTypeEnv,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = genv;
-    let (fir, fir_table) = name_resolution::NameResolution::default().resolve_file(ast);
+    let (fir, mut fir_table) = name_resolution::NameResolution::default().resolve_file(ast);
+    let _ctor_errors = fir::resolve_constructors(&mut fir_table);
     let mut typer = Typer::new(fir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &fir, &typer.fir_table);

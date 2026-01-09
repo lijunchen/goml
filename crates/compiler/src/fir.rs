@@ -54,12 +54,46 @@ impl PatId {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct ConstructorId(pub u32);
+
+impl ConstructorId {
+    pub fn index(self) -> u32 {
+        self.0
+    }
+
+    pub fn to_debug_string(self) -> String {
+        format!("ctor/{}", self.0)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum Constructor {
+    EnumVariant { enum_def: DefId, variant_idx: usize },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ConstructorRef {
+    Unresolved(Path),
+    Resolved(ConstructorId),
+}
+
+impl ConstructorRef {
+    pub fn display(&self, _fir_table: &FirTable) -> String {
+        match self {
+            ConstructorRef::Unresolved(path) => path.display(),
+            ConstructorRef::Resolved(id) => id.to_debug_string(),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct FirTable {
     local_hints: Vec<String>,
     defs: Vec<Def>,
     exprs: Arena<Expr>,
     pats: Arena<Pat>,
+    constructors: Arena<Constructor>,
 }
 
 impl FirTable {
@@ -69,6 +103,7 @@ impl FirTable {
             defs: Vec::new(),
             exprs: Arena::new(),
             pats: Arena::new(),
+            constructors: Arena::new(),
         }
     }
 
@@ -118,6 +153,16 @@ impl FirTable {
     pub fn pat(&self, id: PatId) -> &Pat {
         let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
         &self.pats[idx]
+    }
+
+    pub fn alloc_constructor(&mut self, ctor: Constructor) -> ConstructorId {
+        let idx = self.constructors.alloc(ctor);
+        ConstructorId(idx.into_raw().into_u32())
+    }
+
+    pub fn constructor(&self, id: ConstructorId) -> &Constructor {
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.constructors[idx]
     }
 }
 
@@ -536,6 +581,7 @@ pub struct EnumDef {
     pub name: FirIdent,
     pub generics: Vec<FirIdent>,
     pub variants: Vec<(FirIdent, Vec<TypeExpr>)>,
+    pub variant_ctors: Vec<ConstructorId>,
 }
 
 impl From<&ast::EnumDef> for EnumDef {
@@ -549,6 +595,7 @@ impl From<&ast::EnumDef> for EnumDef {
                 .iter()
                 .map(|(i, tys)| (FirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
+            variant_ctors: Vec::new(),
         }
     }
 }
@@ -670,7 +717,7 @@ pub enum Expr {
         value: String,
     },
     EConstr {
-        constructor: Path,
+        constructor: ConstructorRef,
         args: Vec<ExprId>,
     },
     EStructLiteral {
@@ -781,7 +828,7 @@ pub enum Pat {
         value: String,
     },
     PConstr {
-        constructor: Path,
+        constructor: ConstructorRef,
         args: Vec<PatId>,
     },
     PStruct {
@@ -792,4 +839,125 @@ pub enum Pat {
         pats: Vec<PatId>,
     },
     PWild,
+}
+
+use std::collections::HashMap;
+
+#[derive(Debug, Clone)]
+pub struct ConstructorResolutionError {
+    pub path: Path,
+    pub kind: ConstructorResolutionErrorKind,
+}
+
+#[derive(Debug, Clone)]
+pub enum ConstructorResolutionErrorKind {
+    NotFound,
+    Ambiguous(Vec<ConstructorId>),
+}
+
+pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResolutionError> {
+    let mut errors = Vec::new();
+    let mut full_name_index: HashMap<String, ConstructorId> = HashMap::new();
+    let mut short_name_index: HashMap<String, Vec<ConstructorId>> = HashMap::new();
+
+    for def_id in 0..fir_table.defs.len() {
+        let def_id = DefId(def_id as u32);
+        if let Def::EnumDef(enum_def) = fir_table.def(def_id) {
+            let enum_name = enum_def.name.to_ident_name();
+            for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
+                if variant_idx < enum_def.variant_ctors.len() {
+                    let ctor_id = enum_def.variant_ctors[variant_idx];
+                    let variant_ident = variant_name.to_ident_name();
+                    let full_name = format!("{}::{}", enum_name, variant_ident);
+                    full_name_index.insert(full_name, ctor_id);
+                    short_name_index
+                        .entry(variant_ident)
+                        .or_default()
+                        .push(ctor_id);
+                }
+            }
+        }
+    }
+
+    let expr_count = fir_table.exprs.len();
+    for i in 0..expr_count {
+        let expr_id = ExprId(i as u32);
+        let expr = fir_table.expr(expr_id).clone();
+        if let Expr::EConstr { constructor, args } = expr {
+            if let ConstructorRef::Unresolved(path) = &constructor {
+                let resolved = resolve_constructor_path(
+                    path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                );
+                let new_expr = Expr::EConstr {
+                    constructor: resolved,
+                    args,
+                };
+                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
+                fir_table.exprs[idx] = new_expr;
+            }
+        }
+    }
+
+    let pat_count = fir_table.pats.len();
+    for i in 0..pat_count {
+        let pat_id = PatId(i as u32);
+        let pat = fir_table.pat(pat_id).clone();
+        if let Pat::PConstr { constructor, args } = pat {
+            if let ConstructorRef::Unresolved(path) = &constructor {
+                let resolved = resolve_constructor_path(
+                    path,
+                    &full_name_index,
+                    &short_name_index,
+                    &mut errors,
+                );
+                let new_pat = Pat::PConstr {
+                    constructor: resolved,
+                    args,
+                };
+                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
+                fir_table.pats[idx] = new_pat;
+            }
+        }
+    }
+
+    errors
+}
+
+fn resolve_constructor_path(
+    path: &Path,
+    full_name_index: &HashMap<String, ConstructorId>,
+    short_name_index: &HashMap<String, Vec<ConstructorId>>,
+    errors: &mut Vec<ConstructorResolutionError>,
+) -> ConstructorRef {
+    let path_str = path.display();
+
+    if let Some(&ctor_id) = full_name_index.get(&path_str) {
+        return ConstructorRef::Resolved(ctor_id);
+    }
+
+    if path.segments.len() == 1 {
+        let short_name = &path.segments[0].seg;
+        if let Some(ctors) = short_name_index.get(short_name) {
+            match ctors.len() {
+                0 => {}
+                1 => return ConstructorRef::Resolved(ctors[0]),
+                _ => {
+                    errors.push(ConstructorResolutionError {
+                        path: path.clone(),
+                        kind: ConstructorResolutionErrorKind::Ambiguous(ctors.clone()),
+                    });
+                    return ConstructorRef::Unresolved(path.clone());
+                }
+            }
+        }
+    }
+
+    errors.push(ConstructorResolutionError {
+        path: path.clone(),
+        kind: ConstructorResolutionErrorKind::NotFound,
+    });
+    ConstructorRef::Unresolved(path.clone())
 }

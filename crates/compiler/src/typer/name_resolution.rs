@@ -106,7 +106,22 @@ impl NameResolution {
                     def_names.insert(ext.name.0.clone(), id);
                     id
                 }
-                ast::Item::EnumDef(e) => fir_table.alloc_def(fir::Def::EnumDef(e.into())),
+                ast::Item::EnumDef(e) => {
+                    let enum_def_id = fir_table.alloc_def(fir::Def::EnumDef(e.into()));
+                    let variant_count = e.variants.len();
+                    let mut variant_ctors = Vec::with_capacity(variant_count);
+                    for variant_idx in 0..variant_count {
+                        let ctor_id = fir_table.alloc_constructor(fir::Constructor::EnumVariant {
+                            enum_def: enum_def_id,
+                            variant_idx,
+                        });
+                        variant_ctors.push(ctor_id);
+                    }
+                    if let fir::Def::EnumDef(enum_def) = fir_table.def_mut(enum_def_id) {
+                        enum_def.variant_ctors = variant_ctors;
+                    }
+                    enum_def_id
+                }
                 ast::Item::StructDef(s) => fir_table.alloc_def(fir::Def::StructDef(s.into())),
                 ast::Item::TraitDef(t) => fir_table.alloc_def(fir::Def::TraitDef(t.into())),
                 ast::Item::ImplBlock(_i) => {
@@ -278,7 +293,7 @@ impl NameResolution {
                     .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
                     .collect();
                 fir_table.alloc_expr(fir::Expr::EConstr {
-                    constructor: constructor.into(),
+                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
                     args: new_args,
                 })
             }
@@ -493,7 +508,7 @@ impl NameResolution {
                     .map(|arg| self.resolve_pat(arg, env, fir_table))
                     .collect();
                 fir_table.alloc_pat(fir::Pat::PConstr {
-                    constructor: constructor.into(),
+                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
                     args: new_args,
                 })
             }
