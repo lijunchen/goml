@@ -407,6 +407,10 @@ pub enum Expr {
         path: Path,
         astptr: MySyntaxNodePtr,
     },
+    EVar {
+        name: FirIdent,
+        astptr: MySyntaxNodePtr,
+    },
     EUnit,
     EBool {
         value: bool,

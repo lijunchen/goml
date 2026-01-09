@@ -147,23 +147,22 @@ impl NameResolution {
         global_funcs: &HashSet<String>,
         fir_table: &mut FirTable,
     ) -> fir::Expr {
+        let _ = global_funcs;
         match expr {
             ast::Expr::EPath { path, astptr } => {
                 // Only single-segment paths can be local variables
                 if path.len() == 1 {
                     let name = path.last_ident().unwrap();
                     if let Some(new_name) = env.rfind(name) {
-                        fir::Expr::EPath {
-                            path: fir::Path::from_ident(new_name.to_ident_name()),
+                        fir::Expr::EVar {
+                            name: new_name.clone(),
                             astptr: *astptr,
                         }
-                    } else if global_funcs.contains(&name.0) {
+                    } else {
                         fir::Expr::EPath {
                             path: path.into(),
                             astptr: *astptr,
                         }
-                    } else {
-                        panic!("Variable {} not found in environment", name.0);
                     }
                 } else {
                     // Multi-segment paths (like Type::method) are kept as-is
@@ -309,8 +308,8 @@ impl NameResolution {
                     ast::Expr::EPath { path, astptr } if path.len() == 1 => {
                         let name = path.last_ident().unwrap();
                         if let Some(new_name) = env.rfind(name) {
-                            fir::Expr::EPath {
-                                path: fir::Path::from_ident(new_name.to_ident_name()),
+                            fir::Expr::EVar {
+                                name: new_name.clone(),
                                 astptr: *astptr,
                             }
                         } else {

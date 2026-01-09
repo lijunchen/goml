@@ -23,6 +23,18 @@ impl Typer {
             fir::Expr::EPath { path, astptr } => {
                 self.infer_path_expr(genv, local_env, diagnostics, path, astptr)
             }
+            fir::Expr::EVar { name, astptr } => {
+                let name_ident = tast::TastIdent(name.to_ident_name());
+                if let Some(ty) = local_env.lookup_var(&name_ident) {
+                    tast::Expr::EVar {
+                        name: name.to_ident_name(),
+                        ty: ty.clone(),
+                        astptr: Some(*astptr),
+                    }
+                } else {
+                    panic!("Variable {} not found in environment", name.to_ident_name());
+                }
+            }
             fir::Expr::EUnit => tast::Expr::EPrim {
                 value: Prim::unit(),
                 ty: tast::Ty::TUnit,
@@ -311,17 +323,10 @@ impl Typer {
         path: &fir::Path,
         astptr: &MySyntaxNodePtr,
     ) -> tast::Expr {
+        let _ = local_env;
         if path.len() == 1 {
-            // Single segment path: variable or global function
             let name = path.last_ident().unwrap();
-            let name_ident = tast::TastIdent(name.clone());
-            if let Some(ty) = local_env.lookup_var(&name_ident) {
-                tast::Expr::EVar {
-                    name: name.clone(),
-                    ty: ty.clone(),
-                    astptr: Some(*astptr),
-                }
-            } else if let Some(func_ty) = genv.get_type_of_function(name.as_str()) {
+            if let Some(func_ty) = genv.get_type_of_function(name.as_str()) {
                 let inst_ty = self.inst_ty(&func_ty);
                 tast::Expr::EVar {
                     name: name.clone(),
@@ -1057,10 +1062,43 @@ impl Typer {
         args: &[fir::Expr],
     ) -> tast::Expr {
         match func {
+            fir::Expr::EVar { name, astptr } => {
+                let mut args_tast = Vec::new();
+                let mut arg_types = Vec::new();
+                for arg in args.iter() {
+                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, arg);
+                    arg_types.push(arg_tast.get_ty());
+                    args_tast.push(arg_tast);
+                }
+
+                let name_ident = tast::TastIdent(name.to_ident_name());
+                if let Some(var_ty) = local_env.lookup_var(&name_ident) {
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+                    self.push_constraint(Constraint::TypeEqual(
+                        var_ty.clone(),
+                        call_site_func_ty.clone(),
+                    ));
+
+                    tast::Expr::ECall {
+                        func: Box::new(tast::Expr::EVar {
+                            name: name.to_ident_name(),
+                            ty: var_ty.clone(),
+                            astptr: Some(*astptr),
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
+                    }
+                } else {
+                    panic!("Variable {} not found in environment", name.to_ident_name());
+                }
+            }
             fir::Expr::EPath { path, astptr } if path.len() == 1 => {
-                // Single segment path: variable or global function call
+                // Single segment path: global function call
                 let name = path.last_ident().unwrap();
-                let name_ident = tast::TastIdent(name.clone());
                 let mut args_tast = Vec::new();
                 let mut arg_types = Vec::new();
                 for arg in args.iter() {
@@ -1103,26 +1141,6 @@ impl Typer {
                         func: Box::new(tast::Expr::EVar {
                             name: name.clone(),
                             ty: inst_ty,
-                            astptr: Some(*astptr),
-                        }),
-                        args: args_tast,
-                        ty: ret_ty,
-                    }
-                } else if let Some(var_ty) = local_env.lookup_var(&name_ident) {
-                    let ret_ty = self.fresh_ty_var();
-                    let call_site_func_ty = tast::Ty::TFunc {
-                        params: arg_types,
-                        ret_ty: Box::new(ret_ty.clone()),
-                    };
-                    self.push_constraint(Constraint::TypeEqual(
-                        var_ty.clone(),
-                        call_site_func_ty.clone(),
-                    ));
-
-                    tast::Expr::ECall {
-                        func: Box::new(tast::Expr::EVar {
-                            name: name.clone(),
-                            ty: var_ty.clone(),
                             astptr: Some(*astptr),
                         }),
                         args: args_tast,

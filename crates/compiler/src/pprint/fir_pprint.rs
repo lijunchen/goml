@@ -98,6 +98,8 @@ impl Expr {
         match self {
             Self::EPath { path, astptr: _ } => RcDoc::text(path.display()),
 
+            Self::EVar { name, astptr: _ } => RcDoc::text(name.to_ident_name()),
+
             Self::EUnit => RcDoc::text("()"),
 
             Self::EBool { value } => {
