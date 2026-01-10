@@ -349,39 +349,31 @@ impl Typer {
                     panic!("Builtin {} not found in environment", hint);
                 }
             }
-            fir::NameRef::Unresolved(path) => {
-                self.infer_path_expr(genv, local_env, _diagnostics, path, astptr)
-            }
+            fir::NameRef::Unresolved(path) => self.infer_unresolved_path_expr(genv, path, astptr),
         }
     }
 
-    fn infer_path_expr(
+    fn infer_unresolved_path_expr(
         &mut self,
         genv: &GlobalTypeEnv,
-        local_env: &mut LocalTypeEnv,
-        _diagnostics: &mut Diagnostics,
         path: &fir::Path,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let _ = local_env;
         if path.len() == 1 {
             let name = path.last_ident().unwrap();
             if let Some(func_ty) = genv.get_type_of_function(name.as_str()) {
                 let inst_ty = self.inst_ty(&func_ty);
-                tast::Expr::EVar {
+                return tast::Expr::EVar {
                     name: name.clone(),
                     ty: inst_ty,
                     astptr,
-                }
-            } else {
-                panic!("Variable {} not found in environment", name);
+                };
             }
-        } else {
-            // Multi-segment path: Type::member
-            let type_name = path.parent_ident().unwrap();
-            let member = path.last_ident().unwrap();
-            self.infer_type_member_expr(genv, type_name, member, astptr)
+            panic!("Variable {} not found in environment", name);
         }
+        let type_name = path.parent_ident().unwrap();
+        let member = path.last_ident().unwrap();
+        self.infer_type_member_expr(genv, type_name, member, astptr)
     }
 
     fn infer_type_member_expr(
@@ -1255,7 +1247,7 @@ impl Typer {
                             _ => inst_ty.clone(),
                         };
 
-                        tast::Expr::ECall {
+                        return tast::Expr::ECall {
                             func: Box::new(tast::Expr::EVar {
                                 name: name.clone(),
                                 ty: inst_ty,
@@ -1263,109 +1255,94 @@ impl Typer {
                             }),
                             args: args_tast,
                             ty: ret_ty,
-                        }
-                    } else {
-                        self.infer_constructor_expr(
-                            genv,
-                            local_env,
-                            diagnostics,
-                            &fir::ConstructorRef::Unresolved(path.clone()),
-                            args,
-                        )
+                        };
+                    }
+                    panic!("Unresolved callee {}", path.display());
+                }
+                let type_name = path.parent_ident().unwrap();
+                let member = path.last_ident().unwrap();
+                let type_ident = tast::TastIdent(type_name.clone());
+                let member_ident = tast::TastIdent(member.clone());
+                if let Some(method_ty) = genv.lookup_trait_method(&type_ident, &member_ident) {
+                    let inst_method_ty = self.inst_ty(&method_ty);
+
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                        arg_types.push(arg_tast.get_ty());
+                        args_tast.push(arg_tast);
+                    }
+
+                    let ret_ty = self.fresh_ty_var();
+                    let call_site_func_ty = tast::Ty::TFunc {
+                        params: arg_types,
+                        ret_ty: Box::new(ret_ty.clone()),
+                    };
+
+                    self.push_constraint(Constraint::Overloaded {
+                        op: member_ident.clone(),
+                        trait_name: type_ident.clone(),
+                        call_site_type: call_site_func_ty.clone(),
+                    });
+
+                    return tast::Expr::ECall {
+                        func: Box::new(tast::Expr::ETraitMethod {
+                            trait_name: type_ident.clone(),
+                            method_name: member_ident.clone(),
+                            ty: inst_method_ty,
+                            astptr: None,
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
+                    };
+                }
+
+                let receiver_ty = if genv.enums().contains_key(&type_ident) {
+                    tast::Ty::TEnum {
+                        name: type_name.clone(),
+                    }
+                } else if genv.structs().contains_key(&type_ident) {
+                    tast::Ty::TStruct {
+                        name: type_name.clone(),
                     }
                 } else {
-                    let type_name = path.parent_ident().unwrap();
-                    let member = path.last_ident().unwrap();
-                    let type_ident = tast::TastIdent(type_name.clone());
-                    let member_ident = tast::TastIdent(member.clone());
-                    if let Some(method_ty) = genv.lookup_trait_method(&type_ident, &member_ident) {
-                        let inst_method_ty = self.inst_ty(&method_ty);
+                    panic!("Type or trait {} not found for member access", type_name);
+                };
+                if let Some(method_ty) = genv.lookup_inherent_method(&receiver_ty, &member_ident) {
+                    let inst_method_ty = self.inst_ty(&method_ty);
+                    if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
+                        if params.len() != args.len() {
+                            panic!(
+                                "Method {} expects {} arguments but got {}",
+                                member,
+                                params.len(),
+                                args.len()
+                            );
+                        }
 
-                        let mut args_tast = Vec::new();
-                        let mut arg_types = Vec::new();
-                        for arg in args.iter() {
-                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                            arg_types.push(arg_tast.get_ty());
+                        let mut args_tast = Vec::with_capacity(args.len());
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast =
+                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
                             args_tast.push(arg_tast);
                         }
 
-                        let ret_ty = self.fresh_ty_var();
-                        let call_site_func_ty = tast::Ty::TFunc {
-                            params: arg_types,
-                            ret_ty: Box::new(ret_ty.clone()),
-                        };
-
-                        self.push_constraint(Constraint::Overloaded {
-                            op: member_ident.clone(),
-                            trait_name: type_ident.clone(),
-                            call_site_type: call_site_func_ty.clone(),
-                        });
-
-                        return tast::Expr::ECall {
-                            func: Box::new(tast::Expr::ETraitMethod {
-                                trait_name: type_ident.clone(),
+                        tast::Expr::ECall {
+                            func: Box::new(tast::Expr::EInherentMethod {
+                                receiver_ty: receiver_ty.clone(),
                                 method_name: member_ident.clone(),
                                 ty: inst_method_ty,
                                 astptr: None,
                             }),
                             args: args_tast,
-                            ty: ret_ty,
-                        };
-                    }
-
-                    let receiver_ty = if genv.enums().contains_key(&type_ident) {
-                        tast::Ty::TEnum {
-                            name: type_name.clone(),
-                        }
-                    } else if genv.structs().contains_key(&type_ident) {
-                        tast::Ty::TStruct {
-                            name: type_name.clone(),
+                            ty: (*ret_ty).clone(),
                         }
                     } else {
-                        panic!("Type or trait {} not found for member access", type_name);
-                    };
-                    if let Some(method_ty) =
-                        genv.lookup_inherent_method(&receiver_ty, &member_ident)
-                    {
-                        let inst_method_ty = self.inst_ty(&method_ty);
-                        if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
-                            if params.len() != args.len() {
-                                panic!(
-                                    "Method {} expects {} arguments but got {}",
-                                    member,
-                                    params.len(),
-                                    args.len()
-                                );
-                            }
-
-                            let mut args_tast = Vec::with_capacity(args.len());
-                            for (arg, expected_ty) in args.iter().zip(params.iter()) {
-                                let arg_tast = self.check_expr(
-                                    genv,
-                                    local_env,
-                                    diagnostics,
-                                    *arg,
-                                    expected_ty,
-                                );
-                                args_tast.push(arg_tast);
-                            }
-
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::EInherentMethod {
-                                    receiver_ty: receiver_ty.clone(),
-                                    method_name: member_ident.clone(),
-                                    ty: inst_method_ty,
-                                    astptr: None,
-                                }),
-                                args: args_tast,
-                                ty: (*ret_ty).clone(),
-                            }
-                        } else {
-                            panic!("Type member {}::{} is not callable", type_name, member);
-                        }
-                    } else {
-                        panic!("Method {} not found for type {}", member, type_name);
+                        panic!("Type member {}::{} is not callable", type_name, member);
                     }
+                } else {
+                    panic!("Method {} not found for type {}", member, type_name);
                 }
             }
             fir::Expr::EField {
