@@ -438,24 +438,22 @@ impl Typer {
         args: &[fir::ExprId],
     ) -> tast::Expr {
         let constructor_path = match constructor_ref {
-            fir::ConstructorRef::Resolved(ctor_id) => {
-                let ctor = self.fir_table.constructor(*ctor_id);
-                match ctor {
-                    fir::Constructor::EnumVariant {
-                        enum_def,
-                        variant_idx,
-                    } => {
-                        if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def) {
-                            let enum_name = enum_def_data.name.to_ident_name();
-                            let variant_name =
-                                enum_def_data.variants[*variant_idx].0.to_ident_name();
-                            fir::Path::from_idents(vec![enum_name, variant_name])
-                        } else {
-                            panic!("Constructor points to non-enum DefId");
-                        }
+            fir::ConstructorRef::Resolved(ctor_id) => match ctor_id {
+                fir::ConstructorId::EnumVariant {
+                    enum_def,
+                    variant_idx,
+                } => {
+                    if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def) {
+                        let enum_name = enum_def_data.name.to_ident_name();
+                        let variant_name = enum_def_data.variants[*variant_idx as usize]
+                            .0
+                            .to_ident_name();
+                        fir::Path::from_idents(vec![enum_name, variant_name])
+                    } else {
+                        panic!("Constructor points to non-enum DefId");
                     }
                 }
-            }
+            },
             fir::ConstructorRef::Unresolved(path) => path.clone(),
         };
 
@@ -1759,26 +1757,23 @@ impl Typer {
                 args,
             } => {
                 let constructor_path = match &constructor_ref {
-                    fir::ConstructorRef::Resolved(ctor_id) => {
-                        let ctor = self.fir_table.constructor(*ctor_id);
-                        match ctor {
-                            fir::Constructor::EnumVariant {
-                                enum_def,
-                                variant_idx,
-                            } => {
-                                if let fir::Def::EnumDef(enum_def_data) =
-                                    self.fir_table.def(*enum_def)
-                                {
-                                    let enum_name = enum_def_data.name.to_ident_name();
-                                    let variant_name =
-                                        enum_def_data.variants[*variant_idx].0.to_ident_name();
-                                    fir::Path::from_idents(vec![enum_name, variant_name])
-                                } else {
-                                    panic!("Constructor points to non-enum DefId");
-                                }
+                    fir::ConstructorRef::Resolved(ctor_id) => match ctor_id {
+                        fir::ConstructorId::EnumVariant {
+                            enum_def,
+                            variant_idx,
+                        } => {
+                            if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def)
+                            {
+                                let enum_name = enum_def_data.name.to_ident_name();
+                                let variant_name = enum_def_data.variants[*variant_idx as usize]
+                                    .0
+                                    .to_ident_name();
+                                fir::Path::from_idents(vec![enum_name, variant_name])
+                            } else {
+                                panic!("Constructor points to non-enum DefId");
                             }
                         }
-                    }
+                    },
                     fir::ConstructorRef::Unresolved(path) => path.clone(),
                 };
 

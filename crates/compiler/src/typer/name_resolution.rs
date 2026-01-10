@@ -85,55 +85,70 @@ impl NameResolution {
         for item in ast.toplevels.iter() {
             let def_id = match item {
                 ast::Item::Fn(func) => {
-                    let id = fir_table.alloc_def(fir::Def::Fn(fir::Fn {
-                        attrs: Vec::new(),
-                        name: func.name.0.clone(),
-                        generics: Vec::new(),
-                        params: Vec::new(),
-                        ret_ty: None,
-                        body: fir::ExprId(0),
-                    }));
+                    let id = fir_table.alloc_def(
+                        func.name.0.clone(),
+                        fir::DefKind::Fn,
+                        fir::Def::Fn(fir::Fn {
+                            attrs: Vec::new(),
+                            name: func.name.0.clone(),
+                            generics: Vec::new(),
+                            params: Vec::new(),
+                            ret_ty: None,
+                            body: fir::ExprId(0),
+                        }),
+                    );
                     def_names.insert(func.name.0.clone(), id);
                     id
                 }
                 ast::Item::ExternGo(ext) => {
-                    let id = fir_table.alloc_def(fir::Def::ExternGo(ext.into()));
+                    let id = fir_table.alloc_def(
+                        ext.goml_name.0.clone(),
+                        fir::DefKind::ExternGo,
+                        fir::Def::ExternGo(ext.into()),
+                    );
                     def_names.insert(ext.goml_name.0.clone(), id);
                     id
                 }
                 ast::Item::ExternBuiltin(ext) => {
-                    let id = fir_table.alloc_def(fir::Def::ExternBuiltin(ext.into()));
+                    let id = fir_table.alloc_def(
+                        ext.name.0.clone(),
+                        fir::DefKind::ExternBuiltin,
+                        fir::Def::ExternBuiltin(ext.into()),
+                    );
                     def_names.insert(ext.name.0.clone(), id);
                     id
                 }
-                ast::Item::EnumDef(e) => {
-                    let enum_def_id = fir_table.alloc_def(fir::Def::EnumDef(e.into()));
-                    let variant_count = e.variants.len();
-                    let mut variant_ctors = Vec::with_capacity(variant_count);
-                    for variant_idx in 0..variant_count {
-                        let ctor_id = fir_table.alloc_constructor(fir::Constructor::EnumVariant {
-                            enum_def: enum_def_id,
-                            variant_idx,
-                        });
-                        variant_ctors.push(ctor_id);
-                    }
-                    if let fir::Def::EnumDef(enum_def) = fir_table.def_mut(enum_def_id) {
-                        enum_def.variant_ctors = variant_ctors;
-                    }
-                    enum_def_id
-                }
-                ast::Item::StructDef(s) => fir_table.alloc_def(fir::Def::StructDef(s.into())),
-                ast::Item::TraitDef(t) => fir_table.alloc_def(fir::Def::TraitDef(t.into())),
-                ast::Item::ImplBlock(_i) => {
-                    fir_table.alloc_def(fir::Def::ImplBlock(fir::ImplBlock {
+                ast::Item::EnumDef(e) => fir_table.alloc_def(
+                    e.name.0.clone(),
+                    fir::DefKind::EnumDef,
+                    fir::Def::EnumDef(e.into()),
+                ),
+                ast::Item::StructDef(s) => fir_table.alloc_def(
+                    s.name.0.clone(),
+                    fir::DefKind::StructDef,
+                    fir::Def::StructDef(s.into()),
+                ),
+                ast::Item::TraitDef(t) => fir_table.alloc_def(
+                    t.name.0.clone(),
+                    fir::DefKind::TraitDef,
+                    fir::Def::TraitDef(t.into()),
+                ),
+                ast::Item::ImplBlock(_i) => fir_table.alloc_def(
+                    "impl".to_string(),
+                    fir::DefKind::ImplBlock,
+                    fir::Def::ImplBlock(fir::ImplBlock {
                         attrs: Vec::new(),
                         generics: Vec::new(),
                         trait_name: None,
                         for_type: fir::TypeExpr::TUnit,
                         methods: Vec::new(),
-                    }))
-                }
-                ast::Item::ExternType(ext) => fir_table.alloc_def(fir::Def::ExternType(ext.into())),
+                    }),
+                ),
+                ast::Item::ExternType(ext) => fir_table.alloc_def(
+                    ext.goml_name.0.clone(),
+                    fir::DefKind::ExternType,
+                    fir::Def::ExternType(ext.into()),
+                ),
             };
             toplevels.push(def_id);
         }
@@ -149,6 +164,7 @@ impl NameResolution {
                 ast::Item::Fn(func) => {
                     let def_id = toplevels[toplevels_idx];
                     toplevels_idx += 1;
+                    fir_table.set_current_owner(def_id);
                     let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table);
                     *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
                 }
@@ -184,8 +200,22 @@ impl NameResolution {
         ctx: &ResolutionContext,
         fir_table: &mut FirTable,
     ) -> fir::DefId {
+        let def_id = fir_table.alloc_def(
+            func.name.0.clone(),
+            fir::DefKind::Fn,
+            fir::Def::Fn(fir::Fn {
+                attrs: Vec::new(),
+                name: func.name.0.clone(),
+                generics: Vec::new(),
+                params: Vec::new(),
+                ret_ty: None,
+                body: fir::ExprId(0),
+            }),
+        );
+        fir_table.set_current_owner(def_id);
         let func = self.resolve_fn(func, ctx, fir_table);
-        fir_table.alloc_def(fir::Def::Fn(func))
+        *fir_table.def_mut(def_id) = fir::Def::Fn(func);
+        def_id
     }
 
     fn resolve_fn(
