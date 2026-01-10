@@ -1,15 +1,27 @@
 use expect_test::{Expect, expect};
+use std::path::Path;
+use tempfile::tempdir;
 
 use crate::query::{dot_completions, hover_type};
 
 fn check(src: &str, line: u32, col: u32, expected: Expect) {
-    let result = hover_type(src, line, col);
+    let result = hover_type(Path::new("dummy"), src, line, col);
     expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
 }
 
 fn check_completions(src: &str, line: u32, col: u32, expected: Expect) {
-    let result = dot_completions(src, line, col).unwrap_or_default();
+    let result = dot_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
     expected.assert_debug_eq(&result);
+}
+
+fn check_completions_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
+    let result = dot_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
+    let result = hover_type(path, src, line, col);
+    expected.assert_debug_eq(&result.unwrap_or("<None>".to_string()));
 }
 
 #[test]
@@ -105,6 +117,89 @@ fn main() {
                     kind: Method,
                     detail: Some(
                         "(int32) -> string",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn multi_package_query() {
+    let dir = tempdir().unwrap();
+    let lib_dir = dir.path().join("Lib");
+    std::fs::create_dir_all(&lib_dir).unwrap();
+
+    let lib_src = r#"package Lib
+
+enum Color {
+    Red,
+    Green,
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+fn color_to_int(c: Color) -> int32 {
+    match c {
+        Color::Red => 1,
+        Color::Green => 2,
+    }
+}
+"#;
+    let lib_path = lib_dir.join("main.gom");
+    std::fs::write(&lib_path, lib_src).unwrap();
+
+    let hover_src = r#"package Main
+import Lib
+
+fn main() {
+    let f = Lib::color_to_int;
+    let i = f(Lib::Color::Red);
+    let _ = i;
+    let p = Lib::Point { x: 1, y: 2 };
+}
+"#;
+    let completion_src = r#"package Main
+import Lib
+
+fn main() {
+    let f = Lib::color_to_int;
+    let i = f(Lib::Color::Red);
+    let _ = i;
+    let p = Lib::Point { x: 1, y: 2 };
+    p.
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, hover_src).unwrap();
+
+    check_with_path(&main_path, hover_src, 4, 17, expect![[r#"
+        "(Lib::Color) -> int32"
+    "#]]);
+
+    check_completions_with_path(
+        &main_path,
+        completion_src,
+        8,
+        6,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "x",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "y",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
                     ),
                 },
             ]

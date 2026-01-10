@@ -563,3 +563,60 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         go,
     })
 }
+
+pub fn typecheck_with_packages(
+    path: &Path,
+    src: &str,
+) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
+    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+
+    let root_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let mut all_files = Vec::new();
+    let mut queue = Vec::new();
+    let mut loaded = HashSet::new();
+
+    let entry_package = load_package(root_dir, Some(path), Some(entry_ast.clone()))?;
+    loaded.insert(entry_package.name.clone());
+    queue.extend(collect_imports(&entry_package.files));
+    all_files.extend(entry_package.files);
+
+    while let Some(package_name) = queue.pop() {
+        if loaded.contains(&package_name) {
+            continue;
+        }
+        let package_dir = root_dir.join(&package_name);
+        let package = load_package(&package_dir, None, None)?;
+        if package.name != package_name {
+            return Err(compile_error(format!(
+                "package directory {} declares package {}, expected {}",
+                package_dir.display(),
+                package.name,
+                package_name
+            )));
+        }
+        loaded.insert(package.name.clone());
+        queue.extend(collect_imports(&package.files));
+        all_files.extend(package.files);
+    }
+
+    let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
+    let all_files = all_files
+        .into_iter()
+        .map(|file| {
+            let local = ctor_names_by_package
+                .get(&file.package.0)
+                .cloned()
+                .unwrap_or_default();
+            promote_constructors_in_file(file, &local, &global_ctor_names)
+        })
+        .collect();
+    let (fir, fir_table) = fir::lower_to_fir_files(all_files);
+
+    let (tast, genv, diagnostics) =
+        typer::check_file_with_env(fir, fir_table, GlobalTypeEnv::new());
+
+    Ok((tast, genv, diagnostics))
+}
