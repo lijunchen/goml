@@ -1,20 +1,16 @@
-use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashMap, HashSet};
-use std::hash::{Hash, Hasher};
 use std::path::Path;
-use std::sync::{Mutex, OnceLock};
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
 use diagnostics::Diagnostics;
-use indexmap::IndexMap;
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::{
     anf::{self, GlobalAnfEnv},
     compile_match, derive,
-    env::{self, FnOrigin, FnScheme, Gensym, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
+    env::{Gensym, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
     fir,
     go::{self, compile::GlobalGoEnv, goast},
     lift::{self, GlobalLiftEnv, LiftFile},
@@ -81,64 +77,6 @@ struct PackageExports {
 }
 
 impl PackageExports {
-    fn from_delta(base: &GlobalTypeEnv, full: &GlobalTypeEnv) -> Self {
-        let mut type_env = TypeEnv::new();
-        for (name, def) in full.type_env.enums.iter() {
-            if !base.type_env.enums.contains_key(name) {
-                type_env.enums.insert(name.clone(), def.clone());
-            }
-        }
-        for (name, def) in full.type_env.structs.iter() {
-            if !base.type_env.structs.contains_key(name) {
-                type_env.structs.insert(name.clone(), def.clone());
-            }
-        }
-        for (name, def) in full.type_env.extern_types.iter() {
-            if !base.type_env.extern_types.contains_key(name) {
-                type_env.extern_types.insert(name.clone(), def.clone());
-            }
-        }
-
-        let mut trait_env = TraitEnv {
-            trait_defs: IndexMap::new(),
-            trait_impls: IndexMap::new(),
-            inherent_impls: IndexMap::new(),
-        };
-        for (name, def) in full.trait_env.trait_defs.iter() {
-            if !base.trait_env.trait_defs.contains_key(name) {
-                trait_env.trait_defs.insert(name.clone(), def.clone());
-            }
-        }
-        for (key, def) in full.trait_env.trait_impls.iter() {
-            if !base.trait_env.trait_impls.contains_key(key) {
-                trait_env.trait_impls.insert(key.clone(), def.clone());
-            }
-        }
-        for (key, def) in full.trait_env.inherent_impls.iter() {
-            if !base.trait_env.inherent_impls.contains_key(key) {
-                trait_env.inherent_impls.insert(key.clone(), def.clone());
-            }
-        }
-
-        let mut value_env = ValueEnv::new();
-        for (name, scheme) in full.value_env.funcs.iter() {
-            if !base.value_env.funcs.contains_key(name) {
-                value_env.funcs.insert(name.clone(), scheme.clone());
-            }
-        }
-        for (name, func) in full.value_env.extern_funcs.iter() {
-            if !base.value_env.extern_funcs.contains_key(name) {
-                value_env.extern_funcs.insert(name.clone(), func.clone());
-            }
-        }
-
-        Self {
-            type_env,
-            trait_env,
-            value_env,
-        }
-    }
-
     fn apply_to(&self, genv: &mut GlobalTypeEnv) {
         for (name, def) in self.type_env.enums.iter() {
             genv.type_env.enums.insert(name.clone(), def.clone());
@@ -170,55 +108,15 @@ impl PackageExports {
         }
     }
 
-    fn hash(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
-        hash_type_env(&self.type_env, &mut hasher);
-        hash_trait_env(&self.trait_env, &mut hasher);
-        hash_value_env(&self.value_env, &mut hasher);
-        hasher.finish()
-    }
 }
 
 #[derive(Debug, Clone)]
 struct PackageArtifact {
     tast: tast::File,
     exports: PackageExports,
-    exports_hash: u64,
     ctor_names: HashSet<String>,
     diagnostics: Diagnostics,
 }
-
-#[derive(Debug, Clone)]
-struct PackageCacheEntry {
-    fingerprint: u64,
-    artifact: PackageArtifact,
-}
-
-#[derive(Debug, Default)]
-struct PackageCache {
-    entries: HashMap<String, PackageCacheEntry>,
-}
-
-impl PackageCache {
-    fn get(&self, name: &str, fingerprint: u64) -> Option<PackageArtifact> {
-        self.entries
-            .get(name)
-            .filter(|entry| entry.fingerprint == fingerprint)
-            .map(|entry| entry.artifact.clone())
-    }
-
-    fn insert(&mut self, name: String, fingerprint: u64, artifact: PackageArtifact) {
-        self.entries.insert(
-            name,
-            PackageCacheEntry {
-                fingerprint,
-                artifact,
-            },
-        );
-    }
-}
-
-static PACKAGE_CACHE: OnceLock<Mutex<PackageCache>> = OnceLock::new();
 
 #[derive(Debug)]
 struct TypecheckPackagesResult {
@@ -239,116 +137,6 @@ fn compile_error(message: String) -> CompilationError {
     CompilationError::Compile { diagnostics }
 }
 
-fn hash_fn_scheme(scheme: &FnScheme, hasher: &mut DefaultHasher) {
-    scheme.type_params.hash(hasher);
-    scheme.ty.hash(hasher);
-    let origin = match scheme.origin {
-        FnOrigin::User => 0u8,
-        FnOrigin::Builtin => 1u8,
-        FnOrigin::Compiler => 2u8,
-    };
-    origin.hash(hasher);
-}
-
-fn hash_impl_def(def: &env::ImplDef, hasher: &mut DefaultHasher) {
-    def.params.hash(hasher);
-    let mut keys: Vec<_> = def.methods.keys().collect();
-    keys.sort();
-    for key in keys {
-        key.hash(hasher);
-        let scheme = def.methods.get(key).expect("missing impl method");
-        hash_fn_scheme(scheme, hasher);
-    }
-}
-
-fn hash_trait_env(env: &TraitEnv, hasher: &mut DefaultHasher) {
-    let mut trait_names: Vec<_> = env.trait_defs.keys().collect();
-    trait_names.sort();
-    for name in trait_names {
-        name.hash(hasher);
-        let def = env.trait_defs.get(name).expect("missing trait def");
-        let mut method_names: Vec<_> = def.methods.keys().collect();
-        method_names.sort();
-        for method in method_names {
-            method.hash(hasher);
-            let scheme = def.methods.get(method).expect("missing trait method");
-            hash_fn_scheme(scheme, hasher);
-        }
-    }
-
-    let mut impl_keys: Vec<_> = env.trait_impls.keys().collect();
-    impl_keys.sort();
-    for key in impl_keys {
-        key.hash(hasher);
-        let def = env.trait_impls.get(key).expect("missing trait impl");
-        hash_impl_def(def, hasher);
-    }
-
-    let mut inherent_keys: Vec<_> = env.inherent_impls.keys().collect();
-    inherent_keys.sort();
-    for key in inherent_keys {
-        key.hash(hasher);
-        let def = env.inherent_impls.get(key).expect("missing inherent impl");
-        hash_impl_def(def, hasher);
-    }
-}
-
-fn hash_type_env(env: &TypeEnv, hasher: &mut DefaultHasher) {
-    let mut enum_names: Vec<_> = env.enums.keys().collect();
-    enum_names.sort_by(|a, b| a.0.cmp(&b.0));
-    for name in enum_names {
-        name.hash(hasher);
-        let def = env.enums.get(name).expect("missing enum def");
-        def.name.hash(hasher);
-        def.generics.hash(hasher);
-        for (variant, tys) in def.variants.iter() {
-            variant.hash(hasher);
-            tys.hash(hasher);
-        }
-    }
-
-    let mut struct_names: Vec<_> = env.structs.keys().collect();
-    struct_names.sort_by(|a, b| a.0.cmp(&b.0));
-    for name in struct_names {
-        name.hash(hasher);
-        let def = env.structs.get(name).expect("missing struct def");
-        def.name.hash(hasher);
-        def.generics.hash(hasher);
-        for (field, ty) in def.fields.iter() {
-            field.hash(hasher);
-            ty.hash(hasher);
-        }
-    }
-
-    let mut extern_names: Vec<_> = env.extern_types.keys().collect();
-    extern_names.sort();
-    for name in extern_names {
-        name.hash(hasher);
-        let def = env.extern_types.get(name).expect("missing extern type");
-        def.go_name.hash(hasher);
-        def.package_path.hash(hasher);
-    }
-}
-
-fn hash_value_env(env: &ValueEnv, hasher: &mut DefaultHasher) {
-    let mut func_names: Vec<_> = env.funcs.keys().collect();
-    func_names.sort();
-    for name in func_names {
-        name.hash(hasher);
-        let scheme = env.funcs.get(name).expect("missing func");
-        hash_fn_scheme(scheme, hasher);
-    }
-
-    let mut extern_names: Vec<_> = env.extern_funcs.keys().collect();
-    extern_names.sort();
-    for name in extern_names {
-        name.hash(hasher);
-        let func = env.extern_funcs.get(name).expect("missing extern func");
-        func.package_path.hash(hasher);
-        func.go_name.hash(hasher);
-        func.ty.hash(hasher);
-    }
-}
 
 fn parse_ast_from_source(
     path: &Path,
@@ -693,29 +481,18 @@ fn typecheck_package(
         .collect();
     let (fir, fir_table) = fir::lower_to_fir_files(files);
     let (tast, genv, diagnostics) = typer::check_file_with_env(fir, fir_table, base_env.clone());
-    let exports = PackageExports::from_delta(base_env, &genv);
-    let exports_hash = exports.hash();
+    let exports = PackageExports {
+        type_env: genv.type_env.clone(),
+        trait_env: genv.trait_env.clone(),
+        value_env: genv.value_env.clone(),
+    };
 
     PackageArtifact {
         tast,
         exports,
-        exports_hash,
         ctor_names: local_ctor_names,
         diagnostics,
     }
-}
-
-fn compute_source_hashes(
-    graph: &packages::PackageGraph,
-    entry_path: &Path,
-    entry_src: &str,
-) -> Result<HashMap<String, u64>, CompilationError> {
-    let mut hashes = HashMap::new();
-    for name in graph.packages.keys() {
-        let hash = packages::package_hash(graph, name, Some(entry_path), Some(entry_src))?;
-        hashes.insert(name.clone(), hash);
-    }
-    Ok(hashes)
 }
 
 fn compute_dependency_sets(
@@ -762,7 +539,6 @@ fn compute_dependency_sets(
 
 fn typecheck_packages(
     path: &Path,
-    src: &str,
     entry_ast: ast::File,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
     let root_dir = path
@@ -771,78 +547,47 @@ fn typecheck_packages(
         .unwrap_or_else(|| Path::new("."));
     let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
-    let source_hashes = compute_source_hashes(&graph, path, src)?;
     let dependency_sets = compute_dependency_sets(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = GlobalTypeEnv::new();
     let mut exports_by_name: HashMap<String, PackageExports> = HashMap::new();
     let mut ctor_names_by_package: HashMap<String, HashSet<String>> = HashMap::new();
-    let mut exports_hashes: HashMap<String, u64> = HashMap::new();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
-    let cache = PACKAGE_CACHE.get_or_init(|| Mutex::new(PackageCache::default()));
 
     for name in order.iter() {
         let package = graph
             .packages
             .get(name)
             .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
-        let source_hash = *source_hashes
+        let deps = dependency_sets
             .get(name)
-            .ok_or_else(|| compile_error(format!("hash missing for package {}", name)))?;
-        let mut direct_deps: Vec<String> = package.imports.iter().cloned().collect();
-        direct_deps.sort();
-        let mut hasher = DefaultHasher::new();
-        name.hash(&mut hasher);
-        source_hash.hash(&mut hasher);
-        for dep in direct_deps {
-            dep.hash(&mut hasher);
-            let dep_hash = exports_hashes
-                .get(&dep)
-                .ok_or_else(|| compile_error(format!("missing exports for package {}", dep)))?;
-            dep_hash.hash(&mut hasher);
-        }
-        let fingerprint = hasher.finish();
-
-        let cached = { cache.lock().unwrap().get(name, fingerprint) };
-        let artifact = if let Some(artifact) = cached {
-            artifact
-        } else {
-            let deps = dependency_sets
-                .get(name)
-                .ok_or_else(|| compile_error(format!("missing deps for package {}", name)))?;
-            let mut base_env = GlobalTypeEnv::new();
-            for dep in order.iter() {
-                if deps.contains(dep) {
-                    let exports = exports_by_name.get(dep).ok_or_else(|| {
-                        compile_error(format!("missing exports for package {}", dep))
-                    })?;
-                    exports.apply_to(&mut base_env);
-                }
-            }
-
-            let mut deps_ctor_names = HashSet::new();
-            for dep in deps.iter() {
-                let names = ctor_names_by_package.get(dep).ok_or_else(|| {
-                    compile_error(format!("missing constructors for package {}", dep))
+            .ok_or_else(|| compile_error(format!("missing deps for package {}", name)))?;
+        let mut base_env = GlobalTypeEnv::new();
+        for dep in order.iter() {
+            if deps.contains(dep) {
+                let exports = exports_by_name.get(dep).ok_or_else(|| {
+                    compile_error(format!("missing exports for package {}", dep))
                 })?;
-                deps_ctor_names.extend(names.iter().cloned());
+                exports.apply_to(&mut base_env);
             }
+        }
 
-            let artifact = typecheck_package(package, &base_env, &deps_ctor_names);
-            cache
-                .lock()
-                .unwrap()
-                .insert(name.clone(), fingerprint, artifact.clone());
-            artifact
-        };
+        let mut deps_ctor_names = HashSet::new();
+        for dep in deps.iter() {
+            let names = ctor_names_by_package.get(dep).ok_or_else(|| {
+                compile_error(format!("missing constructors for package {}", dep))
+            })?;
+            deps_ctor_names.extend(names.iter().cloned());
+        }
+
+        let artifact = typecheck_package(package, &base_env, &deps_ctor_names);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
         artifact.exports.apply_to(&mut genv);
         exports_by_name.insert(name.clone(), artifact.exports.clone());
         ctor_names_by_package.insert(name.clone(), artifact.ctor_names.clone());
-        exports_hashes.insert(name.clone(), artifact.exports_hash);
         artifacts_by_name.insert(name.clone(), artifact);
     }
 
@@ -872,7 +617,7 @@ fn typecheck_packages(
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
-    let typecheck = typecheck_packages(path, src, entry_ast.clone())?;
+    let typecheck = typecheck_packages(path, entry_ast.clone())?;
     let TypecheckPackagesResult {
         full_tast,
         genv,
@@ -950,6 +695,6 @@ pub fn typecheck_with_packages(
     src: &str,
 ) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
     let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
-    let result = typecheck_packages(path, src, entry_ast)?;
+    let result = typecheck_packages(path, entry_ast)?;
     Ok((result.entry_tast, result.genv, result.diagnostics))
 }
