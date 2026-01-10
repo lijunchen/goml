@@ -4,7 +4,7 @@ use crate::{
     env::{EnumDef, Gensym, GlobalTypeEnv, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    mangle::{encode_ty, mangle_inherent_name},
+    mangle::{encode_ty, mangle_ident, mangle_inherent_name},
     tast::{self, TastIdent},
 };
 
@@ -172,7 +172,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
-            name: name.clone(),
+            name: mangle_ident(name),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::ImmPrim { value, .. } => {
@@ -265,7 +265,7 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
         }
     }
     if count > 1 {
-        format!("{}_{}", enum_name, variant_name)
+        format!("{}_{}", mangle_ident(enum_name), variant_name)
     } else {
         variant_name.to_string()
     }
@@ -1635,10 +1635,11 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
 
     let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
 
-    let patched_name = if f.name == "main" {
+    let is_entry = f.name == "main" || f.name.ends_with("::main");
+    let patched_name = if is_entry {
         "main0".to_string()
     } else {
-        f.name.clone()
+        mangle_ident(&f.name)
     };
 
     let body = f.body;
@@ -1817,7 +1818,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             })
             .collect();
         defs.push(goast::Item::Struct(goast::Struct {
-            name: name.0.clone(),
+            name: mangle_ident(&name.0),
             fields,
             methods: vec![],
         }));
@@ -1833,10 +1834,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         if has_type_param {
             continue;
         }
-        let type_identifier_method = format!("is{}", name.0);
+        let type_identifier_method = format!("is{}", mangle_ident(&name.0));
 
         defs.push(goast::Item::Interface(goast::Interface {
-            name: name.0.clone(),
+            name: mangle_ident(&name.0),
             methods: vec![goast::MethodElem {
                 name: type_identifier_method.clone(),
                 params: vec![],
@@ -1880,7 +1881,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                 name: format!("{}.{}", alias, ext.go_name),
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
-                name: name.clone(),
+                name: mangle_ident(name),
                 ty: go_ty,
             }));
         }

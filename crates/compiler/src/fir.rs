@@ -3,11 +3,15 @@ use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 
-pub fn lower_to_fir(ast: ast::File) -> (File, FirTable) {
+pub fn lower_to_fir_files(files: Vec<ast::File>) -> (File, FirTable) {
     use crate::typer::name_resolution::NameResolution;
-    let (fir, mut fir_table) = NameResolution::default().resolve_file(ast);
+    let (fir, mut fir_table) = NameResolution::default().resolve_files(files);
     let _ctor_errors = resolve_constructors(&mut fir_table);
     (fir, fir_table)
+}
+
+pub fn lower_to_fir(ast: ast::File) -> (File, FirTable) {
+    lower_to_fir_files(vec![ast])
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -190,6 +194,19 @@ impl FirTable {
 
     pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
         let path = Path::from_ident(name);
+        let key = DefKey {
+            path,
+            kind,
+            disamb: 0,
+        };
+
+        let id = DefId(self.def_data.len() as u32);
+        self.def_interner.insert(key, id);
+        self.def_data.push(def);
+        id
+    }
+
+    pub fn alloc_def_with_path(&mut self, path: Path, kind: DefKind, def: Def) -> DefId {
         let key = DefKey {
             path,
             kind,
@@ -469,7 +486,7 @@ pub enum TypeExpr {
         typs: Vec<TypeExpr>,
     },
     TCon {
-        name: String,
+        path: Path,
     },
     TApp {
         ty: Box<TypeExpr>,
@@ -504,7 +521,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
             ast::TypeExpr::TTuple { typs } => TypeExpr::TTuple {
                 typs: typs.iter().map(|t| t.into()).collect(),
             },
-            ast::TypeExpr::TCon { name } => TypeExpr::TCon { name: name.clone() },
+            ast::TypeExpr::TCon { path } => TypeExpr::TCon { path: path.into() },
             ast::TypeExpr::TApp { ty, args } => TypeExpr::TApp {
                 ty: Box::new(ty.as_ref().into()),
                 args: args.iter().map(|a| a.into()).collect(),
@@ -986,6 +1003,24 @@ fn resolve_constructor_path(
 
     if let Some(&ctor_id) = full_name_index.get(&path_str) {
         return ConstructorRef::Resolved(ctor_id);
+    }
+
+    if path.segments.len() >= 2 {
+        let suffix = format!("::{}", path_str);
+        let matches: Vec<ConstructorId> = full_name_index
+            .iter()
+            .filter_map(|(key, ctor)| key.ends_with(&suffix).then_some(*ctor))
+            .collect();
+        if matches.len() == 1 {
+            return ConstructorRef::Resolved(matches[0]);
+        }
+        if matches.len() > 1 {
+            errors.push(ConstructorResolutionError {
+                path: path.clone(),
+                kind: ConstructorResolutionErrorKind::Ambiguous(matches),
+            });
+            return ConstructorRef::Unresolved(path.clone());
+        }
     }
 
     if path.segments.len() == 1 {

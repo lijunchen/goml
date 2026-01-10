@@ -46,7 +46,7 @@ impl TypeExpr {
 
                 doc.append(RcDoc::text(")"))
             }
-            Self::TCon { name } => RcDoc::text(name.clone()),
+            Self::TCon { path } => RcDoc::text(path.display()),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
                 if !args.is_empty() {
@@ -796,11 +796,29 @@ impl ExternBuiltin {
 
 impl File {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        RcDoc::concat(self.toplevels.iter().map(|item| {
+        let mut docs = Vec::new();
+        docs.push(
+            RcDoc::text("package")
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.package.0.clone()))
+                .append(RcDoc::hardline()),
+        );
+        if !self.imports.is_empty() {
+            let import_docs = RcDoc::concat(self.imports.iter().map(|import| {
+                RcDoc::text("import")
+                    .append(RcDoc::space())
+                    .append(RcDoc::text(import.0.clone()))
+                    .append(RcDoc::hardline())
+            }));
+            docs.push(import_docs);
+            docs.push(RcDoc::hardline());
+        }
+        docs.push(RcDoc::concat(self.toplevels.iter().map(|item| {
             item.to_doc()
                 .append(RcDoc::hardline())
                 .append(RcDoc::hardline())
-        }))
+        })));
+        RcDoc::concat(docs)
     }
 
     pub fn to_pretty(&self, width: usize) -> String {

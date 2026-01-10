@@ -225,6 +225,12 @@ pub enum TokenKind {
     #[token("extern")]
     ExternKeyword,
 
+    #[token("package")]
+    PackageKeyword,
+
+    #[token("import")]
+    ImportKeyword,
+
     #[token("fn")]
     FnKeyword,
 
@@ -416,6 +422,8 @@ impl std::fmt::Display for TokenKind {
             Self::NotEq => "!=",
             Self::Pound => "#",
             Self::ExternKeyword => "extern",
+            Self::PackageKeyword => "package",
+            Self::ImportKeyword => "import",
             Self::EnumKeyword => "enum",
             Self::StructKeyword => "struct",
             Self::TypeKeyword => "type",
@@ -503,6 +511,8 @@ macro_rules! T {
     [!=] => { $crate::TokenKind::NotEq };
     [#] => { $crate::TokenKind::Pound };
     [extern] => { $crate::TokenKind::ExternKeyword };
+    [package] => { $crate::TokenKind::PackageKeyword };
+    [import] => { $crate::TokenKind::ImportKeyword };
     [fn] => { $crate::TokenKind::FnKeyword };
     [trait] => { $crate::TokenKind::TraitKeyword };
     [impl] => { $crate::TokenKind::ImplKeyword };

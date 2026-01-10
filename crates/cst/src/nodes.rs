@@ -48,6 +48,14 @@ impl File {
         support::children(&self.syntax)
     }
 
+    pub fn package_decl(&self) -> Option<PackageDecl> {
+        support::child(&self.syntax)
+    }
+
+    pub fn import_decls(&self) -> CstChildren<ImportDecl> {
+        support::children(&self.syntax)
+    }
+
     pub fn expr(&self) -> Option<Expr> {
         support::child(&self.syntax)
     }
@@ -55,6 +63,38 @@ impl File {
 
 impl_cst_node_simple!(File, MySyntaxKind::FILE);
 impl_display_via_syntax!(File);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PackageDecl {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl PackageDecl {
+    pub fn name_token(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+}
+
+impl_cst_node_simple!(PackageDecl, MySyntaxKind::PACKAGE);
+impl_display_via_syntax!(PackageDecl);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ImportDecl {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ImportDecl {
+    pub fn name_token(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+}
+
+impl_cst_node_simple!(ImportDecl, MySyntaxKind::IMPORT);
+impl_display_via_syntax!(ImportDecl);
 
 ////////////////////////////////////////////////////////////////////////////////
 

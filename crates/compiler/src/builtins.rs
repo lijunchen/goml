@@ -32,9 +32,10 @@ fn parse_builtin_ast() -> ast::File {
     let root = MySyntaxNode::new_root(parse_result.green_node);
     let cst = CstFile::cast(root).expect("failed to cast CST file");
     let lower_result = lower::lower(cst);
-    let ast_file = lower_result
+    let mut ast_file = lower_result
         .into_result()
         .expect("failed to lower builtin.gom AST");
+    ast_file.package = ast::AstIdent::new("Builtin");
 
     match derive::expand(ast_file) {
         Ok(ast) => ast,

@@ -14,6 +14,8 @@ const SELF_PARAM_NAME: &str = "self";
 pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
     let mut toplevels = Vec::with_capacity(ast.toplevels.len());
+    let package = ast.package.clone();
+    let imports = ast.imports.clone();
 
     for item in ast.toplevels.into_iter() {
         let mut derived_impls = Vec::new();
@@ -58,7 +60,11 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     if diagnostics.has_errors() {
         Err(diagnostics)
     } else {
-        Ok(ast::File { toplevels })
+        Ok(ast::File {
+            package,
+            imports,
+            toplevels,
+        })
     }
 }
 
@@ -547,7 +553,7 @@ fn var_expr(name: &AstIdent, attr_ptr: &MySyntaxNodePtr) -> Expr {
 
 fn ty_for_ident(name: &AstIdent) -> ast::TypeExpr {
     ast::TypeExpr::TCon {
-        name: name.0.clone(),
+        path: ast::Path::from_ident(name.clone()),
     }
 }
 

@@ -371,9 +371,14 @@ impl Typer {
             }
             panic!("Variable {} not found in environment", name);
         }
-        let type_name = path.parent_ident().unwrap();
+        let namespace = path.namespace_segments();
+        let type_name = namespace
+            .iter()
+            .map(|seg| seg.seg().clone())
+            .collect::<Vec<_>>()
+            .join("::");
         let member = path.last_ident().unwrap();
-        self.infer_type_member_expr(genv, type_name, member, astptr)
+        self.infer_type_member_expr(genv, &type_name, member, astptr)
     }
 
     fn infer_type_member_expr(
@@ -383,13 +388,18 @@ impl Typer {
         member: &str,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let type_ident = tast::TastIdent(type_name.to_string());
+        let type_name = resolve_type_name(genv, type_name)
+            .unwrap_or_else(|| type_name.to_string());
+        let type_ident = tast::TastIdent(type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
         // First check if type_name is a trait
-        if let Some(method_ty) = genv.lookup_trait_method(&type_ident, &member_ident) {
+        let trait_name = resolve_trait_name(genv, &type_ident.0).unwrap_or(type_ident.0.clone());
+        if let Some(method_ty) =
+            genv.lookup_trait_method(&tast::TastIdent(trait_name.clone()), &member_ident)
+        {
             let inst_ty = self.inst_ty(&method_ty);
             return tast::Expr::ETraitMethod {
-                trait_name: type_ident.clone(),
+                trait_name: tast::TastIdent(trait_name),
                 method_name: member_ident.clone(),
                 ty: inst_ty,
                 astptr,
@@ -545,12 +555,14 @@ impl Typer {
         name: &fir::FirIdent,
         fields: &[(fir::FirIdent, fir::ExprId)],
     ) -> tast::Expr {
+        let resolved_name = resolve_type_name(genv, &name.to_ident_name())
+            .unwrap_or_else(|| name.to_ident_name());
         let (constructor, constr_ty) = genv
-            .lookup_constructor(&tast::TastIdent(name.to_ident_name()))
+            .lookup_constructor(&tast::TastIdent(resolved_name.clone()))
             .unwrap_or_else(|| {
                 panic!(
                     "Constructor {} not found in environment",
-                    name.to_ident_name()
+                    resolved_name
                 )
             });
 
@@ -558,12 +570,12 @@ impl Typer {
             common::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
                 let struct_def = genv.structs().get(type_name).unwrap_or_else(|| {
-                    panic!(
-                        "Struct {} not found when checking literal {}",
-                        type_name.0,
-                        name.to_ident_name()
-                    )
-                });
+                panic!(
+                    "Struct {} not found when checking literal {}",
+                    type_name.0,
+                    resolved_name
+                )
+            });
                 struct_def.fields.clone()
             }
             common::Constructor::Enum { .. } => {
@@ -583,7 +595,7 @@ impl Typer {
         if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
             panic!(
                 "Constructor {} expects {} fields, but got {}",
-                name.to_ident_name(),
+                resolved_name,
                 param_tys.len(),
                 struct_fields.len()
             );
@@ -602,7 +614,7 @@ impl Typer {
                     panic!(
                         "Unknown field {} on struct literal {}",
                         field_name.to_ident_name(),
-                        name.to_ident_name()
+                        resolved_name
                     )
                 });
             if ordered_args[*idx].is_some() {
@@ -1820,21 +1832,23 @@ impl Typer {
                 }
             }
             fir::Pat::PStruct { name, fields } => {
+                let type_name = resolve_type_name(genv, &name.to_ident_name())
+                    .unwrap_or_else(|| name.to_ident_name());
                 let struct_fields = {
                     let struct_def = genv
                         .structs()
-                        .get(&tast::TastIdent(name.to_ident_name()))
+                        .get(&tast::TastIdent(type_name.clone()))
                         .unwrap_or_else(|| {
                             panic!(
                                 "Struct {} not found when checking pattern",
-                                name.to_ident_name()
+                                type_name
                             )
                         });
                     let expected_len = struct_def.fields.len();
                     if expected_len != fields.len() {
                         panic!(
                             "Struct pattern {} expects {} fields, but got {}",
-                            name.to_ident_name(),
+                            type_name,
                             expected_len,
                             fields.len()
                         );
@@ -1847,18 +1861,18 @@ impl Typer {
                     if field_map.insert(fname.to_ident_name(), *pat_id).is_some() {
                         panic!(
                             "Struct pattern {} has duplicate field {}",
-                            name.to_ident_name(),
+                            type_name,
                             fname.to_ident_name()
                         );
                     }
                 }
 
                 let (constructor, constr_ty) = genv
-                    .lookup_constructor(&tast::TastIdent(name.to_ident_name()))
+                    .lookup_constructor(&tast::TastIdent(type_name.clone()))
                     .unwrap_or_else(|| {
                         panic!(
                             "Struct {} not found when checking constructor",
-                            name.to_ident_name()
+                            type_name
                         )
                     });
 
@@ -1871,7 +1885,7 @@ impl Typer {
                 if param_tys.len() != struct_fields.len() {
                     panic!(
                         "Constructor {} expects {} fields, but got {}",
-                        name.to_ident_name(),
+                        type_name,
                         param_tys.len(),
                         struct_fields.len()
                     );
@@ -2149,5 +2163,51 @@ impl Typer {
                 None
             }
         }
+    }
+}
+
+fn resolve_type_name(genv: &GlobalTypeEnv, name: &str) -> Option<String> {
+    let ident = tast::TastIdent(name.to_string());
+    if genv.enums().contains_key(&ident) || genv.structs().contains_key(&ident) {
+        return Some(name.to_string());
+    }
+
+    let suffix = format!("::{}", name);
+    let mut matches = Vec::new();
+    for key in genv
+        .enums()
+        .keys()
+        .chain(genv.structs().keys())
+        .map(|ident| &ident.0)
+    {
+        if key.ends_with(&suffix) {
+            matches.push(key.clone());
+        }
+    }
+
+    if matches.len() == 1 {
+        Some(matches[0].clone())
+    } else {
+        None
+    }
+}
+
+fn resolve_trait_name(genv: &GlobalTypeEnv, name: &str) -> Option<String> {
+    if genv.trait_env.trait_defs.contains_key(name) {
+        return Some(name.to_string());
+    }
+
+    let suffix = format!("::{}", name);
+    let mut matches = Vec::new();
+    for key in genv.trait_env.trait_defs.keys() {
+        if key.ends_with(&suffix) {
+            matches.push(key.clone());
+        }
+    }
+
+    if matches.len() == 1 {
+        Some(matches[0].clone())
+    } else {
+        None
     }
 }

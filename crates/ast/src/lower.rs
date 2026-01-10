@@ -110,6 +110,16 @@ fn collect_constructor_names(file: &cst::File) -> HashSet<String> {
 
 pub fn lower(node: cst::File) -> LowerResult {
     let mut ctx = LowerCtx::new(&node);
+    let package = node
+        .package_decl()
+        .and_then(|decl| decl.name_token())
+        .map(|token| ast::AstIdent::new(&token.to_string()))
+        .unwrap_or_else(|| ast::AstIdent::new("Main"));
+    let imports = node
+        .import_decls()
+        .filter_map(|decl| decl.name_token())
+        .map(|token| ast::AstIdent::new(&token.to_string()))
+        .collect();
     let items = node
         .items()
         .flat_map(|item| lower_item(&mut ctx, item))
@@ -117,7 +127,11 @@ pub fn lower(node: cst::File) -> LowerResult {
     let ast = if ctx.has_errors() {
         None
     } else {
-        Some(ast::File { toplevels: items })
+        Some(ast::File {
+            package,
+            imports,
+            toplevels: items,
+        })
     };
 
     LowerResult {
@@ -377,13 +391,13 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
             Some(ast::TypeExpr::TTuple { typs })
         }
         cst::Type::TAppTy(it) => {
-            let name = it.path()?.ident_tokens().last()?.to_string();
+            let path = it.path().and_then(|path| lower_path(ctx, &path))?;
             let args: Vec<ast::TypeExpr> = it
                 .type_param_list()
                 .map(|list| list.types().flat_map(|ty| lower_ty(ctx, ty)).collect())
                 .unwrap_or_default();
 
-            let base = ast::TypeExpr::TCon { name };
+            let base = ast::TypeExpr::TCon { path };
 
             if args.is_empty() {
                 Some(base)
