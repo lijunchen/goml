@@ -241,7 +241,7 @@ impl FirTable {
 #[derive(Debug, Clone)]
 pub enum FirIdent {
     Name(String),
-    Fresh { id: u32, hint: String },
+    Fresh { id: u32 },
 }
 
 impl FirIdent {
@@ -249,24 +249,14 @@ impl FirIdent {
         FirIdent::Name(s.into())
     }
 
-    pub fn fresh(id: u32, hint: impl Into<String>) -> Self {
-        FirIdent::Fresh {
-            id,
-            hint: hint.into(),
-        }
+    pub fn fresh(id: u32) -> Self {
+        FirIdent::Fresh { id }
     }
 
     pub fn to_ident_name(&self) -> String {
         match self {
             FirIdent::Name(s) => s.clone(),
-            FirIdent::Fresh { id, hint } => format!("{}/{}", hint, id),
-        }
-    }
-
-    pub fn hint(&self) -> &str {
-        match self {
-            FirIdent::Name(s) => s,
-            FirIdent::Fresh { hint, .. } => hint,
+            FirIdent::Fresh { id } => id.to_string(),
         }
     }
 }
@@ -275,7 +265,7 @@ impl PartialEq for FirIdent {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (FirIdent::Name(a), FirIdent::Name(b)) => a == b,
-            (FirIdent::Fresh { id: a, .. }, FirIdent::Fresh { id: b, .. }) => a == b,
+            (FirIdent::Fresh { id: a }, FirIdent::Fresh { id: b }) => a == b,
             _ => false,
         }
     }
@@ -290,7 +280,7 @@ impl std::hash::Hash for FirIdent {
                 0u8.hash(state);
                 s.hash(state);
             }
-            FirIdent::Fresh { id, .. } => {
+            FirIdent::Fresh { id } => {
                 1u8.hash(state);
                 id.hash(state);
             }
