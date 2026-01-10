@@ -11,7 +11,6 @@ use crate::{
     compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
-    hir,
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast, typer,
@@ -22,7 +21,6 @@ pub struct Compilation {
     pub green_node: GreenNode,
     pub cst: CstFile,
     pub ast: ast::File,
-    pub hir: hir::lower::HirLowerResult,
     pub tast: tast::File,
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
@@ -90,11 +88,6 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    // Lower to HIR (experimental, independent pass)
-    // Include builtins in symbol table so HIR can resolve builtin function calls
-    let builtin_ast = crate::builtins::get_builtin_ast();
-    let hir_result = hir::lower::lower_file_with_builtins(builtin_ast, ast.clone());
-
     let (tast, genv, mut diagnostics) = typer::check_file(ast.clone());
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer {
@@ -117,7 +110,6 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         green_node,
         cst,
         ast,
-        hir: hir_result,
         tast,
         genv,
         liftenv,

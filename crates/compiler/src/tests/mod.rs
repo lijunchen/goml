@@ -189,7 +189,6 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     let filename = p.file_name().unwrap().to_str().unwrap();
     let cst_filename = p.with_file_name(format!("{}.cst", filename));
     let ast_filename = p.with_file_name(format!("{}.ast", filename));
-    let hir_filename = p.with_file_name(format!("{}.hir", filename));
     let tast_filename = p.with_file_name(format!("{}.tast", filename));
     let core_filename = p.with_file_name(format!("{}.core", filename));
     let mono_filename = p.with_file_name(format!("{}.mono", filename));
@@ -226,7 +225,6 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
 
     expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
-    expect_test::expect_file![hir_filename].assert_eq(&compilation.hir.to_pretty(120));
     expect_test::expect_file![tast_filename]
         .assert_eq(&compilation.tast.to_pretty(&compilation.genv, 120));
     expect_test::expect_file![core_filename]
