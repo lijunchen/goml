@@ -90,7 +90,7 @@ impl ConstructorRef {
 #[derive(Debug, Clone, Default)]
 pub struct FirTable {
     local_hints: Vec<String>,
-    defs: Vec<Def>,
+    defs: Arena<Def>,
     exprs: Arena<Expr>,
     pats: Arena<Pat>,
     constructors: Arena<Constructor>,
@@ -100,7 +100,7 @@ impl FirTable {
     pub fn new() -> Self {
         Self {
             local_hints: Vec::new(),
-            defs: Vec::new(),
+            defs: Arena::new(),
             exprs: Arena::new(),
             pats: Arena::new(),
             constructors: Arena::new(),
@@ -122,17 +122,18 @@ impl FirTable {
     }
 
     pub fn alloc_def(&mut self, def: Def) -> DefId {
-        let id = self.defs.len() as u32;
-        self.defs.push(def);
-        DefId(id)
+        let idx = self.defs.alloc(def);
+        DefId(idx.into_raw().into_u32())
     }
 
     pub fn def(&self, id: DefId) -> &Def {
-        &self.defs[id.0 as usize]
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &self.defs[idx]
     }
 
     pub fn def_mut(&mut self, id: DefId) -> &mut Def {
-        &mut self.defs[id.0 as usize]
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        &mut self.defs[idx]
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
@@ -860,7 +861,8 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     let mut full_name_index: HashMap<String, ConstructorId> = HashMap::new();
     let mut short_name_index: HashMap<String, Vec<ConstructorId>> = HashMap::new();
 
-    for def_id in 0..fir_table.defs.len() {
+    let def_count = fir_table.defs.len();
+    for def_id in 0..def_count {
         let def_id = DefId(def_id as u32);
         if let Def::EnumDef(enum_def) = fir_table.def(def_id) {
             let enum_name = enum_def.name.to_ident_name();
@@ -883,21 +885,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     for i in 0..expr_count {
         let expr_id = ExprId(i as u32);
         let expr = fir_table.expr(expr_id).clone();
-        if let Expr::EConstr { constructor, args } = expr {
-            if let ConstructorRef::Unresolved(path) = &constructor {
-                let resolved = resolve_constructor_path(
-                    path,
-                    &full_name_index,
-                    &short_name_index,
-                    &mut errors,
-                );
-                let new_expr = Expr::EConstr {
-                    constructor: resolved,
-                    args,
-                };
-                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
-                fir_table.exprs[idx] = new_expr;
-            }
+        if let Expr::EConstr { constructor, args } = expr
+            && let ConstructorRef::Unresolved(path) = &constructor
+        {
+            let resolved =
+                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
+            let new_expr = Expr::EConstr {
+                constructor: resolved,
+                args,
+            };
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
+            fir_table.exprs[idx] = new_expr;
         }
     }
 
@@ -905,21 +903,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     for i in 0..pat_count {
         let pat_id = PatId(i as u32);
         let pat = fir_table.pat(pat_id).clone();
-        if let Pat::PConstr { constructor, args } = pat {
-            if let ConstructorRef::Unresolved(path) = &constructor {
-                let resolved = resolve_constructor_path(
-                    path,
-                    &full_name_index,
-                    &short_name_index,
-                    &mut errors,
-                );
-                let new_pat = Pat::PConstr {
-                    constructor: resolved,
-                    args,
-                };
-                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
-                fir_table.pats[idx] = new_pat;
-            }
+        if let Pat::PConstr { constructor, args } = pat
+            && let ConstructorRef::Unresolved(path) = &constructor
+        {
+            let resolved =
+                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
+            let new_pat = Pat::PConstr {
+                constructor: resolved,
+                args,
+            };
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
+            fir_table.pats[idx] = new_pat;
         }
     }
 
