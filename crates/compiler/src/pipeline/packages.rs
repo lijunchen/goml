@@ -1,5 +1,7 @@
+use std::collections::hash_map::DefaultHasher;
 use std::collections::{HashMap, HashSet};
 use std::fs;
+use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 use ast::ast;
@@ -64,6 +66,38 @@ fn collect_imports(files: &[ast::File]) -> HashSet<String> {
         .collect()
 }
 
+fn hash_package_sources(
+    package_dir: &Path,
+    entry_path: Option<&Path>,
+    entry_src: Option<&str>,
+) -> Result<u64, CompilationError> {
+    let mut paths = read_gom_sources(package_dir)?;
+    if let Some(entry_path) = entry_path
+        && !paths.iter().any(|path| path == entry_path)
+    {
+        paths.push(entry_path.to_path_buf());
+    }
+    paths.sort();
+    let mut hasher = DefaultHasher::new();
+
+    for path in paths {
+        let rel = path.strip_prefix(package_dir).unwrap_or(&path);
+        rel.to_string_lossy().hash(&mut hasher);
+        let src = if entry_path.is_some_and(|entry| entry == path) {
+            entry_src
+                .map(|text| text.to_string())
+                .ok_or_else(|| compile_error(format!("missing source for {}", path.display())))?
+        } else {
+            fs::read_to_string(&path).map_err(|err| {
+                compile_error(format!("failed to read {}: {}", path.display(), err))
+            })?
+        };
+        src.hash(&mut hasher);
+    }
+
+    Ok(hasher.finish())
+}
+
 fn load_package(
     package_dir: &Path,
     entry_path: Option<&Path>,
@@ -112,6 +146,26 @@ fn load_package(
         files,
         imports,
     })
+}
+
+pub fn package_hash(
+    graph: &PackageGraph,
+    package_name: &str,
+    entry_path: Option<&Path>,
+    entry_src: Option<&str>,
+) -> Result<u64, CompilationError> {
+    let dir = package_dir(&graph.root_dir, &graph.entry_package, package_name);
+    let entry_path = if package_name == graph.entry_package {
+        entry_path
+    } else {
+        None
+    };
+    let entry_src = if package_name == graph.entry_package {
+        entry_src
+    } else {
+        None
+    };
+    hash_package_sources(&dir, entry_path, entry_src)
 }
 
 pub fn load_packages(

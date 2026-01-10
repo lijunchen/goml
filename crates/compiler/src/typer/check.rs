@@ -470,9 +470,18 @@ impl Typer {
         let variant_ident = constructor_path
             .last_ident()
             .unwrap_or_else(|| panic!("Constructor path missing final segment"));
-        let enum_name = constructor_path.parent_ident();
+        let namespace = constructor_path.namespace_segments();
+        let enum_ident = if namespace.is_empty() {
+            None
+        } else {
+            let name = namespace
+                .iter()
+                .map(|seg| seg.seg().clone())
+                .collect::<Vec<_>>()
+                .join("::");
+            Some(tast::TastIdent(name))
+        };
         let variant_name = tast::TastIdent(variant_ident.clone());
-        let enum_ident = enum_name.map(|name| tast::TastIdent(name.clone()));
         let (constructor, constr_ty) = genv
             .lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name)
             .unwrap_or_else(|| {
