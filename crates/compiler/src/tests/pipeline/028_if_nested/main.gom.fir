@@ -1,48 +1,28 @@
 fn classify(local/0: int32) -> string {
   if x/0 < 0 {
-      {
-          "negative";
-      }
+      "negative";
   } else {
-      {
-          if 0 < x/0 {
-              {
-                  "positive";
-              }
-          } else {
-              {
-                  "zero";
-              }
-          };
-      }
+      if 0 < x/0 {
+          "positive";
+      } else {
+          "zero";
+      };
   };
 }
 
 fn triangle_type(local/1: int32, local/2: int32, local/3: int32) -> string {
   if a/1 < b/2 {
-      {
-          if b/2 < c/3 {
-              {
-                  "ascending";
-              }
-          } else {
-              {
-                  "peak";
-              }
-          };
-      }
+      if b/2 < c/3 {
+          "ascending";
+      } else {
+          "peak";
+      };
   } else {
-      {
-          if a/1 < c/3 {
-              {
-                  "valley";
-              }
-          } else {
-              {
-                  "flat";
-              }
-          };
-      }
+      if a/1 < c/3 {
+          "valley";
+      } else {
+          "flat";
+      };
   };
 }
 

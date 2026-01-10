@@ -283,31 +283,15 @@ impl Expr {
                 cond,
                 then_branch,
                 else_branch,
-            } => {
-                let then_doc = RcDoc::hardline()
-                    .append(ctx.expr_to_doc(*then_branch))
-                    .nest(4)
-                    .append(RcDoc::hardline());
-                let else_doc = RcDoc::hardline()
-                    .append(ctx.expr_to_doc(*else_branch))
-                    .nest(4)
-                    .append(RcDoc::hardline());
-
-                RcDoc::text("if")
-                    .append(RcDoc::space())
-                    .append(ctx.expr_to_doc(*cond))
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("{"))
-                    .append(then_doc)
-                    .append(RcDoc::text("}"))
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("else"))
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("{"))
-                    .append(else_doc)
-                    .append(RcDoc::text("}"))
-                    .group()
-            }
+            } => RcDoc::text("if")
+                .append(RcDoc::space())
+                .append(ctx.expr_to_doc(*cond))
+                .append(RcDoc::space())
+                .append(ctx.expr_to_doc(*then_branch))
+                .append(RcDoc::space())
+                .append(RcDoc::text("else"))
+                .append(RcDoc::space())
+                .append(ctx.expr_to_doc(*else_branch)),
             fir::Expr::EWhile { cond, body } => {
                 let body_doc = RcDoc::hardline()
                     .append(ctx.expr_to_doc(*body))

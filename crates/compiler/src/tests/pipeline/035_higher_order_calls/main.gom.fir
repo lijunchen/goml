@@ -8,13 +8,9 @@ fn increment(local/1: int32) -> int32 {
 
 fn chooser(local/2: bool) -> (int32) -> int32 {
   if flag/2 {
-      {
-          def/0;
-      }
+      def/0;
   } else {
-      {
-          def/1;
-      }
+      def/1;
   };
 }
 

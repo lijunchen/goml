@@ -4,13 +4,9 @@ fn my_int_equal(local/0: int32, local/1: int32) -> bool {
 
 fn sum(local/2: int32) -> int32 {
   if def/0(n/2, 1) {
-      {
-          1;
-      }
+      1;
   } else {
-      {
-          n/2 + def/1(n/2 - 1);
-      }
+      n/2 + def/1(n/2 - 1);
   };
 }
 

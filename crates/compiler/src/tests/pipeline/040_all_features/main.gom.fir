@@ -60,13 +60,9 @@ impl Describe for Record[string] {
 
 fn choose(local/20: bool, local/21: T, local/22: T) -> T {
   if flag/20 {
-      {
-          when_true/21;
-      }
+      when_true/21;
   } else {
-      {
-          when_false/22;
-      }
+      when_false/22;
   };
 }
 

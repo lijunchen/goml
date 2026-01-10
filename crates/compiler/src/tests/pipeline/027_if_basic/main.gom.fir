@@ -1,12 +1,8 @@
 fn choose(local/0: bool, local/1: int32, local/2: int32) -> int32 {
   if flag/0 {
-      {
-          x/1;
-      }
+      x/1;
   } else {
-      {
-          y/2;
-      }
+      y/2;
   };
 }
 

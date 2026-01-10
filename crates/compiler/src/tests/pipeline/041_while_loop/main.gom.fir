@@ -23,13 +23,9 @@ fn sum_even(local/4: int32) -> int32 {
           let local/9 = ref_get(is_even/7);
           let _ = ref_set(is_even/7, !add_now/9);
           if add_now/9 {
-              {
-                  ref_set(acc/5, ref_get(acc/5) + current/8);
-              }
+              ref_set(acc/5, ref_get(acc/5) + current/8);
           } else {
-              {
-                  ();
-              }
+              ();
           };
       }
   };

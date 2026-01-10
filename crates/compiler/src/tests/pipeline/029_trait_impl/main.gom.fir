@@ -29,13 +29,9 @@ impl Display for Maybe[int32] {
 
 fn make_maybe(local/3: bool) -> Maybe[int32] {
   if flag/3 {
-      {
-          ctor/0(42);
-      }
+      ctor/0(42);
   } else {
-      {
-          ctor/1;
-      }
+      ctor/1;
   };
 }
 
