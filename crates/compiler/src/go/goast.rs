@@ -1,4 +1,8 @@
-use crate::{go::goty, mangle::{encode_ty, mangle_ident}, tast};
+use crate::{
+    go::goty,
+    mangle::{encode_ty, mangle_ident},
+    tast,
+};
 
 #[derive(Debug)]
 pub struct File {
@@ -397,8 +401,5 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
-    format!(
-        "ref_{}_x",
-        mangle_ident(&encode_ty(elem)).to_lowercase()
-    )
+    format!("ref_{}_x", mangle_ident(&encode_ty(elem)).to_lowercase())
 }

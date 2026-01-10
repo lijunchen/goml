@@ -371,6 +371,15 @@ impl Typer {
             }
             panic!("Variable {} not found in environment", name);
         }
+        let full_name = path.display();
+        if let Some(func_ty) = genv.get_type_of_function(&full_name) {
+            let inst_ty = self.inst_ty(&func_ty);
+            return tast::Expr::EVar {
+                name: full_name,
+                ty: inst_ty,
+                astptr,
+            };
+        }
         let namespace = path.namespace_segments();
         let type_name = namespace
             .iter()
@@ -388,8 +397,7 @@ impl Typer {
         member: &str,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let type_name = resolve_type_name(genv, type_name)
-            .unwrap_or_else(|| type_name.to_string());
+        let type_name = resolve_type_name(genv, type_name).unwrap_or_else(|| type_name.to_string());
         let type_ident = tast::TastIdent(type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
         // First check if type_name is a trait
@@ -555,27 +563,21 @@ impl Typer {
         name: &fir::FirIdent,
         fields: &[(fir::FirIdent, fir::ExprId)],
     ) -> tast::Expr {
-        let resolved_name = resolve_type_name(genv, &name.to_ident_name())
-            .unwrap_or_else(|| name.to_ident_name());
+        let resolved_name =
+            resolve_type_name(genv, &name.to_ident_name()).unwrap_or_else(|| name.to_ident_name());
         let (constructor, constr_ty) = genv
             .lookup_constructor(&tast::TastIdent(resolved_name.clone()))
-            .unwrap_or_else(|| {
-                panic!(
-                    "Constructor {} not found in environment",
-                    resolved_name
-                )
-            });
+            .unwrap_or_else(|| panic!("Constructor {} not found in environment", resolved_name));
 
         let struct_fields = match &constructor {
             common::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
                 let struct_def = genv.structs().get(type_name).unwrap_or_else(|| {
-                panic!(
-                    "Struct {} not found when checking literal {}",
-                    type_name.0,
-                    resolved_name
-                )
-            });
+                    panic!(
+                        "Struct {} not found when checking literal {}",
+                        type_name.0, resolved_name
+                    )
+                });
                 struct_def.fields.clone()
             }
             common::Constructor::Enum { .. } => {
@@ -1839,10 +1841,7 @@ impl Typer {
                         .structs()
                         .get(&tast::TastIdent(type_name.clone()))
                         .unwrap_or_else(|| {
-                            panic!(
-                                "Struct {} not found when checking pattern",
-                                type_name
-                            )
+                            panic!("Struct {} not found when checking pattern", type_name)
                         });
                     let expected_len = struct_def.fields.len();
                     if expected_len != fields.len() {
@@ -1870,10 +1869,7 @@ impl Typer {
                 let (constructor, constr_ty) = genv
                     .lookup_constructor(&tast::TastIdent(type_name.clone()))
                     .unwrap_or_else(|| {
-                        panic!(
-                            "Struct {} not found when checking constructor",
-                            type_name
-                        )
+                        panic!("Struct {} not found when checking constructor", type_name)
                     });
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);

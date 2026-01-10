@@ -1,6 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
@@ -19,6 +18,8 @@ use crate::{
     tast,
     typer::{self, name_resolution::FirTable},
 };
+
+mod packages;
 
 #[derive(Debug)]
 pub struct Compilation {
@@ -68,11 +69,6 @@ impl CompilationError {
     }
 }
 
-struct PackageFiles {
-    name: String,
-    files: Vec<ast::File>,
-}
-
 fn compile_error(message: String) -> CompilationError {
     let mut diagnostics = Diagnostics::new();
     diagnostics.push(diagnostics::Diagnostic::new(
@@ -120,87 +116,9 @@ fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError>
     Ok(ast)
 }
 
-fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
-    let mut files = Vec::new();
-    let entries = fs::read_dir(dir).map_err(|err| {
-        compile_error(format!(
-            "failed to read package directory {}: {}",
-            dir.display(),
-            err
-        ))
-    })?;
-
-    for entry in entries {
-        let entry = entry.map_err(|err| {
-            compile_error(format!(
-                "failed to read package directory {}: {}",
-                dir.display(),
-                err
-            ))
-        })?;
-        let path = entry.path();
-        if path.extension().is_some_and(|ext| ext == "gom") {
-            files.push(path);
-        }
-    }
-
-    Ok(files)
-}
-
-fn load_package(
-    package_dir: &Path,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
-) -> Result<PackageFiles, CompilationError> {
-    let mut files = Vec::new();
-    let mut package_name = None;
-
-    if let Some(ast) = entry_ast {
-        package_name = Some(ast.package.0.clone());
-        files.push(ast);
-    }
-
-    for path in read_gom_sources(package_dir)? {
-        if entry_path.is_some_and(|entry| entry == path) {
-            continue;
-        }
-        let src = fs::read_to_string(&path)
-            .map_err(|err| compile_error(format!("failed to read {}: {}", path.display(), err)))?;
-        let ast = parse_ast_file(&path, &src)?;
-        if let Some(existing) = &package_name {
-            if &ast.package.0 != existing {
-                return Err(compile_error(format!(
-                    "package mismatch in {}: expected {}, found {}",
-                    path.display(),
-                    existing,
-                    ast.package.0
-                )));
-            }
-        } else {
-            package_name = Some(ast.package.0.clone());
-        }
-        files.push(ast);
-    }
-
-    let Some(name) = package_name else {
-        return Err(compile_error(format!(
-            "package directory {} has no .gom files",
-            package_dir.display()
-        )));
-    };
-
-    Ok(PackageFiles { name, files })
-}
-
-fn collect_imports(files: &[ast::File]) -> HashSet<String> {
-    files
-        .iter()
-        .flat_map(|file| file.imports.iter())
-        .map(|import| import.0.clone())
-        .collect()
-}
-
-fn collect_constructor_names(files: &[ast::File]) -> (HashSet<String>, HashMap<String, HashSet<String>>) {
+fn collect_constructor_names(
+    files: &[ast::File],
+) -> (HashSet<String>, HashMap<String, HashSet<String>>) {
     let mut global = HashSet::new();
     let mut per_package: HashMap<String, HashSet<String>> = HashMap::new();
     for file in files {
@@ -241,7 +159,8 @@ fn promote_constructors_in_item(
 ) -> ast::Item {
     match item {
         ast::Item::Fn(mut func) => {
-            func.body = promote_constructors_in_expr(func.body, local_ctor_names, global_ctor_names);
+            func.body =
+                promote_constructors_in_expr(func.body, local_ctor_names, global_ctor_names);
             ast::Item::Fn(func)
         }
         ast::Item::ImplBlock(mut block) => {
@@ -249,8 +168,11 @@ fn promote_constructors_in_item(
                 .methods
                 .into_iter()
                 .map(|mut method| {
-                    method.body =
-                        promote_constructors_in_expr(method.body, local_ctor_names, global_ctor_names);
+                    method.body = promote_constructors_in_expr(
+                        method.body,
+                        local_ctor_names,
+                        global_ctor_names,
+                    );
                     method
                 })
                 .collect();
@@ -276,8 +198,7 @@ fn promote_constructors_in_expr(
             } else {
                 false
             };
-            if is_ctor
-            {
+            if is_ctor {
                 ast::Expr::EConstr {
                     constructor: path,
                     args: Vec::new(),
@@ -448,7 +369,11 @@ fn promote_constructors_in_expr(
             )),
             index,
         },
-        ast::Expr::EField { expr, field, astptr } => ast::Expr::EField {
+        ast::Expr::EField {
+            expr,
+            field,
+            astptr,
+        } => ast::Expr::EField {
             expr: Box::new(promote_constructors_in_expr(
                 *expr,
                 local_ctor_names,
@@ -474,45 +399,18 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let mut all_files = Vec::new();
-    let mut queue = Vec::new();
-    let mut loaded = HashSet::new();
-
-    let entry_package = load_package(
-        root_dir,
-        Some(path),
-        Some(entry_ast.clone()),
-    )?;
-    loaded.insert(entry_package.name.clone());
-    queue.extend(collect_imports(&entry_package.files));
-    all_files.extend(entry_package.files);
-
-    while let Some(package_name) = queue.pop() {
-        if loaded.contains(&package_name) {
-            continue;
-        }
-        let package_dir = root_dir.join(&package_name);
-        let package = load_package(&package_dir, None, None)?;
-        if package.name != package_name {
-            return Err(compile_error(format!(
-                "package directory {} declares package {}, expected {}",
-                package_dir.display(),
-                package.name,
-                package_name
-            )));
-        }
-        loaded.insert(package.name.clone());
-        queue.extend(collect_imports(&package.files));
-        all_files.extend(package.files);
-    }
+    let packages = packages::load_packages(root_dir, Some(path), Some(entry_ast.clone()))?;
+    let all_files: Vec<ast::File> = packages
+        .into_iter()
+        .flat_map(|package| package.files)
+        .collect();
 
     let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
     let entry_local = ctor_names_by_package
         .get(&entry_ast.package.0)
         .cloned()
         .unwrap_or_default();
-    let entry_ast =
-        promote_constructors_in_file(entry_ast, &entry_local, &global_ctor_names);
+    let entry_ast = promote_constructors_in_file(entry_ast, &entry_local, &global_ctor_names);
     let all_files = all_files
         .into_iter()
         .map(|file| {
@@ -574,33 +472,11 @@ pub fn typecheck_with_packages(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let mut all_files = Vec::new();
-    let mut queue = Vec::new();
-    let mut loaded = HashSet::new();
-
-    let entry_package = load_package(root_dir, Some(path), Some(entry_ast.clone()))?;
-    loaded.insert(entry_package.name.clone());
-    queue.extend(collect_imports(&entry_package.files));
-    all_files.extend(entry_package.files);
-
-    while let Some(package_name) = queue.pop() {
-        if loaded.contains(&package_name) {
-            continue;
-        }
-        let package_dir = root_dir.join(&package_name);
-        let package = load_package(&package_dir, None, None)?;
-        if package.name != package_name {
-            return Err(compile_error(format!(
-                "package directory {} declares package {}, expected {}",
-                package_dir.display(),
-                package.name,
-                package_name
-            )));
-        }
-        loaded.insert(package.name.clone());
-        queue.extend(collect_imports(&package.files));
-        all_files.extend(package.files);
-    }
+    let packages = packages::load_packages(root_dir, Some(path), Some(entry_ast.clone()))?;
+    let all_files: Vec<ast::File> = packages
+        .into_iter()
+        .flat_map(|package| package.files)
+        .collect();
 
     let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
     let all_files = all_files

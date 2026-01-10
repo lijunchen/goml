@@ -205,8 +205,7 @@ impl NameResolution {
                         toplevel_idx += 1;
                         fir_table.set_current_owner(def_id);
                         let full_name = full_def_name(package_name, &func.name.0);
-                        let resolved_fn =
-                            self.resolve_fn(func, &ctx, &mut fir_table, full_name);
+                        let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table, full_name);
                         *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
                     }
                     ast::Item::ImplBlock(i) => {
@@ -221,10 +220,11 @@ impl NameResolution {
                         let impl_block = fir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
-                            trait_name: i.trait_name.as_ref().map(|t| {
-                                FirIdent::name(&full_def_name(package_name, &t.0))
-                            }),
-                            for_type: self.lower_type_expr(&i.for_type, &tparams, package_name),
+                            trait_name: i
+                                .trait_name
+                                .as_ref()
+                                .map(|t| FirIdent::name(full_def_name(package_name, &t.0))),
+                            for_type: Self::lower_type_expr(&i.for_type, &tparams, package_name),
                             methods,
                         };
                         *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
@@ -288,7 +288,7 @@ impl NameResolution {
             .map(|param| {
                 (
                     env.rfind(&param.0).unwrap(),
-                    self.lower_type_expr(&param.1, &tparams, ctx.current_package),
+                    Self::lower_type_expr(&param.1, &tparams, ctx.current_package),
                 )
             })
             .collect();
@@ -299,7 +299,7 @@ impl NameResolution {
             params: new_params,
             ret_ty: ret_ty
                 .as_ref()
-                .map(|t| self.lower_type_expr(t, &tparams, ctx.current_package)),
+                .map(|t| Self::lower_type_expr(t, &tparams, ctx.current_package)),
             body: self.resolve_expr(body, &mut env, ctx, fir_table),
         }
     }
@@ -658,7 +658,6 @@ impl NameResolution {
     }
 
     fn lower_type_expr(
-        &self,
         ty: &ast::TypeExpr,
         tparams: &HashSet<String>,
         current_package: &str,
@@ -680,7 +679,7 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, tparams, current_package))
+                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package))
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
@@ -697,22 +696,30 @@ impl NameResolution {
                 fir::TypeExpr::TCon { path }
             }
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
-                ty: Box::new(self.lower_type_expr(ty.as_ref(), tparams, current_package)),
+                ty: Box::new(Self::lower_type_expr(ty.as_ref(), tparams, current_package)),
                 args: args
                     .iter()
-                    .map(|arg| self.lower_type_expr(arg, tparams, current_package))
+                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package))
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
                 len: *len,
-                elem: Box::new(self.lower_type_expr(elem.as_ref(), tparams, current_package)),
+                elem: Box::new(Self::lower_type_expr(
+                    elem.as_ref(),
+                    tparams,
+                    current_package,
+                )),
             },
             ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| self.lower_type_expr(param, tparams, current_package))
+                    .map(|param| Self::lower_type_expr(param, tparams, current_package))
                     .collect(),
-                ret_ty: Box::new(self.lower_type_expr(ret_ty.as_ref(), tparams, current_package)),
+                ret_ty: Box::new(Self::lower_type_expr(
+                    ret_ty.as_ref(),
+                    tparams,
+                    current_package,
+                )),
             },
         }
     }
@@ -726,7 +733,7 @@ impl NameResolution {
             .map(|(variant_name, tys)| {
                 let types = tys
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, &tparams, current_package))
+                    .map(|ty| Self::lower_type_expr(ty, &tparams, current_package))
                     .collect();
                 (FirIdent::name(&variant_name.0), types)
             })
@@ -748,7 +755,7 @@ impl NameResolution {
             .map(|(field_name, ty)| {
                 (
                     FirIdent::name(&field_name.0),
-                    self.lower_type_expr(ty, &tparams, current_package),
+                    Self::lower_type_expr(ty, &tparams, current_package),
                 )
             })
             .collect();
@@ -770,9 +777,9 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package))
+                    .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package))
                     .collect(),
-                ret_ty: self.lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package),
+                ret_ty: Self::lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package),
             })
             .collect();
         fir::TraitDef {
@@ -796,14 +803,14 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        self.lower_type_expr(ty, &HashSet::new(), current_package),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package)),
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
         }
     }
 
@@ -830,14 +837,14 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        self.lower_type_expr(ty, &HashSet::new(), current_package),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package)),
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
         }
     }
 
@@ -855,7 +862,7 @@ impl NameResolution {
             ty: param
                 .ty
                 .as_ref()
-                .map(|t| self.lower_type_expr(t, &HashSet::new(), ctx.current_package)),
+                .map(|t| Self::lower_type_expr(t, &HashSet::new(), ctx.current_package)),
             astptr: param.astptr,
         }
     }

@@ -83,20 +83,17 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
 
     if let Some(token) = token.as_ref()
         && let Some(segments) = path_segments_from_token(token)
-    {
-        if let Some(ty) = lookup_type_from_segments(&genv, &segments)
+        && let Some(ty) = lookup_type_from_segments(&genv, &segments)
             .or_else(|| find_type_by_name(&tast, &segments))
-        {
-            return Ok(ty);
-        }
+    {
+        return Ok(ty);
     }
 
-    if let Some(segments) = path_segments_at_offset(src, offset) {
-        if let Some(ty) = lookup_type_from_segments(&genv, &segments)
+    if let Some(segments) = path_segments_at_offset(src, offset)
+        && let Some(ty) = lookup_type_from_segments(&genv, &segments)
             .or_else(|| find_type_by_name(&tast, &segments))
-        {
-            return Ok(ty);
-        }
+    {
+        return Ok(ty);
     }
 
     if let Some(range) = range
@@ -111,10 +108,9 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
 
     if let Some(token) = token.as_ref()
         && let Some(expr_ptr) = find_expr_ptr_from_token(token)
+        && let Some(expr) = find_expr_for_completion(&tast, &expr_ptr)
     {
-        if let Some(expr) = find_expr_for_completion(&tast, &expr_ptr) {
-            return Ok(expr.get_ty().to_pretty(80));
-        }
+        return Ok(expr.get_ty().to_pretty(80));
     }
 
     Err("no type information found".to_string())
