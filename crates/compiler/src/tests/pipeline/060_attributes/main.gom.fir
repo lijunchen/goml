@@ -21,9 +21,9 @@ enum Message {
 impl Message {
   fn to_string(local/3: Message) -> string {
     match self/3 {
-        ctor/0 => "Message::Quit",
-        ctor/1(local/4, local/5) => "Message::Move(" + __field0/4.to_string() + ", " + __field1/5.to_string() + ")",
-        ctor/2(local/6) => "Message::Write(" + __field0/6 + ")",
+        ctor(def/2::v0) => "Message::Quit",
+        ctor(def/2::v1)(local/4, local/5) => "Message::Move(" + __field0/4.to_string() + ", " + __field1/5.to_string() + ")",
+        ctor(def/2::v2)(local/6) => "Message::Write(" + __field0/6 + ")",
     }
   }
 }
@@ -34,9 +34,9 @@ fn main() -> unit {
       y: 7
   };
   let local/8 = point/7.to_string();
-  let local/9 = ctor/1(1, 2).to_string();
-  let local/10 = ctor/2("done").to_string();
-  let local/11 = ctor/0.to_string();
+  let local/9 = ctor(def/2::v1)(1, 2).to_string();
+  let local/10 = ctor(def/2::v2)("done").to_string();
+  let local/11 = ctor(def/2::v0).to_string();
   string_println(summary/8);
   string_println(mv/9);
   string_println(text/10);

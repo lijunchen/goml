@@ -21,17 +21,17 @@ impl Display for Point {
 impl Display for Maybe[int32] {
   fn show(local/1: Maybe[int32]) -> string {
     match self/1 {
-        ctor/0(local/2) => "Just(" + int32_to_string(value/2) + ")",
-        ctor/1 => "Nothing",
+        ctor(def/1::v0)(local/2) => "Just(" + int32_to_string(value/2) + ")",
+        ctor(def/1::v1) => "Nothing",
     };
   }
 }
 
 fn make_maybe(local/3: bool) -> Maybe[int32] {
   if flag/3 {
-      ctor/0(42);
+      ctor(def/1::v0)(42);
   } else {
-      ctor/1;
+      ctor(def/1::v1);
   };
 }
 

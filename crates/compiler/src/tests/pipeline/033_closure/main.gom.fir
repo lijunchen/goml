@@ -34,15 +34,15 @@ fn main() {
   let local/18 = no_capture/17(3);
   let _ = string_println(int32_to_string(doubled/18));
   let _ = def/0();
-  let local/19 = ctor/1(1, ctor/1(2, ctor/1(3, ctor/0)));
+  let local/19 = ctor(def/2::v1)(1, ctor(def/2::v1)(2, ctor(def/2::v1)(3, ctor(def/2::v0))));
   let local/20 = Point {
       x: 10,
       y: 20
   };
   let local/25 = || {
       match list123/19 {
-          ctor/0 => string_println("Empty list"),
-          ctor/1(local/21, local/22) => {
+          ctor(def/2::v0) => string_println("Empty list"),
+          ctor(def/2::v1)(local/21, local/22) => {
                 let _ = string_println(int32_to_string(head/21));
                 match point/20 {
                     Point { x: local/23, y: local/24 } => {

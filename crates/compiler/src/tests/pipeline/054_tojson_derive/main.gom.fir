@@ -36,10 +36,10 @@ enum Color {
 impl Color {
   fn to_json(local/7: Color) -> string {
     match self/7 {
-        ctor/0 => "{\"tag\":\"Red\"}",
-        ctor/1 => "{\"tag\":\"Green\"}",
-        ctor/2 => "{\"tag\":\"Blue\"}",
-        ctor/3(local/8, local/9, local/10) => "{\"tag\":\"Rgb\",\"fields\":[" + __field0/8.to_string() + "," + __field1/9.to_string() + "," + __field2/10.to_string() + "]}",
+        ctor(def/4::v0) => "{\"tag\":\"Red\"}",
+        ctor(def/4::v1) => "{\"tag\":\"Green\"}",
+        ctor(def/4::v2) => "{\"tag\":\"Blue\"}",
+        ctor(def/4::v3)(local/8, local/9, local/10) => "{\"tag\":\"Rgb\",\"fields\":[" + __field0/8.to_string() + "," + __field1/9.to_string() + "," + __field2/10.to_string() + "]}",
     }
   }
 }
@@ -54,8 +54,8 @@ fn main() -> unit {
       age: 30,
       active: true
   };
-  let local/13 = ctor/0;
-  let local/14 = ctor/3(255, 128, 0);
+  let local/13 = ctor(def/4::v0);
+  let local/14 = ctor(def/4::v3)(255, 128, 0);
   string_println(p/11.to_json());
   string_println(person/12.to_json());
   string_println(c1/13.to_json());

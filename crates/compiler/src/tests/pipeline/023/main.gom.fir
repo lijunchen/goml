@@ -16,14 +16,14 @@ enum Mixed {
 
 fn match_mixed_enum(local/1: Mixed) -> int32 {
   match value/1 {
-      ctor/0(0) => 6,
-      ctor/0(_) => 7,
-      ctor/1("zero") => 8,
-      ctor/1(_) => 9,
-      ctor/2(0, "zero") => 10,
-      ctor/2(0, _) => 11,
-      ctor/2(_, "zero") => 12,
-      ctor/2(_, _) => 13,
+      ctor(def/1::v0)(0) => 6,
+      ctor(def/1::v0)(_) => 7,
+      ctor(def/1::v1)("zero") => 8,
+      ctor(def/1::v1)(_) => 9,
+      ctor(def/1::v2)(0, "zero") => 10,
+      ctor(def/1::v2)(0, _) => 11,
+      ctor(def/1::v2)(_, "zero") => 12,
+      ctor(def/1::v2)(_, _) => 13,
   };
 }
 
@@ -33,13 +33,13 @@ fn main() {
   let _ = string_println(int32_to_string(def/0((1, "one"))));
   let _ = string_println(int32_to_string(def/0((2, "zero"))));
   let _ = string_println(int32_to_string(def/0((2, "two"))));
-  let _ = string_println(int32_to_string(def/2(ctor/0(0))));
-  let _ = string_println(int32_to_string(def/2(ctor/0(5))));
-  let _ = string_println(int32_to_string(def/2(ctor/1("zero"))));
-  let _ = string_println(int32_to_string(def/2(ctor/1("hello"))));
-  let _ = string_println(int32_to_string(def/2(ctor/2(0, "zero"))));
-  let _ = string_println(int32_to_string(def/2(ctor/2(0, "hello"))));
-  let _ = string_println(int32_to_string(def/2(ctor/2(2, "zero"))));
-  string_println(int32_to_string(def/2(ctor/2(3, "three"))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v0)(0))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v0)(5))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v1)("zero"))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v1)("hello"))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v2)(0, "zero"))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v2)(0, "hello"))));
+  let _ = string_println(int32_to_string(def/2(ctor(def/1::v2)(2, "zero"))));
+  string_println(int32_to_string(def/2(ctor(def/1::v2)(3, "three"))));
 }
 

@@ -16,9 +16,9 @@ enum Color {
 
 fn color_to_string(local/3: Color) -> string {
   match c/3 {
-      ctor/0 => "Red",
-      ctor/1 => "Green",
-      ctor/2 => "Blue",
+      ctor(def/2::v0) => "Red",
+      ctor(def/2::v1) => "Green",
+      ctor(def/2::v2) => "Blue",
   };
 }
 
@@ -67,7 +67,7 @@ fn main() {
   let local/12 = Line {
       from: p0/10,
       to: p1/11,
-      color: ctor/0
+      color: ctor(def/2::v0)
   };
   string_println(def/5(line/12));
 }

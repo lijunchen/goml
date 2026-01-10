@@ -23,8 +23,8 @@ impl TypeName for Point {
 impl TypeName for Shape {
   fn type_name(local/4: Self) -> string {
     match self/4 {
-        ctor/0 => "Unit",
-        ctor/1(local/5) => "Shape::" + TypeName::type_name(point/5),
+        ctor(def/1::v0) => "Unit",
+        ctor(def/1::v1)(local/5) => "Shape::" + TypeName::type_name(point/5),
     };
   }
 }
@@ -43,9 +43,9 @@ fn main() -> unit {
       y: 9
   };
   let _ = string_println(def/5(point/8));
-  let local/9 = ctor/0;
+  let local/9 = ctor(def/1::v0);
   let _ = string_println(def/6(unit_shape/9));
-  let local/10 = ctor/1(Point {
+  let local/10 = ctor(def/1::v1)(Point {
       x: 1,
       y: 2
   });

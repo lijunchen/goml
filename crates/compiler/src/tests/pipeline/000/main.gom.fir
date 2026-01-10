@@ -8,9 +8,9 @@ enum Color {
 impl Color {
   fn to_string(local/0: Color) -> string {
     match self/0 {
-        ctor/0 => "Color::Red",
-        ctor/1 => "Color::Green",
-        ctor/2 => "Color::Blue",
+        ctor(def/0::v0) => "Color::Red",
+        ctor(def/0::v1) => "Color::Green",
+        ctor(def/0::v2) => "Color::Blue",
     }
   }
 }
@@ -72,17 +72,17 @@ enum LineList {
 impl LineList {
   fn to_string(local/15: LineList) -> string {
     match self/15 {
-        ctor/3 => "LineList::Nil",
-        ctor/4(local/16, local/17) => "LineList::Cons(" + __field0/16.to_string() + ", " + __field1/17.to_string() + ")",
+        ctor(def/8::v0) => "LineList::Nil",
+        ctor(def/8::v1)(local/16, local/17) => "LineList::Cons(" + __field0/16.to_string() + ", " + __field1/17.to_string() + ")",
     }
   }
 }
 
 fn main() {
-  let local/18 = Point::new(10, 20, ctor/0);
-  let local/19 = Point::new(30, 40, ctor/1);
-  let local/20 = Line::new(from/18, to/19, ctor/2);
-  let local/21 = ctor/4(line/20, ctor/3);
+  let local/18 = Point::new(10, 20, ctor(def/0::v0));
+  let local/19 = Point::new(30, 40, ctor(def/0::v1));
+  let local/20 = Line::new(from/18, to/19, ctor(def/0::v2));
+  let local/21 = ctor(def/8::v1)(line/20, ctor(def/8::v0));
   string_println(lines/21.to_string());
   ();
 }
