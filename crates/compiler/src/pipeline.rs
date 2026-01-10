@@ -220,6 +220,15 @@ impl PackageCache {
 
 static PACKAGE_CACHE: OnceLock<Mutex<PackageCache>> = OnceLock::new();
 
+#[derive(Debug)]
+struct TypecheckPackagesResult {
+    entry_tast: tast::File,
+    full_tast: tast::File,
+    genv: GlobalTypeEnv,
+    diagnostics: Diagnostics,
+    graph: packages::PackageGraph,
+}
+
 fn compile_error(message: String) -> CompilationError {
     let mut diagnostics = Diagnostics::new();
     diagnostics.push(diagnostics::Diagnostic::new(
@@ -751,87 +760,16 @@ fn compute_dependency_sets(
     Ok(memo)
 }
 
-pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
-    let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
-
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let packages = packages::load_packages(root_dir, Some(path), Some(entry_ast.clone()))?;
-    let all_files: Vec<ast::File> = packages
-        .into_iter()
-        .flat_map(|package| package.files)
-        .collect();
-
-    let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
-    let entry_local = ctor_names_by_package
-        .get(&entry_ast.package.0)
-        .cloned()
-        .unwrap_or_default();
-    let entry_ast = promote_constructors_in_file(entry_ast, &entry_local, &global_ctor_names);
-    let all_files = all_files
-        .into_iter()
-        .map(|file| {
-            let local = ctor_names_by_package
-                .get(&file.package.0)
-                .cloned()
-                .unwrap_or_default();
-            promote_constructors_in_file(file, &local, &global_ctor_names)
-        })
-        .collect();
-    let (fir, fir_table) = fir::lower_to_fir_files(all_files);
-
-    let (tast, genv, mut diagnostics) =
-        typer::check_file_with_env(fir.clone(), fir_table.clone(), GlobalTypeEnv::new());
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Typer {
-            diagnostics: diagnostics.clone(),
-        });
-    }
-
-    let gensym = Gensym::new();
-
-    let core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &tast);
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Compile { diagnostics });
-    }
-    let (mono, monoenv) = mono::mono(genv.clone(), core.clone());
-    let (lifted_core, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
-    let (anf, anfenv) = anf::anf_file(liftenv.clone(), &gensym, lifted_core.clone());
-    let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
-
-    Ok(Compilation {
-        green_node,
-        cst,
-        ast: entry_ast,
-        fir,
-        fir_table,
-        tast,
-        genv,
-        liftenv,
-        monoenv,
-        anfenv,
-        goenv,
-        core,
-        lambda: lifted_core,
-        mono,
-        anf,
-        go,
-    })
-}
-
-pub fn typecheck_with_packages(
+fn typecheck_packages(
     path: &Path,
     src: &str,
-) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
-    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
-
+    entry_ast: ast::File,
+) -> Result<TypecheckPackagesResult, CompilationError> {
     let root_dir = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast.clone()))?;
+    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
     let source_hashes = compute_source_hashes(&graph, path, src)?;
     let dependency_sets = compute_dependency_sets(&graph)?;
@@ -841,7 +779,7 @@ pub fn typecheck_with_packages(
     let mut exports_by_name: HashMap<String, PackageExports> = HashMap::new();
     let mut ctor_names_by_package: HashMap<String, HashSet<String>> = HashMap::new();
     let mut exports_hashes: HashMap<String, u64> = HashMap::new();
-    let mut entry_tast = None;
+    let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let cache = PACKAGE_CACHE.get_or_init(|| Mutex::new(PackageCache::default()));
 
     for name in order.iter() {
@@ -899,20 +837,119 @@ pub fn typecheck_with_packages(
             artifact
         };
 
-        if name == &graph.entry_package {
-            entry_tast = Some(artifact.tast.clone());
-        }
-
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
         artifact.exports.apply_to(&mut genv);
         exports_by_name.insert(name.clone(), artifact.exports.clone());
         ctor_names_by_package.insert(name.clone(), artifact.ctor_names.clone());
         exports_hashes.insert(name.clone(), artifact.exports_hash);
+        artifacts_by_name.insert(name.clone(), artifact);
     }
 
-    let entry_tast =
-        entry_tast.ok_or_else(|| compile_error("entry package not found".to_string()))?;
+    let entry_tast = artifacts_by_name
+        .get(&graph.entry_package)
+        .ok_or_else(|| compile_error("entry package not found".to_string()))?
+        .tast
+        .clone();
 
-    Ok((entry_tast, genv, diagnostics))
+    let mut toplevels = Vec::new();
+    for name in graph.discovery_order.iter() {
+        let artifact = artifacts_by_name
+            .get(name)
+            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        toplevels.extend(artifact.tast.toplevels.clone());
+    }
+
+    Ok(TypecheckPackagesResult {
+        entry_tast,
+        full_tast: tast::File { toplevels },
+        genv,
+        diagnostics,
+        graph,
+    })
+}
+
+pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
+
+    let typecheck = typecheck_packages(path, src, entry_ast.clone())?;
+    let TypecheckPackagesResult {
+        full_tast,
+        genv,
+        mut diagnostics,
+        graph,
+        ..
+    } = typecheck;
+    let mut all_files = Vec::new();
+    for name in graph.discovery_order.iter() {
+        let package = graph
+            .packages
+            .get(name)
+            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+        all_files.extend(package.files.clone());
+    }
+
+    let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
+    let entry_local = ctor_names_by_package
+        .get(&entry_ast.package.0)
+        .cloned()
+        .unwrap_or_default();
+    let entry_ast = promote_constructors_in_file(entry_ast, &entry_local, &global_ctor_names);
+    let all_files = all_files
+        .into_iter()
+        .map(|file| {
+            let local = ctor_names_by_package
+                .get(&file.package.0)
+                .cloned()
+                .unwrap_or_default();
+            promote_constructors_in_file(file, &local, &global_ctor_names)
+        })
+        .collect();
+    let (fir, fir_table) = fir::lower_to_fir_files(all_files);
+
+    let tast = full_tast;
+    if diagnostics.has_errors() {
+        return Err(CompilationError::Typer {
+            diagnostics: diagnostics.clone(),
+        });
+    }
+
+    let gensym = Gensym::new();
+
+    let core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &tast);
+    if diagnostics.has_errors() {
+        return Err(CompilationError::Compile { diagnostics });
+    }
+    let (mono, monoenv) = mono::mono(genv.clone(), core.clone());
+    let (lifted_core, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
+    let (anf, anfenv) = anf::anf_file(liftenv.clone(), &gensym, lifted_core.clone());
+    let (go, goenv) = go::compile::go_file(anfenv.clone(), &gensym, anf.clone());
+
+    Ok(Compilation {
+        green_node,
+        cst,
+        ast: entry_ast,
+        fir,
+        fir_table,
+        tast,
+        genv,
+        liftenv,
+        monoenv,
+        anfenv,
+        goenv,
+        core,
+        lambda: lifted_core,
+        mono,
+        anf,
+        go,
+    })
+}
+
+pub fn typecheck_with_packages(
+    path: &Path,
+    src: &str,
+) -> Result<(tast::File, GlobalTypeEnv, Diagnostics), CompilationError> {
+    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+    let result = typecheck_packages(path, src, entry_ast)?;
+    Ok((result.entry_tast, result.genv, result.diagnostics))
 }

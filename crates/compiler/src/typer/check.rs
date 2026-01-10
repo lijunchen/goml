@@ -1233,6 +1233,46 @@ impl Typer {
                 res: fir::NameRef::Unresolved(path),
                 ..
             } => {
+                let full_name = path.display();
+                if let Some(func_ty) = genv.get_type_of_function(&full_name) {
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                        arg_types.push(arg_tast.get_ty());
+                        args_tast.push(arg_tast);
+                    }
+
+                    let inst_ty = self.inst_ty(&func_ty);
+                    if let tast::Ty::TFunc { params, .. } = &inst_ty
+                        && params.len() == args.len()
+                        && !params.is_empty()
+                    {
+                        args_tast.clear();
+                        arg_types.clear();
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast =
+                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+                    }
+
+                    let ret_ty = match &inst_ty {
+                        tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
+                        _ => inst_ty.clone(),
+                    };
+
+                    return tast::Expr::ECall {
+                        func: Box::new(tast::Expr::EVar {
+                            name: full_name,
+                            ty: inst_ty,
+                            astptr: None,
+                        }),
+                        args: args_tast,
+                        ty: ret_ty,
+                    };
+                }
                 if path.len() == 1 {
                     let name = path.last_ident().unwrap();
 

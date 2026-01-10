@@ -168,23 +168,6 @@ pub fn package_hash(
     hash_package_sources(&dir, entry_path, entry_src)
 }
 
-pub fn load_packages(
-    root_dir: &Path,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
-) -> Result<Vec<PackageUnit>, CompilationError> {
-    let graph = discover_packages(root_dir, entry_path, entry_ast)?;
-    topo_sort_packages(&graph)?;
-    let mut packages = graph.packages;
-    let mut ordered = Vec::with_capacity(graph.discovery_order.len());
-    for name in graph.discovery_order {
-        if let Some(package) = packages.remove(&name) {
-            ordered.push(package);
-        }
-    }
-    Ok(ordered)
-}
-
 pub fn discover_packages(
     root_dir: &Path,
     entry_path: Option<&Path>,
