@@ -2,6 +2,13 @@ use ast::ast;
 use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 
+pub fn lower_to_fir(ast: ast::File) -> (File, FirTable) {
+    use crate::typer::name_resolution::NameResolution;
+    let (fir, mut fir_table) = NameResolution::default().resolve_file(ast);
+    let _ctor_errors = resolve_constructors(&mut fir_table);
+    (fir, fir_table)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct DefId(pub u32);
 

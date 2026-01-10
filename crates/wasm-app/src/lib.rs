@@ -8,6 +8,21 @@ use compiler::{
 };
 use wasm_bindgen::prelude::*;
 
+fn typecheck_ast(
+    ast: ::ast::ast::File,
+) -> Result<
+    (
+        compiler::tast::File,
+        compiler::env::GlobalTypeEnv,
+        Diagnostics,
+    ),
+    String,
+> {
+    let (fir, fir_table) = compiler::fir::lower_to_fir(ast);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(fir, fir_table);
+    Ok((tast, genv, diagnostics))
+}
+
 #[wasm_bindgen]
 pub fn execute(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
@@ -27,7 +42,7 @@ pub fn execute(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -70,7 +85,7 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -112,7 +127,7 @@ pub fn compile_to_mono(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -156,7 +171,7 @@ pub fn compile_to_anf(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -202,7 +217,7 @@ pub fn compile_to_go(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -274,7 +289,7 @@ pub fn get_tast(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = typecheck_ast(ast).unwrap();
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors

@@ -21,7 +21,8 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     let ast = ast::lower::lower(cst)
         .into_result()
         .expect("failed to lower to AST");
-    crate::typer::check_file(ast)
+    let (fir, fir_table) = crate::fir::lower_to_fir(ast);
+    crate::typer::check_file(fir, fir_table)
 }
 
 fn expect_diagnostics(src: &str, expected: Expect) {

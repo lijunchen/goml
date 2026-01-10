@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use ::ast::ast;
 use diagnostics::{Severity, Stage};
 use indexmap::IndexMap;
 use parser::{Diagnostic, Diagnostics};
@@ -679,17 +678,19 @@ pub fn collect_typedefs(
     }
 }
 
-pub fn check_file(ast: ast::File) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    check_file_with_env(ast, env::GlobalTypeEnv::new())
+pub fn check_file(
+    fir: fir::File,
+    fir_table: name_resolution::FirTable,
+) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
+    check_file_with_env(fir, fir_table, env::GlobalTypeEnv::new())
 }
 
 pub fn check_file_with_env(
-    ast: ast::File,
+    fir: fir::File,
+    fir_table: name_resolution::FirTable,
     genv: env::GlobalTypeEnv,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = genv;
-    let (fir, mut fir_table) = name_resolution::NameResolution::default().resolve_file(ast);
-    let _ctor_errors = fir::resolve_constructors(&mut fir_table);
     let mut typer = Typer::new(fir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &fir, &typer.fir_table);

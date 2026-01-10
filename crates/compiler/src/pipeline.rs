@@ -10,10 +10,12 @@ use crate::{
     anf::{self, GlobalAnfEnv},
     compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
+    fir,
     go::{self, compile::GlobalGoEnv, goast},
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
-    tast, typer,
+    tast,
+    typer::{self, name_resolution::FirTable},
 };
 
 #[derive(Debug)]
@@ -21,6 +23,8 @@ pub struct Compilation {
     pub green_node: GreenNode,
     pub cst: CstFile,
     pub ast: ast::File,
+    pub fir: fir::File,
+    pub fir_table: FirTable,
     pub tast: tast::File,
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
@@ -88,7 +92,10 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         }
     };
 
-    let (tast, genv, mut diagnostics) = typer::check_file(ast.clone());
+    let (fir, fir_table) = fir::lower_to_fir(ast.clone());
+
+    let (tast, genv, mut diagnostics) =
+        typer::check_file_with_env(fir.clone(), fir_table.clone(), GlobalTypeEnv::new());
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer {
             diagnostics: diagnostics.clone(),
@@ -110,6 +117,8 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         green_node,
         cst,
         ast,
+        fir,
+        fir_table,
         tast,
         genv,
         liftenv,
