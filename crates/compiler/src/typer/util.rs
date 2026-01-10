@@ -180,34 +180,37 @@ impl tast::Ty {
                     .map(|ty| Self::from_fir(genv, ty, tparams_env))
                     .collect(),
             },
-            fir::TypeExpr::TCon { name } => {
-                if tparams_env.iter().any(|param| param.0 == *name) {
-                    Self::TParam { name: name.clone() }
+            fir::TypeExpr::TCon { path } => {
+                let name = path.display();
+                if path.len() == 1 && tparams_env.iter().any(|param| param.0 == name) {
+                    Self::TParam { name }
                 } else {
-                    let ident = tast::TastIdent::new(name);
+                    let ident = tast::TastIdent::new(&name);
                     if genv.enums().contains_key(&ident) {
-                        Self::TEnum { name: name.clone() }
+                        Self::TEnum { name }
                     } else if genv.structs().contains_key(&ident)
-                        || genv.type_env.extern_types.contains_key(name)
+                        || genv.type_env.extern_types.contains_key(&name)
                     {
-                        Self::TStruct { name: name.clone() }
+                        Self::TStruct { name }
                     } else {
                         // FIXME
-                        Self::TStruct { name: name.clone() }
+                        Self::TStruct { name }
                     }
                 }
             }
             fir::TypeExpr::TApp { ty, args } => {
-                if let fir::TypeExpr::TCon { name } = ty.as_ref()
-                    && name == "Ref"
+                if let fir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.len() == 1
+                    && path.last_ident().is_some_and(|name| name == "Ref")
                     && args.len() == 1
                 {
                     return Self::TRef {
                         elem: Box::new(Self::from_fir(genv, &args[0], tparams_env)),
                     };
                 }
-                if let fir::TypeExpr::TCon { name } = ty.as_ref()
-                    && name == "Vec"
+                if let fir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.len() == 1
+                    && path.last_ident().is_some_and(|name| name == "Vec")
                     && args.len() == 1
                 {
                     return Self::TVec {

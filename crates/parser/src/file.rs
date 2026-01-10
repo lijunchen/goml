@@ -10,10 +10,20 @@ use crate::{
 
 pub fn file(p: &mut Parser) {
     let m = p.open();
+    if p.at(T![package]) {
+        package_decl(p);
+    }
+    while p.at(T![import]) {
+        import_decl(p);
+    }
     while !p.eof() {
         if p.at(T![#]) {
             let attrs = attribute_list(p);
             item_with_attrs(p, attrs);
+        } else if p.at(T![package]) {
+            p.advance_with_error("package declaration must appear at the top of the file");
+        } else if p.at(T![import]) {
+            p.advance_with_error("import declaration must appear at the top of the file");
         } else if p.at(T![extern]) {
             extern_decl(p)
         } else if p.at(T![fn]) {
@@ -35,6 +45,30 @@ pub fn file(p: &mut Parser) {
         }
     }
     p.close(m, MySyntaxKind::FILE);
+}
+
+fn package_decl(p: &mut Parser) {
+    assert!(p.at(T![package]));
+    let m = p.open();
+    p.expect(T![package]);
+    if p.at(T![ident]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected a package name");
+    }
+    p.close(m, MySyntaxKind::PACKAGE);
+}
+
+fn import_decl(p: &mut Parser) {
+    assert!(p.at(T![import]));
+    let m = p.open();
+    p.expect(T![import]);
+    if p.at(T![ident]) {
+        p.advance();
+    } else {
+        p.advance_with_error("expected an import name");
+    }
+    p.close(m, MySyntaxKind::IMPORT);
 }
 
 fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {

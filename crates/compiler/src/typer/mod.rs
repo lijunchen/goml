@@ -4,7 +4,7 @@ use crate::{env::Constraint, tast::TypeVar};
 
 mod check;
 mod localenv;
-mod name_resolution;
+pub mod name_resolution;
 mod toplevel;
 mod unify;
 mod util;

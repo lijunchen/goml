@@ -1,75 +1,103 @@
 use ast::ast;
 use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
+use std::collections::HashMap;
+
+pub fn lower_to_fir_files(files: Vec<ast::File>) -> (File, FirTable) {
+    use crate::typer::name_resolution::NameResolution;
+    let (fir, mut fir_table) = NameResolution::default().resolve_files(files);
+    let _ctor_errors = resolve_constructors(&mut fir_table);
+    (fir, fir_table)
+}
+
+pub fn lower_to_fir(ast: ast::File) -> (File, FirTable) {
+    lower_to_fir_files(vec![ast])
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum DefKind {
+    Fn,
+    EnumDef,
+    StructDef,
+    TraitDef,
+    ImplBlock,
+    ExternGo,
+    ExternType,
+    ExternBuiltin,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DefKey {
+    pub path: Path,
+    pub kind: DefKind,
+    pub disamb: u32,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct DefId(pub u32);
+pub struct DefId(u32);
 
 impl DefId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
     pub fn to_debug_string(self) -> String {
         format!("def/{}", self.0)
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum LocalKey {
+    AstBinder {
+        owner: DefId,
+        ptr: MySyntaxNodePtr,
+    },
+    Synthetic {
+        owner: DefId,
+        serial: u32,
+        hint: String,
+    },
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct LocalId(pub u32);
+pub struct LocalId(u32);
 
 impl LocalId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
     pub fn to_debug_string(self) -> String {
         format!("local/{}", self.0)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ExprId(pub u32);
+pub struct ExprId(pub(crate) u32);
 
 impl ExprId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
     pub fn to_debug_string(self) -> String {
         format!("expr/{}", self.0)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PatId(pub u32);
+pub struct PatId(pub(crate) u32);
 
 impl PatId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
     pub fn to_debug_string(self) -> String {
         format!("pat/{}", self.0)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ConstructorId(pub u32);
-
-impl ConstructorId {
-    pub fn index(self) -> u32 {
-        self.0
-    }
-
-    pub fn to_debug_string(self) -> String {
-        format!("ctor/{}", self.0)
-    }
+pub enum ConstructorId {
+    EnumVariant { enum_def: DefId, variant_idx: u32 },
 }
 
-#[derive(Debug, Clone)]
-pub enum Constructor {
-    EnumVariant { enum_def: DefId, variant_idx: usize },
+impl ConstructorId {
+    pub fn to_debug_string(self) -> String {
+        match self {
+            ConstructorId::EnumVariant {
+                enum_def,
+                variant_idx,
+            } => {
+                format!("ctor({}::v{})", enum_def.to_debug_string(), variant_idx)
+            }
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -89,50 +117,114 @@ impl ConstructorRef {
 
 #[derive(Debug, Clone, Default)]
 pub struct FirTable {
-    local_hints: Vec<String>,
-    defs: Vec<Def>,
+    def_interner: HashMap<DefKey, DefId>,
+    def_data: Vec<Def>,
+    local_interner: HashMap<LocalKey, LocalId>,
+    local_info: Vec<LocalInfo>,
+    local_counter: u32,
     exprs: Arena<Expr>,
     pats: Arena<Pat>,
-    constructors: Arena<Constructor>,
+    current_owner: Option<DefId>,
+}
+
+#[derive(Debug, Clone)]
+pub struct LocalInfo {
+    pub hint: String,
+    pub origin: LocalKey,
 }
 
 impl FirTable {
     pub fn new() -> Self {
         Self {
-            local_hints: Vec::new(),
-            defs: Vec::new(),
+            def_interner: HashMap::new(),
+            def_data: Vec::new(),
+            local_interner: HashMap::new(),
+            local_info: Vec::new(),
+            local_counter: 0,
             exprs: Arena::new(),
             pats: Arena::new(),
-            constructors: Arena::new(),
+            current_owner: None,
         }
     }
 
+    pub fn set_current_owner(&mut self, owner: DefId) {
+        self.current_owner = Some(owner);
+    }
+
     pub fn fresh_local(&mut self, hint: &str) -> LocalId {
-        let id = self.local_hints.len() as u32;
-        self.local_hints.push(hint.to_string());
-        LocalId(id)
+        let owner = self.current_owner.unwrap_or(DefId(0));
+        let serial = self.local_counter;
+        self.local_counter += 1;
+        let key = LocalKey::Synthetic {
+            owner,
+            serial,
+            hint: hint.to_string(),
+        };
+        let id = LocalId(self.local_info.len() as u32);
+        self.local_interner.insert(key.clone(), id);
+        self.local_info.push(LocalInfo {
+            hint: hint.to_string(),
+            origin: key,
+        });
+        id
+    }
+
+    pub fn alloc_ast_local(&mut self, ptr: MySyntaxNodePtr, hint: &str) -> LocalId {
+        let owner = self.current_owner.unwrap_or(DefId(0));
+        let key = LocalKey::AstBinder { owner, ptr };
+        if let Some(&id) = self.local_interner.get(&key) {
+            return id;
+        }
+        let id = LocalId(self.local_info.len() as u32);
+        self.local_interner.insert(key.clone(), id);
+        self.local_info.push(LocalInfo {
+            hint: hint.to_string(),
+            origin: key,
+        });
+        id
     }
 
     pub fn local_hint(&self, id: LocalId) -> &str {
-        &self.local_hints[id.0 as usize]
+        &self.local_info[id.0 as usize].hint
     }
 
     pub fn local_ident_name(&self, id: LocalId) -> String {
         format!("{}/{}", self.local_hint(id), id.0)
     }
 
-    pub fn alloc_def(&mut self, def: Def) -> DefId {
-        let id = self.defs.len() as u32;
-        self.defs.push(def);
-        DefId(id)
+    pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
+        let path = Path::from_ident(name);
+        let key = DefKey {
+            path,
+            kind,
+            disamb: 0,
+        };
+
+        let id = DefId(self.def_data.len() as u32);
+        self.def_interner.insert(key, id);
+        self.def_data.push(def);
+        id
+    }
+
+    pub fn alloc_def_with_path(&mut self, path: Path, kind: DefKind, def: Def) -> DefId {
+        let key = DefKey {
+            path,
+            kind,
+            disamb: 0,
+        };
+
+        let id = DefId(self.def_data.len() as u32);
+        self.def_interner.insert(key, id);
+        self.def_data.push(def);
+        id
     }
 
     pub fn def(&self, id: DefId) -> &Def {
-        &self.defs[id.0 as usize]
+        &self.def_data[id.0 as usize]
     }
 
     pub fn def_mut(&mut self, id: DefId) -> &mut Def {
-        &mut self.defs[id.0 as usize]
+        &mut self.def_data[id.0 as usize]
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
@@ -155,21 +247,18 @@ impl FirTable {
         &self.pats[idx]
     }
 
-    pub fn alloc_constructor(&mut self, ctor: Constructor) -> ConstructorId {
-        let idx = self.constructors.alloc(ctor);
-        ConstructorId(idx.into_raw().into_u32())
-    }
-
-    pub fn constructor(&self, id: ConstructorId) -> &Constructor {
-        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
-        &self.constructors[idx]
+    pub fn iter_defs(&self) -> impl Iterator<Item = (DefId, &Def)> {
+        self.def_data
+            .iter()
+            .enumerate()
+            .map(|(i, def)| (DefId(i as u32), def))
     }
 }
 
 #[derive(Debug, Clone)]
 pub enum FirIdent {
     Name(String),
-    Fresh { id: u32, hint: String },
+    Fresh { id: u32 },
 }
 
 impl FirIdent {
@@ -177,24 +266,14 @@ impl FirIdent {
         FirIdent::Name(s.into())
     }
 
-    pub fn fresh(id: u32, hint: impl Into<String>) -> Self {
-        FirIdent::Fresh {
-            id,
-            hint: hint.into(),
-        }
+    pub fn fresh(id: u32) -> Self {
+        FirIdent::Fresh { id }
     }
 
     pub fn to_ident_name(&self) -> String {
         match self {
             FirIdent::Name(s) => s.clone(),
-            FirIdent::Fresh { id, hint } => format!("{}/{}", hint, id),
-        }
-    }
-
-    pub fn hint(&self) -> &str {
-        match self {
-            FirIdent::Name(s) => s,
-            FirIdent::Fresh { hint, .. } => hint,
+            FirIdent::Fresh { id } => id.to_string(),
         }
     }
 }
@@ -203,7 +282,7 @@ impl PartialEq for FirIdent {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (FirIdent::Name(a), FirIdent::Name(b)) => a == b,
-            (FirIdent::Fresh { id: a, .. }, FirIdent::Fresh { id: b, .. }) => a == b,
+            (FirIdent::Fresh { id: a }, FirIdent::Fresh { id: b }) => a == b,
             _ => false,
         }
     }
@@ -218,7 +297,7 @@ impl std::hash::Hash for FirIdent {
                 0u8.hash(state);
                 s.hash(state);
             }
-            FirIdent::Fresh { id, .. } => {
+            FirIdent::Fresh { id } => {
                 1u8.hash(state);
                 id.hash(state);
             }
@@ -407,7 +486,7 @@ pub enum TypeExpr {
         typs: Vec<TypeExpr>,
     },
     TCon {
-        name: String,
+        path: Path,
     },
     TApp {
         ty: Box<TypeExpr>,
@@ -442,7 +521,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
             ast::TypeExpr::TTuple { typs } => TypeExpr::TTuple {
                 typs: typs.iter().map(|t| t.into()).collect(),
             },
-            ast::TypeExpr::TCon { name } => TypeExpr::TCon { name: name.clone() },
+            ast::TypeExpr::TCon { path } => TypeExpr::TCon { path: path.into() },
             ast::TypeExpr::TApp { ty, args } => TypeExpr::TApp {
                 ty: Box::new(ty.as_ref().into()),
                 args: args.iter().map(|a| a.into()).collect(),
@@ -581,7 +660,6 @@ pub struct EnumDef {
     pub name: FirIdent,
     pub generics: Vec<FirIdent>,
     pub variants: Vec<(FirIdent, Vec<TypeExpr>)>,
-    pub variant_ctors: Vec<ConstructorId>,
 }
 
 impl From<&ast::EnumDef> for EnumDef {
@@ -595,7 +673,6 @@ impl From<&ast::EnumDef> for EnumDef {
                 .iter()
                 .map(|(i, tys)| (FirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
-            variant_ctors: Vec::new(),
         }
     }
 }
@@ -841,8 +918,6 @@ pub enum Pat {
     PWild,
 }
 
-use std::collections::HashMap;
-
 #[derive(Debug, Clone)]
 pub struct ConstructorResolutionError {
     pub path: Path,
@@ -860,21 +935,21 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     let mut full_name_index: HashMap<String, ConstructorId> = HashMap::new();
     let mut short_name_index: HashMap<String, Vec<ConstructorId>> = HashMap::new();
 
-    for def_id in 0..fir_table.defs.len() {
-        let def_id = DefId(def_id as u32);
-        if let Def::EnumDef(enum_def) = fir_table.def(def_id) {
+    for (def_id, def) in fir_table.iter_defs() {
+        if let Def::EnumDef(enum_def) = def {
             let enum_name = enum_def.name.to_ident_name();
             for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
-                if variant_idx < enum_def.variant_ctors.len() {
-                    let ctor_id = enum_def.variant_ctors[variant_idx];
-                    let variant_ident = variant_name.to_ident_name();
-                    let full_name = format!("{}::{}", enum_name, variant_ident);
-                    full_name_index.insert(full_name, ctor_id);
-                    short_name_index
-                        .entry(variant_ident)
-                        .or_default()
-                        .push(ctor_id);
-                }
+                let ctor_id = ConstructorId::EnumVariant {
+                    enum_def: def_id,
+                    variant_idx: variant_idx as u32,
+                };
+                let variant_ident = variant_name.to_ident_name();
+                let full_name = format!("{}::{}", enum_name, variant_ident);
+                full_name_index.insert(full_name, ctor_id);
+                short_name_index
+                    .entry(variant_ident)
+                    .or_default()
+                    .push(ctor_id);
             }
         }
     }
@@ -883,21 +958,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     for i in 0..expr_count {
         let expr_id = ExprId(i as u32);
         let expr = fir_table.expr(expr_id).clone();
-        if let Expr::EConstr { constructor, args } = expr {
-            if let ConstructorRef::Unresolved(path) = &constructor {
-                let resolved = resolve_constructor_path(
-                    path,
-                    &full_name_index,
-                    &short_name_index,
-                    &mut errors,
-                );
-                let new_expr = Expr::EConstr {
-                    constructor: resolved,
-                    args,
-                };
-                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
-                fir_table.exprs[idx] = new_expr;
-            }
+        if let Expr::EConstr { constructor, args } = expr
+            && let ConstructorRef::Unresolved(path) = &constructor
+        {
+            let resolved =
+                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
+            let new_expr = Expr::EConstr {
+                constructor: resolved,
+                args,
+            };
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
+            fir_table.exprs[idx] = new_expr;
         }
     }
 
@@ -905,21 +976,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
     for i in 0..pat_count {
         let pat_id = PatId(i as u32);
         let pat = fir_table.pat(pat_id).clone();
-        if let Pat::PConstr { constructor, args } = pat {
-            if let ConstructorRef::Unresolved(path) = &constructor {
-                let resolved = resolve_constructor_path(
-                    path,
-                    &full_name_index,
-                    &short_name_index,
-                    &mut errors,
-                );
-                let new_pat = Pat::PConstr {
-                    constructor: resolved,
-                    args,
-                };
-                let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
-                fir_table.pats[idx] = new_pat;
-            }
+        if let Pat::PConstr { constructor, args } = pat
+            && let ConstructorRef::Unresolved(path) = &constructor
+        {
+            let resolved =
+                resolve_constructor_path(path, &full_name_index, &short_name_index, &mut errors);
+            let new_pat = Pat::PConstr {
+                constructor: resolved,
+                args,
+            };
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
+            fir_table.pats[idx] = new_pat;
         }
     }
 
@@ -936,6 +1003,24 @@ fn resolve_constructor_path(
 
     if let Some(&ctor_id) = full_name_index.get(&path_str) {
         return ConstructorRef::Resolved(ctor_id);
+    }
+
+    if path.segments.len() >= 2 {
+        let suffix = format!("::{}", path_str);
+        let matches: Vec<ConstructorId> = full_name_index
+            .iter()
+            .filter_map(|(key, ctor)| key.ends_with(&suffix).then_some(*ctor))
+            .collect();
+        if matches.len() == 1 {
+            return ConstructorRef::Resolved(matches[0]);
+        }
+        if matches.len() > 1 {
+            errors.push(ConstructorResolutionError {
+                path: path.clone(),
+                kind: ConstructorResolutionErrorKind::Ambiguous(matches),
+            });
+            return ConstructorRef::Unresolved(path.clone());
+        }
     }
 
     if path.segments.len() == 1 {

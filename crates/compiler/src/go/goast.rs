@@ -1,4 +1,8 @@
-use crate::{go::goty, mangle::encode_ty, tast};
+use crate::{
+    go::goty,
+    mangle::{encode_ty, mangle_ident},
+    tast,
+};
 
 #[derive(Debug)]
 pub struct File {
@@ -299,8 +303,12 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                     .collect(),
             }
         }
-        tast::Ty::TEnum { name } => goty::GoType::TName { name: name.clone() },
-        tast::Ty::TStruct { name } => goty::GoType::TName { name: name.clone() },
+        tast::Ty::TEnum { name } => goty::GoType::TName {
+            name: mangle_ident(name),
+        },
+        tast::Ty::TStruct { name } => goty::GoType::TName {
+            name: mangle_ident(name),
+        },
         tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
                 unreachable!(
@@ -350,7 +358,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TFloat32 => "float32".to_string(),
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
-        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => mangle_ident(name),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),
         tast::Ty::TTuple { typs } => {
             let mut s = format!("Tuple{}", typs.len());
@@ -393,5 +401,5 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
-    format!("ref_{}_x", encode_ty(elem).to_lowercase())
+    format!("ref_{}_x", mangle_ident(&encode_ty(elem)).to_lowercase())
 }

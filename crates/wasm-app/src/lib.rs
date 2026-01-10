@@ -8,6 +8,24 @@ use compiler::{
 };
 use wasm_bindgen::prelude::*;
 
+fn typecheck_ast(
+    ast: ::ast::ast::File,
+) -> Result<
+    (
+        compiler::tast::File,
+        compiler::env::GlobalTypeEnv,
+        Diagnostics,
+    ),
+    String,
+> {
+    if !ast.imports.is_empty() {
+        return Err("error: package imports are not supported in webapp".to_string());
+    }
+    let (fir, fir_table) = compiler::fir::lower_to_fir(ast);
+    let (tast, genv, diagnostics) = compiler::typer::check_file(fir, fir_table);
+    Ok((tast, genv, diagnostics))
+}
+
 #[wasm_bindgen]
 pub fn execute(src: &str) -> String {
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
@@ -27,7 +45,10 @@ pub fn execute(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -70,7 +91,10 @@ pub fn compile_to_core(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -112,7 +136,10 @@ pub fn compile_to_mono(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -156,7 +183,10 @@ pub fn compile_to_anf(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -202,7 +232,10 @@ pub fn compile_to_go(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -274,7 +307,10 @@ pub fn get_tast(src: &str) -> String {
         Err(diagnostics) => return format_derive_errors(diagnostics),
     };
 
-    let (tast, genv, diagnostics) = compiler::typer::check_file(ast);
+    let (tast, genv, diagnostics) = match typecheck_ast(ast) {
+        Ok(result) => result,
+        Err(message) => return message,
+    };
     let typer_errors = format_typer_diagnostics(&diagnostics);
     if !typer_errors.is_empty() {
         return typer_errors
@@ -287,13 +323,23 @@ pub fn get_tast(src: &str) -> String {
 }
 
 #[wasm_bindgen]
-pub fn hover(src: &str, line: u32, col: u32) -> Option<String> {
-    compiler::query::hover_type(src, line, col)
+pub fn hover(src: &str, line: u32, col: u32) -> String {
+    if has_imports(src) {
+        return "error: package imports are not supported in webapp".to_string();
+    }
+    match compiler::query::hover_type(std::path::Path::new("dummy"), src, line, col) {
+        Ok(result) => result,
+        Err(e) => format!("error: {}", e),
+    }
 }
 
 #[wasm_bindgen]
 pub fn dot_completions(src: &str, line: u32, col: u32) -> String {
-    let items = compiler::query::dot_completions(src, line, col).unwrap_or_default();
+    if has_imports(src) {
+        return "[]".to_string();
+    }
+    let items = compiler::query::dot_completions(std::path::Path::new("dummy"), src, line, col)
+        .unwrap_or_default();
     let mut parts = Vec::with_capacity(items.len());
 
     for item in items {
@@ -337,6 +383,19 @@ fn json_escape(input: &str) -> String {
     }
 
     escaped
+}
+
+fn has_imports(src: &str) -> bool {
+    if !src.contains("import") {
+        return false;
+    }
+    let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
+    if result.has_errors() {
+        return false;
+    }
+    let root = MySyntaxNode::new_root(result.green_node);
+    let cst = cst::cst::File::cast(root).unwrap();
+    cst.import_decls().next().is_some()
 }
 
 fn format_parse_errors(result: &ParseResult, src: &str) -> String {

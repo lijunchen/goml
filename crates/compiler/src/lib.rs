@@ -7,7 +7,6 @@ pub mod derive;
 pub mod env;
 pub mod fir;
 pub mod go;
-pub mod hir;
 pub mod lift;
 pub mod mangle;
 pub mod mono;

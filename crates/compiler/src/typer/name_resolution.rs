@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use ast::ast;
 
@@ -36,31 +36,18 @@ impl ResolveLocalEnv {
     }
 }
 
-struct ResolutionContext {
-    builtin_names: HashMap<String, fir::BuiltinId>,
-    def_names: HashMap<String, fir::DefId>,
+struct ResolutionContext<'a> {
+    builtin_names: &'a HashMap<String, fir::BuiltinId>,
+    def_names: &'a HashMap<String, fir::DefId>,
+    current_package: &'a str,
+    imports: &'a HashSet<String>,
 }
 
-impl ResolutionContext {
-    fn resolve_name(
-        &self,
-        name: &str,
-        local_env: &ResolveLocalEnv,
-        ast_ident: &ast::AstIdent,
-    ) -> fir::NameRef {
-        if let Some(local_id) = local_env.rfind(ast_ident) {
-            return fir::NameRef::Local(local_id);
-        }
-
-        if let Some(&def_id) = self.def_names.get(name) {
-            return fir::NameRef::Def(def_id);
-        }
-
-        if let Some(&builtin_id) = self.builtin_names.get(name) {
-            return fir::NameRef::Builtin(builtin_id);
-        }
-
-        fir::NameRef::Unresolved(fir::Path::from_ident(name.to_string()))
+fn full_def_name(package: &str, name: &str) -> String {
+    if package == "Builtin" || package == "Main" {
+        name.to_string()
+    } else {
+        format!("{}::{}", package, name)
     }
 }
 
@@ -69,7 +56,7 @@ impl NameResolution {
         fir_table.fresh_local(name)
     }
 
-    pub fn resolve_file(&self, ast: ast::File) -> (fir::File, FirTable) {
+    pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::File, FirTable) {
         let mut fir_table = FirTable::new();
 
         let mut builtin_names = HashMap::new();
@@ -81,96 +68,170 @@ impl NameResolution {
 
         let mut def_names = HashMap::new();
         let mut toplevels = Vec::new();
+        let mut per_file_defs = Vec::new();
 
-        for item in ast.toplevels.iter() {
-            let def_id = match item {
-                ast::Item::Fn(func) => {
-                    let id = fir_table.alloc_def(fir::Def::Fn(fir::Fn {
-                        attrs: Vec::new(),
-                        name: func.name.0.clone(),
-                        generics: Vec::new(),
-                        params: Vec::new(),
-                        ret_ty: None,
-                        body: fir::ExprId(0),
-                    }));
-                    def_names.insert(func.name.0.clone(), id);
-                    id
-                }
-                ast::Item::ExternGo(ext) => {
-                    let id = fir_table.alloc_def(fir::Def::ExternGo(ext.into()));
-                    def_names.insert(ext.goml_name.0.clone(), id);
-                    id
-                }
-                ast::Item::ExternBuiltin(ext) => {
-                    let id = fir_table.alloc_def(fir::Def::ExternBuiltin(ext.into()));
-                    def_names.insert(ext.name.0.clone(), id);
-                    id
-                }
-                ast::Item::EnumDef(e) => {
-                    let enum_def_id = fir_table.alloc_def(fir::Def::EnumDef(e.into()));
-                    let variant_count = e.variants.len();
-                    let mut variant_ctors = Vec::with_capacity(variant_count);
-                    for variant_idx in 0..variant_count {
-                        let ctor_id = fir_table.alloc_constructor(fir::Constructor::EnumVariant {
-                            enum_def: enum_def_id,
-                            variant_idx,
-                        });
-                        variant_ctors.push(ctor_id);
+        for file in files.iter() {
+            let package_name = file.package.0.as_str();
+            let mut def_ids = Vec::new();
+            for item in file.toplevels.iter() {
+                let def_id = match item {
+                    ast::Item::Fn(func) => {
+                        let full_name = full_def_name(package_name, &func.name.0);
+                        let path = full_def_path(package_name, &func.name.0);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::Fn,
+                            fir::Def::Fn(fir::Fn {
+                                attrs: Vec::new(),
+                                name: full_name.clone(),
+                                generics: Vec::new(),
+                                params: Vec::new(),
+                                ret_ty: None,
+                                body: fir::ExprId(0),
+                            }),
+                        );
+                        def_names.insert(full_name, id);
+                        id
                     }
-                    if let fir::Def::EnumDef(enum_def) = fir_table.def_mut(enum_def_id) {
-                        enum_def.variant_ctors = variant_ctors;
+                    ast::Item::ExternGo(ext) => {
+                        let full_name = full_def_name(package_name, &ext.goml_name.0);
+                        let path = full_def_path(package_name, &ext.goml_name.0);
+                        let ext_def = self.lower_extern_go(ext, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::ExternGo,
+                            fir::Def::ExternGo(ext_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
                     }
-                    enum_def_id
-                }
-                ast::Item::StructDef(s) => fir_table.alloc_def(fir::Def::StructDef(s.into())),
-                ast::Item::TraitDef(t) => fir_table.alloc_def(fir::Def::TraitDef(t.into())),
-                ast::Item::ImplBlock(_i) => {
-                    fir_table.alloc_def(fir::Def::ImplBlock(fir::ImplBlock {
-                        attrs: Vec::new(),
-                        generics: Vec::new(),
-                        trait_name: None,
-                        for_type: fir::TypeExpr::TUnit,
-                        methods: Vec::new(),
-                    }))
-                }
-                ast::Item::ExternType(ext) => fir_table.alloc_def(fir::Def::ExternType(ext.into())),
-            };
-            toplevels.push(def_id);
+                    ast::Item::ExternBuiltin(ext) => {
+                        let full_name = full_def_name(package_name, &ext.name.0);
+                        let path = full_def_path(package_name, &ext.name.0);
+                        let ext_def = self.lower_extern_builtin(ext, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::ExternBuiltin,
+                            fir::Def::ExternBuiltin(ext_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
+                    }
+                    ast::Item::EnumDef(e) => {
+                        let full_name = full_def_name(package_name, &e.name.0);
+                        let path = full_def_path(package_name, &e.name.0);
+                        let enum_def = self.lower_enum_def(e, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::EnumDef,
+                            fir::Def::EnumDef(enum_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
+                    }
+                    ast::Item::StructDef(s) => {
+                        let full_name = full_def_name(package_name, &s.name.0);
+                        let path = full_def_path(package_name, &s.name.0);
+                        let struct_def = self.lower_struct_def(s, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::StructDef,
+                            fir::Def::StructDef(struct_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
+                    }
+                    ast::Item::TraitDef(t) => {
+                        let full_name = full_def_name(package_name, &t.name.0);
+                        let path = full_def_path(package_name, &t.name.0);
+                        let trait_def = self.lower_trait_def(t, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::TraitDef,
+                            fir::Def::TraitDef(trait_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
+                    }
+                    ast::Item::ImplBlock(_i) => fir_table.alloc_def_with_path(
+                        full_def_path(package_name, "impl"),
+                        fir::DefKind::ImplBlock,
+                        fir::Def::ImplBlock(fir::ImplBlock {
+                            attrs: Vec::new(),
+                            generics: Vec::new(),
+                            trait_name: None,
+                            for_type: fir::TypeExpr::TUnit,
+                            methods: Vec::new(),
+                        }),
+                    ),
+                    ast::Item::ExternType(ext) => {
+                        let full_name = full_def_name(package_name, &ext.goml_name.0);
+                        let path = full_def_path(package_name, &ext.goml_name.0);
+                        let ext_def = self.lower_extern_type(ext, package_name);
+                        let id = fir_table.alloc_def_with_path(
+                            path,
+                            fir::DefKind::ExternType,
+                            fir::Def::ExternType(ext_def),
+                        );
+                        def_names.insert(full_name, id);
+                        id
+                    }
+                };
+                toplevels.push(def_id);
+                def_ids.push(def_id);
+            }
+            per_file_defs.push(def_ids);
         }
 
-        let ctx = ResolutionContext {
-            builtin_names,
-            def_names,
-        };
+        for (file_idx, file) in files.iter().enumerate() {
+            let package_name = file.package.0.as_str();
+            let imports = file
+                .imports
+                .iter()
+                .map(|import| import.0.clone())
+                .collect::<HashSet<_>>();
+            let ctx = ResolutionContext {
+                builtin_names: &builtin_names,
+                def_names: &def_names,
+                current_package: package_name,
+                imports: &imports,
+            };
 
-        let mut toplevels_idx = 0;
-        for item in ast.toplevels.iter() {
-            match item {
-                ast::Item::Fn(func) => {
-                    let def_id = toplevels[toplevels_idx];
-                    toplevels_idx += 1;
-                    let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table);
-                    *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
-                }
-                ast::Item::ImplBlock(i) => {
-                    let def_id = toplevels[toplevels_idx];
-                    toplevels_idx += 1;
-                    let methods = i
-                        .methods
-                        .iter()
-                        .map(|m| self.resolve_fn_def(m, &ctx, &mut fir_table))
-                        .collect();
-                    let impl_block = fir::ImplBlock {
-                        attrs: i.attrs.iter().map(|a| a.into()).collect(),
-                        generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
-                        trait_name: i.trait_name.as_ref().map(|t| FirIdent::name(&t.0)),
-                        for_type: (&i.for_type).into(),
-                        methods,
-                    };
-                    *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
-                }
-                _ => {
-                    toplevels_idx += 1;
+            let mut toplevel_idx = 0;
+            for item in file.toplevels.iter() {
+                match item {
+                    ast::Item::Fn(func) => {
+                        let def_id = per_file_defs[file_idx][toplevel_idx];
+                        toplevel_idx += 1;
+                        fir_table.set_current_owner(def_id);
+                        let full_name = full_def_name(package_name, &func.name.0);
+                        let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table, full_name);
+                        *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
+                    }
+                    ast::Item::ImplBlock(i) => {
+                        let def_id = per_file_defs[file_idx][toplevel_idx];
+                        toplevel_idx += 1;
+                        let methods = i
+                            .methods
+                            .iter()
+                            .map(|m| self.resolve_fn_def(m, &ctx, &mut fir_table))
+                            .collect();
+                        let tparams = type_param_set(&i.generics);
+                        let impl_block = fir::ImplBlock {
+                            attrs: i.attrs.iter().map(|a| a.into()).collect(),
+                            generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+                            trait_name: i
+                                .trait_name
+                                .as_ref()
+                                .map(|t| FirIdent::name(full_def_name(package_name, &t.0))),
+                            for_type: Self::lower_type_expr(&i.for_type, &tparams, package_name),
+                            methods,
+                        };
+                        *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
+                    }
+                    _ => {
+                        toplevel_idx += 1;
+                    }
                 }
             }
         }
@@ -184,8 +245,22 @@ impl NameResolution {
         ctx: &ResolutionContext,
         fir_table: &mut FirTable,
     ) -> fir::DefId {
-        let func = self.resolve_fn(func, ctx, fir_table);
-        fir_table.alloc_def(fir::Def::Fn(func))
+        let def_id = fir_table.alloc_def(
+            func.name.0.clone(),
+            fir::DefKind::Fn,
+            fir::Def::Fn(fir::Fn {
+                attrs: Vec::new(),
+                name: func.name.0.clone(),
+                generics: Vec::new(),
+                params: Vec::new(),
+                ret_ty: None,
+                body: fir::ExprId(0),
+            }),
+        );
+        fir_table.set_current_owner(def_id);
+        let func = self.resolve_fn(func, ctx, fir_table, func.name.0.clone());
+        *fir_table.def_mut(def_id) = fir::Def::Fn(func);
+        def_id
     }
 
     fn resolve_fn(
@@ -193,29 +268,38 @@ impl NameResolution {
         func: &ast::Fn,
         ctx: &ResolutionContext,
         fir_table: &mut FirTable,
+        resolved_name: String,
     ) -> fir::Fn {
         let ast::Fn {
             attrs,
-            name,
             generics,
             params,
             ret_ty,
             body,
+            ..
         } = func;
         let mut env = ResolveLocalEnv::new();
         for param in params {
             env.add(&param.0, self.fresh_name(&param.0.0, fir_table));
         }
+        let tparams = type_param_set(generics);
         let new_params = params
             .iter()
-            .map(|param| (env.rfind(&param.0).unwrap(), (&param.1).into()))
+            .map(|param| {
+                (
+                    env.rfind(&param.0).unwrap(),
+                    Self::lower_type_expr(&param.1, &tparams, ctx.current_package),
+                )
+            })
             .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
-            name: name.0.clone(),
+            name: resolved_name,
             generics: generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
             params: new_params,
-            ret_ty: ret_ty.as_ref().map(|t| t.into()),
+            ret_ty: ret_ty
+                .as_ref()
+                .map(|t| Self::lower_type_expr(t, &tparams, ctx.current_package)),
             body: self.resolve_expr(body, &mut env, ctx, fir_table),
         }
     }
@@ -232,16 +316,49 @@ impl NameResolution {
                 if path.len() == 1 {
                     let ident = path.last_ident().unwrap();
                     let name_str = &ident.0;
-                    let res = ctx.resolve_name(name_str, env, ident);
+                    let res = if let Some(local_id) = env.rfind(ident) {
+                        fir::NameRef::Local(local_id)
+                    } else {
+                        let full_name = full_def_name(ctx.current_package, name_str);
+                        if let Some(&def_id) = ctx.def_names.get(&full_name) {
+                            fir::NameRef::Def(def_id)
+                        } else if let Some(&builtin_id) = ctx.builtin_names.get(name_str) {
+                            fir::NameRef::Builtin(builtin_id)
+                        } else {
+                            fir::NameRef::Unresolved(fir::Path::from_ident(name_str.clone()))
+                        }
+                    };
+                    let hint = match res {
+                        fir::NameRef::Def(_) => full_def_name(ctx.current_package, name_str),
+                        _ => name_str.clone(),
+                    };
                     fir_table.alloc_expr(fir::Expr::ENameRef {
                         res,
-                        hint: name_str.clone(),
+                        hint,
                         astptr: Some(*astptr),
                     })
                 } else {
+                    let full_name = path.display();
+                    let package = path
+                        .segments()
+                        .first()
+                        .map(|seg| seg.ident().0.as_str())
+                        .unwrap_or_default();
+                    let allowed = package == ctx.current_package
+                        || package == "Builtin"
+                        || ctx.imports.contains(package);
+                    let res = if allowed {
+                        ctx.def_names
+                            .get(&full_name)
+                            .copied()
+                            .map(fir::NameRef::Def)
+                            .unwrap_or_else(|| fir::NameRef::Unresolved(path.into()))
+                    } else {
+                        fir::NameRef::Unresolved(path.into())
+                    };
                     fir_table.alloc_expr(fir::Expr::ENameRef {
-                        res: fir::NameRef::Unresolved(path.into()),
-                        hint: path.display(),
+                        res,
+                        hint: full_name,
                         astptr: Some(*astptr),
                     })
                 }
@@ -330,7 +447,9 @@ impl NameResolution {
                 let mut closure_env = env.enter_scope();
                 let new_params = params
                     .iter()
-                    .map(|param| self.resolve_closure_param(param, &mut closure_env, fir_table))
+                    .map(|param| {
+                        self.resolve_closure_param(param, &mut closure_env, ctx, fir_table)
+                    })
                     .collect();
                 let new_body_expr = self.resolve_expr(body, &mut closure_env, ctx, fir_table);
 
@@ -538,18 +657,225 @@ impl NameResolution {
         }
     }
 
+    fn lower_type_expr(
+        ty: &ast::TypeExpr,
+        tparams: &HashSet<String>,
+        current_package: &str,
+    ) -> fir::TypeExpr {
+        match ty {
+            ast::TypeExpr::TUnit => fir::TypeExpr::TUnit,
+            ast::TypeExpr::TBool => fir::TypeExpr::TBool,
+            ast::TypeExpr::TInt8 => fir::TypeExpr::TInt8,
+            ast::TypeExpr::TInt16 => fir::TypeExpr::TInt16,
+            ast::TypeExpr::TInt32 => fir::TypeExpr::TInt32,
+            ast::TypeExpr::TInt64 => fir::TypeExpr::TInt64,
+            ast::TypeExpr::TUint8 => fir::TypeExpr::TUint8,
+            ast::TypeExpr::TUint16 => fir::TypeExpr::TUint16,
+            ast::TypeExpr::TUint32 => fir::TypeExpr::TUint32,
+            ast::TypeExpr::TUint64 => fir::TypeExpr::TUint64,
+            ast::TypeExpr::TFloat32 => fir::TypeExpr::TFloat32,
+            ast::TypeExpr::TFloat64 => fir::TypeExpr::TFloat64,
+            ast::TypeExpr::TString => fir::TypeExpr::TString,
+            ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
+                typs: typs
+                    .iter()
+                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package))
+                    .collect(),
+            },
+            ast::TypeExpr::TCon { path } => {
+                let path = if path.len() == 1 {
+                    let name = path.last_ident().unwrap().0.clone();
+                    if tparams.contains(&name) || name == "Ref" || name == "Vec" {
+                        path.into()
+                    } else {
+                        full_def_path(current_package, &name)
+                    }
+                } else {
+                    path.into()
+                };
+                fir::TypeExpr::TCon { path }
+            }
+            ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
+                ty: Box::new(Self::lower_type_expr(ty.as_ref(), tparams, current_package)),
+                args: args
+                    .iter()
+                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package))
+                    .collect(),
+            },
+            ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
+                len: *len,
+                elem: Box::new(Self::lower_type_expr(
+                    elem.as_ref(),
+                    tparams,
+                    current_package,
+                )),
+            },
+            ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
+                params: params
+                    .iter()
+                    .map(|param| Self::lower_type_expr(param, tparams, current_package))
+                    .collect(),
+                ret_ty: Box::new(Self::lower_type_expr(
+                    ret_ty.as_ref(),
+                    tparams,
+                    current_package,
+                )),
+            },
+        }
+    }
+
+    fn lower_enum_def(&self, def: &ast::EnumDef, current_package: &str) -> fir::EnumDef {
+        let tparams = type_param_set(&def.generics);
+        let name = full_def_name(current_package, &def.name.0);
+        let variants = def
+            .variants
+            .iter()
+            .map(|(variant_name, tys)| {
+                let types = tys
+                    .iter()
+                    .map(|ty| Self::lower_type_expr(ty, &tparams, current_package))
+                    .collect();
+                (FirIdent::name(&variant_name.0), types)
+            })
+            .collect();
+        fir::EnumDef {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            name: FirIdent::name(&name),
+            generics: def.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            variants,
+        }
+    }
+
+    fn lower_struct_def(&self, def: &ast::StructDef, current_package: &str) -> fir::StructDef {
+        let tparams = type_param_set(&def.generics);
+        let name = full_def_name(current_package, &def.name.0);
+        let fields = def
+            .fields
+            .iter()
+            .map(|(field_name, ty)| {
+                (
+                    FirIdent::name(&field_name.0),
+                    Self::lower_type_expr(ty, &tparams, current_package),
+                )
+            })
+            .collect();
+        fir::StructDef {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            name: FirIdent::name(&name),
+            generics: def.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            fields,
+        }
+    }
+
+    fn lower_trait_def(&self, def: &ast::TraitDef, current_package: &str) -> fir::TraitDef {
+        let name = full_def_name(current_package, &def.name.0);
+        let method_sigs = def
+            .method_sigs
+            .iter()
+            .map(|sig| fir::TraitMethodSignature {
+                name: FirIdent::name(&sig.name.0),
+                params: sig
+                    .params
+                    .iter()
+                    .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package))
+                    .collect(),
+                ret_ty: Self::lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package),
+            })
+            .collect();
+        fir::TraitDef {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            name: FirIdent::name(&name),
+            method_sigs,
+        }
+    }
+
+    fn lower_extern_go(&self, def: &ast::ExternGo, current_package: &str) -> fir::ExternGo {
+        let name = full_def_name(current_package, &def.goml_name.0);
+        fir::ExternGo {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            package_path: def.package_path.clone(),
+            go_symbol: def.go_symbol.clone(),
+            goml_name: FirIdent::name(&name),
+            explicit_go_symbol: def.explicit_go_symbol,
+            params: def
+                .params
+                .iter()
+                .map(|(param, ty)| {
+                    (
+                        FirIdent::name(&param.0),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
+                    )
+                })
+                .collect(),
+            ret_ty: def
+                .ret_ty
+                .as_ref()
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
+        }
+    }
+
+    fn lower_extern_type(&self, def: &ast::ExternType, current_package: &str) -> fir::ExternType {
+        let name = full_def_name(current_package, &def.goml_name.0);
+        fir::ExternType {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            goml_name: FirIdent::name(&name),
+        }
+    }
+
+    fn lower_extern_builtin(
+        &self,
+        def: &ast::ExternBuiltin,
+        current_package: &str,
+    ) -> fir::ExternBuiltin {
+        let name = full_def_name(current_package, &def.name.0);
+        fir::ExternBuiltin {
+            attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            name: FirIdent::name(&name),
+            params: def
+                .params
+                .iter()
+                .map(|(param, ty)| {
+                    (
+                        FirIdent::name(&param.0),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
+                    )
+                })
+                .collect(),
+            ret_ty: def
+                .ret_ty
+                .as_ref()
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
+        }
+    }
+
     fn resolve_closure_param(
         &self,
         param: &ast::ClosureParam,
         env: &mut ResolveLocalEnv,
+        ctx: &ResolutionContext,
         fir_table: &mut FirTable,
     ) -> fir::ClosureParam {
         let new_name = self.fresh_name(&param.name.0, fir_table);
         env.add(&param.name, new_name);
         fir::ClosureParam {
             name: new_name,
-            ty: param.ty.as_ref().map(|t| t.into()),
+            ty: param
+                .ty
+                .as_ref()
+                .map(|t| Self::lower_type_expr(t, &HashSet::new(), ctx.current_package)),
             astptr: param.astptr,
         }
+    }
+}
+
+fn type_param_set(params: &[ast::AstIdent]) -> HashSet<String> {
+    params.iter().map(|param| param.0.clone()).collect()
+}
+
+fn full_def_path(package: &str, name: &str) -> fir::Path {
+    if package == "Builtin" || package == "Main" {
+        fir::Path::from_ident(name.to_string())
+    } else {
+        fir::Path::from_idents(vec![package.to_string(), name.to_string()])
     }
 }

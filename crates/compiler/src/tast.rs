@@ -14,12 +14,12 @@ impl TastIdent {
 
 pub const ARRAY_WILDCARD_LEN: usize = usize::MAX;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct File {
     pub toplevels: Vec<Item>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Item {
     ImplBlock(ImplBlock),
     Fn(Fn),
@@ -27,7 +27,7 @@ pub enum Item {
     ExternType(ExternType),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub generics: Vec<String>,
     pub trait_name: Option<TastIdent>,
@@ -35,7 +35,7 @@ pub struct ImplBlock {
     pub methods: Vec<Fn>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Fn {
     pub name: String,
     pub params: Vec<(String, Ty)>,
@@ -43,7 +43,7 @@ pub struct Fn {
     pub body: Expr,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExternGo {
     pub goml_name: String,
     pub go_name: String,
@@ -52,7 +52,7 @@ pub struct ExternGo {
     pub ret_ty: Ty,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ExternType {
     pub goml_name: String,
 }

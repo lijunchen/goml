@@ -63,6 +63,7 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
         == AST ==
+        package Main
         fn main() -> unit {
           string_println("hello");
         }

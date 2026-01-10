@@ -109,7 +109,7 @@ pub enum TypeExpr {
         typs: Vec<TypeExpr>,
     },
     TCon {
-        name: String,
+        path: Path,
     },
     TApp {
         ty: Box<TypeExpr>,
@@ -140,6 +140,8 @@ pub struct Attribute {
 
 #[derive(Debug, Clone)]
 pub struct File {
+    pub package: AstIdent,
+    pub imports: Vec<AstIdent>,
     pub toplevels: Vec<Item>,
 }
 

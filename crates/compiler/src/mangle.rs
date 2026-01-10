@@ -42,6 +42,10 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
     }
 }
 
+pub fn mangle_ident(name: &str) -> String {
+    name.replace("::", "__")
+}
+
 pub fn decode_ty(encoded: &str) -> Result<tast::Ty, String> {
     if encoded.is_empty() {
         return Err("empty type encoding".to_string());
