@@ -108,6 +108,13 @@ impl PackageExports {
         }
     }
 
+    fn to_genv(&self) -> GlobalTypeEnv {
+        GlobalTypeEnv {
+            type_env: self.type_env.clone(),
+            trait_env: self.trait_env.clone(),
+            value_env: self.value_env.clone(),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -125,6 +132,7 @@ struct TypecheckPackagesResult {
     genv: GlobalTypeEnv,
     diagnostics: Diagnostics,
     graph: packages::PackageGraph,
+    artifacts: HashMap<String, PackageArtifact>,
 }
 
 fn compile_error(message: String) -> CompilationError {
@@ -467,7 +475,7 @@ fn promote_constructors_in_expr(
 
 fn typecheck_package(
     package: &packages::PackageUnit,
-    base_env: &GlobalTypeEnv,
+    deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_ctor_names: &HashSet<String>,
 ) -> PackageArtifact {
     let local_ctor_names = collect_constructor_names_for_files(&package.files);
@@ -480,7 +488,13 @@ fn typecheck_package(
         .map(|file| promote_constructors_in_file(file, &local_ctor_names, &global_ctor_names))
         .collect();
     let (fir, fir_table) = fir::lower_to_fir_files(files);
-    let (tast, genv, diagnostics) = typer::check_file_with_env(fir, fir_table, base_env.clone());
+    let (tast, genv, diagnostics) = typer::check_file_with_env(
+        fir,
+        fir_table,
+        GlobalTypeEnv::new(),
+        &package.name,
+        deps_envs,
+    );
     let exports = PackageExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
@@ -563,14 +577,12 @@ fn typecheck_packages(
         let deps = dependency_sets
             .get(name)
             .ok_or_else(|| compile_error(format!("missing deps for package {}", name)))?;
-        let mut base_env = GlobalTypeEnv::new();
-        for dep in order.iter() {
-            if deps.contains(dep) {
-                let exports = exports_by_name.get(dep).ok_or_else(|| {
-                    compile_error(format!("missing exports for package {}", dep))
-                })?;
-                exports.apply_to(&mut base_env);
-            }
+        let mut deps_envs = HashMap::new();
+        for dep in deps.iter() {
+            let exports = exports_by_name
+                .get(dep)
+                .ok_or_else(|| compile_error(format!("missing exports for package {}", dep)))?;
+            deps_envs.insert(dep.clone(), exports.to_genv());
         }
 
         let mut deps_ctor_names = HashSet::new();
@@ -581,7 +593,7 @@ fn typecheck_packages(
             deps_ctor_names.extend(names.iter().cloned());
         }
 
-        let artifact = typecheck_package(package, &base_env, &deps_ctor_names);
+        let artifact = typecheck_package(package, deps_envs, &deps_ctor_names);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
@@ -611,6 +623,7 @@ fn typecheck_packages(
         genv,
         diagnostics,
         graph,
+        artifacts: artifacts_by_name,
     })
 }
 
@@ -623,6 +636,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         genv,
         mut diagnostics,
         graph,
+        artifacts,
         ..
     } = typecheck;
     let mut all_files = Vec::new();
@@ -661,7 +675,17 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let gensym = Gensym::new();
 
-    let core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &tast);
+    let mut core_toplevels = Vec::new();
+    for name in graph.discovery_order.iter() {
+        let artifact = artifacts
+            .get(name)
+            .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        let package_core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &artifact.tast);
+        core_toplevels.extend(package_core.toplevels);
+    }
+    let core = crate::core::File {
+        toplevels: core_toplevels,
+    };
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }

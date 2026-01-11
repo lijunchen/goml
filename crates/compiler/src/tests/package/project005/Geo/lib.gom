@@ -1,0 +1,11 @@
+package Geo
+import Shape
+
+fn squared(p: Shape::Point) -> int32 {
+    let Shape::Point { x: x, y: y } = p;
+    x * x + y * y
+}
+
+fn move(p: Shape::Point, dx: int32, dy: int32) -> Shape::Point {
+    Shape::Point { x: p.x + dx, y: p.y + dy }
+}

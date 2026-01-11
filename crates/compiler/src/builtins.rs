@@ -1,4 +1,4 @@
-use std::{path::Path, sync::OnceLock};
+use std::{collections::HashMap, path::Path, sync::OnceLock};
 
 use crate::derive;
 use ::ast::{ast, lower};
@@ -66,7 +66,13 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
     let (fir, fir_table) = fir::lower_to_fir(ast);
 
-    let (_tast, mut genv, diagnostics) = typer::check_file_with_env(fir, fir_table, base_env);
+    let (_tast, mut genv, diagnostics) = typer::check_file_with_env(
+        fir,
+        fir_table,
+        base_env,
+        "Builtin",
+        HashMap::new(),
+    );
     if diagnostics.has_errors() {
         panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
     }

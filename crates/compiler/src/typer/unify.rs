@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, GlobalTypeEnv},
+    env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
     tast::{self, TastIdent, TypeVar},
     typer::Typer,
 };
@@ -179,7 +179,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(TastIdent, Vec<tast::Ty>)> {
 }
 
 impl Typer {
-    pub fn solve(&mut self, genv: &GlobalTypeEnv, diagnostics: &mut Diagnostics) {
+    pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 
@@ -238,7 +238,10 @@ impl Typer {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
-                                        match genv.get_trait_impl(&trait_name, self_ty, &op) {
+                                        let (resolved, env) =
+                                            resolve_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        match env.get_trait_impl(&trait_ident, self_ty, &op) {
                                             Some(impl_scheme) => {
                                                 let impl_fun_ty = self.inst_ty(&impl_scheme);
 
@@ -314,7 +317,11 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let struct_def = genv.structs().get(&type_name).unwrap_or_else(|| {
+                            let (resolved, env) = resolve_name(genv, &type_name.0);
+                            let struct_def = env
+                                .structs()
+                                .get(&TastIdent(resolved))
+                                .unwrap_or_else(|| {
                                 panic!(
                                     "Struct {} not found when accessing field {}",
                                     type_name.0, field.0
@@ -1050,5 +1057,29 @@ impl Typer {
                 }
             }
         }
+    }
+}
+
+fn resolve_name<'a>(genv: &'a PackageTypeEnv, name: &str) -> (String, &'a GlobalTypeEnv) {
+    if let Some((package, rest)) = name.split_once("::") {
+        if package == "Builtin" {
+            return (rest.to_string(), genv.current());
+        }
+        if package == "Main" && genv.package == "Main" {
+            return (rest.to_string(), genv.current());
+        }
+        if package == genv.package {
+            return (name.to_string(), genv.current());
+        }
+        if let Some(dep) = genv.deps.get(package) {
+            return (name.to_string(), dep);
+        }
+        return (name.to_string(), genv.current());
+    }
+
+    if genv.package == "Main" || genv.package == "Builtin" {
+        (name.to_string(), genv.current())
+    } else {
+        (format!("{}::{}", genv.package, name), genv.current())
     }
 }

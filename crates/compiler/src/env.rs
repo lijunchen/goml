@@ -10,6 +10,7 @@ use crate::{
     tast::{self, TastIdent},
 };
 use std::cell::Cell;
+use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
 pub struct EnumDef {
@@ -453,6 +454,43 @@ pub struct GlobalTypeEnv {
     pub type_env: TypeEnv,
     pub trait_env: TraitEnv,
     pub value_env: ValueEnv,
+}
+
+#[derive(Debug, Clone)]
+pub struct PackageTypeEnv {
+    pub package: String,
+    pub current: GlobalTypeEnv,
+    pub deps: HashMap<String, GlobalTypeEnv>,
+}
+
+impl PackageTypeEnv {
+    pub fn new(
+        package: String,
+        current: GlobalTypeEnv,
+        deps: HashMap<String, GlobalTypeEnv>,
+    ) -> Self {
+        Self {
+            package,
+            current,
+            deps,
+        }
+    }
+
+    pub fn current(&self) -> &GlobalTypeEnv {
+        &self.current
+    }
+
+    pub fn current_mut(&mut self) -> &mut GlobalTypeEnv {
+        &mut self.current
+    }
+
+    pub fn env_for_package(&self, package: &str) -> Option<&GlobalTypeEnv> {
+        if package == self.package {
+            Some(&self.current)
+        } else {
+            self.deps.get(package)
+        }
+    }
 }
 
 impl Default for GlobalTypeEnv {
