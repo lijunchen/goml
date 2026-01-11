@@ -2215,10 +2215,16 @@ fn lookup_function_path(genv: &PackageTypeEnv, path: &fir::Path) -> Option<(Stri
             .get_type_of_function(&full_name)
             .map(|ty| (full_name, ty));
     }
-    genv.deps.get(package).and_then(|env| {
+    if let Some(env) = genv.deps.get(package) {
         env.get_type_of_function(&full_name)
             .map(|ty| (full_name, ty))
-    })
+    } else {
+        eprintln!(
+            "lookup_function_path: package '{}' not found when resolving function '{}'",
+            package, full_name
+        );
+        None
+    }
 }
 
 fn lookup_inherent_method_for_ty(
