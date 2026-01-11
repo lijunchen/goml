@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
+    env::{Constraint, PackageTypeEnv},
     tast::{self, TastIdent, TypeVar},
     typer::Typer,
 };
@@ -239,7 +239,7 @@ impl Typer {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
                                         let (resolved, env) =
-                                            resolve_name(genv, &trait_name.0);
+                                            super::util::resolve_type_name(genv, &trait_name.0);
                                         let trait_ident = TastIdent(resolved);
                                         match env.get_trait_impl(&trait_ident, self_ty, &op) {
                                             Some(impl_scheme) => {
@@ -317,16 +317,15 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let (resolved, env) = resolve_name(genv, &type_name.0);
-                            let struct_def = env
-                                .structs()
-                                .get(&TastIdent(resolved))
-                                .unwrap_or_else(|| {
-                                panic!(
-                                    "Struct {} not found when accessing field {}",
-                                    type_name.0, field.0
-                                )
-                            });
+                            let (resolved, env) =
+                                super::util::resolve_type_name(genv, &type_name.0);
+                            let struct_def =
+                                env.structs().get(&TastIdent(resolved)).unwrap_or_else(|| {
+                                    panic!(
+                                        "Struct {} not found when accessing field {}",
+                                        type_name.0, field.0
+                                    )
+                                });
                             let field_ty =
                                 instantiate_struct_field_ty(struct_def, &type_args, &field);
                             if self.unify(diagnostics, &result_ty, &field_ty) {
@@ -1057,29 +1056,5 @@ impl Typer {
                 }
             }
         }
-    }
-}
-
-fn resolve_name<'a>(genv: &'a PackageTypeEnv, name: &str) -> (String, &'a GlobalTypeEnv) {
-    if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
-            return (rest.to_string(), genv.current());
-        }
-        if package == "Main" && genv.package == "Main" {
-            return (rest.to_string(), genv.current());
-        }
-        if package == genv.package {
-            return (name.to_string(), genv.current());
-        }
-        if let Some(dep) = genv.deps.get(package) {
-            return (name.to_string(), dep);
-        }
-        return (name.to_string(), genv.current());
-    }
-
-    if genv.package == "Main" || genv.package == "Builtin" {
-        (name.to_string(), genv.current())
-    } else {
-        (format!("{}::{}", genv.package, name), genv.current())
     }
 }

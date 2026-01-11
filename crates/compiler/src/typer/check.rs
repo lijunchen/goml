@@ -396,22 +396,21 @@ impl Typer {
         member: &str,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
-        let (resolved_type_name, type_env) = resolve_type_name(genv, type_name);
+        let (resolved_type_name, type_env) = super::util::resolve_type_name(genv, type_name);
         let type_ident = tast::TastIdent(resolved_type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
         // First check if type_name is a trait
-        if let Some((trait_name, trait_env)) = resolve_trait_name(genv, type_name) {
-            if let Some(method_ty) =
+        if let Some((trait_name, trait_env)) = resolve_trait_name(genv, type_name)
+            && let Some(method_ty) =
                 trait_env.lookup_trait_method(&tast::TastIdent(trait_name.clone()), &member_ident)
-            {
-                let inst_ty = self.inst_ty(&method_ty);
-                return tast::Expr::ETraitMethod {
-                    trait_name: tast::TastIdent(trait_name),
-                    method_name: member_ident.clone(),
-                    ty: inst_ty,
-                    astptr,
-                };
-            }
+        {
+            let inst_ty = self.inst_ty(&method_ty);
+            return tast::Expr::ETraitMethod {
+                trait_name: tast::TastIdent(trait_name),
+                method_name: member_ident.clone(),
+                ty: inst_ty,
+                astptr,
+            };
         }
 
         // Check if type_name is an enum or struct for inherent method lookup
@@ -482,7 +481,7 @@ impl Typer {
                 .map(|seg| seg.seg().clone())
                 .collect::<Vec<_>>()
                 .join("::");
-            let (resolved, env) = resolve_type_name(genv, &name);
+            let (resolved, env) = super::util::resolve_type_name(genv, &name);
             (Some(tast::TastIdent(resolved)), env)
         };
         let variant_name = tast::TastIdent(variant_ident.clone());
@@ -577,7 +576,7 @@ impl Typer {
         fields: &[(fir::FirIdent, fir::ExprId)],
     ) -> tast::Expr {
         let name_display = name.display();
-        let (resolved_name, type_env) = resolve_type_name(genv, &name_display);
+        let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
         let (constructor, constr_ty) = type_env
             .lookup_constructor(&tast::TastIdent(resolved_name.clone()))
             .unwrap_or_else(|| panic!("Constructor {} not found in environment", resolved_name));
@@ -652,8 +651,7 @@ impl Typer {
                 let missing = &struct_fields[idx].0;
                 panic!(
                     "Missing field {} in struct literal {}",
-                    missing.0,
-                    name_display
+                    missing.0, name_display
                 );
             }
         }
@@ -1326,7 +1324,8 @@ impl Typer {
                         };
                     }
                 }
-                let (resolved_type_name, type_env) = resolve_type_name(genv, &type_name);
+                let (resolved_type_name, type_env) =
+                    super::util::resolve_type_name(genv, &type_name);
                 let type_ident = tast::TastIdent(resolved_type_name.clone());
                 let receiver_ty = if type_env.enums().contains_key(&type_ident) {
                     tast::Ty::TEnum {
@@ -1342,7 +1341,8 @@ impl Typer {
                         resolved_type_name
                     );
                 };
-                if let Some(method_ty) = type_env.lookup_inherent_method(&receiver_ty, &member_ident)
+                if let Some(method_ty) =
+                    type_env.lookup_inherent_method(&receiver_ty, &member_ident)
                 {
                     let inst_method_ty = self.inst_ty(&method_ty);
                     if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
@@ -1802,7 +1802,7 @@ impl Typer {
                         .map(|seg| seg.seg().clone())
                         .collect::<Vec<_>>()
                         .join("::");
-                    let (resolved, env) = resolve_type_name(genv, &name);
+                    let (resolved, env) = super::util::resolve_type_name(genv, &name);
                     (Some(tast::TastIdent(resolved)), env)
                 };
                 let (constructor, constr_ty) = enum_env
@@ -1866,7 +1866,7 @@ impl Typer {
             }
             fir::Pat::PStruct { name, fields } => {
                 let name_display = name.display();
-                let (type_name, type_env) = resolve_type_name(genv, &name_display);
+                let (type_name, type_env) = super::util::resolve_type_name(genv, &name_display);
                 let struct_fields = {
                     let struct_def = type_env
                         .structs()
@@ -1923,8 +1923,7 @@ impl Typer {
                     let pat_id = field_map.remove(&field_name.0).unwrap_or_else(|| {
                         panic!(
                             "Struct pattern {} missing field {}",
-                            name_display,
-                            field_name.0
+                            name_display, field_name.0
                         )
                     });
                     let expected_ty = param_tys.get(idx).unwrap_or_else(|| {
@@ -1939,8 +1938,7 @@ impl Typer {
                     let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
                     panic!(
                         "Struct pattern {} has unknown fields: {}",
-                        name_display,
-                        extra
+                        name_display, extra
                     );
                 }
 
@@ -2232,13 +2230,10 @@ fn lookup_inherent_method_for_ty(
     env.lookup_inherent_method(receiver_ty, method)
 }
 
-fn env_for_receiver_ty<'a>(
-    genv: &'a PackageTypeEnv,
-    receiver_ty: &tast::Ty,
-) -> &'a GlobalTypeEnv {
+fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> &'a GlobalTypeEnv {
     match receiver_ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
-            let (_resolved, env) = resolve_type_name(genv, name);
+            let (_resolved, env) = super::util::resolve_type_name(genv, name);
             env
         }
         tast::Ty::TApp { ty, .. } => env_for_receiver_ty(genv, ty),
@@ -2247,35 +2242,11 @@ fn env_for_receiver_ty<'a>(
     }
 }
 
-fn resolve_type_name<'a>(genv: &'a PackageTypeEnv, name: &str) -> (String, &'a GlobalTypeEnv) {
-    if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
-            return (rest.to_string(), genv.current());
-        }
-        if package == "Main" && genv.package == "Main" {
-            return (rest.to_string(), genv.current());
-        }
-        if package == genv.package {
-            return (name.to_string(), genv.current());
-        }
-        if let Some(dep) = genv.deps.get(package) {
-            return (name.to_string(), dep);
-        }
-        return (name.to_string(), genv.current());
-    }
-
-    if genv.package == "Main" || genv.package == "Builtin" {
-        (name.to_string(), genv.current())
-    } else {
-        (format!("{}::{}", genv.package, name), genv.current())
-    }
-}
-
 fn resolve_trait_name<'a>(
     genv: &'a PackageTypeEnv,
     name: &str,
 ) -> Option<(String, &'a GlobalTypeEnv)> {
-    let (resolved, env) = resolve_type_name(genv, name);
+    let (resolved, env) = super::util::resolve_type_name(genv, name);
     if env.trait_env.trait_defs.contains_key(&resolved) {
         Some((resolved, env))
     } else {

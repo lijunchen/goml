@@ -243,7 +243,10 @@ impl tast::Ty {
     }
 }
 
-fn resolve_type_name<'a>(genv: &'a PackageTypeEnv, name: &str) -> (String, &'a GlobalTypeEnv) {
+pub(crate) fn resolve_type_name<'a>(
+    genv: &'a PackageTypeEnv,
+    name: &str,
+) -> (String, &'a GlobalTypeEnv) {
     if let Some((package, rest)) = name.split_once("::") {
         if package == "Builtin" {
             return (rest.to_string(), genv.current());
