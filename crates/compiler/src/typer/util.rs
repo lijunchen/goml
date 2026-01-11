@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::{
-    env::GlobalTypeEnv,
+    env::{GlobalTypeEnv, PackageTypeEnv},
     fir,
     tast::{self},
 };
@@ -9,7 +9,7 @@ use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
 pub(crate) fn validate_ty(
-    genv: &mut GlobalTypeEnv,
+    genv: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     ty: &tast::Ty,
     tparams: &HashSet<String>,
@@ -56,8 +56,9 @@ pub(crate) fn validate_ty(
             if name == "Self" {
                 return;
             }
-            let ident = tast::TastIdent::new(name);
-            if let Some(enum_def) = genv.enums().get(&ident) {
+            let (resolved, env) = resolve_type_name(genv, name);
+            let ident = tast::TastIdent::new(&resolved);
+            if let Some(enum_def) = env.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
@@ -69,7 +70,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if let Some(struct_def) = genv.structs().get(&ident) {
+            } else if let Some(struct_def) = env.structs().get(&ident) {
                 if !struct_def.generics.is_empty() {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
@@ -81,7 +82,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if genv.type_env.extern_types.contains_key(name) {
+            } else if env.type_env.extern_types.contains_key(&resolved) {
                 // Extern types do not have generics.
             } else {
                 diagnostics.push(Diagnostic::new(
@@ -97,9 +98,10 @@ pub(crate) fn validate_ty(
             }
 
             let base_name = ty.get_constr_name_unsafe();
-            let ident = tast::TastIdent::new(&base_name);
+            let (resolved, env) = resolve_type_name(genv, &base_name);
+            let ident = tast::TastIdent::new(&resolved);
 
-            if let Some(enum_def) = genv.enums().get(&ident) {
+            if let Some(enum_def) = env.enums().get(&ident) {
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
@@ -112,7 +114,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if let Some(struct_def) = genv.structs().get(&ident) {
+            } else if let Some(struct_def) = env.structs().get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
@@ -125,7 +127,7 @@ pub(crate) fn validate_ty(
                         ),
                     ));
                 }
-            } else if genv.type_env.extern_types.contains_key(&base_name) {
+            } else if env.type_env.extern_types.contains_key(&resolved) {
                 if !args.is_empty() {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
@@ -156,7 +158,7 @@ pub(crate) fn validate_ty(
 
 impl tast::Ty {
     pub(crate) fn from_fir(
-        genv: &GlobalTypeEnv,
+        genv: &PackageTypeEnv,
         fir_ty: &fir::TypeExpr,
         tparams_env: &[tast::TastIdent],
     ) -> Self {
@@ -185,16 +187,17 @@ impl tast::Ty {
                 if path.len() == 1 && tparams_env.iter().any(|param| param.0 == name) {
                     Self::TParam { name }
                 } else {
-                    let ident = tast::TastIdent::new(&name);
-                    if genv.enums().contains_key(&ident) {
-                        Self::TEnum { name }
-                    } else if genv.structs().contains_key(&ident)
-                        || genv.type_env.extern_types.contains_key(&name)
+                    let (resolved, env) = resolve_type_name(genv, &name);
+                    let ident = tast::TastIdent::new(&resolved);
+                    if env.enums().contains_key(&ident) {
+                        Self::TEnum { name: resolved }
+                    } else if env.structs().contains_key(&ident)
+                        || env.type_env.extern_types.contains_key(&resolved)
                     {
-                        Self::TStruct { name }
+                        Self::TStruct { name: resolved }
                     } else {
                         // FIXME
-                        Self::TStruct { name }
+                        Self::TStruct { name: resolved }
                     }
                 }
             }
@@ -237,6 +240,33 @@ impl tast::Ty {
                 ret_ty: Box::new(Self::from_fir(genv, ret_ty, tparams_env)),
             },
         }
+    }
+}
+
+pub(crate) fn resolve_type_name<'a>(
+    genv: &'a PackageTypeEnv,
+    name: &str,
+) -> (String, &'a GlobalTypeEnv) {
+    if let Some((package, rest)) = name.split_once("::") {
+        if package == "Builtin" {
+            return (rest.to_string(), genv.current());
+        }
+        if package == "Main" && genv.package == "Main" {
+            return (rest.to_string(), genv.current());
+        }
+        if package == genv.package {
+            return (name.to_string(), genv.current());
+        }
+        if let Some(dep) = genv.deps.get(package) {
+            return (name.to_string(), dep);
+        }
+        return (name.to_string(), genv.current());
+    }
+
+    if genv.package == "Main" || genv.package == "Builtin" {
+        (name.to_string(), genv.current())
+    } else {
+        (format!("{}::{}", genv.package, name), genv.current())
     }
 }
 

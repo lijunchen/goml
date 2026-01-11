@@ -798,7 +798,7 @@ pub enum Expr {
         args: Vec<ExprId>,
     },
     EStructLiteral {
-        name: FirIdent,
+        name: Path,
         fields: Vec<(FirIdent, ExprId)>,
     },
     ETuple {
@@ -909,7 +909,7 @@ pub enum Pat {
         args: Vec<PatId>,
     },
     PStruct {
-        name: FirIdent,
+        name: Path,
         fields: Vec<(FirIdent, PatId)>,
     },
     PTuple {

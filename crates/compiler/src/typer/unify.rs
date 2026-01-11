@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    env::{Constraint, GlobalTypeEnv},
+    env::{Constraint, PackageTypeEnv},
     tast::{self, TastIdent, TypeVar},
     typer::Typer,
 };
@@ -179,7 +179,7 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(TastIdent, Vec<tast::Ty>)> {
 }
 
 impl Typer {
-    pub fn solve(&mut self, genv: &GlobalTypeEnv, diagnostics: &mut Diagnostics) {
+    pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
 
@@ -238,7 +238,10 @@ impl Typer {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
-                                        match genv.get_trait_impl(&trait_name, self_ty, &op) {
+                                        let (resolved, env) =
+                                            super::util::resolve_type_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        match env.get_trait_impl(&trait_ident, self_ty, &op) {
                                             Some(impl_scheme) => {
                                                 let impl_fun_ty = self.inst_ty(&impl_scheme);
 
@@ -314,12 +317,15 @@ impl Typer {
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
-                            let struct_def = genv.structs().get(&type_name).unwrap_or_else(|| {
-                                panic!(
-                                    "Struct {} not found when accessing field {}",
-                                    type_name.0, field.0
-                                )
-                            });
+                            let (resolved, env) =
+                                super::util::resolve_type_name(genv, &type_name.0);
+                            let struct_def =
+                                env.structs().get(&TastIdent(resolved)).unwrap_or_else(|| {
+                                    panic!(
+                                        "Struct {} not found when accessing field {}",
+                                        type_name.0, field.0
+                                    )
+                                });
                             let field_ty =
                                 instantiate_struct_field_ty(struct_def, &type_args, &field);
                             if self.unify(diagnostics, &result_ty, &field_ty) {

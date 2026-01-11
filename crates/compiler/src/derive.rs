@@ -254,7 +254,7 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
         exprs: vec![
             Expr::ELet {
                 pat: Pat::PStruct {
-                    name: struct_def.name.clone(),
+                    name: Path::from_ident(struct_def.name.clone()),
                     fields: struct_def
                         .fields
                         .iter()
@@ -379,7 +379,7 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
         exprs: vec![
             Expr::ELet {
                 pat: Pat::PStruct {
-                    name: struct_def.name.clone(),
+                    name: Path::from_ident(struct_def.name.clone()),
                     fields: struct_def
                         .fields
                         .iter()

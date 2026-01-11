@@ -175,7 +175,7 @@ impl Expr {
 
             fir::Expr::EStructLiteral { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.to_ident_name())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
@@ -192,7 +192,7 @@ impl Expr {
                                 .append(ctx.expr_to_doc(*expr))
                         }));
 
-                    RcDoc::text(name.to_ident_name())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{"))
                         .append(fields_doc.nest(4))
@@ -413,7 +413,7 @@ impl Pat {
             }
             fir::Pat::PStruct { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.to_ident_name())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
@@ -425,7 +425,7 @@ impl Pat {
                         }),
                         RcDoc::text(", "),
                     );
-                    RcDoc::text(name.to_ident_name())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{ "))
                         .append(fields_doc)

@@ -1360,7 +1360,7 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            let name = it.path()?.ident_tokens().last()?.to_string();
+            let name = lower_path(ctx, &it.path()?)?;
             let fields = it
                 .field_list()
                 .map(|list| {
@@ -1383,7 +1383,7 @@ fn lower_expr_with_args(
                 })
                 .unwrap_or_default();
             Some(ast::Expr::EStructLiteral {
-                name: ast::AstIdent::new(&name),
+                name,
                 fields,
             })
         }
@@ -1897,13 +1897,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::ConstrPat(it) => {
             if let Some(field_list) = it.field_list() {
-                let name = it
-                    .path()
-                    .unwrap()
-                    .ident_tokens()
-                    .last()
-                    .unwrap()
-                    .to_string();
+                let name = lower_path(ctx, &it.path()?)?;
                 let mut fields = Vec::new();
                 for field in field_list.fields() {
                     let Some(fname_token) = field.lident() else {
@@ -1933,10 +1927,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     };
                     fields.push((ast::AstIdent(fname), pat));
                 }
-                Some(ast::Pat::PStruct {
-                    name: ast::AstIdent::new(&name),
-                    fields,
-                })
+                Some(ast::Pat::PStruct { name, fields })
             } else {
                 let constructor = lower_constructor_path_from_constr_pat(ctx, &it)?;
                 let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();

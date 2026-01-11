@@ -140,7 +140,7 @@ impl Expr {
 
             Self::EStructLiteral { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
@@ -157,7 +157,7 @@ impl Expr {
                                 .append(expr.to_doc())
                         }));
 
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{"))
                         .append(fields_doc.nest(4))
@@ -392,7 +392,7 @@ impl Pat {
             }
             Pat::PStruct { name, fields } => {
                 if fields.is_empty() {
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{}"))
                 } else {
@@ -404,7 +404,7 @@ impl Pat {
                         }),
                         RcDoc::text(", "),
                     );
-                    RcDoc::text(name.0.clone())
+                    RcDoc::text(name.display())
                         .append(RcDoc::space())
                         .append(RcDoc::text("{ "))
                         .append(fields_doc)

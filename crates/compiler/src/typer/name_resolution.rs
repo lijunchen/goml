@@ -425,7 +425,7 @@ impl NameResolution {
                     })
                     .collect();
                 fir_table.alloc_expr(fir::Expr::EStructLiteral {
-                    name: FirIdent::name(&name.0),
+                    name: name.into(),
                     fields: new_fields,
                 })
             }
@@ -642,7 +642,7 @@ impl NameResolution {
                     })
                     .collect();
                 fir_table.alloc_pat(fir::Pat::PStruct {
-                    name: FirIdent::name(&name.0),
+                    name: name.into(),
                     fields: new_fields,
                 })
             }
