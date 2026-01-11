@@ -1,0 +1,110 @@
+const n = `struct Point {
+    x: int32,
+    y: int32,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+enum Shape[T] {
+    Dot(Point),
+    Wrapped(Wrapper[T]),
+    Origin,
+}
+
+fn bounce_int(shape: Shape[int32]) -> Shape[int32] {
+    match shape {
+        Dot(point) => Dot(point),
+        Wrapped(inner) => Wrapped(inner),
+        Origin => Origin,
+    }
+}
+
+fn wrap_unit(value: Wrapper[unit]) -> Shape[unit] {
+    Wrapped(value)
+}
+
+fn pick(flag: bool, point: Point, wrapper: Wrapper[int32]) -> Shape[int32] {
+    match flag {
+        true => Dot(point),
+        false => Wrapped(wrapper),
+    }
+}
+
+fn describe[T](shape: Shape[T]) -> int32 {
+    match shape {
+        Dot(_) => 1,
+        Wrapped(_) => 2,
+        Origin => 0,
+    }
+}
+
+fn point32_to_string(point: Point) -> string {
+    let Point { x: x, y: y } = point;
+    let with_x = "Point { x: " + int32_to_string(x);
+    let with_y_label = with_x + ", y: ";
+    let with_y = with_y_label + int32_to_string(y);
+    with_y + " }"
+}
+
+fn wrapper_int32_to_string(wrapper: Wrapper[int32]) -> string {
+    let Wrapper { value: value } = wrapper;
+    let prefix = "Wrapper[int32] { value: " + int32_to_string(value);
+    prefix + " }"
+}
+
+fn wrapper_unit_to_string(wrapper: Wrapper[unit]) -> string {
+    let Wrapper { value: value } = wrapper;
+    let prefix = "Wrapper[unit] { value: " + unit_to_string(value);
+    prefix + " }"
+}
+
+fn shape_int32_to_string(shape: Shape[int32]) -> string {
+    match shape {
+        Dot(point) => {
+            let prefix = "Shape::Dot(" + point32_to_string(point);
+            prefix + ")"
+        },
+        Wrapped(wrapper) => {
+            let prefix = "Shape::Wrapped(" + wrapper_int32_to_string(wrapper);
+            prefix + ")"
+        },
+        Origin => "Shape::Origin",
+    }
+}
+
+fn shape_unit_to_string(shape: Shape[unit]) -> string {
+    match shape {
+        Dot(point) => {
+            let prefix = "Shape::Dot(" + point32_to_string(point);
+            prefix + ")"
+        },
+        Wrapped(wrapper) => {
+            let prefix = "Shape::Wrapped(" + wrapper_unit_to_string(wrapper);
+            prefix + ")"
+        },
+        Origin => "Shape::Origin",
+    }
+}
+
+fn main() {
+    let _ = string_println(point32_to_string(Point(3, 4)));
+    let _ = string_println(wrapper_int32_to_string(Wrapper(7)));
+    let _ = string_println(wrapper_unit_to_string(Wrapper(())));
+
+    let bounced_origin = bounce_int(Origin);
+    let _ = string_println(shape_int32_to_string(Dot(Point(3, 4))));
+    let _ = string_println(shape_int32_to_string(Wrapped(Wrapper(7))));
+    let _ = string_println(shape_int32_to_string(bounced_origin));
+    let _ = string_println(shape_unit_to_string(Dot(Point(3, 4))));
+    let _ = string_println(shape_unit_to_string(Wrapped(Wrapper(()))));
+    let _ = string_println(shape_unit_to_string(Origin));
+
+    let _ = describe(bounce_int(Origin));
+    string_println("struct enums!")
+}
+`;
+export {
+  n as default
+};
