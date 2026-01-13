@@ -121,7 +121,6 @@ impl PackageExports {
 struct PackageArtifact {
     tast: tast::File,
     exports: PackageExports,
-    ctor_names: HashSet<String>,
     diagnostics: Diagnostics,
 }
 
@@ -183,311 +182,13 @@ fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError>
     Ok(ast)
 }
 
-fn collect_constructor_names(
-    files: &[ast::File],
-) -> (HashSet<String>, HashMap<String, HashSet<String>>) {
-    let mut global = HashSet::new();
-    let mut per_package: HashMap<String, HashSet<String>> = HashMap::new();
-    for file in files {
-        let entry = per_package.entry(file.package.0.clone()).or_default();
-        for item in &file.toplevels {
-            if let ast::Item::EnumDef(def) = item {
-                for (variant, _) in &def.variants {
-                    global.insert(variant.0.clone());
-                    entry.insert(variant.0.clone());
-                }
-            }
-        }
-    }
-    (global, per_package)
-}
-
-fn collect_constructor_names_for_files(files: &[ast::File]) -> HashSet<String> {
-    let mut names = HashSet::new();
-    for file in files {
-        for item in &file.toplevels {
-            if let ast::Item::EnumDef(def) = item {
-                for (variant, _) in &def.variants {
-                    names.insert(variant.0.clone());
-                }
-            }
-        }
-    }
-    names
-}
-
-fn promote_constructors_in_file(
-    file: ast::File,
-    local_ctor_names: &HashSet<String>,
-    global_ctor_names: &HashSet<String>,
-) -> ast::File {
-    let toplevels = file
-        .toplevels
-        .into_iter()
-        .map(|item| promote_constructors_in_item(item, local_ctor_names, global_ctor_names))
-        .collect();
-    ast::File {
-        package: file.package,
-        imports: file.imports,
-        toplevels,
-    }
-}
-
-fn promote_constructors_in_item(
-    item: ast::Item,
-    local_ctor_names: &HashSet<String>,
-    global_ctor_names: &HashSet<String>,
-) -> ast::Item {
-    match item {
-        ast::Item::Fn(mut func) => {
-            func.body =
-                promote_constructors_in_expr(func.body, local_ctor_names, global_ctor_names);
-            ast::Item::Fn(func)
-        }
-        ast::Item::ImplBlock(mut block) => {
-            block.methods = block
-                .methods
-                .into_iter()
-                .map(|mut method| {
-                    method.body = promote_constructors_in_expr(
-                        method.body,
-                        local_ctor_names,
-                        global_ctor_names,
-                    );
-                    method
-                })
-                .collect();
-            ast::Item::ImplBlock(block)
-        }
-        other => other,
-    }
-}
-
-fn promote_constructors_in_expr(
-    expr: ast::Expr,
-    local_ctor_names: &HashSet<String>,
-    global_ctor_names: &HashSet<String>,
-) -> ast::Expr {
-    match expr {
-        ast::Expr::EPath { path, astptr } => {
-            let is_ctor = if let Some(ident) = path.last_ident() {
-                if local_ctor_names.contains(&ident.0) {
-                    true
-                } else {
-                    path.len() >= 3 && global_ctor_names.contains(&ident.0)
-                }
-            } else {
-                false
-            };
-            if is_ctor {
-                ast::Expr::EConstr {
-                    constructor: path,
-                    args: Vec::new(),
-                }
-            } else {
-                ast::Expr::EPath { path, astptr }
-            }
-        }
-        ast::Expr::ECall { func, args } => {
-            let func = promote_constructors_in_expr(*func, local_ctor_names, global_ctor_names);
-            let args = args
-                .into_iter()
-                .map(|arg| promote_constructors_in_expr(arg, local_ctor_names, global_ctor_names))
-                .collect::<Vec<_>>();
-            if let ast::Expr::EPath { path, .. } = &func {
-                let is_ctor = if let Some(ident) = path.last_ident() {
-                    if local_ctor_names.contains(&ident.0) {
-                        true
-                    } else {
-                        path.len() >= 3 && global_ctor_names.contains(&ident.0)
-                    }
-                } else {
-                    false
-                };
-                if is_ctor {
-                    ast::Expr::EConstr {
-                        constructor: path.clone(),
-                        args,
-                    }
-                } else {
-                    ast::Expr::ECall {
-                        func: Box::new(func),
-                        args,
-                    }
-                }
-            } else {
-                ast::Expr::ECall {
-                    func: Box::new(func),
-                    args,
-                }
-            }
-        }
-        ast::Expr::EConstr { constructor, args } => ast::Expr::EConstr {
-            constructor,
-            args: args
-                .into_iter()
-                .map(|arg| promote_constructors_in_expr(arg, local_ctor_names, global_ctor_names))
-                .collect(),
-        },
-        ast::Expr::EArray { items } => ast::Expr::EArray {
-            items: items
-                .into_iter()
-                .map(|item| promote_constructors_in_expr(item, local_ctor_names, global_ctor_names))
-                .collect(),
-        },
-        ast::Expr::ETuple { items } => ast::Expr::ETuple {
-            items: items
-                .into_iter()
-                .map(|item| promote_constructors_in_expr(item, local_ctor_names, global_ctor_names))
-                .collect(),
-        },
-        ast::Expr::EClosure { params, body } => ast::Expr::EClosure {
-            params,
-            body: Box::new(promote_constructors_in_expr(
-                *body,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::ELet {
-            pat,
-            annotation,
-            value,
-        } => ast::Expr::ELet {
-            pat,
-            annotation,
-            value: Box::new(promote_constructors_in_expr(
-                *value,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EMatch { expr, arms, astptr } => ast::Expr::EMatch {
-            expr: Box::new(promote_constructors_in_expr(
-                *expr,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            arms: arms
-                .into_iter()
-                .map(|arm| ast::Arm {
-                    pat: arm.pat,
-                    body: promote_constructors_in_expr(
-                        arm.body,
-                        local_ctor_names,
-                        global_ctor_names,
-                    ),
-                })
-                .collect(),
-            astptr,
-        },
-        ast::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-        } => ast::Expr::EIf {
-            cond: Box::new(promote_constructors_in_expr(
-                *cond,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            then_branch: Box::new(promote_constructors_in_expr(
-                *then_branch,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            else_branch: Box::new(promote_constructors_in_expr(
-                *else_branch,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EWhile { cond, body } => ast::Expr::EWhile {
-            cond: Box::new(promote_constructors_in_expr(
-                *cond,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            body: Box::new(promote_constructors_in_expr(
-                *body,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EGo { expr } => ast::Expr::EGo {
-            expr: Box::new(promote_constructors_in_expr(
-                *expr,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EUnary { op, expr } => ast::Expr::EUnary {
-            op,
-            expr: Box::new(promote_constructors_in_expr(
-                *expr,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EBinary { op, lhs, rhs } => ast::Expr::EBinary {
-            op,
-            lhs: Box::new(promote_constructors_in_expr(
-                *lhs,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            rhs: Box::new(promote_constructors_in_expr(
-                *rhs,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-        },
-        ast::Expr::EProj { tuple, index } => ast::Expr::EProj {
-            tuple: Box::new(promote_constructors_in_expr(
-                *tuple,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            index,
-        },
-        ast::Expr::EField {
-            expr,
-            field,
-            astptr,
-        } => ast::Expr::EField {
-            expr: Box::new(promote_constructors_in_expr(
-                *expr,
-                local_ctor_names,
-                global_ctor_names,
-            )),
-            field,
-            astptr,
-        },
-        ast::Expr::EBlock { exprs } => ast::Expr::EBlock {
-            exprs: exprs
-                .into_iter()
-                .map(|expr| promote_constructors_in_expr(expr, local_ctor_names, global_ctor_names))
-                .collect(),
-        },
-        other => other,
-    }
-}
-
 fn typecheck_package(
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-    deps_ctor_names: &HashSet<String>,
+    constructor_files: &[ast::File],
 ) -> PackageArtifact {
-    let local_ctor_names = collect_constructor_names_for_files(&package.files);
-    let mut global_ctor_names = deps_ctor_names.clone();
-    global_ctor_names.extend(local_ctor_names.iter().cloned());
-    let files = package
-        .files
-        .clone()
-        .into_iter()
-        .map(|file| promote_constructors_in_file(file, &local_ctor_names, &global_ctor_names))
-        .collect();
-    let (fir, fir_table) = fir::lower_to_fir_files(files);
+    let (fir, fir_table) =
+        fir::lower_to_fir_files_with_constructors(package.files.clone(), constructor_files);
     let (tast, genv, diagnostics) = typer::check_file_with_env(
         fir,
         fir_table,
@@ -504,7 +205,6 @@ fn typecheck_package(
     PackageArtifact {
         tast,
         exports,
-        ctor_names: local_ctor_names,
         diagnostics,
     }
 }
@@ -566,7 +266,6 @@ fn typecheck_packages(
     let mut diagnostics = Diagnostics::new();
     let mut genv = GlobalTypeEnv::new();
     let mut exports_by_name: HashMap<String, PackageExports> = HashMap::new();
-    let mut ctor_names_by_package: HashMap<String, HashSet<String>> = HashMap::new();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
 
     for name in order.iter() {
@@ -585,21 +284,22 @@ fn typecheck_packages(
             deps_envs.insert(dep.clone(), exports.to_genv());
         }
 
-        let mut deps_ctor_names = HashSet::new();
+        let mut constructor_files = Vec::new();
+        constructor_files.extend(package.files.clone());
         for dep in deps.iter() {
-            let names = ctor_names_by_package.get(dep).ok_or_else(|| {
-                compile_error(format!("missing constructors for package {}", dep))
-            })?;
-            deps_ctor_names.extend(names.iter().cloned());
+            let dep_package = graph
+                .packages
+                .get(dep)
+                .ok_or_else(|| compile_error(format!("package {} not found", dep)))?;
+            constructor_files.extend(dep_package.files.clone());
         }
 
-        let artifact = typecheck_package(package, deps_envs, &deps_ctor_names);
+        let artifact = typecheck_package(package, deps_envs, &constructor_files);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
         artifact.exports.apply_to(&mut genv);
         exports_by_name.insert(name.clone(), artifact.exports.clone());
-        ctor_names_by_package.insert(name.clone(), artifact.ctor_names.clone());
         artifacts_by_name.insert(name.clone(), artifact);
     }
 
@@ -648,22 +348,6 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         all_files.extend(package.files.clone());
     }
 
-    let (global_ctor_names, ctor_names_by_package) = collect_constructor_names(&all_files);
-    let entry_local = ctor_names_by_package
-        .get(&entry_ast.package.0)
-        .cloned()
-        .unwrap_or_default();
-    let entry_ast = promote_constructors_in_file(entry_ast, &entry_local, &global_ctor_names);
-    let all_files = all_files
-        .into_iter()
-        .map(|file| {
-            let local = ctor_names_by_package
-                .get(&file.package.0)
-                .cloned()
-                .unwrap_or_default();
-            promote_constructors_in_file(file, &local, &global_ctor_names)
-        })
-        .collect();
     let (fir, fir_table) = fir::lower_to_fir_files(all_files);
 
     let tast = full_tast;

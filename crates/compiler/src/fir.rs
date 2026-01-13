@@ -4,8 +4,17 @@ use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 
 pub fn lower_to_fir_files(files: Vec<ast::File>) -> (File, FirTable) {
+    let constructor_files = files.clone();
+    lower_to_fir_files_with_constructors(files, &constructor_files)
+}
+
+pub fn lower_to_fir_files_with_constructors(
+    files: Vec<ast::File>,
+    constructor_files: &[ast::File],
+) -> (File, FirTable) {
     use crate::typer::name_resolution::NameResolution;
-    let (fir, mut fir_table) = NameResolution::default().resolve_files(files);
+    let (fir, mut fir_table) =
+        NameResolution::default().resolve_files_with_constructors(files, constructor_files);
     let _ctor_errors = resolve_constructors(&mut fir_table);
     (fir, fir_table)
 }
@@ -119,6 +128,7 @@ impl ConstructorRef {
 pub struct FirTable {
     def_interner: HashMap<DefKey, DefId>,
     def_data: Vec<Def>,
+    def_paths: Vec<Path>,
     local_interner: HashMap<LocalKey, LocalId>,
     local_info: Vec<LocalInfo>,
     local_counter: u32,
@@ -138,6 +148,7 @@ impl FirTable {
         Self {
             def_interner: HashMap::new(),
             def_data: Vec::new(),
+            def_paths: Vec::new(),
             local_interner: HashMap::new(),
             local_info: Vec::new(),
             local_counter: 0,
@@ -195,7 +206,7 @@ impl FirTable {
     pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
         let path = Path::from_ident(name);
         let key = DefKey {
-            path,
+            path: path.clone(),
             kind,
             disamb: 0,
         };
@@ -203,12 +214,13 @@ impl FirTable {
         let id = DefId(self.def_data.len() as u32);
         self.def_interner.insert(key, id);
         self.def_data.push(def);
+        self.def_paths.push(path);
         id
     }
 
     pub fn alloc_def_with_path(&mut self, path: Path, kind: DefKind, def: Def) -> DefId {
         let key = DefKey {
-            path,
+            path: path.clone(),
             kind,
             disamb: 0,
         };
@@ -216,6 +228,7 @@ impl FirTable {
         let id = DefId(self.def_data.len() as u32);
         self.def_interner.insert(key, id);
         self.def_data.push(def);
+        self.def_paths.push(path);
         id
     }
 
@@ -225,6 +238,10 @@ impl FirTable {
 
     pub fn def_mut(&mut self, id: DefId) -> &mut Def {
         &mut self.def_data[id.0 as usize]
+    }
+
+    pub fn def_path(&self, id: DefId) -> &Path {
+        &self.def_paths[id.0 as usize]
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
@@ -937,7 +954,7 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
 
     for (def_id, def) in fir_table.iter_defs() {
         if let Def::EnumDef(enum_def) = def {
-            let enum_name = enum_def.name.to_ident_name();
+            let enum_name = fir_table.def_path(def_id).display();
             for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
                 let ctor_id = ConstructorId::EnumVariant {
                     enum_def: def_id,
