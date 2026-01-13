@@ -7,6 +7,8 @@ use diagnostics::Diagnostics;
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
+use crate::pipeline::compile_error;
+use crate::pipeline::packages;
 use crate::{
     anf::{self, GlobalAnfEnv},
     compile_match, derive,
@@ -18,8 +20,6 @@ use crate::{
     tast,
     typer::{self, name_resolution::FirTable},
 };
-
-mod packages;
 
 #[derive(Debug)]
 pub struct Compilation {
@@ -134,17 +134,6 @@ struct TypecheckPackagesResult {
     artifacts: HashMap<String, PackageArtifact>,
 }
 
-fn compile_error(message: String) -> CompilationError {
-    let mut diagnostics = Diagnostics::new();
-    diagnostics.push(diagnostics::Diagnostic::new(
-        diagnostics::Stage::other("compile"),
-        diagnostics::Severity::Error,
-        message,
-    ));
-    CompilationError::Compile { diagnostics }
-}
-
-
 fn parse_ast_from_source(
     path: &Path,
     src: &str,
@@ -177,7 +166,7 @@ fn parse_ast_from_source(
     Ok((green_node, cst, ast))
 }
 
-fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError> {
+pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError> {
     let (_green, _cst, ast) = parse_ast_from_source(path, src)?;
     Ok(ast)
 }
@@ -364,7 +353,8 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         let artifact = artifacts
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
-        let package_core = compile_match::compile_file(&genv, &gensym, &mut diagnostics, &artifact.tast);
+        let package_core =
+            compile_match::compile_file(&genv, &gensym, &mut diagnostics, &artifact.tast);
         core_toplevels.extend(package_core.toplevels);
     }
     let core = crate::core::File {

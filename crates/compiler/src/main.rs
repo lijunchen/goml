@@ -4,7 +4,7 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
-use compiler::pipeline::{Compilation, CompilationError, compile};
+use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 

@@ -72,7 +72,7 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
     let range = token.as_ref().map(|tok| tok.text_range());
 
     let (tast, genv, _diagnostics) = typecheck_single_file(path, src).or_else(|_| {
-        pipeline::typecheck_with_packages(path, src).map_err(|e| format!("{:?}", e))
+        pipeline::pipeline::typecheck_with_packages(path, src).map_err(|e| format!("{:?}", e))
     })?;
 
     if let Some(range) = range
@@ -424,7 +424,8 @@ pub fn dot_completions(
 
     let (tast, genv, _diagnostics) = typecheck_single_file(path, &fixed_src)
         .or_else(|_| {
-            pipeline::typecheck_with_packages(path, &fixed_src).map_err(|e| format!("{:?}", e))
+            pipeline::pipeline::typecheck_with_packages(path, &fixed_src)
+                .map_err(|e| format!("{:?}", e))
         })
         .ok()?;
 
