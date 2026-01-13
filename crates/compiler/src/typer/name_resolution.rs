@@ -2,7 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use ast::ast;
 
-use crate::env;
+use crate::builtins;
+use crate::env::{self, GlobalTypeEnv};
 use crate::fir;
 use crate::fir::FirIdent;
 
@@ -57,12 +58,25 @@ struct ConstructorIndex {
 }
 
 impl ConstructorIndex {
-    fn new(files: &[ast::File]) -> Self {
-        let mut enums_by_package: HashMap<String, HashMap<String, HashSet<String>>> =
-            HashMap::new();
+    fn new_with_deps(files: &[ast::File], deps_envs: &HashMap<String, GlobalTypeEnv>) -> Self {
+        let mut index = Self {
+            enums_by_package: HashMap::new(),
+        };
+        index.add_files(files);
+        if !files.iter().any(|file| file.package.0 == "Builtin") {
+            let builtin_ast = builtins::get_builtin_ast();
+            index.add_files(std::slice::from_ref(&builtin_ast));
+        }
+        for (package, env) in deps_envs {
+            index.add_env(package, env);
+        }
+        index
+    }
+
+    fn add_files(&mut self, files: &[ast::File]) {
         for file in files {
             let package = file.package.0.clone();
-            let entry = enums_by_package.entry(package).or_default();
+            let entry = self.enums_by_package.entry(package).or_default();
             for item in &file.toplevels {
                 if let ast::Item::EnumDef(def) = item {
                     let variants = entry.entry(def.name.0.clone()).or_default();
@@ -72,7 +86,20 @@ impl ConstructorIndex {
                 }
             }
         }
-        Self { enums_by_package }
+    }
+
+    fn add_env(&mut self, package: &str, env: &GlobalTypeEnv) {
+        for (name, def) in env.type_env.enums.iter() {
+            let enum_name = name.0.rsplit("::").next().unwrap_or(&name.0);
+            let entry = self
+                .enums_by_package
+                .entry(package.to_string())
+                .or_default();
+            let variants = entry.entry(enum_name.to_string()).or_default();
+            for (variant, _) in &def.variants {
+                variants.insert(variant.0.clone());
+            }
+        }
     }
 
     fn enum_has_variant(&self, package: &str, enum_name: &str, variant: &str) -> bool {
@@ -97,17 +124,15 @@ impl ConstructorIndex {
     }
 
     fn has_variant(&self, package: &str, variant: &str) -> bool {
-        self.enums_by_package
-            .get(package)
-            .map_or(false, |enums| enums.values().any(|vars| vars.contains(variant)))
+        self.enums_by_package.get(package).map_or(false, |enums| {
+            enums.values().any(|vars| vars.contains(variant))
+        })
     }
 }
 
 impl ResolutionContext<'_> {
     fn package_allowed(&self, package: &str) -> bool {
-        package == self.current_package
-            || package == "Builtin"
-            || self.imports.contains(package)
+        package == self.current_package || package == "Builtin" || self.imports.contains(package)
     }
 }
 
@@ -116,11 +141,7 @@ impl NameResolution {
         fir_table.fresh_local(name)
     }
 
-    fn constructor_path_for(
-        &self,
-        path: &ast::Path,
-        ctx: &ResolutionContext,
-    ) -> Option<fir::Path> {
+    fn constructor_path_for(&self, path: &ast::Path, ctx: &ResolutionContext) -> Option<fir::Path> {
         let segments = path.segments();
         let last = path.last_ident()?;
         match segments.len() {
@@ -170,24 +191,20 @@ impl NameResolution {
         }
     }
 
-    fn normalize_constructor_path(
-        &self,
-        path: &ast::Path,
-        ctx: &ResolutionContext,
-    ) -> fir::Path {
+    fn normalize_constructor_path(&self, path: &ast::Path, ctx: &ResolutionContext) -> fir::Path {
         self.constructor_path_for(path, ctx)
             .unwrap_or_else(|| path.into())
     }
 
     pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::File, FirTable) {
-        let constructor_files = files.clone();
-        self.resolve_files_with_constructors(files, &constructor_files)
+        let deps_envs = HashMap::new();
+        self.resolve_files_with_env(files, &deps_envs)
     }
 
-    pub fn resolve_files_with_constructors(
+    pub fn resolve_files_with_env(
         &self,
         files: Vec<ast::File>,
-        constructor_files: &[ast::File],
+        deps_envs: &HashMap<String, GlobalTypeEnv>,
     ) -> (fir::File, FirTable) {
         let mut fir_table = FirTable::new();
 
@@ -199,7 +216,7 @@ impl NameResolution {
         }
 
         let mut def_names = HashMap::new();
-        let ctor_index = ConstructorIndex::new(constructor_files);
+        let ctor_index = ConstructorIndex::new_with_deps(&files, deps_envs);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
 

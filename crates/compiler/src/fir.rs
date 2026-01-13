@@ -3,18 +3,19 @@ use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 
+use crate::env::GlobalTypeEnv;
+
 pub fn lower_to_fir_files(files: Vec<ast::File>) -> (File, FirTable) {
-    let constructor_files = files.clone();
-    lower_to_fir_files_with_constructors(files, &constructor_files)
+    let deps_envs = HashMap::new();
+    lower_to_fir_files_with_env(files, &deps_envs)
 }
 
-pub fn lower_to_fir_files_with_constructors(
+pub fn lower_to_fir_files_with_env(
     files: Vec<ast::File>,
-    constructor_files: &[ast::File],
+    deps_envs: &HashMap<String, GlobalTypeEnv>,
 ) -> (File, FirTable) {
     use crate::typer::name_resolution::NameResolution;
-    let (fir, mut fir_table) =
-        NameResolution::default().resolve_files_with_constructors(files, constructor_files);
+    let (fir, mut fir_table) = NameResolution::default().resolve_files_with_env(files, deps_envs);
     let _ctor_errors = resolve_constructors(&mut fir_table);
     (fir, fir_table)
 }

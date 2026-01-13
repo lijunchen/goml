@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::Path;
 
 use ast::ast;
@@ -174,10 +174,8 @@ pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationEr
 fn typecheck_package(
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-    constructor_files: &[ast::File],
 ) -> PackageArtifact {
-    let (fir, fir_table) =
-        fir::lower_to_fir_files_with_constructors(package.files.clone(), constructor_files);
+    let (fir, fir_table) = fir::lower_to_fir_files_with_env(package.files.clone(), &deps_envs);
     let (tast, genv, diagnostics) = typer::check_file_with_env(
         fir,
         fir_table,
@@ -198,48 +196,6 @@ fn typecheck_package(
     }
 }
 
-fn compute_dependency_sets(
-    graph: &packages::PackageGraph,
-) -> Result<HashMap<String, HashSet<String>>, CompilationError> {
-    fn collect_deps(
-        name: &str,
-        graph: &packages::PackageGraph,
-        memo: &mut HashMap<String, HashSet<String>>,
-        visiting: &mut HashSet<String>,
-    ) -> Result<HashSet<String>, CompilationError> {
-        if let Some(existing) = memo.get(name) {
-            return Ok(existing.clone());
-        }
-        if visiting.contains(name) {
-            return Err(compile_error(format!(
-                "cycle detected while collecting dependencies for {}",
-                name
-            )));
-        }
-        visiting.insert(name.to_string());
-        let package = graph
-            .packages
-            .get(name)
-            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
-        let mut deps = HashSet::new();
-        for dep in package.imports.iter() {
-            let dep_set = collect_deps(dep, graph, memo, visiting)?;
-            deps.insert(dep.clone());
-            deps.extend(dep_set);
-        }
-        visiting.remove(name);
-        memo.insert(name.to_string(), deps.clone());
-        Ok(deps)
-    }
-
-    let mut memo = HashMap::new();
-    let mut visiting = HashSet::new();
-    for name in graph.packages.keys() {
-        let _ = collect_deps(name, graph, &mut memo, &mut visiting)?;
-    }
-    Ok(memo)
-}
-
 fn typecheck_packages(
     path: &Path,
     entry_ast: ast::File,
@@ -250,7 +206,6 @@ fn typecheck_packages(
         .unwrap_or_else(|| Path::new("."));
     let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
-    let dependency_sets = compute_dependency_sets(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = GlobalTypeEnv::new();
@@ -262,10 +217,9 @@ fn typecheck_packages(
             .packages
             .get(name)
             .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
-        let deps = dependency_sets
-            .get(name)
-            .ok_or_else(|| compile_error(format!("missing deps for package {}", name)))?;
         let mut deps_envs = HashMap::new();
+        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
+        deps.sort();
         for dep in deps.iter() {
             let exports = exports_by_name
                 .get(dep)
@@ -273,17 +227,7 @@ fn typecheck_packages(
             deps_envs.insert(dep.clone(), exports.to_genv());
         }
 
-        let mut constructor_files = Vec::new();
-        constructor_files.extend(package.files.clone());
-        for dep in deps.iter() {
-            let dep_package = graph
-                .packages
-                .get(dep)
-                .ok_or_else(|| compile_error(format!("package {} not found", dep)))?;
-            constructor_files.extend(dep_package.files.clone());
-        }
-
-        let artifact = typecheck_package(package, deps_envs, &constructor_files);
+        let artifact = typecheck_package(package, deps_envs);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);

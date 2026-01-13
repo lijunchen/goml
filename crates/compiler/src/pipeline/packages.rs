@@ -54,6 +54,7 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
         }
     }
 
+    files.sort();
     Ok(files)
 }
 

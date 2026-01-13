@@ -1774,7 +1774,9 @@ impl Typer {
                 args,
             } => {
                 let constructor_path = match &constructor_ref {
-                    fir::ConstructorRef::Resolved(ctor_id) => self.constructor_path_from_id(ctor_id),
+                    fir::ConstructorRef::Resolved(ctor_id) => {
+                        self.constructor_path_from_id(ctor_id)
+                    }
                     fir::ConstructorRef::Unresolved(path) => path.clone(),
                 };
 
