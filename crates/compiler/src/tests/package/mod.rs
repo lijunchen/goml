@@ -33,7 +33,7 @@ fn run_project(name: &str) -> anyhow::Result<()> {
         .join(name);
     let main_path = root.join("main.gom");
     let main_src = std::fs::read_to_string(&main_path)?;
-    let compilation = pipeline::compile(&main_path, &main_src)
+    let compilation = pipeline::pipeline::compile(&main_path, &main_src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
     let output = super::execute_go_source(&go_source)?;

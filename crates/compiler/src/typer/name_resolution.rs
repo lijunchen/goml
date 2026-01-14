@@ -2,7 +2,8 @@ use std::collections::{HashMap, HashSet};
 
 use ast::ast;
 
-use crate::env;
+use crate::builtins;
+use crate::env::{self, GlobalTypeEnv};
 use crate::fir;
 use crate::fir::FirIdent;
 
@@ -41,6 +42,7 @@ struct ResolutionContext<'a> {
     def_names: &'a HashMap<String, fir::DefId>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
+    constructor_index: &'a ConstructorIndex,
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
@@ -51,12 +53,159 @@ fn full_def_name(package: &str, name: &str) -> String {
     }
 }
 
+struct ConstructorIndex {
+    enums_by_package: HashMap<String, HashMap<String, HashSet<String>>>,
+}
+
+impl ConstructorIndex {
+    fn new_with_deps(files: &[ast::File], deps_envs: &HashMap<String, GlobalTypeEnv>) -> Self {
+        let mut index = Self {
+            enums_by_package: HashMap::new(),
+        };
+        index.add_files(files);
+        if !files.iter().any(|file| file.package.0 == "Builtin") {
+            let builtin_ast = builtins::get_builtin_ast();
+            index.add_files(std::slice::from_ref(&builtin_ast));
+        }
+        for (package, env) in deps_envs {
+            index.add_env(package, env);
+        }
+        index
+    }
+
+    fn add_files(&mut self, files: &[ast::File]) {
+        for file in files {
+            let package = file.package.0.clone();
+            let entry = self.enums_by_package.entry(package).or_default();
+            for item in &file.toplevels {
+                if let ast::Item::EnumDef(def) = item {
+                    let variants = entry.entry(def.name.0.clone()).or_default();
+                    for (variant, _) in &def.variants {
+                        variants.insert(variant.0.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    fn add_env(&mut self, package: &str, env: &GlobalTypeEnv) {
+        for (name, def) in env.type_env.enums.iter() {
+            let enum_name = name.0.rsplit("::").next().unwrap_or(&name.0);
+            let entry = self
+                .enums_by_package
+                .entry(package.to_string())
+                .or_default();
+            let variants = entry.entry(enum_name.to_string()).or_default();
+            for (variant, _) in &def.variants {
+                variants.insert(variant.0.clone());
+            }
+        }
+    }
+
+    fn enum_has_variant(&self, package: &str, enum_name: &str, variant: &str) -> bool {
+        self.enums_by_package
+            .get(package)
+            .and_then(|enums| enums.get(enum_name))
+            .map_or(false, |variants| variants.contains(variant))
+    }
+
+    fn unique_enum_for_variant(&self, package: &str, variant: &str) -> Option<String> {
+        let enums = self.enums_by_package.get(package)?;
+        let mut found = None;
+        for (enum_name, variants) in enums {
+            if variants.contains(variant) {
+                if found.is_some() {
+                    return None;
+                }
+                found = Some(enum_name.clone());
+            }
+        }
+        found
+    }
+
+    fn has_variant(&self, package: &str, variant: &str) -> bool {
+        self.enums_by_package.get(package).map_or(false, |enums| {
+            enums.values().any(|vars| vars.contains(variant))
+        })
+    }
+}
+
+impl ResolutionContext<'_> {
+    fn package_allowed(&self, package: &str) -> bool {
+        package == self.current_package || package == "Builtin" || self.imports.contains(package)
+    }
+}
+
 impl NameResolution {
     fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::LocalId {
         fir_table.fresh_local(name)
     }
 
+    fn constructor_path_for(&self, path: &ast::Path, ctx: &ResolutionContext) -> Option<fir::Path> {
+        let segments = path.segments();
+        let last = path.last_ident()?;
+        match segments.len() {
+            1 => {
+                let variant = &last.0;
+                if let Some(enum_name) = ctx
+                    .constructor_index
+                    .unique_enum_for_variant(ctx.current_package, variant)
+                {
+                    Some(constructor_path(ctx.current_package, &enum_name, variant))
+                } else if ctx
+                    .constructor_index
+                    .has_variant(ctx.current_package, variant)
+                {
+                    Some(fir::Path::from_ident(variant.clone()))
+                } else {
+                    None
+                }
+            }
+            2 => {
+                let enum_name = &segments[0].ident.0;
+                let variant = &segments[1].ident.0;
+                if ctx
+                    .constructor_index
+                    .enum_has_variant(ctx.current_package, enum_name, variant)
+                {
+                    Some(constructor_path(ctx.current_package, enum_name, variant))
+                } else {
+                    None
+                }
+            }
+            3 => {
+                let package = &segments[0].ident.0;
+                let enum_name = &segments[1].ident.0;
+                let variant = &segments[2].ident.0;
+                if ctx.package_allowed(package)
+                    && ctx
+                        .constructor_index
+                        .enum_has_variant(package, enum_name, variant)
+                {
+                    Some(constructor_path(package, enum_name, variant))
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+
+    fn normalize_constructor_path(&self, path: &ast::Path, ctx: &ResolutionContext) -> fir::Path {
+        self.constructor_path_for(path, ctx)
+            .unwrap_or_else(|| path.into())
+    }
+
     pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::File, FirTable) {
+        let deps_envs = HashMap::new();
+        self.resolve_files_with_env(files, &deps_envs)
+    }
+
+    pub fn resolve_files_with_env(
+        &self,
+        files: Vec<ast::File>,
+        deps_envs: &HashMap<String, GlobalTypeEnv>,
+    ) -> (fir::File, FirTable) {
         let mut fir_table = FirTable::new();
 
         let mut builtin_names = HashMap::new();
@@ -67,6 +216,7 @@ impl NameResolution {
         }
 
         let mut def_names = HashMap::new();
+        let ctor_index = ConstructorIndex::new_with_deps(&files, deps_envs);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
 
@@ -195,6 +345,7 @@ impl NameResolution {
                 def_names: &def_names,
                 current_package: package_name,
                 imports: &imports,
+                constructor_index: &ctor_index,
             };
 
             let mut toplevel_idx = 0;
@@ -313,6 +464,12 @@ impl NameResolution {
     ) -> fir::ExprId {
         match expr {
             ast::Expr::EPath { path, astptr } => {
+                if let Some(constructor) = self.constructor_path_for(path, ctx) {
+                    return fir_table.alloc_expr(fir::Expr::EConstr {
+                        constructor: fir::ConstructorRef::Unresolved(constructor),
+                        args: Vec::new(),
+                    });
+                }
                 if path.len() == 1 {
                     let ident = path.last_ident().unwrap();
                     let name_str = &ident.0;
@@ -409,8 +566,9 @@ impl NameResolution {
                     .iter()
                     .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
                     .collect();
+                let constructor = self.normalize_constructor_path(constructor, ctx);
                 fir_table.alloc_expr(fir::Expr::EConstr {
-                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
+                    constructor: fir::ConstructorRef::Unresolved(constructor),
                     args: new_args,
                 })
             }
@@ -464,7 +622,7 @@ impl NameResolution {
                 value,
             } => {
                 let new_value = self.resolve_expr(value, env, ctx, fir_table);
-                let new_pat = self.resolve_pat(pat, env, fir_table);
+                let new_pat = self.resolve_pat(pat, env, ctx, fir_table);
                 fir_table.alloc_expr(fir::Expr::ELet {
                     pat: new_pat,
                     annotation: annotation.as_ref().map(|t| t.into()),
@@ -480,7 +638,7 @@ impl NameResolution {
                 let new_arms = arms
                     .iter()
                     .map(|arm| {
-                        let new_pat = self.resolve_pat(&arm.pat, env, fir_table);
+                        let new_pat = self.resolve_pat(&arm.pat, env, ctx, fir_table);
                         let new_body = self.resolve_expr(&arm.body, env, ctx, fir_table);
                         fir::Arm {
                             pat: new_pat,
@@ -520,6 +678,18 @@ impl NameResolution {
                 fir_table.alloc_expr(fir::Expr::EGo { expr: new_expr })
             }
             ast::Expr::ECall { func, args } => {
+                if let ast::Expr::EPath { path, .. } = func.as_ref()
+                    && let Some(constructor) = self.constructor_path_for(path, ctx)
+                {
+                    let new_args = args
+                        .iter()
+                        .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
+                        .collect();
+                    return fir_table.alloc_expr(fir::Expr::EConstr {
+                        constructor: fir::ConstructorRef::Unresolved(constructor),
+                        args: new_args,
+                    });
+                }
                 let new_func = self.resolve_expr(func, env, ctx, fir_table);
                 let new_args = args
                     .iter()
@@ -578,6 +748,7 @@ impl NameResolution {
         &self,
         pat: &ast::Pat,
         env: &mut ResolveLocalEnv,
+        ctx: &ResolutionContext,
         fir_table: &mut FirTable,
     ) -> fir::PatId {
         match pat {
@@ -624,10 +795,11 @@ impl NameResolution {
             ast::Pat::PConstr { constructor, args } => {
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_pat(arg, env, fir_table))
+                    .map(|arg| self.resolve_pat(arg, env, ctx, fir_table))
                     .collect();
+                let constructor = self.normalize_constructor_path(constructor, ctx);
                 fir_table.alloc_pat(fir::Pat::PConstr {
-                    constructor: fir::ConstructorRef::Unresolved(constructor.into()),
+                    constructor: fir::ConstructorRef::Unresolved(constructor),
                     args: new_args,
                 })
             }
@@ -637,7 +809,7 @@ impl NameResolution {
                     .map(|(fname, pat)| {
                         (
                             FirIdent::name(&fname.0),
-                            self.resolve_pat(pat, env, fir_table),
+                            self.resolve_pat(pat, env, ctx, fir_table),
                         )
                     })
                     .collect();
@@ -649,7 +821,7 @@ impl NameResolution {
             ast::Pat::PTuple { pats } => {
                 let new_pats = pats
                     .iter()
-                    .map(|pat| self.resolve_pat(pat, env, fir_table))
+                    .map(|pat| self.resolve_pat(pat, env, ctx, fir_table))
                     .collect();
                 fir_table.alloc_pat(fir::Pat::PTuple { pats: new_pats })
             }
@@ -877,5 +1049,17 @@ fn full_def_path(package: &str, name: &str) -> fir::Path {
         fir::Path::from_ident(name.to_string())
     } else {
         fir::Path::from_idents(vec![package.to_string(), name.to_string()])
+    }
+}
+
+fn constructor_path(package: &str, enum_name: &str, variant: &str) -> fir::Path {
+    if package == "Builtin" || package == "Main" {
+        fir::Path::from_idents(vec![enum_name.to_string(), variant.to_string()])
+    } else {
+        fir::Path::from_idents(vec![
+            package.to_string(),
+            enum_name.to_string(),
+            variant.to_string(),
+        ])
     }
 }

@@ -10,7 +10,7 @@ use parser::{debug_tree, format_parser_diagnostics};
 
 use crate::{
     env::{format_compile_diagnostics, format_typer_diagnostics},
-    pipeline::{self, CompilationError},
+    pipeline::{self, pipeline::CompilationError},
 };
 
 mod builtin_functions_test;
@@ -60,7 +60,7 @@ fn main() -> unit {
 "#;
 
     let path = PathBuf::from("ref_runtime.go");
-    let compilation = pipeline::compile(&path, src)
+    let compilation = pipeline::pipeline::compile(&path, src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
@@ -200,7 +200,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     let input = std::fs::read_to_string(&p)?;
 
-    let compilation = pipeline::compile(&p, &input).map_err(|err| match err {
+    let compilation = pipeline::pipeline::compile(&p, &input).map_err(|err| match err {
         CompilationError::Parser { diagnostics } => anyhow::anyhow!(
             "Parse errors in {}:\n{}",
             p.display(),
@@ -262,7 +262,7 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            match pipeline::compile(&p, &input) {
+            match pipeline::pipeline::compile(&p, &input) {
                 Err(CompilationError::Parser { diagnostics }) => {
                     let mut formatted = format_parser_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
@@ -320,7 +320,7 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            match pipeline::compile(&p, &input) {
+            match pipeline::pipeline::compile(&p, &input) {
                 Err(CompilationError::Compile { diagnostics }) => {
                     let mut formatted = format_compile_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
@@ -375,7 +375,7 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            match pipeline::compile(&p, &input) {
+            match pipeline::pipeline::compile(&p, &input) {
                 Err(CompilationError::Typer { diagnostics }) => {
                     let mut formatted = format_typer_diagnostics(&diagnostics).join("\n");
                     if !formatted.is_empty() {

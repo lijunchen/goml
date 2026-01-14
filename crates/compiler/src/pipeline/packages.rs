@@ -4,7 +4,8 @@ use std::path::{Path, PathBuf};
 
 use ast::ast;
 
-use super::{CompilationError, compile_error, parse_ast_file};
+use crate::pipeline::compile_error;
+use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 
 #[derive(Debug)]
 pub struct PackageUnit {
@@ -53,6 +54,7 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
         }
     }
 
+    files.sort();
     Ok(files)
 }
 

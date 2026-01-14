@@ -1382,10 +1382,7 @@ fn lower_expr_with_args(
                         .collect()
                 })
                 .unwrap_or_default();
-            Some(ast::Expr::EStructLiteral {
-                name,
-                fields,
-            })
+            Some(ast::Expr::EStructLiteral { name, fields })
         }
         cst::Expr::ArrayLiteralExpr(it) => {
             if !trailing_args.is_empty() {

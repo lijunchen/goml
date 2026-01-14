@@ -445,7 +445,12 @@ fn define_inherent_impl(
     }
 
     // Insert or extend the impl def
-    let impl_def = env.current_mut().trait_env.inherent_impls.entry(key).or_default();
+    let impl_def = env
+        .current_mut()
+        .trait_env
+        .inherent_impls
+        .entry(key)
+        .or_default();
     impl_def.methods.extend(methods_to_add);
 }
 
@@ -549,7 +554,8 @@ fn define_extern_type(
     _diagnostics: &mut Diagnostics,
     ext: &fir::ExternType,
 ) {
-    env.current_mut().register_extern_type(ext.goml_name.to_ident_name());
+    env.current_mut()
+        .register_extern_type(ext.goml_name.to_ident_name());
 }
 
 fn define_extern_builtin(

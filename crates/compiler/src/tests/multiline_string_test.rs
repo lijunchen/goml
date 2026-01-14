@@ -15,7 +15,7 @@ fn main() -> unit {
 "#;
 
     let path = PathBuf::from("multiline_string.gom");
-    let compilation = pipeline::compile(&path, src)
+    let compilation = pipeline::pipeline::compile(&path, src)
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
