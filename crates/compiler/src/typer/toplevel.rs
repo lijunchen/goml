@@ -17,7 +17,7 @@ use crate::{
     },
 };
 
-fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::File, fir_table: &fir::FirTable) {
+fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::PackageFir, fir_table: &fir::FirTable) {
     for item in fir.toplevels.iter() {
         match fir_table.def(*item) {
             fir::Def::EnumDef(enum_def) => {
@@ -660,7 +660,7 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
 pub fn collect_typedefs(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    fir: &fir::File,
+    fir: &fir::PackageFir,
     fir_table: &fir::FirTable,
 ) {
     predeclare_types(env.current_mut(), fir, fir_table);
@@ -686,7 +686,7 @@ pub fn collect_typedefs(
 }
 
 pub fn check_file(
-    fir: fir::File,
+    fir: fir::PackageFir,
     fir_table: name_resolution::FirTable,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     check_file_with_env(
@@ -699,7 +699,7 @@ pub fn check_file(
 }
 
 pub fn check_file_with_env(
-    fir: fir::File,
+    fir: fir::PackageFir,
     fir_table: name_resolution::FirTable,
     genv: env::GlobalTypeEnv,
     package: &str,

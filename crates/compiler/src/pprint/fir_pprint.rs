@@ -1,30 +1,42 @@
 use crate::fir;
 use crate::fir::{
     Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternBuiltin, ExternGo,
-    ExternType, File, FirIdent, FirTable, Fn, ImplBlock, Pat, PatId, StructDef, TraitDef,
-    TraitMethodSignature, TypeExpr,
+    ExternType, FirIdent, Fn, ImplBlock, PackageFir, Pat, PatId, ProjectFir, ProjectFirTable,
+    SourceFileFir, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
 pub struct FirPrintCtx<'a> {
-    pub fir_table: &'a FirTable,
+    pub fir_table: &'a ProjectFirTable,
 }
 
 impl<'a> FirPrintCtx<'a> {
-    pub fn new(fir_table: &'a FirTable) -> Self {
+    pub fn new(fir_table: &'a ProjectFirTable) -> Self {
         Self { fir_table }
     }
 
     fn expr_to_doc(&'a self, id: ExprId) -> RcDoc<'a, ()> {
-        self.fir_table.expr(id).to_doc(self)
+        self.fir_table
+            .package(id.pkg)
+            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+            .expr(id)
+            .to_doc(self)
     }
 
     fn pat_to_doc(&'a self, id: PatId) -> RcDoc<'a, ()> {
-        self.fir_table.pat(id).to_doc(self)
+        self.fir_table
+            .package(id.pkg)
+            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+            .pat(id)
+            .to_doc(self)
     }
 
     fn def_to_doc(&'a self, id: DefId) -> RcDoc<'a, ()> {
-        match self.fir_table.def(id) {
+        let table = self
+            .fir_table
+            .package(id.pkg)
+            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg));
+        match table.def(id) {
             Def::EnumDef(def) => def.to_doc(),
             Def::StructDef(def) => def.to_doc(),
             Def::TraitDef(def) => def.to_doc(),
@@ -685,7 +697,11 @@ impl Fn {
         } else {
             RcDoc::nil()
         };
-        let body = ctx.fir_table.expr(self.body);
+        let body = ctx
+            .fir_table
+            .package(self.body.pkg)
+            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", self.body.pkg))
+            .expr(self.body);
         attrs_doc(&self.attrs).append(
             header
                 .append(params_doc)
@@ -813,12 +829,79 @@ impl ExternBuiltin {
     }
 }
 
-impl File {
+impl SourceFileFir {
     pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
-        RcDoc::concat(self.toplevels.iter().map(|item| {
-            ctx.def_to_doc(*item)
+        let defs_doc = RcDoc::intersperse(
+            self.toplevels.iter().map(|item| ctx.def_to_doc(*item)),
+            RcDoc::hardline().append(RcDoc::hardline()),
+        );
+
+        if self.toplevels.is_empty() {
+            RcDoc::text("file")
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.path.clone()))
+                .nest(2)
+        } else {
+            RcDoc::text("file")
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.path.clone()))
                 .append(RcDoc::hardline())
-                .append(RcDoc::hardline())
+                .append(defs_doc.nest(2))
+                .nest(2)
+        }
+    }
+}
+
+impl PackageFir {
+    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        let imports_doc = if self.imports.is_empty() {
+            RcDoc::nil()
+        } else {
+            let imports = RcDoc::intersperse(
+                self.imports.iter().map(|name| RcDoc::text(name.0.clone())),
+                RcDoc::text(", "),
+            );
+            RcDoc::hardline()
+                .append(
+                    RcDoc::text("imports")
+                        .append(RcDoc::space())
+                        .append(imports),
+                )
+                .nest(2)
+        };
+
+        let files_doc = RcDoc::concat(self.files.iter().enumerate().map(|(idx, file)| {
+            let sep = if idx == 0 {
+                RcDoc::hardline()
+            } else {
+                RcDoc::hardline().append(RcDoc::hardline())
+            };
+            sep.append(file.to_doc(ctx))
+        }));
+
+        RcDoc::text("package")
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.0.clone()))
+            .append(imports_doc)
+            .append(files_doc)
+    }
+
+    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(ctx).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl ProjectFir {
+    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        RcDoc::concat(self.packages.iter().enumerate().map(|(idx, package)| {
+            let sep = if idx == 0 {
+                RcDoc::nil()
+            } else {
+                RcDoc::hardline().append(RcDoc::hardline())
+            };
+            sep.append(package.to_doc(ctx))
         }))
     }
 
