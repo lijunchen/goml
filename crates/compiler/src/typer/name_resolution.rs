@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use ast::ast;
 
 use crate::builtins;
-use crate::env::{self, GlobalTypeEnv};
+use crate::env;
 use crate::fir;
 use crate::fir::FirIdent;
 
@@ -40,6 +40,7 @@ impl ResolveLocalEnv {
 struct ResolutionContext<'a> {
     builtin_names: &'a HashMap<String, fir::BuiltinId>,
     def_names: &'a HashMap<String, fir::DefId>,
+    deps: &'a HashMap<String, fir::PackageInterface>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
     constructor_index: &'a ConstructorIndex,
@@ -53,31 +54,42 @@ fn full_def_name(package: &str, name: &str) -> String {
     }
 }
 
+fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
+    package == current_package || package == "Builtin" || imports.contains(package)
+}
+
 struct ConstructorIndex {
     enums_by_package: HashMap<String, HashMap<String, HashSet<String>>>,
 }
 
 impl ConstructorIndex {
-    fn new_with_deps(files: &[ast::File], deps_envs: &HashMap<String, GlobalTypeEnv>) -> Self {
+    fn new_with_deps(
+        files: &[fir::SourceFileAst],
+        deps: &HashMap<String, fir::PackageInterface>,
+    ) -> Self {
         let mut index = Self {
             enums_by_package: HashMap::new(),
         };
         index.add_files(files);
-        if !files.iter().any(|file| file.package.0 == "Builtin") {
+        if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
             let builtin_ast = builtins::get_builtin_ast();
-            index.add_files(std::slice::from_ref(&builtin_ast));
+            let builtin_file = fir::SourceFileAst {
+                path: "<builtin>".into(),
+                ast: builtin_ast,
+            };
+            index.add_files(std::slice::from_ref(&builtin_file));
         }
-        for (package, env) in deps_envs {
-            index.add_env(package, env);
+        for (package, interface) in deps {
+            index.add_interface(package, interface);
         }
         index
     }
 
-    fn add_files(&mut self, files: &[ast::File]) {
+    fn add_files(&mut self, files: &[fir::SourceFileAst]) {
         for file in files {
-            let package = file.package.0.clone();
+            let package = file.ast.package.0.clone();
             let entry = self.enums_by_package.entry(package).or_default();
-            for item in &file.toplevels {
+            for item in &file.ast.toplevels {
                 if let ast::Item::EnumDef(def) = item {
                     let variants = entry.entry(def.name.0.clone()).or_default();
                     for (variant, _) in &def.variants {
@@ -88,16 +100,15 @@ impl ConstructorIndex {
         }
     }
 
-    fn add_env(&mut self, package: &str, env: &GlobalTypeEnv) {
-        for (name, def) in env.type_env.enums.iter() {
-            let enum_name = name.0.rsplit("::").next().unwrap_or(&name.0);
-            let entry = self
-                .enums_by_package
-                .entry(package.to_string())
-                .or_default();
-            let variants = entry.entry(enum_name.to_string()).or_default();
-            for (variant, _) in &def.variants {
-                variants.insert(variant.0.clone());
+    fn add_interface(&mut self, package: &str, interface: &fir::PackageInterface) {
+        let entry = self
+            .enums_by_package
+            .entry(package.to_string())
+            .or_default();
+        for (enum_name, variants) in interface.enum_variants.iter() {
+            let entry_variants = entry.entry(enum_name.clone()).or_default();
+            for variant in variants {
+                entry_variants.insert(variant.clone());
             }
         }
     }
@@ -177,15 +188,16 @@ impl NameResolution {
                 let package = &segments[0].ident.0;
                 let enum_name = &segments[1].ident.0;
                 let variant = &segments[2].ident.0;
-                if ctx.package_allowed(package)
-                    && ctx
-                        .constructor_index
-                        .enum_has_variant(package, enum_name, variant)
-                {
-                    Some(constructor_path(package, enum_name, variant))
-                } else {
-                    None
+                let exists = ctx
+                    .constructor_index
+                    .enum_has_variant(package, enum_name, variant);
+                if exists && !ctx.package_allowed(package) {
+                    panic!(
+                        "package {} not imported in package {}",
+                        package, ctx.current_package
+                    );
                 }
+                exists.then(|| constructor_path(package, enum_name, variant))
             }
             _ => None,
         }
@@ -196,17 +208,35 @@ impl NameResolution {
             .unwrap_or_else(|| path.into())
     }
 
-    pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::File, FirTable) {
-        let deps_envs = HashMap::new();
-        self.resolve_files_with_env(files, &deps_envs)
+    pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::ResolvedFir, FirTable) {
+        let deps = HashMap::new();
+        let package_name = files
+            .first()
+            .map(|file| file.package.0.as_str())
+            .unwrap_or("Main");
+        let package_id = match package_name {
+            "Builtin" => fir::PackageId(0),
+            "Main" => fir::PackageId(1),
+            _ => fir::PackageId(2),
+        };
+        let files = files
+            .into_iter()
+            .enumerate()
+            .map(|(idx, ast)| fir::SourceFileAst {
+                path: format!("<unknown:{}>", idx).into(),
+                ast,
+            })
+            .collect();
+        self.resolve_files_with_env(package_id, files, &deps)
     }
 
     pub fn resolve_files_with_env(
         &self,
-        files: Vec<ast::File>,
-        deps_envs: &HashMap<String, GlobalTypeEnv>,
-    ) -> (fir::File, FirTable) {
-        let mut fir_table = FirTable::new();
+        package_id: fir::PackageId,
+        files: Vec<fir::SourceFileAst>,
+        deps: &HashMap<String, fir::PackageInterface>,
+    ) -> (fir::ResolvedFir, FirTable) {
+        let mut fir_table = FirTable::new(package_id);
 
         let mut builtin_names = HashMap::new();
         for name in env::builtin_function_names() {
@@ -216,14 +246,20 @@ impl NameResolution {
         }
 
         let mut def_names = HashMap::new();
-        let ctor_index = ConstructorIndex::new_with_deps(&files, deps_envs);
+        let ctor_index = ConstructorIndex::new_with_deps(&files, deps);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
 
         for file in files.iter() {
-            let package_name = file.package.0.as_str();
+            let package_name = file.ast.package.0.as_str();
+            let imports = file
+                .ast
+                .imports
+                .iter()
+                .map(|import| import.0.clone())
+                .collect::<HashSet<_>>();
             let mut def_ids = Vec::new();
-            for item in file.toplevels.iter() {
+            for item in file.ast.toplevels.iter() {
                 let def_id = match item {
                     ast::Item::Fn(func) => {
                         let full_name = full_def_name(package_name, &func.name.0);
@@ -237,7 +273,7 @@ impl NameResolution {
                                 generics: Vec::new(),
                                 params: Vec::new(),
                                 ret_ty: None,
-                                body: fir::ExprId(0),
+                                body: fir_table.dummy_expr(),
                             }),
                         );
                         def_names.insert(full_name, id);
@@ -246,7 +282,7 @@ impl NameResolution {
                     ast::Item::ExternGo(ext) => {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
                         let path = full_def_path(package_name, &ext.goml_name.0);
-                        let ext_def = self.lower_extern_go(ext, package_name);
+                        let ext_def = self.lower_extern_go(ext, package_name, &imports);
                         let id = fir_table.alloc_def_with_path(
                             path,
                             fir::DefKind::ExternGo,
@@ -258,7 +294,7 @@ impl NameResolution {
                     ast::Item::ExternBuiltin(ext) => {
                         let full_name = full_def_name(package_name, &ext.name.0);
                         let path = full_def_path(package_name, &ext.name.0);
-                        let ext_def = self.lower_extern_builtin(ext, package_name);
+                        let ext_def = self.lower_extern_builtin(ext, package_name, &imports);
                         let id = fir_table.alloc_def_with_path(
                             path,
                             fir::DefKind::ExternBuiltin,
@@ -270,7 +306,7 @@ impl NameResolution {
                     ast::Item::EnumDef(e) => {
                         let full_name = full_def_name(package_name, &e.name.0);
                         let path = full_def_path(package_name, &e.name.0);
-                        let enum_def = self.lower_enum_def(e, package_name);
+                        let enum_def = self.lower_enum_def(e, package_name, &imports);
                         let id = fir_table.alloc_def_with_path(
                             path,
                             fir::DefKind::EnumDef,
@@ -282,7 +318,7 @@ impl NameResolution {
                     ast::Item::StructDef(s) => {
                         let full_name = full_def_name(package_name, &s.name.0);
                         let path = full_def_path(package_name, &s.name.0);
-                        let struct_def = self.lower_struct_def(s, package_name);
+                        let struct_def = self.lower_struct_def(s, package_name, &imports);
                         let id = fir_table.alloc_def_with_path(
                             path,
                             fir::DefKind::StructDef,
@@ -294,7 +330,7 @@ impl NameResolution {
                     ast::Item::TraitDef(t) => {
                         let full_name = full_def_name(package_name, &t.name.0);
                         let path = full_def_path(package_name, &t.name.0);
-                        let trait_def = self.lower_trait_def(t, package_name);
+                        let trait_def = self.lower_trait_def(t, package_name, &imports);
                         let id = fir_table.alloc_def_with_path(
                             path,
                             fir::DefKind::TraitDef,
@@ -334,8 +370,9 @@ impl NameResolution {
         }
 
         for (file_idx, file) in files.iter().enumerate() {
-            let package_name = file.package.0.as_str();
+            let package_name = file.ast.package.0.as_str();
             let imports = file
+                .ast
                 .imports
                 .iter()
                 .map(|import| import.0.clone())
@@ -343,13 +380,14 @@ impl NameResolution {
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
+                deps,
                 current_package: package_name,
                 imports: &imports,
                 constructor_index: &ctor_index,
             };
 
             let mut toplevel_idx = 0;
-            for item in file.toplevels.iter() {
+            for item in file.ast.toplevels.iter() {
                 match item {
                     ast::Item::Fn(func) => {
                         let def_id = per_file_defs[file_idx][toplevel_idx];
@@ -375,7 +413,12 @@ impl NameResolution {
                                 .trait_name
                                 .as_ref()
                                 .map(|t| FirIdent::name(full_def_name(package_name, &t.0))),
-                            for_type: Self::lower_type_expr(&i.for_type, &tparams, package_name),
+                            for_type: Self::lower_type_expr(
+                                &i.for_type,
+                                &tparams,
+                                package_name,
+                                &imports,
+                            ),
                             methods,
                         };
                         *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
@@ -387,7 +430,39 @@ impl NameResolution {
             }
         }
 
-        (fir::File { toplevels }, fir_table)
+        let files = files
+            .iter()
+            .enumerate()
+            .map(|(idx, file)| {
+                let package = file.ast.package.0.clone();
+                let file_name = file
+                    .path
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .unwrap_or("<unknown>");
+                let path = if package == "Main" || package == "Builtin" {
+                    file_name.to_string()
+                } else {
+                    format!("{}/{}", package, file_name)
+                };
+                fir::SourceFileFir {
+                    path,
+                    package: fir::PackageName(package),
+                    imports: file
+                        .ast
+                        .imports
+                        .iter()
+                        .map(|import| fir::PackageName(import.0.clone()))
+                        .collect(),
+                    toplevels: per_file_defs[idx].clone(),
+                }
+            })
+            .collect();
+
+        (
+            fir::ResolvedFir { files, toplevels },
+            fir_table,
+        )
     }
 
     fn resolve_fn_def(
@@ -405,7 +480,7 @@ impl NameResolution {
                 generics: Vec::new(),
                 params: Vec::new(),
                 ret_ty: None,
-                body: fir::ExprId(0),
+                body: fir_table.dummy_expr(),
             }),
         );
         fir_table.set_current_owner(def_id);
@@ -439,7 +514,7 @@ impl NameResolution {
             .map(|param| {
                 (
                     env.rfind(&param.0).unwrap(),
-                    Self::lower_type_expr(&param.1, &tparams, ctx.current_package),
+                    Self::lower_type_expr(&param.1, &tparams, ctx.current_package, ctx.imports),
                 )
             })
             .collect();
@@ -450,7 +525,7 @@ impl NameResolution {
             params: new_params,
             ret_ty: ret_ty
                 .as_ref()
-                .map(|t| Self::lower_type_expr(t, &tparams, ctx.current_package)),
+                .map(|t| Self::lower_type_expr(t, &tparams, ctx.current_package, ctx.imports)),
             body: self.resolve_expr(body, &mut env, ctx, fir_table),
         }
     }
@@ -501,12 +576,27 @@ impl NameResolution {
                         .first()
                         .map(|seg| seg.ident().0.as_str())
                         .unwrap_or_default();
-                    let allowed = package == ctx.current_package
-                        || package == "Builtin"
-                        || ctx.imports.contains(package);
-                    let res = if allowed {
+                    if package != ctx.current_package
+                        && package != "Builtin"
+                        && ctx.deps.contains_key(package)
+                        && !ctx.imports.contains(package)
+                    {
+                        panic!(
+                            "package {} not imported in package {}",
+                            package, ctx.current_package
+                        );
+                    }
+
+                    let res = if package == ctx.current_package || package == "Builtin" {
                         ctx.def_names
                             .get(&full_name)
+                            .copied()
+                            .map(fir::NameRef::Def)
+                            .unwrap_or_else(|| fir::NameRef::Unresolved(path.into()))
+                    } else if ctx.imports.contains(package) {
+                        ctx.deps
+                            .get(package)
+                            .and_then(|interface| interface.exports.get(&full_name))
                             .copied()
                             .map(fir::NameRef::Def)
                             .unwrap_or_else(|| fir::NameRef::Unresolved(path.into()))
@@ -582,8 +672,17 @@ impl NameResolution {
                         )
                     })
                     .collect();
+                let qualified: fir::QualifiedPath = name.into();
+                if let Some(package) = &qualified.package
+                    && !ctx.package_allowed(package.as_str())
+                {
+                    panic!(
+                        "package {} not imported in package {}",
+                        package.0, ctx.current_package
+                    );
+                }
                 fir_table.alloc_expr(fir::Expr::EStructLiteral {
-                    name: name.into(),
+                    name: qualified,
                     fields: new_fields,
                 })
             }
@@ -813,8 +912,17 @@ impl NameResolution {
                         )
                     })
                     .collect();
+                let qualified: fir::QualifiedPath = name.into();
+                if let Some(package) = &qualified.package
+                    && !ctx.package_allowed(package.as_str())
+                {
+                    panic!(
+                        "package {} not imported in package {}",
+                        package.0, ctx.current_package
+                    );
+                }
                 fir_table.alloc_pat(fir::Pat::PStruct {
-                    name: name.into(),
+                    name: qualified,
                     fields: new_fields,
                 })
             }
@@ -833,6 +941,7 @@ impl NameResolution {
         ty: &ast::TypeExpr,
         tparams: &HashSet<String>,
         current_package: &str,
+        imports: &HashSet<String>,
     ) -> fir::TypeExpr {
         match ty {
             ast::TypeExpr::TUnit => fir::TypeExpr::TUnit,
@@ -851,27 +960,40 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package))
+                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
-                let path = if path.len() == 1 {
+                let qualified = if path.len() == 1 {
                     let name = path.last_ident().unwrap().0.clone();
-                    if tparams.contains(&name) || name == "Ref" || name == "Vec" {
-                        path.into()
-                    } else {
-                        full_def_path(current_package, &name)
+                    fir::QualifiedPath {
+                        package: None,
+                        path: fir::Path::from_ident(name),
                     }
                 } else {
-                    path.into()
+                    let qualified: fir::QualifiedPath = path.into();
+                    if let Some(package) = &qualified.package
+                        && !package_allowed(package.as_str(), current_package, imports)
+                    {
+                        panic!(
+                            "package {} not imported in package {}",
+                            package.0, current_package
+                        );
+                    }
+                    qualified
                 };
-                fir::TypeExpr::TCon { path }
+                fir::TypeExpr::TCon { path: qualified }
             }
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
-                ty: Box::new(Self::lower_type_expr(ty.as_ref(), tparams, current_package)),
+                ty: Box::new(Self::lower_type_expr(
+                    ty.as_ref(),
+                    tparams,
+                    current_package,
+                    imports,
+                )),
                 args: args
                     .iter()
-                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package))
+                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
@@ -880,23 +1002,30 @@ impl NameResolution {
                     elem.as_ref(),
                     tparams,
                     current_package,
+                    imports,
                 )),
             },
             ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| Self::lower_type_expr(param, tparams, current_package))
+                    .map(|param| Self::lower_type_expr(param, tparams, current_package, imports))
                     .collect(),
                 ret_ty: Box::new(Self::lower_type_expr(
                     ret_ty.as_ref(),
                     tparams,
                     current_package,
+                    imports,
                 )),
             },
         }
     }
 
-    fn lower_enum_def(&self, def: &ast::EnumDef, current_package: &str) -> fir::EnumDef {
+    fn lower_enum_def(
+        &self,
+        def: &ast::EnumDef,
+        current_package: &str,
+        imports: &HashSet<String>,
+    ) -> fir::EnumDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
         let variants = def
@@ -905,7 +1034,7 @@ impl NameResolution {
             .map(|(variant_name, tys)| {
                 let types = tys
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, &tparams, current_package))
+                    .map(|ty| Self::lower_type_expr(ty, &tparams, current_package, imports))
                     .collect();
                 (FirIdent::name(&variant_name.0), types)
             })
@@ -918,7 +1047,12 @@ impl NameResolution {
         }
     }
 
-    fn lower_struct_def(&self, def: &ast::StructDef, current_package: &str) -> fir::StructDef {
+    fn lower_struct_def(
+        &self,
+        def: &ast::StructDef,
+        current_package: &str,
+        imports: &HashSet<String>,
+    ) -> fir::StructDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
         let fields = def
@@ -927,7 +1061,7 @@ impl NameResolution {
             .map(|(field_name, ty)| {
                 (
                     FirIdent::name(&field_name.0),
-                    Self::lower_type_expr(ty, &tparams, current_package),
+                    Self::lower_type_expr(ty, &tparams, current_package, imports),
                 )
             })
             .collect();
@@ -939,7 +1073,12 @@ impl NameResolution {
         }
     }
 
-    fn lower_trait_def(&self, def: &ast::TraitDef, current_package: &str) -> fir::TraitDef {
+    fn lower_trait_def(
+        &self,
+        def: &ast::TraitDef,
+        current_package: &str,
+        imports: &HashSet<String>,
+    ) -> fir::TraitDef {
         let name = full_def_name(current_package, &def.name.0);
         let method_sigs = def
             .method_sigs
@@ -949,9 +1088,11 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package))
+                    .map(|ty| {
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)
+                    })
                     .collect(),
-                ret_ty: Self::lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package),
+                ret_ty: Self::lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package, imports),
             })
             .collect();
         fir::TraitDef {
@@ -961,7 +1102,12 @@ impl NameResolution {
         }
     }
 
-    fn lower_extern_go(&self, def: &ast::ExternGo, current_package: &str) -> fir::ExternGo {
+    fn lower_extern_go(
+        &self,
+        def: &ast::ExternGo,
+        current_package: &str,
+        imports: &HashSet<String>,
+    ) -> fir::ExternGo {
         let name = full_def_name(current_package, &def.goml_name.0);
         fir::ExternGo {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
@@ -975,14 +1121,14 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)),
         }
     }
 
@@ -998,6 +1144,7 @@ impl NameResolution {
         &self,
         def: &ast::ExternBuiltin,
         current_package: &str,
+        imports: &HashSet<String>,
     ) -> fir::ExternBuiltin {
         let name = full_def_name(current_package, &def.name.0);
         fir::ExternBuiltin {
@@ -1009,14 +1156,14 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        Self::lower_type_expr(ty, &HashSet::new(), current_package),
+                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package)),
+                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)),
         }
     }
 
@@ -1034,7 +1181,9 @@ impl NameResolution {
             ty: param
                 .ty
                 .as_ref()
-                .map(|t| Self::lower_type_expr(t, &HashSet::new(), ctx.current_package)),
+                .map(|t| {
+                    Self::lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
+                }),
             astptr: param.astptr,
         }
     }

@@ -326,27 +326,23 @@ impl Typer {
                 }
             }
             fir::NameRef::Def(_def_id) => {
-                if let Some(func_ty) = genv.current().get_type_of_function(hint) {
-                    let inst_ty = self.inst_ty(&func_ty);
-                    tast::Expr::EVar {
-                        name: hint.to_string(),
-                        ty: inst_ty,
-                        astptr,
-                    }
-                } else {
-                    panic!("Function {} not found in environment", hint);
+                let func_ty = lookup_function_type_by_hint(genv, hint)
+                    .unwrap_or_else(|| panic!("Function {} not found in environment", hint));
+                let inst_ty = self.inst_ty(&func_ty);
+                tast::Expr::EVar {
+                    name: hint.to_string(),
+                    ty: inst_ty,
+                    astptr,
                 }
             }
             fir::NameRef::Builtin(_builtin_id) => {
-                if let Some(func_ty) = genv.current().get_type_of_function(hint) {
-                    let inst_ty = self.inst_ty(&func_ty);
-                    tast::Expr::EVar {
-                        name: hint.to_string(),
-                        ty: inst_ty,
-                        astptr,
-                    }
-                } else {
-                    panic!("Builtin {} not found in environment", hint);
+                let func_ty = lookup_function_type_by_hint(genv, hint)
+                    .unwrap_or_else(|| panic!("Builtin {} not found in environment", hint));
+                let inst_ty = self.inst_ty(&func_ty);
+                tast::Expr::EVar {
+                    name: hint.to_string(),
+                    ty: inst_ty,
+                    astptr,
                 }
             }
             fir::NameRef::Unresolved(path) => self.infer_unresolved_path_expr(genv, path, astptr),
@@ -577,7 +573,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        name: &fir::Path,
+        name: &fir::QualifiedPath,
         fields: &[(fir::FirIdent, fir::ExprId)],
     ) -> tast::Expr {
         let name_display = name.display();
@@ -1192,7 +1188,7 @@ impl Typer {
                     arg_types.push(arg_tast.get_ty());
                     args_tast.push(arg_tast);
                 }
-                if let Some(func_ty) = genv.current().get_type_of_function(name.as_str()) {
+                if let Some(func_ty) = lookup_function_type_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_ty);
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
@@ -2216,6 +2212,15 @@ fn lookup_function_path(genv: &PackageTypeEnv, path: &fir::Path) -> Option<(Stri
         );
         None
     }
+}
+
+fn lookup_function_type_by_hint(genv: &PackageTypeEnv, hint: &str) -> Option<tast::Ty> {
+    if let Some(func_ty) = genv.current().get_type_of_function(hint) {
+        return Some(func_ty);
+    }
+    let segments = hint.split("::").map(|seg| seg.to_string()).collect();
+    let path = fir::Path::from_idents(segments);
+    lookup_function_path(genv, &path).map(|(_, ty)| ty)
 }
 
 fn lookup_inherent_method_for_ty(

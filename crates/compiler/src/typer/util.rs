@@ -184,7 +184,10 @@ impl tast::Ty {
             },
             fir::TypeExpr::TCon { path } => {
                 let name = path.display();
-                if path.len() == 1 && tparams_env.iter().any(|param| param.0 == name) {
+                if path.package.is_none()
+                    && path.len() == 1
+                    && tparams_env.iter().any(|param| param.0 == name)
+                {
                     Self::TParam { name }
                 } else {
                     let (resolved, env) = resolve_type_name(genv, &name);
@@ -203,6 +206,7 @@ impl tast::Ty {
             }
             fir::TypeExpr::TApp { ty, args } => {
                 if let fir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.package.is_none()
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Ref")
                     && args.len() == 1
@@ -212,6 +216,7 @@ impl tast::Ty {
                     };
                 }
                 if let fir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.package.is_none()
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Vec")
                     && args.len() == 1

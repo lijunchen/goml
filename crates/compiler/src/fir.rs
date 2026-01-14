@@ -2,26 +2,251 @@ use ast::ast;
 use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
-use crate::env::GlobalTypeEnv;
+#[derive(Debug, Clone)]
+pub struct SourceFileAst {
+    pub path: PathBuf,
+    pub ast: ast::File,
+}
 
-pub fn lower_to_fir_files(files: Vec<ast::File>) -> (File, FirTable) {
-    let deps_envs = HashMap::new();
-    lower_to_fir_files_with_env(files, &deps_envs)
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct PackageName(pub String);
+
+impl PackageName {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct PackageId(pub u32);
+
+#[derive(Debug, Clone)]
+pub struct ProjectFir {
+    pub packages: Vec<PackageFir>,
+    pub package_index: HashMap<PackageName, PackageId>,
+}
+
+#[derive(Debug, Clone)]
+pub struct PackageFir {
+    pub id: PackageId,
+    pub name: PackageName,
+    pub imports: Vec<PackageName>,
+    pub files: Vec<SourceFileFir>,
+    pub toplevels: Vec<DefId>,
+}
+
+#[derive(Debug, Clone)]
+pub struct SourceFileFir {
+    pub path: String,
+    pub package: PackageName,
+    pub imports: Vec<PackageName>,
+    pub toplevels: Vec<DefId>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ResolvedFir {
+    pub files: Vec<SourceFileFir>,
+    pub toplevels: Vec<DefId>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ProjectFirTable {
+    packages: HashMap<PackageId, FirTable>,
+}
+
+impl ProjectFirTable {
+    pub fn new() -> Self {
+        Self {
+            packages: HashMap::new(),
+        }
+    }
+
+    pub fn insert(&mut self, package: PackageId, table: FirTable) {
+        self.packages.insert(package, table);
+    }
+
+    pub fn package(&self, package: PackageId) -> Option<&FirTable> {
+        self.packages.get(&package)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct PackageInterface {
+    pub id: PackageId,
+    pub name: PackageName,
+    pub exports: HashMap<String, DefId>,
+    pub enum_variants: HashMap<String, Vec<String>>,
+}
+
+impl PackageInterface {
+    pub fn from_fir(package: &PackageFir, table: &FirTable) -> Self {
+        let mut exports = HashMap::new();
+        let mut enum_variants = HashMap::new();
+
+        for &def_id in package.toplevels.iter() {
+            match table.def(def_id) {
+                Def::EnumDef(enum_def) => {
+                    let full = enum_def.name.to_ident_name();
+                    exports.insert(full.clone(), def_id);
+                    let key = full.rsplit("::").next().unwrap_or(&full).to_string();
+                    let variants = enum_def
+                        .variants
+                        .iter()
+                        .map(|(name, _)| name.to_ident_name())
+                        .collect();
+                    enum_variants.insert(key, variants);
+                }
+                Def::StructDef(struct_def) => {
+                    exports.insert(struct_def.name.to_ident_name(), def_id);
+                }
+                Def::TraitDef(trait_def) => {
+                    exports.insert(trait_def.name.to_ident_name(), def_id);
+                }
+                Def::Fn(func) => {
+                    exports.insert(func.name.clone(), def_id);
+                }
+                Def::ExternGo(ext) => {
+                    exports.insert(ext.goml_name.to_ident_name(), def_id);
+                }
+                Def::ExternType(ext) => {
+                    exports.insert(ext.goml_name.to_ident_name(), def_id);
+                }
+                Def::ExternBuiltin(ext) => {
+                    exports.insert(ext.name.to_ident_name(), def_id);
+                }
+                Def::ImplBlock(_) => {}
+            }
+        }
+
+        PackageInterface {
+            id: package.id,
+            name: package.name.clone(),
+            exports,
+            enum_variants,
+        }
+    }
+}
+
+pub fn lower_to_fir_files(files: Vec<SourceFileAst>) -> (PackageFir, FirTable) {
+    let deps = HashMap::new();
+    let package_name = files
+        .first()
+        .map(|file| file.ast.package.0.as_str())
+        .unwrap_or("Main");
+    let package_id = match package_name {
+        "Builtin" => PackageId(0),
+        "Main" => PackageId(1),
+        _ => PackageId(2),
+    };
+    lower_to_fir_files_with_env(package_id, files, &deps)
 }
 
 pub fn lower_to_fir_files_with_env(
-    files: Vec<ast::File>,
-    deps_envs: &HashMap<String, GlobalTypeEnv>,
-) -> (File, FirTable) {
+    package_id: PackageId,
+    files: Vec<SourceFileAst>,
+    deps: &HashMap<String, PackageInterface>,
+) -> (PackageFir, FirTable) {
     use crate::typer::name_resolution::NameResolution;
-    let (fir, mut fir_table) = NameResolution::default().resolve_files_with_env(files, deps_envs);
+    let (resolved, mut fir_table) =
+        NameResolution::default().resolve_files_with_env(package_id, files, deps);
     let _ctor_errors = resolve_constructors(&mut fir_table);
-    (fir, fir_table)
+    let package_name = resolved
+        .files
+        .first()
+        .map(|file| file.package.clone())
+        .unwrap_or_else(|| PackageName("Main".to_string()));
+    let mut imports: Vec<PackageName> = resolved
+        .files
+        .iter()
+        .flat_map(|file| file.imports.iter().cloned())
+        .collect();
+    imports.sort_by(|a, b| a.0.cmp(&b.0));
+    imports.dedup_by(|a, b| a.0 == b.0);
+    (
+        PackageFir {
+            id: package_id,
+            name: package_name,
+            imports,
+            files: resolved.files,
+            toplevels: resolved.toplevels,
+        },
+        fir_table,
+    )
 }
 
-pub fn lower_to_fir(ast: ast::File) -> (File, FirTable) {
-    lower_to_fir_files(vec![ast])
+pub fn lower_to_project_fir_files(files: Vec<SourceFileAst>) -> (ProjectFir, ProjectFirTable) {
+    let deps = HashMap::new();
+    lower_to_project_fir_files_with_env(files, &deps)
+}
+
+pub fn lower_to_project_fir_files_with_env(
+    files: Vec<SourceFileAst>,
+    deps: &HashMap<String, PackageInterface>,
+) -> (ProjectFir, ProjectFirTable) {
+    let mut grouped: HashMap<PackageName, Vec<SourceFileAst>> = HashMap::new();
+    for file in files {
+        grouped
+            .entry(PackageName(file.ast.package.0.clone()))
+            .or_default()
+            .push(file);
+    }
+
+    let mut other_packages: Vec<PackageName> = grouped
+        .keys()
+        .filter(|name| name.as_str() != "Main")
+        .cloned()
+        .collect();
+    other_packages.sort_by(|a, b| a.0.cmp(&b.0));
+
+    let mut package_order = Vec::new();
+    if grouped.contains_key(&PackageName("Main".to_string())) {
+        package_order.push(PackageName("Main".to_string()));
+    }
+    package_order.extend(other_packages);
+
+    let mut package_index = HashMap::new();
+    package_index.insert(PackageName("Builtin".to_string()), PackageId(0));
+    if package_order.iter().any(|name| name.as_str() == "Main") {
+        package_index.insert(PackageName("Main".to_string()), PackageId(1));
+    }
+    let mut next_id = 2u32;
+    for name in package_order.iter() {
+        if name.as_str() == "Main" {
+            continue;
+        }
+        package_index.insert(name.clone(), PackageId(next_id));
+        next_id += 1;
+    }
+
+    let mut project_table = ProjectFirTable::new();
+    let mut package_firs = Vec::new();
+
+    for name in package_order {
+        let Some(files) = grouped.remove(&name) else {
+            continue;
+        };
+        let package_id = *package_index.get(&name).unwrap_or(&PackageId(2));
+        let (package_fir, fir_table) = lower_to_fir_files_with_env(package_id, files, deps);
+        project_table.insert(package_id, fir_table);
+        package_firs.push(package_fir);
+    }
+
+    (
+        ProjectFir {
+            packages: package_firs,
+            package_index,
+        },
+        project_table,
+    )
+}
+
+pub fn lower_to_fir(ast: ast::File) -> (PackageFir, FirTable) {
+    lower_to_fir_files(vec![SourceFileAst {
+        path: PathBuf::from("<unknown>"),
+        ast,
+    }])
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -44,11 +269,14 @@ pub struct DefKey {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct DefId(u32);
+pub struct DefId {
+    pub pkg: PackageId,
+    pub idx: u32,
+}
 
 impl DefId {
     pub fn to_debug_string(self) -> String {
-        format!("def/{}", self.0)
+        format!("def/{}/{}", self.pkg.0, self.idx)
     }
 }
 
@@ -66,29 +294,38 @@ pub enum LocalKey {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct LocalId(u32);
+pub struct LocalId {
+    pub pkg: PackageId,
+    pub idx: u32,
+}
 
 impl LocalId {
     pub fn to_debug_string(self) -> String {
-        format!("local/{}", self.0)
+        format!("local/{}/{}", self.pkg.0, self.idx)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct ExprId(pub(crate) u32);
+pub struct ExprId {
+    pub pkg: PackageId,
+    pub idx: u32,
+}
 
 impl ExprId {
     pub fn to_debug_string(self) -> String {
-        format!("expr/{}", self.0)
+        format!("expr/{}/{}", self.pkg.0, self.idx)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct PatId(pub(crate) u32);
+pub struct PatId {
+    pub pkg: PackageId,
+    pub idx: u32,
+}
 
 impl PatId {
     pub fn to_debug_string(self) -> String {
-        format!("pat/{}", self.0)
+        format!("pat/{}/{}", self.pkg.0, self.idx)
     }
 }
 
@@ -117,7 +354,7 @@ pub enum ConstructorRef {
 }
 
 impl ConstructorRef {
-    pub fn display(&self, _fir_table: &FirTable) -> String {
+    pub fn display(&self, _fir_table: &ProjectFirTable) -> String {
         match self {
             ConstructorRef::Unresolved(path) => path.display(),
             ConstructorRef::Resolved(id) => id.to_debug_string(),
@@ -125,8 +362,9 @@ impl ConstructorRef {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct FirTable {
+    package: PackageId,
     def_interner: HashMap<DefKey, DefId>,
     def_data: Vec<Def>,
     def_paths: Vec<Path>,
@@ -135,6 +373,8 @@ pub struct FirTable {
     local_counter: u32,
     exprs: Arena<Expr>,
     pats: Arena<Pat>,
+    dummy_expr: ExprId,
+    dummy_pat: PatId,
     current_owner: Option<DefId>,
 }
 
@@ -145,26 +385,58 @@ pub struct LocalInfo {
 }
 
 impl FirTable {
-    pub fn new() -> Self {
+    pub fn new(package: PackageId) -> Self {
+        let mut exprs = Arena::new();
+        let dummy_expr = ExprId {
+            pkg: package,
+            idx: exprs.alloc(Expr::EUnit).into_raw().into_u32(),
+        };
+        let mut pats = Arena::new();
+        let dummy_pat = PatId {
+            pkg: package,
+            idx: pats.alloc(Pat::PWild).into_raw().into_u32(),
+        };
         Self {
+            package,
             def_interner: HashMap::new(),
             def_data: Vec::new(),
             def_paths: Vec::new(),
             local_interner: HashMap::new(),
             local_info: Vec::new(),
             local_counter: 0,
-            exprs: Arena::new(),
-            pats: Arena::new(),
+            exprs,
+            pats,
+            dummy_expr,
+            dummy_pat,
             current_owner: None,
         }
+    }
+
+    pub fn package(&self) -> PackageId {
+        self.package
+    }
+
+    pub fn dummy_expr(&self) -> ExprId {
+        self.dummy_expr
+    }
+
+    pub fn dummy_pat(&self) -> PatId {
+        self.dummy_pat
     }
 
     pub fn set_current_owner(&mut self, owner: DefId) {
         self.current_owner = Some(owner);
     }
 
+    fn fallback_owner(&self) -> DefId {
+        DefId {
+            pkg: self.package,
+            idx: u32::MAX,
+        }
+    }
+
     pub fn fresh_local(&mut self, hint: &str) -> LocalId {
-        let owner = self.current_owner.unwrap_or(DefId(0));
+        let owner = self.current_owner.unwrap_or_else(|| self.fallback_owner());
         let serial = self.local_counter;
         self.local_counter += 1;
         let key = LocalKey::Synthetic {
@@ -172,7 +444,10 @@ impl FirTable {
             serial,
             hint: hint.to_string(),
         };
-        let id = LocalId(self.local_info.len() as u32);
+        let id = LocalId {
+            pkg: self.package,
+            idx: self.local_info.len() as u32,
+        };
         self.local_interner.insert(key.clone(), id);
         self.local_info.push(LocalInfo {
             hint: hint.to_string(),
@@ -182,12 +457,15 @@ impl FirTable {
     }
 
     pub fn alloc_ast_local(&mut self, ptr: MySyntaxNodePtr, hint: &str) -> LocalId {
-        let owner = self.current_owner.unwrap_or(DefId(0));
+        let owner = self.current_owner.unwrap_or_else(|| self.fallback_owner());
         let key = LocalKey::AstBinder { owner, ptr };
         if let Some(&id) = self.local_interner.get(&key) {
             return id;
         }
-        let id = LocalId(self.local_info.len() as u32);
+        let id = LocalId {
+            pkg: self.package,
+            idx: self.local_info.len() as u32,
+        };
         self.local_interner.insert(key.clone(), id);
         self.local_info.push(LocalInfo {
             hint: hint.to_string(),
@@ -197,11 +475,12 @@ impl FirTable {
     }
 
     pub fn local_hint(&self, id: LocalId) -> &str {
-        &self.local_info[id.0 as usize].hint
+        assert_eq!(id.pkg, self.package);
+        &self.local_info[id.idx as usize].hint
     }
 
     pub fn local_ident_name(&self, id: LocalId) -> String {
-        format!("{}/{}", self.local_hint(id), id.0)
+        format!("{}/{}", self.local_hint(id), id.idx)
     }
 
     pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
@@ -212,7 +491,10 @@ impl FirTable {
             disamb: 0,
         };
 
-        let id = DefId(self.def_data.len() as u32);
+        let id = DefId {
+            pkg: self.package,
+            idx: self.def_data.len() as u32,
+        };
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
@@ -226,7 +508,10 @@ impl FirTable {
             disamb: 0,
         };
 
-        let id = DefId(self.def_data.len() as u32);
+        let id = DefId {
+            pkg: self.package,
+            idx: self.def_data.len() as u32,
+        };
         self.def_interner.insert(key, id);
         self.def_data.push(def);
         self.def_paths.push(path);
@@ -234,34 +519,45 @@ impl FirTable {
     }
 
     pub fn def(&self, id: DefId) -> &Def {
-        &self.def_data[id.0 as usize]
+        assert_eq!(id.pkg, self.package);
+        &self.def_data[id.idx as usize]
     }
 
     pub fn def_mut(&mut self, id: DefId) -> &mut Def {
-        &mut self.def_data[id.0 as usize]
+        assert_eq!(id.pkg, self.package);
+        &mut self.def_data[id.idx as usize]
     }
 
     pub fn def_path(&self, id: DefId) -> &Path {
-        &self.def_paths[id.0 as usize]
+        assert_eq!(id.pkg, self.package);
+        &self.def_paths[id.idx as usize]
     }
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
         let idx = self.exprs.alloc(expr);
-        ExprId(idx.into_raw().into_u32())
+        ExprId {
+            pkg: self.package,
+            idx: idx.into_raw().into_u32(),
+        }
     }
 
     pub fn expr(&self, id: ExprId) -> &Expr {
-        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        assert_eq!(id.pkg, self.package);
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.idx));
         &self.exprs[idx]
     }
 
     pub fn alloc_pat(&mut self, pat: Pat) -> PatId {
         let idx = self.pats.alloc(pat);
-        PatId(idx.into_raw().into_u32())
+        PatId {
+            pkg: self.package,
+            idx: idx.into_raw().into_u32(),
+        }
     }
 
     pub fn pat(&self, id: PatId) -> &Pat {
-        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.0));
+        assert_eq!(id.pkg, self.package);
+        let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.idx));
         &self.pats[idx]
     }
 
@@ -269,7 +565,15 @@ impl FirTable {
         self.def_data
             .iter()
             .enumerate()
-            .map(|(i, def)| (DefId(i as u32), def))
+            .map(|(i, def)| {
+                (
+                    DefId {
+                        pkg: self.package,
+                        idx: i as u32,
+                    },
+                    def,
+                )
+            })
     }
 }
 
@@ -378,9 +682,12 @@ pub enum NameRef {
 }
 
 impl NameRef {
-    pub fn display(&self, fir_table: &FirTable) -> String {
+    pub fn display(&self, fir_table: &ProjectFirTable) -> String {
         match self {
-            NameRef::Local(id) => fir_table.local_ident_name(*id),
+            NameRef::Local(id) => fir_table
+                .package(id.pkg)
+                .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+                .local_ident_name(*id),
             NameRef::Def(id) => id.to_debug_string(),
             NameRef::Builtin(id) => id.to_name(),
             NameRef::Unresolved(path) => path.display(),
@@ -485,6 +792,46 @@ impl From<&ast::Path> for Path {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct QualifiedPath {
+    pub package: Option<PackageName>,
+    pub path: Path,
+}
+
+impl QualifiedPath {
+    pub fn len(&self) -> usize {
+        self.path.len()
+    }
+
+    pub fn last_ident(&self) -> Option<&String> {
+        self.path.last_ident()
+    }
+
+    pub fn display(&self) -> String {
+        match &self.package {
+            Some(package) => format!("{}::{}", package.0, self.path.display()),
+            None => self.path.display(),
+        }
+    }
+}
+
+impl From<&ast::Path> for QualifiedPath {
+    fn from(path: &ast::Path) -> Self {
+        if path.segments.len() <= 1 {
+            return QualifiedPath {
+                package: None,
+                path: path.into(),
+            };
+        }
+        let package = path.segments[0].ident.0.clone();
+        let segments = path.segments[1..].iter().map(|seg| seg.into()).collect();
+        QualifiedPath {
+            package: Some(PackageName(package)),
+            path: Path::new(segments),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum TypeExpr {
     TUnit,
@@ -504,7 +851,7 @@ pub enum TypeExpr {
         typs: Vec<TypeExpr>,
     },
     TCon {
-        path: Path,
+        path: QualifiedPath,
     },
     TApp {
         ty: Box<TypeExpr>,
@@ -816,7 +1163,7 @@ pub enum Expr {
         args: Vec<ExprId>,
     },
     EStructLiteral {
-        name: Path,
+        name: QualifiedPath,
         fields: Vec<(FirIdent, ExprId)>,
     },
     ETuple {
@@ -927,7 +1274,7 @@ pub enum Pat {
         args: Vec<PatId>,
     },
     PStruct {
-        name: Path,
+        name: QualifiedPath,
         fields: Vec<(FirIdent, PatId)>,
     },
     PTuple {
@@ -974,7 +1321,10 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
 
     let expr_count = fir_table.exprs.len();
     for i in 0..expr_count {
-        let expr_id = ExprId(i as u32);
+        let expr_id = ExprId {
+            pkg: fir_table.package(),
+            idx: i as u32,
+        };
         let expr = fir_table.expr(expr_id).clone();
         if let Expr::EConstr { constructor, args } = expr
             && let ConstructorRef::Unresolved(path) = &constructor
@@ -985,14 +1335,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
                 constructor: resolved,
                 args,
             };
-            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.0));
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.idx));
             fir_table.exprs[idx] = new_expr;
         }
     }
 
     let pat_count = fir_table.pats.len();
     for i in 0..pat_count {
-        let pat_id = PatId(i as u32);
+        let pat_id = PatId {
+            pkg: fir_table.package(),
+            idx: i as u32,
+        };
         let pat = fir_table.pat(pat_id).clone();
         if let Pat::PConstr { constructor, args } = pat
             && let ConstructorRef::Unresolved(path) = &constructor
@@ -1003,7 +1356,7 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
                 constructor: resolved,
                 args,
             };
-            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.0));
+            let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.idx));
             fir_table.pats[idx] = new_pat;
         }
     }

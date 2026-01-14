@@ -18,7 +18,7 @@ use crate::{
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast,
-    typer::{self, name_resolution::FirTable},
+    typer,
 };
 
 #[derive(Debug)]
@@ -26,8 +26,8 @@ pub struct Compilation {
     pub green_node: GreenNode,
     pub cst: CstFile,
     pub ast: ast::File,
-    pub fir: fir::File,
-    pub fir_table: FirTable,
+    pub fir: fir::ProjectFir,
+    pub fir_table: fir::ProjectFirTable,
     pub tast: tast::File,
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
@@ -172,10 +172,14 @@ pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationEr
 }
 
 fn typecheck_package(
+    package_id: fir::PackageId,
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-) -> PackageArtifact {
-    let (fir, fir_table) = fir::lower_to_fir_files_with_env(package.files.clone(), &deps_envs);
+    deps_interfaces: &HashMap<String, fir::PackageInterface>,
+) -> (PackageArtifact, fir::PackageInterface) {
+    let (fir, fir_table) =
+        fir::lower_to_fir_files_with_env(package_id, package.files.clone(), deps_interfaces);
+    let interface = fir::PackageInterface::from_fir(&fir, &fir_table);
     let (tast, genv, diagnostics) = typer::check_file_with_env(
         fir,
         fir_table,
@@ -189,11 +193,14 @@ fn typecheck_package(
         value_env: genv.value_env.clone(),
     };
 
-    PackageArtifact {
-        tast,
-        exports,
-        diagnostics,
-    }
+    (
+        PackageArtifact {
+            tast,
+            exports,
+            diagnostics,
+        },
+        interface,
+    )
 }
 
 fn typecheck_packages(
@@ -211,29 +218,52 @@ fn typecheck_packages(
     let mut genv = GlobalTypeEnv::new();
     let mut exports_by_name: HashMap<String, PackageExports> = HashMap::new();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
+    let mut interfaces_by_name: HashMap<String, fir::PackageInterface> = HashMap::new();
+    let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
+    package_names.sort();
+    let mut package_ids = HashMap::new();
+    package_ids.insert("Builtin".to_string(), fir::PackageId(0));
+    package_ids.insert("Main".to_string(), fir::PackageId(1));
+    let mut next_id = 2u32;
+    for name in package_names {
+        if name == "Builtin" || name == "Main" {
+            continue;
+        }
+        package_ids.insert(name, fir::PackageId(next_id));
+        next_id += 1;
+    }
 
     for name in order.iter() {
         let package = graph
             .packages
             .get(name)
             .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+        let package_id = *package_ids
+            .get(name)
+            .unwrap_or_else(|| panic!("missing package id for {}", name));
         let mut deps_envs = HashMap::new();
         let mut deps: Vec<_> = package.imports.iter().cloned().collect();
         deps.sort();
+        let mut deps_interfaces = HashMap::new();
         for dep in deps.iter() {
             let exports = exports_by_name
                 .get(dep)
                 .ok_or_else(|| compile_error(format!("missing exports for package {}", dep)))?;
             deps_envs.insert(dep.clone(), exports.to_genv());
+            let interface = interfaces_by_name
+                .get(dep)
+                .ok_or_else(|| compile_error(format!("missing interface for package {}", dep)))?;
+            deps_interfaces.insert(dep.clone(), interface.clone());
         }
 
-        let artifact = typecheck_package(package, deps_envs);
+        let (artifact, interface) = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
         artifact.exports.apply_to(&mut genv);
         exports_by_name.insert(name.clone(), artifact.exports.clone());
         artifacts_by_name.insert(name.clone(), artifact);
+        interfaces_by_name.insert(name.clone(), interface);
     }
 
     let entry_tast = artifacts_by_name
@@ -281,7 +311,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         all_files.extend(package.files.clone());
     }
 
-    let (fir, fir_table) = fir::lower_to_fir_files(all_files);
+    let (fir, fir_table) = fir::lower_to_project_fir_files(all_files);
 
     let tast = full_tast;
     if diagnostics.has_errors() {

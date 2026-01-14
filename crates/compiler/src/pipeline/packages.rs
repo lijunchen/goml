@@ -4,13 +4,35 @@ use std::path::{Path, PathBuf};
 
 use ast::ast;
 
+use crate::fir::SourceFileAst;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
+
+pub trait PackageLayout {
+    fn root_package_name(&self) -> &str;
+    fn package_dir(&self, root_dir: &Path, entry_package: &str, package_name: &str) -> PathBuf;
+}
+
+pub struct FlatPackageLayout;
+
+impl PackageLayout for FlatPackageLayout {
+    fn root_package_name(&self) -> &str {
+        "Main"
+    }
+
+    fn package_dir(&self, root_dir: &Path, entry_package: &str, package_name: &str) -> PathBuf {
+        if package_name == entry_package {
+            root_dir.to_path_buf()
+        } else {
+            root_dir.join(package_name)
+        }
+    }
+}
 
 #[derive(Debug)]
 pub struct PackageUnit {
     pub name: String,
-    pub files: Vec<ast::File>,
+    pub files: Vec<SourceFileAst>,
     pub imports: HashSet<String>,
 }
 
@@ -20,14 +42,7 @@ pub struct PackageGraph {
     pub entry_package: String,
     pub packages: HashMap<String, PackageUnit>,
     pub discovery_order: Vec<String>,
-}
-
-fn package_dir(root_dir: &Path, entry_package: &str, package_name: &str) -> PathBuf {
-    if package_name == entry_package {
-        root_dir.to_path_buf()
-    } else {
-        root_dir.join(package_name)
-    }
+    pub package_dirs: HashMap<String, PathBuf>,
 }
 
 fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
@@ -58,10 +73,10 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
     Ok(files)
 }
 
-fn collect_imports(files: &[ast::File]) -> HashSet<String> {
+fn collect_imports(files: &[SourceFileAst]) -> HashSet<String> {
     files
         .iter()
-        .flat_map(|file| file.imports.iter())
+        .flat_map(|file| file.ast.imports.iter())
         .map(|import| import.0.clone())
         .collect()
 }
@@ -76,7 +91,13 @@ fn load_package(
 
     if let Some(ast) = entry_ast {
         package_name = Some(ast.package.0.clone());
-        files.push(ast);
+        let path = entry_path.ok_or_else(|| {
+            compile_error("entry path missing when entry ast is provided".to_string())
+        })?;
+        files.push(SourceFileAst {
+            path: path.to_path_buf(),
+            ast,
+        });
     }
 
     for path in read_gom_sources(package_dir)? {
@@ -98,7 +119,7 @@ fn load_package(
         } else {
             package_name = Some(ast.package.0.clone());
         }
-        files.push(ast);
+        files.push(SourceFileAst { path, ast });
     }
 
     let Some(name) = package_name else {
@@ -121,23 +142,43 @@ pub fn discover_packages(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
+    discover_packages_with_layout(&FlatPackageLayout, root_dir, entry_path, entry_ast)
+}
+
+pub fn discover_packages_with_layout(
+    layout: &impl PackageLayout,
+    root_dir: &Path,
+    entry_path: Option<&Path>,
+    entry_ast: Option<ast::File>,
+) -> Result<PackageGraph, CompilationError> {
     let entry_package = load_package(root_dir, entry_path, entry_ast)?;
     let entry_name = entry_package.name.clone();
+    if entry_name != layout.root_package_name() {
+        return Err(compile_error(format!(
+            "root directory {} must declare package {}, found {}",
+            root_dir.display(),
+            layout.root_package_name(),
+            entry_name
+        )));
+    }
     let mut packages = HashMap::new();
     let mut discovery_order = Vec::new();
+    let mut package_dirs = HashMap::new();
     let mut queue: Vec<String> = entry_package.imports.iter().cloned().collect();
     let mut loaded = HashSet::new();
 
     loaded.insert(entry_name.clone());
     packages.insert(entry_name.clone(), entry_package);
     discovery_order.push(entry_name.clone());
+    package_dirs.insert(entry_name.clone(), root_dir.to_path_buf());
 
     while let Some(package_name) = queue.pop() {
         if loaded.contains(&package_name) {
             continue;
         }
-        let package_dir = root_dir.join(&package_name);
+        let package_dir = layout.package_dir(root_dir, &entry_name, &package_name);
         let package = load_package(&package_dir, None, None)?;
+        let declared_name = package.name.clone();
         if package.name != package_name {
             return Err(compile_error(format!(
                 "package directory {} declares package {}, expected {}",
@@ -147,9 +188,10 @@ pub fn discover_packages(
             )));
         }
         queue.extend(package.imports.iter().cloned());
-        loaded.insert(package.name.clone());
-        packages.insert(package.name.clone(), package);
-        discovery_order.push(package_name);
+        loaded.insert(declared_name.clone());
+        packages.insert(declared_name.clone(), package);
+        discovery_order.push(declared_name.clone());
+        package_dirs.insert(declared_name, package_dir);
     }
 
     Ok(PackageGraph {
@@ -157,6 +199,7 @@ pub fn discover_packages(
         entry_package: entry_name,
         packages,
         discovery_order,
+        package_dirs,
     })
 }
 
@@ -199,8 +242,12 @@ fn visit_package(
         let display = cycle
             .iter()
             .map(|pkg| {
-                let dir = package_dir(&graph.root_dir, &graph.entry_package, pkg);
-                format!("{} ({})", pkg, dir.display())
+                let dir = graph
+                    .package_dirs
+                    .get(pkg)
+                    .map(|dir| dir.display().to_string())
+                    .unwrap_or_else(|| graph.root_dir.join(pkg).display().to_string());
+                format!("{} ({})", pkg, dir)
             })
             .collect::<Vec<_>>()
             .join(" -> ");
@@ -224,12 +271,11 @@ fn visit_package(
 
     for dep in deps {
         if !graph.packages.contains_key(&dep) {
-            let dir = package_dir(&graph.root_dir, &graph.entry_package, &dep);
             return Err(compile_error(format!(
                 "package {} imports missing package {} in {}",
                 name,
                 dep,
-                dir.display()
+                graph.root_dir.join(&dep).display()
             )));
         }
         visit_package(&dep, graph, temp, perm, stack, order)?;
