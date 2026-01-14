@@ -43,6 +43,8 @@ The file extension for goml source files is `.gom`.
   - `cargo test` run test to match golden snapshots
   - `env UPDATE_EXPECT=1 cargo test` to update snapshots
 - Aim for fast, deterministic tests; cover parsing/typing edges with minimal fixtures when relevant.
+
+### Single-File Pipeline Tests
 - Each pipeline test case is in its own directory under `crates/compiler/src/tests/pipeline/`. Directory names follow the pattern `NNN/` (e.g., `000/`, `001/`) or `NNN_description/` (e.g., `007_expr_pattern_matching/`, `025_missing_match/`).
 - Each test directory contains:
   - `main.gom` - the input source file
@@ -51,6 +53,28 @@ The file extension for goml source files is `.gom`.
 - You can quick check a test case with: `cargo run -- crates/compiler/src/tests/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.fir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
+
+### Multi-Package Tests
+- Multi-package tests are located in `crates/compiler/src/tests/package/`. They test the compiler's ability to handle multiple packages and inter-package dependencies.
+- Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
+- Structure of a multi-package project:
+  - `main.gom` - the entry point with `package Main` declaration
+  - `PackageName/lib.gom` - library package files, each with its own `package PackageName` declaration
+  - `main.gom.out` - expected execution output
+- Package naming conventions:
+  - The main package must be declared as `package Main` and contain the `fn main()` entry point
+  - Library packages use PascalCase names (e.g., `package Lib`, `package Util`, `package Math`)
+  - Directory names must match the package names (e.g., `Lib/lib.gom` contains `package Lib`)
+- Packages can import other packages using `import PackageName` syntax
+- Inter-package dependencies:
+  - Packages can import and use types, functions, and enums from other packages
+  - Access package members using `PackageName::member` syntax (e.g., `Lib::Color::Red`, `Math::Pair`)
+- To add a new multi-package test:
+  1. Create a new directory under `crates/compiler/src/tests/package/` (e.g., `project006/`)
+  2. Create `main.gom` with `package Main` and `fn main()`
+  3. Create subdirectories for each library package with their `lib.gom` files
+  4. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
+- Note: Multi-package tests only generate `.out` files, not intermediate IR stages like pipeline tests
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
