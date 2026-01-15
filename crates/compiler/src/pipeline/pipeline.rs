@@ -17,8 +17,7 @@ use crate::{
     go::{self, compile::GlobalGoEnv, goast},
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
-    tast,
-    typer,
+    tast, typer,
 };
 
 #[derive(Debug)]
@@ -118,9 +117,41 @@ impl PackageExports {
 }
 
 #[derive(Debug, Clone)]
+struct PackageInterface {
+    exports: PackageExports,
+    fir_interface: fir::PackageInterface,
+}
+
+fn build_package<'a>(
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    package: &'a PackageArtifact,
+    deps: &[&PackageInterface],
+) -> (&'a PackageInterface, crate::core::File) {
+    let mut env = GlobalTypeEnv::new();
+    for dep in deps {
+        dep.exports.apply_to(&mut env);
+    }
+    package.interface.exports.apply_to(&mut env);
+
+    (
+        &package.interface,
+        compile_match::compile_file(&env, gensym, diagnostics, &package.tast),
+    )
+}
+
+fn link_packages(packages: Vec<crate::core::File>) -> crate::core::File {
+    let mut toplevels = Vec::new();
+    for package in packages {
+        toplevels.extend(package.toplevels);
+    }
+    crate::core::File { toplevels }
+}
+
+#[derive(Debug, Clone)]
 struct PackageArtifact {
     tast: tast::File,
-    exports: PackageExports,
+    interface: PackageInterface,
     diagnostics: Diagnostics,
 }
 
@@ -176,10 +207,10 @@ fn typecheck_package(
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, fir::PackageInterface>,
-) -> (PackageArtifact, fir::PackageInterface) {
+) -> PackageArtifact {
     let (fir, fir_table) =
         fir::lower_to_fir_files_with_env(package_id, package.files.clone(), deps_interfaces);
-    let interface = fir::PackageInterface::from_fir(&fir, &fir_table);
+    let fir_interface = fir::PackageInterface::from_fir(&fir, &fir_table);
     let (tast, genv, diagnostics) = typer::check_file_with_env(
         fir,
         fir_table,
@@ -193,14 +224,14 @@ fn typecheck_package(
         value_env: genv.value_env.clone(),
     };
 
-    (
-        PackageArtifact {
-            tast,
+    PackageArtifact {
+        tast,
+        interface: PackageInterface {
             exports,
-            diagnostics,
+            fir_interface,
         },
-        interface,
-    )
+        diagnostics,
+    }
 }
 
 fn typecheck_packages(
@@ -216,9 +247,7 @@ fn typecheck_packages(
 
     let mut diagnostics = Diagnostics::new();
     let mut genv = GlobalTypeEnv::new();
-    let mut exports_by_name: HashMap<String, PackageExports> = HashMap::new();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
-    let mut interfaces_by_name: HashMap<String, fir::PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
     let mut package_ids = HashMap::new();
@@ -246,24 +275,19 @@ fn typecheck_packages(
         deps.sort();
         let mut deps_interfaces = HashMap::new();
         for dep in deps.iter() {
-            let exports = exports_by_name
+            let artifact = artifacts_by_name
                 .get(dep)
-                .ok_or_else(|| compile_error(format!("missing exports for package {}", dep)))?;
-            deps_envs.insert(dep.clone(), exports.to_genv());
-            let interface = interfaces_by_name
-                .get(dep)
-                .ok_or_else(|| compile_error(format!("missing interface for package {}", dep)))?;
-            deps_interfaces.insert(dep.clone(), interface.clone());
+                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
+            deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), artifact.interface.fir_interface.clone());
         }
 
-        let (artifact, interface) = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
+        let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
-        artifact.exports.apply_to(&mut genv);
-        exports_by_name.insert(name.clone(), artifact.exports.clone());
+        artifact.interface.exports.apply_to(&mut genv);
         artifacts_by_name.insert(name.clone(), artifact);
-        interfaces_by_name.insert(name.clone(), interface);
     }
 
     let entry_tast = artifacts_by_name
@@ -322,18 +346,29 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
 
     let gensym = Gensym::new();
 
-    let mut core_toplevels = Vec::new();
+    let mut package_cores = Vec::new();
     for name in graph.discovery_order.iter() {
+        let package = graph
+            .packages
+            .get(name)
+            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
         let artifact = artifacts
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
-        let package_core =
-            compile_match::compile_file(&genv, &gensym, &mut diagnostics, &artifact.tast);
-        core_toplevels.extend(package_core.toplevels);
+        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
+        deps.sort();
+        let mut dep_interfaces = Vec::new();
+        for dep in deps.iter() {
+            let dep_artifact = artifacts
+                .get(dep)
+                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
+            dep_interfaces.push(&dep_artifact.interface);
+        }
+        let (_interface, core) =
+            build_package(&gensym, &mut diagnostics, artifact, &dep_interfaces);
+        package_cores.push(core);
     }
-    let core = crate::core::File {
-        toplevels: core_toplevels,
-    };
+    let core = link_packages(package_cores);
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
     }
