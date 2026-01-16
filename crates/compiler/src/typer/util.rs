@@ -252,6 +252,10 @@ pub(crate) fn resolve_type_name<'a>(
     genv: &'a PackageTypeEnv,
     name: &str,
 ) -> (String, &'a GlobalTypeEnv) {
+    if name == "Self" {
+        return (name.to_string(), genv.current());
+    }
+
     if let Some((package, rest)) = name.split_once("::") {
         if package == "Builtin" {
             return (rest.to_string(), genv.current());
@@ -272,6 +276,18 @@ pub(crate) fn resolve_type_name<'a>(
         (name.to_string(), genv.current())
     } else {
         (format!("{}::{}", genv.package, name), genv.current())
+    }
+}
+
+pub(crate) fn resolve_trait_name<'a>(
+    genv: &'a PackageTypeEnv,
+    name: &str,
+) -> Option<(String, &'a GlobalTypeEnv)> {
+    let (resolved, env) = resolve_type_name(genv, name);
+    if env.trait_env.trait_defs.contains_key(&resolved) {
+        Some((resolved, env))
+    } else {
+        None
     }
 }
 

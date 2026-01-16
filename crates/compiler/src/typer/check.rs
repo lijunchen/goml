@@ -396,7 +396,7 @@ impl Typer {
         let type_ident = tast::TastIdent(resolved_type_name.clone());
         let member_ident = tast::TastIdent(member.to_string());
         // First check if type_name is a trait
-        if let Some((trait_name, trait_env)) = resolve_trait_name(genv, type_name)
+        if let Some((trait_name, trait_env)) = super::util::resolve_trait_name(genv, type_name)
             && let Some(method_ty) =
                 trait_env.lookup_trait_method(&tast::TastIdent(trait_name.clone()), &member_ident)
         {
@@ -1286,7 +1286,9 @@ impl Typer {
                     .join("::");
                 let member = path.last_ident().unwrap();
                 let member_ident = tast::TastIdent(member.clone());
-                if let Some((trait_name, trait_env)) = resolve_trait_name(genv, &type_name) {
+                if let Some((trait_name, trait_env)) =
+                    super::util::resolve_trait_name(genv, &type_name)
+                {
                     let type_ident = tast::TastIdent(trait_name.clone());
                     if let Some(method_ty) =
                         trait_env.lookup_trait_method(&type_ident, &member_ident)
@@ -2241,17 +2243,5 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
         tast::Ty::TApp { ty, .. } => env_for_receiver_ty(genv, ty),
         tast::Ty::TRef { .. } | tast::Ty::TVec { .. } => genv.current(),
         _ => genv.current(),
-    }
-}
-
-fn resolve_trait_name<'a>(
-    genv: &'a PackageTypeEnv,
-    name: &str,
-) -> Option<(String, &'a GlobalTypeEnv)> {
-    let (resolved, env) = super::util::resolve_type_name(genv, name);
-    if env.trait_env.trait_defs.contains_key(&resolved) {
-        Some((resolved, env))
-    } else {
-        None
     }
 }

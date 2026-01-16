@@ -615,7 +615,7 @@ impl ImplBlock {
 
         let header = if let Some(trait_name) = &self.trait_name {
             base.append(RcDoc::space())
-                .append(RcDoc::text(&trait_name.0))
+                .append(RcDoc::text(trait_name.display()))
                 .append(RcDoc::text(" for "))
                 .append(self.for_type.to_doc())
                 .append(RcDoc::text(" {"))

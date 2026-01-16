@@ -145,6 +145,24 @@ fn define_trait(env: &mut PackageTypeEnv, trait_def: &fir::TraitDef) {
         .insert(trait_def.name.to_ident_name(), env::TraitDef { methods });
 }
 
+fn is_local_name(current_package: &str, name: &str) -> bool {
+    if let Some((package, _)) = name.split_once("::") {
+        package == current_package
+    } else {
+        current_package == "Main" || current_package == "Builtin"
+    }
+}
+
+fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => {
+            is_local_name(current_package, name)
+        }
+        tast::Ty::TApp { ty, .. } => is_local_nominal_type(current_package, ty),
+        _ => false,
+    }
+}
+
 fn define_trait_impl(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
@@ -155,22 +173,51 @@ fn define_trait_impl(
     let empty_tparams = HashSet::new();
     let for_ty = tast::Ty::from_fir(env, &impl_block.for_type, &[]);
     validate_ty(env, diagnostics, &for_ty, &empty_tparams);
-    let trait_name_str = trait_name.to_ident_name();
-
-    let trait_def = match env.current().trait_env.trait_defs.get(&trait_name_str) {
-        Some(def) => def.clone(),
-        None => {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "Trait {} is not defined, cannot implement it for {:?}",
-                    trait_name_str, for_ty
-                ),
-            ));
-            return;
-        }
+    let trait_name_raw = trait_name.to_ident_name();
+    let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
+    else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Trait {} is not defined, cannot implement it for {:?}",
+                trait_name_raw, for_ty
+            ),
+        ));
+        return;
     };
+    let trait_def = trait_env
+        .trait_env
+        .trait_defs
+        .get(&trait_name_str)
+        .cloned()
+        .expect("trait def to exist");
+    let trait_local = is_local_name(&env.package, &trait_name_str);
+    let type_local = is_local_nominal_type(&env.package, &for_ty);
+    if !trait_local && !type_local {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Impl violates orphan rule: trait {} and type {:?} are not local to package {}",
+                trait_name_str, for_ty, env.package
+            ),
+        ));
+        return;
+    }
+
+    let key = (trait_name_str.clone(), encode_ty(&for_ty));
+    if env.current().trait_env.trait_impls.contains_key(&key) {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Trait {} implementation for {:?} is already defined",
+                trait_name_str, for_ty
+            ),
+        ));
+        return;
+    }
 
     let trait_method_names: HashSet<String> = trait_def.methods.keys().cloned().collect();
 
@@ -340,7 +387,6 @@ fn define_trait_impl(
     }
 
     // Insert the impl block
-    let key = (trait_name_str, encode_ty(&for_ty));
     env.current_mut().trait_env.trait_impls.insert(
         key,
         env::ImplDef {
@@ -365,6 +411,17 @@ fn define_inherent_impl(
         .collect();
     let for_ty = tast::Ty::from_fir(env, &impl_block.for_type, &impl_generics_tast);
     validate_ty(env, diagnostics, &for_ty, &impl_tparams);
+    if !is_local_nominal_type(&env.package, &for_ty) {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Inherent impl for non-local type {:?} is not allowed",
+                for_ty
+            ),
+        ));
+        return;
+    }
 
     // For generic impl blocks, use base constructor name; for non-generic, use full encoded type
     let key = if !impl_block.generics.is_empty() {
@@ -881,7 +938,12 @@ fn check_impl_block(
             body: typed_body,
         });
     }
-    let trait_name = impl_block.trait_name.clone();
+    let trait_name = impl_block.trait_name.as_ref().map(|t| {
+        let name = t.to_ident_name();
+        super::util::resolve_trait_name(genv, &name)
+            .map(|(resolved, _)| tast::TastIdent(resolved))
+            .unwrap_or_else(|| tast::TastIdent(name))
+    });
     let generics: Vec<String> = impl_block
         .generics
         .iter()
@@ -889,7 +951,7 @@ fn check_impl_block(
         .collect();
     tast::ImplBlock {
         generics,
-        trait_name: trait_name.map(|t| tast::TastIdent(t.to_ident_name())),
+        trait_name,
         for_type: for_ty,
         methods: typed_methods,
     }

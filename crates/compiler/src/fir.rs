@@ -562,18 +562,15 @@ impl FirTable {
     }
 
     pub fn iter_defs(&self) -> impl Iterator<Item = (DefId, &Def)> {
-        self.def_data
-            .iter()
-            .enumerate()
-            .map(|(i, def)| {
-                (
-                    DefId {
-                        pkg: self.package,
-                        idx: i as u32,
-                    },
-                    def,
-                )
-            })
+        self.def_data.iter().enumerate().map(|(i, def)| {
+            (
+                DefId {
+                    pkg: self.package,
+                    idx: i as u32,
+                },
+                def,
+            )
+        })
     }
 }
 
