@@ -32,6 +32,11 @@ fn multi_package_compile_project_006() -> anyhow::Result<()> {
     run_project("project006")
 }
 
+#[test]
+fn multi_package_compile_project_007() -> anyhow::Result<()> {
+    run_project("project007_trait_impl_orphan_ok")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/package")
