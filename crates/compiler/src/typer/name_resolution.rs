@@ -117,7 +117,7 @@ impl ConstructorIndex {
         self.enums_by_package
             .get(package)
             .and_then(|enums| enums.get(enum_name))
-            .map_or(false, |variants| variants.contains(variant))
+            .is_some_and(|variants| variants.contains(variant))
     }
 
     fn unique_enum_for_variant(&self, package: &str, variant: &str) -> Option<String> {
@@ -135,9 +135,9 @@ impl ConstructorIndex {
     }
 
     fn has_variant(&self, package: &str, variant: &str) -> bool {
-        self.enums_by_package.get(package).map_or(false, |enums| {
-            enums.values().any(|vars| vars.contains(variant))
-        })
+        self.enums_by_package
+            .get(package)
+            .is_some_and(|enums| enums.values().any(|vars| vars.contains(variant)))
     }
 }
 
@@ -939,7 +939,7 @@ impl NameResolution {
 
     fn lower_type_expr(
         ty: &ast::TypeExpr,
-        tparams: &HashSet<String>,
+        _tparams: &HashSet<String>,
         current_package: &str,
         imports: &HashSet<String>,
     ) -> fir::TypeExpr {
@@ -960,7 +960,7 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package, imports))
+                    .map(|ty| Self::lower_type_expr(ty, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
@@ -987,20 +987,20 @@ impl NameResolution {
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
                 ty: Box::new(Self::lower_type_expr(
                     ty.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),
                 args: args
                     .iter()
-                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package, imports))
+                    .map(|arg| Self::lower_type_expr(arg, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
                 len: *len,
                 elem: Box::new(Self::lower_type_expr(
                     elem.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),
@@ -1008,11 +1008,11 @@ impl NameResolution {
             ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| Self::lower_type_expr(param, tparams, current_package, imports))
+                    .map(|param| Self::lower_type_expr(param, _tparams, current_package, imports))
                     .collect(),
                 ret_ty: Box::new(Self::lower_type_expr(
                     ret_ty.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),

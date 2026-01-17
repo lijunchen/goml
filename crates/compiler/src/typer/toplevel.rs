@@ -7,7 +7,6 @@ use parser::{Diagnostic, Diagnostics};
 use crate::{
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     fir::{self},
-    mangle::encode_ty,
     tast::{self},
     typer::{
         Typer,
@@ -206,7 +205,7 @@ fn define_trait_impl(
         return;
     }
 
-    let key = (trait_name_str.clone(), encode_ty(&for_ty));
+    let key = (trait_name_str.clone(), for_ty.clone());
     if env.current().trait_env.trait_impls.contains_key(&key) {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
@@ -423,11 +422,10 @@ fn define_inherent_impl(
         return;
     }
 
-    // For generic impl blocks, use base constructor name; for non-generic, use full encoded type
     let key = if !impl_block.generics.is_empty() {
-        for_ty.get_constr_name_unsafe()
+        env::InherentImplKey::Constr(for_ty.get_constr_name_unsafe())
     } else {
-        encode_ty(&for_ty)
+        env::InherentImplKey::Exact(for_ty.clone())
     };
     let mut methods_to_add: IndexMap<String, env::FnScheme> = IndexMap::new();
 

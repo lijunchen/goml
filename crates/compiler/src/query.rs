@@ -5,7 +5,7 @@ use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, mangle::encode_ty, pipeline, tast};
+use crate::{env::GlobalTypeEnv, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 
@@ -592,21 +592,36 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
         }
     }
 
-    let encoded = encode_ty(ty);
-    let mut methods: Vec<DotCompletionItem> =
-        if let Some(impl_def) = genv.trait_env.inherent_impls.get(&encoded) {
-            impl_def
-                .methods
-                .iter()
-                .map(|(method_name, method_scheme)| DotCompletionItem {
+    let mut methods: Vec<DotCompletionItem> = Vec::new();
+    if let Some(impl_def) = genv
+        .trait_env
+        .inherent_impls
+        .get(&crate::env::InherentImplKey::Exact(ty.clone()))
+    {
+        methods.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+            DotCompletionItem {
+                name: method_name.clone(),
+                kind: DotCompletionKind::Method,
+                detail: Some(method_scheme.ty.to_pretty(80)),
+            }
+        }));
+    }
+    if let tast::Ty::TApp { ty, .. } = ty {
+        let base_name = ty.get_constr_name_unsafe();
+        if let Some(impl_def) = genv
+            .trait_env
+            .inherent_impls
+            .get(&crate::env::InherentImplKey::Constr(base_name))
+        {
+            methods.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+                DotCompletionItem {
                     name: method_name.clone(),
                     kind: DotCompletionKind::Method,
                     detail: Some(method_scheme.ty.to_pretty(80)),
-                })
-                .collect()
-        } else {
-            Vec::new()
-        };
+                }
+            }));
+        }
+    }
     methods.sort_by(|a, b| a.name.cmp(&b.name));
     items.extend(methods);
 

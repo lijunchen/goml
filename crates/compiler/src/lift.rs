@@ -2,9 +2,9 @@ use indexmap::IndexMap;
 
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
-    env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, StructDef},
-    mangle::{encode_ty, mangle_inherent_name},
+    env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, InherentImplKey, StructDef},
     mono::{GlobalMonoEnv, MonoExpr, MonoFile},
+    names::inherent_method_fn_name,
     tast::{self, TastIdent, Ty},
 };
 
@@ -20,7 +20,7 @@ pub fn is_closure_env_struct(struct_name: &str) -> bool {
 pub struct GlobalLiftEnv {
     pub monoenv: GlobalMonoEnv,
     pub lifted_structs: IndexMap<TastIdent, StructDef>,
-    pub lifted_inherent_impls: IndexMap<String, ImplDef>,
+    pub lifted_inherent_impls: IndexMap<InherentImplKey, ImplDef>,
     pub lifted_funcs: IndexMap<String, tast::Ty>,
 }
 
@@ -58,7 +58,7 @@ impl GlobalLiftEnv {
         self.monoenv.structs().chain(self.lifted_structs.iter())
     }
 
-    pub fn inherent_impls(&self) -> impl Iterator<Item = (&String, &ImplDef)> {
+    pub fn inherent_impls(&self) -> impl Iterator<Item = (&InherentImplKey, &ImplDef)> {
         self.monoenv
             .genv
             .trait_env
@@ -67,7 +67,7 @@ impl GlobalLiftEnv {
             .chain(self.lifted_inherent_impls.iter())
     }
 
-    pub fn lifted_inherent_impls_mut(&mut self) -> &mut IndexMap<String, ImplDef> {
+    pub fn lifted_inherent_impls_mut(&mut self) -> &mut IndexMap<InherentImplKey, ImplDef> {
         &mut self.lifted_inherent_impls
     }
 
@@ -726,8 +726,7 @@ fn transform_closure(
         });
     }
 
-    // Use mangle_inherent_name to generate apply function name as an inherent method
-    let apply_fn_name = mangle_inherent_name(&env_ty, CLOSURE_APPLY_METHOD);
+    let apply_fn_name = inherent_method_fn_name(&env_ty, CLOSURE_APPLY_METHOD);
 
     let struct_def = StructDef {
         name: struct_name.clone(),
@@ -786,12 +785,11 @@ fn transform_closure(
         .liftenv
         .insert_func(apply_fn_name.clone(), apply_fn_ty.clone());
 
-    // Register as inherent method: encoded_env_ty -> ImplDef with apply method
-    let encoded_ty = encode_ty(&env_ty);
+    let key = InherentImplKey::Exact(env_ty.clone());
     let impl_def = state
         .liftenv
         .lifted_inherent_impls_mut()
-        .entry(encoded_ty)
+        .entry(key)
         .or_default();
     impl_def.methods.insert(
         CLOSURE_APPLY_METHOD.to_string(),

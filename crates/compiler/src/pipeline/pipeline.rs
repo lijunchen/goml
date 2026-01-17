@@ -292,7 +292,7 @@ fn typecheck_packages(
                     Stage::Typer,
                     Severity::Error,
                     format!(
-                        "Trait {} implementation for {} is defined in multiple packages (including {})",
+                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
                         key.0, key.1, name
                     ),
                 ));

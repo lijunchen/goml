@@ -72,6 +72,12 @@ impl ProjectFirTable {
     }
 }
 
+impl Default for ProjectFirTable {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct PackageInterface {
     pub id: PackageId,
@@ -798,6 +804,10 @@ pub struct QualifiedPath {
 impl QualifiedPath {
     pub fn len(&self) -> usize {
         self.path.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn last_ident(&self) -> Option<&String> {

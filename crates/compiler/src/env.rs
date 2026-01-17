@@ -6,7 +6,6 @@ pub use super::builtins::builtin_function_names;
 use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
-    mangle::encode_ty,
     tast::{self, TastIdent},
 };
 use std::cell::Cell;
@@ -360,8 +359,14 @@ impl TypeEnv {
 #[derive(Debug, Clone, Default)]
 pub struct TraitEnv {
     pub trait_defs: IndexMap<String, TraitDef>,
-    pub trait_impls: IndexMap<(String, String), ImplDef>,
-    pub inherent_impls: IndexMap<String, ImplDef>,
+    pub trait_impls: IndexMap<(String, tast::Ty), ImplDef>,
+    pub inherent_impls: IndexMap<InherentImplKey, ImplDef>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum InherentImplKey {
+    Exact(tast::Ty),
+    Constr(String),
 }
 
 impl TraitEnv {
@@ -394,7 +399,7 @@ impl TraitEnv {
         type_name: &tast::Ty,
         func_name: &TastIdent,
     ) -> Option<tast::Ty> {
-        let key = (trait_name.0.clone(), encode_ty(type_name));
+        let key = (trait_name.0.clone(), type_name.clone());
         self.trait_impls
             .get(&key)
             .and_then(|impl_def| impl_def.methods.get(&func_name.0))
@@ -406,27 +411,27 @@ impl TraitEnv {
         receiver_ty: &tast::Ty,
         method: &TastIdent,
     ) -> Option<tast::Ty> {
-        let encoded_ty = encode_ty(receiver_ty);
-
         // First try exact match
         if let Some(scheme) = self
             .inherent_impls
-            .get(&encoded_ty)
+            .get(&InherentImplKey::Exact(receiver_ty.clone()))
             .and_then(|impl_def| impl_def.methods.get(&method.0))
         {
             return Some(scheme.ty.clone());
         }
 
-        // For generic types (TApp), try looking up by base constructor name
-        if let tast::Ty::TApp { ty, .. } = receiver_ty {
-            let base_name = ty.get_constr_name_unsafe();
-            if let Some(scheme) = self
+        let constr = match receiver_ty {
+            tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
+            tast::Ty::TApp { ty, .. } => Some(ty.get_constr_name_unsafe()),
+            _ => None,
+        };
+        if let Some(constr) = constr
+            && let Some(scheme) = self
                 .inherent_impls
-                .get(&base_name)
+                .get(&InherentImplKey::Constr(constr))
                 .and_then(|impl_def| impl_def.methods.get(&method.0))
-            {
-                return Some(scheme.ty.clone());
-            }
+        {
+            return Some(scheme.ty.clone());
         }
 
         None
