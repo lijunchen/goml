@@ -50,11 +50,11 @@ func main0() struct{} {
     var first__8 int32 = apply_once(local__7, 4)
     var composed__9 int32 = compose(double, increment, first__8)
     var closure_apply__11 closure_env_closure_apply_0 = closure_env_closure_apply_0{}
-    var closure_result__12 int32 = impl_inherent_closure_env_closure_apply_0_apply(closure_apply__11, composed__9)
+    var closure_result__12 int32 = goml__inherent_x23_closure__env__closure__apply__0_x23_closure__env__closure__apply__0_x23_apply(closure_apply__11, composed__9)
     var global_invoker__15 closure_env_global_invoker_1 = closure_env_global_invoker_1{}
-    var invoked_with_global__16 int32 = impl_inherent_closure_env_global_invoker_1_apply(global_invoker__15, double, 3)
+    var invoked_with_global__16 int32 = goml__inherent_x23_closure__env__global__invoker__1_x23_closure__env__global__invoker__1_x23_apply(global_invoker__15, double, 3)
     var composer_closure__18 closure_env_composer_closure_2 = closure_env_composer_closure_2{}
-    var composed_by_closure__19 int32 = impl_inherent_closure_env_composer_closure_2_apply(composer_closure__18, 5)
+    var composed_by_closure__19 int32 = goml__inherent_x23_closure__env__composer__closure__2_x23_closure__env__composer__closure__2_x23_apply(composer_closure__18, 5)
     var printer__20 func(string) struct{} = string_println
     var t8 string = int32_to_string(composed__9)
     printer__20(t8)
@@ -68,19 +68,19 @@ func main0() struct{} {
     return ret16
 }
 
-func impl_inherent_closure_env_closure_apply_0_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
+func goml__inherent_x23_closure__env__closure__apply__0_x23_closure__env__closure__apply__0_x23_apply(env4 closure_env_closure_apply_0, value__10 int32) int32 {
     var ret17 int32
     ret17 = apply_once(increment, value__10)
     return ret17
 }
 
-func impl_inherent_closure_env_global_invoker_1_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
+func goml__inherent_x23_closure__env__global__invoker__1_x23_closure__env__global__invoker__1_x23_apply(env5 closure_env_global_invoker_1, func_to_call__13 func(int32) int32, value__14 int32) int32 {
     var ret18 int32
     ret18 = apply_once(func_to_call__13, value__14)
     return ret18
 }
 
-func impl_inherent_closure_env_composer_closure_2_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
+func goml__inherent_x23_closure__env__composer__closure__2_x23_closure__env__composer__closure__2_x23_apply(env6 closure_env_composer_closure_2, value__17 int32) int32 {
     var ret19 int32
     ret19 = compose(double, increment, value__17)
     return ret19

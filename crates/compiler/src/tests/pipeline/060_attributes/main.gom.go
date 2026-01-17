@@ -39,7 +39,7 @@ type Write struct {
 
 func (_ Write) isMessage() {}
 
-func impl_inherent_Point_to_string(self__0 Point) string {
+func goml__inherent_x23_Point_x23_Point_x23_to__string(self__0 Point) string {
     var ret26 string
     var mtmp0 Point = self__0
     var x1 int32 = mtmp0.x
@@ -57,7 +57,7 @@ func impl_inherent_Point_to_string(self__0 Point) string {
     return ret26
 }
 
-func impl_inherent_Message_to_string(self__3 Message) string {
+func goml__inherent_x23_Message_x23_Message_x23_to__string(self__3 Message) string {
     var ret27 string
     switch self__3 := self__3.(type) {
     case Quit:
@@ -88,18 +88,18 @@ func main0() struct{} {
         x: 4,
         y: 7,
     }
-    var summary__8 string = impl_inherent_Point_to_string(point__7)
+    var summary__8 string = goml__inherent_x23_Point_x23_Point_x23_to__string(point__7)
     var t23 Message = Move{
         _0: 1,
         _1: 2,
     }
-    var mv__9 string = impl_inherent_Message_to_string(t23)
+    var mv__9 string = goml__inherent_x23_Message_x23_Message_x23_to__string(t23)
     var t24 Message = Write{
         _0: "done",
     }
-    var text__10 string = impl_inherent_Message_to_string(t24)
+    var text__10 string = goml__inherent_x23_Message_x23_Message_x23_to__string(t24)
     var t25 Message = Quit{}
-    var exit__11 string = impl_inherent_Message_to_string(t25)
+    var exit__11 string = goml__inherent_x23_Message_x23_Message_x23_to__string(t25)
     string_println(summary__8)
     string_println(mv__9)
     string_println(text__10)

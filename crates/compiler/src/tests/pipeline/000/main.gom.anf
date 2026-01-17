@@ -1,4 +1,4 @@
-fn impl_inherent_Color_to_string(self/0: Color) -> string {
+fn inherent#Color#Color#to_string(self/0: Color) -> string {
   match self/0 {
     Tag_0 => {
       "Color::Red"
@@ -12,7 +12,7 @@ fn impl_inherent_Color_to_string(self/0: Color) -> string {
   }
 }
 
-fn impl_inherent_Point_to_string(self/1: Point) -> string {
+fn inherent#Point#Point#to_string(self/1: Point) -> string {
   let mtmp0 = self/1 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
@@ -29,16 +29,16 @@ fn impl_inherent_Point_to_string(self/1: Point) -> string {
   let t14 = (t15 + t20) in
   let t13 = (t14 + ", ") in
   let t12 = (t13 + "color: ") in
-  let t21 = impl_inherent_Color_to_string(color/4) in
+  let t21 = inherent#Color#Color#to_string(color/4) in
   let t11 = (t12 + t21) in
   (t11 + " }")
 }
 
-fn impl_inherent_Point_new(x/5: int32, y/6: int32, color/7: Color) -> Point {
+fn inherent#Point#Point#new(x/5: int32, y/6: int32, color/7: Color) -> Point {
   Point { x: x/5, y: y/6, color: color/7 }
 }
 
-fn impl_inherent_Line_to_string(self/8: Line) -> string {
+fn inherent#Line#Line#to_string(self/8: Line) -> string {
   let mtmp4 = self/8 in
   let x5 = Line.from(mtmp4) in
   let x6 = Line.to(mtmp4) in
@@ -47,24 +47,24 @@ fn impl_inherent_Line_to_string(self/8: Line) -> string {
   let to/10 = x6 in
   let from/9 = x5 in
   let t29 = ("Line { " + "from: ") in
-  let t30 = impl_inherent_Point_to_string(from/9) in
+  let t30 = inherent#Point#Point#to_string(from/9) in
   let t28 = (t29 + t30) in
   let t27 = (t28 + ", ") in
   let t26 = (t27 + "to: ") in
-  let t31 = impl_inherent_Point_to_string(to/10) in
+  let t31 = inherent#Point#Point#to_string(to/10) in
   let t25 = (t26 + t31) in
   let t24 = (t25 + ", ") in
   let t23 = (t24 + "color: ") in
-  let t32 = impl_inherent_Color_to_string(color/11) in
+  let t32 = inherent#Color#Color#to_string(color/11) in
   let t22 = (t23 + t32) in
   (t22 + " }")
 }
 
-fn impl_inherent_Line_new(from/12: Point, to/13: Point, color/14: Color) -> Line {
+fn inherent#Line#Line#new(from/12: Point, to/13: Point, color/14: Color) -> Line {
   Line { from: from/12, to: to/13, color: color/14 }
 }
 
-fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
+fn inherent#LineList#LineList#to_string(self/15: LineList) -> string {
   match self/15 {
     Tag_0 => {
       "LineList::Nil"
@@ -74,10 +74,10 @@ fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
       let x9 = LineList::Cons._1(self/15) in
       let __field1/17 = x9 in
       let __field0/16 = x8 in
-      let t36 = impl_inherent_Line_to_string(__field0/16) in
+      let t36 = inherent#Line#Line#to_string(__field0/16) in
       let t35 = ("LineList::Cons(" + t36) in
       let t34 = (t35 + ", ") in
-      let t37 = impl_inherent_LineList_to_string(__field1/17) in
+      let t37 = inherent#LineList#LineList#to_string(__field1/17) in
       let t33 = (t34 + t37) in
       (t33 + ")")
     },
@@ -86,14 +86,14 @@ fn impl_inherent_LineList_to_string(self/15: LineList) -> string {
 
 fn main() -> unit {
   let t38 = Tag_0 in
-  let from/18 = impl_inherent_Point_new(10, 20, t38) in
+  let from/18 = inherent#Point#Point#new(10, 20, t38) in
   let t39 = Tag_1 in
-  let to/19 = impl_inherent_Point_new(30, 40, t39) in
+  let to/19 = inherent#Point#Point#new(30, 40, t39) in
   let t40 = Tag_2 in
-  let line/20 = impl_inherent_Line_new(from/18, to/19, t40) in
+  let line/20 = inherent#Line#Line#new(from/18, to/19, t40) in
   let t41 = Tag_0 in
   let lines/21 = LineList::Cons(line/20, t41) in
-  let t42 = impl_inherent_LineList_to_string(lines/21) in
+  let t42 = inherent#LineList#LineList#to_string(lines/21) in
   let _wild10 = string_println(t42) in
   ()
 }

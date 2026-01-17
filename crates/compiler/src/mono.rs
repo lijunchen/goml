@@ -1,7 +1,7 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
-use crate::mangle::encode_ty;
+use crate::names::{parse_inherent_method_fn_name, ty_compact};
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -299,27 +299,6 @@ fn fn_is_generic(f: &core::Fn) -> bool {
     !f.generics.is_empty() || f.params.iter().any(|(_, t)| has_tparam(t)) || has_tparam(&f.ret_ty)
 }
 
-// Parse inherent method name to extract base type and method name
-// Format: impl_inherent_<BaseType>_[type_args...]_<method_name>
-// Returns: Some((base_type, method_name))
-fn parse_inherent_method_name(fname: &str) -> Option<(&str, &str)> {
-    let parts: Vec<&str> = fname.split('_').collect();
-
-    // Minimum: ["impl", "inherent", "Type", "method"]
-    if parts.len() < 4 {
-        return None;
-    }
-
-    if parts[0] != "impl" || parts[1] != "inherent" {
-        return None;
-    }
-
-    let base_type = parts[2];
-    let method_name = parts.last()?;
-
-    Some((base_type, method_name))
-}
-
 type Subst = IndexMap<String, Ty>;
 fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
     match ty {
@@ -372,15 +351,16 @@ fn subst_closure_param(param: &tast::ClosureParam, s: &Subst) -> tast::ClosurePa
     }
 }
 
-// Create stable key for a substitution (sorted by type parameter name)
-fn subst_key(s: &Subst) -> String {
-    let mut entries = s.iter().collect::<Vec<_>>();
-    entries.sort_by(|a, b| a.0.cmp(b.0));
-    entries
-        .into_iter()
-        .map(|(k, v)| format!("{}={}", k, encode_ty(v)))
-        .collect::<Vec<_>>()
-        .join(";")
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct SubstKey(Vec<(String, Ty)>);
+
+impl SubstKey {
+    fn new(s: &Subst) -> Self {
+        let mut entries: Vec<(String, Ty)> =
+            s.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        entries.sort_by(|a, b| a.0.cmp(&b.0));
+        Self(entries)
+    }
 }
 
 // Derive a specialized function name based on substitution
@@ -392,7 +372,7 @@ fn spec_name_for(orig: &str, s: &Subst) -> String {
     pairs.sort_by(|a, b| a.0.cmp(b.0));
     let suffix = pairs
         .into_iter()
-        .map(|(k, v)| format!("{}_{}", k, encode_ty(v)))
+        .map(|(k, v)| format!("{}_{}", k, ty_compact(v)))
         .collect::<Vec<_>>()
         .join("__");
     format!("{}__{}", orig, suffix)
@@ -487,8 +467,8 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
 struct Ctx {
     orig_fns: IndexMap<String, core::Fn>,
     // map (orig_name, subst_key) -> spec_name
-    instances: IndexMap<(String, String), String>,
-    queued: IndexSet<(String, String)>,
+    instances: IndexMap<(String, SubstKey), String>,
+    queued: IndexSet<(String, SubstKey)>,
     out: Vec<MonoFn>,
     work: VecDeque<(String, Subst, String)>,
     // Index for inherent methods: (base_type, method_name) -> generic_func_name
@@ -503,8 +483,8 @@ impl Ctx {
         // Build index for generic inherent methods
         for (fname, f) in orig_fns.iter() {
             if !f.generics.is_empty()
-                && fname.starts_with("impl_inherent_")
-                && let Some((base_type, method_name)) = parse_inherent_method_name(fname)
+                && fname.starts_with("inherent#")
+                && let Some((base_type, method_name)) = parse_inherent_method_fn_name(fname)
             {
                 inherent_method_index.insert(
                     (base_type.to_string(), method_name.to_string()),
@@ -525,7 +505,7 @@ impl Ctx {
 
     // Ensure an instance exists (or is queued) and return its specialized name
     fn ensure_instance(&mut self, name: &str, s: Subst) -> String {
-        let key = subst_key(&s);
+        let key = SubstKey::new(&s);
         let k = (name.to_string(), key.clone());
         if let Some(n) = self.instances.get(&k) {
             return n.clone();
@@ -679,7 +659,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             // For inherent methods, try to find generic version if exact match fails
             let callee_opt = ctx.orig_fns.get(func_name).or_else(|| {
                 // Use index to find generic inherent method
-                parse_inherent_method_name(func_name).and_then(|(base_type, method_name)| {
+                parse_inherent_method_fn_name(func_name).and_then(|(base_type, method_name)| {
                     ctx.inherent_method_index
                         .get(&(base_type.to_string(), method_name.to_string()))
                         .and_then(|generic_fname| ctx.orig_fns.get(generic_fname))
@@ -785,7 +765,7 @@ impl<'a> TypeMono<'a> {
         } else {
             format!(
                 "__{}",
-                args.iter().map(encode_ty).collect::<Vec<_>>().join("__")
+                args.iter().map(ty_compact).collect::<Vec<_>>().join("__")
             )
         };
         let new_name = TastIdent::new(&format!("{}{}", name, suffix));

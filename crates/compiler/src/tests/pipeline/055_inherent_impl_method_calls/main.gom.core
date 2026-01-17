@@ -1,19 +1,19 @@
-fn impl_inherent_Shape_name(self/0: Shape) -> string {
+fn inherent#Shape#Shape#name(self/0: Shape) -> string {
   "Shape"
 }
 
-fn impl_inherent_Shape_rename(self/1: Shape, suffix/2: string) -> string {
-  (impl_inherent_Shape_name(self/1) + suffix/2)
+fn inherent#Shape#Shape#rename(self/1: Shape, suffix/2: string) -> string {
+  (inherent#Shape#Shape#name(self/1) + suffix/2)
 }
 
-fn impl_inherent_Shape_join(self/3: Shape, left/4: string, right/5: string) -> string {
-  ((left/4 + impl_inherent_Shape_name(self/3)) + right/5)
+fn inherent#Shape#Shape#join(self/3: Shape, left/4: string, right/5: string) -> string {
+  ((left/4 + inherent#Shape#Shape#name(self/3)) + right/5)
 }
 
 fn announce(shape/6: Shape) -> unit {
-  let base/7 = impl_inherent_Shape_name(shape/6) in
-  let with_suffix/8 = impl_inherent_Shape_rename(shape/6, "!") in
-  let combined/9 = impl_inherent_Shape_join(shape/6, base/7, with_suffix/8) in
+  let base/7 = inherent#Shape#Shape#name(shape/6) in
+  let with_suffix/8 = inherent#Shape#Shape#rename(shape/6, "!") in
+  let combined/9 = inherent#Shape#Shape#join(shape/6, base/7, with_suffix/8) in
   let mtmp0 = string_println(combined/9) in
   ()
 }

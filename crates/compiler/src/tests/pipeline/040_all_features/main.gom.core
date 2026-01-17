@@ -1,4 +1,4 @@
-fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
+fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let mtmp0 = self/0 in
   let x1 = Tracker.label(mtmp0) in
   let x2 = Tracker.count(mtmp0) in
@@ -15,7 +15,7 @@ fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
   ((with_flag_label/9 + bool_to_string(flag/5)) + ")")
 }
 
-fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
+fn trait_impl#Describe#Record[int32]#describe(self/10: Record[int32]) -> string {
   match self/10 {
     Record::Value(x4) => {
       let x4 = Record::Value._0(self/10) in
@@ -36,7 +36,7 @@ fn impl_Describe_Record_int32_describe(self/10: Record[int32]) -> string {
   }
 }
 
-fn impl_Describe_Record_string_describe(self/15: Record[string]) -> string {
+fn trait_impl#Describe#Record[string]#describe(self/15: Record[string]) -> string {
   match self/15 {
     Record::Value(x7) => {
       let x7 = Record::Value._0(self/15) in
@@ -151,7 +151,7 @@ fn main() -> unit {
   let bump/55 = x22 in
   let snapshot/54 = x21 in
   let tracker/53 = x20 in
-  let tracker_info/57 = impl_Describe_Tracker_describe(tracker/53) in
+  let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
   let first_record/58 = snapshot/54() in
   let bumped_record/59 = bump/55(5) in
   let flipped_record/60 = flip/56() in
@@ -164,9 +164,9 @@ fn main() -> unit {
   let first_result/67 = array_get(results/66, 0) in
   let second_result/68 = array_get(results/66, 1) in
   let order_check/69 = ((first_result/67 < second_result/68) && true) in
-  let first_text/70 = impl_Describe_Record_int32_describe(first_record/58) in
-  let bumped_text/71 = impl_Describe_Record_int32_describe(bumped_record/59) in
-  let flipped_text/72 = impl_Describe_Record_string_describe(flipped_record/60) in
+  let first_text/70 = trait_impl#Describe#Record[int32]#describe(first_record/58) in
+  let bumped_text/71 = trait_impl#Describe#Record[int32]#describe(bumped_record/59) in
+  let flipped_text/72 = trait_impl#Describe#Record[string]#describe(flipped_record/60) in
   let summary/74 = match stringified/64 {
     Maybe::Some(x24) => {
       let x24 = Maybe::Some._0(stringified/64) in

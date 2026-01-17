@@ -238,12 +238,27 @@ impl Typer {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
-                                        let (resolved, env) =
+                                        let (resolved, _env) =
                                             super::util::resolve_type_name(genv, &trait_name.0);
                                         let trait_ident = TastIdent(resolved);
-                                        match env.get_trait_impl(&trait_ident, self_ty, &op) {
-                                            Some(impl_scheme) => {
-                                                let impl_fun_ty = self.inst_ty(&impl_scheme);
+                                        let mut impls = Vec::new();
+                                        if let Some(impl_scheme) = genv.current().get_trait_impl(
+                                            &trait_ident,
+                                            self_ty,
+                                            &op,
+                                        ) {
+                                            impls.push(impl_scheme);
+                                        }
+                                        for dep in genv.deps.values() {
+                                            if let Some(impl_scheme) =
+                                                dep.get_trait_impl(&trait_ident, self_ty, &op)
+                                            {
+                                                impls.push(impl_scheme);
+                                            }
+                                        }
+                                        match impls.as_slice() {
+                                            [impl_scheme] => {
+                                                let impl_fun_ty = self.inst_ty(impl_scheme);
 
                                                 let call_fun_ty = tast::Ty::TFunc {
                                                     params: norm_arg_types.clone(),
@@ -255,15 +270,24 @@ impl Typer {
                                                     impl_fun_ty,
                                                 ));
 
-                                                // Made progress!
                                                 changed = true;
                                             }
-                                            None => {
+                                            [] => {
                                                 diagnostics.push(Diagnostic::new(
                                                     Stage::Typer,
                                                     Severity::Error,
                                                     format!(
                                                         "No instance found for trait {}<{:?}> for operator {}",
+                                                        trait_name.0, ty, op.0
+                                                    ),
+                                                ))
+                                            }
+                                            _ => {
+                                                diagnostics.push(Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "Multiple instances found for trait {}<{:?}> for operator {}",
                                                         trait_name.0, ty, op.0
                                                     ),
                                                 ))

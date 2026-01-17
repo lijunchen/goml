@@ -255,14 +255,38 @@ fn impl_block(p: &mut Parser) {
     impl_block_with_marker(p, m);
 }
 
+fn impl_has_trait(p: &mut Parser) -> bool {
+    let mut idx = 0;
+    let mut tok = p.nth(idx);
+    if tok == T![::] {
+        idx += 1;
+        tok = p.nth(idx);
+    }
+    if tok != T![ident] {
+        return false;
+    }
+    idx += 1;
+    loop {
+        if p.nth(idx) == T![::] {
+            idx += 1;
+            if p.nth(idx) != T![ident] {
+                return false;
+            }
+            idx += 1;
+            continue;
+        }
+        break;
+    }
+    p.nth(idx) == T![for]
+}
+
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     if p.at(T!['[']) {
         generic_list(p);
     }
-    let has_trait = p.at(T![ident]) && matches!(p.nth(1), T![for]);
-    if has_trait {
-        p.expect(T![ident]);
+    if impl_has_trait(p) {
+        parse_path_always(p);
         p.expect(T![for]);
         type_expr(p);
     } else {

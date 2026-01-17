@@ -3,7 +3,7 @@ use std::path::Path;
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
-use diagnostics::Diagnostics;
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
@@ -286,6 +286,18 @@ fn typecheck_packages(
 
         let mut package_diagnostics = artifact.diagnostics.clone();
         diagnostics.append(&mut package_diagnostics);
+        for (key, _) in artifact.interface.exports.trait_env.trait_impls.iter() {
+            if genv.trait_env.trait_impls.contains_key(key) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                        key.0, key.1, name
+                    ),
+                ));
+            }
+        }
         artifact.interface.exports.apply_to(&mut genv);
         artifacts_by_name.insert(name.clone(), artifact);
     }

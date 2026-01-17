@@ -77,7 +77,7 @@ The file extension for goml source files is `.gom`.
 - Note: Multi-package tests only generate `.out` files, not intermediate IR stages like pipeline tests
 
 ## Commit & Pull Request Guidelines
-- Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for …”.
+- Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for ...”.
 - PRs: include a clear description, linked issues, and before/after notes or screenshots for web UI changes.
 - Required: run cargo check, test, fmt, clippy locally; ensure no clippy or fmt diffs.
 - Always run tests before notifying the user that a task is complete.
@@ -85,3 +85,67 @@ The file extension for goml source files is `.gom`.
 ## Environment & Tooling
 - Requirements: Rust toolchain, `wasm-pack`, Node 18+, `pnpm`.
 - If adding crates, update workspace in `Cargo.toml`; keep inter‑crate deps via `[workspace.dependencies]`.
+
+## GoML Introduction
+
+### Lexical Structure and Literals
+
+* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`.
+* Literals: boolean, integer/unsigned/floating-point, and string literals. String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
+* Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
+
+### Bindings and Scope
+
+* `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: int32 = 1;`. `let _ = expr;` discards the result.
+* `let` supports pattern destructuring: tuples, struct fields, enum constructors, and wildcards can be mixed.
+
+### Functions and Closures
+
+* Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
+* Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
+* Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
+* Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
+
+### Structs, Enums, and Fields
+
+* Structs: `struct Name { field: Type, ... }`. Construction supports key–value syntax or field shorthand. Field access uses `value.field`, and fields can be used for update reconstruction.
+* Enums: `enum Name { Variant, Variant(T1, T2), ... }`, with support for generics. Constructors may be uppercase or lowercase; namespaced access `Enum::Variant` avoids conflicts.
+* Pattern matching supports field patterns, shorthand, and wildcards for structs; enum matching can destructure payloads or match constructors directly.
+
+### Built-in Containers and References
+
+* Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
+* Mutable references `Ref[T]`: created with `ref(x)`, accessed and updated via `ref_get/ref_set`; nested references are supported.
+* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
+
+### Control Flow and Expressions
+
+* `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
+* Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
+* `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
+
+### Traits and `impl`
+
+* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
+* Inherent implementations `impl Type { ... }` provide associated functions and methods.
+* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
+
+### Concurrency and Side Effects
+
+* `go expr;` starts concurrent execution, commonly used with zero-argument closures.
+* Common built-ins for I/O and debugging: `string_print/string_println`, and `_to_string` for basic types or derived `to_string`.
+
+### Attributes and Derivation
+
+* Attributes such as `#[derive(ToString)]` and `#[derive(ToJson)]` automatically generate methods; applicable to structs and enums.
+
+### External Interoperability
+
+* `extern type Name` declares an external type.
+* Binding Go symbols: `extern "go" "pkg" ["Func"] name(params) -> Ret`, where `"pkg"` is the Go package path and an explicit identifier is optional.
+
+### Additional Conventions and Constraints
+
+* Top-level functions must have explicit type signatures; generics are limited to top-level functions.
+* Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
+* The runtime uses garbage collection; manual ownership or lifetimes are not required.

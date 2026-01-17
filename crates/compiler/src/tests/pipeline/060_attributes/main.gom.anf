@@ -1,4 +1,4 @@
-fn impl_inherent_Point_to_string(self/0: Point) -> string {
+fn inherent#Point#Point#to_string(self/0: Point) -> string {
   let mtmp0 = self/0 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
@@ -14,7 +14,7 @@ fn impl_inherent_Point_to_string(self/0: Point) -> string {
   (t10 + " }")
 }
 
-fn impl_inherent_Message_to_string(self/3: Message) -> string {
+fn inherent#Message#Message#to_string(self/3: Message) -> string {
   match self/3 {
     Tag_0 => {
       "Message::Quit"
@@ -42,13 +42,13 @@ fn impl_inherent_Message_to_string(self/3: Message) -> string {
 
 fn main() -> unit {
   let point/7 = Point { x: 4, y: 7 } in
-  let summary/8 = impl_inherent_Point_to_string(point/7) in
+  let summary/8 = inherent#Point#Point#to_string(point/7) in
   let t23 = Message::Move(1, 2) in
-  let mv/9 = impl_inherent_Message_to_string(t23) in
+  let mv/9 = inherent#Message#Message#to_string(t23) in
   let t24 = Message::Write("done") in
-  let text/10 = impl_inherent_Message_to_string(t24) in
+  let text/10 = inherent#Message#Message#to_string(t24) in
   let t25 = Tag_0 in
-  let exit/11 = impl_inherent_Message_to_string(t25) in
+  let exit/11 = inherent#Message#Message#to_string(t25) in
   let _wild6 = string_println(summary/8) in
   let _wild7 = string_println(mv/9) in
   let _wild8 = string_println(text/10) in

@@ -1,21 +1,21 @@
-fn impl_ToString_int32_to_string(self/0: int32) -> string {
+fn trait_impl#ToString#int32#to_string(self/0: int32) -> string {
   int32_to_string(self/0)
 }
 
-fn impl_ToString_bool_to_string(self/1: bool) -> string {
+fn trait_impl#ToString#bool#to_string(self/1: bool) -> string {
   bool_to_string(self/1)
 }
 
-fn impl_ToString_Tuple_int32_int32_to_string(self/2: (int32, int32)) -> string {
+fn trait_impl#ToString#(int32,int32)#to_string(self/2: (int32, int32)) -> string {
   "(?, ?)"
 }
 
 fn main() -> unit {
   let x/3 = 123 in
-  let mtmp0 = string_println(impl_ToString_int32_to_string(x/3)) in
+  let mtmp0 = string_println(trait_impl#ToString#int32#to_string(x/3)) in
   let x/4 = true in
-  let mtmp1 = string_println(impl_ToString_bool_to_string(x/4)) in
+  let mtmp1 = string_println(trait_impl#ToString#bool#to_string(x/4)) in
   let x/5 = (3, 4) in
-  let mtmp2 = string_println(impl_ToString_Tuple_int32_int32_to_string(x/5)) in
+  let mtmp2 = string_println(trait_impl#ToString#(int32,int32)#to_string(x/5)) in
   ()
 }

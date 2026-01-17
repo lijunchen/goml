@@ -1,7 +1,7 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
 use crate::env::{Gensym, GlobalTypeEnv, StructDef};
-use crate::mangle::{mangle_impl_name, mangle_inherent_name};
+use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
 use crate::tast::Pat::{self, *};
@@ -1157,9 +1157,9 @@ pub fn compile_file(
                 for m in impl_block.methods.iter() {
                     let method_name = &m.name;
                     let func_name = if let Some(trait_name) = &impl_block.trait_name {
-                        mangle_impl_name(trait_name, for_ty, method_name)
+                        trait_impl_fn_name(trait_name, for_ty, method_name)
                     } else {
-                        mangle_inherent_name(for_ty, method_name)
+                        inherent_method_fn_name(for_ty, method_name)
                     };
 
                     let f = core::Fn {
@@ -1499,7 +1499,7 @@ fn compile_expr(
                 tast::UnaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = arg.get_ty();
-                    let func_name = mangle_impl_name(trait_name, &self_ty, method);
+                    let func_name = trait_impl_fn_name(trait_name, &self_ty, method);
                     core::Expr::ECall {
                         func: Box::new(core::Expr::EVar {
                             name: func_name,
@@ -1534,7 +1534,7 @@ fn compile_expr(
                 tast::BinaryResolution::Overloaded { trait_name } => {
                     let method = op.method_name();
                     let self_ty = lhs_expr.get_ty();
-                    let func_name = mangle_impl_name(trait_name, &self_ty, method);
+                    let func_name = trait_impl_fn_name(trait_name, &self_ty, method);
                     let param_tys = vec![lhs_expr.get_ty(), rhs_expr.get_ty()];
                     core::Expr::ECall {
                         func: Box::new(core::Expr::EVar {
@@ -1565,7 +1565,7 @@ fn compile_expr(
             {
                 let for_ty = args[0].get_ty();
                 core::Expr::EVar {
-                    name: mangle_impl_name(trait_name, &for_ty, &method_name.0),
+                    name: trait_impl_fn_name(trait_name, &for_ty, &method_name.0),
                     ty: method_ty.clone(),
                 }
             } else if let tast::Expr::EInherentMethod {
@@ -1576,7 +1576,7 @@ fn compile_expr(
             } = func.as_ref()
             {
                 core::Expr::EVar {
-                    name: mangle_inherent_name(receiver_ty, &method_name.0),
+                    name: inherent_method_fn_name(receiver_ty, &method_name.0),
                     ty: method_ty.clone(),
                 }
             } else {

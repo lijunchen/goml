@@ -331,7 +331,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
                 .collect()
         })
         .unwrap_or_default();
-    let trait_name = node.uident().map(|token| token.to_string());
+    let trait_name = node.trait_path().and_then(|path| lower_path(ctx, &path));
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
         None => {
@@ -349,7 +349,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
     Some(ast::ImplBlock {
         attrs,
         generics,
-        trait_name: trait_name.map(|name| ast::AstIdent::new(&name)),
+        trait_name,
         for_type,
         methods,
     })

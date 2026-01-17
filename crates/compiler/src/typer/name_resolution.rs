@@ -117,7 +117,7 @@ impl ConstructorIndex {
         self.enums_by_package
             .get(package)
             .and_then(|enums| enums.get(enum_name))
-            .map_or(false, |variants| variants.contains(variant))
+            .is_some_and(|variants| variants.contains(variant))
     }
 
     fn unique_enum_for_variant(&self, package: &str, variant: &str) -> Option<String> {
@@ -135,9 +135,9 @@ impl ConstructorIndex {
     }
 
     fn has_variant(&self, package: &str, variant: &str) -> bool {
-        self.enums_by_package.get(package).map_or(false, |enums| {
-            enums.values().any(|vars| vars.contains(variant))
-        })
+        self.enums_by_package
+            .get(package)
+            .is_some_and(|enums| enums.values().any(|vars| vars.contains(variant)))
     }
 }
 
@@ -409,10 +409,13 @@ impl NameResolution {
                         let impl_block = fir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
-                            trait_name: i
-                                .trait_name
-                                .as_ref()
-                                .map(|t| FirIdent::name(full_def_name(package_name, &t.0))),
+                            trait_name: i.trait_name.as_ref().map(|t| {
+                                FirIdent::name(Self::lower_impl_trait_name(
+                                    t,
+                                    package_name,
+                                    &imports,
+                                ))
+                            }),
                             for_type: Self::lower_type_expr(
                                 &i.for_type,
                                 &tparams,
@@ -459,10 +462,7 @@ impl NameResolution {
             })
             .collect();
 
-        (
-            fir::ResolvedFir { files, toplevels },
-            fir_table,
-        )
+        (fir::ResolvedFir { files, toplevels }, fir_table)
     }
 
     fn resolve_fn_def(
@@ -939,7 +939,7 @@ impl NameResolution {
 
     fn lower_type_expr(
         ty: &ast::TypeExpr,
-        tparams: &HashSet<String>,
+        _tparams: &HashSet<String>,
         current_package: &str,
         imports: &HashSet<String>,
     ) -> fir::TypeExpr {
@@ -960,7 +960,7 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, tparams, current_package, imports))
+                    .map(|ty| Self::lower_type_expr(ty, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
@@ -987,20 +987,20 @@ impl NameResolution {
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
                 ty: Box::new(Self::lower_type_expr(
                     ty.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),
                 args: args
                     .iter()
-                    .map(|arg| Self::lower_type_expr(arg, tparams, current_package, imports))
+                    .map(|arg| Self::lower_type_expr(arg, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
                 len: *len,
                 elem: Box::new(Self::lower_type_expr(
                     elem.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),
@@ -1008,11 +1008,11 @@ impl NameResolution {
             ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| Self::lower_type_expr(param, tparams, current_package, imports))
+                    .map(|param| Self::lower_type_expr(param, _tparams, current_package, imports))
                     .collect(),
                 ret_ty: Box::new(Self::lower_type_expr(
                     ret_ty.as_ref(),
-                    tparams,
+                    _tparams,
                     current_package,
                     imports,
                 )),
@@ -1088,11 +1088,14 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| {
-                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)
-                    })
+                    .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports))
                     .collect(),
-                ret_ty: Self::lower_type_expr(&sig.ret_ty, &HashSet::new(), current_package, imports),
+                ret_ty: Self::lower_type_expr(
+                    &sig.ret_ty,
+                    &HashSet::new(),
+                    current_package,
+                    imports,
+                ),
             })
             .collect();
         fir::TraitDef {
@@ -1100,6 +1103,28 @@ impl NameResolution {
             name: FirIdent::name(&name),
             method_sigs,
         }
+    }
+
+    fn lower_impl_trait_name(
+        path: &ast::Path,
+        current_package: &str,
+        imports: &HashSet<String>,
+    ) -> String {
+        if path.len() == 1 {
+            let name = path.last_ident().unwrap().0.clone();
+            return full_def_name(current_package, &name);
+        }
+
+        let qualified: fir::QualifiedPath = path.into();
+        if let Some(package) = &qualified.package
+            && !package_allowed(package.as_str(), current_package, imports)
+        {
+            panic!(
+                "package {} not imported in package {}",
+                package.0, current_package
+            );
+        }
+        qualified.display()
     }
 
     fn lower_extern_go(
@@ -1178,12 +1203,9 @@ impl NameResolution {
         env.add(&param.name, new_name);
         fir::ClosureParam {
             name: new_name,
-            ty: param
-                .ty
-                .as_ref()
-                .map(|t| {
-                    Self::lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
-                }),
+            ty: param.ty.as_ref().map(|t| {
+                Self::lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
+            }),
             astptr: param.astptr,
         }
     }

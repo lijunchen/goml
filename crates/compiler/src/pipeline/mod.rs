@@ -2,6 +2,7 @@ use crate::pipeline::pipeline::CompilationError;
 use diagnostics::Diagnostics;
 
 pub mod packages;
+#[allow(clippy::module_inception)]
 pub mod pipeline;
 
 pub fn compile_error(message: String) -> CompilationError {

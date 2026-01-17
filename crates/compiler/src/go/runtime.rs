@@ -2,8 +2,8 @@ use crate::{
     go::{
         goast::{self, GoBinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
+        mangle::{encode_ty, go_ident},
     },
-    mangle::{encode_ty, mangle_ident},
     tast,
 };
 
@@ -61,11 +61,11 @@ pub fn make_runtime() -> Vec<goast::Item> {
 }
 
 pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, mangle_ident(&encode_ty(ty)))
+    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
 pub fn ref_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
-    format!("{}__{}", prefix, mangle_ident(&encode_ty(ty)))
+    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
 pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {

@@ -1,21 +1,21 @@
-fn impl_inherent_Point_TParam_U_TParam_V_new(x/0: U, y/1: V) -> Point[U, V] {
+fn inherent#Point#Point[U,V]#new(x/0: U, y/1: V) -> Point[U, V] {
   Point { x: x/0, y: y/1 }
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_swap(self/2: Point[U, V]) -> Point[V, U] {
+fn inherent#Point#Point[U,V]#swap(self/2: Point[U, V]) -> Point[V, U] {
   Point { x: Point.y(self/2), y: Point.x(self/2) }
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_get_x(self/3: Point[U, V]) -> U {
+fn inherent#Point#Point[U,V]#get_x(self/3: Point[U, V]) -> U {
   Point.x(self/3)
 }
 
 fn main() -> unit {
-  let p1/4 = impl_inherent_Point_new(10, "hello") in
-  let p2/5 = impl_inherent_Point_new("goml", "lang") in
-  let p3/6 = impl_inherent_Point_int32_string_swap(p1/4) in
+  let p1/4 = inherent#Point#Point#new(10, "hello") in
+  let p2/5 = inherent#Point#Point#new("goml", "lang") in
+  let p3/6 = inherent#Point#Point[int32,string]#swap(p1/4) in
   let x/7 = Point.y(p3/6) in
   let _wild0 = string_println(int32_to_string(x/7)) in
-  let x2/8 = impl_inherent_Point_string_string_get_x(p2/5) in
+  let x2/8 = inherent#Point#Point[string,string]#get_x(p2/5) in
   string_println(x2/8)
 }

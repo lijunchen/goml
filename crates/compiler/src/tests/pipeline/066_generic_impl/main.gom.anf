@@ -1,28 +1,28 @@
 fn main() -> unit {
-  let p1/4 = impl_inherent_Point_TParam_U_TParam_V_new__U_int32__V_string(10, "hello") in
-  let p2/5 = impl_inherent_Point_TParam_U_TParam_V_new__U_string__V_string("goml", "lang") in
-  let p3/6 = impl_inherent_Point_TParam_U_TParam_V_swap__U_int32__V_string(p1/4) in
+  let p1/4 = inherent#Point#Point[U,V]#new__U_int32__V_string(10, "hello") in
+  let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
+  let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
   let x/7 = Point__string__int32.y(p3/6) in
   let t1 = int32_to_string(x/7) in
   let _wild0 = string_println(t1) in
-  let x2/8 = impl_inherent_Point_TParam_U_TParam_V_get_x__U_string__V_string(p2/5) in
+  let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
   string_println(x2/8)
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
+fn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
   Point__int32__string { x: x/0, y: y/1 }
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {
+fn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {
   Point__string__string { x: x/0, y: y/1 }
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
+fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
   let t2 = Point__int32__string.y(self/2) in
   let t3 = Point__int32__string.x(self/2) in
   Point__string__int32 { x: t2, y: t3 }
 }
 
-fn impl_inherent_Point_TParam_U_TParam_V_get_x__U_string__V_string(self/3: Point__string__string) -> string {
+fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
   Point__string__string.x(self/3)
 }

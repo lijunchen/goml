@@ -8,9 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    fir,
-    mangle::encode_ty,
-    tast, typer,
+    fir, tast, typer,
 };
 
 /// The embedded builtin.gom source code
@@ -185,7 +183,8 @@ fn add_vec_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
-pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef> {
+pub(super) fn builtin_inherent_methods()
+-> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
 
     let int32_ty = tast::Ty::TInt32;
@@ -204,7 +203,7 @@ pub(super) fn builtin_inherent_methods() -> IndexMap<String, crate::env::ImplDef
             origin: FnOrigin::Builtin,
         },
     );
-    impls.insert(encode_ty(&int32_ty), int32_impl);
+    impls.insert(crate::env::InherentImplKey::Exact(int32_ty), int32_impl);
 
     impls
 }

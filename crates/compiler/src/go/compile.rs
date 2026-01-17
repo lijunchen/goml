@@ -1,10 +1,11 @@
 use crate::{
     anf::{self, AExpr, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, Gensym, GlobalTypeEnv, StructDef},
+    env::{EnumDef, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
+    go::mangle::go_ident,
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    mangle::{encode_ty, mangle_ident, mangle_inherent_name},
+    names::inherent_method_fn_name,
     tast::{self, TastIdent},
 };
 
@@ -55,10 +56,9 @@ impl GlobalGoEnv {
                 closure_ty
             );
         }
-        let encoded_ty = encode_ty(closure_ty);
         self.liftenv
             .inherent_impls()
-            .find(|(k, _)| *k == &encoded_ty)
+            .find(|(k, _)| matches!(k, InherentImplKey::Exact(ty) if ty == closure_ty))
             .and_then(|(_, impl_def)| impl_def.methods.get("apply"))
             .map(|scheme| scheme.ty.clone())
     }
@@ -172,7 +172,7 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
 fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
     match imm {
         anf::ImmExpr::ImmVar { name, ty: _ } => goast::Expr::Var {
-            name: mangle_ident(name),
+            name: go_ident(name),
             ty: tast_ty_to_go_type(&imm_ty(imm)),
         },
         anf::ImmExpr::ImmPrim { value, .. } => {
@@ -265,9 +265,9 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
         }
     }
     if count > 1 {
-        format!("{}_{}", mangle_ident(enum_name), variant_name)
+        format!("{}_{}", go_ident(enum_name), go_ident(variant_name))
     } else {
-        variant_name.to_string()
+        go_ident(variant_name)
     }
 }
 
@@ -618,7 +618,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     .fields
                     .iter()
                     .zip(args.iter())
-                    .map(|((fname, _), arg)| (fname.0.clone(), compile_imm(goenv, arg)))
+                    .map(|((fname, _), arg)| (go_ident(&fname.0), compile_imm(goenv, arg)))
                     .collect();
                 goast::Expr::StructLiteral { ty: go_ty, fields }
             }
@@ -705,7 +705,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     let (field_name, field_ty) = &fields[*field_index];
                     goast::Expr::FieldAccess {
                         obj: Box::new(obj),
-                        field: field_name.clone(),
+                        field: go_ident(field_name),
                         ty: tast_ty_to_go_type(field_ty),
                     }
                 }
@@ -1250,7 +1250,7 @@ fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<C
         return None;
     }
 
-    let apply_name = mangle_inherent_name(closure_ty, "apply");
+    let apply_name = inherent_method_fn_name(closure_ty, "apply");
 
     Some(ClosureApplyFn {
         name: apply_name,
@@ -1303,7 +1303,7 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
                 | anf::CExpr::EMatch { .. }
                 | anf::CExpr::EWhile { .. }) => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &complex),
                         value: None,
                     });
@@ -1317,7 +1317,7 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
                 anf::CExpr::EGo { ref closure, .. } => {
                     out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: goty::GoType::TUnit,
                         value: Some(goast::Expr::Unit {
                             ty: goty::GoType::TUnit,
@@ -1328,14 +1328,14 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
                 }
                 simple @ anf::CExpr::ECall { .. } => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
@@ -1361,7 +1361,7 @@ fn compile_while(
     let cond_var = gensym.gensym("cond");
     let mut stmts = Vec::new();
     stmts.push(goast::Stmt::VarDecl {
-        name: cond_var.clone(),
+        name: go_ident(&cond_var),
         ty: goty::GoType::TBool,
         value: None,
     });
@@ -1370,7 +1370,7 @@ fn compile_while(
     let not_cond = goast::Expr::UnaryOp {
         op: goast::GoUnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
-            name: cond_var.clone(),
+            name: go_ident(&cond_var),
             ty: goty::GoType::TBool,
         }),
         ty: goty::GoType::TBool,
@@ -1421,7 +1421,7 @@ fn compile_aexpr_assign(
             anf::CExpr::EWhile { cond, body, .. } => {
                 let mut stmts = compile_while(goenv, gensym, *cond, *body);
                 stmts.push(goast::Stmt::Assignment {
-                    name: target.to_string(),
+                    name: go_ident(target),
                     value: goast::Expr::Unit {
                         ty: goty::GoType::TUnit,
                     },
@@ -1436,12 +1436,12 @@ fn compile_aexpr_assign(
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
-                name: target.to_string(),
+                name: go_ident(target),
                 value: compile_cexpr(goenv, &other),
             }],
             anf::CExpr::ECall { func, args, ty } => {
                 vec![goast::Stmt::Assignment {
-                    name: target.to_string(),
+                    name: go_ident(target),
                     value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
                 }]
             }
@@ -1449,7 +1449,7 @@ fn compile_aexpr_assign(
                 vec![
                     compile_go(goenv, &closure),
                     goast::Stmt::Assignment {
-                        name: target.to_string(),
+                        name: go_ident(target),
                         value: goast::Expr::Unit {
                             ty: goty::GoType::TUnit,
                         },
@@ -1471,7 +1471,7 @@ fn compile_aexpr_assign(
                 | anf::CExpr::EMatch { .. }
                 | anf::CExpr::EWhile { .. }) => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &complex),
                         value: None,
                     });
@@ -1485,7 +1485,7 @@ fn compile_aexpr_assign(
                 anf::CExpr::EGo { ref closure, .. } => {
                     out.push(compile_go(goenv, closure));
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: goty::GoType::TUnit,
                         value: Some(goast::Expr::Unit {
                             ty: goty::GoType::TUnit,
@@ -1496,14 +1496,14 @@ fn compile_aexpr_assign(
                 }
                 simple @ anf::CExpr::ECall { .. } => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
                     out.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
@@ -1583,7 +1583,7 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
                 | anf::CExpr::EMatch { .. }
                 | anf::CExpr::EWhile { .. }) => {
                     stmts.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &complex),
                         value: None,
                     });
@@ -1597,7 +1597,7 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
                 anf::CExpr::EGo { ref closure, .. } => {
                     stmts.push(compile_go(goenv, closure));
                     stmts.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: goty::GoType::TUnit,
                         value: Some(goast::Expr::Unit {
                             ty: goty::GoType::TUnit,
@@ -1608,14 +1608,14 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
                 }
                 simple @ anf::CExpr::ECall { .. } => {
                     stmts.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
                 }
                 simple => {
                     stmts.push(goast::Stmt::VarDecl {
-                        name: name.clone(),
+                        name: go_ident(&name),
                         ty: cexpr_ty(goenv, &simple),
                         value: Some(compile_cexpr(goenv, &simple)),
                     });
@@ -1630,7 +1630,7 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
 fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     let mut params = Vec::new();
     for (name, ty) in f.params {
-        params.push((name, tast_ty_to_go_type(&ty)));
+        params.push((go_ident(&name), tast_ty_to_go_type(&ty)));
     }
 
     let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
@@ -1639,7 +1639,7 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     let patched_name = if is_entry {
         "main0".to_string()
     } else {
-        mangle_ident(&f.name)
+        go_ident(&f.name)
     };
 
     let body = f.body;
@@ -1651,7 +1651,7 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
             let mut stmts = Vec::new();
 
             stmts.push(goast::Stmt::VarDecl {
-                name: ret_name.clone(),
+                name: go_ident(&ret_name),
                 ty: go_ret_ty.clone(),
                 value: None,
             });
@@ -1660,7 +1660,7 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
 
             stmts.push(goast::Stmt::Return {
                 expr: Some(goast::Expr::Var {
-                    name: ret_name,
+                    name: go_ident(&ret_name),
                     ty: go_ret_ty.clone(),
                 }),
             });
@@ -1813,12 +1813,12 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             .fields
             .iter()
             .map(|(fname, fty)| goast::Field {
-                name: fname.0.clone(),
+                name: go_ident(&fname.0),
                 ty: tast_ty_to_go_type(fty),
             })
             .collect();
         defs.push(goast::Item::Struct(goast::Struct {
-            name: mangle_ident(&name.0),
+            name: go_ident(&name.0),
             fields,
             methods: vec![],
         }));
@@ -1834,10 +1834,10 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         if has_type_param {
             continue;
         }
-        let type_identifier_method = format!("is{}", mangle_ident(&name.0));
+        let type_identifier_method = format!("is{}", go_ident(&name.0));
 
         defs.push(goast::Item::Interface(goast::Interface {
-            name: mangle_ident(&name.0),
+            name: go_ident(&name.0),
             methods: vec![goast::MethodElem {
                 name: type_identifier_method.clone(),
                 params: vec![],
@@ -1881,7 +1881,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
                 name: format!("{}.{}", alias, ext.go_name),
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
-                name: mangle_ident(name),
+                name: go_ident(name),
                 ty: go_ty,
             }));
         }

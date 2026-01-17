@@ -333,6 +333,10 @@ impl Impl {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
+    pub fn trait_path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+
     pub fn for_type(&self) -> Option<Type> {
         support::child(&self.syntax)
     }

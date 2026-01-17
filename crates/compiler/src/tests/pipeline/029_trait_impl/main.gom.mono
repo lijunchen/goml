@@ -1,8 +1,8 @@
-fn impl_Display_Point_show(self/0: Point) -> string {
+fn trait_impl#Display#Point#show(self/0: Point) -> string {
   "Point"
 }
 
-fn impl_Display_Maybe_int32_show(self/1: Maybe__int32) -> string {
+fn trait_impl#Display#Maybe[int32]#show(self/1: Maybe__int32) -> string {
   match self/1 {
     Maybe__int32::Just(x0) => {
       let x0 = Maybe__int32::Just._0(self/1) in
@@ -27,8 +27,8 @@ fn main() -> unit {
   let point/4 = Point { x: 1, y: 2 } in
   let some_number/5 = make_maybe(true) in
   let none_number/6 = make_maybe(false) in
-  let mtmp1 = string_println(impl_Display_Point_show(point/4)) in
-  let mtmp2 = string_println(impl_Display_Maybe_int32_show(some_number/5)) in
-  let mtmp3 = string_println(impl_Display_Maybe_int32_show(none_number/6)) in
+  let mtmp1 = string_println(trait_impl#Display#Point#show(point/4)) in
+  let mtmp2 = string_println(trait_impl#Display#Maybe[int32]#show(some_number/5)) in
+  let mtmp3 = string_println(trait_impl#Display#Maybe[int32]#show(none_number/6)) in
   ()
 }

@@ -6,7 +6,6 @@ use parser::{Diagnostics, syntax::MySyntaxNode};
 
 use crate::{
     env::{GlobalTypeEnv, format_typer_diagnostics},
-    mangle::encode_ty,
     tast,
 };
 
@@ -234,11 +233,10 @@ impl Point {
         name: "Point".to_string(),
     };
 
-    let encoded = encode_ty(&point_ty);
     let impl_def = genv
         .trait_env
         .inherent_impls
-        .get(&encoded)
+        .get(&crate::env::InherentImplKey::Exact(point_ty.clone()))
         .expect("inherent impl exists");
     let mut method_names: Vec<_> = impl_def.methods.keys().cloned().collect();
     method_names.sort();
@@ -269,12 +267,11 @@ impl Point {
     let point_ty = tast::Ty::TStruct {
         name: "Point".to_string(),
     };
-    let encoded = encode_ty(&point_ty);
 
     let impl_def = genv
         .trait_env
         .inherent_impls
-        .get(&encoded)
+        .get(&crate::env::InherentImplKey::Exact(point_ty))
         .expect("inherent impl registered");
 
     let copy_scheme = impl_def
