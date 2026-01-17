@@ -44,6 +44,8 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(bool_to_string()),
         Item::Fn(bool_to_json()),
         Item::Fn(json_escape_string()),
+        Item::Fn(string_len()),
+        Item::Fn(string_get()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
@@ -446,6 +448,78 @@ fn float32_to_string() -> goast::Fn {
 
 fn float64_to_string() -> goast::Fn {
     to_string_fn("float64_to_string", goty::GoType::TFloat64)
+}
+
+fn string_len() -> goast::Fn {
+    goast::Fn {
+        name: "string_len".to_string(),
+        params: vec![("s".to_string(), goty::GoType::TString)],
+        ret_ty: Some(goty::GoType::TInt32),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "int32".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TInt32],
+                            ret_ty: Box::new(goty::GoType::TInt32),
+                        },
+                    }),
+                    args: vec![goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "len".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString],
+                                ret_ty: Box::new(goty::GoType::TInt32),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        }],
+                        ty: goty::GoType::TInt32,
+                    }],
+                    ty: goty::GoType::TInt32,
+                }),
+            }],
+        },
+    }
+}
+
+fn string_get() -> goast::Fn {
+    goast::Fn {
+        name: "string_get".to_string(),
+        params: vec![
+            ("s".to_string(), goty::GoType::TString),
+            ("i".to_string(), goty::GoType::TInt32),
+        ],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "string".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TUint8],
+                            ret_ty: Box::new(goty::GoType::TString),
+                        },
+                    }),
+                    args: vec![goast::Expr::Index {
+                        array: Box::new(goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        }),
+                        index: Box::new(goast::Expr::Var {
+                            name: "i".to_string(),
+                            ty: goty::GoType::TInt32,
+                        }),
+                        ty: goty::GoType::TUint8,
+                    }],
+                    ty: goty::GoType::TString,
+                }),
+            }],
+        },
+    }
 }
 
 fn string_print() -> goast::Fn {
