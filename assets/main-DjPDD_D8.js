@@ -1,0 +1,49 @@
+const n = `enum List[T] {
+    Nil,
+    Cons(T, List[T]),
+}
+
+fn list_length[T](xs: List[T]) -> int32 {
+    match xs {
+        Nil => 0,
+        Cons(_, tail) => 1 + list_length(tail),
+    }
+}
+
+fn int_list_length(xs: List[int32]) -> int32 {
+    match xs {
+        Nil => 0,
+        Cons(_, tail) => 1 + int_list_length(tail),
+    }
+}
+
+fn main() {
+    let x = Cons(1, Nil);
+    let length = list_length(x);
+    let _ = string_println(int32_to_string(length));
+
+    let x = Cons(1, Cons(2, Nil));
+    let length = list_length(x);
+    let _ = string_println(int32_to_string(length));
+
+    let x = Cons(0, Cons(1, Cons(2, Nil)));
+    let length = int_list_length(x);
+    let _ = string_println(int32_to_string(length));
+
+    let x = Cons((), Nil);
+    let length = list_length(x);
+    let _ = string_println(int32_to_string(length));
+
+    let x = Cons((), Cons((), Nil));
+    let length = list_length(x);
+    let _ = string_println(int32_to_string(length));
+
+    let x = Cons(true, Cons(false, Nil));
+    let length = list_length(x);
+    let _ = string_println(int32_to_string(length));
+    ()
+}
+`;
+export {
+  n as default
+};

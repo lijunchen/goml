@@ -1,0 +1,33 @@
+const n = `extern type Time
+extern type Duration
+
+extern "go" "time" unix(secs: int32, nanos: int32) -> Time
+extern "go" "time" duration(nanos: int32) -> Duration
+
+extern "go" "fmt" "Sprintf" format_time(format: string, value: Time) -> string
+extern "go" "fmt" "Sprintf" format_duration(format: string, value: Duration) -> string
+
+fn describe_epoch() -> string {
+    let epoch = unix(946684800, 500000000);
+    format_time("epoch snapshot => %v", epoch)
+}
+
+fn describe_planned_launch() -> string {
+    let launch = unix(1709294730, 250000000);
+    format_time("planned launch => %v", launch)
+}
+
+fn describe_duration() -> string {
+    let parsed = duration(1500000000);
+    format_duration("parsed duration => %v", parsed)
+}
+
+fn main() -> unit {
+    string_println(describe_epoch());
+    string_println(describe_planned_launch());
+    string_println(describe_duration());
+}
+`;
+export {
+  n as default
+};
