@@ -32,13 +32,13 @@ type Nothing struct {}
 
 func (_ Nothing) isMaybe__int32() {}
 
-func impl_Display_Point_show(self__0 Point) string {
+func goml__trait__impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
     var ret9 string
     ret9 = "Point"
     return ret9
 }
 
-func impl_Display_Maybe_int32_show(self__1 Maybe__int32) string {
+func goml__trait__impl_x23_Display_x23_Maybe_x5b_int32_x5d__x23_show(self__1 Maybe__int32) string {
     var ret10 string
     switch self__1 := self__1.(type) {
     case Just:
@@ -73,11 +73,11 @@ func main0() struct{} {
     }
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
-    var t6 string = impl_Display_Point_show(point__4)
+    var t6 string = goml__trait__impl_x23_Display_x23_Point_x23_show(point__4)
     string_println(t6)
-    var t7 string = impl_Display_Maybe_int32_show(some_number__5)
+    var t7 string = goml__trait__impl_x23_Display_x23_Maybe_x5b_int32_x5d__x23_show(some_number__5)
     string_println(t7)
-    var t8 string = impl_Display_Maybe_int32_show(none_number__6)
+    var t8 string = goml__trait__impl_x23_Display_x23_Maybe_x5b_int32_x5d__x23_show(none_number__6)
     string_println(t8)
     ret12 = struct{}{}
     return ret12

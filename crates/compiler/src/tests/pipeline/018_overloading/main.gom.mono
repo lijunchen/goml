@@ -1,36 +1,36 @@
-fn impl_Arith_int32_add(self/0: int32, other/1: int32) -> int32 {
+fn trait_impl#Arith#int32#add(self/0: int32, other/1: int32) -> int32 {
   (self/0 + other/1)
 }
 
-fn impl_Arith_int32_less(self/2: int32, other/3: int32) -> bool {
+fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
   (self/2 < other/3)
 }
 
-fn impl_ToString_int32_to_string(self/4: int32) -> string {
+fn trait_impl#ToString#int32#to_string(self/4: int32) -> string {
   int32_to_string(self/4)
 }
 
-fn impl_ToString_bool_to_string(self/5: bool) -> string {
+fn trait_impl#ToString#bool#to_string(self/5: bool) -> string {
   bool_to_string(self/5)
 }
 
-fn impl_Output_int32_output(self/6: int32) -> unit {
-  string_println(impl_ToString_int32_to_string(self/6))
+fn trait_impl#Output#int32#output(self/6: int32) -> unit {
+  string_println(trait_impl#ToString#int32#to_string(self/6))
 }
 
-fn impl_Output_bool_output(self/7: bool) -> unit {
-  string_println(impl_ToString_bool_to_string(self/7))
+fn trait_impl#Output#bool#output(self/7: bool) -> unit {
+  string_println(trait_impl#ToString#bool#to_string(self/7))
 }
 
 fn main() -> unit {
   let a/9 = id__T_int32(1) in
   let b/10 = id__T_int32(2) in
-  let c/11 = impl_Arith_int32_add(a/9, b/10) in
-  let mtmp0 = impl_Output_int32_output(c/11) in
+  let c/11 = trait_impl#Arith#int32#add(a/9, b/10) in
+  let mtmp0 = trait_impl#Output#int32#output(c/11) in
   let a/12 = id__T_int32(3) in
   let b/13 = id__T_int32(4) in
-  let c/14 = impl_Arith_int32_less(a/12, b/13) in
-  let mtmp1 = impl_Output_bool_output(c/14) in
+  let c/14 = trait_impl#Arith#int32#less(a/12, b/13) in
+  let mtmp1 = trait_impl#Output#bool#output(c/14) in
   let mtmp2 = id__T_string("abc") in
   let mtmp3 = id__T_bool(true) in
   ()

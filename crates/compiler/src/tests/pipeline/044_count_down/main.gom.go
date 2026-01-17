@@ -41,7 +41,7 @@ func main0() struct{} {
     var t5 closure_env_main_0 = closure_env_main_0{
         counter_0: counter__0,
     }
-    go impl_inherent_closure_env_main_0_apply(t5)
+    go goml__inherent_x23_closure__env__main__0_x23_closure__env__main__0_x23_apply(t5)
     var cond12 bool
     for {
         var t6 int32 = ref_get__Ref_int32(counter__0)
@@ -54,7 +54,7 @@ func main0() struct{} {
     return ret11
 }
 
-func impl_inherent_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
+func goml__inherent_x23_closure__env__main__0_x23_closure__env__main__0_x23_apply(env4 closure_env_main_0) struct{} {
     var ret13 struct{}
     var counter__0 *ref_int32_x = env4.counter_0
     var cond14 bool

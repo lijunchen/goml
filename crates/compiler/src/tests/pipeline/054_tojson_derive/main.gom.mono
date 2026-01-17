@@ -1,4 +1,4 @@
-fn impl_inherent_Point_to_json(self/0: Point) -> string {
+fn inherent#Point#Point#to_json(self/0: Point) -> string {
   let mtmp0 = self/0 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
@@ -7,7 +7,7 @@ fn impl_inherent_Point_to_json(self/0: Point) -> string {
   (((((("{" + "\"x\":") + int32_to_string(x/1)) + ",") + "\"y\":") + int32_to_string(y/2)) + "}")
 }
 
-fn impl_inherent_Person_to_json(self/3: Person) -> string {
+fn inherent#Person#Person#to_json(self/3: Person) -> string {
   let mtmp3 = self/3 in
   let x4 = Person.name(mtmp3) in
   let x5 = Person.age(mtmp3) in
@@ -18,7 +18,7 @@ fn impl_inherent_Person_to_json(self/3: Person) -> string {
   ((((((((("{" + "\"name\":") + json_escape_string(name/4)) + ",") + "\"age\":") + int32_to_string(age/5)) + ",") + "\"active\":") + bool_to_json(active/6)) + "}")
 }
 
-fn impl_inherent_Color_to_json(self/7: Color) -> string {
+fn inherent#Color#Color#to_json(self/7: Color) -> string {
   match self/7 {
     Color::Red => {
       "{\"tag\":\"Red\"}"
@@ -46,9 +46,9 @@ fn main() -> unit {
   let person/12 = Person { name: "Alice", age: 30, active: true } in
   let c1/13 = Color::Red in
   let c2/14 = Color::Rgb(255, 128, 0) in
-  let _wild10 = string_println(impl_inherent_Point_to_json(p/11)) in
-  let _wild11 = string_println(impl_inherent_Person_to_json(person/12)) in
-  let _wild12 = string_println(impl_inherent_Color_to_json(c1/13)) in
-  let _wild13 = string_println(impl_inherent_Color_to_json(c2/14)) in
+  let _wild10 = string_println(inherent#Point#Point#to_json(p/11)) in
+  let _wild11 = string_println(inherent#Person#Person#to_json(person/12)) in
+  let _wild12 = string_println(inherent#Color#Color#to_json(c1/13)) in
+  let _wild13 = string_println(inherent#Color#Color#to_json(c2/14)) in
   ()
 }

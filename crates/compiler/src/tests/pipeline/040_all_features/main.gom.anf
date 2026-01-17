@@ -1,4 +1,4 @@
-fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
+fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let mtmp0 = self/0 in
   let x1 = Tracker.label(mtmp0) in
   let x2 = Tracker.count(mtmp0) in
@@ -18,7 +18,7 @@ fn impl_Describe_Tracker_describe(self/0: Tracker) -> string {
   (t36 + ")")
 }
 
-fn impl_Describe_Record_int32_describe(self/10: Record__int32) -> string {
+fn trait_impl#Describe#Record[int32]#describe(self/10: Record__int32) -> string {
   match self/10 {
     Tag_0 => {
       let x4 = Record__int32::Value._0(self/10) in
@@ -45,7 +45,7 @@ fn impl_Describe_Record_int32_describe(self/10: Record__int32) -> string {
   }
 }
 
-fn impl_Describe_Record_string_describe(self/15: Record__string) -> string {
+fn trait_impl#Describe#Record[string]#describe(self/15: Record__string) -> string {
   match self/15 {
     Tag_0 => {
       let x7 = Record__string::Value._0(self/15) in
@@ -140,13 +140,13 @@ fn main() -> unit {
   let bump/55 = x22 in
   let snapshot/54 = x21 in
   let tracker/53 = x20 in
-  let tracker_info/57 = impl_Describe_Tracker_describe(tracker/53) in
-  let first_record/58 = impl_inherent_closure_env_snapshot_0_apply(snapshot/54) in
-  let bumped_record/59 = impl_inherent_closure_env_bump_1_apply(bump/55, 5) in
-  let flipped_record/60 = impl_inherent_closure_env_flip_2_apply(flip/56) in
+  let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
+  let first_record/58 = inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(snapshot/54) in
+  let bumped_record/59 = inherent#closure_env_bump_1#closure_env_bump_1#apply(bump/55, 5) in
+  let flipped_record/60 = inherent#closure_env_flip_2#closure_env_flip_2#apply(flip/56) in
   let maybe_first/61 = gather(first_record/58) in
   let maybe_second/62 = gather(bumped_record/59) in
-  let chosen/63 = choose__T_Maybe_int32(true, maybe_second/62, maybe_first/61) in
+  let chosen/63 = choose__T_Maybe[int32](true, maybe_second/62, maybe_first/61) in
   let stringified/64 = map_maybe__T_int32__U_string(chosen/63, format_total) in
   let transforms/65 = [increment, triple] in
   let results/66 = run_transforms(4, transforms/65) in
@@ -154,9 +154,9 @@ fn main() -> unit {
   let second_result/68 = array_get(results/66, 1) in
   let t50 = (first_result/67 < second_result/68) in
   let order_check/69 = (t50 && true) in
-  let first_text/70 = impl_Describe_Record_int32_describe(first_record/58) in
-  let bumped_text/71 = impl_Describe_Record_int32_describe(bumped_record/59) in
-  let flipped_text/72 = impl_Describe_Record_string_describe(flipped_record/60) in
+  let first_text/70 = trait_impl#Describe#Record[int32]#describe(first_record/58) in
+  let bumped_text/71 = trait_impl#Describe#Record[int32]#describe(bumped_record/59) in
+  let flipped_text/72 = trait_impl#Describe#Record[string]#describe(flipped_record/60) in
   let summary/74 = match stringified/64 {
     Tag_0 => {
       let x24 = Maybe__string::Some._0(stringified/64) in
@@ -182,7 +182,7 @@ fn main() -> unit {
   ()
 }
 
-fn choose__T_Maybe_int32(flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
+fn choose__T_Maybe[int32](flag/20: bool, when_true/21: Maybe__int32, when_false/22: Maybe__int32) -> Maybe__int32 {
   if flag/20 {
     when_true/21
   } else {
@@ -204,13 +204,13 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
   }
 }
 
-fn impl_inherent_closure_env_snapshot_0_apply(env32: closure_env_snapshot_0) -> Record__int32 {
+fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env32: closure_env_snapshot_0) -> Record__int32 {
   let count/43 = closure_env_snapshot_0.count_0(env32) in
   let t55 = ref_get(count/43) in
   Record__int32::Value(t55)
 }
 
-fn impl_inherent_closure_env_bump_1_apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
+fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
   let count/43 = closure_env_bump_1.count_0(env33) in
   let before/48 = ref_get(count/43) in
   let t56 = (before/48 + delta/47) in
@@ -219,7 +219,7 @@ fn impl_inherent_closure_env_bump_1_apply(env33: closure_env_bump_1, delta/47: i
   Record__int32::Pair(before/48, t57)
 }
 
-fn impl_inherent_closure_env_flip_2_apply(env34: closure_env_flip_2) -> Record__string {
+fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env34: closure_env_flip_2) -> Record__string {
   let toggled/44 = closure_env_flip_2.toggled_0(env34) in
   let before/50 = ref_get(toggled/44) in
   let t58 = (!before/50) in

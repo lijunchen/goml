@@ -2,10 +2,10 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
-  let t18 = impl_inherent_closure_env_f_0_apply(f/3, 2) in
+  let t18 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
   let t17 = int32_to_string(t18) in
   let mtmp0 = string_println(t17) in
-  let t20 = impl_inherent_closure_env_f_0_apply(f/3, 3) in
+  let t20 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
   let t19 = int32_to_string(t20) in
   string_println(t19)
 }
@@ -17,12 +17,12 @@ fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
 fn main() -> unit {
   let base/6 = 5 in
   let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
-  let result/9 = impl_inherent_closure_env_add_base_1_apply(add_base/8, 7) in
+  let result/9 = inherent#closure_env_add_base_1#closure_env_add_base_1#apply(add_base/8, 7) in
   let printer/13 = closure_env_printer_2 {} in
-  let mtmp1 = impl_inherent_closure_env_printer_2_apply(printer/13, "result: ", result/9) in
+  let mtmp1 = inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
-  let doubled/18 = impl_inherent_closure_env_no_capture_4_apply(no_capture/17, 3) in
+  let doubled/18 = inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
   let t21 = int32_to_string(doubled/18) in
   let mtmp2 = string_println(t21) in
   let mtmp3 = test() in
@@ -32,38 +32,38 @@ fn main() -> unit {
   let list123/19 = IntList::Cons(1, t22) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 = closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
-  let mtmp10 = impl_inherent_closure_env_play_list_and_point_5_apply(play_list_and_point/25) in
+  let mtmp10 = inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(play_list_and_point/25) in
   ()
 }
 
-fn impl_inherent_closure_env_f_0_apply(env11: closure_env_f_0, x/2: int32) -> int32 {
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env11: closure_env_f_0, x/2: int32) -> int32 {
   let y/0 = closure_env_f_0.y_0(env11) in
   let z/1 = closure_env_f_0.z_1(env11) in
   let t25 = (x/2 * y/0) in
   (t25 * z/1)
 }
 
-fn impl_inherent_closure_env_add_base_1_apply(env12: closure_env_add_base_1, x/7: int32) -> int32 {
+fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(env12: closure_env_add_base_1, x/7: int32) -> int32 {
   let base/6 = closure_env_add_base_1.base_0(env12) in
   (x/7 + base/6)
 }
 
-fn impl_inherent_closure_env_printer_2_apply(env13: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
+fn inherent#closure_env_printer_2#closure_env_printer_2#apply(env13: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
   let t26 = int32_to_string(value/11) in
   let message/12 = (prefix/10 + t26) in
   string_println(message/12)
 }
 
-fn impl_inherent_closure_env_unused_3_apply(env14: closure_env_unused_3, y/14: int32) -> int32 {
+fn inherent#closure_env_unused_3#closure_env_unused_3#apply(env14: closure_env_unused_3, y/14: int32) -> int32 {
   let result/9 = closure_env_unused_3.result_0(env14) in
   (y/14 + result/9)
 }
 
-fn impl_inherent_closure_env_no_capture_4_apply(env15: closure_env_no_capture_4, z/16: int32) -> int32 {
+fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(env15: closure_env_no_capture_4, z/16: int32) -> int32 {
   (z/16 * 2)
 }
 
-fn impl_inherent_closure_env_play_list_and_point_5_apply(env16: closure_env_play_list_and_point_5) -> unit {
+fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(env16: closure_env_play_list_and_point_5) -> unit {
   let list123/19 = closure_env_play_list_and_point_5.list123_0(env16) in
   let point/20 = closure_env_play_list_and_point_5.point_1(env16) in
   match list123/19 {

@@ -32,7 +32,7 @@ type Location struct {
 
 func (_ Location) isShape() {}
 
-func impl_TypeName_Point_type_name(self__0 Point) string {
+func goml__trait__impl_x23_TypeName_x23_Point_x23_type__name(self__0 Point) string {
     var ret16 string
     var mtmp0 Point = self__0
     var x1 int32 = mtmp0.x
@@ -48,7 +48,7 @@ func impl_TypeName_Point_type_name(self__0 Point) string {
     return ret16
 }
 
-func impl_TypeName_Shape_type_name(self__4 Shape) string {
+func goml__trait__impl_x23_TypeName_x23_Shape_x23_type__name(self__4 Shape) string {
     var ret17 string
     switch self__4 := self__4.(type) {
     case Unit:
@@ -56,7 +56,7 @@ func impl_TypeName_Shape_type_name(self__4 Shape) string {
     case Location:
         var x3 Point = self__4._0
         var point__5 Point = x3
-        var t11 string = impl_TypeName_Point_type_name(point__5)
+        var t11 string = goml__trait__impl_x23_TypeName_x23_Point_x23_type__name(point__5)
         ret17 = "Shape::" + t11
     }
     return ret17
@@ -64,13 +64,13 @@ func impl_TypeName_Shape_type_name(self__4 Shape) string {
 
 func show_point(point__6 Point) string {
     var ret18 string
-    ret18 = impl_TypeName_Point_type_name(point__6)
+    ret18 = goml__trait__impl_x23_TypeName_x23_Point_x23_type__name(point__6)
     return ret18
 }
 
 func show_shape(shape__7 Shape) string {
     var ret19 string
-    ret19 = impl_TypeName_Shape_type_name(shape__7)
+    ret19 = goml__trait__impl_x23_TypeName_x23_Shape_x23_type__name(shape__7)
     return ret19
 }
 

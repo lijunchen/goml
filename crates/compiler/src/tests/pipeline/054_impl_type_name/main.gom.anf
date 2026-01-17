@@ -1,4 +1,4 @@
-fn impl_TypeName_Point_type_name(self/0: Point) -> string {
+fn trait_impl#TypeName#Point#type_name(self/0: Point) -> string {
   let mtmp0 = self/0 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
@@ -12,7 +12,7 @@ fn impl_TypeName_Point_type_name(self/0: Point) -> string {
   (t8 + ")")
 }
 
-fn impl_TypeName_Shape_type_name(self/4: Shape) -> string {
+fn trait_impl#TypeName#Shape#type_name(self/4: Shape) -> string {
   match self/4 {
     Tag_0 => {
       "Unit"
@@ -20,18 +20,18 @@ fn impl_TypeName_Shape_type_name(self/4: Shape) -> string {
     Tag_1 => {
       let x3 = Shape::Location._0(self/4) in
       let point/5 = x3 in
-      let t11 = impl_TypeName_Point_type_name(point/5) in
+      let t11 = trait_impl#TypeName#Point#type_name(point/5) in
       ("Shape::" + t11)
     },
   }
 }
 
 fn show_point(point/6: Point) -> string {
-  impl_TypeName_Point_type_name(point/6)
+  trait_impl#TypeName#Point#type_name(point/6)
 }
 
 fn show_shape(shape/7: Shape) -> string {
-  impl_TypeName_Shape_type_name(shape/7)
+  trait_impl#TypeName#Shape#type_name(shape/7)
 }
 
 fn main() -> unit {
