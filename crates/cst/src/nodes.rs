@@ -2027,6 +2027,7 @@ pub enum Type {
     StringTy(StringTy),
     TupleTy(TupleTy),
     TAppTy(TAppTy),
+    DynTy(DynTy),
     ArrayTy(ArrayTy),
     FuncTy(FuncTy),
 }
@@ -2050,6 +2051,7 @@ impl CstNode for Type {
                 | TYPE_STRING
                 | TYPE_TUPLE
                 | TYPE_TAPP
+                | TYPE_DYN
                 | TYPE_ARRAY
                 | TYPE_FUNC
         )
@@ -2071,6 +2073,7 @@ impl CstNode for Type {
             TYPE_STRING => Type::StringTy(StringTy { syntax }),
             TYPE_TUPLE => Type::TupleTy(TupleTy { syntax }),
             TYPE_TAPP => Type::TAppTy(TAppTy { syntax }),
+            TYPE_DYN => Type::DynTy(DynTy { syntax }),
             TYPE_ARRAY => Type::ArrayTy(ArrayTy { syntax }),
             TYPE_FUNC => Type::FuncTy(FuncTy { syntax }),
             _ => return None,
@@ -2094,6 +2097,7 @@ impl CstNode for Type {
             Type::StringTy(it) => &it.syntax,
             Type::TupleTy(it) => &it.syntax,
             Type::TAppTy(it) => &it.syntax,
+            Type::DynTy(it) => &it.syntax,
             Type::ArrayTy(it) => &it.syntax,
             Type::FuncTy(it) => &it.syntax,
         }
@@ -2274,6 +2278,22 @@ impl TAppTy {
 
 impl_cst_node_simple!(TAppTy, MySyntaxKind::TYPE_TAPP);
 impl_display_via_syntax!(TAppTy);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DynTy {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl DynTy {
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(DynTy, MySyntaxKind::TYPE_DYN);
+impl_display_via_syntax!(DynTy);
 
 ////////////////////////////////////////////////////////////////////////////////
 

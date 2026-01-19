@@ -42,6 +42,7 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
             }
         }
         tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
+        tast::Ty::TDyn { .. } => {}
         tast::Ty::TApp { ty, args } => {
             if !occurs(diagnostics, var, ty.as_ref()) {
                 return false;
@@ -106,6 +107,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         },
         tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
         tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -201,7 +205,7 @@ impl Typer {
                 | tast::Ty::TString
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
-                tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => true,
+                tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } | tast::Ty::TDyn { .. } => true,
                 tast::Ty::TApp { ty, args } => {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
@@ -417,6 +421,9 @@ impl Typer {
             }
             tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
             tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+            tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+                trait_name: trait_name.clone(),
+            },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.norm(ty)),
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
@@ -571,6 +578,16 @@ impl Typer {
                     return false;
                 }
             }
+            (tast::Ty::TDyn { trait_name: t1 }, tast::Ty::TDyn { trait_name: t2 }) => {
+                if t1 != t2 {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Dyn trait types are different: {:?} and {:?}", l, r),
+                    ));
+                    return false;
+                }
+            }
             (
                 tast::Ty::TApp {
                     ty: ty1,
@@ -668,6 +685,9 @@ impl Typer {
             }
             tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
             tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+            tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+                trait_name: trait_name.clone(),
+            },
             tast::Ty::TApp { ty, args } => {
                 let ty = self._go_inst_ty(ty, subst);
                 let args = args
@@ -746,6 +766,9 @@ impl Typer {
             }
             tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
             tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+            tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+                trait_name: trait_name.clone(),
+            },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
                 ty: Box::new(self.subst_ty(diagnostics, ty)),
                 args: args
@@ -1064,6 +1087,20 @@ impl Typer {
                     astptr,
                 }
             }
+            tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                let ty = self.subst_ty(diagnostics, &ty);
+                tast::Expr::EDynTraitMethod {
+                    trait_name,
+                    method_name,
+                    ty: ty.clone(),
+                    astptr,
+                }
+            }
             tast::Expr::EInherentMethod {
                 receiver_ty,
                 method_name,
@@ -1075,6 +1112,24 @@ impl Typer {
                 tast::Expr::EInherentMethod {
                     receiver_ty,
                     method_name,
+                    ty,
+                    astptr,
+                }
+            }
+            tast::Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty,
+                astptr,
+            } => {
+                let for_ty = self.subst_ty(diagnostics, &for_ty);
+                let expr = Box::new(self.subst(diagnostics, *expr));
+                let ty = self.subst_ty(diagnostics, &ty);
+                tast::Expr::EToDyn {
+                    trait_name,
+                    for_ty,
+                    expr,
                     ty,
                     astptr,
                 }

@@ -460,6 +460,7 @@ const TYPE_FIRST: &[TokenKind] = &[
     T![Float32],
     T![Float64],
     T![String],
+    T![dyn],
     T!['['],
     T!['('],
     T![ident],
@@ -671,6 +672,15 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
                 type_param_list(p);
             }
             p.close(m, MySyntaxKind::TYPE_TAPP)
+        }
+        T![dyn] => {
+            p.expect(T![dyn]);
+            if p.at(T![ident]) || p.at(T![::]) {
+                parse_path_always(p);
+            } else {
+                p.advance_with_error("expected a trait name after dyn");
+            }
+            p.close(m, MySyntaxKind::TYPE_DYN)
         }
         _ => {
             p.events.pop();

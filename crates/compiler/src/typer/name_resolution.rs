@@ -984,6 +984,29 @@ impl NameResolution {
                 };
                 fir::TypeExpr::TCon { path: qualified }
             }
+            ast::TypeExpr::TDyn { trait_path } => {
+                let qualified = if trait_path.len() == 1 {
+                    let name = trait_path.last_ident().unwrap().0.clone();
+                    fir::QualifiedPath {
+                        package: None,
+                        path: fir::Path::from_ident(name),
+                    }
+                } else {
+                    let qualified: fir::QualifiedPath = trait_path.into();
+                    if let Some(package) = &qualified.package
+                        && !package_allowed(package.as_str(), current_package, imports)
+                    {
+                        panic!(
+                            "package {} not imported in package {}",
+                            package.0, current_package
+                        );
+                    }
+                    qualified
+                };
+                fir::TypeExpr::TDyn {
+                    trait_path: qualified,
+                }
+            }
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
                 ty: Box::new(Self::lower_type_expr(
                     ty.as_ref(),

@@ -47,6 +47,8 @@ impl TypeExpr {
                 doc.append(RcDoc::text(")"))
             }
             Self::TCon { path } => RcDoc::text(path.display()),
+            Self::TDyn { trait_path } => RcDoc::text("dyn ")
+                .append(RcDoc::text(trait_path.display())),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
                 if !args.is_empty() {

@@ -309,6 +309,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TStruct { name } => goty::GoType::TName {
             name: go_ident(name),
         },
+        tast::Ty::TDyn { trait_name } => goty::GoType::TName {
+            name: dyn_struct_name(trait_name),
+        },
         tast::Ty::TApp { ty, args } => {
             if !args.is_empty() {
                 unreachable!(
@@ -359,6 +362,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => go_ident(name),
+        tast::Ty::TDyn { trait_name } => dyn_struct_name(trait_name),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),
         tast::Ty::TTuple { typs } => {
             let mut s = format!("Tuple{}", typs.len());
@@ -398,6 +402,10 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         // Fallback textual
         tast::Ty::TVar(_) | tast::Ty::TParam { .. } => format!("{:?}", ty),
     }
+}
+
+fn dyn_struct_name(trait_name: &str) -> String {
+    go_ident(&format!("dyn__{}", trait_name))
 }
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {

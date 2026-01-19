@@ -174,6 +174,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         },
         Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
         Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
+        Ty::TDyn { trait_name } => Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -1132,6 +1135,7 @@ fn compile_rows(
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
         Ty::TRef { .. } => panic!("Matching on reference types is not supported"),
+        Ty::TDyn { .. } => panic!("Matching on dyn trait objects is not supported"),
     }
 }
 
@@ -1556,6 +1560,24 @@ fn compile_expr(
                 .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect::<Vec<_>>();
 
+            if let tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ..
+            } = func.as_ref()
+            {
+                let (receiver, other_args) = args
+                    .split_first()
+                    .expect("dyn trait call expects a receiver argument");
+                return core::Expr::EDynCall {
+                    trait_name: trait_name.clone(),
+                    method_name: method_name.clone(),
+                    receiver: Box::new(receiver.clone()),
+                    args: other_args.to_vec(),
+                    ty: ty.clone(),
+                };
+            }
+
             let func_expr = if let tast::Expr::ETraitMethod {
                 trait_name,
                 method_name,
@@ -1597,6 +1619,12 @@ fn compile_expr(
                 ty
             );
         }
+        EDynTraitMethod { ty, .. } => {
+            panic!(
+                "EDynTraitMethod should only appear as the function in ECall, not standalone. Type: {:?}",
+                ty
+            );
+        }
         EInherentMethod { ty, .. } => {
             // EInherentMethod should only appear as the func of ECall
             // If it appears standalone, we can't resolve the implementation without knowing the self type
@@ -1604,6 +1632,21 @@ fn compile_expr(
                 "EInherentMethod should only appear as the function in ECall, not standalone. Type: {:?}",
                 ty
             );
+        }
+        EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+            ..
+        } => {
+            let expr = compile_expr(expr, genv, gensym, diagnostics);
+            core::Expr::EToDyn {
+                trait_name: trait_name.clone(),
+                for_ty: for_ty.clone(),
+                expr: Box::new(expr),
+                ty: ty.clone(),
+            }
         }
         EProj { tuple, index, ty } => {
             let tuple = compile_expr(tuple, genv, gensym, diagnostics);

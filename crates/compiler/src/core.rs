@@ -93,6 +93,19 @@ pub enum Expr {
         args: Vec<Expr>,
         ty: Ty,
     },
+    EToDyn {
+        trait_name: tast::TastIdent,
+        for_ty: Ty,
+        expr: Box<Expr>,
+        ty: Ty,
+    },
+    EDynCall {
+        trait_name: tast::TastIdent,
+        method_name: tast::TastIdent,
+        receiver: Box<Expr>,
+        args: Vec<Expr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<Expr>,
         index: usize,
@@ -118,6 +131,8 @@ impl Expr {
             Expr::EUnary { ty, .. } => ty.clone(),
             Expr::EBinary { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
+            Expr::EToDyn { ty, .. } => ty.clone(),
+            Expr::EDynCall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),
         }
     }

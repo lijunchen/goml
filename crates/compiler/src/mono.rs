@@ -91,6 +91,19 @@ pub enum MonoExpr {
         args: Vec<MonoExpr>,
         ty: Ty,
     },
+    EToDyn {
+        trait_name: TastIdent,
+        for_ty: Ty,
+        expr: Box<MonoExpr>,
+        ty: Ty,
+    },
+    EDynCall {
+        trait_name: TastIdent,
+        method_name: TastIdent,
+        receiver: Box<MonoExpr>,
+        args: Vec<MonoExpr>,
+        ty: Ty,
+    },
     EClosure {
         params: Vec<tast::ClosureParam>,
         body: Box<MonoExpr>,
@@ -121,6 +134,8 @@ impl MonoExpr {
             MonoExpr::EUnary { ty, .. } => ty.clone(),
             MonoExpr::EBinary { ty, .. } => ty.clone(),
             MonoExpr::ECall { ty, .. } => ty.clone(),
+            MonoExpr::EToDyn { ty, .. } => ty.clone(),
+            MonoExpr::EDynCall { ty, .. } => ty.clone(),
             MonoExpr::EProj { ty, .. } => ty.clone(),
         }
     }
@@ -254,7 +269,7 @@ fn has_tparam(ty: &Ty) -> bool {
         | Ty::TFloat64
         | Ty::TString => false,
         Ty::TTuple { typs } => typs.iter().any(has_tparam),
-        Ty::TEnum { .. } | Ty::TStruct { .. } => false,
+        Ty::TEnum { .. } | Ty::TStruct { .. } | Ty::TDyn { .. } => false,
         Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
         Ty::TArray { elem, .. } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
@@ -322,6 +337,9 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         },
         Ty::TEnum { name } => Ty::TEnum { name: name.clone() },
         Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
+        Ty::TDyn { trait_name } => Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
         Ty::TApp { ty, args } => Ty::TApp {
             ty: Box::new(subst_ty(ty, s)),
             args: args.iter().map(|t| subst_ty(t, s)).collect(),
@@ -724,6 +742,30 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
+        core::Expr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => MonoExpr::EToDyn {
+            trait_name,
+            for_ty: subst_ty(&for_ty, s),
+            expr: Box::new(mono_expr(ctx, &expr, s)),
+            ty: subst_ty(&ty, s),
+        },
+        core::Expr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(mono_expr(ctx, &receiver, s)),
+            args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
+            ty: subst_ty(&ty, s),
+        },
         core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
             tuple: Box::new(mono_expr(ctx, &tuple, s)),
             index,
@@ -1027,6 +1069,30 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
         },
         MonoExpr::ECall { func, args, ty } => MonoExpr::ECall {
             func: Box::new(rewrite_expr_types(*func, m)),
+            args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
+            ty: m.collapse_type_apps(&ty),
+        },
+        MonoExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => MonoExpr::EToDyn {
+            trait_name,
+            for_ty: m.collapse_type_apps(&for_ty),
+            expr: Box::new(rewrite_expr_types(*expr, m)),
+            ty: m.collapse_type_apps(&ty),
+        },
+        MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(rewrite_expr_types(*receiver, m)),
             args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
             ty: m.collapse_type_apps(&ty),
         },

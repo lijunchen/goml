@@ -220,6 +220,7 @@ impl TypeEnv {
             tast::Ty::TRef { elem } => {
                 self.record_extern_type_usage(elem, package_path);
             }
+            tast::Ty::TDyn { .. } => {}
         }
     }
 

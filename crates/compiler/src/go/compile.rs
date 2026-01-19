@@ -3,9 +3,9 @@ use crate::{
     common::{Constructor, Prim},
     env::{EnumDef, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
-    go::mangle::go_ident,
+    go::mangle::{encode_ty, go_ident},
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    names::inherent_method_fn_name,
+    names::{inherent_method_fn_name, trait_impl_fn_name},
     tast::{self, TastIdent},
 };
 
@@ -206,6 +206,8 @@ fn cexpr_ty(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goty::GoType {
         | anf::CExpr::EUnary { ty, .. }
         | anf::CExpr::EBinary { ty, .. }
         | anf::CExpr::ECall { ty, .. }
+        | anf::CExpr::EToDyn { ty, .. }
+        | anf::CExpr::EDynCall { ty, .. }
         | anf::CExpr::EGo { ty, .. }
         | anf::CExpr::EProj { ty, .. } => ty.clone(),
         // For EConstrGet, compute field type from the scrutinee's data constructor
@@ -332,6 +334,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         },
         tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
         tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(substitute_ty_params(ty, subst)),
             args: args
@@ -496,6 +501,22 @@ fn collect_runtime_types(
                     }
                     self.collect_type(ty);
                 }
+                anf::CExpr::EToDyn {
+                    for_ty, expr, ty, ..
+                } => {
+                    self.collect_type(for_ty);
+                    self.collect_imm(expr);
+                    self.collect_type(ty);
+                }
+                anf::CExpr::EDynCall {
+                    receiver, args, ty, ..
+                } => {
+                    self.collect_imm(receiver);
+                    for arg in args {
+                        self.collect_imm(arg);
+                    }
+                    self.collect_type(ty);
+                }
                 anf::CExpr::EGo { closure, ty } => {
                     self.collect_imm(closure);
                     self.collect_type(ty);
@@ -563,6 +584,423 @@ fn collect_runtime_types(
         refs: IndexSet::new(),
     }
     .collect_file(file)
+}
+
+#[derive(Default)]
+struct DynRequirements {
+    traits: IndexSet<String>,
+    vtables: IndexSet<(String, tast::Ty)>,
+}
+
+fn any_go_type() -> goty::GoType {
+    goty::GoType::TName {
+        name: "any".to_string(),
+    }
+}
+
+fn dyn_struct_go_name(trait_name: &str) -> String {
+    go_ident(&format!("dyn__{}", trait_name))
+}
+
+fn dyn_vtable_struct_go_name(trait_name: &str) -> String {
+    go_ident(&format!("dyn__{}_vtable", trait_name))
+}
+
+fn dyn_vtable_ctor_go_name(trait_name: &str, for_ty: &tast::Ty) -> String {
+    go_ident(&format!("dyn__{}__vtable__{}", trait_name, encode_ty(for_ty)))
+}
+
+fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
+    go_ident(&format!(
+        "dyn__{}__wrap__{}__{}",
+        trait_name,
+        encode_ty(for_ty),
+        method_name
+    ))
+}
+
+fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
+    fn collect_ty(req: &mut DynRequirements, ty: &tast::Ty) {
+        match ty {
+            tast::Ty::TDyn { trait_name } => {
+                req.traits.insert(trait_name.clone());
+            }
+            tast::Ty::TTuple { typs } => {
+                for t in typs {
+                    collect_ty(req, t);
+                }
+            }
+            tast::Ty::TApp { ty, args } => {
+                collect_ty(req, ty);
+                for a in args {
+                    collect_ty(req, a);
+                }
+            }
+            tast::Ty::TArray { elem, .. } => collect_ty(req, elem),
+            tast::Ty::TVec { elem } => collect_ty(req, elem),
+            tast::Ty::TRef { elem } => collect_ty(req, elem),
+            tast::Ty::TFunc { params, ret_ty } => {
+                for p in params {
+                    collect_ty(req, p);
+                }
+                collect_ty(req, ret_ty);
+            }
+            _ => {}
+        }
+    }
+
+    fn collect_imm(req: &mut DynRequirements, imm: &anf::ImmExpr) {
+        match imm {
+            anf::ImmExpr::ImmVar { ty, .. }
+            | anf::ImmExpr::ImmPrim { ty, .. }
+            | anf::ImmExpr::ImmTag { ty, .. } => collect_ty(req, ty),
+        }
+    }
+
+    fn collect_cexpr(req: &mut DynRequirements, expr: &anf::CExpr) {
+        match expr {
+            anf::CExpr::CImm { imm } => collect_imm(req, imm),
+            anf::CExpr::EConstr { args, ty, .. } => {
+                for a in args {
+                    collect_imm(req, a);
+                }
+                collect_ty(req, ty);
+            }
+            anf::CExpr::ETuple { items, ty } | anf::CExpr::EArray { items, ty } => {
+                for a in items {
+                    collect_imm(req, a);
+                }
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EMatch {
+                expr,
+                arms,
+                default,
+                ty,
+            } => {
+                collect_imm(req, expr);
+                for arm in arms {
+                    collect_aexpr(req, &arm.body);
+                }
+                if let Some(default) = default {
+                    collect_aexpr(req, default);
+                }
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EIf {
+                cond,
+                then,
+                else_,
+                ty,
+            } => {
+                collect_imm(req, cond);
+                collect_aexpr(req, then);
+                collect_aexpr(req, else_);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EWhile { cond, body, ty } => {
+                collect_aexpr(req, cond);
+                collect_aexpr(req, body);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EConstrGet { expr, ty, .. } => {
+                collect_imm(req, expr);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EUnary { expr, ty, .. } => {
+                collect_imm(req, expr);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EBinary { lhs, rhs, ty, .. } => {
+                collect_imm(req, lhs);
+                collect_imm(req, rhs);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::ECall { func, args, ty } => {
+                collect_imm(req, func);
+                for a in args {
+                    collect_imm(req, a);
+                }
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty,
+            } => {
+                req.traits.insert(trait_name.0.clone());
+                req.vtables
+                    .insert((trait_name.0.clone(), for_ty.clone()));
+                collect_ty(req, for_ty);
+                collect_imm(req, expr);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EDynCall {
+                trait_name,
+                receiver,
+                args,
+                ty,
+                ..
+            } => {
+                req.traits.insert(trait_name.0.clone());
+                collect_imm(req, receiver);
+                for a in args {
+                    collect_imm(req, a);
+                }
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EGo { closure, ty } => {
+                collect_imm(req, closure);
+                collect_ty(req, ty);
+            }
+            anf::CExpr::EProj { tuple, ty, .. } => {
+                collect_imm(req, tuple);
+                collect_ty(req, ty);
+            }
+        }
+    }
+
+    fn collect_aexpr(req: &mut DynRequirements, expr: &anf::AExpr) {
+        match expr {
+            anf::AExpr::ACExpr { expr } => collect_cexpr(req, expr),
+            anf::AExpr::ALet { value, body, ty, .. } => {
+                collect_cexpr(req, value);
+                collect_aexpr(req, body);
+                collect_ty(req, ty);
+            }
+        }
+    }
+
+    let mut req = DynRequirements::default();
+    for f in &file.toplevels {
+        for (_, ty) in &f.params {
+            collect_ty(&mut req, ty);
+        }
+        collect_ty(&mut req, &f.ret_ty);
+        collect_aexpr(&mut req, &f.body);
+    }
+    req
+}
+
+fn trait_method_sigs(
+    goenv: &GlobalGoEnv,
+    trait_name: &str,
+) -> Vec<(String, Vec<tast::Ty>, tast::Ty)> {
+    let trait_def = goenv
+        .genv
+        .trait_env
+        .trait_defs
+        .get(trait_name)
+        .unwrap_or_else(|| panic!("missing trait def {}", trait_name));
+    trait_def
+        .methods
+        .iter()
+        .map(|(name, scheme)| {
+            let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
+                panic!("trait {}::{} is not a function", trait_name, name);
+            };
+            let rest = params.iter().skip(1).cloned().collect::<Vec<_>>();
+            (name.clone(), rest, (**ret_ty).clone())
+        })
+        .collect()
+}
+
+fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::Item> {
+    let mut traits: Vec<String> = req.traits.iter().cloned().collect();
+    traits.sort();
+
+    let mut items = Vec::new();
+    for trait_name in traits {
+        let vtable_struct_name = dyn_vtable_struct_go_name(&trait_name);
+        let mut vtable_fields = Vec::new();
+        for (method_name, params, ret_ty) in trait_method_sigs(goenv, &trait_name) {
+            let mut go_params = Vec::with_capacity(params.len() + 1);
+            go_params.push(any_go_type());
+            go_params.extend(params.iter().map(tast_ty_to_go_type));
+            let go_ret = tast_ty_to_go_type(&ret_ty);
+            vtable_fields.push(goast::Field {
+                name: go_ident(&method_name),
+                ty: goty::GoType::TFunc {
+                    params: go_params,
+                    ret_ty: Box::new(go_ret),
+                },
+            });
+        }
+        items.push(goast::Item::Struct(goast::Struct {
+            name: vtable_struct_name.clone(),
+            fields: vtable_fields,
+            methods: vec![],
+        }));
+
+        items.push(goast::Item::Struct(goast::Struct {
+            name: dyn_struct_go_name(&trait_name),
+            fields: vec![
+                goast::Field {
+                    name: "data".to_string(),
+                    ty: any_go_type(),
+                },
+                goast::Field {
+                    name: "vtable".to_string(),
+                    ty: goty::GoType::TPointer {
+                        elem: Box::new(goty::GoType::TName {
+                            name: vtable_struct_name,
+                        }),
+                    },
+                },
+            ],
+            methods: vec![],
+        }));
+    }
+    items
+}
+
+fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::Item> {
+    let mut vtables: Vec<(String, tast::Ty)> = req.vtables.iter().cloned().collect();
+    vtables.sort_by(|(t1, ty1), (t2, ty2)| {
+        let k1 = (t1.clone(), encode_ty(ty1));
+        let k2 = (t2.clone(), encode_ty(ty2));
+        k1.cmp(&k2)
+    });
+
+    let mut items = Vec::new();
+    for (trait_name, for_ty) in vtables {
+        let methods = trait_method_sigs(goenv, &trait_name);
+
+        for (method_name, params, ret_ty) in &methods {
+            items.push(goast::Item::Fn(gen_dyn_wrap_fn(
+                &trait_name,
+                &for_ty,
+                method_name,
+                params,
+                ret_ty,
+            )));
+        }
+
+        items.push(goast::Item::Fn(gen_dyn_vtable_ctor_fn(
+            &trait_name,
+            &for_ty,
+            &methods,
+        )));
+    }
+    items
+}
+
+fn gen_dyn_wrap_fn(
+    trait_name: &str,
+    for_ty: &tast::Ty,
+    method_name: &str,
+    params: &[tast::Ty],
+    ret_ty: &tast::Ty,
+) -> goast::Fn {
+    let fn_name = dyn_wrap_go_name(trait_name, for_ty, method_name);
+
+    let mut go_params = Vec::with_capacity(params.len() + 1);
+    go_params.push(("self".to_string(), any_go_type()));
+    for (i, pty) in params.iter().enumerate() {
+        go_params.push((format!("p{}", i), tast_ty_to_go_type(pty)));
+    }
+
+    let trait_ident = TastIdent(trait_name.to_string());
+    let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
+    let impl_go_name = go_ident(&impl_name);
+
+    let receiver_go_ty = tast_ty_to_go_type(for_ty);
+    let ret_go_ty = tast_ty_to_go_type(ret_ty);
+    let mut impl_param_tys = Vec::with_capacity(params.len() + 1);
+    impl_param_tys.push(receiver_go_ty.clone());
+    impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
+
+    let asserted_self = goast::Expr::Cast {
+        expr: Box::new(goast::Expr::Var {
+            name: "self".to_string(),
+            ty: any_go_type(),
+        }),
+        ty: receiver_go_ty.clone(),
+    };
+
+    let mut args = Vec::with_capacity(params.len() + 1);
+    args.push(asserted_self);
+    for (i, pty) in params.iter().enumerate() {
+        args.push(goast::Expr::Var {
+            name: format!("p{}", i),
+            ty: tast_ty_to_go_type(pty),
+        });
+    }
+
+    let call = goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: impl_go_name,
+            ty: goty::GoType::TFunc {
+                params: impl_param_tys,
+                ret_ty: Box::new(ret_go_ty.clone()),
+            },
+        }),
+        args,
+        ty: ret_go_ty.clone(),
+    };
+
+    goast::Fn {
+        name: fn_name,
+        params: go_params,
+        ret_ty: Some(ret_go_ty),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return { expr: Some(call) }],
+        },
+    }
+}
+
+fn gen_dyn_vtable_ctor_fn(
+    trait_name: &str,
+    for_ty: &tast::Ty,
+    methods: &[(String, Vec<tast::Ty>, tast::Ty)],
+) -> goast::Fn {
+    let vtable_struct_name = dyn_vtable_struct_go_name(trait_name);
+    let vtable_ptr_ty = goty::GoType::TPointer {
+        elem: Box::new(goty::GoType::TName {
+            name: vtable_struct_name.clone(),
+        }),
+    };
+
+    let mut fields = Vec::new();
+    for (method_name, params, ret_ty) in methods {
+        let mut go_params = Vec::with_capacity(params.len() + 1);
+        go_params.push(any_go_type());
+        go_params.extend(params.iter().map(tast_ty_to_go_type));
+        let field_ty = goty::GoType::TFunc {
+            params: go_params,
+            ret_ty: Box::new(tast_ty_to_go_type(ret_ty)),
+        };
+        fields.push((
+            go_ident(method_name),
+            goast::Expr::Var {
+                name: dyn_wrap_go_name(trait_name, for_ty, method_name),
+                ty: field_ty,
+            },
+        ));
+    }
+
+    let lit = goast::Expr::StructLiteral {
+        fields,
+        ty: goty::GoType::TName {
+            name: vtable_struct_name,
+        },
+    };
+
+    let addr = goast::Expr::UnaryOp {
+        op: goast::GoUnaryOp::AddrOf,
+        expr: Box::new(lit),
+        ty: vtable_ptr_ty.clone(),
+    };
+
+    goast::Fn {
+        name: dyn_vtable_ctor_go_name(trait_name, for_ty),
+        params: vec![],
+        ret_ty: Some(vtable_ptr_ty),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return { expr: Some(addr) }],
+        },
+    }
 }
 
 fn tuple_to_go_struct_type(ty: &tast::Ty) -> goty::GoType {
@@ -741,6 +1179,97 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                 op: go_op,
                 lhs: Box::new(compile_imm(goenv, lhs)),
                 rhs: Box::new(compile_imm(goenv, rhs)),
+                ty: tast_ty_to_go_type(ty),
+            }
+        }
+        anf::CExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => {
+            let dyn_struct_ty = tast_ty_to_go_type(ty);
+            let vtable_struct_name = dyn_vtable_struct_go_name(&trait_name.0);
+            let vtable_ptr_ty = goty::GoType::TPointer {
+                elem: Box::new(goty::GoType::TName {
+                    name: vtable_struct_name,
+                }),
+            };
+
+            let ctor_name = dyn_vtable_ctor_go_name(&trait_name.0, for_ty);
+            let ctor_ty = goty::GoType::TFunc {
+                params: vec![],
+                ret_ty: Box::new(vtable_ptr_ty.clone()),
+            };
+            let vtable_expr = goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: ctor_name,
+                    ty: ctor_ty,
+                }),
+                args: vec![],
+                ty: vtable_ptr_ty,
+            };
+
+            goast::Expr::StructLiteral {
+                fields: vec![
+                    ("data".to_string(), compile_imm(goenv, expr)),
+                    ("vtable".to_string(), vtable_expr),
+                ],
+                ty: dyn_struct_ty,
+            }
+        }
+        anf::CExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => {
+            let receiver_expr_for_vtable = compile_imm(goenv, receiver);
+            let receiver_expr_for_data = compile_imm(goenv, receiver);
+
+            let (method_params, method_ret) = trait_method_sigs(goenv, &trait_name.0)
+                .into_iter()
+                .find(|(name, _, _)| name == &method_name.0)
+                .map(|(_name, params, ret)| (params, ret))
+                .unwrap_or_else(|| {
+                    panic!("missing trait method {}::{}", trait_name.0, method_name.0)
+                });
+
+            let mut fn_params = Vec::with_capacity(method_params.len() + 1);
+            fn_params.push(any_go_type());
+            fn_params.extend(method_params.iter().map(tast_ty_to_go_type));
+            let fn_ret = tast_ty_to_go_type(&method_ret);
+
+            let vtable_ptr_expr = goast::Expr::FieldAccess {
+                obj: Box::new(receiver_expr_for_vtable),
+                field: "vtable".to_string(),
+                ty: goty::GoType::TPointer {
+                    elem: Box::new(goty::GoType::TName {
+                        name: dyn_vtable_struct_go_name(&trait_name.0),
+                    }),
+                },
+            };
+            let method_expr = goast::Expr::FieldAccess {
+                obj: Box::new(vtable_ptr_expr),
+                field: go_ident(&method_name.0),
+                ty: goty::GoType::TFunc {
+                    params: fn_params,
+                    ret_ty: Box::new(fn_ret.clone()),
+                },
+            };
+
+            let mut call_args = Vec::with_capacity(args.len() + 1);
+            call_args.push(goast::Expr::FieldAccess {
+                obj: Box::new(receiver_expr_for_data),
+                field: "data".to_string(),
+                ty: any_go_type(),
+            });
+            call_args.extend(args.iter().map(|arg| compile_imm(goenv, arg)));
+
+            goast::Expr::Call {
+                func: Box::new(method_expr),
+                args: call_args,
                 ty: tast_ty_to_go_type(ty),
             }
         }
@@ -1201,8 +1730,9 @@ fn compile_cexpr_effect(goenv: &GlobalGoEnv, expr: &anf::CExpr) -> Vec<goast::St
         | anf::CExpr::EConstrGet { .. }
         | anf::CExpr::EUnary { .. }
         | anf::CExpr::EBinary { .. }
+        | anf::CExpr::EToDyn { .. }
         | anf::CExpr::EProj { .. } => Vec::new(),
-        anf::CExpr::ECall { .. } => {
+        anf::CExpr::ECall { .. } | anf::CExpr::EDynCall { .. } => {
             vec![goast::Stmt::Expr(compile_cexpr(goenv, expr))]
         }
         anf::CExpr::EGo { closure, .. } => {
@@ -1433,6 +1963,7 @@ fn compile_aexpr_assign(
             | anf::CExpr::EConstrGet { .. }
             | anf::CExpr::EUnary { .. }
             | anf::CExpr::EBinary { .. }
+            | anf::CExpr::EToDyn { .. }
             | anf::CExpr::EProj { .. }
             | anf::CExpr::ETuple { .. }
             | anf::CExpr::EArray { .. }) => vec![goast::Stmt::Assignment {
@@ -1443,6 +1974,27 @@ fn compile_aexpr_assign(
                 vec![goast::Stmt::Assignment {
                     name: go_ident(target),
                     value: compile_cexpr(goenv, &anf::CExpr::ECall { func, args, ty }),
+                }]
+            }
+            anf::CExpr::EDynCall {
+                trait_name,
+                method_name,
+                receiver,
+                args,
+                ty,
+            } => {
+                vec![goast::Stmt::Assignment {
+                    name: go_ident(target),
+                    value: compile_cexpr(
+                        goenv,
+                        &anf::CExpr::EDynCall {
+                            trait_name,
+                            method_name,
+                            receiver,
+                            args,
+                            ty,
+                        },
+                    ),
                 }]
             }
             anf::CExpr::EGo { closure, .. } => {
@@ -1766,8 +2318,11 @@ pub fn go_file(
     }
 
     let file = anf::anf_renamer::rename(file);
+    let dyn_req = collect_dyn_requirements(&file);
 
     let mut toplevels = gen_type_definition(&goenv);
+    toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
+    toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req));
     for item in file.toplevels {
         let gof = compile_fn(&goenv, gensym, item);
         toplevels.push(goast::Item::Fn(gof));

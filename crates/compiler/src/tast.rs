@@ -89,6 +89,7 @@ pub enum Ty {
     TTuple { typs: Vec<Ty> },
     TEnum { name: String },
     TStruct { name: String },
+    TDyn { trait_name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
     TArray { len: usize, elem: Box<Ty> },
     TVec { elem: Box<Ty> },
@@ -117,6 +118,7 @@ impl std::fmt::Debug for Ty {
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
             Self::TEnum { name } => write!(f, "TEnum({})", name),
             Self::TStruct { name } => write!(f, "TStruct({})", name),
+            Self::TDyn { trait_name } => write!(f, "TDyn({})", trait_name),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TVec { elem } => write!(f, "TVec({:?})", elem),
@@ -402,9 +404,22 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    EDynTraitMethod {
+        trait_name: TastIdent,
+        method_name: TastIdent,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     EInherentMethod {
         receiver_ty: Ty,
         method_name: TastIdent,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
+    EToDyn {
+        trait_name: TastIdent,
+        for_ty: Ty,
+        expr: Box<Expr>,
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
@@ -431,7 +446,9 @@ impl Expr {
             Self::EField { ty, .. } => ty.clone(),
             Self::EBinary { ty, .. } => ty.clone(),
             Self::ETraitMethod { ty, .. } => ty.clone(),
+            Self::EDynTraitMethod { ty, .. } => ty.clone(),
             Self::EInherentMethod { ty, .. } => ty.clone(),
+            Self::EToDyn { ty, .. } => ty.clone(),
         }
     }
 }

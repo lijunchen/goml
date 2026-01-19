@@ -177,6 +177,19 @@ pub enum LiftExpr {
         args: Vec<LiftExpr>,
         ty: Ty,
     },
+    EToDyn {
+        trait_name: TastIdent,
+        for_ty: Ty,
+        expr: Box<LiftExpr>,
+        ty: Ty,
+    },
+    EDynCall {
+        trait_name: TastIdent,
+        method_name: TastIdent,
+        receiver: Box<LiftExpr>,
+        args: Vec<LiftExpr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<LiftExpr>,
         index: usize,
@@ -201,6 +214,8 @@ impl LiftExpr {
             LiftExpr::EUnary { ty, .. } => ty.clone(),
             LiftExpr::EBinary { ty, .. } => ty.clone(),
             LiftExpr::ECall { ty, .. } => ty.clone(),
+            LiftExpr::EToDyn { ty, .. } => ty.clone(),
+            LiftExpr::EDynCall { ty, .. } => ty.clone(),
             LiftExpr::EProj { ty, .. } => ty.clone(),
         }
     }
@@ -637,6 +652,33 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 ty: call_ty,
             }
         }
+        MonoExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => LiftExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr: Box::new(transform_expr(state, scope, *expr)),
+            ty,
+        },
+        MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => LiftExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(transform_expr(state, scope, *receiver)),
+            args: args
+                .into_iter()
+                .map(|arg| transform_expr(state, scope, arg))
+                .collect(),
+            ty,
+        },
         MonoExpr::EProj { tuple, index, ty } => {
             let tuple = Box::new(transform_expr(state, scope, *tuple));
             let proj_ty = match tuple.get_ty() {
@@ -889,6 +931,17 @@ fn collect_captured(
         }
         LiftExpr::ECall { func, args, .. } => {
             collect_captured(func, bound, captured, scope);
+            for arg in args {
+                collect_captured(arg, bound, captured, scope);
+            }
+        }
+        LiftExpr::EToDyn { expr, .. } => {
+            collect_captured(expr, bound, captured, scope);
+        }
+        LiftExpr::EDynCall {
+            receiver, args, ..
+        } => {
+            collect_captured(receiver, bound, captured, scope);
             for arg in args {
                 collect_captured(arg, bound, captured, scope);
             }

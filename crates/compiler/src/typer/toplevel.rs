@@ -680,6 +680,9 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
                 tast::Ty::TStruct { name: name.clone() }
             }
         }
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
         tast::Ty::TApp { ty, args } => tast::Ty::TApp {
             ty: Box::new(instantiate_self_ty(ty, self_ty)),
             args: args
