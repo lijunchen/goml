@@ -1,0 +1,29 @@
+impl Display for Point{
+  fn show(self/0: Point) -> string {
+      "Point(" + (int32_to_string : (int32) -> string)((self/0 : Point).x) + "," + (int32_to_string : (int32) -> string)((self/0 : Point).y) + ")";
+  }
+}
+
+impl Display for Flag{
+  fn show(self/1: Flag) -> string {
+      if (self/1 : Flag).value {
+          {
+              "Flag(true)";
+          }
+      } else {
+          {
+              "Flag(false)";
+          }
+      };
+  }
+}
+
+fn main() -> unit {
+    let p/2: Point = Point { x: 1, y: 2 };
+    let t/3: Flag = Flag { value: true };
+    let dp/4: dyn Display = to_dyn[Display]{Point}((p/2 : Point));
+    let dt/5: dyn Display = to_dyn[Display]{Flag}((t/3 : Flag));
+    let _ : unit = (string_println : (string) -> unit)((dyn Display::show : (dyn Display) -> string)((dp/4 : dyn Display)));
+    let _ : unit = (string_println : (string) -> unit)((dyn Display::show : (dyn Display) -> string)((dt/5 : dyn Display)));
+    ();
+}
