@@ -1,6 +1,7 @@
 use std::{collections::HashMap, num::IntErrorKind};
 
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
+use diagnostics::{Severity, Stage};
 
 use crate::common::{self, Prim};
 use crate::fir::{self};
@@ -299,8 +300,68 @@ impl Typer {
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
+        let expr_tast = self.coerce_to_expected_dyn(genv, diagnostics, expr_tast, expected);
         self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
         expr_tast
+    }
+
+    fn coerce_to_expected_dyn(
+        &mut self,
+        genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr: tast::Expr,
+        expected: &tast::Ty,
+    ) -> tast::Expr {
+        let tast::Ty::TDyn { trait_name } = expected else {
+            return expr;
+        };
+
+        if matches!(expr.get_ty(), tast::Ty::TDyn { .. }) {
+            return expr;
+        }
+
+        let Some((resolved_trait, _env)) = super::util::resolve_trait_name(genv, trait_name)
+        else {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("Unknown trait {}", trait_name),
+            ));
+            return expr;
+        };
+
+        let for_ty = expr.get_ty();
+        if !is_concrete_dyn_target(&for_ty) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Cannot convert non-concrete type {:?} to dyn {}",
+                    for_ty, resolved_trait
+                ),
+            ));
+            return expr;
+        }
+
+        if !has_visible_trait_impl(genv, &resolved_trait, &for_ty) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Type {:?} does not implement trait {}",
+                    for_ty, resolved_trait
+                ),
+            ));
+            return expr;
+        }
+
+        tast::Expr::EToDyn {
+            trait_name: tast::TastIdent(resolved_trait.clone()),
+            for_ty,
+            expr: Box::new(expr),
+            ty: expected.clone(),
+            astptr: None,
+        }
     }
 
     fn infer_res_expr(
@@ -1294,6 +1355,60 @@ impl Typer {
                         trait_env.lookup_trait_method(&type_ident, &member_ident)
                     {
                         let inst_method_ty = self.inst_ty(&method_ty);
+                        if let tast::Ty::TFunc { params, ret_ty } = &inst_method_ty
+                            && !args.is_empty()
+                        {
+                            let receiver_tast =
+                                self.infer_expr(genv, local_env, diagnostics, args[0]);
+                            if let tast::Ty::TDyn { trait_name: recv_trait } =
+                                receiver_tast.get_ty()
+                                && recv_trait == type_ident.0
+                            {
+                                if params.len() != args.len() {
+                                    panic!(
+                                        "Trait method {}::{} expects {} arguments but got {}",
+                                        type_ident.0,
+                                        member_ident.0,
+                                        params.len(),
+                                        args.len()
+                                    );
+                                }
+
+                                let mut args_tast = Vec::with_capacity(args.len());
+                                args_tast.push(receiver_tast);
+                                for (arg, expected_ty) in
+                                    args.iter().skip(1).zip(params.iter().skip(1))
+                                {
+                                    args_tast.push(self.check_expr(
+                                        genv,
+                                        local_env,
+                                        diagnostics,
+                                        *arg,
+                                        expected_ty,
+                                    ));
+                                }
+
+                                let mut dyn_params = params.clone();
+                                dyn_params[0] = tast::Ty::TDyn {
+                                    trait_name: type_ident.0.clone(),
+                                };
+                                let dyn_method_ty = tast::Ty::TFunc {
+                                    params: dyn_params,
+                                    ret_ty: ret_ty.clone(),
+                                };
+
+                                return tast::Expr::ECall {
+                                    func: Box::new(tast::Expr::EDynTraitMethod {
+                                        trait_name: type_ident.clone(),
+                                        method_name: member_ident.clone(),
+                                        ty: dyn_method_ty,
+                                        astptr: None,
+                                    }),
+                                    args: args_tast,
+                                    ty: (**ret_ty).clone(),
+                                };
+                            }
+                        }
 
                         let mut args_tast = Vec::new();
                         let mut arg_types = Vec::new();
@@ -1976,6 +2091,48 @@ impl Typer {
         self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
         tast::Pat::PWild { ty: pat_ty }
     }
+}
+
+fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TVar(_) | tast::Ty::TParam { .. } => false,
+        tast::Ty::TTuple { typs } => typs.iter().all(is_concrete_dyn_target),
+        tast::Ty::TApp { ty, args } => {
+            is_concrete_dyn_target(ty) && args.iter().all(is_concrete_dyn_target)
+        }
+        tast::Ty::TArray { elem, .. } => is_concrete_dyn_target(elem),
+        tast::Ty::TVec { elem } => is_concrete_dyn_target(elem),
+        tast::Ty::TRef { elem } => is_concrete_dyn_target(elem),
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().all(is_concrete_dyn_target) && is_concrete_dyn_target(ret_ty)
+        }
+        tast::Ty::TEnum { .. }
+        | tast::Ty::TStruct { .. }
+        | tast::Ty::TDyn { .. }
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString => true,
+    }
+}
+
+fn has_visible_trait_impl(genv: &PackageTypeEnv, trait_name: &str, for_ty: &tast::Ty) -> bool {
+    let key = (trait_name.to_string(), for_ty.clone());
+    if genv.current().trait_env.trait_impls.contains_key(&key) {
+        return true;
+    }
+    genv.deps
+        .values()
+        .any(|env| env.trait_env.trait_impls.contains_key(&key))
 }
 
 fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {

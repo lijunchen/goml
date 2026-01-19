@@ -1,0 +1,132 @@
+impl Display for Point{
+  fn show(self/0: Point) -> string {
+      "Point(" + (int32_to_string : (int32) -> string)((self/0 : Point).x) + "," + (int32_to_string : (int32) -> string)((self/0 : Point).y) + ")";
+  }
+  fn show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
+      (prefix/2 : string) + "Point(" + (int32_to_string : (int32) -> string)((self/1 : Point).x) + "," + (int32_to_string : (int32) -> string)((self/1 : Point).y) + ")" + (suffix/3 : string);
+  }
+  fn tick(self/4: Point) -> unit {
+      ();
+  }
+  fn bump(self/5: Point, delta/6: int32) -> int32 {
+      (self/5 : Point).x + (self/5 : Point).y + (delta/6 : int32);
+  }
+}
+
+impl Display for Flag{
+  fn show(self/7: Flag) -> string {
+      if (self/7 : Flag).value {
+          {
+              "Flag(true)";
+          }
+      } else {
+          {
+              "Flag(false)";
+          }
+      };
+  }
+  fn show_with(self/8: Flag, prefix/9: string, suffix/10: string) -> string {
+      if (self/8 : Flag).value {
+          {
+              (prefix/9 : string) + "Flag(true)" + (suffix/10 : string);
+          }
+      } else {
+          {
+              (prefix/9 : string) + "Flag(false)" + (suffix/10 : string);
+          }
+      };
+  }
+  fn tick(self/11: Flag) -> unit {
+      ();
+  }
+  fn bump(self/12: Flag, delta/13: int32) -> int32 {
+      if (self/12 : Flag).value {
+          {
+              (delta/13 : int32);
+          }
+      } else {
+          {
+              -(delta/13 : int32);
+          }
+      };
+  }
+}
+
+impl Display for Counter{
+  fn show(self/14: Counter) -> string {
+      "Counter(" + (int32_to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((self/14 : Counter).cell)) + ")";
+  }
+  fn show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
+      (prefix/16 : string) + "Counter(" + (int32_to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((self/15 : Counter).cell)) + ")" + (suffix/17 : string);
+  }
+  fn tick(self/18: Counter) -> unit {
+      let next/19: int32 = (ref_get : (Ref[int32]) -> int32)((self/18 : Counter).cell) + 1;
+      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((self/18 : Counter).cell, (next/19 : int32));
+      ();
+  }
+  fn bump(self/20: Counter, delta/21: int32) -> int32 {
+      let next/22: int32 = (ref_get : (Ref[int32]) -> int32)((self/20 : Counter).cell) + (delta/21 : int32);
+      let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((self/20 : Counter).cell, (next/22 : int32));
+      (next/22 : int32);
+  }
+}
+
+fn show_dyn(x/23: dyn Display) -> string {
+    (dyn Display::show_with : (dyn Display, string, string) -> string)((x/23 : dyn Display), "<", ">");
+}
+
+fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
+    let f/28: (dyn Display, string) -> string = |v/26: dyn Display, t/27: string| => (dyn Display::show_with : (dyn Display, string, string) -> string)((v/26 : dyn Display), (t/27 : string), (t/27 : string));
+    (f/28 : (dyn Display, string) -> string)((x/24 : dyn Display), (tag/25 : string));
+}
+
+fn make_renderer(tag/29: string) -> (dyn Display) -> string {
+    |x/30: dyn Display| => (dyn Display::show_with : (dyn Display, string, string) -> string)((x/30 : dyn Display), (tag/29 : string), (tag/29 : string));
+}
+
+fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
+    let _ : unit = (dyn Display::tick : (dyn Display) -> unit)((x/31 : dyn Display));
+    (dyn Display::show_with : (dyn Display, string, string) -> string)((x/31 : dyn Display), "[", "]") + ":" + (int32_to_string : (int32) -> string)((dyn Display::bump : (dyn Display, int32) -> int32)((x/31 : dyn Display), (delta/32 : int32)));
+}
+
+fn main() -> unit {
+    let p1/33: Point = Point { x: 1, y: 2 };
+    let p2/34: Point = Point { x: 3, y: 4 };
+    let f1/35: Flag = Flag { value: true };
+    let f2/36: Flag = Flag { value: false };
+    let c/37: Counter = Counter { cell: (ref : (int32) -> Ref[int32])(10) };
+    let dp1/38: dyn Display = to_dyn[Display]{Point}((p1/33 : Point));
+    let dp2/39: dyn Display = to_dyn[Display]{Point}((p2/34 : Point));
+    let df1/40: dyn Display = to_dyn[Display]{Flag}((f1/35 : Flag));
+    let df2/41: dyn Display = to_dyn[Display]{Flag}((f2/36 : Flag));
+    let dc/42: dyn Display = to_dyn[Display]{Counter}((c/37 : Counter));
+    let render_star/43: (dyn Display) -> string = (make_renderer : (string) -> (dyn Display) -> string)("*");
+    let render_angle/44: (dyn Display) -> string = (make_renderer : (string) -> (dyn Display) -> string)("<");
+    let s0/45: string = (show_dyn : (dyn Display) -> string)((dp2/39 : dyn Display));
+    let s1/46: string = (call_via_closure : (dyn Display, string) -> string)((df2/41 : dyn Display), "*");
+    let s2/47: string = (render_star/43 : (dyn Display) -> string)((dp1/38 : dyn Display)) + "|" + (render_angle/44 : (dyn Display) -> string)((df1/40 : dyn Display));
+    let v/48: Vec[dyn Display] = (vec_new : () -> Vec[dyn Display])();
+    let v/49: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/48 : Vec[dyn Display]), (dp1/38 : dyn Display));
+    let v/50: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/49 : Vec[dyn Display]), (df1/40 : dyn Display));
+    let v/51: Vec[dyn Display] = (vec_push : (Vec[dyn Display], dyn Display) -> Vec[dyn Display])((v/50 : Vec[dyn Display]), (dc/42 : dyn Display));
+    let vlen/52: int32 = (vec_len : (Vec[dyn Display]) -> int32)((v/51 : Vec[dyn Display]));
+    let delta/53: int32 = match (vlen/52 : int32) {
+        2 => 3,
+        _ : int32 => 5,
+    };
+    let _ : unit = (string_println : (string) -> unit)((s0/45 : string));
+    let _ : unit = (string_println : (string) -> unit)((s1/46 : string));
+    let _ : unit = (string_println : (string) -> unit)((s2/47 : string));
+    let i/54: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) < 3 {
+        {
+            let line/55: string = (bump_and_show : (dyn Display, int32) -> string)((dc/42 : dyn Display), (delta/53 : int32));
+            (string_println : (string) -> unit)((line/55 : string));
+            let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/54 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/54 : Ref[int32])) + 1);
+            ();
+        }
+    };
+    let _ : unit = (string_println : (string) -> unit)("len:" + (int32_to_string : (int32) -> string)((vlen/52 : int32)));
+    let _ : unit = (string_println : (string) -> unit)("delta:" + (int32_to_string : (int32) -> string)((delta/53 : int32)));
+    ();
+}

@@ -111,6 +111,9 @@ pub enum TypeExpr {
     TCon {
         path: Path,
     },
+    TDyn {
+        trait_path: Path,
+    },
     TApp {
         ty: Box<TypeExpr>,
         args: Vec<TypeExpr>,

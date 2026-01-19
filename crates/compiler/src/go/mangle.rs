@@ -22,6 +22,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             format!("Tuple_{}", inner)
         }
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
+        tast::Ty::TDyn { trait_name } => format!("Dyn_{}", trait_name),
         tast::Ty::TApp { ty, args } => {
             let base = ty.get_constr_name_unsafe();
             if args.is_empty() {

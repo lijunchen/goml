@@ -108,6 +108,19 @@ pub enum CExpr {
         args: Vec<ImmExpr>,
         ty: Ty,
     },
+    EToDyn {
+        trait_name: TastIdent,
+        for_ty: Ty,
+        expr: ImmExpr,
+        ty: Ty,
+    },
+    EDynCall {
+        trait_name: TastIdent,
+        method_name: TastIdent,
+        receiver: ImmExpr,
+        args: Vec<ImmExpr>,
+        ty: Ty,
+    },
     EGo {
         closure: Box<ImmExpr>,
         ty: Ty,
@@ -181,6 +194,8 @@ fn cexpr_tast_ty(e: &CExpr) -> Ty {
         | CExpr::EUnary { ty, .. }
         | CExpr::EBinary { ty, .. }
         | CExpr::ECall { ty, .. }
+        | CExpr::EToDyn { ty, .. }
+        | CExpr::EDynCall { ty, .. }
         | CExpr::EGo { ty, .. }
         | CExpr::EProj { ty, .. }
         | CExpr::EConstrGet { ty, .. } => ty.clone(),
@@ -543,6 +558,58 @@ fn anf<'a>(
                 }),
             )
         }
+        LiftExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty: _,
+        } => {
+            let ty_clone = e_ty.clone();
+            anf_imm(
+                anfenv,
+                gensym,
+                *expr,
+                Box::new(move |expr_imm| {
+                    k(CExpr::EToDyn {
+                        trait_name,
+                        for_ty,
+                        expr: expr_imm,
+                        ty: ty_clone,
+                    })
+                }),
+            )
+        }
+        LiftExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty: _,
+        } => {
+            let ty_clone = e_ty.clone();
+            anf_imm(
+                anfenv,
+                gensym,
+                *receiver,
+                Box::new(move |receiver_imm| {
+                    let ty_clone = ty_clone.clone();
+                    anf_list(
+                        anfenv,
+                        gensym,
+                        &args,
+                        Box::new(move |args_imm| {
+                            k(CExpr::EDynCall {
+                                trait_name,
+                                method_name,
+                                receiver: receiver_imm,
+                                args: args_imm,
+                                ty: ty_clone.clone(),
+                            })
+                        }),
+                    )
+                }),
+            )
+        }
         LiftExpr::EProj {
             tuple,
             index,
@@ -761,6 +828,30 @@ pub mod anf_renamer {
             },
             anf::CExpr::ECall { func, args, ty } => anf::CExpr::ECall {
                 func: rename_imm(func),
+                args: args.into_iter().map(rename_imm).collect(),
+                ty,
+            },
+            anf::CExpr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty,
+            } => anf::CExpr::EToDyn {
+                trait_name,
+                for_ty,
+                expr: rename_imm(expr),
+                ty,
+            },
+            anf::CExpr::EDynCall {
+                trait_name,
+                method_name,
+                receiver,
+                args,
+                ty,
+            } => anf::CExpr::EDynCall {
+                trait_name,
+                method_name,
+                receiver: rename_imm(receiver),
                 args: args.into_iter().map(rename_imm).collect(),
                 ty,
             },

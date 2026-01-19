@@ -1,0 +1,30 @@
+struct Point { x: int32, y: int32 }
+
+struct Flag { value: bool }
+
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string {
+        "Point(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")"
+    }
+}
+
+impl Display for Flag {
+    fn show(self: Flag) -> string {
+        if self.value { "Flag(true)" } else { "Flag(false)" }
+    }
+}
+
+fn main() {
+    let p = Point { x: 1, y: 2 };
+    let t = Flag { value: true };
+    let dp: dyn Display = p;
+    let dt: dyn Display = t;
+    let _ = string_println(Display::show(dp));
+    let _ = string_println(Display::show(dt));
+    ()
+}
+

@@ -52,6 +52,9 @@ pub(crate) fn validate_ty(
                 ));
             }
         }
+        tast::Ty::TDyn { trait_name } => {
+            validate_dyn_trait(genv, diagnostics, trait_name);
+        }
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
             if name == "Self" {
                 return;
@@ -156,6 +159,120 @@ pub(crate) fn validate_ty(
     }
 }
 
+fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trait_name: &str) {
+    let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name) else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("Unknown trait {}", trait_name),
+        ));
+        return;
+    };
+
+    let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved) else {
+        diagnostics.push(Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("Unknown trait {}", trait_name),
+        ));
+        return;
+    };
+
+    for (method_name, scheme) in trait_def.methods.iter() {
+        let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("Trait {}::{} is not a function", resolved, method_name),
+            ));
+            continue;
+        };
+
+        if params.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {}::{} is not dyn-safe: missing receiver parameter",
+                    resolved, method_name
+                ),
+            ));
+            continue;
+        }
+
+        if !is_self_ty(&params[0]) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {}::{} is not dyn-safe: receiver must be Self",
+                    resolved, method_name
+                ),
+            ));
+        }
+
+        for param in params.iter().skip(1) {
+            if ty_contains_self(param) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {}::{} is not dyn-safe: Self is not allowed in non-receiver parameters",
+                        resolved, method_name
+                    ),
+                ));
+                break;
+            }
+        }
+
+        if ty_contains_self(ret_ty.as_ref()) {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Trait {}::{} is not dyn-safe: Self is not allowed in return type",
+                    resolved, method_name
+                ),
+            ));
+        }
+    }
+}
+
+fn is_self_ty(ty: &tast::Ty) -> bool {
+    matches!(ty, tast::Ty::TStruct { name } if name == "Self")
+}
+
+fn ty_contains_self(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TStruct { name } => name == "Self",
+        tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_self),
+        tast::Ty::TApp { ty, args } => ty_contains_self(ty) || args.iter().any(ty_contains_self),
+        tast::Ty::TArray { elem, .. } => ty_contains_self(elem),
+        tast::Ty::TVec { elem } => ty_contains_self(elem),
+        tast::Ty::TRef { elem } => ty_contains_self(elem),
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(ty_contains_self) || ty_contains_self(ret_ty)
+        }
+        tast::Ty::TEnum { .. }
+        | tast::Ty::TDyn { .. }
+        | tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TParam { .. } => false,
+    }
+}
+
 impl tast::Ty {
     pub(crate) fn from_fir(
         genv: &PackageTypeEnv,
@@ -203,6 +320,11 @@ impl tast::Ty {
                         Self::TStruct { name: resolved }
                     }
                 }
+            }
+            fir::TypeExpr::TDyn { trait_path } => {
+                let name = trait_path.display();
+                let (resolved, _env) = resolve_type_name(genv, &name);
+                Self::TDyn { trait_name: resolved }
             }
             fir::TypeExpr::TApp { ty, args } => {
                 if let fir::TypeExpr::TCon { path } = ty.as_ref()

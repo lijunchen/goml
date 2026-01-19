@@ -860,6 +860,9 @@ pub enum TypeExpr {
     TCon {
         path: QualifiedPath,
     },
+    TDyn {
+        trait_path: QualifiedPath,
+    },
     TApp {
         ty: Box<TypeExpr>,
         args: Vec<TypeExpr>,
@@ -894,6 +897,9 @@ impl From<&ast::TypeExpr> for TypeExpr {
                 typs: typs.iter().map(|t| t.into()).collect(),
             },
             ast::TypeExpr::TCon { path } => TypeExpr::TCon { path: path.into() },
+            ast::TypeExpr::TDyn { trait_path } => TypeExpr::TDyn {
+                trait_path: trait_path.into(),
+            },
             ast::TypeExpr::TApp { ty, args } => TypeExpr::TApp {
                 ty: Box::new(ty.as_ref().into()),
                 args: args.iter().map(|a| a.into()).collect(),

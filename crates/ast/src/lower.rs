@@ -408,6 +408,10 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
                 })
             }
         }
+        cst::Type::DynTy(it) => {
+            let trait_path = it.path().and_then(|path| lower_path(ctx, &path))?;
+            Some(ast::TypeExpr::TDyn { trait_path })
+        }
         cst::Type::ArrayTy(it) => {
             let len_token = match it.len() {
                 Some(token) => token,

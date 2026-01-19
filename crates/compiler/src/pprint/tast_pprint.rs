@@ -210,6 +210,7 @@ impl Ty {
                 doc.append(RcDoc::text(")"))
             }
             Self::TEnum { name } | Self::TStruct { name } => RcDoc::text(name.clone()),
+            Self::TDyn { trait_name } => RcDoc::text("dyn ").append(RcDoc::text(trait_name)),
             Self::TApp { ty, args } => {
                 let mut doc = ty.to_doc();
 
@@ -500,6 +501,19 @@ impl Expr {
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc())
                 .append(RcDoc::text(")")),
+            Self::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                ..
+            } => RcDoc::text("(")
+                .append(RcDoc::text("dyn "))
+                .append(RcDoc::text(trait_name.0.clone()))
+                .append(RcDoc::text("::"))
+                .append(RcDoc::text(method_name.0.clone()))
+                .append(RcDoc::text(" : "))
+                .append(ty.to_doc())
+                .append(RcDoc::text(")")),
             Self::EInherentMethod {
                 receiver_ty,
                 method_name,
@@ -511,6 +525,19 @@ impl Expr {
                 .append(RcDoc::text(method_name.0.clone()))
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc())
+                .append(RcDoc::text(")")),
+            Self::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty: _,
+                ..
+            } => RcDoc::text("to_dyn[")
+                .append(RcDoc::text(trait_name.0.clone()))
+                .append(RcDoc::text("]{"))
+                .append(for_ty.to_doc())
+                .append(RcDoc::text("}("))
+                .append(expr.to_doc(genv))
                 .append(RcDoc::text(")")),
         }
     }

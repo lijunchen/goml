@@ -1,0 +1,45 @@
+package Main
+file main.gom
+  struct Point {
+        x: int32,
+        y: int32,
+    }
+    
+    struct Flag {
+        value: bool,
+    }
+    
+    trait Display {
+      fn show(Self) -> string;
+    }
+    
+    impl Display for Point {
+      fn show(local/1/0: Point) -> string {
+        "Point(" + int32_to_string(self/0.x) + "," + int32_to_string(self/0.y) + ")";
+      }
+    }
+    
+    impl Display for Flag {
+      fn show(local/1/1: Flag) -> string {
+        if self/1.value {
+            "Flag(true)";
+        } else {
+            "Flag(false)";
+        };
+      }
+    }
+    
+    fn main() {
+      let local/1/2 = Point {
+          x: 1,
+          y: 2
+      };
+      let local/1/3 = Flag {
+          value: true
+      };
+      let local/1/4: dyn Display = p/2;
+      let local/1/5: dyn Display = t/3;
+      let _ = string_println(Display::show(dp/4));
+      let _ = string_println(Display::show(dt/5));
+      ();
+    }

@@ -267,6 +267,39 @@ impl Expr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
+            Expr::EToDyn {
+                trait_name,
+                for_ty,
+                expr,
+                ty: _,
+            } => RcDoc::text("to_dyn[")
+                .append(RcDoc::text(trait_name.0.clone()))
+                .append(RcDoc::text("]{"))
+                .append(for_ty.to_doc())
+                .append(RcDoc::text("}("))
+                .append(expr.to_doc(genv))
+                .append(RcDoc::text(")")),
+            Expr::EDynCall {
+                trait_name,
+                method_name,
+                receiver,
+                args,
+                ty: _,
+            } => {
+                let args_doc = RcDoc::intersperse(
+                    std::iter::once(receiver.as_ref())
+                        .chain(args.iter())
+                        .map(|arg| arg.to_doc(genv)),
+                    RcDoc::text(", "),
+                );
+                RcDoc::text("dyn_call[")
+                    .append(RcDoc::text(trait_name.0.clone()))
+                    .append(RcDoc::text("::"))
+                    .append(RcDoc::text(method_name.0.clone()))
+                    .append(RcDoc::text("]("))
+                    .append(args_doc)
+                    .append(RcDoc::text(")"))
+            }
             Expr::EProj {
                 tuple,
                 index,

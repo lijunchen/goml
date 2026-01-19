@@ -1,0 +1,31 @@
+fn trait_impl#Display#Point#show(self/0: Point) -> string {
+  let t6 = Point.x(self/0) in
+  let t5 = int32_to_string(t6) in
+  let t4 = ("Point(" + t5) in
+  let t3 = (t4 + ",") in
+  let t8 = Point.y(self/0) in
+  let t7 = int32_to_string(t8) in
+  let t2 = (t3 + t7) in
+  (t2 + ")")
+}
+
+fn trait_impl#Display#Flag#show(self/1: Flag) -> string {
+  let t9 = Flag.value(self/1) in
+  if t9 {
+    "Flag(true)"
+  } else {
+    "Flag(false)"
+  }
+}
+
+fn main() -> unit {
+  let p/2 = Point { x: 1, y: 2 } in
+  let t/3 = Flag { value: true } in
+  let dp/4 = to_dyn[Display]{Point}(p/2) in
+  let dt/5 = to_dyn[Display]{Flag}(t/3) in
+  let t10 = dyn_call[Display::show](dp/4) in
+  let mtmp0 = string_println(t10) in
+  let t11 = dyn_call[Display::show](dt/5) in
+  let mtmp1 = string_println(t11) in
+  ()
+}

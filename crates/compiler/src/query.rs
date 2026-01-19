@@ -300,6 +300,19 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
             }
             None
         }
+        tast::Expr::EDynTraitMethod {
+            trait_name: _,
+            method_name: _,
+            ty: _,
+            astptr,
+        } => {
+            if let Some(astptr) = astptr
+                && astptr.text_range().contains_range(*range)
+            {
+                return Some(tast.get_ty().to_pretty(80));
+            }
+            None
+        }
         tast::Expr::EInherentMethod {
             receiver_ty: _,
             method_name: _,
@@ -312,6 +325,14 @@ fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String>
                 return Some(tast.get_ty().to_pretty(80));
             }
             None
+        }
+        tast::Expr::EToDyn { expr, astptr, .. } => {
+            if let Some(astptr) = astptr
+                && astptr.text_range().contains_range(*range)
+            {
+                return Some(tast.get_ty().to_pretty(80));
+            }
+            find_type_expr(expr, range)
         }
     }
 }
@@ -561,11 +582,17 @@ fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<
             ..
         } if astptr == ptr => Some(expr),
         tast::Expr::ETraitMethod { .. } => None,
+        tast::Expr::EDynTraitMethod {
+            astptr: Some(astptr),
+            ..
+        } if astptr == ptr => Some(expr),
+        tast::Expr::EDynTraitMethod { .. } => None,
         tast::Expr::EInherentMethod {
             astptr: Some(astptr),
             ..
         } if astptr == ptr => Some(expr),
         tast::Expr::EInherentMethod { .. } => None,
+        tast::Expr::EToDyn { expr: inner, .. } => find_expr_in_expr(inner, ptr),
     }
 }
 
@@ -876,7 +903,9 @@ fn find_type_by_name_in_expr(expr: &tast::Expr, name: &str) -> Option<String> {
         tast::Expr::EProj { tuple, .. } => find_type_by_name_in_expr(tuple, name),
         tast::Expr::EField { expr: inner, .. } => find_type_by_name_in_expr(inner, name),
         tast::Expr::ETraitMethod { .. } => None,
+        tast::Expr::EDynTraitMethod { .. } => None,
         tast::Expr::EInherentMethod { .. } => None,
+        tast::Expr::EToDyn { expr: inner, .. } => find_type_by_name_in_expr(inner, name),
     }
 }
 
