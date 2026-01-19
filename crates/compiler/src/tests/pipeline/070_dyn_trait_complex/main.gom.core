@@ -1,0 +1,123 @@
+fn trait_impl#Display#Point#show(self/0: Point) -> string {
+  (((("Point(" + int32_to_string(Point.x(self/0))) + ",") + int32_to_string(Point.y(self/0))) + ")")
+}
+
+fn trait_impl#Display#Point#show_with(self/1: Point, prefix/2: string, suffix/3: string) -> string {
+  ((((((prefix/2 + "Point(") + int32_to_string(Point.x(self/1))) + ",") + int32_to_string(Point.y(self/1))) + ")") + suffix/3)
+}
+
+fn trait_impl#Display#Point#tick(self/4: Point) -> unit {
+  ()
+}
+
+fn trait_impl#Display#Point#bump(self/5: Point, delta/6: int32) -> int32 {
+  ((Point.x(self/5) + Point.y(self/5)) + delta/6)
+}
+
+fn trait_impl#Display#Flag#show(self/7: Flag) -> string {
+  if Flag.value(self/7) {
+      "Flag(true)"
+  } else {
+      "Flag(false)"
+  }
+}
+
+fn trait_impl#Display#Flag#show_with(self/8: Flag, prefix/9: string, suffix/10: string) -> string {
+  if Flag.value(self/8) {
+      ((prefix/9 + "Flag(true)") + suffix/10)
+  } else {
+      ((prefix/9 + "Flag(false)") + suffix/10)
+  }
+}
+
+fn trait_impl#Display#Flag#tick(self/11: Flag) -> unit {
+  ()
+}
+
+fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
+  if Flag.value(self/12) {
+      delta/13
+  } else {
+      (-delta/13)
+  }
+}
+
+fn trait_impl#Display#Counter#show(self/14: Counter) -> string {
+  (("Counter(" + int32_to_string(ref_get(Counter.cell(self/14)))) + ")")
+}
+
+fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suffix/17: string) -> string {
+  ((((prefix/16 + "Counter(") + int32_to_string(ref_get(Counter.cell(self/15)))) + ")") + suffix/17)
+}
+
+fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
+  let next/19 = (ref_get(Counter.cell(self/18)) + 1) in
+  let mtmp0 = ref_set(Counter.cell(self/18), next/19) in
+  ()
+}
+
+fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
+  let next/22 = (ref_get(Counter.cell(self/20)) + delta/21) in
+  let mtmp1 = ref_set(Counter.cell(self/20), next/22) in
+  next/22
+}
+
+fn show_dyn(x/23: dyn Display) -> string {
+  dyn_call[Display::show_with](x/23, "<", ">")
+}
+
+fn call_via_closure(x/24: dyn Display, tag/25: string) -> string {
+  let f/28 = |v/26: dyn Display, t/27: string| => dyn_call[Display::show_with](v/26, t/27, t/27) in
+  f/28(x/24, tag/25)
+}
+
+fn make_renderer(tag/29: string) -> (dyn Display) -> string {
+  |x/30: dyn Display| => dyn_call[Display::show_with](x/30, tag/29, tag/29)
+}
+
+fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
+  let mtmp2 = dyn_call[Display::tick](x/31) in
+  ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
+}
+
+fn main() -> unit {
+  let p1/33 = Point { x: 1, y: 2 } in
+  let p2/34 = Point { x: 3, y: 4 } in
+  let f1/35 = Flag { value: true } in
+  let f2/36 = Flag { value: false } in
+  let c/37 = Counter { cell: ref(10) } in
+  let dp1/38 = to_dyn[Display]{Point}(p1/33) in
+  let dp2/39 = to_dyn[Display]{Point}(p2/34) in
+  let df1/40 = to_dyn[Display]{Flag}(f1/35) in
+  let df2/41 = to_dyn[Display]{Flag}(f2/36) in
+  let dc/42 = to_dyn[Display]{Counter}(c/37) in
+  let render_star/43 = make_renderer("*") in
+  let render_angle/44 = make_renderer("<") in
+  let s0/45 = show_dyn(dp2/39) in
+  let s1/46 = call_via_closure(df2/41, "*") in
+  let s2/47 = ((render_star/43(dp1/38) + "|") + render_angle/44(df1/40)) in
+  let v/48 = vec_new() in
+  let v/49 = vec_push(v/48, dp1/38) in
+  let v/50 = vec_push(v/49, df1/40) in
+  let v/51 = vec_push(v/50, dc/42) in
+  let vlen/52 = vec_len(v/51) in
+  let delta/53 = match vlen/52 {
+    2 => {
+      3
+    },
+    _ => 5,
+  } in
+  let mtmp3 = string_println(s0/45) in
+  let mtmp4 = string_println(s1/46) in
+  let mtmp5 = string_println(s2/47) in
+  let i/54 = ref(0) in
+  let mtmp8 = while (ref_get(i/54) < 3) {
+      let line/55 = bump_and_show(dc/42, delta/53) in
+      let _wild6 = string_println(line/55) in
+      let mtmp7 = ref_set(i/54, (ref_get(i/54) + 1)) in
+      ()
+  } in
+  let mtmp9 = string_println(("len:" + int32_to_string(vlen/52))) in
+  let mtmp10 = string_println(("delta:" + int32_to_string(delta/53))) in
+  ()
+}
