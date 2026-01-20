@@ -1418,18 +1418,20 @@ impl Typer {
                             args_tast.push(arg_tast);
                         }
 
-                        let ret_ty = self.fresh_ty_var();
-                        let call_site_func_ty = tast::Ty::TFunc {
-                            params: arg_types,
-                            ret_ty: Box::new(ret_ty.clone()),
-                        };
-
                         let receiver_ty = args_tast
                             .first()
                             .map(|arg| arg.get_ty())
                             .unwrap_or(tast::Ty::TUnit);
                         let inst_method_ty_for_call =
                             instantiate_self_ty(&inst_method_ty, &receiver_ty);
+                        let ret_ty_for_call = match &inst_method_ty_for_call {
+                            tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
+                            _ => self.fresh_ty_var(),
+                        };
+                        let call_site_func_ty = tast::Ty::TFunc {
+                            params: arg_types,
+                            ret_ty: Box::new(ret_ty_for_call.clone()),
+                        };
 
                         if let tast::Ty::TParam { name } = &receiver_ty {
                             let in_bounds = local_env
@@ -1470,7 +1472,7 @@ impl Typer {
                                 astptr: None,
                             }),
                             args: args_tast,
-                            ty: ret_ty,
+                            ty: ret_ty_for_call,
                         };
                     }
                 }
@@ -1577,27 +1579,45 @@ impl Typer {
                     let candidates = lookup_bound_trait_methods(genv, bounds, &method_name);
                     match candidates.as_slice() {
                         [(trait_name, method_ty)] => {
-                            let mut args_tast = Vec::with_capacity(args.len() + 1);
-                            let mut arg_types = Vec::with_capacity(args.len() + 1);
-                            arg_types.push(receiver_ty.clone());
-                            args_tast.push(receiver_tast);
-                            for arg in args.iter() {
-                                let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                                arg_types.push(arg_tast.get_ty());
-                                args_tast.push(arg_tast);
-                            }
-
                             let inst_method_ty = self.inst_ty(method_ty);
                             let inst_method_ty_for_call =
                                 instantiate_self_ty(&inst_method_ty, &receiver_ty);
-                            let ret_ty = self.fresh_ty_var();
-                            let call_site_ty = tast::Ty::TFunc {
-                                params: arg_types,
-                                ret_ty: Box::new(ret_ty.clone()),
+
+                            let (params, ret_ty) = match &inst_method_ty_for_call {
+                                tast::Ty::TFunc { params, ret_ty } => {
+                                    (params.clone(), (**ret_ty).clone())
+                                }
+                                _ => panic!(
+                                    "Expected trait method {}::{} to have a function type",
+                                    trait_name.0, method_name.0
+                                ),
                             };
+
+                            if params.len() != args.len() + 1 {
+                                panic!(
+                                    "Trait method {}::{} expects {} arguments but got {}",
+                                    trait_name.0,
+                                    method_name.0,
+                                    params.len(),
+                                    args.len() + 1
+                                );
+                            }
+
+                            let mut args_tast = Vec::with_capacity(args.len() + 1);
+                            args_tast.push(receiver_tast);
+                            for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
+                                args_tast.push(self.check_expr(
+                                    genv,
+                                    local_env,
+                                    diagnostics,
+                                    *arg,
+                                    expected_ty,
+                                ));
+                            }
+
                             self.push_constraint(Constraint::TypeEqual(
-                                inst_method_ty_for_call.clone(),
-                                call_site_ty,
+                                receiver_ty.clone(),
+                                params[0].clone(),
                             ));
 
                             tast::Expr::ECall {
