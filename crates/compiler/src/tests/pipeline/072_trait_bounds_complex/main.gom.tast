@@ -94,25 +94,42 @@ fn bool_text(x/20: bool) -> string {
     };
 }
 
-fn combine_and_render(a/21: T, b/22: T) -> string {
-    let scaled/23: T = (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/21 : T), (b/22 : T)), 2);
-    let same/24: bool = (Eq::eq : (T, T) -> bool)((a/21 : T), (b/22 : T));
-    let sum_hash/25: int32 = (Hash::hash : (T) -> int32)((a/21 : T)) + (Hash::hash : (T) -> int32)((b/22 : T));
-    let dbg/26: string = (Debug::show : (T) -> string)((scaled/23 : T));
-    let disp/27: string = (Display::show : (T) -> string)((scaled/23 : T));
-    (dbg/26 : string) + " | " + (disp/27 : string) + " | eq=" + (bool_text : (bool) -> string)((same/24 : bool)) + " | hash=" + (int32_to_string : (int32) -> string)((sum_hash/25 : int32));
+fn show_both(x/21: T) -> string {
+    (Debug::show : (T) -> string)((x/21 : T)) + " / " + (Display::show : (T) -> string)((x/21 : T));
 }
 
-fn sum_and_inspect(x/28: T, y/29: T, z/30: T) -> string {
-    let total/31: T = (Add::add : (T, T) -> T)((Add::add : (T, T) -> T)((x/28 : T), (y/29 : T)), (z/30 : T));
-    let h/32: int32 = (Hash::hash : (T) -> int32)((total/31 : T));
-    (Inspect::inspect : (T) -> string)((total/31 : T)) + " @" + (int32_to_string : (int32) -> string)((h/32 : int32));
+fn tag_text(tag/22: Q) -> string {
+    (Debug::show : (Q) -> string)((tag/22 : Q)) + "#" + (int32_to_string : (int32) -> string)((Hash::hash : (Q) -> int32)((tag/22 : Q)));
+}
+
+fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
+    (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/23 : T), (b/24 : T)), (factor/25 : int32));
+}
+
+fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
+    let same/30: bool = (Eq::eq : (T, T) -> bool)((a/27 : T), (b/28 : T));
+    let header/31: string = (tag_text : (Q) -> string)((tag/26 : Q));
+    let repr/32: string = (show_both : (T) -> string)((combined/29 : T));
+    let h/33: int32 = (Hash::hash : (T) -> int32)((combined/29 : T));
+    (header/31 : string) + " " + (repr/32 : string) + " | eq=" + (bool_text : (bool) -> string)((same/30 : bool)) + " | hash=" + (int32_to_string : (int32) -> string)((h/33 : int32));
+}
+
+fn full_report(tag/34: Q, a/35: T, b/36: T) -> string {
+    let combined/37: T = (combine_scaled : (T, T, int32) -> T)((a/35 : T), (b/36 : T), 2);
+    (report_pair : (Q, T, T, T) -> string)((tag/34 : Q), (a/35 : T), (b/36 : T), (combined/37 : T));
+}
+
+fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
+    let total/42: T = (Add::add : (T, T) -> T)((Add::add : (T, T) -> T)((x/39 : T), (y/40 : T)), (z/41 : T));
+    let header/43: string = (tag_text : (Q) -> string)((tag/38 : Q));
+    let h/44: int32 = (Hash::hash : (T) -> int32)((total/42 : T));
+    (header/43 : string) + " " + (Inspect::inspect : (T) -> string)((total/42 : T)) + " @" + (int32_to_string : (int32) -> string)((h/44 : int32));
 }
 
 fn main() -> unit {
-    let _ : unit = (string_println : (string) -> unit)((combine_and_render : (int32, int32) -> string)(10, 32));
-    let _ : unit = (string_println : (string) -> unit)((combine_and_render : (Boxed, Boxed) -> string)(Boxed { value: 3 }, Boxed { value: 4 }));
-    let _ : unit = (string_println : (string) -> unit)((sum_and_inspect : (int32, int32, int32) -> string)(1, 2, 3));
-    let _ : unit = (string_println : (string) -> unit)((sum_and_inspect : (Boxed, Boxed, Boxed) -> string)(Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
+    let _ : unit = (string_println : (string) -> unit)((full_report : (int32, int32, int32) -> string)(7, 10, 32));
+    let _ : unit = (string_println : (string) -> unit)((full_report : (Boxed, Boxed, Boxed) -> string)(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
+    let _ : unit = (string_println : (string) -> unit)((sum_and_tag : (int32, int32, int32, int32) -> string)(0, 1, 2, 3));
+    let _ : unit = (string_println : (string) -> unit)((sum_and_tag : (Boxed, Boxed, Boxed, Boxed) -> string)(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
     ();
 }

@@ -62,25 +62,42 @@ fn bool_text(x/20: bool) -> string {
   }
 }
 
-fn combine_and_render(a/21: T, b/22: T) -> string {
-  let scaled/23 = trait_call[Scale::scale](trait_call[Add::add](a/21, b/22), 2) in
-  let same/24 = trait_call[Eq::eq](a/21, b/22) in
-  let sum_hash/25 = (trait_call[Hash::hash](a/21) + trait_call[Hash::hash](b/22)) in
-  let dbg/26 = trait_call[Debug::show](scaled/23) in
-  let disp/27 = trait_call[Display::show](scaled/23) in
-  ((((dbg/26 + " | ") + disp/27) + " | eq=") + (bool_text(same/24) + (" | hash=" + int32_to_string(sum_hash/25))))
+fn show_both(x/21: T) -> string {
+  ((trait_call[Debug::show](x/21) + " / ") + trait_call[Display::show](x/21))
 }
 
-fn sum_and_inspect(x/28: T, y/29: T, z/30: T) -> string {
-  let total/31 = trait_call[Add::add](trait_call[Add::add](x/28, y/29), z/30) in
-  let h/32 = trait_call[Hash::hash](total/31) in
-  ((trait_call[Inspect::inspect](total/31) + " @") + int32_to_string(h/32))
+fn tag_text(tag/22: Q) -> string {
+  ((trait_call[Debug::show](tag/22) + "#") + int32_to_string(trait_call[Hash::hash](tag/22)))
+}
+
+fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
+  trait_call[Scale::scale](trait_call[Add::add](a/23, b/24), factor/25)
+}
+
+fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
+  let same/30 = trait_call[Eq::eq](a/27, b/28) in
+  let header/31 = tag_text(tag/26) in
+  let repr/32 = show_both(combined/29) in
+  let h/33 = trait_call[Hash::hash](combined/29) in
+  (((header/31 + " ") + repr/32) + ((" | eq=" + bool_text(same/30)) + (" | hash=" + int32_to_string(h/33))))
+}
+
+fn full_report(tag/34: Q, a/35: T, b/36: T) -> string {
+  let combined/37 = combine_scaled(a/35, b/36, 2) in
+  report_pair(tag/34, a/35, b/36, combined/37)
+}
+
+fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
+  let total/42 = trait_call[Add::add](trait_call[Add::add](x/39, y/40), z/41) in
+  let header/43 = tag_text(tag/38) in
+  let h/44 = trait_call[Hash::hash](total/42) in
+  (((header/43 + " ") + trait_call[Inspect::inspect](total/42)) + (" @" + int32_to_string(h/44)))
 }
 
 fn main() -> unit {
-  let mtmp0 = string_println(combine_and_render(10, 32)) in
-  let mtmp1 = string_println(combine_and_render(Boxed { value: 3 }, Boxed { value: 4 })) in
-  let mtmp2 = string_println(sum_and_inspect(1, 2, 3)) in
-  let mtmp3 = string_println(sum_and_inspect(Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
+  let mtmp0 = string_println(full_report(7, 10, 32)) in
+  let mtmp1 = string_println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 })) in
+  let mtmp2 = string_println(sum_and_tag(0, 1, 2, 3)) in
+  let mtmp3 = string_println(sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
   ()
 }

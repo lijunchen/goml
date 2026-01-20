@@ -131,30 +131,51 @@ fn bool_text(x: bool) -> string {
   };
 }
 
-fn combine_and_render(a: T, b: T) -> string {
-  let scaled = a.add(b).scale(2);
-  let same = Eq::eq(a, b);
-  let sum_hash = a.hash() + b.hash();
-  let dbg = Debug::show(scaled);
-  let disp = Display::show(scaled);
-  dbg + " | " + disp + " | eq=" + bool_text(same) + " | hash=" + int32_to_string(sum_hash);
+fn show_both(x: T) -> string {
+  Debug::show(x) + " / " + Display::show(x);
 }
 
-fn sum_and_inspect(x: T, y: T, z: T) -> string {
+fn tag_text(tag: Q) -> string {
+  Debug::show(tag) + "#" + int32_to_string(tag.hash());
+}
+
+fn combine_scaled(a: T, b: T, factor: int32) -> T {
+  a.add(b).scale(factor);
+}
+
+fn report_pair(tag: Q, a: T, b: T, combined: T) -> string {
+  let same = Eq::eq(a, b);
+  let header = tag_text(tag);
+  let repr = show_both(combined);
+  let h = combined.hash();
+  header + " " + repr + " | eq=" + bool_text(same) + " | hash=" + int32_to_string(h);
+}
+
+fn full_report(tag: Q, a: T, b: T) -> string {
+  let combined = combine_scaled(a, b, 2);
+  report_pair(tag, a, b, combined);
+}
+
+fn sum_and_tag(tag: Q, x: T, y: T, z: T) -> string {
   let total = x.add(y).add(z);
+  let header = tag_text(tag);
   let h = total.hash();
-  total.inspect() + " @" + int32_to_string(h);
+  header + " " + total.inspect() + " @" + int32_to_string(h);
 }
 
 fn main() {
-  let _ = string_println(combine_and_render(10, 32));
-  let _ = string_println(combine_and_render(Boxed {
+  let _ = string_println(full_report(7, 10, 32));
+  let _ = string_println(full_report(Boxed {
+          value: 99
+      }, Boxed {
           value: 3
       }, Boxed {
           value: 4
       }));
-  let _ = string_println(sum_and_inspect(1, 2, 3));
-  let _ = string_println(sum_and_inspect(Boxed {
+  let _ = string_println(sum_and_tag(0, 1, 2, 3));
+  let _ = string_println(sum_and_tag(Boxed {
+          value: 1
+      }, Boxed {
           value: 5
       }, Boxed {
           value: 6
