@@ -128,30 +128,51 @@ file main.gom
       };
     }
     
-    fn combine_and_render(local/1/21: T, local/1/22: T) -> string {
-      let local/1/23 = a/21.add(b/22).scale(2);
-      let local/1/24 = Eq::eq(a/21, b/22);
-      let local/1/25 = a/21.hash() + b/22.hash();
-      let local/1/26 = Debug::show(scaled/23);
-      let local/1/27 = Display::show(scaled/23);
-      dbg/26 + " | " + disp/27 + " | eq=" + def/1/22(same/24) + " | hash=" + int32_to_string(sum_hash/25);
+    fn show_both(local/1/21: T) -> string {
+      Debug::show(x/21) + " / " + Display::show(x/21);
     }
     
-    fn sum_and_inspect(local/1/28: T, local/1/29: T, local/1/30: T) -> string {
-      let local/1/31 = x/28.add(y/29).add(z/30);
-      let local/1/32 = total/31.hash();
-      total/31.inspect() + " @" + int32_to_string(h/32);
+    fn tag_text(local/1/22: Q) -> string {
+      Debug::show(tag/22) + "#" + int32_to_string(tag/22.hash());
+    }
+    
+    fn combine_scaled(local/1/23: T, local/1/24: T, local/1/25: int32) -> T {
+      a/23.add(b/24).scale(factor/25);
+    }
+    
+    fn report_pair(local/1/26: Q, local/1/27: T, local/1/28: T, local/1/29: T) -> string {
+      let local/1/30 = Eq::eq(a/27, b/28);
+      let local/1/31 = def/1/24(tag/26);
+      let local/1/32 = def/1/23(combined/29);
+      let local/1/33 = combined/29.hash();
+      header/31 + " " + repr/32 + " | eq=" + def/1/22(same/30) + " | hash=" + int32_to_string(h/33);
+    }
+    
+    fn full_report(local/1/34: Q, local/1/35: T, local/1/36: T) -> string {
+      let local/1/37 = def/1/25(a/35, b/36, 2);
+      def/1/26(tag/34, a/35, b/36, combined/37);
+    }
+    
+    fn sum_and_tag(local/1/38: Q, local/1/39: T, local/1/40: T, local/1/41: T) -> string {
+      let local/1/42 = x/39.add(y/40).add(z/41);
+      let local/1/43 = def/1/24(tag/38);
+      let local/1/44 = total/42.hash();
+      header/43 + " " + total/42.inspect() + " @" + int32_to_string(h/44);
     }
     
     fn main() {
-      let _ = string_println(def/1/23(10, 32));
-      let _ = string_println(def/1/23(Boxed {
+      let _ = string_println(def/1/27(7, 10, 32));
+      let _ = string_println(def/1/27(Boxed {
+              value: 99
+          }, Boxed {
               value: 3
           }, Boxed {
               value: 4
           }));
-      let _ = string_println(def/1/24(1, 2, 3));
-      let _ = string_println(def/1/24(Boxed {
+      let _ = string_println(def/1/28(0, 1, 2, 3));
+      let _ = string_println(def/1/28(Boxed {
+              value: 1
+          }, Boxed {
               value: 5
           }, Boxed {
               value: 6

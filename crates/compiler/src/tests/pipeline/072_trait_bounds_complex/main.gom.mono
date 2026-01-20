@@ -63,39 +63,73 @@ fn bool_text(x/20: bool) -> string {
 }
 
 fn main() -> unit {
-  let mtmp0 = string_println(combine_and_render__T_int32(10, 32)) in
-  let mtmp1 = string_println(combine_and_render__T_Boxed(Boxed { value: 3 }, Boxed { value: 4 })) in
-  let mtmp2 = string_println(sum_and_inspect__T_int32(1, 2, 3)) in
-  let mtmp3 = string_println(sum_and_inspect__T_Boxed(Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
+  let mtmp0 = string_println(full_report__Q_int32__T_int32(7, 10, 32)) in
+  let mtmp1 = string_println(full_report__Q_Boxed__T_Boxed(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 })) in
+  let mtmp2 = string_println(sum_and_tag__Q_int32__T_int32(0, 1, 2, 3)) in
+  let mtmp3 = string_println(sum_and_tag__Q_Boxed__T_Boxed(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
   ()
 }
 
-fn combine_and_render__T_int32(a/21: int32, b/22: int32) -> string {
-  let scaled/23 = trait_impl#Scale#int32#scale(trait_impl#Add#int32#add(a/21, b/22), 2) in
-  let same/24 = trait_impl#Eq#int32#eq(a/21, b/22) in
-  let sum_hash/25 = (trait_impl#Hash#int32#hash(a/21) + trait_impl#Hash#int32#hash(b/22)) in
-  let dbg/26 = trait_impl#Debug#int32#show(scaled/23) in
-  let disp/27 = trait_impl#Display#int32#show(scaled/23) in
-  ((((dbg/26 + " | ") + disp/27) + " | eq=") + (bool_text(same/24) + (" | hash=" + int32_to_string(sum_hash/25))))
+fn full_report__Q_int32__T_int32(tag/34: int32, a/35: int32, b/36: int32) -> string {
+  let combined/37 = combine_scaled__T_int32(a/35, b/36, 2) in
+  report_pair__Q_int32__T_int32(tag/34, a/35, b/36, combined/37)
 }
 
-fn combine_and_render__T_Boxed(a/21: Boxed, b/22: Boxed) -> string {
-  let scaled/23 = trait_impl#Scale#Boxed#scale(trait_impl#Add#Boxed#add(a/21, b/22), 2) in
-  let same/24 = trait_impl#Eq#Boxed#eq(a/21, b/22) in
-  let sum_hash/25 = (trait_impl#Hash#Boxed#hash(a/21) + trait_impl#Hash#Boxed#hash(b/22)) in
-  let dbg/26 = trait_impl#Debug#Boxed#show(scaled/23) in
-  let disp/27 = trait_impl#Display#Boxed#show(scaled/23) in
-  ((((dbg/26 + " | ") + disp/27) + " | eq=") + (bool_text(same/24) + (" | hash=" + int32_to_string(sum_hash/25))))
+fn full_report__Q_Boxed__T_Boxed(tag/34: Boxed, a/35: Boxed, b/36: Boxed) -> string {
+  let combined/37 = combine_scaled__T_Boxed(a/35, b/36, 2) in
+  report_pair__Q_Boxed__T_Boxed(tag/34, a/35, b/36, combined/37)
 }
 
-fn sum_and_inspect__T_int32(x/28: int32, y/29: int32, z/30: int32) -> string {
-  let total/31 = trait_impl#Add#int32#add(trait_impl#Add#int32#add(x/28, y/29), z/30) in
-  let h/32 = trait_impl#Hash#int32#hash(total/31) in
-  ((trait_impl#Inspect#int32#inspect(total/31) + " @") + int32_to_string(h/32))
+fn sum_and_tag__Q_int32__T_int32(tag/38: int32, x/39: int32, y/40: int32, z/41: int32) -> string {
+  let total/42 = trait_impl#Add#int32#add(trait_impl#Add#int32#add(x/39, y/40), z/41) in
+  let header/43 = tag_text__Q_int32(tag/38) in
+  let h/44 = trait_impl#Hash#int32#hash(total/42) in
+  (((header/43 + " ") + trait_impl#Inspect#int32#inspect(total/42)) + (" @" + int32_to_string(h/44)))
 }
 
-fn sum_and_inspect__T_Boxed(x/28: Boxed, y/29: Boxed, z/30: Boxed) -> string {
-  let total/31 = trait_impl#Add#Boxed#add(trait_impl#Add#Boxed#add(x/28, y/29), z/30) in
-  let h/32 = trait_impl#Hash#Boxed#hash(total/31) in
-  ((trait_impl#Inspect#Boxed#inspect(total/31) + " @") + int32_to_string(h/32))
+fn sum_and_tag__Q_Boxed__T_Boxed(tag/38: Boxed, x/39: Boxed, y/40: Boxed, z/41: Boxed) -> string {
+  let total/42 = trait_impl#Add#Boxed#add(trait_impl#Add#Boxed#add(x/39, y/40), z/41) in
+  let header/43 = tag_text__Q_Boxed(tag/38) in
+  let h/44 = trait_impl#Hash#Boxed#hash(total/42) in
+  (((header/43 + " ") + trait_impl#Inspect#Boxed#inspect(total/42)) + (" @" + int32_to_string(h/44)))
+}
+
+fn combine_scaled__T_int32(a/23: int32, b/24: int32, factor/25: int32) -> int32 {
+  trait_impl#Scale#int32#scale(trait_impl#Add#int32#add(a/23, b/24), factor/25)
+}
+
+fn report_pair__Q_int32__T_int32(tag/26: int32, a/27: int32, b/28: int32, combined/29: int32) -> string {
+  let same/30 = trait_impl#Eq#int32#eq(a/27, b/28) in
+  let header/31 = tag_text__Q_int32(tag/26) in
+  let repr/32 = show_both__T_int32(combined/29) in
+  let h/33 = trait_impl#Hash#int32#hash(combined/29) in
+  (((header/31 + " ") + repr/32) + ((" | eq=" + bool_text(same/30)) + (" | hash=" + int32_to_string(h/33))))
+}
+
+fn combine_scaled__T_Boxed(a/23: Boxed, b/24: Boxed, factor/25: int32) -> Boxed {
+  trait_impl#Scale#Boxed#scale(trait_impl#Add#Boxed#add(a/23, b/24), factor/25)
+}
+
+fn report_pair__Q_Boxed__T_Boxed(tag/26: Boxed, a/27: Boxed, b/28: Boxed, combined/29: Boxed) -> string {
+  let same/30 = trait_impl#Eq#Boxed#eq(a/27, b/28) in
+  let header/31 = tag_text__Q_Boxed(tag/26) in
+  let repr/32 = show_both__T_Boxed(combined/29) in
+  let h/33 = trait_impl#Hash#Boxed#hash(combined/29) in
+  (((header/31 + " ") + repr/32) + ((" | eq=" + bool_text(same/30)) + (" | hash=" + int32_to_string(h/33))))
+}
+
+fn tag_text__Q_int32(tag/22: int32) -> string {
+  ((trait_impl#Debug#int32#show(tag/22) + "#") + int32_to_string(trait_impl#Hash#int32#hash(tag/22)))
+}
+
+fn tag_text__Q_Boxed(tag/22: Boxed) -> string {
+  ((trait_impl#Debug#Boxed#show(tag/22) + "#") + int32_to_string(trait_impl#Hash#Boxed#hash(tag/22)))
+}
+
+fn show_both__T_int32(x/21: int32) -> string {
+  ((trait_impl#Debug#int32#show(x/21) + " / ") + trait_impl#Display#int32#show(x/21))
+}
+
+fn show_both__T_Boxed(x/21: Boxed) -> string {
+  ((trait_impl#Debug#Boxed#show(x/21) + " / ") + trait_impl#Display#Boxed#show(x/21))
 }
