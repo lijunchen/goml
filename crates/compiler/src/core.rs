@@ -106,6 +106,13 @@ pub enum Expr {
         args: Vec<Expr>,
         ty: Ty,
     },
+    ETraitCall {
+        trait_name: tast::TastIdent,
+        method_name: tast::TastIdent,
+        receiver: Box<Expr>,
+        args: Vec<Expr>,
+        ty: Ty,
+    },
     EProj {
         tuple: Box<Expr>,
         index: usize,
@@ -133,6 +140,7 @@ impl Expr {
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EToDyn { ty, .. } => ty.clone(),
             Expr::EDynCall { ty, .. } => ty.clone(),
+            Expr::ETraitCall { ty, .. } => ty.clone(),
             Expr::EProj { ty, .. } => ty.clone(),
         }
     }

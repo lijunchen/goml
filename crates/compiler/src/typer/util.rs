@@ -324,7 +324,9 @@ impl tast::Ty {
             fir::TypeExpr::TDyn { trait_path } => {
                 let name = trait_path.display();
                 let (resolved, _env) = resolve_type_name(genv, &name);
-                Self::TDyn { trait_name: resolved }
+                Self::TDyn {
+                    trait_name: resolved,
+                }
             }
             fir::TypeExpr::TApp { ty, args } => {
                 if let fir::TypeExpr::TCon { path } = ty.as_ref()

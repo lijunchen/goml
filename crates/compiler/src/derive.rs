@@ -112,6 +112,7 @@ fn derive_struct_tostring(
         attrs: Vec::new(),
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         params: vec![(
             AstIdent::new(SELF_PARAM_NAME),
             ty_for_ident(&struct_def.name),
@@ -141,6 +142,7 @@ fn derive_enum_tostring(
         attrs: Vec::new(),
         name: AstIdent::new(TO_STRING_FN),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_body(enum_def, attr_ptr),
@@ -171,6 +173,7 @@ fn derive_struct_tojson(
         attrs: Vec::new(),
         name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         params: vec![(
             AstIdent::new(SELF_PARAM_NAME),
             ty_for_ident(&struct_def.name),
@@ -200,6 +203,7 @@ fn derive_enum_tojson(
         attrs: Vec::new(),
         name: AstIdent::new(TO_JSON_FN),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
         body: build_enum_json_body(enum_def, attr_ptr),

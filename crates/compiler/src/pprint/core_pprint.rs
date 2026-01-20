@@ -300,6 +300,27 @@ impl Expr {
                     .append(args_doc)
                     .append(RcDoc::text(")"))
             }
+            Expr::ETraitCall {
+                trait_name,
+                method_name,
+                receiver,
+                args,
+                ty: _,
+            } => {
+                let args_doc = RcDoc::intersperse(
+                    std::iter::once(receiver.as_ref())
+                        .chain(args.iter())
+                        .map(|arg| arg.to_doc(genv)),
+                    RcDoc::text(", "),
+                );
+                RcDoc::text("trait_call[")
+                    .append(RcDoc::text(trait_name.0.clone()))
+                    .append(RcDoc::text("::"))
+                    .append(RcDoc::text(method_name.0.clone()))
+                    .append(RcDoc::text("]("))
+                    .append(args_doc)
+                    .append(RcDoc::text(")"))
+            }
             Expr::EProj {
                 tuple,
                 index,

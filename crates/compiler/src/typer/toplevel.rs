@@ -830,6 +830,33 @@ fn check_fn(
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
+    let mut bounds = indexmap::IndexMap::new();
+    for param in tparams.iter() {
+        bounds.insert(param.0.clone(), Vec::new());
+    }
+    for (param, traits) in f.generic_bounds.iter() {
+        let param_name = param.to_ident_name();
+        let Some(out) = bounds.get_mut(&param_name) else {
+            continue;
+        };
+        for trait_path in traits.iter() {
+            let name = trait_path.display();
+            if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
+                out.push(tast::TastIdent(resolved));
+            } else {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Unknown trait {}", name),
+                ));
+            }
+        }
+    }
+    for traits in bounds.values_mut() {
+        traits.sort_by(|a, b| a.0.cmp(&b.0));
+        traits.dedup_by(|a, b| a.0 == b.0);
+    }
+    local_env.set_tparam_trait_bounds(bounds);
     let param_types: Vec<(fir::LocalId, String, tast::Ty)> = f
         .params
         .iter()
@@ -857,6 +884,7 @@ fn check_fn(
     let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, f.body, &ret_ty);
     local_env.pop_scope();
     local_env.clear_tparams_env();
+    local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
     let typed_body = typer.subst(diagnostics, typed_body);
     tast::Fn {

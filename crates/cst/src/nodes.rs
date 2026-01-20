@@ -360,9 +360,29 @@ impl Generic {
     pub fn uident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
+
+    pub fn trait_set(&self) -> Option<TraitSet> {
+        support::child(&self.syntax)
+    }
 }
 impl_cst_node_simple!(Generic, MySyntaxKind::GENERIC);
 impl_display_via_syntax!(Generic);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TraitSet {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl TraitSet {
+    pub fn traits(&self) -> CstChildren<Path> {
+        support::children(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(TraitSet, MySyntaxKind::TRAIT_SET);
+impl_display_via_syntax!(TraitSet);
 
 ////////////////////////////////////////////////////////////////////////////////
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]

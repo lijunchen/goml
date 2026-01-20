@@ -271,6 +271,7 @@ impl NameResolution {
                                 attrs: Vec::new(),
                                 name: full_name.clone(),
                                 generics: Vec::new(),
+                                generic_bounds: Vec::new(),
                                 params: Vec::new(),
                                 ret_ty: None,
                                 body: fir_table.dummy_expr(),
@@ -478,6 +479,7 @@ impl NameResolution {
                 attrs: Vec::new(),
                 name: func.name.0.clone(),
                 generics: Vec::new(),
+                generic_bounds: Vec::new(),
                 params: Vec::new(),
                 ret_ty: None,
                 body: fir_table.dummy_expr(),
@@ -499,6 +501,7 @@ impl NameResolution {
         let ast::Fn {
             attrs,
             generics,
+            generic_bounds,
             params,
             ret_ty,
             body,
@@ -518,10 +521,24 @@ impl NameResolution {
                 )
             })
             .collect();
+
+        let new_generic_bounds = generic_bounds
+            .iter()
+            .map(|(param, traits)| {
+                let traits = traits
+                    .iter()
+                    .map(|path| {
+                        fir::Path::new(path.segments().iter().map(fir::PathSegment::from).collect())
+                    })
+                    .collect::<Vec<_>>();
+                (FirIdent::name(&param.0), traits)
+            })
+            .collect();
         fir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
             name: resolved_name,
             generics: generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            generic_bounds: new_generic_bounds,
             params: new_params,
             ret_ty: ret_ty
                 .as_ref()

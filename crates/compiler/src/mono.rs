@@ -1,7 +1,7 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
-use crate::names::{parse_inherent_method_fn_name, ty_compact};
+use crate::names::{parse_inherent_method_fn_name, trait_impl_fn_name, ty_compact};
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -766,6 +766,38 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             args: args.iter().map(|a| mono_expr(ctx, a, s)).collect(),
             ty: subst_ty(&ty, s),
         },
+        core::Expr::ETraitCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => {
+            let receiver = mono_expr(ctx, &receiver, s);
+            let mut all_args = Vec::with_capacity(args.len() + 1);
+            all_args.push(receiver);
+            for arg in args.iter() {
+                all_args.push(mono_expr(ctx, arg, s));
+            }
+
+            let new_ty = subst_ty(&ty, s);
+            let receiver_ty = all_args[0].get_ty();
+            let func_name = trait_impl_fn_name(&trait_name, &receiver_ty, &method_name.0);
+            let param_tys = all_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
+            let func_ty = Ty::TFunc {
+                params: param_tys,
+                ret_ty: Box::new(new_ty.clone()),
+            };
+
+            MonoExpr::ECall {
+                func: Box::new(MonoExpr::EVar {
+                    name: func_name,
+                    ty: func_ty,
+                }),
+                args: all_args,
+                ty: new_ty,
+            }
+        }
         core::Expr::EProj { tuple, index, ty } => MonoExpr::EProj {
             tuple: Box::new(mono_expr(ctx, &tuple, s)),
             index,

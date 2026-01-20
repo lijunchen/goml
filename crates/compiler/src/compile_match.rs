@@ -129,6 +129,35 @@ fn emissing(ty: &Ty) -> core::Expr {
     }
 }
 
+fn has_tparam(ty: &Ty) -> bool {
+    match ty {
+        Ty::TParam { .. } => true,
+        Ty::TVar(_) => false,
+        Ty::TUnit
+        | Ty::TBool
+        | Ty::TInt8
+        | Ty::TInt16
+        | Ty::TInt32
+        | Ty::TInt64
+        | Ty::TUint8
+        | Ty::TUint16
+        | Ty::TUint32
+        | Ty::TUint64
+        | Ty::TFloat32
+        | Ty::TFloat64
+        | Ty::TString
+        | Ty::TEnum { .. }
+        | Ty::TStruct { .. }
+        | Ty::TDyn { .. } => false,
+        Ty::TTuple { typs } => typs.iter().any(has_tparam),
+        Ty::TApp { ty, args } => has_tparam(ty) || args.iter().any(has_tparam),
+        Ty::TArray { elem, .. } => has_tparam(elem),
+        Ty::TVec { elem } => has_tparam(elem),
+        Ty::TRef { elem } => has_tparam(elem),
+        Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
+    }
+}
+
 fn branch_variable(rows: &[Row]) -> Variable {
     let mut counts = HashMap::new();
     let mut var_ty: HashMap<String, Ty> = HashMap::new();
@@ -1576,6 +1605,27 @@ fn compile_expr(
                     args: other_args.to_vec(),
                     ty: ty.clone(),
                 };
+            }
+
+            if let tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ..
+            } = func.as_ref()
+            {
+                let (receiver, other_args) = args
+                    .split_first()
+                    .expect("trait call expects a receiver argument");
+                let for_ty = receiver.get_ty();
+                if has_tparam(&for_ty) {
+                    return core::Expr::ETraitCall {
+                        trait_name: trait_name.clone(),
+                        method_name: method_name.clone(),
+                        receiver: Box::new(receiver.clone()),
+                        args: other_args.to_vec(),
+                        ty: ty.clone(),
+                    };
+                }
             }
 
             let func_expr = if let tast::Expr::ETraitMethod {
