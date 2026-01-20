@@ -103,6 +103,7 @@ The file extension for goml source files is `.gom`.
 
 * Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
 * Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
+* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. `A + B` is only valid in these generic bounds (not in type annotations/param/return types, and not in `dyn`).
 * Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
 * Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
 
@@ -129,6 +130,7 @@ The file extension for goml source files is `.gom`.
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
 * Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
+* When multiple trait bounds provide the same method name for a type parameter, `x.foo()` is ambiguous and requires UFCS disambiguation (e.g. `A::foo(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
