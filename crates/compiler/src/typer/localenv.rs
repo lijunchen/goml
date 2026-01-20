@@ -8,6 +8,7 @@ use crate::tast::{self, TastIdent};
 pub struct LocalTypeEnv {
     scopes: Vec<ImHashMap<LocalId, tast::Ty>>,
     tparams_env: Vec<TastIdent>,
+    tparam_trait_bounds: IndexMap<String, Vec<TastIdent>>,
     capture_stack: Vec<IndexMap<LocalId, tast::Ty>>,
 }
 
@@ -22,6 +23,7 @@ impl LocalTypeEnv {
         Self {
             scopes: vec![ImHashMap::new()],
             tparams_env: Vec::new(),
+            tparam_trait_bounds: IndexMap::new(),
             capture_stack: Vec::new(),
         }
     }
@@ -67,6 +69,18 @@ impl LocalTypeEnv {
 
     pub fn current_tparams_env(&self) -> Vec<TastIdent> {
         self.tparams_env.clone()
+    }
+
+    pub fn set_tparam_trait_bounds(&mut self, bounds: IndexMap<String, Vec<TastIdent>>) {
+        self.tparam_trait_bounds = bounds;
+    }
+
+    pub fn clear_tparam_trait_bounds(&mut self) {
+        self.tparam_trait_bounds.clear();
+    }
+
+    pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[TastIdent]> {
+        self.tparam_trait_bounds.get(name).map(|v| v.as_slice())
     }
 
     pub fn begin_closure(&mut self) {

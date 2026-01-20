@@ -1,0 +1,49 @@
+package Main
+trait A {
+  fn foo(Self) -> string;
+}
+
+trait B {
+  fn foo(Self) -> string;
+}
+
+trait C {
+  fn bar(Self) -> string;
+}
+
+struct S {
+}
+
+impl A for S {
+  fn foo(self: S) -> string {
+    "A";
+  }
+}
+
+impl B for S {
+  fn foo(self: S) -> string {
+    "B";
+  }
+}
+
+impl C for S {
+  fn bar(self: S) -> string {
+    "C";
+  }
+}
+
+fn pick_a(x: T) -> string {
+  A::foo(x);
+}
+
+fn bar_it(x: T) -> string {
+  x.bar();
+}
+
+fn main() {
+  let s = S {};
+  let _ = string_println(pick_a(s));
+  let _ = string_println(bar_it(s));
+  ();
+}
+

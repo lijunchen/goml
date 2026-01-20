@@ -1,7 +1,7 @@
 use std::{collections::HashMap, num::IntErrorKind};
 
-use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 use diagnostics::{Severity, Stage};
+use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 
 use crate::common::{self, Prim};
 use crate::fir::{self};
@@ -320,8 +320,7 @@ impl Typer {
             return expr;
         }
 
-        let Some((resolved_trait, _env)) = super::util::resolve_trait_name(genv, trait_name)
-        else {
+        let Some((resolved_trait, _env)) = super::util::resolve_trait_name(genv, trait_name) else {
             diagnostics.push(Diagnostic::new(
                 Stage::Typer,
                 Severity::Error,
@@ -1360,8 +1359,9 @@ impl Typer {
                         {
                             let receiver_tast =
                                 self.infer_expr(genv, local_env, diagnostics, args[0]);
-                            if let tast::Ty::TDyn { trait_name: recv_trait } =
-                                receiver_tast.get_ty()
+                            if let tast::Ty::TDyn {
+                                trait_name: recv_trait,
+                            } = receiver_tast.get_ty()
                                 && recv_trait == type_ident.0
                             {
                                 if params.len() != args.len() {
@@ -1418,27 +1418,61 @@ impl Typer {
                             args_tast.push(arg_tast);
                         }
 
-                        let ret_ty = self.fresh_ty_var();
+                        let receiver_ty = args_tast
+                            .first()
+                            .map(|arg| arg.get_ty())
+                            .unwrap_or(tast::Ty::TUnit);
+                        let inst_method_ty_for_call =
+                            instantiate_self_ty(&inst_method_ty, &receiver_ty);
+                        let ret_ty_for_call = match &inst_method_ty_for_call {
+                            tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
+                            _ => self.fresh_ty_var(),
+                        };
                         let call_site_func_ty = tast::Ty::TFunc {
                             params: arg_types,
-                            ret_ty: Box::new(ret_ty.clone()),
+                            ret_ty: Box::new(ret_ty_for_call.clone()),
                         };
 
-                        self.push_constraint(Constraint::Overloaded {
-                            op: member_ident.clone(),
-                            trait_name: type_ident.clone(),
-                            call_site_type: call_site_func_ty.clone(),
-                        });
+                        if let tast::Ty::TParam { name } = &receiver_ty {
+                            let in_bounds = local_env
+                                .tparam_trait_bounds(name)
+                                .is_some_and(|bounds| bounds.iter().any(|t| t.0 == type_ident.0));
+                            if !in_bounds {
+                                diagnostics.push(Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "Type parameter {} is not constrained by trait {}",
+                                        name, type_ident.0
+                                    ),
+                                ));
+                                return tast::Expr::EVar {
+                                    name: "<error>".to_string(),
+                                    ty: self.fresh_ty_var(),
+                                    astptr: None,
+                                };
+                            }
+                            self.push_constraint(Constraint::TypeEqual(
+                                call_site_func_ty.clone(),
+                                inst_method_ty_for_call.clone(),
+                            ));
+                        } else {
+                            self.push_constraint(Constraint::Overloaded {
+                                op: member_ident.clone(),
+                                trait_name: type_ident.clone(),
+                                call_site_type: call_site_func_ty.clone(),
+                            });
+                        }
 
                         return tast::Expr::ECall {
                             func: Box::new(tast::Expr::ETraitMethod {
                                 trait_name: type_ident.clone(),
                                 method_name: member_ident.clone(),
-                                ty: inst_method_ty,
+                                ty: inst_method_ty_for_call,
                                 astptr: None,
                             }),
                             args: args_tast,
-                            ty: ret_ty,
+                            ty: ret_ty_for_call,
                         };
                     }
                 }
@@ -1501,17 +1535,13 @@ impl Typer {
                 expr: receiver_expr,
                 field,
             } => {
-                if let Some((receiver_tast, receiver_ty, method_ty)) = {
-                    let receiver_tast =
-                        self.infer_expr(genv, local_env, diagnostics, receiver_expr);
-                    let receiver_ty = receiver_tast.get_ty();
-                    lookup_inherent_method_for_ty(
-                        genv,
-                        &receiver_ty,
-                        &tast::TastIdent(field.to_ident_name()),
-                    )
-                    .map(|ty| (receiver_tast, receiver_ty, ty))
-                } {
+                let receiver_tast = self.infer_expr(genv, local_env, diagnostics, receiver_expr);
+                let receiver_ty = receiver_tast.get_ty();
+                if let Some(method_ty) = lookup_inherent_method_for_ty(
+                    genv,
+                    &receiver_ty,
+                    &tast::TastIdent(field.to_ident_name()),
+                ) {
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
                     let mut arg_types = Vec::with_capacity(args.len() + 1);
                     arg_types.push(receiver_ty.clone());
@@ -1542,6 +1572,100 @@ impl Typer {
                         }),
                         args: args_tast,
                         ty: ret_ty,
+                    }
+                } else if let tast::Ty::TParam { name } = &receiver_ty {
+                    let method_name = tast::TastIdent(field.to_ident_name());
+                    let bounds = local_env.tparam_trait_bounds(name).unwrap_or(&[]);
+                    let candidates = lookup_bound_trait_methods(genv, bounds, &method_name);
+                    match candidates.as_slice() {
+                        [(trait_name, method_ty)] => {
+                            let inst_method_ty = self.inst_ty(method_ty);
+                            let inst_method_ty_for_call =
+                                instantiate_self_ty(&inst_method_ty, &receiver_ty);
+
+                            let (params, ret_ty) = match &inst_method_ty_for_call {
+                                tast::Ty::TFunc { params, ret_ty } => {
+                                    (params.clone(), (**ret_ty).clone())
+                                }
+                                _ => panic!(
+                                    "Expected trait method {}::{} to have a function type",
+                                    trait_name.0, method_name.0
+                                ),
+                            };
+
+                            if params.len() != args.len() + 1 {
+                                panic!(
+                                    "Trait method {}::{} expects {} arguments but got {}",
+                                    trait_name.0,
+                                    method_name.0,
+                                    params.len(),
+                                    args.len() + 1
+                                );
+                            }
+
+                            let mut args_tast = Vec::with_capacity(args.len() + 1);
+                            args_tast.push(receiver_tast);
+                            for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
+                                args_tast.push(self.check_expr(
+                                    genv,
+                                    local_env,
+                                    diagnostics,
+                                    *arg,
+                                    expected_ty,
+                                ));
+                            }
+
+                            self.push_constraint(Constraint::TypeEqual(
+                                receiver_ty.clone(),
+                                params[0].clone(),
+                            ));
+
+                            tast::Expr::ECall {
+                                func: Box::new(tast::Expr::ETraitMethod {
+                                    trait_name: trait_name.clone(),
+                                    method_name: method_name.clone(),
+                                    ty: inst_method_ty_for_call,
+                                    astptr: None,
+                                }),
+                                args: args_tast,
+                                ty: ret_ty,
+                            }
+                        }
+                        [] => {
+                            diagnostics.push(Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Method {} is not available for type parameter {}",
+                                    method_name.0, name
+                                ),
+                            ));
+                            tast::Expr::EVar {
+                                name: "<error>".to_string(),
+                                ty: self.fresh_ty_var(),
+                                astptr: None,
+                            }
+                        }
+                        _ => {
+                            let trait_names = candidates
+                                .iter()
+                                .map(|(t, _)| t.0.clone())
+                                .collect::<Vec<_>>()
+                                .join(", ");
+                            diagnostics.push(Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Ambiguous method {} for type parameter {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                                    method_name.0, name, trait_names, method_name.0
+                                ),
+                            ));
+                            tast::Expr::EVar {
+                                name: "<error>".to_string(),
+                                ty: self.fresh_ty_var(),
+                                astptr: None,
+                            }
+                        }
                     }
                 } else {
                     panic!(
@@ -2401,4 +2525,85 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
         tast::Ty::TRef { .. } | tast::Ty::TVec { .. } => genv.current(),
         _ => genv.current(),
     }
+}
+
+fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(var) => tast::Ty::TVar(*var),
+        tast::Ty::TUnit => tast::Ty::TUnit,
+        tast::Ty::TBool => tast::Ty::TBool,
+        tast::Ty::TInt8 => tast::Ty::TInt8,
+        tast::Ty::TInt16 => tast::Ty::TInt16,
+        tast::Ty::TInt32 => tast::Ty::TInt32,
+        tast::Ty::TInt64 => tast::Ty::TInt64,
+        tast::Ty::TUint8 => tast::Ty::TUint8,
+        tast::Ty::TUint16 => tast::Ty::TUint16,
+        tast::Ty::TUint32 => tast::Ty::TUint32,
+        tast::Ty::TUint64 => tast::Ty::TUint64,
+        tast::Ty::TFloat32 => tast::Ty::TFloat32,
+        tast::Ty::TFloat64 => tast::Ty::TFloat64,
+        tast::Ty::TString => tast::Ty::TString,
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|ty| instantiate_self_ty(ty, self_ty))
+                .collect(),
+        },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => {
+            if name == "Self" {
+                self_ty.clone()
+            } else {
+                tast::Ty::TStruct { name: name.clone() }
+            }
+        }
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(instantiate_self_ty(ty, self_ty)),
+            args: args
+                .iter()
+                .map(|ty| instantiate_self_ty(ty, self_ty))
+                .collect(),
+        },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|param| instantiate_self_ty(param, self_ty))
+                .collect(),
+            ret_ty: Box::new(instantiate_self_ty(ret_ty, self_ty)),
+        },
+    }
+}
+
+fn lookup_bound_trait_methods(
+    genv: &PackageTypeEnv,
+    bounds: &[tast::TastIdent],
+    method: &tast::TastIdent,
+) -> Vec<(tast::TastIdent, tast::Ty)> {
+    let mut result = Vec::new();
+    for trait_name in bounds.iter() {
+        let Some((resolved_trait, trait_env)) =
+            super::util::resolve_trait_name(genv, &trait_name.0)
+        else {
+            continue;
+        };
+        let resolved_ident = tast::TastIdent(resolved_trait);
+        if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {
+            result.push((resolved_ident, method_ty));
+        }
+    }
+    result
 }

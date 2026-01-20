@@ -607,7 +607,11 @@ fn dyn_vtable_struct_go_name(trait_name: &str) -> String {
 }
 
 fn dyn_vtable_ctor_go_name(trait_name: &str, for_ty: &tast::Ty) -> String {
-    go_ident(&format!("dyn__{}__vtable__{}", trait_name, encode_ty(for_ty)))
+    go_ident(&format!(
+        "dyn__{}__vtable__{}",
+        trait_name,
+        encode_ty(for_ty)
+    ))
 }
 
 fn dyn_wrap_go_name(trait_name: &str, for_ty: &tast::Ty, method_name: &str) -> String {
@@ -730,8 +734,7 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
                 ty,
             } => {
                 req.traits.insert(trait_name.0.clone());
-                req.vtables
-                    .insert((trait_name.0.clone(), for_ty.clone()));
+                req.vtables.insert((trait_name.0.clone(), for_ty.clone()));
                 collect_ty(req, for_ty);
                 collect_imm(req, expr);
                 collect_ty(req, ty);
@@ -764,7 +767,9 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
     fn collect_aexpr(req: &mut DynRequirements, expr: &anf::AExpr) {
         match expr {
             anf::AExpr::ACExpr { expr } => collect_cexpr(req, expr),
-            anf::AExpr::ALet { value, body, ty, .. } => {
+            anf::AExpr::ALet {
+                value, body, ty, ..
+            } => {
                 collect_cexpr(req, value);
                 collect_aexpr(req, body);
                 collect_ty(req, ty);

@@ -194,6 +194,7 @@ pub enum MySyntaxKind {
     PARAM_LIST,
     GENERIC,
     GENERIC_LIST,
+    TRAIT_SET,
     TYPE_PARAM_LIST,
     BLOCK,
     FILE,

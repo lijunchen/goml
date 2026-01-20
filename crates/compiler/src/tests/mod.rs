@@ -375,7 +375,10 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            match pipeline::pipeline::compile(&p, &input) {
+            let tmpdir = tempfile::tempdir()?;
+            let tmpfile = tmpdir.path().join("main.gom");
+            std::fs::write(&tmpfile, &input)?;
+            match pipeline::pipeline::compile(&tmpfile, &input) {
                 Err(CompilationError::Typer { diagnostics }) => {
                     let mut formatted = format_typer_diagnostics(&diagnostics).join("\n");
                     if !formatted.is_empty() {

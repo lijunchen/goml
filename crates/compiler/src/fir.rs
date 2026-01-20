@@ -960,6 +960,7 @@ pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
     pub generics: Vec<FirIdent>,
+    pub generic_bounds: Vec<(FirIdent, Vec<Path>)>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: ExprId,

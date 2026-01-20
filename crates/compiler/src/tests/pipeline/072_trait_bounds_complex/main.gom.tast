@@ -1,0 +1,118 @@
+impl Display for int32{
+  fn show(self/0: int32) -> string {
+      (int32_to_string : (int32) -> string)((self/0 : int32));
+  }
+}
+
+impl Debug for int32{
+  fn show(self/1: int32) -> string {
+      "i32(" + (int32_to_string : (int32) -> string)((self/1 : int32)) + ")";
+  }
+}
+
+impl Eq for int32{
+  fn eq(self/2: int32, other/3: int32) -> bool {
+      (self/2 : int32) == (other/3 : int32);
+  }
+}
+
+impl Hash for int32{
+  fn hash(self/4: int32) -> int32 {
+      (self/4 : int32) * 16777619 + 216613626;
+  }
+}
+
+impl Add for int32{
+  fn add(self/5: int32, other/6: int32) -> int32 {
+      (self/5 : int32) + (other/6 : int32);
+  }
+}
+
+impl Scale for int32{
+  fn scale(self/7: int32, factor/8: int32) -> int32 {
+      (self/7 : int32) * (factor/8 : int32);
+  }
+}
+
+impl Inspect for int32{
+  fn inspect(self/9: int32) -> string {
+      "<" + (int32_to_string : (int32) -> string)((self/9 : int32)) + ">";
+  }
+}
+
+impl Display for Boxed{
+  fn show(self/10: Boxed) -> string {
+      "Boxed(" + (int32_to_string : (int32) -> string)((self/10 : Boxed).value) + ")";
+  }
+}
+
+impl Debug for Boxed{
+  fn show(self/11: Boxed) -> string {
+      "Boxed{value=" + (int32_to_string : (int32) -> string)((self/11 : Boxed).value) + "}";
+  }
+}
+
+impl Eq for Boxed{
+  fn eq(self/12: Boxed, other/13: Boxed) -> bool {
+      (self/12 : Boxed).value == (other/13 : Boxed).value;
+  }
+}
+
+impl Hash for Boxed{
+  fn hash(self/14: Boxed) -> int32 {
+      (self/14 : Boxed).value * 31 + 7 * 1315423911;
+  }
+}
+
+impl Add for Boxed{
+  fn add(self/15: Boxed, other/16: Boxed) -> Boxed {
+      Boxed { value: (self/15 : Boxed).value + (other/16 : Boxed).value };
+  }
+}
+
+impl Scale for Boxed{
+  fn scale(self/17: Boxed, factor/18: int32) -> Boxed {
+      Boxed { value: (self/17 : Boxed).value * (factor/18 : int32) };
+  }
+}
+
+impl Inspect for Boxed{
+  fn inspect(self/19: Boxed) -> string {
+      "[" + (int32_to_string : (int32) -> string)((self/19 : Boxed).value) + "]";
+  }
+}
+
+fn bool_text(x/20: bool) -> string {
+    if (x/20 : bool) {
+        {
+            "true";
+        }
+    } else {
+        {
+            "false";
+        }
+    };
+}
+
+fn combine_and_render(a/21: T, b/22: T) -> string {
+    let scaled/23: T = (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/21 : T), (b/22 : T)), 2);
+    let same/24: bool = (Eq::eq : (T, T) -> bool)((a/21 : T), (b/22 : T));
+    let sum_hash/25: int32 = (Hash::hash : (T) -> int32)((a/21 : T)) + (Hash::hash : (T) -> int32)((b/22 : T));
+    let dbg/26: string = (Debug::show : (T) -> string)((scaled/23 : T));
+    let disp/27: string = (Display::show : (T) -> string)((scaled/23 : T));
+    (dbg/26 : string) + " | " + (disp/27 : string) + " | eq=" + (bool_text : (bool) -> string)((same/24 : bool)) + " | hash=" + (int32_to_string : (int32) -> string)((sum_hash/25 : int32));
+}
+
+fn sum_and_inspect(x/28: T, y/29: T, z/30: T) -> string {
+    let total/31: T = (Add::add : (T, T) -> T)((Add::add : (T, T) -> T)((x/28 : T), (y/29 : T)), (z/30 : T));
+    let h/32: int32 = (Hash::hash : (T) -> int32)((total/31 : T));
+    (Inspect::inspect : (T) -> string)((total/31 : T)) + " @" + (int32_to_string : (int32) -> string)((h/32 : int32));
+}
+
+fn main() -> unit {
+    let _ : unit = (string_println : (string) -> unit)((combine_and_render : (int32, int32) -> string)(10, 32));
+    let _ : unit = (string_println : (string) -> unit)((combine_and_render : (Boxed, Boxed) -> string)(Boxed { value: 3 }, Boxed { value: 4 }));
+    let _ : unit = (string_println : (string) -> unit)((sum_and_inspect : (int32, int32, int32) -> string)(1, 2, 3));
+    let _ : unit = (string_println : (string) -> unit)((sum_and_inspect : (Boxed, Boxed, Boxed) -> string)(Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
+    ();
+}

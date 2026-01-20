@@ -938,9 +938,7 @@ fn collect_captured(
         LiftExpr::EToDyn { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }
-        LiftExpr::EDynCall {
-            receiver, args, ..
-        } => {
+        LiftExpr::EDynCall { receiver, args, .. } => {
             collect_captured(receiver, bound, captured, scope);
             for arg in args {
                 collect_captured(arg, bound, captured, scope);

@@ -235,7 +235,7 @@ fn func_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![fn]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, true);
     }
     if p.at(T!['(']) {
         param_list(p);
@@ -283,7 +283,7 @@ fn impl_has_trait(p: &mut Parser) -> bool {
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, false);
     }
     if impl_has_trait(p) {
         parse_path_always(p);
@@ -316,7 +316,7 @@ fn trait_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![trait]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, false);
     }
     if p.at(T!['{']) {
         trait_method_list(p);
@@ -369,7 +369,7 @@ fn enum_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![enum]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, false);
     }
     if p.at(T!['{']) {
         variant_list(p);
@@ -387,7 +387,7 @@ fn struct_def_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![struct]);
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, false);
     }
     if p.at(T!['{']) {
         struct_field_list(p);
@@ -483,23 +483,47 @@ fn type_list(p: &mut Parser) {
     p.close(m, MySyntaxKind::TYPE_LIST);
 }
 
-fn generic(p: &mut Parser) {
+fn generic(p: &mut Parser, allow_bounds: bool) {
     assert!(p.at(T![ident]));
     let m = p.open();
     p.expect(T![ident]);
     if p.at(T!['[']) {
-        generic_list(p);
+        generic_list(p, false);
+    }
+    if allow_bounds && p.eat(T![:]) {
+        trait_set(p);
     }
     p.close(m, MySyntaxKind::GENERIC);
 }
 
-fn generic_list(p: &mut Parser) {
+fn trait_set(p: &mut Parser) {
+    let m = p.open();
+    if p.at(T![ident]) || p.at(T![::]) {
+        parse_path_always(p);
+    } else {
+        p.advance_with_error("expected a trait name");
+        p.close(m, MySyntaxKind::TRAIT_SET);
+        return;
+    }
+
+    while p.eat(T![+]) {
+        if p.at(T![ident]) || p.at(T![::]) {
+            parse_path_always(p);
+        } else {
+            p.advance_with_error("expected a trait name after '+'");
+            break;
+        }
+    }
+    p.close(m, MySyntaxKind::TRAIT_SET);
+}
+
+fn generic_list(p: &mut Parser, allow_bounds: bool) {
     assert!(p.at(T!['[']));
     let m = p.open();
     p.expect(T!['[']);
     while !p.at(T![']']) && !p.eof() {
         if p.at(T![ident]) {
-            generic(p);
+            generic(p, allow_bounds);
             p.eat(T![,]);
         } else {
             p.advance_with_error("expected a generic");

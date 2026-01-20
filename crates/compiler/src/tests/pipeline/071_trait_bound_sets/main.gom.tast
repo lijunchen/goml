@@ -1,0 +1,32 @@
+impl A for S{
+  fn foo(self/0: S) -> string {
+      "A";
+  }
+}
+
+impl B for S{
+  fn foo(self/1: S) -> string {
+      "B";
+  }
+}
+
+impl C for S{
+  fn bar(self/2: S) -> string {
+      "C";
+  }
+}
+
+fn pick_a(x/3: T) -> string {
+    (A::foo : (T) -> string)((x/3 : T));
+}
+
+fn bar_it(x/4: T) -> string {
+    (C::bar : (T) -> string)((x/4 : T));
+}
+
+fn main() -> unit {
+    let s/5: S = S {};
+    let _ : unit = (string_println : (string) -> unit)((pick_a : (S) -> string)((s/5 : S)));
+    let _ : unit = (string_println : (string) -> unit)((bar_it : (S) -> string)((s/5 : S)));
+    ();
+}
