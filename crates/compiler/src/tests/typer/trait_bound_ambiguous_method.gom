@@ -1,0 +1,31 @@
+trait A {
+    fn foo(Self) -> string;
+}
+
+trait B {
+    fn foo(Self) -> string;
+}
+
+struct S {}
+
+impl A for S {
+    fn foo(self: S) -> string {
+        "A"
+    }
+}
+
+impl B for S {
+    fn foo(self: S) -> string {
+        "B"
+    }
+}
+
+fn amb[T: A + B](x: T) -> string {
+    x.foo()
+}
+
+fn main() {
+    let s = S {};
+    let _ = string_println(amb(s));
+    ()
+}

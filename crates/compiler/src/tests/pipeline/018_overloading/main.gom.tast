@@ -21,13 +21,13 @@ impl ToString for bool{
 
 impl Output for int32{
   fn output(self/6: int32) -> unit {
-      (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((self/6 : int32)));
+      (string_println : (string) -> unit)((ToString::to_string : (int32) -> string)((self/6 : int32)));
   }
 }
 
 impl Output for bool{
   fn output(self/7: bool) -> unit {
-      (string_println : (string) -> unit)((ToString::to_string : (Self) -> string)((self/7 : bool)));
+      (string_println : (string) -> unit)((ToString::to_string : (bool) -> string)((self/7 : bool)));
   }
 }
 
@@ -38,12 +38,12 @@ fn id(x/8: T) -> T {
 fn main() -> unit {
     let a/9: int32 = (id : (int32) -> int32)(1);
     let b/10: int32 = (id : (int32) -> int32)(2);
-    let c/11: int32 = (Arith::add : (Self, Self) -> int32)((a/9 : int32), (b/10 : int32));
-    let _ : unit = (Output::output : (Self) -> unit)((c/11 : int32));
+    let c/11: int32 = (Arith::add : (int32, int32) -> int32)((a/9 : int32), (b/10 : int32));
+    let _ : unit = (Output::output : (int32) -> unit)((c/11 : int32));
     let a/12: int32 = (id : (int32) -> int32)(3);
     let b/13: int32 = (id : (int32) -> int32)(4);
-    let c/14: bool = (Arith::less : (Self, Self) -> bool)((a/12 : int32), (b/13 : int32));
-    let _ : unit = (Output::output : (Self) -> unit)((c/14 : bool));
+    let c/14: bool = (Arith::less : (int32, int32) -> bool)((a/12 : int32), (b/13 : int32));
+    let _ : unit = (Output::output : (bool) -> unit)((c/14 : bool));
     let _ : string = (id : (string) -> string)("abc");
     let _ : bool = (id : (bool) -> bool)(true);
     ();

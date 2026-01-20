@@ -1,0 +1,49 @@
+package Main
+file main.gom
+  trait A {
+      fn foo(Self) -> string;
+    }
+    
+    trait B {
+      fn foo(Self) -> string;
+    }
+    
+    trait C {
+      fn bar(Self) -> string;
+    }
+    
+    struct S {
+    }
+    
+    impl A for S {
+      fn foo(local/1/0: S) -> string {
+        "A";
+      }
+    }
+    
+    impl B for S {
+      fn foo(local/1/1: S) -> string {
+        "B";
+      }
+    }
+    
+    impl C for S {
+      fn bar(local/1/2: S) -> string {
+        "C";
+      }
+    }
+    
+    fn pick_a(local/1/3: T) -> string {
+      A::foo(x/3);
+    }
+    
+    fn bar_it(local/1/4: T) -> string {
+      x/4.bar();
+    }
+    
+    fn main() {
+      let local/1/5 = S {};
+      let _ = string_println(def/1/7(s/5));
+      let _ = string_println(def/1/8(s/5));
+      ();
+    }

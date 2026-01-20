@@ -112,7 +112,7 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[in
 
 fn main() -> unit {
     let (tracker/53: Tracker, snapshot/54: () -> Record[int32], bump/55: (int32) -> Record[int32], flip/56: () -> Record[string]) = (build_counter : (string, int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]))("goml", 2);
-    let tracker_info/57: string = (Describe::describe : (Self) -> string)((tracker/53 : Tracker));
+    let tracker_info/57: string = (Describe::describe : (Tracker) -> string)((tracker/53 : Tracker));
     let first_record/58: Record[int32] = (snapshot/54 : () -> Record[int32])();
     let bumped_record/59: Record[int32] = (bump/55 : (int32) -> Record[int32])(5);
     let flipped_record/60: Record[string] = (flip/56 : () -> Record[string])();
@@ -125,9 +125,9 @@ fn main() -> unit {
     let first_result/67: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 0);
     let second_result/68: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 1);
     let order_check/69: bool = (first_result/67 : int32) < (second_result/68 : int32) && true;
-    let first_text/70: string = (Describe::describe : (Self) -> string)((first_record/58 : Record[int32]));
-    let bumped_text/71: string = (Describe::describe : (Self) -> string)((bumped_record/59 : Record[int32]));
-    let flipped_text/72: string = (Describe::describe : (Self) -> string)((flipped_record/60 : Record[string]));
+    let first_text/70: string = (Describe::describe : (Record[int32]) -> string)((first_record/58 : Record[int32]));
+    let bumped_text/71: string = (Describe::describe : (Record[int32]) -> string)((bumped_record/59 : Record[int32]));
+    let flipped_text/72: string = (Describe::describe : (Record[string]) -> string)((flipped_record/60 : Record[string]));
     let summary/74: string = match (stringified/64 : Maybe[string]) {
         Maybe::Some(text/73: string) => "Snapshot: " + (text/73 : string),
         Maybe::None => "Snapshot: none",

@@ -1,0 +1,26 @@
+fn trait_impl#A#S#foo(self/0: S) -> string {
+  "A"
+}
+
+fn trait_impl#B#S#foo(self/1: S) -> string {
+  "B"
+}
+
+fn trait_impl#C#S#bar(self/2: S) -> string {
+  "C"
+}
+
+fn main() -> unit {
+  let s/5 = S {} in
+  let mtmp0 = string_println(pick_a__T_S(s/5)) in
+  let mtmp1 = string_println(bar_it__T_S(s/5)) in
+  ()
+}
+
+fn pick_a__T_S(x/3: S) -> string {
+  trait_impl#A#S#foo(x/3)
+}
+
+fn bar_it__T_S(x/4: S) -> string {
+  trait_impl#C#S#bar(x/4)
+}
