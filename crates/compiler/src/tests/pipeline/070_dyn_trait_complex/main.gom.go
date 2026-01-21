@@ -64,19 +64,19 @@ type dyn__Display struct {
 }
 
 func dyn__Display__wrap__Counter__show(self any) string {
-    return goml__trait__impl_x23_Display_x23_Counter_x23_show(self.(Counter))
+    return _goml_trait_impl_Display_Counter_show(self.(Counter))
 }
 
 func dyn__Display__wrap__Counter__show_with(self any, p0 string, p1 string) string {
-    return goml__trait__impl_x23_Display_x23_Counter_x23_show__with(self.(Counter), p0, p1)
+    return _goml_trait_impl_Display_Counter_show_with(self.(Counter), p0, p1)
 }
 
 func dyn__Display__wrap__Counter__tick(self any) struct{} {
-    return goml__trait__impl_x23_Display_x23_Counter_x23_tick(self.(Counter))
+    return _goml_trait_impl_Display_Counter_tick(self.(Counter))
 }
 
 func dyn__Display__wrap__Counter__bump(self any, p0 int32) int32 {
-    return goml__trait__impl_x23_Display_x23_Counter_x23_bump(self.(Counter), p0)
+    return _goml_trait_impl_Display_Counter_bump(self.(Counter), p0)
 }
 
 func dyn__Display__vtable__Counter() *dyn__Display_vtable {
@@ -89,19 +89,19 @@ func dyn__Display__vtable__Counter() *dyn__Display_vtable {
 }
 
 func dyn__Display__wrap__Flag__show(self any) string {
-    return goml__trait__impl_x23_Display_x23_Flag_x23_show(self.(Flag))
+    return _goml_trait_impl_Display_Flag_show(self.(Flag))
 }
 
 func dyn__Display__wrap__Flag__show_with(self any, p0 string, p1 string) string {
-    return goml__trait__impl_x23_Display_x23_Flag_x23_show__with(self.(Flag), p0, p1)
+    return _goml_trait_impl_Display_Flag_show_with(self.(Flag), p0, p1)
 }
 
 func dyn__Display__wrap__Flag__tick(self any) struct{} {
-    return goml__trait__impl_x23_Display_x23_Flag_x23_tick(self.(Flag))
+    return _goml_trait_impl_Display_Flag_tick(self.(Flag))
 }
 
 func dyn__Display__wrap__Flag__bump(self any, p0 int32) int32 {
-    return goml__trait__impl_x23_Display_x23_Flag_x23_bump(self.(Flag), p0)
+    return _goml_trait_impl_Display_Flag_bump(self.(Flag), p0)
 }
 
 func dyn__Display__vtable__Flag() *dyn__Display_vtable {
@@ -114,19 +114,19 @@ func dyn__Display__vtable__Flag() *dyn__Display_vtable {
 }
 
 func dyn__Display__wrap__Point__show(self any) string {
-    return goml__trait__impl_x23_Display_x23_Point_x23_show(self.(Point))
+    return _goml_trait_impl_Display_Point_show(self.(Point))
 }
 
 func dyn__Display__wrap__Point__show_with(self any, p0 string, p1 string) string {
-    return goml__trait__impl_x23_Display_x23_Point_x23_show__with(self.(Point), p0, p1)
+    return _goml_trait_impl_Display_Point_show_with(self.(Point), p0, p1)
 }
 
 func dyn__Display__wrap__Point__tick(self any) struct{} {
-    return goml__trait__impl_x23_Display_x23_Point_x23_tick(self.(Point))
+    return _goml_trait_impl_Display_Point_tick(self.(Point))
 }
 
 func dyn__Display__wrap__Point__bump(self any, p0 int32) int32 {
-    return goml__trait__impl_x23_Display_x23_Point_x23_bump(self.(Point), p0)
+    return _goml_trait_impl_Display_Point_bump(self.(Point), p0)
 }
 
 func dyn__Display__vtable__Point() *dyn__Display_vtable {
@@ -138,7 +138,7 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
     }
 }
 
-func goml__trait__impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
+func _goml_trait_impl_Display_Point_show(self__0 Point) string {
     var ret68 string
     var t17 int32 = self__0.x
     var t16 string = int32_to_string(t17)
@@ -151,7 +151,7 @@ func goml__trait__impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
     return ret68
 }
 
-func goml__trait__impl_x23_Display_x23_Point_x23_show__with(self__1 Point, prefix__2 string, suffix__3 string) string {
+func _goml_trait_impl_Display_Point_show_with(self__1 Point, prefix__2 string, suffix__3 string) string {
     var ret69 string
     var t24 string = prefix__2 + "Point("
     var t26 int32 = self__1.x
@@ -166,13 +166,13 @@ func goml__trait__impl_x23_Display_x23_Point_x23_show__with(self__1 Point, prefi
     return ret69
 }
 
-func goml__trait__impl_x23_Display_x23_Point_x23_tick(self__4 Point) struct{} {
+func _goml_trait_impl_Display_Point_tick(self__4 Point) struct{} {
     var ret70 struct{}
     ret70 = struct{}{}
     return ret70
 }
 
-func goml__trait__impl_x23_Display_x23_Point_x23_bump(self__5 Point, delta__6 int32) int32 {
+func _goml_trait_impl_Display_Point_bump(self__5 Point, delta__6 int32) int32 {
     var ret71 int32
     var t30 int32 = self__5.x
     var t31 int32 = self__5.y
@@ -181,7 +181,7 @@ func goml__trait__impl_x23_Display_x23_Point_x23_bump(self__5 Point, delta__6 in
     return ret71
 }
 
-func goml__trait__impl_x23_Display_x23_Flag_x23_show(self__7 Flag) string {
+func _goml_trait_impl_Display_Flag_show(self__7 Flag) string {
     var ret72 string
     var t32 bool = self__7.value
     if t32 {
@@ -192,7 +192,7 @@ func goml__trait__impl_x23_Display_x23_Flag_x23_show(self__7 Flag) string {
     return ret72
 }
 
-func goml__trait__impl_x23_Display_x23_Flag_x23_show__with(self__8 Flag, prefix__9 string, suffix__10 string) string {
+func _goml_trait_impl_Display_Flag_show_with(self__8 Flag, prefix__9 string, suffix__10 string) string {
     var ret73 string
     var t33 bool = self__8.value
     if t33 {
@@ -205,13 +205,13 @@ func goml__trait__impl_x23_Display_x23_Flag_x23_show__with(self__8 Flag, prefix_
     return ret73
 }
 
-func goml__trait__impl_x23_Display_x23_Flag_x23_tick(self__11 Flag) struct{} {
+func _goml_trait_impl_Display_Flag_tick(self__11 Flag) struct{} {
     var ret74 struct{}
     ret74 = struct{}{}
     return ret74
 }
 
-func goml__trait__impl_x23_Display_x23_Flag_x23_bump(self__12 Flag, delta__13 int32) int32 {
+func _goml_trait_impl_Display_Flag_bump(self__12 Flag, delta__13 int32) int32 {
     var ret75 int32
     var t36 bool = self__12.value
     if t36 {
@@ -222,7 +222,7 @@ func goml__trait__impl_x23_Display_x23_Flag_x23_bump(self__12 Flag, delta__13 in
     return ret75
 }
 
-func goml__trait__impl_x23_Display_x23_Counter_x23_show(self__14 Counter) string {
+func _goml_trait_impl_Display_Counter_show(self__14 Counter) string {
     var ret76 string
     var t40 *ref_int32_x = self__14.cell
     var t39 int32 = ref_get__Ref_int32(t40)
@@ -232,7 +232,7 @@ func goml__trait__impl_x23_Display_x23_Counter_x23_show(self__14 Counter) string
     return ret76
 }
 
-func goml__trait__impl_x23_Display_x23_Counter_x23_show__with(self__15 Counter, prefix__16 string, suffix__17 string) string {
+func _goml_trait_impl_Display_Counter_show_with(self__15 Counter, prefix__16 string, suffix__17 string) string {
     var ret77 string
     var t43 string = prefix__16 + "Counter("
     var t46 *ref_int32_x = self__15.cell
@@ -244,7 +244,7 @@ func goml__trait__impl_x23_Display_x23_Counter_x23_show__with(self__15 Counter, 
     return ret77
 }
 
-func goml__trait__impl_x23_Display_x23_Counter_x23_tick(self__18 Counter) struct{} {
+func _goml_trait_impl_Display_Counter_tick(self__18 Counter) struct{} {
     var ret78 struct{}
     var t48 *ref_int32_x = self__18.cell
     var t47 int32 = ref_get__Ref_int32(t48)
@@ -255,7 +255,7 @@ func goml__trait__impl_x23_Display_x23_Counter_x23_tick(self__18 Counter) struct
     return ret78
 }
 
-func goml__trait__impl_x23_Display_x23_Counter_x23_bump(self__20 Counter, delta__21 int32) int32 {
+func _goml_trait_impl_Display_Counter_bump(self__20 Counter, delta__21 int32) int32 {
     var ret79 int32
     var t51 *ref_int32_x = self__20.cell
     var t50 int32 = ref_get__Ref_int32(t51)
@@ -275,7 +275,7 @@ func show_dyn(x__23 dyn__Display) string {
 func call_via_closure(x__24 dyn__Display, tag__25 string) string {
     var ret81 string
     var f__28 closure_env_f_0 = closure_env_f_0{}
-    ret81 = goml__inherent_x23_closure__env__f__0_x23_closure__env__f__0_x23_apply(f__28, x__24, tag__25)
+    ret81 = _goml_inherent_closure_env_f_0_closure_env_f_0_apply(f__28, x__24, tag__25)
     return ret81
 }
 
@@ -342,9 +342,9 @@ func main0() struct{} {
     var render_angle__44 closure_env_make_renderer_1 = make_renderer("<")
     var s0__45 string = show_dyn(dp2__39)
     var s1__46 string = call_via_closure(df2__41, "*")
-    var t59 string = goml__inherent_x23_closure__env__make__renderer__1_x23_closure__env__make__renderer__1_x23_apply(render_star__43, dp1__38)
+    var t59 string = _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(render_star__43, dp1__38)
     var t58 string = t59 + "|"
-    var t60 string = goml__inherent_x23_closure__env__make__renderer__1_x23_closure__env__make__renderer__1_x23_apply(render_angle__44, df1__40)
+    var t60 string = _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(render_angle__44, df1__40)
     var s2__47 string = t58 + t60
     var v__48 []dyn__Display = nil
     var v__49 []dyn__Display = append(v__48, dp1__38)
@@ -385,13 +385,13 @@ func main0() struct{} {
     return ret84
 }
 
-func goml__inherent_x23_closure__env__f__0_x23_closure__env__f__0_x23_apply(env11 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
+func _goml_inherent_closure_env_f_0_closure_env_f_0_apply(env11 closure_env_f_0, v__26 dyn__Display, t__27 string) string {
     var ret86 string
     ret86 = v__26.vtable.show_with(v__26.data, t__27, t__27)
     return ret86
 }
 
-func goml__inherent_x23_closure__env__make__renderer__1_x23_closure__env__make__renderer__1_x23_apply(env12 closure_env_make_renderer_1, x__30 dyn__Display) string {
+func _goml_inherent_closure_env_make_renderer_1_closure_env_make_renderer_1_apply(env12 closure_env_make_renderer_1, x__30 dyn__Display) string {
     var ret87 string
     var tag__29 string = env12.tag_0
     ret87 = x__30.vtable.show_with(x__30.data, tag__29, tag__29)

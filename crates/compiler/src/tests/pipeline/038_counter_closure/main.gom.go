@@ -69,15 +69,15 @@ func main0() struct{} {
     var x4 closure_env_reset_1 = mtmp2._1
     var reset__6 closure_env_reset_1 = x4
     var next__5 closure_env_next_0 = x3
-    var first__7 int32 = goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_apply(next__5)
-    var second__8 int32 = goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_apply(next__5)
-    goml__inherent_x23_closure__env__reset__1_x23_closure__env__reset__1_x23_apply(reset__6)
-    var third__9 int32 = goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_apply(next__5)
+    var first__7 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
+    var second__8 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
+    _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__6)
+    var third__9 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
     var new_counter__10 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
     var mtmp6 Tuple2_closure_env_next_0_closure_env_reset_1 = new_counter__10
     var x7 closure_env_next_0 = mtmp6._0
     var new_next__11 closure_env_next_0 = x7
-    var fourth__12 int32 = goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_apply(new_next__11)
+    var fourth__12 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(new_next__11)
     var t15 string = int32_to_string(first__7)
     string_println(t15)
     var t16 string = int32_to_string(second__8)
@@ -90,7 +90,7 @@ func main0() struct{} {
     return ret21
 }
 
-func goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_apply(env13 closure_env_next_0) int32 {
+func _goml_inherent_closure_env_next_0_closure_env_next_0_apply(env13 closure_env_next_0) int32 {
     var ret22 int32
     var cell__0 *ref_int32_x = env13.cell_0
     var t19 int32 = ref_get__Ref_int32(cell__0)
@@ -100,7 +100,7 @@ func goml__inherent_x23_closure__env__next__0_x23_closure__env__next__0_x23_appl
     return ret22
 }
 
-func goml__inherent_x23_closure__env__reset__1_x23_closure__env__reset__1_x23_apply(env14 closure_env_reset_1) struct{} {
+func _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(env14 closure_env_reset_1) struct{} {
     var ret23 struct{}
     var cell__0 *ref_int32_x = env14.cell_0
     ref_set__Ref_int32(cell__0, 0)
