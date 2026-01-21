@@ -44,7 +44,7 @@ func main0() struct{} {
     var t4 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
-    go goml__inherent_x23_closure__env__main__0_x23_closure__env__main__0_x23_apply(t4)
+    go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t4)
     var cond8 bool
     for {
         var t5 int32 = ref_get__Ref_int32(signal__1)
@@ -58,7 +58,7 @@ func main0() struct{} {
     return ret7
 }
 
-func goml__inherent_x23_closure__env__main__0_x23_closure__env__main__0_x23_apply(env3 closure_env_main_0) struct{} {
+func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env3 closure_env_main_0) struct{} {
     var ret9 struct{}
     var signal__1 *ref_int32_x = env3.signal_0
     ret9 = child(signal__1)

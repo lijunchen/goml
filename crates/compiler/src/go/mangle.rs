@@ -47,14 +47,18 @@ pub fn go_ident(name: &str) -> String {
     if is_valid_go_ident(name) && !is_go_keyword(name) {
         return name.to_string();
     }
-    let mut out = String::from("goml__");
+    let mut out = String::from("_goml_");
     for ch in name.chars() {
         if ch.is_ascii_alphanumeric() {
             out.push(ch);
             continue;
         }
+        if ch == '#' {
+            out.push_str("_");
+            continue;
+        }
         if ch == '_' {
-            out.push_str("__");
+            out.push_str("_");
             continue;
         }
         out.push_str("_x");

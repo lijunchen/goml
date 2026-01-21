@@ -32,7 +32,7 @@ type dyn__Display struct {
 }
 
 func dyn__Display__wrap__Flag__show(self any) string {
-    return goml__trait__impl_x23_Display_x23_Flag_x23_show(self.(Flag))
+    return _goml_trait_impl_Display_Flag_show(self.(Flag))
 }
 
 func dyn__Display__vtable__Flag() *dyn__Display_vtable {
@@ -42,7 +42,7 @@ func dyn__Display__vtable__Flag() *dyn__Display_vtable {
 }
 
 func dyn__Display__wrap__Point__show(self any) string {
-    return goml__trait__impl_x23_Display_x23_Point_x23_show(self.(Point))
+    return _goml_trait_impl_Display_Point_show(self.(Point))
 }
 
 func dyn__Display__vtable__Point() *dyn__Display_vtable {
@@ -51,7 +51,7 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
     }
 }
 
-func goml__trait__impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
+func _goml_trait_impl_Display_Point_show(self__0 Point) string {
     var ret12 string
     var t6 int32 = self__0.x
     var t5 string = int32_to_string(t6)
@@ -64,7 +64,7 @@ func goml__trait__impl_x23_Display_x23_Point_x23_show(self__0 Point) string {
     return ret12
 }
 
-func goml__trait__impl_x23_Display_x23_Flag_x23_show(self__1 Flag) string {
+func _goml_trait_impl_Display_Flag_show(self__1 Flag) string {
     var ret13 string
     var t9 bool = self__1.value
     if t9 {

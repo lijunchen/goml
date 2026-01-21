@@ -47,13 +47,13 @@ func main0() struct{} {
     var f1__11 closure_env_f1_3 = closure_env_f1_3{
         a_0: a__0,
     }
-    var result__12 int32 = goml__inherent_x23_closure__env__f1__3_x23_closure__env__f1__3_x23_apply(f1__11, 1)
+    var result__12 int32 = _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(f1__11, 1)
     var t4 string = int32_to_string(result__12)
     ret11 = string_println(t4)
     return ret11
 }
 
-func goml__inherent_x23_closure__env__f4__0_x23_closure__env__f4__0_x23_apply(env0 closure_env_f4_0, w__7 int32) int32 {
+func _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(env0 closure_env_f4_0, w__7 int32) int32 {
     var ret12 int32
     var a__0 int32 = env0.a_0
     var b__2 int32 = env0.b_1
@@ -72,7 +72,7 @@ func goml__inherent_x23_closure__env__f4__0_x23_closure__env__f4__0_x23_apply(en
     return ret12
 }
 
-func goml__inherent_x23_closure__env__f3__1_x23_closure__env__f3__1_x23_apply(env1 closure_env_f3_1, z__5 int32) int32 {
+func _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(env1 closure_env_f3_1, z__5 int32) int32 {
     var ret13 int32
     var a__0 int32 = env1.a_0
     var b__2 int32 = env1.b_1
@@ -89,11 +89,11 @@ func goml__inherent_x23_closure__env__f3__1_x23_closure__env__f3__1_x23_apply(en
         y_5: y__3,
         z_6: z__5,
     }
-    ret13 = goml__inherent_x23_closure__env__f4__0_x23_closure__env__f4__0_x23_apply(f4__8, 4)
+    ret13 = _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(f4__8, 4)
     return ret13
 }
 
-func goml__inherent_x23_closure__env__f2__2_x23_closure__env__f2__2_x23_apply(env2 closure_env_f2_2, y__3 int32) int32 {
+func _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(env2 closure_env_f2_2, y__3 int32) int32 {
     var ret14 int32
     var a__0 int32 = env2.a_0
     var b__2 int32 = env2.b_1
@@ -106,11 +106,11 @@ func goml__inherent_x23_closure__env__f2__2_x23_closure__env__f2__2_x23_apply(en
         x_3: x__1,
         y_4: y__3,
     }
-    ret14 = goml__inherent_x23_closure__env__f3__1_x23_closure__env__f3__1_x23_apply(f3__9, 3)
+    ret14 = _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(f3__9, 3)
     return ret14
 }
 
-func goml__inherent_x23_closure__env__f1__3_x23_closure__env__f1__3_x23_apply(env3 closure_env_f1_3, x__1 int32) int32 {
+func _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(env3 closure_env_f1_3, x__1 int32) int32 {
     var ret15 int32
     var a__0 int32 = env3.a_0
     var b__2 int32 = 20
@@ -119,7 +119,7 @@ func goml__inherent_x23_closure__env__f1__3_x23_closure__env__f1__3_x23_apply(en
         b_1: b__2,
         x_2: x__1,
     }
-    ret15 = goml__inherent_x23_closure__env__f2__2_x23_closure__env__f2__2_x23_apply(f2__10, 2)
+    ret15 = _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(f2__10, 2)
     return ret15
 }
 

@@ -30,18 +30,18 @@ type Point__string__int32 struct {
 
 func main0() struct{} {
     var ret4 struct{}
-    var p1__4 Point__int32__string = goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__int32____V__string(10, "hello")
-    var p2__5 Point__string__string = goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__string____V__string("goml", "lang")
-    var p3__6 Point__string__int32 = goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_swap____U__int32____V__string(p1__4)
+    var p1__4 Point__int32__string = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_int32__V_string(10, "hello")
+    var p2__5 Point__string__string = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_string__V_string("goml", "lang")
+    var p3__6 Point__string__int32 = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__swap__U_int32__V_string(p1__4)
     var x__7 int32 = p3__6.y
     var t1 string = int32_to_string(x__7)
     string_println(t1)
-    var x2__8 string = goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_get__x____U__string____V__string(p2__5)
+    var x2__8 string = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__get_x__U_string__V_string(p2__5)
     ret4 = string_println(x2__8)
     return ret4
 }
 
-func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__int32____V__string(x__0 int32, y__1 string) Point__int32__string {
+func _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_int32__V_string(x__0 int32, y__1 string) Point__int32__string {
     var ret5 Point__int32__string
     ret5 = Point__int32__string{
         x: x__0,
@@ -50,7 +50,7 @@ func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__int32____
     return ret5
 }
 
-func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__string____V__string(x__0 string, y__1 string) Point__string__string {
+func _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_string__V_string(x__0 string, y__1 string) Point__string__string {
     var ret6 Point__string__string
     ret6 = Point__string__string{
         x: x__0,
@@ -59,7 +59,7 @@ func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_new____U__string___
     return ret6
 }
 
-func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_swap____U__int32____V__string(self__2 Point__int32__string) Point__string__int32 {
+func _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__swap__U_int32__V_string(self__2 Point__int32__string) Point__string__int32 {
     var ret7 Point__string__int32
     var t2 string = self__2.y
     var t3 int32 = self__2.x
@@ -70,7 +70,7 @@ func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_swap____U__int32___
     return ret7
 }
 
-func goml__inherent_x23_Point_x23_Point_x5b_U_x2c_V_x5d__x23_get__x____U__string____V__string(self__3 Point__string__string) string {
+func _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__get_x__U_string__V_string(self__3 Point__string__string) string {
     var ret8 string
     ret8 = self__3.x
     return ret8
