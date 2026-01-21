@@ -1,0 +1,14 @@
+package UsePkg
+import TraitPkg
+
+fn pick_a[T: TraitPkg::B + TraitPkg::A + TraitPkg::A](x: T) -> string {
+    TraitPkg::A::foo(x)
+}
+
+fn foo_both[T: TraitPkg::A + TraitPkg::B](x: T) -> string {
+    TraitPkg::A::foo(x) + TraitPkg::B::foo(x)
+}
+
+fn bar_it[T: TraitPkg::C](x: T) -> string {
+    x.bar()
+}
