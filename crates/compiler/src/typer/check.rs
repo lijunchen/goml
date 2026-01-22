@@ -6,6 +6,10 @@ use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 use crate::common::{self, Prim};
 use crate::hir::{self};
 use crate::typer::localenv::LocalTypeEnv;
+use crate::typer::results::{
+    CalleeElab, CallElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
+    StructPatElab,
+};
 use crate::{
     env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
     tast::{self},
@@ -29,6 +33,89 @@ impl Typer {
         }
     }
 
+    fn record_expr_result(&mut self, expr_id: hir::ExprId, expr: &tast::Expr) {
+        self.results.record_expr_ty(expr_id, expr.get_ty());
+        match expr {
+            tast::Expr::EUnary { resolution, .. } => {
+                self.results
+                    .record_unary_resolution(expr_id, resolution.clone());
+            }
+            tast::Expr::EBinary { resolution, .. } => {
+                self.results
+                    .record_binary_resolution(expr_id, resolution.clone());
+            }
+            tast::Expr::EClosure { captures, .. } => {
+                self.results
+                    .record_closure_captures(expr_id, captures.clone());
+            }
+            _ => {}
+        }
+    }
+
+    fn record_name_ref_elab(&mut self, expr_id: hir::ExprId, expr: &tast::Expr) {
+        match expr {
+            tast::Expr::EVar { name, ty, astptr } => {
+                self.results.record_name_ref_elab(
+                    expr_id,
+                    NameRefElab::Var {
+                        name: name.clone(),
+                        ty: ty.clone(),
+                        astptr: *astptr,
+                    },
+                );
+            }
+            tast::Expr::ETraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                self.results.record_name_ref_elab(
+                    expr_id,
+                    NameRefElab::TraitMethod {
+                        trait_name: trait_name.clone(),
+                        method_name: method_name.clone(),
+                        ty: ty.clone(),
+                        astptr: *astptr,
+                    },
+                );
+            }
+            tast::Expr::EDynTraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                self.results.record_name_ref_elab(
+                    expr_id,
+                    NameRefElab::DynTraitMethod {
+                        trait_name: trait_name.clone(),
+                        method_name: method_name.clone(),
+                        ty: ty.clone(),
+                        astptr: *astptr,
+                    },
+                );
+            }
+            tast::Expr::EInherentMethod {
+                receiver_ty,
+                method_name,
+                ty,
+                astptr,
+            } => {
+                self.results.record_name_ref_elab(
+                    expr_id,
+                    NameRefElab::InherentMethod {
+                        receiver_ty: receiver_ty.clone(),
+                        method_name: method_name.clone(),
+                        ty: ty.clone(),
+                        astptr: *astptr,
+                    },
+                );
+            }
+            _ => {}
+        }
+    }
+
     pub fn infer_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -37,7 +124,7 @@ impl Typer {
         e: hir::ExprId,
     ) -> tast::Expr {
         let expr = self.hir_table.expr(e).clone();
-        match expr {
+        let out = match expr.clone() {
             hir::Expr::ENameRef { res, hint, astptr } => {
                 self.infer_res_expr(genv, local_env, diagnostics, &res, &hint, astptr)
             }
@@ -139,10 +226,17 @@ impl Typer {
                 ty: tast::Ty::TString,
             },
             hir::Expr::EConstr { constructor, args } => {
-                self.infer_constructor_expr(genv, local_env, diagnostics, &constructor, &args)
+                self.infer_constructor_expr(
+                    genv,
+                    local_env,
+                    diagnostics,
+                    e,
+                    &constructor,
+                    &args,
+                )
             }
             hir::Expr::EStructLiteral { name, fields } => {
-                self.infer_struct_literal_expr(genv, local_env, diagnostics, &name, &fields)
+                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields)
             }
             hir::Expr::ETuple { items } => {
                 self.infer_tuple_expr(genv, local_env, diagnostics, &items)
@@ -174,7 +268,7 @@ impl Typer {
             }
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
-                self.infer_call_expr(genv, local_env, diagnostics, func, &args)
+                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args)
             }
             hir::Expr::EUnary { op, expr } => {
                 self.infer_unary_expr(genv, local_env, diagnostics, op, expr)
@@ -188,7 +282,13 @@ impl Typer {
             hir::Expr::EField { expr, field } => {
                 self.infer_field_expr(genv, local_env, diagnostics, expr, &field, None)
             }
+        };
+
+        self.record_expr_result(e, &out);
+        if matches!(expr, hir::Expr::ENameRef { .. }) {
+            self.record_name_ref_elab(e, &out);
         }
+        out
     }
 
     pub fn check_expr(
@@ -322,8 +422,9 @@ impl Typer {
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
-        let expr_tast = self.coerce_to_expected_dyn(genv, diagnostics, expr_tast, expected);
+        let expr_tast = self.coerce_to_expected_dyn(genv, diagnostics, e, expr_tast, expected);
         self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
+        self.record_expr_result(e, &expr_tast);
         expr_tast
     }
 
@@ -331,6 +432,7 @@ impl Typer {
         &mut self,
         genv: &PackageTypeEnv,
         diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
         expr: tast::Expr,
         expected: &tast::Ty,
     ) -> tast::Expr {
@@ -376,6 +478,15 @@ impl Typer {
             return expr;
         }
 
+        self.results.push_coercion(
+            expr_id,
+            Coercion::ToDyn {
+                trait_name: tast::TastIdent(resolved_trait.clone()),
+                for_ty: for_ty.clone(),
+                ty: expected.clone(),
+                astptr: None,
+            },
+        );
         tast::Expr::EToDyn {
             trait_name: tast::TastIdent(resolved_trait.clone()),
             for_ty,
@@ -597,6 +708,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
         constructor_ref: &hir::ConstructorRef,
         args: &[hir::ExprId],
     ) -> tast::Expr {
@@ -725,6 +837,9 @@ impl Typer {
             self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
         }
 
+        self.results
+            .record_constructor_expr(expr_id, constructor.clone());
+
         tast::Expr::EConstr {
             constructor,
             args: args_tast,
@@ -737,6 +852,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
         name: &hir::QualifiedPath,
         fields: &[(hir::HirIdent, hir::ExprId)],
     ) -> tast::Expr {
@@ -803,6 +919,7 @@ impl Typer {
         }
 
         let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
+        let mut ordered_hir_args: Vec<Option<hir::ExprId>> = vec![None; struct_fields.len()];
         for (field_name, expr) in fields.iter() {
             let idx = field_positions.get(&tast::TastIdent(field_name.to_ident_name()));
             let Some(&idx) = idx else {
@@ -836,6 +953,10 @@ impl Typer {
                 );
                 continue;
             }
+            let hir_slot = ordered_hir_args.get_mut(idx);
+            if let Some(hir_slot) = hir_slot {
+                *hir_slot = Some(*expr);
+            }
             let field_expr = if let Some(expected_ty) = param_tys.get(idx) {
                 self.check_expr(genv, local_env, diagnostics, *expr, expected_ty)
             } else {
@@ -844,6 +965,7 @@ impl Typer {
             *slot = Some(field_expr);
         }
 
+        let mut elab_args = Vec::with_capacity(struct_fields.len());
         for (idx, slot) in ordered_args.iter_mut().enumerate() {
             if slot.is_none() {
                 let missing = struct_fields.get(idx).map(|(name, _)| name.0.as_str());
@@ -852,7 +974,11 @@ impl Typer {
                         diagnostics,
                         format!("struct literal field index {} out of bounds", idx),
                     );
-                    *slot = Some(self.error_expr(None));
+                    let placeholder = self.error_expr(None);
+                    elab_args.push(StructLitArgElab::Missing {
+                        expected_ty: placeholder.get_ty(),
+                    });
+                    *slot = Some(placeholder);
                     continue;
                 };
                 super::util::push_error(
@@ -867,7 +993,20 @@ impl Typer {
                     .cloned()
                     .map(|ty| self.error_expr_with_ty(None, ty))
                     .unwrap_or_else(|| self.error_expr(None));
+                elab_args.push(StructLitArgElab::Missing {
+                    expected_ty: placeholder.get_ty(),
+                });
                 *slot = Some(placeholder);
+            } else if let Some(hir_arg) = ordered_hir_args.get(idx).and_then(|x| *x) {
+                elab_args.push(StructLitArgElab::Expr(hir_arg));
+            } else {
+                let placeholder_ty = slot
+                    .as_ref()
+                    .map(tast::Expr::get_ty)
+                    .unwrap_or(tast::Ty::TUnit);
+                elab_args.push(StructLitArgElab::Missing {
+                    expected_ty: placeholder_ty,
+                });
             }
         }
 
@@ -889,6 +1028,14 @@ impl Typer {
         } else {
             self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
         }
+
+        self.results.record_struct_lit_elab(
+            expr_id,
+            StructLitElab {
+                constructor: constructor.clone(),
+                args: elab_args,
+            },
+        );
 
         tast::Expr::EConstr {
             constructor,
@@ -962,6 +1109,7 @@ impl Typer {
                 None => self.fresh_ty_var(),
             };
             local_env.insert_var(param.name, param_ty.clone());
+            self.results.record_local_ty(param.name, param_ty.clone());
             param_tys.push(param_ty.clone());
             params_tast.push(tast::ClosureParam {
                 name: name_str,
@@ -1025,6 +1173,7 @@ impl Typer {
                     };
 
                     local_env.insert_var(param.name, param_ty.clone());
+                    self.results.record_local_ty(param.name, param_ty.clone());
                     param_tys.push(param_ty.clone());
                     params_tast.push(tast::ClosureParam {
                         name: name_str,
@@ -1346,6 +1495,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        call_expr_id: hir::ExprId,
         func: hir::ExprId,
         args: &[hir::ExprId],
     ) -> tast::Expr {
@@ -1366,6 +1516,15 @@ impl Typer {
 
                 let name_str = self.hir_table.local_ident_name(name);
                 if let Some(var_ty) = local_env.lookup_var(name) {
+                    self.results.record_expr_ty(func, var_ty.clone());
+                    self.results.record_name_ref_elab(
+                        func,
+                        NameRefElab::Var {
+                            name: name_str.clone(),
+                            ty: var_ty.clone(),
+                            astptr: func_astptr,
+                        },
+                    );
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
@@ -1376,6 +1535,13 @@ impl Typer {
                         call_site_func_ty.clone(),
                     ));
 
+                    self.results.record_call_elab(
+                        call_expr_id,
+                        CallElab {
+                            callee: CalleeElab::Expr(func),
+                            args: args.to_vec(),
+                        },
+                    );
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
                             name: name_str,
@@ -1396,6 +1562,7 @@ impl Typer {
             hir::Expr::ENameRef {
                 res: hir::NameRef::Def(_) | hir::NameRef::Builtin(_),
                 hint,
+                astptr,
                 ..
             } => {
                 let name = &hint;
@@ -1448,6 +1615,26 @@ impl Typer {
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
                     ));
+                    self.results.record_expr_ty(func, inst_ty.clone());
+                    self.results.record_name_ref_elab(
+                        func,
+                        NameRefElab::Var {
+                            name: name.clone(),
+                            ty: inst_ty.clone(),
+                            astptr,
+                        },
+                    );
+                    self.results.record_call_elab(
+                        call_expr_id,
+                        CallElab {
+                            callee: CalleeElab::Var {
+                                name: name.clone(),
+                                ty: inst_ty.clone(),
+                                astptr: None,
+                            },
+                            args: args.to_vec(),
+                        },
+                    );
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
                             name: name.clone(),
@@ -1467,6 +1654,7 @@ impl Typer {
             }
             hir::Expr::ENameRef {
                 res: hir::NameRef::Unresolved(path),
+                astptr,
                 ..
             } => {
                 if let Some((full_name, func_ty)) = lookup_function_path(genv, &path) {
@@ -1498,6 +1686,26 @@ impl Typer {
                         _ => inst_ty.clone(),
                     };
 
+                    self.results.record_expr_ty(func, inst_ty.clone());
+                    self.results.record_name_ref_elab(
+                        func,
+                        NameRefElab::Var {
+                            name: full_name.clone(),
+                            ty: inst_ty.clone(),
+                            astptr,
+                        },
+                    );
+                    self.results.record_call_elab(
+                        call_expr_id,
+                        CallElab {
+                            callee: CalleeElab::Var {
+                                name: full_name.clone(),
+                                ty: inst_ty.clone(),
+                                astptr: None,
+                            },
+                            args: args.to_vec(),
+                        },
+                    );
                     return tast::Expr::ECall {
                         func: Box::new(tast::Expr::EVar {
                             name: full_name,
@@ -1595,6 +1803,28 @@ impl Typer {
                                     ret_ty: ret_ty.clone(),
                                 };
 
+                                self.results.record_expr_ty(func, dyn_method_ty.clone());
+                                self.results.record_name_ref_elab(
+                                    func,
+                                    NameRefElab::DynTraitMethod {
+                                        trait_name: type_ident.clone(),
+                                        method_name: member_ident.clone(),
+                                        ty: dyn_method_ty.clone(),
+                                        astptr,
+                                    },
+                                );
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::DynTraitMethod {
+                                            trait_name: type_ident.clone(),
+                                            method_name: member_ident.clone(),
+                                            ty: dyn_method_ty.clone(),
+                                            astptr: None,
+                                        },
+                                        args: args.to_vec(),
+                                    },
+                                );
                                 return tast::Expr::ECall {
                                     func: Box::new(tast::Expr::EDynTraitMethod {
                                         trait_name: type_ident.clone(),
@@ -1662,6 +1892,28 @@ impl Typer {
                             });
                         }
 
+                        self.results.record_call_elab(
+                            call_expr_id,
+                            CallElab {
+                                callee: CalleeElab::TraitMethod {
+                                    trait_name: type_ident.clone(),
+                                    method_name: member_ident.clone(),
+                                    ty: inst_method_ty_for_call.clone(),
+                                    astptr: None,
+                                },
+                                args: args.to_vec(),
+                            },
+                        );
+                        self.results.record_expr_ty(func, inst_method_ty_for_call.clone());
+                        self.results.record_name_ref_elab(
+                            func,
+                            NameRefElab::TraitMethod {
+                                trait_name: type_ident.clone(),
+                                method_name: member_ident.clone(),
+                                ty: inst_method_ty_for_call.clone(),
+                                astptr,
+                            },
+                        );
                         return tast::Expr::ECall {
                             func: Box::new(tast::Expr::ETraitMethod {
                                 trait_name: type_ident.clone(),
@@ -1720,6 +1972,28 @@ impl Typer {
                             args_tast.push(arg_tast);
                         }
 
+                        self.results.record_call_elab(
+                            call_expr_id,
+                            CallElab {
+                                callee: CalleeElab::InherentMethod {
+                                    receiver_ty: receiver_ty.clone(),
+                                    method_name: member_ident.clone(),
+                                    ty: inst_method_ty.clone(),
+                                    astptr: None,
+                                },
+                                args: args.to_vec(),
+                            },
+                        );
+                        self.results.record_expr_ty(func, inst_method_ty.clone());
+                        self.results.record_name_ref_elab(
+                            func,
+                            NameRefElab::InherentMethod {
+                                receiver_ty: receiver_ty.clone(),
+                                method_name: member_ident.clone(),
+                                ty: inst_method_ty.clone(),
+                                astptr,
+                            },
+                        );
                         tast::Expr::ECall {
                             func: Box::new(tast::Expr::EInherentMethod {
                                 receiver_ty: receiver_ty.clone(),
@@ -1777,6 +2051,30 @@ impl Typer {
                         call_site_ty,
                     ));
 
+                    self.results.record_expr_ty(func, inst_method_ty.clone());
+                    self.results.record_name_ref_elab(
+                        func,
+                        NameRefElab::InherentMethod {
+                            receiver_ty: receiver_ty.clone(),
+                            method_name: tast::TastIdent(field.to_ident_name()),
+                            ty: inst_method_ty.clone(),
+                            astptr: None,
+                        },
+                    );
+                    self.results.record_call_elab(
+                        call_expr_id,
+                        CallElab {
+                            callee: CalleeElab::InherentMethod {
+                                receiver_ty: receiver_ty.clone(),
+                                method_name: tast::TastIdent(field.to_ident_name()),
+                                ty: inst_method_ty.clone(),
+                                astptr: None,
+                            },
+                            args: std::iter::once(receiver_expr)
+                                .chain(args.iter().copied())
+                                .collect(),
+                        },
+                    );
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EInherentMethod {
                             receiver_ty: receiver_ty.clone(),
@@ -1854,6 +2152,30 @@ impl Typer {
                                 receiver_param_ty,
                             ));
 
+                            self.results.record_call_elab(
+                                call_expr_id,
+                                CallElab {
+                                    callee: CalleeElab::TraitMethod {
+                                        trait_name: trait_name.clone(),
+                                        method_name: method_name.clone(),
+                                        ty: inst_method_ty_for_call.clone(),
+                                        astptr: None,
+                                    },
+                                    args: std::iter::once(receiver_expr)
+                                        .chain(args.iter().copied())
+                                        .collect(),
+                                },
+                            );
+                            self.results.record_expr_ty(func, inst_method_ty_for_call.clone());
+                            self.results.record_name_ref_elab(
+                                func,
+                                NameRefElab::TraitMethod {
+                                    trait_name: trait_name.clone(),
+                                    method_name: method_name.clone(),
+                                    ty: inst_method_ty_for_call.clone(),
+                                    astptr: None,
+                                },
+                            );
                             tast::Expr::ECall {
                                 func: Box::new(tast::Expr::ETraitMethod {
                                     trait_name: trait_name.clone(),
@@ -1932,6 +2254,13 @@ impl Typer {
                     call_site_func_ty.clone(),
                 ));
 
+                self.results.record_call_elab(
+                    call_expr_id,
+                    CallElab {
+                        callee: CalleeElab::Expr(func),
+                        args: args.to_vec(),
+                    },
+                );
                 tast::Expr::ECall {
                     func: Box::new(func_tast),
                     args: args_tast,
@@ -2116,7 +2445,7 @@ impl Typer {
         ty: &tast::Ty,
     ) -> tast::Pat {
         let pat_node = self.hir_table.pat(pat).clone();
-        match pat_node {
+        let out = match pat_node {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
@@ -2158,7 +2487,9 @@ impl Typer {
                 self.check_pat_tuple(genv, local_env, diagnostics, &pats, ty)
             }
             hir::Pat::PWild => self.check_pat_wild(ty),
-        }
+        };
+        self.results.record_pat_ty(pat, out.get_ty());
+        out
     }
 
     fn check_pat_var(
@@ -2170,6 +2501,7 @@ impl Typer {
         ty: &tast::Ty,
     ) -> tast::Pat {
         local_env.insert_var(name, ty.clone());
+        self.results.record_local_ty(name, ty.clone());
         let name_str = self.hir_table.local_ident_name(name);
         tast::Pat::PVar {
             name: name_str,
@@ -2360,6 +2692,8 @@ impl Typer {
 
                 self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
+                self.results
+                    .record_constructor_pat(pat, constructor.clone());
                 tast::Pat::PConstr {
                     constructor,
                     args: args_tast,
@@ -2432,6 +2766,7 @@ impl Typer {
                 }
 
                 let mut args_tast = Vec::with_capacity(struct_fields.len());
+                let mut elab_args = Vec::with_capacity(struct_fields.len());
                 for (idx, (field_name, _)) in struct_fields.iter().enumerate() {
                     let expected_ty = param_tys
                         .get(idx)
@@ -2440,6 +2775,7 @@ impl Typer {
                     let pat_id = field_map.remove(&field_name.0);
                     let pat_tast = match pat_id {
                         Some(pat_id) => {
+                            elab_args.push(StructPatArgElab::Pat(pat_id));
                             self.check_pat(genv, local_env, diagnostics, pat_id, &expected_ty)
                         }
                         None => {
@@ -2450,7 +2786,11 @@ impl Typer {
                                     name_display, field_name.0
                                 ),
                             );
-                            self.check_pat_wild(&expected_ty)
+                            let wild = self.check_pat_wild(&expected_ty);
+                            elab_args.push(StructPatArgElab::MissingWild {
+                                expected_ty: wild.get_ty(),
+                            });
+                            wild
                         }
                     };
                     args_tast.push(pat_tast);
@@ -2469,6 +2809,13 @@ impl Typer {
 
                 self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
 
+                self.results.record_struct_pat_elab(
+                    pat,
+                    StructPatElab {
+                        constructor: constructor.clone(),
+                        args: elab_args,
+                    },
+                );
                 tast::Pat::PConstr {
                     constructor,
                     args: args_tast,

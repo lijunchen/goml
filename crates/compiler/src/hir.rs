@@ -430,6 +430,18 @@ impl HirTable {
         self.package
     }
 
+    pub fn expr_count(&self) -> usize {
+        self.exprs.len()
+    }
+
+    pub fn pat_count(&self) -> usize {
+        self.pats.len()
+    }
+
+    pub fn local_count(&self) -> usize {
+        self.local_info.len()
+    }
+
     pub fn dummy_expr(&self) -> ExprId {
         self.dummy_expr
     }
