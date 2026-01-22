@@ -21,8 +21,9 @@ fn typecheck_ast(
     if !ast.imports.is_empty() {
         return Err("error: package imports are not supported in webapp".to_string());
     }
-    let (fir, fir_table) = compiler::fir::lower_to_fir(ast);
-    let (tast, genv, diagnostics) = compiler::typer::check_file(fir, fir_table);
+    let (fir, fir_table, mut fir_diagnostics) = compiler::fir::lower_to_fir(ast);
+    let (tast, genv, mut diagnostics) = compiler::typer::check_file(fir, fir_table);
+    diagnostics.append(&mut fir_diagnostics);
     Ok((tast, genv, diagnostics))
 }
 

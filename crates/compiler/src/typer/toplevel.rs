@@ -185,12 +185,14 @@ fn define_trait_impl(
         ));
         return;
     };
-    let trait_def = trait_env
-        .trait_env
-        .trait_defs
-        .get(&trait_name_str)
-        .cloned()
-        .expect("trait def to exist");
+    let trait_def = trait_env.trait_env.trait_defs.get(&trait_name_str).cloned();
+    let Some(trait_def) = trait_def else {
+        super::util::push_ice(
+            diagnostics,
+            format!("trait def missing after resolution: {}", trait_name_str),
+        );
+        return;
+    };
     let trait_local = is_local_name(&env.package, &trait_name_str);
     let type_local = is_local_nominal_type(&env.package, &for_ty);
     if !trait_local && !type_local {
@@ -257,8 +259,17 @@ fn define_trait_impl(
         let trait_sig = trait_def
             .methods
             .get(&method_name_str)
-            .map(|scheme| scheme.ty.clone())
-            .expect("trait method signature to exist");
+            .map(|scheme| scheme.ty.clone());
+        let Some(trait_sig) = trait_sig else {
+            super::util::push_ice(
+                diagnostics,
+                format!(
+                    "trait method signature missing: {}::{}",
+                    trait_name_str, method_name_str
+                ),
+            );
+            continue;
+        };
 
         let tparam_names = type_param_name_set(&m.generics);
         let generics_tast: Vec<tast::TastIdent> = m
@@ -423,7 +434,17 @@ fn define_inherent_impl(
     }
 
     let key = if !impl_block.generics.is_empty() {
-        env::InherentImplKey::Constr(for_ty.get_constr_name_unsafe())
+        let Some(constr_name) = super::util::try_constr_name(&for_ty) else {
+            super::util::push_ice(
+                diagnostics,
+                format!(
+                    "expected constructor type in inherent impl, got {:?}",
+                    for_ty
+                ),
+            );
+            return;
+        };
+        env::InherentImplKey::Constr(constr_name)
     } else {
         env::InherentImplKey::Exact(for_ty.clone())
     };
@@ -882,7 +903,7 @@ fn check_fn(
         local_env.insert_var(*id, ty.clone());
     }
     let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, f.body, &ret_ty);
-    local_env.pop_scope();
+    local_env.pop_scope(diagnostics);
     local_env.clear_tparams_env();
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
@@ -956,7 +977,7 @@ fn check_impl_block(
             local_env.insert_var(*id, ty.clone());
         }
         let typed_body = typer.check_expr(genv, &mut local_env, diagnostics, f.body, &ret_ty);
-        local_env.pop_scope();
+        local_env.pop_scope(diagnostics);
         local_env.clear_tparams_env();
         typer.solve(genv, diagnostics);
         let typed_body = typer.subst(diagnostics, typed_body);

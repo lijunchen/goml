@@ -13,6 +13,22 @@ use crate::{
 };
 
 impl Typer {
+    fn error_expr(&mut self, astptr: Option<MySyntaxNodePtr>) -> tast::Expr {
+        tast::Expr::EVar {
+            name: "<error>".to_string(),
+            ty: self.fresh_ty_var(),
+            astptr,
+        }
+    }
+
+    fn error_expr_with_ty(&mut self, astptr: Option<MySyntaxNodePtr>, ty: tast::Ty) -> tast::Expr {
+        tast::Expr::EVar {
+            name: "<error>".to_string(),
+            ty,
+            astptr,
+        }
+    }
+
     pub fn infer_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -240,7 +256,13 @@ impl Typer {
             {
                 let expected_elem_tys = match expected {
                     tast::Ty::TTuple { typs } => typs.clone(),
-                    _ => unreachable!("Tuple guard ensures tuple type"),
+                    _ => {
+                        super::util::push_ice(
+                            diagnostics,
+                            "tuple check reached with non-tuple expected type",
+                        );
+                        (0..items.len()).map(|_| self.fresh_ty_var()).collect()
+                    }
                 };
                 let mut checked_items = Vec::with_capacity(items.len());
                 let mut elem_tys = Vec::with_capacity(items.len());
@@ -283,7 +305,7 @@ impl Typer {
                     let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
                     let arm_body_tast =
                         self.check_expr(genv, local_env, diagnostics, arm.body, expected);
-                    local_env.pop_scope();
+                    local_env.pop_scope(diagnostics);
 
                     arms_tast.push(tast::Arm {
                         pat: arm_tast,
@@ -367,7 +389,7 @@ impl Typer {
         &mut self,
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
-        _diagnostics: &mut Diagnostics,
+        diagnostics: &mut Diagnostics,
         res: &fir::NameRef,
         hint: &str,
         astptr: Option<MySyntaxNodePtr>,
@@ -382,12 +404,21 @@ impl Typer {
                         astptr,
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name_str);
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Variable {} not found in environment", name_str),
+                    );
+                    self.error_expr(astptr)
                 }
             }
             fir::NameRef::Def(_def_id) => {
-                let func_ty = lookup_function_type_by_hint(genv, hint)
-                    .unwrap_or_else(|| panic!("Function {} not found in environment", hint));
+                let Some(func_ty) = lookup_function_type_by_hint(genv, hint) else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Function {} not found in environment", hint),
+                    );
+                    return self.error_expr(astptr);
+                };
                 let inst_ty = self.inst_ty(&func_ty);
                 tast::Expr::EVar {
                     name: hint.to_string(),
@@ -396,8 +427,13 @@ impl Typer {
                 }
             }
             fir::NameRef::Builtin(_builtin_id) => {
-                let func_ty = lookup_function_type_by_hint(genv, hint)
-                    .unwrap_or_else(|| panic!("Builtin {} not found in environment", hint));
+                let Some(func_ty) = lookup_function_type_by_hint(genv, hint) else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Builtin {} not found in environment", hint),
+                    );
+                    return self.error_expr(astptr);
+                };
                 let inst_ty = self.inst_ty(&func_ty);
                 tast::Expr::EVar {
                     name: hint.to_string(),
@@ -405,18 +441,24 @@ impl Typer {
                     astptr,
                 }
             }
-            fir::NameRef::Unresolved(path) => self.infer_unresolved_path_expr(genv, path, astptr),
+            fir::NameRef::Unresolved(path) => {
+                self.infer_unresolved_path_expr(genv, diagnostics, path, astptr)
+            }
         }
     }
 
     fn infer_unresolved_path_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
         path: &fir::Path,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         if path.len() == 1 {
-            let name = path.last_ident().unwrap();
+            let Some(name) = path.last_ident() else {
+                super::util::push_ice(diagnostics, "unresolved path missing last segment");
+                return self.error_expr(astptr);
+            };
             if let Some(func_ty) = genv.current().get_type_of_function(name.as_str()) {
                 let inst_ty = self.inst_ty(&func_ty);
                 return tast::Expr::EVar {
@@ -425,7 +467,8 @@ impl Typer {
                     astptr,
                 };
             }
-            panic!("Variable {} not found in environment", name);
+            super::util::push_error(diagnostics, format!("Unresolved name {}", name));
+            return self.error_expr(astptr);
         }
         if let Some((name, func_ty)) = lookup_function_path(genv, path) {
             let inst_ty = self.inst_ty(&func_ty);
@@ -441,13 +484,17 @@ impl Typer {
             .map(|seg| seg.seg().clone())
             .collect::<Vec<_>>()
             .join("::");
-        let member = path.last_ident().unwrap();
-        self.infer_type_member_expr(genv, &type_name, member, astptr)
+        let Some(member) = path.last_ident() else {
+            super::util::push_ice(diagnostics, "unresolved member path missing final segment");
+            return self.error_expr(astptr);
+        };
+        self.infer_type_member_expr(genv, diagnostics, &type_name, member, astptr)
     }
 
     fn infer_type_member_expr(
         &mut self,
         genv: &PackageTypeEnv,
+        diagnostics: &mut Diagnostics,
         type_name: &str,
         member: &str,
         astptr: Option<MySyntaxNodePtr>,
@@ -479,10 +526,14 @@ impl Typer {
                 name: resolved_type_name.to_string(),
             }
         } else {
-            panic!(
-                "Type or trait {} not found for member access",
-                resolved_type_name
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "Type or trait {} not found for member access",
+                    resolved_type_name
+                ),
             );
+            return self.error_expr(astptr);
         };
         if let Some(method_ty) = type_env.lookup_inherent_method(&receiver_ty, &member_ident) {
             let inst_ty = self.inst_ty(&method_ty);
@@ -493,25 +544,49 @@ impl Typer {
                 astptr,
             }
         } else {
-            panic!("Method {} not found for type {}", member, type_name);
+            super::util::push_error(
+                diagnostics,
+                format!("Method {} not found for type {}", member, type_name),
+            );
+            self.error_expr(astptr)
         }
     }
 
-    fn constructor_path_from_id(&self, ctor_id: &fir::ConstructorId) -> fir::Path {
+    fn constructor_path_from_id(
+        &self,
+        diagnostics: &mut Diagnostics,
+        ctor_id: &fir::ConstructorId,
+    ) -> fir::Path {
         match ctor_id {
             fir::ConstructorId::EnumVariant {
                 enum_def,
                 variant_idx,
             } => {
                 if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def) {
-                    let variant_name = enum_def_data.variants[*variant_idx as usize]
-                        .0
-                        .to_ident_name();
+                    let Some(variant_idx) = usize::try_from(*variant_idx).ok() else {
+                        super::util::push_ice(
+                            diagnostics,
+                            format!("invalid enum variant index {}", variant_idx),
+                        );
+                        return fir::Path::from_ident("<error>".to_string());
+                    };
+                    let Some((variant_ident, _)) = enum_def_data.variants.get(variant_idx) else {
+                        super::util::push_ice(
+                            diagnostics,
+                            format!(
+                                "enum variant index {} out of bounds for {:?}",
+                                variant_idx, enum_def
+                            ),
+                        );
+                        return fir::Path::from_ident("<error>".to_string());
+                    };
+                    let variant_name = variant_ident.to_ident_name();
                     let mut segments = self.fir_table.def_path(*enum_def).segments.clone();
                     segments.push(fir::PathSegment::new(variant_name));
                     fir::Path::new(segments)
                 } else {
-                    panic!("Constructor points to non-enum DefId");
+                    super::util::push_ice(diagnostics, "Constructor points to non-enum DefId");
+                    fir::Path::from_ident("<error>".to_string())
                 }
             }
         }
@@ -526,13 +601,16 @@ impl Typer {
         args: &[fir::ExprId],
     ) -> tast::Expr {
         let constructor_path = match constructor_ref {
-            fir::ConstructorRef::Resolved(ctor_id) => self.constructor_path_from_id(ctor_id),
+            fir::ConstructorRef::Resolved(ctor_id) => {
+                self.constructor_path_from_id(diagnostics, ctor_id)
+            }
             fir::ConstructorRef::Unresolved(path) => path.clone(),
         };
 
-        let variant_ident = constructor_path
-            .last_ident()
-            .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+        let Some(variant_ident) = constructor_path.last_ident() else {
+            super::util::push_ice(diagnostics, "Constructor path missing final segment");
+            return self.error_expr(None);
+        };
         let namespace = constructor_path.namespace_segments();
         let (enum_ident, enum_env) = if namespace.is_empty() {
             (None, genv.current())
@@ -546,47 +624,73 @@ impl Typer {
             (Some(tast::TastIdent(resolved)), env)
         };
         let variant_name = tast::TastIdent(variant_ident.clone());
-        let (constructor, constr_ty) = enum_env
-            .lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name)
-            .unwrap_or_else(|| {
-                panic!(
+        let ctor = enum_env.lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name);
+        let Some((constructor, constr_ty)) = ctor else {
+            super::util::push_error(
+                diagnostics,
+                format!(
                     "Constructor {} not found in environment",
                     constructor_path.display()
-                )
-            });
+                ),
+            );
+            return self.error_expr(None);
+        };
 
         let expected_arity = match &constructor {
-            common::Constructor::Enum(enum_constructor) => enum_env
-                .enums()
-                .get(&enum_constructor.type_name)
-                .map(|def| def.variants[enum_constructor.index].1.len())
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Enum {} not found when checking constructor {}",
-                        enum_constructor.type_name.0,
-                        constructor.name().0
-                    )
-                }),
-            common::Constructor::Struct(struct_constructor) => enum_env
-                .structs()
-                .get(&struct_constructor.type_name)
-                .map(|def| def.fields.len())
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Struct {} not found when checking constructor {}",
-                        struct_constructor.type_name.0,
-                        constructor.name().0
-                    )
-                }),
+            common::Constructor::Enum(enum_constructor) => {
+                let def = enum_env.enums().get(&enum_constructor.type_name);
+                let Some(def) = def else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Enum {} not found when checking constructor {}",
+                            enum_constructor.type_name.0,
+                            constructor.name().0
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
+                let variant = def.variants.get(enum_constructor.index);
+                let Some((_, tys)) = variant else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Enum {} variant index {} out of bounds",
+                            enum_constructor.type_name.0, enum_constructor.index
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
+                tys.len()
+            }
+            common::Constructor::Struct(struct_constructor) => {
+                let def = enum_env.structs().get(&struct_constructor.type_name);
+                let Some(def) = def else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Struct {} not found when checking constructor {}",
+                            struct_constructor.type_name.0,
+                            constructor.name().0
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
+                def.fields.len()
+            }
         };
 
         if expected_arity != args.len() {
-            panic!(
-                "Constructor {} expects {} arguments, but got {}",
-                constructor.name().0,
-                expected_arity,
-                args.len()
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "Constructor {} expects {} arguments, but got {}",
+                    constructor.name().0,
+                    expected_arity,
+                    args.len()
+                ),
             );
+            return self.error_expr(None);
         }
 
         let inst_constr_ty = self.inst_ty(&constr_ty);
@@ -638,26 +742,40 @@ impl Typer {
     ) -> tast::Expr {
         let name_display = name.display();
         let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
-        let (constructor, constr_ty) = type_env
-            .lookup_constructor(&tast::TastIdent(resolved_name.clone()))
-            .unwrap_or_else(|| panic!("Constructor {} not found in environment", resolved_name));
+        let ctor = type_env.lookup_constructor(&tast::TastIdent(resolved_name.clone()));
+        let Some((constructor, constr_ty)) = ctor else {
+            super::util::push_error(
+                diagnostics,
+                format!("Constructor {} not found in environment", resolved_name),
+            );
+            return self.error_expr(None);
+        };
 
         let struct_fields = match &constructor {
             common::Constructor::Struct(struct_constructor) => {
                 let type_name = &struct_constructor.type_name;
-                let struct_def = type_env.structs().get(type_name).unwrap_or_else(|| {
-                    panic!(
-                        "Struct {} not found when checking literal {}",
-                        type_name.0, resolved_name
-                    )
-                });
+                let struct_def = type_env.structs().get(type_name);
+                let Some(struct_def) = struct_def else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Struct {} not found when checking literal {}",
+                            type_name.0, resolved_name
+                        ),
+                    );
+                    return self.error_expr(None);
+                };
                 struct_def.fields.clone()
             }
             common::Constructor::Enum { .. } => {
-                panic!(
-                    "Constructor {} refers to an enum, but a struct literal was used",
-                    name_display
-                )
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "Constructor {} refers to an enum, but a struct literal was used",
+                        name_display
+                    ),
+                );
+                return self.error_expr(None);
             }
         };
 
@@ -668,11 +786,14 @@ impl Typer {
         };
 
         if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
-            panic!(
-                "Constructor {} expects {} fields, but got {}",
-                resolved_name,
-                param_tys.len(),
-                struct_fields.len()
+            super::util::push_ice(
+                diagnostics,
+                format!(
+                    "Constructor {} expects {} fields, but got {}",
+                    resolved_name,
+                    param_tys.len(),
+                    struct_fields.len()
+                ),
             );
         }
 
@@ -683,43 +804,76 @@ impl Typer {
 
         let mut ordered_args: Vec<Option<tast::Expr>> = vec![None; struct_fields.len()];
         for (field_name, expr) in fields.iter() {
-            let idx = field_positions
-                .get(&tast::TastIdent(field_name.to_ident_name()))
-                .unwrap_or_else(|| {
-                    panic!(
+            let idx = field_positions.get(&tast::TastIdent(field_name.to_ident_name()));
+            let Some(&idx) = idx else {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
                         "Unknown field {} on struct literal {}",
                         field_name.to_ident_name(),
                         resolved_name
-                    )
-                });
-            if ordered_args[*idx].is_some() {
-                panic!(
-                    "Duplicate field {} in struct literal {}",
-                    field_name.to_ident_name(),
-                    name_display
+                    ),
                 );
+                self.infer_expr(genv, local_env, diagnostics, *expr);
+                continue;
+            };
+            let slot = ordered_args.get_mut(idx);
+            let Some(slot) = slot else {
+                super::util::push_ice(
+                    diagnostics,
+                    format!("struct literal field index {} out of bounds", idx),
+                );
+                continue;
+            };
+            if slot.is_some() {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "Duplicate field {} in struct literal {}",
+                        field_name.to_ident_name(),
+                        name_display
+                    ),
+                );
+                continue;
             }
-            let field_expr = if let Some(expected_ty) = param_tys.get(*idx) {
+            let field_expr = if let Some(expected_ty) = param_tys.get(idx) {
                 self.check_expr(genv, local_env, diagnostics, *expr, expected_ty)
             } else {
                 self.infer_expr(genv, local_env, diagnostics, *expr)
             };
-            ordered_args[*idx] = Some(field_expr);
+            *slot = Some(field_expr);
         }
 
-        for (idx, slot) in ordered_args.iter().enumerate() {
+        for (idx, slot) in ordered_args.iter_mut().enumerate() {
             if slot.is_none() {
-                let missing = &struct_fields[idx].0;
-                panic!(
-                    "Missing field {} in struct literal {}",
-                    missing.0, name_display
+                let missing = struct_fields.get(idx).map(|(name, _)| name.0.as_str());
+                let Some(missing) = missing else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("struct literal field index {} out of bounds", idx),
+                    );
+                    *slot = Some(self.error_expr(None));
+                    continue;
+                };
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "Missing field {} in struct literal {}",
+                        missing, name_display
+                    ),
                 );
+                let placeholder = param_tys
+                    .get(idx)
+                    .cloned()
+                    .map(|ty| self.error_expr_with_ty(None, ty))
+                    .unwrap_or_else(|| self.error_expr(None));
+                *slot = Some(placeholder);
             }
         }
 
         let args_tast: Vec<tast::Expr> = ordered_args
             .into_iter()
-            .map(|arg| arg.expect("field checked to exist"))
+            .map(|arg| arg.unwrap_or_else(|| self.error_expr(None)))
             .collect();
         let ret_ty = match &inst_constr_ty {
             tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
@@ -818,7 +972,7 @@ impl Typer {
 
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         let body_ty = body_tast.get_ty();
-        let captures = local_env.end_closure(&self.fir_table);
+        let captures = local_env.end_closure(diagnostics, &self.fir_table);
 
         let closure_ty = tast::Ty::TFunc {
             params: param_tys,
@@ -882,7 +1036,7 @@ impl Typer {
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
                 let body_ty = body_tast.get_ty();
-                let captures = local_env.end_closure(&self.fir_table);
+                let captures = local_env.end_closure(diagnostics, &self.fir_table);
 
                 tast::Expr::EClosure {
                     params: params_tast,
@@ -949,7 +1103,7 @@ impl Typer {
 
         local_env.push_scope();
         let result = self.infer_block_exprs(genv, local_env, diagnostics, exprs);
-        local_env.pop_scope();
+        local_env.pop_scope(diagnostics);
         result
     }
 
@@ -1037,7 +1191,7 @@ impl Typer {
 
         local_env.push_scope();
         let result = self.check_block_exprs(genv, local_env, diagnostics, exprs, expected);
-        local_env.pop_scope();
+        local_env.pop_scope(diagnostics);
         result
     }
 
@@ -1099,7 +1253,7 @@ impl Typer {
             local_env.push_scope();
             let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
             let arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
-            local_env.pop_scope();
+            local_env.pop_scope(diagnostics);
             self.push_constraint(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
                 arm_ty.clone(),
@@ -1232,7 +1386,11 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name_str);
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Variable {} not found in environment", name_str),
+                    );
+                    self.error_expr(func_astptr)
                 }
             }
             fir::Expr::ENameRef {
@@ -1265,8 +1423,19 @@ impl Typer {
                     }
 
                     let ret_ty = if name.as_str() == "ref" && args_tast.len() == 1 {
+                        let elem_ty =
+                            args_tast
+                                .first()
+                                .map(|arg| arg.get_ty())
+                                .unwrap_or_else(|| {
+                                    super::util::push_ice(
+                                        diagnostics,
+                                        "ref call expected one argument but none found",
+                                    );
+                                    self.fresh_ty_var()
+                                });
                         tast::Ty::TRef {
-                            elem: Box::new(args_tast[0].get_ty()),
+                            elem: Box::new(elem_ty),
                         }
                     } else {
                         self.fresh_ty_var()
@@ -1289,7 +1458,11 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
-                    panic!("Variable {} not found in environment", name);
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Function {} not found in environment", name),
+                    );
+                    self.error_expr(None)
                 }
             }
             fir::Expr::ENameRef {
@@ -1336,7 +1509,11 @@ impl Typer {
                     };
                 }
                 if path.len() == 1 {
-                    panic!("Unresolved callee {}", path.display());
+                    super::util::push_error(
+                        diagnostics,
+                        format!("Unresolved callee {}", path.display()),
+                    );
+                    return self.error_expr(None);
                 }
                 let type_name = path
                     .namespace_segments()
@@ -1344,7 +1521,10 @@ impl Typer {
                     .map(|seg| seg.seg().clone())
                     .collect::<Vec<_>>()
                     .join("::");
-                let member = path.last_ident().unwrap();
+                let Some(member) = path.last_ident() else {
+                    super::util::push_ice(diagnostics, "callee path missing final segment");
+                    return self.error_expr(None);
+                };
                 let member_ident = tast::TastIdent(member.clone());
                 if let Some((trait_name, trait_env)) =
                     super::util::resolve_trait_name(genv, &type_name)
@@ -1357,21 +1537,32 @@ impl Typer {
                         if let tast::Ty::TFunc { params, ret_ty } = &inst_method_ty
                             && !args.is_empty()
                         {
+                            let Some(receiver_arg) = args.first() else {
+                                super::util::push_ice(
+                                    diagnostics,
+                                    "callee args empty after non-empty check",
+                                );
+                                return self.error_expr(None);
+                            };
                             let receiver_tast =
-                                self.infer_expr(genv, local_env, diagnostics, args[0]);
+                                self.infer_expr(genv, local_env, diagnostics, *receiver_arg);
                             if let tast::Ty::TDyn {
                                 trait_name: recv_trait,
                             } = receiver_tast.get_ty()
                                 && recv_trait == type_ident.0
                             {
                                 if params.len() != args.len() {
-                                    panic!(
-                                        "Trait method {}::{} expects {} arguments but got {}",
-                                        type_ident.0,
-                                        member_ident.0,
-                                        params.len(),
-                                        args.len()
+                                    super::util::push_error(
+                                        diagnostics,
+                                        format!(
+                                            "Trait method {}::{} expects {} arguments but got {}",
+                                            type_ident.0,
+                                            member_ident.0,
+                                            params.len(),
+                                            args.len()
+                                        ),
                                     );
+                                    return self.error_expr(None);
                                 }
 
                                 let mut args_tast = Vec::with_capacity(args.len());
@@ -1389,9 +1580,16 @@ impl Typer {
                                 }
 
                                 let mut dyn_params = params.clone();
-                                dyn_params[0] = tast::Ty::TDyn {
-                                    trait_name: type_ident.0.clone(),
-                                };
+                                if let Some(first) = dyn_params.get_mut(0) {
+                                    *first = tast::Ty::TDyn {
+                                        trait_name: type_ident.0.clone(),
+                                    };
+                                } else {
+                                    super::util::push_ice(
+                                        diagnostics,
+                                        "dyn method params missing receiver",
+                                    );
+                                }
                                 let dyn_method_ty = tast::Ty::TFunc {
                                     params: dyn_params,
                                     ret_ty: ret_ty.clone(),
@@ -1488,10 +1686,14 @@ impl Typer {
                         name: resolved_type_name.clone(),
                     }
                 } else {
-                    panic!(
-                        "Type or trait {} not found for member access",
-                        resolved_type_name
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
+                            "Type or trait {} not found for member access",
+                            resolved_type_name
+                        ),
                     );
+                    return self.error_expr(None);
                 };
                 if let Some(method_ty) =
                     type_env.lookup_inherent_method(&receiver_ty, &member_ident)
@@ -1499,12 +1701,16 @@ impl Typer {
                     let inst_method_ty = self.inst_ty(&method_ty);
                     if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
                         if params.len() != args.len() {
-                            panic!(
-                                "Method {} expects {} arguments but got {}",
-                                member,
-                                params.len(),
-                                args.len()
+                            super::util::push_error(
+                                diagnostics,
+                                format!(
+                                    "Method {} expects {} arguments but got {}",
+                                    member,
+                                    params.len(),
+                                    args.len()
+                                ),
                             );
+                            return self.error_expr(None);
                         }
 
                         let mut args_tast = Vec::with_capacity(args.len());
@@ -1525,10 +1731,18 @@ impl Typer {
                             ty: (*ret_ty).clone(),
                         }
                     } else {
-                        panic!("Type member {}::{} is not callable", type_name, member);
+                        super::util::push_ice(
+                            diagnostics,
+                            format!("Type member {}::{} is not callable", type_name, member),
+                        );
+                        self.error_expr(None)
                     }
                 } else {
-                    panic!("Method {} not found for type {}", member, type_name);
+                    super::util::push_error(
+                        diagnostics,
+                        format!("Method {} not found for type {}", member, type_name),
+                    );
+                    self.error_expr(None)
                 }
             }
             fir::Expr::EField {
@@ -1587,20 +1801,30 @@ impl Typer {
                                 tast::Ty::TFunc { params, ret_ty } => {
                                     (params.clone(), (**ret_ty).clone())
                                 }
-                                _ => panic!(
-                                    "Expected trait method {}::{} to have a function type",
-                                    trait_name.0, method_name.0
-                                ),
+                                _ => {
+                                    super::util::push_ice(
+                                        diagnostics,
+                                        format!(
+                                            "Expected trait method {}::{} to have a function type",
+                                            trait_name.0, method_name.0
+                                        ),
+                                    );
+                                    return self.error_expr(None);
+                                }
                             };
 
                             if params.len() != args.len() + 1 {
-                                panic!(
-                                    "Trait method {}::{} expects {} arguments but got {}",
-                                    trait_name.0,
-                                    method_name.0,
-                                    params.len(),
-                                    args.len() + 1
+                                super::util::push_error(
+                                    diagnostics,
+                                    format!(
+                                        "Trait method {}::{} expects {} arguments but got {}",
+                                        trait_name.0,
+                                        method_name.0,
+                                        params.len(),
+                                        args.len() + 1
+                                    ),
                                 );
+                                return self.error_expr(None);
                             }
 
                             let mut args_tast = Vec::with_capacity(args.len() + 1);
@@ -1615,9 +1839,19 @@ impl Typer {
                                 ));
                             }
 
+                            let receiver_param_ty = params.first().cloned().unwrap_or_else(|| {
+                                super::util::push_ice(
+                                    diagnostics,
+                                    format!(
+                                        "trait method {}::{} missing receiver parameter",
+                                        trait_name.0, method_name.0
+                                    ),
+                                );
+                                self.fresh_ty_var()
+                            });
                             self.push_constraint(Constraint::TypeEqual(
                                 receiver_ty.clone(),
-                                params[0].clone(),
+                                receiver_param_ty,
                             ));
 
                             tast::Expr::ECall {
@@ -1668,11 +1902,15 @@ impl Typer {
                         }
                     }
                 } else {
-                    panic!(
-                        "Method {} not found for type {:?}",
-                        field.to_ident_name(),
-                        receiver_expr
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
+                            "Method {} not found for type {:?}",
+                            field.to_ident_name(),
+                            receiver_expr
+                        ),
                     );
+                    self.error_expr(None)
                 }
             }
             _ => {
@@ -1809,10 +2047,14 @@ impl Typer {
         match &tuple_ty {
             tast::Ty::TTuple { typs } => {
                 let field_ty = typs.get(index).cloned().unwrap_or_else(|| {
-                    panic!(
-                        "Tuple index {} out of bounds for type {:?}",
-                        index, tuple_ty
-                    )
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
+                            "Tuple index {} out of bounds for type {:?}",
+                            index, tuple_ty
+                        ),
+                    );
+                    self.fresh_ty_var()
                 });
                 tast::Expr::EProj {
                     tuple: Box::new(tuple_tast),
@@ -2012,14 +2254,15 @@ impl Typer {
             } => {
                 let constructor_path = match &constructor_ref {
                     fir::ConstructorRef::Resolved(ctor_id) => {
-                        self.constructor_path_from_id(ctor_id)
+                        self.constructor_path_from_id(diagnostics, ctor_id)
                     }
                     fir::ConstructorRef::Unresolved(path) => path.clone(),
                 };
 
-                let variant_ident = constructor_path
-                    .last_ident()
-                    .unwrap_or_else(|| panic!("Constructor path missing final segment"));
+                let Some(variant_ident) = constructor_path.last_ident() else {
+                    super::util::push_ice(diagnostics, "Constructor path missing final segment");
+                    return self.check_pat_wild(ty);
+                };
                 let variant_name = tast::TastIdent(variant_ident.clone());
                 let namespace = constructor_path.namespace_segments();
                 let (enum_ident, enum_env) = if namespace.is_empty() {
@@ -2033,42 +2276,69 @@ impl Typer {
                     let (resolved, env) = super::util::resolve_type_name(genv, &name);
                     (Some(tast::TastIdent(resolved)), env)
                 };
-                let (constructor, constr_ty) = enum_env
-                    .lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name)
-                    .unwrap_or_else(|| {
-                        panic!(
+                let ctor =
+                    enum_env.lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name);
+                let Some((constructor, constr_ty)) = ctor else {
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
                             "Constructor {} not found in environment",
                             constructor_path.display()
-                        )
-                    });
+                        ),
+                    );
+                    return self.check_pat_wild(ty);
+                };
 
                 let expected_arity = match &constructor {
-                    common::Constructor::Enum(enum_constructor) => enum_env
-                        .enums()
-                        .get(&enum_constructor.type_name)
-                        .map(|def| def.variants[enum_constructor.index].1.len())
-                        .unwrap_or_else(|| {
-                            panic!(
-                                "Enum {} not found when checking constructor {}",
-                                enum_constructor.type_name.0,
-                                constructor.name().0
-                            )
-                        }),
+                    common::Constructor::Enum(enum_constructor) => {
+                        let def = enum_env.enums().get(&enum_constructor.type_name);
+                        let Some(def) = def else {
+                            super::util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Enum {} not found when checking constructor {}",
+                                    enum_constructor.type_name.0,
+                                    constructor.name().0
+                                ),
+                            );
+                            return self.check_pat_wild(ty);
+                        };
+                        let variant = def.variants.get(enum_constructor.index);
+                        let Some((_, tys)) = variant else {
+                            super::util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Enum {} variant index {} out of bounds",
+                                    enum_constructor.type_name.0, enum_constructor.index
+                                ),
+                            );
+                            return self.check_pat_wild(ty);
+                        };
+                        tys.len()
+                    }
                     common::Constructor::Struct(_) => {
-                        panic!(
-                            "Struct {} patterns must use field syntax",
-                            constructor.name().0
-                        )
+                        super::util::push_error(
+                            diagnostics,
+                            format!(
+                                "Struct {} patterns must use field syntax",
+                                constructor.name().0
+                            ),
+                        );
+                        return self.check_pat_wild(ty);
                     }
                 };
 
                 if expected_arity != args.len() {
-                    panic!(
-                        "Constructor {} expects {} arguments, but got {}",
-                        constructor.name().0,
-                        expected_arity,
-                        args.len()
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
+                            "Constructor {} expects {} arguments, but got {}",
+                            constructor.name().0,
+                            expected_arity,
+                            args.len()
+                        ),
                     );
+                    return self.check_pat_wild(ty);
                 }
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
@@ -2077,10 +2347,14 @@ impl Typer {
                     ty => (Vec::new(), ty.clone()),
                 };
 
-                let mut args_tast = Vec::new();
-                for (arg_ast, expected_ty) in args.iter().zip(param_tys.iter()) {
+                let mut args_tast = Vec::with_capacity(args.len());
+                for (idx, arg_ast) in args.iter().enumerate() {
+                    let expected_ty = param_tys
+                        .get(idx)
+                        .cloned()
+                        .unwrap_or_else(|| self.fresh_ty_var());
                     let arg_tast =
-                        self.check_pat(genv, local_env, diagnostics, *arg_ast, expected_ty);
+                        self.check_pat(genv, local_env, diagnostics, *arg_ast, &expected_ty);
                     args_tast.push(arg_tast);
                 }
 
@@ -2095,41 +2369,49 @@ impl Typer {
             fir::Pat::PStruct { name, fields } => {
                 let name_display = name.display();
                 let (type_name, type_env) = super::util::resolve_type_name(genv, &name_display);
-                let struct_fields = {
-                    let struct_def = type_env
-                        .structs()
-                        .get(&tast::TastIdent(type_name.clone()))
-                        .unwrap_or_else(|| {
-                            panic!("Struct {} not found when checking pattern", type_name)
-                        });
-                    let expected_len = struct_def.fields.len();
-                    if expected_len != fields.len() {
-                        panic!(
+                let struct_def = type_env.structs().get(&tast::TastIdent(type_name.clone()));
+                let Some(struct_def) = struct_def else {
+                    super::util::push_error(
+                        diagnostics,
+                        format!("Struct {} not found when checking pattern", type_name),
+                    );
+                    return self.check_pat_wild(ty);
+                };
+                let struct_fields = struct_def.fields.clone();
+                if struct_fields.len() != fields.len() {
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
                             "Struct pattern {} expects {} fields, but got {}",
                             type_name,
-                            expected_len,
+                            struct_fields.len(),
                             fields.len()
-                        );
-                    }
-                    struct_def.fields.clone()
-                };
+                        ),
+                    );
+                }
 
                 let mut field_map: HashMap<String, fir::PatId> = HashMap::new();
                 for (fname, pat_id) in fields.iter() {
                     if field_map.insert(fname.to_ident_name(), *pat_id).is_some() {
-                        panic!(
-                            "Struct pattern {} has duplicate field {}",
-                            type_name,
-                            fname.to_ident_name()
+                        super::util::push_error(
+                            diagnostics,
+                            format!(
+                                "Struct pattern {} has duplicate field {}",
+                                type_name,
+                                fname.to_ident_name()
+                            ),
                         );
                     }
                 }
 
-                let (constructor, constr_ty) = type_env
-                    .lookup_constructor(&tast::TastIdent(type_name.clone()))
-                    .unwrap_or_else(|| {
-                        panic!("Struct {} not found when checking constructor", type_name)
-                    });
+                let ctor = type_env.lookup_constructor(&tast::TastIdent(type_name.clone()));
+                let Some((constructor, constr_ty)) = ctor else {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!("Struct {} not found when checking constructor", type_name),
+                    );
+                    return self.check_pat_wild(ty);
+                };
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
                 let (param_tys, ret_ty) = match &inst_constr_ty {
@@ -2137,36 +2419,51 @@ impl Typer {
                     ty => (Vec::new(), ty.clone()),
                 };
 
-                if param_tys.len() != struct_fields.len() {
-                    panic!(
-                        "Constructor {} expects {} fields, but got {}",
-                        type_name,
-                        param_tys.len(),
-                        struct_fields.len()
+                if !param_tys.is_empty() && param_tys.len() != struct_fields.len() {
+                    super::util::push_ice(
+                        diagnostics,
+                        format!(
+                            "Constructor {} expects {} fields, but got {}",
+                            type_name,
+                            param_tys.len(),
+                            struct_fields.len()
+                        ),
                     );
                 }
 
-                let mut args_tast = Vec::new();
+                let mut args_tast = Vec::with_capacity(struct_fields.len());
                 for (idx, (field_name, _)) in struct_fields.iter().enumerate() {
-                    let pat_id = field_map.remove(&field_name.0).unwrap_or_else(|| {
-                        panic!(
-                            "Struct pattern {} missing field {}",
-                            name_display, field_name.0
-                        )
-                    });
-                    let expected_ty = param_tys.get(idx).unwrap_or_else(|| {
-                        panic!("Missing instantiated type for field {}", field_name.0)
-                    });
-                    let pat_tast =
-                        self.check_pat(genv, local_env, diagnostics, pat_id, expected_ty);
+                    let expected_ty = param_tys
+                        .get(idx)
+                        .cloned()
+                        .unwrap_or_else(|| self.fresh_ty_var());
+                    let pat_id = field_map.remove(&field_name.0);
+                    let pat_tast = match pat_id {
+                        Some(pat_id) => {
+                            self.check_pat(genv, local_env, diagnostics, pat_id, &expected_ty)
+                        }
+                        None => {
+                            super::util::push_error(
+                                diagnostics,
+                                format!(
+                                    "Struct pattern {} missing field {}",
+                                    name_display, field_name.0
+                                ),
+                            );
+                            self.check_pat_wild(&expected_ty)
+                        }
+                    };
                     args_tast.push(pat_tast);
                 }
 
                 if !field_map.is_empty() {
                     let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
-                    panic!(
-                        "Struct pattern {} has unknown fields: {}",
-                        name_display, extra
+                    super::util::push_error(
+                        diagnostics,
+                        format!(
+                            "Struct pattern {} has unknown fields: {}",
+                            name_display, extra
+                        ),
                     );
                 }
 
@@ -2178,7 +2475,10 @@ impl Typer {
                     ty: ret_ty,
                 }
             }
-            _ => unreachable!("Expected constructor pattern"),
+            _ => {
+                super::util::push_ice(diagnostics, "Expected constructor pattern");
+                self.check_pat_wild(ty)
+            }
         }
     }
 

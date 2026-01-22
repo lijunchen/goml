@@ -8,6 +8,24 @@ use crate::{
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
 
+pub(crate) fn push_error(diagnostics: &mut Diagnostics, message: impl Into<String>) {
+    diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+}
+
+pub(crate) fn push_ice(diagnostics: &mut Diagnostics, message: impl Into<String>) {
+    push_error(diagnostics, format!("Internal error: {}", message.into()));
+}
+
+pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
+    match ty {
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
+        tast::Ty::TApp { ty, .. } => try_constr_name(ty),
+        tast::Ty::TVec { .. } => Some("Vec".to_string()),
+        tast::Ty::TRef { .. } => Some("Ref".to_string()),
+        _ => None,
+    }
+}
+
 pub(crate) fn validate_ty(
     genv: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
@@ -100,7 +118,13 @@ pub(crate) fn validate_ty(
                 validate_ty(genv, diagnostics, arg, tparams);
             }
 
-            let base_name = ty.get_constr_name_unsafe();
+            let Some(base_name) = try_constr_name(ty.as_ref()) else {
+                push_error(
+                    diagnostics,
+                    format!("Expected a type constructor, got: {:?}", ty),
+                );
+                return;
+            };
             let (resolved, env) = resolve_type_name(genv, &base_name);
             let ident = tast::TastIdent::new(&resolved);
 
@@ -161,79 +185,68 @@ pub(crate) fn validate_ty(
 
 fn validate_dyn_trait(genv: &PackageTypeEnv, diagnostics: &mut Diagnostics, trait_name: &str) {
     let Some((resolved, trait_env)) = resolve_trait_name(genv, trait_name) else {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            format!("Unknown trait {}", trait_name),
-        ));
+        push_error(diagnostics, format!("Unknown trait {}", trait_name));
         return;
     };
 
     let Some(trait_def) = trait_env.trait_env.trait_defs.get(&resolved) else {
-        diagnostics.push(Diagnostic::new(
-            Stage::Typer,
-            Severity::Error,
-            format!("Unknown trait {}", trait_name),
-        ));
+        push_error(diagnostics, format!("Unknown trait {}", trait_name));
         return;
     };
 
     for (method_name, scheme) in trait_def.methods.iter() {
         let tast::Ty::TFunc { params, ret_ty } = &scheme.ty else {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
+            push_error(
+                diagnostics,
                 format!("Trait {}::{} is not a function", resolved, method_name),
-            ));
+            );
             continue;
         };
 
         if params.is_empty() {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
+            push_error(
+                diagnostics,
                 format!(
                     "Trait {}::{} is not dyn-safe: missing receiver parameter",
                     resolved, method_name
                 ),
-            ));
+            );
             continue;
         }
 
-        if !is_self_ty(&params[0]) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
+        if let Some(self_param) = params.first()
+            && !is_self_ty(self_param)
+        {
+            push_error(
+                diagnostics,
                 format!(
                     "Trait {}::{} is not dyn-safe: receiver must be Self",
                     resolved, method_name
                 ),
-            ));
+            );
         }
 
         for param in params.iter().skip(1) {
             if ty_contains_self(param) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
+                push_error(
+                    diagnostics,
                     format!(
                         "Trait {}::{} is not dyn-safe: Self is not allowed in non-receiver parameters",
                         resolved, method_name
                     ),
-                ));
+                );
                 break;
             }
         }
 
         if ty_contains_self(ret_ty.as_ref()) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
+            push_error(
+                diagnostics,
                 format!(
                     "Trait {}::{} is not dyn-safe: Self is not allowed in return type",
                     resolved, method_name
                 ),
-            ));
+            );
         }
     }
 }
@@ -334,9 +347,10 @@ impl tast::Ty {
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Ref")
                     && args.len() == 1
+                    && let Some(arg0) = args.first()
                 {
                     return Self::TRef {
-                        elem: Box::new(Self::from_fir(genv, &args[0], tparams_env)),
+                        elem: Box::new(Self::from_fir(genv, arg0, tparams_env)),
                     };
                 }
                 if let fir::TypeExpr::TCon { path } = ty.as_ref()
@@ -344,9 +358,10 @@ impl tast::Ty {
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Vec")
                     && args.len() == 1
+                    && let Some(arg0) = args.first()
                 {
                     return Self::TVec {
-                        elem: Box::new(Self::from_fir(genv, &args[0], tparams_env)),
+                        elem: Box::new(Self::from_fir(genv, arg0, tparams_env)),
                     };
                 }
                 Self::TApp {

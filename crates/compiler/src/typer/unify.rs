@@ -142,18 +142,23 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
 }
 
 fn instantiate_struct_field_ty(
+    diagnostics: &mut Diagnostics,
     struct_def: &crate::env::StructDef,
     type_args: &[tast::Ty],
     field: &TastIdent,
-) -> tast::Ty {
+) -> Option<tast::Ty> {
     const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
     if struct_def.generics.len() != type_args.len() {
-        panic!(
-            "Struct {} expects {} type arguments, but got {}",
-            struct_def.name.0,
-            struct_def.generics.len(),
-            type_args.len()
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "Struct {} expects {} type arguments, but got {}",
+                struct_def.name.0,
+                struct_def.generics.len(),
+                type_args.len()
+            ),
         );
+        return None;
     }
 
     let mut subst = HashMap::new();
@@ -162,11 +167,15 @@ fn instantiate_struct_field_ty(
     }
 
     if let Some((_, ty)) = struct_def.fields.iter().find(|(fname, _)| fname == field) {
-        substitute_ty_params(ty, &subst)
+        Some(substitute_ty_params(ty, &subst))
     } else if field.0 == COMPLETION_PLACEHOLDER {
-        tast::Ty::TUnit
+        Some(tast::Ty::TUnit)
     } else {
-        panic!("Struct {} has no field {}", struct_def.name.0, field.0)
+        super::util::push_error(
+            diagnostics,
+            format!("Struct {} has no field {}", struct_def.name.0, field.0),
+        );
+        None
     }
 }
 
@@ -347,16 +356,24 @@ impl Typer {
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
                             let (resolved, env) =
                                 super::util::resolve_type_name(genv, &type_name.0);
-                            let struct_def =
-                                env.structs().get(&TastIdent(resolved)).unwrap_or_else(|| {
-                                    panic!(
+                            let struct_def = env.structs().get(&TastIdent(resolved));
+                            let Some(struct_def) = struct_def else {
+                                super::util::push_error(
+                                    diagnostics,
+                                    format!(
                                         "Struct {} not found when accessing field {}",
                                         type_name.0, field.0
-                                    )
-                                });
-                            let field_ty =
-                                instantiate_struct_field_ty(struct_def, &type_args, &field);
-                            if self.unify(diagnostics, &result_ty, &field_ty) {
+                                    ),
+                                );
+                                continue;
+                            };
+                            if let Some(field_ty) = instantiate_struct_field_ty(
+                                diagnostics,
+                                struct_def,
+                                &type_args,
+                                &field,
+                            ) && self.unify(diagnostics, &result_ty, &field_ty)
+                            {
                                 changed = true;
                             }
                         } else {
@@ -710,8 +727,7 @@ impl Typer {
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
             tast::Ty::TParam { name } => {
-                if subst.contains_key(name) {
-                    let ty = subst.get(name).unwrap();
+                if let Some(ty) = subst.get(name) {
                     ty.clone()
                 } else {
                     let new_ty = self.fresh_ty_var();
