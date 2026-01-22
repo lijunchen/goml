@@ -20,8 +20,10 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
     let ast = ast::lower::lower(cst)
         .into_result()
         .expect("failed to lower to AST");
-    let (fir, fir_table) = crate::fir::lower_to_fir(ast);
-    crate::typer::check_file(fir, fir_table)
+    let (fir, fir_table, mut fir_diagnostics) = crate::fir::lower_to_fir(ast);
+    let (tast, genv, mut diagnostics) = crate::typer::check_file(fir, fir_table);
+    diagnostics.append(&mut fir_diagnostics);
+    (tast, genv, diagnostics)
 }
 
 fn expect_diagnostics(src: &str, expected: Expect) {

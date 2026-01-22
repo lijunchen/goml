@@ -1,8 +1,11 @@
 use im::HashMap as ImHashMap;
 use indexmap::IndexMap;
 
+use parser::Diagnostics;
+
 use crate::fir::LocalId;
 use crate::tast::{self, TastIdent};
+use crate::typer::util::push_ice;
 
 #[derive(Debug, Clone)]
 pub struct LocalTypeEnv {
@@ -32,9 +35,13 @@ impl LocalTypeEnv {
         self.scopes.push(ImHashMap::new());
     }
 
-    pub fn pop_scope(&mut self) {
+    pub fn pop_scope(&mut self, diagnostics: &mut Diagnostics) {
         if self.scopes.len() <= 1 {
-            panic!("attempted to pop base scope from type environment");
+            push_ice(
+                diagnostics,
+                "attempted to pop base scope from type environment",
+            );
+            return;
         }
         self.scopes.pop();
     }
@@ -88,7 +95,11 @@ impl LocalTypeEnv {
         self.push_scope();
     }
 
-    pub fn end_closure(&mut self, fir_table: &crate::fir::FirTable) -> Vec<(String, tast::Ty)> {
+    pub fn end_closure(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        fir_table: &crate::fir::FirTable,
+    ) -> Vec<(String, tast::Ty)> {
         let captured = self
             .capture_stack
             .pop()
@@ -96,7 +107,7 @@ impl LocalTypeEnv {
             .into_iter()
             .map(|(id, ty)| (fir_table.local_ident_name(id), ty))
             .collect();
-        self.pop_scope();
+        self.pop_scope(diagnostics);
         captured
     }
 

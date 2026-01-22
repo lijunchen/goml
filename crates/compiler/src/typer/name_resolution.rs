@@ -6,11 +6,14 @@ use crate::builtins;
 use crate::env;
 use crate::fir;
 use crate::fir::FirIdent;
+use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 
 pub type FirTable = fir::FirTable;
 
 #[derive(Default)]
-pub struct NameResolution {}
+pub struct NameResolution {
+    diagnostics: Diagnostics,
+}
 
 #[derive(Debug)]
 struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::LocalId)>);
@@ -148,11 +151,24 @@ impl ResolutionContext<'_> {
 }
 
 impl NameResolution {
+    fn error(&mut self, message: impl Into<String>) {
+        self.diagnostics
+            .push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+    }
+
+    fn ice(&mut self, message: impl Into<String>) {
+        self.error(format!("Internal error: {}", message.into()));
+    }
+
     fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::LocalId {
         fir_table.fresh_local(name)
     }
 
-    fn constructor_path_for(&self, path: &ast::Path, ctx: &ResolutionContext) -> Option<fir::Path> {
+    fn constructor_path_for(
+        &mut self,
+        path: &ast::Path,
+        ctx: &ResolutionContext,
+    ) -> Option<fir::Path> {
         let segments = path.segments();
         let last = path.last_ident()?;
         match segments.len() {
@@ -173,8 +189,8 @@ impl NameResolution {
                 }
             }
             2 => {
-                let enum_name = &segments[0].ident.0;
-                let variant = &segments[1].ident.0;
+                let enum_name = segments.get(0).map(|seg| &seg.ident.0)?;
+                let variant = segments.get(1).map(|seg| &seg.ident.0)?;
                 if ctx
                     .constructor_index
                     .enum_has_variant(ctx.current_package, enum_name, variant)
@@ -185,17 +201,18 @@ impl NameResolution {
                 }
             }
             3 => {
-                let package = &segments[0].ident.0;
-                let enum_name = &segments[1].ident.0;
-                let variant = &segments[2].ident.0;
+                let package = segments.get(0).map(|seg| &seg.ident.0)?;
+                let enum_name = segments.get(1).map(|seg| &seg.ident.0)?;
+                let variant = segments.get(2).map(|seg| &seg.ident.0)?;
                 let exists = ctx
                     .constructor_index
                     .enum_has_variant(package, enum_name, variant);
                 if exists && !ctx.package_allowed(package) {
-                    panic!(
+                    self.error(format!(
                         "package {} not imported in package {}",
                         package, ctx.current_package
-                    );
+                    ));
+                    return None;
                 }
                 exists.then(|| constructor_path(package, enum_name, variant))
             }
@@ -203,12 +220,16 @@ impl NameResolution {
         }
     }
 
-    fn normalize_constructor_path(&self, path: &ast::Path, ctx: &ResolutionContext) -> fir::Path {
+    fn normalize_constructor_path(
+        &mut self,
+        path: &ast::Path,
+        ctx: &ResolutionContext,
+    ) -> fir::Path {
         self.constructor_path_for(path, ctx)
             .unwrap_or_else(|| path.into())
     }
 
-    pub fn resolve_files(&self, files: Vec<ast::File>) -> (fir::ResolvedFir, FirTable) {
+    pub fn resolve_files(self, files: Vec<ast::File>) -> (fir::ResolvedFir, FirTable, Diagnostics) {
         let deps = HashMap::new();
         let package_name = files
             .first()
@@ -231,11 +252,11 @@ impl NameResolution {
     }
 
     pub fn resolve_files_with_env(
-        &self,
+        mut self,
         package_id: fir::PackageId,
         files: Vec<fir::SourceFileAst>,
         deps: &HashMap<String, fir::PackageInterface>,
-    ) -> (fir::ResolvedFir, FirTable) {
+    ) -> (fir::ResolvedFir, FirTable, Diagnostics) {
         let mut fir_table = FirTable::new(package_id);
 
         let mut builtin_names = HashMap::new();
@@ -391,7 +412,14 @@ impl NameResolution {
             for item in file.ast.toplevels.iter() {
                 match item {
                     ast::Item::Fn(func) => {
-                        let def_id = per_file_defs[file_idx][toplevel_idx];
+                        let def_id = per_file_defs
+                            .get(file_idx)
+                            .and_then(|defs| defs.get(toplevel_idx))
+                            .copied();
+                        let Some(def_id) = def_id else {
+                            self.ice("missing def id for function");
+                            break;
+                        };
                         toplevel_idx += 1;
                         fir_table.set_current_owner(def_id);
                         let full_name = full_def_name(package_name, &func.name.0);
@@ -399,7 +427,14 @@ impl NameResolution {
                         *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
                     }
                     ast::Item::ImplBlock(i) => {
-                        let def_id = per_file_defs[file_idx][toplevel_idx];
+                        let def_id = per_file_defs
+                            .get(file_idx)
+                            .and_then(|defs| defs.get(toplevel_idx))
+                            .copied();
+                        let Some(def_id) = def_id else {
+                            self.ice("missing def id for impl block");
+                            break;
+                        };
                         toplevel_idx += 1;
                         let methods = i
                             .methods
@@ -407,17 +442,14 @@ impl NameResolution {
                             .map(|m| self.resolve_fn_def(m, &ctx, &mut fir_table))
                             .collect();
                         let tparams = type_param_set(&i.generics);
+                        let trait_name = i.trait_name.as_ref().map(|t| {
+                            FirIdent::name(self.lower_impl_trait_name(t, package_name, &imports))
+                        });
                         let impl_block = fir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
-                            trait_name: i.trait_name.as_ref().map(|t| {
-                                FirIdent::name(Self::lower_impl_trait_name(
-                                    t,
-                                    package_name,
-                                    &imports,
-                                ))
-                            }),
-                            for_type: Self::lower_type_expr(
+                            trait_name,
+                            for_type: self.lower_type_expr(
                                 &i.for_type,
                                 &tparams,
                                 package_name,
@@ -458,16 +490,21 @@ impl NameResolution {
                         .iter()
                         .map(|import| fir::PackageName(import.0.clone()))
                         .collect(),
-                    toplevels: per_file_defs[idx].clone(),
+                    toplevels: per_file_defs.get(idx).cloned().unwrap_or_default(),
                 }
             })
             .collect();
 
-        (fir::ResolvedFir { files, toplevels }, fir_table)
+        let diagnostics = self.diagnostics;
+        (
+            fir::ResolvedFir { files, toplevels },
+            fir_table,
+            diagnostics,
+        )
     }
 
     fn resolve_fn_def(
-        &self,
+        &mut self,
         func: &ast::Fn,
         ctx: &ResolutionContext,
         fir_table: &mut FirTable,
@@ -492,7 +529,7 @@ impl NameResolution {
     }
 
     fn resolve_fn(
-        &self,
+        &mut self,
         func: &ast::Fn,
         ctx: &ResolutionContext,
         fir_table: &mut FirTable,
@@ -515,9 +552,13 @@ impl NameResolution {
         let new_params = params
             .iter()
             .map(|param| {
+                let local_id = env.rfind(&param.0).unwrap_or_else(|| {
+                    self.ice(format!("missing local id for param {}", param.0.0));
+                    self.fresh_name(&param.0.0, fir_table)
+                });
                 (
-                    env.rfind(&param.0).unwrap(),
-                    Self::lower_type_expr(&param.1, &tparams, ctx.current_package, ctx.imports),
+                    local_id,
+                    self.lower_type_expr(&param.1, &tparams, ctx.current_package, ctx.imports),
                 )
             })
             .collect();
@@ -542,13 +583,13 @@ impl NameResolution {
             params: new_params,
             ret_ty: ret_ty
                 .as_ref()
-                .map(|t| Self::lower_type_expr(t, &tparams, ctx.current_package, ctx.imports)),
+                .map(|t| self.lower_type_expr(t, &tparams, ctx.current_package, ctx.imports)),
             body: self.resolve_expr(body, &mut env, ctx, fir_table),
         }
     }
 
     fn resolve_expr(
-        &self,
+        &mut self,
         expr: &ast::Expr,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
@@ -563,7 +604,16 @@ impl NameResolution {
                     });
                 }
                 if path.len() == 1 {
-                    let ident = path.last_ident().unwrap();
+                    let Some(ident) = path.last_ident() else {
+                        self.ice("path length 1 missing last ident");
+                        return fir_table.alloc_expr(fir::Expr::ENameRef {
+                            res: fir::NameRef::Unresolved(fir::Path::from_ident(
+                                "<error>".to_string(),
+                            )),
+                            hint: "<error>".to_string(),
+                            astptr: Some(*astptr),
+                        });
+                    };
                     let name_str = &ident.0;
                     let res = if let Some(local_id) = env.rfind(ident) {
                         fir::NameRef::Local(local_id)
@@ -598,10 +648,10 @@ impl NameResolution {
                         && ctx.deps.contains_key(package)
                         && !ctx.imports.contains(package)
                     {
-                        panic!(
+                        self.error(format!(
                             "package {} not imported in package {}",
                             package, ctx.current_package
-                        );
+                        ));
                     }
 
                     let res = if package == ctx.current_package || package == "Builtin" {
@@ -693,10 +743,10 @@ impl NameResolution {
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
-                    panic!(
+                    self.error(format!(
                         "package {} not imported in package {}",
                         package.0, ctx.current_package
-                    );
+                    ));
                 }
                 fir_table.alloc_expr(fir::Expr::EStructLiteral {
                     name: qualified,
@@ -861,7 +911,7 @@ impl NameResolution {
     }
 
     fn resolve_pat(
-        &self,
+        &mut self,
         pat: &ast::Pat,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
@@ -933,10 +983,10 @@ impl NameResolution {
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
-                    panic!(
+                    self.error(format!(
                         "package {} not imported in package {}",
                         package.0, ctx.current_package
-                    );
+                    ));
                 }
                 fir_table.alloc_pat(fir::Pat::PStruct {
                     name: qualified,
@@ -955,6 +1005,7 @@ impl NameResolution {
     }
 
     fn lower_type_expr(
+        &mut self,
         ty: &ast::TypeExpr,
         _tparams: &HashSet<String>,
         current_package: &str,
@@ -977,12 +1028,18 @@ impl NameResolution {
             ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, _tparams, current_package, imports))
+                    .map(|ty| self.lower_type_expr(ty, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
                 let qualified = if path.len() == 1 {
-                    let name = path.last_ident().unwrap().0.clone();
+                    let name = match path.last_ident() {
+                        Some(ident) => ident.0.clone(),
+                        None => {
+                            self.ice("type path length 1 missing last ident");
+                            "<error>".to_string()
+                        }
+                    };
                     fir::QualifiedPath {
                         package: None,
                         path: fir::Path::from_ident(name),
@@ -992,10 +1049,10 @@ impl NameResolution {
                     if let Some(package) = &qualified.package
                         && !package_allowed(package.as_str(), current_package, imports)
                     {
-                        panic!(
+                        self.error(format!(
                             "package {} not imported in package {}",
                             package.0, current_package
-                        );
+                        ));
                     }
                     qualified
                 };
@@ -1003,7 +1060,13 @@ impl NameResolution {
             }
             ast::TypeExpr::TDyn { trait_path } => {
                 let qualified = if trait_path.len() == 1 {
-                    let name = trait_path.last_ident().unwrap().0.clone();
+                    let name = match trait_path.last_ident() {
+                        Some(ident) => ident.0.clone(),
+                        None => {
+                            self.ice("trait path length 1 missing last ident");
+                            "<error>".to_string()
+                        }
+                    };
                     fir::QualifiedPath {
                         package: None,
                         path: fir::Path::from_ident(name),
@@ -1013,10 +1076,10 @@ impl NameResolution {
                     if let Some(package) = &qualified.package
                         && !package_allowed(package.as_str(), current_package, imports)
                     {
-                        panic!(
+                        self.error(format!(
                             "package {} not imported in package {}",
                             package.0, current_package
-                        );
+                        ));
                     }
                     qualified
                 };
@@ -1025,20 +1088,15 @@ impl NameResolution {
                 }
             }
             ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
-                ty: Box::new(Self::lower_type_expr(
-                    ty.as_ref(),
-                    _tparams,
-                    current_package,
-                    imports,
-                )),
+                ty: Box::new(self.lower_type_expr(ty.as_ref(), _tparams, current_package, imports)),
                 args: args
                     .iter()
-                    .map(|arg| Self::lower_type_expr(arg, _tparams, current_package, imports))
+                    .map(|arg| self.lower_type_expr(arg, _tparams, current_package, imports))
                     .collect(),
             },
             ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
                 len: *len,
-                elem: Box::new(Self::lower_type_expr(
+                elem: Box::new(self.lower_type_expr(
                     elem.as_ref(),
                     _tparams,
                     current_package,
@@ -1048,9 +1106,9 @@ impl NameResolution {
             ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
                 params: params
                     .iter()
-                    .map(|param| Self::lower_type_expr(param, _tparams, current_package, imports))
+                    .map(|param| self.lower_type_expr(param, _tparams, current_package, imports))
                     .collect(),
-                ret_ty: Box::new(Self::lower_type_expr(
+                ret_ty: Box::new(self.lower_type_expr(
                     ret_ty.as_ref(),
                     _tparams,
                     current_package,
@@ -1061,7 +1119,7 @@ impl NameResolution {
     }
 
     fn lower_enum_def(
-        &self,
+        &mut self,
         def: &ast::EnumDef,
         current_package: &str,
         imports: &HashSet<String>,
@@ -1074,7 +1132,7 @@ impl NameResolution {
             .map(|(variant_name, tys)| {
                 let types = tys
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, &tparams, current_package, imports))
+                    .map(|ty| self.lower_type_expr(ty, &tparams, current_package, imports))
                     .collect();
                 (FirIdent::name(&variant_name.0), types)
             })
@@ -1088,7 +1146,7 @@ impl NameResolution {
     }
 
     fn lower_struct_def(
-        &self,
+        &mut self,
         def: &ast::StructDef,
         current_package: &str,
         imports: &HashSet<String>,
@@ -1101,7 +1159,7 @@ impl NameResolution {
             .map(|(field_name, ty)| {
                 (
                     FirIdent::name(&field_name.0),
-                    Self::lower_type_expr(ty, &tparams, current_package, imports),
+                    self.lower_type_expr(ty, &tparams, current_package, imports),
                 )
             })
             .collect();
@@ -1114,7 +1172,7 @@ impl NameResolution {
     }
 
     fn lower_trait_def(
-        &self,
+        &mut self,
         def: &ast::TraitDef,
         current_package: &str,
         imports: &HashSet<String>,
@@ -1128,9 +1186,9 @@ impl NameResolution {
                 params: sig
                     .params
                     .iter()
-                    .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports))
+                    .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports))
                     .collect(),
-                ret_ty: Self::lower_type_expr(
+                ret_ty: self.lower_type_expr(
                     &sig.ret_ty,
                     &HashSet::new(),
                     current_package,
@@ -1146,12 +1204,19 @@ impl NameResolution {
     }
 
     fn lower_impl_trait_name(
+        &mut self,
         path: &ast::Path,
         current_package: &str,
         imports: &HashSet<String>,
     ) -> String {
         if path.len() == 1 {
-            let name = path.last_ident().unwrap().0.clone();
+            let name = match path.last_ident() {
+                Some(ident) => ident.0.clone(),
+                None => {
+                    self.ice("impl trait path length 1 missing last ident");
+                    "<error>".to_string()
+                }
+            };
             return full_def_name(current_package, &name);
         }
 
@@ -1159,16 +1224,16 @@ impl NameResolution {
         if let Some(package) = &qualified.package
             && !package_allowed(package.as_str(), current_package, imports)
         {
-            panic!(
+            self.error(format!(
                 "package {} not imported in package {}",
                 package.0, current_package
-            );
+            ));
         }
         qualified.display()
     }
 
     fn lower_extern_go(
-        &self,
+        &mut self,
         def: &ast::ExternGo,
         current_package: &str,
         imports: &HashSet<String>,
@@ -1186,14 +1251,14 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports),
+                        self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)),
+                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports)),
         }
     }
 
@@ -1206,7 +1271,7 @@ impl NameResolution {
     }
 
     fn lower_extern_builtin(
-        &self,
+        &mut self,
         def: &ast::ExternBuiltin,
         current_package: &str,
         imports: &HashSet<String>,
@@ -1221,19 +1286,19 @@ impl NameResolution {
                 .map(|(param, ty)| {
                     (
                         FirIdent::name(&param.0),
-                        Self::lower_type_expr(ty, &HashSet::new(), current_package, imports),
+                        self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
                 .collect(),
             ret_ty: def
                 .ret_ty
                 .as_ref()
-                .map(|ty| Self::lower_type_expr(ty, &HashSet::new(), current_package, imports)),
+                .map(|ty| self.lower_type_expr(ty, &HashSet::new(), current_package, imports)),
         }
     }
 
     fn resolve_closure_param(
-        &self,
+        &mut self,
         param: &ast::ClosureParam,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
@@ -1244,7 +1309,7 @@ impl NameResolution {
         fir::ClosureParam {
             name: new_name,
             ty: param.ty.as_ref().map(|t| {
-                Self::lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
+                self.lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
             }),
             astptr: param.astptr,
         }

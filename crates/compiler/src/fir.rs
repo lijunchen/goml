@@ -1,4 +1,5 @@
 use ast::ast;
+use diagnostics::Diagnostics;
 use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
@@ -135,7 +136,7 @@ impl PackageInterface {
     }
 }
 
-pub fn lower_to_fir_files(files: Vec<SourceFileAst>) -> (PackageFir, FirTable) {
+pub fn lower_to_fir_files(files: Vec<SourceFileAst>) -> (PackageFir, FirTable, Diagnostics) {
     let deps = HashMap::new();
     let package_name = files
         .first()
@@ -153,9 +154,9 @@ pub fn lower_to_fir_files_with_env(
     package_id: PackageId,
     files: Vec<SourceFileAst>,
     deps: &HashMap<String, PackageInterface>,
-) -> (PackageFir, FirTable) {
+) -> (PackageFir, FirTable, Diagnostics) {
     use crate::typer::name_resolution::NameResolution;
-    let (resolved, mut fir_table) =
+    let (resolved, mut fir_table, diagnostics) =
         NameResolution::default().resolve_files_with_env(package_id, files, deps);
     let _ctor_errors = resolve_constructors(&mut fir_table);
     let package_name = resolved
@@ -179,10 +180,13 @@ pub fn lower_to_fir_files_with_env(
             toplevels: resolved.toplevels,
         },
         fir_table,
+        diagnostics,
     )
 }
 
-pub fn lower_to_project_fir_files(files: Vec<SourceFileAst>) -> (ProjectFir, ProjectFirTable) {
+pub fn lower_to_project_fir_files(
+    files: Vec<SourceFileAst>,
+) -> (ProjectFir, ProjectFirTable, Diagnostics) {
     let deps = HashMap::new();
     lower_to_project_fir_files_with_env(files, &deps)
 }
@@ -190,7 +194,7 @@ pub fn lower_to_project_fir_files(files: Vec<SourceFileAst>) -> (ProjectFir, Pro
 pub fn lower_to_project_fir_files_with_env(
     files: Vec<SourceFileAst>,
     deps: &HashMap<String, PackageInterface>,
-) -> (ProjectFir, ProjectFirTable) {
+) -> (ProjectFir, ProjectFirTable, Diagnostics) {
     let mut grouped: HashMap<PackageName, Vec<SourceFileAst>> = HashMap::new();
     for file in files {
         grouped
@@ -228,13 +232,16 @@ pub fn lower_to_project_fir_files_with_env(
 
     let mut project_table = ProjectFirTable::new();
     let mut package_firs = Vec::new();
+    let mut diagnostics = Diagnostics::new();
 
     for name in package_order {
         let Some(files) = grouped.remove(&name) else {
             continue;
         };
         let package_id = *package_index.get(&name).unwrap_or(&PackageId(2));
-        let (package_fir, fir_table) = lower_to_fir_files_with_env(package_id, files, deps);
+        let (package_fir, fir_table, mut package_diagnostics) =
+            lower_to_fir_files_with_env(package_id, files, deps);
+        diagnostics.append(&mut package_diagnostics);
         project_table.insert(package_id, fir_table);
         package_firs.push(package_fir);
     }
@@ -245,10 +252,11 @@ pub fn lower_to_project_fir_files_with_env(
             package_index,
         },
         project_table,
+        diagnostics,
     )
 }
 
-pub fn lower_to_fir(ast: ast::File) -> (PackageFir, FirTable) {
+pub fn lower_to_fir(ast: ast::File) -> (PackageFir, FirTable, Diagnostics) {
     lower_to_fir_files(vec![SourceFileAst {
         path: PathBuf::from("<unknown>"),
         ast,

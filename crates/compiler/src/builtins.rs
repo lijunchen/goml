@@ -62,10 +62,11 @@ fn build_builtin_env() -> GlobalTypeEnv {
         },
     };
 
-    let (fir, fir_table) = fir::lower_to_fir(ast);
+    let (fir, fir_table, mut fir_diagnostics) = fir::lower_to_fir(ast);
 
-    let (_tast, mut genv, diagnostics) =
+    let (_tast, mut genv, mut diagnostics) =
         typer::check_file_with_env(fir, fir_table, base_env, "Builtin", HashMap::new());
+    diagnostics.append(&mut fir_diagnostics);
     if diagnostics.has_errors() {
         panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
     }

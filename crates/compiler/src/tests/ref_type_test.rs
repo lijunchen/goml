@@ -19,8 +19,9 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnosti
         .into_result()
         .expect("failed to lower to AST");
     let ast_clone = ast.clone();
-    let (fir, fir_table) = crate::fir::lower_to_fir(ast);
-    let (tast, genv, diagnostics) = crate::typer::check_file(fir, fir_table);
+    let (fir, fir_table, mut fir_diagnostics) = crate::fir::lower_to_fir(ast);
+    let (tast, genv, mut diagnostics) = crate::typer::check_file(fir, fir_table);
+    diagnostics.append(&mut fir_diagnostics);
     (ast_clone, tast, genv, diagnostics)
 }
 

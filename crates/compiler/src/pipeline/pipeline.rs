@@ -208,16 +208,17 @@ fn typecheck_package(
     deps_envs: HashMap<String, GlobalTypeEnv>,
     deps_interfaces: &HashMap<String, fir::PackageInterface>,
 ) -> PackageArtifact {
-    let (fir, fir_table) =
+    let (fir, fir_table, mut fir_diagnostics) =
         fir::lower_to_fir_files_with_env(package_id, package.files.clone(), deps_interfaces);
     let fir_interface = fir::PackageInterface::from_fir(&fir, &fir_table);
-    let (tast, genv, diagnostics) = typer::check_file_with_env(
+    let (tast, genv, mut diagnostics) = typer::check_file_with_env(
         fir,
         fir_table,
         GlobalTypeEnv::new(),
         &package.name,
         deps_envs,
     );
+    diagnostics.append(&mut fir_diagnostics);
     let exports = PackageExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
@@ -347,7 +348,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         all_files.extend(package.files.clone());
     }
 
-    let (fir, fir_table) = fir::lower_to_project_fir_files(all_files);
+    let (fir, fir_table, _fir_diagnostics) = fir::lower_to_project_fir_files(all_files);
 
     let tast = full_tast;
     if diagnostics.has_errors() {
