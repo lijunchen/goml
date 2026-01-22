@@ -1,41 +1,41 @@
-use crate::fir;
-use crate::fir::{
+use crate::hir;
+use crate::hir::{
     Arm, Attribute, ClosureParam, Def, DefId, EnumDef, Expr, ExprId, ExternBuiltin, ExternGo,
-    ExternType, FirIdent, Fn, ImplBlock, PackageFir, Pat, PatId, ProjectFir, ProjectFirTable,
-    SourceFileFir, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    ExternType, Fn, HirIdent, ImplBlock, PackageHir, Pat, PatId, ProjectHir, ProjectHirTable,
+    SourceFileHir, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
-pub struct FirPrintCtx<'a> {
-    pub fir_table: &'a ProjectFirTable,
+pub struct HirPrintCtx<'a> {
+    pub hir_table: &'a ProjectHirTable,
 }
 
-impl<'a> FirPrintCtx<'a> {
-    pub fn new(fir_table: &'a ProjectFirTable) -> Self {
-        Self { fir_table }
+impl<'a> HirPrintCtx<'a> {
+    pub fn new(hir_table: &'a ProjectHirTable) -> Self {
+        Self { hir_table }
     }
 
     fn expr_to_doc(&'a self, id: ExprId) -> RcDoc<'a, ()> {
-        self.fir_table
+        self.hir_table
             .package(id.pkg)
-            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+            .unwrap_or_else(|| panic!("missing HIR table for package {:?}", id.pkg))
             .expr(id)
             .to_doc(self)
     }
 
     fn pat_to_doc(&'a self, id: PatId) -> RcDoc<'a, ()> {
-        self.fir_table
+        self.hir_table
             .package(id.pkg)
-            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+            .unwrap_or_else(|| panic!("missing HIR table for package {:?}", id.pkg))
             .pat(id)
             .to_doc(self)
     }
 
     fn def_to_doc(&'a self, id: DefId) -> RcDoc<'a, ()> {
         let table = self
-            .fir_table
+            .hir_table
             .package(id.pkg)
-            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg));
+            .unwrap_or_else(|| panic!("missing HIR table for package {:?}", id.pkg));
         match table.def(id) {
             Def::EnumDef(def) => def.to_doc(),
             Def::StructDef(def) => def.to_doc(),
@@ -142,13 +142,13 @@ impl TypeExpr {
 }
 
 impl Expr {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
-            fir::Expr::ENameRef { res, .. } => RcDoc::text(res.display(ctx.fir_table)),
+            hir::Expr::ENameRef { res, .. } => RcDoc::text(res.display(ctx.hir_table)),
 
-            fir::Expr::EUnit => RcDoc::text("()"),
+            hir::Expr::EUnit => RcDoc::text("()"),
 
-            fir::Expr::EBool { value } => {
+            hir::Expr::EBool { value } => {
                 if *value {
                     RcDoc::text("true")
                 } else {
@@ -156,22 +156,22 @@ impl Expr {
                 }
             }
 
-            fir::Expr::EInt { value } => RcDoc::text(value.clone()),
-            fir::Expr::EInt8 { value } => RcDoc::text(format!("{}i8", value)),
-            fir::Expr::EInt16 { value } => RcDoc::text(format!("{}i16", value)),
-            fir::Expr::EInt32 { value } => RcDoc::text(format!("{}i32", value)),
-            fir::Expr::EInt64 { value } => RcDoc::text(format!("{}i64", value)),
-            fir::Expr::EUInt8 { value } => RcDoc::text(format!("{}u8", value)),
-            fir::Expr::EUInt16 { value } => RcDoc::text(format!("{}u16", value)),
-            fir::Expr::EUInt32 { value } => RcDoc::text(format!("{}u32", value)),
-            fir::Expr::EUInt64 { value } => RcDoc::text(format!("{}u64", value)),
-            fir::Expr::EFloat { value } => RcDoc::text(value.to_string()),
-            fir::Expr::EFloat32 { value } => RcDoc::text(format!("{}f32", value)),
-            fir::Expr::EFloat64 { value } => RcDoc::text(format!("{}f64", value)),
-            fir::Expr::EString { value } => RcDoc::text(format!("{:?}", value)),
+            hir::Expr::EInt { value } => RcDoc::text(value.clone()),
+            hir::Expr::EInt8 { value } => RcDoc::text(format!("{}i8", value)),
+            hir::Expr::EInt16 { value } => RcDoc::text(format!("{}i16", value)),
+            hir::Expr::EInt32 { value } => RcDoc::text(format!("{}i32", value)),
+            hir::Expr::EInt64 { value } => RcDoc::text(format!("{}i64", value)),
+            hir::Expr::EUInt8 { value } => RcDoc::text(format!("{}u8", value)),
+            hir::Expr::EUInt16 { value } => RcDoc::text(format!("{}u16", value)),
+            hir::Expr::EUInt32 { value } => RcDoc::text(format!("{}u32", value)),
+            hir::Expr::EUInt64 { value } => RcDoc::text(format!("{}u64", value)),
+            hir::Expr::EFloat { value } => RcDoc::text(value.to_string()),
+            hir::Expr::EFloat32 { value } => RcDoc::text(format!("{}f32", value)),
+            hir::Expr::EFloat64 { value } => RcDoc::text(format!("{}f64", value)),
+            hir::Expr::EString { value } => RcDoc::text(format!("{:?}", value)),
 
-            fir::Expr::EConstr { constructor, args } => {
-                let prefix = RcDoc::text(constructor.display(ctx.fir_table));
+            hir::Expr::EConstr { constructor, args } => {
+                let prefix = RcDoc::text(constructor.display(ctx.hir_table));
 
                 if args.is_empty() {
                     prefix
@@ -188,7 +188,7 @@ impl Expr {
                 }
             }
 
-            fir::Expr::EStructLiteral { name, fields } => {
+            hir::Expr::EStructLiteral { name, fields } => {
                 if fields.is_empty() {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
@@ -217,7 +217,7 @@ impl Expr {
                 }
             }
 
-            fir::Expr::ETuple { items } => {
+            hir::Expr::ETuple { items } => {
                 if items.is_empty() {
                     RcDoc::text("()")
                 } else {
@@ -230,7 +230,7 @@ impl Expr {
                 }
             }
 
-            fir::Expr::EArray { items } => {
+            hir::Expr::EArray { items } => {
                 if items.is_empty() {
                     RcDoc::text("[]")
                 } else {
@@ -243,7 +243,7 @@ impl Expr {
                 }
             }
 
-            fir::Expr::EClosure { params, body } => {
+            hir::Expr::EClosure { params, body } => {
                 let params_doc = RcDoc::intersperse(
                     params.iter().map(|param| param.to_doc()),
                     RcDoc::text(", "),
@@ -254,7 +254,7 @@ impl Expr {
                     .append(RcDoc::text("| "))
                     .append(ctx.expr_to_doc(*body))
             }
-            fir::Expr::ELet {
+            hir::Expr::ELet {
                 pat,
                 annotation,
                 value,
@@ -276,7 +276,7 @@ impl Expr {
                     .group()
             }
 
-            fir::Expr::EMatch { expr, arms } => {
+            hir::Expr::EMatch { expr, arms } => {
                 let match_expr = RcDoc::text("match")
                     .append(RcDoc::space())
                     .append(ctx.expr_to_doc(*expr))
@@ -294,7 +294,7 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
-            fir::Expr::EIf {
+            hir::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
@@ -307,7 +307,7 @@ impl Expr {
                 .append(RcDoc::text("else"))
                 .append(RcDoc::space())
                 .append(ctx.expr_to_doc(*else_branch)),
-            fir::Expr::EWhile { cond, body } => {
+            hir::Expr::EWhile { cond, body } => {
                 let body_doc = RcDoc::hardline()
                     .append(ctx.expr_to_doc(*body))
                     .nest(4)
@@ -323,11 +323,11 @@ impl Expr {
                     .group()
             }
 
-            fir::Expr::EGo { expr } => RcDoc::text("go")
+            hir::Expr::EGo { expr } => RcDoc::text("go")
                 .append(RcDoc::space())
                 .append(ctx.expr_to_doc(*expr)),
 
-            fir::Expr::ECall { func, args } => {
+            hir::Expr::ECall { func, args } => {
                 let func_doc = ctx.expr_to_doc(*func);
                 if args.is_empty() {
                     func_doc.append(RcDoc::text("()"))
@@ -345,24 +345,24 @@ impl Expr {
                         .group()
                 }
             }
-            fir::Expr::EUnary { op, expr } => RcDoc::text(op.symbol())
+            hir::Expr::EUnary { op, expr } => RcDoc::text(op.symbol())
                 .append(ctx.expr_to_doc(*expr))
                 .group(),
-            fir::Expr::EBinary { op, lhs, rhs } => ctx
+            hir::Expr::EBinary { op, lhs, rhs } => ctx
                 .expr_to_doc(*lhs)
                 .append(RcDoc::space())
                 .append(RcDoc::text(op.symbol()))
                 .append(RcDoc::space())
                 .append(ctx.expr_to_doc(*rhs)),
-            fir::Expr::EProj { tuple, index } => ctx
+            hir::Expr::EProj { tuple, index } => ctx
                 .expr_to_doc(*tuple)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(index.to_string())),
-            fir::Expr::EField { expr, field } => ctx
+            hir::Expr::EField { expr, field } => ctx
                 .expr_to_doc(*expr)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.to_ident_name())),
-            fir::Expr::EBlock { exprs } => {
+            hir::Expr::EBlock { exprs } => {
                 if exprs.is_empty() {
                     RcDoc::text("{}")
                 } else {
@@ -381,7 +381,7 @@ impl Expr {
         }
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -389,29 +389,29 @@ impl Expr {
 }
 
 impl Pat {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
-            fir::Pat::PVar { name, .. } => RcDoc::text(name.to_debug_string()),
-            fir::Pat::PUnit => RcDoc::text("()"),
-            fir::Pat::PBool { value } => {
+            hir::Pat::PVar { name, .. } => RcDoc::text(name.to_debug_string()),
+            hir::Pat::PUnit => RcDoc::text("()"),
+            hir::Pat::PBool { value } => {
                 if *value {
                     RcDoc::text("true")
                 } else {
                     RcDoc::text("false")
                 }
             }
-            fir::Pat::PInt { value } => RcDoc::text(value.clone()),
-            fir::Pat::PInt8 { value } => RcDoc::text(format!("{}i8", value)),
-            fir::Pat::PInt16 { value } => RcDoc::text(format!("{}i16", value)),
-            fir::Pat::PInt32 { value } => RcDoc::text(format!("{}i32", value)),
-            fir::Pat::PInt64 { value } => RcDoc::text(format!("{}i64", value)),
-            fir::Pat::PUInt8 { value } => RcDoc::text(format!("{}u8", value)),
-            fir::Pat::PUInt16 { value } => RcDoc::text(format!("{}u16", value)),
-            fir::Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
-            fir::Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
-            fir::Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
-            fir::Pat::PConstr { constructor, args } => {
-                let prefix = RcDoc::text(constructor.display(ctx.fir_table));
+            hir::Pat::PInt { value } => RcDoc::text(value.clone()),
+            hir::Pat::PInt8 { value } => RcDoc::text(format!("{}i8", value)),
+            hir::Pat::PInt16 { value } => RcDoc::text(format!("{}i16", value)),
+            hir::Pat::PInt32 { value } => RcDoc::text(format!("{}i32", value)),
+            hir::Pat::PInt64 { value } => RcDoc::text(format!("{}i64", value)),
+            hir::Pat::PUInt8 { value } => RcDoc::text(format!("{}u8", value)),
+            hir::Pat::PUInt16 { value } => RcDoc::text(format!("{}u16", value)),
+            hir::Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
+            hir::Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
+            hir::Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
+            hir::Pat::PConstr { constructor, args } => {
+                let prefix = RcDoc::text(constructor.display(ctx.hir_table));
 
                 if args.is_empty() {
                     prefix
@@ -426,7 +426,7 @@ impl Pat {
                         .append(RcDoc::text(")"))
                 }
             }
-            fir::Pat::PStruct { name, fields } => {
+            hir::Pat::PStruct { name, fields } => {
                 if fields.is_empty() {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
@@ -447,7 +447,7 @@ impl Pat {
                         .append(RcDoc::text(" }"))
                 }
             }
-            fir::Pat::PTuple { pats } => {
+            hir::Pat::PTuple { pats } => {
                 if pats.is_empty() {
                     RcDoc::text("()")
                 } else {
@@ -458,11 +458,11 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
-            fir::Pat::PWild => RcDoc::text("_"),
+            hir::Pat::PWild => RcDoc::text("_"),
         }
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -470,7 +470,7 @@ impl Pat {
 }
 
 impl Arm {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         ctx.pat_to_doc(self.pat)
             .append(RcDoc::space())
             .append(RcDoc::text("=>"))
@@ -479,14 +479,14 @@ impl Arm {
             .append(RcDoc::text(","))
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
-fn generics_to_doc(generics: &[FirIdent]) -> RcDoc<'_, ()> {
+fn generics_to_doc(generics: &[HirIdent]) -> RcDoc<'_, ()> {
     if generics.is_empty() {
         RcDoc::nil()
     } else {
@@ -633,7 +633,7 @@ impl TraitMethodSignature {
 }
 
 impl ImplBlock {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let mut base = RcDoc::text("impl");
 
         if !self.generics.is_empty() {
@@ -671,7 +671,7 @@ impl ImplBlock {
         )
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -679,7 +679,7 @@ impl ImplBlock {
 }
 
 impl Fn {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let header = RcDoc::text("fn")
             .append(RcDoc::space())
             .append(RcDoc::text(&self.name))
@@ -701,9 +701,9 @@ impl Fn {
             RcDoc::nil()
         };
         let body = ctx
-            .fir_table
+            .hir_table
             .package(self.body.pkg)
-            .unwrap_or_else(|| panic!("missing FIR table for package {:?}", self.body.pkg))
+            .unwrap_or_else(|| panic!("missing HIR table for package {:?}", self.body.pkg))
             .expr(self.body);
         attrs_doc(&self.attrs).append(
             header
@@ -712,7 +712,7 @@ impl Fn {
                 .append(ret_ty_doc)
                 .append(RcDoc::space())
                 .append(match body {
-                    fir::Expr::EBlock { exprs } => {
+                    hir::Expr::EBlock { exprs } => {
                         if exprs.is_empty() {
                             RcDoc::text("{}")
                         } else {
@@ -736,7 +736,7 @@ impl Fn {
         )
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
@@ -832,8 +832,8 @@ impl ExternBuiltin {
     }
 }
 
-impl SourceFileFir {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+impl SourceFileHir {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let defs_doc = RcDoc::intersperse(
             self.toplevels.iter().map(|item| ctx.def_to_doc(*item)),
             RcDoc::hardline().append(RcDoc::hardline()),
@@ -855,8 +855,8 @@ impl SourceFileFir {
     }
 }
 
-impl PackageFir {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+impl PackageHir {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         let imports_doc = if self.imports.is_empty() {
             RcDoc::nil()
         } else {
@@ -889,15 +889,15 @@ impl PackageFir {
             .append(files_doc)
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
     }
 }
 
-impl ProjectFir {
-    pub fn to_doc<'a>(&'a self, ctx: &'a FirPrintCtx<'a>) -> RcDoc<'a, ()> {
+impl ProjectHir {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         RcDoc::concat(self.packages.iter().enumerate().map(|(idx, package)| {
             let sep = if idx == 0 {
                 RcDoc::nil()
@@ -908,7 +908,7 @@ impl ProjectFir {
         }))
     }
 
-    pub fn to_pretty(&self, ctx: &FirPrintCtx, width: usize) -> String {
+    pub fn to_pretty(&self, ctx: &HirPrintCtx, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(ctx).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()

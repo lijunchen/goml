@@ -6,7 +6,7 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
-    fir::{self},
+    hir::{self},
     tast::{self},
     typer::{
         Typer,
@@ -16,10 +16,10 @@ use crate::{
     },
 };
 
-fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::PackageFir, fir_table: &fir::FirTable) {
-    for item in fir.toplevels.iter() {
-        match fir_table.def(*item) {
-            fir::Def::EnumDef(enum_def) => {
+fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => {
                 genv.ensure_enum_placeholder(
                     tast::TastIdent(enum_def.name.to_ident_name()),
                     enum_def
@@ -29,7 +29,7 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::PackageFir, fir_table: 
                         .collect(),
                 );
             }
-            fir::Def::StructDef(fir::StructDef { name, generics, .. }) => {
+            hir::Def::StructDef(hir::StructDef { name, generics, .. }) => {
                 genv.ensure_struct_placeholder(
                     tast::TastIdent(name.to_ident_name()),
                     generics
@@ -43,7 +43,7 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, fir: &fir::PackageFir, fir_table: 
     }
 }
 
-fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &fir::EnumDef) {
+fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
     let params_env: Vec<tast::TastIdent> = enum_def
         .generics
         .iter()
@@ -57,7 +57,7 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
         .map(|(vcon, typs)| {
             let typs = typs
                 .iter()
-                .map(|ast_ty| tast::Ty::from_fir(env, ast_ty, &params_env))
+                .map(|ast_ty| tast::Ty::from_hir(env, ast_ty, &params_env))
                 .collect::<Vec<_>>();
             for ty in typs.iter() {
                 validate_ty(env, diagnostics, ty, &tparam_names);
@@ -79,7 +79,7 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
 fn define_struct(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    struct_def: &fir::StructDef,
+    struct_def: &hir::StructDef,
 ) {
     let params_env: Vec<tast::TastIdent> = struct_def
         .generics
@@ -91,7 +91,7 @@ fn define_struct(
         .fields
         .iter()
         .map(|(fname, ast_ty)| {
-            let ty = tast::Ty::from_fir(env, ast_ty, &params_env);
+            let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
             validate_ty(env, diagnostics, &ty, &tparam_names);
             (tast::TastIdent(fname.to_ident_name()), ty)
         })
@@ -108,10 +108,10 @@ fn define_struct(
     });
 }
 
-fn define_trait(env: &mut PackageTypeEnv, trait_def: &fir::TraitDef) {
+fn define_trait(env: &mut PackageTypeEnv, trait_def: &hir::TraitDef) {
     let mut methods = IndexMap::new();
 
-    for fir::TraitMethodSignature {
+    for hir::TraitMethodSignature {
         name: method_name,
         params,
         ret_ty,
@@ -119,9 +119,9 @@ fn define_trait(env: &mut PackageTypeEnv, trait_def: &fir::TraitDef) {
     {
         let param_tys = params
             .iter()
-            .map(|ast_ty| tast::Ty::from_fir(env, ast_ty, &[]))
+            .map(|ast_ty| tast::Ty::from_hir(env, ast_ty, &[]))
             .collect::<Vec<_>>();
-        let ret_ty = tast::Ty::from_fir(env, ret_ty, &[]);
+        let ret_ty = tast::Ty::from_hir(env, ret_ty, &[]);
         let fn_ty = tast::Ty::TFunc {
             params: param_tys,
             ret_ty: Box::new(ret_ty),
@@ -165,12 +165,12 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
 fn define_trait_impl(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    impl_block: &fir::ImplBlock,
-    trait_name: &fir::FirIdent,
-    fir_table: &fir::FirTable,
+    impl_block: &hir::ImplBlock,
+    trait_name: &hir::HirIdent,
+    hir_table: &hir::HirTable,
 ) {
     let empty_tparams = HashSet::new();
-    let for_ty = tast::Ty::from_fir(env, &impl_block.for_type, &[]);
+    let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &[]);
     validate_ty(env, diagnostics, &for_ty, &empty_tparams);
     let trait_name_raw = trait_name.to_ident_name();
     let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
@@ -226,8 +226,8 @@ fn define_trait_impl(
     let mut impl_methods: IndexMap<String, env::FnScheme> = IndexMap::new();
 
     for m in impl_block.methods.iter() {
-        let m = match fir_table.def(*m) {
-            fir::Def::Fn(func) => func,
+        let m = match hir_table.def(*m) {
+            hir::Def::Fn(func) => func,
             _ => continue,
         };
         let method_name_str = m.name.clone();
@@ -281,14 +281,14 @@ fn define_trait_impl(
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_fir(env, ty, &generics_tast);
+                let ty = tast::Ty::from_hir(env, ty, &generics_tast);
                 validate_ty(env, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_fir(env, ty, &generics_tast);
+                let ret = tast::Ty::from_hir(env, ty, &generics_tast);
                 validate_ty(env, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -409,8 +409,8 @@ fn define_trait_impl(
 fn define_inherent_impl(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    impl_block: &fir::ImplBlock,
-    fir_table: &fir::FirTable,
+    impl_block: &hir::ImplBlock,
+    hir_table: &hir::HirTable,
 ) {
     // Combine impl generics with method generics for type parameter validation
     let impl_tparams = type_param_name_set(&impl_block.generics);
@@ -419,7 +419,7 @@ fn define_inherent_impl(
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
-    let for_ty = tast::Ty::from_fir(env, &impl_block.for_type, &impl_generics_tast);
+    let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
     validate_ty(env, diagnostics, &for_ty, &impl_tparams);
     if !is_local_nominal_type(&env.package, &for_ty) {
         diagnostics.push(Diagnostic::new(
@@ -452,8 +452,8 @@ fn define_inherent_impl(
 
     let mut implemented_methods: HashSet<String> = HashSet::new();
     for m in impl_block.methods.iter() {
-        let m = match fir_table.def(*m) {
-            fir::Def::Fn(func) => func,
+        let m = match hir_table.def(*m) {
+            hir::Def::Fn(func) => func,
             _ => continue,
         };
         let method_name_str = m.name.clone();
@@ -483,14 +483,14 @@ fn define_inherent_impl(
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_fir(env, ty, &all_generics_tast);
+                let ty = tast::Ty::from_hir(env, ty, &all_generics_tast);
                 validate_ty(env, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_fir(env, ty, &all_generics_tast);
+                let ret = tast::Ty::from_hir(env, ty, &all_generics_tast);
                 validate_ty(env, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -530,7 +530,7 @@ fn define_inherent_impl(
     impl_def.methods.extend(methods_to_add);
 }
 
-fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func: &fir::Fn) {
+fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func: &hir::Fn) {
     let name = func.name.clone();
     let tparam_names = type_param_name_set(&func.generics);
     let generics_tast: Vec<tast::TastIdent> = func
@@ -542,14 +542,14 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_fir(env, ty, &generics_tast);
+            let ty = tast::Ty::from_hir(env, ty, &generics_tast);
             validate_ty(env, diagnostics, &ty, &tparam_names);
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &func.ret_ty {
         Some(ty) => {
-            let ret = tast::Ty::from_fir(env, ty, &generics_tast);
+            let ret = tast::Ty::from_hir(env, ty, &generics_tast);
             validate_ty(env, diagnostics, &ret, &tparam_names);
             ret
         }
@@ -593,19 +593,19 @@ pub fn go_symbol_name(name: &str) -> String {
     }
 }
 
-fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext: &fir::ExternGo) {
+fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext: &hir::ExternGo) {
     let params = ext
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_fir(env, ty, &[]);
+            let ty = tast::Ty::from_hir(env, ty, &[]);
             validate_ty(env, diagnostics, &ty, &HashSet::new());
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &ext.ret_ty {
         Some(ty) => {
-            let ret = tast::Ty::from_fir(env, ty, &[]);
+            let ret = tast::Ty::from_hir(env, ty, &[]);
             validate_ty(env, diagnostics, &ret, &HashSet::new());
             ret
         }
@@ -628,7 +628,7 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
 fn define_extern_type(
     env: &mut PackageTypeEnv,
     _diagnostics: &mut Diagnostics,
-    ext: &fir::ExternType,
+    ext: &hir::ExternType,
 ) {
     env.current_mut()
         .register_extern_type(ext.goml_name.to_ident_name());
@@ -637,20 +637,20 @@ fn define_extern_type(
 fn define_extern_builtin(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    ext: &fir::ExternBuiltin,
+    ext: &hir::ExternBuiltin,
 ) {
     let params = ext
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_fir(env, ty, &[]);
+            let ty = tast::Ty::from_hir(env, ty, &[]);
             validate_ty(env, diagnostics, &ty, &HashSet::new());
             ty
         })
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
         Some(ty) => {
-            let ty = tast::Ty::from_fir(env, ty, &[]);
+            let ty = tast::Ty::from_hir(env, ty, &[]);
             validate_ty(env, diagnostics, &ty, &HashSet::new());
             ty
         }
@@ -739,38 +739,38 @@ fn instantiate_trait_method_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
 pub fn collect_typedefs(
     env: &mut PackageTypeEnv,
     diagnostics: &mut Diagnostics,
-    fir: &fir::PackageFir,
-    fir_table: &fir::FirTable,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
 ) {
-    predeclare_types(env.current_mut(), fir, fir_table);
+    predeclare_types(env.current_mut(), hir, hir_table);
 
-    for item in fir.toplevels.iter() {
-        match fir_table.def(*item) {
-            fir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
-            fir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
-            fir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
-            fir::Def::ImplBlock(impl_block) => {
+    for item in hir.toplevels.iter() {
+        match hir_table.def(*item) {
+            hir::Def::EnumDef(enum_def) => define_enum(env, diagnostics, enum_def),
+            hir::Def::StructDef(struct_def) => define_struct(env, diagnostics, struct_def),
+            hir::Def::TraitDef(trait_def) => define_trait(env, trait_def),
+            hir::Def::ImplBlock(impl_block) => {
                 if let Some(trait_name) = &impl_block.trait_name {
-                    define_trait_impl(env, diagnostics, impl_block, trait_name, fir_table);
+                    define_trait_impl(env, diagnostics, impl_block, trait_name, hir_table);
                 } else {
-                    define_inherent_impl(env, diagnostics, impl_block, fir_table);
+                    define_inherent_impl(env, diagnostics, impl_block, hir_table);
                 }
             }
-            fir::Def::Fn(func) => define_function(env, diagnostics, func),
-            fir::Def::ExternGo(ext) => define_extern_go(env, diagnostics, ext),
-            fir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
-            fir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
+            hir::Def::Fn(func) => define_function(env, diagnostics, func),
+            hir::Def::ExternGo(ext) => define_extern_go(env, diagnostics, ext),
+            hir::Def::ExternType(ext) => define_extern_type(env, diagnostics, ext),
+            hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
         }
     }
 }
 
 pub fn check_file(
-    fir: fir::PackageFir,
-    fir_table: name_resolution::FirTable,
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     check_file_with_env(
-        fir,
-        fir_table,
+        hir,
+        hir_table,
         env::GlobalTypeEnv::new(),
         "Main",
         HashMap::new(),
@@ -778,23 +778,23 @@ pub fn check_file(
 }
 
 pub fn check_file_with_env(
-    fir: fir::PackageFir,
-    fir_table: name_resolution::FirTable,
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
     genv: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
     let mut genv = env::PackageTypeEnv::new(package.to_string(), genv, deps);
-    let mut typer = Typer::new(fir_table);
+    let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
-    collect_typedefs(&mut genv, &mut diagnostics, &fir, &typer.fir_table);
+    collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
     let mut typed_toplevel_tasts = vec![];
-    for item in fir.toplevels.iter() {
-        match typer.fir_table.def(*item).clone() {
-            fir::Def::EnumDef(..) => (),
-            fir::Def::StructDef(..) => (),
-            fir::Def::TraitDef(..) => (),
-            fir::Def::ImplBlock(impl_block) => {
+    for item in hir.toplevels.iter() {
+        match typer.hir_table.def(*item).clone() {
+            hir::Def::EnumDef(..) => (),
+            hir::Def::StructDef(..) => (),
+            hir::Def::TraitDef(..) => (),
+            hir::Def::ImplBlock(impl_block) => {
                 typed_toplevel_tasts.push(tast::Item::ImplBlock(check_impl_block(
                     &genv,
                     &mut typer,
@@ -802,7 +802,7 @@ pub fn check_file_with_env(
                     &impl_block,
                 )));
             }
-            fir::Def::Fn(f) => {
+            hir::Def::Fn(f) => {
                 typed_toplevel_tasts.push(tast::Item::Fn(check_fn(
                     &genv,
                     &mut typer,
@@ -810,7 +810,7 @@ pub fn check_file_with_env(
                     &f,
                 )));
             }
-            fir::Def::ExternGo(ext) => {
+            hir::Def::ExternGo(ext) => {
                 typed_toplevel_tasts.push(tast::Item::ExternGo(check_extern_go(
                     &genv,
                     &mut typer,
@@ -818,7 +818,7 @@ pub fn check_file_with_env(
                     &ext,
                 )));
             }
-            fir::Def::ExternType(ext) => {
+            hir::Def::ExternType(ext) => {
                 typed_toplevel_tasts.push(tast::Item::ExternType(check_extern_type(
                     &mut genv,
                     &mut diagnostics,
@@ -826,7 +826,7 @@ pub fn check_file_with_env(
                 )));
             }
             // ExternBuiltin is handled during GlobalTypeEnv initialization
-            fir::Def::ExternBuiltin(_) => (),
+            hir::Def::ExternBuiltin(_) => (),
         }
     }
 
@@ -843,7 +843,7 @@ fn check_fn(
     genv: &PackageTypeEnv,
     typer: &mut Typer,
     diagnostics: &mut Diagnostics,
-    f: &fir::Fn,
+    f: &hir::Fn,
 ) -> tast::Fn {
     let mut local_env = LocalTypeEnv::new();
     let tparams: Vec<tast::TastIdent> = f
@@ -878,12 +878,12 @@ fn check_fn(
         traits.dedup_by(|a, b| a.0 == b.0);
     }
     local_env.set_tparam_trait_bounds(bounds);
-    let param_types: Vec<(fir::LocalId, String, tast::Ty)> = f
+    let param_types: Vec<(hir::LocalId, String, tast::Ty)> = f
         .params
         .iter()
         .map(|(name, ty)| {
-            let name_str = typer.fir_table.local_ident_name(*name);
-            let ty = tast::Ty::from_fir(genv, ty, &tparams);
+            let name_str = typer.hir_table.local_ident_name(*name);
+            let ty = tast::Ty::from_hir(genv, ty, &tparams);
             (*name, name_str, ty)
         })
         .collect();
@@ -893,7 +893,7 @@ fn check_fn(
         .collect::<Vec<_>>();
 
     let ret_ty = match &f.ret_ty {
-        Some(ty) => tast::Ty::from_fir(genv, ty, &tparams),
+        Some(ty) => tast::Ty::from_hir(genv, ty, &tparams),
         None => tast::Ty::TUnit,
     };
 
@@ -920,18 +920,18 @@ fn check_impl_block(
     genv: &PackageTypeEnv,
     typer: &mut Typer,
     diagnostics: &mut Diagnostics,
-    impl_block: &fir::ImplBlock,
+    impl_block: &hir::ImplBlock,
 ) -> tast::ImplBlock {
     let impl_generics_tast: Vec<tast::TastIdent> = impl_block
         .generics
         .iter()
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
-    let for_ty = tast::Ty::from_fir(genv, &impl_block.for_type, &impl_generics_tast);
+    let for_ty = tast::Ty::from_hir(genv, &impl_block.for_type, &impl_generics_tast);
     let mut typed_methods = Vec::new();
     for f in impl_block.methods.iter() {
-        let f = match typer.fir_table.def(*f).clone() {
-            fir::Def::Fn(func) => func,
+        let f = match typer.hir_table.def(*f).clone() {
+            hir::Def::Fn(func) => func,
             _ => continue,
         };
         let mut local_env = LocalTypeEnv::new();
@@ -944,13 +944,13 @@ fn check_impl_block(
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
 
-        let param_types: Vec<(fir::LocalId, String, tast::Ty)> = f
+        let param_types: Vec<(hir::LocalId, String, tast::Ty)> = f
             .params
             .iter()
             .map(|(name, ty)| {
-                let ty = tast::Ty::from_fir(genv, ty, &all_generics_tast);
+                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
                 let ty = instantiate_self_ty(&ty, &for_ty);
-                let name_str = typer.fir_table.local_ident_name(*name);
+                let name_str = typer.hir_table.local_ident_name(*name);
                 (*name, name_str, ty)
             })
             .collect();
@@ -961,7 +961,7 @@ fn check_impl_block(
 
         let ret_ty = match &f.ret_ty {
             Some(ty) => {
-                let ty = tast::Ty::from_fir(genv, ty, &all_generics_tast);
+                let ty = tast::Ty::from_hir(genv, ty, &all_generics_tast);
                 instantiate_self_ty(&ty, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -1011,15 +1011,15 @@ fn check_extern_go(
     genv: &PackageTypeEnv,
     _typer: &mut Typer,
     _diagnostics: &mut Diagnostics,
-    ext: &fir::ExternGo,
+    ext: &hir::ExternGo,
 ) -> tast::ExternGo {
     let params = ext
         .params
         .iter()
-        .map(|(name, ty)| (name.to_ident_name(), tast::Ty::from_fir(genv, ty, &[])))
+        .map(|(name, ty)| (name.to_ident_name(), tast::Ty::from_hir(genv, ty, &[])))
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
-        Some(ty) => tast::Ty::from_fir(genv, ty, &[]),
+        Some(ty) => tast::Ty::from_hir(genv, ty, &[]),
         None => tast::Ty::TUnit,
     };
     tast::ExternGo {
@@ -1034,7 +1034,7 @@ fn check_extern_go(
 fn check_extern_type(
     genv: &mut PackageTypeEnv,
     _diagnostics: &mut Diagnostics,
-    ext: &fir::ExternType,
+    ext: &hir::ExternType,
 ) -> tast::ExternType {
     genv.current_mut()
         .register_extern_type(ext.goml_name.to_ident_name());

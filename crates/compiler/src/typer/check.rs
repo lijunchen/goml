@@ -4,7 +4,7 @@ use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 
 use crate::common::{self, Prim};
-use crate::fir::{self};
+use crate::hir::{self};
 use crate::typer::localenv::LocalTypeEnv;
 use crate::{
     env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
@@ -34,85 +34,85 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        e: fir::ExprId,
+        e: hir::ExprId,
     ) -> tast::Expr {
-        let expr = self.fir_table.expr(e).clone();
+        let expr = self.hir_table.expr(e).clone();
         match expr {
-            fir::Expr::ENameRef { res, hint, astptr } => {
+            hir::Expr::ENameRef { res, hint, astptr } => {
                 self.infer_res_expr(genv, local_env, diagnostics, &res, &hint, astptr)
             }
-            fir::Expr::EUnit => tast::Expr::EPrim {
+            hir::Expr::EUnit => tast::Expr::EPrim {
                 value: Prim::unit(),
                 ty: tast::Ty::TUnit,
             },
-            fir::Expr::EBool { value } => tast::Expr::EPrim {
+            hir::Expr::EBool { value } => tast::Expr::EPrim {
                 value: Prim::boolean(value),
                 ty: tast::Ty::TBool,
             },
-            fir::Expr::EInt { value } => {
+            hir::Expr::EInt { value } => {
                 let ty = tast::Ty::TInt32;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EInt8 { value } => {
+            hir::Expr::EInt8 { value } => {
                 let ty = tast::Ty::TInt8;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EInt16 { value } => {
+            hir::Expr::EInt16 { value } => {
                 let ty = tast::Ty::TInt16;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EInt32 { value } => {
+            hir::Expr::EInt32 { value } => {
                 let ty = tast::Ty::TInt32;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EInt64 { value } => {
+            hir::Expr::EInt64 { value } => {
                 let ty = tast::Ty::TInt64;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EUInt8 { value } => {
+            hir::Expr::EUInt8 { value } => {
                 let ty = tast::Ty::TUint8;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EUInt16 { value } => {
+            hir::Expr::EUInt16 { value } => {
                 let ty = tast::Ty::TUint16;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EUInt32 { value } => {
+            hir::Expr::EUInt32 { value } => {
                 let ty = tast::Ty::TUint32;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EUInt64 { value } => {
+            hir::Expr::EUInt64 { value } => {
                 let ty = tast::Ty::TUint64;
                 let prim = self
                     .parse_integer_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EFloat { value } => {
+            hir::Expr::EFloat { value } => {
                 self.ensure_float_literal_fits(diagnostics, value, &tast::Ty::TFloat64);
                 let ty = tast::Ty::TFloat64;
                 tast::Expr::EPrim {
@@ -120,72 +120,72 @@ impl Typer {
                     ty,
                 }
             }
-            fir::Expr::EFloat32 { value } => {
+            hir::Expr::EFloat32 { value } => {
                 let ty = tast::Ty::TFloat32;
                 let prim = self
                     .parse_float_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EFloat64 { value } => {
+            hir::Expr::EFloat64 { value } => {
                 let ty = tast::Ty::TFloat64;
                 let prim = self
                     .parse_float_literal_with_ty(diagnostics, &value, &ty)
                     .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
-            fir::Expr::EString { value } => tast::Expr::EPrim {
+            hir::Expr::EString { value } => tast::Expr::EPrim {
                 value: Prim::string(value),
                 ty: tast::Ty::TString,
             },
-            fir::Expr::EConstr { constructor, args } => {
+            hir::Expr::EConstr { constructor, args } => {
                 self.infer_constructor_expr(genv, local_env, diagnostics, &constructor, &args)
             }
-            fir::Expr::EStructLiteral { name, fields } => {
+            hir::Expr::EStructLiteral { name, fields } => {
                 self.infer_struct_literal_expr(genv, local_env, diagnostics, &name, &fields)
             }
-            fir::Expr::ETuple { items } => {
+            hir::Expr::ETuple { items } => {
                 self.infer_tuple_expr(genv, local_env, diagnostics, &items)
             }
-            fir::Expr::EArray { items } => {
+            hir::Expr::EArray { items } => {
                 self.infer_array_expr(genv, local_env, diagnostics, &items)
             }
-            fir::Expr::EClosure { params, body } => {
+            hir::Expr::EClosure { params, body } => {
                 self.infer_closure_expr(genv, local_env, diagnostics, &params, body)
             }
-            fir::Expr::ELet {
+            hir::Expr::ELet {
                 pat,
                 annotation,
                 value,
             } => self.infer_let_expr(genv, local_env, diagnostics, pat, &annotation, value),
-            fir::Expr::EBlock { exprs } => {
+            hir::Expr::EBlock { exprs } => {
                 self.infer_block_expr(genv, local_env, diagnostics, &exprs)
             }
-            fir::Expr::EMatch { expr, arms } => {
+            hir::Expr::EMatch { expr, arms } => {
                 self.infer_match_expr(genv, local_env, diagnostics, expr, &arms, None)
             }
-            fir::Expr::EIf {
+            hir::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
             } => self.infer_if_expr(genv, local_env, diagnostics, cond, then_branch, else_branch),
-            fir::Expr::EWhile { cond, body } => {
+            hir::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
-            fir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
-            fir::Expr::ECall { func, args } => {
+            hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
+            hir::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, func, &args)
             }
-            fir::Expr::EUnary { op, expr } => {
+            hir::Expr::EUnary { op, expr } => {
                 self.infer_unary_expr(genv, local_env, diagnostics, op, expr)
             }
-            fir::Expr::EBinary { op, lhs, rhs } => {
+            hir::Expr::EBinary { op, lhs, rhs } => {
                 self.infer_binary_expr(genv, local_env, diagnostics, op, lhs, rhs)
             }
-            fir::Expr::EProj { tuple, index } => {
+            hir::Expr::EProj { tuple, index } => {
                 self.infer_proj_expr(genv, local_env, diagnostics, tuple, index)
             }
-            fir::Expr::EField { expr, field } => {
+            hir::Expr::EField { expr, field } => {
                 self.infer_field_expr(genv, local_env, diagnostics, expr, &field, None)
             }
         }
@@ -196,12 +196,12 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        e: fir::ExprId,
+        e: hir::ExprId,
         expected: &tast::Ty,
     ) -> tast::Expr {
-        let expr = self.fir_table.expr(e).clone();
+        let expr = self.hir_table.expr(e).clone();
         let expr_tast = match expr {
-            fir::Expr::EUnary {
+            hir::Expr::EUnary {
                 op: common_defs::UnaryOp::Neg,
                 expr: inner,
             } if is_numeric_ty(expected) => {
@@ -213,7 +213,7 @@ impl Typer {
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
-            fir::Expr::EBinary { op, lhs, rhs }
+            hir::Expr::EBinary { op, lhs, rhs }
                 if is_numeric_ty(expected)
                     && matches!(
                         op,
@@ -233,10 +233,10 @@ impl Typer {
                     resolution: tast::BinaryResolution::Builtin,
                 }
             }
-            fir::Expr::EClosure { params, body } => {
+            hir::Expr::EClosure { params, body } => {
                 self.check_closure_expr(genv, local_env, diagnostics, &params, body, expected)
             }
-            fir::Expr::ELet {
+            hir::Expr::ELet {
                 pat,
                 annotation,
                 value,
@@ -249,10 +249,10 @@ impl Typer {
                 value,
                 expected,
             ),
-            fir::Expr::EBlock { exprs } => {
+            hir::Expr::EBlock { exprs } => {
                 self.check_block_expr(genv, local_env, diagnostics, &exprs, expected)
             }
-            fir::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
+            hir::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
             {
                 let expected_elem_tys = match expected {
                     tast::Ty::TTuple { typs } => typs.clone(),
@@ -277,7 +277,7 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
-            fir::Expr::EIf {
+            hir::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
@@ -295,7 +295,7 @@ impl Typer {
                     ty: expected.clone(),
                 }
             }
-            fir::Expr::EMatch { expr, arms } => {
+            hir::Expr::EMatch { expr, arms } => {
                 let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
                 let expr_ty = expr_tast.get_ty();
 
@@ -390,13 +390,13 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        res: &fir::NameRef,
+        res: &hir::NameRef,
         hint: &str,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         match res {
-            fir::NameRef::Local(local_id) => {
-                let name_str = self.fir_table.local_ident_name(*local_id);
+            hir::NameRef::Local(local_id) => {
+                let name_str = self.hir_table.local_ident_name(*local_id);
                 if let Some(ty) = local_env.lookup_var(*local_id) {
                     tast::Expr::EVar {
                         name: name_str,
@@ -411,7 +411,7 @@ impl Typer {
                     self.error_expr(astptr)
                 }
             }
-            fir::NameRef::Def(_def_id) => {
+            hir::NameRef::Def(_def_id) => {
                 let Some(func_ty) = lookup_function_type_by_hint(genv, hint) else {
                     super::util::push_ice(
                         diagnostics,
@@ -426,7 +426,7 @@ impl Typer {
                     astptr,
                 }
             }
-            fir::NameRef::Builtin(_builtin_id) => {
+            hir::NameRef::Builtin(_builtin_id) => {
                 let Some(func_ty) = lookup_function_type_by_hint(genv, hint) else {
                     super::util::push_ice(
                         diagnostics,
@@ -441,7 +441,7 @@ impl Typer {
                     astptr,
                 }
             }
-            fir::NameRef::Unresolved(path) => {
+            hir::NameRef::Unresolved(path) => {
                 self.infer_unresolved_path_expr(genv, diagnostics, path, astptr)
             }
         }
@@ -451,7 +451,7 @@ impl Typer {
         &mut self,
         genv: &PackageTypeEnv,
         diagnostics: &mut Diagnostics,
-        path: &fir::Path,
+        path: &hir::Path,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         if path.len() == 1 {
@@ -555,20 +555,20 @@ impl Typer {
     fn constructor_path_from_id(
         &self,
         diagnostics: &mut Diagnostics,
-        ctor_id: &fir::ConstructorId,
-    ) -> fir::Path {
+        ctor_id: &hir::ConstructorId,
+    ) -> hir::Path {
         match ctor_id {
-            fir::ConstructorId::EnumVariant {
+            hir::ConstructorId::EnumVariant {
                 enum_def,
                 variant_idx,
             } => {
-                if let fir::Def::EnumDef(enum_def_data) = self.fir_table.def(*enum_def) {
+                if let hir::Def::EnumDef(enum_def_data) = self.hir_table.def(*enum_def) {
                     let Some(variant_idx) = usize::try_from(*variant_idx).ok() else {
                         super::util::push_ice(
                             diagnostics,
                             format!("invalid enum variant index {}", variant_idx),
                         );
-                        return fir::Path::from_ident("<error>".to_string());
+                        return hir::Path::from_ident("<error>".to_string());
                     };
                     let Some((variant_ident, _)) = enum_def_data.variants.get(variant_idx) else {
                         super::util::push_ice(
@@ -578,15 +578,15 @@ impl Typer {
                                 variant_idx, enum_def
                             ),
                         );
-                        return fir::Path::from_ident("<error>".to_string());
+                        return hir::Path::from_ident("<error>".to_string());
                     };
                     let variant_name = variant_ident.to_ident_name();
-                    let mut segments = self.fir_table.def_path(*enum_def).segments.clone();
-                    segments.push(fir::PathSegment::new(variant_name));
-                    fir::Path::new(segments)
+                    let mut segments = self.hir_table.def_path(*enum_def).segments.clone();
+                    segments.push(hir::PathSegment::new(variant_name));
+                    hir::Path::new(segments)
                 } else {
                     super::util::push_ice(diagnostics, "Constructor points to non-enum DefId");
-                    fir::Path::from_ident("<error>".to_string())
+                    hir::Path::from_ident("<error>".to_string())
                 }
             }
         }
@@ -597,14 +597,14 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        constructor_ref: &fir::ConstructorRef,
-        args: &[fir::ExprId],
+        constructor_ref: &hir::ConstructorRef,
+        args: &[hir::ExprId],
     ) -> tast::Expr {
         let constructor_path = match constructor_ref {
-            fir::ConstructorRef::Resolved(ctor_id) => {
+            hir::ConstructorRef::Resolved(ctor_id) => {
                 self.constructor_path_from_id(diagnostics, ctor_id)
             }
-            fir::ConstructorRef::Unresolved(path) => path.clone(),
+            hir::ConstructorRef::Unresolved(path) => path.clone(),
         };
 
         let Some(variant_ident) = constructor_path.last_ident() else {
@@ -737,8 +737,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        name: &fir::QualifiedPath,
-        fields: &[(fir::FirIdent, fir::ExprId)],
+        name: &hir::QualifiedPath,
+        fields: &[(hir::HirIdent, hir::ExprId)],
     ) -> tast::Expr {
         let name_display = name.display();
         let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
@@ -902,7 +902,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        items: &[fir::ExprId],
+        items: &[hir::ExprId],
     ) -> tast::Expr {
         let mut typs = Vec::new();
         let mut items_tast = Vec::new();
@@ -922,7 +922,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        items: &[fir::ExprId],
+        items: &[hir::ExprId],
     ) -> tast::Expr {
         let len = items.len();
         let elem_ty = self.fresh_ty_var();
@@ -947,8 +947,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        params: &[fir::ClosureParam],
-        body: fir::ExprId,
+        params: &[hir::ClosureParam],
+        body: hir::ExprId,
     ) -> tast::Expr {
         local_env.begin_closure();
         let mut params_tast = Vec::new();
@@ -956,9 +956,9 @@ impl Typer {
         let current_tparams_env = local_env.current_tparams_env();
 
         for param in params.iter() {
-            let name_str = self.fir_table.local_ident_name(param.name);
+            let name_str = self.hir_table.local_ident_name(param.name);
             let param_ty = match &param.ty {
-                Some(ty) => tast::Ty::from_fir(genv, ty, &current_tparams_env),
+                Some(ty) => tast::Ty::from_hir(genv, ty, &current_tparams_env),
                 None => self.fresh_ty_var(),
             };
             local_env.insert_var(param.name, param_ty.clone());
@@ -972,7 +972,7 @@ impl Typer {
 
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         let body_ty = body_tast.get_ty();
-        let captures = local_env.end_closure(diagnostics, &self.fir_table);
+        let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
         let closure_ty = tast::Ty::TFunc {
             params: param_tys,
@@ -992,8 +992,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        params: &[fir::ClosureParam],
-        body: fir::ExprId,
+        params: &[hir::ClosureParam],
+        body: hir::ExprId,
         expected: &tast::Ty,
     ) -> tast::Expr {
         match expected {
@@ -1007,11 +1007,11 @@ impl Typer {
                 let current_tparams_env = local_env.current_tparams_env();
 
                 for (param, expected_param_ty) in params.iter().zip(expected_params.iter()) {
-                    let name_str = self.fir_table.local_ident_name(param.name);
+                    let name_str = self.hir_table.local_ident_name(param.name);
                     let annotated_ty = param
                         .ty
                         .as_ref()
-                        .map(|ty| tast::Ty::from_fir(genv, ty, &current_tparams_env));
+                        .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
 
                     let param_ty = match annotated_ty {
                         Some(ann_ty) => {
@@ -1036,7 +1036,7 @@ impl Typer {
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
                 let body_ty = body_tast.get_ty();
-                let captures = local_env.end_closure(diagnostics, &self.fir_table);
+                let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
                 tast::Expr::EClosure {
                     params: params_tast,
@@ -1058,14 +1058,14 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pat: fir::PatId,
-        annotation: &Option<fir::TypeExpr>,
-        value: fir::ExprId,
+        pat: hir::PatId,
+        annotation: &Option<hir::TypeExpr>,
+        value: hir::ExprId,
     ) -> tast::Expr {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
             .as_ref()
-            .map(|ty| tast::Ty::from_fir(genv, ty, &current_tparams_env));
+            .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
@@ -1092,7 +1092,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[fir::ExprId],
+        exprs: &[hir::ExprId],
     ) -> tast::Expr {
         if exprs.is_empty() {
             return tast::Expr::EPrim {
@@ -1112,7 +1112,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[fir::ExprId],
+        exprs: &[hir::ExprId],
     ) -> tast::Expr {
         if exprs.is_empty() {
             return tast::Expr::EPrim {
@@ -1143,15 +1143,15 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pat: fir::PatId,
-        annotation: &Option<fir::TypeExpr>,
-        value: fir::ExprId,
+        pat: hir::PatId,
+        annotation: &Option<hir::TypeExpr>,
+        value: hir::ExprId,
         _expected: &tast::Ty,
     ) -> tast::Expr {
         let current_tparams_env = local_env.current_tparams_env();
         let annotated_ty = annotation
             .as_ref()
-            .map(|ty| tast::Ty::from_fir(genv, ty, &current_tparams_env));
+            .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
@@ -1179,7 +1179,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[fir::ExprId],
+        exprs: &[hir::ExprId],
         expected: &tast::Ty,
     ) -> tast::Expr {
         if exprs.is_empty() {
@@ -1200,7 +1200,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[fir::ExprId],
+        exprs: &[hir::ExprId],
         expected: &tast::Ty,
     ) -> tast::Expr {
         if exprs.is_empty() {
@@ -1240,8 +1240,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        expr: fir::ExprId,
-        arms: &[fir::Arm],
+        expr: hir::ExprId,
+        arms: &[hir::Arm],
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
@@ -1277,9 +1277,9 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        cond: fir::ExprId,
-        then_branch: fir::ExprId,
-        else_branch: fir::ExprId,
+        cond: hir::ExprId,
+        then_branch: hir::ExprId,
+        else_branch: hir::ExprId,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
         self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
@@ -1304,8 +1304,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        cond: fir::ExprId,
-        body: fir::ExprId,
+        cond: hir::ExprId,
+        body: hir::ExprId,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
         self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
@@ -1325,7 +1325,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        expr: fir::ExprId,
+        expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
         // go expression expects a closure () -> unit
@@ -1346,13 +1346,13 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        func: fir::ExprId,
-        args: &[fir::ExprId],
+        func: hir::ExprId,
+        args: &[hir::ExprId],
     ) -> tast::Expr {
-        let func_expr = self.fir_table.expr(func).clone();
+        let func_expr = self.hir_table.expr(func).clone();
         match func_expr {
-            fir::Expr::ENameRef {
-                res: fir::NameRef::Local(name),
+            hir::Expr::ENameRef {
+                res: hir::NameRef::Local(name),
                 astptr: func_astptr,
                 ..
             } => {
@@ -1364,7 +1364,7 @@ impl Typer {
                     args_tast.push(arg_tast);
                 }
 
-                let name_str = self.fir_table.local_ident_name(name);
+                let name_str = self.hir_table.local_ident_name(name);
                 if let Some(var_ty) = local_env.lookup_var(name) {
                     let ret_ty = self.fresh_ty_var();
                     let call_site_func_ty = tast::Ty::TFunc {
@@ -1393,8 +1393,8 @@ impl Typer {
                     self.error_expr(func_astptr)
                 }
             }
-            fir::Expr::ENameRef {
-                res: fir::NameRef::Def(_) | fir::NameRef::Builtin(_),
+            hir::Expr::ENameRef {
+                res: hir::NameRef::Def(_) | hir::NameRef::Builtin(_),
                 hint,
                 ..
             } => {
@@ -1465,8 +1465,8 @@ impl Typer {
                     self.error_expr(None)
                 }
             }
-            fir::Expr::ENameRef {
-                res: fir::NameRef::Unresolved(path),
+            hir::Expr::ENameRef {
+                res: hir::NameRef::Unresolved(path),
                 ..
             } => {
                 if let Some((full_name, func_ty)) = lookup_function_path(genv, &path) {
@@ -1745,7 +1745,7 @@ impl Typer {
                     self.error_expr(None)
                 }
             }
-            fir::Expr::EField {
+            hir::Expr::EField {
                 expr: receiver_expr,
                 field,
             } => {
@@ -1947,7 +1947,7 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         op: common_defs::UnaryOp,
-        expr: fir::ExprId,
+        expr: hir::ExprId,
     ) -> tast::Expr {
         let expr_tast = self.infer_expr(genv, local_env, diagnostics, expr);
         let expr_ty = expr_tast.get_ty();
@@ -1979,8 +1979,8 @@ impl Typer {
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         op: common_defs::BinaryOp,
-        lhs: fir::ExprId,
-        rhs: fir::ExprId,
+        lhs: hir::ExprId,
+        rhs: hir::ExprId,
     ) -> tast::Expr {
         let lhs_tast = self.infer_expr(genv, local_env, diagnostics, lhs);
         let rhs_tast = self.infer_expr(genv, local_env, diagnostics, rhs);
@@ -2039,7 +2039,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        tuple: fir::ExprId,
+        tuple: hir::ExprId,
         index: usize,
     ) -> tast::Expr {
         let tuple_tast = self.infer_expr(genv, local_env, diagnostics, tuple);
@@ -2086,8 +2086,8 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        expr: fir::ExprId,
-        field: &fir::FirIdent,
+        expr: hir::ExprId,
+        field: &hir::HirIdent,
         astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, diagnostics, expr);
@@ -2112,52 +2112,52 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pat: fir::PatId,
+        pat: hir::PatId,
         ty: &tast::Ty,
     ) -> tast::Pat {
-        let pat_node = self.fir_table.pat(pat).clone();
+        let pat_node = self.hir_table.pat(pat).clone();
         match pat_node {
-            fir::Pat::PVar { name, astptr } => {
+            hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
-            fir::Pat::PUnit => self.check_pat_unit(),
-            fir::Pat::PBool { value } => self.check_pat_bool(value),
-            fir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty),
-            fir::Pat::PInt8 { value } => {
+            hir::Pat::PUnit => self.check_pat_unit(),
+            hir::Pat::PBool { value } => self.check_pat_bool(value),
+            hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty),
+            hir::Pat::PInt8 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty)
             }
-            fir::Pat::PInt16 { value } => {
+            hir::Pat::PInt16 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty)
             }
-            fir::Pat::PInt32 { value } => {
+            hir::Pat::PInt32 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty)
             }
-            fir::Pat::PInt64 { value } => {
+            hir::Pat::PInt64 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty)
             }
-            fir::Pat::PUInt8 { value } => {
+            hir::Pat::PUInt8 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty)
             }
-            fir::Pat::PUInt16 { value } => {
+            hir::Pat::PUInt16 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty)
             }
-            fir::Pat::PUInt32 { value } => {
+            hir::Pat::PUInt32 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty)
             }
-            fir::Pat::PUInt64 { value } => {
+            hir::Pat::PUInt64 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty)
             }
-            fir::Pat::PString { value } => self.check_pat_string(&value, ty),
-            fir::Pat::PConstr { .. } => {
+            hir::Pat::PString { value } => self.check_pat_string(&value, ty),
+            hir::Pat::PConstr { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
             }
-            fir::Pat::PStruct { .. } => {
+            hir::Pat::PStruct { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
             }
-            fir::Pat::PTuple { pats } => {
+            hir::Pat::PTuple { pats } => {
                 self.check_pat_tuple(genv, local_env, diagnostics, &pats, ty)
             }
-            fir::Pat::PWild => self.check_pat_wild(ty),
+            hir::Pat::PWild => self.check_pat_wild(ty),
         }
     }
 
@@ -2165,12 +2165,12 @@ impl Typer {
         &mut self,
         local_env: &mut LocalTypeEnv,
         _diagnostics: &mut Diagnostics,
-        name: fir::LocalId,
+        name: hir::LocalId,
         astptr: Option<MySyntaxNodePtr>,
         ty: &tast::Ty,
     ) -> tast::Pat {
         local_env.insert_var(name, ty.clone());
-        let name_str = self.fir_table.local_ident_name(name);
+        let name_str = self.hir_table.local_ident_name(name);
         tast::Pat::PVar {
             name: name_str,
             ty: ty.clone(),
@@ -2242,21 +2242,21 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pat: fir::PatId,
+        pat: hir::PatId,
         ty: &tast::Ty,
     ) -> tast::Pat {
-        let pat_node = self.fir_table.pat(pat);
+        let pat_node = self.hir_table.pat(pat);
         let kind = pat_node.clone();
         match kind {
-            fir::Pat::PConstr {
+            hir::Pat::PConstr {
                 constructor: constructor_ref,
                 args,
             } => {
                 let constructor_path = match &constructor_ref {
-                    fir::ConstructorRef::Resolved(ctor_id) => {
+                    hir::ConstructorRef::Resolved(ctor_id) => {
                         self.constructor_path_from_id(diagnostics, ctor_id)
                     }
-                    fir::ConstructorRef::Unresolved(path) => path.clone(),
+                    hir::ConstructorRef::Unresolved(path) => path.clone(),
                 };
 
                 let Some(variant_ident) = constructor_path.last_ident() else {
@@ -2366,7 +2366,7 @@ impl Typer {
                     ty: ret_ty,
                 }
             }
-            fir::Pat::PStruct { name, fields } => {
+            hir::Pat::PStruct { name, fields } => {
                 let name_display = name.display();
                 let (type_name, type_env) = super::util::resolve_type_name(genv, &name_display);
                 let struct_def = type_env.structs().get(&tast::TastIdent(type_name.clone()));
@@ -2390,7 +2390,7 @@ impl Typer {
                     );
                 }
 
-                let mut field_map: HashMap<String, fir::PatId> = HashMap::new();
+                let mut field_map: HashMap<String, hir::PatId> = HashMap::new();
                 for (fname, pat_id) in fields.iter() {
                     if field_map.insert(fname.to_ident_name(), *pat_id).is_some() {
                         super::util::push_error(
@@ -2487,7 +2487,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pats: &[fir::PatId],
+        pats: &[hir::PatId],
         ty: &tast::Ty,
     ) -> tast::Pat {
         let expected_elem_tys: Vec<tast::Ty> = match ty {
@@ -2761,7 +2761,7 @@ impl Typer {
     }
 }
 
-fn lookup_function_path(genv: &PackageTypeEnv, path: &fir::Path) -> Option<(String, tast::Ty)> {
+fn lookup_function_path(genv: &PackageTypeEnv, path: &hir::Path) -> Option<(String, tast::Ty)> {
     if path.len() == 1 {
         let name = path.last_ident()?.clone();
         return genv
@@ -2802,7 +2802,7 @@ fn lookup_function_type_by_hint(genv: &PackageTypeEnv, hint: &str) -> Option<tas
         return Some(func_ty);
     }
     let segments = hint.split("::").map(|seg| seg.to_string()).collect();
-    let path = fir::Path::from_idents(segments);
+    let path = hir::Path::from_idents(segments);
     lookup_function_path(genv, &path).map(|(_, ty)| ty)
 }
 

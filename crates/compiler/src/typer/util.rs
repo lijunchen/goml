@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use crate::{
     env::{GlobalTypeEnv, PackageTypeEnv},
-    fir,
+    hir,
     tast::{self},
 };
 use diagnostics::{Severity, Stage};
@@ -287,32 +287,32 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
 }
 
 impl tast::Ty {
-    pub(crate) fn from_fir(
+    pub(crate) fn from_hir(
         genv: &PackageTypeEnv,
-        fir_ty: &fir::TypeExpr,
+        hir_ty: &hir::TypeExpr,
         tparams_env: &[tast::TastIdent],
     ) -> Self {
-        match fir_ty {
-            fir::TypeExpr::TUnit => Self::TUnit,
-            fir::TypeExpr::TBool => Self::TBool,
-            fir::TypeExpr::TInt8 => Self::TInt8,
-            fir::TypeExpr::TInt16 => Self::TInt16,
-            fir::TypeExpr::TInt32 => Self::TInt32,
-            fir::TypeExpr::TInt64 => Self::TInt64,
-            fir::TypeExpr::TUint8 => Self::TUint8,
-            fir::TypeExpr::TUint16 => Self::TUint16,
-            fir::TypeExpr::TUint32 => Self::TUint32,
-            fir::TypeExpr::TUint64 => Self::TUint64,
-            fir::TypeExpr::TFloat32 => Self::TFloat32,
-            fir::TypeExpr::TFloat64 => Self::TFloat64,
-            fir::TypeExpr::TString => Self::TString,
-            fir::TypeExpr::TTuple { typs } => Self::TTuple {
+        match hir_ty {
+            hir::TypeExpr::TUnit => Self::TUnit,
+            hir::TypeExpr::TBool => Self::TBool,
+            hir::TypeExpr::TInt8 => Self::TInt8,
+            hir::TypeExpr::TInt16 => Self::TInt16,
+            hir::TypeExpr::TInt32 => Self::TInt32,
+            hir::TypeExpr::TInt64 => Self::TInt64,
+            hir::TypeExpr::TUint8 => Self::TUint8,
+            hir::TypeExpr::TUint16 => Self::TUint16,
+            hir::TypeExpr::TUint32 => Self::TUint32,
+            hir::TypeExpr::TUint64 => Self::TUint64,
+            hir::TypeExpr::TFloat32 => Self::TFloat32,
+            hir::TypeExpr::TFloat64 => Self::TFloat64,
+            hir::TypeExpr::TString => Self::TString,
+            hir::TypeExpr::TTuple { typs } => Self::TTuple {
                 typs: typs
                     .iter()
-                    .map(|ty| Self::from_fir(genv, ty, tparams_env))
+                    .map(|ty| Self::from_hir(genv, ty, tparams_env))
                     .collect(),
             },
-            fir::TypeExpr::TCon { path } => {
+            hir::TypeExpr::TCon { path } => {
                 let name = path.display();
                 if path.package.is_none()
                     && path.len() == 1
@@ -334,15 +334,15 @@ impl tast::Ty {
                     }
                 }
             }
-            fir::TypeExpr::TDyn { trait_path } => {
+            hir::TypeExpr::TDyn { trait_path } => {
                 let name = trait_path.display();
                 let (resolved, _env) = resolve_type_name(genv, &name);
                 Self::TDyn {
                     trait_name: resolved,
                 }
             }
-            fir::TypeExpr::TApp { ty, args } => {
-                if let fir::TypeExpr::TCon { path } = ty.as_ref()
+            hir::TypeExpr::TApp { ty, args } => {
+                if let hir::TypeExpr::TCon { path } = ty.as_ref()
                     && path.package.is_none()
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Ref")
@@ -350,10 +350,10 @@ impl tast::Ty {
                     && let Some(arg0) = args.first()
                 {
                     return Self::TRef {
-                        elem: Box::new(Self::from_fir(genv, arg0, tparams_env)),
+                        elem: Box::new(Self::from_hir(genv, arg0, tparams_env)),
                     };
                 }
-                if let fir::TypeExpr::TCon { path } = ty.as_ref()
+                if let hir::TypeExpr::TCon { path } = ty.as_ref()
                     && path.package.is_none()
                     && path.len() == 1
                     && path.last_ident().is_some_and(|name| name == "Vec")
@@ -361,27 +361,27 @@ impl tast::Ty {
                     && let Some(arg0) = args.first()
                 {
                     return Self::TVec {
-                        elem: Box::new(Self::from_fir(genv, arg0, tparams_env)),
+                        elem: Box::new(Self::from_hir(genv, arg0, tparams_env)),
                     };
                 }
                 Self::TApp {
-                    ty: Box::new(Self::from_fir(genv, ty, tparams_env)),
+                    ty: Box::new(Self::from_hir(genv, ty, tparams_env)),
                     args: args
                         .iter()
-                        .map(|ty| Self::from_fir(genv, ty, tparams_env))
+                        .map(|ty| Self::from_hir(genv, ty, tparams_env))
                         .collect(),
                 }
             }
-            fir::TypeExpr::TArray { len, elem } => Self::TArray {
+            hir::TypeExpr::TArray { len, elem } => Self::TArray {
                 len: *len,
-                elem: Box::new(Self::from_fir(genv, elem, tparams_env)),
+                elem: Box::new(Self::from_hir(genv, elem, tparams_env)),
             },
-            fir::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {
+            hir::TypeExpr::TFunc { params, ret_ty } => Self::TFunc {
                 params: params
                     .iter()
-                    .map(|ty| Self::from_fir(genv, ty, tparams_env))
+                    .map(|ty| Self::from_hir(genv, ty, tparams_env))
                     .collect(),
-                ret_ty: Box::new(Self::from_fir(genv, ret_ty, tparams_env)),
+                ret_ty: Box::new(Self::from_hir(genv, ret_ty, tparams_env)),
             },
         }
     }
@@ -430,6 +430,6 @@ pub(crate) fn resolve_trait_name<'a>(
     }
 }
 
-pub(crate) fn type_param_name_set(tparams: &[fir::FirIdent]) -> HashSet<String> {
+pub(crate) fn type_param_name_set(tparams: &[hir::HirIdent]) -> HashSet<String> {
     tparams.iter().map(|param| param.to_ident_name()).collect()
 }

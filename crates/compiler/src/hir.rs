@@ -24,22 +24,22 @@ impl PackageName {
 pub struct PackageId(pub u32);
 
 #[derive(Debug, Clone)]
-pub struct ProjectFir {
-    pub packages: Vec<PackageFir>,
+pub struct ProjectHir {
+    pub packages: Vec<PackageHir>,
     pub package_index: HashMap<PackageName, PackageId>,
 }
 
 #[derive(Debug, Clone)]
-pub struct PackageFir {
+pub struct PackageHir {
     pub id: PackageId,
     pub name: PackageName,
     pub imports: Vec<PackageName>,
-    pub files: Vec<SourceFileFir>,
+    pub files: Vec<SourceFileHir>,
     pub toplevels: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
-pub struct SourceFileFir {
+pub struct SourceFileHir {
     pub path: String,
     pub package: PackageName,
     pub imports: Vec<PackageName>,
@@ -47,33 +47,33 @@ pub struct SourceFileFir {
 }
 
 #[derive(Debug, Clone)]
-pub struct ResolvedFir {
-    pub files: Vec<SourceFileFir>,
+pub struct ResolvedHir {
+    pub files: Vec<SourceFileHir>,
     pub toplevels: Vec<DefId>,
 }
 
 #[derive(Debug, Clone)]
-pub struct ProjectFirTable {
-    packages: HashMap<PackageId, FirTable>,
+pub struct ProjectHirTable {
+    packages: HashMap<PackageId, HirTable>,
 }
 
-impl ProjectFirTable {
+impl ProjectHirTable {
     pub fn new() -> Self {
         Self {
             packages: HashMap::new(),
         }
     }
 
-    pub fn insert(&mut self, package: PackageId, table: FirTable) {
+    pub fn insert(&mut self, package: PackageId, table: HirTable) {
         self.packages.insert(package, table);
     }
 
-    pub fn package(&self, package: PackageId) -> Option<&FirTable> {
+    pub fn package(&self, package: PackageId) -> Option<&HirTable> {
         self.packages.get(&package)
     }
 }
 
-impl Default for ProjectFirTable {
+impl Default for ProjectHirTable {
     fn default() -> Self {
         Self::new()
     }
@@ -88,7 +88,7 @@ pub struct PackageInterface {
 }
 
 impl PackageInterface {
-    pub fn from_fir(package: &PackageFir, table: &FirTable) -> Self {
+    pub fn from_hir(package: &PackageHir, table: &HirTable) -> Self {
         let mut exports = HashMap::new();
         let mut enum_variants = HashMap::new();
 
@@ -136,7 +136,7 @@ impl PackageInterface {
     }
 }
 
-pub fn lower_to_fir_files(files: Vec<SourceFileAst>) -> (PackageFir, FirTable, Diagnostics) {
+pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, Diagnostics) {
     let deps = HashMap::new();
     let package_name = files
         .first()
@@ -147,18 +147,18 @@ pub fn lower_to_fir_files(files: Vec<SourceFileAst>) -> (PackageFir, FirTable, D
         "Main" => PackageId(1),
         _ => PackageId(2),
     };
-    lower_to_fir_files_with_env(package_id, files, &deps)
+    lower_to_hir_files_with_env(package_id, files, &deps)
 }
 
-pub fn lower_to_fir_files_with_env(
+pub fn lower_to_hir_files_with_env(
     package_id: PackageId,
     files: Vec<SourceFileAst>,
     deps: &HashMap<String, PackageInterface>,
-) -> (PackageFir, FirTable, Diagnostics) {
+) -> (PackageHir, HirTable, Diagnostics) {
     use crate::typer::name_resolution::NameResolution;
-    let (resolved, mut fir_table, diagnostics) =
+    let (resolved, mut hir_table, diagnostics) =
         NameResolution::default().resolve_files_with_env(package_id, files, deps);
-    let _ctor_errors = resolve_constructors(&mut fir_table);
+    let _ctor_errors = resolve_constructors(&mut hir_table);
     let package_name = resolved
         .files
         .first()
@@ -172,29 +172,29 @@ pub fn lower_to_fir_files_with_env(
     imports.sort_by(|a, b| a.0.cmp(&b.0));
     imports.dedup_by(|a, b| a.0 == b.0);
     (
-        PackageFir {
+        PackageHir {
             id: package_id,
             name: package_name,
             imports,
             files: resolved.files,
             toplevels: resolved.toplevels,
         },
-        fir_table,
+        hir_table,
         diagnostics,
     )
 }
 
-pub fn lower_to_project_fir_files(
+pub fn lower_to_project_hir_files(
     files: Vec<SourceFileAst>,
-) -> (ProjectFir, ProjectFirTable, Diagnostics) {
+) -> (ProjectHir, ProjectHirTable, Diagnostics) {
     let deps = HashMap::new();
-    lower_to_project_fir_files_with_env(files, &deps)
+    lower_to_project_hir_files_with_env(files, &deps)
 }
 
-pub fn lower_to_project_fir_files_with_env(
+pub fn lower_to_project_hir_files_with_env(
     files: Vec<SourceFileAst>,
     deps: &HashMap<String, PackageInterface>,
-) -> (ProjectFir, ProjectFirTable, Diagnostics) {
+) -> (ProjectHir, ProjectHirTable, Diagnostics) {
     let mut grouped: HashMap<PackageName, Vec<SourceFileAst>> = HashMap::new();
     for file in files {
         grouped
@@ -230,8 +230,8 @@ pub fn lower_to_project_fir_files_with_env(
         next_id += 1;
     }
 
-    let mut project_table = ProjectFirTable::new();
-    let mut package_firs = Vec::new();
+    let mut project_table = ProjectHirTable::new();
+    let mut package_hirs = Vec::new();
     let mut diagnostics = Diagnostics::new();
 
     for name in package_order {
@@ -239,16 +239,16 @@ pub fn lower_to_project_fir_files_with_env(
             continue;
         };
         let package_id = *package_index.get(&name).unwrap_or(&PackageId(2));
-        let (package_fir, fir_table, mut package_diagnostics) =
-            lower_to_fir_files_with_env(package_id, files, deps);
+        let (package_hir, hir_table, mut package_diagnostics) =
+            lower_to_hir_files_with_env(package_id, files, deps);
         diagnostics.append(&mut package_diagnostics);
-        project_table.insert(package_id, fir_table);
-        package_firs.push(package_fir);
+        project_table.insert(package_id, hir_table);
+        package_hirs.push(package_hir);
     }
 
     (
-        ProjectFir {
-            packages: package_firs,
+        ProjectHir {
+            packages: package_hirs,
             package_index,
         },
         project_table,
@@ -256,8 +256,8 @@ pub fn lower_to_project_fir_files_with_env(
     )
 }
 
-pub fn lower_to_fir(ast: ast::File) -> (PackageFir, FirTable, Diagnostics) {
-    lower_to_fir_files(vec![SourceFileAst {
+pub fn lower_to_hir(ast: ast::File) -> (PackageHir, HirTable, Diagnostics) {
+    lower_to_hir_files(vec![SourceFileAst {
         path: PathBuf::from("<unknown>"),
         ast,
     }])
@@ -368,7 +368,7 @@ pub enum ConstructorRef {
 }
 
 impl ConstructorRef {
-    pub fn display(&self, _fir_table: &ProjectFirTable) -> String {
+    pub fn display(&self, _hir_table: &ProjectHirTable) -> String {
         match self {
             ConstructorRef::Unresolved(path) => path.display(),
             ConstructorRef::Resolved(id) => id.to_debug_string(),
@@ -377,7 +377,7 @@ impl ConstructorRef {
 }
 
 #[derive(Debug, Clone)]
-pub struct FirTable {
+pub struct HirTable {
     package: PackageId,
     def_interner: HashMap<DefKey, DefId>,
     def_data: Vec<Def>,
@@ -398,7 +398,7 @@ pub struct LocalInfo {
     pub origin: LocalKey,
 }
 
-impl FirTable {
+impl HirTable {
     pub fn new(package: PackageId) -> Self {
         let mut exprs = Arena::new();
         let dummy_expr = ExprId {
@@ -589,48 +589,48 @@ impl FirTable {
 }
 
 #[derive(Debug, Clone)]
-pub enum FirIdent {
+pub enum HirIdent {
     Name(String),
     Fresh { id: u32 },
 }
 
-impl FirIdent {
+impl HirIdent {
     pub fn name(s: impl Into<String>) -> Self {
-        FirIdent::Name(s.into())
+        HirIdent::Name(s.into())
     }
 
     pub fn fresh(id: u32) -> Self {
-        FirIdent::Fresh { id }
+        HirIdent::Fresh { id }
     }
 
     pub fn to_ident_name(&self) -> String {
         match self {
-            FirIdent::Name(s) => s.clone(),
-            FirIdent::Fresh { id } => id.to_string(),
+            HirIdent::Name(s) => s.clone(),
+            HirIdent::Fresh { id } => id.to_string(),
         }
     }
 }
 
-impl PartialEq for FirIdent {
+impl PartialEq for HirIdent {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (FirIdent::Name(a), FirIdent::Name(b)) => a == b,
-            (FirIdent::Fresh { id: a }, FirIdent::Fresh { id: b }) => a == b,
+            (HirIdent::Name(a), HirIdent::Name(b)) => a == b,
+            (HirIdent::Fresh { id: a }, HirIdent::Fresh { id: b }) => a == b,
             _ => false,
         }
     }
 }
 
-impl Eq for FirIdent {}
+impl Eq for HirIdent {}
 
-impl std::hash::Hash for FirIdent {
+impl std::hash::Hash for HirIdent {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         match self {
-            FirIdent::Name(s) => {
+            HirIdent::Name(s) => {
                 0u8.hash(state);
                 s.hash(state);
             }
-            FirIdent::Fresh { id } => {
+            HirIdent::Fresh { id } => {
                 1u8.hash(state);
                 id.hash(state);
             }
@@ -693,11 +693,11 @@ pub enum NameRef {
 }
 
 impl NameRef {
-    pub fn display(&self, fir_table: &ProjectFirTable) -> String {
+    pub fn display(&self, hir_table: &ProjectHirTable) -> String {
         match self {
-            NameRef::Local(id) => fir_table
+            NameRef::Local(id) => hir_table
                 .package(id.pkg)
-                .unwrap_or_else(|| panic!("missing FIR table for package {:?}", id.pkg))
+                .unwrap_or_else(|| panic!("missing HIR table for package {:?}", id.pkg))
                 .local_ident_name(*id),
             NameRef::Def(id) => id.to_debug_string(),
             NameRef::Builtin(id) => id.to_name(),
@@ -967,8 +967,8 @@ pub enum Def {
 pub struct Fn {
     pub attrs: Vec<Attribute>,
     pub name: String,
-    pub generics: Vec<FirIdent>,
-    pub generic_bounds: Vec<(FirIdent, Vec<Path>)>,
+    pub generics: Vec<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
     pub body: ExprId,
@@ -979,9 +979,9 @@ pub struct ExternGo {
     pub attrs: Vec<Attribute>,
     pub package_path: String,
     pub go_symbol: String,
-    pub goml_name: FirIdent,
+    pub goml_name: HirIdent,
     pub explicit_go_symbol: bool,
-    pub params: Vec<(FirIdent, TypeExpr)>,
+    pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
@@ -991,12 +991,12 @@ impl From<&ast::ExternGo> for ExternGo {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             package_path: ext.package_path.clone(),
             go_symbol: ext.go_symbol.clone(),
-            goml_name: FirIdent::name(&ext.goml_name.0),
+            goml_name: HirIdent::name(&ext.goml_name.0),
             explicit_go_symbol: ext.explicit_go_symbol,
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
+                .map(|(i, t)| (HirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -1006,14 +1006,14 @@ impl From<&ast::ExternGo> for ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
-    pub goml_name: FirIdent,
+    pub goml_name: HirIdent,
 }
 
 impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: FirIdent::name(&ext.goml_name.0),
+            goml_name: HirIdent::name(&ext.goml_name.0),
         }
     }
 }
@@ -1021,8 +1021,8 @@ impl From<&ast::ExternType> for ExternType {
 #[derive(Debug, Clone)]
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
-    pub name: FirIdent,
-    pub params: Vec<(FirIdent, TypeExpr)>,
+    pub name: HirIdent,
+    pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
 
@@ -1030,11 +1030,11 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
     fn from(ext: &ast::ExternBuiltin) -> Self {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&ext.name.0),
+            name: HirIdent::name(&ext.name.0),
             params: ext
                 .params
                 .iter()
-                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
+                .map(|(i, t)| (HirIdent::name(&i.0), t.into()))
                 .collect(),
             ret_ty: ext.ret_ty.as_ref().map(|t| t.into()),
         }
@@ -1044,21 +1044,21 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
 #[derive(Debug, Clone)]
 pub struct EnumDef {
     pub attrs: Vec<Attribute>,
-    pub name: FirIdent,
-    pub generics: Vec<FirIdent>,
-    pub variants: Vec<(FirIdent, Vec<TypeExpr>)>,
+    pub name: HirIdent,
+    pub generics: Vec<HirIdent>,
+    pub variants: Vec<(HirIdent, Vec<TypeExpr>)>,
 }
 
 impl From<&ast::EnumDef> for EnumDef {
     fn from(e: &ast::EnumDef) -> Self {
         EnumDef {
             attrs: e.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&e.name.0),
-            generics: e.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            name: HirIdent::name(&e.name.0),
+            generics: e.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             variants: e
                 .variants
                 .iter()
-                .map(|(i, tys)| (FirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
+                .map(|(i, tys)| (HirIdent::name(&i.0), tys.iter().map(|t| t.into()).collect()))
                 .collect(),
         }
     }
@@ -1067,21 +1067,21 @@ impl From<&ast::EnumDef> for EnumDef {
 #[derive(Debug, Clone)]
 pub struct StructDef {
     pub attrs: Vec<Attribute>,
-    pub name: FirIdent,
-    pub generics: Vec<FirIdent>,
-    pub fields: Vec<(FirIdent, TypeExpr)>,
+    pub name: HirIdent,
+    pub generics: Vec<HirIdent>,
+    pub fields: Vec<(HirIdent, TypeExpr)>,
 }
 
 impl From<&ast::StructDef> for StructDef {
     fn from(s: &ast::StructDef) -> Self {
         StructDef {
             attrs: s.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&s.name.0),
-            generics: s.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            name: HirIdent::name(&s.name.0),
+            generics: s.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             fields: s
                 .fields
                 .iter()
-                .map(|(i, t)| (FirIdent::name(&i.0), t.into()))
+                .map(|(i, t)| (HirIdent::name(&i.0), t.into()))
                 .collect(),
         }
     }
@@ -1090,7 +1090,7 @@ impl From<&ast::StructDef> for StructDef {
 #[derive(Debug, Clone)]
 pub struct TraitDef {
     pub attrs: Vec<Attribute>,
-    pub name: FirIdent,
+    pub name: HirIdent,
     pub method_sigs: Vec<TraitMethodSignature>,
 }
 
@@ -1098,7 +1098,7 @@ impl From<&ast::TraitDef> for TraitDef {
     fn from(t: &ast::TraitDef) -> Self {
         TraitDef {
             attrs: t.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&t.name.0),
+            name: HirIdent::name(&t.name.0),
             method_sigs: t.method_sigs.iter().map(|m| m.into()).collect(),
         }
     }
@@ -1106,7 +1106,7 @@ impl From<&ast::TraitDef> for TraitDef {
 
 #[derive(Debug, Clone)]
 pub struct TraitMethodSignature {
-    pub name: FirIdent,
+    pub name: HirIdent,
     pub params: Vec<TypeExpr>,
     pub ret_ty: TypeExpr,
 }
@@ -1114,7 +1114,7 @@ pub struct TraitMethodSignature {
 impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
     fn from(m: &ast::TraitMethodSignature) -> Self {
         TraitMethodSignature {
-            name: FirIdent::name(&m.name.0),
+            name: HirIdent::name(&m.name.0),
             params: m.params.iter().map(|p| p.into()).collect(),
             ret_ty: (&m.ret_ty).into(),
         }
@@ -1124,8 +1124,8 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
 #[derive(Debug, Clone)]
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
-    pub generics: Vec<FirIdent>,
-    pub trait_name: Option<FirIdent>,
+    pub generics: Vec<HirIdent>,
+    pub trait_name: Option<HirIdent>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,
 }
@@ -1186,7 +1186,7 @@ pub enum Expr {
     },
     EStructLiteral {
         name: QualifiedPath,
-        fields: Vec<(FirIdent, ExprId)>,
+        fields: Vec<(HirIdent, ExprId)>,
     },
     ETuple {
         items: Vec<ExprId>,
@@ -1238,7 +1238,7 @@ pub enum Expr {
     },
     EField {
         expr: ExprId,
-        field: FirIdent,
+        field: HirIdent,
     },
     EBlock {
         exprs: Vec<ExprId>,
@@ -1297,7 +1297,7 @@ pub enum Pat {
     },
     PStruct {
         name: QualifiedPath,
-        fields: Vec<(FirIdent, PatId)>,
+        fields: Vec<(HirIdent, PatId)>,
     },
     PTuple {
         pats: Vec<PatId>,
@@ -1317,14 +1317,14 @@ pub enum ConstructorResolutionErrorKind {
     Ambiguous(Vec<ConstructorId>),
 }
 
-pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResolutionError> {
+pub fn resolve_constructors(hir_table: &mut HirTable) -> Vec<ConstructorResolutionError> {
     let mut errors = Vec::new();
     let mut full_name_index: HashMap<String, ConstructorId> = HashMap::new();
     let mut short_name_index: HashMap<String, Vec<ConstructorId>> = HashMap::new();
 
-    for (def_id, def) in fir_table.iter_defs() {
+    for (def_id, def) in hir_table.iter_defs() {
         if let Def::EnumDef(enum_def) = def {
-            let enum_name = fir_table.def_path(def_id).display();
+            let enum_name = hir_table.def_path(def_id).display();
             for (variant_idx, (variant_name, _)) in enum_def.variants.iter().enumerate() {
                 let ctor_id = ConstructorId::EnumVariant {
                     enum_def: def_id,
@@ -1341,13 +1341,13 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
         }
     }
 
-    let expr_count = fir_table.exprs.len();
+    let expr_count = hir_table.exprs.len();
     for i in 0..expr_count {
         let expr_id = ExprId {
-            pkg: fir_table.package(),
+            pkg: hir_table.package(),
             idx: i as u32,
         };
-        let expr = fir_table.expr(expr_id).clone();
+        let expr = hir_table.expr(expr_id).clone();
         if let Expr::EConstr { constructor, args } = expr
             && let ConstructorRef::Unresolved(path) = &constructor
         {
@@ -1358,17 +1358,17 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
                 args,
             };
             let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(expr_id.idx));
-            fir_table.exprs[idx] = new_expr;
+            hir_table.exprs[idx] = new_expr;
         }
     }
 
-    let pat_count = fir_table.pats.len();
+    let pat_count = hir_table.pats.len();
     for i in 0..pat_count {
         let pat_id = PatId {
-            pkg: fir_table.package(),
+            pkg: hir_table.package(),
             idx: i as u32,
         };
-        let pat = fir_table.pat(pat_id).clone();
+        let pat = hir_table.pat(pat_id).clone();
         if let Pat::PConstr { constructor, args } = pat
             && let ConstructorRef::Unresolved(path) = &constructor
         {
@@ -1379,7 +1379,7 @@ pub fn resolve_constructors(fir_table: &mut FirTable) -> Vec<ConstructorResoluti
                 args,
             };
             let idx = la_arena::Idx::from_raw(la_arena::RawIdx::from_u32(pat_id.idx));
-            fir_table.pats[idx] = new_pat;
+            hir_table.pats[idx] = new_pat;
         }
     }
 

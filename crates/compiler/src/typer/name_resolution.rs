@@ -4,11 +4,11 @@ use ast::ast;
 
 use crate::builtins;
 use crate::env;
-use crate::fir;
-use crate::fir::FirIdent;
+use crate::hir;
+use crate::hir::HirIdent;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 
-pub type FirTable = fir::FirTable;
+pub type HirTable = hir::HirTable;
 
 #[derive(Default)]
 pub struct NameResolution {
@@ -16,7 +16,7 @@ pub struct NameResolution {
 }
 
 #[derive(Debug)]
-struct ResolveLocalEnv(im::Vector<(ast::AstIdent, fir::LocalId)>);
+struct ResolveLocalEnv(im::Vector<(ast::AstIdent, hir::LocalId)>);
 
 impl ResolveLocalEnv {
     pub fn new() -> Self {
@@ -28,11 +28,11 @@ impl ResolveLocalEnv {
         Self(self.0.clone())
     }
 
-    pub fn add(&mut self, name: &ast::AstIdent, new_name: fir::LocalId) {
+    pub fn add(&mut self, name: &ast::AstIdent, new_name: hir::LocalId) {
         self.0.push_back((name.clone(), new_name));
     }
 
-    pub fn rfind(&self, key: &ast::AstIdent) -> Option<fir::LocalId> {
+    pub fn rfind(&self, key: &ast::AstIdent) -> Option<hir::LocalId> {
         self.0
             .iter()
             .rfind(|(name, _)| name == key)
@@ -41,9 +41,9 @@ impl ResolveLocalEnv {
 }
 
 struct ResolutionContext<'a> {
-    builtin_names: &'a HashMap<String, fir::BuiltinId>,
-    def_names: &'a HashMap<String, fir::DefId>,
-    deps: &'a HashMap<String, fir::PackageInterface>,
+    builtin_names: &'a HashMap<String, hir::BuiltinId>,
+    def_names: &'a HashMap<String, hir::DefId>,
+    deps: &'a HashMap<String, hir::PackageInterface>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
     constructor_index: &'a ConstructorIndex,
@@ -67,8 +67,8 @@ struct ConstructorIndex {
 
 impl ConstructorIndex {
     fn new_with_deps(
-        files: &[fir::SourceFileAst],
-        deps: &HashMap<String, fir::PackageInterface>,
+        files: &[hir::SourceFileAst],
+        deps: &HashMap<String, hir::PackageInterface>,
     ) -> Self {
         let mut index = Self {
             enums_by_package: HashMap::new(),
@@ -76,7 +76,7 @@ impl ConstructorIndex {
         index.add_files(files);
         if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
             let builtin_ast = builtins::get_builtin_ast();
-            let builtin_file = fir::SourceFileAst {
+            let builtin_file = hir::SourceFileAst {
                 path: "<builtin>".into(),
                 ast: builtin_ast,
             };
@@ -88,7 +88,7 @@ impl ConstructorIndex {
         index
     }
 
-    fn add_files(&mut self, files: &[fir::SourceFileAst]) {
+    fn add_files(&mut self, files: &[hir::SourceFileAst]) {
         for file in files {
             let package = file.ast.package.0.clone();
             let entry = self.enums_by_package.entry(package).or_default();
@@ -103,7 +103,7 @@ impl ConstructorIndex {
         }
     }
 
-    fn add_interface(&mut self, package: &str, interface: &fir::PackageInterface) {
+    fn add_interface(&mut self, package: &str, interface: &hir::PackageInterface) {
         let entry = self
             .enums_by_package
             .entry(package.to_string())
@@ -160,15 +160,15 @@ impl NameResolution {
         self.error(format!("Internal error: {}", message.into()));
     }
 
-    fn fresh_name(&self, name: &str, fir_table: &mut FirTable) -> fir::LocalId {
-        fir_table.fresh_local(name)
+    fn fresh_name(&self, name: &str, hir_table: &mut HirTable) -> hir::LocalId {
+        hir_table.fresh_local(name)
     }
 
     fn constructor_path_for(
         &mut self,
         path: &ast::Path,
         ctx: &ResolutionContext,
-    ) -> Option<fir::Path> {
+    ) -> Option<hir::Path> {
         let segments = path.segments();
         let last = path.last_ident()?;
         match segments.len() {
@@ -183,7 +183,7 @@ impl NameResolution {
                     .constructor_index
                     .has_variant(ctx.current_package, variant)
                 {
-                    Some(fir::Path::from_ident(variant.clone()))
+                    Some(hir::Path::from_ident(variant.clone()))
                 } else {
                     None
                 }
@@ -224,26 +224,26 @@ impl NameResolution {
         &mut self,
         path: &ast::Path,
         ctx: &ResolutionContext,
-    ) -> fir::Path {
+    ) -> hir::Path {
         self.constructor_path_for(path, ctx)
             .unwrap_or_else(|| path.into())
     }
 
-    pub fn resolve_files(self, files: Vec<ast::File>) -> (fir::ResolvedFir, FirTable, Diagnostics) {
+    pub fn resolve_files(self, files: Vec<ast::File>) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let deps = HashMap::new();
         let package_name = files
             .first()
             .map(|file| file.package.0.as_str())
             .unwrap_or("Main");
         let package_id = match package_name {
-            "Builtin" => fir::PackageId(0),
-            "Main" => fir::PackageId(1),
-            _ => fir::PackageId(2),
+            "Builtin" => hir::PackageId(0),
+            "Main" => hir::PackageId(1),
+            _ => hir::PackageId(2),
         };
         let files = files
             .into_iter()
             .enumerate()
-            .map(|(idx, ast)| fir::SourceFileAst {
+            .map(|(idx, ast)| hir::SourceFileAst {
                 path: format!("<unknown:{}>", idx).into(),
                 ast,
             })
@@ -253,15 +253,15 @@ impl NameResolution {
 
     pub fn resolve_files_with_env(
         mut self,
-        package_id: fir::PackageId,
-        files: Vec<fir::SourceFileAst>,
-        deps: &HashMap<String, fir::PackageInterface>,
-    ) -> (fir::ResolvedFir, FirTable, Diagnostics) {
-        let mut fir_table = FirTable::new(package_id);
+        package_id: hir::PackageId,
+        files: Vec<hir::SourceFileAst>,
+        deps: &HashMap<String, hir::PackageInterface>,
+    ) -> (hir::ResolvedHir, HirTable, Diagnostics) {
+        let mut hir_table = HirTable::new(package_id);
 
         let mut builtin_names = HashMap::new();
         for name in env::builtin_function_names() {
-            if let Some(id) = fir::BuiltinId::from_name(&name) {
+            if let Some(id) = hir::BuiltinId::from_name(&name) {
                 builtin_names.insert(name, id);
             }
         }
@@ -285,17 +285,17 @@ impl NameResolution {
                     ast::Item::Fn(func) => {
                         let full_name = full_def_name(package_name, &func.name.0);
                         let path = full_def_path(package_name, &func.name.0);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::Fn,
-                            fir::Def::Fn(fir::Fn {
+                            hir::DefKind::Fn,
+                            hir::Def::Fn(hir::Fn {
                                 attrs: Vec::new(),
                                 name: full_name.clone(),
                                 generics: Vec::new(),
                                 generic_bounds: Vec::new(),
                                 params: Vec::new(),
                                 ret_ty: None,
-                                body: fir_table.dummy_expr(),
+                                body: hir_table.dummy_expr(),
                             }),
                         );
                         def_names.insert(full_name, id);
@@ -305,10 +305,10 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
                         let path = full_def_path(package_name, &ext.goml_name.0);
                         let ext_def = self.lower_extern_go(ext, package_name, &imports);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::ExternGo,
-                            fir::Def::ExternGo(ext_def),
+                            hir::DefKind::ExternGo,
+                            hir::Def::ExternGo(ext_def),
                         );
                         def_names.insert(full_name, id);
                         id
@@ -317,10 +317,10 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &ext.name.0);
                         let path = full_def_path(package_name, &ext.name.0);
                         let ext_def = self.lower_extern_builtin(ext, package_name, &imports);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::ExternBuiltin,
-                            fir::Def::ExternBuiltin(ext_def),
+                            hir::DefKind::ExternBuiltin,
+                            hir::Def::ExternBuiltin(ext_def),
                         );
                         def_names.insert(full_name, id);
                         id
@@ -329,10 +329,10 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &e.name.0);
                         let path = full_def_path(package_name, &e.name.0);
                         let enum_def = self.lower_enum_def(e, package_name, &imports);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::EnumDef,
-                            fir::Def::EnumDef(enum_def),
+                            hir::DefKind::EnumDef,
+                            hir::Def::EnumDef(enum_def),
                         );
                         def_names.insert(full_name, id);
                         id
@@ -341,10 +341,10 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &s.name.0);
                         let path = full_def_path(package_name, &s.name.0);
                         let struct_def = self.lower_struct_def(s, package_name, &imports);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::StructDef,
-                            fir::Def::StructDef(struct_def),
+                            hir::DefKind::StructDef,
+                            hir::Def::StructDef(struct_def),
                         );
                         def_names.insert(full_name, id);
                         id
@@ -353,22 +353,22 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &t.name.0);
                         let path = full_def_path(package_name, &t.name.0);
                         let trait_def = self.lower_trait_def(t, package_name, &imports);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::TraitDef,
-                            fir::Def::TraitDef(trait_def),
+                            hir::DefKind::TraitDef,
+                            hir::Def::TraitDef(trait_def),
                         );
                         def_names.insert(full_name, id);
                         id
                     }
-                    ast::Item::ImplBlock(_i) => fir_table.alloc_def_with_path(
+                    ast::Item::ImplBlock(_i) => hir_table.alloc_def_with_path(
                         full_def_path(package_name, "impl"),
-                        fir::DefKind::ImplBlock,
-                        fir::Def::ImplBlock(fir::ImplBlock {
+                        hir::DefKind::ImplBlock,
+                        hir::Def::ImplBlock(hir::ImplBlock {
                             attrs: Vec::new(),
                             generics: Vec::new(),
                             trait_name: None,
-                            for_type: fir::TypeExpr::TUnit,
+                            for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
                         }),
                     ),
@@ -376,10 +376,10 @@ impl NameResolution {
                         let full_name = full_def_name(package_name, &ext.goml_name.0);
                         let path = full_def_path(package_name, &ext.goml_name.0);
                         let ext_def = self.lower_extern_type(ext, package_name);
-                        let id = fir_table.alloc_def_with_path(
+                        let id = hir_table.alloc_def_with_path(
                             path,
-                            fir::DefKind::ExternType,
-                            fir::Def::ExternType(ext_def),
+                            hir::DefKind::ExternType,
+                            hir::Def::ExternType(ext_def),
                         );
                         def_names.insert(full_name, id);
                         id
@@ -421,10 +421,10 @@ impl NameResolution {
                             break;
                         };
                         toplevel_idx += 1;
-                        fir_table.set_current_owner(def_id);
+                        hir_table.set_current_owner(def_id);
                         let full_name = full_def_name(package_name, &func.name.0);
-                        let resolved_fn = self.resolve_fn(func, &ctx, &mut fir_table, full_name);
-                        *fir_table.def_mut(def_id) = fir::Def::Fn(resolved_fn);
+                        let resolved_fn = self.resolve_fn(func, &ctx, &mut hir_table, full_name);
+                        *hir_table.def_mut(def_id) = hir::Def::Fn(resolved_fn);
                     }
                     ast::Item::ImplBlock(i) => {
                         let def_id = per_file_defs
@@ -439,15 +439,15 @@ impl NameResolution {
                         let methods = i
                             .methods
                             .iter()
-                            .map(|m| self.resolve_fn_def(m, &ctx, &mut fir_table))
+                            .map(|m| self.resolve_fn_def(m, &ctx, &mut hir_table))
                             .collect();
                         let tparams = type_param_set(&i.generics);
                         let trait_name = i.trait_name.as_ref().map(|t| {
-                            FirIdent::name(self.lower_impl_trait_name(t, package_name, &imports))
+                            HirIdent::name(self.lower_impl_trait_name(t, package_name, &imports))
                         });
-                        let impl_block = fir::ImplBlock {
+                        let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
-                            generics: i.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+                            generics: i.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
                             trait_name,
                             for_type: self.lower_type_expr(
                                 &i.for_type,
@@ -457,7 +457,7 @@ impl NameResolution {
                             ),
                             methods,
                         };
-                        *fir_table.def_mut(def_id) = fir::Def::ImplBlock(impl_block);
+                        *hir_table.def_mut(def_id) = hir::Def::ImplBlock(impl_block);
                     }
                     _ => {
                         toplevel_idx += 1;
@@ -481,14 +481,14 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
-                fir::SourceFileFir {
+                hir::SourceFileHir {
                     path,
-                    package: fir::PackageName(package),
+                    package: hir::PackageName(package),
                     imports: file
                         .ast
                         .imports
                         .iter()
-                        .map(|import| fir::PackageName(import.0.clone()))
+                        .map(|import| hir::PackageName(import.0.clone()))
                         .collect(),
                     toplevels: per_file_defs.get(idx).cloned().unwrap_or_default(),
                 }
@@ -497,8 +497,8 @@ impl NameResolution {
 
         let diagnostics = self.diagnostics;
         (
-            fir::ResolvedFir { files, toplevels },
-            fir_table,
+            hir::ResolvedHir { files, toplevels },
+            hir_table,
             diagnostics,
         )
     }
@@ -507,24 +507,24 @@ impl NameResolution {
         &mut self,
         func: &ast::Fn,
         ctx: &ResolutionContext,
-        fir_table: &mut FirTable,
-    ) -> fir::DefId {
-        let def_id = fir_table.alloc_def(
+        hir_table: &mut HirTable,
+    ) -> hir::DefId {
+        let def_id = hir_table.alloc_def(
             func.name.0.clone(),
-            fir::DefKind::Fn,
-            fir::Def::Fn(fir::Fn {
+            hir::DefKind::Fn,
+            hir::Def::Fn(hir::Fn {
                 attrs: Vec::new(),
                 name: func.name.0.clone(),
                 generics: Vec::new(),
                 generic_bounds: Vec::new(),
                 params: Vec::new(),
                 ret_ty: None,
-                body: fir_table.dummy_expr(),
+                body: hir_table.dummy_expr(),
             }),
         );
-        fir_table.set_current_owner(def_id);
-        let func = self.resolve_fn(func, ctx, fir_table, func.name.0.clone());
-        *fir_table.def_mut(def_id) = fir::Def::Fn(func);
+        hir_table.set_current_owner(def_id);
+        let func = self.resolve_fn(func, ctx, hir_table, func.name.0.clone());
+        *hir_table.def_mut(def_id) = hir::Def::Fn(func);
         def_id
     }
 
@@ -532,9 +532,9 @@ impl NameResolution {
         &mut self,
         func: &ast::Fn,
         ctx: &ResolutionContext,
-        fir_table: &mut FirTable,
+        hir_table: &mut HirTable,
         resolved_name: String,
-    ) -> fir::Fn {
+    ) -> hir::Fn {
         let ast::Fn {
             attrs,
             generics,
@@ -546,7 +546,7 @@ impl NameResolution {
         } = func;
         let mut env = ResolveLocalEnv::new();
         for param in params {
-            env.add(&param.0, self.fresh_name(&param.0.0, fir_table));
+            env.add(&param.0, self.fresh_name(&param.0.0, hir_table));
         }
         let tparams = type_param_set(generics);
         let new_params = params
@@ -554,7 +554,7 @@ impl NameResolution {
             .map(|param| {
                 let local_id = env.rfind(&param.0).unwrap_or_else(|| {
                     self.ice(format!("missing local id for param {}", param.0.0));
-                    self.fresh_name(&param.0.0, fir_table)
+                    self.fresh_name(&param.0.0, hir_table)
                 });
                 (
                     local_id,
@@ -569,22 +569,22 @@ impl NameResolution {
                 let traits = traits
                     .iter()
                     .map(|path| {
-                        fir::Path::new(path.segments().iter().map(fir::PathSegment::from).collect())
+                        hir::Path::new(path.segments().iter().map(hir::PathSegment::from).collect())
                     })
                     .collect::<Vec<_>>();
-                (FirIdent::name(&param.0), traits)
+                (HirIdent::name(&param.0), traits)
             })
             .collect();
-        fir::Fn {
+        hir::Fn {
             attrs: attrs.iter().map(|a| a.into()).collect(),
             name: resolved_name,
-            generics: generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            generics: generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             generic_bounds: new_generic_bounds,
             params: new_params,
             ret_ty: ret_ty
                 .as_ref()
                 .map(|t| self.lower_type_expr(t, &tparams, ctx.current_package, ctx.imports)),
-            body: self.resolve_expr(body, &mut env, ctx, fir_table),
+            body: self.resolve_expr(body, &mut env, ctx, hir_table),
         }
     }
 
@@ -593,21 +593,21 @@ impl NameResolution {
         expr: &ast::Expr,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
-        fir_table: &mut FirTable,
-    ) -> fir::ExprId {
+        hir_table: &mut HirTable,
+    ) -> hir::ExprId {
         match expr {
             ast::Expr::EPath { path, astptr } => {
                 if let Some(constructor) = self.constructor_path_for(path, ctx) {
-                    return fir_table.alloc_expr(fir::Expr::EConstr {
-                        constructor: fir::ConstructorRef::Unresolved(constructor),
+                    return hir_table.alloc_expr(hir::Expr::EConstr {
+                        constructor: hir::ConstructorRef::Unresolved(constructor),
                         args: Vec::new(),
                     });
                 }
                 if path.len() == 1 {
                     let Some(ident) = path.last_ident() else {
                         self.ice("path length 1 missing last ident");
-                        return fir_table.alloc_expr(fir::Expr::ENameRef {
-                            res: fir::NameRef::Unresolved(fir::Path::from_ident(
+                        return hir_table.alloc_expr(hir::Expr::ENameRef {
+                            res: hir::NameRef::Unresolved(hir::Path::from_ident(
                                 "<error>".to_string(),
                             )),
                             hint: "<error>".to_string(),
@@ -616,22 +616,22 @@ impl NameResolution {
                     };
                     let name_str = &ident.0;
                     let res = if let Some(local_id) = env.rfind(ident) {
-                        fir::NameRef::Local(local_id)
+                        hir::NameRef::Local(local_id)
                     } else {
                         let full_name = full_def_name(ctx.current_package, name_str);
                         if let Some(&def_id) = ctx.def_names.get(&full_name) {
-                            fir::NameRef::Def(def_id)
+                            hir::NameRef::Def(def_id)
                         } else if let Some(&builtin_id) = ctx.builtin_names.get(name_str) {
-                            fir::NameRef::Builtin(builtin_id)
+                            hir::NameRef::Builtin(builtin_id)
                         } else {
-                            fir::NameRef::Unresolved(fir::Path::from_ident(name_str.clone()))
+                            hir::NameRef::Unresolved(hir::Path::from_ident(name_str.clone()))
                         }
                     };
                     let hint = match res {
-                        fir::NameRef::Def(_) => full_def_name(ctx.current_package, name_str),
+                        hir::NameRef::Def(_) => full_def_name(ctx.current_package, name_str),
                         _ => name_str.clone(),
                     };
-                    fir_table.alloc_expr(fir::Expr::ENameRef {
+                    hir_table.alloc_expr(hir::Expr::ENameRef {
                         res,
                         hint,
                         astptr: Some(*astptr),
@@ -658,74 +658,74 @@ impl NameResolution {
                         ctx.def_names
                             .get(&full_name)
                             .copied()
-                            .map(fir::NameRef::Def)
-                            .unwrap_or_else(|| fir::NameRef::Unresolved(path.into()))
+                            .map(hir::NameRef::Def)
+                            .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
                     } else if ctx.imports.contains(package) {
                         ctx.deps
                             .get(package)
                             .and_then(|interface| interface.exports.get(&full_name))
                             .copied()
-                            .map(fir::NameRef::Def)
-                            .unwrap_or_else(|| fir::NameRef::Unresolved(path.into()))
+                            .map(hir::NameRef::Def)
+                            .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
                     } else {
-                        fir::NameRef::Unresolved(path.into())
+                        hir::NameRef::Unresolved(path.into())
                     };
-                    fir_table.alloc_expr(fir::Expr::ENameRef {
+                    hir_table.alloc_expr(hir::Expr::ENameRef {
                         res,
                         hint: full_name,
                         astptr: Some(*astptr),
                     })
                 }
             }
-            ast::Expr::EUnit => fir_table.alloc_expr(fir::Expr::EUnit),
-            ast::Expr::EBool { value } => fir_table.alloc_expr(fir::Expr::EBool { value: *value }),
-            ast::Expr::EInt { value } => fir_table.alloc_expr(fir::Expr::EInt {
+            ast::Expr::EUnit => hir_table.alloc_expr(hir::Expr::EUnit),
+            ast::Expr::EBool { value } => hir_table.alloc_expr(hir::Expr::EBool { value: *value }),
+            ast::Expr::EInt { value } => hir_table.alloc_expr(hir::Expr::EInt {
                 value: value.clone(),
             }),
-            ast::Expr::EInt8 { value } => fir_table.alloc_expr(fir::Expr::EInt8 {
+            ast::Expr::EInt8 { value } => hir_table.alloc_expr(hir::Expr::EInt8 {
                 value: value.clone(),
             }),
-            ast::Expr::EInt16 { value } => fir_table.alloc_expr(fir::Expr::EInt16 {
+            ast::Expr::EInt16 { value } => hir_table.alloc_expr(hir::Expr::EInt16 {
                 value: value.clone(),
             }),
-            ast::Expr::EInt32 { value } => fir_table.alloc_expr(fir::Expr::EInt32 {
+            ast::Expr::EInt32 { value } => hir_table.alloc_expr(hir::Expr::EInt32 {
                 value: value.clone(),
             }),
-            ast::Expr::EInt64 { value } => fir_table.alloc_expr(fir::Expr::EInt64 {
+            ast::Expr::EInt64 { value } => hir_table.alloc_expr(hir::Expr::EInt64 {
                 value: value.clone(),
             }),
-            ast::Expr::EUInt8 { value } => fir_table.alloc_expr(fir::Expr::EUInt8 {
+            ast::Expr::EUInt8 { value } => hir_table.alloc_expr(hir::Expr::EUInt8 {
                 value: value.clone(),
             }),
-            ast::Expr::EUInt16 { value } => fir_table.alloc_expr(fir::Expr::EUInt16 {
+            ast::Expr::EUInt16 { value } => hir_table.alloc_expr(hir::Expr::EUInt16 {
                 value: value.clone(),
             }),
-            ast::Expr::EUInt32 { value } => fir_table.alloc_expr(fir::Expr::EUInt32 {
+            ast::Expr::EUInt32 { value } => hir_table.alloc_expr(hir::Expr::EUInt32 {
                 value: value.clone(),
             }),
-            ast::Expr::EUInt64 { value } => fir_table.alloc_expr(fir::Expr::EUInt64 {
+            ast::Expr::EUInt64 { value } => hir_table.alloc_expr(hir::Expr::EUInt64 {
                 value: value.clone(),
             }),
             ast::Expr::EFloat { value } => {
-                fir_table.alloc_expr(fir::Expr::EFloat { value: *value })
+                hir_table.alloc_expr(hir::Expr::EFloat { value: *value })
             }
-            ast::Expr::EFloat32 { value } => fir_table.alloc_expr(fir::Expr::EFloat32 {
+            ast::Expr::EFloat32 { value } => hir_table.alloc_expr(hir::Expr::EFloat32 {
                 value: value.clone(),
             }),
-            ast::Expr::EFloat64 { value } => fir_table.alloc_expr(fir::Expr::EFloat64 {
+            ast::Expr::EFloat64 { value } => hir_table.alloc_expr(hir::Expr::EFloat64 {
                 value: value.clone(),
             }),
-            ast::Expr::EString { value } => fir_table.alloc_expr(fir::Expr::EString {
+            ast::Expr::EString { value } => hir_table.alloc_expr(hir::Expr::EString {
                 value: value.clone(),
             }),
             ast::Expr::EConstr { constructor, args } => {
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
+                    .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                     .collect();
                 let constructor = self.normalize_constructor_path(constructor, ctx);
-                fir_table.alloc_expr(fir::Expr::EConstr {
-                    constructor: fir::ConstructorRef::Unresolved(constructor),
+                hir_table.alloc_expr(hir::Expr::EConstr {
+                    constructor: hir::ConstructorRef::Unresolved(constructor),
                     args: new_args,
                 })
             }
@@ -734,12 +734,12 @@ impl NameResolution {
                     .iter()
                     .map(|(field_name, expr)| {
                         (
-                            FirIdent::name(&field_name.0),
-                            self.resolve_expr(expr, env, ctx, fir_table),
+                            HirIdent::name(&field_name.0),
+                            self.resolve_expr(expr, env, ctx, hir_table),
                         )
                     })
                     .collect();
-                let qualified: fir::QualifiedPath = name.into();
+                let qualified: hir::QualifiedPath = name.into();
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
@@ -748,7 +748,7 @@ impl NameResolution {
                         package.0, ctx.current_package
                     ));
                 }
-                fir_table.alloc_expr(fir::Expr::EStructLiteral {
+                hir_table.alloc_expr(hir::Expr::EStructLiteral {
                     name: qualified,
                     fields: new_fields,
                 })
@@ -756,28 +756,28 @@ impl NameResolution {
             ast::Expr::ETuple { items } => {
                 let new_items = items
                     .iter()
-                    .map(|item| self.resolve_expr(item, env, ctx, fir_table))
+                    .map(|item| self.resolve_expr(item, env, ctx, hir_table))
                     .collect();
-                fir_table.alloc_expr(fir::Expr::ETuple { items: new_items })
+                hir_table.alloc_expr(hir::Expr::ETuple { items: new_items })
             }
             ast::Expr::EArray { items } => {
                 let new_items = items
                     .iter()
-                    .map(|item| self.resolve_expr(item, env, ctx, fir_table))
+                    .map(|item| self.resolve_expr(item, env, ctx, hir_table))
                     .collect();
-                fir_table.alloc_expr(fir::Expr::EArray { items: new_items })
+                hir_table.alloc_expr(hir::Expr::EArray { items: new_items })
             }
             ast::Expr::EClosure { params, body } => {
                 let mut closure_env = env.enter_scope();
                 let new_params = params
                     .iter()
                     .map(|param| {
-                        self.resolve_closure_param(param, &mut closure_env, ctx, fir_table)
+                        self.resolve_closure_param(param, &mut closure_env, ctx, hir_table)
                     })
                     .collect();
-                let new_body_expr = self.resolve_expr(body, &mut closure_env, ctx, fir_table);
+                let new_body_expr = self.resolve_expr(body, &mut closure_env, ctx, hir_table);
 
-                fir_table.alloc_expr(fir::Expr::EClosure {
+                hir_table.alloc_expr(hir::Expr::EClosure {
                     params: new_params,
                     body: new_body_expr,
                 })
@@ -787,9 +787,9 @@ impl NameResolution {
                 annotation,
                 value,
             } => {
-                let new_value = self.resolve_expr(value, env, ctx, fir_table);
-                let new_pat = self.resolve_pat(pat, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::ELet {
+                let new_value = self.resolve_expr(value, env, ctx, hir_table);
+                let new_pat = self.resolve_pat(pat, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::ELet {
                     pat: new_pat,
                     annotation: annotation.as_ref().map(|t| t.into()),
                     value: new_value,
@@ -800,19 +800,19 @@ impl NameResolution {
                 arms,
                 astptr: _,
             } => {
-                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
                 let new_arms = arms
                     .iter()
                     .map(|arm| {
-                        let new_pat = self.resolve_pat(&arm.pat, env, ctx, fir_table);
-                        let new_body = self.resolve_expr(&arm.body, env, ctx, fir_table);
-                        fir::Arm {
+                        let new_pat = self.resolve_pat(&arm.pat, env, ctx, hir_table);
+                        let new_body = self.resolve_expr(&arm.body, env, ctx, hir_table);
+                        hir::Arm {
                             pat: new_pat,
                             body: new_body,
                         }
                     })
                     .collect();
-                fir_table.alloc_expr(fir::Expr::EMatch {
+                hir_table.alloc_expr(hir::Expr::EMatch {
                     expr: new_expr,
                     arms: new_arms,
                 })
@@ -822,26 +822,26 @@ impl NameResolution {
                 then_branch,
                 else_branch,
             } => {
-                let new_cond = self.resolve_expr(cond, env, ctx, fir_table);
-                let new_then = self.resolve_expr(then_branch, env, ctx, fir_table);
-                let new_else = self.resolve_expr(else_branch, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EIf {
+                let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
+                let new_then = self.resolve_expr(then_branch, env, ctx, hir_table);
+                let new_else = self.resolve_expr(else_branch, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EIf {
                     cond: new_cond,
                     then_branch: new_then,
                     else_branch: new_else,
                 })
             }
             ast::Expr::EWhile { cond, body } => {
-                let new_cond = self.resolve_expr(cond, env, ctx, fir_table);
-                let new_body = self.resolve_expr(body, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EWhile {
+                let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
+                let new_body = self.resolve_expr(body, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EWhile {
                     cond: new_cond,
                     body: new_body,
                 })
             }
             ast::Expr::EGo { expr } => {
-                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EGo { expr: new_expr })
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EGo { expr: new_expr })
             }
             ast::Expr::ECall { func, args } => {
                 if let ast::Expr::EPath { path, .. } = func.as_ref()
@@ -849,42 +849,42 @@ impl NameResolution {
                 {
                     let new_args = args
                         .iter()
-                        .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
+                        .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                         .collect();
-                    return fir_table.alloc_expr(fir::Expr::EConstr {
-                        constructor: fir::ConstructorRef::Unresolved(constructor),
+                    return hir_table.alloc_expr(hir::Expr::EConstr {
+                        constructor: hir::ConstructorRef::Unresolved(constructor),
                         args: new_args,
                     });
                 }
-                let new_func = self.resolve_expr(func, env, ctx, fir_table);
+                let new_func = self.resolve_expr(func, env, ctx, hir_table);
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_expr(arg, env, ctx, fir_table))
+                    .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                     .collect();
-                fir_table.alloc_expr(fir::Expr::ECall {
+                hir_table.alloc_expr(hir::Expr::ECall {
                     func: new_func,
                     args: new_args,
                 })
             }
             ast::Expr::EUnary { op, expr } => {
-                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EUnary {
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EUnary {
                     op: *op,
                     expr: new_expr,
                 })
             }
             ast::Expr::EBinary { op, lhs, rhs } => {
-                let new_lhs = self.resolve_expr(lhs, env, ctx, fir_table);
-                let new_rhs = self.resolve_expr(rhs, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EBinary {
+                let new_lhs = self.resolve_expr(lhs, env, ctx, hir_table);
+                let new_rhs = self.resolve_expr(rhs, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EBinary {
                     op: *op,
                     lhs: new_lhs,
                     rhs: new_rhs,
                 })
             }
             ast::Expr::EProj { tuple, index } => {
-                let new_tuple = self.resolve_expr(tuple, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EProj {
+                let new_tuple = self.resolve_expr(tuple, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EProj {
                     tuple: new_tuple,
                     index: *index,
                 })
@@ -894,18 +894,18 @@ impl NameResolution {
                 field,
                 astptr: _,
             } => {
-                let new_expr = self.resolve_expr(expr, env, ctx, fir_table);
-                fir_table.alloc_expr(fir::Expr::EField {
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                hir_table.alloc_expr(hir::Expr::EField {
                     expr: new_expr,
-                    field: FirIdent::name(&field.0),
+                    field: HirIdent::name(&field.0),
                 })
             }
             ast::Expr::EBlock { exprs } => {
                 let new_exprs = exprs
                     .iter()
-                    .map(|e| self.resolve_expr(e, env, ctx, fir_table))
+                    .map(|e| self.resolve_expr(e, env, ctx, hir_table))
                     .collect();
-                fir_table.alloc_expr(fir::Expr::EBlock { exprs: new_exprs })
+                hir_table.alloc_expr(hir::Expr::EBlock { exprs: new_exprs })
             }
         }
     }
@@ -915,57 +915,57 @@ impl NameResolution {
         pat: &ast::Pat,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
-        fir_table: &mut FirTable,
-    ) -> fir::PatId {
+        hir_table: &mut HirTable,
+    ) -> hir::PatId {
         match pat {
             ast::Pat::PVar { name, astptr } => {
-                let newname = self.fresh_name(&name.0, fir_table);
+                let newname = self.fresh_name(&name.0, hir_table);
                 env.add(name, newname);
-                fir_table.alloc_pat(fir::Pat::PVar {
+                hir_table.alloc_pat(hir::Pat::PVar {
                     name: newname,
                     astptr: *astptr,
                 })
             }
-            ast::Pat::PUnit => fir_table.alloc_pat(fir::Pat::PUnit),
-            ast::Pat::PBool { value } => fir_table.alloc_pat(fir::Pat::PBool { value: *value }),
-            ast::Pat::PInt { value } => fir_table.alloc_pat(fir::Pat::PInt {
+            ast::Pat::PUnit => hir_table.alloc_pat(hir::Pat::PUnit),
+            ast::Pat::PBool { value } => hir_table.alloc_pat(hir::Pat::PBool { value: *value }),
+            ast::Pat::PInt { value } => hir_table.alloc_pat(hir::Pat::PInt {
                 value: value.clone(),
             }),
-            ast::Pat::PInt8 { value } => fir_table.alloc_pat(fir::Pat::PInt8 {
+            ast::Pat::PInt8 { value } => hir_table.alloc_pat(hir::Pat::PInt8 {
                 value: value.clone(),
             }),
-            ast::Pat::PInt16 { value } => fir_table.alloc_pat(fir::Pat::PInt16 {
+            ast::Pat::PInt16 { value } => hir_table.alloc_pat(hir::Pat::PInt16 {
                 value: value.clone(),
             }),
-            ast::Pat::PInt32 { value } => fir_table.alloc_pat(fir::Pat::PInt32 {
+            ast::Pat::PInt32 { value } => hir_table.alloc_pat(hir::Pat::PInt32 {
                 value: value.clone(),
             }),
-            ast::Pat::PInt64 { value } => fir_table.alloc_pat(fir::Pat::PInt64 {
+            ast::Pat::PInt64 { value } => hir_table.alloc_pat(hir::Pat::PInt64 {
                 value: value.clone(),
             }),
-            ast::Pat::PUInt8 { value } => fir_table.alloc_pat(fir::Pat::PUInt8 {
+            ast::Pat::PUInt8 { value } => hir_table.alloc_pat(hir::Pat::PUInt8 {
                 value: value.clone(),
             }),
-            ast::Pat::PUInt16 { value } => fir_table.alloc_pat(fir::Pat::PUInt16 {
+            ast::Pat::PUInt16 { value } => hir_table.alloc_pat(hir::Pat::PUInt16 {
                 value: value.clone(),
             }),
-            ast::Pat::PUInt32 { value } => fir_table.alloc_pat(fir::Pat::PUInt32 {
+            ast::Pat::PUInt32 { value } => hir_table.alloc_pat(hir::Pat::PUInt32 {
                 value: value.clone(),
             }),
-            ast::Pat::PUInt64 { value } => fir_table.alloc_pat(fir::Pat::PUInt64 {
+            ast::Pat::PUInt64 { value } => hir_table.alloc_pat(hir::Pat::PUInt64 {
                 value: value.clone(),
             }),
-            ast::Pat::PString { value } => fir_table.alloc_pat(fir::Pat::PString {
+            ast::Pat::PString { value } => hir_table.alloc_pat(hir::Pat::PString {
                 value: value.clone(),
             }),
             ast::Pat::PConstr { constructor, args } => {
                 let new_args = args
                     .iter()
-                    .map(|arg| self.resolve_pat(arg, env, ctx, fir_table))
+                    .map(|arg| self.resolve_pat(arg, env, ctx, hir_table))
                     .collect();
                 let constructor = self.normalize_constructor_path(constructor, ctx);
-                fir_table.alloc_pat(fir::Pat::PConstr {
-                    constructor: fir::ConstructorRef::Unresolved(constructor),
+                hir_table.alloc_pat(hir::Pat::PConstr {
+                    constructor: hir::ConstructorRef::Unresolved(constructor),
                     args: new_args,
                 })
             }
@@ -974,12 +974,12 @@ impl NameResolution {
                     .iter()
                     .map(|(fname, pat)| {
                         (
-                            FirIdent::name(&fname.0),
-                            self.resolve_pat(pat, env, ctx, fir_table),
+                            HirIdent::name(&fname.0),
+                            self.resolve_pat(pat, env, ctx, hir_table),
                         )
                     })
                     .collect();
-                let qualified: fir::QualifiedPath = name.into();
+                let qualified: hir::QualifiedPath = name.into();
                 if let Some(package) = &qualified.package
                     && !ctx.package_allowed(package.as_str())
                 {
@@ -988,7 +988,7 @@ impl NameResolution {
                         package.0, ctx.current_package
                     ));
                 }
-                fir_table.alloc_pat(fir::Pat::PStruct {
+                hir_table.alloc_pat(hir::Pat::PStruct {
                     name: qualified,
                     fields: new_fields,
                 })
@@ -996,11 +996,11 @@ impl NameResolution {
             ast::Pat::PTuple { pats } => {
                 let new_pats = pats
                     .iter()
-                    .map(|pat| self.resolve_pat(pat, env, ctx, fir_table))
+                    .map(|pat| self.resolve_pat(pat, env, ctx, hir_table))
                     .collect();
-                fir_table.alloc_pat(fir::Pat::PTuple { pats: new_pats })
+                hir_table.alloc_pat(hir::Pat::PTuple { pats: new_pats })
             }
-            ast::Pat::PWild => fir_table.alloc_pat(fir::Pat::PWild),
+            ast::Pat::PWild => hir_table.alloc_pat(hir::Pat::PWild),
         }
     }
 
@@ -1010,22 +1010,22 @@ impl NameResolution {
         _tparams: &HashSet<String>,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::TypeExpr {
+    ) -> hir::TypeExpr {
         match ty {
-            ast::TypeExpr::TUnit => fir::TypeExpr::TUnit,
-            ast::TypeExpr::TBool => fir::TypeExpr::TBool,
-            ast::TypeExpr::TInt8 => fir::TypeExpr::TInt8,
-            ast::TypeExpr::TInt16 => fir::TypeExpr::TInt16,
-            ast::TypeExpr::TInt32 => fir::TypeExpr::TInt32,
-            ast::TypeExpr::TInt64 => fir::TypeExpr::TInt64,
-            ast::TypeExpr::TUint8 => fir::TypeExpr::TUint8,
-            ast::TypeExpr::TUint16 => fir::TypeExpr::TUint16,
-            ast::TypeExpr::TUint32 => fir::TypeExpr::TUint32,
-            ast::TypeExpr::TUint64 => fir::TypeExpr::TUint64,
-            ast::TypeExpr::TFloat32 => fir::TypeExpr::TFloat32,
-            ast::TypeExpr::TFloat64 => fir::TypeExpr::TFloat64,
-            ast::TypeExpr::TString => fir::TypeExpr::TString,
-            ast::TypeExpr::TTuple { typs } => fir::TypeExpr::TTuple {
+            ast::TypeExpr::TUnit => hir::TypeExpr::TUnit,
+            ast::TypeExpr::TBool => hir::TypeExpr::TBool,
+            ast::TypeExpr::TInt8 => hir::TypeExpr::TInt8,
+            ast::TypeExpr::TInt16 => hir::TypeExpr::TInt16,
+            ast::TypeExpr::TInt32 => hir::TypeExpr::TInt32,
+            ast::TypeExpr::TInt64 => hir::TypeExpr::TInt64,
+            ast::TypeExpr::TUint8 => hir::TypeExpr::TUint8,
+            ast::TypeExpr::TUint16 => hir::TypeExpr::TUint16,
+            ast::TypeExpr::TUint32 => hir::TypeExpr::TUint32,
+            ast::TypeExpr::TUint64 => hir::TypeExpr::TUint64,
+            ast::TypeExpr::TFloat32 => hir::TypeExpr::TFloat32,
+            ast::TypeExpr::TFloat64 => hir::TypeExpr::TFloat64,
+            ast::TypeExpr::TString => hir::TypeExpr::TString,
+            ast::TypeExpr::TTuple { typs } => hir::TypeExpr::TTuple {
                 typs: typs
                     .iter()
                     .map(|ty| self.lower_type_expr(ty, _tparams, current_package, imports))
@@ -1040,12 +1040,12 @@ impl NameResolution {
                             "<error>".to_string()
                         }
                     };
-                    fir::QualifiedPath {
+                    hir::QualifiedPath {
                         package: None,
-                        path: fir::Path::from_ident(name),
+                        path: hir::Path::from_ident(name),
                     }
                 } else {
-                    let qualified: fir::QualifiedPath = path.into();
+                    let qualified: hir::QualifiedPath = path.into();
                     if let Some(package) = &qualified.package
                         && !package_allowed(package.as_str(), current_package, imports)
                     {
@@ -1056,7 +1056,7 @@ impl NameResolution {
                     }
                     qualified
                 };
-                fir::TypeExpr::TCon { path: qualified }
+                hir::TypeExpr::TCon { path: qualified }
             }
             ast::TypeExpr::TDyn { trait_path } => {
                 let qualified = if trait_path.len() == 1 {
@@ -1067,12 +1067,12 @@ impl NameResolution {
                             "<error>".to_string()
                         }
                     };
-                    fir::QualifiedPath {
+                    hir::QualifiedPath {
                         package: None,
-                        path: fir::Path::from_ident(name),
+                        path: hir::Path::from_ident(name),
                     }
                 } else {
-                    let qualified: fir::QualifiedPath = trait_path.into();
+                    let qualified: hir::QualifiedPath = trait_path.into();
                     if let Some(package) = &qualified.package
                         && !package_allowed(package.as_str(), current_package, imports)
                     {
@@ -1083,18 +1083,18 @@ impl NameResolution {
                     }
                     qualified
                 };
-                fir::TypeExpr::TDyn {
+                hir::TypeExpr::TDyn {
                     trait_path: qualified,
                 }
             }
-            ast::TypeExpr::TApp { ty, args } => fir::TypeExpr::TApp {
+            ast::TypeExpr::TApp { ty, args } => hir::TypeExpr::TApp {
                 ty: Box::new(self.lower_type_expr(ty.as_ref(), _tparams, current_package, imports)),
                 args: args
                     .iter()
                     .map(|arg| self.lower_type_expr(arg, _tparams, current_package, imports))
                     .collect(),
             },
-            ast::TypeExpr::TArray { len, elem } => fir::TypeExpr::TArray {
+            ast::TypeExpr::TArray { len, elem } => hir::TypeExpr::TArray {
                 len: *len,
                 elem: Box::new(self.lower_type_expr(
                     elem.as_ref(),
@@ -1103,7 +1103,7 @@ impl NameResolution {
                     imports,
                 )),
             },
-            ast::TypeExpr::TFunc { params, ret_ty } => fir::TypeExpr::TFunc {
+            ast::TypeExpr::TFunc { params, ret_ty } => hir::TypeExpr::TFunc {
                 params: params
                     .iter()
                     .map(|param| self.lower_type_expr(param, _tparams, current_package, imports))
@@ -1123,7 +1123,7 @@ impl NameResolution {
         def: &ast::EnumDef,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::EnumDef {
+    ) -> hir::EnumDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
         let variants = def
@@ -1134,13 +1134,13 @@ impl NameResolution {
                     .iter()
                     .map(|ty| self.lower_type_expr(ty, &tparams, current_package, imports))
                     .collect();
-                (FirIdent::name(&variant_name.0), types)
+                (HirIdent::name(&variant_name.0), types)
             })
             .collect();
-        fir::EnumDef {
+        hir::EnumDef {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&name),
-            generics: def.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            name: HirIdent::name(&name),
+            generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             variants,
         }
     }
@@ -1150,7 +1150,7 @@ impl NameResolution {
         def: &ast::StructDef,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::StructDef {
+    ) -> hir::StructDef {
         let tparams = type_param_set(&def.generics);
         let name = full_def_name(current_package, &def.name.0);
         let fields = def
@@ -1158,15 +1158,15 @@ impl NameResolution {
             .iter()
             .map(|(field_name, ty)| {
                 (
-                    FirIdent::name(&field_name.0),
+                    HirIdent::name(&field_name.0),
                     self.lower_type_expr(ty, &tparams, current_package, imports),
                 )
             })
             .collect();
-        fir::StructDef {
+        hir::StructDef {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&name),
-            generics: def.generics.iter().map(|g| FirIdent::name(&g.0)).collect(),
+            name: HirIdent::name(&name),
+            generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
             fields,
         }
     }
@@ -1176,13 +1176,13 @@ impl NameResolution {
         def: &ast::TraitDef,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::TraitDef {
+    ) -> hir::TraitDef {
         let name = full_def_name(current_package, &def.name.0);
         let method_sigs = def
             .method_sigs
             .iter()
-            .map(|sig| fir::TraitMethodSignature {
-                name: FirIdent::name(&sig.name.0),
+            .map(|sig| hir::TraitMethodSignature {
+                name: HirIdent::name(&sig.name.0),
                 params: sig
                     .params
                     .iter()
@@ -1196,9 +1196,9 @@ impl NameResolution {
                 ),
             })
             .collect();
-        fir::TraitDef {
+        hir::TraitDef {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&name),
+            name: HirIdent::name(&name),
             method_sigs,
         }
     }
@@ -1220,7 +1220,7 @@ impl NameResolution {
             return full_def_name(current_package, &name);
         }
 
-        let qualified: fir::QualifiedPath = path.into();
+        let qualified: hir::QualifiedPath = path.into();
         if let Some(package) = &qualified.package
             && !package_allowed(package.as_str(), current_package, imports)
         {
@@ -1237,20 +1237,20 @@ impl NameResolution {
         def: &ast::ExternGo,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::ExternGo {
+    ) -> hir::ExternGo {
         let name = full_def_name(current_package, &def.goml_name.0);
-        fir::ExternGo {
+        hir::ExternGo {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             package_path: def.package_path.clone(),
             go_symbol: def.go_symbol.clone(),
-            goml_name: FirIdent::name(&name),
+            goml_name: HirIdent::name(&name),
             explicit_go_symbol: def.explicit_go_symbol,
             params: def
                 .params
                 .iter()
                 .map(|(param, ty)| {
                     (
-                        FirIdent::name(&param.0),
+                        HirIdent::name(&param.0),
                         self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
@@ -1262,11 +1262,11 @@ impl NameResolution {
         }
     }
 
-    fn lower_extern_type(&self, def: &ast::ExternType, current_package: &str) -> fir::ExternType {
+    fn lower_extern_type(&self, def: &ast::ExternType, current_package: &str) -> hir::ExternType {
         let name = full_def_name(current_package, &def.goml_name.0);
-        fir::ExternType {
+        hir::ExternType {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            goml_name: FirIdent::name(&name),
+            goml_name: HirIdent::name(&name),
         }
     }
 
@@ -1275,17 +1275,17 @@ impl NameResolution {
         def: &ast::ExternBuiltin,
         current_package: &str,
         imports: &HashSet<String>,
-    ) -> fir::ExternBuiltin {
+    ) -> hir::ExternBuiltin {
         let name = full_def_name(current_package, &def.name.0);
-        fir::ExternBuiltin {
+        hir::ExternBuiltin {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
-            name: FirIdent::name(&name),
+            name: HirIdent::name(&name),
             params: def
                 .params
                 .iter()
                 .map(|(param, ty)| {
                     (
-                        FirIdent::name(&param.0),
+                        HirIdent::name(&param.0),
                         self.lower_type_expr(ty, &HashSet::new(), current_package, imports),
                     )
                 })
@@ -1302,11 +1302,11 @@ impl NameResolution {
         param: &ast::ClosureParam,
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
-        fir_table: &mut FirTable,
-    ) -> fir::ClosureParam {
-        let new_name = self.fresh_name(&param.name.0, fir_table);
+        hir_table: &mut HirTable,
+    ) -> hir::ClosureParam {
+        let new_name = self.fresh_name(&param.name.0, hir_table);
         env.add(&param.name, new_name);
-        fir::ClosureParam {
+        hir::ClosureParam {
             name: new_name,
             ty: param.ty.as_ref().map(|t| {
                 self.lower_type_expr(t, &HashSet::new(), ctx.current_package, ctx.imports)
@@ -1320,19 +1320,19 @@ fn type_param_set(params: &[ast::AstIdent]) -> HashSet<String> {
     params.iter().map(|param| param.0.clone()).collect()
 }
 
-fn full_def_path(package: &str, name: &str) -> fir::Path {
+fn full_def_path(package: &str, name: &str) -> hir::Path {
     if package == "Builtin" || package == "Main" {
-        fir::Path::from_ident(name.to_string())
+        hir::Path::from_ident(name.to_string())
     } else {
-        fir::Path::from_idents(vec![package.to_string(), name.to_string()])
+        hir::Path::from_idents(vec![package.to_string(), name.to_string()])
     }
 }
 
-fn constructor_path(package: &str, enum_name: &str, variant: &str) -> fir::Path {
+fn constructor_path(package: &str, enum_name: &str, variant: &str) -> hir::Path {
     if package == "Builtin" || package == "Main" {
-        fir::Path::from_idents(vec![enum_name.to_string(), variant.to_string()])
+        hir::Path::from_idents(vec![enum_name.to_string(), variant.to_string()])
     } else {
-        fir::Path::from_idents(vec![
+        hir::Path::from_idents(vec![
             package.to_string(),
             enum_name.to_string(),
             variant.to_string(),

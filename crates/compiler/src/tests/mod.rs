@@ -190,7 +190,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     let filename = p.file_name().unwrap().to_str().unwrap();
     let cst_filename = p.with_file_name(format!("{}.cst", filename));
     let ast_filename = p.with_file_name(format!("{}.ast", filename));
-    let fir_filename = p.with_file_name(format!("{}.fir", filename));
+    let hir_filename = p.with_file_name(format!("{}.hir", filename));
     let tast_filename = p.with_file_name(format!("{}.tast", filename));
     let core_filename = p.with_file_name(format!("{}.core", filename));
     let mono_filename = p.with_file_name(format!("{}.mono", filename));
@@ -228,8 +228,8 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
 
     expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
 
-    let fir_ctx = crate::pprint::fir_pprint::FirPrintCtx::new(&compilation.fir_table);
-    expect_test::expect_file![fir_filename].assert_eq(&compilation.fir.to_pretty(&fir_ctx, 120));
+    let hir_ctx = crate::pprint::hir_pprint::HirPrintCtx::new(&compilation.hir_table);
+    expect_test::expect_file![hir_filename].assert_eq(&compilation.hir.to_pretty(&hir_ctx, 120));
 
     expect_test::expect_file![tast_filename]
         .assert_eq(&compilation.tast.to_pretty(&compilation.genv, 120));

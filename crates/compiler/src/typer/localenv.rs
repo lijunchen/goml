@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 
 use parser::Diagnostics;
 
-use crate::fir::LocalId;
+use crate::hir::LocalId;
 use crate::tast::{self, TastIdent};
 use crate::typer::util::push_ice;
 
@@ -98,14 +98,14 @@ impl LocalTypeEnv {
     pub fn end_closure(
         &mut self,
         diagnostics: &mut Diagnostics,
-        fir_table: &crate::fir::FirTable,
+        hir_table: &crate::hir::HirTable,
     ) -> Vec<(String, tast::Ty)> {
         let captured = self
             .capture_stack
             .pop()
             .unwrap_or_default()
             .into_iter()
-            .map(|(id, ty)| (fir_table.local_ident_name(id), ty))
+            .map(|(id, ty)| (hir_table.local_ident_name(id), ty))
             .collect();
         self.pop_scope(diagnostics);
         captured

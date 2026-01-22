@@ -13,8 +13,8 @@ use crate::{
     anf::{self, GlobalAnfEnv},
     compile_match, derive,
     env::{Gensym, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    fir,
     go::{self, compile::GlobalGoEnv, goast},
+    hir,
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast, typer,
@@ -25,8 +25,8 @@ pub struct Compilation {
     pub green_node: GreenNode,
     pub cst: CstFile,
     pub ast: ast::File,
-    pub fir: fir::ProjectFir,
-    pub fir_table: fir::ProjectFirTable,
+    pub hir: hir::ProjectHir,
+    pub hir_table: hir::ProjectHirTable,
     pub tast: tast::File,
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
@@ -119,7 +119,7 @@ impl PackageExports {
 #[derive(Debug, Clone)]
 struct PackageInterface {
     exports: PackageExports,
-    fir_interface: fir::PackageInterface,
+    hir_interface: hir::PackageInterface,
 }
 
 fn build_package<'a>(
@@ -203,22 +203,22 @@ pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationEr
 }
 
 fn typecheck_package(
-    package_id: fir::PackageId,
+    package_id: hir::PackageId,
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-    deps_interfaces: &HashMap<String, fir::PackageInterface>,
+    deps_interfaces: &HashMap<String, hir::PackageInterface>,
 ) -> PackageArtifact {
-    let (fir, fir_table, mut fir_diagnostics) =
-        fir::lower_to_fir_files_with_env(package_id, package.files.clone(), deps_interfaces);
-    let fir_interface = fir::PackageInterface::from_fir(&fir, &fir_table);
+    let (hir, hir_table, mut hir_diagnostics) =
+        hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
+    let hir_interface = hir::PackageInterface::from_hir(&hir, &hir_table);
     let (tast, genv, mut diagnostics) = typer::check_file_with_env(
-        fir,
-        fir_table,
+        hir,
+        hir_table,
         GlobalTypeEnv::new(),
         &package.name,
         deps_envs,
     );
-    diagnostics.append(&mut fir_diagnostics);
+    diagnostics.append(&mut hir_diagnostics);
     let exports = PackageExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
@@ -229,7 +229,7 @@ fn typecheck_package(
         tast,
         interface: PackageInterface {
             exports,
-            fir_interface,
+            hir_interface,
         },
         diagnostics,
     }
@@ -252,14 +252,14 @@ fn typecheck_packages(
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
     let mut package_ids = HashMap::new();
-    package_ids.insert("Builtin".to_string(), fir::PackageId(0));
-    package_ids.insert("Main".to_string(), fir::PackageId(1));
+    package_ids.insert("Builtin".to_string(), hir::PackageId(0));
+    package_ids.insert("Main".to_string(), hir::PackageId(1));
     let mut next_id = 2u32;
     for name in package_names {
         if name == "Builtin" || name == "Main" {
             continue;
         }
-        package_ids.insert(name, fir::PackageId(next_id));
+        package_ids.insert(name, hir::PackageId(next_id));
         next_id += 1;
     }
 
@@ -280,7 +280,7 @@ fn typecheck_packages(
                 .get(dep)
                 .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
             deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), artifact.interface.fir_interface.clone());
+            deps_interfaces.insert(dep.clone(), artifact.interface.hir_interface.clone());
         }
 
         let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
@@ -348,7 +348,7 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         all_files.extend(package.files.clone());
     }
 
-    let (fir, fir_table, _fir_diagnostics) = fir::lower_to_project_fir_files(all_files);
+    let (hir, hir_table, _hir_diagnostics) = hir::lower_to_project_hir_files(all_files);
 
     let tast = full_tast;
     if diagnostics.has_errors() {
@@ -394,8 +394,8 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         green_node,
         cst,
         ast: entry_ast,
-        fir,
-        fir_table,
+        hir,
+        hir_table,
         tast,
         genv,
         liftenv,

@@ -8,7 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    fir, tast, typer,
+    hir, tast, typer,
 };
 
 /// The embedded builtin.gom source code
@@ -62,11 +62,11 @@ fn build_builtin_env() -> GlobalTypeEnv {
         },
     };
 
-    let (fir, fir_table, mut fir_diagnostics) = fir::lower_to_fir(ast);
+    let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
     let (_tast, mut genv, mut diagnostics) =
-        typer::check_file_with_env(fir, fir_table, base_env, "Builtin", HashMap::new());
-    diagnostics.append(&mut fir_diagnostics);
+        typer::check_file_with_env(hir, hir_table, base_env, "Builtin", HashMap::new());
+    diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
         panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
     }

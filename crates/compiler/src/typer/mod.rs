@@ -14,15 +14,15 @@ pub use toplevel::{check_file, check_file_with_env};
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
-    pub fir_table: name_resolution::FirTable,
+    pub hir_table: name_resolution::HirTable,
 }
 
 impl Typer {
-    pub fn new(fir_table: name_resolution::FirTable) -> Self {
+    pub fn new(hir_table: name_resolution::HirTable) -> Self {
         Self {
             uni: InPlaceUnificationTable::new(),
             constraints: Vec::new(),
-            fir_table,
+            hir_table,
         }
     }
 

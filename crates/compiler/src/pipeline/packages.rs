@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 
 use ast::ast;
 
-use crate::fir::SourceFileAst;
+use crate::hir::SourceFileAst;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 
