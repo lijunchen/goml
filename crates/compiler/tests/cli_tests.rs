@@ -47,6 +47,7 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
         .arg("run")
         .args([
             "--dump-ast",
+            "--dump-hir",
             "--dump-tast",
             "--dump-core",
             "--dump-mono",
@@ -69,6 +70,13 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
 
+
+        == HIR ==
+        package Main
+        file main.gom
+          fn main() -> unit {
+              string_println("hello");
+            }
 
         == Typed AST ==
         fn main() -> unit {

@@ -13,6 +13,7 @@ const PRETTY_WIDTH: usize = 120;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum DumpStage {
     Ast,
+    Hir,
     Tast,
     Core,
     Mono,
@@ -25,6 +26,7 @@ impl DumpStage {
     fn label(&self) -> &'static str {
         match self {
             DumpStage::Ast => "AST",
+            DumpStage::Hir => "HIR",
             DumpStage::Tast => "Typed AST",
             DumpStage::Core => "Core",
             DumpStage::Mono => "Mono",
@@ -37,12 +39,13 @@ impl DumpStage {
     fn order(&self) -> usize {
         match self {
             DumpStage::Ast => 0,
-            DumpStage::Tast => 1,
-            DumpStage::Core => 2,
-            DumpStage::Mono => 3,
-            DumpStage::Lift => 4,
-            DumpStage::Anf => 5,
-            DumpStage::Go => 6,
+            DumpStage::Hir => 1,
+            DumpStage::Tast => 2,
+            DumpStage::Core => 3,
+            DumpStage::Mono => 4,
+            DumpStage::Lift => 5,
+            DumpStage::Anf => 6,
+            DumpStage::Go => 7,
         }
     }
 }
@@ -93,6 +96,7 @@ where
     for arg in args {
         match arg.as_str() {
             "--dump-ast" => dumps.push(DumpStage::Ast),
+            "--dump-hir" => dumps.push(DumpStage::Hir),
             "--dump-tast" => dumps.push(DumpStage::Tast),
             "--dump-core" => dumps.push(DumpStage::Core),
             "--dump-mono" => dumps.push(DumpStage::Mono),
@@ -157,6 +161,10 @@ fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {
 fn print_dump(compilation: &Compilation, stage: DumpStage) {
     let content = match stage {
         DumpStage::Ast => compilation.ast.to_pretty(PRETTY_WIDTH),
+        DumpStage::Hir => {
+            let ctx = compiler::pprint::hir_pprint::HirPrintCtx::new(&compilation.hir_table);
+            compilation.hir.to_pretty(&ctx, PRETTY_WIDTH)
+        }
         DumpStage::Tast => compilation.tast.to_pretty(&compilation.genv, PRETTY_WIDTH),
         DumpStage::Core => compilation.core.to_pretty(&compilation.genv, PRETTY_WIDTH),
         DumpStage::Mono => compilation
