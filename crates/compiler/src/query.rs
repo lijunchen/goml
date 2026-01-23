@@ -13,24 +13,22 @@ const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 struct HirResultsIndex {
     expr_by_ptr: HashMap<MySyntaxNodePtr, hir::ExprId>,
     pat_by_ptr: HashMap<MySyntaxNodePtr, hir::PatId>,
+    local_by_ptr: HashMap<MySyntaxNodePtr, hir::LocalId>,
 }
 
 impl HirResultsIndex {
     fn new(hir_table: &hir::HirTable) -> Self {
         let mut expr_by_ptr = HashMap::new();
         let mut pat_by_ptr = HashMap::new();
+        let mut local_by_ptr = HashMap::new();
 
         for idx in 0..hir_table.expr_count() {
             let expr_id = hir::ExprId {
                 pkg: hir_table.package(),
                 idx: idx as u32,
             };
-            if let hir::Expr::ENameRef {
-                astptr: Some(astptr),
-                ..
-            } = hir_table.expr(expr_id)
-            {
-                expr_by_ptr.insert(*astptr, expr_id);
+            if let Some(ptr) = hir_table.expr_ptr(expr_id) {
+                expr_by_ptr.insert(ptr, expr_id);
             }
         }
 
@@ -39,14 +37,21 @@ impl HirResultsIndex {
                 pkg: hir_table.package(),
                 idx: idx as u32,
             };
-            if let hir::Pat::PVar { astptr, .. } = hir_table.pat(pat_id) {
-                pat_by_ptr.insert(*astptr, pat_id);
+            if let Some(ptr) = hir_table.pat_ptr(pat_id) {
+                pat_by_ptr.insert(ptr, pat_id);
+            }
+        }
+
+        for (local_id, _info) in hir_table.iter_locals() {
+            if let Some(ptr) = hir_table.local_origin_ptr(local_id) {
+                local_by_ptr.insert(ptr, local_id);
             }
         }
 
         Self {
             expr_by_ptr,
             pat_by_ptr,
+            local_by_ptr,
         }
     }
 
@@ -56,6 +61,10 @@ impl HirResultsIndex {
 
     fn pat_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::PatId> {
         self.pat_by_ptr.get(ptr).copied()
+    }
+
+    fn local_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::LocalId> {
+        self.local_by_ptr.get(ptr).copied()
     }
 }
 
@@ -118,20 +127,12 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
     let node = cst.syntax().token_at_offset(offset);
     let token = match node {
         rowan::TokenAtOffset::None => None,
-        rowan::TokenAtOffset::Single(x) => {
-            if x.kind() == MySyntaxKind::Ident {
-                Some(x)
-            } else {
-                None
-            }
-        }
+        rowan::TokenAtOffset::Single(x) => Some(x),
         rowan::TokenAtOffset::Between(x, y) => {
             if x.kind() == MySyntaxKind::Ident {
                 Some(x)
-            } else if y.kind() == MySyntaxKind::Ident {
-                Some(y)
             } else {
-                None
+                Some(y)
             }
         }
     };
@@ -145,16 +146,20 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
     let index = HirResultsIndex::new(&hir_table);
 
     if let Some(token) = token.as_ref() {
-        if let Some(pat_ptr) = find_pat_ptr_from_token(token)
-            && let Some(pat_id) = index.pat_id(&pat_ptr)
+        if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
             && let Some(ty) = results.pat_ty(pat_id)
         {
             return Ok(ty.to_pretty(80));
         }
 
-        if let Some(expr_ptr) = find_expr_ptr_from_token(token)
-            && let Some(expr_id) = index.expr_id(&expr_ptr)
+        if let Some(expr_id) = find_mapped_expr_id_from_token(token, &index)
             && let Some(ty) = results.expr_ty(expr_id)
+        {
+            return Ok(ty.to_pretty(80));
+        }
+
+        if let Some(local_id) = find_mapped_local_id_from_token(token, &index)
+            && let Some(ty) = results.local_ty(local_id)
         {
             return Ok(ty.to_pretty(80));
         }
@@ -340,22 +345,49 @@ fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
     }
 }
 
-fn find_expr_ptr_from_token(token: &MySyntaxToken) -> Option<MySyntaxNodePtr> {
+fn find_mapped_expr_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::ExprId> {
     let mut current = token.parent();
     while let Some(node) = current {
         if cst::nodes::Expr::can_cast(node.kind()) {
-            return Some(MySyntaxNodePtr::new(&node));
+            let ptr = MySyntaxNodePtr::new(&node);
+            if let Some(id) = index.expr_id(&ptr) {
+                return Some(id);
+            }
         }
         current = node.parent();
     }
     None
 }
 
-fn find_pat_ptr_from_token(token: &MySyntaxToken) -> Option<MySyntaxNodePtr> {
+fn find_mapped_pat_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::PatId> {
     let mut current = token.parent();
     while let Some(node) = current {
         if cst::nodes::Pattern::can_cast(node.kind()) {
-            return Some(MySyntaxNodePtr::new(&node));
+            let ptr = MySyntaxNodePtr::new(&node);
+            if let Some(id) = index.pat_id(&ptr) {
+                return Some(id);
+            }
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn find_mapped_local_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::LocalId> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        let ptr = MySyntaxNodePtr::new(&node);
+        if let Some(id) = index.local_id(&ptr) {
+            return Some(id);
         }
         current = node.parent();
     }

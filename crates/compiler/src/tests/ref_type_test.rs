@@ -28,7 +28,7 @@ fn typecheck(src: &str) -> (ast::ast::File, tast::File, GlobalTypeEnv, Diagnosti
 fn describe_pat(pat: &ast::ast::Pat) -> String {
     match pat {
         ast::ast::Pat::PVar { name, .. } => name.0.clone(),
-        ast::ast::Pat::PWild => "_".to_string(),
+        ast::ast::Pat::PWild { .. } => "_".to_string(),
         other => format!("{other:?}"),
     }
 }
@@ -45,6 +45,7 @@ fn describe_expr(expr: &ast::ast::Expr) -> String {
             pat,
             annotation,
             value,
+            ..
         } => {
             let annotation = annotation
                 .as_ref()
@@ -57,7 +58,7 @@ fn describe_expr(expr: &ast::ast::Expr) -> String {
                 describe_expr(value)
             )
         }
-        ast::ast::Expr::ECall { func, args } => {
+        ast::ast::Expr::ECall { func, args, .. } => {
             let args = args
                 .iter()
                 .map(describe_expr)
@@ -66,8 +67,8 @@ fn describe_expr(expr: &ast::ast::Expr) -> String {
             format!("call {}({})", describe_expr(func), args)
         }
         ast::ast::Expr::EPath { path, .. } => describe_path(path),
-        ast::ast::Expr::EInt { value } => value.clone(),
-        ast::ast::Expr::EBlock { exprs } => format!(
+        ast::ast::Expr::EInt { value, .. } => value.clone(),
+        ast::ast::Expr::EBlock { exprs, .. } => format!(
             "block [{}]",
             exprs
                 .iter()
@@ -98,7 +99,7 @@ fn main() -> int32 {
 
     // The function body is now an EBlock containing the statements
     let exprs = match &main_fn.body {
-        ast::ast::Expr::EBlock { exprs } => exprs,
+        ast::ast::Expr::EBlock { exprs, .. } => exprs,
         other => panic!("unexpected main body, expected EBlock: {:?}", other),
     };
 

@@ -58,6 +58,28 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_literals() {
+    let src = r#"
+fn main() {
+    let _ = 1;
+    let _ = true;
+    let _ = "x";
+}
+"#;
+
+    check(src, 2, 12, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 3, 12, expect![[r#"
+        "bool"
+    "#]]);
+    check(src, 4, 12, expect![[r#"
+        "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn struct_field_completions() {
     let src = r#"
 struct Point {
