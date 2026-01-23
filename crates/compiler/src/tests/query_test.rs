@@ -96,6 +96,36 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn hover_fn_params() {
+    let src = r#"
+fn f(x: int32, y: string) -> int32 { x }
+"#;
+
+    check(src, 1, 5, expect![[r#"
+        "int32"
+    "#]]);
+    check(src, 1, 15, expect![[r#"
+        "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn hover_closure_params() {
+    let src = r#"
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#;
+
+    check(src, 2, 13, expect![[r#"
+        "int32"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
 fn struct_field_completions() {
     let src = r#"
 struct Point {

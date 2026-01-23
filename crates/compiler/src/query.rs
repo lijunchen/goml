@@ -148,8 +148,13 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
                 .map_err(|e| format!("{:?}", e))
         })?;
     let index = HirResultsIndex::new(&hir_table);
+    let closure_params = ClosureParamIndex::new(&hir_table);
 
     if let Some(token) = token.as_ref() {
+        if let Some(ty) = param_type_from_token(token, &closure_params, &results) {
+            return Ok(ty);
+        }
+
         if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
             && let Some(ty) = results.pat_ty(pat_id)
         {
@@ -193,6 +198,56 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
     }
 
     Err("no type information found".to_string())
+}
+
+#[derive(Debug, Clone)]
+struct ClosureParamIndex {
+    local_by_ptr: HashMap<MySyntaxNodePtr, hir::LocalId>,
+}
+
+impl ClosureParamIndex {
+    fn new(hir_table: &hir::HirTable) -> Self {
+        let mut local_by_ptr = HashMap::new();
+        for idx in 0..hir_table.expr_count() {
+            let expr_id = hir::ExprId {
+                pkg: hir_table.package(),
+                idx: idx as u32,
+            };
+            if let hir::Expr::EClosure { params, .. } = hir_table.expr(expr_id) {
+                for param in params {
+                    local_by_ptr.insert(param.astptr, param.name);
+                }
+            }
+        }
+        Self { local_by_ptr }
+    }
+
+    fn local_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::LocalId> {
+        self.local_by_ptr.get(ptr).copied()
+    }
+}
+
+fn param_type_from_token(
+    token: &MySyntaxToken,
+    closure_params: &ClosureParamIndex,
+    results: &crate::typer::results::TypeckResults,
+) -> Option<String> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(param) = cst::nodes::Param::cast(node.clone()) {
+            return param.ty().map(|t| t.to_string());
+        }
+        if let Some(param) = cst::nodes::ClosureParam::cast(node.clone()) {
+            if let Some(ty) = param.ty() {
+                return Some(ty.to_string());
+            }
+            let ptr = MySyntaxNodePtr::new(param.syntax());
+            let local_id = closure_params.local_id(&ptr)?;
+            return results.local_ty(local_id).map(|t| t.to_pretty(80));
+        }
+        current = node.parent();
+    }
+    None
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
