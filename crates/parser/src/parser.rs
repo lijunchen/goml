@@ -181,7 +181,12 @@ impl Parser<'_> {
             cur_kind.to_string()
         );
 
-        self.events.push(Event::Error(err_msg));
+        if cur_kind == T![eof] || !should_consume_on_expect_failure(cur_kind) {
+            self.events.push(Event::Error(err_msg));
+            return;
+        }
+
+        self.advance_with_error(&err_msg);
     }
 
     pub fn advance(&mut self) {
@@ -299,3 +304,24 @@ impl Parser<'_> {
 }
 
 pub const STMT_RECOVERY: &[TokenKind] = &[T![fn]];
+
+fn should_consume_on_expect_failure(kind: TokenKind) -> bool {
+    !matches!(
+        kind,
+        T![fn]
+            | T![struct]
+            | T![enum]
+            | T![trait]
+            | T![impl]
+            | T![extern]
+            | T![package]
+            | T![import]
+            | T![let]
+            | T![return]
+            | T!['}']
+            | T![')']
+            | T![']']
+            | T![;]
+            | T![,]
+    )
+}

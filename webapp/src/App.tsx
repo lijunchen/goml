@@ -1,6 +1,6 @@
 import Editor, { useMonaco } from '@monaco-editor/react';
 import { useEffect, useMemo, useState } from 'react';
-import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast, dot_completions } from 'wasm-app';
+import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast, dot_completions, colon_colon_completions } from 'wasm-app';
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 const demos: Record<string, string> = {};
@@ -10,6 +10,14 @@ type DotCompletionKind = 'field' | 'method';
 interface DotCompletionItem {
   name: string;
   kind: DotCompletionKind;
+  detail?: string;
+}
+
+type ColonColonCompletionKind = 'type' | 'value' | 'trait' | 'variant' | 'method';
+
+interface ColonColonCompletionItem {
+  name: string;
+  kind: ColonColonCompletionKind;
   detail?: string;
 }
 
@@ -135,7 +143,7 @@ function App() {
       });
 
       monaco.languages.registerCompletionItemProvider('simple', {
-        triggerCharacters: ['.'],
+        triggerCharacters: ['.', ':'],
         provideCompletionItems: (
           model: monacoEditor.editor.ITextModel,
           position: monacoEditor.Position,
@@ -144,33 +152,78 @@ function App() {
           const col = position.column - 1;
           const content = model.getValue();
 
-          let items: DotCompletionItem[] = [];
-          try {
-            const raw = dot_completions(content, line, col);
-            items = JSON.parse(raw) as DotCompletionItem[];
-          } catch (error) {
-            console.error('dot completion failed', error);
-          }
+          const word = model.getWordUntilPosition(position);
+          const startColumn0 = word.startColumn - 1;
+          const lineText = model.getLineContent(position.lineNumber);
+          const isColonColon =
+            startColumn0 >= 2 && lineText.slice(startColumn0 - 2, startColumn0) === '::';
+          const isDot = startColumn0 >= 1 && lineText[startColumn0 - 1] === '.';
 
           const range = new monacoEditor.Range(
             position.lineNumber,
-            position.column,
+            word.startColumn,
             position.lineNumber,
-            position.column,
+            word.endColumn,
           );
 
-          const suggestions = items.map((item): monacoEditor.languages.CompletionItem => ({
-            label: item.name,
-            kind:
-              item.kind === 'method'
-                ? monaco.languages.CompletionItemKind.Method
-                : monaco.languages.CompletionItemKind.Field,
-            insertText: item.name,
-            detail: item.detail,
-            range,
-          }));
+          if (isDot) {
+            let items: DotCompletionItem[] = [];
+            try {
+              const raw = dot_completions(content, line, col);
+              items = JSON.parse(raw) as DotCompletionItem[];
+            } catch (error) {
+              console.error('dot completion failed', error);
+            }
 
-          return { suggestions };
+            const suggestions = items.map((item): monacoEditor.languages.CompletionItem => ({
+              label: item.name,
+              kind:
+                item.kind === 'method'
+                  ? monaco.languages.CompletionItemKind.Method
+                  : monaco.languages.CompletionItemKind.Field,
+              insertText: item.name,
+              detail: item.detail,
+              range,
+            }));
+
+            return { suggestions };
+          }
+
+          if (isColonColon) {
+            let items: ColonColonCompletionItem[] = [];
+            try {
+              const raw = colon_colon_completions(content, line, col);
+              items = JSON.parse(raw) as ColonColonCompletionItem[];
+            } catch (error) {
+              console.error(':: completion failed', error);
+            }
+
+            const suggestions = items.map((item): monacoEditor.languages.CompletionItem => ({
+              label: item.name,
+              kind: (() => {
+                switch (item.kind) {
+                  case 'type':
+                    return monaco.languages.CompletionItemKind.Class;
+                  case 'trait':
+                    return monaco.languages.CompletionItemKind.Interface;
+                  case 'variant':
+                    return monaco.languages.CompletionItemKind.EnumMember;
+                  case 'method':
+                    return monaco.languages.CompletionItemKind.Method;
+                  case 'value':
+                  default:
+                    return monaco.languages.CompletionItemKind.Function;
+                }
+              })(),
+              insertText: item.name,
+              detail: item.detail,
+              range,
+            }));
+
+            return { suggestions };
+          }
+
+          return { suggestions: [] };
         },
       });
 

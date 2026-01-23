@@ -197,6 +197,34 @@ fn parse_ast_from_source(
     Ok((green_node, cst, ast))
 }
 
+fn parse_ast_from_source_allow_parse_errors(
+    path: &Path,
+    src: &str,
+) -> Result<(GreenNode, CstFile, ast::File, Diagnostics), CompilationError> {
+    let parse_result = parser::parse(path, src);
+    let (green_node, mut diagnostics) = parse_result.into_parts();
+
+    let root = MySyntaxNode::new_root(green_node.clone());
+    let cst = CstFile::cast(root).expect("failed to cast CST file");
+    let lower = ::ast::lower::lower(cst.clone());
+    let (ast, mut lower_diagnostics) = lower.into_parts();
+    diagnostics.append(&mut lower_diagnostics);
+    let Some(ast) = ast else {
+        return Err(CompilationError::Lower { diagnostics });
+    };
+
+    let original_ast = ast.clone();
+    let ast = match derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(mut derive_diagnostics) => {
+            diagnostics.append(&mut derive_diagnostics);
+            original_ast
+        }
+    };
+
+    Ok((green_node, cst, ast, diagnostics))
+}
+
 pub fn parse_ast_file(path: &Path, src: &str) -> Result<ast::File, CompilationError> {
     let (_green, _cst, ast) = parse_ast_from_source(path, src)?;
     Ok(ast)
@@ -431,7 +459,8 @@ pub fn typecheck_with_packages_and_results(
     ),
     CompilationError,
 > {
-    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+    let (_green_node, _cst, entry_ast, mut diagnostics) =
+        parse_ast_from_source_allow_parse_errors(path, src)?;
     let root_dir = path
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
@@ -439,7 +468,6 @@ pub fn typecheck_with_packages_and_results(
     let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
-    let mut diagnostics = Diagnostics::new();
     let mut genv = GlobalTypeEnv::new();
     let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();

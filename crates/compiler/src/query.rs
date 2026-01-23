@@ -81,42 +81,46 @@ fn typecheck_single_file_for_query(
     String,
 > {
     let result = parser::parse(path, src);
-    if result.has_errors() {
-        return Err("parse error".to_string());
-    }
-    let root = MySyntaxNode::new_root(result.green_node);
+    let (green_node, mut parse_diagnostics) = result.into_parts();
+    let root = MySyntaxNode::new_root(green_node);
     let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast CST".to_string())?;
 
     let lower = ::ast::lower::lower(cst);
-    let ast = lower
-        .into_result()
-        .map_err(|_| "AST lowering error".to_string())?;
+    let (ast, mut lower_diagnostics) = lower.into_parts();
+    parse_diagnostics.append(&mut lower_diagnostics);
+    let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
 
     if !ast.imports.is_empty() {
         return Err("package imports are not supported in this context".to_string());
     }
 
-    let ast = crate::derive::expand(ast).map_err(|_| "derive expansion error".to_string())?;
+    let original_ast = ast.clone();
+    let ast = match crate::derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(mut derive_diagnostics) => {
+            parse_diagnostics.append(&mut derive_diagnostics);
+            original_ast
+        }
+    };
 
     let (hir, hir_table, mut hir_diagnostics) = crate::hir::lower_to_hir(ast);
     let package = hir.name.0.clone();
-    let (hir_table, results, genv, mut diagnostics) = crate::typer::check_file_with_env_and_results(
-        hir,
-        hir_table,
-        GlobalTypeEnv::new(),
-        &package,
-        HashMap::new(),
-    );
-    diagnostics.append(&mut hir_diagnostics);
+    let (hir_table, results, genv, mut type_diagnostics) =
+        crate::typer::check_file_with_env_and_results(
+            hir,
+            hir_table,
+            GlobalTypeEnv::new(),
+            &package,
+            HashMap::new(),
+        );
+    type_diagnostics.append(&mut hir_diagnostics);
+    parse_diagnostics.append(&mut type_diagnostics);
 
-    Ok((hir_table, results, genv, diagnostics))
+    Ok((hir_table, results, genv, parse_diagnostics))
 }
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {
     let result = parser::parse(path, src);
-    if result.has_errors() {
-        return Err("parse error".to_string());
-    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
 
@@ -204,6 +208,22 @@ pub struct DotCompletionItem {
     pub detail: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ColonColonCompletionKind {
+    Type,
+    Value,
+    Trait,
+    Variant,
+    Method,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColonColonCompletionItem {
+    pub name: String,
+    pub kind: ColonColonCompletionKind,
+    pub detail: Option<String>,
+}
+
 pub fn dot_completions(
     path: &Path,
     src: &str,
@@ -212,17 +232,22 @@ pub fn dot_completions(
 ) -> Option<Vec<DotCompletionItem>> {
     let line_index = line_index::LineIndex::new(src);
     let offset = line_index.offset(line_index::LineCol { line, col })?;
-    if offset == TextSize::from(0) {
+    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+    let dot_offset = prefix_start.checked_sub(TextSize::from(1))?;
+    if src.as_bytes().get(u32::from(dot_offset) as usize) != Some(&b'.') {
         return None;
     }
 
-    let dot_offset = offset.checked_sub(TextSize::from(1))?;
+    let parse_src = if prefix.is_empty() {
+        let mut fixed_src = src.to_string();
+        let insert_index = u32::from(offset) as usize;
+        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+        fixed_src
+    } else {
+        src.to_string()
+    };
 
-    let mut fixed_src = src.to_string();
-    let insert_index = u32::from(offset) as usize;
-    fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
-
-    let result = parser::parse(path, &fixed_src);
+    let result = parser::parse(path, &parse_src);
 
     let root = MySyntaxNode::new_root(result.green_node);
     let file = cst::cst::File::cast(root.clone())?;
@@ -265,16 +290,17 @@ pub fn dot_completions(
     let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
 
     let (hir_table, results, genv, _diagnostics) =
-        typecheck_single_file_for_query(path, &fixed_src)
+        typecheck_single_file_for_query(path, &parse_src)
             .or_else(|_| {
-                pipeline::pipeline::typecheck_with_packages_and_results(path, &fixed_src)
+                pipeline::pipeline::typecheck_with_packages_and_results(path, &parse_src)
                     .map_err(|e| format!("{:?}", e))
             })
             .ok()?;
     let index = HirResultsIndex::new(&hir_table);
     let expr_id = index.expr_id(&lhs_ptr)?;
     let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
-    Some(completions_for_type(&genv, &ty))
+    let items = completions_for_type(&genv, &ty);
+    Some(filter_dot_items(items, &prefix))
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
@@ -334,6 +360,82 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     items.extend(methods);
 
     items
+}
+
+pub fn colon_colon_completions(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+) -> Option<Vec<ColonColonCompletionItem>> {
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index.offset(line_index::LineCol { line, col })?;
+    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+    let colon_start = prefix_start.checked_sub(TextSize::from(2))?;
+    if src
+        .as_bytes()
+        .get(u32::from(colon_start) as usize..u32::from(prefix_start) as usize)
+        != Some(b"::")
+    {
+        return None;
+    }
+
+    let parse_src = if prefix.is_empty() {
+        let mut fixed_src = src.to_string();
+        let insert_index = u32::from(offset) as usize;
+        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+        fixed_src
+    } else {
+        src.to_string()
+    };
+
+    let result = parser::parse(path, &parse_src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let file = cst::cst::File::cast(root.clone())?;
+
+    let focus_offset = if prefix.is_empty() {
+        offset
+    } else {
+        offset.checked_sub(TextSize::from(1))?
+    };
+
+    let token = match file.syntax().token_at_offset(focus_offset) {
+        rowan::TokenAtOffset::None => None,
+        rowan::TokenAtOffset::Single(x) => Some(x),
+        rowan::TokenAtOffset::Between(x, y) => {
+            if y.kind() == MySyntaxKind::Ident {
+                Some(y)
+            } else {
+                Some(x)
+            }
+        }
+    }?;
+
+    let path_node = ancestor_path_from_token(&token)?;
+    let segments = path_node
+        .ident_tokens()
+        .map(|tok| tok.to_string())
+        .collect::<Vec<_>>();
+    if segments.is_empty() {
+        return None;
+    }
+    let namespace = segments[..segments.len().saturating_sub(1)].join("::");
+    if namespace.is_empty() {
+        return None;
+    }
+
+    let (_hir_table, _results, genv, _diagnostics) =
+        typecheck_single_file_for_query(path, &parse_src)
+            .or_else(|_| {
+                pipeline::pipeline::typecheck_with_packages_and_results(path, &parse_src)
+                    .map_err(|e| format!("{:?}", e))
+            })
+            .ok()?;
+
+    let mut items = colon_colon_items_for_namespace(&genv, &namespace);
+    items.sort_by(|a, b| a.name.cmp(&b.name));
+    items.retain(|item| item.name.starts_with(&prefix));
+    Some(items)
 }
 
 fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
@@ -475,6 +577,197 @@ fn path_segments_at_offset(src: &str, offset: TextSize) -> Option<Vec<String>> {
 
 fn is_path_char(b: u8) -> bool {
     matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b':')
+}
+
+fn is_ident_char(b: u8) -> bool {
+    matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_')
+}
+
+fn ident_prefix_at_offset(src: &str, offset: TextSize) -> Option<(TextSize, String)> {
+    let mut idx = u32::from(offset) as usize;
+    let bytes = src.as_bytes();
+    if idx > bytes.len() {
+        return None;
+    }
+    while idx > 0 && is_ident_char(bytes[idx - 1]) {
+        idx -= 1;
+    }
+    let start = idx;
+    let end = u32::from(offset) as usize;
+    let prefix = src.get(start..end)?.to_string();
+    Some((TextSize::from(start as u32), prefix))
+}
+
+fn filter_dot_items(items: Vec<DotCompletionItem>, prefix: &str) -> Vec<DotCompletionItem> {
+    if prefix.is_empty() {
+        return items;
+    }
+    items
+        .into_iter()
+        .filter(|item| item.name.starts_with(prefix))
+        .collect()
+}
+
+fn ancestor_path_from_token(token: &MySyntaxToken) -> Option<cst::nodes::Path> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(path) = cst::nodes::Path::cast(node.clone()) {
+            return Some(path);
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn colon_colon_items_for_namespace(
+    genv: &GlobalTypeEnv,
+    namespace: &str,
+) -> Vec<ColonColonCompletionItem> {
+    let mut items = Vec::new();
+
+    if let Some(enum_def) = genv.enums().get(&tast::TastIdent(namespace.to_string())) {
+        for (variant_name, payload) in &enum_def.variants {
+            let detail = if payload.is_empty() {
+                Some(namespace.to_string())
+            } else {
+                let payload_str = payload
+                    .iter()
+                    .map(|ty| ty.to_pretty(80))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                Some(format!("({}) -> {}", payload_str, namespace))
+            };
+            items.push(ColonColonCompletionItem {
+                name: variant_name.0.clone(),
+                kind: ColonColonCompletionKind::Variant,
+                detail,
+            });
+        }
+        items.extend(colon_colon_inherent_methods(
+            genv,
+            tast::Ty::TEnum {
+                name: namespace.to_string(),
+            },
+        ));
+        return items;
+    }
+
+    if genv.trait_env.trait_defs.contains_key(namespace) {
+        if let Some(trait_def) = genv.trait_env.trait_defs.get(namespace) {
+            for (method_name, scheme) in trait_def.methods.iter() {
+                items.push(ColonColonCompletionItem {
+                    name: method_name.clone(),
+                    kind: ColonColonCompletionKind::Method,
+                    detail: Some(scheme.ty.to_pretty(80)),
+                });
+            }
+        }
+        return items;
+    }
+
+    if genv
+        .structs()
+        .contains_key(&tast::TastIdent(namespace.to_string()))
+    {
+        items.extend(colon_colon_inherent_methods(
+            genv,
+            tast::Ty::TStruct {
+                name: namespace.to_string(),
+            },
+        ));
+        return items;
+    }
+
+    let ns_prefix = format!("{}::", namespace);
+
+    for name in genv.type_env.enums.keys() {
+        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Type,
+                detail: Some("enum".to_string()),
+            });
+        }
+    }
+    for name in genv.type_env.structs.keys() {
+        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Type,
+                detail: Some("struct".to_string()),
+            });
+        }
+    }
+    for name in genv.trait_env.trait_defs.keys() {
+        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Trait,
+                detail: None,
+            });
+        }
+    }
+    for name in genv.value_env.funcs.keys() {
+        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Value,
+                detail: Some("fn".to_string()),
+            });
+        }
+    }
+
+    items
+}
+
+fn strip_namespace_member<'a>(full: &'a str, ns_prefix: &str) -> Option<&'a str> {
+    if !full.starts_with(ns_prefix) {
+        return None;
+    }
+    let rest = &full[ns_prefix.len()..];
+    if rest.is_empty() || rest.contains("::") {
+        None
+    } else {
+        Some(rest)
+    }
+}
+
+fn colon_colon_inherent_methods(
+    genv: &GlobalTypeEnv,
+    receiver_ty: tast::Ty,
+) -> Vec<ColonColonCompletionItem> {
+    let mut items = Vec::new();
+    if let Some(impl_def) = genv
+        .trait_env
+        .inherent_impls
+        .get(&crate::env::InherentImplKey::Exact(receiver_ty.clone()))
+    {
+        items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+            ColonColonCompletionItem {
+                name: method_name.clone(),
+                kind: ColonColonCompletionKind::Method,
+                detail: Some(method_scheme.ty.to_pretty(80)),
+            }
+        }));
+    }
+    if let tast::Ty::TApp { ty, .. } = receiver_ty {
+        let base_name = ty.get_constr_name_unsafe();
+        if let Some(impl_def) = genv
+            .trait_env
+            .inherent_impls
+            .get(&crate::env::InherentImplKey::Constr(base_name))
+        {
+            items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+                ColonColonCompletionItem {
+                    name: method_name.clone(),
+                    kind: ColonColonCompletionKind::Method,
+                    detail: Some(method_scheme.ty.to_pretty(80)),
+                }
+            }));
+        }
+    }
+    items.sort_by(|a, b| a.name.cmp(&b.name));
+    items
 }
 
 fn path_segments_from_token(token: &MySyntaxToken) -> Option<Vec<String>> {
