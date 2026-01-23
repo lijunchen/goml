@@ -705,15 +705,50 @@ impl NameResolution {
                     } else {
                         hir::NameRef::Unresolved(path.into())
                     };
-                    self.alloc_expr_with_ptr(
-                        hir_table,
-                        *astptr,
-                        hir::Expr::ENameRef {
-                            res,
-                            hint: full_name,
-                            astptr: Some(*astptr),
-                        },
-                    )
+                    match res {
+                        hir::NameRef::Def(_) => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::ENameRef {
+                                res,
+                                hint: full_name,
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                        hir::NameRef::Unresolved(_)
+                            if path.len() == 2
+                                && (package == ctx.current_package
+                                    || package == "Builtin"
+                                    || ctx.deps.contains_key(package)) =>
+                        {
+                            self.alloc_expr_with_ptr(
+                                hir_table,
+                                *astptr,
+                                hir::Expr::ENameRef {
+                                    res,
+                                    hint: full_name,
+                                    astptr: Some(*astptr),
+                                },
+                            )
+                        }
+                        hir::NameRef::Unresolved(_) => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::EStaticMember {
+                                path: path.into(),
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                        _ => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::ENameRef {
+                                res,
+                                hint: full_name,
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                    }
                 }
             }
             ast::Expr::EUnit { astptr } => {

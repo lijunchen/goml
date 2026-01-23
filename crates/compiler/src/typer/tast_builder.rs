@@ -218,7 +218,9 @@ fn build_expr(
     expr_id: hir::ExprId,
 ) -> tast::Expr {
     let built = match hir_table.expr(expr_id).clone() {
-        hir::Expr::ENameRef { .. } => build_name_ref_expr(hir_table, results, expr_id),
+        hir::Expr::ENameRef { .. } | hir::Expr::EStaticMember { .. } => {
+            build_name_ref_expr(hir_table, results, expr_id)
+        }
         hir::Expr::EUnit => tast::Expr::EPrim {
             value: Prim::unit(),
             ty: tast::Ty::TUnit,

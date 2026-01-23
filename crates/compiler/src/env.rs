@@ -246,10 +246,7 @@ impl TypeEnv {
         for (enum_name, enum_def) in self.enums.iter() {
             if let Some(candidate) = Self::enum_constructor_info(enum_name, enum_def, constr) {
                 if found.is_some() {
-                    panic!(
-                        "Constructor {} is defined in multiple enums; use Enum::{} to disambiguate",
-                        constr.0, constr.0
-                    );
+                    return None;
                 }
                 found = Some(candidate);
             }

@@ -365,6 +365,10 @@ impl ConstructorId {
 pub enum ConstructorRef {
     Unresolved(Path),
     Resolved(ConstructorId),
+    Ambiguous {
+        path: Path,
+        candidates: Vec<ConstructorId>,
+    },
 }
 
 impl ConstructorRef {
@@ -372,6 +376,7 @@ impl ConstructorRef {
         match self {
             ConstructorRef::Unresolved(path) => path.display(),
             ConstructorRef::Resolved(id) => id.to_debug_string(),
+            ConstructorRef::Ambiguous { path, .. } => path.display(),
         }
     }
 }
@@ -1213,6 +1218,10 @@ pub enum Expr {
         hint: String,
         astptr: Option<MySyntaxNodePtr>,
     },
+    EStaticMember {
+        path: Path,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     EUnit,
     EBool {
         value: bool,
@@ -1484,11 +1493,15 @@ fn resolve_constructor_path(
             return ConstructorRef::Resolved(matches[0]);
         }
         if matches.len() > 1 {
+            let candidates = matches.clone();
             errors.push(ConstructorResolutionError {
                 path: path.clone(),
                 kind: ConstructorResolutionErrorKind::Ambiguous(matches),
             });
-            return ConstructorRef::Unresolved(path.clone());
+            return ConstructorRef::Ambiguous {
+                path: path.clone(),
+                candidates,
+            };
         }
     }
 
@@ -1503,7 +1516,10 @@ fn resolve_constructor_path(
                         path: path.clone(),
                         kind: ConstructorResolutionErrorKind::Ambiguous(ctors.clone()),
                     });
-                    return ConstructorRef::Unresolved(path.clone());
+                    return ConstructorRef::Ambiguous {
+                        path: path.clone(),
+                        candidates: ctors.clone(),
+                    };
                 }
             }
         }
