@@ -27,9 +27,9 @@ pub fn build_file(
                 &tparams_for(&func.generics),
                 None,
             ))),
-            hir::Def::ExternGo(ext) => toplevels.push(tast::Item::ExternGo(build_extern_go(
-                genv, &ext,
-            ))),
+            hir::Def::ExternGo(ext) => {
+                toplevels.push(tast::Item::ExternGo(build_extern_go(genv, &ext)))
+            }
             hir::Def::ExternType(ext) => toplevels.push(tast::Item::ExternType(tast::ExternType {
                 goml_name: ext.goml_name.to_ident_name(),
             })),
@@ -212,7 +212,11 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     }
 }
 
-fn build_expr(hir_table: &hir::HirTable, results: &TypeckResults, expr_id: hir::ExprId) -> tast::Expr {
+fn build_expr(
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+    expr_id: hir::ExprId,
+) -> tast::Expr {
     let built = match hir_table.expr(expr_id).clone() {
         hir::Expr::ENameRef { .. } => build_name_ref_expr(hir_table, results, expr_id),
         hir::Expr::EUnit => tast::Expr::EPrim {
@@ -364,10 +368,7 @@ fn build_expr(hir_table: &hir::HirTable, results: &TypeckResults, expr_id: hir::
                 .iter()
                 .map(|p| {
                     let name = hir_table.local_ident_name(p.name);
-                    let ty = results
-                        .local_ty(p.name)
-                        .cloned()
-                        .unwrap_or(tast::Ty::TUnit);
+                    let ty = results.local_ty(p.name).cloned().unwrap_or(tast::Ty::TUnit);
                     tast::ClosureParam {
                         name,
                         ty,
@@ -572,7 +573,11 @@ fn build_name_ref_expr(
     }
 }
 
-fn build_callee(hir_table: &hir::HirTable, results: &TypeckResults, callee: &CalleeElab) -> tast::Expr {
+fn build_callee(
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+    callee: &CalleeElab,
+) -> tast::Expr {
     match callee {
         CalleeElab::Expr(expr_id) => build_expr(hir_table, results, *expr_id),
         CalleeElab::Var { name, ty, astptr } => tast::Expr::EVar {
@@ -621,7 +626,11 @@ fn build_callee(hir_table: &hir::HirTable, results: &TypeckResults, callee: &Cal
     }
 }
 
-fn apply_coercions(results: &TypeckResults, expr_id: hir::ExprId, mut expr: tast::Expr) -> tast::Expr {
+fn apply_coercions(
+    results: &TypeckResults,
+    expr_id: hir::ExprId,
+    mut expr: tast::Expr,
+) -> tast::Expr {
     for coercion in results.coercions(expr_id) {
         match coercion {
             Coercion::ToDyn {

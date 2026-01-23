@@ -790,7 +790,9 @@ pub fn check_file_with_env(
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(&genv, &mut typer, &mut diagnostics, &impl_block),
+            hir::Def::ImplBlock(impl_block) => {
+                typecheck_impl_block(&genv, &mut typer, &mut diagnostics, &impl_block)
+            }
             hir::Def::Fn(func) => typecheck_fn(&genv, &mut typer, &mut diagnostics, &func),
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
@@ -815,6 +817,46 @@ pub fn check_file_with_env(
     let file = subst_file(&mut typer, &mut diagnostics, file);
 
     (file, genv.current, diagnostics)
+}
+
+pub fn check_file_with_env_and_results(
+    hir: hir::PackageHir,
+    hir_table: name_resolution::HirTable,
+    genv: env::GlobalTypeEnv,
+    package: &str,
+    deps: HashMap<String, env::GlobalTypeEnv>,
+) -> (
+    name_resolution::HirTable,
+    crate::typer::results::TypeckResults,
+    env::GlobalTypeEnv,
+    Diagnostics,
+) {
+    let mut genv = env::PackageTypeEnv::new(package.to_string(), genv, deps);
+    let mut typer = Typer::new(hir_table);
+    let mut diagnostics = Diagnostics::new();
+    collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
+    for item in hir.toplevels.iter() {
+        match typer.hir_table.def(*item).clone() {
+            hir::Def::ImplBlock(impl_block) => {
+                typecheck_impl_block(&genv, &mut typer, &mut diagnostics, &impl_block)
+            }
+            hir::Def::Fn(func) => typecheck_fn(&genv, &mut typer, &mut diagnostics, &func),
+            hir::Def::EnumDef(..)
+            | hir::Def::StructDef(..)
+            | hir::Def::TraitDef(..)
+            | hir::Def::ExternGo(..)
+            | hir::Def::ExternType(..)
+            | hir::Def::ExternBuiltin(..) => {}
+        }
+    }
+    let mut results = std::mem::replace(
+        &mut typer.results,
+        crate::typer::results::TypeckResultsBuilder::new(&typer.hir_table),
+    );
+    results.finalize_types(&mut typer);
+    let results = results.finish();
+
+    (typer.hir_table, results, genv.current, diagnostics)
 }
 
 fn subst_file(typer: &mut Typer, diagnostics: &mut Diagnostics, file: tast::File) -> tast::File {

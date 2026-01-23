@@ -26,7 +26,9 @@ impl TypeckResults {
     }
 
     pub fn expr_ty(&self, expr: hir::ExprId) -> Option<&tast::Ty> {
-        self.expr_tys.get(expr.idx as usize).and_then(|t| t.as_ref())
+        self.expr_tys
+            .get(expr.idx as usize)
+            .and_then(|t| t.as_ref())
     }
 
     pub fn pat_ty(&self, pat: hir::PatId) -> Option<&tast::Ty> {
@@ -306,7 +308,11 @@ impl TypeckResultsBuilder {
         }
     }
 
-    pub fn record_closure_captures(&mut self, expr: hir::ExprId, captures: Vec<(String, tast::Ty)>) {
+    pub fn record_closure_captures(
+        &mut self,
+        expr: hir::ExprId,
+        captures: Vec<(String, tast::Ty)>,
+    ) {
         if let Some(slot) = self.results.closure_captures.get_mut(expr.idx as usize) {
             *slot = Some(captures);
         }
@@ -319,15 +325,15 @@ impl TypeckResultsBuilder {
         for slot in self.results.pat_tys.iter_mut().filter_map(Option::as_mut) {
             *slot = typer.subst_ty_silent(slot);
         }
-        for slot in self
+        for slot in self.results.local_tys.iter_mut().filter_map(Option::as_mut) {
+            *slot = typer.subst_ty_silent(slot);
+        }
+        for elab in self
             .results
-            .local_tys
+            .name_ref_elab
             .iter_mut()
             .filter_map(Option::as_mut)
         {
-            *slot = typer.subst_ty_silent(slot);
-        }
-        for elab in self.results.name_ref_elab.iter_mut().filter_map(Option::as_mut) {
             match elab {
                 NameRefElab::Var { ty, .. } => *ty = typer.subst_ty_silent(ty),
                 NameRefElab::TraitMethod { ty, .. } => *ty = typer.subst_ty_silent(ty),

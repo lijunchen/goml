@@ -7,7 +7,7 @@ use crate::common::{self, Prim};
 use crate::hir::{self};
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::results::{
-    CalleeElab, CallElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
+    CallElab, CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
     StructPatElab,
 };
 use crate::{
@@ -226,14 +226,7 @@ impl Typer {
                 ty: tast::Ty::TString,
             },
             hir::Expr::EConstr { constructor, args } => {
-                self.infer_constructor_expr(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    e,
-                    &constructor,
-                    &args,
-                )
+                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args)
             }
             hir::Expr::EStructLiteral { name, fields } => {
                 self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields)
@@ -1904,7 +1897,8 @@ impl Typer {
                                 args: args.to_vec(),
                             },
                         );
-                        self.results.record_expr_ty(func, inst_method_ty_for_call.clone());
+                        self.results
+                            .record_expr_ty(func, inst_method_ty_for_call.clone());
                         self.results.record_name_ref_elab(
                             func,
                             NameRefElab::TraitMethod {
@@ -2166,7 +2160,8 @@ impl Typer {
                                         .collect(),
                                 },
                             );
-                            self.results.record_expr_ty(func, inst_method_ty_for_call.clone());
+                            self.results
+                                .record_expr_ty(func, inst_method_ty_for_call.clone());
                             self.results.record_name_ref_elab(
                                 func,
                                 NameRefElab::TraitMethod {

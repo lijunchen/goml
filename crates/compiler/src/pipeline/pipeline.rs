@@ -418,3 +418,120 @@ pub fn typecheck_with_packages(
     let result = typecheck_packages(path, entry_ast)?;
     Ok((result.entry_tast, result.genv, result.diagnostics))
 }
+
+pub fn typecheck_with_packages_and_results(
+    path: &Path,
+    src: &str,
+) -> Result<
+    (
+        hir::HirTable,
+        typer::results::TypeckResults,
+        GlobalTypeEnv,
+        Diagnostics,
+    ),
+    CompilationError,
+> {
+    let (_green_node, _cst, entry_ast) = parse_ast_from_source(path, src)?;
+    let root_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
+    let order = packages::topo_sort_packages(&graph)?;
+
+    let mut diagnostics = Diagnostics::new();
+    let mut genv = GlobalTypeEnv::new();
+    let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
+    let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
+    package_names.sort();
+    let mut package_ids = HashMap::new();
+    package_ids.insert("Builtin".to_string(), hir::PackageId(0));
+    package_ids.insert("Main".to_string(), hir::PackageId(1));
+    let mut next_id = 2u32;
+    for name in package_names {
+        if name == "Builtin" || name == "Main" {
+            continue;
+        }
+        package_ids.insert(name, hir::PackageId(next_id));
+        next_id += 1;
+    }
+
+    let mut entry_hir_table = None;
+    let mut entry_results = None;
+
+    for name in order.iter() {
+        let package = graph
+            .packages
+            .get(name)
+            .ok_or_else(|| compile_error(format!("package {} not found", name)))?;
+        let package_id = *package_ids
+            .get(name)
+            .unwrap_or_else(|| panic!("missing package id for {}", name));
+        let mut deps_envs = HashMap::new();
+        let mut deps: Vec<_> = package.imports.iter().cloned().collect();
+        deps.sort();
+        let mut deps_interfaces = HashMap::new();
+        for dep in deps.iter() {
+            let interface = artifacts_by_name
+                .get(dep)
+                .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
+            deps_envs.insert(dep.clone(), interface.exports.to_genv());
+            deps_interfaces.insert(dep.clone(), interface.hir_interface.clone());
+        }
+
+        let (hir, hir_table, mut hir_diagnostics) =
+            hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
+        let hir_interface = hir::PackageInterface::from_hir(&hir, &hir_table);
+        let (hir_table, results, package_genv, mut package_diagnostics) =
+            typer::check_file_with_env_and_results(
+                hir,
+                hir_table,
+                GlobalTypeEnv::new(),
+                &package.name,
+                deps_envs,
+            );
+        package_diagnostics.append(&mut hir_diagnostics);
+        diagnostics.append(&mut package_diagnostics);
+
+        for (key, _) in package_genv.trait_env.trait_impls.iter() {
+            if genv.trait_env.trait_impls.contains_key(key) {
+                diagnostics.push(Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Trait {} implementation for {:?} is defined in multiple packages (including {})",
+                        key.0, key.1, name
+                    ),
+                ));
+            }
+        }
+
+        let exports = PackageExports {
+            type_env: package_genv.type_env.clone(),
+            trait_env: package_genv.trait_env.clone(),
+            value_env: package_genv.value_env.clone(),
+        };
+        exports.apply_to(&mut genv);
+
+        let interface = PackageInterface {
+            exports,
+            hir_interface,
+        };
+
+        if name == &graph.entry_package {
+            entry_hir_table = Some(hir_table);
+            entry_results = Some(results);
+        }
+
+        artifacts_by_name.insert(name.clone(), interface);
+    }
+
+    let Some(entry_hir_table) = entry_hir_table else {
+        return Err(compile_error("entry package not found".to_string()));
+    };
+    let Some(entry_results) = entry_results else {
+        return Err(compile_error("entry package not found".to_string()));
+    };
+
+    Ok((entry_hir_table, entry_results, genv, diagnostics))
+}

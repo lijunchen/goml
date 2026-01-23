@@ -1,7 +1,7 @@
 use ena::unify::InPlaceUnificationTable;
 
-use crate::{env::Constraint, tast::TypeVar};
 use crate::typer::results::TypeckResultsBuilder;
+use crate::{env::Constraint, tast::TypeVar};
 
 mod check;
 mod localenv;
@@ -12,6 +12,7 @@ mod toplevel;
 mod unify;
 mod util;
 
+pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env};
 
 pub struct Typer {

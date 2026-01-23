@@ -189,7 +189,7 @@ impl NameResolution {
                 }
             }
             2 => {
-                let enum_name = segments.get(0).map(|seg| &seg.ident.0)?;
+                let enum_name = segments.first().map(|seg| &seg.ident.0)?;
                 let variant = segments.get(1).map(|seg| &seg.ident.0)?;
                 if ctx
                     .constructor_index
@@ -201,7 +201,7 @@ impl NameResolution {
                 }
             }
             3 => {
-                let package = segments.get(0).map(|seg| &seg.ident.0)?;
+                let package = segments.first().map(|seg| &seg.ident.0)?;
                 let enum_name = segments.get(1).map(|seg| &seg.ident.0)?;
                 let variant = segments.get(2).map(|seg| &seg.ident.0)?;
                 let exists = ctx
