@@ -705,6 +705,7 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
 
 fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
     let mut exprs: Vec<ast::Expr> = Vec::new();
+    let astptr = MySyntaxNodePtr::new(node.syntax());
 
     for stmt in node.stmts() {
         if let Some(expr) = lower_stmt(ctx, stmt) {
@@ -717,15 +718,16 @@ fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
             exprs.push(expr);
         }
     } else {
-        exprs.push(ast::Expr::EUnit);
+        exprs.push(ast::Expr::EUnit { astptr });
     }
 
-    Some(ast::Expr::EBlock { exprs })
+    Some(ast::Expr::EBlock { exprs, astptr })
 }
 
 fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
     match stmt {
         cst::Stmt::LetStmt(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let pattern = match it.pattern() {
                 Some(pattern) => pattern,
                 None => {
@@ -753,6 +755,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
                 pat,
                 annotation,
                 value: Box::new(value),
+                astptr,
             })
         }
         cst::Stmt::ExprStmt(it) => {
@@ -815,6 +818,7 @@ fn lower_expr_with_args(
     trailing_args: Vec<ast::Expr>,
 ) -> Option<ast::Expr> {
     let node_range = node.syntax().text_range();
+    let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
         cst::Expr::UnitExpr(_) => {
             if !trailing_args.is_empty() {
@@ -824,17 +828,26 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EUnit)
+            Some(ast::Expr::EUnit {
+                astptr: node_astptr,
+            })
         }
         cst::Expr::BoolExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "BoolExpr has no value");
                 return None;
             };
             let value = token.to_string();
             let expr = match value.as_str() {
-                "true" => ast::Expr::EBool { value: true },
-                "false" => ast::Expr::EBool { value: false },
+                "true" => ast::Expr::EBool {
+                    value: true,
+                    astptr,
+                },
+                "false" => ast::Expr::EBool {
+                    value: false,
+                    astptr,
+                },
                 _ => {
                     ctx.push_error(
                         Some(token.text_range()),
@@ -853,6 +866,7 @@ fn lower_expr_with_args(
             Some(expr)
         }
         cst::Expr::IntExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "IntExpr has no value");
                 return None;
@@ -865,9 +879,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EInt { value })
+            Some(ast::Expr::EInt { value, astptr })
         }
         cst::Expr::Int8Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Int8Expr has no value");
                 return None;
@@ -881,9 +896,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EInt8 { value })
+            Some(ast::Expr::EInt8 { value, astptr })
         }
         cst::Expr::Int16Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Int16Expr has no value");
                 return None;
@@ -897,9 +913,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EInt16 { value })
+            Some(ast::Expr::EInt16 { value, astptr })
         }
         cst::Expr::Int32Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Int32Expr has no value");
                 return None;
@@ -913,9 +930,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EInt32 { value })
+            Some(ast::Expr::EInt32 { value, astptr })
         }
         cst::Expr::Int64Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Int64Expr has no value");
                 return None;
@@ -929,9 +947,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EInt64 { value })
+            Some(ast::Expr::EInt64 { value, astptr })
         }
         cst::Expr::UInt8Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "UInt8Expr has no value");
                 return None;
@@ -945,9 +964,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EUInt8 { value })
+            Some(ast::Expr::EUInt8 { value, astptr })
         }
         cst::Expr::UInt16Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "UInt16Expr has no value");
                 return None;
@@ -961,9 +981,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EUInt16 { value })
+            Some(ast::Expr::EUInt16 { value, astptr })
         }
         cst::Expr::UInt32Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "UInt32Expr has no value");
                 return None;
@@ -977,9 +998,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EUInt32 { value })
+            Some(ast::Expr::EUInt32 { value, astptr })
         }
         cst::Expr::UInt64Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "UInt64Expr has no value");
                 return None;
@@ -993,9 +1015,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EUInt64 { value })
+            Some(ast::Expr::EUInt64 { value, astptr })
         }
         cst::Expr::FloatExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "FloatExpr has no value");
                 return None;
@@ -1018,9 +1041,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EFloat { value })
+            Some(ast::Expr::EFloat { value, astptr })
         }
         cst::Expr::Float32Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Float32Expr has no value");
                 return None;
@@ -1034,9 +1058,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EFloat32 { value })
+            Some(ast::Expr::EFloat32 { value, astptr })
         }
         cst::Expr::Float64Expr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "Float64Expr has no value");
                 return None;
@@ -1050,9 +1075,10 @@ fn lower_expr_with_args(
                 );
                 return None;
             }
-            Some(ast::Expr::EFloat64 { value })
+            Some(ast::Expr::EFloat64 { value, astptr })
         }
         cst::Expr::StrExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "StrExpr has no value");
                 return None;
@@ -1071,9 +1097,11 @@ fn lower_expr_with_args(
             }
             Some(ast::Expr::EString {
                 value: value.to_string(),
+                astptr,
             })
         }
         cst::Expr::MultilineStrExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1100,9 +1128,10 @@ fn lower_expr_with_args(
                 parts.push(rest);
             }
             let value = parts.join("\n");
-            Some(ast::Expr::EString { value })
+            Some(ast::Expr::EString { value, astptr })
         }
         cst::Expr::CallExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let args: Vec<ast::Expr> = it
                 .arg_list()
                 .map(|list| list.args().flat_map(|arg| lower_arg(ctx, arg)).collect())
@@ -1115,10 +1144,14 @@ fn lower_expr_with_args(
                             .last_ident()
                             .cloned()
                             .expect("paths must contain at least one segment");
-                        let astptr = MySyntaxNodePtr::new(ident_expr.syntax());
+                        let callee_astptr = MySyntaxNodePtr::new(ident_expr.syntax());
 
                         if ctx.is_constructor(&variant_ident) {
-                            let constr = ast::Expr::EConstr { constructor, args };
+                            let constr = ast::Expr::EConstr {
+                                constructor,
+                                args,
+                                astptr,
+                            };
                             apply_trailing_args(
                                 ctx,
                                 constr,
@@ -1128,11 +1161,12 @@ fn lower_expr_with_args(
                         } else {
                             let path_expr = ast::Expr::EPath {
                                 path: constructor,
-                                astptr,
+                                astptr: callee_astptr,
                             };
                             let call = ast::Expr::ECall {
                                 func: Box::new(path_expr),
                                 args,
+                                astptr,
                             };
                             apply_trailing_args(
                                 ctx,
@@ -1148,6 +1182,7 @@ fn lower_expr_with_args(
                             let call = ast::Expr::ECall {
                                 func: Box::new(func_expr),
                                 args,
+                                astptr,
                             };
                             apply_trailing_args(
                                 ctx,
@@ -1164,6 +1199,7 @@ fn lower_expr_with_args(
                                 let call = ast::Expr::ECall {
                                     func: Box::new(func_expr),
                                     args,
+                                    astptr,
                                 };
                                 apply_trailing_args(
                                     ctx,
@@ -1218,6 +1254,7 @@ fn lower_expr_with_args(
             })
         }
         cst::Expr::GoExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1238,9 +1275,11 @@ fn lower_expr_with_args(
 
             Some(ast::Expr::EGo {
                 expr: Box::new(expr),
+                astptr,
             })
         }
         cst::Expr::IfExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1315,9 +1354,11 @@ fn lower_expr_with_args(
                 cond: Box::new(cond),
                 then_branch: Box::new(then_branch),
                 else_branch: Box::new(else_branch),
+                astptr,
             })
         }
         cst::Expr::WhileExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1368,9 +1409,11 @@ fn lower_expr_with_args(
             Some(ast::Expr::EWhile {
                 cond: Box::new(cond),
                 body: Box::new(body),
+                astptr,
             })
         }
         cst::Expr::StructLiteralExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1400,9 +1443,14 @@ fn lower_expr_with_args(
                         .collect()
                 })
                 .unwrap_or_default();
-            Some(ast::Expr::EStructLiteral { name, fields })
+            Some(ast::Expr::EStructLiteral {
+                name,
+                fields,
+                astptr,
+            })
         }
         cst::Expr::ArrayLiteralExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1411,9 +1459,10 @@ fn lower_expr_with_args(
                 return None;
             }
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
-            Some(ast::Expr::EArray { items })
+            Some(ast::Expr::EArray { items, astptr })
         }
         cst::Expr::IdentExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let constructor = lower_constructor_path_from_ident_expr(ctx, &it)?;
             let variant_ident = constructor
                 .last_ident()
@@ -1423,17 +1472,19 @@ fn lower_expr_with_args(
                 let expr = ast::Expr::EConstr {
                     constructor,
                     args: vec![],
+                    astptr,
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             } else {
                 let expr = ast::Expr::EPath {
                     path: constructor,
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                    astptr,
                 };
                 apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
             }
         }
         cst::Expr::TupleExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1442,7 +1493,7 @@ fn lower_expr_with_args(
                 return None;
             }
             let items = it.exprs().flat_map(|expr| lower_expr(ctx, expr)).collect();
-            Some(ast::Expr::ETuple { items })
+            Some(ast::Expr::ETuple { items, astptr })
         }
         cst::Expr::ParenExpr(it) => {
             // Parenthesized expression - just unwrap and process the inner expression
@@ -1452,6 +1503,7 @@ fn lower_expr_with_args(
             Some(inner)
         }
         cst::Expr::PrefixExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let expr = match it
                 .expr()
                 .and_then(|expr| lower_expr_with_args(ctx, expr, Vec::new()))
@@ -1476,10 +1528,12 @@ fn lower_expr_with_args(
                 MySyntaxKind::Minus => ast::Expr::EUnary {
                     op: common_defs::UnaryOp::Neg,
                     expr: Box::new(expr),
+                    astptr,
                 },
                 MySyntaxKind::Bang => ast::Expr::EUnary {
                     op: common_defs::UnaryOp::Not,
                     expr: Box::new(expr),
+                    astptr,
                 },
                 kind => {
                     ctx.push_error(
@@ -1492,6 +1546,7 @@ fn lower_expr_with_args(
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
         }
         cst::Expr::BinaryExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let mut exprs = it.exprs();
             let Some(lhs_cst) = exprs.next() else {
                 ctx.push_error(
@@ -1522,6 +1577,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Add,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Minus => {
@@ -1530,6 +1586,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Sub,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Star => {
@@ -1538,6 +1595,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Mul,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Slash => {
@@ -1546,6 +1604,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Div,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::AndAnd => {
@@ -1554,6 +1613,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::And,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::OrOr => {
@@ -1562,6 +1622,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Or,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Less => {
@@ -1570,6 +1631,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Less,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Greater => {
@@ -1578,6 +1640,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Greater,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::LessEq => {
@@ -1586,6 +1649,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::LessEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::GreaterEq => {
@@ -1594,6 +1658,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::GreaterEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::EqEq => {
@@ -1602,6 +1667,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::Eq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::NotEq => {
@@ -1610,6 +1676,7 @@ fn lower_expr_with_args(
                         op: common_defs::BinaryOp::NotEq,
                         lhs: Box::new(lhs),
                         rhs: Box::new(rhs),
+                        astptr,
                     })
                 }
                 MySyntaxKind::Dot => match rhs_cst {
@@ -1635,6 +1702,7 @@ fn lower_expr_with_args(
                         Some(ast::Expr::EProj {
                             tuple: Box::new(lhs),
                             index,
+                            astptr,
                         })
                     }
                     cst::Expr::IdentExpr(ident_expr) => {
@@ -1658,6 +1726,7 @@ fn lower_expr_with_args(
                             Some(ast::Expr::ECall {
                                 func: Box::new(field_expr),
                                 args: trailing_args,
+                                astptr,
                             })
                         }
                     }
@@ -1681,6 +1750,7 @@ fn lower_expr_with_args(
             }
         }
         cst::Expr::ClosureExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {
                 ctx.push_error(
                     Some(it.syntax().text_range()),
@@ -1723,6 +1793,7 @@ fn lower_expr_with_args(
             Some(ast::Expr::EClosure {
                 params,
                 body: Box::new(body),
+                astptr,
             })
         }
     }
@@ -1742,13 +1813,19 @@ fn apply_trailing_args(
         ast::Expr::EPath { path, astptr } => Some(ast::Expr::ECall {
             func: Box::new(ast::Expr::EPath { path, astptr }),
             args: trailing_args,
+            astptr,
         }),
-        ast::Expr::ECall { func, args } => {
-            let mut result = ast::Expr::ECall { func, args };
+        ast::Expr::ECall { func, args, astptr } => {
+            let mut result = ast::Expr::ECall { func, args, astptr };
             for arg in trailing_args {
+                let call_astptr = match &result {
+                    ast::Expr::ECall { astptr, .. } => *astptr,
+                    _ => unreachable!(),
+                };
                 result = ast::Expr::ECall {
                     func: Box::new(result),
                     args: vec![arg],
+                    astptr: call_astptr,
                 };
             }
             Some(result)
@@ -1756,9 +1833,14 @@ fn apply_trailing_args(
         ast::Expr::EConstr {
             constructor,
             mut args,
+            astptr,
         } => {
             args.extend(trailing_args);
-            Some(ast::Expr::EConstr { constructor, args })
+            Some(ast::Expr::EConstr {
+                constructor,
+                args,
+                astptr,
+            })
         }
         ast::Expr::EField {
             expr,
@@ -1771,20 +1853,28 @@ fn apply_trailing_args(
                 astptr,
             }),
             args: trailing_args,
+            astptr,
         }),
-        ast::Expr::EBinary { op, lhs, rhs } => {
+        ast::Expr::EBinary {
+            op,
+            lhs,
+            rhs,
+            astptr,
+        } => {
             let rhs = apply_trailing_args(ctx, *rhs, trailing_args, range)?;
             Some(ast::Expr::EBinary {
                 op,
                 lhs,
                 rhs: Box::new(rhs),
+                astptr,
             })
         }
-        ast::Expr::EUnary { op, expr } => {
+        ast::Expr::EUnary { op, expr, astptr } => {
             let expr = apply_trailing_args(ctx, *expr, trailing_args, range)?;
             Some(ast::Expr::EUnary {
                 op,
                 expr: Box::new(expr),
+                astptr,
             })
         }
         other => {
@@ -1821,29 +1911,41 @@ fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
 }
 
 fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
+    let node_astptr = MySyntaxNodePtr::new(node.syntax());
     match node {
         cst::Pattern::VarPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let name = it.lident().unwrap().to_string();
             let ident = ast::AstIdent(name);
             if ctx.is_constructor(&ident) {
                 Some(ast::Pat::PConstr {
                     constructor: ast::Path::from_ident(ident),
                     args: Vec::new(),
+                    astptr,
                 })
             } else {
                 Some(ast::Pat::PVar {
                     name: ident,
-                    astptr: MySyntaxNodePtr::new(it.syntax()),
+                    astptr,
                 })
             }
         }
-        cst::Pattern::UnitPat(_) => Some(ast::Pat::PUnit),
+        cst::Pattern::UnitPat(_) => Some(ast::Pat::PUnit {
+            astptr: node_astptr,
+        }),
         cst::Pattern::BoolPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let value = it.value()?.to_string();
 
             match value.as_str() {
-                "true" => Some(ast::Pat::PBool { value: true }),
-                "false" => Some(ast::Pat::PBool { value: false }),
+                "true" => Some(ast::Pat::PBool {
+                    value: true,
+                    astptr,
+                }),
+                "false" => Some(ast::Pat::PBool {
+                    value: false,
+                    astptr,
+                }),
                 _ => {
                     ctx.push_error(
                         Some(it.syntax().text_range()),
@@ -1855,48 +1957,58 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         }
         cst::Pattern::IntPat(it) => Some(ast::Pat::PInt {
             value: it.value()?.to_string(),
+            astptr: MySyntaxNodePtr::new(it.syntax()),
         }),
         cst::Pattern::Int8Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt8 { value })
+            Some(ast::Pat::PInt8 { value, astptr })
         }
         cst::Pattern::Int16Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt16 { value })
+            Some(ast::Pat::PInt16 { value, astptr })
         }
         cst::Pattern::Int32Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt32 { value })
+            Some(ast::Pat::PInt32 { value, astptr })
         }
         cst::Pattern::Int64Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt64 { value })
+            Some(ast::Pat::PInt64 { value, astptr })
         }
         cst::Pattern::UInt8Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u8").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt8 { value })
+            Some(ast::Pat::PUInt8 { value, astptr })
         }
         cst::Pattern::UInt16Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u16").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt16 { value })
+            Some(ast::Pat::PUInt16 { value, astptr })
         }
         cst::Pattern::UInt32Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u32").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt32 { value })
+            Some(ast::Pat::PUInt32 { value, astptr })
         }
         cst::Pattern::UInt64Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
-            Some(ast::Pat::PUInt64 { value })
+            Some(ast::Pat::PUInt64 { value, astptr })
         }
         cst::Pattern::StringPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(token) = it.value() else {
                 ctx.push_error(Some(it.syntax().text_range()), "StringPat has no value");
                 return None;
@@ -1908,9 +2020,11 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             };
             Some(ast::Pat::PString {
                 value: value.to_string(),
+                astptr,
             })
         }
         cst::Pattern::ConstrPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             if let Some(field_list) = it.field_list() {
                 let name = lower_path(ctx, &it.path()?)?;
                 let mut fields = Vec::new();
@@ -1942,21 +2056,31 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                     };
                     fields.push((ast::AstIdent(fname), pat));
                 }
-                Some(ast::Pat::PStruct { name, fields })
+                Some(ast::Pat::PStruct {
+                    name,
+                    fields,
+                    astptr,
+                })
             } else {
                 let constructor = lower_constructor_path_from_constr_pat(ctx, &it)?;
                 let pats = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
                 Some(ast::Pat::PConstr {
                     constructor,
                     args: pats,
+                    astptr,
                 })
             }
         }
         cst::Pattern::TuplePat(it) => {
             let items = it.patterns().flat_map(|pat| lower_pat(ctx, pat)).collect();
-            Some(ast::Pat::PTuple { pats: items })
+            Some(ast::Pat::PTuple {
+                pats: items,
+                astptr: MySyntaxNodePtr::new(it.syntax()),
+            })
         }
-        cst::Pattern::WildPat(_) => Some(ast::Pat::PWild),
+        cst::Pattern::WildPat(_) => Some(ast::Pat::PWild {
+            astptr: node_astptr,
+        }),
     }
 }
 

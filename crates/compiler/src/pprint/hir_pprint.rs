@@ -145,6 +145,7 @@ impl Expr {
     pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
             hir::Expr::ENameRef { res, .. } => RcDoc::text(res.display(ctx.hir_table)),
+            hir::Expr::EStaticMember { path, .. } => RcDoc::text(path.display()),
 
             hir::Expr::EUnit => RcDoc::text("()"),
 

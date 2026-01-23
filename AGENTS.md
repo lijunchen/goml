@@ -14,6 +14,10 @@ The file extension for goml source files is `.gom`.
 - Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core -> Mono -> Lift → ANF` before emitting Go (`crates/compiler/src/go`).
 - The CLI driver in `crates/compiler/src/main.rs` prints generated Go; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
 - The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
+- `typer/name_resolution.rs` should only handle AST → HIR lowering plus pure name/visibility resolution; avoid making decisions that depend on `GlobalTypeEnv` or type information.
+- `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as “fallback resolution paths” or cross-package name lookup.
+- Any "ambiguity" should produce recoverable diagnostics; never `panic!` inside env/lookup. When multiple candidates exist, return `None` and report the error at a higher level.
+
 
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:

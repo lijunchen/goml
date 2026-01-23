@@ -241,71 +241,93 @@ pub enum Expr {
         path: Path,
         astptr: MySyntaxNodePtr,
     },
-    EUnit,
+    EUnit {
+        astptr: MySyntaxNodePtr,
+    },
     EBool {
         value: bool,
+        astptr: MySyntaxNodePtr,
     },
     EInt {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EInt8 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EInt16 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EInt32 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EInt64 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EUInt8 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EUInt16 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EUInt32 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EUInt64 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EFloat {
         value: f64,
+        astptr: MySyntaxNodePtr,
     },
     EFloat32 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EFloat64 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EString {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     EConstr {
         constructor: Path,
         args: Vec<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EStructLiteral {
         name: Path,
         fields: Vec<(AstIdent, Expr)>,
+        astptr: MySyntaxNodePtr,
     },
     ETuple {
         items: Vec<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EArray {
         items: Vec<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     ELet {
         pat: Pat,
         annotation: Option<TypeExpr>,
         value: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EClosure {
         params: Vec<ClosureParam>,
         body: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EMatch {
         expr: Box<Expr>,
@@ -316,30 +338,37 @@ pub enum Expr {
         cond: Box<Expr>,
         then_branch: Box<Expr>,
         else_branch: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EWhile {
         cond: Box<Expr>,
         body: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EGo {
         expr: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EUnary {
         op: common_defs::UnaryOp,
         expr: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<Expr>,
         rhs: Box<Expr>,
+        astptr: MySyntaxNodePtr,
     },
     EProj {
         tuple: Box<Expr>,
         index: usize,
+        astptr: MySyntaxNodePtr,
     },
     EField {
         expr: Box<Expr>,
@@ -348,6 +377,7 @@ pub enum Expr {
     },
     EBlock {
         exprs: Vec<Expr>,
+        astptr: MySyntaxNodePtr,
     },
 }
 
@@ -363,50 +393,68 @@ pub enum Pat {
         name: AstIdent,
         astptr: MySyntaxNodePtr,
     },
-    PUnit,
+    PUnit {
+        astptr: MySyntaxNodePtr,
+    },
     PBool {
         value: bool,
+        astptr: MySyntaxNodePtr,
     },
     PInt {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PInt8 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PInt16 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PInt32 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PInt64 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PUInt8 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PUInt16 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PUInt32 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PUInt64 {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PString {
         value: String,
+        astptr: MySyntaxNodePtr,
     },
     PConstr {
         constructor: Path,
         args: Vec<Pat>,
+        astptr: MySyntaxNodePtr,
     },
     PStruct {
         name: Path,
         fields: Vec<(AstIdent, Pat)>,
+        astptr: MySyntaxNodePtr,
     },
     PTuple {
         pats: Vec<Pat>,
+        astptr: MySyntaxNodePtr,
     },
-    PWild,
+    PWild {
+        astptr: MySyntaxNodePtr,
+    },
 }

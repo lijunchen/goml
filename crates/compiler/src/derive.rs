@@ -222,12 +222,14 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
     if struct_def.fields.is_empty() {
         return Expr::EString {
             value: "{}".to_string(),
+            astptr: *attr_ptr,
         };
     }
 
     let mut parts = Vec::new();
     parts.push(Expr::EString {
         value: "{".to_string(),
+        astptr: *attr_ptr,
     });
 
     for (idx, (field_name, field_ty)) in struct_def.fields.iter().enumerate() {
@@ -235,11 +237,13 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
         if idx > 0 {
             parts.push(Expr::EString {
                 value: ",".to_string(),
+                astptr: *attr_ptr,
             });
         }
         // "fieldName":
         parts.push(Expr::EString {
             value: format!("\"{}\":", field_name.0),
+            astptr: *attr_ptr,
         });
         // field value as JSON
         parts.push(call_to_json(
@@ -251,6 +255,7 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
 
     parts.push(Expr::EString {
         value: "}".to_string(),
+        astptr: *attr_ptr,
     });
 
     let body = concat_parts(parts, attr_ptr);
@@ -272,12 +277,15 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
                             )
                         })
                         .collect(),
+                    astptr: *attr_ptr,
                 },
                 annotation: None,
                 value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
+                astptr: *attr_ptr,
             },
             body,
         ],
+        astptr: *attr_ptr,
     }
 }
 
@@ -294,9 +302,11 @@ fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                     pat: Pat::PConstr {
                         constructor,
                         args: Vec::new(),
+                        astptr: *attr_ptr,
                     },
                     body: Expr::EString {
                         value: format!("{{\"tag\":\"{}\"}}", variant_name.0),
+                        astptr: *attr_ptr,
                     },
                 }
             } else {
@@ -315,11 +325,13 @@ fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 let mut parts = Vec::new();
                 parts.push(Expr::EString {
                     value: format!("{{\"tag\":\"{}\",\"fields\":[", variant_name.0),
+                    astptr: *attr_ptr,
                 });
                 for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate() {
                     if idx > 0 {
                         parts.push(Expr::EString {
                             value: ",".to_string(),
+                            astptr: *attr_ptr,
                         });
                     }
                     parts.push(call_to_json(
@@ -330,9 +342,14 @@ fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 }
                 parts.push(Expr::EString {
                     value: "]}".to_string(),
+                    astptr: *attr_ptr,
                 });
                 Arm {
-                    pat: Pat::PConstr { constructor, args },
+                    pat: Pat::PConstr {
+                        constructor,
+                        args,
+                        astptr: *attr_ptr,
+                    },
                     body: concat_parts(parts, attr_ptr),
                 }
             }
@@ -350,17 +367,20 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
     if struct_def.fields.is_empty() {
         return Expr::EString {
             value: format!("{} {{}}", struct_def.name.0),
+            astptr: *attr_ptr,
         };
     }
 
     let mut parts = Vec::new();
     parts.push(Expr::EString {
         value: format!("{} {{ ", struct_def.name.0),
+        astptr: *attr_ptr,
     });
 
     for (idx, (field_name, field_ty)) in struct_def.fields.iter().enumerate() {
         parts.push(Expr::EString {
             value: format!("{}: ", field_name.0),
+            astptr: *attr_ptr,
         });
         parts.push(call_to_string(
             var_expr(field_name, attr_ptr),
@@ -370,12 +390,14 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
         if idx + 1 != struct_def.fields.len() {
             parts.push(Expr::EString {
                 value: ", ".to_string(),
+                astptr: *attr_ptr,
             });
         }
     }
 
     parts.push(Expr::EString {
         value: " }".to_string(),
+        astptr: *attr_ptr,
     });
 
     let body = concat_parts(parts, attr_ptr);
@@ -397,12 +419,15 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
                             )
                         })
                         .collect(),
+                    astptr: *attr_ptr,
                 },
                 annotation: None,
                 value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
+                astptr: *attr_ptr,
             },
             body,
         ],
+        astptr: *attr_ptr,
     }
 }
 
@@ -418,9 +443,11 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                     pat: Pat::PConstr {
                         constructor,
                         args: Vec::new(),
+                        astptr: *attr_ptr,
                     },
                     body: Expr::EString {
                         value: format!("{}::{}", enum_def.name.0, variant_name.0),
+                        astptr: *attr_ptr,
                     },
                 }
             } else {
@@ -437,11 +464,13 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                 let mut parts = Vec::new();
                 parts.push(Expr::EString {
                     value: format!("{}::{}(", enum_def.name.0, variant_name.0),
+                    astptr: *attr_ptr,
                 });
                 for (idx, (binding, field_ty)) in bindings.iter().zip(fields.iter()).enumerate() {
                     if idx > 0 {
                         parts.push(Expr::EString {
                             value: ", ".to_string(),
+                            astptr: *attr_ptr,
                         });
                     }
                     parts.push(call_to_string(
@@ -452,9 +481,14 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
                 }
                 parts.push(Expr::EString {
                     value: ")".to_string(),
+                    astptr: *attr_ptr,
                 });
                 Arm {
-                    pat: Pat::PConstr { constructor, args },
+                    pat: Pat::PConstr {
+                        constructor,
+                        args,
+                        astptr: *attr_ptr,
+                    },
                     body: concat_parts(parts, attr_ptr),
                 }
             }
@@ -468,16 +502,18 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
     }
 }
 
-fn concat_parts(parts: Vec<Expr>, _attr_ptr: &MySyntaxNodePtr) -> Expr {
+fn concat_parts(parts: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     let mut iter = parts.into_iter();
     let mut acc = iter.next().unwrap_or(Expr::EString {
         value: String::new(),
+        astptr: *attr_ptr,
     });
     for part in iter {
         acc = Expr::EBinary {
             op: common_defs::BinaryOp::Add,
             lhs: Box::new(acc),
             rhs: Box::new(part),
+            astptr: *attr_ptr,
         };
     }
     acc
@@ -494,6 +530,7 @@ fn call_to_string(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNo
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
+            astptr: *attr_ptr,
         }
     }
 }
@@ -524,10 +561,12 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
+            astptr: *attr_ptr,
         },
         // Unit serializes as null
         Some(ast::TypeExpr::TUnit) => Expr::EString {
             value: "null".to_string(),
+            astptr: *attr_ptr,
         },
         // For other types (user-defined structs/enums), call .to_json()
         _ => Expr::ECall {
@@ -537,6 +576,7 @@ fn call_to_json(value: Expr, ty: Option<&ast::TypeExpr>, attr_ptr: &MySyntaxNode
                 astptr: *attr_ptr,
             }),
             args: Vec::new(),
+            astptr: *attr_ptr,
         },
     }
 }
@@ -545,6 +585,7 @@ fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Exp
     Expr::ECall {
         func: Box::new(var_expr(&AstIdent::new(name), attr_ptr)),
         args,
+        astptr: *attr_ptr,
     }
 }
 

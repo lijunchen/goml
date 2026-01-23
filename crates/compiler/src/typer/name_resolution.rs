@@ -7,6 +7,7 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
+use parser::syntax::MySyntaxNodePtr;
 
 pub type HirTable = hir::HirTable;
 
@@ -189,7 +190,7 @@ impl NameResolution {
                 }
             }
             2 => {
-                let enum_name = segments.get(0).map(|seg| &seg.ident.0)?;
+                let enum_name = segments.first().map(|seg| &seg.ident.0)?;
                 let variant = segments.get(1).map(|seg| &seg.ident.0)?;
                 if ctx
                     .constructor_index
@@ -201,7 +202,7 @@ impl NameResolution {
                 }
             }
             3 => {
-                let package = segments.get(0).map(|seg| &seg.ident.0)?;
+                let package = segments.first().map(|seg| &seg.ident.0)?;
                 let enum_name = segments.get(1).map(|seg| &seg.ident.0)?;
                 let variant = segments.get(2).map(|seg| &seg.ident.0)?;
                 let exists = ctx
@@ -588,6 +589,28 @@ impl NameResolution {
         }
     }
 
+    fn alloc_expr_with_ptr(
+        &mut self,
+        hir_table: &mut HirTable,
+        astptr: MySyntaxNodePtr,
+        expr: hir::Expr,
+    ) -> hir::ExprId {
+        let id = hir_table.alloc_expr(expr);
+        hir_table.set_expr_ptr(id, Some(astptr));
+        id
+    }
+
+    fn alloc_pat_with_ptr(
+        &mut self,
+        hir_table: &mut HirTable,
+        astptr: MySyntaxNodePtr,
+        pat: hir::Pat,
+    ) -> hir::PatId {
+        let id = hir_table.alloc_pat(pat);
+        hir_table.set_pat_ptr(id, Some(astptr));
+        id
+    }
+
     fn resolve_expr(
         &mut self,
         expr: &ast::Expr,
@@ -598,21 +621,29 @@ impl NameResolution {
         match expr {
             ast::Expr::EPath { path, astptr } => {
                 if let Some(constructor) = self.constructor_path_for(path, ctx) {
-                    return hir_table.alloc_expr(hir::Expr::EConstr {
-                        constructor: hir::ConstructorRef::Unresolved(constructor),
-                        args: Vec::new(),
-                    });
+                    return self.alloc_expr_with_ptr(
+                        hir_table,
+                        *astptr,
+                        hir::Expr::EConstr {
+                            constructor: hir::ConstructorRef::Unresolved(constructor),
+                            args: Vec::new(),
+                        },
+                    );
                 }
                 if path.len() == 1 {
                     let Some(ident) = path.last_ident() else {
                         self.ice("path length 1 missing last ident");
-                        return hir_table.alloc_expr(hir::Expr::ENameRef {
-                            res: hir::NameRef::Unresolved(hir::Path::from_ident(
-                                "<error>".to_string(),
-                            )),
-                            hint: "<error>".to_string(),
-                            astptr: Some(*astptr),
-                        });
+                        return self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::ENameRef {
+                                res: hir::NameRef::Unresolved(hir::Path::from_ident(
+                                    "<error>".to_string(),
+                                )),
+                                hint: "<error>".to_string(),
+                                astptr: Some(*astptr),
+                            },
+                        );
                     };
                     let name_str = &ident.0;
                     let res = if let Some(local_id) = env.rfind(ident) {
@@ -631,11 +662,15 @@ impl NameResolution {
                         hir::NameRef::Def(_) => full_def_name(ctx.current_package, name_str),
                         _ => name_str.clone(),
                     };
-                    hir_table.alloc_expr(hir::Expr::ENameRef {
-                        res,
-                        hint,
-                        astptr: Some(*astptr),
-                    })
+                    self.alloc_expr_with_ptr(
+                        hir_table,
+                        *astptr,
+                        hir::Expr::ENameRef {
+                            res,
+                            hint,
+                            astptr: Some(*astptr),
+                        },
+                    )
                 } else {
                     let full_name = path.display();
                     let package = path
@@ -670,66 +705,169 @@ impl NameResolution {
                     } else {
                         hir::NameRef::Unresolved(path.into())
                     };
-                    hir_table.alloc_expr(hir::Expr::ENameRef {
-                        res,
-                        hint: full_name,
-                        astptr: Some(*astptr),
-                    })
+                    match res {
+                        hir::NameRef::Def(_) => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::ENameRef {
+                                res,
+                                hint: full_name,
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                        hir::NameRef::Unresolved(_)
+                            if path.len() == 2
+                                && (package == ctx.current_package
+                                    || package == "Builtin"
+                                    || ctx.deps.contains_key(package)) =>
+                        {
+                            self.alloc_expr_with_ptr(
+                                hir_table,
+                                *astptr,
+                                hir::Expr::ENameRef {
+                                    res,
+                                    hint: full_name,
+                                    astptr: Some(*astptr),
+                                },
+                            )
+                        }
+                        hir::NameRef::Unresolved(_) => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::EStaticMember {
+                                path: path.into(),
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                        _ => self.alloc_expr_with_ptr(
+                            hir_table,
+                            *astptr,
+                            hir::Expr::ENameRef {
+                                res,
+                                hint: full_name,
+                                astptr: Some(*astptr),
+                            },
+                        ),
+                    }
                 }
             }
-            ast::Expr::EUnit => hir_table.alloc_expr(hir::Expr::EUnit),
-            ast::Expr::EBool { value } => hir_table.alloc_expr(hir::Expr::EBool { value: *value }),
-            ast::Expr::EInt { value } => hir_table.alloc_expr(hir::Expr::EInt {
-                value: value.clone(),
-            }),
-            ast::Expr::EInt8 { value } => hir_table.alloc_expr(hir::Expr::EInt8 {
-                value: value.clone(),
-            }),
-            ast::Expr::EInt16 { value } => hir_table.alloc_expr(hir::Expr::EInt16 {
-                value: value.clone(),
-            }),
-            ast::Expr::EInt32 { value } => hir_table.alloc_expr(hir::Expr::EInt32 {
-                value: value.clone(),
-            }),
-            ast::Expr::EInt64 { value } => hir_table.alloc_expr(hir::Expr::EInt64 {
-                value: value.clone(),
-            }),
-            ast::Expr::EUInt8 { value } => hir_table.alloc_expr(hir::Expr::EUInt8 {
-                value: value.clone(),
-            }),
-            ast::Expr::EUInt16 { value } => hir_table.alloc_expr(hir::Expr::EUInt16 {
-                value: value.clone(),
-            }),
-            ast::Expr::EUInt32 { value } => hir_table.alloc_expr(hir::Expr::EUInt32 {
-                value: value.clone(),
-            }),
-            ast::Expr::EUInt64 { value } => hir_table.alloc_expr(hir::Expr::EUInt64 {
-                value: value.clone(),
-            }),
-            ast::Expr::EFloat { value } => {
-                hir_table.alloc_expr(hir::Expr::EFloat { value: *value })
+            ast::Expr::EUnit { astptr } => {
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EUnit)
             }
-            ast::Expr::EFloat32 { value } => hir_table.alloc_expr(hir::Expr::EFloat32 {
-                value: value.clone(),
-            }),
-            ast::Expr::EFloat64 { value } => hir_table.alloc_expr(hir::Expr::EFloat64 {
-                value: value.clone(),
-            }),
-            ast::Expr::EString { value } => hir_table.alloc_expr(hir::Expr::EString {
-                value: value.clone(),
-            }),
-            ast::Expr::EConstr { constructor, args } => {
+            ast::Expr::EBool { value, astptr } => {
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EBool { value: *value })
+            }
+            ast::Expr::EInt { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EInt {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EInt8 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EInt8 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EInt16 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EInt16 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EInt32 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EInt32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EInt64 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EInt64 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EUInt8 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EUInt8 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EUInt16 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EUInt16 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EUInt32 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EUInt32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EUInt64 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EUInt64 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EFloat { value, astptr } => {
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EFloat { value: *value })
+            }
+            ast::Expr::EFloat32 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EFloat32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EFloat64 { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EFloat64 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EString { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EString {
+                    value: value.clone(),
+                },
+            ),
+            ast::Expr::EConstr {
+                constructor,
+                args,
+                astptr,
+            } => {
                 let new_args = args
                     .iter()
                     .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                     .collect();
                 let constructor = self.normalize_constructor_path(constructor, ctx);
-                hir_table.alloc_expr(hir::Expr::EConstr {
-                    constructor: hir::ConstructorRef::Unresolved(constructor),
-                    args: new_args,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EConstr {
+                        constructor: hir::ConstructorRef::Unresolved(constructor),
+                        args: new_args,
+                    },
+                )
             }
-            ast::Expr::EStructLiteral { name, fields } => {
+            ast::Expr::EStructLiteral {
+                name,
+                fields,
+                astptr,
+            } => {
                 let new_fields = fields
                     .iter()
                     .map(|(field_name, expr)| {
@@ -748,26 +886,34 @@ impl NameResolution {
                         package.0, ctx.current_package
                     ));
                 }
-                hir_table.alloc_expr(hir::Expr::EStructLiteral {
-                    name: qualified,
-                    fields: new_fields,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EStructLiteral {
+                        name: qualified,
+                        fields: new_fields,
+                    },
+                )
             }
-            ast::Expr::ETuple { items } => {
+            ast::Expr::ETuple { items, astptr } => {
                 let new_items = items
                     .iter()
                     .map(|item| self.resolve_expr(item, env, ctx, hir_table))
                     .collect();
-                hir_table.alloc_expr(hir::Expr::ETuple { items: new_items })
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::ETuple { items: new_items })
             }
-            ast::Expr::EArray { items } => {
+            ast::Expr::EArray { items, astptr } => {
                 let new_items = items
                     .iter()
                     .map(|item| self.resolve_expr(item, env, ctx, hir_table))
                     .collect();
-                hir_table.alloc_expr(hir::Expr::EArray { items: new_items })
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EArray { items: new_items })
             }
-            ast::Expr::EClosure { params, body } => {
+            ast::Expr::EClosure {
+                params,
+                body,
+                astptr,
+            } => {
                 let mut closure_env = env.enter_scope();
                 let new_params = params
                     .iter()
@@ -777,29 +923,34 @@ impl NameResolution {
                     .collect();
                 let new_body_expr = self.resolve_expr(body, &mut closure_env, ctx, hir_table);
 
-                hir_table.alloc_expr(hir::Expr::EClosure {
-                    params: new_params,
-                    body: new_body_expr,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EClosure {
+                        params: new_params,
+                        body: new_body_expr,
+                    },
+                )
             }
             ast::Expr::ELet {
                 pat,
                 annotation,
                 value,
+                astptr,
             } => {
                 let new_value = self.resolve_expr(value, env, ctx, hir_table);
                 let new_pat = self.resolve_pat(pat, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::ELet {
-                    pat: new_pat,
-                    annotation: annotation.as_ref().map(|t| t.into()),
-                    value: new_value,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::ELet {
+                        pat: new_pat,
+                        annotation: annotation.as_ref().map(|t| t.into()),
+                        value: new_value,
+                    },
+                )
             }
-            ast::Expr::EMatch {
-                expr,
-                arms,
-                astptr: _,
-            } => {
+            ast::Expr::EMatch { expr, arms, astptr } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
                 let new_arms = arms
                     .iter()
@@ -812,38 +963,51 @@ impl NameResolution {
                         }
                     })
                     .collect();
-                hir_table.alloc_expr(hir::Expr::EMatch {
-                    expr: new_expr,
-                    arms: new_arms,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EMatch {
+                        expr: new_expr,
+                        arms: new_arms,
+                    },
+                )
             }
             ast::Expr::EIf {
                 cond,
                 then_branch,
                 else_branch,
+                astptr,
             } => {
                 let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
                 let new_then = self.resolve_expr(then_branch, env, ctx, hir_table);
                 let new_else = self.resolve_expr(else_branch, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EIf {
-                    cond: new_cond,
-                    then_branch: new_then,
-                    else_branch: new_else,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EIf {
+                        cond: new_cond,
+                        then_branch: new_then,
+                        else_branch: new_else,
+                    },
+                )
             }
-            ast::Expr::EWhile { cond, body } => {
+            ast::Expr::EWhile { cond, body, astptr } => {
                 let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
                 let new_body = self.resolve_expr(body, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EWhile {
-                    cond: new_cond,
-                    body: new_body,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EWhile {
+                        cond: new_cond,
+                        body: new_body,
+                    },
+                )
             }
-            ast::Expr::EGo { expr } => {
+            ast::Expr::EGo { expr, astptr } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EGo { expr: new_expr })
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EGo { expr: new_expr })
             }
-            ast::Expr::ECall { func, args } => {
+            ast::Expr::ECall { func, args, astptr } => {
                 if let ast::Expr::EPath { path, .. } = func.as_ref()
                     && let Some(constructor) = self.constructor_path_for(path, ctx)
                 {
@@ -851,61 +1015,94 @@ impl NameResolution {
                         .iter()
                         .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                         .collect();
-                    return hir_table.alloc_expr(hir::Expr::EConstr {
-                        constructor: hir::ConstructorRef::Unresolved(constructor),
-                        args: new_args,
-                    });
+                    return self.alloc_expr_with_ptr(
+                        hir_table,
+                        *astptr,
+                        hir::Expr::EConstr {
+                            constructor: hir::ConstructorRef::Unresolved(constructor),
+                            args: new_args,
+                        },
+                    );
                 }
                 let new_func = self.resolve_expr(func, env, ctx, hir_table);
                 let new_args = args
                     .iter()
                     .map(|arg| self.resolve_expr(arg, env, ctx, hir_table))
                     .collect();
-                hir_table.alloc_expr(hir::Expr::ECall {
-                    func: new_func,
-                    args: new_args,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::ECall {
+                        func: new_func,
+                        args: new_args,
+                    },
+                )
             }
-            ast::Expr::EUnary { op, expr } => {
+            ast::Expr::EUnary { op, expr, astptr } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EUnary {
-                    op: *op,
-                    expr: new_expr,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EUnary {
+                        op: *op,
+                        expr: new_expr,
+                    },
+                )
             }
-            ast::Expr::EBinary { op, lhs, rhs } => {
+            ast::Expr::EBinary {
+                op,
+                lhs,
+                rhs,
+                astptr,
+            } => {
                 let new_lhs = self.resolve_expr(lhs, env, ctx, hir_table);
                 let new_rhs = self.resolve_expr(rhs, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EBinary {
-                    op: *op,
-                    lhs: new_lhs,
-                    rhs: new_rhs,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EBinary {
+                        op: *op,
+                        lhs: new_lhs,
+                        rhs: new_rhs,
+                    },
+                )
             }
-            ast::Expr::EProj { tuple, index } => {
+            ast::Expr::EProj {
+                tuple,
+                index,
+                astptr,
+            } => {
                 let new_tuple = self.resolve_expr(tuple, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EProj {
-                    tuple: new_tuple,
-                    index: *index,
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EProj {
+                        tuple: new_tuple,
+                        index: *index,
+                    },
+                )
             }
             ast::Expr::EField {
                 expr,
                 field,
-                astptr: _,
+                astptr,
             } => {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
-                hir_table.alloc_expr(hir::Expr::EField {
-                    expr: new_expr,
-                    field: HirIdent::name(&field.0),
-                })
+                self.alloc_expr_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Expr::EField {
+                        expr: new_expr,
+                        field: HirIdent::name(&field.0),
+                    },
+                )
             }
-            ast::Expr::EBlock { exprs } => {
+            ast::Expr::EBlock { exprs, astptr } => {
                 let new_exprs = exprs
                     .iter()
                     .map(|e| self.resolve_expr(e, env, ctx, hir_table))
                     .collect();
-                hir_table.alloc_expr(hir::Expr::EBlock { exprs: new_exprs })
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EBlock { exprs: new_exprs })
             }
         }
     }
@@ -921,55 +1118,115 @@ impl NameResolution {
             ast::Pat::PVar { name, astptr } => {
                 let newname = self.fresh_name(&name.0, hir_table);
                 env.add(name, newname);
-                hir_table.alloc_pat(hir::Pat::PVar {
-                    name: newname,
-                    astptr: *astptr,
-                })
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PVar {
+                        name: newname,
+                        astptr: *astptr,
+                    },
+                )
             }
-            ast::Pat::PUnit => hir_table.alloc_pat(hir::Pat::PUnit),
-            ast::Pat::PBool { value } => hir_table.alloc_pat(hir::Pat::PBool { value: *value }),
-            ast::Pat::PInt { value } => hir_table.alloc_pat(hir::Pat::PInt {
-                value: value.clone(),
-            }),
-            ast::Pat::PInt8 { value } => hir_table.alloc_pat(hir::Pat::PInt8 {
-                value: value.clone(),
-            }),
-            ast::Pat::PInt16 { value } => hir_table.alloc_pat(hir::Pat::PInt16 {
-                value: value.clone(),
-            }),
-            ast::Pat::PInt32 { value } => hir_table.alloc_pat(hir::Pat::PInt32 {
-                value: value.clone(),
-            }),
-            ast::Pat::PInt64 { value } => hir_table.alloc_pat(hir::Pat::PInt64 {
-                value: value.clone(),
-            }),
-            ast::Pat::PUInt8 { value } => hir_table.alloc_pat(hir::Pat::PUInt8 {
-                value: value.clone(),
-            }),
-            ast::Pat::PUInt16 { value } => hir_table.alloc_pat(hir::Pat::PUInt16 {
-                value: value.clone(),
-            }),
-            ast::Pat::PUInt32 { value } => hir_table.alloc_pat(hir::Pat::PUInt32 {
-                value: value.clone(),
-            }),
-            ast::Pat::PUInt64 { value } => hir_table.alloc_pat(hir::Pat::PUInt64 {
-                value: value.clone(),
-            }),
-            ast::Pat::PString { value } => hir_table.alloc_pat(hir::Pat::PString {
-                value: value.clone(),
-            }),
-            ast::Pat::PConstr { constructor, args } => {
+            ast::Pat::PUnit { astptr } => {
+                self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PUnit)
+            }
+            ast::Pat::PBool { value, astptr } => {
+                self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PBool { value: *value })
+            }
+            ast::Pat::PInt { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PInt {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PInt8 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PInt8 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PInt16 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PInt16 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PInt32 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PInt32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PInt64 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PInt64 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PUInt8 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PUInt8 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PUInt16 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PUInt16 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PUInt32 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PUInt32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PUInt64 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PUInt64 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PString { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PString {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PConstr {
+                constructor,
+                args,
+                astptr,
+            } => {
                 let new_args = args
                     .iter()
                     .map(|arg| self.resolve_pat(arg, env, ctx, hir_table))
                     .collect();
                 let constructor = self.normalize_constructor_path(constructor, ctx);
-                hir_table.alloc_pat(hir::Pat::PConstr {
-                    constructor: hir::ConstructorRef::Unresolved(constructor),
-                    args: new_args,
-                })
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PConstr {
+                        constructor: hir::ConstructorRef::Unresolved(constructor),
+                        args: new_args,
+                    },
+                )
             }
-            ast::Pat::PStruct { name, fields } => {
+            ast::Pat::PStruct {
+                name,
+                fields,
+                astptr,
+            } => {
                 let new_fields = fields
                     .iter()
                     .map(|(fname, pat)| {
@@ -988,19 +1245,25 @@ impl NameResolution {
                         package.0, ctx.current_package
                     ));
                 }
-                hir_table.alloc_pat(hir::Pat::PStruct {
-                    name: qualified,
-                    fields: new_fields,
-                })
+                self.alloc_pat_with_ptr(
+                    hir_table,
+                    *astptr,
+                    hir::Pat::PStruct {
+                        name: qualified,
+                        fields: new_fields,
+                    },
+                )
             }
-            ast::Pat::PTuple { pats } => {
+            ast::Pat::PTuple { pats, astptr } => {
                 let new_pats = pats
                     .iter()
                     .map(|pat| self.resolve_pat(pat, env, ctx, hir_table))
                     .collect();
-                hir_table.alloc_pat(hir::Pat::PTuple { pats: new_pats })
+                self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PTuple { pats: new_pats })
             }
-            ast::Pat::PWild => hir_table.alloc_pat(hir::Pat::PWild),
+            ast::Pat::PWild { astptr } => {
+                self.alloc_pat_with_ptr(hir_table, *astptr, hir::Pat::PWild)
+            }
         }
     }
 

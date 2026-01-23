@@ -101,9 +101,9 @@ impl Expr {
         match self {
             Self::EPath { path, astptr: _ } => RcDoc::text(path.display()),
 
-            Self::EUnit => RcDoc::text("()"),
+            Self::EUnit { astptr: _ } => RcDoc::text("()"),
 
-            Self::EBool { value } => {
+            Self::EBool { value, astptr: _ } => {
                 if *value {
                     RcDoc::text("true")
                 } else {
@@ -111,21 +111,25 @@ impl Expr {
                 }
             }
 
-            Self::EInt { value } => RcDoc::text(value.clone()),
-            Self::EInt8 { value } => RcDoc::text(format!("{}i8", value)),
-            Self::EInt16 { value } => RcDoc::text(format!("{}i16", value)),
-            Self::EInt32 { value } => RcDoc::text(format!("{}i32", value)),
-            Self::EInt64 { value } => RcDoc::text(format!("{}i64", value)),
-            Self::EUInt8 { value } => RcDoc::text(format!("{}u8", value)),
-            Self::EUInt16 { value } => RcDoc::text(format!("{}u16", value)),
-            Self::EUInt32 { value } => RcDoc::text(format!("{}u32", value)),
-            Self::EUInt64 { value } => RcDoc::text(format!("{}u64", value)),
-            Self::EFloat { value } => RcDoc::text(value.to_string()),
-            Self::EFloat32 { value } => RcDoc::text(format!("{}f32", value)),
-            Self::EFloat64 { value } => RcDoc::text(format!("{}f64", value)),
-            Self::EString { value } => RcDoc::text(format!("{:?}", value)),
+            Self::EInt { value, astptr: _ } => RcDoc::text(value.clone()),
+            Self::EInt8 { value, astptr: _ } => RcDoc::text(format!("{}i8", value)),
+            Self::EInt16 { value, astptr: _ } => RcDoc::text(format!("{}i16", value)),
+            Self::EInt32 { value, astptr: _ } => RcDoc::text(format!("{}i32", value)),
+            Self::EInt64 { value, astptr: _ } => RcDoc::text(format!("{}i64", value)),
+            Self::EUInt8 { value, astptr: _ } => RcDoc::text(format!("{}u8", value)),
+            Self::EUInt16 { value, astptr: _ } => RcDoc::text(format!("{}u16", value)),
+            Self::EUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
+            Self::EUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
+            Self::EFloat { value, astptr: _ } => RcDoc::text(value.to_string()),
+            Self::EFloat32 { value, astptr: _ } => RcDoc::text(format!("{}f32", value)),
+            Self::EFloat64 { value, astptr: _ } => RcDoc::text(format!("{}f64", value)),
+            Self::EString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
 
-            Self::EConstr { constructor, args } => {
+            Self::EConstr {
+                constructor,
+                args,
+                astptr: _,
+            } => {
                 let prefix = RcDoc::text(constructor.display());
 
                 if args.is_empty() {
@@ -141,7 +145,11 @@ impl Expr {
                 }
             }
 
-            Self::EStructLiteral { name, fields } => {
+            Self::EStructLiteral {
+                name,
+                fields,
+                astptr: _,
+            } => {
                 if fields.is_empty() {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
@@ -170,7 +178,7 @@ impl Expr {
                 }
             }
 
-            Self::ETuple { items } => {
+            Self::ETuple { items, astptr: _ } => {
                 if items.is_empty() {
                     RcDoc::text("()")
                 } else {
@@ -183,7 +191,7 @@ impl Expr {
                 }
             }
 
-            Self::EArray { items } => {
+            Self::EArray { items, astptr: _ } => {
                 if items.is_empty() {
                     RcDoc::text("[]")
                 } else {
@@ -196,7 +204,11 @@ impl Expr {
                 }
             }
 
-            Self::EClosure { params, body } => {
+            Self::EClosure {
+                params,
+                body,
+                astptr: _,
+            } => {
                 let params_doc = RcDoc::intersperse(
                     params.iter().map(|param| param.to_doc()),
                     RcDoc::text(", "),
@@ -211,6 +223,7 @@ impl Expr {
                 pat,
                 annotation,
                 value,
+                astptr: _,
             } => {
                 let base_pat_doc = pat.to_doc();
                 let pat_doc = if let Some(ty) = annotation {
@@ -255,6 +268,7 @@ impl Expr {
                 cond,
                 then_branch,
                 else_branch,
+                astptr: _,
             } => {
                 let then_doc = RcDoc::hardline()
                     .append(then_branch.to_doc())
@@ -280,7 +294,11 @@ impl Expr {
                     .append(RcDoc::text("}"))
                     .group()
             }
-            Self::EWhile { cond, body } => {
+            Self::EWhile {
+                cond,
+                body,
+                astptr: _,
+            } => {
                 let body_doc = RcDoc::hardline()
                     .append(body.to_doc())
                     .nest(4)
@@ -296,11 +314,15 @@ impl Expr {
                     .group()
             }
 
-            Self::EGo { expr } => RcDoc::text("go")
+            Self::EGo { expr, astptr: _ } => RcDoc::text("go")
                 .append(RcDoc::space())
                 .append(expr.to_doc()),
 
-            Self::ECall { func, args } => {
+            Self::ECall {
+                func,
+                args,
+                astptr: _,
+            } => {
                 let func_doc = func.to_doc();
                 if args.is_empty() {
                     func_doc.append(RcDoc::text("()"))
@@ -316,14 +338,27 @@ impl Expr {
                         .group()
                 }
             }
-            Self::EUnary { op, expr } => RcDoc::text(op.symbol()).append(expr.to_doc()).group(),
-            Self::EBinary { op, lhs, rhs } => lhs
+            Self::EUnary {
+                op,
+                expr,
+                astptr: _,
+            } => RcDoc::text(op.symbol()).append(expr.to_doc()).group(),
+            Self::EBinary {
+                op,
+                lhs,
+                rhs,
+                astptr: _,
+            } => lhs
                 .to_doc()
                 .append(RcDoc::space())
                 .append(RcDoc::text(op.symbol()))
                 .append(RcDoc::space())
                 .append(rhs.to_doc()),
-            Self::EProj { tuple, index } => tuple
+            Self::EProj {
+                tuple,
+                index,
+                astptr: _,
+            } => tuple
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(index.to_string())),
@@ -331,7 +366,7 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
-            Self::EBlock { exprs } => {
+            Self::EBlock { exprs, astptr: _ } => {
                 if exprs.is_empty() {
                     RcDoc::text("{}")
                 } else {
@@ -361,25 +396,29 @@ impl Pat {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Pat::PVar { name, astptr: _ } => RcDoc::text(name.0.clone()),
-            Pat::PUnit => RcDoc::text("()"),
-            Pat::PBool { value } => {
+            Pat::PUnit { astptr: _ } => RcDoc::text("()"),
+            Pat::PBool { value, astptr: _ } => {
                 if *value {
                     RcDoc::text("true")
                 } else {
                     RcDoc::text("false")
                 }
             }
-            Pat::PInt { value } => RcDoc::text(value.clone()),
-            Pat::PInt8 { value } => RcDoc::text(format!("{}i8", value)),
-            Pat::PInt16 { value } => RcDoc::text(format!("{}i16", value)),
-            Pat::PInt32 { value } => RcDoc::text(format!("{}i32", value)),
-            Pat::PInt64 { value } => RcDoc::text(format!("{}i64", value)),
-            Pat::PUInt8 { value } => RcDoc::text(format!("{}u8", value)),
-            Pat::PUInt16 { value } => RcDoc::text(format!("{}u16", value)),
-            Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
-            Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
-            Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
-            Pat::PConstr { constructor, args } => {
+            Pat::PInt { value, astptr: _ } => RcDoc::text(value.clone()),
+            Pat::PInt8 { value, astptr: _ } => RcDoc::text(format!("{}i8", value)),
+            Pat::PInt16 { value, astptr: _ } => RcDoc::text(format!("{}i16", value)),
+            Pat::PInt32 { value, astptr: _ } => RcDoc::text(format!("{}i32", value)),
+            Pat::PInt64 { value, astptr: _ } => RcDoc::text(format!("{}i64", value)),
+            Pat::PUInt8 { value, astptr: _ } => RcDoc::text(format!("{}u8", value)),
+            Pat::PUInt16 { value, astptr: _ } => RcDoc::text(format!("{}u16", value)),
+            Pat::PUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
+            Pat::PUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
+            Pat::PString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
+            Pat::PConstr {
+                constructor,
+                args,
+                astptr: _,
+            } => {
                 let prefix = RcDoc::text(constructor.display());
 
                 if args.is_empty() {
@@ -393,7 +432,11 @@ impl Pat {
                         .append(RcDoc::text(")"))
                 }
             }
-            Pat::PStruct { name, fields } => {
+            Pat::PStruct {
+                name,
+                fields,
+                astptr: _,
+            } => {
                 if fields.is_empty() {
                     RcDoc::text(name.display())
                         .append(RcDoc::space())
@@ -414,7 +457,7 @@ impl Pat {
                         .append(RcDoc::text(" }"))
                 }
             }
-            Pat::PTuple { pats } => {
+            Pat::PTuple { pats, astptr: _ } => {
                 if pats.is_empty() {
                     RcDoc::text("()")
                 } else {
@@ -425,7 +468,7 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
-            Pat::PWild => RcDoc::text("_"),
+            Pat::PWild { astptr: _ } => RcDoc::text("_"),
         }
     }
 
@@ -677,7 +720,7 @@ impl Fn {
                 .append(ret_ty_doc)
                 .append(RcDoc::space())
                 .append(match &self.body {
-                    Expr::EBlock { exprs } => {
+                    Expr::EBlock { exprs, astptr: _ } => {
                         if exprs.is_empty() {
                             RcDoc::text("{}")
                         } else {

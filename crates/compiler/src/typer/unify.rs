@@ -746,7 +746,7 @@ impl Typer {
         }
     }
 
-    fn subst_ty(&mut self, diagnostics: &mut Diagnostics, ty: &tast::Ty) -> tast::Ty {
+    pub(crate) fn subst_ty(&mut self, diagnostics: &mut Diagnostics, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {
@@ -810,6 +810,57 @@ impl Typer {
                 let ret_ty = Box::new(self.subst_ty(diagnostics, ret_ty));
                 tast::Ty::TFunc { params, ret_ty }
             }
+            tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
+        }
+    }
+
+    pub(crate) fn subst_ty_silent(&mut self, ty: &tast::Ty) -> tast::Ty {
+        match ty {
+            tast::Ty::TVar(v) => self
+                .uni
+                .probe_value(*v)
+                .as_ref()
+                .map(|value| self.subst_ty_silent(value))
+                .unwrap_or(tast::Ty::TVar(*v)),
+            tast::Ty::TUnit => tast::Ty::TUnit,
+            tast::Ty::TBool => tast::Ty::TBool,
+            tast::Ty::TInt8 => tast::Ty::TInt8,
+            tast::Ty::TInt16 => tast::Ty::TInt16,
+            tast::Ty::TInt32 => tast::Ty::TInt32,
+            tast::Ty::TInt64 => tast::Ty::TInt64,
+            tast::Ty::TUint8 => tast::Ty::TUint8,
+            tast::Ty::TUint16 => tast::Ty::TUint16,
+            tast::Ty::TUint32 => tast::Ty::TUint32,
+            tast::Ty::TUint64 => tast::Ty::TUint64,
+            tast::Ty::TFloat32 => tast::Ty::TFloat32,
+            tast::Ty::TFloat64 => tast::Ty::TFloat64,
+            tast::Ty::TString => tast::Ty::TString,
+            tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+                typs: typs.iter().map(|ty| self.subst_ty_silent(ty)).collect(),
+            },
+            tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+            tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+            tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+                trait_name: trait_name.clone(),
+            },
+            tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+                ty: Box::new(self.subst_ty_silent(ty)),
+                args: args.iter().map(|arg| self.subst_ty_silent(arg)).collect(),
+            },
+            tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+                len: *len,
+                elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::TVec { elem } => tast::Ty::TVec {
+                elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::TRef { elem } => tast::Ty::TRef {
+                elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+                params: params.iter().map(|ty| self.subst_ty_silent(ty)).collect(),
+                ret_ty: Box::new(self.subst_ty_silent(ret_ty)),
+            },
             tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         }
     }

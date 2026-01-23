@@ -1,48 +1,126 @@
-use std::path::Path;
+use std::{collections::HashMap, path::Path};
 
 use cst::cst::CstNode;
 use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, pipeline, tast};
+use crate::{env::GlobalTypeEnv, hir, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 
-fn typecheck_single_file(
+#[derive(Debug, Clone)]
+struct HirResultsIndex {
+    expr_by_ptr: HashMap<MySyntaxNodePtr, hir::ExprId>,
+    pat_by_ptr: HashMap<MySyntaxNodePtr, hir::PatId>,
+    local_by_ptr: HashMap<MySyntaxNodePtr, hir::LocalId>,
+}
+
+impl HirResultsIndex {
+    fn new(hir_table: &hir::HirTable) -> Self {
+        let mut expr_by_ptr = HashMap::new();
+        let mut pat_by_ptr = HashMap::new();
+        let mut local_by_ptr = HashMap::new();
+
+        for idx in 0..hir_table.expr_count() {
+            let expr_id = hir::ExprId {
+                pkg: hir_table.package(),
+                idx: idx as u32,
+            };
+            if let Some(ptr) = hir_table.expr_ptr(expr_id) {
+                expr_by_ptr.insert(ptr, expr_id);
+            }
+        }
+
+        for idx in 0..hir_table.pat_count() {
+            let pat_id = hir::PatId {
+                pkg: hir_table.package(),
+                idx: idx as u32,
+            };
+            if let Some(ptr) = hir_table.pat_ptr(pat_id) {
+                pat_by_ptr.insert(ptr, pat_id);
+            }
+        }
+
+        for (local_id, _info) in hir_table.iter_locals() {
+            if let Some(ptr) = hir_table.local_origin_ptr(local_id) {
+                local_by_ptr.insert(ptr, local_id);
+            }
+        }
+
+        Self {
+            expr_by_ptr,
+            pat_by_ptr,
+            local_by_ptr,
+        }
+    }
+
+    fn expr_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::ExprId> {
+        self.expr_by_ptr.get(ptr).copied()
+    }
+
+    fn pat_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::PatId> {
+        self.pat_by_ptr.get(ptr).copied()
+    }
+
+    fn local_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::LocalId> {
+        self.local_by_ptr.get(ptr).copied()
+    }
+}
+
+fn typecheck_single_file_for_query(
     path: &Path,
     src: &str,
-) -> Result<(tast::File, GlobalTypeEnv, diagnostics::Diagnostics), String> {
+) -> Result<
+    (
+        hir::HirTable,
+        crate::typer::results::TypeckResults,
+        GlobalTypeEnv,
+        diagnostics::Diagnostics,
+    ),
+    String,
+> {
     let result = parser::parse(path, src);
-    if result.has_errors() {
-        return Err("parse error".to_string());
-    }
-    let root = MySyntaxNode::new_root(result.green_node);
+    let (green_node, mut parse_diagnostics) = result.into_parts();
+    let root = MySyntaxNode::new_root(green_node);
     let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast CST".to_string())?;
 
     let lower = ::ast::lower::lower(cst);
-    let ast = lower
-        .into_result()
-        .map_err(|_| "AST lowering error".to_string())?;
+    let (ast, mut lower_diagnostics) = lower.into_parts();
+    parse_diagnostics.append(&mut lower_diagnostics);
+    let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
 
     if !ast.imports.is_empty() {
         return Err("package imports are not supported in this context".to_string());
     }
 
-    let ast = crate::derive::expand(ast).map_err(|_| "derive expansion error".to_string())?;
+    let original_ast = ast.clone();
+    let ast = match crate::derive::expand(ast) {
+        Ok(ast) => ast,
+        Err(mut derive_diagnostics) => {
+            parse_diagnostics.append(&mut derive_diagnostics);
+            original_ast
+        }
+    };
 
     let (hir, hir_table, mut hir_diagnostics) = crate::hir::lower_to_hir(ast);
-    let (tast, genv, mut diagnostics) = crate::typer::check_file(hir, hir_table);
-    diagnostics.append(&mut hir_diagnostics);
+    let package = hir.name.0.clone();
+    let (hir_table, results, genv, mut type_diagnostics) =
+        crate::typer::check_file_with_env_and_results(
+            hir,
+            hir_table,
+            GlobalTypeEnv::new(),
+            &package,
+            HashMap::new(),
+        );
+    type_diagnostics.append(&mut hir_diagnostics);
+    parse_diagnostics.append(&mut type_diagnostics);
 
-    Ok((tast, genv, diagnostics))
+    Ok((hir_table, results, genv, parse_diagnostics))
 }
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {
     let result = parser::parse(path, src);
-    if result.has_errors() {
-        return Err("parse error".to_string());
-    }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
 
@@ -53,46 +131,58 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
     let node = cst.syntax().token_at_offset(offset);
     let token = match node {
         rowan::TokenAtOffset::None => None,
-        rowan::TokenAtOffset::Single(x) => {
-            if x.kind() == MySyntaxKind::Ident {
-                Some(x)
-            } else {
-                None
-            }
-        }
+        rowan::TokenAtOffset::Single(x) => Some(x),
         rowan::TokenAtOffset::Between(x, y) => {
             if x.kind() == MySyntaxKind::Ident {
                 Some(x)
-            } else if y.kind() == MySyntaxKind::Ident {
-                Some(y)
             } else {
-                None
+                Some(y)
             }
         }
     };
     let range = token.as_ref().map(|tok| tok.text_range());
 
-    let (tast, genv, _diagnostics) = typecheck_single_file(path, src).or_else(|_| {
-        pipeline::pipeline::typecheck_with_packages(path, src).map_err(|e| format!("{:?}", e))
-    })?;
+    let (hir_table, results, genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })?;
+    let index = HirResultsIndex::new(&hir_table);
+    let closure_params = ClosureParamIndex::new(&hir_table);
 
-    if let Some(range) = range
-        && let Some(ty) = find_type(&tast, &range)
-    {
-        return Ok(ty);
+    if let Some(token) = token.as_ref() {
+        if let Some(ty) = param_type_from_token(token, &closure_params, &results) {
+            return Ok(ty);
+        }
+
+        if let Some(pat_id) = find_mapped_pat_id_from_token(token, &index)
+            && let Some(ty) = results.pat_ty(pat_id)
+        {
+            return Ok(ty.to_pretty(80));
+        }
+
+        if let Some(expr_id) = find_mapped_expr_id_from_token(token, &index)
+            && let Some(ty) = results.expr_ty(expr_id)
+        {
+            return Ok(ty.to_pretty(80));
+        }
+
+        if let Some(local_id) = find_mapped_local_id_from_token(token, &index)
+            && let Some(ty) = results.local_ty(local_id)
+        {
+            return Ok(ty.to_pretty(80));
+        }
     }
 
     if let Some(token) = token.as_ref()
         && let Some(segments) = path_segments_from_token(token)
         && let Some(ty) = lookup_type_from_segments(&genv, &segments)
-            .or_else(|| find_type_by_name(&tast, &segments))
     {
         return Ok(ty);
     }
 
     if let Some(segments) = path_segments_at_offset(src, offset)
         && let Some(ty) = lookup_type_from_segments(&genv, &segments)
-            .or_else(|| find_type_by_name(&tast, &segments))
     {
         return Ok(ty);
     }
@@ -107,268 +197,57 @@ pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String,
         return Ok(ty);
     }
 
-    if let Some(token) = token.as_ref()
-        && let Some(expr_ptr) = find_expr_ptr_from_token(token)
-        && let Some(expr) = find_expr_for_completion(&tast, &expr_ptr)
-    {
-        return Ok(expr.get_ty().to_pretty(80));
-    }
-
     Err("no type information found".to_string())
 }
 
-fn find_type(tast: &tast::File, range: &rowan::TextRange) -> Option<String> {
-    for item in &tast.toplevels {
-        match item {
-            tast::Item::ImplBlock(impl_block) => {
-                for item in impl_block.methods.iter() {
-                    if let Some(t) = find_type_fn(item, range) {
-                        return Some(t.clone());
-                    }
+#[derive(Debug, Clone)]
+struct ClosureParamIndex {
+    local_by_ptr: HashMap<MySyntaxNodePtr, hir::LocalId>,
+}
+
+impl ClosureParamIndex {
+    fn new(hir_table: &hir::HirTable) -> Self {
+        let mut local_by_ptr = HashMap::new();
+        for idx in 0..hir_table.expr_count() {
+            let expr_id = hir::ExprId {
+                pkg: hir_table.package(),
+                idx: idx as u32,
+            };
+            if let hir::Expr::EClosure { params, .. } = hir_table.expr(expr_id) {
+                for param in params {
+                    local_by_ptr.insert(param.astptr, param.name);
                 }
             }
-            tast::Item::Fn(f) => {
-                if let Some(t) = find_type_fn(f, range) {
-                    return Some(t.clone());
-                }
-            }
-            tast::Item::ExternGo(_) => {}
-            tast::Item::ExternType(_) => {}
         }
+        Self { local_by_ptr }
+    }
+
+    fn local_id(&self, ptr: &MySyntaxNodePtr) -> Option<hir::LocalId> {
+        self.local_by_ptr.get(ptr).copied()
+    }
+}
+
+fn param_type_from_token(
+    token: &MySyntaxToken,
+    closure_params: &ClosureParamIndex,
+    results: &crate::typer::results::TypeckResults,
+) -> Option<String> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(param) = cst::nodes::Param::cast(node.clone()) {
+            return param.ty().map(|t| t.to_string());
+        }
+        if let Some(param) = cst::nodes::ClosureParam::cast(node.clone()) {
+            if let Some(ty) = param.ty() {
+                return Some(ty.to_string());
+            }
+            let ptr = MySyntaxNodePtr::new(param.syntax());
+            let local_id = closure_params.local_id(&ptr)?;
+            return results.local_ty(local_id).map(|t| t.to_pretty(80));
+        }
+        current = node.parent();
     }
     None
-}
-
-fn find_type_fn(tast: &tast::Fn, range: &rowan::TextRange) -> Option<String> {
-    find_type_expr(&tast.body, range)
-}
-
-fn find_type_expr(tast: &tast::Expr, range: &rowan::TextRange) -> Option<String> {
-    match tast {
-        tast::Expr::EVar {
-            name: _,
-            ty: _,
-            astptr,
-        } => {
-            if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Expr::EPrim { .. } => None,
-        tast::Expr::EConstr { .. } => None,
-        tast::Expr::ETuple { items, ty: _ } | tast::Expr::EArray { items, ty: _ } => {
-            for item in items {
-                if let Some(expr) = find_type_expr(item, range) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Expr::EClosure {
-            params,
-            body,
-            ty: _,
-            captures: _,
-        } => {
-            for param in params {
-                if let Some(astptr) = param.astptr
-                    && astptr.text_range().contains_range(*range)
-                {
-                    return Some(param.ty.to_pretty(80));
-                }
-            }
-            find_type_expr(body, range)
-        }
-        tast::Expr::ELet { pat, value, ty: _ } => {
-            if let Some(expr) = find_type_pat(pat, range) {
-                return Some(expr);
-            }
-            find_type_expr(value, range)
-        }
-        tast::Expr::EBlock { exprs, ty: _ } => {
-            for expr in exprs {
-                if let Some(result) = find_type_expr(expr, range) {
-                    return Some(result);
-                }
-            }
-            None
-        }
-        tast::Expr::EMatch {
-            expr,
-            arms,
-            ty: _,
-            astptr,
-        } => {
-            if let Some(expr) = find_type_expr(expr, range) {
-                return Some(expr);
-            }
-            for arm in arms {
-                if let Some(expr) = find_type_pat(&arm.pat, range) {
-                    return Some(expr);
-                }
-                if let Some(expr) = find_type_expr(&arm.body, range) {
-                    return Some(expr);
-                }
-            }
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-            ty: _,
-        } => {
-            if let Some(expr) = find_type_expr(cond, range) {
-                return Some(expr);
-            }
-            if let Some(expr) = find_type_expr(then_branch, range) {
-                return Some(expr);
-            }
-            find_type_expr(else_branch, range)
-        }
-        tast::Expr::EWhile { cond, body, ty: _ } => {
-            if let Some(expr) = find_type_expr(cond, range) {
-                return Some(expr);
-            }
-            find_type_expr(body, range)
-        }
-        tast::Expr::EGo { expr, ty: _ } => find_type_expr(expr, range),
-        tast::Expr::ECall { func, args, ty: _ } => {
-            if let Some(expr) = find_type_expr(func, range) {
-                return Some(expr);
-            }
-            for arg in args {
-                if let Some(expr) = find_type_expr(arg, range) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Expr::EBinary {
-            lhs, rhs, ty: _, ..
-        } => {
-            if let Some(expr) = find_type_expr(lhs, range) {
-                return Some(expr);
-            }
-            if let Some(expr) = find_type_expr(rhs, range) {
-                return Some(expr);
-            }
-            None
-        }
-        tast::Expr::EUnary { expr, ty: _, .. } => find_type_expr(expr, range),
-        tast::Expr::EProj {
-            tuple,
-            index: _,
-            ty: _,
-        } => {
-            if let Some(expr) = find_type_expr(tuple, range) {
-                return Some(expr);
-            }
-            None
-        }
-        tast::Expr::EField {
-            expr,
-            field_name: _,
-            ty: _,
-            astptr,
-        } => {
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            if let Some(expr) = find_type_expr(expr, range) {
-                return Some(expr);
-            }
-            None
-        }
-        tast::Expr::ETraitMethod {
-            trait_name: _,
-            method_name: _,
-            ty: _,
-            astptr,
-        } => {
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Expr::EDynTraitMethod {
-            trait_name: _,
-            method_name: _,
-            ty: _,
-            astptr,
-        } => {
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Expr::EInherentMethod {
-            receiver_ty: _,
-            method_name: _,
-            ty: _,
-            astptr,
-        } => {
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Expr::EToDyn { expr, astptr, .. } => {
-            if let Some(astptr) = astptr
-                && astptr.text_range().contains_range(*range)
-            {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            find_type_expr(expr, range)
-        }
-    }
-}
-
-fn find_type_pat(tast: &tast::Pat, range: &rowan::TextRange) -> Option<String> {
-    match tast {
-        tast::Pat::PVar {
-            name: _,
-            ty: _,
-            astptr,
-        } => {
-            if astptr.unwrap().text_range().contains_range(*range) {
-                return Some(tast.get_ty().to_pretty(80));
-            }
-            None
-        }
-        tast::Pat::PPrim { value: _, ty: _ } => None,
-        tast::Pat::PConstr { args, .. } => {
-            for arg in args {
-                if let Some(expr) = find_type_pat(arg, range) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Pat::PTuple { items, ty: _ } => {
-            for item in items {
-                if let Some(expr) = find_type_pat(item, range) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Pat::PWild { ty: _ } => None,
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -384,6 +263,22 @@ pub struct DotCompletionItem {
     pub detail: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ColonColonCompletionKind {
+    Type,
+    Value,
+    Trait,
+    Variant,
+    Method,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ColonColonCompletionItem {
+    pub name: String,
+    pub kind: ColonColonCompletionKind,
+    pub detail: Option<String>,
+}
+
 pub fn dot_completions(
     path: &Path,
     src: &str,
@@ -392,17 +287,22 @@ pub fn dot_completions(
 ) -> Option<Vec<DotCompletionItem>> {
     let line_index = line_index::LineIndex::new(src);
     let offset = line_index.offset(line_index::LineCol { line, col })?;
-    if offset == TextSize::from(0) {
+    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+    let dot_offset = prefix_start.checked_sub(TextSize::from(1))?;
+    if src.as_bytes().get(u32::from(dot_offset) as usize) != Some(&b'.') {
         return None;
     }
 
-    let dot_offset = offset.checked_sub(TextSize::from(1))?;
+    let parse_src = if prefix.is_empty() {
+        let mut fixed_src = src.to_string();
+        let insert_index = u32::from(offset) as usize;
+        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+        fixed_src
+    } else {
+        src.to_string()
+    };
 
-    let mut fixed_src = src.to_string();
-    let insert_index = u32::from(offset) as usize;
-    fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
-
-    let result = parser::parse(path, &fixed_src);
+    let result = parser::parse(path, &parse_src);
 
     let root = MySyntaxNode::new_root(result.green_node);
     let file = cst::cst::File::cast(root.clone())?;
@@ -444,157 +344,18 @@ pub fn dot_completions(
     let lhs_expr = exprs.next()?;
     let lhs_ptr = MySyntaxNodePtr::new(lhs_expr.syntax());
 
-    let (tast, genv, _diagnostics) = typecheck_single_file(path, &fixed_src)
-        .or_else(|_| {
-            pipeline::pipeline::typecheck_with_packages(path, &fixed_src)
-                .map_err(|e| format!("{:?}", e))
-        })
-        .ok()?;
-
-    let target_expr = find_expr_for_completion(&tast, &lhs_ptr)?;
-    let ty = normalize_completion_ty(target_expr.get_ty());
-    Some(completions_for_type(&genv, &ty))
-}
-
-fn find_expr_for_completion<'a>(
-    file: &'a tast::File,
-    ptr: &MySyntaxNodePtr,
-) -> Option<&'a tast::Expr> {
-    for item in &file.toplevels {
-        if let Some(expr) = find_expr_in_item(item, ptr) {
-            return Some(expr);
-        }
-    }
-    None
-}
-
-fn find_expr_in_item<'a>(item: &'a tast::Item, ptr: &MySyntaxNodePtr) -> Option<&'a tast::Expr> {
-    match item {
-        tast::Item::ImplBlock(block) => {
-            for method in &block.methods {
-                if let Some(expr) = find_expr_in_expr(&method.body, ptr) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Item::Fn(func) => find_expr_in_expr(&func.body, ptr),
-        tast::Item::ExternGo(_) | tast::Item::ExternType(_) => None,
-    }
-}
-
-fn find_expr_in_expr<'a>(expr: &'a tast::Expr, ptr: &MySyntaxNodePtr) -> Option<&'a tast::Expr> {
-    match expr {
-        tast::Expr::EVar {
-            astptr: Some(astptr),
-            ..
-        } if astptr == ptr => Some(expr),
-        tast::Expr::EVar { .. } => None,
-        tast::Expr::EPrim { .. } => None,
-        tast::Expr::EConstr { args, .. } => args.iter().find_map(|arg| find_expr_in_expr(arg, ptr)),
-        tast::Expr::ETuple { items, .. } | tast::Expr::EArray { items, .. } => {
-            items.iter().find_map(|item| find_expr_in_expr(item, ptr))
-        }
-        tast::Expr::EClosure { body, .. } => find_expr_in_expr(body, ptr),
-        tast::Expr::ELet { value, .. } => find_expr_in_expr(value, ptr),
-        tast::Expr::EBlock { exprs, .. } => {
-            for e in exprs {
-                if let Some(found) = find_expr_in_expr(e, ptr) {
-                    return Some(found);
-                }
-            }
-            None
-        }
-        tast::Expr::EMatch {
-            expr: scrutinee,
-            arms,
-            astptr,
-            ..
-        } => {
-            if let Some(astptr) = astptr
-                && astptr == ptr
-            {
-                return Some(expr);
-            }
-            if let Some(found) = find_expr_in_expr(scrutinee, ptr) {
-                return Some(found);
-            }
-            for arm in arms {
-                if let Some(found) = find_expr_in_expr(&arm.body, ptr) {
-                    return Some(found);
-                }
-            }
-            None
-        }
-        tast::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-            ..
-        } => {
-            if let Some(expr) = find_expr_in_expr(cond, ptr) {
-                return Some(expr);
-            }
-            if let Some(expr) = find_expr_in_expr(then_branch, ptr) {
-                return Some(expr);
-            }
-            find_expr_in_expr(else_branch, ptr)
-        }
-        tast::Expr::EWhile { cond, body, .. } => {
-            if let Some(expr) = find_expr_in_expr(cond, ptr) {
-                return Some(expr);
-            }
-            find_expr_in_expr(body, ptr)
-        }
-        tast::Expr::EGo { expr, .. } => find_expr_in_expr(expr, ptr),
-        tast::Expr::ECall { func, args, .. } => {
-            if let Some(expr) = find_expr_in_expr(func, ptr) {
-                return Some(expr);
-            }
-            for arg in args {
-                if let Some(expr) = find_expr_in_expr(arg, ptr) {
-                    return Some(expr);
-                }
-            }
-            None
-        }
-        tast::Expr::EBinary { lhs, rhs, .. } => {
-            if let Some(expr) = find_expr_in_expr(lhs, ptr) {
-                return Some(expr);
-            }
-            find_expr_in_expr(rhs, ptr)
-        }
-        tast::Expr::EUnary { expr: inner, .. } => find_expr_in_expr(inner, ptr),
-        tast::Expr::EProj { tuple, .. } => find_expr_in_expr(tuple, ptr),
-        tast::Expr::EField {
-            expr: inner,
-            astptr,
-            ..
-        } => {
-            if let Some(astptr) = astptr
-                && astptr == ptr
-            {
-                return Some(expr);
-            }
-            find_expr_in_expr(inner, ptr)
-        }
-        tast::Expr::ETraitMethod {
-            astptr: Some(astptr),
-            ..
-        } if astptr == ptr => Some(expr),
-        tast::Expr::ETraitMethod { .. } => None,
-        tast::Expr::EDynTraitMethod {
-            astptr: Some(astptr),
-            ..
-        } if astptr == ptr => Some(expr),
-        tast::Expr::EDynTraitMethod { .. } => None,
-        tast::Expr::EInherentMethod {
-            astptr: Some(astptr),
-            ..
-        } if astptr == ptr => Some(expr),
-        tast::Expr::EInherentMethod { .. } => None,
-        tast::Expr::EToDyn { expr: inner, .. } => find_expr_in_expr(inner, ptr),
-    }
+    let (hir_table, results, genv, _diagnostics) =
+        typecheck_single_file_for_query(path, &parse_src)
+            .or_else(|_| {
+                pipeline::pipeline::typecheck_with_packages_and_results(path, &parse_src)
+                    .map_err(|e| format!("{:?}", e))
+            })
+            .ok()?;
+    let index = HirResultsIndex::new(&hir_table);
+    let expr_id = index.expr_id(&lhs_ptr)?;
+    let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
+    let items = completions_for_type(&genv, &ty);
+    Some(filter_dot_items(items, &prefix))
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
@@ -656,6 +417,82 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
     items
 }
 
+pub fn colon_colon_completions(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+) -> Option<Vec<ColonColonCompletionItem>> {
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index.offset(line_index::LineCol { line, col })?;
+    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+    let colon_start = prefix_start.checked_sub(TextSize::from(2))?;
+    if src
+        .as_bytes()
+        .get(u32::from(colon_start) as usize..u32::from(prefix_start) as usize)
+        != Some(b"::")
+    {
+        return None;
+    }
+
+    let parse_src = if prefix.is_empty() {
+        let mut fixed_src = src.to_string();
+        let insert_index = u32::from(offset) as usize;
+        fixed_src.insert_str(insert_index, COMPLETION_PLACEHOLDER);
+        fixed_src
+    } else {
+        src.to_string()
+    };
+
+    let result = parser::parse(path, &parse_src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let file = cst::cst::File::cast(root.clone())?;
+
+    let focus_offset = if prefix.is_empty() {
+        offset
+    } else {
+        offset.checked_sub(TextSize::from(1))?
+    };
+
+    let token = match file.syntax().token_at_offset(focus_offset) {
+        rowan::TokenAtOffset::None => None,
+        rowan::TokenAtOffset::Single(x) => Some(x),
+        rowan::TokenAtOffset::Between(x, y) => {
+            if y.kind() == MySyntaxKind::Ident {
+                Some(y)
+            } else {
+                Some(x)
+            }
+        }
+    }?;
+
+    let path_node = ancestor_path_from_token(&token)?;
+    let segments = path_node
+        .ident_tokens()
+        .map(|tok| tok.to_string())
+        .collect::<Vec<_>>();
+    if segments.is_empty() {
+        return None;
+    }
+    let namespace = segments[..segments.len().saturating_sub(1)].join("::");
+    if namespace.is_empty() {
+        return None;
+    }
+
+    let (_hir_table, _results, genv, _diagnostics) =
+        typecheck_single_file_for_query(path, &parse_src)
+            .or_else(|_| {
+                pipeline::pipeline::typecheck_with_packages_and_results(path, &parse_src)
+                    .map_err(|e| format!("{:?}", e))
+            })
+            .ok()?;
+
+    let mut items = colon_colon_items_for_namespace(&genv, &namespace);
+    items.sort_by(|a, b| a.name.cmp(&b.name));
+    items.retain(|item| item.name.starts_with(&prefix));
+    Some(items)
+}
+
 fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
     match ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.as_str()),
@@ -665,11 +502,49 @@ fn type_constructor_name(ty: &tast::Ty) -> Option<&str> {
     }
 }
 
-fn find_expr_ptr_from_token(token: &MySyntaxToken) -> Option<MySyntaxNodePtr> {
+fn find_mapped_expr_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::ExprId> {
     let mut current = token.parent();
     while let Some(node) = current {
         if cst::nodes::Expr::can_cast(node.kind()) {
-            return Some(MySyntaxNodePtr::new(&node));
+            let ptr = MySyntaxNodePtr::new(&node);
+            if let Some(id) = index.expr_id(&ptr) {
+                return Some(id);
+            }
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn find_mapped_pat_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::PatId> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if cst::nodes::Pattern::can_cast(node.kind()) {
+            let ptr = MySyntaxNodePtr::new(&node);
+            if let Some(id) = index.pat_id(&ptr) {
+                return Some(id);
+            }
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn find_mapped_local_id_from_token(
+    token: &MySyntaxToken,
+    index: &HirResultsIndex,
+) -> Option<hir::LocalId> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        let ptr = MySyntaxNodePtr::new(&node);
+        if let Some(id) = index.local_id(&ptr) {
+            return Some(id);
         }
         current = node.parent();
     }
@@ -759,6 +634,197 @@ fn is_path_char(b: u8) -> bool {
     matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_' | b':')
 }
 
+fn is_ident_char(b: u8) -> bool {
+    matches!(b, b'a'..=b'z' | b'A'..=b'Z' | b'0'..=b'9' | b'_')
+}
+
+fn ident_prefix_at_offset(src: &str, offset: TextSize) -> Option<(TextSize, String)> {
+    let mut idx = u32::from(offset) as usize;
+    let bytes = src.as_bytes();
+    if idx > bytes.len() {
+        return None;
+    }
+    while idx > 0 && is_ident_char(bytes[idx - 1]) {
+        idx -= 1;
+    }
+    let start = idx;
+    let end = u32::from(offset) as usize;
+    let prefix = src.get(start..end)?.to_string();
+    Some((TextSize::from(start as u32), prefix))
+}
+
+fn filter_dot_items(items: Vec<DotCompletionItem>, prefix: &str) -> Vec<DotCompletionItem> {
+    if prefix.is_empty() {
+        return items;
+    }
+    items
+        .into_iter()
+        .filter(|item| item.name.starts_with(prefix))
+        .collect()
+}
+
+fn ancestor_path_from_token(token: &MySyntaxToken) -> Option<cst::nodes::Path> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(path) = cst::nodes::Path::cast(node.clone()) {
+            return Some(path);
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn colon_colon_items_for_namespace(
+    genv: &GlobalTypeEnv,
+    namespace: &str,
+) -> Vec<ColonColonCompletionItem> {
+    let mut items = Vec::new();
+
+    if let Some(enum_def) = genv.enums().get(&tast::TastIdent(namespace.to_string())) {
+        for (variant_name, payload) in &enum_def.variants {
+            let detail = if payload.is_empty() {
+                Some(namespace.to_string())
+            } else {
+                let payload_str = payload
+                    .iter()
+                    .map(|ty| ty.to_pretty(80))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                Some(format!("({}) -> {}", payload_str, namespace))
+            };
+            items.push(ColonColonCompletionItem {
+                name: variant_name.0.clone(),
+                kind: ColonColonCompletionKind::Variant,
+                detail,
+            });
+        }
+        items.extend(colon_colon_inherent_methods(
+            genv,
+            tast::Ty::TEnum {
+                name: namespace.to_string(),
+            },
+        ));
+        return items;
+    }
+
+    if genv.trait_env.trait_defs.contains_key(namespace) {
+        if let Some(trait_def) = genv.trait_env.trait_defs.get(namespace) {
+            for (method_name, scheme) in trait_def.methods.iter() {
+                items.push(ColonColonCompletionItem {
+                    name: method_name.clone(),
+                    kind: ColonColonCompletionKind::Method,
+                    detail: Some(scheme.ty.to_pretty(80)),
+                });
+            }
+        }
+        return items;
+    }
+
+    if genv
+        .structs()
+        .contains_key(&tast::TastIdent(namespace.to_string()))
+    {
+        items.extend(colon_colon_inherent_methods(
+            genv,
+            tast::Ty::TStruct {
+                name: namespace.to_string(),
+            },
+        ));
+        return items;
+    }
+
+    let ns_prefix = format!("{}::", namespace);
+
+    for name in genv.type_env.enums.keys() {
+        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Type,
+                detail: Some("enum".to_string()),
+            });
+        }
+    }
+    for name in genv.type_env.structs.keys() {
+        if let Some(member) = strip_namespace_member(&name.0, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Type,
+                detail: Some("struct".to_string()),
+            });
+        }
+    }
+    for name in genv.trait_env.trait_defs.keys() {
+        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Trait,
+                detail: None,
+            });
+        }
+    }
+    for name in genv.value_env.funcs.keys() {
+        if let Some(member) = strip_namespace_member(name, &ns_prefix) {
+            items.push(ColonColonCompletionItem {
+                name: member.to_string(),
+                kind: ColonColonCompletionKind::Value,
+                detail: Some("fn".to_string()),
+            });
+        }
+    }
+
+    items
+}
+
+fn strip_namespace_member<'a>(full: &'a str, ns_prefix: &str) -> Option<&'a str> {
+    if !full.starts_with(ns_prefix) {
+        return None;
+    }
+    let rest = &full[ns_prefix.len()..];
+    if rest.is_empty() || rest.contains("::") {
+        None
+    } else {
+        Some(rest)
+    }
+}
+
+fn colon_colon_inherent_methods(
+    genv: &GlobalTypeEnv,
+    receiver_ty: tast::Ty,
+) -> Vec<ColonColonCompletionItem> {
+    let mut items = Vec::new();
+    if let Some(impl_def) = genv
+        .trait_env
+        .inherent_impls
+        .get(&crate::env::InherentImplKey::Exact(receiver_ty.clone()))
+    {
+        items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+            ColonColonCompletionItem {
+                name: method_name.clone(),
+                kind: ColonColonCompletionKind::Method,
+                detail: Some(method_scheme.ty.to_pretty(80)),
+            }
+        }));
+    }
+    if let tast::Ty::TApp { ty, .. } = receiver_ty {
+        let base_name = ty.get_constr_name_unsafe();
+        if let Some(impl_def) = genv
+            .trait_env
+            .inherent_impls
+            .get(&crate::env::InherentImplKey::Constr(base_name))
+        {
+            items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
+                ColonColonCompletionItem {
+                    name: method_name.clone(),
+                    kind: ColonColonCompletionKind::Method,
+                    detail: Some(method_scheme.ty.to_pretty(80)),
+                }
+            }));
+        }
+    }
+    items.sort_by(|a, b| a.name.cmp(&b.name));
+    items
+}
+
 fn path_segments_from_token(token: &MySyntaxToken) -> Option<Vec<String>> {
     let mut current = token.parent();
     while let Some(node) = current {
@@ -796,118 +862,6 @@ fn lookup_type_from_segments(genv: &GlobalTypeEnv, segments: &[String]) -> Optio
         }
     }
     None
-}
-
-fn find_type_by_name(file: &tast::File, segments: &[String]) -> Option<String> {
-    let full_name = segments.join("::");
-    if let Some(ty) = find_type_by_name_in_file(file, &full_name) {
-        return Some(ty);
-    }
-    if let Some(last) = segments.last()
-        && let Some(ty) = find_type_by_name_in_file(file, last)
-    {
-        return Some(ty);
-    }
-    None
-}
-
-fn find_type_by_name_in_file(file: &tast::File, name: &str) -> Option<String> {
-    for item in &file.toplevels {
-        let expr = match item {
-            tast::Item::ImplBlock(block) => {
-                let mut found = None;
-                for method in &block.methods {
-                    if let Some(ty) = find_type_by_name_in_expr(&method.body, name) {
-                        found = Some(ty);
-                        break;
-                    }
-                }
-                if found.is_some() {
-                    return found;
-                }
-                continue;
-            }
-            tast::Item::Fn(func) => &func.body,
-            tast::Item::ExternGo(_) | tast::Item::ExternType(_) => continue,
-        };
-        if let Some(ty) = find_type_by_name_in_expr(expr, name) {
-            return Some(ty);
-        }
-    }
-    None
-}
-
-fn find_type_by_name_in_expr(expr: &tast::Expr, name: &str) -> Option<String> {
-    match expr {
-        tast::Expr::EVar { name: var, ty, .. } => {
-            if var == name {
-                Some(ty.to_pretty(80))
-            } else {
-                None
-            }
-        }
-        tast::Expr::EPrim { .. } => None,
-        tast::Expr::EConstr { args, .. } => args
-            .iter()
-            .find_map(|arg| find_type_by_name_in_expr(arg, name)),
-        tast::Expr::ETuple { items, .. } | tast::Expr::EArray { items, .. } => items
-            .iter()
-            .find_map(|item| find_type_by_name_in_expr(item, name)),
-        tast::Expr::EClosure { body, .. } => find_type_by_name_in_expr(body, name),
-        tast::Expr::ELet { value, .. } => find_type_by_name_in_expr(value, name),
-        tast::Expr::EBlock { exprs, .. } => {
-            for e in exprs {
-                if let Some(found) = find_type_by_name_in_expr(e, name) {
-                    return Some(found);
-                }
-            }
-            None
-        }
-        tast::Expr::EMatch { expr, arms, .. } => {
-            if let Some(found) = find_type_by_name_in_expr(expr, name) {
-                return Some(found);
-            }
-            for arm in arms {
-                if let Some(found) = find_type_by_name_in_expr(&arm.body, name) {
-                    return Some(found);
-                }
-            }
-            None
-        }
-        tast::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-            ..
-        } => find_type_by_name_in_expr(cond, name)
-            .or_else(|| find_type_by_name_in_expr(then_branch, name))
-            .or_else(|| find_type_by_name_in_expr(else_branch, name)),
-        tast::Expr::EWhile { cond, body, .. } => {
-            find_type_by_name_in_expr(cond, name).or_else(|| find_type_by_name_in_expr(body, name))
-        }
-        tast::Expr::EGo { expr, .. } => find_type_by_name_in_expr(expr, name),
-        tast::Expr::ECall { func, args, .. } => {
-            if let Some(found) = find_type_by_name_in_expr(func, name) {
-                return Some(found);
-            }
-            for arg in args {
-                if let Some(found) = find_type_by_name_in_expr(arg, name) {
-                    return Some(found);
-                }
-            }
-            None
-        }
-        tast::Expr::EBinary { lhs, rhs, .. } => {
-            find_type_by_name_in_expr(lhs, name).or_else(|| find_type_by_name_in_expr(rhs, name))
-        }
-        tast::Expr::EUnary { expr: inner, .. } => find_type_by_name_in_expr(inner, name),
-        tast::Expr::EProj { tuple, .. } => find_type_by_name_in_expr(tuple, name),
-        tast::Expr::EField { expr: inner, .. } => find_type_by_name_in_expr(inner, name),
-        tast::Expr::ETraitMethod { .. } => None,
-        tast::Expr::EDynTraitMethod { .. } => None,
-        tast::Expr::EInherentMethod { .. } => None,
-        tast::Expr::EToDyn { expr: inner, .. } => find_type_by_name_in_expr(inner, name),
-    }
 }
 
 fn find_function_type(genv: &GlobalTypeEnv, segments: &[String]) -> Option<tast::Ty> {

@@ -365,6 +365,10 @@ impl ConstructorId {
 pub enum ConstructorRef {
     Unresolved(Path),
     Resolved(ConstructorId),
+    Ambiguous {
+        path: Path,
+        candidates: Vec<ConstructorId>,
+    },
 }
 
 impl ConstructorRef {
@@ -372,6 +376,7 @@ impl ConstructorRef {
         match self {
             ConstructorRef::Unresolved(path) => path.display(),
             ConstructorRef::Resolved(id) => id.to_debug_string(),
+            ConstructorRef::Ambiguous { path, .. } => path.display(),
         }
     }
 }
@@ -386,7 +391,9 @@ pub struct HirTable {
     local_info: Vec<LocalInfo>,
     local_counter: u32,
     exprs: Arena<Expr>,
+    expr_ptrs: Vec<Option<MySyntaxNodePtr>>,
     pats: Arena<Pat>,
+    pat_ptrs: Vec<Option<MySyntaxNodePtr>>,
     dummy_expr: ExprId,
     dummy_pat: PatId,
     current_owner: Option<DefId>,
@@ -419,7 +426,9 @@ impl HirTable {
             local_info: Vec::new(),
             local_counter: 0,
             exprs,
+            expr_ptrs: vec![None],
             pats,
+            pat_ptrs: vec![None],
             dummy_expr,
             dummy_pat,
             current_owner: None,
@@ -428,6 +437,18 @@ impl HirTable {
 
     pub fn package(&self) -> PackageId {
         self.package
+    }
+
+    pub fn expr_count(&self) -> usize {
+        self.exprs.len()
+    }
+
+    pub fn pat_count(&self) -> usize {
+        self.pats.len()
+    }
+
+    pub fn local_count(&self) -> usize {
+        self.local_info.len()
     }
 
     pub fn dummy_expr(&self) -> ExprId {
@@ -497,6 +518,26 @@ impl HirTable {
         format!("{}/{}", self.local_hint(id), id.idx)
     }
 
+    pub fn iter_locals(&self) -> impl Iterator<Item = (LocalId, &LocalInfo)> {
+        self.local_info.iter().enumerate().map(|(idx, info)| {
+            (
+                LocalId {
+                    pkg: self.package,
+                    idx: idx as u32,
+                },
+                info,
+            )
+        })
+    }
+
+    pub fn local_origin_ptr(&self, id: LocalId) -> Option<MySyntaxNodePtr> {
+        assert_eq!(id.pkg, self.package);
+        match &self.local_info[id.idx as usize].origin {
+            LocalKey::AstBinder { ptr, .. } => Some(*ptr),
+            LocalKey::Synthetic { .. } => None,
+        }
+    }
+
     pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
         let path = Path::from_ident(name);
         let key = DefKey {
@@ -549,9 +590,13 @@ impl HirTable {
 
     pub fn alloc_expr(&mut self, expr: Expr) -> ExprId {
         let idx = self.exprs.alloc(expr);
+        let raw = idx.into_raw().into_u32();
+        if raw as usize >= self.expr_ptrs.len() {
+            self.expr_ptrs.resize(raw as usize + 1, None);
+        }
         ExprId {
             pkg: self.package,
-            idx: idx.into_raw().into_u32(),
+            idx: raw,
         }
     }
 
@@ -561,11 +606,31 @@ impl HirTable {
         &self.exprs[idx]
     }
 
+    pub fn set_expr_ptr(&mut self, id: ExprId, ptr: Option<MySyntaxNodePtr>) {
+        assert_eq!(id.pkg, self.package);
+        if id.idx as usize >= self.expr_ptrs.len() {
+            self.expr_ptrs.resize(id.idx as usize + 1, None);
+        }
+        self.expr_ptrs[id.idx as usize] = ptr;
+    }
+
+    pub fn expr_ptr(&self, id: ExprId) -> Option<MySyntaxNodePtr> {
+        assert_eq!(id.pkg, self.package);
+        self.expr_ptrs
+            .get(id.idx as usize)
+            .and_then(|ptr| ptr.as_ref())
+            .copied()
+    }
+
     pub fn alloc_pat(&mut self, pat: Pat) -> PatId {
         let idx = self.pats.alloc(pat);
+        let raw = idx.into_raw().into_u32();
+        if raw as usize >= self.pat_ptrs.len() {
+            self.pat_ptrs.resize(raw as usize + 1, None);
+        }
         PatId {
             pkg: self.package,
-            idx: idx.into_raw().into_u32(),
+            idx: raw,
         }
     }
 
@@ -573,6 +638,22 @@ impl HirTable {
         assert_eq!(id.pkg, self.package);
         let idx = Idx::from_raw(la_arena::RawIdx::from_u32(id.idx));
         &self.pats[idx]
+    }
+
+    pub fn set_pat_ptr(&mut self, id: PatId, ptr: Option<MySyntaxNodePtr>) {
+        assert_eq!(id.pkg, self.package);
+        if id.idx as usize >= self.pat_ptrs.len() {
+            self.pat_ptrs.resize(id.idx as usize + 1, None);
+        }
+        self.pat_ptrs[id.idx as usize] = ptr;
+    }
+
+    pub fn pat_ptr(&self, id: PatId) -> Option<MySyntaxNodePtr> {
+        assert_eq!(id.pkg, self.package);
+        self.pat_ptrs
+            .get(id.idx as usize)
+            .and_then(|ptr| ptr.as_ref())
+            .copied()
     }
 
     pub fn iter_defs(&self) -> impl Iterator<Item = (DefId, &Def)> {
@@ -1137,6 +1218,10 @@ pub enum Expr {
         hint: String,
         astptr: Option<MySyntaxNodePtr>,
     },
+    EStaticMember {
+        path: Path,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     EUnit,
     EBool {
         value: bool,
@@ -1408,11 +1493,15 @@ fn resolve_constructor_path(
             return ConstructorRef::Resolved(matches[0]);
         }
         if matches.len() > 1 {
+            let candidates = matches.clone();
             errors.push(ConstructorResolutionError {
                 path: path.clone(),
                 kind: ConstructorResolutionErrorKind::Ambiguous(matches),
             });
-            return ConstructorRef::Unresolved(path.clone());
+            return ConstructorRef::Ambiguous {
+                path: path.clone(),
+                candidates,
+            };
         }
     }
 
@@ -1427,7 +1516,10 @@ fn resolve_constructor_path(
                         path: path.clone(),
                         kind: ConstructorResolutionErrorKind::Ambiguous(ctors.clone()),
                     });
-                    return ConstructorRef::Unresolved(path.clone());
+                    return ConstructorRef::Ambiguous {
+                        path: path.clone(),
+                        candidates: ctors.clone(),
+                    };
                 }
             }
         }

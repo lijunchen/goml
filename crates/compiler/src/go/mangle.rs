@@ -54,11 +54,11 @@ pub fn go_ident(name: &str) -> String {
             continue;
         }
         if ch == '#' {
-            out.push_str("_");
+            out.push('_');
             continue;
         }
         if ch == '_' {
-            out.push_str("_");
+            out.push('_');
             continue;
         }
         out.push_str("_x");
