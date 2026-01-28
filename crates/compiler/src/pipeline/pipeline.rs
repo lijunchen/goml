@@ -11,8 +11,9 @@ use crate::pipeline::compile_error;
 use crate::pipeline::packages;
 use crate::{
     anf::{self, GlobalAnfEnv},
+    artifact::PackageExports,
     compile_match, derive,
-    env::{Gensym, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
+    env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
     hir,
     lift::{self, GlobalLiftEnv, LiftFile},
@@ -64,54 +65,6 @@ impl CompilationError {
             | CompilationError::Lower { diagnostics }
             | CompilationError::Typer { diagnostics }
             | CompilationError::Compile { diagnostics } => diagnostics,
-        }
-    }
-}
-
-#[derive(Debug, Clone)]
-struct PackageExports {
-    type_env: TypeEnv,
-    trait_env: TraitEnv,
-    value_env: ValueEnv,
-}
-
-impl PackageExports {
-    fn apply_to(&self, genv: &mut GlobalTypeEnv) {
-        for (name, def) in self.type_env.enums.iter() {
-            genv.type_env.enums.insert(name.clone(), def.clone());
-        }
-        for (name, def) in self.type_env.structs.iter() {
-            genv.type_env.structs.insert(name.clone(), def.clone());
-        }
-        for (name, def) in self.type_env.extern_types.iter() {
-            genv.type_env.extern_types.insert(name.clone(), def.clone());
-        }
-        for (name, def) in self.trait_env.trait_defs.iter() {
-            genv.trait_env.trait_defs.insert(name.clone(), def.clone());
-        }
-        for (key, def) in self.trait_env.trait_impls.iter() {
-            genv.trait_env.trait_impls.insert(key.clone(), def.clone());
-        }
-        for (key, def) in self.trait_env.inherent_impls.iter() {
-            genv.trait_env
-                .inherent_impls
-                .insert(key.clone(), def.clone());
-        }
-        for (name, scheme) in self.value_env.funcs.iter() {
-            genv.value_env.funcs.insert(name.clone(), scheme.clone());
-        }
-        for (name, func) in self.value_env.extern_funcs.iter() {
-            genv.value_env
-                .extern_funcs
-                .insert(name.clone(), func.clone());
-        }
-    }
-
-    fn to_genv(&self) -> GlobalTypeEnv {
-        GlobalTypeEnv {
-            type_env: self.type_env.clone(),
-            trait_env: self.trait_env.clone(),
-            value_env: self.value_env.clone(),
         }
     }
 }

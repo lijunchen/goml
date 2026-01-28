@@ -18,6 +18,7 @@ mod multiline_string_test;
 mod package;
 mod query_test;
 mod ref_type_test;
+mod separate_compile_test;
 mod struct_type_test;
 mod trait_impl_test;
 

@@ -1,5 +1,6 @@
 use ast::ast;
 use diagnostics::Diagnostics;
+use indexmap::IndexMap;
 use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
@@ -11,7 +12,7 @@ pub struct SourceFileAst {
     pub ast: ast::File,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct PackageName(pub String);
 
 impl PackageName {
@@ -20,7 +21,7 @@ impl PackageName {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct PackageId(pub u32);
 
 #[derive(Debug, Clone)]
@@ -79,18 +80,18 @@ impl Default for ProjectHirTable {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageInterface {
     pub id: PackageId,
     pub name: PackageName,
-    pub exports: HashMap<String, DefId>,
-    pub enum_variants: HashMap<String, Vec<String>>,
+    pub exports: IndexMap<String, DefId>,
+    pub enum_variants: IndexMap<String, Vec<String>>,
 }
 
 impl PackageInterface {
     pub fn from_hir(package: &PackageHir, table: &HirTable) -> Self {
-        let mut exports = HashMap::new();
-        let mut enum_variants = HashMap::new();
+        let mut exports = IndexMap::new();
+        let mut enum_variants = IndexMap::new();
 
         for &def_id in package.toplevels.iter() {
             match table.def(def_id) {
@@ -282,7 +283,7 @@ pub struct DefKey {
     pub disamb: u32,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct DefId {
     pub pkg: PackageId,
     pub idx: u32,

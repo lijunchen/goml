@@ -55,6 +55,18 @@ struct RunOptions {
     dumps: Vec<DumpStage>,
 }
 
+struct PackageCommandOptions {
+    package: String,
+    input_files: Vec<PathBuf>,
+    interface_paths: Vec<PathBuf>,
+    output: PathBuf,
+}
+
+struct LinkOptions {
+    input_cores: Vec<PathBuf>,
+    output: PathBuf,
+}
+
 fn main() {
     if let Err(err) = run_cli() {
         eprintln!("{err}");
@@ -74,6 +86,18 @@ fn run_cli() -> anyhow::Result<()> {
         "run" => {
             let options = parse_run_args(args)?;
             execute_run(options)
+        }
+        "check" => {
+            let options = parse_package_command_args(args)?;
+            execute_check(options)
+        }
+        "build" => {
+            let options = parse_package_command_args(args)?;
+            execute_build(options)
+        }
+        "link" => {
+            let options = parse_link_args(args)?;
+            execute_link(options)
         }
         "-h" | "--help" | "help" => {
             print_usage(&program);
@@ -126,6 +150,121 @@ where
     Ok(RunOptions { file_path, dumps })
 }
 
+fn parse_package_command_args<I>(args: I) -> anyhow::Result<PackageCommandOptions>
+where
+    I: IntoIterator<Item = String>,
+{
+    let mut package = None;
+    let mut input_files = Vec::new();
+    let mut interface_paths = Vec::new();
+    let mut output = None;
+
+    let mut iter = args.into_iter().peekable();
+    while let Some(arg) = iter.next() {
+        match arg.as_str() {
+            "--package" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| anyhow!("missing value for --package"))?;
+                package = Some(value);
+            }
+            "--input" => {
+                let mut any = false;
+                while let Some(next) = iter.peek() {
+                    if next.starts_with("--") {
+                        break;
+                    }
+                    any = true;
+                    input_files.push(PathBuf::from(iter.next().unwrap()));
+                }
+                if !any {
+                    bail!("--input requires at least one file");
+                }
+            }
+            "--interface-path" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| anyhow!("missing value for --interface-path"))?;
+                interface_paths.push(PathBuf::from(value));
+            }
+            "--output" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| anyhow!("missing value for --output"))?;
+                output = Some(PathBuf::from(value));
+            }
+            flag if flag.starts_with("--") => {
+                bail!("unknown flag: {flag}");
+            }
+            other => {
+                bail!("unexpected argument: {other}");
+            }
+        }
+    }
+
+    let package = package.ok_or_else(|| anyhow!("missing --package"))?;
+    if input_files.is_empty() {
+        bail!("missing --input");
+    }
+    let output = output.ok_or_else(|| anyhow!("missing --output"))?;
+
+    Ok(PackageCommandOptions {
+        package,
+        input_files,
+        interface_paths,
+        output,
+    })
+}
+
+fn parse_link_args<I>(args: I) -> anyhow::Result<LinkOptions>
+where
+    I: IntoIterator<Item = String>,
+{
+    let mut input_cores = Vec::new();
+    let mut output = None;
+
+    let mut iter = args.into_iter().peekable();
+    while let Some(arg) = iter.next() {
+        match arg.as_str() {
+            "--input" => {
+                let mut any = false;
+                while let Some(next) = iter.peek() {
+                    if next.starts_with("--") {
+                        break;
+                    }
+                    any = true;
+                    input_cores.push(PathBuf::from(iter.next().unwrap()));
+                }
+                if !any {
+                    bail!("--input requires at least one file");
+                }
+            }
+            "--output" => {
+                let value = iter
+                    .next()
+                    .ok_or_else(|| anyhow!("missing value for --output"))?;
+                output = Some(PathBuf::from(value));
+            }
+            flag if flag.starts_with("--") => {
+                bail!("unknown flag: {flag}");
+            }
+            other => {
+                bail!("unexpected argument: {other}");
+            }
+        }
+    }
+
+    if input_cores.is_empty() {
+        bail!("missing --input");
+    }
+    let output = output.ok_or_else(|| anyhow!("missing --output"))?;
+
+    Ok(LinkOptions {
+        input_cores,
+        output,
+    })
+}
+
 fn execute_run(options: RunOptions) -> anyhow::Result<()> {
     let src = fs::read_to_string(&options.file_path)
         .with_context(|| format!("error reading goml file: {}", options.file_path.display()))?;
@@ -146,6 +285,76 @@ fn execute_run(options: RunOptions) -> anyhow::Result<()> {
     let output = execute_go_source(&go_source)?;
     print!("{output}");
 
+    Ok(())
+}
+
+fn execute_check(options: PackageCommandOptions) -> anyhow::Result<()> {
+    let unit =
+        compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
+            package: options.package,
+            input_files: options.input_files,
+            interface_paths: options.interface_paths,
+        })
+        .map_err(|err| anyhow!("check failed: {:?}", err))?;
+
+    let out = options.output.with_extension("interface");
+    let json = serde_json::to_string_pretty(&unit)?;
+    if let Some(parent) = out.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(&out, json).with_context(|| format!("failed to write {}", out.display()))?;
+    Ok(())
+}
+
+fn execute_build(options: PackageCommandOptions) -> anyhow::Result<()> {
+    let unit =
+        compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
+            package: options.package,
+            input_files: options.input_files,
+            interface_paths: options.interface_paths,
+        })
+        .map_err(|err| anyhow!("build failed: {:?}", err))?;
+
+    let interface_path = options.output.with_extension("interface");
+    let core_path = options.output.with_extension("core");
+
+    let interface_json = serde_json::to_string_pretty(&unit.interface)?;
+    if let Some(parent) = interface_path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(&interface_path, interface_json)
+        .with_context(|| format!("failed to write {}", interface_path.display()))?;
+
+    let core_json = serde_json::to_string_pretty(&unit)?;
+    if let Some(parent) = core_path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(&core_path, core_json)
+        .with_context(|| format!("failed to write {}", core_path.display()))?;
+
+    Ok(())
+}
+
+fn execute_link(options: LinkOptions) -> anyhow::Result<()> {
+    let mut units = Vec::new();
+    for path in options.input_cores {
+        let unit = compiler::pipeline::separate::read_core(&path)
+            .map_err(|err| anyhow!("link failed: {:?} ({})", err, path.display()))?;
+        units.push(unit);
+    }
+
+    let linked = compiler::pipeline::separate::link_cores(units)
+        .map_err(|err| anyhow!("link failed: {:?}", err))?;
+    let go_source = linked.go.to_pretty(&linked.goenv, PRETTY_WIDTH);
+    if let Some(parent) = options.output.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(&options.output, go_source)
+        .with_context(|| format!("failed to write {}", options.output.display()))?;
     Ok(())
 }
 
@@ -286,6 +495,13 @@ fn print_usage(program: &str) {
     eprintln!(
         "  {program} run [--dump-ast --dump-hir --dump-tast --dump-core --dump-mono --dump-lift --dump-anf --dump-go] <file>"
     );
+    eprintln!(
+        "  {program} check --package Pkg --input a.gom b.gom --output Pkg.interface [--interface-path dir ...]"
+    );
+    eprintln!(
+        "  {program} build --package Pkg --input a.gom b.gom --output Pkg [--interface-path dir ...]"
+    );
+    eprintln!("  {program} link --input Pkg1.core Pkg2.core --output output.go");
     eprintln!();
     eprintln!("Examples:");
     eprintln!("  {program} run examples/hello.gom");
