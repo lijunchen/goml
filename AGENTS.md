@@ -15,7 +15,7 @@ The file extension for goml source files is `.gom`.
 - The CLI driver in `crates/compiler/src/main.rs` prints generated Go; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
 - The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
 - `typer/name_resolution.rs` should only handle AST → HIR lowering plus pure name/visibility resolution; avoid making decisions that depend on `GlobalTypeEnv` or type information.
-- `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as “fallback resolution paths” or cross-package name lookup.
+- `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as "fallback resolution paths" or cross-package name lookup.
 - Any "ambiguity" should produce recoverable diagnostics; never `panic!` inside env/lookup. When multiple candidates exist, return `None` and report the error at a higher level.
 
 
@@ -81,7 +81,7 @@ The file extension for goml source files is `.gom`.
 - Note: Multi-package tests only generate `.out` files, not intermediate IR stages like pipeline tests
 
 ## Commit & Pull Request Guidelines
-- Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: “add parser error for ...”.
+- Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: "add parser error for ...".
 - PRs: include a clear description, linked issues, and before/after notes or screenshots for web UI changes.
 - Required: run cargo check, test, fmt, clippy locally; ensure no clippy or fmt diffs.
 - Always run tests before notifying the user that a task is complete.
