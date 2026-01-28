@@ -1,6 +1,6 @@
 use crate::tast::TastIdent;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Prim {
     Unit { value: () },
     Bool { value: bool },
@@ -37,7 +37,7 @@ impl std::fmt::Display for Prim {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnumConstructor {
     pub type_name: TastIdent,
     pub variant: TastIdent,
@@ -50,12 +50,12 @@ impl EnumConstructor {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StructConstructor {
     pub type_name: TastIdent,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Constructor {
     Enum(EnumConstructor),
     Struct(StructConstructor),

@@ -11,34 +11,34 @@ use crate::{
 use std::cell::Cell;
 use std::collections::HashMap;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct EnumDef {
     pub name: TastIdent,
     pub generics: Vec<TastIdent>,
     pub variants: Vec<(TastIdent, Vec<tast::Ty>)>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct StructDef {
     pub name: TastIdent,
     pub generics: Vec<TastIdent>,
     pub fields: Vec<(TastIdent, tast::Ty)>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ExternFunc {
     pub package_path: String,
     pub go_name: String,
     pub ty: tast::Ty,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ExternType {
     pub go_name: String,
     pub package_path: Option<String>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Constraint {
     TypeEqual(tast::Ty, tast::Ty),
     Overloaded {
@@ -54,7 +54,7 @@ pub enum Constraint {
 }
 
 /// Origin of a function definition.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, serde::Serialize, serde::Deserialize)]
 pub enum FnOrigin {
     /// User-defined function in source code
     #[default]
@@ -65,7 +65,7 @@ pub enum FnOrigin {
     Compiler,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FnScheme {
     pub type_params: Vec<String>,
     pub constraints: (), // placeholder for future use
@@ -74,18 +74,18 @@ pub struct FnScheme {
     pub origin: FnOrigin,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TraitDef {
     pub methods: IndexMap<String, FnScheme>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ImplDef {
     pub params: Vec<TastIdent>,
     pub methods: IndexMap<String, FnScheme>,
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TypeEnv {
     pub enums: IndexMap<TastIdent, EnumDef>,
     pub structs: IndexMap<TastIdent, StructDef>,
@@ -354,14 +354,16 @@ impl TypeEnv {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct TraitEnv {
     pub trait_defs: IndexMap<String, TraitDef>,
+    #[serde(with = "indexmap::map::serde_seq")]
     pub trait_impls: IndexMap<(String, tast::Ty), ImplDef>,
+    #[serde(with = "indexmap::map::serde_seq")]
     pub inherent_impls: IndexMap<InherentImplKey, ImplDef>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum InherentImplKey {
     Exact(tast::Ty),
     Constr(String),
@@ -436,7 +438,7 @@ impl TraitEnv {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct ValueEnv {
     pub funcs: IndexMap<String, FnScheme>,
     pub extern_funcs: IndexMap<String, ExternFunc>,

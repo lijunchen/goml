@@ -2,12 +2,12 @@ pub type Ty = crate::tast::Ty;
 use crate::common::{Constructor, Prim};
 use crate::tast;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct File {
     pub toplevels: Vec<Fn>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Fn {
     pub name: String,
     pub generics: Vec<String>,
@@ -16,7 +16,7 @@ pub struct Fn {
     pub body: Expr,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Expr {
     EVar {
         name: String,
@@ -146,7 +146,7 @@ impl Expr {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Arm {
     pub lhs: Expr,
     pub body: Expr,

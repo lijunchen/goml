@@ -3,7 +3,7 @@ use parser::syntax::MySyntaxNodePtr;
 
 use crate::common::{Constructor, Prim};
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct TastIdent(pub String);
 
 impl TastIdent {
@@ -57,10 +57,11 @@ pub struct ExternType {
     pub goml_name: String,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ClosureParam {
     pub name: String,
     pub ty: Ty,
+    #[serde(skip)]
     pub astptr: Option<MySyntaxNodePtr>,
 }
 
@@ -70,7 +71,7 @@ impl ClosureParam {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum Ty {
     TVar(TypeVar),
     TUnit,
@@ -278,7 +279,7 @@ impl Prim {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub struct TypeVar(u32);
 
 #[derive(Debug, Clone)]
