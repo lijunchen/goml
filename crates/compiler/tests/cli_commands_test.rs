@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use compiler::artifact::{CoreUnit, InterfaceUnit};
+use expect_test::expect_file;
 use xshell::{Shell, cmd};
 
 fn goml_bin() -> PathBuf {
@@ -22,6 +23,35 @@ fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> anyhow::Result<T> {
 
 fn run_go(sh: &Shell, go_file: &Path) -> anyhow::Result<String> {
     Ok(cmd!(sh, "go run {go_file}").read()?)
+}
+
+fn expect_root() -> PathBuf {
+    PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("expect")
+        .join("cli_commands_test")
+}
+
+fn snapshot_path(test_name: &str, file_name: &str) -> PathBuf {
+    expect_root().join(test_name).join(file_name)
+}
+
+fn assert_snapshot_file(
+    test_name: &str,
+    file_name: &str,
+    actual_path: &Path,
+    temp_root: &Path,
+) -> anyhow::Result<()> {
+    let content = std::fs::read_to_string(actual_path)?;
+    let content = normalize_temp_paths(&content, temp_root);
+    let expected = snapshot_path(test_name, file_name);
+    expect_file![expected].assert_eq(&content);
+    Ok(())
+}
+
+fn normalize_temp_paths(text: &str, root: &Path) -> String {
+    let root_str = root.to_string_lossy();
+    text.replace(root_str.as_ref(), "<TMP>")
 }
 
 #[test]
@@ -50,6 +80,7 @@ fn main() -> unit {
         "{bin} check --package Main --input {main_gom} --output {main_interface}"
     )
     .run()?;
+    assert_snapshot_file("single", "Main.interface", &main_interface, root)?;
     let unit: InterfaceUnit = read_json(&main_interface)?;
     assert_eq!(unit.package, "Main");
     assert!(unit.validate_hash());
@@ -62,14 +93,19 @@ fn main() -> unit {
     .run()?;
     assert!(out.join("Main.interface").exists());
     assert!(out.join("Main.core").exists());
+    assert_snapshot_file("single", "Main.core", &out.join("Main.core"), root)?;
     let core: CoreUnit = read_json(&out.join("Main.core"))?;
     assert!(core.validate());
 
     let go_file = out.join("main.go");
     let main_core = out.join("Main.core");
     cmd!(sh, "{bin} link --input {main_core} --output {go_file}").run()?;
+    assert_snapshot_file("single", "main.go", &go_file, root)?;
     let output = run_go(&sh, &go_file)?;
-    assert_eq!(output, "ok");
+    {
+        let expected = snapshot_path("single", "output.txt");
+        expect_file![expected].assert_eq(&output);
+    }
 
     Ok(())
 }
@@ -116,11 +152,13 @@ fn main() -> unit {
         "{bin} check --package Lib --input {lib_gom} --output {lib_interface}"
     )
     .run()?;
+    assert_snapshot_file("with_dep", "Lib.interface", &lib_interface, root)?;
     cmd!(
         sh,
         "{bin} check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
     )
     .run()?;
+    assert_snapshot_file("with_dep", "Main.interface", &main_interface, root)?;
 
     let lib_out = out.join("Lib");
     let main_out = out.join("Main");
@@ -134,6 +172,8 @@ fn main() -> unit {
         "{bin} build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
     )
     .run()?;
+    assert_snapshot_file("with_dep", "Lib.core", &out.join("Lib.core"), root)?;
+    assert_snapshot_file("with_dep", "Main.core", &out.join("Main.core"), root)?;
 
     let go_file = out.join("main.go");
     let lib_core = out.join("Lib.core");
@@ -143,8 +183,12 @@ fn main() -> unit {
         "{bin} link --input {lib_core} {main_core} --output {go_file}"
     )
     .run()?;
+    assert_snapshot_file("with_dep", "main.go", &go_file, root)?;
     let output = run_go(&sh, &go_file)?;
-    assert_eq!(output, "hi");
+    {
+        let expected = snapshot_path("with_dep", "output.txt");
+        expect_file![expected].assert_eq(&output);
+    }
 
     Ok(())
 }
@@ -190,6 +234,7 @@ fn main() -> unit {
         "{bin} check --package Lib --input {lib_gom} --output {lib_interface}"
     )
     .run()?;
+    assert_snapshot_file("hash_mismatch", "Lib.interface", &lib_interface, root)?;
     let lib_out = out.join("Lib");
     cmd!(
         sh,
@@ -202,6 +247,7 @@ fn main() -> unit {
         "{bin} build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
     )
     .run()?;
+    assert_snapshot_file("hash_mismatch", "Main.core", &out.join("Main.core"), root)?;
 
     write_file(
         &lib_gom,
@@ -222,6 +268,7 @@ fn extra() -> int32 {
         "{bin} build --package Lib --input {lib_gom} --output {lib_out}"
     )
     .run()?;
+    assert_snapshot_file("hash_mismatch", "Lib.core", &out.join("Lib.core"), root)?;
 
     let go_file = out.join("main.go");
     let main_core = out.join("Main.core");
@@ -235,6 +282,11 @@ fn extra() -> int32 {
     assert!(!result.status.success());
     let stderr = String::from_utf8_lossy(&result.stderr);
     assert!(stderr.contains("expects interface_hash"));
+    {
+        let expected = snapshot_path("hash_mismatch", "stderr.txt");
+        let normalized = normalize_temp_paths(stderr.as_ref(), root);
+        expect_file![expected].assert_eq(&normalized);
+    }
 
     Ok(())
 }
