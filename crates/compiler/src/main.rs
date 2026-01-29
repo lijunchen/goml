@@ -3,12 +3,69 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
+use clap::{Args, Parser, Subcommand};
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
 const PRETTY_WIDTH: usize = 120;
+
+#[derive(Parser, Debug)]
+#[command(name = "goml", arg_required_else_help = true)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+enum Commands {
+    Run(RunArgs),
+    Check(PackageCommandArgs),
+    Build(PackageCommandArgs),
+    Link(LinkArgs),
+}
+
+#[derive(Args, Debug)]
+struct RunArgs {
+    #[arg(long = "dump-ast")]
+    dump_ast: bool,
+    #[arg(long = "dump-hir")]
+    dump_hir: bool,
+    #[arg(long = "dump-tast")]
+    dump_tast: bool,
+    #[arg(long = "dump-core")]
+    dump_core: bool,
+    #[arg(long = "dump-mono")]
+    dump_mono: bool,
+    #[arg(long = "dump-lift")]
+    dump_lift: bool,
+    #[arg(long = "dump-anf")]
+    dump_anf: bool,
+    #[arg(long = "dump-go")]
+    dump_go: bool,
+    file: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct PackageCommandArgs {
+    #[arg(long)]
+    package: String,
+    #[arg(long, required = true, num_args = 1..)]
+    input: Vec<PathBuf>,
+    #[arg(long = "interface-path")]
+    interface_path: Vec<PathBuf>,
+    #[arg(long)]
+    output: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct LinkArgs {
+    #[arg(long, required = true, num_args = 1..)]
+    input: Vec<PathBuf>,
+    #[arg(long)]
+    output: PathBuf,
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 enum DumpStage {
@@ -75,194 +132,77 @@ fn main() {
 }
 
 fn run_cli() -> anyhow::Result<()> {
-    let mut args = std::env::args();
-    let program = args.next().unwrap_or_else(|| "goml".to_string());
-    let Some(command) = args.next() else {
-        print_usage(&program);
-        bail!("missing command");
-    };
+    let cli = Cli::parse();
 
-    match command.as_str() {
-        "run" => {
-            let options = parse_run_args(args)?;
+    match cli.command {
+        Commands::Run(args) => {
+            let dumps = run_dumps(&args);
+            let options = RunOptions {
+                file_path: args.file,
+                dumps,
+            };
             execute_run(options)
         }
-        "check" => {
-            let options = parse_package_command_args(args)?;
+        Commands::Check(args) => {
+            let options = PackageCommandOptions {
+                package: args.package,
+                input_files: args.input,
+                interface_paths: args.interface_path,
+                output: args.output,
+            };
             execute_check(options)
         }
-        "build" => {
-            let options = parse_package_command_args(args)?;
+        Commands::Build(args) => {
+            let options = PackageCommandOptions {
+                package: args.package,
+                input_files: args.input,
+                interface_paths: args.interface_path,
+                output: args.output,
+            };
             execute_build(options)
         }
-        "link" => {
-            let options = parse_link_args(args)?;
+        Commands::Link(args) => {
+            let options = LinkOptions {
+                input_cores: args.input,
+                output: args.output,
+            };
             execute_link(options)
-        }
-        "-h" | "--help" | "help" => {
-            print_usage(&program);
-            Ok(())
-        }
-        other => {
-            print_usage(&program);
-            bail!("unknown command: {other}");
         }
     }
 }
 
-fn parse_run_args<I>(args: I) -> anyhow::Result<RunOptions>
-where
-    I: IntoIterator<Item = String>,
-{
+fn run_dumps(args: &RunArgs) -> Vec<DumpStage> {
     let mut dumps = Vec::new();
-    let mut file_path = None;
 
-    for arg in args {
-        match arg.as_str() {
-            "--dump-ast" => dumps.push(DumpStage::Ast),
-            "--dump-hir" => dumps.push(DumpStage::Hir),
-            "--dump-tast" => dumps.push(DumpStage::Tast),
-            "--dump-core" => dumps.push(DumpStage::Core),
-            "--dump-mono" => dumps.push(DumpStage::Mono),
-            "--dump-lift" => dumps.push(DumpStage::Lift),
-            "--dump-anf" => dumps.push(DumpStage::Anf),
-            "--dump-go" => dumps.push(DumpStage::Go),
-            flag if flag.starts_with("--dump-") => {
-                bail!("unknown dump flag: {flag}");
-            }
-            flag if flag.starts_with("--") => {
-                bail!("unknown flag: {flag}");
-            }
-            path => {
-                if file_path.is_some() {
-                    bail!("multiple input files provided: {path}");
-                }
-                file_path = Some(PathBuf::from(path));
-            }
-        }
+    if args.dump_ast {
+        dumps.push(DumpStage::Ast);
     }
-
-    let file_path = file_path.ok_or_else(|| anyhow!("missing input file path"))?;
+    if args.dump_hir {
+        dumps.push(DumpStage::Hir);
+    }
+    if args.dump_tast {
+        dumps.push(DumpStage::Tast);
+    }
+    if args.dump_core {
+        dumps.push(DumpStage::Core);
+    }
+    if args.dump_mono {
+        dumps.push(DumpStage::Mono);
+    }
+    if args.dump_lift {
+        dumps.push(DumpStage::Lift);
+    }
+    if args.dump_anf {
+        dumps.push(DumpStage::Anf);
+    }
+    if args.dump_go {
+        dumps.push(DumpStage::Go);
+    }
 
     dumps.sort_by_key(|stage| stage.order());
     dumps.dedup();
 
-    Ok(RunOptions { file_path, dumps })
-}
-
-fn parse_package_command_args<I>(args: I) -> anyhow::Result<PackageCommandOptions>
-where
-    I: IntoIterator<Item = String>,
-{
-    let mut package = None;
-    let mut input_files = Vec::new();
-    let mut interface_paths = Vec::new();
-    let mut output = None;
-
-    let mut iter = args.into_iter().peekable();
-    while let Some(arg) = iter.next() {
-        match arg.as_str() {
-            "--package" => {
-                let value = iter
-                    .next()
-                    .ok_or_else(|| anyhow!("missing value for --package"))?;
-                package = Some(value);
-            }
-            "--input" => {
-                let mut any = false;
-                while let Some(next) = iter.peek() {
-                    if next.starts_with("--") {
-                        break;
-                    }
-                    any = true;
-                    input_files.push(PathBuf::from(iter.next().unwrap()));
-                }
-                if !any {
-                    bail!("--input requires at least one file");
-                }
-            }
-            "--interface-path" => {
-                let value = iter
-                    .next()
-                    .ok_or_else(|| anyhow!("missing value for --interface-path"))?;
-                interface_paths.push(PathBuf::from(value));
-            }
-            "--output" => {
-                let value = iter
-                    .next()
-                    .ok_or_else(|| anyhow!("missing value for --output"))?;
-                output = Some(PathBuf::from(value));
-            }
-            flag if flag.starts_with("--") => {
-                bail!("unknown flag: {flag}");
-            }
-            other => {
-                bail!("unexpected argument: {other}");
-            }
-        }
-    }
-
-    let package = package.ok_or_else(|| anyhow!("missing --package"))?;
-    if input_files.is_empty() {
-        bail!("missing --input");
-    }
-    let output = output.ok_or_else(|| anyhow!("missing --output"))?;
-
-    Ok(PackageCommandOptions {
-        package,
-        input_files,
-        interface_paths,
-        output,
-    })
-}
-
-fn parse_link_args<I>(args: I) -> anyhow::Result<LinkOptions>
-where
-    I: IntoIterator<Item = String>,
-{
-    let mut input_cores = Vec::new();
-    let mut output = None;
-
-    let mut iter = args.into_iter().peekable();
-    while let Some(arg) = iter.next() {
-        match arg.as_str() {
-            "--input" => {
-                let mut any = false;
-                while let Some(next) = iter.peek() {
-                    if next.starts_with("--") {
-                        break;
-                    }
-                    any = true;
-                    input_cores.push(PathBuf::from(iter.next().unwrap()));
-                }
-                if !any {
-                    bail!("--input requires at least one file");
-                }
-            }
-            "--output" => {
-                let value = iter
-                    .next()
-                    .ok_or_else(|| anyhow!("missing value for --output"))?;
-                output = Some(PathBuf::from(value));
-            }
-            flag if flag.starts_with("--") => {
-                bail!("unknown flag: {flag}");
-            }
-            other => {
-                bail!("unexpected argument: {other}");
-            }
-        }
-    }
-
-    if input_cores.is_empty() {
-        bail!("missing --input");
-    }
-    let output = output.ok_or_else(|| anyhow!("missing --output"))?;
-
-    Ok(LinkOptions {
-        input_cores,
-        output,
-    })
+    dumps
 }
 
 fn execute_run(options: RunOptions) -> anyhow::Result<()> {
@@ -488,22 +428,4 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
             bail!("go run failed:\n{}", stderr.trim_end());
         }
     }
-}
-
-fn print_usage(program: &str) {
-    eprintln!("Usage:");
-    eprintln!(
-        "  {program} run [--dump-ast --dump-hir --dump-tast --dump-core --dump-mono --dump-lift --dump-anf --dump-go] <file>"
-    );
-    eprintln!(
-        "  {program} check --package Pkg --input a.gom b.gom --output Pkg.interface [--interface-path dir ...]"
-    );
-    eprintln!(
-        "  {program} build --package Pkg --input a.gom b.gom --output Pkg [--interface-path dir ...]"
-    );
-    eprintln!("  {program} link --input Pkg1.core Pkg2.core --output output.go");
-    eprintln!();
-    eprintln!("Examples:");
-    eprintln!("  {program} run examples/hello.gom");
-    eprintln!("  {program} run --dump-ast --dump-hir --dump-go examples/hello.gom");
 }
