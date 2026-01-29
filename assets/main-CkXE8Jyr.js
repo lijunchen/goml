@@ -1,0 +1,22 @@
+const n = `struct Point {
+  x: int32,
+  y: int32,
+}
+
+fn make_point(base: int32) -> Point {
+  Point { x: base, y: base + 1 }
+}
+
+fn sum_point(p: Point) -> int32 {
+  p.x + p.y
+}
+
+fn main() -> int32 {
+  let p = make_point(5);
+  let shifted = Point { x: p.x + 1, y: p.y - 2 };
+  shifted.x + sum_point(shifted)
+}
+`;
+export {
+  n as default
+};

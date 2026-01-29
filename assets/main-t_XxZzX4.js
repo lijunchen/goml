@@ -1,0 +1,19 @@
+const a = `fn update_array(arr: [int32; 3]) -> [int32; 3] {
+    array_set(arr, 1, 42)
+}
+
+fn read_array(arr: [int32; 3]) -> int32 {
+    array_get(arr, 1)
+}
+
+fn main() {
+    let arr = [1, 2, 3];
+    let updated = update_array(arr);
+    let value = read_array(updated);
+    let _ = string_println(int32_to_string(value));
+    ()
+}
+`;
+export {
+  a as default
+};

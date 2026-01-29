@@ -1,0 +1,22 @@
+const n = `enum Expr {
+    Zero,
+    Succ(Expr),
+    Add(Expr, Expr),
+    Mul(Expr, Expr),
+}
+
+fn main() {
+    let a = Mul(Add(Zero,Zero),Zero);
+    match a {
+        Add(Zero,Zero) => string_print(int32_to_string(0)),
+        Mul(Zero,x) => string_print(int32_to_string(1)),
+        Add(Succ(x),y) => string_print(int32_to_string(2)),
+        Mul(x,Zero) => string_print(int32_to_string(3)),
+        Mul(Add(x,y),z) => string_print(int32_to_string(4)),
+        Add(x,Zero) => string_print(int32_to_string(5)),
+        x => string_print(int32_to_string(6)),
+    }
+}`;
+export {
+  n as default
+};

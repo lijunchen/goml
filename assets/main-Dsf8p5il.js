@@ -1,0 +1,35 @@
+const n = `enum option[T] {
+    some(T),
+    none,
+}
+
+struct point {
+    x: int32,
+    y: int32,
+}
+
+fn make_some(value: int32) -> option[int32] {
+    some(value)
+}
+
+fn build_point(x: int32, y: int32) -> point {
+    point { x: x, y: y }
+}
+
+fn magnitude(p: point) -> int32 {
+    let point { x, y } = p;
+    x + y
+}
+
+fn main() -> int32 {
+    let some(result) = make_some(5);
+    let pt = build_point(result, 7);
+    match some(pt.x) {
+        some(value) => value + magnitude(pt),
+        none => 0,
+    }
+}
+`;
+export {
+  n as default
+};

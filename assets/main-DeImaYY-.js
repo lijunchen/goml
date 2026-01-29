@@ -1,0 +1,34 @@
+const n = `fn make_counter() -> (() -> int32, () -> unit) {
+    let cell = ref(0);
+    let next = || {
+        let next = ref_get(cell) + 1;
+        let _ = ref_set(cell, next);
+        next
+    };
+    let reset = || {
+        let _ = ref_set(cell, 0);
+        ()
+    };
+    (next, reset)
+}
+
+fn main() {
+    let counter = make_counter();
+    let (next, reset) = counter;
+    let first = next();
+    let second = next();
+    let _ = reset();
+    let third = next();
+    let new_counter = make_counter();
+    let (new_next, _) = new_counter;
+    let fourth = new_next();
+    let _ = string_println(int32_to_string(first));
+    let _ = string_println(int32_to_string(second));
+    let _ = string_println(int32_to_string(third));
+    let _ = string_println(int32_to_string(fourth));
+    ()
+}
+`;
+export {
+  n as default
+};

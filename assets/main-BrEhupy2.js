@@ -1,0 +1,15 @@
+const n = `struct Buffer {
+    values: [int32; 3],
+}
+
+fn id_array(x: [int32; 3]) -> [int32; 3] {
+    x
+}
+
+fn main() {
+    string_print("array")
+}
+`;
+export {
+  n as default
+};

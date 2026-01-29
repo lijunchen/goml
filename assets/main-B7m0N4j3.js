@@ -1,0 +1,16 @@
+const n = `fn main() {
+    let a = (true, false);
+    let _ = match a {
+        (true, b) => string_print(bool_to_string(b)),
+        _ => (),
+    };
+    let c = (true, true);
+    match c {
+        (true, d) => string_print(bool_to_string(d)),
+        _ => (),
+    }
+}
+`;
+export {
+  n as default
+};

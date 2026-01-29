@@ -1,0 +1,79 @@
+const n = `struct Point {
+    x: int32,
+    y: int32,
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+fn make_point() -> Point {
+    Point { x: 0, y: 0 }
+}
+
+fn flip(point: Point) -> Point {
+    let Point { x: x, y: y } = point;
+    Point { y: x, x: y }
+}
+
+fn wrap_int(x: int32) -> Wrapper[int32] {
+    Wrapper { value: x }
+}
+
+fn x_add_1(p: Point) -> Point {
+    let Point { x: x, y: y } = p;
+    Point { x: x + 1, y: y }
+}
+
+fn get_x(p: Point) -> int32 {
+    let Point { x: x, y: y } = p;
+    x
+}
+
+fn get_y(p: Point) -> int32 {
+    let Point { x: x, y: y } = p;
+    y
+}
+
+fn point32_to_string(p: Point) -> string {
+    let Point { x: x, y: y } = p;
+    "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + "}"
+}
+
+fn point32_to_string2(p: Point) -> string {
+    let Point { x, y } = p;
+    "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + "}"
+}
+
+fn point32_to_string3(p: Point) -> string {
+    let Point { x: x, y } = p;
+    "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + "}"
+}
+
+fn point32_to_string4(p: Point) -> string {
+    let Point { x, y: y } = p;
+    "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + "}"
+}
+
+fn main() {
+    let start = make_point();
+    let _ = string_println(point32_to_string(start));
+
+    let swapped = flip(Point { y: 2, x: 1 });
+    let _ = string_println(point32_to_string2(swapped));
+
+    let boxed = wrap_int(3);
+    let point_box = Wrapper { value: swapped };
+
+    let a = x_add_1(start);
+    let _ = string_println(point32_to_string3(a));
+
+    let a = flip(x_add_1(start));
+    let _ = string_println(point32_to_string4(a));
+
+    ()
+}
+`;
+export {
+  n as default
+};

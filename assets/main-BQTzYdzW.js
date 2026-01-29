@@ -1,0 +1,161 @@
+const n = `trait Display {
+    fn show(Self) -> string;
+}
+
+trait Debug {
+    fn show(Self) -> string;
+}
+
+trait Eq {
+    fn eq(Self, Self) -> bool;
+}
+
+trait Hash {
+    fn hash(Self) -> int32;
+}
+
+trait Add {
+    fn add(Self, Self) -> Self;
+}
+
+trait Scale {
+    fn scale(Self, int32) -> Self;
+}
+
+trait Inspect {
+    fn inspect(Self) -> string;
+}
+
+struct Boxed { value: int32 }
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Debug for int32 {
+    fn show(self: int32) -> string {
+        "i32(" + int32_to_string(self) + ")"
+    }
+}
+
+impl Eq for int32 {
+    fn eq(self: int32, other: int32) -> bool {
+        self == other
+    }
+}
+
+impl Hash for int32 {
+    fn hash(self: int32) -> int32 {
+        (self * 16777619) + 216613626
+    }
+}
+
+impl Add for int32 {
+    fn add(self: int32, other: int32) -> int32 {
+        self + other
+    }
+}
+
+impl Scale for int32 {
+    fn scale(self: int32, factor: int32) -> int32 {
+        self * factor
+    }
+}
+
+impl Inspect for int32 {
+    fn inspect(self: int32) -> string {
+        "<" + int32_to_string(self) + ">"
+    }
+}
+
+impl Display for Boxed {
+    fn show(self: Boxed) -> string {
+        "Boxed(" + int32_to_string(self.value) + ")"
+    }
+}
+
+impl Debug for Boxed {
+    fn show(self: Boxed) -> string {
+        "Boxed{value=" + int32_to_string(self.value) + "}"
+    }
+}
+
+impl Eq for Boxed {
+    fn eq(self: Boxed, other: Boxed) -> bool {
+        self.value == other.value
+    }
+}
+
+impl Hash for Boxed {
+    fn hash(self: Boxed) -> int32 {
+        ((self.value * 31) + 7) * 1315423911
+    }
+}
+
+impl Add for Boxed {
+    fn add(self: Boxed, other: Boxed) -> Boxed {
+        Boxed { value: self.value + other.value }
+    }
+}
+
+impl Scale for Boxed {
+    fn scale(self: Boxed, factor: int32) -> Boxed {
+        Boxed { value: self.value * factor }
+    }
+}
+
+impl Inspect for Boxed {
+    fn inspect(self: Boxed) -> string {
+        "[" + int32_to_string(self.value) + "]"
+    }
+}
+
+fn bool_text(x: bool) -> string {
+    if x { "true" } else { "false" }
+}
+
+fn show_both[T: Debug + Display](x: T) -> string {
+    (Debug::show(x) + " / ") + Display::show(x)
+}
+
+fn tag_text[Q: Debug + Hash](tag: Q) -> string {
+    (Debug::show(tag) + "#") + int32_to_string(tag.hash())
+}
+
+fn combine_scaled[T: Add + Scale](a: T, b: T, factor: int32) -> T {
+    a.add(b).scale(factor)
+}
+
+fn report_pair[T: Debug + Display + Eq + Hash, Q: Debug + Hash](tag: Q, a: T, b: T, combined: T) -> string {
+    let same = Eq::eq(a, b);
+    let header = tag_text(tag);
+    let repr = show_both(combined);
+    let h = combined.hash();
+    ((header + " ") + repr) + ((" | eq=" + bool_text(same)) + (" | hash=" + int32_to_string(h)))
+}
+
+fn full_report[T: Debug + Hash + Display + Eq + Add + Scale + Debug, Q: Debug + Hash](tag: Q, a: T, b: T) -> string {
+    let combined = combine_scaled(a, b, 2);
+    report_pair(tag, a, b, combined)
+}
+
+fn sum_and_tag[T: Add + Hash + Inspect, Q: Debug + Hash](tag: Q, x: T, y: T, z: T) -> string {
+    let total = x.add(y).add(z);
+    let header = tag_text(tag);
+    let h = total.hash();
+    ((header + " ") + total.inspect()) + (" @" + int32_to_string(h))
+}
+
+fn main() {
+    let _ = string_println(full_report(7, 10, 32));
+    let _ = string_println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
+    let _ = string_println(sum_and_tag(0, 1, 2, 3));
+    let _ = string_println(sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
+    ()
+}
+`;
+export {
+  n as default
+};

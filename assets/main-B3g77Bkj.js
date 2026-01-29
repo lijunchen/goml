@@ -1,0 +1,45 @@
+const n = `fn match_int(n: int32) -> int32 {
+  match n {
+    0 => 10,
+    1 => 20,
+    _ => 30,
+  }
+}
+
+fn wildcard_first(n: int32) -> int32 {
+  match n {
+    _ => 40,
+    0 => 50,
+  }
+}
+
+fn wildcard_middle(n: int32) -> int32 {
+  match n {
+    2 => 90,
+    _ => 100,
+    3 => 110,
+  }
+}
+
+fn repeated(n: int32) -> int32 {
+  match n {
+    1 => 60,
+    1 => 70,
+    _ => 80,
+  }
+}
+
+fn main() {
+    let _ = string_println(int32_to_string(match_int(0)));
+    let _ = string_println(int32_to_string(match_int(5)));
+    let _ = string_println(int32_to_string(wildcard_first(0)));
+    let _ = string_println(int32_to_string(wildcard_first(2)));
+    let _ = string_println(int32_to_string(wildcard_middle(2)));
+    let _ = string_println(int32_to_string(wildcard_middle(3)));
+    let _ = string_println(int32_to_string(repeated(1)));
+    string_println(int32_to_string(repeated(3)))
+}
+`;
+export {
+  n as default
+};

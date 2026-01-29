@@ -1,0 +1,21 @@
+const n = `extern type Duration
+
+extern "go" "time" sleep(d: Duration) -> unit
+extern "go" "time" duration(nanos: int32) -> Duration
+
+
+fn main() {
+    let counter = ref(0);
+    go || {
+        while ref_get(counter) < 10 {
+            string_println("hello");
+            sleep(duration(1000));
+            ref_set(counter, ref_get(counter) + 1);
+        }
+    };
+    while ref_get(counter) < 10 {}
+}
+`;
+export {
+  n as default
+};

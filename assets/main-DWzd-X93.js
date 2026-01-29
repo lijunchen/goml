@@ -1,0 +1,33 @@
+const n = `struct Point[U, V] {
+    x: U,
+    y: V,
+}
+
+impl[U, V] Point[U, V] {
+    fn new(x: U, y: V) -> Point[U, V] {
+        Point { x, y }
+    }
+
+    fn swap(self: Point[U, V]) -> Point[V, U] {
+        Point { x: self.y, y: self.x }
+    }
+
+    fn get_x(self: Point[U, V]) -> U {
+        self.x
+    }
+}
+
+fn main() -> unit {
+    let p1: Point[int32, string] = Point::new(10, "hello");
+    let p2: Point[string, string] = Point::new("goml", "lang");
+
+    let p3: Point[string, int32] = p1.swap();
+    let x: int32 = p3.y;
+    string_println(int32_to_string(x));
+
+    let x2: string = p2.get_x();
+    string_println(x2)
+}`;
+export {
+  n as default
+};

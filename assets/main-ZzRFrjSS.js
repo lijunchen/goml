@@ -1,0 +1,24 @@
+const t = `fn main() {
+    let a = (true, false);
+    let b = match a {
+        (false, false) => (true, true),
+        (false, true) => (true, false),
+        (true, false) => (false, true),
+        (true, true) => (false, false),
+    };
+    let b_1 = match b {
+        (_, w) => w
+    };
+    let c = match (true, b_1) {
+        (false, false) => string_print(int32_to_string(0)),
+        (false, true) => string_print(int32_to_string(1)),
+        (true, false) => string_print(int32_to_string(2)),
+        (true, true) => string_print(int32_to_string(3)),
+    }
+ ;
+    string_print(unit_to_string(c))
+}
+`;
+export {
+  t as default
+};

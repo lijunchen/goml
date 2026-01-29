@@ -1,0 +1,14 @@
+const n = `struct Point {
+  x: int32,
+  y: int32
+}
+
+fn main() {
+  let p0 = Point { x: 0, y: 0 };
+  let Point { x: 10, y: 8} = p0;
+  ()
+}
+`;
+export {
+  n as default
+};

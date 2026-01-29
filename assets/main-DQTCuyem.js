@@ -1,0 +1,73 @@
+const n = `struct Point {
+  x: int32,
+  y: int32
+}
+
+fn point32_to_string(p: Point) -> string {
+  let Point {x : x, y: y} = p;
+  "Point { x: " + int32_to_string(x) + ", y: " + int32_to_string(y) + " }"
+}
+
+enum Color {
+  Red,
+  Green,
+  Blue,
+}
+
+fn color_to_string(c: Color) -> string {
+  match c {
+    Red => "Red",
+    Green => "Green",
+    Blue => "Blue",
+  }
+}
+
+struct Line {
+  from: Point,
+  to: Point,
+  color: Color,
+}
+
+fn line_to_string(l: Line) -> string {
+  let Line { from: from, to: to, color: color } = l;
+  "Line { from: "
+    + point32_to_string(from)
+    + ", to: "
+    + point32_to_string(to)
+    + ", color: "
+    + color_to_string(color)
+    + " }"
+}
+
+fn point_type(p: Point) -> string {
+  match p {
+    Point { x: 0, y : 0} => {
+      "origin"
+    },
+    Point { x: 0, y : 1} => {
+      "up"
+    },
+    Point { x: 1, y : 0} => {
+      "right"
+    },
+    Point { x: 0, y : y} => {
+      match 0 < y {
+        true => "above",
+        false => "below",
+      }
+    },
+    _ => "unknown"
+  }
+}
+
+fn main() {
+  let p0 = Point { x: 0, y: 0 };
+  let _ = string_println(point_type(p0));
+  let p1 = Point { x: 10, y: 10 };
+  let line = Line { from: p0, to: p1, color: Red };
+  string_println(line_to_string(line))
+}
+`;
+export {
+  n as default
+};

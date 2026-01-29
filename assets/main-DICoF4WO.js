@@ -1,0 +1,16 @@
+const n = `fn child(signal: Ref[int32]) -> unit {
+    ref_set(signal, 1)
+}
+
+fn main() -> unit {
+    let signal = ref(0);
+    go || { child(signal) };
+    while ref_get(signal) < 1 {
+        ()
+    };
+    string_println("main");
+}
+`;
+export {
+  n as default
+};

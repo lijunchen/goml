@@ -1,0 +1,33 @@
+const n = `enum Color {
+    Red,
+    Green,
+}
+
+enum Signal {
+    Red,
+    Yellow,
+}
+
+fn color_is_red(color: Color) -> bool {
+    match color {
+        Color::Red => true,
+        Color::Green => false,
+    }
+}
+
+fn toggle_signal(signal: Signal) -> Signal {
+    match signal {
+        Signal::Red => Signal::Yellow,
+        Signal::Yellow => Signal::Red,
+    }
+}
+
+fn main() -> Signal {
+    let current = Color::Red;
+    let _ = color_is_red(current);
+    toggle_signal(Signal::Red)
+}
+`;
+export {
+  n as default
+};
