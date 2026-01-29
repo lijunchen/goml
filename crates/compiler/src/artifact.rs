@@ -4,7 +4,7 @@ use sha2::Digest;
 
 use crate::env::{GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv};
 
-pub const FORMAT_VERSION: u32 = 1;
+pub const FORMAT_VERSION: u32 = 2;
 pub const COMPILER_ABI: u32 = 1;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -61,7 +61,7 @@ pub struct InterfaceUnit {
     pub compiler_abi: u32,
     pub package: String,
     pub exports: PackageExports,
-    pub hir_interface: crate::hir::PackageInterface,
+    pub interface: crate::interface::PackageInterface,
     pub deps: BTreeMap<String, String>,
     pub interface_hash: String,
 }
@@ -72,7 +72,7 @@ struct InterfaceHashView<'a> {
     compiler_abi: u32,
     package: &'a str,
     exports: &'a PackageExports,
-    hir_interface: &'a crate::hir::PackageInterface,
+    interface: &'a crate::interface::PackageInterface,
     deps: &'a BTreeMap<String, String>,
 }
 
@@ -80,7 +80,7 @@ impl InterfaceUnit {
     pub fn new(
         package: String,
         exports: PackageExports,
-        hir_interface: crate::hir::PackageInterface,
+        interface: crate::interface::PackageInterface,
         deps: BTreeMap<String, String>,
     ) -> Self {
         let mut unit = Self {
@@ -88,7 +88,7 @@ impl InterfaceUnit {
             compiler_abi: COMPILER_ABI,
             package,
             exports,
-            hir_interface,
+            interface,
             deps,
             interface_hash: String::new(),
         };
@@ -102,7 +102,7 @@ impl InterfaceUnit {
             compiler_abi: self.compiler_abi,
             package: &self.package,
             exports: &self.exports,
-            hir_interface: &self.hir_interface,
+            interface: &self.interface,
             deps: &self.deps,
         };
         let bytes = serde_json::to_vec(&view).expect("InterfaceUnit hash view must serialize");

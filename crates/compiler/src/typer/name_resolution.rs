@@ -6,6 +6,7 @@ use crate::builtins;
 use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
+use crate::interface;
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -44,7 +45,7 @@ impl ResolveLocalEnv {
 struct ResolutionContext<'a> {
     builtin_names: &'a HashMap<String, hir::BuiltinId>,
     def_names: &'a HashMap<String, hir::DefId>,
-    deps: &'a HashMap<String, hir::PackageInterface>,
+    deps: &'a HashMap<String, interface::PackageInterface>,
     current_package: &'a str,
     imports: &'a HashSet<String>,
     constructor_index: &'a ConstructorIndex,
@@ -69,7 +70,7 @@ struct ConstructorIndex {
 impl ConstructorIndex {
     fn new_with_deps(
         files: &[hir::SourceFileAst],
-        deps: &HashMap<String, hir::PackageInterface>,
+        deps: &HashMap<String, interface::PackageInterface>,
     ) -> Self {
         let mut index = Self {
             enums_by_package: HashMap::new(),
@@ -104,7 +105,7 @@ impl ConstructorIndex {
         }
     }
 
-    fn add_interface(&mut self, package: &str, interface: &hir::PackageInterface) {
+    fn add_interface(&mut self, package: &str, interface: &interface::PackageInterface) {
         let entry = self
             .enums_by_package
             .entry(package.to_string())
@@ -256,7 +257,7 @@ impl NameResolution {
         mut self,
         package_id: hir::PackageId,
         files: Vec<hir::SourceFileAst>,
-        deps: &HashMap<String, hir::PackageInterface>,
+        deps: &HashMap<String, interface::PackageInterface>,
     ) -> (hir::ResolvedHir, HirTable, Diagnostics) {
         let mut hir_table = HirTable::new(package_id);
 
@@ -698,9 +699,14 @@ impl NameResolution {
                     } else if ctx.imports.contains(package) {
                         ctx.deps
                             .get(package)
-                            .and_then(|interface| interface.exports.get(&full_name))
+                            .and_then(|pkg_interface| pkg_interface.value_exports.get(&full_name))
                             .copied()
-                            .map(hir::NameRef::Def)
+                            .map(|idx| {
+                                hir::NameRef::Def(hir::DefId {
+                                    pkg: interface::package_id_for_name(package),
+                                    idx,
+                                })
+                            })
                             .unwrap_or_else(|| hir::NameRef::Unresolved(path.into()))
                     } else {
                         hir::NameRef::Unresolved(path.into())

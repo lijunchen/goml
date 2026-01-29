@@ -8,6 +8,7 @@ pub mod derive;
 pub mod env;
 pub mod go;
 pub mod hir;
+pub mod interface;
 pub mod lift;
 pub mod mono;
 pub mod names;
