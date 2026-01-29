@@ -198,6 +198,11 @@ impl NameResolution {
                     .enum_has_variant(ctx.current_package, enum_name, variant)
                 {
                     Some(constructor_path(ctx.current_package, enum_name, variant))
+                } else if ctx
+                    .constructor_index
+                    .enum_has_variant("Builtin", enum_name, variant)
+                {
+                    Some(constructor_path("Builtin", enum_name, variant))
                 } else {
                     None
                 }

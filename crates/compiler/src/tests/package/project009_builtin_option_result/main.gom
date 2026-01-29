@@ -1,0 +1,17 @@
+package Main
+
+import Lib
+
+fn main() {
+  let x = Lib::maybe_one();
+  match x {
+    Option::Some(v) => string_println(int32_to_string(v)),
+    Option::None => string_println("none"),
+  };
+
+  let r = Lib::maybe_err(0);
+  match r {
+    Result::Ok(v) => string_println(int32_to_string(v)),
+    Result::Err(e) => string_println(e),
+  };
+}

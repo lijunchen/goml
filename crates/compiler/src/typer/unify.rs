@@ -252,9 +252,16 @@ impl Typer {
                                 match self_ty {
                                     ty if is_concrete(ty) => {
                                         let (resolved, _env) =
-                                            super::util::resolve_type_name(genv, &trait_name.0);
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
                                         let trait_ident = TastIdent(resolved);
                                         let mut impls = Vec::new();
+                                        if let Some(impl_scheme) = genv.builtins().get_trait_impl(
+                                            &trait_ident,
+                                            self_ty,
+                                            &op,
+                                        ) {
+                                            impls.push(impl_scheme);
+                                        }
                                         if let Some(impl_scheme) = genv.current().get_trait_impl(
                                             &trait_ident,
                                             self_ty,
