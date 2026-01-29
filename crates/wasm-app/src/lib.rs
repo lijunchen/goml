@@ -406,6 +406,40 @@ pub fn colon_colon_completions(src: &str, line: u32, col: u32) -> String {
     format!("[{}]", parts.join(","))
 }
 
+#[wasm_bindgen]
+pub fn value_completions(src: &str, line: u32, col: u32) -> String {
+    if has_imports(src) {
+        return "[]".to_string();
+    }
+    let items =
+        compiler::query::value_completions(std::path::Path::new("dummy"), src, line, col)
+            .unwrap_or_default();
+    let mut parts = Vec::with_capacity(items.len());
+
+    for item in items {
+        let compiler::query::ValueCompletionItem { name, kind, detail } = item;
+
+        let kind_str = match kind {
+            compiler::query::ValueCompletionKind::Function => "function",
+        };
+
+        let mut entry = format!(
+            "{{\"name\":\"{}\",\"kind\":\"{}\"",
+            json_escape(&name),
+            kind_str,
+        );
+
+        if let Some(detail) = detail {
+            entry.push_str(&format!(",\"detail\":\"{}\"", json_escape(&detail)));
+        }
+
+        entry.push('}');
+        parts.push(entry);
+    }
+
+    format!("[{}]", parts.join(","))
+}
+
 fn json_escape(input: &str) -> String {
     let mut escaped = String::with_capacity(input.len());
 

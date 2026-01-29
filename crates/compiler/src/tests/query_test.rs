@@ -2,7 +2,7 @@ use expect_test::{Expect, expect};
 use std::path::Path;
 use tempfile::tempdir;
 
-use crate::query::{colon_colon_completions, dot_completions, hover_type};
+use crate::query::{colon_colon_completions, dot_completions, hover_type, value_completions};
 
 fn check(src: &str, line: u32, col: u32, expected: Expect) {
     let result = hover_type(Path::new("dummy"), src, line, col);
@@ -32,6 +32,11 @@ fn check_colon_colon_completions_with_path(
     expected: Expect,
 ) {
     let result = colon_colon_completions(path, src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = value_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
     expected.assert_debug_eq(&result);
 }
 
@@ -91,6 +96,49 @@ fn main() {
     "#]]);
     check(src, 4, 12, expect![[r#"
         "string"
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_value_completions() {
+    let src = r#"
+fn main() {
+    s
+}
+"#;
+
+    check_value_completions(src, 2, 5, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "string_get",
+                kind: Function,
+                detail: Some(
+                    "(string, int32) -> string",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_len",
+                kind: Function,
+                detail: Some(
+                    "(string) -> int32",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_print",
+                kind: Function,
+                detail: Some(
+                    "(string) -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "string_println",
+                kind: Function,
+                detail: Some(
+                    "(string) -> unit",
+                ),
+            },
+        ]
     "#]]);
 }
 

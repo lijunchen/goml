@@ -1,6 +1,6 @@
 import Editor, { useMonaco } from '@monaco-editor/react';
 import { useEffect, useMemo, useState } from 'react';
-import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast, dot_completions, colon_colon_completions } from 'wasm-app';
+import { execute, compile_to_core, compile_to_mono, compile_to_go, compile_to_anf, hover, get_cst, get_ast, get_tast, dot_completions, colon_colon_completions, value_completions } from 'wasm-app';
 import * as monacoEditor from 'monaco-editor/esm/vs/editor/editor.api';
 
 const demos: Record<string, string> = {};
@@ -18,6 +18,14 @@ type ColonColonCompletionKind = 'type' | 'value' | 'trait' | 'variant' | 'method
 interface ColonColonCompletionItem {
   name: string;
   kind: ColonColonCompletionKind;
+  detail?: string;
+}
+
+type ValueCompletionKind = 'function';
+
+interface ValueCompletionItem {
+  name: string;
+  kind: ValueCompletionKind;
   detail?: string;
 }
 
@@ -143,7 +151,7 @@ function App() {
       });
 
       monaco.languages.registerCompletionItemProvider('simple', {
-        triggerCharacters: ['.', ':'],
+        triggerCharacters: ['.', ':', ...Array.from('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_')],
         provideCompletionItems: (
           model: monacoEditor.editor.ITextModel,
           position: monacoEditor.Position,
@@ -223,7 +231,23 @@ function App() {
             return { suggestions };
           }
 
-          return { suggestions: [] };
+          let items: ValueCompletionItem[] = [];
+          try {
+            const raw = value_completions(content, line, col);
+            items = JSON.parse(raw) as ValueCompletionItem[];
+          } catch (error) {
+            console.error('value completion failed', error);
+          }
+
+          const suggestions = items.map((item): monacoEditor.languages.CompletionItem => ({
+            label: item.name,
+            kind: monaco.languages.CompletionItemKind.Function,
+            insertText: item.name,
+            detail: item.detail,
+            range,
+          }));
+
+          return { suggestions };
         },
       });
 
@@ -297,6 +321,9 @@ function App() {
               fontSize: 14,
               minimap: { enabled: false },
               automaticLayout: true,
+              quickSuggestions: true,
+              quickSuggestionsDelay: 0,
+              suggestOnTriggerCharacters: true,
               stickyScroll: {
                 enabled: false
               }

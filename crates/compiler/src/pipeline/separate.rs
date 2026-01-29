@@ -107,7 +107,7 @@ fn load_interface_from_paths(
 fn read_source_files(
     package: &str,
     input_files: &[PathBuf],
-) -> Result<(Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>), CompilationError> {
+) -> Result<ReadSourceFilesResult, CompilationError> {
     if input_files.is_empty() {
         return Err(compile_error("no input files provided".to_string()));
     }
@@ -141,6 +141,8 @@ fn read_source_files(
 
     Ok((files, imports, source_list))
 }
+
+type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
 
 fn typecheck_single_package(
     package: &str,
