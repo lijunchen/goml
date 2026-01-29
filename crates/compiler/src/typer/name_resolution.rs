@@ -49,6 +49,7 @@ struct ResolutionContext<'a> {
     current_package: &'a str,
     imports: &'a HashSet<String>,
     constructor_index: &'a ConstructorIndex,
+    trait_index: &'a TraitIndex,
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
@@ -143,6 +144,46 @@ impl ConstructorIndex {
         self.enums_by_package
             .get(package)
             .is_some_and(|enums| enums.values().any(|vars| vars.contains(variant)))
+    }
+}
+
+struct TraitIndex {
+    traits_by_package: HashMap<String, HashSet<String>>,
+}
+
+impl TraitIndex {
+    fn new_with_files(files: &[hir::SourceFileAst]) -> Self {
+        let mut index = Self {
+            traits_by_package: HashMap::new(),
+        };
+        index.add_files(files);
+        if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
+            let builtin_ast = builtins::get_builtin_ast();
+            let builtin_file = hir::SourceFileAst {
+                path: "<builtin>".into(),
+                ast: builtin_ast,
+            };
+            index.add_files(std::slice::from_ref(&builtin_file));
+        }
+        index
+    }
+
+    fn add_files(&mut self, files: &[hir::SourceFileAst]) {
+        for file in files {
+            let package = file.ast.package.0.clone();
+            let entry = self.traits_by_package.entry(package).or_default();
+            for item in &file.ast.toplevels {
+                if let ast::Item::TraitDef(def) = item {
+                    entry.insert(def.name.0.clone());
+                }
+            }
+        }
+    }
+
+    fn has_trait(&self, package: &str, name: &str) -> bool {
+        self.traits_by_package
+            .get(package)
+            .is_some_and(|traits| traits.contains(name))
     }
 }
 
@@ -275,6 +316,7 @@ impl NameResolution {
 
         let mut def_names = HashMap::new();
         let ctor_index = ConstructorIndex::new_with_deps(&files, deps);
+        let trait_index = TraitIndex::new_with_files(&files);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
 
@@ -413,6 +455,7 @@ impl NameResolution {
                 current_package: package_name,
                 imports: &imports,
                 constructor_index: &ctor_index,
+                trait_index: &trait_index,
             };
 
             let mut toplevel_idx = 0;
@@ -450,7 +493,7 @@ impl NameResolution {
                             .collect();
                         let tparams = type_param_set(&i.generics);
                         let trait_name = i.trait_name.as_ref().map(|t| {
-                            HirIdent::name(self.lower_impl_trait_name(t, package_name, &imports))
+                            HirIdent::name(self.lower_impl_trait_name(t, &ctx))
                         });
                         let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
@@ -1480,8 +1523,7 @@ impl NameResolution {
     fn lower_impl_trait_name(
         &mut self,
         path: &ast::Path,
-        current_package: &str,
-        imports: &HashSet<String>,
+        ctx: &ResolutionContext,
     ) -> String {
         if path.len() == 1 {
             let name = match path.last_ident() {
@@ -1491,16 +1533,24 @@ impl NameResolution {
                     "<error>".to_string()
                 }
             };
-            return full_def_name(current_package, &name);
+
+            let local = full_def_name(ctx.current_package, &name);
+            if ctx.trait_index.has_trait(ctx.current_package, &name) {
+                return local;
+            }
+            if ctx.trait_index.has_trait("Builtin", &name) {
+                return name;
+            }
+            return local;
         }
 
         let qualified: hir::QualifiedPath = path.into();
         if let Some(package) = &qualified.package
-            && !package_allowed(package.as_str(), current_package, imports)
+            && !package_allowed(package.as_str(), ctx.current_package, ctx.imports)
         {
             self.error(format!(
                 "package {} not imported in package {}",
-                package.0, current_package
+                package.0, ctx.current_package
             ));
         }
         qualified.display()
