@@ -7,8 +7,9 @@ use indexmap::{IndexMap, IndexSet};
 use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
+    artifact::{InterfaceUnit, PackageExports},
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    hir, tast, typer,
+    hir, interface, tast, typer,
 };
 
 /// The embedded builtin.gom source code
@@ -87,6 +88,17 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
 pub(crate) fn builtin_env() -> GlobalTypeEnv {
     BUILTIN_GENV.get_or_init(build_builtin_env).clone()
+}
+
+pub fn builtin_interface_hash() -> String {
+    let genv = builtin_env();
+    let exports = PackageExports {
+        type_env: genv.type_env.clone(),
+        trait_env: genv.trait_env.clone(),
+        value_env: genv.value_env.clone(),
+    };
+    let iface = interface::PackageInterface::from_exports("Builtin", &exports);
+    InterfaceUnit::new("Builtin".to_string(), exports, iface, Default::default()).interface_hash
 }
 
 fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {

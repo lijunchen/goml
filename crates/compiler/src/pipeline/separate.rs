@@ -71,6 +71,25 @@ fn load_interface_from_paths(
                 candidate.display()
             )));
         }
+        if unit.package != "Builtin" {
+            let expected = builtins::builtin_interface_hash();
+            let Some(actual) = unit.deps.get("Builtin") else {
+                return Err(compile_error(format!(
+                    "interface {} is missing implicit Builtin dependency (rebuild {})",
+                    candidate.display(),
+                    unit.package
+                )));
+            };
+            if actual != &expected {
+                return Err(compile_error(format!(
+                    "interface {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                    candidate.display(),
+                    actual,
+                    expected,
+                    unit.package
+                )));
+            }
+        }
         return Ok(unit);
     }
 
@@ -166,6 +185,10 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
     let mut deps_interfaces = HashMap::new();
     let mut dep_hashes = BTreeMap::new();
 
+    if opts.package != "Builtin" {
+        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    }
+
     for dep in deps {
         if dep == "Builtin" || dep == opts.package {
             continue;
@@ -199,6 +222,10 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
     let mut deps_interfaces = HashMap::new();
     let mut dep_hashes = BTreeMap::new();
     let mut dep_units = Vec::new();
+
+    if opts.package != "Builtin" {
+        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    }
 
     for dep in deps {
         if dep == "Builtin" || dep == opts.package {
@@ -279,8 +306,18 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         ));
     }
 
+    let builtin_hash = builtins::builtin_interface_hash();
     for (pkg, unit) in by_name.iter() {
         for (dep, expected_hash) in unit.deps.iter() {
+            if dep == "Builtin" {
+                if expected_hash != &builtin_hash {
+                    return Err(compile_error(format!(
+                        "package {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                        pkg, expected_hash, builtin_hash, pkg
+                    )));
+                }
+                continue;
+            }
             let Some(dep_unit) = by_name.get(dep) else {
                 return Err(compile_error(format!(
                     "package {} depends on missing package {}",
