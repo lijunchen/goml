@@ -288,6 +288,18 @@ pub struct ColonColonCompletionItem {
     pub detail: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ValueCompletionKind {
+    Function,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ValueCompletionItem {
+    pub name: String,
+    pub kind: ValueCompletionKind,
+    pub detail: Option<String>,
+}
+
 pub fn dot_completions(
     path: &Path,
     src: &str,
@@ -365,6 +377,57 @@ pub fn dot_completions(
     let ty = normalize_completion_ty(results.expr_ty(expr_id)?.clone());
     let items = completions_for_type(&genv, &ty);
     Some(filter_dot_items(items, &prefix))
+}
+
+pub fn value_completions(
+    _path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+) -> Option<Vec<ValueCompletionItem>> {
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index.offset(line_index::LineCol { line, col })?;
+    let (prefix_start, prefix) = ident_prefix_at_offset(src, offset)?;
+    if prefix.is_empty() {
+        return Some(Vec::new());
+    }
+
+    if prefix_start > TextSize::from(0)
+        && src.as_bytes()
+            .get(u32::from(prefix_start.checked_sub(TextSize::from(1))?) as usize)
+            == Some(&b'.')
+    {
+        return None;
+    }
+
+    if prefix_start >= TextSize::from(2)
+        && src
+            .as_bytes()
+            .get(
+                u32::from(prefix_start.checked_sub(TextSize::from(2))?) as usize
+                    ..u32::from(prefix_start) as usize,
+            )
+            == Some(b"::")
+    {
+        return None;
+    }
+
+    let genv = builtins::builtin_env();
+    let mut items = genv
+        .value_env
+        .funcs
+        .iter()
+        .filter(|(name, _scheme)| !name.contains("::") && name.starts_with(&prefix))
+        .map(|(name, scheme)| ValueCompletionItem {
+            name: name.clone(),
+            kind: ValueCompletionKind::Function,
+            detail: Some(scheme.ty.to_pretty(80)),
+        })
+        .collect::<Vec<_>>();
+
+    items.sort_by(|a, b| a.name.cmp(&b.name));
+    items.truncate(50);
+    Some(items)
 }
 
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
