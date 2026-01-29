@@ -3,6 +3,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
+use crate::builtins;
 use crate::env::{Gensym, GlobalTypeEnv};
 use crate::go::{self, compile::GlobalGoEnv, goast};
 use crate::hir;
@@ -136,8 +137,14 @@ fn typecheck_single_package(
     let package_id = interface::package_id_for_name(package);
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, files, deps_interfaces);
-    let (tast, genv, mut diagnostics) =
-        crate::typer::check_file_with_env(hir, hir_table, GlobalTypeEnv::new(), package, deps_envs);
+    let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
+        hir,
+        hir_table,
+        GlobalTypeEnv::new(),
+        builtins::builtin_env(),
+        package,
+        deps_envs,
+    );
     diagnostics.append(&mut hir_diagnostics);
     let exports = PackageExports {
         type_env: genv.type_env.clone(),
@@ -213,7 +220,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
     let interface = InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
 
     let gensym = Gensym::new();
-    let mut env = GlobalTypeEnv::new();
+    let mut env = builtins::builtin_env();
     for dep in dep_units.iter() {
         dep.exports.apply_to(&mut env);
     }
@@ -291,7 +298,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
 
     let order = topo_sort(&by_name)?;
 
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut diagnostics = Diagnostics::new();
     for pkg in order.iter() {
         let unit = by_name

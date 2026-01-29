@@ -3,7 +3,6 @@ use indexmap::IndexMap;
 use line_index::LineIndex;
 
 pub use super::builtins::builtin_function_names;
-use super::builtins::{builtin_env, builtin_inherent_methods};
 use crate::{
     common::{self, Constructor},
     tast::{self, TastIdent},
@@ -374,7 +373,7 @@ impl TraitEnv {
         Self {
             trait_defs: IndexMap::new(),
             trait_impls: IndexMap::new(),
-            inherent_impls: builtin_inherent_methods(),
+            inherent_impls: IndexMap::new(),
         }
     }
 
@@ -464,6 +463,7 @@ pub struct GlobalTypeEnv {
 #[derive(Debug, Clone)]
 pub struct PackageTypeEnv {
     pub package: String,
+    pub builtins: GlobalTypeEnv,
     pub current: GlobalTypeEnv,
     pub deps: HashMap<String, GlobalTypeEnv>,
 }
@@ -471,14 +471,20 @@ pub struct PackageTypeEnv {
 impl PackageTypeEnv {
     pub fn new(
         package: String,
+        builtins: GlobalTypeEnv,
         current: GlobalTypeEnv,
         deps: HashMap<String, GlobalTypeEnv>,
     ) -> Self {
         Self {
             package,
+            builtins,
             current,
             deps,
         }
+    }
+
+    pub fn builtins(&self) -> &GlobalTypeEnv {
+        &self.builtins
     }
 
     pub fn current(&self) -> &GlobalTypeEnv {
@@ -490,11 +496,20 @@ impl PackageTypeEnv {
     }
 
     pub fn env_for_package(&self, package: &str) -> Option<&GlobalTypeEnv> {
+        if package == "Builtin" {
+            return Some(&self.builtins);
+        }
         if package == self.package {
             Some(&self.current)
         } else {
             self.deps.get(package)
         }
+    }
+
+    pub fn get_type_of_function_unqualified(&self, name: &str) -> Option<tast::Ty> {
+        self.current
+            .get_type_of_function(name)
+            .or_else(|| self.builtins.get_type_of_function(name))
     }
 }
 
@@ -506,11 +521,9 @@ impl Default for GlobalTypeEnv {
 
 impl GlobalTypeEnv {
     pub fn new() -> Self {
-        builtin_env()
+        Self::new_empty()
     }
 
-    /// Create an empty GlobalTypeEnv without any builtins.
-    /// This is used during the initial parsing of builtin.gom to avoid recursion.
     pub fn new_empty() -> Self {
         Self {
             type_env: TypeEnv::new(),
@@ -519,10 +532,7 @@ impl GlobalTypeEnv {
                 trait_impls: IndexMap::new(),
                 inherent_impls: IndexMap::new(),
             },
-            value_env: ValueEnv {
-                funcs: IndexMap::new(),
-                extern_funcs: IndexMap::new(),
-            },
+            value_env: ValueEnv::new(),
         }
     }
 

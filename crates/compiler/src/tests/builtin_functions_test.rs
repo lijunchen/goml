@@ -1,6 +1,6 @@
 use expect_test::{Expect, expect};
 
-use crate::{env::GlobalTypeEnv, tast};
+use crate::{builtins, env::GlobalTypeEnv, tast};
 
 fn expect_function_types(env: &GlobalTypeEnv, names: &[&str], expected: Expect) {
     let mut lines = Vec::new();
@@ -12,7 +12,7 @@ fn expect_function_types(env: &GlobalTypeEnv, names: &[&str], expected: Expect) 
 
 #[test]
 fn env_registers_builtin_function_signatures() {
-    let env = GlobalTypeEnv::new();
+    let env = builtins::builtin_env();
 
     expect_function_types(
         &env,
@@ -36,7 +36,7 @@ fn env_registers_builtin_function_signatures() {
 
 #[test]
 fn env_does_not_register_legacy_int_aliases() {
-    let env = GlobalTypeEnv::new();
+    let env = builtins::builtin_env();
     let legacy_symbols = [
         "int_to_string",
         "int_neg",
@@ -63,7 +63,7 @@ fn env_does_not_register_legacy_int_aliases() {
 
 #[test]
 fn env_registers_builtin_int32_inherent_to_string() {
-    let env = GlobalTypeEnv::new();
+    let env = builtins::builtin_env();
     let method = tast::TastIdent("to_string".to_string());
 
     let result = env.lookup_inherent_method(&tast::Ty::TInt32, &method);

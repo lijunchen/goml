@@ -4,7 +4,7 @@ use sha2::Digest;
 
 use crate::env::{GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv};
 
-pub const FORMAT_VERSION: u32 = 2;
+pub const FORMAT_VERSION: u32 = 4;
 pub const COMPILER_ABI: u32 = 1;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

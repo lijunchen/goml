@@ -397,7 +397,7 @@ pub(crate) fn resolve_type_name<'a>(
 
     if let Some((package, rest)) = name.split_once("::") {
         if package == "Builtin" {
-            return (rest.to_string(), genv.current());
+            return (rest.to_string(), genv.builtins());
         }
         if package == "Main" && genv.package == "Main" {
             return (rest.to_string(), genv.current());

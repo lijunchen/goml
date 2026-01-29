@@ -5,7 +5,7 @@ use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::TextSize;
 
-use crate::{env::GlobalTypeEnv, hir, pipeline, tast};
+use crate::{artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
 
@@ -110,13 +110,22 @@ fn typecheck_single_file_for_query(
             hir,
             hir_table,
             GlobalTypeEnv::new(),
+            builtins::builtin_env(),
             &package,
             HashMap::new(),
         );
     type_diagnostics.append(&mut hir_diagnostics);
     parse_diagnostics.append(&mut type_diagnostics);
 
-    Ok((hir_table, results, genv, parse_diagnostics))
+    let exports = PackageExports {
+        type_env: genv.type_env.clone(),
+        trait_env: genv.trait_env.clone(),
+        value_env: genv.value_env.clone(),
+    };
+    let mut full_env = builtins::builtin_env();
+    exports.apply_to(&mut full_env);
+
+    Ok((hir_table, results, full_env, parse_diagnostics))
 }
 
 pub fn hover_type(path: &Path, src: &str, line: u32, col: u32) -> Result<String, String> {

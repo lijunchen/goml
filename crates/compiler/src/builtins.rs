@@ -64,13 +64,20 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
-    let (_tast, mut genv, mut diagnostics) =
-        typer::check_file_with_env(hir, hir_table, base_env, "Builtin", HashMap::new());
+    let (_tast, mut genv, mut diagnostics) = typer::check_file_with_env(
+        hir,
+        hir_table,
+        base_env,
+        GlobalTypeEnv::new_empty(),
+        "Builtin",
+        HashMap::new(),
+    );
     diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
         panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
     }
 
+    genv.trait_env.inherent_impls = builtin_inherent_methods();
     add_array_builtins(&mut genv.value_env.funcs);
     add_ref_builtins(&mut genv.value_env.funcs);
     add_vec_builtins(&mut genv.value_env.funcs);

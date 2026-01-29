@@ -5,6 +5,7 @@ use indexmap::IndexMap;
 use parser::{Diagnostic, Diagnostics};
 
 use crate::{
+    builtins,
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
     tast::{self},
@@ -772,6 +773,7 @@ pub fn check_file(
         hir,
         hir_table,
         env::GlobalTypeEnv::new(),
+        builtins::builtin_env(),
         "Main",
         HashMap::new(),
     )
@@ -781,10 +783,11 @@ pub fn check_file_with_env(
     hir: hir::PackageHir,
     hir_table: name_resolution::HirTable,
     genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (tast::File, env::GlobalTypeEnv, Diagnostics) {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), genv, deps);
+    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
@@ -823,6 +826,7 @@ pub fn check_file_with_env_and_results(
     hir: hir::PackageHir,
     hir_table: name_resolution::HirTable,
     genv: env::GlobalTypeEnv,
+    builtins: env::GlobalTypeEnv,
     package: &str,
     deps: HashMap<String, env::GlobalTypeEnv>,
 ) -> (
@@ -831,7 +835,7 @@ pub fn check_file_with_env_and_results(
     env::GlobalTypeEnv,
     Diagnostics,
 ) {
-    let mut genv = env::PackageTypeEnv::new(package.to_string(), genv, deps);
+    let mut genv = env::PackageTypeEnv::new(package.to_string(), builtins, genv, deps);
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);

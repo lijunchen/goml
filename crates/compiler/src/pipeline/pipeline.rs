@@ -12,7 +12,7 @@ use crate::pipeline::packages;
 use crate::{
     anf::{self, GlobalAnfEnv},
     artifact::PackageExports,
-    compile_match, derive,
+    builtins, compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
     hir, interface,
@@ -81,7 +81,7 @@ fn build_package<'a>(
     package: &'a PackageArtifact,
     deps: &[&PackageInterface],
 ) -> (&'a PackageInterface, crate::core::File) {
-    let mut env = GlobalTypeEnv::new();
+    let mut env = builtins::builtin_env();
     for dep in deps {
         dep.exports.apply_to(&mut env);
     }
@@ -195,6 +195,7 @@ fn typecheck_package(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
+        builtins::builtin_env(),
         &package.name,
         deps_envs,
     );
@@ -228,7 +229,7 @@ fn typecheck_packages(
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -421,7 +422,7 @@ pub fn typecheck_with_packages_and_results(
     let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -467,6 +468,7 @@ pub fn typecheck_with_packages_and_results(
                 hir,
                 hir_table,
                 GlobalTypeEnv::new(),
+                builtins::builtin_env(),
                 &package.name,
                 deps_envs,
             );
