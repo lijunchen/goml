@@ -554,7 +554,7 @@ impl Typer {
             hir::NameRef::Unresolved(path) => {
                 if path.len() == 1
                     && let Some(name) = path.last_ident()
-                    && let Some(func_ty) = genv.current().get_type_of_function(name.as_str())
+                    && let Some(func_ty) = genv.get_type_of_function_unqualified(name.as_str())
                 {
                     let inst_ty = self.inst_ty(&func_ty);
                     return tast::Expr::EVar {
@@ -1971,7 +1971,7 @@ impl Typer {
             } => {
                 if path.len() == 1
                     && let Some(name) = path.last_ident()
-                    && let Some(func_ty) = genv.current().get_type_of_function(name.as_str())
+                    && let Some(func_ty) = genv.get_type_of_function_unqualified(name.as_str())
                 {
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
@@ -3169,8 +3169,7 @@ fn lookup_function_path(genv: &PackageTypeEnv, path: &hir::Path) -> Option<(Stri
     if path.len() == 1 {
         let name = path.last_ident()?.clone();
         return genv
-            .current()
-            .get_type_of_function(name.as_str())
+            .get_type_of_function_unqualified(name.as_str())
             .map(|ty| (name, ty));
     }
 
@@ -3179,7 +3178,7 @@ fn lookup_function_path(genv: &PackageTypeEnv, path: &hir::Path) -> Option<(Stri
     if package == "Builtin" {
         let name = path.last_ident()?.clone();
         return genv
-            .current()
+            .builtins()
             .get_type_of_function(name.as_str())
             .map(|ty| (name, ty));
     }
@@ -3202,7 +3201,11 @@ fn lookup_function_path(genv: &PackageTypeEnv, path: &hir::Path) -> Option<(Stri
 }
 
 fn lookup_function_type_by_hint(genv: &PackageTypeEnv, hint: &str) -> Option<tast::Ty> {
-    if let Some(func_ty) = genv.current().get_type_of_function(hint) {
+    if let Some(func_ty) = genv
+        .current()
+        .get_type_of_function(hint)
+        .or_else(|| genv.builtins().get_type_of_function(hint))
+    {
         return Some(func_ty);
     }
     let segments = hint.split("::").map(|seg| seg.to_string()).collect();
@@ -3217,6 +3220,7 @@ fn lookup_inherent_method_for_ty(
 ) -> Option<tast::Ty> {
     let env = env_for_receiver_ty(genv, receiver_ty);
     env.lookup_inherent_method(receiver_ty, method)
+        .or_else(|| genv.builtins().lookup_inherent_method(receiver_ty, method))
 }
 
 fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> &'a GlobalTypeEnv {

@@ -12,10 +12,10 @@ use crate::pipeline::packages;
 use crate::{
     anf::{self, GlobalAnfEnv},
     artifact::PackageExports,
-    compile_match, derive,
+    builtins, compile_match, derive,
     env::{Gensym, GlobalTypeEnv},
     go::{self, compile::GlobalGoEnv, goast},
-    hir,
+    hir, interface,
     lift::{self, GlobalLiftEnv, LiftFile},
     mono::{self, GlobalMonoEnv},
     tast, typer,
@@ -72,7 +72,7 @@ impl CompilationError {
 #[derive(Debug, Clone)]
 struct PackageInterface {
     exports: PackageExports,
-    hir_interface: hir::PackageInterface,
+    package_interface: interface::PackageInterface,
 }
 
 fn build_package<'a>(
@@ -81,7 +81,7 @@ fn build_package<'a>(
     package: &'a PackageArtifact,
     deps: &[&PackageInterface],
 ) -> (&'a PackageInterface, crate::core::File) {
-    let mut env = GlobalTypeEnv::new();
+    let mut env = builtins::builtin_env();
     for dep in deps {
         dep.exports.apply_to(&mut env);
     }
@@ -187,15 +187,15 @@ fn typecheck_package(
     package_id: hir::PackageId,
     package: &packages::PackageUnit,
     deps_envs: HashMap<String, GlobalTypeEnv>,
-    deps_interfaces: &HashMap<String, hir::PackageInterface>,
+    deps_interfaces: &HashMap<String, interface::PackageInterface>,
 ) -> PackageArtifact {
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, package.files.clone(), deps_interfaces);
-    let hir_interface = hir::PackageInterface::from_hir(&hir, &hir_table);
     let (tast, genv, mut diagnostics) = typer::check_file_with_env(
         hir,
         hir_table,
         GlobalTypeEnv::new(),
+        builtins::builtin_env(),
         &package.name,
         deps_envs,
     );
@@ -205,12 +205,13 @@ fn typecheck_package(
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),
     };
+    let package_interface = interface::PackageInterface::from_exports(&package.name, &exports);
 
     PackageArtifact {
         tast,
         interface: PackageInterface {
             exports,
-            hir_interface,
+            package_interface,
         },
         diagnostics,
     }
@@ -228,7 +229,7 @@ fn typecheck_packages(
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -261,7 +262,7 @@ fn typecheck_packages(
                 .get(dep)
                 .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
             deps_envs.insert(dep.clone(), artifact.interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), artifact.interface.hir_interface.clone());
+            deps_interfaces.insert(dep.clone(), artifact.interface.package_interface.clone());
         }
 
         let artifact = typecheck_package(package_id, package, deps_envs, &deps_interfaces);
@@ -421,7 +422,7 @@ pub fn typecheck_with_packages_and_results(
     let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
@@ -457,17 +458,17 @@ pub fn typecheck_with_packages_and_results(
                 .get(dep)
                 .ok_or_else(|| compile_error(format!("missing package artifact for {}", dep)))?;
             deps_envs.insert(dep.clone(), interface.exports.to_genv());
-            deps_interfaces.insert(dep.clone(), interface.hir_interface.clone());
+            deps_interfaces.insert(dep.clone(), interface.package_interface.clone());
         }
 
         let (hir, hir_table, mut hir_diagnostics) =
             hir::lower_to_hir_files_with_env(package_id, package.files.clone(), &deps_interfaces);
-        let hir_interface = hir::PackageInterface::from_hir(&hir, &hir_table);
         let (hir_table, results, package_genv, mut package_diagnostics) =
             typer::check_file_with_env_and_results(
                 hir,
                 hir_table,
                 GlobalTypeEnv::new(),
+                builtins::builtin_env(),
                 &package.name,
                 deps_envs,
             );
@@ -493,10 +494,11 @@ pub fn typecheck_with_packages_and_results(
             value_env: package_genv.value_env.clone(),
         };
         exports.apply_to(&mut genv);
+        let package_interface = interface::PackageInterface::from_exports(name, &exports);
 
         let interface = PackageInterface {
             exports,
-            hir_interface,
+            package_interface,
         };
 
         if name == &graph.entry_package {

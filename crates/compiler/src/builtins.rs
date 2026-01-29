@@ -7,8 +7,9 @@ use indexmap::{IndexMap, IndexSet};
 use parser::{self, syntax::MySyntaxNode};
 
 use crate::{
+    artifact::{InterfaceUnit, PackageExports},
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    hir, tast, typer,
+    hir, interface, tast, typer,
 };
 
 /// The embedded builtin.gom source code
@@ -64,13 +65,20 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
-    let (_tast, mut genv, mut diagnostics) =
-        typer::check_file_with_env(hir, hir_table, base_env, "Builtin", HashMap::new());
+    let (_tast, mut genv, mut diagnostics) = typer::check_file_with_env(
+        hir,
+        hir_table,
+        base_env,
+        GlobalTypeEnv::new_empty(),
+        "Builtin",
+        HashMap::new(),
+    );
     diagnostics.append(&mut hir_diagnostics);
     if diagnostics.has_errors() {
         panic!("Failed to typecheck builtin.gom: {:?}", diagnostics);
     }
 
+    genv.trait_env.inherent_impls = builtin_inherent_methods();
     add_array_builtins(&mut genv.value_env.funcs);
     add_ref_builtins(&mut genv.value_env.funcs);
     add_vec_builtins(&mut genv.value_env.funcs);
@@ -80,6 +88,17 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
 pub(crate) fn builtin_env() -> GlobalTypeEnv {
     BUILTIN_GENV.get_or_init(build_builtin_env).clone()
+}
+
+pub fn builtin_interface_hash() -> String {
+    let genv = builtin_env();
+    let exports = PackageExports {
+        type_env: genv.type_env.clone(),
+        trait_env: genv.trait_env.clone(),
+        value_env: genv.value_env.clone(),
+    };
+    let iface = interface::PackageInterface::from_exports("Builtin", &exports);
+    InterfaceUnit::new("Builtin".to_string(), exports, iface, Default::default()).interface_hash
 }
 
 fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {

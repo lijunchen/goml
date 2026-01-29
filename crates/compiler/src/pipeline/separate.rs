@@ -2,17 +2,17 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use diagnostics::Diagnostics;
-use sha2::Digest;
-
 use crate::artifact::{CoreUnit, InterfaceUnit, PackageExports};
+use crate::builtins;
 use crate::env::{Gensym, GlobalTypeEnv};
 use crate::go::{self, compile::GlobalGoEnv, goast};
 use crate::hir;
+use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
+use diagnostics::Diagnostics;
 
 pub struct PackageInputs {
     pub package: String,
@@ -32,23 +32,6 @@ pub struct LinkOutput {
     pub liftenv: GlobalLiftEnv,
     pub anf: crate::anf::File,
     pub anfenv: crate::anf::GlobalAnfEnv,
-}
-
-fn package_id_for_name(name: &str) -> hir::PackageId {
-    match name {
-        "Builtin" => hir::PackageId(0),
-        "Main" => hir::PackageId(1),
-        other => {
-            let digest = sha2::Sha256::digest(other.as_bytes());
-            let mut bytes = [0u8; 4];
-            bytes.copy_from_slice(&digest[..4]);
-            let mut id = u32::from_be_bytes(bytes);
-            if id <= 1 {
-                id = id.wrapping_add(2);
-            }
-            hir::PackageId(id)
-        }
-    }
 }
 
 fn load_interface_from_paths(
@@ -87,6 +70,25 @@ fn load_interface_from_paths(
                 "interface {} has invalid interface_hash",
                 candidate.display()
             )));
+        }
+        if unit.package != "Builtin" {
+            let expected = builtins::builtin_interface_hash();
+            let Some(actual) = unit.deps.get("Builtin") else {
+                return Err(compile_error(format!(
+                    "interface {} is missing implicit Builtin dependency (rebuild {})",
+                    candidate.display(),
+                    unit.package
+                )));
+            };
+            if actual != &expected {
+                return Err(compile_error(format!(
+                    "interface {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                    candidate.display(),
+                    actual,
+                    expected,
+                    unit.package
+                )));
+            }
         }
         return Ok(unit);
     }
@@ -143,27 +145,33 @@ fn read_source_files(
 fn typecheck_single_package(
     package: &str,
     files: Vec<hir::SourceFileAst>,
-    deps_interfaces: &HashMap<String, hir::PackageInterface>,
+    deps_interfaces: &HashMap<String, interface::PackageInterface>,
     deps_envs: HashMap<String, GlobalTypeEnv>,
 ) -> (
     crate::tast::File,
     PackageExports,
-    hir::PackageInterface,
+    interface::PackageInterface,
     diagnostics::Diagnostics,
 ) {
-    let package_id = package_id_for_name(package);
+    let package_id = interface::package_id_for_name(package);
     let (hir, hir_table, mut hir_diagnostics) =
         hir::lower_to_hir_files_with_env(package_id, files, deps_interfaces);
-    let hir_interface = hir::PackageInterface::from_hir(&hir, &hir_table);
-    let (tast, genv, mut diagnostics) =
-        crate::typer::check_file_with_env(hir, hir_table, GlobalTypeEnv::new(), package, deps_envs);
+    let (tast, genv, mut diagnostics) = crate::typer::check_file_with_env(
+        hir,
+        hir_table,
+        GlobalTypeEnv::new(),
+        builtins::builtin_env(),
+        package,
+        deps_envs,
+    );
     diagnostics.append(&mut hir_diagnostics);
     let exports = PackageExports {
         type_env: genv.type_env.clone(),
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),
     };
-    (tast, exports, hir_interface, diagnostics)
+    let pkg_interface = interface::PackageInterface::from_exports(package, &exports);
+    (tast, exports, pkg_interface, diagnostics)
 }
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
@@ -177,21 +185,25 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
     let mut deps_interfaces = HashMap::new();
     let mut dep_hashes = BTreeMap::new();
 
+    if opts.package != "Builtin" {
+        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    }
+
     for dep in deps {
         if dep == "Builtin" || dep == opts.package {
             continue;
         }
         let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), unit.hir_interface.clone());
+        deps_interfaces.insert(dep.clone(), unit.interface.clone());
         dep_hashes.insert(dep, unit.interface_hash.clone());
     }
 
-    let (tast, exports, hir_interface, diagnostics) =
+    let (tast, exports, pkg_interface, diagnostics) =
         typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
     drop(tast);
 
-    let interface = InterfaceUnit::new(opts.package.clone(), exports, hir_interface, dep_hashes);
+    let interface = InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer { diagnostics });
     }
@@ -211,27 +223,31 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
     let mut dep_hashes = BTreeMap::new();
     let mut dep_units = Vec::new();
 
+    if opts.package != "Builtin" {
+        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    }
+
     for dep in deps {
         if dep == "Builtin" || dep == opts.package {
             continue;
         }
         let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
-        deps_interfaces.insert(dep.clone(), unit.hir_interface.clone());
+        deps_interfaces.insert(dep.clone(), unit.interface.clone());
         dep_hashes.insert(dep.clone(), unit.interface_hash.clone());
         dep_units.push(unit);
     }
 
-    let (tast, exports, hir_interface, diagnostics) =
+    let (tast, exports, pkg_interface, diagnostics) =
         typecheck_single_package(&opts.package, files, &deps_interfaces, deps_envs);
     if diagnostics.has_errors() {
         return Err(CompilationError::Typer { diagnostics });
     }
 
-    let interface = InterfaceUnit::new(opts.package.clone(), exports, hir_interface, dep_hashes);
+    let interface = InterfaceUnit::new(opts.package.clone(), exports, pkg_interface, dep_hashes);
 
     let gensym = Gensym::new();
-    let mut env = GlobalTypeEnv::new();
+    let mut env = builtins::builtin_env();
     for dep in dep_units.iter() {
         dep.exports.apply_to(&mut env);
     }
@@ -290,8 +306,18 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         ));
     }
 
+    let builtin_hash = builtins::builtin_interface_hash();
     for (pkg, unit) in by_name.iter() {
         for (dep, expected_hash) in unit.deps.iter() {
+            if dep == "Builtin" {
+                if expected_hash != &builtin_hash {
+                    return Err(compile_error(format!(
+                        "package {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                        pkg, expected_hash, builtin_hash, pkg
+                    )));
+                }
+                continue;
+            }
             let Some(dep_unit) = by_name.get(dep) else {
                 return Err(compile_error(format!(
                     "package {} depends on missing package {}",
@@ -309,7 +335,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
 
     let order = topo_sort(&by_name)?;
 
-    let mut genv = GlobalTypeEnv::new();
+    let mut genv = builtins::builtin_env();
     let mut diagnostics = Diagnostics::new();
     for pkg in order.iter() {
         let unit = by_name
