@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 impl Describe for Tracker{
   fn describe(self/0: Tracker) -> string {
       let Tracker { label: label/1: string, count: count/2: Ref[int32], toggled: toggled/3: Ref[bool] } = (self/0 : Tracker);

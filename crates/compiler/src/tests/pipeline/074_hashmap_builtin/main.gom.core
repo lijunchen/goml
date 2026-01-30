@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
   ((true && trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))) && trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1)))
 }
@@ -94,12 +102,12 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
 fn print_opt_int(x/20: Option[int32]) -> unit {
   match x/20 {
     Option::None => {
-      string_println(trait_call[ToString::to_string]("none"))
+      println("none")
     },
     Option::Some(x13) => {
       let x13 = Option::Some._0(x/20) in
       let v/21 = x13 in
-      string_println(trait_call[ToString::to_string](v/21))
+      println(v/21)
     },
   }
 }
@@ -108,12 +116,12 @@ fn main() -> unit {
   let m1/22 = hashmap_new() in
   let _wild14 = hashmap_set(m1/22, Key::A, 10) in
   let _wild15 = hashmap_set(m1/22, Key::B(1), 20) in
-  let _wild16 = string_println(trait_call[ToString::to_string](hashmap_len(m1/22))) in
+  let _wild16 = println(hashmap_len(m1/22)) in
   let _wild17 = print_opt_int(hashmap_get(m1/22, Key::A)) in
-  let _wild18 = string_println(trait_call[ToString::to_string](hashmap_contains(m1/22, Key::B(1)))) in
+  let _wild18 = println(hashmap_contains(m1/22, Key::B(1))) in
   let _wild19 = hashmap_remove(m1/22, Key::B(1)) in
-  let _wild20 = string_println(trait_call[ToString::to_string](hashmap_contains(m1/22, Key::B(1)))) in
-  let _wild21 = string_println(trait_call[ToString::to_string](hashmap_len(m1/22))) in
+  let _wild20 = println(hashmap_contains(m1/22, Key::B(1))) in
+  let _wild21 = println(hashmap_len(m1/22)) in
   let m2/23 = hashmap_new() in
   let p1/24 = ref(Point { x: 1, y: 2 }) in
   let p2/25 = ref(Point { x: 1, y: 2 }) in

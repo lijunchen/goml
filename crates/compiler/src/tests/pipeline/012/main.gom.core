@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn fib(x/0: int32) -> int32 {
   let mtmp0 = (x/0 < 2) in
   match mtmp0 {
@@ -11,6 +19,6 @@ fn fib(x/0: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let mtmp1 = string_print(trait_call[ToString::to_string](fib(10))) in
+  let mtmp1 = print(fib(10)) in
   ()
 }

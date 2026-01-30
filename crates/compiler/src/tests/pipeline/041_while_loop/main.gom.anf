@@ -40,11 +40,18 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let mtmp6 = string_print("sum_to(5)=") in
-  let t19 = int32_to_string(first/10) in
-  let mtmp7 = string_println(t19) in
-  let mtmp8 = string_print("sum_even(6)=") in
-  let t20 = int32_to_string(evens/11) in
-  let mtmp9 = string_println(t20) in
+  let mtmp6 = print__T_string("sum_to(5)=") in
+  let mtmp7 = println__T_int32(first/10) in
+  let mtmp8 = print__T_string("sum_even(6)=") in
+  let mtmp9 = println__T_int32(evens/11) in
   ()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t19 = int32_to_string(value/1) in
+  string_println(t19)
 }

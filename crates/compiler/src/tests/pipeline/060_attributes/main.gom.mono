@@ -33,9 +33,13 @@ fn main() -> unit {
   let mv/9 = trait_impl#ToString#Message#to_string(Message::Move(1, 2)) in
   let text/10 = trait_impl#ToString#Message#to_string(Message::Write("done")) in
   let exit/11 = trait_impl#ToString#Message#to_string(Message::Quit) in
-  let _wild6 = string_println(summary/8) in
-  let _wild7 = string_println(mv/9) in
-  let _wild8 = string_println(text/10) in
-  let _wild9 = string_println(exit/11) in
+  let _wild6 = println__T_string(summary/8) in
+  let _wild7 = println__T_string(mv/9) in
+  let _wild8 = println__T_string(text/10) in
+  let _wild9 = println__T_string(exit/11) in
   ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }

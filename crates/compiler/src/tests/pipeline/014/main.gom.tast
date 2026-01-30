@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
     match (x/0 : (bool, bool)) {
         (true, false) => match (y/1 : (bool, bool)) {

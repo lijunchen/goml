@@ -31,11 +31,17 @@ func fib(x__0 int32) int32 {
 
 func main0() struct{} {
     var ret9 struct{}
-    var t7 int32 = fib(10)
-    var t6 string = int32_to_string(t7)
-    string_print(t6)
+    var t6 int32 = fib(10)
+    print__T_int32(t6)
     ret9 = struct{}{}
     return ret9
+}
+
+func print__T_int32(value__0 int32) struct{} {
+    var ret10 struct{}
+    var t7 string = int32_to_string(value__0)
+    ret10 = string_print(t7)
+    return ret10
 }
 
 func main() {

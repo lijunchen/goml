@@ -23,7 +23,7 @@ type Tuple2_bool_bool struct {
 }
 
 func main0() struct{} {
-    var ret7 struct{}
+    var ret6 struct{}
     var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: false,
@@ -33,8 +33,7 @@ func main0() struct{} {
     switch x0 {
     case true:
         var b__1 bool = x1
-        var t5 string = bool_to_string(b__1)
-        string_print(t5)
+        print__T_bool(b__1)
     case false:
     }
     var c__2 Tuple2_bool_bool = Tuple2_bool_bool{
@@ -46,11 +45,17 @@ func main0() struct{} {
     switch x3 {
     case true:
         var d__3 bool = x4
-        var t6 string = bool_to_string(d__3)
-        ret7 = string_print(t6)
+        ret6 = print__T_bool(d__3)
     case false:
-        ret7 = struct{}{}
+        ret6 = struct{}{}
     }
+    return ret6
+}
+
+func print__T_bool(value__0 bool) struct{} {
+    var ret7 struct{}
+    var t5 string = bool_to_string(value__0)
+    ret7 = string_print(t5)
     return ret7
 }
 

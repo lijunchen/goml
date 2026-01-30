@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn bounce_int(shape/0: Shape[int32]) -> Shape[int32] {
     match (shape/0 : Shape[int32]) {
         Shape::Dot(point/1: Point) => Shape::Dot((point/1 : Point)),

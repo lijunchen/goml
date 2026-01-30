@@ -17,38 +17,32 @@ fn main() -> unit {
   let t11 = Tag_0 in
   let x/4 = List__int32::Cons(1, t11) in
   let length/5 = list_length__T_int32(x/4) in
-  let t12 = int32_to_string(length/5) in
-  let mtmp4 = string_println(t12) in
-  let t14 = Tag_0 in
-  let t13 = List__int32::Cons(2, t14) in
-  let x/6 = List__int32::Cons(1, t13) in
+  let mtmp4 = println__T_int32(length/5) in
+  let t13 = Tag_0 in
+  let t12 = List__int32::Cons(2, t13) in
+  let x/6 = List__int32::Cons(1, t12) in
   let length/7 = list_length__T_int32(x/6) in
-  let t15 = int32_to_string(length/7) in
-  let mtmp5 = string_println(t15) in
-  let t18 = Tag_0 in
-  let t17 = List__int32::Cons(2, t18) in
-  let t16 = List__int32::Cons(1, t17) in
-  let x/8 = List__int32::Cons(0, t16) in
+  let mtmp5 = println__T_int32(length/7) in
+  let t16 = Tag_0 in
+  let t15 = List__int32::Cons(2, t16) in
+  let t14 = List__int32::Cons(1, t15) in
+  let x/8 = List__int32::Cons(0, t14) in
   let length/9 = int_list_length(x/8) in
-  let t19 = int32_to_string(length/9) in
-  let mtmp6 = string_println(t19) in
-  let t20 = Tag_0 in
-  let x/10 = List__unit::Cons((), t20) in
+  let mtmp6 = println__T_int32(length/9) in
+  let t17 = Tag_0 in
+  let x/10 = List__unit::Cons((), t17) in
   let length/11 = list_length__T_unit(x/10) in
-  let t21 = int32_to_string(length/11) in
-  let mtmp7 = string_println(t21) in
-  let t23 = Tag_0 in
-  let t22 = List__unit::Cons((), t23) in
-  let x/12 = List__unit::Cons((), t22) in
+  let mtmp7 = println__T_int32(length/11) in
+  let t19 = Tag_0 in
+  let t18 = List__unit::Cons((), t19) in
+  let x/12 = List__unit::Cons((), t18) in
   let length/13 = list_length__T_unit(x/12) in
-  let t24 = int32_to_string(length/13) in
-  let mtmp8 = string_println(t24) in
-  let t26 = Tag_0 in
-  let t25 = List__bool::Cons(false, t26) in
-  let x/14 = List__bool::Cons(true, t25) in
+  let mtmp8 = println__T_int32(length/13) in
+  let t21 = Tag_0 in
+  let t20 = List__bool::Cons(false, t21) in
+  let x/14 = List__bool::Cons(true, t20) in
   let length/15 = list_length__T_bool(x/14) in
-  let t27 = int32_to_string(length/15) in
-  let mtmp9 = string_println(t27) in
+  let mtmp9 = println__T_int32(length/15) in
   ()
 }
 
@@ -61,10 +55,15 @@ fn list_length__T_int32(xs/0: List__int32) -> int32 {
       let x0 = List__int32::Cons._0(xs/0) in
       let x1 = List__int32::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t28 = list_length__T_int32(tail/1) in
-      (1 + t28)
+      let t22 = list_length__T_int32(tail/1) in
+      (1 + t22)
     },
   }
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t23 = int32_to_string(value/1) in
+  string_println(t23)
 }
 
 fn list_length__T_unit(xs/0: List__unit) -> int32 {
@@ -76,8 +75,8 @@ fn list_length__T_unit(xs/0: List__unit) -> int32 {
       let x0 = List__unit::Cons._0(xs/0) in
       let x1 = List__unit::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t29 = list_length__T_unit(tail/1) in
-      (1 + t29)
+      let t24 = list_length__T_unit(tail/1) in
+      (1 + t24)
     },
   }
 }
@@ -91,8 +90,8 @@ fn list_length__T_bool(xs/0: List__bool) -> int32 {
       let x0 = List__bool::Cons._0(xs/0) in
       let x1 = List__bool::Cons._1(xs/0) in
       let tail/1 = x1 in
-      let t30 = list_length__T_bool(tail/1) in
-      (1 + t30)
+      let t25 = list_length__T_bool(tail/1) in
+      (1 + t25)
     },
   }
 }

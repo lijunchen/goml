@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn point32_to_string(p/0: Point) -> string {
     let Point { x: x/1: int32, y: y/2: int32 } = (p/0 : Point);
     "Point { x: " + (int32_to_string : (int32) -> string)((x/1 : int32)) + ", y: " + (int32_to_string : (int32) -> string)((y/2 : int32)) + " }";

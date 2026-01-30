@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn main() -> unit {
   let counter/0 = ref(0) in
   let _wild3 = go || => while (ref_get(counter/0) < 10) {

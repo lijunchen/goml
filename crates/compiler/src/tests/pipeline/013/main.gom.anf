@@ -1,6 +1,14 @@
 fn main() -> unit {
   let s/0 = "abcde" in
-  let _wild0 = string_println(s/0) in
-  let _wild1 = string_print(s/0) in
+  let _wild0 = println__T_string(s/0) in
+  let _wild1 = print__T_string(s/0) in
   ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
 }

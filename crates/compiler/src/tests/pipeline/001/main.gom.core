@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn main() -> unit {
   let mtmp0 = () in
   let a/0 = (true, false, (true, false)) in
@@ -11,6 +19,6 @@ fn main() -> unit {
   let y/2 = x2 in
   let x/1 = x1 in
   w/4 in
-  let mtmp6 = string_print(trait_call[ToString::to_string](b/5)) in
+  let mtmp6 = print(b/5) in
   ()
 }

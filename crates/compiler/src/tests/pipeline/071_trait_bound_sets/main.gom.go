@@ -27,9 +27,9 @@ func main0() struct{} {
     var ret7 struct{}
     var s__5 S = S{}
     var t2 string = pick_a__T_S(s__5)
-    string_println(t2)
+    println__T_string(t2)
     var t3 string = bar_it__T_S(s__5)
-    string_println(t3)
+    println__T_string(t3)
     ret7 = struct{}{}
     return ret7
 }
@@ -40,10 +40,16 @@ func pick_a__T_S(x__3 S) string {
     return ret8
 }
 
-func bar_it__T_S(x__4 S) string {
-    var ret9 string
-    ret9 = _goml_trait_impl_C_S_bar(x__4)
+func println__T_string(value__1 string) struct{} {
+    var ret9 struct{}
+    ret9 = string_println(value__1)
     return ret9
+}
+
+func bar_it__T_S(x__4 S) string {
+    var ret10 string
+    ret10 = _goml_trait_impl_C_S_bar(x__4)
+    return ret10
 }
 
 func main() {

@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 impl ToString for Color{
   fn to_string(self/0: Color) -> string {
     match (self/0 : Color) {

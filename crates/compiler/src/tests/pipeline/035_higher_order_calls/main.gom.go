@@ -44,21 +44,27 @@ func main0() struct{} {
     var xs__3 [2]func(int32) int32 = [2]func(int32) int32{double, increment}
     var f__4 func(int32) int32 = array_get__Array_2_Fn_int32_to_int32(xs__3, 0)
     var g__5 func(int32) int32 = array_get__Array_2_Fn_int32_to_int32(xs__3, 1)
-    var t5 int32 = f__4(10)
-    var t4 int32 = g__5(t5)
-    var t3 string = int32_to_string(t4)
-    string_println(t3)
+    var t4 int32 = f__4(10)
+    var t3 int32 = g__5(t4)
+    println__T_int32(t3)
     var chosen__6 func(int32) int32 = chooser(true)
     var applied__7 int32 = chosen__6(5)
-    var t6 func(int32) int32 = chooser(false)
-    var direct__8 int32 = t6(5)
+    var t5 func(int32) int32 = chooser(false)
+    var direct__8 int32 = t5(5)
     var printer__9 func(string) struct{} = string_println
-    var t7 string = int32_to_string(applied__7)
+    var t6 string = int32_to_string(applied__7)
+    printer__9(t6)
+    var t7 string = int32_to_string(direct__8)
     printer__9(t7)
-    var t8 string = int32_to_string(direct__8)
-    printer__9(t8)
     ret12 = struct{}{}
     return ret12
+}
+
+func println__T_int32(value__1 int32) struct{} {
+    var ret13 struct{}
+    var t8 string = int32_to_string(value__1)
+    ret13 = string_println(t8)
+    return ret13
 }
 
 func main() {

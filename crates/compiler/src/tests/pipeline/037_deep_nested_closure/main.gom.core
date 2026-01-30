@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn main() -> unit {
   let a/0 = 10 in
   let f1/11 = |x/1: int32| => let b/2 = 20 in
@@ -8,5 +16,5 @@ fn main() -> unit {
   f3/9(3) in
   f2/10(2) in
   let result/12 = f1/11(1) in
-  string_println(trait_call[ToString::to_string](result/12))
+  println(result/12)
 }

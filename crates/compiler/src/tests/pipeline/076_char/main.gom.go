@@ -2,9 +2,13 @@ package main
 
 import (
     "fmt"
+    "unicode/utf8"
 )
 
 func char_to_string(x rune) string {
+    if !utf8.ValidRune(x) {
+        panic("invalid char")
+    }
     return string(x)
 }
 

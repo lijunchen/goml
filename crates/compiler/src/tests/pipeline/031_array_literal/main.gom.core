@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn make_array() -> [int32; 3] {
   [1, 2, 3]
 }
@@ -5,7 +13,7 @@ fn make_array() -> [int32; 3] {
 fn main() -> unit {
   let arr/0 = make_array() in
   let inline/1 = [4, 5, 6] in
-  let mtmp0 = string_print(trait_call[ToString::to_string]("array literal")) in
+  let mtmp0 = print("array literal") in
   let mtmp1 = arr/0 in
   let mtmp2 = inline/1 in
   ()

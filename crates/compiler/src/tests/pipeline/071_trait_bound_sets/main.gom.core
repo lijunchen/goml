@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn trait_impl#A#S#foo(self/0: S) -> string {
   "A"
 }
@@ -20,7 +28,7 @@ fn bar_it(x/4: T) -> string {
 
 fn main() -> unit {
   let s/5 = S {} in
-  let mtmp0 = string_println(trait_call[ToString::to_string](pick_a(s/5))) in
-  let mtmp1 = string_println(trait_call[ToString::to_string](bar_it(s/5))) in
+  let mtmp0 = println(pick_a(s/5)) in
+  let mtmp1 = println(bar_it(s/5)) in
   ()
 }

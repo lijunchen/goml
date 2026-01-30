@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn sum_to(limit/0: int32) -> int32 {
     let acc/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let i/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0);

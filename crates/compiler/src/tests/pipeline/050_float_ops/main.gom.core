@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn show32(label/0: string, value/1: float32) -> unit {
   let message/2 = (label/0 + float32_to_string(value/1)) in
   let mtmp0 = string_println(message/2) in
