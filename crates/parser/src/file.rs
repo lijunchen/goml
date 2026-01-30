@@ -13,8 +13,11 @@ pub fn file(p: &mut Parser) {
     if p.at(T![package]) {
         package_decl(p);
     }
+    while p.at(T![use]) {
+        use_decl(p);
+    }
     while p.at(T![import]) {
-        import_decl(p);
+        import_decl_error(p);
     }
     while !p.eof() {
         if p.at(T![#]) {
@@ -22,8 +25,10 @@ pub fn file(p: &mut Parser) {
             item_with_attrs(p, attrs);
         } else if p.at(T![package]) {
             p.advance_with_error("package declaration must appear at the top of the file");
+        } else if p.at(T![use]) {
+            p.advance_with_error("use declaration must appear at the top of the file");
         } else if p.at(T![import]) {
-            p.advance_with_error("import declaration must appear at the top of the file");
+            p.advance_with_error("`import` has been removed; use `use`");
         } else if p.at(T![extern]) {
             extern_decl(p)
         } else if p.at(T![fn]) {
@@ -59,16 +64,28 @@ fn package_decl(p: &mut Parser) {
     p.close(m, MySyntaxKind::PACKAGE);
 }
 
-fn import_decl(p: &mut Parser) {
+fn use_decl(p: &mut Parser) {
+    assert!(p.at(T![use]));
+    let m = p.open();
+    p.expect(T![use]);
+    if p.at_any(&[T![ident], T![::]]) {
+        parse_path_always(p);
+    } else if !p.eof() {
+        p.advance_with_error("expected a path after `use`");
+    }
+    p.close(m, MySyntaxKind::USE);
+}
+
+fn import_decl_error(p: &mut Parser) {
     assert!(p.at(T![import]));
     let m = p.open();
-    p.expect(T![import]);
-    if p.at(T![ident]) {
-        p.advance();
-    } else {
-        p.advance_with_error("expected an import name");
+    p.advance_with_error("`import` has been removed; use `use`");
+    if p.at_any(&[T![ident], T![::]]) {
+        parse_path_always(p);
+    } else if !p.eof() {
+        p.advance_with_error("expected a path after `import`");
     }
-    p.close(m, MySyntaxKind::IMPORT);
+    p.close(m, MySyntaxKind::ErrorTree);
 }
 
 fn item_with_attrs(p: &mut Parser, attrs: MarkerClosed) {

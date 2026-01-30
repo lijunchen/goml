@@ -336,7 +336,7 @@ impl tast::Ty {
             }
             hir::TypeExpr::TDyn { trait_path } => {
                 let name = trait_path.display();
-                let (resolved, _env) = resolve_type_name(genv, &name);
+                let (resolved, _env) = normalize_trait_name(genv, &name);
                 Self::TDyn {
                     trait_name: resolved,
                 }
@@ -411,23 +411,84 @@ pub(crate) fn resolve_type_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    if genv.package == "Main" || genv.package == "Builtin" {
-        (name.to_string(), genv.current())
+    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+        name.to_string()
     } else {
-        (format!("{}::{}", genv.package, name), genv.current())
+        format!("{}::{}", genv.package, name)
+    };
+
+    let current_env = genv.current();
+    if type_constructor_exists(current_env, &current_name) {
+        return (current_name, current_env);
     }
+
+    let builtin_env = genv.builtins();
+    if type_constructor_exists(builtin_env, name) {
+        return (name.to_string(), builtin_env);
+    }
+
+    (current_name, current_env)
+}
+
+fn type_constructor_exists(env: &GlobalTypeEnv, name: &str) -> bool {
+    let ident = tast::TastIdent::new(name);
+    env.enums().contains_key(&ident)
+        || env.structs().contains_key(&ident)
+        || env.type_env.extern_types.contains_key(name)
 }
 
 pub(crate) fn resolve_trait_name<'a>(
     genv: &'a PackageTypeEnv,
     name: &str,
 ) -> Option<(String, &'a GlobalTypeEnv)> {
-    let (resolved, env) = resolve_type_name(genv, name);
-    if env.trait_env.trait_defs.contains_key(&resolved) {
-        Some((resolved, env))
-    } else {
-        None
+    let (resolved, env) = normalize_trait_name(genv, name);
+    env.trait_env
+        .trait_defs
+        .contains_key(&resolved)
+        .then(|| (resolved, env))
+}
+
+pub(crate) fn normalize_trait_name<'a>(
+    genv: &'a PackageTypeEnv,
+    name: &str,
+) -> (String, &'a GlobalTypeEnv) {
+    if name == "Self" {
+        return (name.to_string(), genv.current());
     }
+
+    if let Some((package, rest)) = name.split_once("::") {
+        if package == "Builtin" {
+            return (rest.to_string(), genv.builtins());
+        }
+        if package == "Main" && genv.package == "Main" {
+            return (rest.to_string(), genv.current());
+        }
+        if package == genv.package {
+            return (name.to_string(), genv.current());
+        }
+        if let Some(dep) = genv.deps.get(package) {
+            return (name.to_string(), dep);
+        }
+        return (name.to_string(), genv.current());
+    }
+
+    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+        name.to_string()
+    } else {
+        format!("{}::{}", genv.package, name)
+    };
+
+    let current_env = genv.current();
+    if current_env.trait_env.trait_defs.contains_key(&current_name) {
+        return (current_name, current_env);
+    }
+
+    let builtin_env = genv.builtins();
+    if builtin_env.trait_env.trait_defs.contains_key(name) {
+        return (name.to_string(), builtin_env);
+    }
+
+    (current_name, current_env)
 }
 
 pub(crate) fn type_param_name_set(tparams: &[hir::HirIdent]) -> HashSet<String> {

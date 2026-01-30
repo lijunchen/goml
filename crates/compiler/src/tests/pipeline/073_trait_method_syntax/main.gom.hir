@@ -1,0 +1,19 @@
+package Main
+file main.gom
+  struct S {
+        value: int32,
+    }
+    
+    impl Show for S {
+      fn show(local/1/0: S) -> string {
+        "S(" + int32_to_string(self/0.value) + ")";
+      }
+    }
+    
+    fn main() -> unit {
+      let local/1/1 = S {
+          value: 7
+      };
+      string_println(s/1.show());
+      ();
+    }

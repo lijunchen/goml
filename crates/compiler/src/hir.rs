@@ -35,6 +35,7 @@ pub struct PackageHir {
     pub id: PackageId,
     pub name: PackageName,
     pub imports: Vec<PackageName>,
+    pub use_traits: Vec<QualifiedPath>,
     pub files: Vec<SourceFileHir>,
     pub toplevels: Vec<DefId>,
 }
@@ -44,6 +45,7 @@ pub struct SourceFileHir {
     pub path: String,
     pub package: PackageName,
     pub imports: Vec<PackageName>,
+    pub use_traits: Vec<QualifiedPath>,
     pub toplevels: Vec<DefId>,
 }
 
@@ -172,11 +174,19 @@ pub fn lower_to_hir_files_with_env(
         .collect();
     imports.sort_by(|a, b| a.0.cmp(&b.0));
     imports.dedup_by(|a, b| a.0 == b.0);
+    let mut use_traits: Vec<QualifiedPath> = resolved
+        .files
+        .iter()
+        .flat_map(|file| file.use_traits.iter().cloned())
+        .collect();
+    use_traits.sort_by(|a, b| a.display().cmp(&b.display()));
+    use_traits.dedup_by(|a, b| a.display() == b.display());
     (
         PackageHir {
             id: package_id,
             name: package_name,
             imports,
+            use_traits,
             files: resolved.files,
             toplevels: resolved.toplevels,
         },

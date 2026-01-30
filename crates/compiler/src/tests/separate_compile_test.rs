@@ -116,7 +116,7 @@ fn foo() -> int32 {
         r#"
 package Main
 
-import Lib
+use Lib
 
 fn main() -> unit {
     string_println(int32_to_string(Lib::foo()))

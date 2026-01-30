@@ -42,6 +42,16 @@ fn multi_package_compile_project_008() -> anyhow::Result<()> {
     run_project("project008_trait_bounds_across_packages")
 }
 
+#[test]
+fn multi_package_compile_project_009() -> anyhow::Result<()> {
+    run_project("project009_builtin_option_result")
+}
+
+#[test]
+fn multi_package_compile_project_010() -> anyhow::Result<()> {
+    run_project("project010_builtin_trait_show")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/package")

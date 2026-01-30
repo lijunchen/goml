@@ -12,6 +12,7 @@ pub struct LocalTypeEnv {
     scopes: Vec<ImHashMap<LocalId, tast::Ty>>,
     tparams_env: Vec<TastIdent>,
     tparam_trait_bounds: IndexMap<String, Vec<TastIdent>>,
+    in_scope_traits: Vec<TastIdent>,
     capture_stack: Vec<IndexMap<LocalId, tast::Ty>>,
 }
 
@@ -27,6 +28,7 @@ impl LocalTypeEnv {
             scopes: vec![ImHashMap::new()],
             tparams_env: Vec::new(),
             tparam_trait_bounds: IndexMap::new(),
+            in_scope_traits: Vec::new(),
             capture_stack: Vec::new(),
         }
     }
@@ -88,6 +90,14 @@ impl LocalTypeEnv {
 
     pub fn tparam_trait_bounds(&self, name: &str) -> Option<&[TastIdent]> {
         self.tparam_trait_bounds.get(name).map(|v| v.as_slice())
+    }
+
+    pub fn set_in_scope_traits(&mut self, traits: Vec<TastIdent>) {
+        self.in_scope_traits = traits;
+    }
+
+    pub fn in_scope_traits(&self) -> &[TastIdent] {
+        &self.in_scope_traits
     }
 
     pub fn begin_closure(&mut self) {

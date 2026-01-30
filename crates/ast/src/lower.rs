@@ -115,11 +115,43 @@ pub fn lower(node: cst::File) -> LowerResult {
         .and_then(|decl| decl.name_token())
         .map(|token| ast::AstIdent::new(&token.to_string()))
         .unwrap_or_else(|| ast::AstIdent::new("Main"));
-    let imports = node
-        .import_decls()
-        .filter_map(|decl| decl.name_token())
-        .map(|token| ast::AstIdent::new(&token.to_string()))
-        .collect();
+    let mut imports = Vec::new();
+    let mut use_traits = Vec::new();
+    for decl in node.use_decls() {
+        let Some(path) = decl.path() else {
+            ctx.push_error(
+                Some(decl.syntax().text_range()),
+                "use declaration missing path",
+            );
+            continue;
+        };
+        let idents = path
+            .ident_tokens()
+            .map(|token| ast::AstIdent::new(&token.to_string()))
+            .collect::<Vec<_>>();
+        let ast_path = ast::Path::from_idents(idents);
+        match ast_path.len() {
+            1 => {
+                if let Some(name) = ast_path.last_ident() {
+                    imports.push(name.clone());
+                } else {
+                    ctx.push_error(
+                        Some(path.syntax().text_range()),
+                        "use declaration missing package name",
+                    );
+                }
+            }
+            2 => {
+                use_traits.push(ast_path);
+            }
+            _ => {
+                ctx.push_error(
+                    Some(path.syntax().text_range()),
+                    "use declaration must be `use Pkg` or `use Pkg::Trait`",
+                );
+            }
+        }
+    }
     let items = node
         .items()
         .flat_map(|item| lower_item(&mut ctx, item))
@@ -130,6 +162,7 @@ pub fn lower(node: cst::File) -> LowerResult {
         Some(ast::File {
             package,
             imports,
+            use_traits,
             toplevels: items,
         })
     };

@@ -2274,15 +2274,144 @@ impl Typer {
                         }
                     }
                 } else {
-                    super::util::push_error(
-                        diagnostics,
-                        format!(
-                            "Method {} not found for type {:?}",
-                            field.to_ident_name(),
-                            receiver_expr
-                        ),
+                    let method_name = tast::TastIdent(field.to_ident_name());
+                    let candidates = lookup_in_scope_trait_methods(
+                        genv,
+                        local_env.in_scope_traits(),
+                        &receiver_ty,
+                        &method_name,
                     );
-                    self.error_expr(None)
+                    match candidates.as_slice() {
+                        [(trait_name, method_ty)] => {
+                            let inst_method_ty = self.inst_ty(method_ty);
+                            let inst_method_ty_for_call =
+                                instantiate_self_ty(&inst_method_ty, &receiver_ty);
+
+                            let (params, ret_ty) = match &inst_method_ty_for_call {
+                                tast::Ty::TFunc { params, ret_ty } => {
+                                    (params.clone(), (**ret_ty).clone())
+                                }
+                                _ => {
+                                    super::util::push_ice(
+                                        diagnostics,
+                                        format!(
+                                            "Expected trait method {}::{} to have a function type",
+                                            trait_name.0, method_name.0
+                                        ),
+                                    );
+                                    return self.error_expr(None);
+                                }
+                            };
+
+                            if params.len() != args.len() + 1 {
+                                super::util::push_error(
+                                    diagnostics,
+                                    format!(
+                                        "Trait method {}::{} expects {} arguments but got {}",
+                                        trait_name.0,
+                                        method_name.0,
+                                        params.len(),
+                                        args.len() + 1
+                                    ),
+                                );
+                                return self.error_expr(None);
+                            }
+
+                            let mut args_tast = Vec::with_capacity(args.len() + 1);
+                            args_tast.push(receiver_tast);
+                            for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
+                                args_tast.push(self.check_expr(
+                                    genv,
+                                    local_env,
+                                    diagnostics,
+                                    *arg,
+                                    expected_ty,
+                                ));
+                            }
+
+                            let receiver_param_ty = params.first().cloned().unwrap_or_else(|| {
+                                super::util::push_ice(
+                                    diagnostics,
+                                    format!(
+                                        "trait method {}::{} missing receiver parameter",
+                                        trait_name.0, method_name.0
+                                    ),
+                                );
+                                self.fresh_ty_var()
+                            });
+                            self.push_constraint(Constraint::TypeEqual(
+                                receiver_ty.clone(),
+                                receiver_param_ty,
+                            ));
+
+                            self.results.record_call_elab(
+                                call_expr_id,
+                                CallElab {
+                                    callee: CalleeElab::TraitMethod {
+                                        trait_name: trait_name.clone(),
+                                        method_name: method_name.clone(),
+                                        ty: inst_method_ty_for_call.clone(),
+                                        astptr: None,
+                                    },
+                                    args: std::iter::once(receiver_expr)
+                                        .chain(args.iter().copied())
+                                        .collect(),
+                                },
+                            );
+                            self.results
+                                .record_expr_ty(func, inst_method_ty_for_call.clone());
+                            self.results.record_name_ref_elab(
+                                func,
+                                NameRefElab::TraitMethod {
+                                    trait_name: trait_name.clone(),
+                                    method_name: method_name.clone(),
+                                    ty: inst_method_ty_for_call.clone(),
+                                    astptr: None,
+                                },
+                            );
+                            tast::Expr::ECall {
+                                func: Box::new(tast::Expr::ETraitMethod {
+                                    trait_name: trait_name.clone(),
+                                    method_name: method_name.clone(),
+                                    ty: inst_method_ty_for_call,
+                                    astptr: None,
+                                }),
+                                args: args_tast,
+                                ty: ret_ty,
+                            }
+                        }
+                        [] => {
+                            super::util::push_error(
+                                diagnostics,
+                                format!(
+                                    "Method {} not found for type {:?}",
+                                    field.to_ident_name(),
+                                    receiver_expr
+                                ),
+                            );
+                            self.error_expr(None)
+                        }
+                        _ => {
+                            let trait_names = candidates
+                                .iter()
+                                .map(|(t, _)| t.0.clone())
+                                .collect::<Vec<_>>()
+                                .join(", ");
+                            diagnostics.push(Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Ambiguous method {} for type {:?} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                                    method_name.0, receiver_expr, trait_names, method_name.0
+                                ),
+                            ));
+                            tast::Expr::EVar {
+                                name: "<error>".to_string(),
+                                ty: self.fresh_ty_var(),
+                                astptr: None,
+                            }
+                        }
+                    }
                 }
             }
             _ => {
@@ -3309,6 +3438,30 @@ fn lookup_bound_trait_methods(
             continue;
         };
         let resolved_ident = tast::TastIdent(resolved_trait);
+        if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {
+            result.push((resolved_ident, method_ty));
+        }
+    }
+    result
+}
+
+fn lookup_in_scope_trait_methods(
+    genv: &PackageTypeEnv,
+    in_scope_traits: &[tast::TastIdent],
+    receiver_ty: &tast::Ty,
+    method: &tast::TastIdent,
+) -> Vec<(tast::TastIdent, tast::Ty)> {
+    let mut result = Vec::new();
+    for trait_name in in_scope_traits.iter() {
+        let Some((resolved_trait, trait_env)) =
+            super::util::resolve_trait_name(genv, &trait_name.0)
+        else {
+            continue;
+        };
+        let resolved_ident = tast::TastIdent(resolved_trait);
+        if !has_visible_trait_impl(genv, &resolved_ident.0, receiver_ty) {
+            continue;
+        }
         if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {
             result.push((resolved_ident, method_ty));
         }

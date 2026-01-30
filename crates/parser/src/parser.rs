@@ -315,6 +315,7 @@ fn should_consume_on_expect_failure(kind: TokenKind) -> bool {
             | T![impl]
             | T![extern]
             | T![package]
+            | T![use]
             | T![import]
             | T![let]
             | T![return]

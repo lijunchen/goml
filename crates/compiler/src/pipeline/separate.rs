@@ -135,6 +135,12 @@ fn read_source_files(
         for import in ast.imports.iter() {
             imports.insert(import.0.clone());
         }
+        for use_trait in ast.use_traits.iter() {
+            let Some(first) = use_trait.segments().first() else {
+                continue;
+            };
+            imports.insert(first.ident.0.clone());
+        }
         source_list.push(path.display().to_string());
         files.push(hir::SourceFileAst { path, ast });
     }

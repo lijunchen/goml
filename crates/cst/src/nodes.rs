@@ -52,7 +52,7 @@ impl File {
         support::child(&self.syntax)
     }
 
-    pub fn import_decls(&self) -> CstChildren<ImportDecl> {
+    pub fn use_decls(&self) -> CstChildren<UseDecl> {
         support::children(&self.syntax)
     }
 
@@ -83,18 +83,18 @@ impl_display_via_syntax!(PackageDecl);
 ////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct ImportDecl {
+pub struct UseDecl {
     pub(crate) syntax: MySyntaxNode,
 }
 
-impl ImportDecl {
-    pub fn name_token(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+impl UseDecl {
+    pub fn path(&self) -> Option<Path> {
+        support::child(&self.syntax)
     }
 }
 
-impl_cst_node_simple!(ImportDecl, MySyntaxKind::IMPORT);
-impl_display_via_syntax!(ImportDecl);
+impl_cst_node_simple!(UseDecl, MySyntaxKind::USE);
+impl_display_via_syntax!(UseDecl);
 
 ////////////////////////////////////////////////////////////////////////////////
 

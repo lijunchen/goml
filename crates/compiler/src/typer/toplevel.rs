@@ -791,12 +791,21 @@ pub fn check_file_with_env(
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
+    let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
             hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(&genv, &mut typer, &mut diagnostics, &impl_block)
+                typecheck_impl_block(
+                    &genv,
+                    &mut typer,
+                    &mut diagnostics,
+                    &impl_block,
+                    &in_scope_traits,
+                )
             }
-            hir::Def::Fn(func) => typecheck_fn(&genv, &mut typer, &mut diagnostics, &func),
+            hir::Def::Fn(func) => {
+                typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
+            }
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
@@ -839,12 +848,21 @@ pub fn check_file_with_env_and_results(
     let mut typer = Typer::new(hir_table);
     let mut diagnostics = Diagnostics::new();
     collect_typedefs(&mut genv, &mut diagnostics, &hir, &typer.hir_table);
+    let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
             hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(&genv, &mut typer, &mut diagnostics, &impl_block)
+                typecheck_impl_block(
+                    &genv,
+                    &mut typer,
+                    &mut diagnostics,
+                    &impl_block,
+                    &in_scope_traits,
+                )
             }
-            hir::Def::Fn(func) => typecheck_fn(&genv, &mut typer, &mut diagnostics, &func),
+            hir::Def::Fn(func) => {
+                typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
+            }
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
             | hir::Def::TraitDef(..)
@@ -889,13 +907,45 @@ fn subst_file(typer: &mut Typer, diagnostics: &mut Diagnostics, file: tast::File
     tast::File { toplevels }
 }
 
+fn build_in_scope_traits(
+    genv: &PackageTypeEnv,
+    hir: &hir::PackageHir,
+    diagnostics: &mut Diagnostics,
+) -> Vec<tast::TastIdent> {
+    let mut traits = genv
+        .builtins()
+        .trait_env
+        .trait_defs
+        .keys()
+        .cloned()
+        .map(tast::TastIdent)
+        .collect::<Vec<_>>();
+    for use_trait in hir.use_traits.iter() {
+        let name = use_trait.display();
+        if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
+            traits.push(tast::TastIdent(resolved));
+        } else {
+            diagnostics.push(Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("Unknown trait {}", name),
+            ));
+        }
+    }
+    traits.sort_by(|a, b| a.0.cmp(&b.0));
+    traits.dedup_by(|a, b| a.0 == b.0);
+    traits
+}
+
 fn typecheck_fn(
     genv: &PackageTypeEnv,
     typer: &mut Typer,
     diagnostics: &mut Diagnostics,
     f: &hir::Fn,
+    in_scope_traits: &[tast::TastIdent],
 ) {
     let mut local_env = LocalTypeEnv::new();
+    local_env.set_in_scope_traits(in_scope_traits.to_vec());
     let tparams: Vec<tast::TastIdent> = f
         .generics
         .iter()
@@ -960,6 +1010,7 @@ fn typecheck_impl_block(
     typer: &mut Typer,
     diagnostics: &mut Diagnostics,
     impl_block: &hir::ImplBlock,
+    in_scope_traits: &[tast::TastIdent],
 ) {
     let impl_generics_tast: Vec<tast::TastIdent> = impl_block
         .generics
@@ -973,6 +1024,7 @@ fn typecheck_impl_block(
             _ => continue,
         };
         let mut local_env = LocalTypeEnv::new();
+        local_env.set_in_scope_traits(in_scope_traits.to_vec());
 
         // Combine impl generics and method generics
         let mut all_generics = impl_block.generics.clone();

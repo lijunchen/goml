@@ -338,7 +338,7 @@ fn color_to_int(c: Color) -> int32 {
     std::fs::write(&lib_path, lib_src).unwrap();
 
     let hover_src = r#"package Main
-import Lib
+use Lib
 
 fn main() {
     let f = Lib::color_to_int;
@@ -348,7 +348,7 @@ fn main() {
 }
 "#;
     let completion_src = r#"package Main
-import Lib
+use Lib
 
 fn main() {
     let f = Lib::color_to_int;
@@ -421,14 +421,14 @@ fn color_to_int(c: Color) -> int32 {
     std::fs::write(&lib_path, lib_src).unwrap();
 
     let src = r#"package Main
-import Lib
+use Lib
 
 fn main() {
     let _ = Lib::;
 }
 "#;
     let src_with_prefix = r#"package Main
-import Lib
+use Lib
 
 fn main() {
     let _ = Lib::co;

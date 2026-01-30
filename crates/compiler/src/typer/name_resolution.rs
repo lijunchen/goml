@@ -49,6 +49,7 @@ struct ResolutionContext<'a> {
     current_package: &'a str,
     imports: &'a HashSet<String>,
     constructor_index: &'a ConstructorIndex,
+    trait_index: &'a TraitIndex,
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
@@ -146,6 +147,46 @@ impl ConstructorIndex {
     }
 }
 
+struct TraitIndex {
+    traits_by_package: HashMap<String, HashSet<String>>,
+}
+
+impl TraitIndex {
+    fn new_with_files(files: &[hir::SourceFileAst]) -> Self {
+        let mut index = Self {
+            traits_by_package: HashMap::new(),
+        };
+        index.add_files(files);
+        if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
+            let builtin_ast = builtins::get_builtin_ast();
+            let builtin_file = hir::SourceFileAst {
+                path: "<builtin>".into(),
+                ast: builtin_ast,
+            };
+            index.add_files(std::slice::from_ref(&builtin_file));
+        }
+        index
+    }
+
+    fn add_files(&mut self, files: &[hir::SourceFileAst]) {
+        for file in files {
+            let package = file.ast.package.0.clone();
+            let entry = self.traits_by_package.entry(package).or_default();
+            for item in &file.ast.toplevels {
+                if let ast::Item::TraitDef(def) = item {
+                    entry.insert(def.name.0.clone());
+                }
+            }
+        }
+    }
+
+    fn has_trait(&self, package: &str, name: &str) -> bool {
+        self.traits_by_package
+            .get(package)
+            .is_some_and(|traits| traits.contains(name))
+    }
+}
+
 impl ResolutionContext<'_> {
     fn package_allowed(&self, package: &str) -> bool {
         package == self.current_package || package == "Builtin" || self.imports.contains(package)
@@ -198,6 +239,11 @@ impl NameResolution {
                     .enum_has_variant(ctx.current_package, enum_name, variant)
                 {
                     Some(constructor_path(ctx.current_package, enum_name, variant))
+                } else if ctx
+                    .constructor_index
+                    .enum_has_variant("Builtin", enum_name, variant)
+                {
+                    Some(constructor_path("Builtin", enum_name, variant))
                 } else {
                     None
                 }
@@ -270,17 +316,23 @@ impl NameResolution {
 
         let mut def_names = HashMap::new();
         let ctor_index = ConstructorIndex::new_with_deps(&files, deps);
+        let trait_index = TraitIndex::new_with_files(&files);
         let mut toplevels = Vec::new();
         let mut per_file_defs = Vec::new();
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file
+            let mut imports = file
                 .ast
                 .imports
                 .iter()
                 .map(|import| import.0.clone())
                 .collect::<HashSet<_>>();
+            for use_trait in file.ast.use_traits.iter() {
+                if let Some(first) = use_trait.segments().first() {
+                    imports.insert(first.ident.0.clone());
+                }
+            }
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
@@ -395,12 +447,17 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file
+            let mut imports = file
                 .ast
                 .imports
                 .iter()
                 .map(|import| import.0.clone())
                 .collect::<HashSet<_>>();
+            for use_trait in file.ast.use_traits.iter() {
+                if let Some(first) = use_trait.segments().first() {
+                    imports.insert(first.ident.0.clone());
+                }
+            }
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
@@ -408,6 +465,7 @@ impl NameResolution {
                 current_package: package_name,
                 imports: &imports,
                 constructor_index: &ctor_index,
+                trait_index: &trait_index,
             };
 
             let mut toplevel_idx = 0;
@@ -445,7 +503,7 @@ impl NameResolution {
                             .collect();
                         let tparams = type_param_set(&i.generics);
                         let trait_name = i.trait_name.as_ref().map(|t| {
-                            HirIdent::name(self.lower_impl_trait_name(t, package_name, &imports))
+                            HirIdent::name(self.lower_impl_trait_name(t, &ctx))
                         });
                         let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
@@ -483,15 +541,42 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
+                let mut imports: HashSet<String> = file
+                    .ast
+                    .imports
+                    .iter()
+                    .map(|import| import.0.clone())
+                    .collect();
+                for use_trait in file.ast.use_traits.iter() {
+                    if let Some(first) = use_trait.segments().first() {
+                        imports.insert(first.ident.0.clone());
+                    }
+                }
+                let mut imports_vec = imports
+                    .into_iter()
+                    .map(hir::PackageName)
+                    .collect::<Vec<_>>();
+                imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
+
+                let mut use_traits = Vec::new();
+                for use_trait in file.ast.use_traits.iter() {
+                    let qualified: hir::QualifiedPath = use_trait.into();
+                    let Some(package) = &qualified.package else {
+                        self.ice("use trait is missing package");
+                        continue;
+                    };
+                    let Some(trait_name) = qualified.last_ident() else {
+                        self.ice("use trait is missing name");
+                        continue;
+                    };
+                    let _ = (package, trait_name);
+                    use_traits.push(qualified);
+                }
                 hir::SourceFileHir {
                     path,
                     package: hir::PackageName(package),
-                    imports: file
-                        .ast
-                        .imports
-                        .iter()
-                        .map(|import| hir::PackageName(import.0.clone()))
-                        .collect(),
+                    imports: imports_vec,
+                    use_traits,
                     toplevels: per_file_defs.get(idx).cloned().unwrap_or_default(),
                 }
             })
@@ -1475,8 +1560,7 @@ impl NameResolution {
     fn lower_impl_trait_name(
         &mut self,
         path: &ast::Path,
-        current_package: &str,
-        imports: &HashSet<String>,
+        ctx: &ResolutionContext,
     ) -> String {
         if path.len() == 1 {
             let name = match path.last_ident() {
@@ -1486,16 +1570,24 @@ impl NameResolution {
                     "<error>".to_string()
                 }
             };
-            return full_def_name(current_package, &name);
+
+            let local = full_def_name(ctx.current_package, &name);
+            if ctx.trait_index.has_trait(ctx.current_package, &name) {
+                return local;
+            }
+            if ctx.trait_index.has_trait("Builtin", &name) {
+                return name;
+            }
+            return local;
         }
 
         let qualified: hir::QualifiedPath = path.into();
         if let Some(package) = &qualified.package
-            && !package_allowed(package.as_str(), current_package, imports)
+            && !package_allowed(package.as_str(), ctx.current_package, ctx.imports)
         {
             self.error(format!(
                 "package {} not imported in package {}",
-                package.0, current_package
+                package.0, ctx.current_package
             ));
         }
         qualified.display()

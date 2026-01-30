@@ -90,8 +90,8 @@ fn typecheck_single_file_for_query(
     parse_diagnostics.append(&mut lower_diagnostics);
     let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
 
-    if !ast.imports.is_empty() {
-        return Err("package imports are not supported in this context".to_string());
+    if !ast.imports.is_empty() || !ast.use_traits.is_empty() {
+        return Err("package uses are not supported in this context".to_string());
     }
 
     let original_ast = ast.clone();

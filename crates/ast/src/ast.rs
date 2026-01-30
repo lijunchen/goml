@@ -145,6 +145,7 @@ pub struct Attribute {
 pub struct File {
     pub package: AstIdent,
     pub imports: Vec<AstIdent>,
+    pub use_traits: Vec<Path>,
     pub toplevels: Vec<Item>,
 }
 

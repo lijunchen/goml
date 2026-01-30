@@ -1,0 +1,9 @@
+fn trait_impl#Show#S#show(self/0: S) -> string {
+  (("S(" + int32_to_string(S.value(self/0))) + ")")
+}
+
+fn main() -> unit {
+  let s/1 = S { value: 7 } in
+  let _wild0 = string_println(trait_impl#Show#S#show(s/1)) in
+  ()
+}
