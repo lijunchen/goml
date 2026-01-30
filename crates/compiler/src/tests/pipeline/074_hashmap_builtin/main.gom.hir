@@ -62,8 +62,8 @@ enum Key {
     
     fn print_opt_int(local/1/20: Option[int32]) -> unit {
       match x/20 {
-          Option::Some(local/1/21) => string_println(int32_to_string(v/21)),
-          Option::None => string_println("none"),
+          Option::Some(local/1/21) => println(v/21),
+          Option::None => println("none"),
       };
     }
     
@@ -71,12 +71,12 @@ enum Key {
       let local/1/22 = hashmap_new();
       hashmap_set(m1/22, ctor(def/1/3::v0), 10);
       hashmap_set(m1/22, ctor(def/1/3::v1)(1), 20);
-      string_println(int32_to_string(hashmap_len(m1/22)));
+      println(hashmap_len(m1/22));
       def/1/6(hashmap_get(m1/22, ctor(def/1/3::v0)));
-      string_println(bool_to_string(hashmap_contains(m1/22, ctor(def/1/3::v1)(1))));
+      println(hashmap_contains(m1/22, ctor(def/1/3::v1)(1)));
       hashmap_remove(m1/22, ctor(def/1/3::v1)(1));
-      string_println(bool_to_string(hashmap_contains(m1/22, ctor(def/1/3::v1)(1))));
-      string_println(int32_to_string(hashmap_len(m1/22)));
+      println(hashmap_contains(m1/22, ctor(def/1/3::v1)(1)));
+      println(hashmap_len(m1/22));
       let local/1/23 = hashmap_new();
       let local/1/24 = ref(Point {
             x: 1,

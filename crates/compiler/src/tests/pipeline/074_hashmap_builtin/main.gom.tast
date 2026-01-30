@@ -47,8 +47,8 @@ impl Hash for Key{
 
 fn print_opt_int(x/20: Option[int32]) -> unit {
     match (x/20 : Option[int32]) {
-        Option::Some(v/21: int32) => (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((v/21 : int32))),
-        Option::None => (string_println : (string) -> unit)("none"),
+        Option::Some(v/21: int32) => (println : (int32) -> unit)((v/21 : int32)),
+        Option::None => (println : (string) -> unit)("none"),
     };
 }
 
@@ -56,12 +56,12 @@ fn main() -> unit {
     let m1/22: HashMap[Key, int32] = (hashmap_new : () -> HashMap[Key, int32])();
     (hashmap_set : (HashMap[Key, int32], Key, int32) -> unit)((m1/22 : HashMap[Key, int32]), Key::A, 10);
     (hashmap_set : (HashMap[Key, int32], Key, int32) -> unit)((m1/22 : HashMap[Key, int32]), Key::B(1), 20);
-    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((hashmap_len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32]))));
+    (println : (int32) -> unit)((hashmap_len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32])));
     (print_opt_int : (Option[int32]) -> unit)((hashmap_get : (HashMap[Key, int32], Key) -> Option[int32])((m1/22 : HashMap[Key, int32]), Key::A));
-    (string_println : (string) -> unit)((bool_to_string : (bool) -> string)((hashmap_contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1))));
+    (println : (bool) -> unit)((hashmap_contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1)));
     (hashmap_remove : (HashMap[Key, int32], Key) -> unit)((m1/22 : HashMap[Key, int32]), Key::B(1));
-    (string_println : (string) -> unit)((bool_to_string : (bool) -> string)((hashmap_contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1))));
-    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((hashmap_len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32]))));
+    (println : (bool) -> unit)((hashmap_contains : (HashMap[Key, int32], Key) -> bool)((m1/22 : HashMap[Key, int32]), Key::B(1)));
+    (println : (int32) -> unit)((hashmap_len : (HashMap[Key, int32]) -> int32)((m1/22 : HashMap[Key, int32])));
     let m2/23: HashMap[Ref[Point], int32] = (hashmap_new : () -> HashMap[Ref[Point], int32])();
     let p1/24: Ref[Point] = (ref : (Point) -> Ref[Point])(Point { x: 1, y: 2 });
     let p2/25: Ref[Point] = (ref : (Point) -> Ref[Point])(Point { x: 1, y: 2 });

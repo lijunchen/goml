@@ -61,8 +61,8 @@ impl Hash for Key {
 
 fn print_opt_int(x: Option[int32]) -> unit {
   match x {
-      Option::Some(v) => string_println(int32_to_string(v)),
-      Option::None => string_println("none"),
+      Option::Some(v) => println(v),
+      Option::None => println("none"),
   };
 }
 
@@ -70,12 +70,12 @@ fn main() -> unit {
   let m1 = hashmap_new();
   hashmap_set(m1, Key::A, 10);
   hashmap_set(m1, Key::B(1), 20);
-  string_println(int32_to_string(hashmap_len(m1)));
+  println(hashmap_len(m1));
   print_opt_int(hashmap_get(m1, Key::A));
-  string_println(bool_to_string(hashmap_contains(m1, Key::B(1))));
+  println(hashmap_contains(m1, Key::B(1)));
   hashmap_remove(m1, Key::B(1));
-  string_println(bool_to_string(hashmap_contains(m1, Key::B(1))));
-  string_println(int32_to_string(hashmap_len(m1)));
+  println(hashmap_contains(m1, Key::B(1)));
+  println(hashmap_len(m1));
   let m2 = hashmap_new();
   let p1 = ref(Point {
         x: 1,
