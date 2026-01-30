@@ -1993,17 +1993,17 @@ impl Typer {
                     if matches!(name.as_str(), "print" | "println") && arg_types.len() == 1 {
                         let arg_ty = arg_types[0].clone();
                         match &arg_ty {
-                            tast::Ty::TDyn { trait_name } if trait_name == "Show" => {}
+                            tast::Ty::TDyn { trait_name } if trait_name == "ToString" => {}
                             tast::Ty::TParam { name } => {
                                 let in_bounds = local_env
                                     .tparam_trait_bounds(name)
-                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "Show"));
+                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "ToString"));
                                 if !in_bounds {
                                     diagnostics.push(Diagnostic::new(
                                         Stage::Typer,
                                         Severity::Error,
                                         format!(
-                                            "Type parameter {} is not constrained by trait Show",
+                                            "Type parameter {} is not constrained by trait ToString",
                                             name
                                         ),
                                     ));
@@ -2016,8 +2016,8 @@ impl Typer {
                                     ret_ty: Box::new(tast::Ty::TString),
                                 };
                                 self.push_constraint(Constraint::Overloaded {
-                                    op: tast::TastIdent("show".to_string()),
-                                    trait_name: tast::TastIdent("Show".to_string()),
+                                    op: tast::TastIdent("to_string".to_string()),
+                                    trait_name: tast::TastIdent("ToString".to_string()),
                                     call_site_type: show_call_site_ty,
                                 });
                             }

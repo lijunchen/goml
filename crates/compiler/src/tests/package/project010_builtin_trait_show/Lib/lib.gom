@@ -4,12 +4,12 @@ struct S {
   value: int32,
 }
 
-impl Show for S {
-  fn show(self: S) -> string {
+impl ToString for S {
+  fn to_string(self: S) -> string {
     "S(" + int32_to_string(self.value) + ")"
   }
 }
 
-fn make_dyn_show() -> dyn Show {
+fn make_dyn_to_string() -> dyn ToString {
   S { value: 123 }
 }
