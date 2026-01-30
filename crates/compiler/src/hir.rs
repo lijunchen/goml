@@ -179,7 +179,7 @@ pub fn lower_to_hir_files_with_env(
         .iter()
         .flat_map(|file| file.use_traits.iter().cloned())
         .collect();
-    use_traits.sort_by(|a, b| a.display().cmp(&b.display()));
+    use_traits.sort_by_key(|a| a.display());
     use_traits.dedup_by(|a, b| a.display() == b.display());
     (
         PackageHir {

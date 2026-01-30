@@ -794,15 +794,13 @@ pub fn check_file_with_env(
     let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(
-                    &genv,
-                    &mut typer,
-                    &mut diagnostics,
-                    &impl_block,
-                    &in_scope_traits,
-                )
-            }
+            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
+                &genv,
+                &mut typer,
+                &mut diagnostics,
+                &impl_block,
+                &in_scope_traits,
+            ),
             hir::Def::Fn(func) => {
                 typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
             }
@@ -851,15 +849,13 @@ pub fn check_file_with_env_and_results(
     let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(
-                    &genv,
-                    &mut typer,
-                    &mut diagnostics,
-                    &impl_block,
-                    &in_scope_traits,
-                )
-            }
+            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
+                &genv,
+                &mut typer,
+                &mut diagnostics,
+                &impl_block,
+                &in_scope_traits,
+            ),
             hir::Def::Fn(func) => {
                 typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
             }

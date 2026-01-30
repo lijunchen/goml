@@ -393,7 +393,8 @@ pub fn value_completions(
     }
 
     if prefix_start > TextSize::from(0)
-        && src.as_bytes()
+        && src
+            .as_bytes()
             .get(u32::from(prefix_start.checked_sub(TextSize::from(1))?) as usize)
             == Some(&b'.')
     {
@@ -401,13 +402,10 @@ pub fn value_completions(
     }
 
     if prefix_start >= TextSize::from(2)
-        && src
-            .as_bytes()
-            .get(
-                u32::from(prefix_start.checked_sub(TextSize::from(2))?) as usize
-                    ..u32::from(prefix_start) as usize,
-            )
-            == Some(b"::")
+        && src.as_bytes().get(
+            u32::from(prefix_start.checked_sub(TextSize::from(2))?) as usize
+                ..u32::from(prefix_start) as usize,
+        ) == Some(b"::")
     {
         return None;
     }

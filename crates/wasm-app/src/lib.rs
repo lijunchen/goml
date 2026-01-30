@@ -411,9 +411,8 @@ pub fn value_completions(src: &str, line: u32, col: u32) -> String {
     if has_uses(src) {
         return "[]".to_string();
     }
-    let items =
-        compiler::query::value_completions(std::path::Path::new("dummy"), src, line, col)
-            .unwrap_or_default();
+    let items = compiler::query::value_completions(std::path::Path::new("dummy"), src, line, col)
+        .unwrap_or_default();
     let mut parts = Vec::with_capacity(items.len());
 
     for item in items {

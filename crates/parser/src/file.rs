@@ -61,6 +61,7 @@ fn package_decl(p: &mut Parser) {
     } else {
         p.advance_with_error("expected a package name");
     }
+    p.expect(T![;]);
     p.close(m, MySyntaxKind::PACKAGE);
 }
 
@@ -73,6 +74,7 @@ fn use_decl(p: &mut Parser) {
     } else if !p.eof() {
         p.advance_with_error("expected a path after `use`");
     }
+    p.expect(T![;]);
     p.close(m, MySyntaxKind::USE);
 }
 

@@ -445,7 +445,7 @@ pub(crate) fn resolve_trait_name<'a>(
     env.trait_env
         .trait_defs
         .contains_key(&resolved)
-        .then(|| (resolved, env))
+        .then_some((resolved, env))
 }
 
 pub(crate) fn normalize_trait_name<'a>(

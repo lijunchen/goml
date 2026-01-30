@@ -87,7 +87,7 @@ fn link_rejects_interface_hash_mismatch() -> anyhow::Result<()> {
     std::fs::write(
         &lib_path,
         r#"
-package Lib
+package Lib;
 
 fn foo() -> int32 {
     1
@@ -114,9 +114,9 @@ fn foo() -> int32 {
     std::fs::write(
         &main_path,
         r#"
-package Main
+package Main;
 
-use Lib
+use Lib;
 
 fn main() -> unit {
     string_println(int32_to_string(Lib::foo()))
@@ -142,7 +142,7 @@ fn main() -> unit {
     std::fs::write(
         &lib_path,
         r#"
-package Lib
+package Lib;
 
 fn foo() -> int32 {
     1

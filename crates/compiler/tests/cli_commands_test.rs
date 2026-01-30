@@ -65,7 +65,7 @@ fn cli_check_build_link_single_package() -> anyhow::Result<()> {
     write_file(
         &main_gom,
         r#"
-package Main
+package Main;
 
 fn main() -> unit {
     string_println("ok")
@@ -122,7 +122,7 @@ fn cli_check_build_link_with_dep() -> anyhow::Result<()> {
     write_file(
         &lib_gom,
         r#"
-package Lib
+package Lib;
 
 fn msg() -> string {
     "hi"
@@ -134,9 +134,9 @@ fn msg() -> string {
     write_file(
         &main_gom,
         r#"
-package Main
+package Main;
 
-use Lib
+use Lib;
 
 fn main() -> unit {
     string_println(Lib::msg())
@@ -205,7 +205,7 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     write_file(
         &lib_gom,
         r#"
-package Lib
+package Lib;
 
 fn msg() -> string {
     "v1"
@@ -217,9 +217,9 @@ fn msg() -> string {
     write_file(
         &main_gom,
         r#"
-package Main
+package Main;
 
-use Lib
+use Lib;
 
 fn main() -> unit {
     string_println(Lib::msg())
@@ -252,7 +252,7 @@ fn main() -> unit {
     write_file(
         &lib_gom,
         r#"
-package Lib
+package Lib;
 
 fn msg() -> string {
     "v2"

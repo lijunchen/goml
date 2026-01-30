@@ -847,6 +847,7 @@ impl File {
             RcDoc::text("package")
                 .append(RcDoc::space())
                 .append(RcDoc::text(self.package.0.clone()))
+                .append(RcDoc::text(";"))
                 .append(RcDoc::hardline()),
         );
         if !self.imports.is_empty() || !self.use_traits.is_empty() {
@@ -859,6 +860,7 @@ impl File {
                         RcDoc::text("use")
                             .append(RcDoc::space())
                             .append(RcDoc::text(path.display()))
+                            .append(RcDoc::text(";"))
                             .append(RcDoc::hardline())
                     }),
             );

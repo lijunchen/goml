@@ -502,9 +502,10 @@ impl NameResolution {
                             .map(|m| self.resolve_fn_def(m, &ctx, &mut hir_table))
                             .collect();
                         let tparams = type_param_set(&i.generics);
-                        let trait_name = i.trait_name.as_ref().map(|t| {
-                            HirIdent::name(self.lower_impl_trait_name(t, &ctx))
-                        });
+                        let trait_name = i
+                            .trait_name
+                            .as_ref()
+                            .map(|t| HirIdent::name(self.lower_impl_trait_name(t, &ctx)));
                         let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
@@ -1557,11 +1558,7 @@ impl NameResolution {
         }
     }
 
-    fn lower_impl_trait_name(
-        &mut self,
-        path: &ast::Path,
-        ctx: &ResolutionContext,
-    ) -> String {
+    fn lower_impl_trait_name(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> String {
         if path.len() == 1 {
             let name = match path.last_ident() {
                 Some(ident) => ident.0.clone(),
