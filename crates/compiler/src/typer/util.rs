@@ -22,6 +22,7 @@ pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
         tast::Ty::TApp { ty, .. } => try_constr_name(ty),
         tast::Ty::TVec { .. } => Some("Vec".to_string()),
         tast::Ty::TRef { .. } => Some("Ref".to_string()),
+        tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
         _ => None,
     }
 }
@@ -60,6 +61,10 @@ pub(crate) fn validate_ty(
         }
         tast::Ty::TVec { elem } => {
             validate_ty(genv, diagnostics, elem, tparams);
+        }
+        tast::Ty::THashMap { key, value } => {
+            validate_ty(genv, diagnostics, key, tparams);
+            validate_ty(genv, diagnostics, value, tparams);
         }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
@@ -263,6 +268,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         tast::Ty::TArray { elem, .. } => ty_contains_self(elem),
         tast::Ty::TVec { elem } => ty_contains_self(elem),
         tast::Ty::TRef { elem } => ty_contains_self(elem),
+        tast::Ty::THashMap { key, value } => ty_contains_self(key) || ty_contains_self(value),
         tast::Ty::TFunc { params, ret_ty } => {
             params.iter().any(ty_contains_self) || ty_contains_self(ret_ty)
         }
@@ -364,6 +370,20 @@ impl tast::Ty {
                         elem: Box::new(Self::from_hir(genv, arg0, tparams_env)),
                     };
                 }
+                if let hir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.package.is_none()
+                    && path.len() == 1
+                    && path.last_ident().is_some_and(|name| name == "HashMap")
+                    && args.len() == 2
+                {
+                    let mut it = args.iter();
+                    let key = it.next().unwrap();
+                    let value = it.next().unwrap();
+                    return Self::THashMap {
+                        key: Box::new(Self::from_hir(genv, key, tparams_env)),
+                        value: Box::new(Self::from_hir(genv, value, tparams_env)),
+                    };
+                }
                 Self::TApp {
                     ty: Box::new(Self::from_hir(genv, ty, tparams_env)),
                     args: args
@@ -445,7 +465,7 @@ pub(crate) fn resolve_trait_name<'a>(
     env.trait_env
         .trait_defs
         .contains_key(&resolved)
-        .then(|| (resolved, env))
+        .then_some((resolved, env))
 }
 
 pub(crate) fn normalize_trait_name<'a>(

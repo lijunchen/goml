@@ -99,6 +99,9 @@ pub enum Expr {
     Nil {
         ty: goty::GoType,
     },
+    Make {
+        ty: goty::GoType,
+    },
     Void {
         ty: goty::GoType,
     },
@@ -174,6 +177,7 @@ impl Expr {
     pub fn get_ty(&self) -> &goty::GoType {
         match self {
             Expr::Nil { ty }
+            | Expr::Make { ty }
             | Expr::Void { ty }
             | Expr::Unit { ty }
             | Expr::Var { ty, .. }
@@ -334,6 +338,12 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
                 elem: Box::new(goty::GoType::TName { name: struct_name }),
             }
         }
+        tast::Ty::THashMap { key, value } => {
+            let struct_name = hashmap_struct_name(key, value);
+            goty::GoType::TPointer {
+                elem: Box::new(goty::GoType::TName { name: struct_name }),
+            }
+        }
         tast::Ty::TParam { name } => goty::GoType::TName { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => {
             let param_tys = params.iter().map(tast_ty_to_go_type).collect();
@@ -385,6 +395,11 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
             "Ptr_{}",
             ref_struct_name(elem).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
         ),
+        tast::Ty::THashMap { key, value } => format!(
+            "HashMap_{}_{}",
+            go_type_name_for(key).replace(['{', '}', ' ', '[', ']', ',', '*'], "_"),
+            go_type_name_for(value).replace(['{', '}', ' ', '[', ']', ',', '*'], "_")
+        ),
         tast::Ty::TFunc { params, ret_ty } => {
             let mut s = String::from("TFunc");
             if params.is_empty() {
@@ -410,4 +425,9 @@ fn dyn_struct_name(trait_name: &str) -> String {
 
 pub fn ref_struct_name(elem: &tast::Ty) -> String {
     format!("ref_{}_x", go_ident(&encode_ty(elem)).to_lowercase())
+}
+
+pub fn hashmap_struct_name(key: &tast::Ty, value: &tast::Ty) -> String {
+    let enc = format!("{}_{}", encode_ty(key), encode_ty(value));
+    format!("hashmap_{}_x", go_ident(&enc).to_lowercase())
 }

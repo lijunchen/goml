@@ -319,6 +319,7 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
         },
         // Leaves
         e @ ast::Expr::Nil { .. }
+        | e @ ast::Expr::Make { .. }
         | e @ ast::Expr::Void { .. }
         | e @ ast::Expr::Unit { .. }
         | e @ ast::Expr::Var { .. }
@@ -501,6 +502,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
             }
         }
         ast::Expr::Nil { .. }
+        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
@@ -617,6 +619,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
         }
         ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_side_effects),
+        ast::Expr::Make { .. } => false,
         ast::Expr::Var { .. }
         | ast::Expr::Nil { .. }
         | ast::Expr::Void { .. }
@@ -871,6 +874,7 @@ fn collect_called_in_expr(
             }
         }
         ast::Expr::Nil { .. }
+        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Bool { .. }
@@ -1082,6 +1086,7 @@ fn collect_packages_in_expr(
             collect_packages_in_expr(rhs, imports, used);
         }
         ast::Expr::Nil { .. }
+        | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
         | ast::Expr::Var { .. }

@@ -170,9 +170,14 @@ fn define_trait_impl(
     trait_name: &hir::HirIdent,
     hir_table: &hir::HirTable,
 ) {
-    let empty_tparams = HashSet::new();
-    let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &[]);
-    validate_ty(env, diagnostics, &for_ty, &empty_tparams);
+    let impl_tparams = type_param_name_set(&impl_block.generics);
+    let impl_generics_tast: Vec<tast::TastIdent> = impl_block
+        .generics
+        .iter()
+        .map(|g| tast::TastIdent(g.to_ident_name()))
+        .collect();
+    let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
+    validate_ty(env, diagnostics, &for_ty, &impl_tparams);
     let trait_name_raw = trait_name.to_ident_name();
     let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
     else {
@@ -272,9 +277,10 @@ fn define_trait_impl(
             continue;
         };
 
-        let tparam_names = type_param_name_set(&m.generics);
-        let generics_tast: Vec<tast::TastIdent> = m
-            .generics
+        let mut all_generics = impl_block.generics.clone();
+        all_generics.extend(m.generics.clone());
+        let tparam_names = type_param_name_set(&all_generics);
+        let all_generics_tast: Vec<tast::TastIdent> = all_generics
             .iter()
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
@@ -282,14 +288,14 @@ fn define_trait_impl(
             .params
             .iter()
             .map(|(_, ty)| {
-                let ty = tast::Ty::from_hir(env, ty, &generics_tast);
+                let ty = tast::Ty::from_hir(env, ty, &all_generics_tast);
                 validate_ty(env, diagnostics, &ty, &tparam_names);
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
             Some(ty) => {
-                let ret = tast::Ty::from_hir(env, ty, &generics_tast);
+                let ret = tast::Ty::from_hir(env, ty, &all_generics_tast);
                 validate_ty(env, diagnostics, &ret, &tparam_names);
                 instantiate_self_ty(&ret, &for_ty)
             }
@@ -372,10 +378,15 @@ fn define_trait_impl(
         }
 
         if method_ok {
+            let type_params: Vec<String> = impl_block
+                .generics
+                .iter()
+                .map(|g| g.to_ident_name())
+                .collect();
             impl_methods.insert(
                 method_name_str.clone(),
                 env::FnScheme {
-                    type_params: vec![],
+                    type_params,
                     constraints: (),
                     ty: impl_method_ty,
                     origin: FnOrigin::User,
@@ -401,7 +412,7 @@ fn define_trait_impl(
     env.current_mut().trait_env.trait_impls.insert(
         key,
         env::ImplDef {
-            params: vec![],
+            params: impl_generics_tast,
             methods: impl_methods,
         },
     );
@@ -722,6 +733,10 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(instantiate_self_ty(key, self_ty)),
+            value: Box::new(instantiate_self_ty(value, self_ty)),
+        },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
@@ -794,15 +809,13 @@ pub fn check_file_with_env(
     let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(
-                    &genv,
-                    &mut typer,
-                    &mut diagnostics,
-                    &impl_block,
-                    &in_scope_traits,
-                )
-            }
+            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
+                &genv,
+                &mut typer,
+                &mut diagnostics,
+                &impl_block,
+                &in_scope_traits,
+            ),
             hir::Def::Fn(func) => {
                 typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
             }
@@ -851,15 +864,13 @@ pub fn check_file_with_env_and_results(
     let in_scope_traits = build_in_scope_traits(&genv, &hir, &mut diagnostics);
     for item in hir.toplevels.iter() {
         match typer.hir_table.def(*item).clone() {
-            hir::Def::ImplBlock(impl_block) => {
-                typecheck_impl_block(
-                    &genv,
-                    &mut typer,
-                    &mut diagnostics,
-                    &impl_block,
-                    &in_scope_traits,
-                )
-            }
+            hir::Def::ImplBlock(impl_block) => typecheck_impl_block(
+                &genv,
+                &mut typer,
+                &mut diagnostics,
+                &impl_block,
+                &in_scope_traits,
+            ),
             hir::Def::Fn(func) => {
                 typecheck_fn(&genv, &mut typer, &mut diagnostics, &func, &in_scope_traits)
             }
@@ -1037,6 +1048,24 @@ fn typecheck_impl_block(
         let mut bounds = indexmap::IndexMap::new();
         for param in all_generics_tast.iter() {
             bounds.insert(param.0.clone(), Vec::new());
+        }
+        for (param, traits) in impl_block.generic_bounds.iter() {
+            let param_name = param.to_ident_name();
+            let Some(out) = bounds.get_mut(&param_name) else {
+                continue;
+            };
+            for trait_path in traits.iter() {
+                let name = trait_path.display();
+                if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
+                    out.push(tast::TastIdent(resolved));
+                } else {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Unknown trait {}", name),
+                    ));
+                }
+            }
         }
         for (param, traits) in f.generic_bounds.iter() {
             let param_name = param.to_ident_name();

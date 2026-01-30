@@ -70,8 +70,8 @@ fn point_type(p/8: Point) -> string {
 
 fn main() -> unit {
   let p0/10 = Point { x: 0, y: 0 } in
-  let mtmp10 = string_println(point_type(p0/10)) in
+  let mtmp10 = string_println(trait_call[Show::show](point_type(p0/10))) in
   let p1/11 = Point { x: 10, y: 10 } in
   let line/12 = Line { from: p0/10, to: p1/11, color: Color::Red } in
-  string_println(line_to_string(line/12))
+  string_println(trait_call[Show::show](line_to_string(line/12)))
 }

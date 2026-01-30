@@ -1,6 +1,6 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
-use crate::env::{Gensym, GlobalTypeEnv, StructDef};
+use crate::env::{FnOrigin, Gensym, GlobalTypeEnv, StructDef};
 use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
@@ -154,6 +154,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TArray { elem, .. } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
+        Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
         Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
     }
 }
@@ -226,6 +227,10 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         },
         Ty::TRef { elem } => Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::THashMap { key, value } => Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
         },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params
@@ -1161,6 +1166,7 @@ fn compile_rows(
         ),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TVec { .. } => panic!("Matching on Vec types is not supported"),
+        Ty::THashMap { .. } => panic!("Matching on HashMap types is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
         Ty::TRef { .. } => panic!("Matching on reference types is not supported"),
@@ -1589,6 +1595,59 @@ fn compile_expr(
                 .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect::<Vec<_>>();
 
+            if let tast::Expr::EVar { name, .. } = func.as_ref()
+                && (name == "print" || name == "println")
+                && genv
+                    .value_env
+                    .funcs
+                    .get(name)
+                    .is_some_and(|scheme| scheme.origin == FnOrigin::Builtin)
+            {
+                let Some(arg) = args.first() else {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::other("compile"),
+                        Severity::Error,
+                        format!("{} expects one argument but got none", name),
+                    ));
+                    return core::eunit();
+                };
+
+                let show = core::Expr::ETraitCall {
+                    trait_name: TastIdent("Show".to_string()),
+                    method_name: TastIdent("show".to_string()),
+                    receiver: Box::new(arg.clone()),
+                    args: vec![],
+                    ty: Ty::TString,
+                };
+
+                let (func_name, func_ty) = match name.as_str() {
+                    "print" => (
+                        "string_print".to_string(),
+                        Ty::TFunc {
+                            params: vec![Ty::TString],
+                            ret_ty: Box::new(Ty::TUnit),
+                        },
+                    ),
+                    "println" => (
+                        "string_println".to_string(),
+                        Ty::TFunc {
+                            params: vec![Ty::TString],
+                            ret_ty: Box::new(Ty::TUnit),
+                        },
+                    ),
+                    _ => unreachable!(),
+                };
+
+                return core::Expr::ECall {
+                    func: Box::new(core::Expr::EVar {
+                        name: func_name,
+                        ty: func_ty,
+                    }),
+                    args: vec![show],
+                    ty: ty.clone(),
+                };
+            }
+
             if let tast::Expr::EDynTraitMethod {
                 trait_name,
                 method_name,
@@ -1617,7 +1676,7 @@ fn compile_expr(
                     .split_first()
                     .expect("trait call expects a receiver argument");
                 let for_ty = receiver.get_ty();
-                if has_tparam(&for_ty) {
+                if (trait_name.0 == "Show" && method_name.0 == "show") || has_tparam(&for_ty) {
                     return core::Expr::ETraitCall {
                         trait_name: trait_name.clone(),
                         method_name: method_name.clone(),

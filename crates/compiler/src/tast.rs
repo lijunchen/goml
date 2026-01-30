@@ -95,6 +95,7 @@ pub enum Ty {
     TArray { len: usize, elem: Box<Ty> },
     TVec { elem: Box<Ty> },
     TRef { elem: Box<Ty> },
+    THashMap { key: Box<Ty>, value: Box<Ty> },
     TParam { name: String },
     TFunc { params: Vec<Ty>, ret_ty: Box<Ty> },
 }
@@ -124,6 +125,7 @@ impl std::fmt::Debug for Ty {
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
             Self::TVec { elem } => write!(f, "TVec({:?})", elem),
             Self::TRef { elem } => write!(f, "TRef({:?})", elem),
+            Self::THashMap { key, value } => write!(f, "THashMap({:?}, {:?})", key, value),
             Self::TParam { name } => write!(f, "TParam({})", name),
             Self::TFunc { params, ret_ty } => write!(f, "TFunc({:?}, {:?})", params, ret_ty),
         }
@@ -137,6 +139,7 @@ impl Ty {
             Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
             Self::TVec { .. } => "Vec".to_string(),
             Self::TRef { .. } => "Ref".to_string(),
+            Self::THashMap { .. } => "HashMap".to_string(),
             _ => {
                 panic!("Expected a constructor type, got: {:?}", self)
             }

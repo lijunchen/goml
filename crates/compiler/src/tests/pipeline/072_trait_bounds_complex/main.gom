@@ -6,11 +6,11 @@ trait Debug {
     fn show(Self) -> string;
 }
 
-trait Eq {
+trait MyEq {
     fn eq(Self, Self) -> bool;
 }
 
-trait Hash {
+trait MyHash {
     fn hash(Self) -> int32;
 }
 
@@ -40,13 +40,13 @@ impl Debug for int32 {
     }
 }
 
-impl Eq for int32 {
+impl MyEq for int32 {
     fn eq(self: int32, other: int32) -> bool {
         self == other
     }
 }
 
-impl Hash for int32 {
+impl MyHash for int32 {
     fn hash(self: int32) -> int32 {
         (self * 16777619) + 216613626
     }
@@ -82,13 +82,13 @@ impl Debug for Boxed {
     }
 }
 
-impl Eq for Boxed {
+impl MyEq for Boxed {
     fn eq(self: Boxed, other: Boxed) -> bool {
         self.value == other.value
     }
 }
 
-impl Hash for Boxed {
+impl MyHash for Boxed {
     fn hash(self: Boxed) -> int32 {
         ((self.value * 31) + 7) * 1315423911
     }
@@ -120,7 +120,7 @@ fn show_both[T: Debug + Display](x: T) -> string {
     (Debug::show(x) + " / ") + Display::show(x)
 }
 
-fn tag_text[Q: Debug + Hash](tag: Q) -> string {
+fn tag_text[Q: Debug + MyHash](tag: Q) -> string {
     (Debug::show(tag) + "#") + int32_to_string(tag.hash())
 }
 
@@ -128,20 +128,20 @@ fn combine_scaled[T: Add + Scale](a: T, b: T, factor: int32) -> T {
     a.add(b).scale(factor)
 }
 
-fn report_pair[T: Debug + Display + Eq + Hash, Q: Debug + Hash](tag: Q, a: T, b: T, combined: T) -> string {
-    let same = Eq::eq(a, b);
+fn report_pair[T: Debug + Display + MyEq + MyHash, Q: Debug + MyHash](tag: Q, a: T, b: T, combined: T) -> string {
+    let same = MyEq::eq(a, b);
     let header = tag_text(tag);
     let repr = show_both(combined);
     let h = combined.hash();
     ((header + " ") + repr) + ((" | eq=" + bool_text(same)) + (" | hash=" + int32_to_string(h)))
 }
 
-fn full_report[T: Debug + Hash + Display + Eq + Add + Scale + Debug, Q: Debug + Hash](tag: Q, a: T, b: T) -> string {
+fn full_report[T: Debug + MyHash + Display + MyEq + Add + Scale + Debug, Q: Debug + MyHash](tag: Q, a: T, b: T) -> string {
     let combined = combine_scaled(a, b, 2);
     report_pair(tag, a, b, combined)
 }
 
-fn sum_and_tag[T: Add + Hash + Inspect, Q: Debug + Hash](tag: Q, x: T, y: T, z: T) -> string {
+fn sum_and_tag[T: Add + MyHash + Inspect, Q: Debug + MyHash](tag: Q, x: T, y: T, z: T) -> string {
     let total = x.add(y).add(z);
     let header = tag_text(tag);
     let h = total.hash();

@@ -68,6 +68,14 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
                 return false;
             }
         }
+        tast::Ty::THashMap { key, value } => {
+            if !occurs(diagnostics, var, key) {
+                return false;
+            }
+            if !occurs(diagnostics, var, value) {
+                return false;
+            }
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
                 if !occurs(diagnostics, var, param) {
@@ -130,6 +138,10 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
         },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
@@ -221,6 +233,7 @@ impl Typer {
                 tast::Ty::TArray { elem, .. } => is_concrete(elem),
                 tast::Ty::TVec { elem } => is_concrete(elem),
                 tast::Ty::TRef { elem } => is_concrete(elem),
+                tast::Ty::THashMap { key, value } => is_concrete(key) && is_concrete(value),
                 tast::Ty::TFunc { params, ret_ty } => {
                     params.iter().all(is_concrete) && is_concrete(ret_ty)
                 }
@@ -462,6 +475,10 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.norm(elem)),
             },
+            tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+                key: Box::new(self.norm(key)),
+                value: Box::new(self.norm(value)),
+            },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params.iter().map(|ty| self.norm(ty)).collect();
                 let ret_ty = Box::new(self.norm(ret_ty));
@@ -558,6 +575,23 @@ impl Typer {
             }
             (tast::Ty::TVec { elem: elem1 }, tast::Ty::TVec { elem: elem2 }) => {
                 if !self.unify(diagnostics, elem1, elem2) {
+                    return false;
+                }
+            }
+            (
+                tast::Ty::THashMap {
+                    key: key1,
+                    value: value1,
+                },
+                tast::Ty::THashMap {
+                    key: key2,
+                    value: value2,
+                },
+            ) => {
+                if !self.unify(diagnostics, key1, key2) {
+                    return false;
+                }
+                if !self.unify(diagnostics, value1, value2) {
                     return false;
                 }
             }
@@ -733,6 +767,10 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
+            tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+                key: Box::new(self._go_inst_ty(key, subst)),
+                value: Box::new(self._go_inst_ty(value, subst)),
+            },
             tast::Ty::TParam { name } => {
                 if let Some(ty) = subst.get(name) {
                     ty.clone()
@@ -809,6 +847,10 @@ impl Typer {
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.subst_ty(diagnostics, elem)),
             },
+            tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+                key: Box::new(self.subst_ty(diagnostics, key)),
+                value: Box::new(self.subst_ty(diagnostics, value)),
+            },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params
                     .iter()
@@ -863,6 +905,10 @@ impl Typer {
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
                 elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+                key: Box::new(self.subst_ty_silent(key)),
+                value: Box::new(self.subst_ty_silent(value)),
             },
             tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
                 params: params.iter().map(|ty| self.subst_ty_silent(ty)).collect(),

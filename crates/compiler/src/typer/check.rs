@@ -33,6 +33,65 @@ impl Typer {
         }
     }
 
+    fn ensure_hashmap_key_traits(
+        &mut self,
+        local_env: &LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        key_ty: &tast::Ty,
+    ) -> bool {
+        match key_ty {
+            tast::Ty::TParam { name } => {
+                let Some(bounds) = local_env.tparam_trait_bounds(name) else {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type parameter {} is not constrained by traits Hash + Eq",
+                            name
+                        ),
+                    ));
+                    return false;
+                };
+                let has_hash = bounds.iter().any(|t| t.0 == "Hash");
+                let has_eq = bounds.iter().any(|t| t.0 == "Eq");
+                if !has_hash || !has_eq {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Type parameter {} is not constrained by traits Hash + Eq",
+                            name
+                        ),
+                    ));
+                    return false;
+                }
+                true
+            }
+            _ => {
+                let hash_call_site_ty = tast::Ty::TFunc {
+                    params: vec![key_ty.clone()],
+                    ret_ty: Box::new(tast::Ty::TUint64),
+                };
+                self.push_constraint(Constraint::Overloaded {
+                    op: tast::TastIdent("hash".to_string()),
+                    trait_name: tast::TastIdent("Hash".to_string()),
+                    call_site_type: hash_call_site_ty,
+                });
+
+                let eq_call_site_ty = tast::Ty::TFunc {
+                    params: vec![key_ty.clone(), key_ty.clone()],
+                    ret_ty: Box::new(tast::Ty::TBool),
+                };
+                self.push_constraint(Constraint::Overloaded {
+                    op: tast::TastIdent("eq".to_string()),
+                    trait_name: tast::TastIdent("Eq".to_string()),
+                    call_site_type: eq_call_site_ty,
+                });
+                true
+            }
+        }
+    }
+
     fn record_expr_result(&mut self, expr_id: hir::ExprId, expr: &tast::Expr) {
         self.results.record_expr_ty(expr_id, expr.get_ty());
         match expr {
@@ -1919,6 +1978,51 @@ impl Typer {
                     } else {
                         self.fresh_ty_var()
                     };
+
+                    if matches!(
+                        name.as_str(),
+                        "hashmap_get" | "hashmap_set" | "hashmap_remove" | "hashmap_contains"
+                    ) && arg_types.len() >= 2
+                    {
+                        let key_ty = arg_types[1].clone();
+                        if !self.ensure_hashmap_key_traits(local_env, diagnostics, &key_ty) {
+                            return self.error_expr(astptr);
+                        }
+                    }
+
+                    if matches!(name.as_str(), "print" | "println") && arg_types.len() == 1 {
+                        let arg_ty = arg_types[0].clone();
+                        match &arg_ty {
+                            tast::Ty::TDyn { trait_name } if trait_name == "Show" => {}
+                            tast::Ty::TParam { name } => {
+                                let in_bounds = local_env
+                                    .tparam_trait_bounds(name)
+                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "Show"));
+                                if !in_bounds {
+                                    diagnostics.push(Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Type parameter {} is not constrained by trait Show",
+                                            name
+                                        ),
+                                    ));
+                                    return self.error_expr(astptr);
+                                }
+                            }
+                            _ => {
+                                let show_call_site_ty = tast::Ty::TFunc {
+                                    params: vec![arg_ty],
+                                    ret_ty: Box::new(tast::Ty::TString),
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: tast::TastIdent("show".to_string()),
+                                    trait_name: tast::TastIdent("Show".to_string()),
+                                    call_site_type: show_call_site_ty,
+                                });
+                            }
+                        }
+                    }
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
@@ -2014,6 +2118,17 @@ impl Typer {
                     } else {
                         self.fresh_ty_var()
                     };
+
+                    if matches!(
+                        name.as_str(),
+                        "hashmap_get" | "hashmap_set" | "hashmap_remove" | "hashmap_contains"
+                    ) && arg_types.len() >= 2
+                    {
+                        let key_ty = arg_types[1].clone();
+                        if !self.ensure_hashmap_key_traits(local_env, diagnostics, &key_ty) {
+                            return self.error_expr(astptr);
+                        }
+                    }
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
@@ -3060,6 +3175,9 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
         tast::Ty::TArray { elem, .. } => is_concrete_dyn_target(elem),
         tast::Ty::TVec { elem } => is_concrete_dyn_target(elem),
         tast::Ty::TRef { elem } => is_concrete_dyn_target(elem),
+        tast::Ty::THashMap { key, value } => {
+            is_concrete_dyn_target(key) && is_concrete_dyn_target(value)
+        }
         tast::Ty::TFunc { params, ret_ty } => {
             params.iter().all(is_concrete_dyn_target) && is_concrete_dyn_target(ret_ty)
         }
@@ -3084,6 +3202,9 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
 
 fn has_visible_trait_impl(genv: &PackageTypeEnv, trait_name: &str, for_ty: &tast::Ty) -> bool {
     let key = (trait_name.to_string(), for_ty.clone());
+    if genv.builtins().trait_env.trait_impls.contains_key(&key) {
+        return true;
+    }
     if genv.current().trait_env.trait_impls.contains_key(&key) {
         return true;
     }
@@ -3359,7 +3480,7 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
             env
         }
         tast::Ty::TApp { ty, .. } => env_for_receiver_ty(genv, ty),
-        tast::Ty::TRef { .. } | tast::Ty::TVec { .. } => genv.current(),
+        tast::Ty::TRef { .. } | tast::Ty::TVec { .. } | tast::Ty::THashMap { .. } => genv.current(),
         _ => genv.current(),
     }
 }
@@ -3413,6 +3534,10 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         },
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(instantiate_self_ty(key, self_ty)),
+            value: Box::new(instantiate_self_ty(value, self_ty)),
         },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {

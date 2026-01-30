@@ -421,6 +421,7 @@ impl NameResolution {
                         hir::Def::ImplBlock(hir::ImplBlock {
                             attrs: Vec::new(),
                             generics: Vec::new(),
+                            generic_bounds: Vec::new(),
                             trait_name: None,
                             for_type: hir::TypeExpr::TUnit,
                             methods: Vec::new(),
@@ -502,12 +503,32 @@ impl NameResolution {
                             .map(|m| self.resolve_fn_def(m, &ctx, &mut hir_table))
                             .collect();
                         let tparams = type_param_set(&i.generics);
-                        let trait_name = i.trait_name.as_ref().map(|t| {
-                            HirIdent::name(self.lower_impl_trait_name(t, &ctx))
-                        });
+                        let generic_bounds = i
+                            .generic_bounds
+                            .iter()
+                            .map(|(param, traits)| {
+                                let traits = traits
+                                    .iter()
+                                    .map(|path| {
+                                        hir::Path::new(
+                                            path.segments()
+                                                .iter()
+                                                .map(hir::PathSegment::from)
+                                                .collect(),
+                                        )
+                                    })
+                                    .collect::<Vec<_>>();
+                                (HirIdent::name(&param.0), traits)
+                            })
+                            .collect();
+                        let trait_name = i
+                            .trait_name
+                            .as_ref()
+                            .map(|t| HirIdent::name(self.lower_impl_trait_name(t, &ctx)));
                         let impl_block = hir::ImplBlock {
                             attrs: i.attrs.iter().map(|a| a.into()).collect(),
                             generics: i.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+                            generic_bounds,
                             trait_name,
                             for_type: self.lower_type_expr(
                                 &i.for_type,
@@ -1557,11 +1578,7 @@ impl NameResolution {
         }
     }
 
-    fn lower_impl_trait_name(
-        &mut self,
-        path: &ast::Path,
-        ctx: &ResolutionContext,
-    ) -> String {
+    fn lower_impl_trait_name(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> String {
         if path.len() == 1 {
             let name = match path.last_ident() {
                 Some(ident) => ident.0.clone(),

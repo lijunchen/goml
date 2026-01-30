@@ -35,4 +35,8 @@ pub enum GoType {
     TSlice {
         elem: Box<GoType>,
     },
+    TMap {
+        key: Box<GoType>,
+        value: Box<GoType>,
+    },
 }

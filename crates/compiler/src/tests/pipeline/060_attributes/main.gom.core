@@ -33,9 +33,9 @@ fn main() -> unit {
   let mv/9 = inherent#Message#Message#to_string(Message::Move(1, 2)) in
   let text/10 = inherent#Message#Message#to_string(Message::Write("done")) in
   let exit/11 = inherent#Message#Message#to_string(Message::Quit) in
-  let _wild6 = string_println(summary/8) in
-  let _wild7 = string_println(mv/9) in
-  let _wild8 = string_println(text/10) in
-  let _wild9 = string_println(exit/11) in
+  let _wild6 = string_println(trait_call[Show::show](summary/8)) in
+  let _wild7 = string_println(trait_call[Show::show](mv/9)) in
+  let _wild8 = string_println(trait_call[Show::show](text/10)) in
+  let _wild9 = string_println(trait_call[Show::show](exit/11)) in
   ()
 }

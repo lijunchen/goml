@@ -54,7 +54,7 @@ pub fn get_builtin_ast() -> ast::File {
 fn build_builtin_env() -> GlobalTypeEnv {
     let ast = builtin_ast();
 
-    let base_env = GlobalTypeEnv {
+    let mut base_env = GlobalTypeEnv {
         type_env: TypeEnv::new(),
         trait_env: TraitEnv::new(),
         value_env: ValueEnv {
@@ -62,6 +62,12 @@ fn build_builtin_env() -> GlobalTypeEnv {
             extern_funcs: IndexMap::new(),
         },
     };
+
+    add_array_builtins(&mut base_env.value_env.funcs);
+    add_ref_builtins(&mut base_env.value_env.funcs);
+    add_vec_builtins(&mut base_env.value_env.funcs);
+    add_hashmap_builtins(&mut base_env.value_env.funcs);
+    add_print_builtins(&mut base_env.value_env.funcs);
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
@@ -79,9 +85,6 @@ fn build_builtin_env() -> GlobalTypeEnv {
     }
 
     genv.trait_env.inherent_impls = builtin_inherent_methods();
-    add_array_builtins(&mut genv.value_env.funcs);
-    add_ref_builtins(&mut genv.value_env.funcs);
-    add_vec_builtins(&mut genv.value_env.funcs);
 
     genv
 }
@@ -203,6 +206,67 @@ fn add_vec_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
+fn add_hashmap_builtins(funcs: &mut IndexMap<String, FnScheme>) {
+    let key_param = tast::Ty::TParam {
+        name: "K".to_string(),
+    };
+    let value_param = tast::Ty::TParam {
+        name: "V".to_string(),
+    };
+    let map_ty = tast::Ty::THashMap {
+        key: Box::new(key_param.clone()),
+        value: Box::new(value_param.clone()),
+    };
+    let option_value_ty = tast::Ty::TApp {
+        ty: Box::new(tast::Ty::TEnum {
+            name: "Option".to_string(),
+        }),
+        args: vec![value_param.clone()],
+    };
+
+    funcs.insert(
+        "hashmap_new".to_string(),
+        make_fn_scheme(vec![], map_ty.clone()),
+    );
+    funcs.insert(
+        "hashmap_get".to_string(),
+        make_fn_scheme(vec![map_ty.clone(), key_param.clone()], option_value_ty),
+    );
+    funcs.insert(
+        "hashmap_set".to_string(),
+        make_fn_scheme(
+            vec![map_ty.clone(), key_param.clone(), value_param.clone()],
+            tast::Ty::TUnit,
+        ),
+    );
+    funcs.insert(
+        "hashmap_remove".to_string(),
+        make_fn_scheme(vec![map_ty.clone(), key_param.clone()], tast::Ty::TUnit),
+    );
+    funcs.insert(
+        "hashmap_len".to_string(),
+        make_fn_scheme(vec![map_ty.clone()], tast::Ty::TInt32),
+    );
+    funcs.insert(
+        "hashmap_contains".to_string(),
+        make_fn_scheme(vec![map_ty, key_param], tast::Ty::TBool),
+    );
+}
+
+fn add_print_builtins(funcs: &mut IndexMap<String, FnScheme>) {
+    let t_param = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    funcs.insert(
+        "print".to_string(),
+        make_fn_scheme(vec![t_param.clone()], tast::Ty::TUnit),
+    );
+    funcs.insert(
+        "println".to_string(),
+        make_fn_scheme(vec![t_param], tast::Ty::TUnit),
+    );
+}
+
 pub(super) fn builtin_inherent_methods()
 -> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
@@ -240,6 +304,8 @@ pub fn builtin_function_names() -> Vec<String> {
     for name in [
         "array_get",
         "array_set",
+        "print",
+        "println",
         "ref",
         "ref_get",
         "ref_set",
@@ -247,6 +313,12 @@ pub fn builtin_function_names() -> Vec<String> {
         "vec_push",
         "vec_get",
         "vec_len",
+        "hashmap_new",
+        "hashmap_get",
+        "hashmap_set",
+        "hashmap_remove",
+        "hashmap_len",
+        "hashmap_contains",
     ] {
         names.insert(name.to_string());
     }

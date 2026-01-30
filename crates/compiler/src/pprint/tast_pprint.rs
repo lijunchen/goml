@@ -238,6 +238,11 @@ impl Ty {
             Self::TRef { elem } => RcDoc::text("Ref[")
                 .append(elem.to_doc())
                 .append(RcDoc::text("]")),
+            Self::THashMap { key, value } => RcDoc::text("HashMap[")
+                .append(key.to_doc())
+                .append(RcDoc::text(", "))
+                .append(value.to_doc())
+                .append(RcDoc::text("]")),
             Self::TFunc { params, ret_ty } => {
                 let mut doc = RcDoc::text("(");
 

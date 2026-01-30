@@ -118,6 +118,13 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string_hash",
+                kind: Function,
+                detail: Some(
+                    "(string) -> uint64",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string_len",
                 kind: Function,
                 detail: Some(
@@ -315,7 +322,7 @@ fn multi_package_query() {
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
-    let lib_src = r#"package Lib
+    let lib_src = r#"package Lib;
 
 enum Color {
     Red,
@@ -337,8 +344,8 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let hover_src = r#"package Main
-use Lib
+    let hover_src = r#"package Main;
+use Lib;
 
 fn main() {
     let f = Lib::color_to_int;
@@ -347,8 +354,8 @@ fn main() {
     let p = Lib::Point { x: 1, y: 2 };
 }
 "#;
-    let completion_src = r#"package Main
-use Lib
+    let completion_src = r#"package Main;
+use Lib;
 
 fn main() {
     let f = Lib::color_to_int;
@@ -398,7 +405,7 @@ fn multi_package_colon_colon_completions() {
     let lib_dir = dir.path().join("Lib");
     std::fs::create_dir_all(&lib_dir).unwrap();
 
-    let lib_src = r#"package Lib
+    let lib_src = r#"package Lib;
 
 enum Color {
     Red,
@@ -420,15 +427,15 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let src = r#"package Main
-use Lib
+    let src = r#"package Main;
+use Lib;
 
 fn main() {
     let _ = Lib::;
 }
 "#;
-    let src_with_prefix = r#"package Main
-use Lib
+    let src_with_prefix = r#"package Main;
+use Lib;
 
 fn main() {
     let _ = Lib::co;

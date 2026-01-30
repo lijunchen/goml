@@ -8,11 +8,11 @@ file main.gom
       fn show(Self) -> string;
     }
     
-    trait Eq {
+    trait MyEq {
       fn eq(Self, Self) -> bool;
     }
     
-    trait Hash {
+    trait MyHash {
       fn hash(Self) -> int32;
     }
     
@@ -44,13 +44,13 @@ file main.gom
       }
     }
     
-    impl Eq for int32 {
+    impl MyEq for int32 {
       fn eq(local/1/2: int32, local/1/3: int32) -> bool {
         self/2 == other/3;
       }
     }
     
-    impl Hash for int32 {
+    impl MyHash for int32 {
       fn hash(local/1/4: int32) -> int32 {
         self/4 * 16777619 + 216613626;
       }
@@ -86,13 +86,13 @@ file main.gom
       }
     }
     
-    impl Eq for Boxed {
+    impl MyEq for Boxed {
       fn eq(local/1/12: Boxed, local/1/13: Boxed) -> bool {
         self/12.value == other/13.value;
       }
     }
     
-    impl Hash for Boxed {
+    impl MyHash for Boxed {
       fn hash(local/1/14: Boxed) -> int32 {
         self/14.value * 31 + 7 * 1315423911;
       }
@@ -141,7 +141,7 @@ file main.gom
     }
     
     fn report_pair(local/1/26: Q, local/1/27: T, local/1/28: T, local/1/29: T) -> string {
-      let local/1/30 = Eq::eq(a/27, b/28);
+      let local/1/30 = MyEq::eq(a/27, b/28);
       let local/1/31 = def/1/24(tag/26);
       let local/1/32 = def/1/23(combined/29);
       let local/1/33 = combined/29.hash();

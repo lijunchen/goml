@@ -1,0 +1,35 @@
+fn trait_impl#Show#S#show(self/0: S) -> string {
+  let t13 = S.value(self/0) in
+  let t12 = int32_to_string(t13) in
+  let t11 = ("S(" + t12) in
+  (t11 + ")")
+}
+
+fn main() -> unit {
+  let t14 = int32_to_string(1) in
+  let _wild0 = string_println(t14) in
+  let t15 = bool_to_string(true) in
+  let _wild1 = string_println(t15) in
+  let _wild2 = string_println("hi") in
+  let t16 = unit_to_string(()) in
+  let _wild3 = string_println(t16) in
+  let t17 = int32_to_string(2) in
+  let _wild4 = string_println(t17) in
+  let t18 = int32_to_string(2) in
+  let _wild5 = string_println(t18) in
+  let s/1 = S { value: 9 } in
+  let t19 = trait_impl#Show#S#show(s/1) in
+  let _wild6 = string_println(t19) in
+  let d/2 = to_dyn[Show]{S}(s/1) in
+  let t20 = dyn_call[Show::show](d/2) in
+  let _wild7 = string_println(t20) in
+  let r/3 = ref(5) in
+  let t24 = ref_get(r/3) in
+  let t23 = int32_to_string(t24) in
+  let t22 = ("ref(" + t23) in
+  let t21 = (t22 + ")") in
+  let _wild8 = string_println(t21) in
+  let _wild9 = string_print("no-newline") in
+  let _wild10 = string_println("!") in
+  ()
+}

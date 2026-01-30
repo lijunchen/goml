@@ -45,6 +45,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TName { name } => name.clone(),
         GoType::TArray { len, elem } => format!("[{}]{}", len, go_type_name(elem)),
         GoType::TSlice { elem } => format!("[]{}", go_type_name(elem)),
+        GoType::TMap { key, value } => format!("map[{}]{}", go_type_name(key), go_type_name(value)),
         GoType::TFunc { .. } => "func".to_string(),
     }
 }
@@ -68,6 +69,10 @@ fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
         }
         GoType::TArray { len, elem } => RcDoc::text(format!("[{}]", len)).append(go_type_doc(elem)),
         GoType::TSlice { elem } => RcDoc::text("[]").append(go_type_doc(elem)),
+        GoType::TMap { key, value } => RcDoc::text("map[")
+            .append(go_type_doc(key))
+            .append(RcDoc::text("]"))
+            .append(go_type_doc(value)),
         GoType::TPointer { elem } => RcDoc::text("*").append(go_type_doc(elem)),
         other => RcDoc::text(go_type_name(other)),
     }
@@ -669,6 +674,9 @@ impl Expr {
     pub fn to_doc(&self, goenv: &GlobalGoEnv) -> RcDoc<'_, ()> {
         match self {
             Expr::Nil { ty: _ } => RcDoc::text("nil"),
+            Expr::Make { ty } => RcDoc::text("make(")
+                .append(go_type_doc(ty))
+                .append(RcDoc::text(")")),
             Expr::Void { ty: _ } => RcDoc::text(""),
             Expr::Unit { ty: _ } => RcDoc::text("struct{}{}"),
             Expr::Var { name, ty: _ } => RcDoc::text(name),

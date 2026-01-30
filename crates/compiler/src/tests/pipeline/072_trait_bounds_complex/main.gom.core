@@ -6,11 +6,11 @@ fn trait_impl#Debug#int32#show(self/1: int32) -> string {
   (("i32(" + int32_to_string(self/1)) + ")")
 }
 
-fn trait_impl#Eq#int32#eq(self/2: int32, other/3: int32) -> bool {
+fn trait_impl#MyEq#int32#eq(self/2: int32, other/3: int32) -> bool {
   (self/2 == other/3)
 }
 
-fn trait_impl#Hash#int32#hash(self/4: int32) -> int32 {
+fn trait_impl#MyHash#int32#hash(self/4: int32) -> int32 {
   ((self/4 * 16777619) + 216613626)
 }
 
@@ -34,11 +34,11 @@ fn trait_impl#Debug#Boxed#show(self/11: Boxed) -> string {
   (("Boxed{value=" + int32_to_string(Boxed.value(self/11))) + "}")
 }
 
-fn trait_impl#Eq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
+fn trait_impl#MyEq#Boxed#eq(self/12: Boxed, other/13: Boxed) -> bool {
   (Boxed.value(self/12) == Boxed.value(other/13))
 }
 
-fn trait_impl#Hash#Boxed#hash(self/14: Boxed) -> int32 {
+fn trait_impl#MyHash#Boxed#hash(self/14: Boxed) -> int32 {
   (((Boxed.value(self/14) * 31) + 7) * 1315423911)
 }
 
@@ -67,7 +67,7 @@ fn show_both(x/21: T) -> string {
 }
 
 fn tag_text(tag/22: Q) -> string {
-  ((trait_call[Debug::show](tag/22) + "#") + int32_to_string(trait_call[Hash::hash](tag/22)))
+  ((trait_call[Debug::show](tag/22) + "#") + int32_to_string(trait_call[MyHash::hash](tag/22)))
 }
 
 fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
@@ -75,10 +75,10 @@ fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
 }
 
 fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
-  let same/30 = trait_call[Eq::eq](a/27, b/28) in
+  let same/30 = trait_call[MyEq::eq](a/27, b/28) in
   let header/31 = tag_text(tag/26) in
   let repr/32 = show_both(combined/29) in
-  let h/33 = trait_call[Hash::hash](combined/29) in
+  let h/33 = trait_call[MyHash::hash](combined/29) in
   (((header/31 + " ") + repr/32) + ((" | eq=" + bool_text(same/30)) + (" | hash=" + int32_to_string(h/33))))
 }
 
@@ -90,7 +90,7 @@ fn full_report(tag/34: Q, a/35: T, b/36: T) -> string {
 fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
   let total/42 = trait_call[Add::add](trait_call[Add::add](x/39, y/40), z/41) in
   let header/43 = tag_text(tag/38) in
-  let h/44 = trait_call[Hash::hash](total/42) in
+  let h/44 = trait_call[MyHash::hash](total/42) in
   (((header/43 + " ") + trait_call[Inspect::inspect](total/42)) + (" @" + int32_to_string(h/44)))
 }
 

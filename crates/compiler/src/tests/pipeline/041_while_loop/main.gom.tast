@@ -39,7 +39,9 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
     let first/10: int32 = (sum_to : (int32) -> int32)(5);
     let evens/11: int32 = (sum_even : (int32) -> int32)(6);
-    let _ : unit = (string_println : (string) -> unit)("sum_to(5)=" + (int32_to_string : (int32) -> string)((first/10 : int32)));
-    let _ : unit = (string_println : (string) -> unit)("sum_even(6)=" + (int32_to_string : (int32) -> string)((evens/11 : int32)));
+    let _ : unit = (print : (string) -> unit)("sum_to(5)=");
+    let _ : unit = (println : (int32) -> unit)((first/10 : int32));
+    let _ : unit = (print : (string) -> unit)("sum_even(6)=");
+    let _ : unit = (println : (int32) -> unit)((evens/11 : int32));
     ();
 }

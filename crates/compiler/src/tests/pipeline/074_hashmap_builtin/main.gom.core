@@ -1,0 +1,128 @@
+fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
+  ((true && trait_impl#Eq#int32#eq(Point.x(self/0), Point.x(other/1))) && trait_impl#Eq#int32#eq(Point.y(self/0), Point.y(other/1)))
+}
+
+fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
+  let h/3 = 14695981039346656037 in
+  let h/4 = ((h/3 * 1099511628211) + trait_impl#Hash#int32#hash(Point.x(self/2))) in
+  let h/5 = ((h/4 * 1099511628211) + trait_impl#Hash#int32#hash(Point.y(self/2))) in
+  h/5
+}
+
+fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
+  let mtmp0 = (self/6, other/7) in
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  match x2 {
+    Key::A => {
+      match x1 {
+        Key::A => {
+          true
+        },
+        Key::B(x5) => {
+          let x5 = Key::B._0(x1) in
+          false
+        },
+        Key::P(x6) => {
+          let x6 = Key::P._0(x1) in
+          false
+        },
+      }
+    },
+    Key::B(x3) => {
+      let x3 = Key::B._0(x2) in
+      match x1 {
+        Key::A => {
+          false
+        },
+        Key::B(x7) => {
+          let x7 = Key::B._0(x1) in
+          let __l1_0/8 = x7 in
+          let __r1_0/9 = x3 in
+          (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
+        },
+        Key::P(x8) => {
+          let x8 = Key::P._0(x1) in
+          false
+        },
+      }
+    },
+    Key::P(x4) => {
+      let x4 = Key::P._0(x2) in
+      match x1 {
+        Key::A => {
+          false
+        },
+        Key::B(x9) => {
+          let x9 = Key::B._0(x1) in
+          false
+        },
+        Key::P(x10) => {
+          let x10 = Key::P._0(x1) in
+          let __l2_0/10 = x10 in
+          let __r2_0/11 = x4 in
+          (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
+  match self/12 {
+    Key::A => {
+      let h/13 = (14695981039346656037 + 1) in
+      h/13
+    },
+    Key::B(x11) => {
+      let x11 = Key::B._0(self/12) in
+      let __field1_0/14 = x11 in
+      let h/15 = (14695981039346656037 + 2) in
+      let h/16 = ((h/15 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/14)) in
+      h/16
+    },
+    Key::P(x12) => {
+      let x12 = Key::P._0(self/12) in
+      let __field2_0/17 = x12 in
+      let h/18 = (14695981039346656037 + 3) in
+      let h/19 = ((h/18 * 1099511628211) + trait_impl#Hash#Point#hash(__field2_0/17)) in
+      h/19
+    },
+  }
+}
+
+fn print_opt_int(x/20: Option[int32]) -> unit {
+  match x/20 {
+    Option::None => {
+      string_println(trait_call[Show::show]("none"))
+    },
+    Option::Some(x13) => {
+      let x13 = Option::Some._0(x/20) in
+      let v/21 = x13 in
+      string_println(trait_call[Show::show](v/21))
+    },
+  }
+}
+
+fn main() -> unit {
+  let m1/22 = hashmap_new() in
+  let _wild14 = hashmap_set(m1/22, Key::A, 10) in
+  let _wild15 = hashmap_set(m1/22, Key::B(1), 20) in
+  let _wild16 = string_println(trait_call[Show::show](hashmap_len(m1/22))) in
+  let _wild17 = print_opt_int(hashmap_get(m1/22, Key::A)) in
+  let _wild18 = string_println(trait_call[Show::show](hashmap_contains(m1/22, Key::B(1)))) in
+  let _wild19 = hashmap_remove(m1/22, Key::B(1)) in
+  let _wild20 = string_println(trait_call[Show::show](hashmap_contains(m1/22, Key::B(1)))) in
+  let _wild21 = string_println(trait_call[Show::show](hashmap_len(m1/22))) in
+  let m2/23 = hashmap_new() in
+  let p1/24 = ref(Point { x: 1, y: 2 }) in
+  let p2/25 = ref(Point { x: 1, y: 2 }) in
+  let _wild22 = hashmap_set(m2/23, p1/24, 99) in
+  let _wild23 = print_opt_int(hashmap_get(m2/23, p2/25)) in
+  let m3/26 = hashmap_new() in
+  let k1/27 = ref(Key::B(7)) in
+  let k2/28 = ref(Key::B(7)) in
+  let _wild24 = hashmap_set(m3/26, k1/27, 123) in
+  let _wild25 = print_opt_int(hashmap_get(m3/26, k2/28)) in
+  ()
+}

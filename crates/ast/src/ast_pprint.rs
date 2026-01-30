@@ -650,12 +650,35 @@ impl ImplBlock {
         let mut base = RcDoc::text("impl");
 
         if !self.generics.is_empty() {
+            let mut bounds_by_param: std::collections::HashMap<&str, Vec<String>> =
+                std::collections::HashMap::new();
+            for (param, traits) in self.generic_bounds.iter() {
+                bounds_by_param.insert(
+                    param.0.as_str(),
+                    traits.iter().map(|t| t.display()).collect(),
+                );
+            }
+            let generics_doc: Vec<RcDoc<'_, ()>> = self
+                .generics
+                .iter()
+                .map(|g| {
+                    if let Some(traits) = bounds_by_param.get(g.0.as_str())
+                        && !traits.is_empty()
+                    {
+                        RcDoc::text(&g.0)
+                            .append(RcDoc::text(": "))
+                            .append(RcDoc::intersperse(
+                                traits.iter().cloned().map(RcDoc::text),
+                                RcDoc::text(" + "),
+                            ))
+                    } else {
+                        RcDoc::text(&g.0)
+                    }
+                })
+                .collect();
             base = base
                 .append(RcDoc::text("["))
-                .append(RcDoc::intersperse(
-                    self.generics.iter().map(|g| RcDoc::text(&g.0)),
-                    RcDoc::text(", "),
-                ))
+                .append(RcDoc::intersperse(generics_doc, RcDoc::text(", ")))
                 .append(RcDoc::text("]"));
         }
 
@@ -847,6 +870,7 @@ impl File {
             RcDoc::text("package")
                 .append(RcDoc::space())
                 .append(RcDoc::text(self.package.0.clone()))
+                .append(RcDoc::text(";"))
                 .append(RcDoc::hardline()),
         );
         if !self.imports.is_empty() || !self.use_traits.is_empty() {
@@ -859,6 +883,7 @@ impl File {
                         RcDoc::text("use")
                             .append(RcDoc::space())
                             .append(RcDoc::text(path.display()))
+                            .append(RcDoc::text(";"))
                             .append(RcDoc::hardline())
                     }),
             );

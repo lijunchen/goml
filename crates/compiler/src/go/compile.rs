@@ -358,6 +358,10 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
+        },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params
                 .iter()
@@ -400,22 +404,33 @@ fn instantiate_struct_fields(
 
 fn collect_runtime_types(
     file: &anf::File,
-) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+) -> (
+    IndexSet<tast::Ty>,
+    IndexSet<tast::Ty>,
+    IndexSet<tast::Ty>,
+    IndexSet<tast::Ty>,
+) {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
         arrays: IndexSet<tast::Ty>,
         refs: IndexSet<tast::Ty>,
+        hashmaps: IndexSet<tast::Ty>,
     }
 
     impl Collector {
         fn collect_file(
             mut self,
             file: &anf::File,
-        ) -> (IndexSet<tast::Ty>, IndexSet<tast::Ty>, IndexSet<tast::Ty>) {
+        ) -> (
+            IndexSet<tast::Ty>,
+            IndexSet<tast::Ty>,
+            IndexSet<tast::Ty>,
+            IndexSet<tast::Ty>,
+        ) {
             for item in &file.toplevels {
                 self.collect_fn(item);
             }
-            (self.tuples, self.arrays, self.refs)
+            (self.tuples, self.arrays, self.refs, self.hashmaps)
         }
 
         fn collect_fn(&mut self, item: &anf::Fn) {
@@ -557,6 +572,12 @@ fn collect_runtime_types(
                         self.collect_type(elem);
                     }
                 }
+                tast::Ty::THashMap { key, value } => {
+                    if self.hashmaps.insert(ty.clone()) {
+                        self.collect_type(key);
+                        self.collect_type(value);
+                    }
+                }
                 tast::Ty::TStruct { name: _ } => {
                     // Vec types are handled as slices, no special collection needed
                 }
@@ -582,6 +603,7 @@ fn collect_runtime_types(
         tuples: IndexSet::new(),
         arrays: IndexSet::new(),
         refs: IndexSet::new(),
+        hashmaps: IndexSet::new(),
     }
     .collect_file(file)
 }
@@ -1334,6 +1356,64 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                         },
                     )
                 };
+                goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: helper,
+                        ty: helper_ty,
+                    }),
+                    args: compiled_args,
+                    ty: tast_ty_to_go_type(ty),
+                }
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && (*name == "hashmap_new"
+                    || *name == "hashmap_get"
+                    || *name == "hashmap_set"
+                    || *name == "hashmap_remove"
+                    || *name == "hashmap_len"
+                    || *name == "hashmap_contains")
+            {
+                let map_ty = if name == "hashmap_new" {
+                    ty.clone()
+                } else {
+                    imm_ty(&args[0])
+                };
+                let tast::Ty::THashMap { key, value } = &map_ty else {
+                    panic!("{} expects HashMap type, got {:?}", name, map_ty);
+                };
+
+                let map_go_ty = tast_ty_to_go_type(&map_ty);
+                let key_go_ty = tast_ty_to_go_type(key);
+                let value_go_ty = tast_ty_to_go_type(value);
+
+                let helper = runtime::hashmap_helper_fn_name(name, &map_ty);
+                let helper_ty = match name.as_str() {
+                    "hashmap_new" => goty::GoType::TFunc {
+                        params: vec![],
+                        ret_ty: Box::new(map_go_ty.clone()),
+                    },
+                    "hashmap_get" => goty::GoType::TFunc {
+                        params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                        ret_ty: Box::new(tast_ty_to_go_type(ty)),
+                    },
+                    "hashmap_set" => goty::GoType::TFunc {
+                        params: vec![map_go_ty.clone(), key_go_ty.clone(), value_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TUnit),
+                    },
+                    "hashmap_remove" => goty::GoType::TFunc {
+                        params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TUnit),
+                    },
+                    "hashmap_len" => goty::GoType::TFunc {
+                        params: vec![map_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TInt32),
+                    },
+                    "hashmap_contains" => goty::GoType::TFunc {
+                        params: vec![map_go_ty.clone(), key_go_ty.clone()],
+                        ret_ty: Box::new(goty::GoType::TBool),
+                    },
+                    _ => unreachable!(),
+                };
+
                 goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
                         name: helper,
@@ -2242,11 +2322,12 @@ pub fn go_file(
     let goenv = GlobalGoEnv::from_anf_env(anfenv);
     let mut all = Vec::new();
 
-    let (tuple_types, array_types, ref_types) = collect_runtime_types(&file);
+    let (tuple_types, array_types, ref_types, hashmap_types) = collect_runtime_types(&file);
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
+    all.extend(runtime::make_hashmap_runtime(&goenv.genv, &hashmap_types));
 
     if !goenv.genv.value_env.extern_funcs.is_empty() || !goenv.genv.type_env.extern_types.is_empty()
     {

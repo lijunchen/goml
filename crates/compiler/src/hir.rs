@@ -179,7 +179,7 @@ pub fn lower_to_hir_files_with_env(
         .iter()
         .flat_map(|file| file.use_traits.iter().cloned())
         .collect();
-    use_traits.sort_by(|a, b| a.display().cmp(&b.display()));
+    use_traits.sort_by_key(|a| a.display());
     use_traits.dedup_by(|a, b| a.display() == b.display());
     (
         PackageHir {
@@ -741,6 +741,12 @@ pub enum BuiltinId {
     VecPush,
     VecGet,
     VecLen,
+    HashMapNew,
+    HashMapGet,
+    HashMapSet,
+    HashMapRemove,
+    HashMapLen,
+    HashMapContains,
     Named(u32),
 }
 
@@ -756,6 +762,12 @@ impl BuiltinId {
             "vec_push" => Some(BuiltinId::VecPush),
             "vec_get" => Some(BuiltinId::VecGet),
             "vec_len" => Some(BuiltinId::VecLen),
+            "hashmap_new" => Some(BuiltinId::HashMapNew),
+            "hashmap_get" => Some(BuiltinId::HashMapGet),
+            "hashmap_set" => Some(BuiltinId::HashMapSet),
+            "hashmap_remove" => Some(BuiltinId::HashMapRemove),
+            "hashmap_len" => Some(BuiltinId::HashMapLen),
+            "hashmap_contains" => Some(BuiltinId::HashMapContains),
             _ => None,
         }
     }
@@ -771,6 +783,12 @@ impl BuiltinId {
             BuiltinId::VecPush => "vec_push".to_string(),
             BuiltinId::VecGet => "vec_get".to_string(),
             BuiltinId::VecLen => "vec_len".to_string(),
+            BuiltinId::HashMapNew => "hashmap_new".to_string(),
+            BuiltinId::HashMapGet => "hashmap_get".to_string(),
+            BuiltinId::HashMapSet => "hashmap_set".to_string(),
+            BuiltinId::HashMapRemove => "hashmap_remove".to_string(),
+            BuiltinId::HashMapLen => "hashmap_len".to_string(),
+            BuiltinId::HashMapContains => "hashmap_contains".to_string(),
             BuiltinId::Named(id) => format!("builtin/{}", id),
         }
     }
@@ -1217,6 +1235,7 @@ impl From<&ast::TraitMethodSignature> for TraitMethodSignature {
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
     pub trait_name: Option<HirIdent>,
     pub for_type: TypeExpr,
     pub methods: Vec<DefId>,

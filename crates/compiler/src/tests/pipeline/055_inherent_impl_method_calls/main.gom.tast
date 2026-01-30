@@ -14,7 +14,7 @@ fn announce(shape/6: Shape) -> unit {
     let base/7: string = (Shape::name : (Shape) -> string)((shape/6 : Shape));
     let with_suffix/8: string = (Shape::rename : (Shape, string) -> string)((shape/6 : Shape), "!");
     let combined/9: string = (Shape::join : (Shape, string, string) -> string)((shape/6 : Shape), (base/7 : string), (with_suffix/8 : string));
-    let _ : unit = (string_println : (string) -> unit)((combined/9 : string));
+    let _ : unit = (println : (string) -> unit)((combined/9 : string));
     ();
 }
 

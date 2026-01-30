@@ -31,13 +31,13 @@ func _goml_trait_impl_Debug_int32_show(self__1 int32) string {
     return ret82
 }
 
-func _goml_trait_impl_Eq_int32_eq(self__2 int32, other__3 int32) bool {
+func _goml_trait_impl_MyEq_int32_eq(self__2 int32, other__3 int32) bool {
     var ret83 bool
     ret83 = self__2 == other__3
     return ret83
 }
 
-func _goml_trait_impl_Hash_int32_hash(self__4 int32) int32 {
+func _goml_trait_impl_MyHash_int32_hash(self__4 int32) int32 {
     var ret84 int32
     var t6 int32 = self__4 * 16777619
     ret84 = t6 + 216613626
@@ -82,7 +82,7 @@ func _goml_trait_impl_Debug_Boxed_show(self__11 Boxed) string {
     return ret89
 }
 
-func _goml_trait_impl_Eq_Boxed_eq(self__12 Boxed, other__13 Boxed) bool {
+func _goml_trait_impl_MyEq_Boxed_eq(self__12 Boxed, other__13 Boxed) bool {
     var ret90 bool
     var t15 int32 = self__12.value
     var t16 int32 = other__13.value
@@ -90,7 +90,7 @@ func _goml_trait_impl_Eq_Boxed_eq(self__12 Boxed, other__13 Boxed) bool {
     return ret90
 }
 
-func _goml_trait_impl_Hash_Boxed_hash(self__14 Boxed) int32 {
+func _goml_trait_impl_MyHash_Boxed_hash(self__14 Boxed) int32 {
     var ret91 int32
     var t19 int32 = self__14.value
     var t18 int32 = t19 * 31
@@ -193,7 +193,7 @@ func sum_and_tag__Q_int32__T_int32(tag__38 int32, x__39 int32, y__40 int32, z__4
     var t39 int32 = _goml_trait_impl_Add_int32_add(x__39, y__40)
     var total__42 int32 = _goml_trait_impl_Add_int32_add(t39, z__41)
     var header__43 string = tag_text__Q_int32(tag__38)
-    var h__44 int32 = _goml_trait_impl_Hash_int32_hash(total__42)
+    var h__44 int32 = _goml_trait_impl_MyHash_int32_hash(total__42)
     var t41 string = header__43 + " "
     var t42 string = _goml_trait_impl_Inspect_int32_inspect(total__42)
     var t40 string = t41 + t42
@@ -208,7 +208,7 @@ func sum_and_tag__Q_Boxed__T_Boxed(tag__38 Boxed, x__39 Boxed, y__40 Boxed, z__4
     var t45 Boxed = _goml_trait_impl_Add_Boxed_add(x__39, y__40)
     var total__42 Boxed = _goml_trait_impl_Add_Boxed_add(t45, z__41)
     var header__43 string = tag_text__Q_Boxed(tag__38)
-    var h__44 int32 = _goml_trait_impl_Hash_Boxed_hash(total__42)
+    var h__44 int32 = _goml_trait_impl_MyHash_Boxed_hash(total__42)
     var t47 string = header__43 + " "
     var t48 string = _goml_trait_impl_Inspect_Boxed_inspect(total__42)
     var t46 string = t47 + t48
@@ -227,10 +227,10 @@ func combine_scaled__T_int32(a__23 int32, b__24 int32, factor__25 int32) int32 {
 
 func report_pair__Q_int32__T_int32(tag__26 int32, a__27 int32, b__28 int32, combined__29 int32) string {
     var ret102 string
-    var same__30 bool = _goml_trait_impl_Eq_int32_eq(a__27, b__28)
+    var same__30 bool = _goml_trait_impl_MyEq_int32_eq(a__27, b__28)
     var header__31 string = tag_text__Q_int32(tag__26)
     var repr__32 string = show_both__T_int32(combined__29)
-    var h__33 int32 = _goml_trait_impl_Hash_int32_hash(combined__29)
+    var h__33 int32 = _goml_trait_impl_MyHash_int32_hash(combined__29)
     var t53 string = header__31 + " "
     var t52 string = t53 + repr__32
     var t56 string = bool_text(same__30)
@@ -251,10 +251,10 @@ func combine_scaled__T_Boxed(a__23 Boxed, b__24 Boxed, factor__25 int32) Boxed {
 
 func report_pair__Q_Boxed__T_Boxed(tag__26 Boxed, a__27 Boxed, b__28 Boxed, combined__29 Boxed) string {
     var ret104 string
-    var same__30 bool = _goml_trait_impl_Eq_Boxed_eq(a__27, b__28)
+    var same__30 bool = _goml_trait_impl_MyEq_Boxed_eq(a__27, b__28)
     var header__31 string = tag_text__Q_Boxed(tag__26)
     var repr__32 string = show_both__T_Boxed(combined__29)
-    var h__33 int32 = _goml_trait_impl_Hash_Boxed_hash(combined__29)
+    var h__33 int32 = _goml_trait_impl_MyHash_Boxed_hash(combined__29)
     var t61 string = header__31 + " "
     var t60 string = t61 + repr__32
     var t64 string = bool_text(same__30)
@@ -270,7 +270,7 @@ func tag_text__Q_int32(tag__22 int32) string {
     var ret105 string
     var t68 string = _goml_trait_impl_Debug_int32_show(tag__22)
     var t67 string = t68 + "#"
-    var t70 int32 = _goml_trait_impl_Hash_int32_hash(tag__22)
+    var t70 int32 = _goml_trait_impl_MyHash_int32_hash(tag__22)
     var t69 string = int32_to_string(t70)
     ret105 = t67 + t69
     return ret105
@@ -280,7 +280,7 @@ func tag_text__Q_Boxed(tag__22 Boxed) string {
     var ret106 string
     var t72 string = _goml_trait_impl_Debug_Boxed_show(tag__22)
     var t71 string = t72 + "#"
-    var t74 int32 = _goml_trait_impl_Hash_Boxed_hash(tag__22)
+    var t74 int32 = _goml_trait_impl_MyHash_Boxed_hash(tag__22)
     var t73 string = int32_to_string(t74)
     ret106 = t71 + t73
     return ret106

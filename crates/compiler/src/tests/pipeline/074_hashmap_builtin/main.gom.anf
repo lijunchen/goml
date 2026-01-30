@@ -1,0 +1,169 @@
+fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
+  let t28 = Point.x(self/0) in
+  let t29 = Point.x(other/1) in
+  let t27 = trait_impl#Eq#int32#eq(t28, t29) in
+  let t26 = (true && t27) in
+  let t31 = Point.y(self/0) in
+  let t32 = Point.y(other/1) in
+  let t30 = trait_impl#Eq#int32#eq(t31, t32) in
+  (t26 && t30)
+}
+
+fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
+  let h/3 = 14695981039346656037 in
+  let t33 = (h/3 * 1099511628211) in
+  let t35 = Point.x(self/2) in
+  let t34 = trait_impl#Hash#int32#hash(t35) in
+  let h/4 = (t33 + t34) in
+  let t36 = (h/4 * 1099511628211) in
+  let t38 = Point.y(self/2) in
+  let t37 = trait_impl#Hash#int32#hash(t38) in
+  let h/5 = (t36 + t37) in
+  h/5
+}
+
+fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
+  let mtmp0 = (self/6, other/7) in
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  match x2 {
+    Tag_0 => {
+      match x1 {
+        Tag_0 => {
+          true
+        },
+        Tag_1 => {
+          let x5 = Key::B._0(x1) in
+          false
+        },
+        Tag_2 => {
+          let x6 = Key::P._0(x1) in
+          false
+        },
+      }
+    },
+    Tag_1 => {
+      let x3 = Key::B._0(x2) in
+      match x1 {
+        Tag_0 => {
+          false
+        },
+        Tag_1 => {
+          let x7 = Key::B._0(x1) in
+          let __l1_0/8 = x7 in
+          let __r1_0/9 = x3 in
+          let t39 = trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9) in
+          (true && t39)
+        },
+        Tag_2 => {
+          let x8 = Key::P._0(x1) in
+          false
+        },
+      }
+    },
+    Tag_2 => {
+      let x4 = Key::P._0(x2) in
+      match x1 {
+        Tag_0 => {
+          false
+        },
+        Tag_1 => {
+          let x9 = Key::B._0(x1) in
+          false
+        },
+        Tag_2 => {
+          let x10 = Key::P._0(x1) in
+          let __l2_0/10 = x10 in
+          let __r2_0/11 = x4 in
+          let t40 = trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11) in
+          (true && t40)
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
+  match self/12 {
+    Tag_0 => {
+      let h/13 = (14695981039346656037 + 1) in
+      h/13
+    },
+    Tag_1 => {
+      let x11 = Key::B._0(self/12) in
+      let __field1_0/14 = x11 in
+      let h/15 = (14695981039346656037 + 2) in
+      let t41 = (h/15 * 1099511628211) in
+      let t42 = trait_impl#Hash#int32#hash(__field1_0/14) in
+      let h/16 = (t41 + t42) in
+      h/16
+    },
+    Tag_2 => {
+      let x12 = Key::P._0(self/12) in
+      let __field2_0/17 = x12 in
+      let h/18 = (14695981039346656037 + 3) in
+      let t43 = (h/18 * 1099511628211) in
+      let t44 = trait_impl#Hash#Point#hash(__field2_0/17) in
+      let h/19 = (t43 + t44) in
+      h/19
+    },
+  }
+}
+
+fn print_opt_int(x/20: Option__int32) -> unit {
+  match x/20 {
+    Tag_0 => {
+      string_println("none")
+    },
+    Tag_1 => {
+      let x13 = Option__int32::Some._0(x/20) in
+      let v/21 = x13 in
+      let t45 = int32_to_string(v/21) in
+      string_println(t45)
+    },
+  }
+}
+
+fn main() -> unit {
+  let m1/22 = hashmap_new() in
+  let t46 = Tag_0 in
+  let _wild14 = hashmap_set(m1/22, t46, 10) in
+  let t47 = Key::B(1) in
+  let _wild15 = hashmap_set(m1/22, t47, 20) in
+  let t49 = hashmap_len(m1/22) in
+  let t48 = int32_to_string(t49) in
+  let _wild16 = string_println(t48) in
+  let t51 = Tag_0 in
+  let t50 = hashmap_get(m1/22, t51) in
+  let _wild17 = print_opt_int(t50) in
+  let t54 = Key::B(1) in
+  let t53 = hashmap_contains(m1/22, t54) in
+  let t52 = bool_to_string(t53) in
+  let _wild18 = string_println(t52) in
+  let t55 = Key::B(1) in
+  let _wild19 = hashmap_remove(m1/22, t55) in
+  let t58 = Key::B(1) in
+  let t57 = hashmap_contains(m1/22, t58) in
+  let t56 = bool_to_string(t57) in
+  let _wild20 = string_println(t56) in
+  let t60 = hashmap_len(m1/22) in
+  let t59 = int32_to_string(t60) in
+  let _wild21 = string_println(t59) in
+  let m2/23 = hashmap_new() in
+  let t61 = Point { x: 1, y: 2 } in
+  let p1/24 = ref(t61) in
+  let t62 = Point { x: 1, y: 2 } in
+  let p2/25 = ref(t62) in
+  let _wild22 = hashmap_set(m2/23, p1/24, 99) in
+  let t63 = hashmap_get(m2/23, p2/25) in
+  let _wild23 = print_opt_int(t63) in
+  let m3/26 = hashmap_new() in
+  let t64 = Key::B(7) in
+  let k1/27 = ref(t64) in
+  let t65 = Key::B(7) in
+  let k2/28 = ref(t65) in
+  let _wild24 = hashmap_set(m3/26, k1/27, 123) in
+  let t66 = hashmap_get(m3/26, k2/28) in
+  let _wild25 = print_opt_int(t66) in
+  ()
+}
