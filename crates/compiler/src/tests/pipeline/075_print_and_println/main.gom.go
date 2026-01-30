@@ -48,26 +48,26 @@ type S struct {
     value int32
 }
 
-type dyn__Show_vtable struct {
-    show func(any) string
+type dyn__ToString_vtable struct {
+    to_string func(any) string
 }
 
-type dyn__Show struct {
+type dyn__ToString struct {
     data any
-    vtable *dyn__Show_vtable
+    vtable *dyn__ToString_vtable
 }
 
-func dyn__Show__wrap__S__show(self any) string {
-    return _goml_trait_impl_Show_S_show(self.(S))
+func dyn__ToString__wrap__S__to_string(self any) string {
+    return _goml_trait_impl_ToString_S_to_string(self.(S))
 }
 
-func dyn__Show__vtable__S() *dyn__Show_vtable {
-    return &dyn__Show_vtable{
-        show: dyn__Show__wrap__S__show,
+func dyn__ToString__vtable__S() *dyn__ToString_vtable {
+    return &dyn__ToString_vtable{
+        to_string: dyn__ToString__wrap__S__to_string,
     }
 }
 
-func _goml_trait_impl_Show_S_show(self__0 S) string {
+func _goml_trait_impl_ToString_S_to_string(self__0 S) string {
     var ret25 string
     var t13 int32 = self__0.value
     var t12 string = int32_to_string(t13)
@@ -92,13 +92,13 @@ func main0() struct{} {
     var s__1 S = S{
         value: 9,
     }
-    var t19 string = _goml_trait_impl_Show_S_show(s__1)
+    var t19 string = _goml_trait_impl_ToString_S_to_string(s__1)
     string_println(t19)
-    var d__2 dyn__Show = dyn__Show{
+    var d__2 dyn__ToString = dyn__ToString{
         data: s__1,
-        vtable: dyn__Show__vtable__S(),
+        vtable: dyn__ToString__vtable__S(),
     }
-    var t20 string = d__2.vtable.show(d__2.data)
+    var t20 string = d__2.vtable.to_string(d__2.data)
     string_println(t20)
     var r__3 *ref_int32_x = ref__Ref_int32(5)
     var t24 int32 = ref_get__Ref_int32(r__3)

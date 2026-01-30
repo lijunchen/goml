@@ -6,7 +6,7 @@ struct Point {
         y: int32,
     }
     
-    impl Point {
+    impl ToString for Point {
       fn to_string(local/1/0: Point) -> string {
         let Point { x: local/1/1, y: local/1/2 } = self/0;
         "Point { " + "x: " + x/1.to_string() + ", " + "y: " + y/2.to_string() + " }";
@@ -20,7 +20,7 @@ enum Message {
         Write(string)
     }
     
-    impl Message {
+    impl ToString for Message {
       fn to_string(local/1/3: Message) -> string {
         match self/3 {
             ctor(def/1/2::v0) => "Message::Quit",

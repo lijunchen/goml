@@ -3,8 +3,8 @@ struct S {
     value: int32,
 }
 
-impl Show for S {
-  fn show(self: S) -> string {
+impl ToString for S {
+  fn to_string(self: S) -> string {
     "S(" + int32_to_string(self.value) + ")";
   }
 }
@@ -14,13 +14,13 @@ fn main() -> unit {
   println(true);
   println("hi");
   println(());
-  println(Show::show(2i32));
-  println(2i32.show());
+  println(ToString::to_string(2i32));
+  println(2i32.to_string());
   let s = S {
       value: 9i32
   };
   println(s);
-  let d: dyn Show = s;
+  let d: dyn ToString = s;
   println(d);
   let r = ref(5i32);
   println(r);

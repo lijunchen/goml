@@ -5,7 +5,7 @@ struct Point {
     y: int32,
 }
 
-impl Point {
+impl ToString for Point {
   fn to_string(self: Point) -> string {
     let Point { x: x, y: y } = self;
     "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + " }";
@@ -19,7 +19,7 @@ enum Message {
     Write(string)
 }
 
-impl Message {
+impl ToString for Message {
   fn to_string(self: Message) -> string {
     match self {
         Message::Quit => "Message::Quit",

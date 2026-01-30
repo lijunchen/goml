@@ -17,7 +17,7 @@ type S struct {
     value int32
 }
 
-func _goml_trait_impl_Show_S_show(self__0 S) string {
+func _goml_trait_impl_ToString_S_to_string(self__0 S) string {
     var ret5 string
     var t3 int32 = self__0.value
     var t2 string = int32_to_string(t3)
@@ -31,7 +31,7 @@ func main0() struct{} {
     var s__1 S = S{
         value: 7,
     }
-    var t4 string = _goml_trait_impl_Show_S_show(s__1)
+    var t4 string = _goml_trait_impl_ToString_S_to_string(s__1)
     string_println(t4)
     ret6 = struct{}{}
     return ret6

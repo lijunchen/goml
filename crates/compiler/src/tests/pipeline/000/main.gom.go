@@ -56,7 +56,7 @@ type Cons struct {
 
 func (_ Cons) isLineList() {}
 
-func _goml_inherent_Color_Color_to_string(self__0 Color) string {
+func _goml_trait_impl_ToString_Color_to_string(self__0 Color) string {
     var ret43 string
     switch self__0.(type) {
     case Red:
@@ -69,7 +69,7 @@ func _goml_inherent_Color_Color_to_string(self__0 Color) string {
     return ret43
 }
 
-func _goml_inherent_Point_Point_to_string(self__1 Point) string {
+func _goml_trait_impl_ToString_Point_to_string(self__1 Point) string {
     var ret44 string
     var mtmp0 Point = self__1
     var x1 int32 = mtmp0.x
@@ -87,7 +87,7 @@ func _goml_inherent_Point_Point_to_string(self__1 Point) string {
     var t14 string = t15 + t20
     var t13 string = t14 + ", "
     var t12 string = t13 + "color: "
-    var t21 string = _goml_inherent_Color_Color_to_string(color__4)
+    var t21 string = _goml_trait_impl_ToString_Color_to_string(color__4)
     var t11 string = t12 + t21
     ret44 = t11 + " }"
     return ret44
@@ -103,7 +103,7 @@ func _goml_inherent_Point_Point_new(x__5 int32, y__6 int32, color__7 Color) Poin
     return ret45
 }
 
-func _goml_inherent_Line_Line_to_string(self__8 Line) string {
+func _goml_trait_impl_ToString_Line_to_string(self__8 Line) string {
     var ret46 string
     var mtmp4 Line = self__8
     var x5 Point = mtmp4.from
@@ -113,15 +113,15 @@ func _goml_inherent_Line_Line_to_string(self__8 Line) string {
     var to__10 Point = x6
     var from__9 Point = x5
     var t29 string = "Line { " + "from: "
-    var t30 string = _goml_inherent_Point_Point_to_string(from__9)
+    var t30 string = _goml_trait_impl_ToString_Point_to_string(from__9)
     var t28 string = t29 + t30
     var t27 string = t28 + ", "
     var t26 string = t27 + "to: "
-    var t31 string = _goml_inherent_Point_Point_to_string(to__10)
+    var t31 string = _goml_trait_impl_ToString_Point_to_string(to__10)
     var t25 string = t26 + t31
     var t24 string = t25 + ", "
     var t23 string = t24 + "color: "
-    var t32 string = _goml_inherent_Color_Color_to_string(color__11)
+    var t32 string = _goml_trait_impl_ToString_Color_to_string(color__11)
     var t22 string = t23 + t32
     ret46 = t22 + " }"
     return ret46
@@ -137,7 +137,7 @@ func _goml_inherent_Line_Line_new(from__12 Point, to__13 Point, color__14 Color)
     return ret47
 }
 
-func _goml_inherent_LineList_LineList_to_string(self__15 LineList) string {
+func _goml_trait_impl_ToString_LineList_to_string(self__15 LineList) string {
     var ret48 string
     switch self__15 := self__15.(type) {
     case Nil:
@@ -147,10 +147,10 @@ func _goml_inherent_LineList_LineList_to_string(self__15 LineList) string {
         var x9 LineList = self__15._1
         var __field1__17 LineList = x9
         var __field0__16 Line = x8
-        var t36 string = _goml_inherent_Line_Line_to_string(__field0__16)
+        var t36 string = _goml_trait_impl_ToString_Line_to_string(__field0__16)
         var t35 string = "LineList::Cons(" + t36
         var t34 string = t35 + ", "
-        var t37 string = _goml_inherent_LineList_LineList_to_string(__field1__17)
+        var t37 string = _goml_trait_impl_ToString_LineList_to_string(__field1__17)
         var t33 string = t34 + t37
         ret48 = t33 + ")"
     }
@@ -170,7 +170,7 @@ func main0() struct{} {
         _0: line__20,
         _1: t41,
     }
-    var t42 string = _goml_inherent_LineList_LineList_to_string(lines__21)
+    var t42 string = _goml_trait_impl_ToString_LineList_to_string(lines__21)
     string_println(t42)
     ret49 = struct{}{}
     return ret49

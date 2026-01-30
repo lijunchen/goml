@@ -14,52 +14,36 @@ file main.gom
       }
     }
     
-    trait ToString {
-      fn to_string(Self) -> string;
-    }
-    
-    impl ToString for int32 {
-      fn to_string(local/1/4: int32) -> string {
-        int32_to_string(self/4);
-      }
-    }
-    
-    impl ToString for bool {
-      fn to_string(local/1/5: bool) -> string {
-        bool_to_string(self/5);
-      }
-    }
-    
     trait Output {
       fn output(Self) -> unit;
     }
     
     impl Output for int32 {
-      fn output(local/1/6: int32) -> unit {
-        string_println(ToString::to_string(self/6));
+      fn output(local/1/4: int32) -> unit {
+        string_println(ToString::to_string(self/4));
       }
     }
     
     impl Output for bool {
-      fn output(local/1/7: bool) -> unit {
-        string_println(ToString::to_string(self/7));
+      fn output(local/1/5: bool) -> unit {
+        string_println(ToString::to_string(self/5));
       }
     }
     
-    fn id(local/1/8: T) -> T {
-      x/8;
+    fn id(local/1/6: T) -> T {
+      x/6;
     }
     
     fn main() {
-      let local/1/9 = def/1/8(1);
-      let local/1/10 = def/1/8(2);
-      let local/1/11 = Arith::add(a/9, b/10);
-      let _ = Output::output(c/11);
-      let local/1/12 = def/1/8(3);
-      let local/1/13 = def/1/8(4);
-      let local/1/14 = Arith::less(a/12, b/13);
-      let _ = Output::output(c/14);
-      let _ = def/1/8("abc");
-      let _ = def/1/8(true);
+      let local/1/7 = def/1/5(1);
+      let local/1/8 = def/1/5(2);
+      let local/1/9 = Arith::add(a/7, b/8);
+      let _ = Output::output(c/9);
+      let local/1/10 = def/1/5(3);
+      let local/1/11 = def/1/5(4);
+      let local/1/12 = Arith::less(a/10, b/11);
+      let _ = Output::output(c/12);
+      let _ = def/1/5("abc");
+      let _ = def/1/5(true);
       ();
     }

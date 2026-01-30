@@ -1,11 +1,11 @@
-impl Point{
+impl ToString for Point{
   fn to_string(self/0: Point) -> string {
       let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point);
       "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/1 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/2 : int32)) + " }";
   }
 }
 
-impl Message{
+impl ToString for Message{
   fn to_string(self/3: Message) -> string {
     match (self/3 : Message) {
         Message::Quit => "Message::Quit",
@@ -17,10 +17,10 @@ impl Message{
 
 fn main() -> unit {
     let point/7: Point = Point { x: 4, y: 7 };
-    let summary/8: string = (Point::to_string : (Point) -> string)((point/7 : Point));
-    let mv/9: string = (Message::to_string : (Message) -> string)(Message::Move(1, 2));
-    let text/10: string = (Message::to_string : (Message) -> string)(Message::Write("done"));
-    let exit/11: string = (Message::to_string : (Message) -> string)(Message::Quit);
+    let summary/8: string = (ToString::to_string : (Point) -> string)((point/7 : Point));
+    let mv/9: string = (ToString::to_string : (Message) -> string)(Message::Move(1, 2));
+    let text/10: string = (ToString::to_string : (Message) -> string)(Message::Write("done"));
+    let exit/11: string = (ToString::to_string : (Message) -> string)(Message::Quit);
     (println : (string) -> unit)((summary/8 : string));
     (println : (string) -> unit)((mv/9 : string));
     (println : (string) -> unit)((text/10 : string));

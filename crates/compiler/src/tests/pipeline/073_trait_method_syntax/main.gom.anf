@@ -1,4 +1,4 @@
-fn trait_impl#Show#S#show(self/0: S) -> string {
+fn trait_impl#ToString#S#to_string(self/0: S) -> string {
   let t3 = S.value(self/0) in
   let t2 = int32_to_string(t3) in
   let t1 = ("S(" + t2) in
@@ -7,7 +7,7 @@ fn trait_impl#Show#S#show(self/0: S) -> string {
 
 fn main() -> unit {
   let s/1 = S { value: 7 } in
-  let t4 = trait_impl#Show#S#show(s/1) in
+  let t4 = trait_impl#ToString#S#to_string(s/1) in
   let _wild0 = string_println(t4) in
   ()
 }

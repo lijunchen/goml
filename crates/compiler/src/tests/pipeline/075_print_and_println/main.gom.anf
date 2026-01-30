@@ -1,4 +1,4 @@
-fn trait_impl#Show#S#show(self/0: S) -> string {
+fn trait_impl#ToString#S#to_string(self/0: S) -> string {
   let t13 = S.value(self/0) in
   let t12 = int32_to_string(t13) in
   let t11 = ("S(" + t12) in
@@ -18,10 +18,10 @@ fn main() -> unit {
   let t18 = int32_to_string(2) in
   let _wild5 = string_println(t18) in
   let s/1 = S { value: 9 } in
-  let t19 = trait_impl#Show#S#show(s/1) in
+  let t19 = trait_impl#ToString#S#to_string(s/1) in
   let _wild6 = string_println(t19) in
-  let d/2 = to_dyn[Show]{S}(s/1) in
-  let t20 = dyn_call[Show::show](d/2) in
+  let d/2 = to_dyn[ToString]{S}(s/1) in
+  let t20 = dyn_call[ToString::to_string](d/2) in
   let _wild7 = string_println(t20) in
   let r/3 = ref(5) in
   let t24 = ref_get(r/3) in
