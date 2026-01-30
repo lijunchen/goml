@@ -2137,6 +2137,40 @@ impl Typer {
                             return self.error_expr(astptr);
                         }
                     }
+
+                    if matches!(name.as_str(), "print" | "println") && arg_types.len() == 1 {
+                        let arg_ty = arg_types[0].clone();
+                        match &arg_ty {
+                            tast::Ty::TDyn { trait_name } if trait_name == "ToString" => {}
+                            tast::Ty::TParam { name } => {
+                                let in_bounds = local_env
+                                    .tparam_trait_bounds(name)
+                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "ToString"));
+                                if !in_bounds {
+                                    diagnostics.push(Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Type parameter {} is not constrained by trait ToString",
+                                            name
+                                        ),
+                                    ));
+                                    return self.error_expr(astptr);
+                                }
+                            }
+                            _ => {
+                                let show_call_site_ty = tast::Ty::TFunc {
+                                    params: vec![arg_ty],
+                                    ret_ty: Box::new(tast::Ty::TString),
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: tast::TastIdent("to_string".to_string()),
+                                    trait_name: tast::TastIdent("ToString".to_string()),
+                                    call_site_type: show_call_site_ty,
+                                });
+                            }
+                        }
+                    }
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),

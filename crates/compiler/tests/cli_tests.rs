@@ -79,11 +79,27 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
             }
 
         == Typed AST ==
+        fn print(value/0: T) -> unit {
+            (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+        }
+
+        fn println(value/1: T) -> unit {
+            (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+        }
+
         fn main() -> unit {
             (string_println : (string) -> unit)("hello");
         }
 
         == Core ==
+        fn print(value/0: T) -> unit {
+          string_print(trait_call[ToString::to_string](value/0))
+        }
+
+        fn println(value/1: T) -> unit {
+          string_println(trait_call[ToString::to_string](value/1))
+        }
+
         fn main() -> unit {
           string_println("hello")
         }

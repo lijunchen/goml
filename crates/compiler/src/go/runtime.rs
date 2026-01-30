@@ -49,6 +49,10 @@ pub fn make_runtime() -> Vec<goast::Item> {
                     alias: None,
                     path: "math".to_string(),
                 },
+                ImportSpec {
+                    alias: None,
+                    path: "unicode/utf8".to_string(),
+                },
             ],
         }),
         Item::Fn(unit_to_string()),
@@ -2047,22 +2051,61 @@ fn char_to_string() -> goast::Fn {
         params: vec![("x".to_string(), goty::GoType::TChar)],
         ret_ty: Some(goty::GoType::TString),
         body: goast::Block {
-            stmts: vec![goast::Stmt::Return {
-                expr: Some(goast::Expr::Call {
-                    func: Box::new(goast::Expr::Var {
-                        name: "string".to_string(),
-                        ty: goty::GoType::TFunc {
-                            params: vec![goty::GoType::TChar],
-                            ret_ty: Box::new(goty::GoType::TString),
-                        },
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::Not,
+                        expr: Box::new(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "utf8.ValidRune".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TChar],
+                                    ret_ty: Box::new(goty::GoType::TBool),
+                                },
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "x".to_string(),
+                                ty: goty::GoType::TChar,
+                            }],
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "panic".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TString],
+                                    ret_ty: Box::new(goty::GoType::TVoid),
+                                },
+                            }),
+                            args: vec![goast::Expr::String {
+                                value: "invalid char".to_string(),
+                                ty: goty::GoType::TString,
+                            }],
+                            ty: goty::GoType::TVoid,
+                        })],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "string".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TChar],
+                                ret_ty: Box::new(goty::GoType::TString),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "x".to_string(),
+                            ty: goty::GoType::TChar,
+                        }],
+                        ty: goty::GoType::TString,
                     }),
-                    args: vec![goast::Expr::Var {
-                        name: "x".to_string(),
-                        ty: goty::GoType::TChar,
-                    }],
-                    ty: goty::GoType::TString,
-                }),
-            }],
+                },
+            ],
         },
     }
 }

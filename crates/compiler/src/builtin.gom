@@ -23,6 +23,14 @@ extern fn string_print(value: string) -> unit
 #[builtin]
 extern fn string_println(value: string) -> unit
 
+fn print[T: ToString](value: T) -> unit {
+    string_print(ToString::to_string(value))
+}
+
+fn println[T: ToString](value: T) -> unit {
+    string_println(ToString::to_string(value))
+}
+
 #[builtin]
 extern fn char_to_string(value: char) -> string
 
