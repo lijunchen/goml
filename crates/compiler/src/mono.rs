@@ -778,6 +778,92 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             args,
             ty,
         } => {
+            if trait_name.0 == "Show" && method_name.0 == "show" && args.is_empty() {
+                fn call_unary_builtin(func_name: &str, arg: MonoExpr, ret_ty: Ty) -> MonoExpr {
+                    let arg_ty = arg.get_ty();
+                    MonoExpr::ECall {
+                        func: Box::new(MonoExpr::EVar {
+                            name: func_name.to_string(),
+                            ty: Ty::TFunc {
+                                params: vec![arg_ty],
+                                ret_ty: Box::new(ret_ty.clone()),
+                            },
+                        }),
+                        args: vec![arg],
+                        ty: ret_ty,
+                    }
+                }
+
+                fn show_to_string(expr: MonoExpr, ty: Ty) -> MonoExpr {
+                    match ty.clone() {
+                        Ty::TString => expr,
+                        Ty::TUnit => call_unary_builtin("unit_to_string", expr, Ty::TString),
+                        Ty::TBool => call_unary_builtin("bool_to_string", expr, Ty::TString),
+                        Ty::TInt8 => call_unary_builtin("int8_to_string", expr, Ty::TString),
+                        Ty::TInt16 => call_unary_builtin("int16_to_string", expr, Ty::TString),
+                        Ty::TInt32 => call_unary_builtin("int32_to_string", expr, Ty::TString),
+                        Ty::TInt64 => call_unary_builtin("int64_to_string", expr, Ty::TString),
+                        Ty::TUint8 => call_unary_builtin("uint8_to_string", expr, Ty::TString),
+                        Ty::TUint16 => call_unary_builtin("uint16_to_string", expr, Ty::TString),
+                        Ty::TUint32 => call_unary_builtin("uint32_to_string", expr, Ty::TString),
+                        Ty::TUint64 => call_unary_builtin("uint64_to_string", expr, Ty::TString),
+                        Ty::TFloat32 => call_unary_builtin("float32_to_string", expr, Ty::TString),
+                        Ty::TFloat64 => call_unary_builtin("float64_to_string", expr, Ty::TString),
+                        Ty::TRef { elem } => {
+                            let inner_ty = *elem;
+                            let inner = call_unary_builtin("ref_get", expr, inner_ty.clone());
+                            let inner_str = show_to_string(inner, inner_ty);
+                            let prefix = MonoExpr::EPrim {
+                                value: Prim::string("ref(".to_string()),
+                                ty: Ty::TString,
+                            };
+                            let suffix = MonoExpr::EPrim {
+                                value: Prim::string(")".to_string()),
+                                ty: Ty::TString,
+                            };
+                            let with_prefix = MonoExpr::EBinary {
+                                op: common_defs::BinaryOp::Add,
+                                lhs: Box::new(prefix),
+                                rhs: Box::new(inner_str),
+                                ty: Ty::TString,
+                            };
+                            MonoExpr::EBinary {
+                                op: common_defs::BinaryOp::Add,
+                                lhs: Box::new(with_prefix),
+                                rhs: Box::new(suffix),
+                                ty: Ty::TString,
+                            }
+                        }
+                        Ty::TDyn { trait_name } if trait_name == "Show" => MonoExpr::EDynCall {
+                            trait_name: TastIdent("Show".to_string()),
+                            method_name: TastIdent("show".to_string()),
+                            receiver: Box::new(expr),
+                            args: vec![],
+                            ty: Ty::TString,
+                        },
+                        _ => {
+                            let func_name =
+                                trait_impl_fn_name(&TastIdent("Show".to_string()), &ty, "show");
+                            MonoExpr::ECall {
+                                func: Box::new(MonoExpr::EVar {
+                                    name: func_name,
+                                    ty: Ty::TFunc {
+                                        params: vec![ty.clone()],
+                                        ret_ty: Box::new(Ty::TString),
+                                    },
+                                }),
+                                args: vec![expr],
+                                ty: Ty::TString,
+                            }
+                        }
+                    }
+                }
+
+                let receiver = mono_expr(ctx, &receiver, s);
+                let receiver_ty = receiver.get_ty();
+                return show_to_string(receiver, receiver_ty);
+            }
+
             let receiver = mono_expr(ctx, &receiver, s);
             let mut all_args = Vec::with_capacity(args.len() + 1);
             all_args.push(receiver);

@@ -67,6 +67,7 @@ fn build_builtin_env() -> GlobalTypeEnv {
     add_ref_builtins(&mut base_env.value_env.funcs);
     add_vec_builtins(&mut base_env.value_env.funcs);
     add_hashmap_builtins(&mut base_env.value_env.funcs);
+    add_print_builtins(&mut base_env.value_env.funcs);
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
@@ -252,6 +253,20 @@ fn add_hashmap_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
+fn add_print_builtins(funcs: &mut IndexMap<String, FnScheme>) {
+    let t_param = tast::Ty::TParam {
+        name: "T".to_string(),
+    };
+    funcs.insert(
+        "print".to_string(),
+        make_fn_scheme(vec![t_param.clone()], tast::Ty::TUnit),
+    );
+    funcs.insert(
+        "println".to_string(),
+        make_fn_scheme(vec![t_param], tast::Ty::TUnit),
+    );
+}
+
 pub(super) fn builtin_inherent_methods()
 -> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
@@ -289,6 +304,8 @@ pub fn builtin_function_names() -> Vec<String> {
     for name in [
         "array_get",
         "array_set",
+        "print",
+        "println",
         "ref",
         "ref_get",
         "ref_set",

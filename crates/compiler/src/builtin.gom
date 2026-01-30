@@ -107,6 +107,84 @@ trait Show {
     fn show(Self) -> string;
 }
 
+impl Show for unit {
+    fn show(self: unit) -> string {
+        unit_to_string(self)
+    }
+}
+
+impl Show for bool {
+    fn show(self: bool) -> string {
+        bool_to_string(self)
+    }
+}
+
+impl Show for string {
+    fn show(self: string) -> string {
+        self
+    }
+}
+
+impl Show for int8 {
+    fn show(self: int8) -> string {
+        int8_to_string(self)
+    }
+}
+
+impl Show for int16 {
+    fn show(self: int16) -> string {
+        int16_to_string(self)
+    }
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Show for int64 {
+    fn show(self: int64) -> string {
+        int64_to_string(self)
+    }
+}
+
+impl Show for uint8 {
+    fn show(self: uint8) -> string {
+        uint8_to_string(self)
+    }
+}
+
+impl Show for uint16 {
+    fn show(self: uint16) -> string {
+        uint16_to_string(self)
+    }
+}
+
+impl Show for uint32 {
+    fn show(self: uint32) -> string {
+        uint32_to_string(self)
+    }
+}
+
+impl Show for uint64 {
+    fn show(self: uint64) -> string {
+        uint64_to_string(self)
+    }
+}
+
+impl Show for float32 {
+    fn show(self: float32) -> string {
+        float32_to_string(self)
+    }
+}
+
+impl Show for float64 {
+    fn show(self: float64) -> string {
+        float64_to_string(self)
+    }
+}
+
 impl Eq for unit {
     fn eq(self: unit, other: unit) -> bool {
         true
@@ -275,5 +353,12 @@ impl [T: Hash] Hash for Ref[T] {
     fn hash(self: Ref[T]) -> uint64 {
         let v: T = ref_get(self);
         Hash::hash(v)
+    }
+}
+
+impl [T: Show] Show for Ref[T] {
+    fn show(self: Ref[T]) -> string {
+        let v: T = ref_get(self);
+        "ref(" + Show::show(v) + ")"
     }
 }

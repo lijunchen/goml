@@ -1,0 +1,23 @@
+impl Show for S{
+  fn show(self/0: S) -> string {
+      "S(" + (int32_to_string : (int32) -> string)((self/0 : S).value) + ")";
+  }
+}
+
+fn main() -> unit {
+    (println : (int32) -> unit)(1);
+    (println : (bool) -> unit)(true);
+    (println : (string) -> unit)("hi");
+    (println : (unit) -> unit)(());
+    (println : (string) -> unit)((Show::show : (int32) -> string)(2));
+    (println : (string) -> unit)((Show::show : (int32) -> string)(2));
+    let s/1: S = S { value: 9 };
+    (println : (S) -> unit)((s/1 : S));
+    let d/2: dyn Show = to_dyn[Show]{S}((s/1 : S));
+    (println : (dyn Show) -> unit)((d/2 : dyn Show));
+    let r/3: Ref[int32] = (ref : (int32) -> Ref[int32])(5);
+    (println : (Ref[int32]) -> unit)((r/3 : Ref[int32]));
+    (print : (string) -> unit)("no-newline");
+    (println : (string) -> unit)("!");
+    ();
+}

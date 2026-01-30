@@ -1989,6 +1989,40 @@ impl Typer {
                             return self.error_expr(astptr);
                         }
                     }
+
+                    if matches!(name.as_str(), "print" | "println") && arg_types.len() == 1 {
+                        let arg_ty = arg_types[0].clone();
+                        match &arg_ty {
+                            tast::Ty::TDyn { trait_name } if trait_name == "Show" => {}
+                            tast::Ty::TParam { name } => {
+                                let in_bounds = local_env
+                                    .tparam_trait_bounds(name)
+                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "Show"));
+                                if !in_bounds {
+                                    diagnostics.push(Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Type parameter {} is not constrained by trait Show",
+                                            name
+                                        ),
+                                    ));
+                                    return self.error_expr(astptr);
+                                }
+                            }
+                            _ => {
+                                let show_call_site_ty = tast::Ty::TFunc {
+                                    params: vec![arg_ty],
+                                    ret_ty: Box::new(tast::Ty::TString),
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: tast::TastIdent("show".to_string()),
+                                    trait_name: tast::TastIdent("Show".to_string()),
+                                    call_site_type: show_call_site_ty,
+                                });
+                            }
+                        }
+                    }
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
@@ -3168,6 +3202,9 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
 
 fn has_visible_trait_impl(genv: &PackageTypeEnv, trait_name: &str, for_ty: &tast::Ty) -> bool {
     let key = (trait_name.to_string(), for_ty.clone());
+    if genv.builtins().trait_env.trait_impls.contains_key(&key) {
+        return true;
+    }
     if genv.current().trait_env.trait_impls.contains_key(&key) {
         return true;
     }

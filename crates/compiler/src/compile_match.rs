@@ -1,6 +1,6 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core;
-use crate::env::{Gensym, GlobalTypeEnv, StructDef};
+use crate::env::{FnOrigin, Gensym, GlobalTypeEnv, StructDef};
 use crate::names::{inherent_method_fn_name, trait_impl_fn_name};
 use crate::tast::Arm;
 use crate::tast::Expr::{self, *};
@@ -1595,6 +1595,59 @@ fn compile_expr(
                 .map(|arg| compile_expr(arg, genv, gensym, diagnostics))
                 .collect::<Vec<_>>();
 
+            if let tast::Expr::EVar { name, .. } = func.as_ref()
+                && (name == "print" || name == "println")
+                && genv
+                    .value_env
+                    .funcs
+                    .get(name)
+                    .is_some_and(|scheme| scheme.origin == FnOrigin::Builtin)
+            {
+                let Some(arg) = args.first() else {
+                    diagnostics.push(Diagnostic::new(
+                        Stage::other("compile"),
+                        Severity::Error,
+                        format!("{} expects one argument but got none", name),
+                    ));
+                    return core::eunit();
+                };
+
+                let show = core::Expr::ETraitCall {
+                    trait_name: TastIdent("Show".to_string()),
+                    method_name: TastIdent("show".to_string()),
+                    receiver: Box::new(arg.clone()),
+                    args: vec![],
+                    ty: Ty::TString,
+                };
+
+                let (func_name, func_ty) = match name.as_str() {
+                    "print" => (
+                        "string_print".to_string(),
+                        Ty::TFunc {
+                            params: vec![Ty::TString],
+                            ret_ty: Box::new(Ty::TUnit),
+                        },
+                    ),
+                    "println" => (
+                        "string_println".to_string(),
+                        Ty::TFunc {
+                            params: vec![Ty::TString],
+                            ret_ty: Box::new(Ty::TUnit),
+                        },
+                    ),
+                    _ => unreachable!(),
+                };
+
+                return core::Expr::ECall {
+                    func: Box::new(core::Expr::EVar {
+                        name: func_name,
+                        ty: func_ty,
+                    }),
+                    args: vec![show],
+                    ty: ty.clone(),
+                };
+            }
+
             if let tast::Expr::EDynTraitMethod {
                 trait_name,
                 method_name,
@@ -1623,7 +1676,7 @@ fn compile_expr(
                     .split_first()
                     .expect("trait call expects a receiver argument");
                 let for_ty = receiver.get_ty();
-                if has_tparam(&for_ty) {
+                if (trait_name.0 == "Show" && method_name.0 == "show") || has_tparam(&for_ty) {
                     return core::Expr::ETraitCall {
                         trait_name: trait_name.clone(),
                         method_name: method_name.clone(),
