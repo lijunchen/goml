@@ -136,7 +136,7 @@ fn msg() -> string {
         r#"
 package Main
 
-import Lib
+use Lib
 
 fn main() -> unit {
     string_println(Lib::msg())
@@ -219,7 +219,7 @@ fn msg() -> string {
         r#"
 package Main
 
-import Lib
+use Lib
 
 fn main() -> unit {
     string_println(Lib::msg())

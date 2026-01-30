@@ -18,8 +18,8 @@ fn typecheck_ast(
     ),
     String,
 > {
-    if !ast.imports.is_empty() {
-        return Err("error: package imports are not supported in webapp".to_string());
+    if !ast.imports.is_empty() || !ast.use_traits.is_empty() {
+        return Err("error: package uses are not supported in webapp".to_string());
     }
     let (hir, hir_table, mut hir_diagnostics) = compiler::hir::lower_to_hir(ast);
     let (tast, genv, mut diagnostics) = compiler::typer::check_file(hir, hir_table);
@@ -325,8 +325,8 @@ pub fn get_tast(src: &str) -> String {
 
 #[wasm_bindgen]
 pub fn hover(src: &str, line: u32, col: u32) -> String {
-    if has_imports(src) {
-        return "error: package imports are not supported in webapp".to_string();
+    if has_uses(src) {
+        return "error: package uses are not supported in webapp".to_string();
     }
     match compiler::query::hover_type(std::path::Path::new("dummy"), src, line, col) {
         Ok(result) => result,
@@ -336,7 +336,7 @@ pub fn hover(src: &str, line: u32, col: u32) -> String {
 
 #[wasm_bindgen]
 pub fn dot_completions(src: &str, line: u32, col: u32) -> String {
-    if has_imports(src) {
+    if has_uses(src) {
         return "[]".to_string();
     }
     let items = compiler::query::dot_completions(std::path::Path::new("dummy"), src, line, col)
@@ -370,7 +370,7 @@ pub fn dot_completions(src: &str, line: u32, col: u32) -> String {
 
 #[wasm_bindgen]
 pub fn colon_colon_completions(src: &str, line: u32, col: u32) -> String {
-    if has_imports(src) {
+    if has_uses(src) {
         return "[]".to_string();
     }
     let items =
@@ -408,7 +408,7 @@ pub fn colon_colon_completions(src: &str, line: u32, col: u32) -> String {
 
 #[wasm_bindgen]
 pub fn value_completions(src: &str, line: u32, col: u32) -> String {
-    if has_imports(src) {
+    if has_uses(src) {
         return "[]".to_string();
     }
     let items =
@@ -458,8 +458,8 @@ fn json_escape(input: &str) -> String {
     escaped
 }
 
-fn has_imports(src: &str) -> bool {
-    if !src.contains("import") {
+fn has_uses(src: &str) -> bool {
+    if !src.contains("use") {
         return false;
     }
     let result = parser::parse(&std::path::PathBuf::from("dummy"), src);
@@ -468,7 +468,7 @@ fn has_imports(src: &str) -> bool {
     }
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).unwrap();
-    cst.import_decls().next().is_some()
+    cst.use_decls().next().is_some()
 }
 
 fn format_parse_errors(result: &ParseResult, src: &str) -> String {

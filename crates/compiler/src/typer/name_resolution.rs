@@ -322,12 +322,17 @@ impl NameResolution {
 
         for file in files.iter() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file
+            let mut imports = file
                 .ast
                 .imports
                 .iter()
                 .map(|import| import.0.clone())
                 .collect::<HashSet<_>>();
+            for use_trait in file.ast.use_traits.iter() {
+                if let Some(first) = use_trait.segments().first() {
+                    imports.insert(first.ident.0.clone());
+                }
+            }
             let mut def_ids = Vec::new();
             for item in file.ast.toplevels.iter() {
                 let def_id = match item {
@@ -442,12 +447,17 @@ impl NameResolution {
 
         for (file_idx, file) in files.iter().enumerate() {
             let package_name = file.ast.package.0.as_str();
-            let imports = file
+            let mut imports = file
                 .ast
                 .imports
                 .iter()
                 .map(|import| import.0.clone())
                 .collect::<HashSet<_>>();
+            for use_trait in file.ast.use_traits.iter() {
+                if let Some(first) = use_trait.segments().first() {
+                    imports.insert(first.ident.0.clone());
+                }
+            }
             let ctx = ResolutionContext {
                 builtin_names: &builtin_names,
                 def_names: &def_names,
@@ -531,15 +541,42 @@ impl NameResolution {
                 } else {
                     format!("{}/{}", package, file_name)
                 };
+                let mut imports: HashSet<String> = file
+                    .ast
+                    .imports
+                    .iter()
+                    .map(|import| import.0.clone())
+                    .collect();
+                for use_trait in file.ast.use_traits.iter() {
+                    if let Some(first) = use_trait.segments().first() {
+                        imports.insert(first.ident.0.clone());
+                    }
+                }
+                let mut imports_vec = imports
+                    .into_iter()
+                    .map(hir::PackageName)
+                    .collect::<Vec<_>>();
+                imports_vec.sort_by(|a, b| a.0.cmp(&b.0));
+
+                let mut use_traits = Vec::new();
+                for use_trait in file.ast.use_traits.iter() {
+                    let qualified: hir::QualifiedPath = use_trait.into();
+                    let Some(package) = &qualified.package else {
+                        self.ice("use trait is missing package");
+                        continue;
+                    };
+                    let Some(trait_name) = qualified.last_ident() else {
+                        self.ice("use trait is missing name");
+                        continue;
+                    };
+                    let _ = (package, trait_name);
+                    use_traits.push(qualified);
+                }
                 hir::SourceFileHir {
                     path,
                     package: hir::PackageName(package),
-                    imports: file
-                        .ast
-                        .imports
-                        .iter()
-                        .map(|import| hir::PackageName(import.0.clone()))
-                        .collect(),
+                    imports: imports_vec,
+                    use_traits,
                     toplevels: per_file_defs.get(idx).cloned().unwrap_or_default(),
                 }
             })

@@ -1,6 +1,6 @@
 use crate::ast::{
     Arm, AstIdent, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType,
-    File, Fn, ImplBlock, Item, Pat, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    File, Fn, ImplBlock, Item, Pat, Path, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -849,14 +849,20 @@ impl File {
                 .append(RcDoc::text(self.package.0.clone()))
                 .append(RcDoc::hardline()),
         );
-        if !self.imports.is_empty() {
-            let import_docs = RcDoc::concat(self.imports.iter().map(|import| {
-                RcDoc::text("import")
-                    .append(RcDoc::space())
-                    .append(RcDoc::text(import.0.clone()))
-                    .append(RcDoc::hardline())
-            }));
-            docs.push(import_docs);
+        if !self.imports.is_empty() || !self.use_traits.is_empty() {
+            let use_docs = RcDoc::concat(
+                self.imports
+                    .iter()
+                    .map(|import| Path::from_ident(import.clone()))
+                    .chain(self.use_traits.iter().cloned())
+                    .map(|path| {
+                        RcDoc::text("use")
+                            .append(RcDoc::space())
+                            .append(RcDoc::text(path.display()))
+                            .append(RcDoc::hardline())
+                    }),
+            );
+            docs.push(use_docs);
             docs.push(RcDoc::hardline());
         }
         docs.push(RcDoc::concat(self.toplevels.iter().map(|item| {

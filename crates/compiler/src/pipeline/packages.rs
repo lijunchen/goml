@@ -76,8 +76,15 @@ fn read_gom_sources(dir: &Path) -> Result<Vec<PathBuf>, CompilationError> {
 fn collect_imports(files: &[SourceFileAst]) -> HashSet<String> {
     files
         .iter()
-        .flat_map(|file| file.ast.imports.iter())
-        .map(|import| import.0.clone())
+        .flat_map(|file| {
+            let from_imports = file.ast.imports.iter().map(|import| import.0.clone());
+            let from_use_traits = file.ast.use_traits.iter().filter_map(|path| {
+                path.segments()
+                    .first()
+                    .map(|seg| seg.ident.0.clone())
+            });
+            from_imports.chain(from_use_traits)
+        })
         .collect()
 }
 

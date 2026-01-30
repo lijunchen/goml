@@ -228,6 +228,9 @@ pub enum TokenKind {
     #[token("package")]
     PackageKeyword,
 
+    #[token("use")]
+    UseKeyword,
+
     #[token("import")]
     ImportKeyword,
 
@@ -426,6 +429,7 @@ impl std::fmt::Display for TokenKind {
             Self::Pound => "#",
             Self::ExternKeyword => "extern",
             Self::PackageKeyword => "package",
+            Self::UseKeyword => "use",
             Self::ImportKeyword => "import",
             Self::EnumKeyword => "enum",
             Self::StructKeyword => "struct",
@@ -516,6 +520,7 @@ macro_rules! T {
     [#] => { $crate::TokenKind::Pound };
     [extern] => { $crate::TokenKind::ExternKeyword };
     [package] => { $crate::TokenKind::PackageKeyword };
+    [use] => { $crate::TokenKind::UseKeyword };
     [import] => { $crate::TokenKind::ImportKeyword };
     [fn] => { $crate::TokenKind::FnKeyword };
     [trait] => { $crate::TokenKind::TraitKeyword };
