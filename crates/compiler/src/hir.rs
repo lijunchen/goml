@@ -972,6 +972,7 @@ pub enum TypeExpr {
     TFloat32,
     TFloat64,
     TString,
+    TChar,
     TTuple {
         typs: Vec<TypeExpr>,
     },
@@ -1011,6 +1012,7 @@ impl From<&ast::TypeExpr> for TypeExpr {
             ast::TypeExpr::TFloat32 => TypeExpr::TFloat32,
             ast::TypeExpr::TFloat64 => TypeExpr::TFloat64,
             ast::TypeExpr::TString => TypeExpr::TString,
+            ast::TypeExpr::TChar => TypeExpr::TChar,
             ast::TypeExpr::TTuple { typs } => TypeExpr::TTuple {
                 typs: typs.iter().map(|t| t.into()).collect(),
             },
@@ -1295,6 +1297,9 @@ pub enum Expr {
     EString {
         value: String,
     },
+    EChar {
+        value: String,
+    },
     EConstr {
         constructor: ConstructorRef,
         args: Vec<ExprId>,
@@ -1404,6 +1409,9 @@ pub enum Pat {
         value: String,
     },
     PString {
+        value: String,
+    },
+    PChar {
         value: String,
     },
     PConstr {

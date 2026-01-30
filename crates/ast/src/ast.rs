@@ -105,6 +105,7 @@ pub enum TypeExpr {
     TFloat32,
     TFloat64,
     TString,
+    TChar,
     TTuple {
         typs: Vec<TypeExpr>,
     },
@@ -302,6 +303,10 @@ pub enum Expr {
         value: String,
         astptr: MySyntaxNodePtr,
     },
+    EChar {
+        value: String,
+        astptr: MySyntaxNodePtr,
+    },
     EConstr {
         constructor: Path,
         args: Vec<Expr>,
@@ -439,6 +444,10 @@ pub enum Pat {
         astptr: MySyntaxNodePtr,
     },
     PString {
+        value: String,
+        astptr: MySyntaxNodePtr,
+    },
+    PChar {
         value: String,
         astptr: MySyntaxNodePtr,
     },

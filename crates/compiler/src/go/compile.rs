@@ -93,6 +93,13 @@ fn go_literal_from_primitive(value: &Prim, ty: &tast::Ty) -> goast::Expr {
         };
     }
 
+    if let Some(ch) = value.as_char() {
+        return goast::Expr::Int {
+            value: (ch as u32).to_string(),
+            ty: tast_ty_to_go_type(ty),
+        };
+    }
+
     if let Some(v) = value.as_int8() {
         return goast::Expr::Int {
             value: v.to_string(),
@@ -325,7 +332,8 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TUint64
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
-        | tast::Ty::TString => ty.clone(),
+        | tast::Ty::TString
+        | tast::Ty::TChar => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()
@@ -1689,6 +1697,11 @@ where
         tast::Ty::TUint64 => {
             compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
                 v.as_uint64().map(|x| x.to_string())
+            })
+        }
+        tast::Ty::TChar => {
+            compile_int_match_branch(goenv, scrutinee, arms, default, &mut build_branch, |v| {
+                v.as_char().map(|ch| (ch as u32).to_string())
             })
         }
         tast::Ty::TFloat32 => {

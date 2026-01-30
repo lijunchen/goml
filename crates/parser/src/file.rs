@@ -479,6 +479,7 @@ const TYPE_FIRST: &[TokenKind] = &[
     T![Float32],
     T![Float64],
     T![String],
+    T![Char],
     T![dyn],
     T!['['],
     T!['('],
@@ -678,6 +679,10 @@ fn type_atom(p: &mut Parser) -> Option<MarkerClosed> {
         T![String] => {
             p.advance();
             p.close(m, MySyntaxKind::TYPE_STRING)
+        }
+        T![Char] => {
+            p.advance();
+            p.close(m, MySyntaxKind::TYPE_CHAR)
         }
         T!['('] => {
             type_list(p);

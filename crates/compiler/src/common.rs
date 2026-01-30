@@ -15,6 +15,7 @@ pub enum Prim {
     Float32 { value: f32 },
     Float64 { value: f64 },
     String { value: String },
+    Char { value: char },
 }
 
 impl std::fmt::Display for Prim {
@@ -33,6 +34,7 @@ impl std::fmt::Display for Prim {
             Prim::Float32 { value } => write!(f, "{}", value),
             Prim::Float64 { value } => write!(f, "{}", value),
             Prim::String { value } => write!(f, "{:?}", value),
+            Prim::Char { value } => write!(f, "{:?}", value),
         }
     }
 }

@@ -167,6 +167,7 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TFloat32 => tast::Ty::TFloat32,
         tast::Ty::TFloat64 => tast::Ty::TFloat64,
         tast::Ty::TString => tast::Ty::TString,
+        tast::Ty::TChar => tast::Ty::TChar,
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()
@@ -306,6 +307,12 @@ fn build_expr(
         hir::Expr::EString { value } => tast::Expr::EPrim {
             value: Prim::string(value),
             ty: tast::Ty::TString,
+        },
+        hir::Expr::EChar { value } => tast::Expr::EPrim {
+            value: Prim::Char {
+                value: parse_char_literal(&value).unwrap_or('\0'),
+            },
+            ty: tast::Ty::TChar,
         },
         hir::Expr::EConstr { args, .. } => {
             let constructor = results
@@ -738,6 +745,12 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
             value: Prim::string(value),
             ty: tast::Ty::TString,
         },
+        hir::Pat::PChar { value } => tast::Pat::PPrim {
+            value: Prim::Char {
+                value: parse_char_literal(&value).unwrap_or('\0'),
+            },
+            ty: tast::Ty::TChar,
+        },
         hir::Pat::PConstr { args, .. } => {
             let constructor = results
                 .constructor_for_pat(pat_id)
@@ -808,4 +821,47 @@ where
         return None;
     }
     s.parse().ok()
+}
+
+fn parse_char_literal(s: &str) -> Option<char> {
+    if s.is_empty() {
+        return None;
+    }
+    if let Some(rest) = s.strip_prefix('\\') {
+        let mut chars = rest.chars();
+        let tag = chars.next()?;
+        let out = match tag {
+            '\'' => Some('\''),
+            '"' => Some('"'),
+            '\\' => Some('\\'),
+            '/' => Some('/'),
+            'b' => Some('\u{0008}'),
+            'f' => Some('\u{000C}'),
+            'n' => Some('\n'),
+            'r' => Some('\r'),
+            't' => Some('\t'),
+            'u' => {
+                let hex: String = chars.by_ref().take(4).collect();
+                if hex.chars().count() != 4 || chars.next().is_some() {
+                    None
+                } else if let Ok(code) = u32::from_str_radix(&hex, 16) {
+                    char::from_u32(code)
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }?;
+        if chars.next().is_some() {
+            return None;
+        }
+        return Some(out);
+    }
+
+    let mut iter = s.chars();
+    let ch = iter.next()?;
+    if iter.next().is_some() {
+        return None;
+    }
+    Some(ch)
 }

@@ -429,6 +429,7 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
         cst::Type::Float32Ty(_) => Some(ast::TypeExpr::TFloat32),
         cst::Type::Float64Ty(_) => Some(ast::TypeExpr::TFloat64),
         cst::Type::StringTy(_) => Some(ast::TypeExpr::TString),
+        cst::Type::CharTy(_) => Some(ast::TypeExpr::TChar),
         cst::Type::TupleTy(it) => {
             let typs = it
                 .type_list()?
@@ -1123,6 +1124,29 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EFloat64 { value, astptr })
+        }
+        cst::Expr::CharExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "CharExpr has no value");
+                return None;
+            };
+            let raw = token.to_string();
+            let Some(value) = raw.strip_prefix('\'').and_then(|s| s.strip_suffix('\'')) else {
+                ctx.push_error(Some(token.text_range()), "CharExpr has no value");
+                return None;
+            };
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to char literal",
+                );
+                return None;
+            }
+            Some(ast::Expr::EChar {
+                value: value.to_string(),
+                astptr,
+            })
         }
         cst::Expr::StrExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -2053,6 +2077,22 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
             Some(ast::Pat::PUInt64 { value, astptr })
+        }
+        cst::Pattern::CharPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let Some(token) = it.value() else {
+                ctx.push_error(Some(it.syntax().text_range()), "CharPat has no value");
+                return None;
+            };
+            let raw = token.to_string();
+            let Some(value) = raw.strip_prefix('\'').and_then(|s| s.strip_suffix('\'')) else {
+                ctx.push_error(Some(token.text_range()), "CharPat has no value");
+                return None;
+            };
+            Some(ast::Pat::PChar {
+                value: value.to_string(),
+                astptr,
+            })
         }
         cst::Pattern::StringPat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());

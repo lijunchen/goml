@@ -267,7 +267,8 @@ fn has_tparam(ty: &Ty) -> bool {
         | Ty::TUint64
         | Ty::TFloat32
         | Ty::TFloat64
-        | Ty::TString => false,
+        | Ty::TString
+        | Ty::TChar => false,
         Ty::TTuple { typs } => typs.iter().any(has_tparam),
         Ty::TEnum { .. } | Ty::TStruct { .. } | Ty::TDyn { .. } => false,
         Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
@@ -332,7 +333,8 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         | Ty::TUint64
         | Ty::TFloat32
         | Ty::TFloat64
-        | Ty::TString => ty.clone(),
+        | Ty::TString
+        | Ty::TChar => ty.clone(),
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs.iter().map(|t| subst_ty(t, s)).collect(),
         },

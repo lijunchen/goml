@@ -146,6 +146,7 @@ fn has_tparam(ty: &Ty) -> bool {
         | Ty::TFloat32
         | Ty::TFloat64
         | Ty::TString
+        | Ty::TChar
         | Ty::TEnum { .. }
         | Ty::TStruct { .. }
         | Ty::TDyn { .. } => false,
@@ -195,7 +196,8 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         | Ty::TUint64
         | Ty::TFloat32
         | Ty::TFloat64
-        | Ty::TString => ty.clone(),
+        | Ty::TString
+        | Ty::TChar => ty.clone(),
         Ty::TTuple { typs } => Ty::TTuple {
             typs: typs
                 .iter()
@@ -804,6 +806,22 @@ fn compile_int_case(
                 |value| Prim::UInt64 { value },
             );
         }
+        Ty::TChar => {
+            return compile_int_case_impl::<u32, _, _>(
+                genv,
+                gensym,
+                diagnostics,
+                rows,
+                bvar,
+                ty,
+                Ty::TChar,
+                match_range,
+                |prim| prim.as_char().map(|ch| ch as u32),
+                |value| Prim::Char {
+                    value: char::from_u32(value).unwrap_or('\u{FFFD}'),
+                },
+            );
+        }
         _ => {}
     }
 
@@ -1097,6 +1115,16 @@ fn compile_rows(
             panic!("Matching on floating point types is not supported")
         }
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
+        Ty::TChar => compile_int_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            Ty::TChar,
+            match_range,
+        ),
         Ty::TEnum { name } => {
             let ident = TastIdent::new(name);
             compile_enum_case(

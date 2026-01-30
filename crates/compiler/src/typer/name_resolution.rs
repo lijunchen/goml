@@ -956,6 +956,13 @@ impl NameResolution {
                     value: value.clone(),
                 },
             ),
+            ast::Expr::EChar { value, astptr } => self.alloc_expr_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Expr::EChar {
+                    value: value.clone(),
+                },
+            ),
             ast::Expr::EConstr {
                 constructor,
                 args,
@@ -1315,6 +1322,13 @@ impl NameResolution {
                     value: value.clone(),
                 },
             ),
+            ast::Pat::PChar { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PChar {
+                    value: value.clone(),
+                },
+            ),
             ast::Pat::PConstr {
                 constructor,
                 args,
@@ -1400,6 +1414,7 @@ impl NameResolution {
             ast::TypeExpr::TFloat32 => hir::TypeExpr::TFloat32,
             ast::TypeExpr::TFloat64 => hir::TypeExpr::TFloat64,
             ast::TypeExpr::TString => hir::TypeExpr::TString,
+            ast::TypeExpr::TChar => hir::TypeExpr::TChar,
             ast::TypeExpr::TTuple { typs } => hir::TypeExpr::TTuple {
                 typs: typs
                     .iter()

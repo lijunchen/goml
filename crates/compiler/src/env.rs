@@ -188,7 +188,8 @@ impl TypeEnv {
             | tast::Ty::TUint64
             | tast::Ty::TFloat32
             | tast::Ty::TFloat64
-            | tast::Ty::TString => {}
+            | tast::Ty::TString
+            | tast::Ty::TChar => {}
             tast::Ty::TTuple { typs } => {
                 for ty in typs {
                     self.record_extern_type_usage(ty, package_path);
@@ -487,7 +488,8 @@ fn trait_impl_matches(template: &tast::Ty, actual: &tast::Ty) -> bool {
             | tast::Ty::TUint64
             | tast::Ty::TFloat32
             | tast::Ty::TFloat64
-            | tast::Ty::TString => template == actual,
+            | tast::Ty::TString
+            | tast::Ty::TChar => template == actual,
             tast::Ty::TTuple { typs } => match actual {
                 tast::Ty::TTuple { typs: actual_typs } if typs.len() == actual_typs.len() => typs
                     .iter()

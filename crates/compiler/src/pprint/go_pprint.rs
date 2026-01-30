@@ -40,6 +40,7 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TFloat32 => "float32".to_string(),
         GoType::TFloat64 => "float64".to_string(),
         GoType::TString => "string".to_string(),
+        GoType::TChar => "rune".to_string(),
         GoType::TStruct { name, .. } => name.clone(),
         GoType::TPointer { elem } => format!("*{}", go_type_name(elem)),
         GoType::TName { name } => name.clone(),

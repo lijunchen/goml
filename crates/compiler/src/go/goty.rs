@@ -14,6 +14,7 @@ pub enum GoType {
     TFloat32,
     TFloat64,
     TString,
+    TChar,
     TStruct {
         name: String,
         fields: Vec<(String, GoType)>,

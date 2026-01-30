@@ -23,6 +23,9 @@ extern fn string_print(value: string) -> unit
 #[builtin]
 extern fn string_println(value: string) -> unit
 
+#[builtin]
+extern fn char_to_string(value: char) -> string
+
 // Int8 operations
 #[builtin]
 extern fn int8_to_string(value: int8) -> string
@@ -84,6 +87,8 @@ extern fn float32_hash(value: float32) -> uint64
 extern fn float64_hash(value: float64) -> uint64
 #[builtin]
 extern fn string_hash(value: string) -> uint64
+#[builtin]
+extern fn char_hash(value: char) -> uint64
 
 enum Option[T] {
     None,
@@ -122,6 +127,12 @@ impl ToString for bool {
 impl ToString for string {
     fn to_string(self: string) -> string {
         self
+    }
+}
+
+impl ToString for char {
+    fn to_string(self: char) -> string {
+        char_to_string(self)
     }
 }
 
@@ -203,6 +214,12 @@ impl Eq for string {
     }
 }
 
+impl Eq for char {
+    fn eq(self: char, other: char) -> bool {
+        self == other
+    }
+}
+
 impl Eq for int8 {
     fn eq(self: int8, other: int8) -> bool {
         self == other
@@ -278,6 +295,12 @@ impl Hash for bool {
 impl Hash for string {
     fn hash(self: string) -> uint64 {
         string_hash(self)
+    }
+}
+
+impl Hash for char {
+    fn hash(self: char) -> uint64 {
+        char_hash(self)
     }
 }
 

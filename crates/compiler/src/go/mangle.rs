@@ -15,6 +15,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
         tast::Ty::TFloat32 => "float32".to_string(),
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
+        tast::Ty::TChar => "char".to_string(),
         tast::Ty::TVar(_v) => "Var".to_string(),
         tast::Ty::TParam { name } => format!("TParam_{}", name),
         tast::Ty::TTuple { typs } => {

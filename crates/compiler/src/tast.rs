@@ -87,6 +87,7 @@ pub enum Ty {
     TFloat32,
     TFloat64,
     TString,
+    TChar,
     TTuple { typs: Vec<Ty> },
     TEnum { name: String },
     TStruct { name: String },
@@ -117,6 +118,7 @@ impl std::fmt::Debug for Ty {
             Self::TFloat32 => write!(f, "TFloat32"),
             Self::TFloat64 => write!(f, "TFloat64"),
             Self::TString => write!(f, "TString"),
+            Self::TChar => write!(f, "TChar"),
             Self::TTuple { typs } => write!(f, "TTuple({:?})", typs),
             Self::TEnum { name } => write!(f, "TEnum({})", name),
             Self::TStruct { name } => write!(f, "TStruct({})", name),
@@ -156,6 +158,10 @@ impl Prim {
 
     pub fn boolean(value: bool) -> Self {
         Prim::Bool { value }
+    }
+
+    pub fn character(value: char) -> Self {
+        Prim::Char { value }
     }
 
     pub fn string(value: String) -> Self {
@@ -278,6 +284,14 @@ impl Prim {
         match self {
             Prim::String { value } => Some(value.as_str()),
             _ => None,
+        }
+    }
+
+    pub fn as_char(&self) -> Option<char> {
+        if let Prim::Char { value } = self {
+            Some(*value)
+        } else {
+            None
         }
     }
 }
