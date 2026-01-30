@@ -1,0 +1,11 @@
+impl Show for S{
+  fn show(self/0: S) -> string {
+      "S(" + (int32_to_string : (int32) -> string)((self/0 : S).value) + ")";
+  }
+}
+
+fn main() -> unit {
+    let s/1: S = S { value: 7 };
+    (string_println : (string) -> unit)((Show::show : (S) -> string)((s/1 : S)));
+    ();
+}

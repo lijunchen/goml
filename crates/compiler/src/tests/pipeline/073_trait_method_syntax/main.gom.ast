@@ -1,0 +1,19 @@
+package Main
+struct S {
+    value: int32,
+}
+
+impl Show for S {
+  fn show(self: S) -> string {
+    "S(" + int32_to_string(self.value) + ")";
+  }
+}
+
+fn main() -> unit {
+  let s = S {
+      value: 7
+  };
+  string_println(s.show());
+  ();
+}
+

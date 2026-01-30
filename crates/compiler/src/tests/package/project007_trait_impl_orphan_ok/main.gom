@@ -1,9 +1,9 @@
 package Main
-import TraitPkg
-import DataPkg
+use TraitPkg::Show
+use DataPkg
 
 fn main() -> unit {
     let item = DataPkg::Item { value: 7 };
-    let s = TraitPkg::Show::show(item);
+    let s = item.show();
     string_println(s)
 }
