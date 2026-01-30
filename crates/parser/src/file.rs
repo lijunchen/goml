@@ -302,7 +302,7 @@ fn impl_has_trait(p: &mut Parser) -> bool {
 fn impl_block_with_marker(p: &mut Parser, m: MarkerOpened) {
     p.expect(T![impl]);
     if p.at(T!['[']) {
-        generic_list(p, false);
+        generic_list(p, true);
     }
     if impl_has_trait(p) {
         parse_path_always(p);

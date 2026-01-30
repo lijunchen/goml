@@ -231,6 +231,7 @@ pub struct TraitMethodSignature {
 pub struct ImplBlock {
     pub attrs: Vec<Attribute>,
     pub generics: Vec<AstIdent>,
+    pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
     pub trait_name: Option<Path>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,

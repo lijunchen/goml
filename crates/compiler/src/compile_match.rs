@@ -154,6 +154,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TArray { elem, .. } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
+        Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
         Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
     }
 }
@@ -226,6 +227,10 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
         },
         Ty::TRef { elem } => Ty::TRef {
             elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::THashMap { key, value } => Ty::THashMap {
+            key: Box::new(substitute_ty_params(key, subst)),
+            value: Box::new(substitute_ty_params(value, subst)),
         },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params
@@ -1161,6 +1166,7 @@ fn compile_rows(
         ),
         Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
         Ty::TVec { .. } => panic!("Matching on Vec types is not supported"),
+        Ty::THashMap { .. } => panic!("Matching on HashMap types is not supported"),
         Ty::TFunc { .. } => unreachable!(),
         Ty::TParam { .. } => unreachable!(),
         Ty::TRef { .. } => panic!("Matching on reference types is not supported"),

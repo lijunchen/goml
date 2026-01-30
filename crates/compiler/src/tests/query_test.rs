@@ -118,6 +118,13 @@ fn main() {
                 ),
             },
             ValueCompletionItem {
+                name: "string_hash",
+                kind: Function,
+                detail: Some(
+                    "(string) -> uint64",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string_len",
                 kind: Function,
                 detail: Some(

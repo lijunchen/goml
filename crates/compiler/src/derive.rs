@@ -9,7 +9,12 @@ const TO_STRING_TRAIT: &str = "ToString";
 const TO_STRING_FN: &str = "to_string";
 const TO_JSON_TRAIT: &str = "ToJson";
 const TO_JSON_FN: &str = "to_json";
+const HASH_TRAIT: &str = "Hash";
+const HASH_FN: &str = "hash";
+const EQ_TRAIT: &str = "Eq";
+const EQ_FN: &str = "eq";
 const SELF_PARAM_NAME: &str = "self";
+const OTHER_PARAM_NAME: &str = "other";
 
 pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
     let mut diagnostics = Diagnostics::new();
@@ -34,6 +39,18 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
                         Err(diag) => diagnostics.push(diag),
                     }
                 }
+                if let Some(attr_ptr) = find_derive_attr(&struct_def.attrs, EQ_TRAIT) {
+                    match derive_struct_eq(struct_def, &attr_ptr) {
+                        Ok(impl_block) => derived_impls.push(impl_block),
+                        Err(diag) => diagnostics.push(diag),
+                    }
+                }
+                if let Some(attr_ptr) = find_derive_attr(&struct_def.attrs, HASH_TRAIT) {
+                    match derive_struct_hash(struct_def, &attr_ptr) {
+                        Ok(impl_block) => derived_impls.push(impl_block),
+                        Err(diag) => diagnostics.push(diag),
+                    }
+                }
             }
             Item::EnumDef(enum_def) => {
                 if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, TO_STRING_TRAIT) {
@@ -44,6 +61,18 @@ pub fn expand(ast: ast::File) -> Result<ast::File, Diagnostics> {
                 }
                 if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, TO_JSON_TRAIT) {
                     match derive_enum_tojson(enum_def, &attr_ptr) {
+                        Ok(impl_block) => derived_impls.push(impl_block),
+                        Err(diag) => diagnostics.push(diag),
+                    }
+                }
+                if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, EQ_TRAIT) {
+                    match derive_enum_eq(enum_def, &attr_ptr) {
+                        Ok(impl_block) => derived_impls.push(impl_block),
+                        Err(diag) => diagnostics.push(diag),
+                    }
+                }
+                if let Some(attr_ptr) = find_derive_attr(&enum_def.attrs, HASH_TRAIT) {
+                    match derive_enum_hash(enum_def, &attr_ptr) {
                         Ok(impl_block) => derived_impls.push(impl_block),
                         Err(diag) => diagnostics.push(diag),
                     }
@@ -126,6 +155,7 @@ fn derive_struct_tostring(
     Ok(ImplBlock {
         attrs: Vec::new(),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
@@ -153,6 +183,7 @@ fn derive_enum_tostring(
     Ok(ImplBlock {
         attrs: Vec::new(),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
@@ -187,6 +218,7 @@ fn derive_struct_tojson(
     Ok(ImplBlock {
         attrs: Vec::new(),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         trait_name: None,
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
@@ -214,7 +246,155 @@ fn derive_enum_tojson(
     Ok(ImplBlock {
         attrs: Vec::new(),
         generics: Vec::new(),
+        generic_bounds: Vec::new(),
         trait_name: None,
+        for_type: ty_for_ident(&enum_def.name),
+        methods: vec![method],
+    })
+}
+
+fn derive_struct_eq(
+    struct_def: &StructDef,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Result<ImplBlock, Diagnostic> {
+    if !struct_def.generics.is_empty() {
+        return Err(generic_not_supported_other(
+            EQ_TRAIT,
+            "struct",
+            &struct_def.name,
+            attr_ptr,
+        ));
+    }
+
+    let method = ast::Fn {
+        attrs: Vec::new(),
+        name: AstIdent::new(EQ_FN),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        params: vec![
+            (
+                AstIdent::new(SELF_PARAM_NAME),
+                ty_for_ident(&struct_def.name),
+            ),
+            (
+                AstIdent::new(OTHER_PARAM_NAME),
+                ty_for_ident(&struct_def.name),
+            ),
+        ],
+        ret_ty: Some(ast::TypeExpr::TBool),
+        body: build_struct_eq_body(struct_def, attr_ptr),
+    };
+
+    Ok(ImplBlock {
+        attrs: Vec::new(),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        trait_name: Some(Path::from_ident(AstIdent::new(EQ_TRAIT))),
+        for_type: ty_for_ident(&struct_def.name),
+        methods: vec![method],
+    })
+}
+
+fn derive_enum_eq(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Result<ImplBlock, Diagnostic> {
+    if !enum_def.generics.is_empty() {
+        return Err(generic_not_supported_other(
+            EQ_TRAIT,
+            "enum",
+            &enum_def.name,
+            attr_ptr,
+        ));
+    }
+
+    let method = ast::Fn {
+        attrs: Vec::new(),
+        name: AstIdent::new(EQ_FN),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        params: vec![
+            (AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name)),
+            (
+                AstIdent::new(OTHER_PARAM_NAME),
+                ty_for_ident(&enum_def.name),
+            ),
+        ],
+        ret_ty: Some(ast::TypeExpr::TBool),
+        body: build_enum_eq_body(enum_def, attr_ptr),
+    };
+
+    Ok(ImplBlock {
+        attrs: Vec::new(),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        trait_name: Some(Path::from_ident(AstIdent::new(EQ_TRAIT))),
+        for_type: ty_for_ident(&enum_def.name),
+        methods: vec![method],
+    })
+}
+
+fn derive_struct_hash(
+    struct_def: &StructDef,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Result<ImplBlock, Diagnostic> {
+    if !struct_def.generics.is_empty() {
+        return Err(generic_not_supported_other(
+            HASH_TRAIT,
+            "struct",
+            &struct_def.name,
+            attr_ptr,
+        ));
+    }
+
+    let method = ast::Fn {
+        attrs: Vec::new(),
+        name: AstIdent::new(HASH_FN),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        params: vec![(
+            AstIdent::new(SELF_PARAM_NAME),
+            ty_for_ident(&struct_def.name),
+        )],
+        ret_ty: Some(ast::TypeExpr::TUint64),
+        body: build_struct_hash_body(struct_def, attr_ptr),
+    };
+
+    Ok(ImplBlock {
+        attrs: Vec::new(),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        trait_name: Some(Path::from_ident(AstIdent::new(HASH_TRAIT))),
+        for_type: ty_for_ident(&struct_def.name),
+        methods: vec![method],
+    })
+}
+
+fn derive_enum_hash(
+    enum_def: &EnumDef,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Result<ImplBlock, Diagnostic> {
+    if !enum_def.generics.is_empty() {
+        return Err(generic_not_supported_other(
+            HASH_TRAIT,
+            "enum",
+            &enum_def.name,
+            attr_ptr,
+        ));
+    }
+
+    let method = ast::Fn {
+        attrs: Vec::new(),
+        name: AstIdent::new(HASH_FN),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
+        ret_ty: Some(ast::TypeExpr::TUint64),
+        body: build_enum_hash_body(enum_def, attr_ptr),
+    };
+
+    Ok(ImplBlock {
+        attrs: Vec::new(),
+        generics: Vec::new(),
+        generic_bounds: Vec::new(),
+        trait_name: Some(Path::from_ident(AstIdent::new(HASH_TRAIT))),
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })
@@ -504,6 +684,274 @@ fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
     }
 }
 
+fn build_struct_eq_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    let self_var = var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr);
+    let other_var = var_expr(&AstIdent::new(OTHER_PARAM_NAME), attr_ptr);
+
+    let mut out = Expr::EBool {
+        value: true,
+        astptr: *attr_ptr,
+    };
+
+    for (field_name, _field_ty) in struct_def.fields.iter() {
+        let lhs = Expr::EField {
+            expr: Box::new(self_var.clone()),
+            field: field_name.clone(),
+            astptr: *attr_ptr,
+        };
+        let rhs = Expr::EField {
+            expr: Box::new(other_var.clone()),
+            field: field_name.clone(),
+            astptr: *attr_ptr,
+        };
+        let eq = trait_call(EQ_TRAIT, EQ_FN, vec![lhs, rhs], attr_ptr);
+        out = Expr::EBinary {
+            op: common_defs::BinaryOp::And,
+            lhs: Box::new(out),
+            rhs: Box::new(eq),
+            astptr: *attr_ptr,
+        };
+    }
+    out
+}
+
+fn build_enum_eq_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    let self_var = var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr);
+    let other_var = var_expr(&AstIdent::new(OTHER_PARAM_NAME), attr_ptr);
+
+    let scrutinee = Expr::ETuple {
+        items: vec![self_var, other_var],
+        astptr: *attr_ptr,
+    };
+
+    let mut arms = Vec::new();
+
+    for (variant_idx, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
+        let left_bindings: Vec<AstIdent> = (0..fields.len())
+            .map(|idx| AstIdent::new(&format!("__l{}_{}", variant_idx, idx)))
+            .collect();
+        let right_bindings: Vec<AstIdent> = (0..fields.len())
+            .map(|idx| AstIdent::new(&format!("__r{}_{}", variant_idx, idx)))
+            .collect();
+
+        let constr = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
+        let left_pat = Pat::PConstr {
+            constructor: constr.clone(),
+            args: left_bindings
+                .iter()
+                .map(|b| Pat::PVar {
+                    name: b.clone(),
+                    astptr: *attr_ptr,
+                })
+                .collect(),
+            astptr: *attr_ptr,
+        };
+        let right_pat = Pat::PConstr {
+            constructor: constr,
+            args: right_bindings
+                .iter()
+                .map(|b| Pat::PVar {
+                    name: b.clone(),
+                    astptr: *attr_ptr,
+                })
+                .collect(),
+            astptr: *attr_ptr,
+        };
+
+        let pat = Pat::PTuple {
+            pats: vec![left_pat, right_pat],
+            astptr: *attr_ptr,
+        };
+
+        let mut body = Expr::EBool {
+            value: true,
+            astptr: *attr_ptr,
+        };
+        for (l, r) in left_bindings.iter().zip(right_bindings.iter()) {
+            let eq = trait_call(
+                EQ_TRAIT,
+                EQ_FN,
+                vec![var_expr(l, attr_ptr), var_expr(r, attr_ptr)],
+                attr_ptr,
+            );
+            body = Expr::EBinary {
+                op: common_defs::BinaryOp::And,
+                lhs: Box::new(body),
+                rhs: Box::new(eq),
+                astptr: *attr_ptr,
+            };
+        }
+
+        arms.push(Arm { pat, body });
+    }
+
+    arms.push(Arm {
+        pat: Pat::PWild { astptr: *attr_ptr },
+        body: Expr::EBool {
+            value: false,
+            astptr: *attr_ptr,
+        },
+    });
+
+    Expr::EMatch {
+        expr: Box::new(scrutinee),
+        arms,
+        astptr: *attr_ptr,
+    }
+}
+
+fn build_struct_hash_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    let mut exprs = Vec::new();
+    exprs.push(Expr::ELet {
+        pat: Pat::PVar {
+            name: AstIdent::new("h"),
+            astptr: *attr_ptr,
+        },
+        annotation: Some(ast::TypeExpr::TUint64),
+        value: Box::new(Expr::EUInt64 {
+            value: "14695981039346656037".to_string(),
+            astptr: *attr_ptr,
+        }),
+        astptr: *attr_ptr,
+    });
+
+    let self_var = var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr);
+    for (field_name, _field_ty) in struct_def.fields.iter() {
+        let field = Expr::EField {
+            expr: Box::new(self_var.clone()),
+            field: field_name.clone(),
+            astptr: *attr_ptr,
+        };
+        let field_hash = trait_call(HASH_TRAIT, HASH_FN, vec![field], attr_ptr);
+        let h_next = Expr::EBinary {
+            op: common_defs::BinaryOp::Add,
+            lhs: Box::new(Expr::EBinary {
+                op: common_defs::BinaryOp::Mul,
+                lhs: Box::new(var_expr(&AstIdent::new("h"), attr_ptr)),
+                rhs: Box::new(Expr::EUInt64 {
+                    value: "1099511628211".to_string(),
+                    astptr: *attr_ptr,
+                }),
+                astptr: *attr_ptr,
+            }),
+            rhs: Box::new(field_hash),
+            astptr: *attr_ptr,
+        };
+        exprs.push(Expr::ELet {
+            pat: Pat::PVar {
+                name: AstIdent::new("h"),
+                astptr: *attr_ptr,
+            },
+            annotation: None,
+            value: Box::new(h_next),
+            astptr: *attr_ptr,
+        });
+    }
+
+    exprs.push(var_expr(&AstIdent::new("h"), attr_ptr));
+
+    Expr::EBlock {
+        exprs,
+        astptr: *attr_ptr,
+    }
+}
+
+fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    let self_var = Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr));
+    let mut arms = Vec::new();
+
+    for (idx, (variant_name, fields)) in enum_def.variants.iter().enumerate() {
+        let constructor = Path::from_idents(vec![enum_def.name.clone(), variant_name.clone()]);
+        let bindings: Vec<AstIdent> = (0..fields.len())
+            .map(|i| AstIdent::new(&format!("__field{}_{}", idx, i)))
+            .collect();
+        let args = bindings
+            .iter()
+            .map(|binding| Pat::PVar {
+                name: binding.clone(),
+                astptr: *attr_ptr,
+            })
+            .collect();
+
+        let tag = Expr::EUInt64 {
+            value: (idx as u64 + 1).to_string(),
+            astptr: *attr_ptr,
+        };
+
+        let mut exprs = Vec::new();
+        exprs.push(Expr::ELet {
+            pat: Pat::PVar {
+                name: AstIdent::new("h"),
+                astptr: *attr_ptr,
+            },
+            annotation: Some(ast::TypeExpr::TUint64),
+            value: Box::new(Expr::EBinary {
+                op: common_defs::BinaryOp::Add,
+                lhs: Box::new(Expr::EUInt64 {
+                    value: "14695981039346656037".to_string(),
+                    astptr: *attr_ptr,
+                }),
+                rhs: Box::new(tag),
+                astptr: *attr_ptr,
+            }),
+            astptr: *attr_ptr,
+        });
+
+        for binding in bindings.iter() {
+            let field_hash = trait_call(
+                HASH_TRAIT,
+                HASH_FN,
+                vec![var_expr(binding, attr_ptr)],
+                attr_ptr,
+            );
+            let h_next = Expr::EBinary {
+                op: common_defs::BinaryOp::Add,
+                lhs: Box::new(Expr::EBinary {
+                    op: common_defs::BinaryOp::Mul,
+                    lhs: Box::new(var_expr(&AstIdent::new("h"), attr_ptr)),
+                    rhs: Box::new(Expr::EUInt64 {
+                        value: "1099511628211".to_string(),
+                        astptr: *attr_ptr,
+                    }),
+                    astptr: *attr_ptr,
+                }),
+                rhs: Box::new(field_hash),
+                astptr: *attr_ptr,
+            };
+            exprs.push(Expr::ELet {
+                pat: Pat::PVar {
+                    name: AstIdent::new("h"),
+                    astptr: *attr_ptr,
+                },
+                annotation: None,
+                value: Box::new(h_next),
+                astptr: *attr_ptr,
+            });
+        }
+
+        exprs.push(var_expr(&AstIdent::new("h"), attr_ptr));
+        let body = Expr::EBlock {
+            exprs,
+            astptr: *attr_ptr,
+        };
+
+        arms.push(Arm {
+            pat: Pat::PConstr {
+                constructor,
+                args,
+                astptr: *attr_ptr,
+            },
+            body,
+        });
+    }
+
+    Expr::EMatch {
+        expr: self_var,
+        arms,
+        astptr: *attr_ptr,
+    }
+}
+
 fn concat_parts(parts: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Expr {
     let mut iter = parts.into_iter();
     let mut acc = iter.next().unwrap_or(Expr::EString {
@@ -591,6 +1039,25 @@ fn call_function(name: &str, args: Vec<Expr>, attr_ptr: &MySyntaxNodePtr) -> Exp
     }
 }
 
+fn trait_call(
+    trait_name: &str,
+    method_name: &str,
+    args: Vec<Expr>,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Expr {
+    Expr::ECall {
+        func: Box::new(Expr::EPath {
+            path: ast::Path::from_idents(vec![
+                AstIdent::new(trait_name),
+                AstIdent::new(method_name),
+            ]),
+            astptr: *attr_ptr,
+        }),
+        args,
+        astptr: *attr_ptr,
+    }
+}
+
 fn var_expr(name: &AstIdent, attr_ptr: &MySyntaxNodePtr) -> Expr {
     Expr::EPath {
         path: ast::Path::from_ident(name.clone()),
@@ -627,6 +1094,23 @@ fn generic_not_supported_json(
         format!(
             "`#[derive(ToJson)]` is not supported for generic {} `{}`",
             kind, name.0
+        ),
+    )
+    .with_range(attr_ptr.text_range())
+}
+
+fn generic_not_supported_other(
+    trait_name: &str,
+    kind: &str,
+    name: &AstIdent,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Diagnostic {
+    Diagnostic::new(
+        Stage::other(DERIVE_STAGE),
+        Severity::Error,
+        format!(
+            "`#[derive({})]` is not supported for generic {} `{}`",
+            trait_name, kind, name.0
         ),
     )
     .with_range(attr_ptr.text_range())

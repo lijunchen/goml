@@ -201,6 +201,10 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TRef { elem } => tast::Ty::TRef {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(instantiate_self_ty(key, self_ty)),
+            value: Box::new(instantiate_self_ty(value, self_ty)),
+        },
         tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
         tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
             params: params

@@ -63,6 +63,28 @@ extern fn float32_to_string(value: float32) -> string
 #[builtin]
 extern fn float64_to_string(value: float64) -> string
 
+// Hash helpers
+#[builtin]
+extern fn int8_hash(value: int8) -> uint64
+#[builtin]
+extern fn int16_hash(value: int16) -> uint64
+#[builtin]
+extern fn int32_hash(value: int32) -> uint64
+#[builtin]
+extern fn int64_hash(value: int64) -> uint64
+#[builtin]
+extern fn uint8_hash(value: uint8) -> uint64
+#[builtin]
+extern fn uint16_hash(value: uint16) -> uint64
+#[builtin]
+extern fn uint32_hash(value: uint32) -> uint64
+#[builtin]
+extern fn float32_hash(value: float32) -> uint64
+#[builtin]
+extern fn float64_hash(value: float64) -> uint64
+#[builtin]
+extern fn string_hash(value: string) -> uint64
+
 enum Option[T] {
     None,
     Some(T),
@@ -73,6 +95,185 @@ enum Result[T, E] {
     Err(E),
 }
 
+trait Eq {
+    fn eq(Self, Self) -> bool;
+}
+
+trait Hash {
+    fn hash(Self) -> uint64;
+}
+
 trait Show {
     fn show(Self) -> string;
+}
+
+impl Eq for unit {
+    fn eq(self: unit, other: unit) -> bool {
+        true
+    }
+}
+
+impl Eq for bool {
+    fn eq(self: bool, other: bool) -> bool {
+        self == other
+    }
+}
+
+impl Eq for string {
+    fn eq(self: string, other: string) -> bool {
+        self == other
+    }
+}
+
+impl Eq for int8 {
+    fn eq(self: int8, other: int8) -> bool {
+        self == other
+    }
+}
+
+impl Eq for int16 {
+    fn eq(self: int16, other: int16) -> bool {
+        self == other
+    }
+}
+
+impl Eq for int32 {
+    fn eq(self: int32, other: int32) -> bool {
+        self == other
+    }
+}
+
+impl Eq for int64 {
+    fn eq(self: int64, other: int64) -> bool {
+        self == other
+    }
+}
+
+impl Eq for uint8 {
+    fn eq(self: uint8, other: uint8) -> bool {
+        self == other
+    }
+}
+
+impl Eq for uint16 {
+    fn eq(self: uint16, other: uint16) -> bool {
+        self == other
+    }
+}
+
+impl Eq for uint32 {
+    fn eq(self: uint32, other: uint32) -> bool {
+        self == other
+    }
+}
+
+impl Eq for uint64 {
+    fn eq(self: uint64, other: uint64) -> bool {
+        self == other
+    }
+}
+
+impl Eq for float32 {
+    fn eq(self: float32, other: float32) -> bool {
+        self == other
+    }
+}
+
+impl Eq for float64 {
+    fn eq(self: float64, other: float64) -> bool {
+        self == other
+    }
+}
+
+impl Hash for unit {
+    fn hash(self: unit) -> uint64 {
+        0u64
+    }
+}
+
+impl Hash for bool {
+    fn hash(self: bool) -> uint64 {
+        if self { 1u64 } else { 0u64 }
+    }
+}
+
+impl Hash for string {
+    fn hash(self: string) -> uint64 {
+        string_hash(self)
+    }
+}
+
+impl Hash for int8 {
+    fn hash(self: int8) -> uint64 {
+        int8_hash(self)
+    }
+}
+
+impl Hash for int16 {
+    fn hash(self: int16) -> uint64 {
+        int16_hash(self)
+    }
+}
+
+impl Hash for int32 {
+    fn hash(self: int32) -> uint64 {
+        int32_hash(self)
+    }
+}
+
+impl Hash for int64 {
+    fn hash(self: int64) -> uint64 {
+        int64_hash(self)
+    }
+}
+
+impl Hash for uint8 {
+    fn hash(self: uint8) -> uint64 {
+        uint8_hash(self)
+    }
+}
+
+impl Hash for uint16 {
+    fn hash(self: uint16) -> uint64 {
+        uint16_hash(self)
+    }
+}
+
+impl Hash for uint32 {
+    fn hash(self: uint32) -> uint64 {
+        uint32_hash(self)
+    }
+}
+
+impl Hash for uint64 {
+    fn hash(self: uint64) -> uint64 {
+        self
+    }
+}
+
+impl Hash for float32 {
+    fn hash(self: float32) -> uint64 {
+        float32_hash(self)
+    }
+}
+
+impl Hash for float64 {
+    fn hash(self: float64) -> uint64 {
+        float64_hash(self)
+    }
+}
+
+impl [T: Eq] Eq for Ref[T] {
+    fn eq(self: Ref[T], other: Ref[T]) -> bool {
+        let a: T = ref_get(self);
+        let b: T = ref_get(other);
+        Eq::eq(a, b)
+    }
+}
+
+impl [T: Hash] Hash for Ref[T] {
+    fn hash(self: Ref[T]) -> uint64 {
+        let v: T = ref_get(self);
+        Hash::hash(v)
+    }
 }

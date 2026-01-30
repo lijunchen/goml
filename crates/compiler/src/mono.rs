@@ -274,6 +274,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TArray { elem, .. } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
+        Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
         Ty::TFunc { params, ret_ty } => params.iter().any(has_tparam) || has_tparam(ret_ty),
     }
 }
@@ -353,6 +354,10 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         },
         Ty::TRef { elem } => Ty::TRef {
             elem: Box::new(subst_ty(elem, s)),
+        },
+        Ty::THashMap { key, value } => Ty::THashMap {
+            key: Box::new(subst_ty(key, s)),
+            value: Box::new(subst_ty(value, s)),
         },
         Ty::TFunc { params, ret_ty } => Ty::TFunc {
             params: params.iter().map(|t| subst_ty(t, s)).collect(),

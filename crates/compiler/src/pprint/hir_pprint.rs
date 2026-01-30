@@ -638,12 +638,36 @@ impl ImplBlock {
         let mut base = RcDoc::text("impl");
 
         if !self.generics.is_empty() {
+            let mut bounds_by_param: std::collections::HashMap<String, Vec<String>> =
+                std::collections::HashMap::new();
+            for (param, traits) in self.generic_bounds.iter() {
+                bounds_by_param.insert(
+                    param.to_ident_name(),
+                    traits.iter().map(|t| t.display()).collect(),
+                );
+            }
+            let generics_doc: Vec<RcDoc<'a, ()>> = self
+                .generics
+                .iter()
+                .map(|g| {
+                    let name = g.to_ident_name();
+                    if let Some(traits) = bounds_by_param.get(&name)
+                        && !traits.is_empty()
+                    {
+                        RcDoc::text(name)
+                            .append(RcDoc::text(": "))
+                            .append(RcDoc::intersperse(
+                                traits.iter().cloned().map(RcDoc::text),
+                                RcDoc::text(" + "),
+                            ))
+                    } else {
+                        RcDoc::text(name)
+                    }
+                })
+                .collect();
             base = base
                 .append(RcDoc::text("["))
-                .append(RcDoc::intersperse(
-                    self.generics.iter().map(|g| RcDoc::text(g.to_ident_name())),
-                    RcDoc::text(", "),
-                ))
+                .append(RcDoc::intersperse(generics_doc, RcDoc::text(", ")))
                 .append(RcDoc::text("]"));
         }
 

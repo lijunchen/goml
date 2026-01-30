@@ -353,17 +353,30 @@ fn lower_trait_method(
 
 fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBlock> {
     let attrs = lower_attributes(node.attributes());
-    let generics: Vec<ast::AstIdent> = node
-        .generic_list()
-        .map(|list| {
-            list.generics()
-                .flat_map(|x| {
-                    let name = x.uident().unwrap().to_string();
-                    Some(ast::AstIdent::new(&name))
-                })
-                .collect()
-        })
-        .unwrap_or_default();
+    let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
+        node.generic_list()
+            .map(|list| {
+                let mut generics = Vec::new();
+                let mut bounds = Vec::new();
+                for generic in list.generics() {
+                    let Some(token) = generic.uident() else {
+                        continue;
+                    };
+                    let name = token.to_string();
+                    let ident = ast::AstIdent::new(&name);
+                    generics.push(ident.clone());
+
+                    if let Some(trait_set) = generic.trait_set() {
+                        let traits = trait_set
+                            .traits()
+                            .flat_map(|path| lower_path(ctx, &path))
+                            .collect::<Vec<_>>();
+                        bounds.push((ident, traits));
+                    }
+                }
+                (generics, bounds)
+            })
+            .unwrap_or_default();
     let trait_name = node.trait_path().and_then(|path| lower_path(ctx, &path));
     let for_type = match node.for_type().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
@@ -382,6 +395,7 @@ fn lower_impl_block(ctx: &mut LowerCtx, node: cst::Impl) -> Option<ast::ImplBloc
     Some(ast::ImplBlock {
         attrs,
         generics,
+        generic_bounds,
         trait_name,
         for_type,
         methods,

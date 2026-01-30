@@ -7,11 +7,11 @@ trait Debug {
   fn show(Self) -> string;
 }
 
-trait Eq {
+trait MyEq {
   fn eq(Self, Self) -> bool;
 }
 
-trait Hash {
+trait MyHash {
   fn hash(Self) -> int32;
 }
 
@@ -43,13 +43,13 @@ impl Debug for int32 {
   }
 }
 
-impl Eq for int32 {
+impl MyEq for int32 {
   fn eq(self: int32, other: int32) -> bool {
     self == other;
   }
 }
 
-impl Hash for int32 {
+impl MyHash for int32 {
   fn hash(self: int32) -> int32 {
     self * 16777619 + 216613626;
   }
@@ -85,13 +85,13 @@ impl Debug for Boxed {
   }
 }
 
-impl Eq for Boxed {
+impl MyEq for Boxed {
   fn eq(self: Boxed, other: Boxed) -> bool {
     self.value == other.value;
   }
 }
 
-impl Hash for Boxed {
+impl MyHash for Boxed {
   fn hash(self: Boxed) -> int32 {
     self.value * 31 + 7 * 1315423911;
   }
@@ -144,7 +144,7 @@ fn combine_scaled(a: T, b: T, factor: int32) -> T {
 }
 
 fn report_pair(tag: Q, a: T, b: T, combined: T) -> string {
-  let same = Eq::eq(a, b);
+  let same = MyEq::eq(a, b);
   let header = tag_text(tag);
   let repr = show_both(combined);
   let h = combined.hash();
