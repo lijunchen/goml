@@ -159,7 +159,9 @@ fn dce_block_with_live(
                 out.push(ast::Stmt::Return { expr });
             }
             ast::Stmt::Loop { body } => {
-                let (body_block, body_live_in) = dce_block_with_live(body, &live);
+                let mut loop_live_out = live.clone();
+                loop_live_out.extend(free_vars_in_block(&body));
+                let (body_block, body_live_in) = dce_block_with_live(body, &loop_live_out);
                 live.extend(body_live_in);
                 needs_decl.extend(assigned_vars_in_block(&body_block));
                 out.push(ast::Stmt::Loop { body: body_block });

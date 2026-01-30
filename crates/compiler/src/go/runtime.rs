@@ -35,7 +35,7 @@ fn ty_contains_type_param(ty: &tast::Ty) -> bool {
 // println(s : string) struct{}
 // missing(s : string) struct{}
 pub fn make_runtime() -> Vec<goast::Item> {
-    vec![
+    let mut items = vec![
         Item::Package(Package {
             name: "main".to_string(),
         }),
@@ -80,7 +80,194 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_print()),
         Item::Fn(string_println()),
         Item::Fn(missing()),
-    ]
+    ];
+    items.extend(make_builtin_eq_hash_trait_impls());
+    items
+}
+
+fn make_builtin_eq_hash_trait_impls() -> Vec<goast::Item> {
+    fn eq_impl(ty: tast::Ty) -> goast::Item {
+        let go_ty = goast::tast_ty_to_go_type(&ty);
+        let name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Eq".to_string()),
+            &ty,
+            "eq",
+        ));
+        goast::Item::Fn(goast::Fn {
+            name,
+            params: vec![
+                ("self".to_string(), go_ty.clone()),
+                ("other".to_string(), go_ty.clone()),
+            ],
+            ret_ty: Some(goty::GoType::TBool),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(goast::Expr::Var {
+                            name: "self".to_string(),
+                            ty: go_ty.clone(),
+                        }),
+                        rhs: Box::new(goast::Expr::Var {
+                            name: "other".to_string(),
+                            ty: go_ty.clone(),
+                        }),
+                        ty: goty::GoType::TBool,
+                    }),
+                }],
+            },
+        })
+    }
+
+    fn hash_impl(ty: tast::Ty, body_expr: goast::Expr) -> goast::Item {
+        let go_ty = goast::tast_ty_to_go_type(&ty);
+        let name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Hash".to_string()),
+            &ty,
+            "hash",
+        ));
+        goast::Item::Fn(goast::Fn {
+            name,
+            params: vec![("self".to_string(), go_ty)],
+            ret_ty: Some(goty::GoType::TUint64),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(body_expr),
+                }],
+            },
+        })
+    }
+
+    fn hash_call(hash_fn: &str, param_ty: goty::GoType) -> goast::Expr {
+        goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: hash_fn.to_string(),
+                ty: goty::GoType::TFunc {
+                    params: vec![param_ty.clone()],
+                    ret_ty: Box::new(goty::GoType::TUint64),
+                },
+            }),
+            args: vec![goast::Expr::Var {
+                name: "self".to_string(),
+                ty: param_ty,
+            }],
+            ty: goty::GoType::TUint64,
+        }
+    }
+
+    let eq_tys = vec![
+        tast::Ty::TUnit,
+        tast::Ty::TBool,
+        tast::Ty::TString,
+        tast::Ty::TInt8,
+        tast::Ty::TInt16,
+        tast::Ty::TInt32,
+        tast::Ty::TInt64,
+        tast::Ty::TUint8,
+        tast::Ty::TUint16,
+        tast::Ty::TUint32,
+        tast::Ty::TUint64,
+        tast::Ty::TFloat32,
+        tast::Ty::TFloat64,
+    ];
+
+    let mut items = Vec::new();
+    for ty in eq_tys {
+        items.push(eq_impl(ty));
+    }
+
+    items.push(hash_impl(
+        tast::Ty::TUnit,
+        goast::Expr::Int {
+            value: "0".to_string(),
+            ty: goty::GoType::TUint64,
+        },
+    ));
+    items.push(goast::Item::Fn({
+        let name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Hash".to_string()),
+            &tast::Ty::TBool,
+            "hash",
+        ));
+        goast::Fn {
+            name,
+            params: vec![("self".to_string(), goty::GoType::TBool)],
+            ret_ty: Some(goty::GoType::TUint64),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::If {
+                    cond: goast::Expr::Var {
+                        name: "self".to_string(),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Int {
+                                value: "1".to_string(),
+                                ty: goty::GoType::TUint64,
+                            }),
+                        }],
+                    },
+                    else_: Some(goast::Block {
+                        stmts: vec![goast::Stmt::Return {
+                            expr: Some(goast::Expr::Int {
+                                value: "0".to_string(),
+                                ty: goty::GoType::TUint64,
+                            }),
+                        }],
+                    }),
+                }],
+            },
+        }
+    }));
+    items.push(hash_impl(
+        tast::Ty::TString,
+        hash_call("string_hash", goty::GoType::TString),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TInt8,
+        hash_call("int8_hash", goty::GoType::TInt8),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TInt16,
+        hash_call("int16_hash", goty::GoType::TInt16),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TInt32,
+        hash_call("int32_hash", goty::GoType::TInt32),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TInt64,
+        hash_call("int64_hash", goty::GoType::TInt64),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TUint8,
+        hash_call("uint8_hash", goty::GoType::TUint8),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TUint16,
+        hash_call("uint16_hash", goty::GoType::TUint16),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TUint32,
+        hash_call("uint32_hash", goty::GoType::TUint32),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TUint64,
+        goast::Expr::Var {
+            name: "self".to_string(),
+            ty: goty::GoType::TUint64,
+        },
+    ));
+    items.push(hash_impl(
+        tast::Ty::TFloat32,
+        hash_call("float32_hash", goty::GoType::TFloat32),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TFloat64,
+        hash_call("float64_hash", goty::GoType::TFloat64),
+    ));
+
+    items
 }
 
 pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
@@ -281,6 +468,112 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
         items.push(goast::Item::Fn(new_fn));
         items.push(goast::Item::Fn(get_fn));
         items.push(goast::Item::Fn(set_fn));
+
+        let eq_name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Eq".to_string()),
+            ty,
+            "eq",
+        ));
+        let hash_name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Hash".to_string()),
+            ty,
+            "hash",
+        ));
+        let inner_eq_name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Eq".to_string()),
+            elem,
+            "eq",
+        ));
+        let inner_hash_name = go_ident(&trait_impl_fn_name(
+            &tast::TastIdent("Hash".to_string()),
+            elem,
+            "hash",
+        ));
+        let ref_get_name = ref_helper_fn_name("ref_get", ty);
+        let inner_eq_fn_ty = goty::GoType::TFunc {
+            params: vec![elem_go_ty.clone(), elem_go_ty.clone()],
+            ret_ty: Box::new(goty::GoType::TBool),
+        };
+        let inner_hash_fn_ty = goty::GoType::TFunc {
+            params: vec![elem_go_ty.clone()],
+            ret_ty: Box::new(goty::GoType::TUint64),
+        };
+        let ref_get_fn_ty = goty::GoType::TFunc {
+            params: vec![ref_go_ty.clone()],
+            ret_ty: Box::new(elem_go_ty.clone()),
+        };
+
+        items.push(goast::Item::Fn(goast::Fn {
+            name: eq_name,
+            params: vec![
+                ("self".to_string(), ref_go_ty.clone()),
+                ("other".to_string(), ref_go_ty.clone()),
+            ],
+            ret_ty: Some(goty::GoType::TBool),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: inner_eq_name,
+                            ty: inner_eq_fn_ty.clone(),
+                        }),
+                        args: vec![
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: ref_get_name.clone(),
+                                    ty: ref_get_fn_ty.clone(),
+                                }),
+                                args: vec![goast::Expr::Var {
+                                    name: "self".to_string(),
+                                    ty: ref_go_ty.clone(),
+                                }],
+                                ty: elem_go_ty.clone(),
+                            },
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: ref_get_name.clone(),
+                                    ty: ref_get_fn_ty.clone(),
+                                }),
+                                args: vec![goast::Expr::Var {
+                                    name: "other".to_string(),
+                                    ty: ref_go_ty.clone(),
+                                }],
+                                ty: elem_go_ty.clone(),
+                            },
+                        ],
+                        ty: goty::GoType::TBool,
+                    }),
+                }],
+            },
+        }));
+
+        items.push(goast::Item::Fn(goast::Fn {
+            name: hash_name,
+            params: vec![("self".to_string(), ref_go_ty.clone())],
+            ret_ty: Some(goty::GoType::TUint64),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: inner_hash_name,
+                            ty: inner_hash_fn_ty.clone(),
+                        }),
+                        args: vec![goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: ref_get_name,
+                                ty: ref_get_fn_ty,
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "self".to_string(),
+                                ty: ref_go_ty,
+                            }],
+                            ty: elem_go_ty,
+                        }],
+                        ty: goty::GoType::TUint64,
+                    }),
+                }],
+            },
+        }));
     }
 
     items
