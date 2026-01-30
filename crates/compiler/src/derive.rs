@@ -156,7 +156,7 @@ fn derive_struct_tostring(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: None,
+        trait_name: Some(Path::from_ident(AstIdent::new(TO_STRING_TRAIT))),
         for_type: ty_for_ident(&struct_def.name),
         methods: vec![method],
     })
@@ -184,7 +184,7 @@ fn derive_enum_tostring(
         attrs: Vec::new(),
         generics: Vec::new(),
         generic_bounds: Vec::new(),
-        trait_name: None,
+        trait_name: Some(Path::from_ident(AstIdent::new(TO_STRING_TRAIT))),
         for_type: ty_for_ident(&enum_def.name),
         methods: vec![method],
     })

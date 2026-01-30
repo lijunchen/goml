@@ -6,7 +6,7 @@ enum Color {
     Blue
 }
 
-impl Color {
+impl ToString for Color {
   fn to_string(self: Color) -> string {
     match self {
         Color::Red => "Color::Red",
@@ -23,7 +23,7 @@ struct Point {
     color: Color,
 }
 
-impl Point {
+impl ToString for Point {
   fn to_string(self: Point) -> string {
     let Point { x: x, y: y, color: color } = self;
     "Point { " + "x: " + x.to_string() + ", " + "y: " + y.to_string() + ", " + "color: " + color.to_string() + " }";
@@ -47,7 +47,7 @@ struct Line {
     color: Color,
 }
 
-impl Line {
+impl ToString for Line {
   fn to_string(self: Line) -> string {
     let Line { from: from, to: to, color: color } = self;
     "Line { " + "from: " + from.to_string() + ", " + "to: " + to.to_string() + ", " + "color: " + color.to_string() + " }";
@@ -70,7 +70,7 @@ enum LineList {
     Cons(Line, LineList)
 }
 
-impl LineList {
+impl ToString for LineList {
   fn to_string(self: LineList) -> string {
     match self {
         LineList::Nil => "LineList::Nil",

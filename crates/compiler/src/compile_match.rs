@@ -1613,8 +1613,8 @@ fn compile_expr(
                 };
 
                 let show = core::Expr::ETraitCall {
-                    trait_name: TastIdent("Show".to_string()),
-                    method_name: TastIdent("show".to_string()),
+                    trait_name: TastIdent("ToString".to_string()),
+                    method_name: TastIdent("to_string".to_string()),
                     receiver: Box::new(arg.clone()),
                     args: vec![],
                     ty: Ty::TString,
@@ -1676,7 +1676,9 @@ fn compile_expr(
                     .split_first()
                     .expect("trait call expects a receiver argument");
                 let for_ty = receiver.get_ty();
-                if (trait_name.0 == "Show" && method_name.0 == "show") || has_tparam(&for_ty) {
+                if (trait_name.0 == "ToString" && method_name.0 == "to_string")
+                    || has_tparam(&for_ty)
+                {
                     return core::Expr::ETraitCall {
                         trait_name: trait_name.clone(),
                         method_name: method_name.clone(),

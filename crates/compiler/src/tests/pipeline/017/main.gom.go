@@ -26,40 +26,28 @@ type Tuple2_int32_int32 struct {
     _1 int32
 }
 
-func _goml_trait_impl_ToString_int32_to_string(self__0 int32) string {
+func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple2_int32_int32) string {
     var ret6 string
-    ret6 = int32_to_string(self__0)
+    ret6 = "(?, ?)"
     return ret6
 }
 
-func _goml_trait_impl_ToString_bool_to_string(self__1 bool) string {
-    var ret7 string
-    ret7 = bool_to_string(self__1)
-    return ret7
-}
-
-func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__2 Tuple2_int32_int32) string {
-    var ret8 string
-    ret8 = "(?, ?)"
-    return ret8
-}
-
 func main0() struct{} {
-    var ret9 struct{}
-    var x__3 int32 = 123
-    var t3 string = _goml_trait_impl_ToString_int32_to_string(x__3)
+    var ret7 struct{}
+    var x__1 int32 = 123
+    var t3 string = int32_to_string(x__1)
     string_println(t3)
-    var x__4 bool = true
-    var t4 string = _goml_trait_impl_ToString_bool_to_string(x__4)
+    var x__2 bool = true
+    var t4 string = bool_to_string(x__2)
     string_println(t4)
-    var x__5 Tuple2_int32_int32 = Tuple2_int32_int32{
+    var x__3 Tuple2_int32_int32 = Tuple2_int32_int32{
         _0: 3,
         _1: 4,
     }
-    var t5 string = _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(x__5)
+    var t5 string = _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(x__3)
     string_println(t5)
-    ret9 = struct{}{}
-    return ret9
+    ret7 = struct{}{}
+    return ret7
 }
 
 func main() {

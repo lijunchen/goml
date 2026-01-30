@@ -16,9 +16,21 @@ func int32_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
 
+func int32_hash(x int32) uint64 {
+    return uint64(x)
+}
+
 func string_println(s string) struct{} {
     fmt.Println(s)
     return struct{}{}
+}
+
+func _goml_trait_impl_Eq_int32_eq(self int32, other int32) bool {
+    return self == other
+}
+
+func _goml_trait_impl_Hash_int32_hash(self int32) uint64 {
+    return int32_hash(self)
 }
 
 type ref_point_x struct {
@@ -31,6 +43,18 @@ func ref__Ref_Point(value Point) *ref_point_x {
     }
 }
 
+func ref_get__Ref_Point(reference *ref_point_x) Point {
+    return reference.value
+}
+
+func _goml_trait_impl_Eq_Ref_x5b_Point_x5d__eq(self *ref_point_x, other *ref_point_x) bool {
+    return _goml_trait_impl_Eq_Point_eq(ref_get__Ref_Point(self), ref_get__Ref_Point(other))
+}
+
+func _goml_trait_impl_Hash_Ref_x5b_Point_x5d__hash(self *ref_point_x) uint64 {
+    return _goml_trait_impl_Hash_Point_hash(ref_get__Ref_Point(self))
+}
+
 type ref_key_x struct {
     value Key
 }
@@ -39,6 +63,18 @@ func ref__Ref_Key(value Key) *ref_key_x {
     return &ref_key_x{
         value: value,
     }
+}
+
+func ref_get__Ref_Key(reference *ref_key_x) Key {
+    return reference.value
+}
+
+func _goml_trait_impl_Eq_Ref_x5b_Key_x5d__eq(self *ref_key_x, other *ref_key_x) bool {
+    return _goml_trait_impl_Eq_Key_eq(ref_get__Ref_Key(self), ref_get__Ref_Key(other))
+}
+
+func _goml_trait_impl_Hash_Ref_x5b_Key_x5d__hash(self *ref_key_x) uint64 {
+    return _goml_trait_impl_Hash_Key_hash(ref_get__Ref_Key(self))
 }
 
 type hashmap_key_int32_x_entry struct {
@@ -83,6 +119,7 @@ func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int
                 _0: entry.value,
             }
         }
+        i = i + 1
     }
     return None{}
 }
@@ -103,6 +140,7 @@ func hashmap_set__HashMap_Key_int32(m *hashmap_key_int32_x, key Key, value int32
             bucket[i].value = value
             return struct{}{}
         }
+        i = i + 1
     }
     bucket = append(bucket, hashmap_key_int32_x_entry{
         active: true,
@@ -131,6 +169,7 @@ func hashmap_remove__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) struct{}
             m.len = m.len - 1
             return struct{}{}
         }
+        i = i + 1
     }
     return struct{}{}
 }
@@ -150,6 +189,7 @@ func hashmap_contains__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) bool {
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
             return true
         }
+        i = i + 1
     }
     return false
 }
@@ -189,6 +229,7 @@ func hashmap_get__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref
                 _0: entry.value,
             }
         }
+        i = i + 1
     }
     return None{}
 }
@@ -209,6 +250,7 @@ func hashmap_set__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref
             bucket[i].value = value
             return struct{}{}
         }
+        i = i + 1
     }
     bucket = append(bucket, hashmap_ref_point_int32_x_entry{
         active: true,
@@ -255,6 +297,7 @@ func hashmap_get__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key
                 _0: entry.value,
             }
         }
+        i = i + 1
     }
     return None{}
 }
@@ -275,6 +318,7 @@ func hashmap_set__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key
             bucket[i].value = value
             return struct{}{}
         }
+        i = i + 1
     }
     bucket = append(bucket, hashmap_ref_key_int32_x_entry{
         active: true,
