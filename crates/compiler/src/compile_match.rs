@@ -306,7 +306,9 @@ fn compile_constructor_cases(
     mut cases: Vec<ConstructorCase>,
     ty: &Ty,
     match_range: Option<TextRange>,
+    variant_names: &[String],
 ) -> Vec<core::Arm> {
+    let mut has_wildcard = false;
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
             if let Pat::PConstr {
@@ -334,9 +336,31 @@ fn compile_constructor_cases(
                 unreachable!()
             }
         } else {
+            has_wildcard = true;
             for ConstructorCase { rows, .. } in &mut cases {
                 rows.push(row.clone())
             }
+        }
+    }
+
+    if !has_wildcard {
+        let missing: Vec<&str> = cases
+            .iter()
+            .enumerate()
+            .filter(|(_, case)| case.rows.is_empty())
+            .map(|(i, _)| variant_names[i].as_str())
+            .collect();
+
+        if !missing.is_empty() {
+            let message = format!(
+                "non-exhaustive match: missing pattern{} {}",
+                if missing.len() > 1 { "s" } else { "" },
+                missing.join(", ")
+            );
+            diagnostics.push(
+                Diagnostic::new(Stage::other("compile"), Severity::Error, message)
+                    .with_range(match_range),
+            );
         }
     }
 
@@ -381,6 +405,12 @@ fn compile_enum_case(
     for (param, arg) in tydef.generics.iter().zip(type_args.iter()) {
         subst.insert(param.0.clone(), arg.clone());
     }
+
+    let variant_names: Vec<String> = tydef
+        .variants
+        .iter()
+        .map(|(variant, _)| variant.0.clone())
+        .collect();
 
     let cases: Vec<ConstructorCase> = tydef
         .variants
@@ -433,6 +463,7 @@ fn compile_enum_case(
         cases,
         ty,
         match_range,
+        &variant_names,
     );
 
     let mut new_arms = vec![];
@@ -648,6 +679,7 @@ fn compile_bool_case(
 
     let mut true_rows = vec![];
     let mut false_rows = vec![];
+    let mut has_wildcard = false;
     for mut r in rows {
         if let Some(col) = r.remove_column(&bvar.name) {
             match col.pat {
@@ -658,13 +690,43 @@ fn compile_bool_case(
                         false_rows.push(r);
                     }
                 }
+                Pat::PWild { .. } => {
+                    has_wildcard = true;
+                    true_rows.push(r.clone());
+                    false_rows.push(r);
+                }
                 _ => unreachable!("expected bool pattern"),
             }
         } else {
+            has_wildcard = true;
             true_rows.push(r.clone());
             false_rows.push(r);
         }
     }
+
+    let missing_true = true_rows.is_empty();
+    let missing_false = false_rows.is_empty();
+
+    if !has_wildcard && (missing_true || missing_false) {
+        let missing: Vec<&str> = [
+            if missing_true { Some("true") } else { None },
+            if missing_false { Some("false") } else { None },
+        ]
+        .into_iter()
+        .flatten()
+        .collect();
+
+        let message = format!(
+            "non-exhaustive match: missing pattern{}{}",
+            if missing.len() > 1 { "s " } else { " " },
+            missing.join(", ")
+        );
+        diagnostics.push(
+            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
+                .with_range(match_range),
+        );
+    }
+
     core::Expr::EMatch {
         expr: Box::new(bvar.to_core()),
         arms: vec![
@@ -883,9 +945,21 @@ where
     }
 
     if default_rows.is_empty() {
+        let type_name = match &literal_ty {
+            Ty::TInt8 => "int8",
+            Ty::TInt16 => "int16",
+            Ty::TInt32 => "int32",
+            Ty::TInt64 => "int64",
+            Ty::TUint8 => "uint8",
+            Ty::TUint16 => "uint16",
+            Ty::TUint32 => "uint32",
+            Ty::TUint64 => "uint64",
+            Ty::TChar => "char",
+            _ => "integer",
+        };
         let message = format!(
-            "non-exhaustive match on integer literal of type {:?}; add a wildcard arm",
-            literal_ty
+            "non-exhaustive match on {} literal; add a wildcard arm `_`",
+            type_name
         );
         diagnostics.push(
             Diagnostic::new(Stage::other("compile"), Severity::Error, message)
@@ -974,6 +1048,15 @@ fn compile_string_case(
         }
     }
 
+    if default_rows.is_empty() {
+        let message = "non-exhaustive match on string literal; add a wildcard arm `_`".to_string();
+        diagnostics.push(
+            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
+                .with_range(match_range),
+        );
+        return emissing(ty);
+    }
+
     let arms = value_rows
         .into_iter()
         .map(|(value, rows)| core::Arm {
@@ -985,18 +1068,14 @@ fn compile_string_case(
         })
         .collect();
 
-    let default = if default_rows.is_empty() {
-        None
-    } else {
-        Some(Box::new(compile_rows(
-            genv,
-            gensym,
-            diagnostics,
-            default_rows,
-            ty,
-            match_range,
-        )))
-    };
+    let default = Some(Box::new(compile_rows(
+        genv,
+        gensym,
+        diagnostics,
+        default_rows,
+        ty,
+        match_range,
+    )));
 
     core::Expr::EMatch {
         expr: Box::new(bvar.to_core()),
