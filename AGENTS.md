@@ -94,8 +94,11 @@ The file extension for goml source files is `.gom`.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`.
-* Literals: boolean, integer/unsigned/floating-point, and string literals. String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
+* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
+* Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+  * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
+  * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
+* String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
 * Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
 
 ### Bindings and Scope
@@ -140,6 +143,12 @@ The file extension for goml source files is `.gom`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
   * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
   * Limitations (current): trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
+
+### Notes on `char`
+
+* Codegen: goml `char` lowers to Go `rune`.
+* Printing: `char` implements `ToString`; `c.to_string()` returns a `string` representation of the code point.
+* Pattern matching: `match` supports `char` scrutinees and `char` literal patterns.
 
 ### Concurrency and Side Effects
 
