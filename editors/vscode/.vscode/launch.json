@@ -1,0 +1,28 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run GoML VS Code Extension",
+            "type": "extensionHost",
+            "request": "launch",
+            "runtimeExecutable": "${execPath}",
+            "args": [
+                "--disable-extensions",
+                "--extensionDevelopmentPath=${workspaceFolder}",
+                "--folder-uri=${workspaceFolder}/../.."
+            ],
+            "outFiles": [
+                "${workspaceFolder}/out/**/*.js"
+            ],
+            "preLaunchTask": "goml: compile (tsc)"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Dev: Extension",
+            "configurations": [
+                "Run GoML VS Code Extension"
+            ]
+        }
+    ]
+}

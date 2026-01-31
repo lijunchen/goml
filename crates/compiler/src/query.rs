@@ -964,3 +964,83 @@ fn find_function_type(genv: &GlobalTypeEnv, segments: &[String]) -> Option<tast:
     }
     best
 }
+
+pub fn goto_definition(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+) -> Result<text_size::TextRange, String> {
+    let result = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
+
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index
+        .offset(line_index::LineCol { line, col })
+        .ok_or_else(|| "failed to get offset from line and column".to_string())?;
+
+    let token = match cst.syntax().token_at_offset(offset) {
+        rowan::TokenAtOffset::None => None,
+        rowan::TokenAtOffset::Single(x) => Some(x),
+        rowan::TokenAtOffset::Between(x, y) => {
+            if x.kind() == MySyntaxKind::Ident {
+                Some(x)
+            } else {
+                Some(y)
+            }
+        }
+    }
+    .ok_or_else(|| "no token at position".to_string())?;
+
+    let (hir_table, results, _genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })?;
+
+    let index = HirResultsIndex::new(&hir_table);
+
+    if let Some(expr_id) = find_mapped_expr_id_from_token(&token, &index) {
+        if let Some(elab) = results.name_ref_elab(expr_id)
+            && let Some(ptr) = name_ref_elab_astptr(elab)
+        {
+            return Ok(ptr.text_range());
+        }
+        if let Some(call_elab) = results.call_elab(expr_id)
+            && let Some(ptr) = callee_elab_astptr(&call_elab.callee)
+        {
+            return Ok(ptr.text_range());
+        }
+    }
+
+    if let Some(local_id) = find_mapped_local_id_from_token(&token, &index)
+        && let Some(ptr) = hir_table.local_origin_ptr(local_id)
+    {
+        return Ok(ptr.text_range());
+    }
+
+    Err("no definition found".to_string())
+}
+
+fn name_ref_elab_astptr(elab: &crate::typer::results::NameRefElab) -> Option<MySyntaxNodePtr> {
+    use crate::typer::results::NameRefElab;
+    match elab {
+        NameRefElab::Var { astptr, .. }
+        | NameRefElab::TraitMethod { astptr, .. }
+        | NameRefElab::DynTraitMethod { astptr, .. }
+        | NameRefElab::InherentMethod { astptr, .. } => *astptr,
+    }
+}
+
+fn callee_elab_astptr(callee: &crate::typer::results::CalleeElab) -> Option<MySyntaxNodePtr> {
+    use crate::typer::results::CalleeElab;
+    match callee {
+        CalleeElab::Var { astptr, .. }
+        | CalleeElab::TraitMethod { astptr, .. }
+        | CalleeElab::DynTraitMethod { astptr, .. }
+        | CalleeElab::InherentMethod { astptr, .. }
+        | CalleeElab::Error { astptr, .. } => *astptr,
+        CalleeElab::Expr(_) => None,
+    }
+}

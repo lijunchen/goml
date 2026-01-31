@@ -1,0 +1,144 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "GoML",
+    "scopeName": "source.goml",
+    "patterns": [
+        {
+            "include": "#comments"
+        },
+        {
+            "include": "#strings"
+        },
+        {
+            "include": "#chars"
+        },
+        {
+            "include": "#numbers"
+        },
+        {
+            "include": "#keywords"
+        },
+        {
+            "include": "#types"
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#operators"
+        }
+    ],
+    "repository": {
+        "comments": {
+            "patterns": [
+                {
+                    "name": "comment.line.double-slash.goml",
+                    "match": "//.*$"
+                },
+                {
+                    "name": "comment.block.goml",
+                    "begin": "/\\*",
+                    "end": "\\*/"
+                }
+            ]
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.double.goml",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.goml",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "chars": {
+            "patterns": [
+                {
+                    "name": "string.quoted.single.goml",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.goml",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "numbers": {
+            "patterns": [
+                {
+                    "name": "constant.numeric.float.goml",
+                    "match": "\\b[0-9]+\\.[0-9]+([eE][+-]?[0-9]+)?\\b"
+                },
+                {
+                    "name": "constant.numeric.integer.goml",
+                    "match": "\\b[0-9]+\\b"
+                }
+            ]
+        },
+        "keywords": {
+            "patterns": [
+                {
+                    "name": "keyword.control.goml",
+                    "match": "\\b(if|else|match|while|for|return|break|continue|go)\\b"
+                },
+                {
+                    "name": "keyword.declaration.goml",
+                    "match": "\\b(fn|let|struct|enum|trait|impl|type|use|package|extern)\\b"
+                },
+                {
+                    "name": "keyword.other.goml",
+                    "match": "\\b(dyn|as|ref|mut|pub|mod)\\b"
+                },
+                {
+                    "name": "constant.language.boolean.goml",
+                    "match": "\\b(true|false)\\b"
+                },
+                {
+                    "name": "variable.language.self.goml",
+                    "match": "\\b(Self)\\b"
+                }
+            ]
+        },
+        "types": {
+            "patterns": [
+                {
+                    "name": "storage.type.primitive.goml",
+                    "match": "\\b(bool|int8|int16|int32|int64|uint8|uint16|uint32|uint64|float32|float64|string|char|unit)\\b"
+                },
+                {
+                    "name": "storage.type.builtin.goml",
+                    "match": "\\b(Vec|Ref|Option|HashMap)\\b"
+                },
+                {
+                    "name": "entity.name.type.goml",
+                    "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "entity.name.function.goml",
+                    "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()"
+                }
+            ]
+        },
+        "operators": {
+            "patterns": [
+                {
+                    "name": "keyword.operator.goml",
+                    "match": "(->|=>|::|\\+=|-=|\\*=|/=|==|!=|<=|>=|&&|\\|\\||\\+|-|\\*|/|%|<|>|=|!|&|\\|)"
+                }
+            ]
+        }
+    }
+}

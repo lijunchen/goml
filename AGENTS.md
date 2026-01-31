@@ -21,9 +21,33 @@ The file extension for goml source files is `.gom`.
 
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:
-  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings).
+  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
 - Frontend in `webapp` (Vite + React + TypeScript) consuming `crates/wasm-app/pkg`.
+- VS Code extension in `editors/vscode/` consuming LSP server binary.
 - CI/dev helpers in `.justfile`. Build artifacts in `target/` and `webapp/dist/`.
+
+## VS Code LSP Extension
+
+### Design Philosophy
+- Reuse existing compiler infrastructure: the LSP server delegates to `crates/compiler/src/query.rs` which already powers the Monaco web editor.
+- Full compilation on every request: no incremental/salsa-based caching yet; each hover/completion triggers a full typecheck of the entry package and its dependencies.
+- Multi-package aware: the LSP discovers packages via `pipeline::packages::discover_packages` starting from the file's parent directory, supporting `package Main;` + subdirectory library packages.
+
+### Build Commands
+- `just build-lsp`: Build release LSP binary (`target/release/goml-lsp`).
+- `just install-lsp`: Build and copy binary to `editors/vscode/bin/`.
+- `just vscode-ext`: Full build (LSP + extension TypeScript).
+
+### Development Workflow
+1. Build LSP: `cargo build -p lsp-server --release`
+2. Copy binary: `cp target/release/goml-lsp editors/vscode/bin/`
+3. Install deps: `cd editors/vscode && pnpm install`
+4. Compile TS: `pnpm run compile`
+5. Press F5 in VS Code to launch Extension Development Host.
+
+### Configuration
+- `goml.serverPath`: Custom path to `goml-lsp` binary (defaults to bundled or PATH lookup).
+- `goml.trace.server`: Trace LSP communication (`off`, `messages`, `verbose`).
 
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
