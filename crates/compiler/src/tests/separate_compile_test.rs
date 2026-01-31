@@ -20,7 +20,7 @@ fn gom_files_in_dir(dir: &Path) -> anyhow::Result<Vec<PathBuf>> {
 #[test]
 fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/package")
+        .join("src/tests/module")
         .join("project008_trait_bounds_across_packages");
     let main_path = root.join("main.gom");
     let main_src = std::fs::read_to_string(&main_path)?;

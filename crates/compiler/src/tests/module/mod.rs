@@ -54,7 +54,7 @@ fn multi_package_compile_project_010() -> anyhow::Result<()> {
 
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
-        .join("src/tests/package")
+        .join("src/tests/module")
         .join(name);
     let main_path = root.join("main.gom");
     let main_src = std::fs::read_to_string(&main_path)?;
