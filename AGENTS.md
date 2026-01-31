@@ -73,6 +73,7 @@ The file extension for goml source files is `.gom`.
 - Inter-package dependencies:
   - Packages can import and use types, functions, and enums from other packages
   - Access package members using `PackageName::member` syntax (e.g., `Lib::Color::Red`, `Math::Pair`)
+  - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use PackageName::Trait` (builtin traits like `Show` are in the prelude and do not require `use`)
 - To add a new multi-package test:
   1. Create a new directory under `crates/compiler/src/tests/package/` (e.g., `project006/`)
   2. Create `main.gom` with `package Main;` and `fn main()`
@@ -137,6 +138,7 @@ The file extension for goml source files is `.gom`.
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
 * Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
+  * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use PackageName::Trait` (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
 * When multiple trait bounds provide the same method name for a type parameter, `x.foo()` is ambiguous and requires UFCS disambiguation (e.g. `A::foo(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
