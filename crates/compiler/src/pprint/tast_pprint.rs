@@ -194,6 +194,7 @@ impl Ty {
             Self::TFloat32 => RcDoc::text("float32"),
             Self::TFloat64 => RcDoc::text("float64"),
             Self::TString => RcDoc::text("string"),
+            Self::TChar => RcDoc::text("char"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");
 

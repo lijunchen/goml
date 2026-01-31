@@ -43,10 +43,16 @@ func main0() struct{} {
     var x5 bool = x3._1
     var w__4 bool = x5
     var b__5 bool = w__4
-    var t8 string = bool_to_string(b__5)
-    string_print(t8)
+    print__T_bool(b__5)
     ret9 = struct{}{}
     return ret9
+}
+
+func print__T_bool(value__0 bool) struct{} {
+    var ret10 struct{}
+    var t8 string = bool_to_string(value__0)
+    ret10 = string_print(t8)
+    return ret10
 }
 
 func main() {

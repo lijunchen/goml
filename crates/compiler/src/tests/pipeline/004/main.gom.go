@@ -74,12 +74,18 @@ func main0() bool {
         case Green:
             ret6 = false
         case Blue:
-            var t5 string = bool_to_string(true)
-            string_print(t5)
+            print__T_bool(true)
             ret6 = false
         }
     }
     return ret6
+}
+
+func print__T_bool(value__0 bool) struct{} {
+    var ret7 struct{}
+    var t5 string = bool_to_string(value__0)
+    ret7 = string_print(t5)
+    return ret7
 }
 
 func main() {

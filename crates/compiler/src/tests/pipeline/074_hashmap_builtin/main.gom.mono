@@ -94,12 +94,12 @@ fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
 fn print_opt_int(x/20: Option__int32) -> unit {
   match x/20 {
     Option__int32::None => {
-      string_println("none")
+      println__T_string("none")
     },
     Option__int32::Some(x13) => {
       let x13 = Option__int32::Some._0(x/20) in
       let v/21 = x13 in
-      string_println(int32_to_string(v/21))
+      println__T_int32(v/21)
     },
   }
 }
@@ -108,12 +108,12 @@ fn main() -> unit {
   let m1/22 = hashmap_new() in
   let _wild14 = hashmap_set(m1/22, Key::A, 10) in
   let _wild15 = hashmap_set(m1/22, Key::B(1), 20) in
-  let _wild16 = string_println(int32_to_string(hashmap_len(m1/22))) in
+  let _wild16 = println__T_int32(hashmap_len(m1/22)) in
   let _wild17 = print_opt_int(hashmap_get(m1/22, Key::A)) in
-  let _wild18 = string_println(bool_to_string(hashmap_contains(m1/22, Key::B(1)))) in
+  let _wild18 = println__T_bool(hashmap_contains(m1/22, Key::B(1))) in
   let _wild19 = hashmap_remove(m1/22, Key::B(1)) in
-  let _wild20 = string_println(bool_to_string(hashmap_contains(m1/22, Key::B(1)))) in
-  let _wild21 = string_println(int32_to_string(hashmap_len(m1/22))) in
+  let _wild20 = println__T_bool(hashmap_contains(m1/22, Key::B(1))) in
+  let _wild21 = println__T_int32(hashmap_len(m1/22)) in
   let m2/23 = hashmap_new() in
   let p1/24 = ref(Point { x: 1, y: 2 }) in
   let p2/25 = ref(Point { x: 1, y: 2 }) in
@@ -125,4 +125,16 @@ fn main() -> unit {
   let _wild24 = hashmap_set(m3/26, k1/27, 123) in
   let _wild25 = print_opt_int(hashmap_get(m3/26, k2/28)) in
   ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  string_println(int32_to_string(value/1))
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  string_println(bool_to_string(value/1))
 }

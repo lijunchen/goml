@@ -295,6 +295,7 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
         tast::Ty::TFloat32 => goty::GoType::TFloat32,
         tast::Ty::TFloat64 => goty::GoType::TFloat64,
         tast::Ty::TString => goty::GoType::TString,
+        tast::Ty::TChar => goty::GoType::TChar,
         tast::Ty::TTuple { typs } => {
             // compile to struct with field _0, _1, ...
             let name = go_type_name_for(ty);
@@ -371,6 +372,7 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TFloat32 => "float32".to_string(),
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
+        tast::Ty::TChar => "char".to_string(),
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => go_ident(name),
         tast::Ty::TDyn { trait_name } => dyn_struct_name(trait_name),
         tast::Ty::TApp { ty, .. } => go_type_name_for(ty.as_ref()),

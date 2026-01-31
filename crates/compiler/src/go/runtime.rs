@@ -49,6 +49,10 @@ pub fn make_runtime() -> Vec<goast::Item> {
                     alias: None,
                     path: "math".to_string(),
                 },
+                ImportSpec {
+                    alias: None,
+                    path: "unicode/utf8".to_string(),
+                },
             ],
         }),
         Item::Fn(unit_to_string()),
@@ -57,6 +61,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(json_escape_string()),
         Item::Fn(string_len()),
         Item::Fn(string_get()),
+        Item::Fn(char_to_string()),
         Item::Fn(int8_to_string()),
         Item::Fn(int16_to_string()),
         Item::Fn(int32_to_string()),
@@ -71,6 +76,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(int16_hash()),
         Item::Fn(int32_hash()),
         Item::Fn(int64_hash()),
+        Item::Fn(char_hash()),
         Item::Fn(uint8_hash()),
         Item::Fn(uint16_hash()),
         Item::Fn(uint32_hash()),
@@ -159,6 +165,7 @@ fn make_builtin_eq_hash_trait_impls() -> Vec<goast::Item> {
         tast::Ty::TUnit,
         tast::Ty::TBool,
         tast::Ty::TString,
+        tast::Ty::TChar,
         tast::Ty::TInt8,
         tast::Ty::TInt16,
         tast::Ty::TInt32,
@@ -222,6 +229,10 @@ fn make_builtin_eq_hash_trait_impls() -> Vec<goast::Item> {
     items.push(hash_impl(
         tast::Ty::TString,
         hash_call("string_hash", goty::GoType::TString),
+    ));
+    items.push(hash_impl(
+        tast::Ty::TChar,
+        hash_call("char_hash", goty::GoType::TChar),
     ));
     items.push(hash_impl(
         tast::Ty::TInt8,
@@ -2034,6 +2045,71 @@ fn float64_to_string() -> goast::Fn {
     to_string_fn("float64_to_string", goty::GoType::TFloat64)
 }
 
+fn char_to_string() -> goast::Fn {
+    goast::Fn {
+        name: "char_to_string".to_string(),
+        params: vec![("x".to_string(), goty::GoType::TChar)],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![
+                goast::Stmt::If {
+                    cond: goast::Expr::UnaryOp {
+                        op: goast::GoUnaryOp::Not,
+                        expr: Box::new(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "utf8.ValidRune".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TChar],
+                                    ret_ty: Box::new(goty::GoType::TBool),
+                                },
+                            }),
+                            args: vec![goast::Expr::Var {
+                                name: "x".to_string(),
+                                ty: goty::GoType::TChar,
+                            }],
+                            ty: goty::GoType::TBool,
+                        }),
+                        ty: goty::GoType::TBool,
+                    },
+                    then: goast::Block {
+                        stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "panic".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TString],
+                                    ret_ty: Box::new(goty::GoType::TVoid),
+                                },
+                            }),
+                            args: vec![goast::Expr::String {
+                                value: "invalid char".to_string(),
+                                ty: goty::GoType::TString,
+                            }],
+                            ty: goty::GoType::TVoid,
+                        })],
+                    },
+                    else_: None,
+                },
+                goast::Stmt::Return {
+                    expr: Some(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "string".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TChar],
+                                ret_ty: Box::new(goty::GoType::TString),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "x".to_string(),
+                            ty: goty::GoType::TChar,
+                        }],
+                        ty: goty::GoType::TString,
+                    }),
+                },
+            ],
+        },
+    }
+}
+
 fn int8_hash() -> goast::Fn {
     goast::Fn {
         name: "int8_hash".to_string(),
@@ -2104,6 +2180,32 @@ fn int32_hash() -> goast::Fn {
                     args: vec![goast::Expr::Var {
                         name: "x".to_string(),
                         ty: goty::GoType::TInt32,
+                    }],
+                    ty: goty::GoType::TUint64,
+                }),
+            }],
+        },
+    }
+}
+
+fn char_hash() -> goast::Fn {
+    goast::Fn {
+        name: "char_hash".to_string(),
+        params: vec![("x".to_string(), goty::GoType::TChar)],
+        ret_ty: Some(goty::GoType::TUint64),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "uint64".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TChar],
+                            ret_ty: Box::new(goty::GoType::TUint64),
+                        },
+                    }),
+                    args: vec![goast::Expr::Var {
+                        name: "x".to_string(),
+                        ty: goty::GoType::TChar,
                     }],
                     ty: goty::GoType::TUint64,
                 }),

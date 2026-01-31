@@ -6,30 +6,62 @@ fn trait_impl#ToString#S#to_string(self/0: S) -> string {
 }
 
 fn main() -> unit {
-  let t14 = int32_to_string(1) in
-  let _wild0 = string_println(t14) in
-  let t15 = bool_to_string(true) in
-  let _wild1 = string_println(t15) in
-  let _wild2 = string_println("hi") in
-  let t16 = unit_to_string(()) in
-  let _wild3 = string_println(t16) in
-  let t17 = int32_to_string(2) in
-  let _wild4 = string_println(t17) in
-  let t18 = int32_to_string(2) in
-  let _wild5 = string_println(t18) in
+  let _wild0 = println__T_int32(1) in
+  let _wild1 = println__T_bool(true) in
+  let _wild2 = println__T_string("hi") in
+  let _wild3 = println__T_unit(()) in
+  let t14 = int32_to_string(2) in
+  let _wild4 = println__T_string(t14) in
+  let t15 = int32_to_string(2) in
+  let _wild5 = println__T_string(t15) in
   let s/1 = S { value: 9 } in
-  let t19 = trait_impl#ToString#S#to_string(s/1) in
-  let _wild6 = string_println(t19) in
+  let _wild6 = println__T_S(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
-  let t20 = dyn_call[ToString::to_string](d/2) in
-  let _wild7 = string_println(t20) in
+  let _wild7 = println__T_dynToString(d/2) in
   let r/3 = ref(5) in
-  let t24 = ref_get(r/3) in
+  let _wild8 = println__T_Ref[int32](r/3) in
+  let _wild9 = print__T_string("no-newline") in
+  let _wild10 = println__T_string("!") in
+  ()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t16 = int32_to_string(value/1) in
+  string_println(t16)
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  let t17 = bool_to_string(value/1) in
+  string_println(t17)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn println__T_unit(value/1: unit) -> unit {
+  let t18 = unit_to_string(value/1) in
+  string_println(t18)
+}
+
+fn println__T_S(value/1: S) -> unit {
+  let t19 = trait_impl#ToString#S#to_string(value/1) in
+  string_println(t19)
+}
+
+fn println__T_dynToString(value/1: dyn ToString) -> unit {
+  let t20 = dyn_call[ToString::to_string](value/1) in
+  string_println(t20)
+}
+
+fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {
+  let t24 = ref_get(value/1) in
   let t23 = int32_to_string(t24) in
   let t22 = ("ref(" + t23) in
   let t21 = (t22 + ")") in
-  let _wild8 = string_println(t21) in
-  let _wild9 = string_print("no-newline") in
-  let _wild10 = string_println("!") in
-  ()
+  string_println(t21)
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
 }

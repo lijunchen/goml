@@ -37,7 +37,7 @@ func announce(shape__6 Shape) struct{} {
     var base__7 string = _goml_inherent_Shape_Shape_name(shape__6)
     var with_suffix__8 string = _goml_inherent_Shape_Shape_rename(shape__6, "!")
     var combined__9 string = _goml_inherent_Shape_Shape_join(shape__6, base__7, with_suffix__8)
-    string_println(combined__9)
+    println__T_string(combined__9)
     ret8 = struct{}{}
     return ret8
 }
@@ -48,6 +48,12 @@ func main0() struct{} {
     announce(shape__10)
     ret9 = struct{}{}
     return ret9
+}
+
+func println__T_string(value__1 string) struct{} {
+    var ret10 struct{}
+    ret10 = string_println(value__1)
+    return ret10
 }
 
 func main() {

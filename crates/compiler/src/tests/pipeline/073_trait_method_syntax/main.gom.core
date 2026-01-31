@@ -1,9 +1,17 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn trait_impl#ToString#S#to_string(self/0: S) -> string {
   (("S(" + int32_to_string(S.value(self/0))) + ")")
 }
 
 fn main() -> unit {
   let s/1 = S { value: 7 } in
-  let _wild0 = string_println(trait_call[ToString::to_string](trait_call[ToString::to_string](s/1))) in
+  let _wild0 = println(trait_call[ToString::to_string](s/1)) in
   ()
 }

@@ -16,7 +16,13 @@ use crate::{
 const BUILTIN_GOM: &str = include_str!("builtin.gom");
 
 static BUILTIN_AST: OnceLock<ast::File> = OnceLock::new();
-static BUILTIN_GENV: OnceLock<GlobalTypeEnv> = OnceLock::new();
+static BUILTIN_ARTIFACTS: OnceLock<BuiltinArtifacts> = OnceLock::new();
+
+#[derive(Debug, Clone)]
+struct BuiltinArtifacts {
+    genv: GlobalTypeEnv,
+    tast: tast::File,
+}
 
 fn parse_builtin_ast() -> ast::File {
     let path = Path::new("builtin.gom");
@@ -51,7 +57,7 @@ pub fn get_builtin_ast() -> ast::File {
     builtin_ast()
 }
 
-fn build_builtin_env() -> GlobalTypeEnv {
+fn build_builtin_artifacts() -> BuiltinArtifacts {
     let ast = builtin_ast();
 
     let mut base_env = GlobalTypeEnv {
@@ -67,11 +73,10 @@ fn build_builtin_env() -> GlobalTypeEnv {
     add_ref_builtins(&mut base_env.value_env.funcs);
     add_vec_builtins(&mut base_env.value_env.funcs);
     add_hashmap_builtins(&mut base_env.value_env.funcs);
-    add_print_builtins(&mut base_env.value_env.funcs);
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
-    let (_tast, mut genv, mut diagnostics) = typer::check_file_with_env(
+    let (tast, mut genv, mut diagnostics) = typer::check_file_with_env(
         hir,
         hir_table,
         base_env,
@@ -86,11 +91,33 @@ fn build_builtin_env() -> GlobalTypeEnv {
 
     genv.trait_env.inherent_impls = builtin_inherent_methods();
 
-    genv
+    BuiltinArtifacts { genv, tast }
 }
 
 pub(crate) fn builtin_env() -> GlobalTypeEnv {
-    BUILTIN_GENV.get_or_init(build_builtin_env).clone()
+    BUILTIN_ARTIFACTS
+        .get_or_init(build_builtin_artifacts)
+        .genv
+        .clone()
+}
+
+pub(crate) fn builtin_tast() -> tast::File {
+    BUILTIN_ARTIFACTS
+        .get_or_init(build_builtin_artifacts)
+        .tast
+        .clone()
+}
+
+pub(crate) fn builtin_print_tast() -> tast::File {
+    let toplevels = builtin_tast()
+        .toplevels
+        .into_iter()
+        .filter(|item| match item {
+            tast::Item::Fn(f) => f.name == "print" || f.name == "println",
+            _ => false,
+        })
+        .collect();
+    tast::File { toplevels }
 }
 
 pub fn builtin_interface_hash() -> String {
@@ -253,20 +280,6 @@ fn add_hashmap_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
-fn add_print_builtins(funcs: &mut IndexMap<String, FnScheme>) {
-    let t_param = tast::Ty::TParam {
-        name: "T".to_string(),
-    };
-    funcs.insert(
-        "print".to_string(),
-        make_fn_scheme(vec![t_param.clone()], tast::Ty::TUnit),
-    );
-    funcs.insert(
-        "println".to_string(),
-        make_fn_scheme(vec![t_param], tast::Ty::TUnit),
-    );
-}
-
 pub(super) fn builtin_inherent_methods()
 -> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
@@ -289,6 +302,23 @@ pub(super) fn builtin_inherent_methods()
     );
     impls.insert(crate::env::InherentImplKey::Exact(int32_ty), int32_impl);
 
+    let char_ty = tast::Ty::TChar;
+    let char_method_ty = tast::Ty::TFunc {
+        params: vec![char_ty.clone()],
+        ret_ty: Box::new(tast::Ty::TString),
+    };
+    let mut char_impl = crate::env::ImplDef::default();
+    char_impl.methods.insert(
+        "to_string".to_string(),
+        crate::env::FnScheme {
+            type_params: vec![],
+            constraints: (),
+            ty: char_method_ty,
+            origin: FnOrigin::Builtin,
+        },
+    );
+    impls.insert(crate::env::InherentImplKey::Exact(char_ty), char_impl);
+
     impls
 }
 
@@ -304,8 +334,6 @@ pub fn builtin_function_names() -> Vec<String> {
     for name in [
         "array_get",
         "array_set",
-        "print",
-        "println",
         "ref",
         "ref_get",
         "ref_set",

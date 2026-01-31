@@ -32,9 +32,15 @@ func main0() struct{} {
         value: 7,
     }
     var t4 string = _goml_trait_impl_ToString_S_to_string(s__1)
-    string_println(t4)
+    println__T_string(t4)
     ret6 = struct{}{}
     return ret6
+}
+
+func println__T_string(value__1 string) struct{} {
+    var ret7 struct{}
+    ret7 = string_println(value__1)
+    return ret7
 }
 
 func main() {

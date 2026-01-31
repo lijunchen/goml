@@ -76,6 +76,7 @@ impl TypeExpr {
             Self::TFloat32 => RcDoc::text("float32"),
             Self::TFloat64 => RcDoc::text("float64"),
             Self::TString => RcDoc::text("string"),
+            Self::TChar => RcDoc::text("char"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");
 
@@ -170,6 +171,7 @@ impl Expr {
             hir::Expr::EFloat32 { value } => RcDoc::text(format!("{}f32", value)),
             hir::Expr::EFloat64 { value } => RcDoc::text(format!("{}f64", value)),
             hir::Expr::EString { value } => RcDoc::text(format!("{:?}", value)),
+            hir::Expr::EChar { value } => RcDoc::text(format!("'{}'", value)),
 
             hir::Expr::EConstr { constructor, args } => {
                 let prefix = RcDoc::text(constructor.display(ctx.hir_table));
@@ -411,6 +413,7 @@ impl Pat {
             hir::Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
             hir::Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
             hir::Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
+            hir::Pat::PChar { value } => RcDoc::text(format!("'{}'", value)),
             hir::Pat::PConstr { constructor, args } => {
                 let prefix = RcDoc::text(constructor.display(ctx.hir_table));
 

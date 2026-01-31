@@ -22,6 +22,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![float64_lit],
     T![str],
     T![multiline_str],
+    T![char_lit],
     T![ident],
     T![::],
     T![true],
@@ -151,6 +152,11 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::EXPR_MULTILINE_STR)
+        }
+        T![char_lit] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::EXPR_CHAR)
         }
         T![true] | T![false] => {
             let m = p.open();

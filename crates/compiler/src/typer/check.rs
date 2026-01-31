@@ -287,6 +287,14 @@ impl Typer {
                 value: Prim::string(value),
                 ty: tast::Ty::TString,
             },
+            hir::Expr::EChar { value } => {
+                let ty = tast::Ty::TChar;
+                let ch = self.parse_char_literal(diagnostics, &value).unwrap_or('\0');
+                tast::Expr::EPrim {
+                    value: Prim::character(ch),
+                    ty,
+                }
+            }
             hir::Expr::EConstr { constructor, args } => {
                 self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args)
             }
@@ -2129,6 +2137,40 @@ impl Typer {
                             return self.error_expr(astptr);
                         }
                     }
+
+                    if matches!(name.as_str(), "print" | "println") && arg_types.len() == 1 {
+                        let arg_ty = arg_types[0].clone();
+                        match &arg_ty {
+                            tast::Ty::TDyn { trait_name } if trait_name == "ToString" => {}
+                            tast::Ty::TParam { name } => {
+                                let in_bounds = local_env
+                                    .tparam_trait_bounds(name)
+                                    .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "ToString"));
+                                if !in_bounds {
+                                    diagnostics.push(Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Type parameter {} is not constrained by trait ToString",
+                                            name
+                                        ),
+                                    ));
+                                    return self.error_expr(astptr);
+                                }
+                            }
+                            _ => {
+                                let show_call_site_ty = tast::Ty::TFunc {
+                                    params: vec![arg_ty],
+                                    ret_ty: Box::new(tast::Ty::TString),
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: tast::TastIdent("to_string".to_string()),
+                                    trait_name: tast::TastIdent("ToString".to_string()),
+                                    call_site_type: show_call_site_ty,
+                                });
+                            }
+                        }
+                    }
                     let call_site_func_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
@@ -2771,6 +2813,7 @@ impl Typer {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty)
             }
             hir::Pat::PString { value } => self.check_pat_string(&value, ty),
+            hir::Pat::PChar { value } => self.check_pat_char(diagnostics, value.as_str(), ty),
             hir::Pat::PConstr { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
             }
@@ -2860,6 +2903,20 @@ impl Typer {
         tast::Pat::PPrim {
             value: Prim::string(value.to_owned()),
             ty: tast::Ty::TString,
+        }
+    }
+
+    fn check_pat_char(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        ty: &tast::Ty,
+    ) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone()));
+        let ch = self.parse_char_literal(diagnostics, value).unwrap_or('\0');
+        tast::Pat::PPrim {
+            value: Prim::character(ch),
+            ty: tast::Ty::TChar,
         }
     }
 
@@ -3196,7 +3253,8 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
         | tast::Ty::TUint64
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
-        | tast::Ty::TString => true,
+        | tast::Ty::TString
+        | tast::Ty::TChar => true,
     }
 }
 
@@ -3279,6 +3337,68 @@ impl Typer {
         }
     }
 
+    fn parse_char_literal(&mut self, diagnostics: &mut Diagnostics, literal: &str) -> Option<char> {
+        if literal.is_empty() {
+            diagnostics.push(Diagnostic::new(
+                diagnostics::Stage::Typer,
+                diagnostics::Severity::Error,
+                "Char literal cannot be empty".to_string(),
+            ));
+            return None;
+        }
+
+        if let Some(rest) = literal.strip_prefix('\\') {
+            let mut chars = rest.chars();
+            let Some(tag) = chars.next() else {
+                self.report_invalid_char_literal(diagnostics, literal);
+                return None;
+            };
+
+            let out = match tag {
+                '\'' => Some('\''),
+                '"' => Some('"'),
+                '\\' => Some('\\'),
+                '/' => Some('/'),
+                'b' => Some('\u{0008}'),
+                'f' => Some('\u{000C}'),
+                'n' => Some('\n'),
+                'r' => Some('\r'),
+                't' => Some('\t'),
+                'u' => {
+                    let hex: String = chars.by_ref().take(4).collect();
+                    if hex.chars().count() != 4 || chars.next().is_some() {
+                        None
+                    } else if let Ok(code) = u32::from_str_radix(&hex, 16) {
+                        char::from_u32(code)
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            };
+
+            if let Some(ch) = out
+                && chars.next().is_none()
+            {
+                return Some(ch);
+            }
+
+            self.report_invalid_char_literal(diagnostics, literal);
+            return None;
+        }
+
+        let mut iter = literal.chars();
+        let first = iter.next();
+        let second = iter.next();
+        match (first, second) {
+            (Some(ch), None) => Some(ch),
+            _ => {
+                self.report_invalid_char_literal(diagnostics, literal);
+                None
+            }
+        }
+    }
+
     fn parse_signed_integer<T>(
         &mut self,
         diagnostics: &mut Diagnostics,
@@ -3351,6 +3471,14 @@ impl Typer {
             diagnostics::Stage::Typer,
             diagnostics::Severity::Error,
             format!("Invalid integer literal: {}", literal),
+        ));
+    }
+
+    fn report_invalid_char_literal(&mut self, diagnostics: &mut Diagnostics, literal: &str) {
+        diagnostics.push(Diagnostic::new(
+            diagnostics::Stage::Typer,
+            diagnostics::Severity::Error,
+            format!("Invalid char literal: {}", literal),
         ));
     }
 
@@ -3501,6 +3629,7 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TFloat32 => tast::Ty::TFloat32,
         tast::Ty::TFloat64 => tast::Ty::TFloat64,
         tast::Ty::TString => tast::Ty::TString,
+        tast::Ty::TChar => tast::Ty::TChar,
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()

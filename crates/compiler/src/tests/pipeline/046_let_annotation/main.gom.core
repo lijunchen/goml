@@ -1,9 +1,17 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn main() -> unit {
   let x/0 = 1 in
   let y/1 = 1 in
-  let mtmp0 = string_print(trait_call[ToString::to_string]("int32: ")) in
-  let mtmp1 = string_println(trait_call[ToString::to_string](x/0)) in
-  let mtmp2 = string_print(trait_call[ToString::to_string]("int8: ")) in
-  let mtmp3 = string_println(trait_call[ToString::to_string](y/1)) in
+  let mtmp0 = print("int32: ") in
+  let mtmp1 = println(x/0) in
+  let mtmp2 = print("int8: ") in
+  let mtmp3 = println(y/1) in
   ()
 }

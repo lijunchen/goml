@@ -35,7 +35,7 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func main0() struct{} {
-    var ret13 struct{}
+    var ret5 struct{}
     var t2 Color = Blue{}
     var t3 Color = Red{}
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
@@ -48,41 +48,39 @@ func main0() struct{} {
     case Red:
         switch x0.(type) {
         case Red:
-            var t4 string = int32_to_string(1)
-            ret13 = string_print(t4)
+            ret5 = print__T_int32(1)
         case Green:
-            var t5 string = int32_to_string(3)
-            ret13 = string_print(t5)
+            ret5 = print__T_int32(3)
         case Blue:
-            var t6 string = int32_to_string(3)
-            ret13 = string_print(t6)
+            ret5 = print__T_int32(3)
         }
     case Green:
         switch x0.(type) {
         case Red:
-            var t7 string = int32_to_string(0)
-            ret13 = string_print(t7)
+            ret5 = print__T_int32(0)
         case Green:
-            var t8 string = int32_to_string(3)
-            ret13 = string_print(t8)
+            ret5 = print__T_int32(3)
         case Blue:
-            var t9 string = int32_to_string(3)
-            ret13 = string_print(t9)
+            ret5 = print__T_int32(3)
         }
     case Blue:
         switch x0.(type) {
         case Red:
-            var t10 string = int32_to_string(3)
-            ret13 = string_print(t10)
+            ret5 = print__T_int32(3)
         case Green:
-            var t11 string = int32_to_string(3)
-            ret13 = string_print(t11)
+            ret5 = print__T_int32(3)
         case Blue:
-            var t12 string = int32_to_string(2)
-            ret13 = string_print(t12)
+            ret5 = print__T_int32(2)
         }
     }
-    return ret13
+    return ret5
+}
+
+func print__T_int32(value__0 int32) struct{} {
+    var ret6 struct{}
+    var t4 string = int32_to_string(value__0)
+    ret6 = string_print(t4)
+    return ret6
 }
 
 func main() {

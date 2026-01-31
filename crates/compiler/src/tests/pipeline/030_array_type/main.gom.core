@@ -1,7 +1,15 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn id_array(x/0: [int32; 3]) -> [int32; 3] {
   x/0
 }
 
 fn main() -> unit {
-  string_print(trait_call[ToString::to_string]("array"))
+  print("array")
 }

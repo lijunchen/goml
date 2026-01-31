@@ -213,3 +213,33 @@ fn lexes_int8_keyword() {
         "#]],
     );
 }
+
+#[test]
+fn lexes_char_keyword() {
+    check(
+        "char",
+        expect![[r#"
+            [
+                {kind: CharKeyword, text: "char"},
+            ]
+        "#]],
+    );
+}
+
+#[test]
+fn lexes_char_literal() {
+    check(
+        "let c = 'a'",
+        expect![[r#"
+            [
+                {kind: LetKeyword, text: "let"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "c"},
+                {kind: Whitespace, text: " "},
+                {kind: Eq, text: "="},
+                {kind: Whitespace, text: " "},
+                {kind: CharLit, text: "'a'"},
+            ]
+        "#]],
+    )
+}

@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn make_counter() -> (() -> int32, () -> unit) {
     let cell/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     let next/2: () -> int32 = || => {

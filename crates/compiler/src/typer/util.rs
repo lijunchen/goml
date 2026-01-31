@@ -47,7 +47,8 @@ pub(crate) fn validate_ty(
         | tast::Ty::TUint64
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
-        | tast::Ty::TString => {}
+        | tast::Ty::TString
+        | tast::Ty::TChar => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
                 validate_ty(genv, diagnostics, ty, tparams);
@@ -288,6 +289,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
         | tast::Ty::TString
+        | tast::Ty::TChar
         | tast::Ty::TParam { .. } => false,
     }
 }
@@ -312,6 +314,7 @@ impl tast::Ty {
             hir::TypeExpr::TFloat32 => Self::TFloat32,
             hir::TypeExpr::TFloat64 => Self::TFloat64,
             hir::TypeExpr::TString => Self::TString,
+            hir::TypeExpr::TChar => Self::TChar,
             hir::TypeExpr::TTuple { typs } => Self::TTuple {
                 typs: typs
                     .iter()

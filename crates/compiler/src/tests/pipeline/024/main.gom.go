@@ -131,7 +131,7 @@ func main0() struct{} {
         y: 0,
     }
     var t24 string = point_type(p0__10)
-    string_println(t24)
+    println__T_string(t24)
     var p1__11 Point = Point{
         x: 10,
         y: 10,
@@ -143,8 +143,14 @@ func main0() struct{} {
         color: t25,
     }
     var t26 string = line_to_string(line__12)
-    ret31 = string_println(t26)
+    ret31 = println__T_string(t26)
     return ret31
+}
+
+func println__T_string(value__1 string) struct{} {
+    var ret32 struct{}
+    ret32 = string_println(value__1)
+    return ret32
 }
 
 func main() {

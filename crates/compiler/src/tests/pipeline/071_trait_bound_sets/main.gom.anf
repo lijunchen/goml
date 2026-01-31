@@ -13,14 +13,18 @@ fn trait_impl#C#S#bar(self/2: S) -> string {
 fn main() -> unit {
   let s/5 = S {} in
   let t2 = pick_a__T_S(s/5) in
-  let mtmp0 = string_println(t2) in
+  let mtmp0 = println__T_string(t2) in
   let t3 = bar_it__T_S(s/5) in
-  let mtmp1 = string_println(t3) in
+  let mtmp1 = println__T_string(t3) in
   ()
 }
 
 fn pick_a__T_S(x/3: S) -> string {
   trait_impl#A#S#foo(x/3)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
 }
 
 fn bar_it__T_S(x/4: S) -> string {

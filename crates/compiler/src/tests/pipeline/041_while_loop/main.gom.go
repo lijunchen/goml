@@ -57,14 +57,14 @@ func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
 }
 
 func sum_to(limit__0 int32) int32 {
-    var ret21 int32
+    var ret20 int32
     var acc__1 *ref_int32_x = ref__Ref_int32(0)
     var i__2 *ref_int32_x = ref__Ref_int32(0)
-    var cond22 bool
+    var cond21 bool
     for {
         var t10 int32 = ref_get__Ref_int32(i__2)
-        cond22 = t10 < limit__0
-        if !cond22 {
+        cond21 = t10 < limit__0
+        if !cond21 {
             break
         }
         var current__3 int32 = ref_get__Ref_int32(i__2)
@@ -74,20 +74,20 @@ func sum_to(limit__0 int32) int32 {
         var t13 int32 = current__3 + 1
         ref_set__Ref_int32(i__2, t13)
     }
-    ret21 = ref_get__Ref_int32(acc__1)
-    return ret21
+    ret20 = ref_get__Ref_int32(acc__1)
+    return ret20
 }
 
 func sum_even(limit__4 int32) int32 {
-    var ret23 int32
+    var ret22 int32
     var acc__5 *ref_int32_x = ref__Ref_int32(0)
     var i__6 *ref_int32_x = ref__Ref_int32(0)
     var is_even__7 *ref_bool_x = ref__Ref_bool(true)
-    var cond24 bool
+    var cond23 bool
     for {
         var t14 int32 = ref_get__Ref_int32(i__6)
-        cond24 = t14 < limit__4
-        if !cond24 {
+        cond23 = t14 < limit__4
+        if !cond23 {
             break
         }
         var current__8 int32 = ref_get__Ref_int32(i__6)
@@ -102,22 +102,33 @@ func sum_even(limit__4 int32) int32 {
             ref_set__Ref_int32(acc__5, t17)
         } else {}
     }
-    ret23 = ref_get__Ref_int32(acc__5)
-    return ret23
+    ret22 = ref_get__Ref_int32(acc__5)
+    return ret22
 }
 
 func main0() struct{} {
-    var ret25 struct{}
+    var ret24 struct{}
     var first__10 int32 = sum_to(5)
     var evens__11 int32 = sum_even(6)
-    string_print("sum_to(5)=")
-    var t19 string = int32_to_string(first__10)
-    string_println(t19)
-    string_print("sum_even(6)=")
-    var t20 string = int32_to_string(evens__11)
-    string_println(t20)
-    ret25 = struct{}{}
+    print__T_string("sum_to(5)=")
+    println__T_int32(first__10)
+    print__T_string("sum_even(6)=")
+    println__T_int32(evens__11)
+    ret24 = struct{}{}
+    return ret24
+}
+
+func print__T_string(value__0 string) struct{} {
+    var ret25 struct{}
+    ret25 = string_print(value__0)
     return ret25
+}
+
+func println__T_int32(value__1 int32) struct{} {
+    var ret26 struct{}
+    var t19 string = int32_to_string(value__1)
+    ret26 = string_println(t19)
+    return ret26
 }
 
 func main() {

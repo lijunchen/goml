@@ -330,6 +330,9 @@ pub enum TokenKind {
     #[token("string")]
     StringKeyword,
 
+    #[token("char")]
+    CharKeyword,
+
     #[token("array")]
     ArrayKeyword,
 
@@ -378,6 +381,9 @@ pub enum TokenKind {
     Str,
     #[regex(r"\\{2}", lex_multiline_str, priority = 2)]
     MultilineStr,
+
+    #[regex(r#"'([^'\\\x00-\x1F]|\\(['\\bnfrt/]|u[a-fA-F0-9]{4}))'"#)]
+    CharLit,
 
     #[regex(r"[ \t\r\n]+")]
     Whitespace,
@@ -463,6 +469,7 @@ impl std::fmt::Display for TokenKind {
             Self::Float32Keyword => "float32",
             Self::Float64Keyword => "float64",
             Self::StringKeyword => "string",
+            Self::CharKeyword => "char",
             Self::ArrayKeyword => "array",
             Self::Ident => "ident",
             Self::Float => "float",
@@ -479,6 +486,7 @@ impl std::fmt::Display for TokenKind {
             Self::UInt64Lit => "uint64_lit",
             Self::Str => "str",
             Self::MultilineStr => "multiline_str",
+            Self::CharLit => "char_lit",
             Self::Whitespace => "whitespace",
             Self::Comment => "comment",
             Self::Error => "unknown token",
@@ -554,6 +562,7 @@ macro_rules! T {
     [Float32] => { $crate::TokenKind::Float32Keyword };
     [Float64] => { $crate::TokenKind::Float64Keyword };
     [String] => { $crate::TokenKind::StringKeyword };
+    [Char] => { $crate::TokenKind::CharKeyword };
     [array] => { $crate::TokenKind::ArrayKeyword };
     [ident] => { $crate::TokenKind::Ident };
     [float] => { $crate::TokenKind::Float };
@@ -570,6 +579,7 @@ macro_rules! T {
     [uint64_lit] => { $crate::TokenKind::UInt64Lit };
     [str] => { $crate::TokenKind::Str };
     [multiline_str] => { $crate::TokenKind::MultilineStr };
+    [char_lit] => { $crate::TokenKind::CharLit };
     [whitespace] => { $crate::TokenKind::Whitespace };
     [comment] => { $crate::TokenKind::Comment };
     [error] => { $crate::TokenKind::Error };

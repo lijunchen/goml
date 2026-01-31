@@ -15,8 +15,12 @@ fn fib(x/0: int32) -> int32 {
 }
 
 fn main() -> unit {
-  let t7 = fib(10) in
-  let t6 = int32_to_string(t7) in
-  let mtmp1 = string_print(t6) in
+  let t6 = fib(10) in
+  let mtmp1 = print__T_int32(t6) in
   ()
+}
+
+fn print__T_int32(value/0: int32) -> unit {
+  let t7 = int32_to_string(value/0) in
+  string_print(t7)
 }

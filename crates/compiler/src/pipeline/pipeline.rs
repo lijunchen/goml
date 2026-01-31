@@ -292,11 +292,39 @@ fn typecheck_packages(
         .clone();
 
     let mut toplevels = Vec::new();
+    let mut has_print = false;
+    let mut has_println = false;
     for name in graph.discovery_order.iter() {
         let artifact = artifacts_by_name
             .get(name)
             .ok_or_else(|| compile_error(format!("missing package artifact for {}", name)))?;
+        for item in artifact.tast.toplevels.iter() {
+            if let tast::Item::Fn(f) = item {
+                if f.name == "print" {
+                    has_print = true;
+                }
+                if f.name == "println" {
+                    has_println = true;
+                }
+            }
+        }
         toplevels.extend(artifact.tast.toplevels.clone());
+    }
+
+    if !has_print || !has_println {
+        let mut extra = Vec::new();
+        for item in builtins::builtin_tast().toplevels.iter() {
+            let tast::Item::Fn(f) = item else {
+                continue;
+            };
+            if (!has_print && f.name == "print") || (!has_println && f.name == "println") {
+                extra.push(item.clone());
+            }
+        }
+        if !extra.is_empty() {
+            extra.extend(toplevels);
+            toplevels = extra;
+        }
     }
 
     Ok(TypecheckPackagesResult {
@@ -342,6 +370,13 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     let gensym = Gensym::new();
 
     let mut package_cores = Vec::new();
+    let builtin_print_core = compile_match::compile_file(
+        &builtins::builtin_env(),
+        &gensym,
+        &mut diagnostics,
+        &builtins::builtin_print_tast(),
+    );
+    package_cores.push(builtin_print_core);
     for name in graph.discovery_order.iter() {
         let package = graph
             .packages

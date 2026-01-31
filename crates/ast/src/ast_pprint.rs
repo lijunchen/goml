@@ -31,6 +31,7 @@ impl TypeExpr {
             Self::TFloat32 => RcDoc::text("float32"),
             Self::TFloat64 => RcDoc::text("float64"),
             Self::TString => RcDoc::text("string"),
+            Self::TChar => RcDoc::text("char"),
             Self::TTuple { typs } => {
                 let mut doc = RcDoc::text("(");
 
@@ -124,6 +125,7 @@ impl Expr {
             Self::EFloat32 { value, astptr: _ } => RcDoc::text(format!("{}f32", value)),
             Self::EFloat64 { value, astptr: _ } => RcDoc::text(format!("{}f64", value)),
             Self::EString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
+            Self::EChar { value, astptr: _ } => RcDoc::text(format!("'{}'", value)),
 
             Self::EConstr {
                 constructor,
@@ -414,6 +416,7 @@ impl Pat {
             Pat::PUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
             Pat::PUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
             Pat::PString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
+            Pat::PChar { value, astptr: _ } => RcDoc::text(format!("'{}'", value)),
             Pat::PConstr {
                 constructor,
                 args,

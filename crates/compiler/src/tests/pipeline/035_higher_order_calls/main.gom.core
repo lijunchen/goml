@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn double(x/0: int32) -> int32 {
   (x/0 * 2)
 }
@@ -18,7 +26,7 @@ fn main() -> unit {
   let xs/3 = [double, increment] in
   let f/4 = array_get(xs/3, 0) in
   let g/5 = array_get(xs/3, 1) in
-  let mtmp0 = string_println(trait_call[ToString::to_string](g/5(f/4(10)))) in
+  let mtmp0 = println(g/5(f/4(10))) in
   let chosen/6 = chooser(true) in
   let applied/7 = chosen/6(5) in
   let direct/8 = chooser(false)(5) in

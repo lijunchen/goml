@@ -42,7 +42,7 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var ret85 struct{}
+    var ret55 struct{}
     var t51 Expr = Zero{}
     var t52 Expr = Zero{}
     var t50 Expr = Add{
@@ -56,11 +56,9 @@ func main0() struct{} {
     }
     switch a__0 := a__0.(type) {
     case Zero:
-        var t54 string = int32_to_string(6)
-        ret85 = string_print(t54)
+        ret55 = print__T_int32(6)
     case Succ:
-        var t55 string = int32_to_string(6)
-        ret85 = string_print(t55)
+        ret55 = print__T_int32(6)
     case Add:
         var x1 Expr = a__0._0
         var x2 Expr = a__0._1
@@ -68,62 +66,46 @@ func main0() struct{} {
         case Zero:
             switch x1.(type) {
             case Zero:
-                var t56 string = int32_to_string(0)
-                ret85 = string_print(t56)
+                ret55 = print__T_int32(0)
             case Succ:
-                var t57 string = int32_to_string(2)
-                ret85 = string_print(t57)
+                ret55 = print__T_int32(2)
             case Add:
-                var t58 string = int32_to_string(5)
-                ret85 = string_print(t58)
+                ret55 = print__T_int32(5)
             case Mul:
-                var t59 string = int32_to_string(5)
-                ret85 = string_print(t59)
+                ret55 = print__T_int32(5)
             }
         case Succ:
             switch x1.(type) {
             case Zero:
-                var t60 string = int32_to_string(6)
-                ret85 = string_print(t60)
+                ret55 = print__T_int32(6)
             case Succ:
-                var t61 string = int32_to_string(2)
-                ret85 = string_print(t61)
+                ret55 = print__T_int32(2)
             case Add:
-                var t62 string = int32_to_string(6)
-                ret85 = string_print(t62)
+                ret55 = print__T_int32(6)
             case Mul:
-                var t63 string = int32_to_string(6)
-                ret85 = string_print(t63)
+                ret55 = print__T_int32(6)
             }
         case Add:
             switch x1.(type) {
             case Zero:
-                var t64 string = int32_to_string(6)
-                ret85 = string_print(t64)
+                ret55 = print__T_int32(6)
             case Succ:
-                var t65 string = int32_to_string(2)
-                ret85 = string_print(t65)
+                ret55 = print__T_int32(2)
             case Add:
-                var t66 string = int32_to_string(6)
-                ret85 = string_print(t66)
+                ret55 = print__T_int32(6)
             case Mul:
-                var t67 string = int32_to_string(6)
-                ret85 = string_print(t67)
+                ret55 = print__T_int32(6)
             }
         case Mul:
             switch x1.(type) {
             case Zero:
-                var t68 string = int32_to_string(6)
-                ret85 = string_print(t68)
+                ret55 = print__T_int32(6)
             case Succ:
-                var t69 string = int32_to_string(2)
-                ret85 = string_print(t69)
+                ret55 = print__T_int32(2)
             case Add:
-                var t70 string = int32_to_string(6)
-                ret85 = string_print(t70)
+                ret55 = print__T_int32(6)
             case Mul:
-                var t71 string = int32_to_string(6)
-                ret85 = string_print(t71)
+                ret55 = print__T_int32(6)
             }
         }
     case Mul:
@@ -131,56 +113,50 @@ func main0() struct{} {
         var x4 Expr = a__0._1
         switch x3.(type) {
         case Zero:
-            var t72 string = int32_to_string(1)
-            ret85 = string_print(t72)
+            ret55 = print__T_int32(1)
         case Succ:
             switch x4.(type) {
             case Zero:
-                var t73 string = int32_to_string(3)
-                ret85 = string_print(t73)
+                ret55 = print__T_int32(3)
             case Succ:
-                var t74 string = int32_to_string(6)
-                ret85 = string_print(t74)
+                ret55 = print__T_int32(6)
             case Add:
-                var t75 string = int32_to_string(6)
-                ret85 = string_print(t75)
+                ret55 = print__T_int32(6)
             case Mul:
-                var t76 string = int32_to_string(6)
-                ret85 = string_print(t76)
+                ret55 = print__T_int32(6)
             }
         case Add:
             switch x4.(type) {
             case Zero:
-                var t77 string = int32_to_string(3)
-                ret85 = string_print(t77)
+                ret55 = print__T_int32(3)
             case Succ:
-                var t78 string = int32_to_string(4)
-                ret85 = string_print(t78)
+                ret55 = print__T_int32(4)
             case Add:
-                var t79 string = int32_to_string(4)
-                ret85 = string_print(t79)
+                ret55 = print__T_int32(4)
             case Mul:
-                var t80 string = int32_to_string(4)
-                ret85 = string_print(t80)
+                ret55 = print__T_int32(4)
             }
         case Mul:
             switch x4.(type) {
             case Zero:
-                var t81 string = int32_to_string(3)
-                ret85 = string_print(t81)
+                ret55 = print__T_int32(3)
             case Succ:
-                var t82 string = int32_to_string(6)
-                ret85 = string_print(t82)
+                ret55 = print__T_int32(6)
             case Add:
-                var t83 string = int32_to_string(6)
-                ret85 = string_print(t83)
+                ret55 = print__T_int32(6)
             case Mul:
-                var t84 string = int32_to_string(6)
-                ret85 = string_print(t84)
+                ret55 = print__T_int32(6)
             }
         }
     }
-    return ret85
+    return ret55
+}
+
+func print__T_int32(value__0 int32) struct{} {
+    var ret56 struct{}
+    var t54 string = int32_to_string(value__0)
+    ret56 = string_print(t54)
+    return ret56
 }
 
 func main() {

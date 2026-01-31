@@ -1,11 +1,23 @@
 fn main() -> unit {
   let x/0 = 1 in
   let y/1 = 1 in
-  let mtmp0 = string_print("int32: ") in
-  let t4 = int32_to_string(x/0) in
-  let mtmp1 = string_println(t4) in
-  let mtmp2 = string_print("int8: ") in
-  let t5 = int8_to_string(y/1) in
-  let mtmp3 = string_println(t5) in
+  let mtmp0 = print__T_string("int32: ") in
+  let mtmp1 = println__T_int32(x/0) in
+  let mtmp2 = print__T_string("int8: ") in
+  let mtmp3 = println__T_int8(y/1) in
   ()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t4 = int32_to_string(value/1) in
+  string_println(t4)
+}
+
+fn println__T_int8(value/1: int8) -> unit {
+  let t5 = int8_to_string(value/1) in
+  string_println(t5)
 }

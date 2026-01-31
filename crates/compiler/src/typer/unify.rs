@@ -33,6 +33,7 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
         | tast::Ty::TString
+        | tast::Ty::TChar
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
@@ -106,7 +107,8 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
         | tast::Ty::TUint64
         | tast::Ty::TFloat32
         | tast::Ty::TFloat64
-        | tast::Ty::TString => ty.clone(),
+        | tast::Ty::TString
+        | tast::Ty::TChar => ty.clone(),
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()
@@ -224,6 +226,7 @@ impl Typer {
                 | tast::Ty::TFloat32
                 | tast::Ty::TFloat64
                 | tast::Ty::TString
+                | tast::Ty::TChar
                 | tast::Ty::TParam { .. } => true, // TParam is treated as concrete here
                 tast::Ty::TTuple { typs } => typs.iter().all(is_concrete),
                 tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } | tast::Ty::TDyn { .. } => true,
@@ -452,6 +455,7 @@ impl Typer {
             tast::Ty::TFloat32 => tast::Ty::TFloat32,
             tast::Ty::TFloat64 => tast::Ty::TFloat64,
             tast::Ty::TString => tast::Ty::TString,
+            tast::Ty::TChar => tast::Ty::TChar,
             tast::Ty::TTuple { typs } => {
                 let typs = typs.iter().map(|ty| self.norm(ty)).collect();
                 tast::Ty::TTuple { typs }
@@ -530,6 +534,7 @@ impl Typer {
             (tast::Ty::TFloat32, tast::Ty::TFloat32) => {}
             (tast::Ty::TFloat64, tast::Ty::TFloat64) => {}
             (tast::Ty::TString, tast::Ty::TString) => {}
+            (tast::Ty::TChar, tast::Ty::TChar) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
                     diagnostics.push(Diagnostic::new(
@@ -734,6 +739,7 @@ impl Typer {
             tast::Ty::TFloat32 => ty.clone(),
             tast::Ty::TFloat64 => ty.clone(),
             tast::Ty::TString => ty.clone(),
+            tast::Ty::TChar => ty.clone(),
             tast::Ty::TTuple { typs } => {
                 let typs = typs
                     .iter()
@@ -818,6 +824,7 @@ impl Typer {
             tast::Ty::TFloat32 => tast::Ty::TFloat32,
             tast::Ty::TFloat64 => tast::Ty::TFloat64,
             tast::Ty::TString => tast::Ty::TString,
+            tast::Ty::TChar => tast::Ty::TChar,
             tast::Ty::TTuple { typs } => {
                 let typs = typs
                     .iter()
@@ -884,6 +891,7 @@ impl Typer {
             tast::Ty::TFloat32 => tast::Ty::TFloat32,
             tast::Ty::TFloat64 => tast::Ty::TFloat64,
             tast::Ty::TString => tast::Ty::TString,
+            tast::Ty::TChar => tast::Ty::TChar,
             tast::Ty::TTuple { typs } => tast::Ty::TTuple {
                 typs: typs.iter().map(|ty| self.subst_ty_silent(ty)).collect(),
             },

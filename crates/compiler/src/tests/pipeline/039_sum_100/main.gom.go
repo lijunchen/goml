@@ -38,10 +38,16 @@ func sum(n__2 int32) int32 {
 
 func main0() struct{} {
     var ret11 struct{}
-    var t8 int32 = sum(100)
-    var t7 string = int32_to_string(t8)
-    ret11 = string_println(t7)
+    var t7 int32 = sum(100)
+    ret11 = println__T_int32(t7)
     return ret11
+}
+
+func println__T_int32(value__1 int32) struct{} {
+    var ret12 struct{}
+    var t8 string = int32_to_string(value__1)
+    ret12 = string_println(t8)
+    return ret12
 }
 
 func main() {

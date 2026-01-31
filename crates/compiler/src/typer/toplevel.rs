@@ -699,6 +699,7 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         tast::Ty::TFloat32 => tast::Ty::TFloat32,
         tast::Ty::TFloat64 => tast::Ty::TFloat64,
         tast::Ty::TString => tast::Ty::TString,
+        tast::Ty::TChar => tast::Ty::TChar,
         tast::Ty::TTuple { typs } => tast::Ty::TTuple {
             typs: typs
                 .iter()

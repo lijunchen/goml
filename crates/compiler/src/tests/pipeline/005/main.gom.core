@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
 fn main() -> unit {
   let a/0 = (Color::Blue, Color::Red) in
   let x0 = a/0.0 in
@@ -6,39 +14,39 @@ fn main() -> unit {
     Color::Red => {
       match x0 {
         Color::Red => {
-          string_print(trait_call[ToString::to_string](1))
+          print(1)
         },
         Color::Green => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
         Color::Blue => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
       }
     },
     Color::Green => {
       match x0 {
         Color::Red => {
-          string_print(trait_call[ToString::to_string](0))
+          print(0)
         },
         Color::Green => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
         Color::Blue => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
       }
     },
     Color::Blue => {
       match x0 {
         Color::Red => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
         Color::Green => {
-          string_print(trait_call[ToString::to_string](3))
+          print(3)
         },
         Color::Blue => {
-          string_print(trait_call[ToString::to_string](2))
+          print(2)
         },
       }
     },

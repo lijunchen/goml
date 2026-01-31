@@ -62,6 +62,7 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
         tast::Ty::TFloat32 => "float32".to_string(),
         tast::Ty::TFloat64 => "float64".to_string(),
         tast::Ty::TString => "string".to_string(),
+        tast::Ty::TChar => "char".to_string(),
         tast::Ty::TEnum { .. }
         | tast::Ty::TStruct { .. }
         | tast::Ty::TApp { .. }
@@ -87,5 +88,6 @@ fn is_primitive(ty: &tast::Ty) -> bool {
             | tast::Ty::TFloat32
             | tast::Ty::TFloat64
             | tast::Ty::TString
+            | tast::Ty::TChar
     )
 }

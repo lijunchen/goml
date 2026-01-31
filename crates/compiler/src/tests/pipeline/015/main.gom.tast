@@ -1,3 +1,11 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
 fn print_int_list(xs/0: IntList) -> unit {
     match (xs/0 : IntList) {
         IntList::Nil => (string_print : (string) -> unit)("Nil"),

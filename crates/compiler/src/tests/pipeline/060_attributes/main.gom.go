@@ -100,12 +100,18 @@ func main0() struct{} {
     var text__10 string = _goml_trait_impl_ToString_Message_to_string(t24)
     var t25 Message = Quit{}
     var exit__11 string = _goml_trait_impl_ToString_Message_to_string(t25)
-    string_println(summary__8)
-    string_println(mv__9)
-    string_println(text__10)
-    string_println(exit__11)
+    println__T_string(summary__8)
+    println__T_string(mv__9)
+    println__T_string(text__10)
+    println__T_string(exit__11)
     ret28 = struct{}{}
     return ret28
+}
+
+func println__T_string(value__1 string) struct{} {
+    var ret29 struct{}
+    ret29 = string_println(value__1)
+    return ret29
 }
 
 func main() {
