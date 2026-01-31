@@ -50,7 +50,7 @@ pub fn execute(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -96,7 +96,7 @@ pub fn compile_to_core(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -141,7 +141,7 @@ pub fn compile_to_mono(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -188,7 +188,7 @@ pub fn compile_to_anf(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -237,7 +237,7 @@ pub fn compile_to_go(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()
@@ -312,7 +312,7 @@ pub fn get_tast(src: &str) -> String {
         Ok(result) => result,
         Err(message) => return message,
     };
-    let typer_errors = format_typer_diagnostics(&diagnostics);
+    let typer_errors = format_typer_diagnostics(&diagnostics, src);
     if !typer_errors.is_empty() {
         return typer_errors
             .into_iter()

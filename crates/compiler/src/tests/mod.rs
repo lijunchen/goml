@@ -363,7 +363,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
         CompilationError::Typer { diagnostics } => anyhow::anyhow!(
             "Typer errors in {}:\n{}",
             p.display(),
-            format_typer_diagnostics(&diagnostics).join("\n")
+            format_typer_diagnostics(&diagnostics, &input).join("\n")
         ),
         CompilationError::Compile { diagnostics } => anyhow::anyhow!(
             "Compile errors in {}:\n{}",
@@ -490,7 +490,7 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected parse errors in {}, but typer reported diagnostics: {}",
                         p.display(),
-                        format_typer_diagnostics(&diagnostics).join("\n")
+                        format_typer_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Err(CompilationError::Compile { diagnostics }) => {
@@ -558,7 +558,7 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected compile diagnostics in {}, but typer reported diagnostics: {}",
                         p.display(),
-                        format_typer_diagnostics(&diagnostics).join("\n")
+                        format_typer_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Ok(_) => {
@@ -591,7 +591,7 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
             std::fs::write(&tmpfile, &input)?;
             match pipeline::pipeline::compile(&tmpfile, &input) {
                 Err(CompilationError::Typer { diagnostics }) => {
-                    let mut formatted = format_typer_diagnostics(&diagnostics).join("\n");
+                    let mut formatted = format_typer_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
                         formatted.push('\n');
                     }

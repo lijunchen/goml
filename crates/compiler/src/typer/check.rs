@@ -2,6 +2,7 @@ use std::{collections::HashMap, num::IntErrorKind};
 
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
+use text_size::TextRange;
 
 use crate::common::{self, Prim};
 use crate::hir::{self};
@@ -17,6 +18,14 @@ use crate::{
 };
 
 impl Typer {
+    fn expr_range(&self, expr_id: hir::ExprId) -> Option<TextRange> {
+        self.hir_table.expr_ptr(expr_id).map(|ptr| ptr.text_range())
+    }
+
+    fn pat_range(&self, pat_id: hir::PatId) -> Option<TextRange> {
+        self.hir_table.pat_ptr(pat_id).map(|ptr| ptr.text_range())
+    }
+
     fn error_expr(&mut self, astptr: Option<MySyntaxNodePtr>) -> tast::Expr {
         tast::Expr::EVar {
             name: "<error>".to_string(),
@@ -38,31 +47,38 @@ impl Typer {
         local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         key_ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> bool {
         match key_ty {
             tast::Ty::TParam { name } => {
                 let Some(bounds) = local_env.tparam_trait_bounds(name) else {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Type parameter {} is not constrained by traits Hash + Eq",
-                            name
-                        ),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Type parameter {} is not constrained by traits Hash + Eq",
+                                name
+                            ),
+                        )
+                        .with_range(range),
+                    );
                     return false;
                 };
                 let has_hash = bounds.iter().any(|t| t.0 == "Hash");
                 let has_eq = bounds.iter().any(|t| t.0 == "Eq");
                 if !has_hash || !has_eq {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Type parameter {} is not constrained by traits Hash + Eq",
-                            name
-                        ),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Type parameter {} is not constrained by traits Hash + Eq",
+                                name
+                            ),
+                        )
+                        .with_range(range),
+                    );
                     return false;
                 }
                 true
@@ -200,69 +216,79 @@ impl Typer {
             },
             hir::Expr::EInt { value } => {
                 let ty = tast::Ty::TInt32;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EInt8 { value } => {
                 let ty = tast::Ty::TInt8;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EInt16 { value } => {
                 let ty = tast::Ty::TInt16;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EInt32 { value } => {
                 let ty = tast::Ty::TInt32;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EInt64 { value } => {
                 let ty = tast::Ty::TInt64;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EUInt8 { value } => {
                 let ty = tast::Ty::TUint8;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EUInt16 { value } => {
                 let ty = tast::Ty::TUint16;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EUInt32 { value } => {
                 let ty = tast::Ty::TUint32;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EUInt64 { value } => {
                 let ty = tast::Ty::TUint64;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_integer_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_integer_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::zero_for_int_ty(&ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EFloat { value } => {
-                self.ensure_float_literal_fits(diagnostics, value, &tast::Ty::TFloat64);
+                let range = self.expr_range(e);
+                self.ensure_float_literal_fits(diagnostics, value, &tast::Ty::TFloat64, range);
                 let ty = tast::Ty::TFloat64;
                 tast::Expr::EPrim {
                     value: Prim::from_float_literal(value, &ty),
@@ -271,15 +297,17 @@ impl Typer {
             }
             hir::Expr::EFloat32 { value } => {
                 let ty = tast::Ty::TFloat32;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_float_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_float_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
             hir::Expr::EFloat64 { value } => {
                 let ty = tast::Ty::TFloat64;
+                let range = self.expr_range(e);
                 let prim = self
-                    .parse_float_literal_with_ty(diagnostics, &value, &ty)
+                    .parse_float_literal_with_ty(diagnostics, &value, &ty, range)
                     .unwrap_or_else(|| Prim::from_float_literal(0.0, &ty));
                 tast::Expr::EPrim { value: prim, ty }
             }
@@ -289,7 +317,10 @@ impl Typer {
             },
             hir::Expr::EChar { value } => {
                 let ty = tast::Ty::TChar;
-                let ch = self.parse_char_literal(diagnostics, &value).unwrap_or('\0');
+                let range = self.expr_range(e);
+                let ch = self
+                    .parse_char_literal(diagnostics, &value, range)
+                    .unwrap_or('\0');
                 tast::Expr::EPrim {
                     value: Prim::character(ch),
                     ty,
@@ -340,7 +371,7 @@ impl Typer {
                 self.infer_binary_expr(genv, local_env, diagnostics, op, lhs, rhs)
             }
             hir::Expr::EProj { tuple, index } => {
-                self.infer_proj_expr(genv, local_env, diagnostics, tuple, index)
+                self.infer_proj_expr(genv, local_env, diagnostics, e, tuple, index)
             }
             hir::Expr::EField { expr, field } => {
                 self.infer_field_expr(genv, local_env, diagnostics, expr, &field, None)
@@ -510,37 +541,47 @@ impl Typer {
             return expr;
         }
 
+        let range = self.expr_range(expr_id);
         let Some((resolved_trait, _env)) = super::util::resolve_trait_name(genv, trait_name) else {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!("Unknown trait {}", trait_name),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!("Unknown trait {}", trait_name),
+                )
+                .with_range(range),
+            );
             return expr;
         };
 
         let for_ty = expr.get_ty();
         if !is_concrete_dyn_target(&for_ty) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "Cannot convert non-concrete type {:?} to dyn {}",
-                    for_ty, resolved_trait
-                ),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Cannot convert non-concrete type {:?} to dyn {}",
+                        for_ty, resolved_trait
+                    ),
+                )
+                .with_range(range),
+            );
             return expr;
         }
 
         if !has_visible_trait_impl(genv, &resolved_trait, &for_ty) {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "Type {:?} does not implement trait {}",
-                    for_ty, resolved_trait
-                ),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Type {:?} does not implement trait {}",
+                        for_ty, resolved_trait
+                    ),
+                )
+                .with_range(range),
+            );
             return expr;
         }
 
@@ -886,14 +927,17 @@ impl Typer {
                         .tparam_trait_bounds(name)
                         .is_some_and(|bounds| bounds.iter().any(|t| t.0 == type_ident.0));
                     if !in_bounds {
-                        diagnostics.push(Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Type parameter {} is not constrained by trait {}",
-                                name, type_ident.0
-                            ),
-                        ));
+                        diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Type parameter {} is not constrained by trait {}",
+                                    name, type_ident.0
+                                ),
+                            )
+                            .with_range(self.expr_range(call_expr_id)),
+                        );
                         return self.error_expr(None);
                     }
                     self.push_constraint(Constraint::TypeEqual(
@@ -1987,13 +2031,19 @@ impl Typer {
                         self.fresh_ty_var()
                     };
 
+                    let call_range = self.expr_range(call_expr_id);
                     if matches!(
                         name.as_str(),
                         "hashmap_get" | "hashmap_set" | "hashmap_remove" | "hashmap_contains"
                     ) && arg_types.len() >= 2
                     {
                         let key_ty = arg_types[1].clone();
-                        if !self.ensure_hashmap_key_traits(local_env, diagnostics, &key_ty) {
+                        if !self.ensure_hashmap_key_traits(
+                            local_env,
+                            diagnostics,
+                            &key_ty,
+                            call_range,
+                        ) {
                             return self.error_expr(astptr);
                         }
                     }
@@ -2007,14 +2057,17 @@ impl Typer {
                                     .tparam_trait_bounds(name)
                                     .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "ToString"));
                                 if !in_bounds {
-                                    diagnostics.push(Diagnostic::new(
-                                        Stage::Typer,
-                                        Severity::Error,
-                                        format!(
-                                            "Type parameter {} is not constrained by trait ToString",
-                                            name
-                                        ),
-                                    ));
+                                    diagnostics.push(
+                                        Diagnostic::new(
+                                            Stage::Typer,
+                                            Severity::Error,
+                                            format!(
+                                                "Type parameter {} is not constrained by trait ToString",
+                                                name
+                                            ),
+                                        )
+                                        .with_range(call_range),
+                                    );
                                     return self.error_expr(astptr);
                                 }
                             }
@@ -2127,13 +2180,19 @@ impl Typer {
                         self.fresh_ty_var()
                     };
 
+                    let call_range = self.expr_range(call_expr_id);
                     if matches!(
                         name.as_str(),
                         "hashmap_get" | "hashmap_set" | "hashmap_remove" | "hashmap_contains"
                     ) && arg_types.len() >= 2
                     {
                         let key_ty = arg_types[1].clone();
-                        if !self.ensure_hashmap_key_traits(local_env, diagnostics, &key_ty) {
+                        if !self.ensure_hashmap_key_traits(
+                            local_env,
+                            diagnostics,
+                            &key_ty,
+                            call_range,
+                        ) {
                             return self.error_expr(astptr);
                         }
                     }
@@ -2147,14 +2206,17 @@ impl Typer {
                                     .tparam_trait_bounds(name)
                                     .is_some_and(|bounds| bounds.iter().any(|t| t.0 == "ToString"));
                                 if !in_bounds {
-                                    diagnostics.push(Diagnostic::new(
-                                        Stage::Typer,
-                                        Severity::Error,
-                                        format!(
-                                            "Type parameter {} is not constrained by trait ToString",
-                                            name
-                                        ),
-                                    ));
+                                    diagnostics.push(
+                                        Diagnostic::new(
+                                            Stage::Typer,
+                                            Severity::Error,
+                                            format!(
+                                                "Type parameter {} is not constrained by trait ToString",
+                                                name
+                                            ),
+                                        )
+                                        .with_range(call_range),
+                                    );
                                     return self.error_expr(astptr);
                                 }
                             }
@@ -2395,14 +2457,17 @@ impl Typer {
                             }
                         }
                         [] => {
-                            diagnostics.push(Diagnostic::new(
-                                Stage::Typer,
-                                Severity::Error,
-                                format!(
-                                    "Method {} is not available for type parameter {}",
-                                    method_name.0, name
-                                ),
-                            ));
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "Method {} is not available for type parameter {}",
+                                        method_name.0, name
+                                    ),
+                                )
+                                .with_range(self.expr_range(call_expr_id)),
+                            );
                             tast::Expr::EVar {
                                 name: "<error>".to_string(),
                                 ty: self.fresh_ty_var(),
@@ -2415,14 +2480,17 @@ impl Typer {
                                 .map(|(t, _)| t.0.clone())
                                 .collect::<Vec<_>>()
                                 .join(", ");
-                            diagnostics.push(Diagnostic::new(
-                                Stage::Typer,
-                                Severity::Error,
-                                format!(
-                                    "Ambiguous method {} for type parameter {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
-                                    method_name.0, name, trait_names, method_name.0
-                                ),
-                            ));
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "Ambiguous method {} for type parameter {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                                        method_name.0, name, trait_names, method_name.0
+                                    ),
+                                )
+                                .with_range(self.expr_range(call_expr_id)),
+                            );
                             tast::Expr::EVar {
                                 name: "<error>".to_string(),
                                 ty: self.fresh_ty_var(),
@@ -2554,14 +2622,17 @@ impl Typer {
                                 .map(|(t, _)| t.0.clone())
                                 .collect::<Vec<_>>()
                                 .join(", ");
-                            diagnostics.push(Diagnostic::new(
-                                Stage::Typer,
-                                Severity::Error,
-                                format!(
-                                    "Ambiguous method {} for type {:?} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
-                                    method_name.0, receiver_expr, trait_names, method_name.0
-                                ),
-                            ));
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "Ambiguous method {} for type {:?} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                                        method_name.0, receiver_expr, trait_names, method_name.0
+                                    ),
+                                )
+                                .with_range(self.expr_range(call_expr_id)),
+                            );
                             tast::Expr::EVar {
                                 name: "<error>".to_string(),
                                 ty: self.fresh_ty_var(),
@@ -2704,20 +2775,26 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        proj_expr_id: hir::ExprId,
         tuple: hir::ExprId,
         index: usize,
     ) -> tast::Expr {
         let tuple_tast = self.infer_expr(genv, local_env, diagnostics, tuple);
         let tuple_ty = tuple_tast.get_ty();
+        let range = self.expr_range(proj_expr_id);
         match &tuple_ty {
             tast::Ty::TTuple { typs } => {
                 let field_ty = typs.get(index).cloned().unwrap_or_else(|| {
-                    super::util::push_error(
-                        diagnostics,
-                        format!(
-                            "Tuple index {} out of bounds for type {:?}",
-                            index, tuple_ty
-                        ),
+                    diagnostics.push(
+                        Diagnostic::new(
+                            diagnostics::Stage::Typer,
+                            diagnostics::Severity::Error,
+                            format!(
+                                "Tuple index {} out of bounds for type {:?}",
+                                index, tuple_ty
+                            ),
+                        )
+                        .with_range(range),
                     );
                     self.fresh_ty_var()
                 });
@@ -2728,14 +2805,17 @@ impl Typer {
                 }
             }
             _ => {
-                diagnostics.push(Diagnostic::new(
-                    diagnostics::Stage::Typer,
-                    diagnostics::Severity::Error,
-                    format!(
-                        "Cannot project field {} on non-tuple type {:?}",
-                        index, tuple_ty
-                    ),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        diagnostics::Stage::Typer,
+                        diagnostics::Severity::Error,
+                        format!(
+                            "Cannot project field {} on non-tuple type {:?}",
+                            index, tuple_ty
+                        ),
+                    )
+                    .with_range(range),
+                );
                 let ret_ty = self.fresh_ty_var();
                 tast::Expr::EProj {
                     tuple: Box::new(tuple_tast),
@@ -2781,39 +2861,42 @@ impl Typer {
         ty: &tast::Ty,
     ) -> tast::Pat {
         let pat_node = self.hir_table.pat(pat).clone();
+        let range = self.pat_range(pat);
         let out = match pat_node {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
             hir::Pat::PUnit => self.check_pat_unit(),
             hir::Pat::PBool { value } => self.check_pat_bool(value),
-            hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty),
+            hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range),
             hir::Pat::PInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range)
             }
             hir::Pat::PInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty, range)
             }
             hir::Pat::PInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty, range)
             }
             hir::Pat::PInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty, range)
             }
             hir::Pat::PUInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty, range)
             }
             hir::Pat::PUInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty, range)
             }
             hir::Pat::PUInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty, range)
             }
             hir::Pat::PUInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range)
             }
             hir::Pat::PString { value } => self.check_pat_string(&value, ty),
-            hir::Pat::PChar { value } => self.check_pat_char(diagnostics, value.as_str(), ty),
+            hir::Pat::PChar { value } => {
+                self.check_pat_char(diagnostics, value.as_str(), ty, range)
+            }
             hir::Pat::PConstr { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
             }
@@ -2866,10 +2949,11 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         value: &str,
         ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
         let prim = self
-            .parse_integer_literal_with_ty(diagnostics, value, &target_ty)
+            .parse_integer_literal_with_ty(diagnostics, value, &target_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
         self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
         tast::Pat::PPrim {
@@ -2884,9 +2968,10 @@ impl Typer {
         value: &str,
         literal_ty: &tast::Ty,
         expected_ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> tast::Pat {
         let prim = self
-            .parse_integer_literal_with_ty(diagnostics, value, literal_ty)
+            .parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
         self.push_constraint(Constraint::TypeEqual(
             literal_ty.clone(),
@@ -2911,9 +2996,12 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         value: &str,
         ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> tast::Pat {
         self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone()));
-        let ch = self.parse_char_literal(diagnostics, value).unwrap_or('\0');
+        let ch = self
+            .parse_char_literal(diagnostics, value, range)
+            .unwrap_or('\0');
         tast::Pat::PPrim {
             value: Prim::character(ch),
             ty: tast::Ty::TChar,
@@ -3307,50 +3395,59 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         literal: &str,
         ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> Option<Prim> {
         match ty {
             tast::Ty::TInt8 => self
-                .parse_signed_integer(diagnostics, literal, "int8")
+                .parse_signed_integer(diagnostics, literal, "int8", range)
                 .map(|value| Prim::Int8 { value }),
             tast::Ty::TInt16 => self
-                .parse_signed_integer(diagnostics, literal, "int16")
+                .parse_signed_integer(diagnostics, literal, "int16", range)
                 .map(|value| Prim::Int16 { value }),
             tast::Ty::TInt32 => self
-                .parse_signed_integer(diagnostics, literal, "int32")
+                .parse_signed_integer(diagnostics, literal, "int32", range)
                 .map(|value| Prim::Int32 { value }),
             tast::Ty::TInt64 => self
-                .parse_signed_integer(diagnostics, literal, "int64")
+                .parse_signed_integer(diagnostics, literal, "int64", range)
                 .map(|value| Prim::Int64 { value }),
             tast::Ty::TUint8 => self
-                .parse_unsigned_integer(diagnostics, literal, "uint8")
+                .parse_unsigned_integer(diagnostics, literal, "uint8", range)
                 .map(|value| Prim::UInt8 { value }),
             tast::Ty::TUint16 => self
-                .parse_unsigned_integer(diagnostics, literal, "uint16")
+                .parse_unsigned_integer(diagnostics, literal, "uint16", range)
                 .map(|value| Prim::UInt16 { value }),
             tast::Ty::TUint32 => self
-                .parse_unsigned_integer(diagnostics, literal, "uint32")
+                .parse_unsigned_integer(diagnostics, literal, "uint32", range)
                 .map(|value| Prim::UInt32 { value }),
             tast::Ty::TUint64 => self
-                .parse_unsigned_integer(diagnostics, literal, "uint64")
+                .parse_unsigned_integer(diagnostics, literal, "uint64", range)
                 .map(|value| Prim::UInt64 { value }),
             _ => None,
         }
     }
 
-    fn parse_char_literal(&mut self, diagnostics: &mut Diagnostics, literal: &str) -> Option<char> {
+    fn parse_char_literal(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        literal: &str,
+        range: Option<TextRange>,
+    ) -> Option<char> {
         if literal.is_empty() {
-            diagnostics.push(Diagnostic::new(
-                diagnostics::Stage::Typer,
-                diagnostics::Severity::Error,
-                "Char literal cannot be empty".to_string(),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    diagnostics::Stage::Typer,
+                    diagnostics::Severity::Error,
+                    "Char literal cannot be empty".to_string(),
+                )
+                .with_range(range),
+            );
             return None;
         }
 
         if let Some(rest) = literal.strip_prefix('\\') {
             let mut chars = rest.chars();
             let Some(tag) = chars.next() else {
-                self.report_invalid_char_literal(diagnostics, literal);
+                self.report_invalid_char_literal(diagnostics, literal, range);
                 return None;
             };
 
@@ -3383,7 +3480,7 @@ impl Typer {
                 return Some(ch);
             }
 
-            self.report_invalid_char_literal(diagnostics, literal);
+            self.report_invalid_char_literal(diagnostics, literal, range);
             return None;
         }
 
@@ -3393,7 +3490,7 @@ impl Typer {
         match (first, second) {
             (Some(ch), None) => Some(ch),
             _ => {
-                self.report_invalid_char_literal(diagnostics, literal);
+                self.report_invalid_char_literal(diagnostics, literal, range);
                 None
             }
         }
@@ -3404,6 +3501,7 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         literal: &str,
         ty_name: &str,
+        range: Option<TextRange>,
     ) -> Option<T>
     where
         T: std::str::FromStr<Err = std::num::ParseIntError>,
@@ -3413,14 +3511,17 @@ impl Typer {
             Err(err) => {
                 match err.kind() {
                     IntErrorKind::Empty | IntErrorKind::InvalidDigit => {
-                        self.report_invalid_integer_literal(diagnostics, literal);
+                        self.report_invalid_integer_literal(diagnostics, literal, range);
                     }
                     _ => {
-                        diagnostics.push(Diagnostic::new(
-                            diagnostics::Stage::Typer,
-                            diagnostics::Severity::Error,
-                            format!("Integer literal {} does not fit in {}", literal, ty_name),
-                        ));
+                        diagnostics.push(
+                            Diagnostic::new(
+                                diagnostics::Stage::Typer,
+                                diagnostics::Severity::Error,
+                                format!("Integer literal {} does not fit in {}", literal, ty_name),
+                            )
+                            .with_range(range),
+                        );
                     }
                 }
                 None
@@ -3433,16 +3534,20 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         literal: &str,
         ty_name: &str,
+        range: Option<TextRange>,
     ) -> Option<T>
     where
         T: std::str::FromStr<Err = std::num::ParseIntError>,
     {
         if literal.starts_with('-') {
-            diagnostics.push(Diagnostic::new(
-                diagnostics::Stage::Typer,
-                diagnostics::Severity::Error,
-                format!("Integer literal {} does not fit in {}", literal, ty_name),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    diagnostics::Stage::Typer,
+                    diagnostics::Severity::Error,
+                    format!("Integer literal {} does not fit in {}", literal, ty_name),
+                )
+                .with_range(range),
+            );
             return None;
         }
 
@@ -3451,14 +3556,17 @@ impl Typer {
             Err(err) => {
                 match err.kind() {
                     IntErrorKind::Empty | IntErrorKind::InvalidDigit => {
-                        self.report_invalid_integer_literal(diagnostics, literal);
+                        self.report_invalid_integer_literal(diagnostics, literal, range);
                     }
                     _ => {
-                        diagnostics.push(Diagnostic::new(
-                            diagnostics::Stage::Typer,
-                            diagnostics::Severity::Error,
-                            format!("Integer literal {} does not fit in {}", literal, ty_name),
-                        ));
+                        diagnostics.push(
+                            Diagnostic::new(
+                                diagnostics::Stage::Typer,
+                                diagnostics::Severity::Error,
+                                format!("Integer literal {} does not fit in {}", literal, ty_name),
+                            )
+                            .with_range(range),
+                        );
                     }
                 }
                 None
@@ -3466,20 +3574,36 @@ impl Typer {
         }
     }
 
-    fn report_invalid_integer_literal(&mut self, diagnostics: &mut Diagnostics, literal: &str) {
-        diagnostics.push(Diagnostic::new(
-            diagnostics::Stage::Typer,
-            diagnostics::Severity::Error,
-            format!("Invalid integer literal: {}", literal),
-        ));
+    fn report_invalid_integer_literal(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        literal: &str,
+        range: Option<TextRange>,
+    ) {
+        diagnostics.push(
+            Diagnostic::new(
+                diagnostics::Stage::Typer,
+                diagnostics::Severity::Error,
+                format!("Invalid integer literal: {}", literal),
+            )
+            .with_range(range),
+        );
     }
 
-    fn report_invalid_char_literal(&mut self, diagnostics: &mut Diagnostics, literal: &str) {
-        diagnostics.push(Diagnostic::new(
-            diagnostics::Stage::Typer,
-            diagnostics::Severity::Error,
-            format!("Invalid char literal: {}", literal),
-        ));
+    fn report_invalid_char_literal(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        literal: &str,
+        range: Option<TextRange>,
+    ) {
+        diagnostics.push(
+            Diagnostic::new(
+                diagnostics::Stage::Typer,
+                diagnostics::Severity::Error,
+                format!("Invalid char literal: {}", literal),
+            )
+            .with_range(range),
+        );
     }
 
     fn ensure_float_literal_fits(
@@ -3487,24 +3611,31 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         value: f64,
         ty: &tast::Ty,
+        range: Option<TextRange>,
     ) {
         if !value.is_finite() {
-            diagnostics.push(Diagnostic::new(
-                diagnostics::Stage::Typer,
-                diagnostics::Severity::Error,
-                "Float literal must be finite".to_string(),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    diagnostics::Stage::Typer,
+                    diagnostics::Severity::Error,
+                    "Float literal must be finite".to_string(),
+                )
+                .with_range(range),
+            );
             return;
         }
 
         match ty {
             tast::Ty::TFloat32 => {
                 if value < f32::MIN as f64 || value > f32::MAX as f64 {
-                    diagnostics.push(Diagnostic::new(
-                        diagnostics::Stage::Typer,
-                        diagnostics::Severity::Error,
-                        format!("Float literal {} does not fit in float32", value),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            diagnostics::Stage::Typer,
+                            diagnostics::Severity::Error,
+                            format!("Float literal {} does not fit in float32", value),
+                        )
+                        .with_range(range),
+                    );
                 }
             }
             tast::Ty::TFloat64 => {
@@ -3519,10 +3650,11 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         literal: &str,
         ty: &tast::Ty,
+        range: Option<TextRange>,
     ) -> Option<Prim> {
         match literal.parse::<f64>() {
             Ok(value) => {
-                self.ensure_float_literal_fits(diagnostics, value, ty);
+                self.ensure_float_literal_fits(diagnostics, value, ty, range);
                 match ty {
                     tast::Ty::TFloat32 => Some(Prim::Float32 {
                         value: value as f32,
@@ -3532,11 +3664,14 @@ impl Typer {
                 }
             }
             Err(_) => {
-                diagnostics.push(Diagnostic::new(
-                    diagnostics::Stage::Typer,
-                    diagnostics::Severity::Error,
-                    format!("Invalid float literal: {}", literal),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        diagnostics::Stage::Typer,
+                        diagnostics::Severity::Error,
+                        format!("Invalid float literal: {}", literal),
+                    )
+                    .with_range(range),
+                );
                 None
             }
         }
