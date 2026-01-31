@@ -169,3 +169,24 @@ The file extension for goml source files is `.gom`.
 * Top-level functions must have explicit type signatures; generics are limited to top-level functions.
 * Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
 * The runtime uses garbage collection; manual ownership or lifetimes are not required.
+
+### Builtin `HashMap`
+
+* Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
+* Key requirements: `K` must have both `Hash` and `Eq`.
+
+### Builtin traits `Eq` / `Hash`
+
+* `trait Eq { fn eq(Self, Self) -> bool; }`
+* `trait Hash { fn hash(Self) -> uint64; }`
+* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`ref_get(self)`), not pointer identity.
+
+### Testing / snapshots gotchas
+
+* Adding/changing builtins changes the Builtin interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
+* Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
+
+### Name collisions
+
+* Avoid defining user traits named `Eq` or `Hash` in tests/examples unless you fully qualify or rename them; the builtins now reserve these names and duplicate impls can surface as “defined in multiple packages”.
