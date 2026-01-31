@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use expect_test::{Expect, expect};
 use tower_lsp::lsp_types::*;
 
 use crate::{Document, handlers};
@@ -18,51 +19,161 @@ fn pipeline_dir() -> PathBuf {
         .join("compiler/src/tests/pipeline")
 }
 
+fn format_diagnostics(diags: &[Diagnostic]) -> String {
+    if diags.is_empty() {
+        return "no diagnostics".to_string();
+    }
+    diags
+        .iter()
+        .map(|d| {
+            let severity = match d.severity {
+                Some(DiagnosticSeverity::ERROR) => "error",
+                Some(DiagnosticSeverity::WARNING) => "warning",
+                Some(DiagnosticSeverity::INFORMATION) => "info",
+                Some(DiagnosticSeverity::HINT) => "hint",
+                _ => "unknown",
+            };
+            format!(
+                "[{}:{}] {}: {}",
+                d.range.start.line, d.range.start.character, severity, d.message
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn format_hover(hover: Option<Hover>) -> String {
+    match hover {
+        None => "no hover".to_string(),
+        Some(h) => match h.contents {
+            HoverContents::Markup(m) => m.value,
+            HoverContents::Scalar(MarkedString::String(s)) => s,
+            HoverContents::Scalar(MarkedString::LanguageString(ls)) => {
+                format!("```{}\n{}\n```", ls.language, ls.value)
+            }
+            HoverContents::Array(arr) => arr
+                .into_iter()
+                .map(|ms| match ms {
+                    MarkedString::String(s) => s,
+                    MarkedString::LanguageString(ls) => {
+                        format!("```{}\n{}\n```", ls.language, ls.value)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n"),
+        },
+    }
+}
+
+fn format_completion(completion: Option<CompletionResponse>) -> String {
+    match completion {
+        None => "no completion".to_string(),
+        Some(CompletionResponse::Array(items)) => {
+            if items.is_empty() {
+                return "empty completion".to_string();
+            }
+            let mut labels: Vec<_> = items.iter().map(|i| i.label.as_str()).collect();
+            labels.sort();
+            labels.join(", ")
+        }
+        Some(CompletionResponse::List(list)) => {
+            if list.items.is_empty() {
+                return "empty completion".to_string();
+            }
+            let mut labels: Vec<_> = list.items.iter().map(|i| i.label.as_str()).collect();
+            labels.sort();
+            labels.join(", ")
+        }
+    }
+}
+
+fn check_diagnostics(src: &str, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let doc = Document::new(src.to_string());
+    let diags = handlers::get_diagnostics(&path, src, &doc);
+    expect.assert_eq(&format_diagnostics(&diags));
+}
+
+fn check_hover(src: &str, line: u32, character: u32, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let position = Position { line, character };
+    let hover = handlers::hover(&path, src, position);
+    expect.assert_eq(&format_hover(hover));
+}
+
+fn check_completion(src: &str, line: u32, character: u32, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let position = Position { line, character };
+    let completion = handlers::completion(&path, src, position);
+    expect.assert_eq(&format_completion(completion));
+}
+
+fn check_module_diagnostics(project_name: &str, expect: Expect) {
+    let project_dir = test_module_dir().join(project_name);
+    let main_path = project_dir.join("main.gom");
+    let src = std::fs::read_to_string(&main_path).unwrap();
+    let doc = Document::new(src.clone());
+    let diags = handlers::get_diagnostics(&main_path, &src, &doc);
+    expect.assert_eq(&format_diagnostics(&diags));
+}
+
+fn check_pipeline_diagnostics(case_name: &str, expect: Expect) {
+    let case_dir = pipeline_dir().join(case_name);
+    let main_path = case_dir.join("main.gom");
+    if !main_path.exists() {
+        expect.assert_eq("case not found");
+        return;
+    }
+    let src = std::fs::read_to_string(&main_path).unwrap();
+    let doc = Document::new(src.clone());
+    let diags = handlers::get_diagnostics(&main_path, &src, &doc);
+    expect.assert_eq(&format_diagnostics(&diags));
+}
+
 mod diagnostics_tests {
     use super::*;
 
     #[test]
     fn valid_code_no_diagnostics() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     let x = 42;
     println(x.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "Expected no diagnostics for valid code");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn undefined_variable_error() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     println(undefined_var.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(
-            !diags.is_empty(),
-            "Expected diagnostics for undefined variable"
-        );
-        assert!(
-            diags
-                .iter()
-                .any(|d| d.severity == Some(DiagnosticSeverity::ERROR))
+"#,
+            expect![[r#"
+                [0:0] error: Unresolved name undefined_var
+                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [0:0] error: Unresolved name undefined_var
+                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString) }]
+                [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString) }]
+                [0:0] error: Type variable TypeVar(2) not resolved
+                [0:0] error: Type variable TypeVar(4) not resolved"#]],
         );
     }
 
     #[test]
     fn type_mismatch_error() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn add(x: int32, y: int32) -> int32 {
@@ -72,31 +183,38 @@ fn add(x: int32, y: int32) -> int32 {
 fn main() {
     let result = add("hello", 42);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(!diags.is_empty(), "Expected diagnostics for type mismatch");
+"#,
+            expect![[r#"
+                [0:0] error: Types are not equal: TString and TInt32
+                [0:0] error: Types are not equal: TInt32 and TString
+                [0:0] error: Type variable TypeVar(0) not resolved
+                [0:0] error: Type variable TypeVar(0) not resolved"#]],
+        );
     }
 
     #[test]
     fn parse_error() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main( {
     let x = 42;
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(!diags.is_empty(), "Expected diagnostics for parse error");
+"#,
+            expect![[r#"
+                [3:9] error: expect ")", actual "{"
+                [4:4] error: expected a function
+                [4:10] error: expected a function
+                [4:14] error: expected a function
+                [5:0] error: expected a function"#]],
+        );
     }
 
     #[test]
     fn missing_return_type() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn add(x: int32, y: int32) {
@@ -106,52 +224,26 @@ fn add(x: int32, y: int32) {
 fn main() {
     let _ = add(1, 2);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let _diags = handlers::get_diagnostics(&path, src, &doc);
+"#,
+            expect![[r#"
+                [0:0] error: Types are not equal: TInt32 and TUnit
+                [0:0] error: Types are not equal: TInt32 and TUnit"#]],
+        );
     }
 
     #[test]
     fn module_project001_no_errors() {
-        let project_dir = test_module_dir().join("project001");
-        let main_path = project_dir.join("main.gom");
-        let src = std::fs::read_to_string(&main_path).unwrap();
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&main_path, &src, &doc);
-        assert!(
-            diags.is_empty(),
-            "project001/main.gom should have no errors: {:?}",
-            diags
-        );
+        check_module_diagnostics("project001", expect!["no diagnostics"]);
     }
 
     #[test]
     fn module_project002_no_errors() {
-        let project_dir = test_module_dir().join("project002");
-        let main_path = project_dir.join("main.gom");
-        let src = std::fs::read_to_string(&main_path).unwrap();
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&main_path, &src, &doc);
-        assert!(
-            diags.is_empty(),
-            "project002/main.gom should have no errors: {:?}",
-            diags
-        );
+        check_module_diagnostics("project002", expect!["no diagnostics"]);
     }
 
     #[test]
     fn module_project003_no_errors() {
-        let project_dir = test_module_dir().join("project003");
-        let main_path = project_dir.join("main.gom");
-        let src = std::fs::read_to_string(&main_path).unwrap();
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&main_path, &src, &doc);
-        assert!(
-            diags.is_empty(),
-            "project003/main.gom should have no errors: {:?}",
-            diags
-        );
+        check_module_diagnostics("project003", expect!["no diagnostics"]);
     }
 }
 
@@ -160,25 +252,28 @@ mod hover_tests {
 
     #[test]
     fn hover_on_variable() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
     let x = 42;
     println(x.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 5,
-            character: 12,
-        };
-        let _hover = handlers::hover(&path, src, position);
+"#,
+            5,
+            12,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_function_name() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn add(x: int32, y: int32) -> int32 {
@@ -188,19 +283,20 @@ fn add(x: int32, y: int32) -> int32 {
 fn main() {
     let result = add(1, 2);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 3,
-            character: 5,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on function");
+"#,
+            3,
+            5,
+            expect![[r#"
+                ```goml
+                (int32, int32) -> int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_function_call() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn add(x: int32, y: int32) -> int32 {
@@ -210,19 +306,20 @@ fn add(x: int32, y: int32) -> int32 {
 fn main() {
     let result = add(1, 2);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 8,
-            character: 18,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on function call");
+"#,
+            8,
+            18,
+            expect![[r#"
+                ```goml
+                (int32, int32) -> int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_struct_field() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 struct Point {
@@ -234,22 +331,20 @@ fn main() {
     let p = Point { x: 10, y: 20 };
     println(p.x.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 10,
-            character: 14,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(
-            hover.is_some(),
-            "Expected hover info on struct field access"
+"#,
+            10,
+            14,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
         );
     }
 
     #[test]
     fn hover_on_enum_variant() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 enum Color {
@@ -261,19 +356,20 @@ enum Color {
 fn main() {
     let c = Color::Red;
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 10,
-            character: 18,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on enum variant");
+"#,
+            10,
+            18,
+            expect![[r#"
+                ```goml
+                Color
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_parameter() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn double(n: int32) -> int32 {
@@ -283,38 +379,40 @@ fn double(n: int32) -> int32 {
 fn main() {
     let _ = double(5);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 4,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on parameter");
+"#,
+            4,
+            4,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_let_binding() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
     let result: int32 = 42;
     println(result.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 8,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on let binding");
+"#,
+            4,
+            8,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn hover_on_match_arm_binding() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 enum Option {
@@ -329,14 +427,14 @@ fn main() {
         Option::None => println("none"),
     };
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 11,
-            character: 22,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover info on match arm binding");
+"#,
+            11,
+            22,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
+        );
     }
 }
 
@@ -345,7 +443,8 @@ mod completion_tests {
 
     #[test]
     fn dot_completion_on_struct() {
-        let src = r#"
+        check_completion(
+            r#"
 package Main;
 
 struct Point {
@@ -357,53 +456,34 @@ fn main() {
     let p = Point { x: 10, y: 20 };
     p.
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 10,
-            character: 6,
-        };
-        let completion = handlers::completion(&path, src, position);
-        assert!(
-            completion.is_some(),
-            "Expected completions for struct fields"
+"#,
+            10,
+            6,
+            expect!["x, y"],
         );
-        if let Some(CompletionResponse::Array(items)) = completion {
-            let labels: Vec<_> = items.iter().map(|i| i.label.as_str()).collect();
-            assert!(labels.contains(&"x"), "Should suggest field 'x'");
-            assert!(labels.contains(&"y"), "Should suggest field 'y'");
-        }
     }
 
     #[test]
     fn dot_completion_on_int() {
-        let src = r#"
+        check_completion(
+            r#"
 package Main;
 
 fn main() {
     let x = 42;
     x.
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 5,
-            character: 6,
-        };
-        let completion = handlers::completion(&path, src, position);
-        assert!(completion.is_some(), "Expected completions for int methods");
-        if let Some(CompletionResponse::Array(items)) = completion {
-            let labels: Vec<_> = items.iter().map(|i| i.label.as_str()).collect();
-            assert!(
-                labels.contains(&"to_string"),
-                "Should suggest 'to_string' method"
-            );
-        }
+"#,
+            5,
+            6,
+            expect!["to_string"],
+        );
     }
 
     #[test]
     fn colon_colon_completion_on_enum() {
-        let src = r#"
+        check_completion(
+            r#"
 package Main;
 
 enum Color {
@@ -415,28 +495,17 @@ enum Color {
 fn main() {
     let c = Color::
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 10,
-            character: 19,
-        };
-        let completion = handlers::completion(&path, src, position);
-        assert!(
-            completion.is_some(),
-            "Expected completions for enum variants"
+"#,
+            10,
+            19,
+            expect!["Blue, Green, Red"],
         );
-        if let Some(CompletionResponse::Array(items)) = completion {
-            let labels: Vec<_> = items.iter().map(|i| i.label.as_str()).collect();
-            assert!(labels.contains(&"Red"), "Should suggest variant 'Red'");
-            assert!(labels.contains(&"Green"), "Should suggest variant 'Green'");
-            assert!(labels.contains(&"Blue"), "Should suggest variant 'Blue'");
-        }
     }
 
     #[test]
     fn value_completion_suggests_functions() {
-        let src = r#"
+        check_completion(
+            r#"
 package Main;
 
 fn helper() -> int32 {
@@ -446,18 +515,17 @@ fn helper() -> int32 {
 fn main() {
     let x = hel
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 8,
-            character: 15,
-        };
-        let _completion = handlers::completion(&path, src, position);
+"#,
+            8,
+            15,
+            expect!["empty completion"],
+        );
     }
 
     #[test]
     fn completion_in_empty_function_body() {
-        let src = r#"
+        check_completion(
+            r#"
 package Main;
 
 fn greet(name: string) -> string {
@@ -467,13 +535,11 @@ fn greet(name: string) -> string {
 fn main() {
     
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 8,
-            character: 4,
-        };
-        let _completion = handlers::completion(&path, src, position);
+"#,
+            8,
+            4,
+            expect!["empty completion"],
+        );
     }
 }
 
@@ -488,29 +554,83 @@ mod goto_definition_tests {
         Url::from_file_path(test_file_path()).unwrap()
     }
 
+    fn format_goto_result(result: Option<GotoDefinitionResponse>) -> String {
+        match result {
+            None => "no definition".to_string(),
+            Some(GotoDefinitionResponse::Scalar(loc)) => {
+                format!(
+                    "{}:{}:{}",
+                    loc.uri.path().split('/').next_back().unwrap_or(""),
+                    loc.range.start.line,
+                    loc.range.start.character
+                )
+            }
+            Some(GotoDefinitionResponse::Array(locs)) => {
+                if locs.is_empty() {
+                    return "no definition".to_string();
+                }
+                locs.iter()
+                    .map(|loc| {
+                        format!(
+                            "{}:{}:{}",
+                            loc.uri.path().split('/').next_back().unwrap_or(""),
+                            loc.range.start.line,
+                            loc.range.start.character
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            }
+            Some(GotoDefinitionResponse::Link(links)) => {
+                if links.is_empty() {
+                    return "no definition".to_string();
+                }
+                links
+                    .iter()
+                    .map(|link| {
+                        format!(
+                            "{}:{}:{}",
+                            link.target_uri.path().split('/').next_back().unwrap_or(""),
+                            link.target_range.start.line,
+                            link.target_range.start.character
+                        )
+                    })
+                    .collect::<Vec<_>>()
+                    .join("\n")
+            }
+        }
+    }
+
+    fn check_goto(src: &str, line: u32, character: u32, expect: Expect) {
+        let path = test_file_path();
+        let doc = Document::new(src.to_string());
+        let uri = test_file_uri();
+        let position = Position { line, character };
+        let result = handlers::goto_definition(&uri, &path, src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
     #[test]
     fn goto_definition_local_variable() {
-        let src = r#"
+        check_goto(
+            r#"
 package Main;
 
 fn main() {
     let x = 42;
     println(x.to_string());
 }
-"#;
-        let path = test_file_path();
-        let doc = Document::new(src.to_string());
-        let uri = test_file_uri();
-        let position = Position {
-            line: 5,
-            character: 12,
-        };
-        let _result = handlers::goto_definition(&uri, &path, src, position, &doc);
+"#,
+            5,
+            12,
+            expect!["goml_test.gom:5:12"],
+        );
     }
 
     #[test]
     fn goto_definition_function() {
-        let src = r#"
+        check_goto(
+            r#"
 package Main;
 
 fn helper() -> int32 {
@@ -520,20 +640,17 @@ fn helper() -> int32 {
 fn main() {
     let x = helper();
 }
-"#;
-        let path = test_file_path();
-        let doc = Document::new(src.to_string());
-        let uri = test_file_uri();
-        let position = Position {
-            line: 8,
-            character: 14,
-        };
-        let _result = handlers::goto_definition(&uri, &path, src, position, &doc);
+"#,
+            8,
+            14,
+            expect!["goml_test.gom:8:12"],
+        );
     }
 
     #[test]
     fn goto_definition_struct_field() {
-        let src = r#"
+        check_goto(
+            r#"
 package Main;
 
 struct Point {
@@ -545,20 +662,17 @@ fn main() {
     let p = Point { x: 10, y: 20 };
     let _ = p.x;
 }
-"#;
-        let path = test_file_path();
-        let doc = Document::new(src.to_string());
-        let uri = test_file_uri();
-        let position = Position {
-            line: 10,
-            character: 14,
-        };
-        let _result = handlers::goto_definition(&uri, &path, src, position, &doc);
+"#,
+            10,
+            14,
+            expect!["no definition"],
+        );
     }
 
     #[test]
     fn goto_definition_parameter() {
-        let src = r#"
+        check_goto(
+            r#"
 package Main;
 
 fn double(n: int32) -> int32 {
@@ -568,15 +682,11 @@ fn double(n: int32) -> int32 {
 fn main() {
     let _ = double(5);
 }
-"#;
-        let path = test_file_path();
-        let doc = Document::new(src.to_string());
-        let uri = test_file_uri();
-        let position = Position {
-            line: 4,
-            character: 4,
-        };
-        let _result = handlers::goto_definition(&uri, &path, src, position, &doc);
+"#,
+            4,
+            4,
+            expect!["goml_test.gom:4:4"],
+        );
     }
 }
 
@@ -584,124 +694,111 @@ mod document_tests {
     use super::*;
     use text_size::TextSize;
 
+    fn check_position(src: &str, offset: u32, expect: Expect) {
+        let doc = Document::new(src.to_string());
+        match doc.position(TextSize::from(offset)) {
+            Some(pos) => expect.assert_eq(&format!("{}:{}", pos.line, pos.character)),
+            None => expect.assert_eq("invalid offset"),
+        }
+    }
+
+    fn check_range(src: &str, start: u32, end: u32, expect: Expect) {
+        let doc = Document::new(src.to_string());
+        let range = doc.range(text_size::TextRange::new(
+            TextSize::from(start),
+            TextSize::from(end),
+        ));
+        match range {
+            Some(r) => expect.assert_eq(&format!(
+                "{}:{}-{}:{}",
+                r.start.line, r.start.character, r.end.line, r.end.character
+            )),
+            None => expect.assert_eq("invalid range"),
+        }
+    }
+
     #[test]
     fn document_position_first_line() {
-        let doc = Document::new("hello\nworld".to_string());
-        let pos = doc.position(TextSize::from(0)).unwrap();
-        assert_eq!(pos.line, 0);
-        assert_eq!(pos.character, 0);
+        check_position("hello\nworld", 0, expect!["0:0"]);
     }
 
     #[test]
     fn document_position_second_line() {
-        let doc = Document::new("hello\nworld".to_string());
-        let pos = doc.position(TextSize::from(6)).unwrap();
-        assert_eq!(pos.line, 1);
-        assert_eq!(pos.character, 0);
+        check_position("hello\nworld", 6, expect!["1:0"]);
     }
 
     #[test]
     fn document_position_middle_of_line() {
-        let doc = Document::new("hello\nworld".to_string());
-        let pos = doc.position(TextSize::from(3)).unwrap();
-        assert_eq!(pos.line, 0);
-        assert_eq!(pos.character, 3);
+        check_position("hello\nworld", 3, expect!["0:3"]);
     }
 
     #[test]
     fn document_range() {
-        let doc = Document::new("hello\nworld".to_string());
-        let range = doc
-            .range(text_size::TextRange::new(
-                TextSize::from(0),
-                TextSize::from(5),
-            ))
-            .unwrap();
-        assert_eq!(range.start.line, 0);
-        assert_eq!(range.start.character, 0);
-        assert_eq!(range.end.line, 0);
-        assert_eq!(range.end.character, 5);
+        check_range("hello\nworld", 0, 5, expect!["0:0-0:5"]);
     }
 
     #[test]
     fn document_range_multiline() {
-        let doc = Document::new("hello\nworld".to_string());
-        let range = doc
-            .range(text_size::TextRange::new(
-                TextSize::from(0),
-                TextSize::from(11),
-            ))
-            .unwrap();
-        assert_eq!(range.start.line, 0);
-        assert_eq!(range.start.character, 0);
-        assert_eq!(range.end.line, 1);
-        assert_eq!(range.end.character, 5);
+        check_range("hello\nworld", 0, 11, expect!["0:0-1:5"]);
     }
 }
 
 mod pipeline_integration_tests {
     use super::*;
 
-    fn run_diagnostics_on_pipeline_case(case_name: &str) {
-        let case_dir = pipeline_dir().join(case_name);
-        let main_path = case_dir.join("main.gom");
-        if !main_path.exists() {
-            return;
-        }
-        let src = std::fs::read_to_string(&main_path).unwrap();
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&main_path, &src, &doc);
-        assert!(
-            diags.is_empty(),
-            "Pipeline case {} should have no LSP diagnostics: {:?}",
-            case_name,
-            diags
-        );
+    #[test]
+    fn pipeline_000() {
+        check_pipeline_diagnostics("000", expect!["no diagnostics"]);
     }
 
     #[test]
-    fn pipeline_000() {
-        run_diagnostics_on_pipeline_case("000");
-    }
-    #[test]
     fn pipeline_001() {
-        run_diagnostics_on_pipeline_case("001");
+        check_pipeline_diagnostics("001", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_002() {
-        run_diagnostics_on_pipeline_case("002");
+        check_pipeline_diagnostics("002", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_003() {
-        run_diagnostics_on_pipeline_case("003");
+        check_pipeline_diagnostics("003", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_004() {
-        run_diagnostics_on_pipeline_case("004");
+        check_pipeline_diagnostics("004", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_005() {
-        run_diagnostics_on_pipeline_case("005");
+        check_pipeline_diagnostics("005", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_006() {
-        run_diagnostics_on_pipeline_case("006");
+        check_pipeline_diagnostics("006", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_007_expr_pattern_matching() {
-        run_diagnostics_on_pipeline_case("007_expr_pattern_matching");
+        check_pipeline_diagnostics("007_expr_pattern_matching", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_008_expr_pattern_matching_unit() {
-        run_diagnostics_on_pipeline_case("008_expr_pattern_matching_unit");
+        check_pipeline_diagnostics("008_expr_pattern_matching_unit", expect!["case not found"]);
     }
+
     #[test]
     fn pipeline_009() {
-        run_diagnostics_on_pipeline_case("009");
+        check_pipeline_diagnostics("009", expect!["no diagnostics"]);
     }
+
     #[test]
     fn pipeline_010() {
-        run_diagnostics_on_pipeline_case("010");
+        check_pipeline_diagnostics("010", expect!["no diagnostics"]);
     }
 }
 
@@ -710,7 +807,8 @@ mod complex_code_tests {
 
     #[test]
     fn generics_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn identity[T](x: T) -> T {
@@ -721,19 +819,20 @@ fn main() {
     let n = identity(42);
     let s = identity("hello");
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 8,
-            character: 12,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover on generic function call");
+"#,
+            8,
+            12,
+            expect![[r#"
+                ```goml
+                (int32) -> int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn trait_method_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 trait Greet {
@@ -754,19 +853,20 @@ fn main() {
     let p = Person { name: "Alice" };
     let greeting = Greet::greet(p);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 19,
-            character: 25,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover on trait method call");
+"#,
+            19,
+            25,
+            expect![[r#"
+                ```goml
+                (Person) -> string
+                ```"#]],
+        );
     }
 
     #[test]
     fn closure_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
@@ -774,18 +874,17 @@ fn main() {
     let result: int32 = add(1, 2);
     println(result.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 14,
-        };
-        let _hover = handlers::hover(&path, src, position);
+"#,
+            4,
+            14,
+            expect!["no hover"],
+        );
     }
 
     #[test]
     fn match_expression_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 enum Result {
@@ -800,19 +899,20 @@ fn main() {
         Result::Err(_) => 0,
     };
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 11,
-            character: 22,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover in match arm");
+"#,
+            11,
+            22,
+            expect![[r#"
+                ```goml
+                int32
+                ```"#]],
+        );
     }
 
     #[test]
     fn ref_type_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
@@ -820,57 +920,60 @@ fn main() {
     ref_set(counter, ref_get(counter) + 1);
     println(ref_get(counter).to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 8,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover on ref variable");
+"#,
+            4,
+            8,
+            expect![[r#"
+                ```goml
+                Ref[int32]
+                ```"#]],
+        );
     }
 
     #[test]
     fn array_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
     let first = array_get(arr, 0);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 8,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover on array variable");
+"#,
+            4,
+            8,
+            expect![[r#"
+                ```goml
+                [int32; 3]
+                ```"#]],
+        );
     }
 
     #[test]
     fn tuple_hover() {
-        let src = r#"
+        check_hover(
+            r#"
 package Main;
 
 fn main() {
     let pair = (42, "hello");
     let (n, s) = pair;
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 4,
-            character: 8,
-        };
-        let hover = handlers::hover(&path, src, position);
-        assert!(hover.is_some(), "Expected hover on tuple variable");
+"#,
+            4,
+            8,
+            expect![[r#"
+                ```goml
+                (int32, string)
+                ```"#]],
+        );
     }
 
     #[test]
     fn while_loop_diagnostics() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -880,26 +983,30 @@ fn main() {
     };
     println(ref_get(i).to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let _diags = handlers::get_diagnostics(&path, src, &doc);
+"#,
+            expect![[r#"
+                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
+                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
+                [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString) }]
+                [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString) }]
+                [0:0] error: Type variable TypeVar(14) not resolved
+                [0:0] error: Type variable TypeVar(17) not resolved"#]],
+        );
     }
 
     #[test]
     fn extern_function_diagnostics() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     let s = "value: 42";
     println(s);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "Simple code should have no errors");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 }
 
@@ -908,103 +1015,77 @@ mod edge_case_tests {
 
     #[test]
     fn empty_file() {
-        let src = "";
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let _diags = handlers::get_diagnostics(&path, src, &doc);
+        check_diagnostics("", expect!["no diagnostics"]);
     }
 
     #[test]
     fn only_package_declaration() {
-        let src = "package Main;";
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let _diags = handlers::get_diagnostics(&path, src, &doc);
+        check_diagnostics("package Main;", expect!["no diagnostics"]);
     }
 
     #[test]
     fn unicode_in_strings() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     let s = "你好世界 🌍";
     println(s);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "Unicode strings should work");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn deeply_nested_expressions() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     let x: int32 = ((((1 + 2) * 3) - 4) / 2);
     println(x.to_string());
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(
-            diags.is_empty(),
-            "Nested expressions should work: {:?}",
-            diags
+"#,
+            expect!["no diagnostics"],
         );
     }
 
     #[test]
     fn multiline_string() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     let s = "line1 line2 line3";
     println(s);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "Simple strings should work");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn hover_at_file_start() {
-        let src = "package Main;\n\nfn main() {}";
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 0,
-            character: 0,
-        };
-        let _hover = handlers::hover(&path, src, position);
+        check_hover("package Main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
     }
 
     #[test]
     fn hover_at_file_end() {
-        let src = "package Main;\n\nfn main() {}";
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 2,
-            character: 10,
-        };
-        let _hover = handlers::hover(&path, src, position);
+        check_hover("package Main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
     }
 
     #[test]
     fn completion_at_file_start() {
-        let src = "package Main;\n\nfn main() {}";
-        let path = PathBuf::from("test.gom");
-        let position = Position {
-            line: 0,
-            character: 0,
-        };
-        let _completion = handlers::completion(&path, src, position);
+        check_completion(
+            "package Main;\n\nfn main() {}",
+            0,
+            0,
+            expect!["empty completion"],
+        );
     }
 
     #[test]
@@ -1021,10 +1102,7 @@ fn main() {{
 "#,
             long_string
         );
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&path, &src, &doc);
-        assert!(diags.is_empty(), "Long lines should work");
+        check_diagnostics(&src, expect!["no diagnostics"]);
     }
 
     #[test]
@@ -1034,11 +1112,7 @@ fn main() {{
             src.push_str(&format!("fn func{}() -> int32 {{ {} }}\n", i, i));
         }
         src.push_str("fn main() { let _ = func0(); }");
-
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.clone());
-        let diags = handlers::get_diagnostics(&path, &src, &doc);
-        assert!(diags.is_empty(), "Many functions should work");
+        check_diagnostics(&src, expect!["no diagnostics"]);
     }
 }
 
@@ -1047,37 +1121,36 @@ mod builtin_tests {
 
     #[test]
     fn builtin_println() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     println("hello");
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "println should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_print() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
     print("hello");
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "print should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_ref_operations() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1085,16 +1158,15 @@ fn main() {
     let v = ref_get(r);
     ref_set(r, v + 1);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "ref operations should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_vec_operations() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1104,16 +1176,15 @@ fn main() {
     let len = vec_len(v);
     let first = vec_get(v, 0);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "vec operations should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_array_operations() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1121,16 +1192,15 @@ fn main() {
     let v = array_get(arr, 0);
     array_set(arr, 0, v + 1);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "array operations should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_string_operations() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1138,16 +1208,15 @@ fn main() {
     let len = string_len(s);
     let c = string_get(s, 0);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "string operations should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_hashmap_operations() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1158,16 +1227,15 @@ fn main() {
     let len = hashmap_len(m);
     hashmap_remove(m, "key");
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "hashmap operations should be available");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 
     #[test]
     fn builtin_to_string_trait() {
-        let src = r#"
+        check_diagnostics(
+            r#"
 package Main;
 
 fn main() {
@@ -1175,10 +1243,8 @@ fn main() {
     let s = n.to_string();
     println(s);
 }
-"#;
-        let path = PathBuf::from("test.gom");
-        let doc = Document::new(src.to_string());
-        let diags = handlers::get_diagnostics(&path, src, &doc);
-        assert!(diags.is_empty(), "to_string should be available on int32");
+"#,
+            expect!["no diagnostics"],
+        );
     }
 }
