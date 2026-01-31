@@ -251,16 +251,16 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
         }
     }
 
-    if let Ok(filter) = std::env::var("GOML_TEST_FILTER") {
-        if !filter.is_empty() {
-            case_paths.retain(|p| p.to_string_lossy().contains(&filter));
-            if test_log_enabled() {
-                eprintln!(
-                    "[test_cases] filter={} matched={}",
-                    filter,
-                    case_paths.len()
-                );
-            }
+    if let Ok(filter) = std::env::var("GOML_TEST_FILTER")
+        && !filter.is_empty()
+    {
+        case_paths.retain(|p| p.to_string_lossy().contains(&filter));
+        if test_log_enabled() {
+            eprintln!(
+                "[test_cases] filter={} matched={}",
+                filter,
+                case_paths.len()
+            );
         }
     }
 

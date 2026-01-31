@@ -26,12 +26,53 @@ The file extension for goml source files is `.gom`.
 - VS Code extension in `editors/vscode/` consuming LSP server binary.
 - CI/dev helpers in `.justfile`. Build artifacts in `target/` and `webapp/dist/`.
 
+## Project Configuration (`goml.toml`)
+
+GoML projects use a `goml.toml` file for project configuration, similar to Cargo.toml in Rust.
+
+A **module** is the top-level compilation unit containing one or more packages. The module root has a `goml.toml` with a `[module]` section. Sub-packages can have their own `goml.toml` files (without `[module]`) or rely on directory-based discovery.
+
+### Module Root Example
+```toml
+[module]
+name = "myapp"
+
+[package]
+name = "main"
+entry = "main.gom"
+```
+
+### Sub-Package Example
+```toml
+[package]
+name = "utils"
+```
+
+### Minimal Example (no module section, backward compatible)
+```toml
+[package]
+name = "Main"
+```
+
+### Fields
+| Field           | Required | Default     | Description                                  |
+| --------------- | -------- | ----------- | -------------------------------------------- |
+| `module.name`   | No       | -           | Module name (presence indicates module root) |
+| `package.name`  | Yes      | -           | Package name (any valid identifier)          |
+| `package.entry` | No       | `"lib.gom"` | Path to entry file relative to goml.toml     |
+
+### Project Discovery
+- The LSP and CLI search upward from the current file to find `goml.toml` with a `[module]` section
+- If found, uses `package.entry` as the compilation entry point
+- Sub-packages are discovered from subdirectories when imported, using their own `goml.toml` if present
+- Package names can be any valid identifier (lowercase or PascalCase)
+
 ## VS Code LSP Extension
 
 ### Design Philosophy
 - Reuse existing compiler infrastructure: the LSP server delegates to `crates/compiler/src/query.rs` which already powers the Monaco web editor.
 - Full compilation on every request: no incremental/salsa-based caching yet; each hover/completion triggers a full typecheck of the entry package and its dependencies.
-- Multi-package aware: the LSP discovers packages via `pipeline::packages::discover_packages` starting from the file's parent directory, supporting `package Main;` + subdirectory library packages.
+- Multi-package aware: the LSP discovers packages via `pipeline::packages::discover_packages` starting from the module root, supporting arbitrary package names + subdirectory library packages.
 
 ### Build Commands
 - `just build-lsp`: Build release LSP binary (`target/release/goml-lsp`).
