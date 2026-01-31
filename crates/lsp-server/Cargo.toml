@@ -7,6 +7,10 @@ edition.workspace = true
 name = "goml-lsp"
 path = "src/main.rs"
 
+[lib]
+name = "lsp_server"
+path = "src/lib.rs"
+
 [dependencies]
 compiler = { path = "../compiler" }
 diagnostics = { path = "../diagnostics" }
@@ -21,3 +25,6 @@ text-size = "1.1.1"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dashmap = "6"
+
+[dev-dependencies]
+tempfile = "3"

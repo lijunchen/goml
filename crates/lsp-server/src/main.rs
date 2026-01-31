@@ -1,44 +1,11 @@
 use std::path::PathBuf;
 
 use dashmap::DashMap;
-use line_index::LineIndex;
-use text_size::TextRange;
+use lsp_server::{Document, handlers};
 use tower_lsp::jsonrpc::Result;
 use tower_lsp::lsp_types::*;
 use tower_lsp::{Client, LanguageServer, LspService, Server};
 use tracing::info;
-
-mod handlers;
-
-#[derive(Debug)]
-struct Document {
-    content: String,
-    line_index: LineIndex,
-}
-
-impl Document {
-    fn new(content: String) -> Self {
-        let line_index = LineIndex::new(&content);
-        Self {
-            content,
-            line_index,
-        }
-    }
-
-    fn position(&self, offset: text_size::TextSize) -> Option<Position> {
-        let line_col = self.line_index.line_col(offset);
-        Some(Position {
-            line: line_col.line,
-            character: line_col.col,
-        })
-    }
-
-    fn range(&self, text_range: TextRange) -> Option<Range> {
-        let start = self.position(text_range.start())?;
-        let end = self.position(text_range.end())?;
-        Some(Range { start, end })
-    }
-}
 
 #[derive(Debug)]
 struct Backend {
