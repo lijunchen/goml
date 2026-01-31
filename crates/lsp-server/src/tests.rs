@@ -1248,3 +1248,277 @@ fn main() {
         );
     }
 }
+mod exhaustiveness_tests {
+    use super::*;
+
+    #[test]
+    fn exhaustive_bool_match() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match true {
+        true => 1,
+        false => 0,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_bool_missing_false() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match true {
+        true => 1,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match: missing pattern false"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_bool_missing_true() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match true {
+        false => 0,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match: missing pattern true"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_enum_match() {
+        check_diagnostics(
+            r#"
+package Main;
+
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+fn main() -> int32 {
+    let c = Color::Red;
+    match c {
+        Color::Red => 1,
+        Color::Green => 2,
+        Color::Blue => 3,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_enum_missing_variants() {
+        check_diagnostics(
+            r#"
+package Main;
+
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+fn main() -> int32 {
+    let c = Color::Red;
+    match c {
+        Color::Red => 1,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match: missing patterns Green, Blue"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_enum_with_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+enum Color {
+    Red,
+    Green,
+    Blue
+}
+
+fn main() -> int32 {
+    let c = Color::Red;
+    match c {
+        Color::Red => 1,
+        _ => 0,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_generic_enum() {
+        check_diagnostics(
+            r#"
+package Main;
+
+enum Option[T] {
+    Some(T),
+    None
+}
+
+fn main() -> int32 {
+    let x: Option[int32] = Option::Some(42);
+    match x {
+        Option::Some(n) => n,
+        Option::None => 0,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_generic_enum() {
+        check_diagnostics(
+            r#"
+package Main;
+
+enum Option[T] {
+    Some(T),
+    None
+}
+
+fn main() -> int32 {
+    let x: Option[int32] = Option::Some(42);
+    match x {
+        Option::Some(n) => n,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match: missing pattern None"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_int_with_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match 42 {
+        0 => 0,
+        1 => 1,
+        _ => 2,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_int_no_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match 42 {
+        0 => 0,
+        1 => 1,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match on int32 literal; add a wildcard arm `_`"],
+        );
+    }
+
+    #[test]
+    fn exhaustive_string_with_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match "hello" {
+        "hello" => 1,
+        _ => 0,
+    }
+}
+"#,
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_string_no_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match "hello" {
+        "hello" => 1,
+        "world" => 2,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match on string literal; add a wildcard arm `_`"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_char_no_wildcard() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    match 'a' {
+        'a' => 1,
+        'b' => 2,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match on char literal; add a wildcard arm `_`"],
+        );
+    }
+
+    #[test]
+    fn non_exhaustive_nested_tuple() {
+        check_diagnostics(
+            r#"
+package Main;
+
+fn main() -> int32 {
+    let pair = (true, false);
+    match pair {
+        (true, true) => 1,
+        (true, false) => 2,
+        (false, true) => 3,
+    }
+}
+"#,
+            expect!["[0:0] error: non-exhaustive match: missing pattern false"],
+        );
+    }
+}
