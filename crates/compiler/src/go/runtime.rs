@@ -2562,15 +2562,15 @@ fn string_get() -> goast::Fn {
             ("s".to_string(), goty::GoType::TString),
             ("i".to_string(), goty::GoType::TInt32),
         ],
-        ret_ty: Some(goty::GoType::TString),
+        ret_ty: Some(goty::GoType::TChar),
         body: goast::Block {
             stmts: vec![goast::Stmt::Return {
                 expr: Some(goast::Expr::Call {
                     func: Box::new(goast::Expr::Var {
-                        name: "string".to_string(),
+                        name: "rune".to_string(),
                         ty: goty::GoType::TFunc {
                             params: vec![goty::GoType::TUint8],
-                            ret_ty: Box::new(goty::GoType::TString),
+                            ret_ty: Box::new(goty::GoType::TChar),
                         },
                     }),
                     args: vec![goast::Expr::Index {
@@ -2584,7 +2584,7 @@ fn string_get() -> goast::Fn {
                         }),
                         ty: goty::GoType::TUint8,
                     }],
-                    ty: goty::GoType::TString,
+                    ty: goty::GoType::TChar,
                 }),
             }],
         },

@@ -114,7 +114,7 @@ fn main() {
                 name: "string_get",
                 kind: Function,
                 detail: Some(
-                    "(string, int32) -> string",
+                    "(string, int32) -> char",
                 ),
             },
             ValueCompletionItem {

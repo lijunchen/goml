@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
+use std::sync::OnceLock;
 use std::sync::{Arc, Mutex};
+use std::time::Instant;
 
 use std::process::{Command, Stdio};
 
@@ -24,9 +26,44 @@ mod trait_impl_test;
 
 #[test]
 fn test_cases() -> anyhow::Result<()> {
+    let start = Instant::now();
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let cases_dir = root_dir.join("src/tests/pipeline");
-    run_test_cases(&cases_dir)
+    if test_log_enabled() {
+        eprintln!(
+            "[test_cases] start root_dir={} cases_dir={}",
+            root_dir.display(),
+            cases_dir.display()
+        );
+        eprintln!("[test_cases] yaegi_available={}", yaegi_available());
+    }
+
+    let result = run_test_cases(&cases_dir);
+    if test_log_enabled() {
+        eprintln!("[test_cases] done elapsed={:?}", start.elapsed());
+    }
+    result
+}
+
+fn test_log_enabled() -> bool {
+    static ENABLED: OnceLock<bool> = OnceLock::new();
+    *ENABLED.get_or_init(|| {
+        std::env::var("GOML_TEST_LOG")
+            .ok()
+            .is_some_and(|v| v == "1" || v == "true")
+    })
+}
+
+fn yaegi_available() -> bool {
+    static AVAILABLE: OnceLock<bool> = OnceLock::new();
+    *AVAILABLE.get_or_init(|| {
+        Command::new("yaegi")
+            .arg("help")
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .is_ok_and(|s| s.success())
+    })
 }
 
 #[test]
@@ -65,14 +102,23 @@ fn main() -> unit {
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
-    let go_output = execute_go_source(&go_source)?;
+    let go_output = execute_go_source(&go_source, "reference_runtime_executes")?;
 
     assert_eq!(go_output, "5\n");
 
     Ok(())
 }
 
-fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
+fn execute_with_go_run(label: &str, dir: &Path, file: &Path) -> anyhow::Result<String> {
+    let start = Instant::now();
+    if test_log_enabled() {
+        eprintln!(
+            "[go_run] start label={} dir={} file={}",
+            label,
+            dir.display(),
+            file.display()
+        );
+    }
     let child = Command::new("go")
         .arg("run")
         .arg(file)
@@ -83,26 +129,40 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
+    if test_log_enabled() {
+        eprintln!("[go_run] spawned label={} pid={}", label, child.id());
+    }
     let output = child.wait_with_output()?;
     let ret = if !output.status.success() {
         String::from_utf8_lossy(&output.stderr).to_string()
     } else {
         String::from_utf8_lossy(&output.stdout).to_string()
     };
+    if test_log_enabled() {
+        eprintln!(
+            "[go_run] done label={} status={} elapsed={:?}",
+            label,
+            output.status,
+            start.elapsed()
+        );
+    }
     Ok(ret.replace(dir.to_str().unwrap(), "${WORKDIR}"))
 }
 
-fn execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<String> {
-    let status = Command::new("yaegi")
-        .arg("help")
-        .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .status();
-
-    if status.is_err() || !status.unwrap().success() {
-        return execute_with_go_run(dir, file);
+fn execute_with_yaegi(label: &str, dir: &Path, file: &Path) -> anyhow::Result<String> {
+    if !yaegi_available() {
+        return execute_with_go_run(label, dir, file);
     }
 
+    let start = Instant::now();
+    if test_log_enabled() {
+        eprintln!(
+            "[yaegi] start label={} dir={} file={}",
+            label,
+            dir.display(),
+            file.display()
+        );
+    }
     let child = Command::new("yaegi")
         .arg("run")
         .arg(file)
@@ -113,28 +173,73 @@ fn execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<String> {
         .stderr(Stdio::piped())
         .spawn()
         .unwrap();
+    if test_log_enabled() {
+        eprintln!("[yaegi] spawned label={} pid={}", label, child.id());
+    }
     let output = child.wait_with_output()?;
+    if test_log_enabled() {
+        if output.status.success() {
+            eprintln!(
+                "[yaegi] done label={} status={} elapsed={:?}",
+                label,
+                output.status,
+                start.elapsed()
+            );
+        } else {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let stderr_trimmed = stderr.trim();
+            let stderr_short = if stderr_trimmed.len() > 800 {
+                &stderr_trimmed[..800]
+            } else {
+                stderr_trimmed
+            };
+            eprintln!(
+                "[yaegi] failed label={} status={} elapsed={:?} stderr=<<<{}>>>",
+                label,
+                output.status,
+                start.elapsed(),
+                stderr_short
+            );
+        }
+    }
+
     let ret = if !output.status.success() {
-        return execute_with_go_run(dir, file);
+        return execute_with_go_run(label, dir, file);
     } else {
         String::from_utf8_lossy(&output.stdout).to_string()
     };
     Ok(ret.replace(dir.to_str().unwrap(), "${WORKDIR}"))
 }
 
-fn execute_go_source(source: &str) -> anyhow::Result<String> {
+fn execute_go_source(source: &str, label: &str) -> anyhow::Result<String> {
+    let start = Instant::now();
     let dir = tempfile::tempdir().with_context(|| "Failed to create temporary directory")?;
 
     let main_go_file = dir.path().join("main.go");
     std::fs::write(&main_go_file, source)
         .with_context(|| format!("Failed to write go source to {}", main_go_file.display()))?;
 
-    let ret = execute_with_yaegi(dir.path(), &main_go_file)?;
+    if test_log_enabled() {
+        eprintln!(
+            "[go_exec] wrote {} bytes label={} to {} (workdir={})",
+            source.len(),
+            label,
+            main_go_file.display(),
+            dir.path().display()
+        );
+    }
+
+    let ret = execute_with_yaegi(label, dir.path(), &main_go_file)?;
+
+    if test_log_enabled() {
+        eprintln!("[go_exec] done elapsed={:?}", start.elapsed());
+    }
 
     Ok(ret.replace(dir.path().to_str().unwrap(), "${WORKDIR}"))
 }
 
 fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
+    let start = Instant::now();
     let mut case_paths = Vec::new();
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
@@ -146,6 +251,19 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
         }
     }
 
+    if let Ok(filter) = std::env::var("GOML_TEST_FILTER") {
+        if !filter.is_empty() {
+            case_paths.retain(|p| p.to_string_lossy().contains(&filter));
+            if test_log_enabled() {
+                eprintln!(
+                    "[test_cases] filter={} matched={}",
+                    filter,
+                    case_paths.len()
+                );
+            }
+        }
+    }
+
     if case_paths.is_empty() {
         return Ok(());
     }
@@ -153,7 +271,24 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
     let available = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(1);
-    let worker_count = std::cmp::min(available, case_paths.len());
+
+    let default_worker_count = std::cmp::min(available, case_paths.len());
+    let worker_count = std::env::var("GOML_TEST_WORKERS")
+        .ok()
+        .and_then(|s| s.parse::<usize>().ok())
+        .filter(|&n| n > 0)
+        .map(|n| n.min(case_paths.len()))
+        .unwrap_or(default_worker_count);
+
+    if test_log_enabled() {
+        eprintln!(
+            "[test_cases] discovered {} cases workers={} available={} elapsed={:?}",
+            case_paths.len(),
+            worker_count,
+            available,
+            start.elapsed()
+        );
+    }
     let cases: Arc<Mutex<Vec<PathBuf>>> = Arc::new(Mutex::new(case_paths));
 
     let mut handles = Vec::with_capacity(worker_count);
@@ -187,7 +322,11 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
 }
 
 fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
+    let start = Instant::now();
     println!("Testing file: {}", p.display());
+    if test_log_enabled() {
+        eprintln!("[case] start file={}", p.display());
+    }
     let filename = p.file_name().unwrap().to_str().unwrap();
     let cst_filename = p.with_file_name(format!("{}.cst", filename));
     let ast_filename = p.with_file_name(format!("{}.ast", filename));
@@ -199,8 +338,17 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
     let go_filename = p.with_file_name(format!("{}.go", filename));
     let result_filename = p.with_file_name(format!("{}.out", filename));
 
+    let t_read = Instant::now();
     let input = std::fs::read_to_string(&p)?;
+    if test_log_enabled() {
+        eprintln!(
+            "[case] read ok bytes={} elapsed={:?}",
+            input.len(),
+            t_read.elapsed()
+        );
+    }
 
+    let t_compile = Instant::now();
     let compilation = pipeline::pipeline::compile(&p, &input).map_err(|err| match err {
         CompilationError::Parser { diagnostics } => anyhow::anyhow!(
             "Parse errors in {}:\n{}",
@@ -223,30 +371,89 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
             format_compile_diagnostics(&diagnostics, &input).join("\n")
         ),
     })?;
+    if test_log_enabled() {
+        eprintln!("[case] compile ok elapsed={:?}", t_compile.elapsed());
+    }
 
+    let t_snapshots = Instant::now();
+    let t_cst = Instant::now();
+    if test_log_enabled() {
+        eprintln!("[case] cst debug_tree start");
+    }
     let cst_debug = debug_tree(&compilation.green_node);
+    if test_log_enabled() {
+        eprintln!(
+            "[case] cst debug_tree done bytes={} elapsed={:?}",
+            cst_debug.len(),
+            t_cst.elapsed()
+        );
+        eprintln!("[case] cst expect start");
+    }
     expect_test::expect_file![cst_filename].assert_eq(&cst_debug);
+    if test_log_enabled() {
+        eprintln!("[case] snapshot cst elapsed={:?}", t_cst.elapsed());
+    }
 
+    let t_ast = Instant::now();
     expect_test::expect_file![ast_filename].assert_eq(&compilation.ast.to_pretty(120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot ast elapsed={:?}", t_ast.elapsed());
+    }
 
+    let t_hir = Instant::now();
     let hir_ctx = crate::pprint::hir_pprint::HirPrintCtx::new(&compilation.hir_table);
     expect_test::expect_file![hir_filename].assert_eq(&compilation.hir.to_pretty(&hir_ctx, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot hir elapsed={:?}", t_hir.elapsed());
+    }
 
+    let t_tast = Instant::now();
     expect_test::expect_file![tast_filename]
         .assert_eq(&compilation.tast.to_pretty(&compilation.genv, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot tast elapsed={:?}", t_tast.elapsed());
+    }
+
+    let t_core = Instant::now();
     expect_test::expect_file![core_filename]
         .assert_eq(&compilation.core.to_pretty(&compilation.genv, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot core elapsed={:?}", t_core.elapsed());
+    }
+
+    let t_mono = Instant::now();
     expect_test::expect_file![mono_filename]
         .assert_eq(&compilation.mono.to_pretty(&compilation.monoenv, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot mono elapsed={:?}", t_mono.elapsed());
+    }
+
+    let t_anf = Instant::now();
     expect_test::expect_file![anf_filename]
         .assert_eq(&compilation.anf.to_pretty(&compilation.anfenv, 120));
+    if test_log_enabled() {
+        eprintln!("[case] snapshot anf elapsed={:?}", t_anf.elapsed());
+    }
 
+    let t_go = Instant::now();
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
     expect_test::expect_file![&go_filename].assert_eq(&go_source);
+    if test_log_enabled() {
+        eprintln!("[case] snapshot go elapsed={:?}", t_go.elapsed());
+        eprintln!("[case] snapshots total elapsed={:?}", t_snapshots.elapsed());
+    }
 
-    let go_output = execute_go_source(&go_source)?;
+    let t_exec = Instant::now();
+    let go_output = execute_go_source(&go_source, &p.to_string_lossy())?;
+    if test_log_enabled() {
+        eprintln!("[case] execute ok elapsed={:?}", t_exec.elapsed());
+    }
 
     expect_test::expect_file![result_filename].assert_eq(&go_output);
+
+    if test_log_enabled() {
+        eprintln!("[case] done elapsed={:?}", start.elapsed());
+    }
 
     Ok(())
 }

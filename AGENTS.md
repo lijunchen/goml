@@ -73,6 +73,7 @@ The file extension for goml source files is `.gom`.
 - Inter-package dependencies:
   - Packages can import and use types, functions, and enums from other packages
   - Access package members using `PackageName::member` syntax (e.g., `Lib::Color::Red`, `Math::Pair`)
+  - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use PackageName::Trait` (builtin traits like `Show` are in the prelude and do not require `use`)
 - To add a new multi-package test:
   1. Create a new directory under `crates/compiler/src/tests/package/` (e.g., `project006/`)
   2. Create `main.gom` with `package Main;` and `fn main()`
@@ -94,8 +95,11 @@ The file extension for goml source files is `.gom`.
 
 ### Lexical Structure and Literals
 
-* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`.
-* Literals: boolean, integer/unsigned/floating-point, and string literals. String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
+* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
+* Literals: boolean, integer/unsigned/floating-point, string, and char literals.
+  * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
+  * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
+* String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
 * Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
 
 ### Bindings and Scope
@@ -134,12 +138,19 @@ The file extension for goml source files is `.gom`.
 * `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
 * Inherent implementations `impl Type { ... }` provide associated functions and methods.
 * Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
+  * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use PackageName::Trait` (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
 * When multiple trait bounds provide the same method name for a type parameter, `x.foo()` is ambiguous and requires UFCS disambiguation (e.g. `A::foo(x)`).
 * Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
   * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
   * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
   * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
   * Limitations (current): trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
+
+### Notes on `char`
+
+* Codegen: goml `char` lowers to Go `rune`.
+* Printing: `char` implements `ToString`; `c.to_string()` returns a `string` representation of the code point.
+* Pattern matching: `match` supports `char` scrutinees and `char` literal patterns.
 
 ### Concurrency and Side Effects
 
@@ -160,3 +171,24 @@ The file extension for goml source files is `.gom`.
 * Top-level functions must have explicit type signatures; generics are limited to top-level functions.
 * Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
 * The runtime uses garbage collection; manual ownership or lifetimes are not required.
+
+### Builtin `HashMap`
+
+* Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
+* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
+* Key requirements: `K` must have both `Hash` and `Eq`.
+
+### Builtin traits `Eq` / `Hash`
+
+* `trait Eq { fn eq(Self, Self) -> bool; }`
+* `trait Hash { fn hash(Self) -> uint64; }`
+* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`ref_get(self)`), not pointer identity.
+
+### Testing / snapshots gotchas
+
+* Adding/changing builtins changes the Builtin interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
+* Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
+
+### Name collisions
+
+* Avoid defining user traits named `Eq` or `Hash` in tests/examples unless you fully qualify or rename them; the builtins now reserve these names and duplicate impls can surface as “defined in multiple packages”.

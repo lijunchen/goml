@@ -34,68 +34,51 @@ file main.gom
         List(Vec[SExpr])
     }
     
-    fn is_digit(local/1/0: string) -> bool {
-      match ch/0 {
-          "0" => true,
-          "1" => true,
-          "2" => true,
-          "3" => true,
-          "4" => true,
-          "5" => true,
-          "6" => true,
-          "7" => true,
-          "8" => true,
-          "9" => true,
-          _ => false,
-      };
+    fn is_digit(local/1/0: char) -> bool {
+      ch/0 >= '0' && ch/0 <= '9';
     }
     
-    fn digit_value(local/1/1: string) -> int32 {
+    fn digit_value(local/1/1: char) -> int32 {
       match ch/1 {
-          "0" => 0,
-          "1" => 1,
-          "2" => 2,
-          "3" => 3,
-          "4" => 4,
-          "5" => 5,
-          "6" => 6,
-          "7" => 7,
-          "8" => 8,
-          "9" => 9,
+          '0' => 0,
+          '1' => 1,
+          '2' => 2,
+          '3' => 3,
+          '4' => 4,
+          '5' => 5,
+          '6' => 6,
+          '7' => 7,
+          '8' => 8,
+          '9' => 9,
           _ => 0,
       };
     }
     
     fn is_int_text(local/1/2: string) -> bool {
       let local/1/3 = string_len(text/2);
-      match len/3 == 0 {
-          true => false,
-          false => {
-                let local/1/4 = ref(0);
-                let local/1/5 = ref(false);
-                let local/1/6 = ref(true);
-                let local/1/7 = ref(false);
-                let _ = while ref_get(ok/6) && ref_get(i/4) < len/3 {
-                    {
-                        let local/1/8 = string_get(text/2, ref_get(i/4));
-                        match (ref_get(started/7), ch/8) {
-                            (false, "-") => {
-                                  let _ = ref_set(started/7, true);
-                                  ref_set(i/4, ref_get(i/4) + 1);
-                              },
-                            _ => match def/1/5(ch/8) {
-                                  true => {
-                                        let _ = ref_set(started/7, true);
-                                        let _ = ref_set(saw_digit/5, true);
-                                        ref_set(i/4, ref_get(i/4) + 1);
-                                    },
-                                  false => ref_set(ok/6, false),
-                              },
-                        };
-                    }
-                };
-                ref_get(ok/6) && ref_get(saw_digit/5);
-            },
+      if len/3 == 0 {
+          false;
+      } else {
+          let local/1/4 = ref(0);
+          let local/1/5 = ref(false);
+          let local/1/6 = ref(true);
+          let local/1/7 = ref(false);
+          let _ = while ref_get(ok/6) && ref_get(i/4) < len/3 {
+              {
+                  let local/1/8 = string_get(text/2, ref_get(i/4));
+                  if !ref_get(started/7) && ch/8 == '-' {
+                      let _ = ref_set(started/7, true);
+                      ref_set(i/4, ref_get(i/4) + 1);
+                  } else if def/1/5(ch/8) {
+                      let _ = ref_set(started/7, true);
+                      let _ = ref_set(saw_digit/5, true);
+                      ref_set(i/4, ref_get(i/4) + 1);
+                  } else {
+                      ref_set(ok/6, false);
+                  };
+              }
+          };
+          ref_get(ok/6) && ref_get(saw_digit/5);
       };
     }
     
@@ -108,34 +91,27 @@ file main.gom
       let _ = while ref_get(i/11) < len/10 {
           {
               let local/1/15 = string_get(text/9, ref_get(i/11));
-              match (ref_get(started/13), ch/15) {
-                  (false, "-") => {
-                        let _ = ref_set(started/13, true);
-                        let _ = ref_set(negative/12, true);
-                        ref_set(i/11, ref_get(i/11) + 1);
-                    },
-                  _ => {
-                        let _ = ref_set(started/13, true);
-                        let local/1/16 = def/1/6(ch/15);
-                        let _ = ref_set(acc/14, ref_get(acc/14) * 10 + d/16);
-                        ref_set(i/11, ref_get(i/11) + 1);
-                    },
+              if !ref_get(started/13) && ch/15 == '-' {
+                  let _ = ref_set(started/13, true);
+                  let _ = ref_set(negative/12, true);
+                  ref_set(i/11, ref_get(i/11) + 1);
+              } else {
+                  let _ = ref_set(started/13, true);
+                  let local/1/16 = def/1/6(ch/15);
+                  let _ = ref_set(acc/14, ref_get(acc/14) * 10 + d/16);
+                  ref_set(i/11, ref_get(i/11) + 1);
               };
           }
       };
-      match ref_get(negative/12) {
-          true => 0 - ref_get(acc/14),
-          false => ref_get(acc/14),
+      if ref_get(negative/12) {
+          0 - ref_get(acc/14);
+      } else {
+          ref_get(acc/14);
       };
     }
     
-    fn is_delim(local/1/17: string) -> bool {
-      match ch/17 {
-          "(" => true,
-          ")" => true,
-          " " => true,
-          _ => false,
-      };
+    fn is_delim(local/1/17: char) -> bool {
+      ch/17 == '(' || ch/17 == ')' || ch/17 == ' ';
     }
     
     fn lex_atom(local/1/18: string, local/1/19: int32) -> (Token, int32) {
@@ -146,12 +122,11 @@ file main.gom
       let _ = while !ref_get(done/23) && ref_get(i/22) < len/20 {
           {
               let local/1/24 = string_get(source/18, ref_get(i/22));
-              match def/1/9(ch/24) {
-                  true => ref_set(done/23, true),
-                  false => {
-                        let _ = ref_set(text/21, ref_get(text/21) + ch/24);
-                        ref_set(i/22, ref_get(i/22) + 1);
-                    },
+              if def/1/9(ch/24) {
+                  ref_set(done/23, true);
+              } else {
+                  let _ = ref_set(text/21, ref_get(text/21) + char_to_string(ch/24));
+                  ref_set(i/22, ref_get(i/22) + 1);
               };
           }
       };
@@ -159,9 +134,10 @@ file main.gom
       let local/1/26 = match atom/25 {
           "true" => ctor(def/1/0::v4)(true),
           "false" => ctor(def/1/0::v4)(false),
-          _ => match def/1/7(atom/25) {
-                true => ctor(def/1/0::v3)(def/1/8(atom/25)),
-                false => ctor(def/1/0::v2)(atom/25),
+          _ => if def/1/7(atom/25) {
+                ctor(def/1/0::v3)(def/1/8(atom/25));
+            } else {
+                ctor(def/1/0::v2)(atom/25);
             },
       };
       (token/26, ref_get(i/22));
@@ -175,21 +151,18 @@ file main.gom
       let _ = while ref_get(i/31) < len/28 {
           {
               let local/1/32 = string_get(source/27, ref_get(i/31));
-              match ch/32 {
-                  "(" => {
-                        let _ = ref_set(toks/30, vec_push(ref_get(toks/30), ctor(def/1/0::v0)));
-                        ref_set(i/31, ref_get(i/31) + 1);
-                    },
-                  ")" => {
-                        let _ = ref_set(toks/30, vec_push(ref_get(toks/30), ctor(def/1/0::v1)));
-                        ref_set(i/31, ref_get(i/31) + 1);
-                    },
-                  " " => ref_set(i/31, ref_get(i/31) + 1),
-                  _ => {
-                        let (local/1/33, local/1/34) = def/1/10(source/27, ref_get(i/31));
-                        let _ = ref_set(toks/30, vec_push(ref_get(toks/30), tok/33));
-                        ref_set(i/31, next/34);
-                    },
+              if ch/32 == '(' {
+                  let _ = ref_set(toks/30, vec_push(ref_get(toks/30), ctor(def/1/0::v0)));
+                  ref_set(i/31, ref_get(i/31) + 1);
+              } else if ch/32 == ')' {
+                  let _ = ref_set(toks/30, vec_push(ref_get(toks/30), ctor(def/1/0::v1)));
+                  ref_set(i/31, ref_get(i/31) + 1);
+              } else if ch/32 == ' ' {
+                  ref_set(i/31, ref_get(i/31) + 1);
+              } else {
+                  let (local/1/33, local/1/34) = def/1/10(source/27, ref_get(i/31));
+                  let _ = ref_set(toks/30, vec_push(ref_get(toks/30), tok/33));
+                  ref_set(i/31, next/34);
               };
           }
       };
@@ -318,51 +291,53 @@ file main.gom
       match name/86 {
           "begin" => def/1/22(items/87, 1, local/88, global/89),
           "define" => {
-                match vec_len(items/87) == 3 {
-                    true => match vec_get(items/87, 1) {
-                          ctor(def/1/4::v2)(local/1/90) => {
-                                let local/1/91 = def/1/19(vec_get(items/87, 2), local/88, global/89);
-                                let local/1/92 = ref_get(global/89);
-                                let local/1/93 = vec_push(env/92, Binding {
-                                      name: var/90,
-                                      value: value/91
-                                  });
-                                let _ = ref_set(global/89, updated/93);
-                                value/91;
-                            },
-                          _ => ctor(def/1/3::v3),
-                      },
-                    false => ctor(def/1/3::v3),
+                if vec_len(items/87) == 3 {
+                    match vec_get(items/87, 1) {
+                        ctor(def/1/4::v2)(local/1/90) => {
+                              let local/1/91 = def/1/19(vec_get(items/87, 2), local/88, global/89);
+                              let local/1/92 = ref_get(global/89);
+                              let local/1/93 = vec_push(env/92, Binding {
+                                    name: var/90,
+                                    value: value/91
+                                });
+                              let _ = ref_set(global/89, updated/93);
+                              value/91;
+                          },
+                        _ => ctor(def/1/3::v3),
+                    };
+                } else {
+                    ctor(def/1/3::v3);
                 };
             },
           "if" => {
-                match vec_len(items/87) == 4 {
-                    true => {
-                          let local/1/94 = def/1/19(vec_get(items/87, 1), local/88, global/89);
-                          match def/1/18(cond/94) {
-                              true => def/1/19(vec_get(items/87, 2), local/88, global/89),
-                              false => def/1/19(vec_get(items/87, 3), local/88, global/89),
-                          };
-                      },
-                    false => ctor(def/1/3::v3),
+                if vec_len(items/87) == 4 {
+                    let local/1/94 = def/1/19(vec_get(items/87, 1), local/88, global/89);
+                    if def/1/18(cond/94) {
+                        def/1/19(vec_get(items/87, 2), local/88, global/89);
+                    } else {
+                        def/1/19(vec_get(items/87, 3), local/88, global/89);
+                    };
+                } else {
+                    ctor(def/1/3::v3);
                 };
             },
           "lambda" => {
-                match vec_len(items/87) == 3 {
-                    true => match vec_get(items/87, 1) {
-                          ctor(def/1/4::v3)(local/1/95) => {
-                                let local/1/96 = def/1/23(params_exprs/95);
-                                let local/1/97 = vec_get(items/87, 2);
-                                ctor(def/1/3::v2)(Lambda {
-                                    params: params/96,
-                                    body: body/97,
-                                    env: local/88,
-                                    global: global/89
-                                });
-                            },
-                          _ => ctor(def/1/3::v3),
-                      },
-                    false => ctor(def/1/3::v3),
+                if vec_len(items/87) == 3 {
+                    match vec_get(items/87, 1) {
+                        ctor(def/1/4::v3)(local/1/95) => {
+                              let local/1/96 = def/1/23(params_exprs/95);
+                              let local/1/97 = vec_get(items/87, 2);
+                              ctor(def/1/3::v2)(Lambda {
+                                  params: params/96,
+                                  body: body/97,
+                                  env: local/88,
+                                  global: global/89
+                              });
+                          },
+                        _ => ctor(def/1/3::v3),
+                    };
+                } else {
+                    ctor(def/1/3::v3);
                 };
             },
           "+" => def/1/25("+", def/1/24(items/87, 1, local/88, global/89)),
@@ -425,13 +400,14 @@ file main.gom
     
     fn apply_builtin(local/1/120: string, local/1/121: Vec[Value]) -> Value {
       match name/120 {
-          "=" => match vec_len(args/121) == 2 {
-                true => match (vec_get(args/121, 0), vec_get(args/121, 1)) {
-                      (ctor(def/1/3::v0)(local/1/122), ctor(def/1/3::v0)(local/1/123)) => ctor(def/1/3::v1)(a/122 == b/123),
-                      (ctor(def/1/3::v1)(local/1/124), ctor(def/1/3::v1)(local/1/125)) => ctor(def/1/3::v1)(a/124 == b/125),
-                      _ => ctor(def/1/3::v1)(false),
-                  },
-                false => ctor(def/1/3::v1)(false),
+          "=" => if vec_len(args/121) == 2 {
+                match (vec_get(args/121, 0), vec_get(args/121, 1)) {
+                    (ctor(def/1/3::v0)(local/1/122), ctor(def/1/3::v0)(local/1/123)) => ctor(def/1/3::v1)(a/122 == b/123),
+                    (ctor(def/1/3::v1)(local/1/124), ctor(def/1/3::v1)(local/1/125)) => ctor(def/1/3::v1)(a/124 == b/125),
+                    _ => ctor(def/1/3::v1)(false),
+                };
+            } else {
+                ctor(def/1/3::v1)(false);
             },
           "+" => {
                 let local/1/126 = ref(0);
@@ -476,12 +452,13 @@ file main.gom
                   },
                 _ => ctor(def/1/3::v3),
             },
-          "/" => match vec_len(args/121) == 2 {
-                true => match (vec_get(args/121, 0), vec_get(args/121, 1)) {
-                      (ctor(def/1/3::v0)(local/1/135), ctor(def/1/3::v0)(local/1/136)) => ctor(def/1/3::v0)(a/135 / b/136),
-                      _ => ctor(def/1/3::v3),
-                  },
-                false => ctor(def/1/3::v3),
+          "/" => if vec_len(args/121) == 2 {
+                match (vec_get(args/121, 0), vec_get(args/121, 1)) {
+                    (ctor(def/1/3::v0)(local/1/135), ctor(def/1/3::v0)(local/1/136)) => ctor(def/1/3::v0)(a/135 / b/136),
+                    _ => ctor(def/1/3::v3),
+                };
+            } else {
+                ctor(def/1/3::v3);
             },
           _ => ctor(def/1/3::v3),
       };

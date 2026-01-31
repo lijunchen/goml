@@ -19,7 +19,7 @@ fn main() -> unit {
         .map_err(|err| anyhow::anyhow!("compilation failed: {:?}", err))?;
 
     let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
-    let go_output = execute_go_source(&go_source)?;
+    let go_output = execute_go_source(&go_source, "multiline_string_prints_lines")?;
 
     expect![[r#"
         first line
