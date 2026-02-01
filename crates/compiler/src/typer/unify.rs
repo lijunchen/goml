@@ -7,16 +7,81 @@ use crate::{
 };
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
+use text_size::TextRange;
 
-fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
+fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
+    match pat {
+        tast::Pat::PVar { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Pat::PConstr { args, .. } => args.first().and_then(pat_origin),
+        tast::Pat::PTuple { items, .. } => items.first().and_then(pat_origin),
+        tast::Pat::PPrim { .. } | tast::Pat::PWild { .. } => None,
+    }
+}
+
+fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
+    match expr {
+        tast::Expr::EVar { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Expr::EMatch { astptr, expr, .. } => astptr
+            .as_ref()
+            .map(|ptr| ptr.text_range())
+            .or_else(|| expr_origin(expr.as_ref())),
+        tast::Expr::EField { astptr, expr, .. } => astptr
+            .as_ref()
+            .map(|ptr| ptr.text_range())
+            .or_else(|| expr_origin(expr.as_ref())),
+        tast::Expr::ETraitMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Expr::EDynTraitMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Expr::EInherentMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        tast::Expr::EToDyn { astptr, expr, .. } => astptr
+            .as_ref()
+            .map(|ptr| ptr.text_range())
+            .or_else(|| expr_origin(expr.as_ref())),
+        tast::Expr::ECall { func, args, .. } => expr_origin(func)
+            .or_else(|| args.first().and_then(expr_origin))
+            .or_else(|| args.last().and_then(expr_origin)),
+        tast::Expr::EBinary { lhs, rhs, .. } => expr_origin(lhs).or_else(|| expr_origin(rhs)),
+        tast::Expr::EUnary { expr, .. } => expr_origin(expr),
+        tast::Expr::ELet { pat, value, .. } => pat_origin(pat).or_else(|| expr_origin(value)),
+        tast::Expr::EBlock { exprs, .. } => exprs
+            .first()
+            .and_then(expr_origin)
+            .or_else(|| exprs.last().and_then(expr_origin)),
+        tast::Expr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ..
+        } => expr_origin(cond)
+            .or_else(|| expr_origin(then_branch))
+            .or_else(|| expr_origin(else_branch)),
+        tast::Expr::EWhile { cond, body, .. } => expr_origin(cond).or_else(|| expr_origin(body)),
+        tast::Expr::EGo { expr, .. } => expr_origin(expr),
+        tast::Expr::EProj { tuple, .. } => expr_origin(tuple),
+        tast::Expr::EConstr { args, .. } => args.first().and_then(expr_origin),
+        tast::Expr::ETuple { items, .. } => items.first().and_then(expr_origin),
+        tast::Expr::EArray { items, .. } => items.first().and_then(expr_origin),
+        tast::Expr::EClosure { body, .. } => expr_origin(body),
+        tast::Expr::EPrim { .. } => None,
+    }
+}
+
+fn occurs(
+    diagnostics: &mut Diagnostics,
+    origin: Option<TextRange>,
+    var: TypeVar,
+    ty: &tast::Ty,
+) -> bool {
     match ty {
         tast::Ty::TVar(v) => {
             if var == *v {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!("occurs check failed: {:?} occurs in {:?}", var, ty),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("occurs check failed: {:?} occurs in {:?}", var, ty),
+                    )
+                    .with_range(origin),
+                );
                 return false;
             }
         }
@@ -37,7 +102,7 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
         | tast::Ty::TParam { .. } => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                if !occurs(diagnostics, var, ty) {
+                if !occurs(diagnostics, origin, var, ty) {
                     return false;
                 }
             }
@@ -45,45 +110,45 @@ fn occurs(diagnostics: &mut Diagnostics, var: TypeVar, ty: &tast::Ty) -> bool {
         tast::Ty::TEnum { .. } | tast::Ty::TStruct { .. } => {}
         tast::Ty::TDyn { .. } => {}
         tast::Ty::TApp { ty, args } => {
-            if !occurs(diagnostics, var, ty.as_ref()) {
+            if !occurs(diagnostics, origin, var, ty.as_ref()) {
                 return false;
             }
             for arg in args.iter() {
-                if !occurs(diagnostics, var, arg) {
+                if !occurs(diagnostics, origin, var, arg) {
                     return false;
                 }
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            if !occurs(diagnostics, var, elem) {
+            if !occurs(diagnostics, origin, var, elem) {
                 return false;
             }
         }
         tast::Ty::TVec { elem } => {
-            if !occurs(diagnostics, var, elem) {
+            if !occurs(diagnostics, origin, var, elem) {
                 return false;
             }
         }
         tast::Ty::TRef { elem } => {
-            if !occurs(diagnostics, var, elem) {
+            if !occurs(diagnostics, origin, var, elem) {
                 return false;
             }
         }
         tast::Ty::THashMap { key, value } => {
-            if !occurs(diagnostics, var, key) {
+            if !occurs(diagnostics, origin, var, key) {
                 return false;
             }
-            if !occurs(diagnostics, var, value) {
+            if !occurs(diagnostics, origin, var, value) {
                 return false;
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                if !occurs(diagnostics, var, param) {
+                if !occurs(diagnostics, origin, var, param) {
                     return false;
                 }
             }
-            if !occurs(diagnostics, var, ret_ty) {
+            if !occurs(diagnostics, origin, var, ret_ty) {
                 return false;
             }
         }
@@ -206,6 +271,91 @@ fn decompose_struct_type(ty: &tast::Ty) -> Option<(TastIdent, Vec<tast::Ty>)> {
 }
 
 impl Typer {
+    fn constraint_origin(constraint: &Constraint) -> Option<TextRange> {
+        match constraint {
+            Constraint::TypeEqual(_, _, origin) => *origin,
+            Constraint::Overloaded { origin, .. } => *origin,
+            Constraint::StructFieldAccess { origin, .. } => *origin,
+        }
+    }
+
+    fn first_constraint_origin(constraints: &[Constraint]) -> Option<TextRange> {
+        constraints.iter().find_map(Self::constraint_origin)
+    }
+
+    fn ty_mentions_var(ty: &tast::Ty, var: TypeVar) -> bool {
+        match ty {
+            tast::Ty::TVar(v) => *v == var,
+            tast::Ty::TUnit
+            | tast::Ty::TBool
+            | tast::Ty::TInt8
+            | tast::Ty::TInt16
+            | tast::Ty::TInt32
+            | tast::Ty::TInt64
+            | tast::Ty::TUint8
+            | tast::Ty::TUint16
+            | tast::Ty::TUint32
+            | tast::Ty::TUint64
+            | tast::Ty::TFloat32
+            | tast::Ty::TFloat64
+            | tast::Ty::TString
+            | tast::Ty::TChar
+            | tast::Ty::TEnum { .. }
+            | tast::Ty::TStruct { .. }
+            | tast::Ty::TDyn { .. }
+            | tast::Ty::TParam { .. } => false,
+            tast::Ty::TTuple { typs } => typs.iter().any(|t| Self::ty_mentions_var(t, var)),
+            tast::Ty::TApp { ty, args } => {
+                Self::ty_mentions_var(ty, var) || args.iter().any(|t| Self::ty_mentions_var(t, var))
+            }
+            tast::Ty::TArray { elem, .. } => Self::ty_mentions_var(elem, var),
+            tast::Ty::TVec { elem } => Self::ty_mentions_var(elem, var),
+            tast::Ty::TRef { elem } => Self::ty_mentions_var(elem, var),
+            tast::Ty::THashMap { key, value } => {
+                Self::ty_mentions_var(key, var) || Self::ty_mentions_var(value, var)
+            }
+            tast::Ty::TFunc { params, ret_ty } => {
+                params.iter().any(|t| Self::ty_mentions_var(t, var))
+                    || Self::ty_mentions_var(ret_ty, var)
+            }
+        }
+    }
+
+    fn origin_for_unresolved_type_var(&self, var: TypeVar) -> Option<TextRange> {
+        self.constraints.iter().find_map(|constraint| match constraint {
+            Constraint::TypeEqual(l, r, origin) => {
+                if Self::ty_mentions_var(l, var) || Self::ty_mentions_var(r, var) {
+                    *origin
+                } else {
+                    None
+                }
+            }
+            Constraint::Overloaded {
+                call_site_type,
+                origin,
+                ..
+            } => {
+                if Self::ty_mentions_var(call_site_type, var) {
+                    *origin
+                } else {
+                    None
+                }
+            }
+            Constraint::StructFieldAccess {
+                expr_ty,
+                result_ty,
+                origin,
+                ..
+            } => {
+                if Self::ty_mentions_var(expr_ty, var) || Self::ty_mentions_var(result_ty, var) {
+                    *origin
+                } else {
+                    None
+                }
+            }
+        })
+    }
+
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         let mut constraints = std::mem::take(&mut self.constraints);
         let mut changed = true;
@@ -249,7 +399,7 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r, origin) => {
-                        if !self.unify(diagnostics, &l, &r) {
+                        if !self.unify(diagnostics, &l, &r, origin) {
                             diagnostics.push(
                                 Diagnostic::new(
                                     Stage::Typer,
@@ -412,7 +562,7 @@ impl Typer {
                                 struct_def,
                                 &type_args,
                                 &field,
-                            ) && self.unify(diagnostics, &result_ty, &field_ty)
+                            ) && self.unify(diagnostics, &result_ty, &field_ty, origin)
                             {
                                 changed = true;
                             }
@@ -430,23 +580,29 @@ impl Typer {
             constraints.extend(still_pending);
 
             if !changed && !constraints.is_empty() {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!("Could not solve all constraints: {:?}", constraints),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Could not solve all constraints: {:?}", constraints),
+                    )
+                    .with_range(Self::first_constraint_origin(&constraints)),
+                );
                 break;
             }
         }
         if !constraints.is_empty() {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!(
-                    "Type inference failed, remaining constraints: {:?}",
-                    constraints
-                ),
-            ));
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Type inference failed, remaining constraints: {:?}",
+                        constraints
+                    ),
+                )
+                .with_range(Self::first_constraint_origin(&constraints)),
+            );
         }
         self.constraints = constraints;
     }
@@ -510,31 +666,43 @@ impl Typer {
         }
     }
 
-    fn unify(&mut self, diagnostics: &mut Diagnostics, l: &tast::Ty, r: &tast::Ty) -> bool {
+    fn unify(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        l: &tast::Ty,
+        r: &tast::Ty,
+        origin: Option<TextRange>,
+    ) -> bool {
         let l_norm = self.norm(l);
         let r_norm = self.norm(r);
         match (&l_norm, &r_norm) {
             (tast::Ty::TVar(a), tast::Ty::TVar(b)) => {
                 if self.uni.unify_var_var(*a, *b).is_err() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Failed to unify type variables {:?} and {:?}", a, b),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Failed to unify type variables {:?} and {:?}", a, b),
+                        )
+                        .with_range(origin),
+                    );
 
                     return false;
                 }
             }
             (tast::Ty::TVar(a), t) | (t, tast::Ty::TVar(a)) => {
-                if !occurs(diagnostics, *a, t) {
+                if !occurs(diagnostics, origin, *a, t) {
                     return false;
                 }
                 if self.uni.unify_var_value(*a, Some(t.clone())).is_err() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Failed to unify type variable {:?} with {:?}", a, t),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Failed to unify type variable {:?} with {:?}", a, t),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
             }
@@ -555,15 +723,18 @@ impl Typer {
             (tast::Ty::TChar, tast::Ty::TChar) => {}
             (tast::Ty::TTuple { typs: typs1 }, tast::Ty::TTuple { typs: typs2 }) => {
                 if typs1.len() != typs2.len() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Tuple types have different lengths: {:?} and {:?}", l, r),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Tuple types have different lengths: {:?} and {:?}", l, r),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
                 for (ty1, ty2) in typs1.iter().zip(typs2.iter()) {
-                    if !self.unify(diagnostics, ty1, ty2) {
+                    if !self.unify(diagnostics, ty1, ty2, origin) {
                         return false;
                     }
                 }
@@ -580,24 +751,27 @@ impl Typer {
             ) => {
                 let wildcard = tast::ARRAY_WILDCARD_LEN;
                 if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Array types have different lengths: {:?} and {:?}", l, r),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Array types have different lengths: {:?} and {:?}", l, r),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
-                if !self.unify(diagnostics, elem1, elem2) {
+                if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
-                if !self.unify(diagnostics, elem1, elem2) {
+                if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
                 }
             }
             (tast::Ty::TVec { elem: elem1 }, tast::Ty::TVec { elem: elem2 }) => {
-                if !self.unify(diagnostics, elem1, elem2) {
+                if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
                 }
             }
@@ -611,10 +785,10 @@ impl Typer {
                     value: value2,
                 },
             ) => {
-                if !self.unify(diagnostics, key1, key2) {
+                if !self.unify(diagnostics, key1, key2, origin) {
                     return false;
                 }
-                if !self.unify(diagnostics, value1, value2) {
+                if !self.unify(diagnostics, value1, value2, origin) {
                     return false;
                 }
             }
@@ -629,22 +803,25 @@ impl Typer {
                 },
             ) => {
                 if param1.len() != param2.len() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Function types have different parameter lengths: {:?} and {:?}",
-                            l, r
-                        ),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Function types have different parameter lengths: {:?} and {:?}",
+                                l, r
+                            ),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
                 for (p1, p2) in param1.iter().zip(param2.iter()) {
-                    if !self.unify(diagnostics, p1, p2) {
+                    if !self.unify(diagnostics, p1, p2, origin) {
                         return false;
                     }
                 }
-                if !self.unify(diagnostics, ret_ty1, ret_ty2) {
+                if !self.unify(diagnostics, ret_ty1, ret_ty2, origin) {
                     return false;
                 }
             }
@@ -680,52 +857,64 @@ impl Typer {
                 },
             ) => {
                 if args1.len() != args2.len() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!(
-                            "Constructor types have different argument lengths: {:?} and {:?}",
-                            l, r
-                        ),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Constructor types have different argument lengths: {:?} and {:?}",
+                                l, r
+                            ),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
-                if !self.unify(diagnostics, ty1.as_ref(), ty2.as_ref()) {
+                if !self.unify(diagnostics, ty1.as_ref(), ty2.as_ref(), origin) {
                     return false;
                 }
                 for (arg1, arg2) in args1.iter().zip(args2.iter()) {
-                    if !self.unify(diagnostics, arg1, arg2) {
+                    if !self.unify(diagnostics, arg1, arg2, origin) {
                         return false;
                     }
                 }
             }
             (tast::Ty::TParam { name }, tast::Ty::TParam { name: name2 }) => {
                 if name != name2 {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Type parameters are different: {:?} and {:?}", l, r),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Type parameters are different: {:?} and {:?}", l, r),
+                        )
+                        .with_range(origin),
+                    );
                     return false;
                 }
             }
             (tast::Ty::TParam { name }, ty) | (ty, tast::Ty::TParam { name }) => {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Cannot unify type parameter {:?} with concrete type {:?}",
-                        name, ty
-                    ),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!(
+                            "Cannot unify type parameter {:?} with concrete type {:?}",
+                            name, ty
+                        ),
+                    )
+                    .with_range(origin),
+                );
                 return false;
             }
             _ => {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!("Types are not equal: {:?} and {:?}", l_norm, r_norm),
-                ));
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Types are not equal: {:?} and {:?}", l_norm, r_norm),
+                    )
+                    .with_range(origin),
+                );
                 return false;
             }
         }
@@ -815,17 +1004,29 @@ impl Typer {
         }
     }
 
-    pub(crate) fn subst_ty(&mut self, diagnostics: &mut Diagnostics, ty: &tast::Ty) -> tast::Ty {
+    pub(crate) fn subst_ty(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        ty: &tast::Ty,
+        origin: Option<TextRange>,
+    ) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {
-                    self.subst_ty(diagnostics, &value)
+                    self.subst_ty(diagnostics, &value, origin)
                 } else {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Type variable {:?} not resolved", v),
-                    ));
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!("Type variable {:?} not resolved", v),
+                        )
+                        .with_range(
+                            origin
+                                .or_else(|| self.origin_for_unresolved_type_var(*v))
+                                .or_else(|| diagnostics.iter().filter_map(|d| d.range()).last()),
+                        ),
+                    );
                     tast::Ty::TVar(*v)
                 }
             }
@@ -846,7 +1047,7 @@ impl Typer {
             tast::Ty::TTuple { typs } => {
                 let typs = typs
                     .iter()
-                    .map(|ty| self.subst_ty(diagnostics, ty))
+                    .map(|ty| self.subst_ty(diagnostics, ty, origin))
                     .collect();
                 tast::Ty::TTuple { typs }
             }
@@ -856,32 +1057,32 @@ impl Typer {
                 trait_name: trait_name.clone(),
             },
             tast::Ty::TApp { ty, args } => tast::Ty::TApp {
-                ty: Box::new(self.subst_ty(diagnostics, ty)),
+                ty: Box::new(self.subst_ty(diagnostics, ty, origin)),
                 args: args
                     .iter()
-                    .map(|arg| self.subst_ty(diagnostics, arg))
+                    .map(|arg| self.subst_ty(diagnostics, arg, origin))
                     .collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
-                elem: Box::new(self.subst_ty(diagnostics, elem)),
+                elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
-                elem: Box::new(self.subst_ty(diagnostics, elem)),
+                elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
-                elem: Box::new(self.subst_ty(diagnostics, elem)),
+                elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-                key: Box::new(self.subst_ty(diagnostics, key)),
-                value: Box::new(self.subst_ty(diagnostics, value)),
+                key: Box::new(self.subst_ty(diagnostics, key, origin)),
+                value: Box::new(self.subst_ty(diagnostics, value, origin)),
             },
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params
                     .iter()
-                    .map(|ty| self.subst_ty(diagnostics, ty))
+                    .map(|ty| self.subst_ty(diagnostics, ty, origin))
                     .collect();
-                let ret_ty = Box::new(self.subst_ty(diagnostics, ret_ty));
+                let ret_ty = Box::new(self.subst_ty(diagnostics, ret_ty, origin));
                 tast::Ty::TFunc { params, ret_ty }
             }
             tast::Ty::TParam { name } => tast::Ty::TParam { name: name.clone() },
@@ -947,7 +1148,8 @@ impl Typer {
     fn subst_pat(&mut self, diagnostics: &mut Diagnostics, p: tast::Pat) -> tast::Pat {
         match p {
             tast::Pat::PVar { name, ty, astptr } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Pat::PVar {
                     name: name.clone(),
                     ty: ty.clone(),
@@ -955,7 +1157,7 @@ impl Typer {
                 }
             }
             tast::Pat::PPrim { value, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let ty = self.subst_ty(diagnostics, &ty, None);
                 tast::Pat::PPrim {
                     value,
                     ty: ty.clone(),
@@ -966,7 +1168,8 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = args.first().and_then(|p| pat_origin(p));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let args = args
                     .into_iter()
                     .map(|arg| self.subst_pat(diagnostics, arg))
@@ -978,7 +1181,8 @@ impl Typer {
                 }
             }
             tast::Pat::PTuple { items, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = items.first().and_then(|p| pat_origin(p));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
                     .map(|item| self.subst_pat(diagnostics, item))
@@ -989,7 +1193,7 @@ impl Typer {
                 }
             }
             tast::Pat::PWild { ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let ty = self.subst_ty(diagnostics, &ty, None);
                 tast::Pat::PWild { ty: ty.clone() }
             }
         }
@@ -998,7 +1202,8 @@ impl Typer {
     pub fn subst(&mut self, diagnostics: &mut Diagnostics, e: tast::Expr) -> tast::Expr {
         match e {
             tast::Expr::EVar { name, ty, astptr } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::EVar {
                     name,
                     ty: ty.clone(),
@@ -1006,7 +1211,7 @@ impl Typer {
                 }
             }
             tast::Expr::EPrim { value, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let ty = self.subst_ty(diagnostics, &ty, None);
                 tast::Expr::EPrim { value, ty }
             }
             tast::Expr::EConstr {
@@ -1014,7 +1219,8 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = args.first().and_then(|e| expr_origin(e));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let args = args
                     .into_iter()
                     .map(|arg| self.subst(diagnostics, arg))
@@ -1026,7 +1232,8 @@ impl Typer {
                 }
             }
             tast::Expr::ETuple { items, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = items.first().and_then(|e| expr_origin(e));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
                     .map(|item| self.subst(diagnostics, item))
@@ -1037,7 +1244,8 @@ impl Typer {
                 }
             }
             tast::Expr::EArray { items, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = items.first().and_then(|e| expr_origin(e));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
                     .map(|item| self.subst(diagnostics, item))
@@ -1053,19 +1261,28 @@ impl Typer {
                 ty,
                 captures,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let outer_origin = expr_origin(body.as_ref());
+                let ty = self.subst_ty(diagnostics, &ty, outer_origin);
                 let params = params
                     .into_iter()
                     .map(|param| tast::ClosureParam {
                         name: param.name,
-                        ty: self.subst_ty(diagnostics, &param.ty),
+                        ty: self.subst_ty(
+                            diagnostics,
+                            &param.ty,
+                            param
+                                .astptr
+                                .as_ref()
+                                .map(|ptr| ptr.text_range())
+                                .or(outer_origin),
+                        ),
                         astptr: param.astptr,
                     })
                     .collect();
                 let body = Box::new(self.subst(diagnostics, *body));
                 let captures = captures
                     .into_iter()
-                    .map(|(name, cap_ty)| (name, self.subst_ty(diagnostics, &cap_ty)))
+                    .map(|(name, cap_ty)| (name, self.subst_ty(diagnostics, &cap_ty, outer_origin)))
                     .collect();
                 tast::Expr::EClosure {
                     params,
@@ -1075,7 +1292,8 @@ impl Typer {
                 }
             }
             tast::Expr::ELet { pat, value, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = pat_origin(&pat).or_else(|| expr_origin(value.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let pat = self.subst_pat(diagnostics, pat);
                 let value = Box::new(self.subst(diagnostics, *value));
                 tast::Expr::ELet {
@@ -1085,7 +1303,11 @@ impl Typer {
                 }
             }
             tast::Expr::EBlock { exprs, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = exprs
+                    .first()
+                    .and_then(|e| expr_origin(e))
+                    .or_else(|| exprs.last().and_then(|e| expr_origin(e)));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let exprs = exprs
                     .into_iter()
                     .map(|e| self.subst(diagnostics, e))
@@ -1098,7 +1320,11 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| expr_origin(expr.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 let arms = arms
                     .into_iter()
@@ -1120,7 +1346,10 @@ impl Typer {
                 else_branch,
                 ty,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(cond.as_ref())
+                    .or_else(|| expr_origin(then_branch.as_ref()))
+                    .or_else(|| expr_origin(else_branch.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let cond = Box::new(self.subst(diagnostics, *cond));
                 let then_branch = Box::new(self.subst(diagnostics, *then_branch));
                 let else_branch = Box::new(self.subst(diagnostics, *else_branch));
@@ -1132,7 +1361,8 @@ impl Typer {
                 }
             }
             tast::Expr::EWhile { cond, body, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(cond.as_ref()).or_else(|| expr_origin(body.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let cond = Box::new(self.subst(diagnostics, *cond));
                 let body = Box::new(self.subst(diagnostics, *body));
                 tast::Expr::EWhile {
@@ -1142,7 +1372,8 @@ impl Typer {
                 }
             }
             tast::Expr::EGo { expr, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(expr.as_ref());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 tast::Expr::EGo {
                     expr,
@@ -1150,7 +1381,10 @@ impl Typer {
                 }
             }
             tast::Expr::ECall { func, args, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(func.as_ref())
+                    .or_else(|| args.first().and_then(|e| expr_origin(e)))
+                    .or_else(|| args.last().and_then(|e| expr_origin(e)));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let func = Box::new(self.subst(diagnostics, *func));
                 let args = args
                     .into_iter()
@@ -1168,7 +1402,8 @@ impl Typer {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(expr.as_ref());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 tast::Expr::EUnary {
                     op,
@@ -1184,7 +1419,8 @@ impl Typer {
                 ty,
                 resolution,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(lhs.as_ref()).or_else(|| expr_origin(rhs.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let lhs = Box::new(self.subst(diagnostics, *lhs));
                 let rhs = Box::new(self.subst(diagnostics, *rhs));
                 tast::Expr::EBinary {
@@ -1196,7 +1432,8 @@ impl Typer {
                 }
             }
             tast::Expr::EProj { tuple, index, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = expr_origin(tuple.as_ref());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let tuple = Box::new(self.subst(diagnostics, *tuple));
                 tast::Expr::EProj {
                     tuple,
@@ -1210,7 +1447,11 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| expr_origin(expr.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 tast::Expr::EField {
                     expr,
@@ -1225,7 +1466,8 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::ETraitMethod {
                     trait_name,
                     method_name,
@@ -1239,7 +1481,8 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::EDynTraitMethod {
                     trait_name,
                     method_name,
@@ -1253,8 +1496,9 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let receiver_ty = self.subst_ty(diagnostics, &receiver_ty);
-                let ty = self.subst_ty(diagnostics, &ty);
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let receiver_ty = self.subst_ty(diagnostics, &receiver_ty, origin);
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::EInherentMethod {
                     receiver_ty,
                     method_name,
@@ -1269,9 +1513,13 @@ impl Typer {
                 ty,
                 astptr,
             } => {
-                let for_ty = self.subst_ty(diagnostics, &for_ty);
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| expr_origin(expr.as_ref()));
+                let for_ty = self.subst_ty(diagnostics, &for_ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
-                let ty = self.subst_ty(diagnostics, &ty);
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Expr::EToDyn {
                     trait_name,
                     for_ty,

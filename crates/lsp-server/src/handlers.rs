@@ -18,16 +18,19 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
             diags
                 .iter()
                 .map(|d| {
-                    let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
-                        start: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                        end: Position {
-                            line: 0,
-                            character: 0,
-                        },
-                    });
+                    let range = d
+                        .range()
+                        .and_then(|r| doc.range(r))
+                        .unwrap_or_else(|| Range {
+                            start: Position {
+                                line: 0,
+                                character: 0,
+                            },
+                            end: Position {
+                                line: 0,
+                                character: 0,
+                            },
+                        });
 
                     let severity = match d.severity() {
                         diagnostics::Severity::Error => DiagnosticSeverity::ERROR,

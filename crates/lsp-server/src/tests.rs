@@ -163,10 +163,10 @@ fn main() {
                 [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
                 [4:12] error: Unresolved name undefined_var
                 [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
-                [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [0:0] error: Type variable TypeVar(2) not resolved
-                [0:0] error: Type variable TypeVar(4) not resolved"#]],
+                [4:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
+                [4:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
+                [4:4] error: Type variable TypeVar(2) not resolved
+                [4:4] error: Type variable TypeVar(4) not resolved"#]],
         );
     }
 
@@ -185,12 +185,12 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [0:0] error: Types are not equal: TString and TInt32
+                [8:21] error: Types are not equal: TString and TInt32
                 [8:21] error: Type mismatch: expected TString, found TInt32
-                [0:0] error: Types are not equal: TInt32 and TString
+                [8:17] error: Types are not equal: TInt32 and TString
                 [8:17] error: Type mismatch: expected TFunc([TInt32, TInt32], TInt32), found TFunc([TString, TInt32], TVar(0))
-                [0:0] error: Type variable TypeVar(0) not resolved
-                [0:0] error: Type variable TypeVar(0) not resolved"#]],
+                [8:8] error: Type variable TypeVar(0) not resolved
+                [8:8] error: Type variable TypeVar(0) not resolved"#]],
         );
     }
 
@@ -228,9 +228,9 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [0:0] error: Types are not equal: TInt32 and TUnit
+                [4:4] error: Types are not equal: TInt32 and TUnit
                 [4:4] error: Type mismatch: expected TVar(0), found TUnit
-                [0:0] error: Types are not equal: TInt32 and TUnit
+                [3:27] error: Types are not equal: TInt32 and TUnit
                 [3:27] error: Type mismatch: expected TVar(0), found TUnit"#]],
         );
     }
@@ -991,10 +991,10 @@ fn main() {
             expect![[r#"
                 [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
                 [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [0:0] error: Type variable TypeVar(14) not resolved
-                [0:0] error: Type variable TypeVar(17) not resolved"#]],
+                [8:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
+                [8:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
+                [8:4] error: Type variable TypeVar(14) not resolved
+                [8:4] error: Type variable TypeVar(17) not resolved"#]],
         );
     }
 
@@ -1284,7 +1284,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match: missing pattern false"],
+            expect!["[4:4] error: non-exhaustive match: missing pattern false"],
         );
     }
 
@@ -1300,7 +1300,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match: missing pattern true"],
+            expect!["[4:4] error: non-exhaustive match: missing pattern true"],
         );
     }
 
@@ -1348,7 +1348,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match: missing patterns Green, Blue"],
+            expect!["[11:4] error: non-exhaustive match: missing patterns Green, Blue"],
         );
     }
 
@@ -1417,7 +1417,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match: missing pattern None"],
+            expect!["[10:4] error: non-exhaustive match: missing pattern None"],
         );
     }
 
@@ -1452,7 +1452,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match on int32 literal; add a wildcard arm `_`"],
+            expect!["[4:4] error: non-exhaustive match on int32 literal; add a wildcard arm `_`"],
         );
     }
 
@@ -1486,7 +1486,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match on string literal; add a wildcard arm `_`"],
+            expect!["[4:4] error: non-exhaustive match on string literal; add a wildcard arm `_`"],
         );
     }
 
@@ -1503,7 +1503,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match on char literal; add a wildcard arm `_`"],
+            expect!["[4:4] error: non-exhaustive match on char literal; add a wildcard arm `_`"],
         );
     }
 
@@ -1522,7 +1522,7 @@ fn main() -> int32 {
     }
 }
 "#,
-            expect!["[0:0] error: non-exhaustive match: missing pattern false"],
+            expect!["[5:4] error: non-exhaustive match: missing pattern false"],
         );
     }
 }

@@ -352,7 +352,14 @@ impl Typer {
                 self.infer_block_expr(genv, local_env, diagnostics, &exprs)
             }
             hir::Expr::EMatch { expr, arms } => {
-                self.infer_match_expr(genv, local_env, diagnostics, expr, &arms, None)
+                self.infer_match_expr(
+                    genv,
+                    local_env,
+                    diagnostics,
+                    expr,
+                    &arms,
+                    self.hir_table.expr_ptr(e),
+                )
             }
             hir::Expr::EIf {
                 cond,
@@ -515,7 +522,7 @@ impl Typer {
                     expr: Box::new(expr_tast),
                     arms: arms_tast,
                     ty: expected.clone(),
-                    astptr: None,
+                    astptr: self.hir_table.expr_ptr(e),
                 }
             }
             _ => self.infer_expr(genv, local_env, diagnostics, e),
