@@ -347,7 +347,7 @@ fn report_compilation_error(file_path: &Path, src: &str, err: CompilationError) 
             }
         }
         CompilationError::Typer { diagnostics } => {
-            for error in format_typer_diagnostics(diagnostics) {
+            for error in format_typer_diagnostics(diagnostics, src) {
                 eprintln!("error (typer): {}: {}", file_path.display(), error);
             }
         }

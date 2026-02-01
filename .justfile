@@ -13,3 +13,15 @@ ci:
     cargo test
     cargo fmt
     just clippy
+
+build-lsp:
+    cargo build -p lsp-server --release
+
+install-lsp:
+    cargo build -p lsp-server --release
+    mkdir -p editors/vscode/bin
+    cp target/release/goml-lsp editors/vscode/bin/
+
+vscode-ext:
+    just install-lsp
+    cd editors/vscode && npm install && npm run compile

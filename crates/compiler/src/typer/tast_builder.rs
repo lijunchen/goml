@@ -422,7 +422,7 @@ fn build_expr(
                 expr: scrutinee,
                 arms,
                 ty,
-                astptr: None,
+                astptr: hir_table.expr_ptr(expr_id),
             }
         }
         hir::Expr::EIf {

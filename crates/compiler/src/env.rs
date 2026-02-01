@@ -39,16 +39,24 @@ pub struct ExternType {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Constraint {
-    TypeEqual(tast::Ty, tast::Ty),
+    TypeEqual(
+        tast::Ty,
+        tast::Ty,
+        #[serde(skip)] Option<text_size::TextRange>,
+    ),
     Overloaded {
         op: TastIdent,
         trait_name: TastIdent,
         call_site_type: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
     },
     StructFieldAccess {
         expr_ty: tast::Ty,
         field: TastIdent,
         result_ty: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
     },
 }
 
@@ -803,13 +811,26 @@ impl Gensym {
     }
 }
 
-pub fn format_typer_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
+pub fn format_typer_diagnostics(diagnostics: &Diagnostics, src: &str) -> Vec<String> {
+    let index = LineIndex::new(src);
     diagnostics
         .iter()
         .filter(|diagnostic| {
             diagnostic.severity() == Severity::Error && diagnostic.stage() == &Stage::Typer
         })
-        .map(|diagnostic| diagnostic.message().to_string())
+        .map(|diagnostic| {
+            if let Some(range) = diagnostic.range() {
+                let line_col = index.line_col(range.start());
+                format!(
+                    "{}:{}: {}",
+                    line_col.line + 1,
+                    line_col.col + 1,
+                    diagnostic.message()
+                )
+            } else {
+                diagnostic.message().to_string()
+            }
+        })
         .collect()
 }
 

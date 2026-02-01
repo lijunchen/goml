@@ -1,0 +1,86 @@
+{
+    "name": "goml",
+    "displayName": "GoML Language Support",
+    "description": "Language support for GoML (.gom files)",
+    "version": "0.1.0",
+    "publisher": "goml",
+    "engines": {
+        "vscode": "^1.85.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "activationEvents": [
+        "onLanguage:goml"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "languages": [
+            {
+                "id": "goml",
+                "aliases": [
+                    "GoML",
+                    "goml"
+                ],
+                "extensions": [
+                    ".gom"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "goml",
+                "scopeName": "source.goml",
+                "path": "./syntaxes/goml.tmLanguage.json"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "GoML",
+            "properties": {
+                "goml.serverPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to the goml-lsp executable. If empty, uses the bundled server or searches PATH."
+                },
+                "goml.trace.server": {
+                    "type": "string",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "default": "off",
+                    "description": "Traces the communication between VS Code and the GoML language server."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "lint": "eslint src --ext ts",
+        "pretest": "npm run compile",
+        "test": "node ./out/test/runTest.js",
+        "package": "vsce package"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^9.0.1"
+    },
+    "devDependencies": {
+        "@types/glob": "^8.1.0",
+        "@types/mocha": "^10.0.6",
+        "@types/node": "^20.10.0",
+        "@types/vscode": "^1.85.0",
+        "@typescript-eslint/eslint-plugin": "^6.13.0",
+        "@typescript-eslint/parser": "^6.13.0",
+        "@vscode/test-electron": "^2.3.8",
+        "eslint": "^8.54.0",
+        "glob": "^10.3.10",
+        "mocha": "^10.2.0",
+        "typescript": "^5.3.2",
+        "@vscode/vsce": "^2.22.0"
+    }
+}

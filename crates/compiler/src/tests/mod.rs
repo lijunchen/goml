@@ -16,8 +16,8 @@ use crate::{
 };
 
 mod builtin_functions_test;
+mod module;
 mod multiline_string_test;
-mod package;
 mod query_test;
 mod ref_type_test;
 mod separate_compile_test;
@@ -251,16 +251,16 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
         }
     }
 
-    if let Ok(filter) = std::env::var("GOML_TEST_FILTER") {
-        if !filter.is_empty() {
-            case_paths.retain(|p| p.to_string_lossy().contains(&filter));
-            if test_log_enabled() {
-                eprintln!(
-                    "[test_cases] filter={} matched={}",
-                    filter,
-                    case_paths.len()
-                );
-            }
+    if let Ok(filter) = std::env::var("GOML_TEST_FILTER")
+        && !filter.is_empty()
+    {
+        case_paths.retain(|p| p.to_string_lossy().contains(&filter));
+        if test_log_enabled() {
+            eprintln!(
+                "[test_cases] filter={} matched={}",
+                filter,
+                case_paths.len()
+            );
         }
     }
 
@@ -363,7 +363,7 @@ fn run_single_test_case(p: PathBuf) -> anyhow::Result<()> {
         CompilationError::Typer { diagnostics } => anyhow::anyhow!(
             "Typer errors in {}:\n{}",
             p.display(),
-            format_typer_diagnostics(&diagnostics).join("\n")
+            format_typer_diagnostics(&diagnostics, &input).join("\n")
         ),
         CompilationError::Compile { diagnostics } => anyhow::anyhow!(
             "Compile errors in {}:\n{}",
@@ -490,7 +490,7 @@ fn run_parse_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected parse errors in {}, but typer reported diagnostics: {}",
                         p.display(),
-                        format_typer_diagnostics(&diagnostics).join("\n")
+                        format_typer_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Err(CompilationError::Compile { diagnostics }) => {
@@ -528,7 +528,10 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
             let diag_filename = p.with_file_name(format!("{}.diag", filename));
 
             let input = std::fs::read_to_string(&p)?;
-            match pipeline::pipeline::compile(&p, &input) {
+            let tmpdir = tempfile::tempdir()?;
+            let tmpfile = tmpdir.path().join("main.gom");
+            std::fs::write(&tmpfile, &input)?;
+            match pipeline::pipeline::compile(&tmpfile, &input) {
                 Err(CompilationError::Compile { diagnostics }) => {
                     let mut formatted = format_compile_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
@@ -555,7 +558,7 @@ fn run_compile_error_cases(dir: &Path) -> anyhow::Result<()> {
                     bail!(
                         "Expected compile diagnostics in {}, but typer reported diagnostics: {}",
                         p.display(),
-                        format_typer_diagnostics(&diagnostics).join("\n")
+                        format_typer_diagnostics(&diagnostics, &input).join("\n")
                     );
                 }
                 Ok(_) => {
@@ -588,7 +591,7 @@ fn run_typer_error_cases(dir: &Path) -> anyhow::Result<()> {
             std::fs::write(&tmpfile, &input)?;
             match pipeline::pipeline::compile(&tmpfile, &input) {
                 Err(CompilationError::Typer { diagnostics }) => {
-                    let mut formatted = format_typer_diagnostics(&diagnostics).join("\n");
+                    let mut formatted = format_typer_diagnostics(&diagnostics, &input).join("\n");
                     if !formatted.is_empty() {
                         formatted.push('\n');
                     }

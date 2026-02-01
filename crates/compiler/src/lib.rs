@@ -3,6 +3,7 @@ pub mod artifact;
 pub mod builtins;
 pub mod common;
 pub mod compile_match;
+pub mod config;
 pub mod core;
 pub mod derive;
 pub mod env;

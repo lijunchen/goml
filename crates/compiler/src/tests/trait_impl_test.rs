@@ -28,7 +28,7 @@ fn typecheck(src: &str) -> (tast::File, GlobalTypeEnv, Diagnostics) {
 
 fn expect_diagnostics(src: &str, expected: Expect) {
     let (_, _genv, diagnostics) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&diagnostics);
+    let diagnostics = format_typer_diagnostics(&diagnostics, src);
     expected.assert_debug_eq(&diagnostics);
 }
 
@@ -227,7 +227,7 @@ impl Point {
 "#;
 
     let (_tast, genv, diagnostics) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&diagnostics);
+    let diagnostics = format_typer_diagnostics(&diagnostics, src);
     let mut lines = Vec::new();
     lines.push(format!("diagnostics={diagnostics:?}"));
 
@@ -262,7 +262,7 @@ impl Point {
 "#;
 
     let (tast_file, genv, diagnostics) = typecheck(src);
-    let diagnostics = format_typer_diagnostics(&diagnostics);
+    let diagnostics = format_typer_diagnostics(&diagnostics, src);
     let mut lines = Vec::new();
     lines.push(format!("diagnostics={diagnostics:?}"));
 

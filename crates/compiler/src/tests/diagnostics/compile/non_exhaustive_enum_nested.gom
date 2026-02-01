@@ -1,0 +1,13 @@
+enum Expr {
+    Zero,
+    Succ(Expr),
+    Add(Expr, Expr)
+}
+
+fn main() -> int32 {
+    let e = Expr::Zero;
+    match e {
+        Expr::Zero => 0,
+        Expr::Succ(n) => 1,
+    }
+}

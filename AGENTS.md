@@ -21,9 +21,74 @@ The file extension for goml source files is `.gom`.
 
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:
-  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings).
+  - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
 - Frontend in `webapp` (Vite + React + TypeScript) consuming `crates/wasm-app/pkg`.
+- VS Code extension in `editors/vscode/` consuming LSP server binary.
 - CI/dev helpers in `.justfile`. Build artifacts in `target/` and `webapp/dist/`.
+
+## Project Configuration (`goml.toml`)
+
+GoML projects use a `goml.toml` file for project configuration, similar to Cargo.toml in Rust.
+
+A **module** is the top-level compilation unit containing one or more packages. The module root has a `goml.toml` with a `[module]` section. Sub-packages can have their own `goml.toml` files (without `[module]`) or rely on directory-based discovery.
+
+### Module Root Example
+```toml
+[module]
+name = "myapp"
+
+[package]
+name = "main"
+entry = "main.gom"
+```
+
+### Sub-Package Example
+```toml
+[package]
+name = "utils"
+```
+
+### Minimal Example (no module section, backward compatible)
+```toml
+[package]
+name = "Main"
+```
+
+### Fields
+| Field           | Required | Default     | Description                                  |
+| --------------- | -------- | ----------- | -------------------------------------------- |
+| `module.name`   | No       | -           | Module name (presence indicates module root) |
+| `package.name`  | Yes      | -           | Package name (any valid identifier)          |
+| `package.entry` | No       | `"lib.gom"` | Path to entry file relative to goml.toml     |
+
+### Project Discovery
+- The LSP and CLI search upward from the current file to find `goml.toml` with a `[module]` section
+- If found, uses `package.entry` as the compilation entry point
+- Sub-packages are discovered from subdirectories when imported, using their own `goml.toml` if present
+- Package names can be any valid identifier (lowercase or PascalCase)
+
+## VS Code LSP Extension
+
+### Design Philosophy
+- Reuse existing compiler infrastructure: the LSP server delegates to `crates/compiler/src/query.rs` which already powers the Monaco web editor.
+- Full compilation on every request: no incremental/salsa-based caching yet; each hover/completion triggers a full typecheck of the entry package and its dependencies.
+- Multi-package aware: the LSP discovers packages via `pipeline::packages::discover_packages` starting from the module root, supporting arbitrary package names + subdirectory library packages.
+
+### Build Commands
+- `just build-lsp`: Build release LSP binary (`target/release/goml-lsp`).
+- `just install-lsp`: Build and copy binary to `editors/vscode/bin/`.
+- `just vscode-ext`: Full build (LSP + extension TypeScript).
+
+### Development Workflow
+1. Build LSP: `cargo build -p lsp-server --release`
+2. Copy binary: `cp target/release/goml-lsp editors/vscode/bin/`
+3. Install deps: `cd editors/vscode && pnpm install`
+4. Compile TS: `pnpm run compile`
+5. Press F5 in VS Code to launch Extension Development Host.
+
+### Configuration
+- `goml.serverPath`: Custom path to `goml-lsp` binary (defaults to bundled or PATH lookup).
+- `goml.trace.server`: Trace LSP communication (`off`, `messages`, `verbose`).
 
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
@@ -58,15 +123,17 @@ The file extension for goml source files is `.gom`.
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
 
-### Multi-Package Tests
-- Multi-package tests are located in `crates/compiler/src/tests/package/`. They test the compiler's ability to handle multiple packages and inter-package dependencies.
+### Multi-Module Tests
+- Multi-module tests are located in `crates/compiler/src/tests/module/`. They test the compiler's ability to handle multiple packages within a module.
 - Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
-- Structure of a multi-package project:
+- Structure of a multi-module project:
+  - `goml.toml` - module configuration with `[module]` and `[package]` sections
   - `main.gom` - the entry point with `package Main;` declaration
+  - `PackageName/goml.toml` - sub-package configuration with `[package]` section
   - `PackageName/lib.gom` - library package files, each with its own `package PackageName;` declaration
   - `main.gom.out` - expected execution output
 - Package naming conventions:
-  - The main package must be declared as `package Main;` and contain the `fn main()` entry point
+  - The main package is typically declared as `package Main;` and contains the `fn main()` entry point
   - Library packages use PascalCase names (e.g., `package Lib;`, `package Util;`, `package Math;`)
   - Directory names must match the package names (e.g., `Lib/lib.gom` contains `package Lib;`)
 - Packages can import other packages using `use PackageName;` syntax
@@ -74,12 +141,13 @@ The file extension for goml source files is `.gom`.
   - Packages can import and use types, functions, and enums from other packages
   - Access package members using `PackageName::member` syntax (e.g., `Lib::Color::Red`, `Math::Pair`)
   - Trait method syntax `x.method(...)` for non-`dyn` values is enabled by `use PackageName::Trait` (builtin traits like `Show` are in the prelude and do not require `use`)
-- To add a new multi-package test:
-  1. Create a new directory under `crates/compiler/src/tests/package/` (e.g., `project006/`)
-  2. Create `main.gom` with `package Main;` and `fn main()`
-  3. Create subdirectories for each library package with their `lib.gom` files
-  4. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
-- Note: Multi-package tests only generate `.out` files, not intermediate IR stages like pipeline tests
+- To add a new multi-module test:
+  1. Create a new directory under `crates/compiler/src/tests/module/` (e.g., `project011/`)
+  2. Create `goml.toml` with `[module]` and `[package]` sections
+  3. Create `main.gom` with `package Main;` and `fn main()`
+  4. Create subdirectories for each library package with their `goml.toml` and `lib.gom` files
+  5. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
+- Note: Multi-module tests only generate `.out` files, not intermediate IR stages like pipeline tests
 
 ## Commit & Pull Request Guidelines
 - Prefer Conventional Commits (`feat:`, `fix:`, `refactor:`, `chore:`). Be concise and imperative: "add parser error for ...".
