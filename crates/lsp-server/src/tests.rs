@@ -159,10 +159,10 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [0:0] error: Unresolved name undefined_var
-                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
-                [0:0] error: Unresolved name undefined_var
-                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [4:12] error: Unresolved name undefined_var
+                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [4:12] error: Unresolved name undefined_var
+                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
                 [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
                 [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
                 [0:0] error: Type variable TypeVar(2) not resolved
@@ -989,8 +989,8 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [0:0] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
+                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
+                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
                 [0:0] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
                 [0:0] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
                 [0:0] error: Type variable TypeVar(14) not resolved
