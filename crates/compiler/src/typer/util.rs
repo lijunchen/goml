@@ -7,9 +7,18 @@ use crate::{
 };
 use diagnostics::{Severity, Stage};
 use parser::{Diagnostic, Diagnostics};
+use text_size::TextRange;
 
 pub(crate) fn push_error(diagnostics: &mut Diagnostics, message: impl Into<String>) {
     diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message));
+}
+
+pub(crate) fn push_error_with_range(
+    diagnostics: &mut Diagnostics,
+    message: impl Into<String>,
+    range: Option<TextRange>,
+) {
+    diagnostics.push(Diagnostic::new(Stage::Typer, Severity::Error, message).with_range(range));
 }
 
 pub(crate) fn push_ice(diagnostics: &mut Diagnostics, message: impl Into<String>) {

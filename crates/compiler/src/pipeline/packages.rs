@@ -283,9 +283,9 @@ pub fn discover_packages_from_config(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
-    let entry_file = entry_path.map(|p| p.to_path_buf()).unwrap_or_else(|| {
-        module_dir.join(&config.package.entry)
-    });
+    let entry_file = entry_path
+        .map(|p| p.to_path_buf())
+        .unwrap_or_else(|| module_dir.join(&config.package.entry));
 
     let entry_ast = if let Some(ast) = entry_ast {
         ast
@@ -300,12 +300,8 @@ pub fn discover_packages_from_config(
         parse_ast_file(&entry_file, &src)?
     };
 
-    let entry_package = load_package_from_config(
-        module_dir,
-        config,
-        Some(&entry_file),
-        Some(entry_ast),
-    )?;
+    let entry_package =
+        load_package_from_config(module_dir, config, Some(&entry_file), Some(entry_ast))?;
     let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();

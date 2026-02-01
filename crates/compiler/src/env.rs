@@ -39,16 +39,24 @@ pub struct ExternType {
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub enum Constraint {
-    TypeEqual(tast::Ty, tast::Ty),
+    TypeEqual(
+        tast::Ty,
+        tast::Ty,
+        #[serde(skip)] Option<text_size::TextRange>,
+    ),
     Overloaded {
         op: TastIdent,
         trait_name: TastIdent,
         call_site_type: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
     },
     StructFieldAccess {
         expr_ty: tast::Ty,
         field: TastIdent,
         result_ty: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
     },
 }
 

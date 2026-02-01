@@ -248,8 +248,17 @@ impl Typer {
             let mut still_pending = Vec::new();
             for constraint in constraints.drain(..) {
                 match constraint {
-                    Constraint::TypeEqual(l, r) => {
-                        if self.unify(diagnostics, &l, &r) {
+                    Constraint::TypeEqual(l, r, origin) => {
+                        if !self.unify(diagnostics, &l, &r) {
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!("Type mismatch: expected {:?}, found {:?}", l, r),
+                                )
+                                .with_range(origin),
+                            );
+                        } else {
                             changed = true;
                         }
                     }
@@ -257,6 +266,7 @@ impl Typer {
                         op,
                         trait_name,
                         call_site_type,
+                        origin,
                     } => {
                         let norm_call_site_type = self.norm(&call_site_type);
                         if let tast::Ty::TFunc {
@@ -304,6 +314,7 @@ impl Typer {
                                                 still_pending.push(Constraint::TypeEqual(
                                                     call_fun_ty,
                                                     impl_fun_ty,
+                                                    origin,
                                                 ));
 
                                                 changed = true;
@@ -316,7 +327,7 @@ impl Typer {
                                                         "No instance found for trait {}<{:?}> for operator {}",
                                                         trait_name.0, ty, op.0
                                                     ),
-                                                ))
+                                                ).with_range(origin))
                                             }
                                             _ => {
                                                 diagnostics.push(Diagnostic::new(
@@ -326,7 +337,7 @@ impl Typer {
                                                         "Multiple instances found for trait {}<{:?}> for operator {}",
                                                         trait_name.0, ty, op.0
                                                     ),
-                                                ))
+                                                ).with_range(origin))
                                             }
                                         }
                                     }
@@ -336,6 +347,7 @@ impl Typer {
                                             op,
                                             trait_name,
                                             call_site_type, // Push original back
+                                            origin,
                                         });
                                     }
                                     _ => {
@@ -346,18 +358,21 @@ impl Typer {
                                                 "Overload resolution failed for non-concrete, non-variable type {:?}",
                                                 self_ty
                                             ),
-                                        ));
+                                        ).with_range(origin));
                                     }
                                 }
                             } else {
-                                diagnostics.push(Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                        "Overloaded operator {} called with no arguments?",
-                                        op.0
-                                    ),
-                                ));
+                                diagnostics.push(
+                                    Diagnostic::new(
+                                        Stage::Typer,
+                                        Severity::Error,
+                                        format!(
+                                            "Overloaded operator {} called with no arguments?",
+                                            op.0
+                                        ),
+                                    )
+                                    .with_range(origin),
+                                );
                             }
                         } else {
                             diagnostics.push(Diagnostic::new(
@@ -367,13 +382,14 @@ impl Typer {
                                     "Overloaded constraint does not involve a function type: {:?}",
                                     norm_call_site_type
                                 ),
-                            ));
+                            ).with_range(origin));
                         }
                     }
                     Constraint::StructFieldAccess {
                         expr_ty,
                         field,
                         result_ty,
+                        origin,
                     } => {
                         let norm_expr_ty = self.norm(&expr_ty);
                         if let Some((type_name, type_args)) = decompose_struct_type(&norm_expr_ty) {
@@ -381,12 +397,13 @@ impl Typer {
                                 super::util::resolve_type_name(genv, &type_name.0);
                             let struct_def = env.structs().get(&TastIdent(resolved));
                             let Some(struct_def) = struct_def else {
-                                super::util::push_error(
+                                super::util::push_error_with_range(
                                     diagnostics,
                                     format!(
                                         "Struct {} not found when accessing field {}",
                                         type_name.0, field.0
                                     ),
+                                    origin,
                                 );
                                 continue;
                             };
@@ -404,6 +421,7 @@ impl Typer {
                                 expr_ty: norm_expr_ty,
                                 field,
                                 result_ty,
+                                origin,
                             });
                         }
                     }

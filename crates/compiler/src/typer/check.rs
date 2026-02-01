@@ -92,6 +92,7 @@ impl Typer {
                     op: tast::TastIdent("hash".to_string()),
                     trait_name: tast::TastIdent("Hash".to_string()),
                     call_site_type: hash_call_site_ty,
+                    origin: range,
                 });
 
                 let eq_call_site_ty = tast::Ty::TFunc {
@@ -102,6 +103,7 @@ impl Typer {
                     op: tast::TastIdent("eq".to_string()),
                     trait_name: tast::TastIdent("Eq".to_string()),
                     call_site_type: eq_call_site_ty,
+                    origin: range,
                 });
                 true
             }
@@ -520,7 +522,11 @@ impl Typer {
         };
 
         let expr_tast = self.coerce_to_expected_dyn(genv, diagnostics, e, expr_tast, expected);
-        self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), expected.clone()));
+        self.push_constraint(Constraint::TypeEqual(
+            expr_tast.get_ty(),
+            expected.clone(),
+            self.expr_range(e),
+        ));
         self.record_expr_result(e, &expr_tast);
         expr_tast
     }
@@ -671,7 +677,11 @@ impl Typer {
                         astptr,
                     };
                 }
-                super::util::push_error(diagnostics, format!("Unresolved name {}", path.display()));
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!("Unresolved name {}", path.display()),
+                    astptr.map(|p| p.text_range()),
+                );
                 self.error_expr(astptr)
             }
         }
@@ -742,12 +752,13 @@ impl Typer {
                 name: resolved_type_name.to_string(),
             }
         } else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!(
                     "Type or trait {} not found for member access",
                     resolved_type_name
                 ),
+                astptr.map(|p| p.text_range()),
             );
             return self.error_expr(astptr);
         };
@@ -760,9 +771,10 @@ impl Typer {
                 astptr,
             }
         } else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!("Method {} not found for type {}", member, type_name),
+                astptr.map(|p| p.text_range()),
             );
             self.error_expr(astptr)
         }
@@ -823,7 +835,7 @@ impl Typer {
                         && recv_trait == type_ident.0
                     {
                         if params.len() != args.len() {
-                            super::util::push_error(
+                            super::util::push_error_with_range(
                                 diagnostics,
                                 format!(
                                     "Trait method {}::{} expects {} arguments but got {}",
@@ -832,6 +844,7 @@ impl Typer {
                                     params.len(),
                                     args.len()
                                 ),
+                                self.expr_range(call_expr_id),
                             );
                             return self.error_expr(None);
                         }
@@ -943,12 +956,14 @@ impl Typer {
                     self.push_constraint(Constraint::TypeEqual(
                         call_site_func_ty.clone(),
                         inst_method_ty_for_call.clone(),
+                        self.expr_range(call_expr_id),
                     ));
                 } else {
                     self.push_constraint(Constraint::Overloaded {
                         op: member_ident.clone(),
                         trait_name: type_ident.clone(),
                         call_site_type: call_site_func_ty.clone(),
+                        origin: self.expr_range(call_expr_id),
                     });
                 }
 
@@ -999,12 +1014,13 @@ impl Typer {
                 name: resolved_type_name.clone(),
             }
         } else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!(
                     "Type or trait {} not found for member access",
                     resolved_type_name
                 ),
+                self.expr_range(call_expr_id),
             );
             return self.error_expr(None);
         };
@@ -1012,7 +1028,7 @@ impl Typer {
             let inst_method_ty = self.inst_ty(&method_ty);
             if let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() {
                 if params.len() != args.len() {
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Method {} expects {} arguments but got {}",
@@ -1020,6 +1036,7 @@ impl Typer {
                             params.len(),
                             args.len()
                         ),
+                        self.expr_range(call_expr_id),
                     );
                     return self.error_expr(None);
                 }
@@ -1071,9 +1088,10 @@ impl Typer {
                 self.error_expr(None)
             }
         } else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!("Method {} not found for type {}", member, type_name),
+                self.expr_range(call_expr_id),
             );
             self.error_expr(None)
         }
@@ -1134,9 +1152,10 @@ impl Typer {
             }
             hir::ConstructorRef::Unresolved(path) => path.clone(),
             hir::ConstructorRef::Ambiguous { path, .. } => {
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!("Ambiguous constructor {}", path.display()),
+                    self.expr_range(expr_id),
                 );
                 return self.error_expr(None);
             }
@@ -1161,12 +1180,13 @@ impl Typer {
         let variant_name = tast::TastIdent(variant_ident.clone());
         let ctor = enum_env.lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name);
         let Some((constructor, constr_ty)) = ctor else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!(
                     "Constructor {} not found in environment",
                     constructor_path.display()
                 ),
+                self.expr_range(expr_id),
             );
             return self.error_expr(None);
         };
@@ -1216,7 +1236,7 @@ impl Typer {
         };
 
         if expected_arity != args.len() {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!(
                     "Constructor {} expects {} arguments, but got {}",
@@ -1224,6 +1244,7 @@ impl Typer {
                     expected_arity,
                     args.len()
                 ),
+                self.expr_range(expr_id),
             );
             return self.error_expr(None);
         }
@@ -1255,9 +1276,17 @@ impl Typer {
                 params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+            self.push_constraint(Constraint::TypeEqual(
+                inst_constr_ty,
+                actual_ty,
+                self.expr_range(expr_id),
+            ));
         } else {
-            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(
+                inst_constr_ty,
+                ret_ty.clone(),
+                self.expr_range(expr_id),
+            ));
         }
 
         self.results
@@ -1283,9 +1312,10 @@ impl Typer {
         let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
         let ctor = type_env.lookup_constructor(&tast::TastIdent(resolved_name.clone()));
         let Some((constructor, constr_ty)) = ctor else {
-            super::util::push_error(
+            super::util::push_error_with_range(
                 diagnostics,
                 format!("Constructor {} not found in environment", resolved_name),
+                self.expr_range(expr_id),
             );
             return self.error_expr(None);
         };
@@ -1307,12 +1337,13 @@ impl Typer {
                 struct_def.fields.clone()
             }
             common::Constructor::Enum { .. } => {
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!(
                         "Constructor {} refers to an enum, but a struct literal was used",
                         name_display
                     ),
+                    self.expr_range(expr_id),
                 );
                 return self.error_expr(None);
             }
@@ -1346,13 +1377,14 @@ impl Typer {
         for (field_name, expr) in fields.iter() {
             let idx = field_positions.get(&tast::TastIdent(field_name.to_ident_name()));
             let Some(&idx) = idx else {
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!(
                         "Unknown field {} on struct literal {}",
                         field_name.to_ident_name(),
                         resolved_name
                     ),
+                    self.expr_range(*expr),
                 );
                 self.infer_expr(genv, local_env, diagnostics, *expr);
                 continue;
@@ -1366,13 +1398,14 @@ impl Typer {
                 continue;
             };
             if slot.is_some() {
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!(
                         "Duplicate field {} in struct literal {}",
                         field_name.to_ident_name(),
                         name_display
                     ),
+                    self.expr_range(*expr),
                 );
                 continue;
             }
@@ -1404,12 +1437,13 @@ impl Typer {
                     *slot = Some(placeholder);
                     continue;
                 };
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!(
                         "Missing field {} in struct literal {}",
                         missing, name_display
                     ),
+                    self.expr_range(expr_id),
                 );
                 let placeholder = param_tys
                     .get(idx)
@@ -1447,9 +1481,17 @@ impl Typer {
                 params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
                 ret_ty: Box::new(ret_ty.clone()),
             };
-            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, actual_ty));
+            self.push_constraint(Constraint::TypeEqual(
+                inst_constr_ty,
+                actual_ty,
+                self.expr_range(expr_id),
+            ));
         } else {
-            self.push_constraint(Constraint::TypeEqual(inst_constr_ty, ret_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(
+                inst_constr_ty,
+                ret_ty.clone(),
+                self.expr_range(expr_id),
+            ));
         }
 
         self.results.record_struct_lit_elab(
@@ -1499,7 +1541,11 @@ impl Typer {
         let mut items_tast = Vec::with_capacity(len);
         for item in items.iter() {
             let item_tast = self.infer_expr(genv, local_env, diagnostics, *item);
-            self.push_constraint(Constraint::TypeEqual(item_tast.get_ty(), elem_ty.clone()));
+            self.push_constraint(Constraint::TypeEqual(
+                item_tast.get_ty(),
+                elem_ty.clone(),
+                self.expr_range(*item),
+            ));
             items_tast.push(item_tast);
         }
 
@@ -1589,6 +1635,7 @@ impl Typer {
                             self.push_constraint(Constraint::TypeEqual(
                                 ann_ty.clone(),
                                 expected_param_ty.clone(),
+                                None,
                             ));
                             ann_ty
                         }
@@ -1829,6 +1876,7 @@ impl Typer {
             self.push_constraint(Constraint::TypeEqual(
                 arm_body_tast.get_ty(),
                 arm_ty.clone(),
+                self.expr_range(arm.body),
             ));
 
             arms_tast.push(tast::Arm {
@@ -1854,14 +1902,26 @@ impl Typer {
         else_branch: hir::ExprId,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
-        self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+        self.push_constraint(Constraint::TypeEqual(
+            cond_tast.get_ty(),
+            tast::Ty::TBool,
+            self.expr_range(cond),
+        ));
 
         let then_tast = self.infer_expr(genv, local_env, diagnostics, then_branch);
         let else_tast = self.infer_expr(genv, local_env, diagnostics, else_branch);
         let result_ty = self.fresh_ty_var();
 
-        self.push_constraint(Constraint::TypeEqual(then_tast.get_ty(), result_ty.clone()));
-        self.push_constraint(Constraint::TypeEqual(else_tast.get_ty(), result_ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(
+            then_tast.get_ty(),
+            result_ty.clone(),
+            self.expr_range(then_branch),
+        ));
+        self.push_constraint(Constraint::TypeEqual(
+            else_tast.get_ty(),
+            result_ty.clone(),
+            self.expr_range(else_branch),
+        ));
 
         tast::Expr::EIf {
             cond: Box::new(cond_tast),
@@ -1880,10 +1940,18 @@ impl Typer {
         body: hir::ExprId,
     ) -> tast::Expr {
         let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
-        self.push_constraint(Constraint::TypeEqual(cond_tast.get_ty(), tast::Ty::TBool));
+        self.push_constraint(Constraint::TypeEqual(
+            cond_tast.get_ty(),
+            tast::Ty::TBool,
+            self.expr_range(cond),
+        ));
 
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        self.push_constraint(Constraint::TypeEqual(body_tast.get_ty(), tast::Ty::TUnit));
+        self.push_constraint(Constraint::TypeEqual(
+            body_tast.get_ty(),
+            tast::Ty::TUnit,
+            self.expr_range(body),
+        ));
 
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
@@ -1905,7 +1973,11 @@ impl Typer {
             params: vec![],
             ret_ty: Box::new(tast::Ty::TUnit),
         };
-        self.push_constraint(Constraint::TypeEqual(expr_tast.get_ty(), closure_ty));
+        self.push_constraint(Constraint::TypeEqual(
+            expr_tast.get_ty(),
+            closure_ty,
+            self.expr_range(expr),
+        ));
 
         tast::Expr::EGo {
             expr: Box::new(expr_tast),
@@ -1956,6 +2028,7 @@ impl Typer {
                     self.push_constraint(Constraint::TypeEqual(
                         var_ty.clone(),
                         call_site_func_ty.clone(),
+                        self.expr_range(call_expr_id),
                     ));
 
                     self.results.record_call_elab(
@@ -2080,6 +2153,7 @@ impl Typer {
                                     op: tast::TastIdent("to_string".to_string()),
                                     trait_name: tast::TastIdent("ToString".to_string()),
                                     call_site_type: show_call_site_ty,
+                                    origin: call_range,
                                 });
                             }
                         }
@@ -2091,6 +2165,7 @@ impl Typer {
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
+                        call_range,
                     ));
                     self.results.record_expr_ty(func, inst_ty.clone());
                     self.results.record_name_ref_elab(
@@ -2229,6 +2304,7 @@ impl Typer {
                                     op: tast::TastIdent("to_string".to_string()),
                                     trait_name: tast::TastIdent("ToString".to_string()),
                                     call_site_type: show_call_site_ty,
+                                    origin: call_range,
                                 });
                             }
                         }
@@ -2240,6 +2316,7 @@ impl Typer {
                     self.push_constraint(Constraint::TypeEqual(
                         inst_ty.clone(),
                         call_site_func_ty.clone(),
+                        call_range,
                     ));
                     self.results.record_expr_ty(func, inst_ty.clone());
                     self.results.record_name_ref_elab(
@@ -2271,9 +2348,10 @@ impl Typer {
                         ty: ret_ty,
                     };
                 }
-                super::util::push_error(
+                super::util::push_error_with_range(
                     diagnostics,
                     format!("Unresolved callee {}", path.display()),
+                    self.expr_range(call_expr_id),
                 );
                 self.error_expr(None)
             }
@@ -2317,6 +2395,7 @@ impl Typer {
                     self.push_constraint(Constraint::TypeEqual(
                         inst_method_ty.clone(),
                         call_site_ty,
+                        self.expr_range(call_expr_id),
                     ));
 
                     self.results.record_expr_ty(func, inst_method_ty.clone());
@@ -2380,7 +2459,7 @@ impl Typer {
                             };
 
                             if params.len() != args.len() + 1 {
-                                super::util::push_error(
+                                super::util::push_error_with_range(
                                     diagnostics,
                                     format!(
                                         "Trait method {}::{} expects {} arguments but got {}",
@@ -2389,6 +2468,7 @@ impl Typer {
                                         params.len(),
                                         args.len() + 1
                                     ),
+                                    self.expr_range(call_expr_id),
                                 );
                                 return self.error_expr(None);
                             }
@@ -2418,6 +2498,7 @@ impl Typer {
                             self.push_constraint(Constraint::TypeEqual(
                                 receiver_ty.clone(),
                                 receiver_param_ty,
+                                self.expr_range(call_expr_id),
                             ));
 
                             self.results.record_call_elab(
@@ -2529,7 +2610,7 @@ impl Typer {
                             };
 
                             if params.len() != args.len() + 1 {
-                                super::util::push_error(
+                                super::util::push_error_with_range(
                                     diagnostics,
                                     format!(
                                         "Trait method {}::{} expects {} arguments but got {}",
@@ -2538,6 +2619,7 @@ impl Typer {
                                         params.len(),
                                         args.len() + 1
                                     ),
+                                    self.expr_range(call_expr_id),
                                 );
                                 return self.error_expr(None);
                             }
@@ -2567,6 +2649,7 @@ impl Typer {
                             self.push_constraint(Constraint::TypeEqual(
                                 receiver_ty.clone(),
                                 receiver_param_ty,
+                                self.expr_range(call_expr_id),
                             ));
 
                             self.results.record_call_elab(
@@ -2606,13 +2689,14 @@ impl Typer {
                             }
                         }
                         [] => {
-                            super::util::push_error(
+                            super::util::push_error_with_range(
                                 diagnostics,
                                 format!(
                                     "Method {} not found for type {:?}",
                                     field.to_ident_name(),
                                     receiver_expr
                                 ),
+                                self.expr_range(call_expr_id),
                             );
                             self.error_expr(None)
                         }
@@ -2659,6 +2743,7 @@ impl Typer {
                 self.push_constraint(Constraint::TypeEqual(
                     func_tast.get_ty(),
                     call_site_func_ty.clone(),
+                    self.expr_range(call_expr_id),
                 ));
 
                 self.results.record_call_elab(
@@ -2689,7 +2774,11 @@ impl Typer {
         let expr_ty = expr_tast.get_ty();
         match op {
             common_defs::UnaryOp::Not => {
-                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), tast::Ty::TBool));
+                self.push_constraint(Constraint::TypeEqual(
+                    expr_ty.clone(),
+                    tast::Ty::TBool,
+                    self.expr_range(expr),
+                ));
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
@@ -2698,7 +2787,11 @@ impl Typer {
                 }
             }
             common_defs::UnaryOp::Neg => {
-                self.push_constraint(Constraint::TypeEqual(expr_ty.clone(), expr_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    expr_ty.clone(),
+                    expr_ty.clone(),
+                    self.expr_range(expr),
+                ));
                 tast::Expr::EUnary {
                     op,
                     expr: Box::new(expr_tast),
@@ -2737,18 +2830,42 @@ impl Typer {
 
         match op {
             common_defs::BinaryOp::Add => {
-                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    lhs_ty.clone(),
+                    ret_ty.clone(),
+                    self.expr_range(lhs),
+                ));
+                self.push_constraint(Constraint::TypeEqual(
+                    rhs_ty.clone(),
+                    ret_ty.clone(),
+                    self.expr_range(rhs),
+                ));
             }
             common_defs::BinaryOp::Sub
             | common_defs::BinaryOp::Mul
             | common_defs::BinaryOp::Div => {
-                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), ret_ty.clone()));
-                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), ret_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    lhs_ty.clone(),
+                    ret_ty.clone(),
+                    self.expr_range(lhs),
+                ));
+                self.push_constraint(Constraint::TypeEqual(
+                    rhs_ty.clone(),
+                    ret_ty.clone(),
+                    self.expr_range(rhs),
+                ));
             }
             common_defs::BinaryOp::And | common_defs::BinaryOp::Or => {
-                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), tast::Ty::TBool));
-                self.push_constraint(Constraint::TypeEqual(rhs_ty.clone(), tast::Ty::TBool));
+                self.push_constraint(Constraint::TypeEqual(
+                    lhs_ty.clone(),
+                    tast::Ty::TBool,
+                    self.expr_range(lhs),
+                ));
+                self.push_constraint(Constraint::TypeEqual(
+                    rhs_ty.clone(),
+                    tast::Ty::TBool,
+                    self.expr_range(rhs),
+                ));
             }
             common_defs::BinaryOp::Less
             | common_defs::BinaryOp::Greater
@@ -2757,7 +2874,11 @@ impl Typer {
             | common_defs::BinaryOp::Eq
             | common_defs::BinaryOp::NotEq => {
                 // Comparison operators: lhs and rhs must have same type (numeric types)
-                self.push_constraint(Constraint::TypeEqual(lhs_ty.clone(), rhs_ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    lhs_ty.clone(),
+                    rhs_ty.clone(),
+                    self.expr_range(lhs),
+                ));
             }
         }
 
@@ -2842,6 +2963,7 @@ impl Typer {
             expr_ty: base_ty.clone(),
             field: tast::TastIdent(field.to_ident_name()),
             result_ty: result_ty.clone(),
+            origin: astptr.map(|p| p.text_range()),
         });
 
         tast::Expr::EField {
@@ -2893,7 +3015,7 @@ impl Typer {
             hir::Pat::PUInt64 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range)
             }
-            hir::Pat::PString { value } => self.check_pat_string(&value, ty),
+            hir::Pat::PString { value } => self.check_pat_string(&value, ty, range),
             hir::Pat::PChar { value } => {
                 self.check_pat_char(diagnostics, value.as_str(), ty, range)
             }
@@ -2955,7 +3077,7 @@ impl Typer {
         let prim = self
             .parse_integer_literal_with_ty(diagnostics, value, &target_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(&target_ty));
-        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone(), range));
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
@@ -2976,6 +3098,7 @@ impl Typer {
         self.push_constraint(Constraint::TypeEqual(
             literal_ty.clone(),
             expected_ty.clone(),
+            range,
         ));
         tast::Pat::PPrim {
             value: prim,
@@ -2983,8 +3106,13 @@ impl Typer {
         }
     }
 
-    fn check_pat_string(&mut self, value: &String, ty: &tast::Ty) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TString, ty.clone()));
+    fn check_pat_string(
+        &mut self,
+        value: &String,
+        ty: &tast::Ty,
+        range: Option<TextRange>,
+    ) -> tast::Pat {
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TString, ty.clone(), range));
         tast::Pat::PPrim {
             value: Prim::string(value.to_owned()),
             ty: tast::Ty::TString,
@@ -2998,7 +3126,7 @@ impl Typer {
         ty: &tast::Ty,
         range: Option<TextRange>,
     ) -> tast::Pat {
-        self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone(), range));
         let ch = self
             .parse_char_literal(diagnostics, value, range)
             .unwrap_or('\0');
@@ -3029,9 +3157,10 @@ impl Typer {
                     }
                     hir::ConstructorRef::Unresolved(path) => path.clone(),
                     hir::ConstructorRef::Ambiguous { path, .. } => {
-                        super::util::push_error(
+                        super::util::push_error_with_range(
                             diagnostics,
                             format!("Ambiguous constructor {}", path.display()),
+                            self.pat_range(pat),
                         );
                         return self.check_pat_wild(ty);
                     }
@@ -3057,12 +3186,13 @@ impl Typer {
                 let ctor =
                     enum_env.lookup_constructor_with_namespace(enum_ident.as_ref(), &variant_name);
                 let Some((constructor, constr_ty)) = ctor else {
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Constructor {} not found in environment",
                             constructor_path.display()
                         ),
+                        self.pat_range(pat),
                     );
                     return self.check_pat_wild(ty);
                 };
@@ -3095,19 +3225,20 @@ impl Typer {
                         tys.len()
                     }
                     common::Constructor::Struct(_) => {
-                        super::util::push_error(
+                        super::util::push_error_with_range(
                             diagnostics,
                             format!(
                                 "Struct {} patterns must use field syntax",
                                 constructor.name().0
                             ),
+                            self.pat_range(pat),
                         );
                         return self.check_pat_wild(ty);
                     }
                 };
 
                 if expected_arity != args.len() {
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Constructor {} expects {} arguments, but got {}",
@@ -3115,6 +3246,7 @@ impl Typer {
                             expected_arity,
                             args.len()
                         ),
+                        self.pat_range(pat),
                     );
                     return self.check_pat_wild(ty);
                 }
@@ -3136,7 +3268,11 @@ impl Typer {
                     args_tast.push(arg_tast);
                 }
 
-                self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    ret_ty.clone(),
+                    ty.clone(),
+                    self.pat_range(pat),
+                ));
 
                 self.results
                     .record_constructor_pat(pat, constructor.clone());
@@ -3151,15 +3287,16 @@ impl Typer {
                 let (type_name, type_env) = super::util::resolve_type_name(genv, &name_display);
                 let struct_def = type_env.structs().get(&tast::TastIdent(type_name.clone()));
                 let Some(struct_def) = struct_def else {
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!("Struct {} not found when checking pattern", type_name),
+                        self.pat_range(pat),
                     );
                     return self.check_pat_wild(ty);
                 };
                 let struct_fields = struct_def.fields.clone();
                 if struct_fields.len() != fields.len() {
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Struct pattern {} expects {} fields, but got {}",
@@ -3167,19 +3304,21 @@ impl Typer {
                             struct_fields.len(),
                             fields.len()
                         ),
+                        self.pat_range(pat),
                     );
                 }
 
                 let mut field_map: HashMap<String, hir::PatId> = HashMap::new();
                 for (fname, pat_id) in fields.iter() {
                     if field_map.insert(fname.to_ident_name(), *pat_id).is_some() {
-                        super::util::push_error(
+                        super::util::push_error_with_range(
                             diagnostics,
                             format!(
                                 "Struct pattern {} has duplicate field {}",
                                 type_name,
                                 fname.to_ident_name()
                             ),
+                            self.pat_range(pat),
                         );
                     }
                 }
@@ -3225,12 +3364,13 @@ impl Typer {
                             self.check_pat(genv, local_env, diagnostics, pat_id, &expected_ty)
                         }
                         None => {
-                            super::util::push_error(
+                            super::util::push_error_with_range(
                                 diagnostics,
                                 format!(
                                     "Struct pattern {} missing field {}",
                                     name_display, field_name.0
                                 ),
+                                self.pat_range(pat),
                             );
                             let wild = self.check_pat_wild(&expected_ty);
                             elab_args.push(StructPatArgElab::MissingWild {
@@ -3244,16 +3384,21 @@ impl Typer {
 
                 if !field_map.is_empty() {
                     let extra = field_map.keys().cloned().collect::<Vec<_>>().join(", ");
-                    super::util::push_error(
+                    super::util::push_error_with_range(
                         diagnostics,
                         format!(
                             "Struct pattern {} has unknown fields: {}",
                             name_display, extra
                         ),
+                        self.pat_range(pat),
                     );
                 }
 
-                self.push_constraint(Constraint::TypeEqual(ret_ty.clone(), ty.clone()));
+                self.push_constraint(Constraint::TypeEqual(
+                    ret_ty.clone(),
+                    ty.clone(),
+                    self.pat_range(pat),
+                ));
 
                 self.results.record_struct_pat_elab(
                     pat,
@@ -3296,7 +3441,7 @@ impl Typer {
             pats_tast.push(pat_tast);
         }
         let pat_ty = tast::Ty::TTuple { typs: pat_typs };
-        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone(), None));
         tast::Pat::PTuple {
             items: pats_tast,
             ty: pat_ty,
@@ -3305,7 +3450,7 @@ impl Typer {
 
     fn check_pat_wild(&mut self, ty: &tast::Ty) -> tast::Pat {
         let pat_ty = self.fresh_ty_var();
-        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone()));
+        self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone(), None));
         tast::Pat::PWild { ty: pat_ty }
     }
 }
