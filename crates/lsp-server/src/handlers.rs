@@ -18,19 +18,16 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
             diags
                 .iter()
                 .map(|d| {
-                    let range = d
-                        .range()
-                        .and_then(|r| doc.range(r))
-                        .unwrap_or_else(|| Range {
-                            start: Position {
-                                line: 0,
-                                character: 0,
-                            },
-                            end: Position {
-                                line: 0,
-                                character: 0,
-                            },
-                        });
+                    let range = d.range().and_then(|r| doc.range(r)).unwrap_or(Range {
+                        start: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                        end: Position {
+                            line: 0,
+                            character: 0,
+                        },
+                    });
 
                     let severity = match d.severity() {
                         diagnostics::Severity::Error => DiagnosticSeverity::ERROR,
@@ -127,11 +124,52 @@ pub fn goto_definition(
     position: Position,
     doc: &Document,
 ) -> Option<GotoDefinitionResponse> {
-    let def_range = query::goto_definition(path, src, position.line, position.character).ok()?;
-    let lsp_range = doc.range(def_range)?;
+    let locations =
+        query::goto_definition_locations(path, src, position.line, position.character).ok()?;
+    if locations.is_empty() {
+        return None;
+    }
 
-    Some(GotoDefinitionResponse::Scalar(Location {
-        uri: uri.clone(),
-        range: lsp_range,
-    }))
+    let mut lsp_locations = Vec::new();
+    for loc in locations {
+        let target_uri = if loc.path == path {
+            uri.clone()
+        } else {
+            let Some(u) = Url::from_file_path(&loc.path).ok() else {
+                continue;
+            };
+            u
+        };
+        let range = if loc.path == path {
+            doc.range(loc.range)
+        } else {
+            let Some(target_src) = std::fs::read_to_string(&loc.path).ok() else {
+                continue;
+            };
+            let target_doc = Document::new(target_src);
+            target_doc.range(loc.range)
+        };
+        if let Some(range) = range {
+            lsp_locations.push(Location {
+                uri: target_uri,
+                range,
+            });
+        }
+    }
+
+    lsp_locations.sort_by(|a, b| {
+        a.uri
+            .cmp(&b.uri)
+            .then(a.range.start.line.cmp(&b.range.start.line))
+            .then(a.range.start.character.cmp(&b.range.start.character))
+    });
+    lsp_locations.dedup_by(|a, b| a.uri == b.uri && a.range == b.range);
+
+    match lsp_locations.len() {
+        0 => None,
+        1 => Some(GotoDefinitionResponse::Scalar(
+            lsp_locations.into_iter().next()?,
+        )),
+        _ => Some(GotoDefinitionResponse::Array(lsp_locations)),
+    }
 }

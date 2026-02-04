@@ -559,12 +559,30 @@ mod goto_definition_tests {
     }
 
     fn format_goto_result(result: Option<GotoDefinitionResponse>) -> String {
+        fn short_uri(uri: &Url) -> String {
+            let Ok(path) = uri.to_file_path() else {
+                return uri.path().to_string();
+            };
+            if path.file_name().is_some_and(|n| n == "goml_test.gom") {
+                return "goml_test.gom".to_string();
+            }
+            let parts = path
+                .components()
+                .filter_map(|c| c.as_os_str().to_str().map(|s| s.to_string()))
+                .collect::<Vec<_>>();
+            match parts.as_slice() {
+                [] => "".to_string(),
+                [one] => one.clone(),
+                _ => format!("{}/{}", parts[parts.len() - 2], parts[parts.len() - 1]),
+            }
+        }
+
         match result {
             None => "no definition".to_string(),
             Some(GotoDefinitionResponse::Scalar(loc)) => {
                 format!(
                     "{}:{}:{}",
-                    loc.uri.path().split('/').next_back().unwrap_or(""),
+                    short_uri(&loc.uri),
                     loc.range.start.line,
                     loc.range.start.character
                 )
@@ -577,7 +595,7 @@ mod goto_definition_tests {
                     .map(|loc| {
                         format!(
                             "{}:{}:{}",
-                            loc.uri.path().split('/').next_back().unwrap_or(""),
+                            short_uri(&loc.uri),
                             loc.range.start.line,
                             loc.range.start.character
                         )
@@ -594,7 +612,7 @@ mod goto_definition_tests {
                     .map(|link| {
                         format!(
                             "{}:{}:{}",
-                            link.target_uri.path().split('/').next_back().unwrap_or(""),
+                            short_uri(&link.target_uri),
                             link.target_range.start.line,
                             link.target_range.start.character
                         )
@@ -627,7 +645,7 @@ fn main() {
 "#,
             5,
             12,
-            expect!["goml_test.gom:5:12"],
+            expect!["goml_test.gom:4:8"],
         );
     }
 
@@ -647,7 +665,7 @@ fn main() {
 "#,
             8,
             14,
-            expect!["goml_test.gom:8:12"],
+            expect!["goml_test.gom:3:3"],
         );
     }
 
@@ -669,7 +687,7 @@ fn main() {
 "#,
             10,
             14,
-            expect!["no definition"],
+            expect!["goml_test.gom:4:4"],
         );
     }
 
@@ -689,8 +707,62 @@ fn main() {
 "#,
             4,
             4,
-            expect!["goml_test.gom:4:4"],
+            expect!["goml_test.gom:3:10"],
         );
+    }
+
+    fn check_module_goto(
+        project_name: &str,
+        rel_file: &str,
+        line: u32,
+        character: u32,
+        expect: Expect,
+    ) {
+        let project_dir = test_module_dir().join(project_name);
+        let path = project_dir.join(rel_file);
+        let src = std::fs::read_to_string(&path).unwrap();
+        let doc = Document::new(src.clone());
+        let uri = Url::from_file_path(&path).unwrap();
+        let position = Position { line, character };
+        let result = handlers::goto_definition(&uri, &path, &src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
+    #[test]
+    fn goto_definition_use_package_to_goml_toml() {
+        check_module_goto("project001", "main.gom", 1, 6, expect!["Lib/goml.toml:0:0"]);
+    }
+
+    #[test]
+    fn goto_definition_use_member_to_trait() {
+        check_module_goto(
+            "project007_trait_impl_orphan_ok",
+            "main.gom",
+            1,
+            17,
+            expect!["TraitPkg/lib.gom:2:6"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_method_prefers_impl() {
+        check_module_goto(
+            "project007_trait_impl_orphan_ok",
+            "main.gom",
+            6,
+            18,
+            expect!["DataPkg/lib.gom:8:7"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_enum_variant_across_package() {
+        check_module_goto("project001", "main.gom", 4, 42, expect!["Lib/lib.gom:4:4"]);
+    }
+
+    #[test]
+    fn goto_definition_struct_field_across_package() {
+        check_module_goto("project001", "main.gom", 5, 25, expect!["Lib/lib.gom:15:4"]);
     }
 }
 

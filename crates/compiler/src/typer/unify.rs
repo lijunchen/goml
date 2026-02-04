@@ -322,38 +322,41 @@ impl Typer {
     }
 
     fn origin_for_unresolved_type_var(&self, var: TypeVar) -> Option<TextRange> {
-        self.constraints.iter().find_map(|constraint| match constraint {
-            Constraint::TypeEqual(l, r, origin) => {
-                if Self::ty_mentions_var(l, var) || Self::ty_mentions_var(r, var) {
-                    *origin
-                } else {
-                    None
+        self.constraints
+            .iter()
+            .find_map(|constraint| match constraint {
+                Constraint::TypeEqual(l, r, origin) => {
+                    if Self::ty_mentions_var(l, var) || Self::ty_mentions_var(r, var) {
+                        *origin
+                    } else {
+                        None
+                    }
                 }
-            }
-            Constraint::Overloaded {
-                call_site_type,
-                origin,
-                ..
-            } => {
-                if Self::ty_mentions_var(call_site_type, var) {
-                    *origin
-                } else {
-                    None
+                Constraint::Overloaded {
+                    call_site_type,
+                    origin,
+                    ..
+                } => {
+                    if Self::ty_mentions_var(call_site_type, var) {
+                        *origin
+                    } else {
+                        None
+                    }
                 }
-            }
-            Constraint::StructFieldAccess {
-                expr_ty,
-                result_ty,
-                origin,
-                ..
-            } => {
-                if Self::ty_mentions_var(expr_ty, var) || Self::ty_mentions_var(result_ty, var) {
-                    *origin
-                } else {
-                    None
+                Constraint::StructFieldAccess {
+                    expr_ty,
+                    result_ty,
+                    origin,
+                    ..
+                } => {
+                    if Self::ty_mentions_var(expr_ty, var) || Self::ty_mentions_var(result_ty, var)
+                    {
+                        *origin
+                    } else {
+                        None
+                    }
                 }
-            }
-        })
+            })
     }
 
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
@@ -1168,7 +1171,7 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let origin = args.first().and_then(|p| pat_origin(p));
+                let origin = args.first().and_then(pat_origin);
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let args = args
                     .into_iter()
@@ -1181,7 +1184,7 @@ impl Typer {
                 }
             }
             tast::Pat::PTuple { items, ty } => {
-                let origin = items.first().and_then(|p| pat_origin(p));
+                let origin = items.first().and_then(pat_origin);
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
@@ -1219,7 +1222,7 @@ impl Typer {
                 args,
                 ty,
             } => {
-                let origin = args.first().and_then(|e| expr_origin(e));
+                let origin = args.first().and_then(expr_origin);
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let args = args
                     .into_iter()
@@ -1232,7 +1235,7 @@ impl Typer {
                 }
             }
             tast::Expr::ETuple { items, ty } => {
-                let origin = items.first().and_then(|e| expr_origin(e));
+                let origin = items.first().and_then(expr_origin);
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
@@ -1244,7 +1247,7 @@ impl Typer {
                 }
             }
             tast::Expr::EArray { items, ty } => {
-                let origin = items.first().and_then(|e| expr_origin(e));
+                let origin = items.first().and_then(expr_origin);
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
@@ -1305,8 +1308,8 @@ impl Typer {
             tast::Expr::EBlock { exprs, ty } => {
                 let origin = exprs
                     .first()
-                    .and_then(|e| expr_origin(e))
-                    .or_else(|| exprs.last().and_then(|e| expr_origin(e)));
+                    .and_then(expr_origin)
+                    .or_else(|| exprs.last().and_then(expr_origin));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let exprs = exprs
                     .into_iter()
@@ -1382,8 +1385,8 @@ impl Typer {
             }
             tast::Expr::ECall { func, args, ty } => {
                 let origin = expr_origin(func.as_ref())
-                    .or_else(|| args.first().and_then(|e| expr_origin(e)))
-                    .or_else(|| args.last().and_then(|e| expr_origin(e)));
+                    .or_else(|| args.first().and_then(expr_origin))
+                    .or_else(|| args.last().and_then(expr_origin));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let func = Box::new(self.subst(diagnostics, *func));
                 let args = args

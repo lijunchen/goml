@@ -351,16 +351,14 @@ impl Typer {
             hir::Expr::EBlock { exprs } => {
                 self.infer_block_expr(genv, local_env, diagnostics, &exprs)
             }
-            hir::Expr::EMatch { expr, arms } => {
-                self.infer_match_expr(
-                    genv,
-                    local_env,
-                    diagnostics,
-                    expr,
-                    &arms,
-                    self.hir_table.expr_ptr(e),
-                )
-            }
+            hir::Expr::EMatch { expr, arms } => self.infer_match_expr(
+                genv,
+                local_env,
+                diagnostics,
+                expr,
+                &arms,
+                self.hir_table.expr_ptr(e),
+            ),
             hir::Expr::EIf {
                 cond,
                 then_branch,
