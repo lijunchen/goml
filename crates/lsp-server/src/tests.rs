@@ -559,12 +559,30 @@ mod goto_definition_tests {
     }
 
     fn format_goto_result(result: Option<GotoDefinitionResponse>) -> String {
+        fn short_uri(uri: &Url) -> String {
+            let Ok(path) = uri.to_file_path() else {
+                return uri.path().to_string();
+            };
+            if path.file_name().is_some_and(|n| n == "goml_test.gom") {
+                return "goml_test.gom".to_string();
+            }
+            let parts = path
+                .components()
+                .filter_map(|c| c.as_os_str().to_str().map(|s| s.to_string()))
+                .collect::<Vec<_>>();
+            match parts.as_slice() {
+                [] => "".to_string(),
+                [one] => one.clone(),
+                _ => format!("{}/{}", parts[parts.len() - 2], parts[parts.len() - 1]),
+            }
+        }
+
         match result {
             None => "no definition".to_string(),
             Some(GotoDefinitionResponse::Scalar(loc)) => {
                 format!(
                     "{}:{}:{}",
-                    loc.uri.path().split('/').next_back().unwrap_or(""),
+                    short_uri(&loc.uri),
                     loc.range.start.line,
                     loc.range.start.character
                 )
@@ -577,7 +595,7 @@ mod goto_definition_tests {
                     .map(|loc| {
                         format!(
                             "{}:{}:{}",
-                            loc.uri.path().split('/').next_back().unwrap_or(""),
+                            short_uri(&loc.uri),
                             loc.range.start.line,
                             loc.range.start.character
                         )
@@ -594,7 +612,7 @@ mod goto_definition_tests {
                     .map(|link| {
                         format!(
                             "{}:{}:{}",
-                            link.target_uri.path().split('/').next_back().unwrap_or(""),
+                            short_uri(&link.target_uri),
                             link.target_range.start.line,
                             link.target_range.start.character
                         )
@@ -614,6 +632,31 @@ mod goto_definition_tests {
         expect.assert_eq(&format_goto_result(result));
     }
 
+    fn position_in_src(src: &str, needle: &str, token: &str) -> Position {
+        let needle_offset = src
+            .find(needle)
+            .unwrap_or_else(|| panic!("needle not found: {}", needle));
+        let token_offset_in_needle = needle
+            .find(token)
+            .unwrap_or_else(|| panic!("token not found in needle: {}", token));
+        let offset = needle_offset + token_offset_in_needle;
+        let index = line_index::LineIndex::new(src);
+        let line_col = index.line_col(text_size::TextSize::from(offset as u32));
+        Position {
+            line: line_col.line,
+            character: line_col.col,
+        }
+    }
+
+    fn check_goto_token(src: &str, needle: &str, token: &str, expect: Expect) {
+        let path = test_file_path();
+        let doc = Document::new(src.to_string());
+        let uri = test_file_uri();
+        let position = position_in_src(src, needle, token);
+        let result = handlers::goto_definition(&uri, &path, src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
     #[test]
     fn goto_definition_local_variable() {
         check_goto(
@@ -627,7 +670,24 @@ fn main() {
 "#,
             5,
             12,
-            expect!["goml_test.gom:5:12"],
+            expect!["goml_test.gom:4:8"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_local_variable_via_token_search() {
+        check_goto_token(
+            r#"
+package Main;
+
+fn main() {
+    let x = 42;
+    println(x.to_string());
+}
+"#,
+            "println(x.to_string())",
+            "x",
+            expect!["goml_test.gom:4:8"],
         );
     }
 
@@ -647,7 +707,7 @@ fn main() {
 "#,
             8,
             14,
-            expect!["goml_test.gom:8:12"],
+            expect!["goml_test.gom:3:3"],
         );
     }
 
@@ -669,7 +729,7 @@ fn main() {
 "#,
             10,
             14,
-            expect!["no definition"],
+            expect!["goml_test.gom:4:4"],
         );
     }
 
@@ -689,7 +749,546 @@ fn main() {
 "#,
             4,
             4,
-            expect!["goml_test.gom:4:4"],
+            expect!["goml_test.gom:3:10"],
+        );
+    }
+
+    fn check_module_goto(
+        project_name: &str,
+        rel_file: &str,
+        line: u32,
+        character: u32,
+        expect: Expect,
+    ) {
+        let project_dir = test_module_dir().join(project_name);
+        let path = project_dir.join(rel_file);
+        let src = std::fs::read_to_string(&path).unwrap();
+        let doc = Document::new(src.clone());
+        let uri = Url::from_file_path(&path).unwrap();
+        let position = Position { line, character };
+        let result = handlers::goto_definition(&uri, &path, &src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
+    fn check_module_goto_token(
+        project_name: &str,
+        rel_file: &str,
+        needle: &str,
+        token: &str,
+        expect: Expect,
+    ) {
+        let project_dir = test_module_dir().join(project_name);
+        let path = project_dir.join(rel_file);
+        let src = std::fs::read_to_string(&path).unwrap();
+        let doc = Document::new(src.clone());
+        let uri = Url::from_file_path(&path).unwrap();
+        let position = position_in_src(&src, needle, token);
+        let result = handlers::goto_definition(&uri, &path, &src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
+    fn temp_project_dir(test_name: &str) -> PathBuf {
+        std::env::temp_dir()
+            .join("goml_lsp_goto_definition_tests")
+            .join(test_name)
+    }
+
+    fn write_file(path: &std::path::Path, content: &str) {
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, content).unwrap();
+    }
+
+    fn check_temp_module_goto_token(
+        test_name: &str,
+        rel_file: &str,
+        needle: &str,
+        token: &str,
+        expect: Expect,
+    ) {
+        let root = temp_project_dir(test_name);
+        let path = root.join(rel_file);
+        let src = std::fs::read_to_string(&path).unwrap();
+        let doc = Document::new(src.clone());
+        let uri = Url::from_file_path(&path).unwrap();
+        let position = position_in_src(&src, needle, token);
+        let result = handlers::goto_definition(&uri, &path, &src, position, &doc);
+        expect.assert_eq(&format_goto_result(result));
+    }
+
+    #[test]
+    fn goto_definition_use_package_to_goml_toml() {
+        check_module_goto("project001", "main.gom", 1, 6, expect!["Lib/goml.toml:0:0"]);
+    }
+
+    #[test]
+    fn goto_definition_use_member_to_trait() {
+        check_module_goto(
+            "project007_trait_impl_orphan_ok",
+            "main.gom",
+            1,
+            17,
+            expect!["TraitPkg/lib.gom:2:6"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_method_prefers_impl() {
+        check_module_goto(
+            "project007_trait_impl_orphan_ok",
+            "main.gom",
+            6,
+            18,
+            expect!["DataPkg/lib.gom:8:7"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_enum_variant_across_package() {
+        check_module_goto("project001", "main.gom", 4, 42, expect!["Lib/lib.gom:4:4"]);
+    }
+
+    #[test]
+    fn goto_definition_struct_field_across_package() {
+        check_module_goto("project001", "main.gom", 5, 25, expect!["Lib/lib.gom:15:4"]);
+    }
+
+    #[test]
+    fn goto_definition_use_package_project002() {
+        check_module_goto_token(
+            "project002",
+            "main.gom",
+            "use Util;",
+            "Util",
+            expect!["Util/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project003_math() {
+        check_module_goto_token(
+            "project003",
+            "main.gom",
+            "use Math;",
+            "Math",
+            expect!["Math/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project003_stats() {
+        check_module_goto_token(
+            "project003",
+            "main.gom",
+            "use Stats;",
+            "Stats",
+            expect!["Stats/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project004() {
+        check_module_goto_token(
+            "project004",
+            "main.gom",
+            "use Util;",
+            "Util",
+            expect!["Util/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project005_shape() {
+        check_module_goto_token(
+            "project005",
+            "main.gom",
+            "use Shape;",
+            "Shape",
+            expect!["Shape/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project005_geo() {
+        check_module_goto_token(
+            "project005",
+            "main.gom",
+            "use Geo;",
+            "Geo",
+            expect!["Geo/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project006() {
+        check_module_goto_token(
+            "project006",
+            "main.gom",
+            "use Shape;",
+            "Shape",
+            expect!["Shape/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project008_datapkg() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "main.gom",
+            "use DataPkg;",
+            "DataPkg",
+            expect!["DataPkg/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_project008_usepkg() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "main.gom",
+            "use UsePkg;",
+            "UsePkg",
+            expect!["UsePkg/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_segment_project007_traitpkg() {
+        check_module_goto_token(
+            "project007_trait_impl_orphan_ok",
+            "main.gom",
+            "use TraitPkg::Show;",
+            "TraitPkg",
+            expect!["TraitPkg/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "DataPkg/lib.gom",
+            "use TraitPkg;",
+            "TraitPkg",
+            expect!["TraitPkg/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "UsePkg/lib.gom",
+            "use TraitPkg;",
+            "TraitPkg",
+            expect!["TraitPkg/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project002_adjust() {
+        check_module_goto_token(
+            "project002",
+            "main.gom",
+            "Util::adjust",
+            "adjust",
+            expect!["Util/lib.gom:11:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project002_dec() {
+        check_module_goto_token(
+            "project002",
+            "main.gom",
+            "Util::dec",
+            "dec",
+            expect!["Util/lib.gom:7:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_type_project003_pair() {
+        check_module_goto_token(
+            "project003",
+            "main.gom",
+            "Math::Pair",
+            "Pair",
+            expect!["Math/lib.gom:2:7"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project003_sum() {
+        check_module_goto_token(
+            "project003",
+            "main.gom",
+            "Stats::sum",
+            "sum",
+            expect!["Stats/lib.gom:3:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_variant_project003_add() {
+        check_module_goto_token(
+            "project003",
+            "Stats/lib.gom",
+            "Math::Op::Add",
+            "Add",
+            expect!["Math/lib.gom:8:4"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_struct_field_project003_pair_a() {
+        check_module_goto_token(
+            "project003",
+            "main.gom",
+            "a: 9",
+            "a",
+            expect!["Math/lib.gom:3:4"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project005_move() {
+        check_module_goto_token(
+            "project005",
+            "main.gom",
+            "Geo::move",
+            "move",
+            expect!["Geo/lib.gom:8:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_type_project005_shape_point_in_pattern() {
+        check_module_goto_token(
+            "project005",
+            "Geo/lib.gom",
+            "Shape::Point { x: x, y: y }",
+            "Point",
+            expect!["Shape/lib.gom:2:7"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project008_bar_it() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "main.gom",
+            "UsePkg::bar_it",
+            "bar_it",
+            expect!["UsePkg/lib.gom:11:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_type_in_generic_bound_project008_trait_c() {
+        check_module_goto_token(
+            "project008_trait_bounds_across_packages",
+            "UsePkg/lib.gom",
+            "TraitPkg::C",
+            "C",
+            expect!["TraitPkg/lib.gom:10:6"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_package_segment_in_path_project001_lib() {
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "Lib::Color::Green",
+            "Lib",
+            expect!["Lib/goml.toml:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_type_segment_in_path_project001_color() {
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "Lib::Color::Green",
+            "Color",
+            expect!["Lib/lib.gom:2:5"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_segment_in_path_project001_sum_point() {
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "Lib::sum_point",
+            "sum_point",
+            expect!["Lib/lib.gom:19:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_type_in_struct_literal_project001_point() {
+        check_module_goto_token(
+            "project001",
+            "main.gom",
+            "Lib::Point",
+            "Point",
+            expect!["Lib/lib.gom:14:7"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_multi_file_in_package_project006_inc() {
+        check_module_goto_token(
+            "project006",
+            "main.gom",
+            "Shape::inc",
+            "inc",
+            expect!["Shape/ops.gom:2:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_value_project006_sum() {
+        check_module_goto_token(
+            "project006",
+            "main.gom",
+            "Shape::sum",
+            "sum",
+            expect!["Shape/ops.gom:6:3"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_builtin_option_variant_has_no_definition() {
+        check_module_goto_token(
+            "project009_builtin_option_result",
+            "main.gom",
+            "Option::Some",
+            "Some",
+            expect!["no definition"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_use_package_fallback_picks_first_gom_file() {
+        let root = temp_project_dir("use_fallback_first_gom");
+        let _ = std::fs::remove_dir_all(&root);
+        write_file(
+            &root.join("goml.toml"),
+            r#"
+[module]
+name = "tmpmod"
+
+[package]
+name = "Main"
+entry = "main.gom"
+"#,
+        );
+        write_file(
+            &root.join("main.gom"),
+            r#"
+package Main;
+use Pkg;
+
+fn main() {
+    let _ = 0;
+}
+"#,
+        );
+        write_file(
+            &root.join("Pkg/b.gom"),
+            r#"
+package Pkg;
+
+fn b() -> int32 { 0 }
+"#,
+        );
+        write_file(
+            &root.join("Pkg/a.gom"),
+            r#"
+package Pkg;
+
+fn a() -> int32 { 0 }
+"#,
+        );
+
+        check_temp_module_goto_token(
+            "use_fallback_first_gom",
+            "main.gom",
+            "use Pkg;",
+            "Pkg",
+            expect!["Pkg/a.gom:0:0"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_unqualified_type_returns_multiple_candidates() {
+        let root = temp_project_dir("unqualified_ambiguous_type");
+        let _ = std::fs::remove_dir_all(&root);
+        write_file(
+            &root.join("goml.toml"),
+            r#"
+[module]
+name = "tmpmod"
+
+[package]
+name = "Main"
+entry = "main.gom"
+"#,
+        );
+        write_file(
+            &root.join("main.gom"),
+            r#"
+package Main;
+use A;
+use B;
+
+fn main() {
+    let _ = Foo {};
+}
+"#,
+        );
+        write_file(
+            &root.join("A/goml.toml"),
+            r#"
+[package]
+name = "A"
+"#,
+        );
+        write_file(
+            &root.join("A/lib.gom"),
+            r#"
+package A;
+
+struct Foo {}
+"#,
+        );
+        write_file(
+            &root.join("B/goml.toml"),
+            r#"
+[package]
+name = "B"
+"#,
+        );
+        write_file(
+            &root.join("B/lib.gom"),
+            r#"
+package B;
+
+struct Foo {}
+"#,
+        );
+
+        check_temp_module_goto_token(
+            "unqualified_ambiguous_type",
+            "main.gom",
+            "Foo {}",
+            "Foo",
+            expect![[r#"
+                A/lib.gom:3:7
+                B/lib.gom:3:7"#]],
         );
     }
 }

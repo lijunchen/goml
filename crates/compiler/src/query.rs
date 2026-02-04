@@ -1,9 +1,13 @@
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    fs,
+    path::{Path, PathBuf},
+};
 
 use cst::cst::CstNode;
 use cst::nodes::BinaryExpr;
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
-use text_size::TextSize;
+use text_size::{TextRange, TextSize};
 
 use crate::{artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline, tast};
 
@@ -971,6 +975,740 @@ pub fn goto_definition(
     line: u32,
     col: u32,
 ) -> Result<text_size::TextRange, String> {
+    let locations = goto_definition_locations(path, src, line, col)?;
+    let mut same_file = locations
+        .iter()
+        .filter(|loc| loc.path == path)
+        .collect::<Vec<_>>();
+    if same_file.len() == 1 {
+        return Ok(same_file.swap_remove(0).range);
+    }
+    Err("no definition found".to_string())
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DefinitionLocation {
+    pub path: PathBuf,
+    pub range: TextRange,
+}
+
+#[derive(Debug, Default)]
+struct ProjectSymbolIndex {
+    values: HashMap<String, Vec<DefinitionLocation>>,
+    types: HashMap<String, Vec<DefinitionLocation>>,
+    impl_methods: HashMap<(String, String), Vec<DefinitionLocation>>,
+    trait_methods: HashMap<(String, String), Vec<DefinitionLocation>>,
+    struct_fields: HashMap<(String, String), Vec<DefinitionLocation>>,
+    enum_variants: HashMap<(String, String), Vec<DefinitionLocation>>,
+    packages: HashMap<String, PathBuf>,
+}
+
+impl ProjectSymbolIndex {
+    fn add_value(&mut self, name: String, loc: DefinitionLocation) {
+        self.values.entry(name).or_default().push(loc);
+    }
+
+    fn add_type(&mut self, name: String, loc: DefinitionLocation) {
+        self.types.entry(name).or_default().push(loc);
+    }
+
+    fn add_impl_method(&mut self, receiver: String, method: String, loc: DefinitionLocation) {
+        self.impl_methods
+            .entry((receiver, method))
+            .or_default()
+            .push(loc);
+    }
+
+    fn add_trait_method(&mut self, tr: String, method: String, loc: DefinitionLocation) {
+        self.trait_methods
+            .entry((tr, method))
+            .or_default()
+            .push(loc);
+    }
+
+    fn add_struct_field(&mut self, st: String, field: String, loc: DefinitionLocation) {
+        self.struct_fields.entry((st, field)).or_default().push(loc);
+    }
+
+    fn add_enum_variant(&mut self, en: String, variant: String, loc: DefinitionLocation) {
+        self.enum_variants
+            .entry((en, variant))
+            .or_default()
+            .push(loc);
+    }
+
+    fn find_value(&self, name: &str) -> Vec<DefinitionLocation> {
+        self.values.get(name).cloned().unwrap_or_default()
+    }
+
+    fn find_type(&self, name: &str) -> Vec<DefinitionLocation> {
+        self.types.get(name).cloned().unwrap_or_default()
+    }
+
+    fn find_impl_methods(&self, receiver: &str, method: &str) -> Vec<DefinitionLocation> {
+        self.impl_methods
+            .get(&(receiver.to_string(), method.to_string()))
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn find_trait_methods(&self, tr: &str, method: &str) -> Vec<DefinitionLocation> {
+        self.trait_methods
+            .get(&(tr.to_string(), method.to_string()))
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn find_struct_field(&self, st: &str, field: &str) -> Vec<DefinitionLocation> {
+        self.struct_fields
+            .get(&(st.to_string(), field.to_string()))
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn find_enum_variant(&self, en: &str, variant: &str) -> Vec<DefinitionLocation> {
+        self.enum_variants
+            .get(&(en.to_string(), variant.to_string()))
+            .cloned()
+            .unwrap_or_default()
+    }
+
+    fn find_package(&self, pkg: &str) -> Option<PathBuf> {
+        self.packages.get(pkg).cloned()
+    }
+}
+
+fn index_source_file_symbols(
+    index: &mut ProjectSymbolIndex,
+    file_path: &Path,
+    src: &str,
+) -> Result<(), String> {
+    let result = parser::parse(file_path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let cst_file =
+        cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
+    let package_name = cst_file
+        .package_decl()
+        .and_then(|d| d.name_token())
+        .map(|t| t.to_string())
+        .unwrap_or_else(|| "Main".to_string());
+
+    for item in cst_file.items() {
+        match item {
+            cst::nodes::Item::Fn(f) => {
+                if let Some(name_tok) = f.lident() {
+                    let mut names = Vec::new();
+                    add_name_variants(&mut names, &package_name, &name_tok.to_string());
+                    for name in names {
+                        index.add_value(
+                            name,
+                            DefinitionLocation {
+                                path: file_path.to_path_buf(),
+                                range: name_tok.text_range(),
+                            },
+                        );
+                    }
+                }
+            }
+            cst::nodes::Item::Struct(s) => {
+                let Some(type_tok) = s.uident() else {
+                    continue;
+                };
+                let mut type_names = Vec::new();
+                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                for tn in type_names.iter() {
+                    index.add_type(
+                        tn.clone(),
+                        DefinitionLocation {
+                            path: file_path.to_path_buf(),
+                            range: type_tok.text_range(),
+                        },
+                    );
+                }
+                if let Some(fields) = s.field_list() {
+                    for field in fields.fields() {
+                        let Some(field_tok) = field.lident() else {
+                            continue;
+                        };
+                        for tn in type_names.iter() {
+                            index.add_struct_field(
+                                tn.clone(),
+                                field_tok.to_string(),
+                                DefinitionLocation {
+                                    path: file_path.to_path_buf(),
+                                    range: field_tok.text_range(),
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+            cst::nodes::Item::Enum(e) => {
+                let Some(type_tok) = e.uident() else {
+                    continue;
+                };
+                let mut type_names = Vec::new();
+                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                for tn in type_names.iter() {
+                    index.add_type(
+                        tn.clone(),
+                        DefinitionLocation {
+                            path: file_path.to_path_buf(),
+                            range: type_tok.text_range(),
+                        },
+                    );
+                }
+                if let Some(variants) = e.variant_list() {
+                    for variant in variants.variants() {
+                        let Some(var_tok) = variant.uident() else {
+                            continue;
+                        };
+                        for tn in type_names.iter() {
+                            index.add_enum_variant(
+                                tn.clone(),
+                                var_tok.to_string(),
+                                DefinitionLocation {
+                                    path: file_path.to_path_buf(),
+                                    range: var_tok.text_range(),
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+            cst::nodes::Item::Trait(t) => {
+                let Some(type_tok) = t.uident() else {
+                    continue;
+                };
+                let mut type_names = Vec::new();
+                add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                for tn in type_names.iter() {
+                    index.add_type(
+                        tn.clone(),
+                        DefinitionLocation {
+                            path: file_path.to_path_buf(),
+                            range: type_tok.text_range(),
+                        },
+                    );
+                }
+                if let Some(methods) = t.trait_method_list() {
+                    for m in methods.methods() {
+                        let Some(method_tok) = m.lident() else {
+                            continue;
+                        };
+                        for tn in type_names.iter() {
+                            index.add_trait_method(
+                                tn.clone(),
+                                method_tok.to_string(),
+                                DefinitionLocation {
+                                    path: file_path.to_path_buf(),
+                                    range: method_tok.text_range(),
+                                },
+                            );
+                        }
+                    }
+                }
+            }
+            cst::nodes::Item::Impl(i) => {
+                let receiver = i
+                    .for_type()
+                    .and_then(|t| cst_type_path_name(&t))
+                    .unwrap_or_default();
+                if receiver.is_empty() {
+                    continue;
+                }
+                let receiver_keys = collect_receiver_keys(&package_name, &receiver);
+                for f in i.functions() {
+                    let Some(method_tok) = f.lident() else {
+                        continue;
+                    };
+                    for rk in receiver_keys.iter() {
+                        index.add_impl_method(
+                            rk.clone(),
+                            method_tok.to_string(),
+                            DefinitionLocation {
+                                path: file_path.to_path_buf(),
+                                range: method_tok.text_range(),
+                            },
+                        );
+                    }
+                }
+            }
+            cst::nodes::Item::Extern(ex) => {
+                if ex.type_keyword().is_some() {
+                    let Some(type_tok) = ex.uident() else {
+                        continue;
+                    };
+                    let mut type_names = Vec::new();
+                    add_name_variants(&mut type_names, &package_name, &type_tok.to_string());
+                    for tn in type_names.iter() {
+                        index.add_type(
+                            tn.clone(),
+                            DefinitionLocation {
+                                path: file_path.to_path_buf(),
+                                range: type_tok.text_range(),
+                            },
+                        );
+                    }
+                } else if let Some(name_tok) = ex.lident() {
+                    let mut names = Vec::new();
+                    add_name_variants(&mut names, &package_name, &name_tok.to_string());
+                    for name in names {
+                        index.add_value(
+                            name,
+                            DefinitionLocation {
+                                path: file_path.to_path_buf(),
+                                range: name_tok.text_range(),
+                            },
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn parse_ast_for_discovery(path: &Path, src: &str) -> Result<::ast::ast::File, String> {
+    let result = parser::parse(path, src);
+    let (green_node, mut diagnostics) = result.into_parts();
+    let root = MySyntaxNode::new_root(green_node);
+    let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast CST".to_string())?;
+    let lower = ::ast::lower::lower(cst);
+    let (ast, mut lower_diagnostics) = lower.into_parts();
+    diagnostics.append(&mut lower_diagnostics);
+    let ast = ast.ok_or_else(|| "AST lowering error".to_string())?;
+    Ok(ast)
+}
+
+fn discover_packages_for_query(
+    path: &Path,
+    src: &str,
+) -> Result<crate::pipeline::packages::PackageGraph, String> {
+    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
+        let entry_path = module_dir.join(&config.package.entry);
+        let entry_ast = if entry_path == path {
+            Some(parse_ast_for_discovery(path, src)?)
+        } else {
+            None
+        };
+        let graph = crate::pipeline::packages::discover_packages(
+            &module_dir,
+            Some(entry_path.as_path()),
+            entry_ast,
+        )
+        .map_err(|e| format!("{:?}", e))?;
+        return Ok(graph);
+    }
+
+    let root_dir = path
+        .parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."));
+    let entry_ast = parse_ast_for_discovery(path, src)?;
+    crate::pipeline::packages::discover_packages(root_dir, Some(path), Some(entry_ast))
+        .map_err(|e| format!("{:?}", e))
+}
+
+fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
+    path.ident_tokens().map(|t| t.to_string()).collect()
+}
+
+fn qualify_name(package: &str, name: &str) -> String {
+    if package == "Main" || package == "Builtin" {
+        name.to_string()
+    } else {
+        format!("{}::{}", package, name)
+    }
+}
+
+fn add_name_variants(map: &mut Vec<String>, package: &str, name: &str) {
+    map.push(name.to_string());
+    let qualified = qualify_name(package, name);
+    if qualified != name {
+        map.push(qualified);
+    }
+}
+
+fn collect_receiver_keys(package: &str, receiver: &str) -> Vec<String> {
+    let mut keys = Vec::new();
+    if receiver.is_empty() {
+        return keys;
+    }
+    keys.push(receiver.to_string());
+    if receiver.contains("::") {
+        if let Some(last) = receiver.rsplit("::").next()
+            && last != receiver
+        {
+            keys.push(last.to_string());
+        }
+        return keys;
+    }
+    let qualified = qualify_name(package, receiver);
+    if qualified != receiver {
+        keys.push(qualified);
+    }
+    keys
+}
+
+fn cst_type_path_name(ty: &cst::nodes::Type) -> Option<String> {
+    match ty {
+        cst::nodes::Type::TAppTy(app) => {
+            let path = app.path()?;
+            let segments = ident_tokens_to_segments(&path);
+            if segments.is_empty() {
+                None
+            } else {
+                Some(segments.join("::"))
+            }
+        }
+        cst::nodes::Type::DynTy(d) => {
+            let path = d.path()?;
+            let segments = ident_tokens_to_segments(&path);
+            if segments.is_empty() {
+                None
+            } else {
+                Some(segments.join("::"))
+            }
+        }
+        _ => None,
+    }
+}
+
+fn index_package_symbols(
+    index: &mut ProjectSymbolIndex,
+    package_dir: &Path,
+    package_files: &[hir::SourceFileAst],
+    src_overrides: &HashMap<PathBuf, String>,
+) -> Result<(), String> {
+    let package_goml = package_dir.join("goml.toml");
+    if package_goml.exists() {
+        if let Some(pkg_name) = package_dir.file_name().and_then(|s| s.to_str()) {
+            index.packages.insert(pkg_name.to_string(), package_goml);
+        }
+    } else if let Some(pkg_name) = package_dir.file_name().and_then(|s| s.to_str()) {
+        let mut gom_files = package_files
+            .iter()
+            .map(|f| f.path.clone())
+            .collect::<Vec<_>>();
+        gom_files.sort();
+        if let Some(first) = gom_files.first() {
+            index.packages.insert(pkg_name.to_string(), first.clone());
+        }
+    }
+
+    for file in package_files {
+        let file_path = &file.path;
+        let src = if let Some(override_src) = src_overrides.get(file_path) {
+            override_src.clone()
+        } else {
+            fs::read_to_string(file_path)
+                .map_err(|e| format!("failed to read {}: {}", file_path.display(), e))?
+        };
+        index_source_file_symbols(index, file_path, &src)?;
+    }
+
+    Ok(())
+}
+
+fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
+    let toml = dir.join("goml.toml");
+    if toml.exists() {
+        return Some(toml);
+    }
+    let mut gom_files = Vec::new();
+    let entries = fs::read_dir(dir).ok()?;
+    for entry in entries {
+        let path = entry.ok()?.path();
+        if path.extension().is_some_and(|ext| ext == "gom") {
+            gom_files.push(path);
+        }
+    }
+    gom_files.sort();
+    gom_files.into_iter().next()
+}
+
+fn build_symbol_index(
+    path: &Path,
+    src: &str,
+) -> Result<(crate::pipeline::packages::PackageGraph, ProjectSymbolIndex), String> {
+    let graph = discover_packages_for_query(path, src)?;
+    let mut index = ProjectSymbolIndex::default();
+    let mut overrides = HashMap::new();
+    overrides.insert(path.to_path_buf(), src.to_string());
+
+    for (pkg_name, unit) in graph.packages.iter() {
+        let Some(pkg_dir) = graph.package_dirs.get(pkg_name) else {
+            continue;
+        };
+        index_package_symbols(&mut index, pkg_dir, &unit.files, &overrides)?;
+    }
+
+    Ok((graph, index))
+}
+
+fn token_segment_index(token: &MySyntaxToken, segments: &[MySyntaxToken]) -> Option<usize> {
+    segments
+        .iter()
+        .position(|seg| seg.text_range() == token.text_range())
+}
+
+fn use_decl_from_token(token: &MySyntaxToken) -> Option<cst::nodes::UseDecl> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(use_decl) = cst::nodes::UseDecl::cast(node.clone()) {
+            return Some(use_decl);
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn self_definition_location(path: &Path, token: &MySyntaxToken) -> Option<DefinitionLocation> {
+    if token.kind() != MySyntaxKind::Ident {
+        return None;
+    }
+
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(f) = cst::nodes::Fn::cast(node.clone())
+            && f.lident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(s) = cst::nodes::Struct::cast(node.clone())
+            && s.uident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(e) = cst::nodes::Enum::cast(node.clone())
+            && e.uident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(t) = cst::nodes::Trait::cast(node.clone())
+            && t.uident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(v) = cst::nodes::Variant::cast(node.clone())
+            && v.uident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(f) = cst::nodes::StructField::cast(node.clone())
+            && f.lident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(m) = cst::nodes::TraitMethod::cast(node.clone())
+            && m.lident()
+                .is_some_and(|t| t.text_range() == token.text_range())
+        {
+            return Some(DefinitionLocation {
+                path: path.to_path_buf(),
+                range: token.text_range(),
+            });
+        }
+        if let Some(ex) = cst::nodes::Extern::cast(node.clone()) {
+            if ex.type_keyword().is_some()
+                && ex
+                    .uident()
+                    .is_some_and(|t| t.text_range() == token.text_range())
+            {
+                return Some(DefinitionLocation {
+                    path: path.to_path_buf(),
+                    range: token.text_range(),
+                });
+            }
+            if ex.type_keyword().is_none()
+                && ex
+                    .lident()
+                    .is_some_and(|t| t.text_range() == token.text_range())
+            {
+                return Some(DefinitionLocation {
+                    path: path.to_path_buf(),
+                    range: token.text_range(),
+                });
+            }
+        }
+
+        current = node.parent();
+    }
+
+    None
+}
+
+fn local_def_range_from_pats(hir_table: &hir::HirTable, local: hir::LocalId) -> Option<TextRange> {
+    for idx in 0..hir_table.pat_count() {
+        let pat_id = hir::PatId {
+            pkg: hir_table.package(),
+            idx: idx as u32,
+        };
+        if let hir::Pat::PVar { name, astptr } = hir_table.pat(pat_id)
+            && *name == local
+        {
+            return Some(astptr.text_range());
+        }
+    }
+    None
+}
+
+fn local_def_range_from_fn_params(token: &MySyntaxToken, name: &str) -> Option<TextRange> {
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(f) = cst::nodes::Fn::cast(node.clone()) {
+            let params = f.param_list()?.params();
+            for p in params {
+                let ident = p.lident()?;
+                if ident.to_string() == name {
+                    return Some(ident.text_range());
+                }
+            }
+            return None;
+        }
+        current = node.parent();
+    }
+    None
+}
+
+fn expr_ids_from_token(token: &MySyntaxToken, index: &HirResultsIndex) -> Vec<hir::ExprId> {
+    let mut ids = Vec::new();
+    let mut seen = HashSet::new();
+    let mut current = token.parent();
+    while let Some(node) = current {
+        let ptr = MySyntaxNodePtr::new(&node);
+        if let Some(id) = index.expr_id(&ptr)
+            && seen.insert(id.idx)
+        {
+            ids.push(id);
+        }
+        current = node.parent();
+    }
+    ids
+}
+
+fn pat_ids_from_token(token: &MySyntaxToken, index: &HirResultsIndex) -> Vec<hir::PatId> {
+    let mut ids = Vec::new();
+    let mut seen = HashSet::new();
+    let mut current = token.parent();
+    while let Some(node) = current {
+        let ptr = MySyntaxNodePtr::new(&node);
+        if let Some(id) = index.pat_id(&ptr)
+            && seen.insert(id.idx)
+        {
+            ids.push(id);
+        }
+        current = node.parent();
+    }
+    ids
+}
+
+fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
+    fn inner(ty: &tast::Ty, out: &mut Vec<String>) {
+        match ty {
+            tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => out.push(name.clone()),
+            tast::Ty::TApp { ty, .. } => inner(ty, out),
+            tast::Ty::TRef { elem } => inner(elem, out),
+            _ => {}
+        }
+    }
+
+    let mut out = Vec::new();
+    inner(ty, &mut out);
+    let mut expanded = Vec::new();
+    for name in out {
+        expanded.push(name.clone());
+        if name.contains("::")
+            && let Some(last) = name.rsplit("::").next()
+            && last != name
+        {
+            expanded.push(last.to_string());
+        }
+    }
+    expanded
+}
+
+fn lookup_symbol_locations_for_path(
+    graph: Option<&crate::pipeline::packages::PackageGraph>,
+    index: &ProjectSymbolIndex,
+    token: &MySyntaxToken,
+    segments: &[String],
+) -> Vec<DefinitionLocation> {
+    if segments.is_empty() {
+        return Vec::new();
+    }
+
+    let mut locations = Vec::new();
+    let full_name = segments.join("::");
+
+    if segments[0] != "Builtin"
+        && token.to_string() == segments[0]
+        && graph
+            .and_then(|g| g.package_dirs.get(&segments[0]))
+            .is_some()
+        && let Some(loc) = index.find_package(&segments[0])
+    {
+        locations.push(DefinitionLocation {
+            path: loc,
+            range: TextRange::new(TextSize::from(0), TextSize::from(0)),
+        });
+        return locations;
+    }
+
+    if segments.len() >= 2 {
+        let enum_name = segments[..segments.len() - 1].join("::");
+        let variant_name = segments[segments.len() - 1].as_str();
+        if token.to_string() == *variant_name {
+            locations.extend(index.find_enum_variant(&enum_name, variant_name));
+            if !locations.is_empty() {
+                return locations;
+            }
+        }
+        if token.to_string() == segments[segments.len() - 2] {
+            locations.extend(index.find_type(&enum_name));
+            if !locations.is_empty() {
+                return locations;
+            }
+        }
+    }
+
+    locations.extend(index.find_value(&full_name));
+    locations.extend(index.find_type(&full_name));
+    locations
+}
+
+pub fn goto_definition_locations(
+    path: &Path,
+    src: &str,
+    line: u32,
+    col: u32,
+) -> Result<Vec<DefinitionLocation>, String> {
     let result = parser::parse(path, src);
     let root = MySyntaxNode::new_root(result.green_node);
     let cst = cst::cst::File::cast(root).ok_or_else(|| "failed to cast syntax tree".to_string())?;
@@ -993,54 +1731,276 @@ pub fn goto_definition(
     }
     .ok_or_else(|| "no token at position".to_string())?;
 
-    let (hir_table, results, _genv, _diagnostics) = typecheck_single_file_for_query(path, src)
-        .or_else(|_| {
-            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
-                .map_err(|e| format!("{:?}", e))
-        })?;
-
-    let index = HirResultsIndex::new(&hir_table);
-
-    if let Some(expr_id) = find_mapped_expr_id_from_token(&token, &index) {
-        if let Some(elab) = results.name_ref_elab(expr_id)
-            && let Some(ptr) = name_ref_elab_astptr(elab)
-        {
-            return Ok(ptr.text_range());
+    if let Some(use_decl) = use_decl_from_token(&token)
+        && let Some(path_node) = use_decl.path()
+    {
+        let ident_tokens = path_node.ident_tokens().collect::<Vec<_>>();
+        let segments = ident_tokens
+            .iter()
+            .map(|t| t.to_string())
+            .collect::<Vec<_>>();
+        if segments.is_empty() {
+            return Err("no definition found".to_string());
         }
-        if let Some(call_elab) = results.call_elab(expr_id)
-            && let Some(ptr) = callee_elab_astptr(&call_elab.callee)
-        {
-            return Ok(ptr.text_range());
+        if let Some(idx) = token_segment_index(&token, &ident_tokens) {
+            if idx == 0 {
+                let pkg = &segments[0];
+                let pkg_dir = if let Ok((module_dir, _)) =
+                    crate::pipeline::packages::discover_project_from_file(path)
+                {
+                    module_dir.join(pkg)
+                } else {
+                    path.parent()
+                        .filter(|p| !p.as_os_str().is_empty())
+                        .unwrap_or_else(|| Path::new("."))
+                        .join(pkg)
+                };
+                if let Some(target) = package_nav_target_in_dir(&pkg_dir) {
+                    return Ok(vec![DefinitionLocation {
+                        path: target,
+                        range: TextRange::new(TextSize::from(0), TextSize::from(0)),
+                    }]);
+                }
+            } else {
+                let lookup = segments[..=idx].join("::");
+                if let Ok((_graph, index)) = build_symbol_index(path, src) {
+                    let mut out = index.find_type(&lookup);
+                    out.extend(index.find_value(&lookup));
+                    if !out.is_empty() {
+                        return Ok(out);
+                    }
+                }
+            }
         }
     }
 
-    if let Some(local_id) = find_mapped_local_id_from_token(&token, &index)
-        && let Some(ptr) = hir_table.local_origin_ptr(local_id)
-    {
-        return Ok(ptr.text_range());
+    if let Some(loc) = self_definition_location(path, &token) {
+        return Ok(vec![loc]);
+    }
+
+    let (graph, sym_index) = match build_symbol_index(path, src) {
+        Ok((g, i)) => (Some(g), i),
+        Err(_) => {
+            let mut i = ProjectSymbolIndex::default();
+            let _ = index_source_file_symbols(&mut i, path, src);
+            (None, i)
+        }
+    };
+
+    let typecheck = typecheck_single_file_for_query(path, src).or_else(|_| {
+        pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+            .map_err(|e| format!("{:?}", e))
+    });
+
+    if let Ok((hir_table, results, _genv, _diagnostics)) = typecheck {
+        let index = HirResultsIndex::new(&hir_table);
+        let expr_ids = expr_ids_from_token(&token, &index);
+        for expr_id in expr_ids.iter() {
+            match hir_table.expr(*expr_id) {
+                hir::Expr::ENameRef { res, hint, .. } => match res {
+                    hir::NameRef::Local(local_id) => {
+                        if let Some(range) = local_def_range_from_pats(&hir_table, *local_id) {
+                            return Ok(vec![DefinitionLocation {
+                                path: path.to_path_buf(),
+                                range,
+                            }]);
+                        }
+                        if let Some(range) = local_def_range_from_fn_params(&token, hint) {
+                            return Ok(vec![DefinitionLocation {
+                                path: path.to_path_buf(),
+                                range,
+                            }]);
+                        }
+                    }
+                    hir::NameRef::Def(_) => {
+                        let mut out = sym_index.find_value(hint);
+                        out.extend(sym_index.find_type(hint));
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    }
+                    hir::NameRef::Builtin(_) => {}
+                    hir::NameRef::Unresolved(p) => {
+                        let segments = p
+                            .segments()
+                            .iter()
+                            .map(|s| s.seg.clone())
+                            .collect::<Vec<_>>();
+                        let out = lookup_symbol_locations_for_path(
+                            graph.as_ref(),
+                            &sym_index,
+                            &token,
+                            &segments,
+                        );
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    }
+                },
+                hir::Expr::EStaticMember { path: p, .. } => {
+                    let segments = p
+                        .segments()
+                        .iter()
+                        .map(|s| s.seg.clone())
+                        .collect::<Vec<_>>();
+                    let out = lookup_symbol_locations_for_path(
+                        graph.as_ref(),
+                        &sym_index,
+                        &token,
+                        &segments,
+                    );
+                    if !out.is_empty() {
+                        return Ok(out);
+                    }
+                }
+                hir::Expr::EField { expr, field } => {
+                    if token.kind() != MySyntaxKind::Ident {
+                        continue;
+                    }
+                    let field_name = field.to_ident_name();
+                    if token.to_string() != field_name {
+                        continue;
+                    }
+
+                    if let Some(elab) = results.name_ref_elab(*expr_id) {
+                        let receiver_ty =
+                            results.expr_ty(*expr).cloned().unwrap_or(tast::Ty::TUnit);
+                        let receiver_keys = tast_ty_constr_candidates(&receiver_ty);
+                        let method_name = match elab {
+                            crate::typer::results::NameRefElab::InherentMethod {
+                                method_name,
+                                ..
+                            }
+                            | crate::typer::results::NameRefElab::TraitMethod {
+                                method_name, ..
+                            }
+                            | crate::typer::results::NameRefElab::DynTraitMethod {
+                                method_name,
+                                ..
+                            } => method_name.0.clone(),
+                            crate::typer::results::NameRefElab::Var { .. } => field_name.clone(),
+                        };
+                        let mut out = Vec::new();
+                        for rk in receiver_keys.iter() {
+                            out.extend(sym_index.find_impl_methods(rk, &method_name));
+                        }
+                        if out.is_empty()
+                            && let crate::typer::results::NameRefElab::TraitMethod {
+                                trait_name,
+                                ..
+                            }
+                            | crate::typer::results::NameRefElab::DynTraitMethod {
+                                trait_name,
+                                ..
+                            } = elab
+                        {
+                            out.extend(sym_index.find_trait_methods(&trait_name.0, &method_name));
+                        }
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    } else if let Some(receiver_ty) = results.expr_ty(*expr) {
+                        let receiver_keys = tast_ty_constr_candidates(receiver_ty);
+                        let mut out = Vec::new();
+                        for rk in receiver_keys.iter() {
+                            out.extend(sym_index.find_struct_field(rk, &field_name));
+                        }
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    }
+                }
+                hir::Expr::EStructLiteral { .. } => {
+                    if let Some(elab) = results.struct_lit_elab(*expr_id)
+                        && token.kind() == MySyntaxKind::Ident
+                    {
+                        let field_name = token.to_string();
+                        let struct_name = elab.constructor.type_name().0.clone();
+                        let mut out = sym_index.find_struct_field(&struct_name, &field_name);
+                        if out.is_empty()
+                            && struct_name.contains("::")
+                            && let Some(last) = struct_name.rsplit("::").next()
+                        {
+                            out.extend(sym_index.find_struct_field(last, &field_name));
+                        }
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    }
+                }
+                hir::Expr::EConstr { .. } => {
+                    if let Some(constructor) = results.constructor_for_expr(*expr_id) {
+                        if let Some(enum_ctor) = constructor.as_enum() {
+                            let variant = enum_ctor.variant.0.as_str();
+                            let enum_name = enum_ctor.type_name.0.as_str();
+                            if token.to_string() == variant {
+                                let out = sym_index.find_enum_variant(enum_name, variant);
+                                if !out.is_empty() {
+                                    return Ok(out);
+                                }
+                            }
+                            if token.to_string()
+                                == enum_ctor
+                                    .type_name
+                                    .0
+                                    .rsplit("::")
+                                    .next()
+                                    .unwrap_or(&enum_ctor.type_name.0)
+                            {
+                                let out = sym_index.find_type(enum_name);
+                                if !out.is_empty() {
+                                    return Ok(out);
+                                }
+                            }
+                        } else if let Some(struct_ctor) = constructor.as_struct() {
+                            let st = struct_ctor.type_name.0.as_str();
+                            if token.to_string()
+                                == struct_ctor
+                                    .type_name
+                                    .0
+                                    .rsplit("::")
+                                    .next()
+                                    .unwrap_or(&struct_ctor.type_name.0)
+                            {
+                                let out = sym_index.find_type(st);
+                                if !out.is_empty() {
+                                    return Ok(out);
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let pat_ids = pat_ids_from_token(&token, &index);
+        for pat_id in pat_ids.iter() {
+            if let Some(constructor) = results.constructor_for_pat(*pat_id)
+                && let Some(enum_ctor) = constructor.as_enum()
+            {
+                let variant = enum_ctor.variant.0.as_str();
+                let enum_name = enum_ctor.type_name.0.as_str();
+                if token.to_string() == variant {
+                    let out = sym_index.find_enum_variant(enum_name, variant);
+                    if !out.is_empty() {
+                        return Ok(out);
+                    }
+                }
+            }
+        }
+    }
+
+    if token.kind() == MySyntaxKind::Ident {
+        let segments = path_segments_from_token(&token).unwrap_or_default();
+        if !segments.is_empty() {
+            let out =
+                lookup_symbol_locations_for_path(graph.as_ref(), &sym_index, &token, &segments);
+            if !out.is_empty() {
+                return Ok(out);
+            }
+        }
     }
 
     Err("no definition found".to_string())
-}
-
-fn name_ref_elab_astptr(elab: &crate::typer::results::NameRefElab) -> Option<MySyntaxNodePtr> {
-    use crate::typer::results::NameRefElab;
-    match elab {
-        NameRefElab::Var { astptr, .. }
-        | NameRefElab::TraitMethod { astptr, .. }
-        | NameRefElab::DynTraitMethod { astptr, .. }
-        | NameRefElab::InherentMethod { astptr, .. } => *astptr,
-    }
-}
-
-fn callee_elab_astptr(callee: &crate::typer::results::CalleeElab) -> Option<MySyntaxNodePtr> {
-    use crate::typer::results::CalleeElab;
-    match callee {
-        CalleeElab::Var { astptr, .. }
-        | CalleeElab::TraitMethod { astptr, .. }
-        | CalleeElab::DynTraitMethod { astptr, .. }
-        | CalleeElab::InherentMethod { astptr, .. }
-        | CalleeElab::Error { astptr, .. } => *astptr,
-        CalleeElab::Expr(_) => None,
-    }
 }
