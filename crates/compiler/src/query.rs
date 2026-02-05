@@ -1429,6 +1429,16 @@ fn package_nav_target_in_dir(dir: &Path) -> Option<PathBuf> {
     gom_files.into_iter().next()
 }
 
+fn index_builtin_symbols(index: &mut ProjectSymbolIndex) -> Result<(), String> {
+    let builtin_path = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("src")
+        .join("builtin.gom");
+    let Ok(src) = fs::read_to_string(&builtin_path) else {
+        return Ok(());
+    };
+    index_source_file_symbols(index, &builtin_path, &src)
+}
+
 fn build_symbol_index(
     path: &Path,
     src: &str,
@@ -1444,6 +1454,8 @@ fn build_symbol_index(
         };
         index_package_symbols(&mut index, pkg_dir, &unit.files, &overrides)?;
     }
+
+    index_builtin_symbols(&mut index)?;
 
     Ok((graph, index))
 }
@@ -1634,7 +1646,9 @@ fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
         match ty {
             tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => out.push(name.clone()),
             tast::Ty::TApp { ty, .. } => inner(ty, out),
-            tast::Ty::TRef { elem } => inner(elem, out),
+            tast::Ty::TRef { .. } => out.push("Ref".to_string()),
+            tast::Ty::TVec { .. } => out.push("Vec".to_string()),
+            tast::Ty::THashMap { .. } => out.push("HashMap".to_string()),
             _ => {}
         }
     }
@@ -1783,6 +1797,7 @@ pub fn goto_definition_locations(
         Err(_) => {
             let mut i = ProjectSymbolIndex::default();
             let _ = index_source_file_symbols(&mut i, path, src);
+            let _ = index_builtin_symbols(&mut i);
             (None, i)
         }
     };
@@ -1819,7 +1834,13 @@ pub fn goto_definition_locations(
                             return Ok(out);
                         }
                     }
-                    hir::NameRef::Builtin(_) => {}
+                    hir::NameRef::Builtin(_) => {
+                        let mut out = sym_index.find_value(hint);
+                        out.extend(sym_index.find_type(hint));
+                        if !out.is_empty() {
+                            return Ok(out);
+                        }
+                    }
                     hir::NameRef::Unresolved(p) => {
                         let segments = p
                             .segments()
@@ -1838,6 +1859,45 @@ pub fn goto_definition_locations(
                     }
                 },
                 hir::Expr::EStaticMember { path: p, .. } => {
+                    if token.kind() == MySyntaxKind::Ident
+                        && let Some(member) = p.last_ident()
+                        && token.to_string() == member.as_str()
+                        && let Some(elab) = results.name_ref_elab(*expr_id)
+                    {
+                        match elab {
+                            crate::typer::results::NameRefElab::InherentMethod {
+                                receiver_ty,
+                                method_name,
+                                ..
+                            } => {
+                                let receiver_keys = tast_ty_constr_candidates(receiver_ty);
+                                let mut out = Vec::new();
+                                for rk in receiver_keys.iter() {
+                                    out.extend(sym_index.find_impl_methods(rk, &method_name.0));
+                                }
+                                if !out.is_empty() {
+                                    return Ok(out);
+                                }
+                            }
+                            crate::typer::results::NameRefElab::TraitMethod {
+                                trait_name,
+                                method_name,
+                                ..
+                            }
+                            | crate::typer::results::NameRefElab::DynTraitMethod {
+                                trait_name,
+                                method_name,
+                                ..
+                            } => {
+                                let out =
+                                    sym_index.find_trait_methods(&trait_name.0, &method_name.0);
+                                if !out.is_empty() {
+                                    return Ok(out);
+                                }
+                            }
+                            crate::typer::results::NameRefElab::Var { .. } => {}
+                        }
+                    }
                     let segments = p
                         .segments()
                         .iter()

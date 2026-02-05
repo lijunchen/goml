@@ -1134,6 +1134,8 @@ impl From<&ast::ExternType> for ExternType {
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
     pub name: HirIdent,
+    pub generics: Vec<HirIdent>,
+    pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
     pub params: Vec<(HirIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }
@@ -1143,6 +1145,15 @@ impl From<&ast::ExternBuiltin> for ExternBuiltin {
         ExternBuiltin {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&ext.name.0),
+            generics: ext.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            generic_bounds: ext
+                .generic_bounds
+                .iter()
+                .map(|(param, traits)| {
+                    let traits = traits.iter().map(|p| p.into()).collect::<Vec<_>>();
+                    (HirIdent::name(&param.0), traits)
+                })
+                .collect(),
             params: ext
                 .params
                 .iter()

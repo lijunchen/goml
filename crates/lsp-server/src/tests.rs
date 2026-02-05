@@ -1167,7 +1167,55 @@ fn main() {
             "main.gom",
             "Option::Some",
             "Some",
-            expect!["no definition"],
+            expect!["src/builtin.gom:102:4"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_builtin_vec_new() {
+        check_goto_token(
+            r#"
+package Main;
+
+fn main() -> unit {
+    let v: Vec[int32] = vec_new();
+    ()
+}
+"#,
+            "vec_new()",
+            "vec_new",
+            expect!["src/builtin.gom:111:10"],
+        );
+    }
+
+    #[test]
+    fn goto_definition_builtin_hashmap_methods() {
+        let src = r#"
+package Main;
+
+#[derive(Hash, Eq)]
+enum Key {
+    A,
+}
+
+fn main() -> unit {
+    let m: HashMap[Key, int32] = HashMap::new();
+    m.set(Key::A, 1);
+    ()
+}
+"#;
+
+        check_goto_token(
+            src,
+            "HashMap::new()",
+            "new",
+            expect!["src/builtin.gom:437:7"],
+        );
+        check_goto_token(
+            src,
+            "m.set(Key::A, 1)",
+            "set",
+            expect!["src/builtin.gom:445:7"],
         );
     }
 

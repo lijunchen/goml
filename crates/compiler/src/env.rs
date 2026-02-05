@@ -458,6 +458,9 @@ impl TraitEnv {
         let constr = match receiver_ty {
             tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
             tast::Ty::TApp { ty, .. } => Some(ty.get_constr_name_unsafe()),
+            tast::Ty::TVec { .. } => Some("Vec".to_string()),
+            tast::Ty::TRef { .. } => Some("Ref".to_string()),
+            tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
             _ => None,
         };
         if let Some(constr) = constr

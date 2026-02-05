@@ -159,6 +159,9 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
             is_local_name(current_package, name)
         }
         tast::Ty::TApp { ty, .. } => is_local_nominal_type(current_package, ty),
+        tast::Ty::TVec { .. } | tast::Ty::TRef { .. } | tast::Ty::THashMap { .. } => {
+            current_package == "Builtin"
+        }
         _ => false,
     }
 }
@@ -651,19 +654,25 @@ fn define_extern_builtin(
     diagnostics: &mut Diagnostics,
     ext: &hir::ExternBuiltin,
 ) {
+    let tparams: Vec<tast::TastIdent> = ext
+        .generics
+        .iter()
+        .map(|g| tast::TastIdent(g.to_ident_name()))
+        .collect();
+    let tparam_names = type_param_name_set(&ext.generics);
     let params = ext
         .params
         .iter()
         .map(|(_, ty)| {
-            let ty = tast::Ty::from_hir(env, ty, &[]);
-            validate_ty(env, diagnostics, &ty, &HashSet::new());
+            let ty = tast::Ty::from_hir(env, ty, &tparams);
+            validate_ty(env, diagnostics, &ty, &tparam_names);
             ty
         })
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
         Some(ty) => {
-            let ty = tast::Ty::from_hir(env, ty, &[]);
-            validate_ty(env, diagnostics, &ty, &HashSet::new());
+            let ty = tast::Ty::from_hir(env, ty, &tparams);
+            validate_ty(env, diagnostics, &ty, &tparam_names);
             ty
         }
         None => tast::Ty::TUnit,

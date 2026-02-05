@@ -619,6 +619,30 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             return None;
         };
         let name = name_token.to_string();
+        let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
+            node.generic_list()
+                .map(|list| {
+                    let mut generics = Vec::new();
+                    let mut bounds = Vec::new();
+                    for generic in list.generics() {
+                        let Some(token) = generic.uident() else {
+                            continue;
+                        };
+                        let name = token.to_string();
+                        let ident = ast::AstIdent::new(&name);
+                        generics.push(ident.clone());
+
+                        if let Some(trait_set) = generic.trait_set() {
+                            let traits = trait_set
+                                .traits()
+                                .flat_map(|path| lower_path(ctx, &path))
+                                .collect::<Vec<_>>();
+                            bounds.push((ident, traits));
+                        }
+                    }
+                    (generics, bounds)
+                })
+                .unwrap_or_default();
         let params = node
             .param_list()
             .map(|list| {
@@ -631,6 +655,8 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         return Some(ast::Item::ExternBuiltin(ast::ExternBuiltin {
             attrs,
             name: ast::AstIdent(name),
+            generics,
+            generic_bounds,
             params,
             ret_ty,
         }));

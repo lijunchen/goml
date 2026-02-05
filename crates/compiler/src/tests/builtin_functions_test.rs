@@ -74,3 +74,43 @@ fn env_registers_builtin_int32_inherent_to_string() {
     "#]]
     .assert_debug_eq(&result);
 }
+
+#[test]
+fn env_registers_builtin_vec_inherent_methods() {
+    let env = builtins::builtin_env();
+    let receiver = tast::Ty::TVec {
+        elem: Box::new(tast::Ty::TInt32),
+    };
+
+    let new = env.lookup_inherent_method(&receiver, &tast::TastIdent("new".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([], TVec(TParam(T))),
+        )
+    "#]]
+    .assert_debug_eq(&new);
+
+    let push = env.lookup_inherent_method(&receiver, &tast::TastIdent("push".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TVec(TParam(T)), TParam(T)], TVec(TParam(T))),
+        )
+    "#]]
+    .assert_debug_eq(&push);
+
+    let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TVec(TParam(T)), TInt32], TParam(T)),
+        )
+    "#]]
+    .assert_debug_eq(&get);
+
+    let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TVec(TParam(T))], TInt32),
+        )
+    "#]]
+    .assert_debug_eq(&len);
+}

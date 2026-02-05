@@ -108,6 +108,28 @@ enum Result[T, E] {
     Err(E),
 }
 
+#[builtin]
+extern fn vec_new[T]() -> Vec[T]
+#[builtin]
+extern fn vec_push[T](vec: Vec[T], elem: T) -> Vec[T]
+#[builtin]
+extern fn vec_get[T](vec: Vec[T], index: int32) -> T
+#[builtin]
+extern fn vec_len[T](vec: Vec[T]) -> int32
+
+#[builtin]
+extern fn hashmap_new[K, V]() -> HashMap[K, V]
+#[builtin]
+extern fn hashmap_get[K, V](m: HashMap[K, V], key: K) -> Option[V]
+#[builtin]
+extern fn hashmap_set[K, V](m: HashMap[K, V], key: K, value: V) -> unit
+#[builtin]
+extern fn hashmap_remove[K, V](m: HashMap[K, V], key: K) -> unit
+#[builtin]
+extern fn hashmap_len[K, V](m: HashMap[K, V]) -> int32
+#[builtin]
+extern fn hashmap_contains[K, V](m: HashMap[K, V], key: K) -> bool
+
 trait Eq {
     fn eq(Self, Self) -> bool;
 }
@@ -391,5 +413,49 @@ impl [T: ToString] ToString for Ref[T] {
     fn to_string(self: Ref[T]) -> string {
         let v: T = ref_get(self);
         "ref(" + ToString::to_string(v) + ")"
+    }
+}
+
+impl [T] Vec[T] {
+    fn new() -> Self {
+        vec_new()
+    }
+
+    fn push(self: Self, elem: T) -> Self {
+        vec_push(self, elem)
+    }
+
+    fn get(self: Self, index: int32) -> T {
+        vec_get(self, index)
+    }
+
+    fn len(self: Self) -> int32 {
+        vec_len(self)
+    }
+}
+
+impl [K: Hash + Eq, V] HashMap[K, V] {
+    fn new() -> Self {
+        hashmap_new()
+    }
+
+    fn get(self: Self, key: K) -> Option[V] {
+        hashmap_get(self, key)
+    }
+
+    fn set(self: Self, key: K, value: V) -> unit {
+        hashmap_set(self, key, value)
+    }
+
+    fn remove(self: Self, key: K) -> unit {
+        hashmap_remove(self, key)
+    }
+
+    fn len(self: Self) -> int32 {
+        hashmap_len(self)
+    }
+
+    fn contains(self: Self, key: K) -> bool {
+        hashmap_contains(self, key)
     }
 }

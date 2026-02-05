@@ -569,6 +569,10 @@ impl Extern {
         support::token(&self.syntax, MySyntaxKind::Ident)
     }
 
+    pub fn generic_list(&self) -> Option<GenericList> {
+        support::child(&self.syntax)
+    }
+
     pub fn type_keyword(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::TypeKeyword)
     }
