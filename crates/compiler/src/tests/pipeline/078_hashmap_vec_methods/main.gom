@@ -1,0 +1,33 @@
+#[derive(Hash, Eq)]
+enum Key {
+    A,
+    B(int32),
+}
+
+fn print_opt_int(x: Option[int32]) -> unit {
+    match x {
+        Option::Some(v) => println(v),
+        Option::None => println("none"),
+    }
+}
+
+fn main() -> unit {
+    let v = Vec::new();
+    let v = v.push(10);
+    let v = v.push(20);
+    let v = v.push(30);
+    println(v.get(0));
+    println(v.get(1));
+    println(v.get(2));
+    println(v.len());
+
+    let m = HashMap::new();
+    m.set(Key::A, 10);
+    m.set(Key::B(1), 20);
+    println(m.len());
+    print_opt_int(m.get(Key::A));
+    println(m.contains(Key::B(1)));
+    m.remove(Key::B(1));
+    println(m.contains(Key::B(1)));
+    println(m.len());
+}

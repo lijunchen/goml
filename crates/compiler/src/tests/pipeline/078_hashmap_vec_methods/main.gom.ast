@@ -1,0 +1,61 @@
+package Main;
+#[derive(Hash, Eq)]
+enum Key {
+    A,
+    B(int32)
+}
+
+impl Eq for Key {
+  fn eq(self: Key, other: Key) -> bool {
+    match (self, other) {
+        (Key::A, Key::A) => true,
+        (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+        _ => false,
+    }
+  }
+}
+
+impl Hash for Key {
+  fn hash(self: Key) -> uint64 {
+    match self {
+        Key::A => {
+              let h: uint64 = 14695981039346656037u64 + 1u64;
+              h;
+          },
+        Key::B(__field1_0) => {
+              let h: uint64 = 14695981039346656037u64 + 2u64;
+              let h = h * 1099511628211u64 + Hash::hash(__field1_0);
+              h;
+          },
+    }
+  }
+}
+
+fn print_opt_int(x: Option[int32]) -> unit {
+  match x {
+      Option::Some(v) => println(v),
+      Option::None => println("none"),
+  };
+}
+
+fn main() -> unit {
+  let v = Vec::new();
+  let v = v.push(10);
+  let v = v.push(20);
+  let v = v.push(30);
+  println(v.get(0));
+  println(v.get(1));
+  println(v.get(2));
+  println(v.len());
+  let m = HashMap::new();
+  m.set(Key::A, 10);
+  m.set(Key::B(1), 20);
+  println(m.len());
+  print_opt_int(m.get(Key::A));
+  println(m.contains(Key::B(1)));
+  m.remove(Key::B(1));
+  println(m.contains(Key::B(1)));
+  println(m.len());
+  ();
+}
+
