@@ -1,0 +1,12 @@
+fn main() -> unit {
+  let a/0 = ref(1) in
+  let b/1 = a/0 in
+  let c/2 = ref(1) in
+  let _wild0 = println__T_bool(ptr_eq(a/0, b/1)) in
+  let _wild1 = println__T_bool(ptr_eq(a/0, c/2)) in
+  ()
+}
+
+fn println__T_bool(value/1: bool) -> unit {
+  string_println(bool_to_string(value/1))
+}
