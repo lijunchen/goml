@@ -188,8 +188,9 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Trait {} is not defined, cannot implement it for {:?}",
-                trait_name_raw, for_ty
+                "Trait {} is not defined, cannot implement it for {}",
+                trait_name_raw,
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -209,8 +210,10 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Impl violates orphan rule: trait {} and type {:?} are not local to package {}",
-                trait_name_str, for_ty, env.package
+                "Impl violates orphan rule: trait {} and type {} are not local to package {}",
+                trait_name_str,
+                super::util::format_ty_for_diag(&for_ty),
+                env.package
             ),
         ));
         return;
@@ -222,8 +225,9 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Trait {} implementation for {:?} is already defined",
-                trait_name_str, for_ty
+                "Trait {} implementation for {} is already defined",
+                trait_name_str,
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -347,8 +351,12 @@ fn define_trait_impl(
                             Stage::Typer,
                             Severity::Error,
                             format!(
-                                "Trait {}::{} parameter {} expected type {:?} but found {:?}",
-                                trait_name_str, method_name_str, idx, expected, actual
+                                "Trait {}::{} parameter {} expected type {} but found {}",
+                                trait_name_str,
+                                method_name_str,
+                                idx,
+                                super::util::format_ty_for_diag(expected),
+                                super::util::format_ty_for_diag(actual)
                             ),
                         ));
                         method_ok = false;
@@ -360,8 +368,11 @@ fn define_trait_impl(
                         Stage::Typer,
                         Severity::Error,
                         format!(
-                            "Trait {}::{} expected return type {:?} but found {:?}",
-                            trait_name_str, method_name_str, expected_ret, impl_ret
+                            "Trait {}::{} expected return type {} but found {}",
+                            trait_name_str,
+                            method_name_str,
+                            super::util::format_ty_for_diag(expected_ret),
+                            super::util::format_ty_for_diag(impl_ret)
                         ),
                     ));
                     method_ok = false;
@@ -404,8 +415,10 @@ fn define_trait_impl(
                 Stage::Typer,
                 Severity::Error,
                 format!(
-                    "Trait {} implementation for {:?} is missing method {}",
-                    trait_name_str, for_ty, method_name
+                    "Trait {} implementation for {} is missing method {}",
+                    trait_name_str,
+                    super::util::format_ty_for_diag(&for_ty),
+                    method_name
                 ),
             ));
         }
@@ -441,8 +454,8 @@ fn define_inherent_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Inherent impl for non-local type {:?} is not allowed",
-                for_ty
+                "Inherent impl for non-local type {} is not allowed",
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -453,8 +466,8 @@ fn define_inherent_impl(
             super::util::push_ice(
                 diagnostics,
                 format!(
-                    "expected constructor type in inherent impl, got {:?}",
-                    for_ty
+                    "Expected constructor type in inherent impl, got {}",
+                    super::util::format_ty_for_diag(&for_ty)
                 ),
             );
             return;
@@ -478,8 +491,9 @@ fn define_inherent_impl(
                 Stage::Typer,
                 Severity::Error,
                 format!(
-                    "Method {} implemented multiple times in impl for {:?}",
-                    method_name_str, for_ty
+                    "Method {} implemented multiple times in impl for {}",
+                    method_name_str,
+                    super::util::format_ty_for_diag(&for_ty)
                 ),
             ));
             continue;

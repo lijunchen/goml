@@ -160,13 +160,13 @@ fn main() {
 "#,
             expect![[r#"
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [4:12] error: Method to_string not found for type unknown
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
-                [4:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [4:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [4:4] error: Type variable TypeVar(2) not resolved
-                [4:4] error: Type variable TypeVar(4) not resolved"#]],
+                [4:12] error: Method to_string not found for type unknown
+                [4:4] error: Could not solve all type constraints
+                [4:4] error: Type inference failed due to unresolved constraints
+                [4:4] error: Could not infer type
+                [4:4] error: Could not infer type"#]],
         );
     }
 
@@ -185,12 +185,9 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [8:21] error: Types are not equal: TString and TInt32
-                [8:21] error: Type mismatch: expected TString, found TInt32
-                [8:17] error: Types are not equal: TInt32 and TString
-                [8:17] error: Type mismatch: expected TFunc([TInt32, TInt32], TInt32), found TFunc([TString, TInt32], TVar(0))
-                [8:8] error: Type variable TypeVar(0) not resolved
-                [8:8] error: Type variable TypeVar(0) not resolved"#]],
+                [8:21] error: Type mismatch: expected string, found int32
+                [8:17] error: Type mismatch: expected int32, found string
+                [8:8] error: Could not infer type"#]],
         );
     }
 
@@ -228,10 +225,8 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [4:4] error: Types are not equal: TInt32 and TUnit
-                [4:4] error: Type mismatch: expected TVar(0), found TUnit
-                [3:27] error: Types are not equal: TInt32 and TUnit
-                [3:27] error: Type mismatch: expected TVar(0), found TUnit"#]],
+                [4:4] error: Type mismatch: expected int32, found unit
+                [3:27] error: Type mismatch: expected int32, found unit"#]],
         );
     }
 
@@ -1721,12 +1716,12 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [8:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [8:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [8:4] error: Type variable TypeVar(14) not resolved
-                [8:4] error: Type variable TypeVar(17) not resolved"#]],
+                [8:12] error: Method to_string not found for type unknown
+                [8:12] error: Method to_string not found for type unknown
+                [8:4] error: Could not solve all type constraints
+                [8:4] error: Type inference failed due to unresolved constraints
+                [8:4] error: Could not infer type
+                [8:4] error: Could not infer type"#]],
         );
     }
 

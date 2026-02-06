@@ -572,8 +572,9 @@ impl Typer {
                     Stage::Typer,
                     Severity::Error,
                     format!(
-                        "Cannot convert non-concrete type {:?} to dyn {}",
-                        for_ty, resolved_trait
+                        "Cannot convert non-concrete type {} to dyn {}",
+                        super::util::format_ty_for_diag(&for_ty),
+                        resolved_trait
                     ),
                 )
                 .with_range(range),
@@ -587,8 +588,9 @@ impl Typer {
                     Stage::Typer,
                     Severity::Error,
                     format!(
-                        "Type {:?} does not implement trait {}",
-                        for_ty, resolved_trait
+                        "Type {} does not implement trait {}",
+                        super::util::format_ty_for_diag(&for_ty),
+                        resolved_trait
                     ),
                 )
                 .with_range(range),
@@ -1294,8 +1296,9 @@ impl Typer {
                         super::util::push_ice(
                             diagnostics,
                             format!(
-                                "enum variant index {} out of bounds for {:?}",
-                                variant_idx, enum_def
+                                "Enum {} variant index {} out of bounds",
+                                self.hir_table.def_path(*enum_def).display(),
+                                variant_idx
                             ),
                         );
                         return hir::Path::from_ident("<error>".to_string());
@@ -2899,9 +2902,9 @@ impl Typer {
                             super::util::push_error_with_range(
                                 diagnostics,
                                 format!(
-                                    "Method {} not found for type {:?}",
+                                    "Method {} not found for type {}",
                                     field.to_ident_name(),
-                                    receiver_expr
+                                    super::util::format_ty_for_diag(&receiver_ty)
                                 ),
                                 self.expr_range(call_expr_id),
                             );
@@ -2918,8 +2921,11 @@ impl Typer {
                                     Stage::Typer,
                                     Severity::Error,
                                     format!(
-                                        "Ambiguous method {} for type {:?} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
-                                        method_name.0, receiver_expr, trait_names, method_name.0
+                                        "Ambiguous method {} for type {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                                        method_name.0,
+                                        super::util::format_ty_for_diag(&receiver_ty),
+                                        trait_names,
+                                        method_name.0
                                     ),
                                 )
                                 .with_range(self.expr_range(call_expr_id)),
@@ -3118,8 +3124,9 @@ impl Typer {
                             diagnostics::Stage::Typer,
                             diagnostics::Severity::Error,
                             format!(
-                                "Tuple index {} out of bounds for type {:?}",
-                                index, tuple_ty
+                                "Tuple index {} out of bounds for type {}",
+                                index,
+                                super::util::format_ty_for_diag(&tuple_ty)
                             ),
                         )
                         .with_range(range),
@@ -3138,8 +3145,9 @@ impl Typer {
                         diagnostics::Stage::Typer,
                         diagnostics::Severity::Error,
                         format!(
-                            "Cannot project field {} on non-tuple type {:?}",
-                            index, tuple_ty
+                            "Cannot project field {} on non-tuple type {}",
+                            index,
+                            super::util::format_ty_for_diag(&tuple_ty)
                         ),
                     )
                     .with_range(range),

@@ -25,6 +25,73 @@ pub(crate) fn push_ice(diagnostics: &mut Diagnostics, message: impl Into<String>
     push_error(diagnostics, format!("Internal error: {}", message.into()));
 }
 
+pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
+    match ty {
+        tast::Ty::TVar(_) => "unknown".to_string(),
+        tast::Ty::TUnit => "unit".to_string(),
+        tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt8 => "int8".to_string(),
+        tast::Ty::TInt16 => "int16".to_string(),
+        tast::Ty::TInt32 => "int32".to_string(),
+        tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint8 => "uint8".to_string(),
+        tast::Ty::TUint16 => "uint16".to_string(),
+        tast::Ty::TUint32 => "uint32".to_string(),
+        tast::Ty::TUint64 => "uint64".to_string(),
+        tast::Ty::TFloat32 => "float32".to_string(),
+        tast::Ty::TFloat64 => "float64".to_string(),
+        tast::Ty::TString => "string".to_string(),
+        tast::Ty::TChar => "char".to_string(),
+        tast::Ty::TTuple { typs } => {
+            let items = typs
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({})", items)
+        }
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
+        tast::Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        tast::Ty::TApp { ty, args } => {
+            let base = format_ty_for_diag(ty.as_ref());
+            if args.is_empty() {
+                base
+            } else {
+                let args = args
+                    .iter()
+                    .map(format_ty_for_diag)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{}[{}]", base, args)
+            }
+        }
+        tast::Ty::TArray { len, elem } => {
+            let rendered_len = if *len == tast::ARRAY_WILDCARD_LEN {
+                "_".to_string()
+            } else {
+                len.to_string()
+            };
+            format!("[{}; {}]", format_ty_for_diag(elem.as_ref()), rendered_len)
+        }
+        tast::Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_diag(elem.as_ref())),
+        tast::Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_diag(elem.as_ref())),
+        tast::Ty::THashMap { key, value } => format!(
+            "HashMap[{}, {}]",
+            format_ty_for_diag(key.as_ref()),
+            format_ty_for_diag(value.as_ref())
+        ),
+        tast::Ty::TParam { name } => name.clone(),
+        tast::Ty::TFunc { params, ret_ty } => {
+            let params = params
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({}) -> {}", params, format_ty_for_diag(ret_ty.as_ref()))
+        }
+    }
+}
+
 pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
     match ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
@@ -136,7 +203,10 @@ pub(crate) fn validate_ty(
             let Some(base_name) = try_constr_name(ty.as_ref()) else {
                 push_error(
                     diagnostics,
-                    format!("Expected a type constructor, got: {:?}", ty),
+                    format!(
+                        "Expected a type constructor, got {}",
+                        format_ty_for_diag(ty.as_ref())
+                    ),
                 );
                 return;
             };

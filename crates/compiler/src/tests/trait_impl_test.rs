@@ -48,7 +48,7 @@ impl Display for int32 {
         src,
         expect![[r#"
             [
-                "Trait Display::show expected return type TString but found TBool",
+                "Trait Display::show expected return type string but found bool",
             ]
         "#]],
     );
@@ -70,7 +70,7 @@ impl Display for int32 {
         src,
         expect![[r#"
             [
-                "Trait Display::show parameter 0 expected type TInt32 but found TBool",
+                "Trait Display::show parameter 0 expected type int32 but found bool",
             ]
         "#]],
     );
@@ -115,7 +115,7 @@ impl Display for int32 {
         src,
         expect![[r#"
             [
-                "Trait Display implementation for TInt32 is missing method debug",
+                "Trait Display implementation for int32 is missing method debug",
             ]
         "#]],
     );
@@ -156,7 +156,7 @@ impl Unknown for int32 {
         src,
         expect![[r#"
             [
-                "Trait Unknown is not defined, cannot implement it for TInt32",
+                "Trait Unknown is not defined, cannot implement it for int32",
             ]
         "#]],
     );
@@ -181,7 +181,7 @@ impl Display for Point {
         src,
         expect![[r#"
             [
-                "Trait Display implementation for TStruct(Point) is missing method debug",
+                "Trait Display implementation for Point is missing method debug",
             ]
         "#]],
     );
@@ -209,7 +209,7 @@ impl Display for Maybe[int32] {
         src,
         expect![[r#"
             [
-                "Trait Display implementation for TApp(TEnum(Maybe), [TInt32]) is missing method debug",
+                "Trait Display implementation for Maybe[int32] is missing method debug",
             ]
         "#]],
     );

@@ -1,4 +1,5 @@
 use ena::unify::InPlaceUnificationTable;
+use std::collections::HashSet;
 
 use crate::typer::results::TypeckResultsBuilder;
 use crate::{env::Constraint, tast::TypeVar};
@@ -18,6 +19,7 @@ pub use toplevel::{check_file, check_file_with_env};
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
+    pub(crate) reported_unresolved_type_vars: HashSet<TypeVar>,
     pub hir_table: name_resolution::HirTable,
     pub results: TypeckResultsBuilder,
 }
@@ -28,6 +30,7 @@ impl Typer {
         Self {
             uni: InPlaceUnificationTable::new(),
             constraints: Vec::new(),
+            reported_unresolved_type_vars: HashSet::new(),
             hir_table,
             results,
         }
