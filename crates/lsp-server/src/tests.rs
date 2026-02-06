@@ -507,6 +507,72 @@ fn main() {
     }
 
     #[test]
+    fn dot_completion_on_builtin_vec() {
+        check_completion(
+            r#"
+package Main;
+
+fn main() {
+    let v: Vec[int32] = Vec::new();
+    v.
+}
+"#,
+            5,
+            6,
+            expect!["get, len, new, push"],
+        );
+    }
+
+    #[test]
+    fn dot_completion_on_builtin_hashmap() {
+        check_completion(
+            r#"
+package Main;
+
+fn main() {
+    let m: HashMap[string, int32] = HashMap::new();
+    m.
+}
+"#,
+            5,
+            6,
+            expect!["contains, get, len, new, remove, set"],
+        );
+    }
+
+    #[test]
+    fn colon_colon_completion_on_builtin_vec() {
+        check_completion(
+            r#"
+package Main;
+
+fn main() {
+    let _ = Vec::
+}
+"#,
+            4,
+            17,
+            expect!["get, len, new, push"],
+        );
+    }
+
+    #[test]
+    fn colon_colon_completion_on_builtin_hashmap() {
+        check_completion(
+            r#"
+package Main;
+
+fn main() {
+    let _ = HashMap::
+}
+"#,
+            4,
+            21,
+            expect!["contains, get, len, new, remove, set"],
+        );
+    }
+
+    #[test]
     fn value_completion_suggests_functions() {
         check_completion(
             r#"
