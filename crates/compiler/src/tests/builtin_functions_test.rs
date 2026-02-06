@@ -114,3 +114,13 @@ fn env_registers_builtin_vec_inherent_methods() {
     "#]]
     .assert_debug_eq(&len);
 }
+
+#[test]
+fn builtin_function_names_include_ref_builtins() {
+    let names = builtins::builtin_function_names();
+    assert!(names.iter().any(|n| n == "ref"));
+    assert!(names.iter().any(|n| n == "ref_get"));
+    assert!(names.iter().any(|n| n == "ref_set"));
+    assert!(names.iter().any(|n| n == "array_get"));
+    assert!(names.iter().any(|n| n == "array_set"));
+}

@@ -1189,6 +1189,25 @@ fn main() -> unit {
     }
 
     #[test]
+    fn goto_definition_builtin_ref_get() {
+        check_goto_token(
+            r#"
+package Main;
+
+fn main() -> unit {
+    let r = ref(1);
+    let x = ref_get(r);
+    println(x);
+    ()
+}
+"#,
+            "ref_get(r)",
+            "ref_get",
+            expect!["src/builtin.gom:465:10"],
+        );
+    }
+
+    #[test]
     fn goto_definition_builtin_hashmap_methods() {
         let src = r#"
 package Main;

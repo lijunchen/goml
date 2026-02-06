@@ -459,3 +459,10 @@ impl [K: Hash + Eq, V] HashMap[K, V] {
         hashmap_contains(self, key)
     }
 }
+
+#[builtin]
+extern fn ref[T](value: T) -> Ref[T]
+#[builtin]
+extern fn ref_get[T](reference: Ref[T]) -> T
+#[builtin]
+extern fn ref_set[T](reference: Ref[T], value: T) -> unit

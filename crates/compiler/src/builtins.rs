@@ -70,7 +70,6 @@ fn build_builtin_artifacts() -> BuiltinArtifacts {
     };
 
     add_array_builtins(&mut base_env.value_env.funcs);
-    add_ref_builtins(&mut base_env.value_env.funcs);
 
     let (hir, hir_table, mut hir_diagnostics) = hir::lower_to_hir(ast);
 
@@ -167,35 +166,6 @@ fn add_array_builtins(funcs: &mut IndexMap<String, FnScheme>) {
     );
 }
 
-fn add_ref_builtins(funcs: &mut IndexMap<String, FnScheme>) {
-    let ref_elem_param = tast::Ty::TParam {
-        name: "T".to_string(),
-    };
-    let ref_ty = tast::Ty::TRef {
-        elem: Box::new(ref_elem_param.clone()),
-    };
-    funcs.insert(
-        "ref".to_string(),
-        make_fn_scheme(
-            vec![ref_elem_param.clone()],
-            tast::Ty::TRef {
-                elem: Box::new(ref_elem_param.clone()),
-            },
-        ),
-    );
-    funcs.insert(
-        "ref_get".to_string(),
-        make_fn_scheme(vec![ref_ty.clone()], ref_elem_param.clone()),
-    );
-    funcs.insert(
-        "ref_set".to_string(),
-        make_fn_scheme(
-            vec![ref_ty.clone(), ref_elem_param.clone()],
-            tast::Ty::TUnit,
-        ),
-    );
-}
-
 pub(super) fn builtin_inherent_methods()
 -> IndexMap<crate::env::InherentImplKey, crate::env::ImplDef> {
     let mut impls = IndexMap::new();
@@ -247,7 +217,7 @@ pub fn builtin_function_names() -> Vec<String> {
         }
     }
 
-    for name in ["array_get", "array_set", "ref", "ref_get", "ref_set"] {
+    for name in ["array_get", "array_set"] {
         names.insert(name.to_string());
     }
 
