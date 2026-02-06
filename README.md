@@ -8,6 +8,8 @@ goml aims to empower gophers with a more powerful type system but without leavin
 
 If you want to gain a quick, basic sense of what the goml language looks like, you can explore the test materials inside the [crates/compiler/src/tests/pipeline](crates/compiler/src/tests/pipeline). Files ending in `.gom` contain the original goml source code, `.go` files are the compiled outputs, `.out` files are the program's stdout. You can also visit the project page at [lijunchen.github.io/goml/](https://lijunchen.github.io/goml/), which provides the same content as the test directory but presented in a convenient web‑browsable format.
 
+See [docs/language_spec.md](docs/language_spec.md) for an implementation-accurate language specification.
+
 ## Disclaimer
 
 This project is a **personal project** and is **NOT** affiliated with, endorsed by, or connected to any organization.
