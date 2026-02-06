@@ -14,6 +14,13 @@ fn check_completions(src: &str, line: u32, col: u32, expected: Expect) {
     expected.assert_debug_eq(&result);
 }
 
+fn check_completion_labels(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = dot_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    let mut labels = result.into_iter().map(|item| item.name).collect::<Vec<_>>();
+    labels.sort();
+    expected.assert_debug_eq(&labels);
+}
+
 fn check_completions_with_path(path: &Path, src: &str, line: u32, col: u32, expected: Expect) {
     let result = dot_completions(path, src, line, col).unwrap_or_default();
     expected.assert_debug_eq(&result);
@@ -22,6 +29,13 @@ fn check_completions_with_path(path: &Path, src: &str, line: u32, col: u32, expe
 fn check_colon_colon_completions(src: &str, line: u32, col: u32, expected: Expect) {
     let result = colon_colon_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
     expected.assert_debug_eq(&result);
+}
+
+fn check_colon_colon_completion_labels(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = colon_colon_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    let mut labels = result.into_iter().map(|item| item.name).collect::<Vec<_>>();
+    labels.sort();
+    expected.assert_debug_eq(&labels);
 }
 
 fn check_colon_colon_completions_with_path(
@@ -282,6 +296,58 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn builtin_vec_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let v: Vec[int32] = Vec::new();
+    v.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        6,
+        expect![[r#"
+            [
+                "get",
+                "len",
+                "new",
+                "push",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_hashmap_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let m: HashMap[string, int32] = HashMap::new();
+    m.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        3,
+        6,
+        expect![[r#"
+            [
+                "contains",
+                "get",
+                "len",
+                "new",
+                "remove",
+                "set",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn enum_variant_completion() {
     let src = r#"enum Color { Red, Green }
 
@@ -310,6 +376,56 @@ fn main() {
                         "Color",
                     ),
                 },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_vec_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Vec::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        17,
+        expect![[r#"
+            [
+                "get",
+                "len",
+                "new",
+                "push",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_hashmap_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = HashMap::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        21,
+        expect![[r#"
+            [
+                "contains",
+                "get",
+                "len",
+                "new",
+                "remove",
+                "set",
             ]
         "#]],
     );

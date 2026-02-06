@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     fs,
     path::{Path, PathBuf},
 };
@@ -455,38 +455,13 @@ fn completions_for_type(genv: &GlobalTypeEnv, ty: &tast::Ty) -> Vec<DotCompletio
         }
     }
 
-    let mut methods: Vec<DotCompletionItem> = Vec::new();
-    if let Some(impl_def) = genv
-        .trait_env
-        .inherent_impls
-        .get(&crate::env::InherentImplKey::Exact(ty.clone()))
-    {
-        methods.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
-            DotCompletionItem {
-                name: method_name.clone(),
-                kind: DotCompletionKind::Method,
-                detail: Some(method_scheme.ty.to_pretty(80)),
-            }
-        }));
-    }
-    if let tast::Ty::TApp { ty, .. } = ty {
-        let base_name = ty.get_constr_name_unsafe();
-        if let Some(impl_def) = genv
-            .trait_env
-            .inherent_impls
-            .get(&crate::env::InherentImplKey::Constr(base_name))
-        {
-            methods.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
-                DotCompletionItem {
-                    name: method_name.clone(),
-                    kind: DotCompletionKind::Method,
-                    detail: Some(method_scheme.ty.to_pretty(80)),
-                }
-            }));
-        }
-    }
-    methods.sort_by(|a, b| a.name.cmp(&b.name));
-    items.extend(methods);
+    items.extend(inherent_methods_for_receiver(genv, ty).into_iter().map(
+        |(method_name, method_ty)| DotCompletionItem {
+            name: method_name,
+            kind: DotCompletionKind::Method,
+            detail: Some(method_ty),
+        },
+    ));
 
     items
 }
@@ -807,6 +782,20 @@ fn colon_colon_items_for_namespace(
         return items;
     }
 
+    if genv
+        .trait_env
+        .inherent_impls
+        .contains_key(&crate::env::InherentImplKey::Constr(namespace.to_string()))
+    {
+        items.extend(colon_colon_inherent_methods(
+            genv,
+            tast::Ty::TStruct {
+                name: namespace.to_string(),
+            },
+        ));
+        return items;
+    }
+
     let ns_prefix = format!("{}::", namespace);
 
     for name in genv.type_env.enums.keys() {
@@ -865,38 +854,57 @@ fn colon_colon_inherent_methods(
     genv: &GlobalTypeEnv,
     receiver_ty: tast::Ty,
 ) -> Vec<ColonColonCompletionItem> {
-    let mut items = Vec::new();
+    inherent_methods_for_receiver(genv, &receiver_ty)
+        .into_iter()
+        .map(|(method_name, method_ty)| ColonColonCompletionItem {
+            name: method_name,
+            kind: ColonColonCompletionKind::Method,
+            detail: Some(method_ty),
+        })
+        .collect()
+}
+
+fn inherent_methods_for_receiver(
+    genv: &GlobalTypeEnv,
+    receiver_ty: &tast::Ty,
+) -> Vec<(String, String)> {
+    let mut methods = BTreeMap::new();
+
     if let Some(impl_def) = genv
         .trait_env
         .inherent_impls
         .get(&crate::env::InherentImplKey::Exact(receiver_ty.clone()))
     {
-        items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
-            ColonColonCompletionItem {
-                name: method_name.clone(),
-                kind: ColonColonCompletionKind::Method,
-                detail: Some(method_scheme.ty.to_pretty(80)),
-            }
-        }));
-    }
-    if let tast::Ty::TApp { ty, .. } = receiver_ty {
-        let base_name = ty.get_constr_name_unsafe();
-        if let Some(impl_def) = genv
-            .trait_env
-            .inherent_impls
-            .get(&crate::env::InherentImplKey::Constr(base_name))
-        {
-            items.extend(impl_def.methods.iter().map(|(method_name, method_scheme)| {
-                ColonColonCompletionItem {
-                    name: method_name.clone(),
-                    kind: ColonColonCompletionKind::Method,
-                    detail: Some(method_scheme.ty.to_pretty(80)),
-                }
-            }));
+        for (method_name, method_scheme) in impl_def.methods.iter() {
+            methods.insert(method_name.clone(), method_scheme.ty.to_pretty(80));
         }
     }
-    items.sort_by(|a, b| a.name.cmp(&b.name));
-    items
+
+    if let Some(constr_name) = completion_constructor_name(receiver_ty)
+        && let Some(impl_def) = genv
+            .trait_env
+            .inherent_impls
+            .get(&crate::env::InherentImplKey::Constr(constr_name))
+    {
+        for (method_name, method_scheme) in impl_def.methods.iter() {
+            methods
+                .entry(method_name.clone())
+                .or_insert_with(|| method_scheme.ty.to_pretty(80));
+        }
+    }
+
+    methods.into_iter().collect()
+}
+
+fn completion_constructor_name(ty: &tast::Ty) -> Option<String> {
+    match ty {
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
+        tast::Ty::TApp { .. }
+        | tast::Ty::TVec { .. }
+        | tast::Ty::TRef { .. }
+        | tast::Ty::THashMap { .. } => Some(ty.get_constr_name_unsafe()),
+        _ => None,
+    }
 }
 
 fn path_segments_from_token(token: &MySyntaxToken) -> Option<Vec<String>> {
