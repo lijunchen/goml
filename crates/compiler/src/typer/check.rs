@@ -2173,24 +2173,7 @@ impl Typer {
                         }
                     }
 
-                    let ret_ty = if name.as_str() == "ref" && args_tast.len() == 1 {
-                        let elem_ty =
-                            args_tast
-                                .first()
-                                .map(|arg| arg.get_ty())
-                                .unwrap_or_else(|| {
-                                    super::util::push_ice(
-                                        diagnostics,
-                                        "ref call expected one argument but none found",
-                                    );
-                                    self.fresh_ty_var()
-                                });
-                        tast::Ty::TRef {
-                            elem: Box::new(elem_ty),
-                        }
-                    } else {
-                        self.fresh_ty_var()
-                    };
+                    let ret_ty = self.fresh_ty_var();
 
                     let call_range = self.expr_range(call_expr_id);
                     let call_site_func_ty = tast::Ty::TFunc {
@@ -2282,24 +2265,7 @@ impl Typer {
                         }
                     }
 
-                    let ret_ty = if name.as_str() == "ref" && args_tast.len() == 1 {
-                        let elem_ty =
-                            args_tast
-                                .first()
-                                .map(|arg| arg.get_ty())
-                                .unwrap_or_else(|| {
-                                    super::util::push_ice(
-                                        diagnostics,
-                                        "ref call expected one argument but none found",
-                                    );
-                                    self.fresh_ty_var()
-                                });
-                        tast::Ty::TRef {
-                            elem: Box::new(elem_ty),
-                        }
-                    } else {
-                        self.fresh_ty_var()
-                    };
+                    let ret_ty = self.fresh_ty_var();
 
                     let call_range = self.expr_range(call_expr_id);
                     let call_site_func_ty = tast::Ty::TFunc {
