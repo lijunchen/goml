@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::Path;
 
 use compiler::query::{
@@ -48,15 +49,80 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
 }
 
 pub fn hover(path: &Path, src: &str, position: Position) -> Option<Hover> {
-    let type_info = query::hover_type(path, src, position.line, position.character).ok()?;
+    let type_info = query::hover_type(path, src, position.line, position.character).ok();
+    let diagnostics = diagnostics_for_hover(path, src, position);
+    if type_info.is_none() && diagnostics.is_empty() {
+        return None;
+    }
+
+    let mut sections = Vec::new();
+    if let Some(type_info) = type_info {
+        sections.push(format!("```goml\n{}\n```", type_info));
+    }
+    if !diagnostics.is_empty() {
+        let lines = diagnostics
+            .iter()
+            .map(|(severity, message)| {
+                let marker = match severity {
+                    diagnostics::Severity::Error => "-",
+                    diagnostics::Severity::Warning => "+",
+                };
+                format!("{} {}", marker, message)
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        sections.push(format!("**Diagnostics**\n```diff\n{}\n```", lines));
+    }
 
     Some(Hover {
         contents: HoverContents::Markup(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: format!("```goml\n{}\n```", type_info),
+            value: sections.join("\n\n"),
         }),
         range: None,
     })
+}
+
+fn diagnostics_for_hover(
+    path: &Path,
+    src: &str,
+    position: Position,
+) -> Vec<(diagnostics::Severity, String)> {
+    let doc = Document::new(src.to_string());
+    let mut messages = Vec::new();
+    let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
+    let result = compiler::pipeline::pipeline::compile(path, src);
+    let diagnostics = match result {
+        Ok(_) => return messages,
+        Err(err) => err.into_diagnostics(),
+    };
+    for diagnostic in diagnostics.iter() {
+        let Some(text_range) = diagnostic.range() else {
+            continue;
+        };
+        let Some(range) = doc.range(text_range) else {
+            continue;
+        };
+        if !position_in_range(position, range) {
+            continue;
+        }
+        let item = (diagnostic.severity(), diagnostic.message().to_string());
+        if seen.insert(item.clone()) {
+            messages.push(item);
+        }
+    }
+    messages
+}
+
+fn position_in_range(position: Position, range: Range) -> bool {
+    let at_or_after_start = position.line > range.start.line
+        || (position.line == range.start.line && position.character >= range.start.character);
+    let strictly_before_end = position.line < range.end.line
+        || (position.line == range.end.line && position.character < range.end.character);
+    let zero_width_match = range.start == range.end
+        && position.line == range.start.line
+        && position.character == range.start.character;
+    at_or_after_start && (strictly_before_end || zero_width_match)
 }
 
 pub fn completion(path: &Path, src: &str, position: Position) -> Option<CompletionResponse> {

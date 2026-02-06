@@ -3173,17 +3173,23 @@ impl Typer {
     ) -> tast::Expr {
         let base_tast = self.infer_expr(genv, local_env, diagnostics, expr);
         let base_ty = base_tast.get_ty();
-        let result_ty = self.fresh_ty_var();
-        self.push_constraint(Constraint::StructFieldAccess {
-            expr_ty: base_ty.clone(),
-            field: tast::TastIdent(field.to_ident_name()),
-            result_ty: result_ty.clone(),
-            origin: astptr.map(|p| p.text_range()),
-        });
+        let field_ident = tast::TastIdent(field.to_ident_name());
+        let result_ty = if let Some(ty) = resolve_field_ty_eager(genv, &base_ty, &field_ident) {
+            ty
+        } else {
+            let result_ty = self.fresh_ty_var();
+            self.push_constraint(Constraint::StructFieldAccess {
+                expr_ty: base_ty.clone(),
+                field: field_ident.clone(),
+                result_ty: result_ty.clone(),
+                origin: astptr.map(|p| p.text_range()),
+            });
+            result_ty
+        };
 
         tast::Expr::EField {
             expr: Box::new(base_tast),
-            field_name: field.to_ident_name(),
+            field_name: field_ident.0,
             ty: result_ty,
             astptr,
         }
@@ -4094,6 +4100,102 @@ fn lookup_inherent_method_for_ty(
     let env = env_for_receiver_ty(genv, receiver_ty);
     env.lookup_inherent_method(receiver_ty, method)
         .or_else(|| genv.builtins().lookup_inherent_method(receiver_ty, method))
+}
+
+fn resolve_field_ty_eager(
+    genv: &PackageTypeEnv,
+    base_ty: &tast::Ty,
+    field: &tast::TastIdent,
+) -> Option<tast::Ty> {
+    let (type_name, type_args) = decompose_struct_type(base_ty)?;
+    let (resolved, env) = super::util::resolve_type_name(genv, &type_name);
+    let struct_def = env.structs().get(&tast::TastIdent::new(&resolved))?;
+    if struct_def.generics.len() != type_args.len() {
+        return None;
+    }
+
+    let mut subst = HashMap::new();
+    for (param, arg) in struct_def.generics.iter().zip(type_args.iter()) {
+        subst.insert(param.0.clone(), arg.clone());
+    }
+
+    let (_, ty) = struct_def.fields.iter().find(|(fname, _)| fname == field)?;
+    Some(substitute_ty_params(ty, &subst))
+}
+
+fn decompose_struct_type(ty: &tast::Ty) -> Option<(String, Vec<tast::Ty>)> {
+    match ty {
+        tast::Ty::TStruct { name } => Some((name.clone(), Vec::new())),
+        tast::Ty::TApp { ty: base, args } => {
+            let (type_name, mut collected) = decompose_struct_type(base.as_ref())?;
+            collected.extend(args.iter().cloned());
+            Some((type_name, collected))
+        }
+        _ => None,
+    }
+}
+
+fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
+    match ty {
+        tast::Ty::TVar(_)
+        | tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar => ty.clone(),
+        tast::Ty::TTuple { typs } => tast::Ty::TTuple {
+            typs: typs
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TEnum { name } => tast::Ty::TEnum { name: name.clone() },
+        tast::Ty::TStruct { name } => tast::Ty::TStruct { name: name.clone() },
+        tast::Ty::TDyn { trait_name } => tast::Ty::TDyn {
+            trait_name: trait_name.clone(),
+        },
+        tast::Ty::TApp { ty, args } => tast::Ty::TApp {
+            ty: Box::new(substitute_ty_params(ty.as_ref(), subst)),
+            args: args
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+        },
+        tast::Ty::TArray { len, elem } => tast::Ty::TArray {
+            len: *len,
+            elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
+        },
+        tast::Ty::TVec { elem } => tast::Ty::TVec {
+            elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
+        },
+        tast::Ty::TRef { elem } => tast::Ty::TRef {
+            elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
+        },
+        tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
+            key: Box::new(substitute_ty_params(key.as_ref(), subst)),
+            value: Box::new(substitute_ty_params(value.as_ref(), subst)),
+        },
+        tast::Ty::TParam { name } => subst
+            .get(name)
+            .cloned()
+            .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
+        tast::Ty::TFunc { params, ret_ty } => tast::Ty::TFunc {
+            params: params
+                .iter()
+                .map(|item| substitute_ty_params(item, subst))
+                .collect(),
+            ret_ty: Box::new(substitute_ty_params(ret_ty.as_ref(), subst)),
+        },
+    }
 }
 
 fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> &'a GlobalTypeEnv {
