@@ -15,12 +15,12 @@ ci:
     just clippy
 
 build-lsp:
-    cargo build -p lsp-server --release
+    cargo build -p lsp-server
 
 install-lsp:
-    cargo build -p lsp-server --release
+    cargo build -p lsp-server
     mkdir -p editors/vscode/bin
-    cp target/release/goml-lsp editors/vscode/bin/
+    cp target/debug/goml-lsp editors/vscode/bin/
 
 vscode-ext:
     just install-lsp
