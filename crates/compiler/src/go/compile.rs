@@ -1325,7 +1325,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     ty: tast_ty_to_go_type(ty),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                && (*name == "ref" || *name == "ref_get" || *name == "ref_set")
+                && (*name == "ref" || *name == "ref_get" || *name == "ref_set" || *name == "ptr_eq")
             {
                 let (helper, helper_ty) = if name == "ref" {
                     let tast::Ty::TRef { elem } = ty else {
@@ -1338,6 +1338,19 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                         goty::GoType::TFunc {
                             params: vec![elem_go_ty],
                             ret_ty: Box::new(ref_go_ty),
+                        },
+                    )
+                } else if name == "ptr_eq" {
+                    let ref_ty = imm_ty(&args[0]);
+                    let tast::Ty::TRef { .. } = &ref_ty else {
+                        panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    (
+                        runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
+                        goty::GoType::TFunc {
+                            params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
+                            ret_ty: Box::new(goty::GoType::TBool),
                         },
                     )
                 } else {
