@@ -159,104 +159,15 @@ name = "Main"
 - Requirements: Rust toolchain, `wasm-pack`, Node 18+, `pnpm`.
 - If adding crates, update workspace in `Cargo.toml`; keep inter‑crate deps via `[workspace.dependencies]`.
 
-## GoML Introduction
+## GoML Language Specification
 
-### Lexical Structure and Literals
+For the complete GoML language specification, see [SPEC.md](SPEC.md).
 
-* Primitive types: `bool`, `unit`/`()`, `int8/16/32/64`, `uint8/16/32/64`, `float32/float64`, `string`, `char`.
-* Literals: boolean, integer/unsigned/floating-point, string, and char literals.
-  * Char literals use single quotes, e.g. `'a'`, and support escapes like `'\n'` and `'\u0041'`.
-  * `char` represents a Unicode scalar value and compiles to Go `rune` (an `int32` code point).
-* String concatenation with `+` is supported. Multiline strings continue lines with leading `\\` and may contain quotes and backslashes (see `062_multiline_string`).
-* Tuples `(a, b, c)` and the wildcard `_` are commonly used in bindings and pattern matching.
+Key language characteristics:
+* Statically typed with syntax similar to Rust but with garbage collection
+* Top-level functions support generic type parameters (denoted with square brackets)
+* Closures have a single concrete type (no let-polymorphism)
+* Compiles to Go via monomorphization and lambda lifting
+* File extension: `.gom`
 
-### Bindings and Scope
-
-* `let name = expr;` allows shadowing of the same name. Type annotations are supported, e.g. `let x: int32 = 1;`. `let _ = expr;` discards the result.
-* `let` supports pattern destructuring: tuples, struct fields, enum constructors, and wildcards can be mixed.
-
-### Functions and Closures
-
-* Top-level function declaration: `fn name(params) -> Ret { ... }`. Top-level functions must have explicit signatures; if the return type is omitted, it defaults to `unit`.
-* Only top-level functions may declare generic parameters, using square brackets, e.g. `fn id[T](x: T) -> T`.
-* Top-level function generics may add trait bounds per parameter: `fn f[T: A + B + C](x: T) -> ...`. `A + B` is only valid in these generic bounds (not in type annotations/param/return types, and not in `dyn`).
-* Function types are written as `(A, B) -> C` and can be stored in arrays, passed as arguments, or returned.
-* Closures are written as `|args| expr` or `|| { ... }`. They can capture outer variables, support multiple levels of nesting, and can return closures.
-
-### Structs, Enums, and Fields
-
-* Structs: `struct Name { field: Type, ... }`. Construction supports key–value syntax or field shorthand. Field access uses `value.field`, and fields can be used for update reconstruction.
-* Enums: `enum Name { Variant, Variant(T1, T2), ... }`, with support for generics. Constructors may be uppercase or lowercase; namespaced access `Enum::Variant` avoids conflicts.
-* Pattern matching supports field patterns, shorthand, and wildcards for structs; enum matching can destructure payloads or match constructors directly.
-
-### Built-in Containers and References
-
-* Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
-* Mutable references `Ref[T]`: created with `ref(x)`, accessed and updated via `ref_get/ref_set`; nested references are supported.
-* Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
-
-### Control Flow and Expressions
-
-* `if ... else ...` is an expression; branches may be nested. `while cond { ... }` loops return `unit`.
-* Boolean and arithmetic operators: `+ - * /`, unary negation, logical `! && ||`, and comparisons `== != < > <= >=`.
-* `match expr { pattern => expr, ... }`: patterns are tried in order. Patterns include literals, tuples, structs, enums, bindings, and the wildcard `_`. Missing coverage results in an error (e.g., unmatched destructuring).
-
-### Traits and `impl`
-
-* `trait T { fn method(Self, ...) -> ...; }` defines an interface. Implementations use `impl Trait for Type { ... }`, including for specific generic instances.
-* Inherent implementations `impl Type { ... }` provide associated functions and methods.
-* Invocation styles: method syntax `value.method(...)`, or associated syntax `Type::method(value, ...)` / `Trait::method(value, ...)`.
-  * For trait methods on non-`dyn` values, `x.method(...)` works when the trait is in scope via `use PackageName::Trait` (builtin traits like `Show` are in the prelude), otherwise use UFCS like `Trait::method(x, ...)`.
-* When multiple trait bounds provide the same method name for a type parameter, `x.foo()` is ambiguous and requires UFCS disambiguation (e.g. `A::foo(x)`).
-* Trait objects: `dyn Trait` is a first-class type for dynamic dispatch.
-  * Coercion: when the expected type is `dyn Trait`, a value of concrete type `T` is implicitly converted if there is a visible `impl Trait for T`.
-  * Calling: `Trait::method(x, ...)` works for both concrete `x: T` (static dispatch) and `x: dyn Trait` (dynamic dispatch).
-  * Object safety (current): the receiver must be the first parameter and be exactly `Self`; `Self` is not allowed in other parameters or the return type.
-  * Limitations (current): trait method call via `x.method(...)` is not supported for `dyn Trait` (use `Trait::method(x, ...)`); pattern matching on `dyn Trait` is not supported; `dyn TraitA + TraitB` and explicit `as dyn Trait` syntax are not implemented.
-
-### Notes on `char`
-
-* Codegen: goml `char` lowers to Go `rune`.
-* Printing: `char` implements `ToString`; `c.to_string()` returns a `string` representation of the code point.
-* Pattern matching: `match` supports `char` scrutinees and `char` literal patterns.
-
-### Concurrency and Side Effects
-
-* `go expr;` starts concurrent execution, commonly used with zero-argument closures.
-* Common built-ins for I/O and debugging: `string_print/string_println`, and `_to_string` for basic types or derived `to_string`.
-
-### Attributes and Derivation
-
-* Attributes such as `#[derive(ToString)]` and `#[derive(ToJson)]` automatically generate methods; applicable to structs and enums.
-
-### External Interoperability
-
-* `extern type Name` declares an external type.
-* Binding Go symbols: `extern "go" "pkg" ["Func"] name(params) -> Ret`, where `"pkg"` is the Go package path and an explicit identifier is optional.
-
-### Additional Conventions and Constraints
-
-* Top-level functions must have explicit type signatures; generics are limited to top-level functions.
-* Closures must have a single concrete type (no let-polymorphism); generics are expanded via monomorphization.
-* The runtime uses garbage collection; manual ownership or lifetimes are not required.
-
-### Builtin `HashMap`
-
-* Builtin type: `HashMap[K, V]`, backed by generated Go runtime code and Go `map` internally.
-* Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
-* Key requirements: `K` must have both `Hash` and `Eq`.
-
-### Builtin traits `Eq` / `Hash`
-
-* `trait Eq { fn eq(Self, Self) -> bool; }`
-* `trait Hash { fn hash(Self) -> uint64; }`
-* `Ref[T]` implements `Eq`/`Hash` by the pointed-to content (`ref_get(self)`), not pointer identity.
-
-### Testing / snapshots gotchas
-
-* Adding/changing builtins changes the Builtin interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
-* Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
-
-### Name collisions
-
-* Avoid defining user traits named `Eq` or `Hash` in tests/examples unless you fully qualify or rename them; the builtins now reserve these names and duplicate impls can surface as “defined in multiple packages”.
+For testing and development notes specific to the compiler implementation, see the Testing Guidelines section above.
