@@ -1,0 +1,593 @@
+package Main
+file main.gom
+  enum Exp {
+        Var(string),
+        App(Ref[Exp], Ref[Exp]),
+        Lam(string, Ref[Exp]),
+        Let(string, Ref[Exp], Ref[Exp])
+    }
+    
+    enum TvContent {
+        Unbound(int32, string, int32),
+        Link(Ref[Typ])
+    }
+    
+    enum Typ {
+        TVar(Ref[TvContent]),
+        QVar(string),
+        TArrow(Ref[Typ], Ref[Typ])
+    }
+    
+    struct State {
+        gensym_counter: Ref[int32],
+        current_level: Ref[int32],
+    }
+    
+    fn state_new() -> State {
+      State {
+          gensym_counter: ref(0),
+          current_level: ref(1)
+      };
+    }
+    
+    fn reset_gensym(local/1/0: Ref[State]) -> unit {
+      let local/1/1 = ref_get(st/0);
+      ref_set(s/1.gensym_counter, 0);
+    }
+    
+    fn gensym(local/1/2: Ref[State]) -> string {
+      let local/1/3 = ref_get(st/2);
+      let local/1/4 = ref_get(s/3.gensym_counter);
+      let _ = ref_set(s/3.gensym_counter, n/4 + 1);
+      if n/4 < 26 {
+          let local/1/5 = string_get("abcdefghijklmnopqrstuvwxyz", n/4);
+          char_to_string(c/5);
+      } else {
+          "t" + int32_to_string(n/4);
+      };
+    }
+    
+    fn reset_level(local/1/6: Ref[State]) -> unit {
+      let local/1/7 = ref_get(st/6);
+      ref_set(s/7.current_level, 1);
+    }
+    
+    fn reset_type_variables(local/1/8: Ref[State]) -> unit {
+      let _ = def/1/5(st/8);
+      def/1/7(st/8);
+    }
+    
+    fn enter_level(local/1/9: Ref[State]) -> unit {
+      let local/1/10 = ref_get(st/9);
+      let local/1/11 = ref_get(s/10.current_level);
+      ref_set(s/10.current_level, lv/11 + 1);
+    }
+    
+    fn leave_level(local/1/12: Ref[State]) -> unit {
+      let local/1/13 = ref_get(st/12);
+      let local/1/14 = ref_get(s/13.current_level);
+      ref_set(s/13.current_level, lv/14 - 1);
+    }
+    
+    fn newvar(local/1/15: Ref[State]) -> Typ {
+      let local/1/16 = ref_get(st/15);
+      let local/1/17 = ref_get(s/16.gensym_counter);
+      let local/1/18 = def/1/6(st/15);
+      let local/1/19 = ref_get(s/16.current_level);
+      ctor(def/1/2::v0)(ref(ctor(def/1/1::v0)(id/17, name/18, level/19)));
+    }
+    
+    fn min_int32(local/1/20: int32, local/1/21: int32) -> int32 {
+      if a/20 < b/21 {
+          a/20;
+      } else {
+          b/21;
+      };
+    }
+    
+    fn occurs(local/1/22: Ref[State], local/1/23: Ref[TvContent], local/1/24: int32, local/1/25: Typ) -> Result[unit, string] {
+      match ty/25 {
+          ctor(def/1/2::v0)(local/1/26) => {
+                let local/1/27 = ref_get(tvr/23);
+                let local/1/28 = ref_get(tvr2/26);
+                match (tv_content/27, tv_content2/28) {
+                    (ctor(def/1/1::v0)(_, _, local/1/29), ctor(def/1/1::v1)(local/1/30)) => {
+                          def/1/13(st/22, tvr/23, tvr_id/24, ref_get(linked_ty/30));
+                      },
+                    (ctor(def/1/1::v0)(_, _, local/1/31), ctor(def/1/1::v0)(local/1/32, local/1/33, local/1/34)) => {
+                          if tvr_id/24 == id2/32 {
+                              Result::Err("occurs check");
+                          } else {
+                              let local/1/35 = def/1/12(l/31, l2/34);
+                              let _ = ref_set(tvr2/26, ctor(def/1/1::v0)(id2/32, name2/33, min_level/35));
+                              Result::Ok(());
+                          };
+                      },
+                    (_, ctor(def/1/1::v0)(local/1/36, local/1/37, local/1/38)) => {
+                          let _ = ref_set(tvr2/26, ctor(def/1/1::v0)(id2/36, name2/37, l2/38));
+                          Result::Ok(());
+                      },
+                    _ => Result::Ok(()),
+                };
+            },
+          ctor(def/1/2::v2)(local/1/39, local/1/40) => {
+                match def/1/13(st/22, tvr/23, tvr_id/24, ref_get(t1/39)) {
+                    Result::Ok(_) => def/1/13(st/22, tvr/23, tvr_id/24, ref_get(t2/40)),
+                    Result::Err(local/1/41) => Result::Err(e/41),
+                };
+            },
+          _ => Result::Ok(()),
+      };
+    }
+    
+    fn unify(local/1/42: Ref[State], local/1/43: Typ, local/1/44: Typ) -> Result[unit, string] {
+      match (t1/43, t2/44) {
+          (ctor(def/1/2::v0)(local/1/45), ctor(def/1/2::v0)(local/1/46)) => {
+                let local/1/47 = ref_get(tv1/45);
+                let local/1/48 = ref_get(tv2/46);
+                match (c1/47, c2/48) {
+                    (ctor(def/1/1::v0)(local/1/49, _, _), ctor(def/1/1::v0)(local/1/50, _, _)) => {
+                          if id1/49 == id2/50 {
+                              Result::Ok(());
+                          } else {
+                              match def/1/13(st/42, tv1/45, id1/49, ctor(def/1/2::v0)(tv2/46)) {
+                                  Result::Ok(_) => {
+                                        let _ = ref_set(tv1/45, ctor(def/1/1::v1)(ref(ctor(def/1/2::v0)(tv2/46))));
+                                        Result::Ok(());
+                                    },
+                                  Result::Err(local/1/51) => Result::Err(e/51),
+                              };
+                          };
+                      },
+                    (ctor(def/1/1::v1)(local/1/52), _) => def/1/14(st/42, ref_get(ty1/52), ctor(def/1/2::v0)(tv2/46)),
+                    (_, ctor(def/1/1::v1)(local/1/53)) => def/1/14(st/42, ctor(def/1/2::v0)(tv1/45), ref_get(ty2/53)),
+                };
+            },
+          (ctor(def/1/2::v0)(local/1/54), local/1/55) => {
+                let local/1/56 = ref_get(tv/54);
+                match c/56 {
+                    ctor(def/1/1::v1)(local/1/57) => def/1/14(st/42, ref_get(ty/57), t/55),
+                    ctor(def/1/1::v0)(local/1/58, _, _) => {
+                          match def/1/13(st/42, tv/54, id/58, t/55) {
+                              Result::Ok(_) => {
+                                    let _ = ref_set(tv/54, ctor(def/1/1::v1)(ref(t/55)));
+                                    Result::Ok(());
+                                },
+                              Result::Err(local/1/59) => Result::Err(e/59),
+                          };
+                      },
+                };
+            },
+          (local/1/60, ctor(def/1/2::v0)(local/1/61)) => {
+                let local/1/62 = ref_get(tv/61);
+                match c/62 {
+                    ctor(def/1/1::v1)(local/1/63) => def/1/14(st/42, t/60, ref_get(ty/63)),
+                    ctor(def/1/1::v0)(local/1/64, _, _) => {
+                          match def/1/13(st/42, tv/61, id/64, t/60) {
+                              Result::Ok(_) => {
+                                    let _ = ref_set(tv/61, ctor(def/1/1::v1)(ref(t/60)));
+                                    Result::Ok(());
+                                },
+                              Result::Err(local/1/65) => Result::Err(e/65),
+                          };
+                      },
+                };
+            },
+          (ctor(def/1/2::v2)(local/1/66, local/1/67), ctor(def/1/2::v2)(local/1/68, local/1/69)) => {
+                match def/1/14(st/42, ref_get(t1a/66), ref_get(t2a/68)) {
+                    Result::Ok(_) => def/1/14(st/42, ref_get(t1b/67), ref_get(t2b/69)),
+                    Result::Err(local/1/70) => Result::Err(e/70),
+                };
+            },
+          _ => Result::Err("unification error"),
+      };
+    }
+    
+    fn gen(local/1/71: Ref[State], local/1/72: Typ) -> Typ {
+      let local/1/73 = ref_get(st/71);
+      let local/1/74 = ref_get(s/73.current_level);
+      match ty/72 {
+          ctor(def/1/2::v0)(local/1/75) => {
+                let local/1/76 = ref_get(tv/75);
+                match c/76 {
+                    ctor(def/1/1::v0)(_, local/1/77, local/1/78) => {
+                          if l/78 > curr_level/74 {
+                              ctor(def/1/2::v1)(name/77);
+                          } else {
+                              ctor(def/1/2::v0)(tv/75);
+                          };
+                      },
+                    ctor(def/1/1::v1)(local/1/79) => def/1/15(st/71, ref_get(linked_ty/79)),
+                };
+            },
+          ctor(def/1/2::v2)(local/1/80, local/1/81) => {
+                ctor(def/1/2::v2)(ref(def/1/15(st/71, ref_get(t1/80))), ref(def/1/15(st/71, ref_get(t2/81))));
+            },
+          _ => ty/72,
+      };
+    }
+    
+    fn inst_helper(local/1/82: Ref[State], local/1/83: Typ, local/1/84: Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]) {
+      match ty/83 {
+          ctor(def/1/2::v1)(local/1/85) => {
+                let local/1/86 = def/1/20(subst/84, name/85);
+                match found/86 {
+                    Option::Some(local/1/87) => (t/87, subst/84),
+                    Option::None => {
+                          let local/1/88 = def/1/11(st/82);
+                          let local/1/89 = def/1/19((name/85, tv/88), subst/84);
+                          (tv/88, new_subst/89);
+                      },
+                };
+            },
+          ctor(def/1/2::v0)(local/1/90) => {
+                let local/1/91 = ref_get(tv/90);
+                match c/91 {
+                    ctor(def/1/1::v1)(local/1/92) => def/1/16(st/82, ref_get(linked_ty/92), subst/84),
+                    _ => (ctor(def/1/2::v0)(tv/90), subst/84),
+                };
+            },
+          ctor(def/1/2::v2)(local/1/93, local/1/94) => {
+                let local/1/95 = def/1/16(st/82, ref_get(t1/93), subst/84);
+                let (local/1/96, local/1/97) = pair1/95;
+                let local/1/98 = def/1/16(st/82, ref_get(t2/94), subst1/97);
+                let (local/1/99, local/1/100) = pair2/98;
+                (ctor(def/1/2::v2)(ref(ty1/96), ref(ty2/99)), subst2/100);
+            },
+      };
+    }
+    
+    fn inst(local/1/101: Ref[State], local/1/102: Typ) -> Typ {
+      let local/1/103 = vec_new();
+      let local/1/104 = def/1/16(st/101, ty/102, empty_subst/103);
+      let (local/1/105, _) = result/104;
+      ty_result/105;
+    }
+    
+    fn vec_cons_env(local/1/106: (string, Typ), local/1/107: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+      let local/1/108 = vec_new();
+      let local/1/109 = vec_push(new_vec/108, elem/106);
+      let local/1/110 = ref(0);
+      let local/1/111 = vec_len(vec/107);
+      let local/1/112 = ref(new_vec/109);
+      let _ = while ref_get(i/110) < len/111 {
+          {
+              let local/1/113 = ref_get(new_vec_ref/112);
+              let local/1/114 = vec_push(nv/113, vec_get(vec/107, ref_get(i/110)));
+              let _ = ref_set(new_vec_ref/112, nv/114);
+              let _ = ref_set(i/110, ref_get(i/110) + 1);
+              ();
+          }
+      };
+      ref_get(new_vec_ref/112);
+    }
+    
+    fn vec_cons_subst(local/1/115: (string, Typ), local/1/116: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+      let local/1/117 = vec_new();
+      let local/1/118 = vec_push(new_vec/117, elem/115);
+      let local/1/119 = ref(0);
+      let local/1/120 = vec_len(vec/116);
+      let local/1/121 = ref(new_vec/118);
+      let _ = while ref_get(i/119) < len/120 {
+          {
+              let local/1/122 = ref_get(new_vec_ref/121);
+              let local/1/123 = vec_push(nv/122, vec_get(vec/116, ref_get(i/119)));
+              let _ = ref_set(new_vec_ref/121, nv/123);
+              let _ = ref_set(i/119, ref_get(i/119) + 1);
+              ();
+          }
+      };
+      ref_get(new_vec_ref/121);
+    }
+    
+    fn vec_find_assoc(local/1/124: Vec[(string, Typ)], local/1/125: string) -> Option[Typ] {
+      let local/1/126 = ref(0);
+      let local/1/127 = vec_len(vec/124);
+      let local/1/128 = ref(Option::None);
+      let _ = while ref_get(i/126) < len/127 {
+          {
+              let local/1/129 = vec_get(vec/124, ref_get(i/126));
+              let (local/1/130, local/1/131) = pair/129;
+              let _ = if k/130 == key/125 {
+                  ref_set(result/128, Option::Some(v/131));
+              } else {
+                  ();
+              };
+              ref_set(i/126, ref_get(i/126) + 1);
+          }
+      };
+      ref_get(result/128);
+    }
+    
+    fn env_lookup(local/1/132: Vec[(string, Typ)], local/1/133: string) -> Option[Typ] {
+      def/1/20(env/132, name/133);
+    }
+    
+    fn typeof(local/1/134: Ref[State], local/1/135: Vec[(string, Typ)], local/1/136: Exp) -> Result[Typ, string] {
+      match exp/136 {
+          ctor(def/1/0::v0)(local/1/137) => {
+                match def/1/21(env/135, x/137) {
+                    Option::Some(local/1/138) => Result::Ok(def/1/17(st/134, ty/138)),
+                    Option::None => Result::Err("unbound var"),
+                };
+            },
+          ctor(def/1/0::v2)(local/1/139, local/1/140) => {
+                let local/1/141 = def/1/11(st/134);
+                let local/1/142 = def/1/18((x/139, ty_x/141), env/135);
+                match def/1/22(st/134, new_env/142, ref_get(e/140)) {
+                    Result::Ok(local/1/143) => Result::Ok(ctor(def/1/2::v2)(ref(ty_x/141), ref(ty_e/143))),
+                    Result::Err(local/1/144) => Result::Err(e/144),
+                };
+            },
+          ctor(def/1/0::v1)(local/1/145, local/1/146) => {
+                match def/1/22(st/134, env/135, ref_get(e1/145)) {
+                    Result::Ok(local/1/147) => {
+                          match def/1/22(st/134, env/135, ref_get(e2/146)) {
+                              Result::Ok(local/1/148) => {
+                                    let local/1/149 = def/1/11(st/134);
+                                    match def/1/14(st/134, ty_fun/147, ctor(def/1/2::v2)(ref(ty_arg/148), ref(ty_res/149))) {
+                                        Result::Ok(_) => Result::Ok(ty_res/149),
+                                        Result::Err(local/1/150) => Result::Err(e/150),
+                                    };
+                                },
+                              Result::Err(local/1/151) => Result::Err(e/151),
+                          };
+                      },
+                    Result::Err(local/1/152) => Result::Err(e/152),
+                };
+            },
+          ctor(def/1/0::v3)(local/1/153, local/1/154, local/1/155) => {
+                let _ = def/1/9(st/134);
+                let local/1/156 = def/1/22(st/134, env/135, ref_get(e/154));
+                let _ = def/1/10(st/134);
+                match ty_e_result/156 {
+                    Result::Ok(local/1/157) => {
+                          let local/1/158 = def/1/15(st/134, ty_e/157);
+                          let local/1/159 = def/1/18((x/153, gen_ty/158), env/135);
+                          def/1/22(st/134, new_env/159, ref_get(e2/155));
+                      },
+                    Result::Err(local/1/160) => Result::Err(e/160),
+                };
+            },
+      };
+    }
+    
+    fn mk_id() -> Exp {
+      ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v0)("x")));
+    }
+    
+    fn mk_c1() -> Exp {
+      ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v2)("y", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("y")))))));
+    }
+    
+    fn test1(local/1/161: Ref[State]) -> unit {
+      let _ = def/1/8(st/161);
+      let local/1/162 = vec_new();
+      let local/1/163 = def/1/22(st/161, empty_env/162, def/1/23());
+      match ty/163 {
+          Result::Ok(_) => println("test1: OK"),
+          Result::Err(local/1/164) => println("test1: " + e/164),
+      };
+    }
+    
+    fn test2(local/1/165: Ref[State]) -> unit {
+      let _ = def/1/8(st/165);
+      let local/1/166 = vec_new();
+      let local/1/167 = def/1/22(st/165, empty_env/166, def/1/24());
+      match ty/167 {
+          Result::Ok(_) => println("test2: OK"),
+          Result::Err(local/1/168) => println("test2: " + e/168),
+      };
+    }
+    
+    fn test3(local/1/169: Ref[State]) -> unit {
+      let _ = def/1/8(st/169);
+      let local/1/170 = vec_new();
+      let local/1/171 = ctor(def/1/0::v3)("x", ref(def/1/24()), ref(ctor(def/1/0::v0)("x")));
+      let local/1/172 = def/1/22(st/169, empty_env/170, exp/171);
+      match ty/172 {
+          Result::Ok(_) => println("test3: OK"),
+          Result::Err(local/1/173) => println("test3: " + e/173),
+      };
+    }
+    
+    fn test4(local/1/174: Ref[State]) -> unit {
+      let _ = def/1/8(st/174);
+      let local/1/175 = vec_new();
+      let local/1/176 = ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v0)("z")))), ref(ctor(def/1/0::v0)("y")));
+      let local/1/177 = def/1/22(st/174, empty_env/175, exp/176);
+      match ty/177 {
+          Result::Ok(_) => println("test4: OK"),
+          Result::Err(local/1/178) => println("test4: " + e/178),
+      };
+    }
+    
+    fn test5(local/1/179: Ref[State]) -> unit {
+      let _ = def/1/8(st/179);
+      let local/1/180 = vec_new();
+      let local/1/181 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v0)("z")))), ref(ctor(def/1/0::v0)("y")))));
+      let local/1/182 = def/1/22(st/179, empty_env/180, exp/181);
+      match ty/182 {
+          Result::Ok(_) => println("test5: OK"),
+          Result::Err(local/1/183) => println("test5: " + e/183),
+      };
+    }
+    
+    fn test6(local/1/184: Ref[State]) -> unit {
+      let _ = def/1/8(st/184);
+      let local/1/185 = vec_new();
+      let local/1/186 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v0)("z")))), ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("y")), ref(ctor(def/1/0::v0)("x")))))));
+      let local/1/187 = def/1/22(st/184, empty_env/185, exp/186);
+      match ty/187 {
+          Result::Ok(_) => println("test6: OK"),
+          Result::Err(local/1/188) => println("test6: " + e/188),
+      };
+    }
+    
+    fn test7(local/1/189: Ref[State]) -> unit {
+      let _ = def/1/8(st/189);
+      let local/1/190 = vec_new();
+      let local/1/191 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("x")))));
+      let local/1/192 = def/1/22(st/189, empty_env/190, exp/191);
+      match ty/192 {
+          Result::Ok(_) => println("test7: FAIL - should have failed"),
+          Result::Err(local/1/193) => println(e/193),
+      };
+    }
+    
+    fn test8(local/1/194: Ref[State]) -> unit {
+      let _ = def/1/8(st/194);
+      let local/1/195 = vec_new();
+      let local/1/196 = ctor(def/1/0::v3)("x", ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("x")));
+      let local/1/197 = def/1/22(st/194, empty_env/195, exp/196);
+      match ty/197 {
+          Result::Ok(_) => println("test8: FAIL - should have failed"),
+          Result::Err(local/1/198) => println(e/198),
+      };
+    }
+    
+    fn test9(local/1/199: Ref[State]) -> unit {
+      let _ = def/1/8(st/199);
+      let local/1/200 = vec_new();
+      let local/1/201 = ctor(def/1/0::v2)("y", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("y")), ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("y")), ref(ctor(def/1/0::v0)("z")))))))));
+      let local/1/202 = def/1/22(st/199, empty_env/200, exp/201);
+      match ty/202 {
+          Result::Ok(_) => println("test9: FAIL - should have failed"),
+          Result::Err(local/1/203) => println(e/203),
+      };
+    }
+    
+    fn test10(local/1/204: Ref[State]) -> unit {
+      let _ = def/1/8(st/204);
+      let local/1/205 = vec_new();
+      let local/1/206 = ref(def/1/23());
+      let local/1/207 = ctor(def/1/0::v3)("id", id_exp/206, ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("id")), ref(ctor(def/1/0::v0)("id")))));
+      let local/1/208 = def/1/22(st/204, empty_env/205, exp/207);
+      match ty/208 {
+          Result::Ok(_) => println("test10: OK"),
+          Result::Err(local/1/209) => println("test10: " + e/209),
+      };
+    }
+    
+    fn test11(local/1/210: Ref[State]) -> unit {
+      let _ = def/1/8(st/210);
+      let local/1/211 = vec_new();
+      let local/1/212 = ref(def/1/23());
+      let local/1/213 = ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), id_exp/212);
+      let local/1/214 = ctor(def/1/0::v3)("z", ref(z_app/213), ref(ctor(def/1/0::v0)("z")));
+      let local/1/215 = ctor(def/1/0::v3)("y", ref(let_z/214), ref(ctor(def/1/0::v0)("y")));
+      let local/1/216 = ctor(def/1/0::v3)("x", ref(def/1/24()), ref(let_y/215));
+      let local/1/217 = def/1/22(st/210, empty_env/211, exp/216);
+      match ty/217 {
+          Result::Ok(_) => println("test11: OK"),
+          Result::Err(local/1/218) => println("test11: " + e/218),
+      };
+    }
+    
+    fn test12(local/1/219: Ref[State]) -> unit {
+      let _ = def/1/8(st/219);
+      let local/1/220 = vec_new();
+      let local/1/221 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("y")), ref(ctor(def/1/0::v0)("x")))));
+      let local/1/222 = ctor(def/1/0::v3)("x", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("y")))), ref(inner_lam/221));
+      let local/1/223 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v2)("y", ref(let_x/222))));
+      let local/1/224 = def/1/22(st/219, empty_env/220, exp/223);
+      match ty/224 {
+          Result::Ok(_) => println("test12: OK"),
+          Result::Err(local/1/225) => println("test12: " + e/225),
+      };
+    }
+    
+    fn test13(local/1/226: Ref[State]) -> unit {
+      let _ = def/1/8(st/226);
+      let local/1/227 = vec_new();
+      let local/1/228 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("y")))));
+      let local/1/229 = def/1/22(st/226, empty_env/227, exp/228);
+      match ty/229 {
+          Result::Ok(_) => println("test13: OK"),
+          Result::Err(local/1/230) => println("test13: " + e/230),
+      };
+    }
+    
+    fn test14(local/1/231: Ref[State]) -> unit {
+      let _ = def/1/8(st/231);
+      let local/1/232 = vec_new();
+      let local/1/233 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v0)("x")))), ref(ctor(def/1/0::v0)("y")))));
+      let local/1/234 = def/1/22(st/231, empty_env/232, exp/233);
+      match ty/234 {
+          Result::Ok(_) => println("test14: OK"),
+          Result::Err(local/1/235) => println("test14: " + e/235),
+      };
+    }
+    
+    fn test15(local/1/236: Ref[State]) -> unit {
+      let _ = def/1/8(st/236);
+      let local/1/237 = vec_new();
+      let local/1/238 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v2)("z", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("z")))))), ref(ctor(def/1/0::v0)("y")))));
+      let local/1/239 = def/1/22(st/236, empty_env/237, exp/238);
+      match ty/239 {
+          Result::Ok(_) => println("test15: OK"),
+          Result::Err(local/1/240) => println("test15: " + e/240),
+      };
+    }
+    
+    fn test16(local/1/241: Ref[State]) -> unit {
+      let _ = def/1/8(st/241);
+      let local/1/242 = vec_new();
+      let local/1/243 = ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("y")));
+      let local/1/244 = ctor(def/1/0::v3)("x", ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v0)("y")))), ref(inner_app/243));
+      let local/1/245 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v2)("y", ref(let_x/244))));
+      let local/1/246 = def/1/22(st/241, empty_env/242, exp/245);
+      match ty/246 {
+          Result::Ok(_) => println("test16: OK"),
+          Result::Err(local/1/247) => println("test16: " + e/247),
+      };
+    }
+    
+    fn test17(local/1/248: Ref[State]) -> unit {
+      let _ = def/1/8(st/248);
+      let local/1/249 = vec_new();
+      let local/1/250 = ctor(def/1/0::v2)("x", ref(ctor(def/1/0::v3)("y", ref(ctor(def/1/0::v0)("x")), ref(ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("y")), ref(ctor(def/1/0::v0)("y")))))));
+      let local/1/251 = def/1/22(st/248, empty_env/249, exp/250);
+      match ty/251 {
+          Result::Ok(_) => println("test17: FAIL - should have failed"),
+          Result::Err(local/1/252) => println(e/252),
+      };
+    }
+    
+    fn test18(local/1/253: Ref[State]) -> unit {
+      let _ = def/1/5(st/253);
+      let local/1/254 = vec_new();
+      let local/1/255 = ref(def/1/23());
+      let local/1/256 = ctor(def/1/0::v1)(ref(ctor(def/1/0::v0)("x")), id_exp/255);
+      let local/1/257 = ctor(def/1/0::v3)("z", ref(z_app/256), ref(ctor(def/1/0::v0)("z")));
+      let local/1/258 = ctor(def/1/0::v3)("y", ref(let_z/257), ref(ctor(def/1/0::v0)("y")));
+      let local/1/259 = ctor(def/1/0::v2)("x", ref(let_y/258));
+      let local/1/260 = def/1/22(st/253, empty_env/254, exp/259);
+      match ty/260 {
+          Result::Ok(_) => println("test18: OK"),
+          Result::Err(local/1/261) => println("test18: " + e/261),
+      };
+    }
+    
+    fn main() -> unit {
+      let local/1/262 = ref(def/1/4());
+      let _ = def/1/25(st/262);
+      let _ = def/1/26(st/262);
+      let _ = def/1/27(st/262);
+      let _ = def/1/28(st/262);
+      let _ = def/1/29(st/262);
+      let _ = def/1/30(st/262);
+      let _ = def/1/31(st/262);
+      let _ = def/1/32(st/262);
+      let _ = def/1/33(st/262);
+      let _ = def/1/34(st/262);
+      let _ = def/1/35(st/262);
+      let _ = def/1/36(st/262);
+      let _ = def/1/37(st/262);
+      let _ = def/1/38(st/262);
+      let _ = def/1/39(st/262);
+      let _ = def/1/40(st/262);
+      let _ = def/1/41(st/262);
+      let _ = def/1/42(st/262);
+      println("\\nAll Done\\n");
+    }

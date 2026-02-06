@@ -1,0 +1,617 @@
+package Main;
+enum Exp {
+    Var(string),
+    App(Ref[Exp], Ref[Exp]),
+    Lam(string, Ref[Exp]),
+    Let(string, Ref[Exp], Ref[Exp])
+}
+
+enum TvContent {
+    Unbound(int32, string, int32),
+    Link(Ref[Typ])
+}
+
+enum Typ {
+    TVar(Ref[TvContent]),
+    QVar(string),
+    TArrow(Ref[Typ], Ref[Typ])
+}
+
+struct State {
+    gensym_counter: Ref[int32],
+    current_level: Ref[int32],
+}
+
+fn state_new() -> State {
+  State {
+      gensym_counter: ref(0),
+      current_level: ref(1)
+  };
+}
+
+fn reset_gensym(st: Ref[State]) -> unit {
+  let s = ref_get(st);
+  ref_set(s.gensym_counter, 0);
+}
+
+fn gensym(st: Ref[State]) -> string {
+  let s = ref_get(st);
+  let n = ref_get(s.gensym_counter);
+  let _ = ref_set(s.gensym_counter, n + 1);
+  if n < 26 {
+      {
+          let c = string_get("abcdefghijklmnopqrstuvwxyz", n);
+          char_to_string(c);
+      }
+  } else {
+      {
+          "t" + int32_to_string(n);
+      }
+  };
+}
+
+fn reset_level(st: Ref[State]) -> unit {
+  let s = ref_get(st);
+  ref_set(s.current_level, 1);
+}
+
+fn reset_type_variables(st: Ref[State]) -> unit {
+  let _ = reset_gensym(st);
+  reset_level(st);
+}
+
+fn enter_level(st: Ref[State]) -> unit {
+  let s = ref_get(st);
+  let lv = ref_get(s.current_level);
+  ref_set(s.current_level, lv + 1);
+}
+
+fn leave_level(st: Ref[State]) -> unit {
+  let s = ref_get(st);
+  let lv = ref_get(s.current_level);
+  ref_set(s.current_level, lv - 1);
+}
+
+fn newvar(st: Ref[State]) -> Typ {
+  let s = ref_get(st);
+  let id = ref_get(s.gensym_counter);
+  let name = gensym(st);
+  let level = ref_get(s.current_level);
+  Typ::TVar(ref(TvContent::Unbound(id, name, level)));
+}
+
+fn min_int32(a: int32, b: int32) -> int32 {
+  if a < b {
+      {
+          a;
+      }
+  } else {
+      {
+          b;
+      }
+  };
+}
+
+fn occurs(st: Ref[State], tvr: Ref[TvContent], tvr_id: int32, ty: Typ) -> Result[unit, string] {
+  match ty {
+      Typ::TVar(tvr2) => {
+            let tv_content = ref_get(tvr);
+            let tv_content2 = ref_get(tvr2);
+            match (tv_content, tv_content2) {
+                (TvContent::Unbound(_, _, l), TvContent::Link(linked_ty)) => {
+                      occurs(st, tvr, tvr_id, ref_get(linked_ty));
+                  },
+                (TvContent::Unbound(_, _, l), TvContent::Unbound(id2, name2, l2)) => {
+                      if tvr_id == id2 {
+                          {
+                              Result::Err("occurs check");
+                          }
+                      } else {
+                          {
+                              let min_level = min_int32(l, l2);
+                              let _ = ref_set(tvr2, TvContent::Unbound(id2, name2, min_level));
+                              Result::Ok(());
+                          }
+                      };
+                  },
+                (_, TvContent::Unbound(id2, name2, l2)) => {
+                      let _ = ref_set(tvr2, TvContent::Unbound(id2, name2, l2));
+                      Result::Ok(());
+                  },
+                _ => Result::Ok(()),
+            };
+        },
+      Typ::TArrow(t1, t2) => {
+            match occurs(st, tvr, tvr_id, ref_get(t1)) {
+                Result::Ok(_) => occurs(st, tvr, tvr_id, ref_get(t2)),
+                Result::Err(e) => Result::Err(e),
+            };
+        },
+      _ => Result::Ok(()),
+  };
+}
+
+fn unify(st: Ref[State], t1: Typ, t2: Typ) -> Result[unit, string] {
+  match (t1, t2) {
+      (Typ::TVar(tv1), Typ::TVar(tv2)) => {
+            let c1 = ref_get(tv1);
+            let c2 = ref_get(tv2);
+            match (c1, c2) {
+                (TvContent::Unbound(id1, _, _), TvContent::Unbound(id2, _, _)) => {
+                      if id1 == id2 {
+                          {
+                              Result::Ok(());
+                          }
+                      } else {
+                          {
+                              match occurs(st, tv1, id1, Typ::TVar(tv2)) {
+                                  Result::Ok(_) => {
+                                        let _ = ref_set(tv1, TvContent::Link(ref(Typ::TVar(tv2))));
+                                        Result::Ok(());
+                                    },
+                                  Result::Err(e) => Result::Err(e),
+                              };
+                          }
+                      };
+                  },
+                (TvContent::Link(ty1), _) => unify(st, ref_get(ty1), Typ::TVar(tv2)),
+                (_, TvContent::Link(ty2)) => unify(st, Typ::TVar(tv1), ref_get(ty2)),
+            };
+        },
+      (Typ::TVar(tv), t) => {
+            let c = ref_get(tv);
+            match c {
+                TvContent::Link(ty) => unify(st, ref_get(ty), t),
+                TvContent::Unbound(id, _, _) => {
+                      match occurs(st, tv, id, t) {
+                          Result::Ok(_) => {
+                                let _ = ref_set(tv, TvContent::Link(ref(t)));
+                                Result::Ok(());
+                            },
+                          Result::Err(e) => Result::Err(e),
+                      };
+                  },
+            };
+        },
+      (t, Typ::TVar(tv)) => {
+            let c = ref_get(tv);
+            match c {
+                TvContent::Link(ty) => unify(st, t, ref_get(ty)),
+                TvContent::Unbound(id, _, _) => {
+                      match occurs(st, tv, id, t) {
+                          Result::Ok(_) => {
+                                let _ = ref_set(tv, TvContent::Link(ref(t)));
+                                Result::Ok(());
+                            },
+                          Result::Err(e) => Result::Err(e),
+                      };
+                  },
+            };
+        },
+      (Typ::TArrow(t1a, t1b), Typ::TArrow(t2a, t2b)) => {
+            match unify(st, ref_get(t1a), ref_get(t2a)) {
+                Result::Ok(_) => unify(st, ref_get(t1b), ref_get(t2b)),
+                Result::Err(e) => Result::Err(e),
+            };
+        },
+      _ => Result::Err("unification error"),
+  };
+}
+
+fn gen(st: Ref[State], ty: Typ) -> Typ {
+  let s = ref_get(st);
+  let curr_level = ref_get(s.current_level);
+  match ty {
+      Typ::TVar(tv) => {
+            let c = ref_get(tv);
+            match c {
+                TvContent::Unbound(_, name, l) => {
+                      if l > curr_level {
+                          {
+                              Typ::QVar(name);
+                          }
+                      } else {
+                          {
+                              Typ::TVar(tv);
+                          }
+                      };
+                  },
+                TvContent::Link(linked_ty) => gen(st, ref_get(linked_ty)),
+            };
+        },
+      Typ::TArrow(t1, t2) => {
+            Typ::TArrow(ref(gen(st, ref_get(t1))), ref(gen(st, ref_get(t2))));
+        },
+      _ => ty,
+  };
+}
+
+fn inst_helper(st: Ref[State], ty: Typ, subst: Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]) {
+  match ty {
+      Typ::QVar(name) => {
+            let found = vec_find_assoc(subst, name);
+            match found {
+                Option::Some(t) => (t, subst),
+                Option::None => {
+                      let tv = newvar(st);
+                      let new_subst = vec_cons_subst((name, tv), subst);
+                      (tv, new_subst);
+                  },
+            };
+        },
+      Typ::TVar(tv) => {
+            let c = ref_get(tv);
+            match c {
+                TvContent::Link(linked_ty) => inst_helper(st, ref_get(linked_ty), subst),
+                _ => (Typ::TVar(tv), subst),
+            };
+        },
+      Typ::TArrow(t1, t2) => {
+            let pair1 = inst_helper(st, ref_get(t1), subst);
+            let (ty1, subst1) = pair1;
+            let pair2 = inst_helper(st, ref_get(t2), subst1);
+            let (ty2, subst2) = pair2;
+            (Typ::TArrow(ref(ty1), ref(ty2)), subst2);
+        },
+  };
+}
+
+fn inst(st: Ref[State], ty: Typ) -> Typ {
+  let empty_subst = vec_new();
+  let result = inst_helper(st, ty, empty_subst);
+  let (ty_result, _) = result;
+  ty_result;
+}
+
+fn vec_cons_env(elem: (string, Typ), vec: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+  let new_vec = vec_new();
+  let new_vec = vec_push(new_vec, elem);
+  let i = ref(0);
+  let len = vec_len(vec);
+  let new_vec_ref = ref(new_vec);
+  let _ = while ref_get(i) < len {
+      {
+          let nv = ref_get(new_vec_ref);
+          let nv = vec_push(nv, vec_get(vec, ref_get(i)));
+          let _ = ref_set(new_vec_ref, nv);
+          let _ = ref_set(i, ref_get(i) + 1);
+          ();
+      }
+  };
+  ref_get(new_vec_ref);
+}
+
+fn vec_cons_subst(elem: (string, Typ), vec: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+  let new_vec = vec_new();
+  let new_vec = vec_push(new_vec, elem);
+  let i = ref(0);
+  let len = vec_len(vec);
+  let new_vec_ref = ref(new_vec);
+  let _ = while ref_get(i) < len {
+      {
+          let nv = ref_get(new_vec_ref);
+          let nv = vec_push(nv, vec_get(vec, ref_get(i)));
+          let _ = ref_set(new_vec_ref, nv);
+          let _ = ref_set(i, ref_get(i) + 1);
+          ();
+      }
+  };
+  ref_get(new_vec_ref);
+}
+
+fn vec_find_assoc(vec: Vec[(string, Typ)], key: string) -> Option[Typ] {
+  let i = ref(0);
+  let len = vec_len(vec);
+  let result = ref(Option::None);
+  let _ = while ref_get(i) < len {
+      {
+          let pair = vec_get(vec, ref_get(i));
+          let (k, v) = pair;
+          let _ = if k == key {
+              {
+                  ref_set(result, Option::Some(v));
+              }
+          } else {
+              {
+                  ();
+              }
+          };
+          ref_set(i, ref_get(i) + 1);
+      }
+  };
+  ref_get(result);
+}
+
+fn env_lookup(env: Vec[(string, Typ)], name: string) -> Option[Typ] {
+  vec_find_assoc(env, name);
+}
+
+fn typeof(st: Ref[State], env: Vec[(string, Typ)], exp: Exp) -> Result[Typ, string] {
+  match exp {
+      Exp::Var(x) => {
+            match env_lookup(env, x) {
+                Option::Some(ty) => Result::Ok(inst(st, ty)),
+                Option::None => Result::Err("unbound var"),
+            };
+        },
+      Exp::Lam(x, e) => {
+            let ty_x = newvar(st);
+            let new_env = vec_cons_env((x, ty_x), env);
+            match typeof(st, new_env, ref_get(e)) {
+                Result::Ok(ty_e) => Result::Ok(Typ::TArrow(ref(ty_x), ref(ty_e))),
+                Result::Err(e) => Result::Err(e),
+            };
+        },
+      Exp::App(e1, e2) => {
+            match typeof(st, env, ref_get(e1)) {
+                Result::Ok(ty_fun) => {
+                      match typeof(st, env, ref_get(e2)) {
+                          Result::Ok(ty_arg) => {
+                                let ty_res = newvar(st);
+                                match unify(st, ty_fun, Typ::TArrow(ref(ty_arg), ref(ty_res))) {
+                                    Result::Ok(_) => Result::Ok(ty_res),
+                                    Result::Err(e) => Result::Err(e),
+                                };
+                            },
+                          Result::Err(e) => Result::Err(e),
+                      };
+                  },
+                Result::Err(e) => Result::Err(e),
+            };
+        },
+      Exp::Let(x, e, e2) => {
+            let _ = enter_level(st);
+            let ty_e_result = typeof(st, env, ref_get(e));
+            let _ = leave_level(st);
+            match ty_e_result {
+                Result::Ok(ty_e) => {
+                      let gen_ty = gen(st, ty_e);
+                      let new_env = vec_cons_env((x, gen_ty), env);
+                      typeof(st, new_env, ref_get(e2));
+                  },
+                Result::Err(e) => Result::Err(e),
+            };
+        },
+  };
+}
+
+fn mk_id() -> Exp {
+  Exp::Lam("x", ref(Exp::Var("x")));
+}
+
+fn mk_c1() -> Exp {
+  Exp::Lam("x", ref(Exp::Lam("y", ref(Exp::App(ref(Exp::Var("x")), ref(Exp::Var("y")))))));
+}
+
+fn test1(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let ty = typeof(st, empty_env, mk_id());
+  match ty {
+      Result::Ok(_) => println("test1: OK"),
+      Result::Err(e) => println("test1: " + e),
+  };
+}
+
+fn test2(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let ty = typeof(st, empty_env, mk_c1());
+  match ty {
+      Result::Ok(_) => println("test2: OK"),
+      Result::Err(e) => println("test2: " + e),
+  };
+}
+
+fn test3(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Let("x", ref(mk_c1()), ref(Exp::Var("x")));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test3: OK"),
+      Result::Err(e) => println("test3: " + e),
+  };
+}
+
+fn test4(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Let("y", ref(Exp::Lam("z", ref(Exp::Var("z")))), ref(Exp::Var("y")));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test4: OK"),
+      Result::Err(e) => println("test4: " + e),
+  };
+}
+
+fn test5(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Lam("z", ref(Exp::Var("z")))), ref(Exp::Var("y")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test5: OK"),
+      Result::Err(e) => println("test5: " + e),
+  };
+}
+
+fn test6(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Lam("z", ref(Exp::Var("z")))), ref(Exp::App(ref(Exp::Var("y")), ref(Exp::Var("x")))))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test6: OK"),
+      Result::Err(e) => println("test6: " + e),
+  };
+}
+
+fn test7(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::App(ref(Exp::Var("x")), ref(Exp::Var("x")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test7: FAIL - should have failed"),
+      Result::Err(e) => println(e),
+  };
+}
+
+fn test8(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Let("x", ref(Exp::Var("x")), ref(Exp::Var("x")));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test8: FAIL - should have failed"),
+      Result::Err(e) => println(e),
+  };
+}
+
+fn test9(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("y", ref(Exp::App(ref(Exp::Var("y")), ref(Exp::Lam("z", ref(Exp::App(ref(Exp::Var("y")), ref(Exp::Var("z")))))))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test9: FAIL - should have failed"),
+      Result::Err(e) => println(e),
+  };
+}
+
+fn test10(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let id_exp = ref(mk_id());
+  let exp = Exp::Let("id", id_exp, ref(Exp::App(ref(Exp::Var("id")), ref(Exp::Var("id")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test10: OK"),
+      Result::Err(e) => println("test10: " + e),
+  };
+}
+
+fn test11(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let id_exp = ref(mk_id());
+  let z_app = Exp::App(ref(Exp::Var("x")), id_exp);
+  let let_z = Exp::Let("z", ref(z_app), ref(Exp::Var("z")));
+  let let_y = Exp::Let("y", ref(let_z), ref(Exp::Var("y")));
+  let exp = Exp::Let("x", ref(mk_c1()), ref(let_y));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test11: OK"),
+      Result::Err(e) => println("test11: " + e),
+  };
+}
+
+fn test12(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let inner_lam = Exp::Lam("x", ref(Exp::App(ref(Exp::Var("y")), ref(Exp::Var("x")))));
+  let let_x = Exp::Let("x", ref(Exp::App(ref(Exp::Var("x")), ref(Exp::Var("y")))), ref(inner_lam));
+  let exp = Exp::Lam("x", ref(Exp::Lam("y", ref(let_x))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test12: OK"),
+      Result::Err(e) => println("test12: " + e),
+  };
+}
+
+fn test13(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Var("x")), ref(Exp::Var("y")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test13: OK"),
+      Result::Err(e) => println("test13: " + e),
+  };
+}
+
+fn test14(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Lam("z", ref(Exp::Var("x")))), ref(Exp::Var("y")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test14: OK"),
+      Result::Err(e) => println("test14: " + e),
+  };
+}
+
+fn test15(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Lam("z", ref(Exp::App(ref(Exp::Var("x")), ref(Exp::Var("z")))))), ref(Exp::Var("y")))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test15: OK"),
+      Result::Err(e) => println("test15: " + e),
+  };
+}
+
+fn test16(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let inner_app = Exp::App(ref(Exp::Var("x")), ref(Exp::Var("y")));
+  let let_x = Exp::Let("x", ref(Exp::App(ref(Exp::Var("x")), ref(Exp::Var("y")))), ref(inner_app));
+  let exp = Exp::Lam("x", ref(Exp::Lam("y", ref(let_x))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test16: OK"),
+      Result::Err(e) => println("test16: " + e),
+  };
+}
+
+fn test17(st: Ref[State]) -> unit {
+  let _ = reset_type_variables(st);
+  let empty_env = vec_new();
+  let exp = Exp::Lam("x", ref(Exp::Let("y", ref(Exp::Var("x")), ref(Exp::App(ref(Exp::Var("y")), ref(Exp::Var("y")))))));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test17: FAIL - should have failed"),
+      Result::Err(e) => println(e),
+  };
+}
+
+fn test18(st: Ref[State]) -> unit {
+  let _ = reset_gensym(st);
+  let empty_env = vec_new();
+  let id_exp = ref(mk_id());
+  let z_app = Exp::App(ref(Exp::Var("x")), id_exp);
+  let let_z = Exp::Let("z", ref(z_app), ref(Exp::Var("z")));
+  let let_y = Exp::Let("y", ref(let_z), ref(Exp::Var("y")));
+  let exp = Exp::Lam("x", ref(let_y));
+  let ty = typeof(st, empty_env, exp);
+  match ty {
+      Result::Ok(_) => println("test18: OK"),
+      Result::Err(e) => println("test18: " + e),
+  };
+}
+
+fn main() -> unit {
+  let st = ref(state_new());
+  let _ = test1(st);
+  let _ = test2(st);
+  let _ = test3(st);
+  let _ = test4(st);
+  let _ = test5(st);
+  let _ = test6(st);
+  let _ = test7(st);
+  let _ = test8(st);
+  let _ = test9(st);
+  let _ = test10(st);
+  let _ = test11(st);
+  let _ = test12(st);
+  let _ = test13(st);
+  let _ = test14(st);
+  let _ = test15(st);
+  let _ = test16(st);
+  let _ = test17(st);
+  let _ = test18(st);
+  println("\\nAll Done\\n");
+}
+

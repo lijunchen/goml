@@ -1,0 +1,597 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
+fn state_new() -> State {
+    State { gensym_counter: (ref : (int32) -> Ref[int32])(0), current_level: (ref : (int32) -> Ref[int32])(1) };
+}
+
+fn reset_gensym(st/0: Ref[State]) -> unit {
+    let s/1: State = (ref_get : (Ref[State]) -> State)((st/0 : Ref[State]));
+    (ref_set : (Ref[int32], int32) -> unit)((s/1 : State).gensym_counter, 0);
+}
+
+fn gensym(st/2: Ref[State]) -> string {
+    let s/3: State = (ref_get : (Ref[State]) -> State)((st/2 : Ref[State]));
+    let n/4: int32 = (ref_get : (Ref[int32]) -> int32)((s/3 : State).gensym_counter);
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((s/3 : State).gensym_counter, (n/4 : int32) + 1);
+    if (n/4 : int32) < 26 {
+        {
+            let c/5: char = (string_get : (string, int32) -> char)("abcdefghijklmnopqrstuvwxyz", (n/4 : int32));
+            (char_to_string : (char) -> string)((c/5 : char));
+        }
+    } else {
+        {
+            "t" + (int32_to_string : (int32) -> string)((n/4 : int32));
+        }
+    };
+}
+
+fn reset_level(st/6: Ref[State]) -> unit {
+    let s/7: State = (ref_get : (Ref[State]) -> State)((st/6 : Ref[State]));
+    (ref_set : (Ref[int32], int32) -> unit)((s/7 : State).current_level, 1);
+}
+
+fn reset_type_variables(st/8: Ref[State]) -> unit {
+    let _ : unit = (reset_gensym : (Ref[State]) -> unit)((st/8 : Ref[State]));
+    (reset_level : (Ref[State]) -> unit)((st/8 : Ref[State]));
+}
+
+fn enter_level(st/9: Ref[State]) -> unit {
+    let s/10: State = (ref_get : (Ref[State]) -> State)((st/9 : Ref[State]));
+    let lv/11: int32 = (ref_get : (Ref[int32]) -> int32)((s/10 : State).current_level);
+    (ref_set : (Ref[int32], int32) -> unit)((s/10 : State).current_level, (lv/11 : int32) + 1);
+}
+
+fn leave_level(st/12: Ref[State]) -> unit {
+    let s/13: State = (ref_get : (Ref[State]) -> State)((st/12 : Ref[State]));
+    let lv/14: int32 = (ref_get : (Ref[int32]) -> int32)((s/13 : State).current_level);
+    (ref_set : (Ref[int32], int32) -> unit)((s/13 : State).current_level, (lv/14 : int32) - 1);
+}
+
+fn newvar(st/15: Ref[State]) -> Typ {
+    let s/16: State = (ref_get : (Ref[State]) -> State)((st/15 : Ref[State]));
+    let id/17: int32 = (ref_get : (Ref[int32]) -> int32)((s/16 : State).gensym_counter);
+    let name/18: string = (gensym : (Ref[State]) -> string)((st/15 : Ref[State]));
+    let level/19: int32 = (ref_get : (Ref[int32]) -> int32)((s/16 : State).current_level);
+    Typ::TVar((ref : (TvContent) -> Ref[TvContent])(TvContent::Unbound((id/17 : int32), (name/18 : string), (level/19 : int32))));
+}
+
+fn min_int32(a/20: int32, b/21: int32) -> int32 {
+    if (a/20 : int32) < (b/21 : int32) {
+        {
+            (a/20 : int32);
+        }
+    } else {
+        {
+            (b/21 : int32);
+        }
+    };
+}
+
+fn occurs(st/22: Ref[State], tvr/23: Ref[TvContent], tvr_id/24: int32, ty/25: Typ) -> Result[unit, string] {
+    match (ty/25 : Typ) {
+        Typ::TVar(tvr2/26: Ref[TvContent]) => {
+              let tv_content/27: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tvr/23 : Ref[TvContent]));
+              let tv_content2/28: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tvr2/26 : Ref[TvContent]));
+              match ((tv_content/27 : TvContent), (tv_content2/28 : TvContent)) {
+                  (TvContent::Unbound(_ : int32, _ : string, l/29: int32), TvContent::Link(linked_ty/30: Ref[Typ])) => {
+                        (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/22 : Ref[State]), (tvr/23 : Ref[TvContent]), (tvr_id/24 : int32), (ref_get : (Ref[Typ]) -> Typ)((linked_ty/30 : Ref[Typ])));
+                    },
+                  (TvContent::Unbound(_ : int32, _ : string, l/31: int32), TvContent::Unbound(id2/32: int32, name2/33: string, l2/34: int32)) => {
+                        if (tvr_id/24 : int32) == (id2/32 : int32) {
+                            {
+                                Result::Err("occurs check");
+                            }
+                        } else {
+                            {
+                                let min_level/35: int32 = (min_int32 : (int32, int32) -> int32)((l/31 : int32), (l2/34 : int32));
+                                let _ : unit = (ref_set : (Ref[TvContent], TvContent) -> unit)((tvr2/26 : Ref[TvContent]), TvContent::Unbound((id2/32 : int32), (name2/33 : string), (min_level/35 : int32)));
+                                Result::Ok(());
+                            }
+                        };
+                    },
+                  (_ : TvContent, TvContent::Unbound(id2/36: int32, name2/37: string, l2/38: int32)) => {
+                        let _ : unit = (ref_set : (Ref[TvContent], TvContent) -> unit)((tvr2/26 : Ref[TvContent]), TvContent::Unbound((id2/36 : int32), (name2/37 : string), (l2/38 : int32)));
+                        Result::Ok(());
+                    },
+                  _ : (TvContent, TvContent) => Result::Ok(()),
+              };
+          },
+        Typ::TArrow(t1/39: Ref[Typ], t2/40: Ref[Typ]) => {
+              match (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/22 : Ref[State]), (tvr/23 : Ref[TvContent]), (tvr_id/24 : int32), (ref_get : (Ref[Typ]) -> Typ)((t1/39 : Ref[Typ]))) {
+                  Result::Ok(_ : unit) => (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/22 : Ref[State]), (tvr/23 : Ref[TvContent]), (tvr_id/24 : int32), (ref_get : (Ref[Typ]) -> Typ)((t2/40 : Ref[Typ]))),
+                  Result::Err(e/41: string) => Result::Err((e/41 : string)),
+              };
+          },
+        _ : Typ => Result::Ok(()),
+    };
+}
+
+fn unify(st/42: Ref[State], t1/43: Typ, t2/44: Typ) -> Result[unit, string] {
+    match ((t1/43 : Typ), (t2/44 : Typ)) {
+        (Typ::TVar(tv1/45: Ref[TvContent]), Typ::TVar(tv2/46: Ref[TvContent])) => {
+              let c1/47: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv1/45 : Ref[TvContent]));
+              let c2/48: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv2/46 : Ref[TvContent]));
+              match ((c1/47 : TvContent), (c2/48 : TvContent)) {
+                  (TvContent::Unbound(id1/49: int32, _ : string, _ : int32), TvContent::Unbound(id2/50: int32, _ : string, _ : int32)) => {
+                        if (id1/49 : int32) == (id2/50 : int32) {
+                            {
+                                Result::Ok(());
+                            }
+                        } else {
+                            {
+                                match (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/42 : Ref[State]), (tv1/45 : Ref[TvContent]), (id1/49 : int32), Typ::TVar((tv2/46 : Ref[TvContent]))) {
+                                    Result::Ok(_ : unit) => {
+                                          let _ : unit = (ref_set : (Ref[TvContent], TvContent) -> unit)((tv1/45 : Ref[TvContent]), TvContent::Link((ref : (Typ) -> Ref[Typ])(Typ::TVar((tv2/46 : Ref[TvContent])))));
+                                          Result::Ok(());
+                                      },
+                                    Result::Err(e/51: string) => Result::Err((e/51 : string)),
+                                };
+                            }
+                        };
+                    },
+                  (TvContent::Link(ty1/52: Ref[Typ]), _ : TvContent) => (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((ty1/52 : Ref[Typ])), Typ::TVar((tv2/46 : Ref[TvContent]))),
+                  (_ : TvContent, TvContent::Link(ty2/53: Ref[Typ])) => (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), Typ::TVar((tv1/45 : Ref[TvContent])), (ref_get : (Ref[Typ]) -> Typ)((ty2/53 : Ref[Typ]))),
+              };
+          },
+        (Typ::TVar(tv/54: Ref[TvContent]), t/55: Typ) => {
+              let c/56: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv/54 : Ref[TvContent]));
+              match (c/56 : TvContent) {
+                  TvContent::Link(ty/57: Ref[Typ]) => (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((ty/57 : Ref[Typ])), (t/55 : Typ)),
+                  TvContent::Unbound(id/58: int32, _ : string, _ : int32) => {
+                        match (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/42 : Ref[State]), (tv/54 : Ref[TvContent]), (id/58 : int32), (t/55 : Typ)) {
+                            Result::Ok(_ : unit) => {
+                                  let _ : unit = (ref_set : (Ref[TvContent], TvContent) -> unit)((tv/54 : Ref[TvContent]), TvContent::Link((ref : (Typ) -> Ref[Typ])((t/55 : Typ))));
+                                  Result::Ok(());
+                              },
+                            Result::Err(e/59: string) => Result::Err((e/59 : string)),
+                        };
+                    },
+              };
+          },
+        (t/60: Typ, Typ::TVar(tv/61: Ref[TvContent])) => {
+              let c/62: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv/61 : Ref[TvContent]));
+              match (c/62 : TvContent) {
+                  TvContent::Link(ty/63: Ref[Typ]) => (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), (t/60 : Typ), (ref_get : (Ref[Typ]) -> Typ)((ty/63 : Ref[Typ]))),
+                  TvContent::Unbound(id/64: int32, _ : string, _ : int32) => {
+                        match (occurs : (Ref[State], Ref[TvContent], int32, Typ) -> Result[unit, string])((st/42 : Ref[State]), (tv/61 : Ref[TvContent]), (id/64 : int32), (t/60 : Typ)) {
+                            Result::Ok(_ : unit) => {
+                                  let _ : unit = (ref_set : (Ref[TvContent], TvContent) -> unit)((tv/61 : Ref[TvContent]), TvContent::Link((ref : (Typ) -> Ref[Typ])((t/60 : Typ))));
+                                  Result::Ok(());
+                              },
+                            Result::Err(e/65: string) => Result::Err((e/65 : string)),
+                        };
+                    },
+              };
+          },
+        (Typ::TArrow(t1a/66: Ref[Typ], t1b/67: Ref[Typ]), Typ::TArrow(t2a/68: Ref[Typ], t2b/69: Ref[Typ])) => {
+              match (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t1a/66 : Ref[Typ])), (ref_get : (Ref[Typ]) -> Typ)((t2a/68 : Ref[Typ]))) {
+                  Result::Ok(_ : unit) => (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/42 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t1b/67 : Ref[Typ])), (ref_get : (Ref[Typ]) -> Typ)((t2b/69 : Ref[Typ]))),
+                  Result::Err(e/70: string) => Result::Err((e/70 : string)),
+              };
+          },
+        _ : (Typ, Typ) => Result::Err("unification error"),
+    };
+}
+
+fn gen(st/71: Ref[State], ty/72: Typ) -> Typ {
+    let s/73: State = (ref_get : (Ref[State]) -> State)((st/71 : Ref[State]));
+    let curr_level/74: int32 = (ref_get : (Ref[int32]) -> int32)((s/73 : State).current_level);
+    match (ty/72 : Typ) {
+        Typ::TVar(tv/75: Ref[TvContent]) => {
+              let c/76: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv/75 : Ref[TvContent]));
+              match (c/76 : TvContent) {
+                  TvContent::Unbound(_ : int32, name/77: string, l/78: int32) => {
+                        if (l/78 : int32) > (curr_level/74 : int32) {
+                            {
+                                Typ::QVar((name/77 : string));
+                            }
+                        } else {
+                            {
+                                Typ::TVar((tv/75 : Ref[TvContent]));
+                            }
+                        };
+                    },
+                  TvContent::Link(linked_ty/79: Ref[Typ]) => (gen : (Ref[State], Typ) -> Typ)((st/71 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((linked_ty/79 : Ref[Typ]))),
+              };
+          },
+        Typ::TArrow(t1/80: Ref[Typ], t2/81: Ref[Typ]) => {
+              Typ::TArrow((ref : (Typ) -> Ref[Typ])((gen : (Ref[State], Typ) -> Typ)((st/71 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t1/80 : Ref[Typ])))), (ref : (Typ) -> Ref[Typ])((gen : (Ref[State], Typ) -> Typ)((st/71 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t2/81 : Ref[Typ])))));
+          },
+        _ : Typ => (ty/72 : Typ),
+    };
+}
+
+fn inst_helper(st/82: Ref[State], ty/83: Typ, subst/84: Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]) {
+    match (ty/83 : Typ) {
+        Typ::QVar(name/85: string) => {
+              let found/86: Option[Typ] = (vec_find_assoc : (Vec[(string, Typ)], string) -> Option[Typ])((subst/84 : Vec[(string, Typ)]), (name/85 : string));
+              match (found/86 : Option[Typ]) {
+                  Option::Some(t/87: Typ) => ((t/87 : Typ), (subst/84 : Vec[(string, Typ)])),
+                  Option::None => {
+                        let tv/88: Typ = (newvar : (Ref[State]) -> Typ)((st/82 : Ref[State]));
+                        let new_subst/89: Vec[(string, Typ)] = (vec_cons_subst : ((string, Typ), Vec[(string, Typ)]) -> Vec[(string, Typ)])(((name/85 : string), (tv/88 : Typ)), (subst/84 : Vec[(string, Typ)]));
+                        ((tv/88 : Typ), (new_subst/89 : Vec[(string, Typ)]));
+                    },
+              };
+          },
+        Typ::TVar(tv/90: Ref[TvContent]) => {
+              let c/91: TvContent = (ref_get : (Ref[TvContent]) -> TvContent)((tv/90 : Ref[TvContent]));
+              match (c/91 : TvContent) {
+                  TvContent::Link(linked_ty/92: Ref[Typ]) => (inst_helper : (Ref[State], Typ, Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]))((st/82 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((linked_ty/92 : Ref[Typ])), (subst/84 : Vec[(string, Typ)])),
+                  _ : TvContent => (Typ::TVar((tv/90 : Ref[TvContent])), (subst/84 : Vec[(string, Typ)])),
+              };
+          },
+        Typ::TArrow(t1/93: Ref[Typ], t2/94: Ref[Typ]) => {
+              let pair1/95: (Typ, Vec[(string, Typ)]) = (inst_helper : (Ref[State], Typ, Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]))((st/82 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t1/93 : Ref[Typ])), (subst/84 : Vec[(string, Typ)]));
+              let (ty1/96: Typ, subst1/97: Vec[(string, Typ)]) = (pair1/95 : (Typ, Vec[(string, Typ)]));
+              let pair2/98: (Typ, Vec[(string, Typ)]) = (inst_helper : (Ref[State], Typ, Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]))((st/82 : Ref[State]), (ref_get : (Ref[Typ]) -> Typ)((t2/94 : Ref[Typ])), (subst1/97 : Vec[(string, Typ)]));
+              let (ty2/99: Typ, subst2/100: Vec[(string, Typ)]) = (pair2/98 : (Typ, Vec[(string, Typ)]));
+              (Typ::TArrow((ref : (Typ) -> Ref[Typ])((ty1/96 : Typ)), (ref : (Typ) -> Ref[Typ])((ty2/99 : Typ))), (subst2/100 : Vec[(string, Typ)]));
+          },
+    };
+}
+
+fn inst(st/101: Ref[State], ty/102: Typ) -> Typ {
+    let empty_subst/103: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let result/104: (Typ, Vec[(string, Typ)]) = (inst_helper : (Ref[State], Typ, Vec[(string, Typ)]) -> (Typ, Vec[(string, Typ)]))((st/101 : Ref[State]), (ty/102 : Typ), (empty_subst/103 : Vec[(string, Typ)]));
+    let (ty_result/105: Typ, _ : Vec[(string, Typ)]) = (result/104 : (Typ, Vec[(string, Typ)]));
+    (ty_result/105 : Typ);
+}
+
+fn vec_cons_env(elem/106: (string, Typ), vec/107: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+    let new_vec/108: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let new_vec/109: Vec[(string, Typ)] = (vec_push : (Vec[(string, Typ)], (string, Typ)) -> Vec[(string, Typ)])((new_vec/108 : Vec[(string, Typ)]), (elem/106 : (string, Typ)));
+    let i/110: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let len/111: int32 = (vec_len : (Vec[(string, Typ)]) -> int32)((vec/107 : Vec[(string, Typ)]));
+    let new_vec_ref/112: Ref[Vec[(string, Typ)]] = (ref : (Vec[(string, Typ)]) -> Ref[Vec[(string, Typ)]])((new_vec/109 : Vec[(string, Typ)]));
+    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/110 : Ref[int32])) < (len/111 : int32) {
+        {
+            let nv/113: Vec[(string, Typ)] = (ref_get : (Ref[Vec[(string, Typ)]]) -> Vec[(string, Typ)])((new_vec_ref/112 : Ref[Vec[(string, Typ)]]));
+            let nv/114: Vec[(string, Typ)] = (vec_push : (Vec[(string, Typ)], (string, Typ)) -> Vec[(string, Typ)])((nv/113 : Vec[(string, Typ)]), (vec_get : (Vec[(string, Typ)], int32) -> (string, Typ))((vec/107 : Vec[(string, Typ)]), (ref_get : (Ref[int32]) -> int32)((i/110 : Ref[int32]))));
+            let _ : unit = (ref_set : (Ref[Vec[(string, Typ)]], Vec[(string, Typ)]) -> unit)((new_vec_ref/112 : Ref[Vec[(string, Typ)]]), (nv/114 : Vec[(string, Typ)]));
+            let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/110 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/110 : Ref[int32])) + 1);
+            ();
+        }
+    };
+    (ref_get : (Ref[Vec[(string, Typ)]]) -> Vec[(string, Typ)])((new_vec_ref/112 : Ref[Vec[(string, Typ)]]));
+}
+
+fn vec_cons_subst(elem/115: (string, Typ), vec/116: Vec[(string, Typ)]) -> Vec[(string, Typ)] {
+    let new_vec/117: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let new_vec/118: Vec[(string, Typ)] = (vec_push : (Vec[(string, Typ)], (string, Typ)) -> Vec[(string, Typ)])((new_vec/117 : Vec[(string, Typ)]), (elem/115 : (string, Typ)));
+    let i/119: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let len/120: int32 = (vec_len : (Vec[(string, Typ)]) -> int32)((vec/116 : Vec[(string, Typ)]));
+    let new_vec_ref/121: Ref[Vec[(string, Typ)]] = (ref : (Vec[(string, Typ)]) -> Ref[Vec[(string, Typ)]])((new_vec/118 : Vec[(string, Typ)]));
+    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/119 : Ref[int32])) < (len/120 : int32) {
+        {
+            let nv/122: Vec[(string, Typ)] = (ref_get : (Ref[Vec[(string, Typ)]]) -> Vec[(string, Typ)])((new_vec_ref/121 : Ref[Vec[(string, Typ)]]));
+            let nv/123: Vec[(string, Typ)] = (vec_push : (Vec[(string, Typ)], (string, Typ)) -> Vec[(string, Typ)])((nv/122 : Vec[(string, Typ)]), (vec_get : (Vec[(string, Typ)], int32) -> (string, Typ))((vec/116 : Vec[(string, Typ)]), (ref_get : (Ref[int32]) -> int32)((i/119 : Ref[int32]))));
+            let _ : unit = (ref_set : (Ref[Vec[(string, Typ)]], Vec[(string, Typ)]) -> unit)((new_vec_ref/121 : Ref[Vec[(string, Typ)]]), (nv/123 : Vec[(string, Typ)]));
+            let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/119 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/119 : Ref[int32])) + 1);
+            ();
+        }
+    };
+    (ref_get : (Ref[Vec[(string, Typ)]]) -> Vec[(string, Typ)])((new_vec_ref/121 : Ref[Vec[(string, Typ)]]));
+}
+
+fn vec_find_assoc(vec/124: Vec[(string, Typ)], key/125: string) -> Option[Typ] {
+    let i/126: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let len/127: int32 = (vec_len : (Vec[(string, Typ)]) -> int32)((vec/124 : Vec[(string, Typ)]));
+    let result/128: Ref[Option[Typ]] = (ref : (Option[Typ]) -> Ref[Option[Typ]])(Option::None);
+    let _ : unit = while (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) < (len/127 : int32) {
+        {
+            let pair/129: (string, Typ) = (vec_get : (Vec[(string, Typ)], int32) -> (string, Typ))((vec/124 : Vec[(string, Typ)]), (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])));
+            let (k/130: string, v/131: Typ) = (pair/129 : (string, Typ));
+            let _ : unit = if (k/130 : string) == (key/125 : string) {
+                {
+                    (ref_set : (Ref[Option[Typ]], Option[Typ]) -> unit)((result/128 : Ref[Option[Typ]]), Option::Some((v/131 : Typ)));
+                }
+            } else {
+                {
+                    ();
+                }
+            };
+            (ref_set : (Ref[int32], int32) -> unit)((i/126 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/126 : Ref[int32])) + 1);
+        }
+    };
+    (ref_get : (Ref[Option[Typ]]) -> Option[Typ])((result/128 : Ref[Option[Typ]]));
+}
+
+fn env_lookup(env/132: Vec[(string, Typ)], name/133: string) -> Option[Typ] {
+    (vec_find_assoc : (Vec[(string, Typ)], string) -> Option[Typ])((env/132 : Vec[(string, Typ)]), (name/133 : string));
+}
+
+fn typeof(st/134: Ref[State], env/135: Vec[(string, Typ)], exp/136: Exp) -> Result[Typ, string] {
+    match (exp/136 : Exp) {
+        Exp::Var(x/137: string) => {
+              match (env_lookup : (Vec[(string, Typ)], string) -> Option[Typ])((env/135 : Vec[(string, Typ)]), (x/137 : string)) {
+                  Option::Some(ty/138: Typ) => Result::Ok((inst : (Ref[State], Typ) -> Typ)((st/134 : Ref[State]), (ty/138 : Typ))),
+                  Option::None => Result::Err("unbound var"),
+              };
+          },
+        Exp::Lam(x/139: string, e/140: Ref[Exp]) => {
+              let ty_x/141: Typ = (newvar : (Ref[State]) -> Typ)((st/134 : Ref[State]));
+              let new_env/142: Vec[(string, Typ)] = (vec_cons_env : ((string, Typ), Vec[(string, Typ)]) -> Vec[(string, Typ)])(((x/139 : string), (ty_x/141 : Typ)), (env/135 : Vec[(string, Typ)]));
+              match (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/134 : Ref[State]), (new_env/142 : Vec[(string, Typ)]), (ref_get : (Ref[Exp]) -> Exp)((e/140 : Ref[Exp]))) {
+                  Result::Ok(ty_e/143: Typ) => Result::Ok(Typ::TArrow((ref : (Typ) -> Ref[Typ])((ty_x/141 : Typ)), (ref : (Typ) -> Ref[Typ])((ty_e/143 : Typ)))),
+                  Result::Err(e/144: string) => Result::Err((e/144 : string)),
+              };
+          },
+        Exp::App(e1/145: Ref[Exp], e2/146: Ref[Exp]) => {
+              match (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/134 : Ref[State]), (env/135 : Vec[(string, Typ)]), (ref_get : (Ref[Exp]) -> Exp)((e1/145 : Ref[Exp]))) {
+                  Result::Ok(ty_fun/147: Typ) => {
+                        match (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/134 : Ref[State]), (env/135 : Vec[(string, Typ)]), (ref_get : (Ref[Exp]) -> Exp)((e2/146 : Ref[Exp]))) {
+                            Result::Ok(ty_arg/148: Typ) => {
+                                  let ty_res/149: Typ = (newvar : (Ref[State]) -> Typ)((st/134 : Ref[State]));
+                                  match (unify : (Ref[State], Typ, Typ) -> Result[unit, string])((st/134 : Ref[State]), (ty_fun/147 : Typ), Typ::TArrow((ref : (Typ) -> Ref[Typ])((ty_arg/148 : Typ)), (ref : (Typ) -> Ref[Typ])((ty_res/149 : Typ)))) {
+                                      Result::Ok(_ : unit) => Result::Ok((ty_res/149 : Typ)),
+                                      Result::Err(e/150: string) => Result::Err((e/150 : string)),
+                                  };
+                              },
+                            Result::Err(e/151: string) => Result::Err((e/151 : string)),
+                        };
+                    },
+                  Result::Err(e/152: string) => Result::Err((e/152 : string)),
+              };
+          },
+        Exp::Let(x/153: string, e/154: Ref[Exp], e2/155: Ref[Exp]) => {
+              let _ : unit = (enter_level : (Ref[State]) -> unit)((st/134 : Ref[State]));
+              let ty_e_result/156: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/134 : Ref[State]), (env/135 : Vec[(string, Typ)]), (ref_get : (Ref[Exp]) -> Exp)((e/154 : Ref[Exp])));
+              let _ : unit = (leave_level : (Ref[State]) -> unit)((st/134 : Ref[State]));
+              match (ty_e_result/156 : Result[Typ, string]) {
+                  Result::Ok(ty_e/157: Typ) => {
+                        let gen_ty/158: Typ = (gen : (Ref[State], Typ) -> Typ)((st/134 : Ref[State]), (ty_e/157 : Typ));
+                        let new_env/159: Vec[(string, Typ)] = (vec_cons_env : ((string, Typ), Vec[(string, Typ)]) -> Vec[(string, Typ)])(((x/153 : string), (gen_ty/158 : Typ)), (env/135 : Vec[(string, Typ)]));
+                        (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/134 : Ref[State]), (new_env/159 : Vec[(string, Typ)]), (ref_get : (Ref[Exp]) -> Exp)((e2/155 : Ref[Exp])));
+                    },
+                  Result::Err(e/160: string) => Result::Err((e/160 : string)),
+              };
+          },
+    };
+}
+
+fn mk_id() -> Exp {
+    Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Var("x")));
+}
+
+fn mk_c1() -> Exp {
+    Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Lam("y", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))))));
+}
+
+fn test1(st/161: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/161 : Ref[State]));
+    let empty_env/162: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let ty/163: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/161 : Ref[State]), (empty_env/162 : Vec[(string, Typ)]), (mk_id : () -> Exp)());
+    match (ty/163 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test1: OK"),
+        Result::Err(e/164: string) => (println : (string) -> unit)("test1: " + (e/164 : string)),
+    };
+}
+
+fn test2(st/165: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/165 : Ref[State]));
+    let empty_env/166: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let ty/167: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/165 : Ref[State]), (empty_env/166 : Vec[(string, Typ)]), (mk_c1 : () -> Exp)());
+    match (ty/167 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test2: OK"),
+        Result::Err(e/168: string) => (println : (string) -> unit)("test2: " + (e/168 : string)),
+    };
+}
+
+fn test3(st/169: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/169 : Ref[State]));
+    let empty_env/170: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/171: Exp = Exp::Let("x", (ref : (Exp) -> Ref[Exp])((mk_c1 : () -> Exp)()), (ref : (Exp) -> Ref[Exp])(Exp::Var("x")));
+    let ty/172: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/169 : Ref[State]), (empty_env/170 : Vec[(string, Typ)]), (exp/171 : Exp));
+    match (ty/172 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test3: OK"),
+        Result::Err(e/173: string) => (println : (string) -> unit)("test3: " + (e/173 : string)),
+    };
+}
+
+fn test4(st/174: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/174 : Ref[State]));
+    let empty_env/175: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/176: Exp = Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::Var("z")))), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")));
+    let ty/177: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/174 : Ref[State]), (empty_env/175 : Vec[(string, Typ)]), (exp/176 : Exp));
+    match (ty/177 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test4: OK"),
+        Result::Err(e/178: string) => (println : (string) -> unit)("test4: " + (e/178 : string)),
+    };
+}
+
+fn test5(st/179: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/179 : Ref[State]));
+    let empty_env/180: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/181: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::Var("z")))), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))));
+    let ty/182: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/179 : Ref[State]), (empty_env/180 : Vec[(string, Typ)]), (exp/181 : Exp));
+    match (ty/182 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test5: OK"),
+        Result::Err(e/183: string) => (println : (string) -> unit)("test5: " + (e/183 : string)),
+    };
+}
+
+fn test6(st/184: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/184 : Ref[State]));
+    let empty_env/185: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/186: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::Var("z")))), (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("y")), (ref : (Exp) -> Ref[Exp])(Exp::Var("x")))))));
+    let ty/187: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/184 : Ref[State]), (empty_env/185 : Vec[(string, Typ)]), (exp/186 : Exp));
+    match (ty/187 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test6: OK"),
+        Result::Err(e/188: string) => (println : (string) -> unit)("test6: " + (e/188 : string)),
+    };
+}
+
+fn test7(st/189: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/189 : Ref[State]));
+    let empty_env/190: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/191: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("x")))));
+    let ty/192: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/189 : Ref[State]), (empty_env/190 : Vec[(string, Typ)]), (exp/191 : Exp));
+    match (ty/192 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test7: FAIL - should have failed"),
+        Result::Err(e/193: string) => (println : (string) -> unit)((e/193 : string)),
+    };
+}
+
+fn test8(st/194: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/194 : Ref[State]));
+    let empty_env/195: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/196: Exp = Exp::Let("x", (ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("x")));
+    let ty/197: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/194 : Ref[State]), (empty_env/195 : Vec[(string, Typ)]), (exp/196 : Exp));
+    match (ty/197 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test8: FAIL - should have failed"),
+        Result::Err(e/198: string) => (println : (string) -> unit)((e/198 : string)),
+    };
+}
+
+fn test9(st/199: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/199 : Ref[State]));
+    let empty_env/200: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/201: Exp = Exp::Lam("y", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("y")), (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("y")), (ref : (Exp) -> Ref[Exp])(Exp::Var("z")))))))));
+    let ty/202: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/199 : Ref[State]), (empty_env/200 : Vec[(string, Typ)]), (exp/201 : Exp));
+    match (ty/202 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test9: FAIL - should have failed"),
+        Result::Err(e/203: string) => (println : (string) -> unit)((e/203 : string)),
+    };
+}
+
+fn test10(st/204: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/204 : Ref[State]));
+    let empty_env/205: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let id_exp/206: Ref[Exp] = (ref : (Exp) -> Ref[Exp])((mk_id : () -> Exp)());
+    let exp/207: Exp = Exp::Let("id", (id_exp/206 : Ref[Exp]), (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("id")), (ref : (Exp) -> Ref[Exp])(Exp::Var("id")))));
+    let ty/208: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/204 : Ref[State]), (empty_env/205 : Vec[(string, Typ)]), (exp/207 : Exp));
+    match (ty/208 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test10: OK"),
+        Result::Err(e/209: string) => (println : (string) -> unit)("test10: " + (e/209 : string)),
+    };
+}
+
+fn test11(st/210: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/210 : Ref[State]));
+    let empty_env/211: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let id_exp/212: Ref[Exp] = (ref : (Exp) -> Ref[Exp])((mk_id : () -> Exp)());
+    let z_app/213: Exp = Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (id_exp/212 : Ref[Exp]));
+    let let_z/214: Exp = Exp::Let("z", (ref : (Exp) -> Ref[Exp])((z_app/213 : Exp)), (ref : (Exp) -> Ref[Exp])(Exp::Var("z")));
+    let let_y/215: Exp = Exp::Let("y", (ref : (Exp) -> Ref[Exp])((let_z/214 : Exp)), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")));
+    let exp/216: Exp = Exp::Let("x", (ref : (Exp) -> Ref[Exp])((mk_c1 : () -> Exp)()), (ref : (Exp) -> Ref[Exp])((let_y/215 : Exp)));
+    let ty/217: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/210 : Ref[State]), (empty_env/211 : Vec[(string, Typ)]), (exp/216 : Exp));
+    match (ty/217 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test11: OK"),
+        Result::Err(e/218: string) => (println : (string) -> unit)("test11: " + (e/218 : string)),
+    };
+}
+
+fn test12(st/219: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/219 : Ref[State]));
+    let empty_env/220: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let inner_lam/221: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("y")), (ref : (Exp) -> Ref[Exp])(Exp::Var("x")))));
+    let let_x/222: Exp = Exp::Let("x", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))), (ref : (Exp) -> Ref[Exp])((inner_lam/221 : Exp)));
+    let exp/223: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Lam("y", (ref : (Exp) -> Ref[Exp])((let_x/222 : Exp)))));
+    let ty/224: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/219 : Ref[State]), (empty_env/220 : Vec[(string, Typ)]), (exp/223 : Exp));
+    match (ty/224 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test12: OK"),
+        Result::Err(e/225: string) => (println : (string) -> unit)("test12: " + (e/225 : string)),
+    };
+}
+
+fn test13(st/226: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/226 : Ref[State]));
+    let empty_env/227: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/228: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))));
+    let ty/229: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/226 : Ref[State]), (empty_env/227 : Vec[(string, Typ)]), (exp/228 : Exp));
+    match (ty/229 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test13: OK"),
+        Result::Err(e/230: string) => (println : (string) -> unit)("test13: " + (e/230 : string)),
+    };
+}
+
+fn test14(st/231: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/231 : Ref[State]));
+    let empty_env/232: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/233: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::Var("x")))), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))));
+    let ty/234: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/231 : Ref[State]), (empty_env/232 : Vec[(string, Typ)]), (exp/233 : Exp));
+    match (ty/234 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test14: OK"),
+        Result::Err(e/235: string) => (println : (string) -> unit)("test14: " + (e/235 : string)),
+    };
+}
+
+fn test15(st/236: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/236 : Ref[State]));
+    let empty_env/237: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/238: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Lam("z", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("z")))))), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))));
+    let ty/239: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/236 : Ref[State]), (empty_env/237 : Vec[(string, Typ)]), (exp/238 : Exp));
+    match (ty/239 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test15: OK"),
+        Result::Err(e/240: string) => (println : (string) -> unit)("test15: " + (e/240 : string)),
+    };
+}
+
+fn test16(st/241: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/241 : Ref[State]));
+    let empty_env/242: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let inner_app/243: Exp = Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")));
+    let let_x/244: Exp = Exp::Let("x", (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))), (ref : (Exp) -> Ref[Exp])((inner_app/243 : Exp)));
+    let exp/245: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Lam("y", (ref : (Exp) -> Ref[Exp])((let_x/244 : Exp)))));
+    let ty/246: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/241 : Ref[State]), (empty_env/242 : Vec[(string, Typ)]), (exp/245 : Exp));
+    match (ty/246 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test16: OK"),
+        Result::Err(e/247: string) => (println : (string) -> unit)("test16: " + (e/247 : string)),
+    };
+}
+
+fn test17(st/248: Ref[State]) -> unit {
+    let _ : unit = (reset_type_variables : (Ref[State]) -> unit)((st/248 : Ref[State]));
+    let empty_env/249: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let exp/250: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])(Exp::Let("y", (ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (ref : (Exp) -> Ref[Exp])(Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("y")), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")))))));
+    let ty/251: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/248 : Ref[State]), (empty_env/249 : Vec[(string, Typ)]), (exp/250 : Exp));
+    match (ty/251 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test17: FAIL - should have failed"),
+        Result::Err(e/252: string) => (println : (string) -> unit)((e/252 : string)),
+    };
+}
+
+fn test18(st/253: Ref[State]) -> unit {
+    let _ : unit = (reset_gensym : (Ref[State]) -> unit)((st/253 : Ref[State]));
+    let empty_env/254: Vec[(string, Typ)] = (vec_new : () -> Vec[(string, Typ)])();
+    let id_exp/255: Ref[Exp] = (ref : (Exp) -> Ref[Exp])((mk_id : () -> Exp)());
+    let z_app/256: Exp = Exp::App((ref : (Exp) -> Ref[Exp])(Exp::Var("x")), (id_exp/255 : Ref[Exp]));
+    let let_z/257: Exp = Exp::Let("z", (ref : (Exp) -> Ref[Exp])((z_app/256 : Exp)), (ref : (Exp) -> Ref[Exp])(Exp::Var("z")));
+    let let_y/258: Exp = Exp::Let("y", (ref : (Exp) -> Ref[Exp])((let_z/257 : Exp)), (ref : (Exp) -> Ref[Exp])(Exp::Var("y")));
+    let exp/259: Exp = Exp::Lam("x", (ref : (Exp) -> Ref[Exp])((let_y/258 : Exp)));
+    let ty/260: Result[Typ, string] = (typeof : (Ref[State], Vec[(string, Typ)], Exp) -> Result[Typ, string])((st/253 : Ref[State]), (empty_env/254 : Vec[(string, Typ)]), (exp/259 : Exp));
+    match (ty/260 : Result[Typ, string]) {
+        Result::Ok(_ : Typ) => (println : (string) -> unit)("test18: OK"),
+        Result::Err(e/261: string) => (println : (string) -> unit)("test18: " + (e/261 : string)),
+    };
+}
+
+fn main() -> unit {
+    let st/262: Ref[State] = (ref : (State) -> Ref[State])((state_new : () -> State)());
+    let _ : unit = (test1 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test2 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test3 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test4 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test5 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test6 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test7 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test8 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test9 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test10 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test11 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test12 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test13 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test14 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test15 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test16 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test17 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    let _ : unit = (test18 : (Ref[State]) -> unit)((st/262 : Ref[State]));
+    (println : (string) -> unit)("\\nAll Done\\n");
+}
