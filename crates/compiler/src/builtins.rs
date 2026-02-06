@@ -133,7 +133,7 @@ pub fn builtin_interface_hash() -> String {
 fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {
     FnScheme {
         type_params: vec![],
-        constraints: (),
+        constraints: vec![],
         ty: tast::Ty::TFunc {
             params,
             ret_ty: Box::new(ret),
@@ -181,7 +181,7 @@ pub(super) fn builtin_inherent_methods()
         "to_string".to_string(),
         crate::env::FnScheme {
             type_params: vec![],
-            constraints: (),
+            constraints: vec![],
             ty: method_ty,
             origin: FnOrigin::Builtin,
         },
@@ -198,7 +198,7 @@ pub(super) fn builtin_inherent_methods()
         "to_string".to_string(),
         crate::env::FnScheme {
             type_params: vec![],
-            constraints: (),
+            constraints: vec![],
             ty: char_method_ty,
             origin: FnOrigin::Builtin,
         },

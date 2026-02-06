@@ -537,6 +537,10 @@ fn type_constructor_exists(env: &GlobalTypeEnv, name: &str) -> bool {
     env.enums().contains_key(&ident)
         || env.structs().contains_key(&ident)
         || env.type_env.extern_types.contains_key(name)
+        || env
+            .trait_env
+            .inherent_impls
+            .contains_key(&crate::env::InherentImplKey::Constr(name.to_string()))
 }
 
 pub(crate) fn resolve_trait_name<'a>(

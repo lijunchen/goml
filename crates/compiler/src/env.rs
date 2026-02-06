@@ -51,6 +51,12 @@ pub enum Constraint {
         #[serde(skip)]
         origin: Option<text_size::TextRange>,
     },
+    Implements {
+        trait_name: TastIdent,
+        for_ty: tast::Ty,
+        #[serde(skip)]
+        origin: Option<text_size::TextRange>,
+    },
     StructFieldAccess {
         expr_ty: tast::Ty,
         field: TastIdent,
@@ -72,10 +78,16 @@ pub enum FnOrigin {
     Compiler,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct FnConstraint {
+    pub type_param: String,
+    pub trait_name: TastIdent,
+}
+
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct FnScheme {
     pub type_params: Vec<String>,
-    pub constraints: (), // placeholder for future use
+    pub constraints: Vec<FnConstraint>,
     pub ty: tast::Ty,
     /// Origin of this function (user-defined, builtin, or compiler-generated)
     pub origin: FnOrigin,
@@ -399,10 +411,19 @@ impl TraitEnv {
         trait_name: &TastIdent,
         method_name: &TastIdent,
     ) -> Option<tast::Ty> {
+        self.lookup_trait_method_scheme(trait_name, method_name)
+            .map(|scheme| scheme.ty.clone())
+    }
+
+    pub fn lookup_trait_method_scheme(
+        &self,
+        trait_name: &TastIdent,
+        method_name: &TastIdent,
+    ) -> Option<FnScheme> {
         self.trait_defs
             .get(&trait_name.0)
             .and_then(|trait_def| trait_def.methods.get(&method_name.0))
-            .map(|scheme| scheme.ty.clone())
+            .cloned()
     }
 
     pub fn get_trait_impl(
@@ -411,17 +432,26 @@ impl TraitEnv {
         type_name: &tast::Ty,
         func_name: &TastIdent,
     ) -> Option<tast::Ty> {
+        self.get_trait_impl_scheme(trait_name, type_name, func_name)
+            .map(|scheme| scheme.ty.clone())
+    }
+
+    pub fn get_trait_impl_scheme(
+        &self,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Option<FnScheme> {
         let key = (trait_name.0.clone(), type_name.clone());
-        if let Some(ty) = self
+        if let Some(scheme) = self
             .trait_impls
             .get(&key)
             .and_then(|impl_def| impl_def.methods.get(&func_name.0))
-            .map(|scheme| scheme.ty.clone())
         {
-            return Some(ty);
+            return Some(scheme.clone());
         }
 
-        let mut found: Option<tast::Ty> = None;
+        let mut found: Option<FnScheme> = None;
         for ((impl_trait_name, impl_for_ty), impl_def) in self.trait_impls.iter() {
             if impl_trait_name != &trait_name.0 {
                 continue;
@@ -435,10 +465,24 @@ impl TraitEnv {
             if found.is_some() {
                 return None;
             }
-            found = Some(method.ty.clone());
+            found = Some(method.clone());
         }
 
         found
+    }
+
+    pub fn has_trait_impl(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
+        if self
+            .trait_impls
+            .contains_key(&(trait_name.to_string(), type_name.clone()))
+        {
+            return true;
+        }
+        self.trait_impls
+            .iter()
+            .any(|((impl_trait_name, impl_ty), _)| {
+                impl_trait_name == trait_name && trait_impl_matches(impl_ty, type_name)
+            })
     }
 
     pub fn lookup_inherent_method(
@@ -446,13 +490,21 @@ impl TraitEnv {
         receiver_ty: &tast::Ty,
         method: &TastIdent,
     ) -> Option<tast::Ty> {
-        // First try exact match
+        self.lookup_inherent_method_scheme(receiver_ty, method)
+            .map(|scheme| scheme.ty.clone())
+    }
+
+    pub fn lookup_inherent_method_scheme(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &TastIdent,
+    ) -> Option<FnScheme> {
         if let Some(scheme) = self
             .inherent_impls
             .get(&InherentImplKey::Exact(receiver_ty.clone()))
             .and_then(|impl_def| impl_def.methods.get(&method.0))
         {
-            return Some(scheme.ty.clone());
+            return Some(scheme.clone());
         }
 
         let constr = match receiver_ty {
@@ -463,16 +515,22 @@ impl TraitEnv {
             tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
             _ => None,
         };
-        if let Some(constr) = constr
-            && let Some(scheme) = self
-                .inherent_impls
-                .get(&InherentImplKey::Constr(constr))
-                .and_then(|impl_def| impl_def.methods.get(&method.0))
-        {
-            return Some(scheme.ty.clone());
+        if let Some(constr) = constr {
+            return self.lookup_inherent_method_by_constr(&constr, method);
         }
 
         None
+    }
+
+    pub fn lookup_inherent_method_by_constr(
+        &self,
+        constr: &str,
+        method: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.inherent_impls
+            .get(&InherentImplKey::Constr(constr.to_string()))
+            .and_then(|impl_def| impl_def.methods.get(&method.0))
+            .cloned()
     }
 }
 
@@ -582,7 +640,11 @@ impl ValueEnv {
     }
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
-        self.funcs.get(func).map(|scheme| scheme.ty.clone())
+        self.get_function_scheme(func).map(|scheme| scheme.ty)
+    }
+
+    pub fn get_function_scheme(&self, func: &str) -> Option<FnScheme> {
+        self.funcs.get(func).cloned()
     }
 }
 
@@ -640,9 +702,14 @@ impl PackageTypeEnv {
     }
 
     pub fn get_type_of_function_unqualified(&self, name: &str) -> Option<tast::Ty> {
+        self.get_function_scheme_unqualified(name)
+            .map(|scheme| scheme.ty)
+    }
+
+    pub fn get_function_scheme_unqualified(&self, name: &str) -> Option<FnScheme> {
         self.current
-            .get_type_of_function(name)
-            .or_else(|| self.builtins.get_type_of_function(name))
+            .get_function_scheme(name)
+            .or_else(|| self.builtins.get_function_scheme(name))
     }
 }
 
@@ -751,6 +818,10 @@ impl GlobalTypeEnv {
             .get_trait_impl(trait_name, type_name, func_name)
     }
 
+    pub fn has_trait_impl(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
+        self.trait_env.has_trait_impl(trait_name, type_name)
+    }
+
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
@@ -761,6 +832,47 @@ impl GlobalTypeEnv {
 
     pub fn get_type_of_function(&self, func: &str) -> Option<tast::Ty> {
         self.value_env.get_type_of_function(func)
+    }
+
+    pub fn lookup_trait_method_scheme(
+        &self,
+        trait_name: &TastIdent,
+        method_name: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.trait_env
+            .lookup_trait_method_scheme(trait_name, method_name)
+    }
+
+    pub fn get_trait_impl_scheme(
+        &self,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.trait_env
+            .get_trait_impl_scheme(trait_name, type_name, func_name)
+    }
+
+    pub fn lookup_inherent_method_scheme(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.trait_env
+            .lookup_inherent_method_scheme(receiver_ty, method)
+    }
+
+    pub fn lookup_inherent_method_by_constr(
+        &self,
+        constr: &str,
+        method: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.trait_env
+            .lookup_inherent_method_by_constr(constr, method)
+    }
+
+    pub fn get_function_scheme(&self, func: &str) -> Option<FnScheme> {
+        self.value_env.get_function_scheme(func)
     }
 
     pub fn register_extern_function(
@@ -774,7 +886,7 @@ impl GlobalTypeEnv {
             goml_name.clone(),
             FnScheme {
                 type_params: vec![],
-                constraints: (),
+                constraints: vec![],
                 ty: ty.clone(),
                 origin: FnOrigin::User,
             },

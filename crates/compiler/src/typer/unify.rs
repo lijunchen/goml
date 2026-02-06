@@ -278,6 +278,7 @@ impl Typer {
         match constraint {
             Constraint::TypeEqual(_, _, origin) => *origin,
             Constraint::Overloaded { origin, .. } => *origin,
+            Constraint::Implements { origin, .. } => *origin,
             Constraint::StructFieldAccess { origin, .. } => *origin,
         }
     }
@@ -341,6 +342,13 @@ impl Typer {
                     ..
                 } => {
                     if Self::ty_mentions_var(call_site_type, var) {
+                        *origin
+                    } else {
+                        None
+                    }
+                }
+                Constraint::Implements { for_ty, origin, .. } => {
+                    if Self::ty_mentions_var(for_ty, var) {
                         *origin
                     } else {
                         None
@@ -535,6 +543,44 @@ impl Typer {
                                     super::util::format_ty_for_diag(&norm_call_site_type)
                                 ),
                             ).with_range(origin));
+                        }
+                    }
+                    Constraint::Implements {
+                        trait_name,
+                        for_ty,
+                        origin,
+                    } => {
+                        let norm_for_ty = self.norm(&for_ty);
+                        let impl_found =
+                            genv.builtins().has_trait_impl(&trait_name.0, &norm_for_ty)
+                                || genv.current().has_trait_impl(&trait_name.0, &norm_for_ty)
+                                || genv
+                                    .deps
+                                    .values()
+                                    .any(|env| env.has_trait_impl(&trait_name.0, &norm_for_ty));
+                        if impl_found {
+                            changed = true;
+                        } else if matches!(norm_for_ty, tast::Ty::TVar(_))
+                            || !is_concrete(&norm_for_ty)
+                        {
+                            still_pending.push(Constraint::Implements {
+                                trait_name,
+                                for_ty: norm_for_ty,
+                                origin,
+                            });
+                        } else {
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "No instance found for trait {}<{}>",
+                                        trait_name.0,
+                                        super::util::format_ty_for_diag(&norm_for_ty)
+                                    ),
+                                )
+                                .with_range(origin),
+                            );
                         }
                     }
                     Constraint::StructFieldAccess {
