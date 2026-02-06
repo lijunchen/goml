@@ -294,21 +294,24 @@ fn run_test_cases(dir: &Path) -> anyhow::Result<()> {
     let mut handles = Vec::with_capacity(worker_count);
     for _ in 0..worker_count {
         let cases = Arc::clone(&cases);
-        handles.push(std::thread::spawn(move || -> anyhow::Result<()> {
-            loop {
-                let case = {
-                    let mut cases = cases.lock().unwrap();
-                    cases.pop()
-                };
+        let handle = std::thread::Builder::new()
+            .stack_size(16 * 1024 * 1024)
+            .spawn(move || -> anyhow::Result<()> {
+                loop {
+                    let case = {
+                        let mut cases = cases.lock().unwrap();
+                        cases.pop()
+                    };
 
-                match case {
-                    Some(case) => run_single_test_case(case)?,
-                    None => break,
+                    match case {
+                        Some(case) => run_single_test_case(case)?,
+                        None => break,
+                    }
                 }
-            }
 
-            Ok(())
-        }));
+                Ok(())
+            })?;
+        handles.push(handle);
     }
 
     for handle in handles {
