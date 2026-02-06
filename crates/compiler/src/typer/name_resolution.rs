@@ -1670,9 +1670,24 @@ impl NameResolution {
         imports: &HashSet<String>,
     ) -> hir::ExternBuiltin {
         let name = full_def_name(current_package, &def.name.0);
+        let generic_bounds = def
+            .generic_bounds
+            .iter()
+            .map(|(param, traits)| {
+                let traits = traits
+                    .iter()
+                    .map(|path| {
+                        hir::Path::new(path.segments().iter().map(hir::PathSegment::from).collect())
+                    })
+                    .collect::<Vec<_>>();
+                (HirIdent::name(&param.0), traits)
+            })
+            .collect();
         hir::ExternBuiltin {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
             name: HirIdent::name(&name),
+            generics: def.generics.iter().map(|g| HirIdent::name(&g.0)).collect(),
+            generic_bounds,
             params: def
                 .params
                 .iter()

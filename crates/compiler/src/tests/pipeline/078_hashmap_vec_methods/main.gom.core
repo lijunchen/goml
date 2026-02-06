@@ -1,0 +1,90 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trait_impl#Eq#Key#eq(self/0: Key, other/1: Key) -> bool {
+  let mtmp0 = (self/0, other/1) in
+  let x1 = mtmp0.0 in
+  let x2 = mtmp0.1 in
+  match x2 {
+    Key::A => {
+      match x1 {
+        Key::A => {
+          true
+        },
+        Key::B(x4) => {
+          let x4 = Key::B._0(x1) in
+          false
+        },
+      }
+    },
+    Key::B(x3) => {
+      let x3 = Key::B._0(x2) in
+      match x1 {
+        Key::A => {
+          false
+        },
+        Key::B(x5) => {
+          let x5 = Key::B._0(x1) in
+          let __l1_0/2 = x5 in
+          let __r1_0/3 = x3 in
+          (true && trait_impl#Eq#int32#eq(__l1_0/2, __r1_0/3))
+        },
+      }
+    },
+  }
+}
+
+fn trait_impl#Hash#Key#hash(self/4: Key) -> uint64 {
+  match self/4 {
+    Key::A => {
+      let h/5 = (14695981039346656037 + 1) in
+      h/5
+    },
+    Key::B(x6) => {
+      let x6 = Key::B._0(self/4) in
+      let __field1_0/6 = x6 in
+      let h/7 = (14695981039346656037 + 2) in
+      let h/8 = ((h/7 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/6)) in
+      h/8
+    },
+  }
+}
+
+fn print_opt_int(x/9: Option[int32]) -> unit {
+  match x/9 {
+    Option::None => {
+      println("none")
+    },
+    Option::Some(x7) => {
+      let x7 = Option::Some._0(x/9) in
+      let v/10 = x7 in
+      println(v/10)
+    },
+  }
+}
+
+fn main() -> unit {
+  let v/11 = vec_new() in
+  let v/12 = vec_push(v/11, 10) in
+  let v/13 = vec_push(v/12, 20) in
+  let v/14 = vec_push(v/13, 30) in
+  let _wild8 = println(vec_get(v/14, 0)) in
+  let _wild9 = println(vec_get(v/14, 1)) in
+  let _wild10 = println(vec_get(v/14, 2)) in
+  let _wild11 = println(vec_len(v/14)) in
+  let m/15 = hashmap_new() in
+  let _wild12 = hashmap_set(m/15, Key::A, 10) in
+  let _wild13 = hashmap_set(m/15, Key::B(1), 20) in
+  let _wild14 = println(hashmap_len(m/15)) in
+  let _wild15 = print_opt_int(hashmap_get(m/15, Key::A)) in
+  let _wild16 = println(hashmap_contains(m/15, Key::B(1))) in
+  let _wild17 = hashmap_remove(m/15, Key::B(1)) in
+  let _wild18 = println(hashmap_contains(m/15, Key::B(1))) in
+  let _wild19 = println(hashmap_len(m/15)) in
+  ()
+}

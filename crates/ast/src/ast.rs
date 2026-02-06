@@ -194,6 +194,8 @@ pub struct ExternType {
 pub struct ExternBuiltin {
     pub attrs: Vec<Attribute>,
     pub name: AstIdent,
+    pub generics: Vec<AstIdent>,
+    pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
 }

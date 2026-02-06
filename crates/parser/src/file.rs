@@ -185,6 +185,9 @@ fn extern_decl_with_marker(p: &mut Parser, m: MarkerOpened) {
         } else {
             p.advance_with_error("expected a function name");
         }
+        if p.at(T!['[']) {
+            generic_list(p, true);
+        }
         if p.at(T!['(']) {
             param_list(p);
         } else {

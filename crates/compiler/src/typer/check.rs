@@ -747,6 +747,61 @@ impl Typer {
             };
         }
 
+        let builtin_constr = match type_name {
+            "Vec" | "Builtin::Vec" => Some("Vec"),
+            "Ref" | "Builtin::Ref" => Some("Ref"),
+            "HashMap" | "Builtin::HashMap" => Some("HashMap"),
+            _ => None,
+        };
+        if let Some(constr) = builtin_constr {
+            let receiver_ty = match constr {
+                "Vec" => tast::Ty::TVec {
+                    elem: Box::new(tast::Ty::TParam {
+                        name: "T".to_string(),
+                    }),
+                },
+                "Ref" => tast::Ty::TRef {
+                    elem: Box::new(tast::Ty::TParam {
+                        name: "T".to_string(),
+                    }),
+                },
+                "HashMap" => tast::Ty::THashMap {
+                    key: Box::new(tast::Ty::TParam {
+                        name: "K".to_string(),
+                    }),
+                    value: Box::new(tast::Ty::TParam {
+                        name: "V".to_string(),
+                    }),
+                },
+                _ => self.fresh_ty_var(),
+            };
+            if let Some(method_ty) = genv
+                .builtins()
+                .lookup_inherent_method(&receiver_ty, &member_ident)
+            {
+                let inst_ty = self.inst_ty(&method_ty);
+                let receiver_ty_for_record = match &inst_ty {
+                    tast::Ty::TFunc { params, ret_ty } => params
+                        .first()
+                        .cloned()
+                        .unwrap_or_else(|| (**ret_ty).clone()),
+                    _ => receiver_ty.clone(),
+                };
+                return tast::Expr::EInherentMethod {
+                    receiver_ty: receiver_ty_for_record,
+                    method_name: member_ident,
+                    ty: inst_ty,
+                    astptr,
+                };
+            }
+            super::util::push_error_with_range(
+                diagnostics,
+                format!("Method {} not found for type {}", member, constr),
+                astptr.map(|p| p.text_range()),
+            );
+            return self.error_expr(astptr);
+        }
+
         // Check if type_name is an enum or struct for inherent method lookup
         let receiver_ty = if type_env.enums().contains_key(&type_ident) {
             tast::Ty::TEnum {
@@ -1010,6 +1065,121 @@ impl Typer {
 
         let (resolved_type_name, type_env) = super::util::resolve_type_name(genv, &type_name);
         let type_ident = tast::TastIdent(resolved_type_name.clone());
+        let builtin_constr = match type_name.as_str() {
+            "Vec" | "Builtin::Vec" => Some("Vec"),
+            "Ref" | "Builtin::Ref" => Some("Ref"),
+            "HashMap" | "Builtin::HashMap" => Some("HashMap"),
+            _ => None,
+        };
+        if let Some(constr) = builtin_constr {
+            let receiver_ty = match constr {
+                "Vec" => tast::Ty::TVec {
+                    elem: Box::new(tast::Ty::TParam {
+                        name: "T".to_string(),
+                    }),
+                },
+                "Ref" => tast::Ty::TRef {
+                    elem: Box::new(tast::Ty::TParam {
+                        name: "T".to_string(),
+                    }),
+                },
+                "HashMap" => tast::Ty::THashMap {
+                    key: Box::new(tast::Ty::TParam {
+                        name: "K".to_string(),
+                    }),
+                    value: Box::new(tast::Ty::TParam {
+                        name: "V".to_string(),
+                    }),
+                },
+                _ => self.fresh_ty_var(),
+            };
+            let Some(method_ty) = genv
+                .builtins()
+                .lookup_inherent_method(&receiver_ty, &member_ident)
+            else {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!("Method {} not found for type {}", member, constr),
+                    self.expr_range(call_expr_id),
+                );
+                return self.error_expr(None);
+            };
+
+            let inst_method_ty = self.inst_ty(&method_ty);
+            let tast::Ty::TFunc { params, ret_ty } = inst_method_ty.clone() else {
+                super::util::push_ice(
+                    diagnostics,
+                    format!("Type member {}::{} is not callable", type_name, member),
+                );
+                return self.error_expr(None);
+            };
+            let receiver_ty_for_record =
+                params.first().cloned().unwrap_or_else(|| (*ret_ty).clone());
+            if params.len() != args.len() {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "Method {} expects {} arguments but got {}",
+                        member,
+                        params.len(),
+                        args.len()
+                    ),
+                    self.expr_range(call_expr_id),
+                );
+                return self.error_expr(None);
+            }
+
+            let mut args_tast = Vec::with_capacity(args.len());
+            for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                args_tast.push(arg_tast);
+            }
+
+            let call_range = self.expr_range(call_expr_id);
+            if constr == "HashMap"
+                && matches!(member.as_str(), "get" | "set" | "remove" | "contains")
+                && args_tast.len() >= 2
+            {
+                let key_ty = args_tast[1].get_ty();
+                if !self.ensure_hashmap_key_traits(local_env, diagnostics, &key_ty, call_range) {
+                    return self.error_expr(None);
+                }
+            }
+
+            self.results.record_call_elab(
+                call_expr_id,
+                CallElab {
+                    callee: CalleeElab::InherentMethod {
+                        receiver_ty: receiver_ty_for_record.clone(),
+                        method_name: member_ident.clone(),
+                        ty: inst_method_ty.clone(),
+                        astptr: None,
+                    },
+                    args: args.to_vec(),
+                },
+            );
+            self.results
+                .record_expr_ty(func_expr_id, inst_method_ty.clone());
+            self.results.record_name_ref_elab(
+                func_expr_id,
+                NameRefElab::InherentMethod {
+                    receiver_ty: receiver_ty_for_record.clone(),
+                    method_name: member_ident.clone(),
+                    ty: inst_method_ty.clone(),
+                    astptr,
+                },
+            );
+            return tast::Expr::ECall {
+                func: Box::new(tast::Expr::EInherentMethod {
+                    receiver_ty: receiver_ty_for_record,
+                    method_name: member_ident.clone(),
+                    ty: inst_method_ty,
+                    astptr: None,
+                }),
+                args: args_tast,
+                ty: (*ret_ty).clone(),
+            };
+        }
         let receiver_ty = if type_env.enums().contains_key(&type_ident) {
             tast::Ty::TEnum {
                 name: resolved_type_name.clone(),
@@ -2376,10 +2546,11 @@ impl Typer {
             } => {
                 let receiver_tast = self.infer_expr(genv, local_env, diagnostics, receiver_expr);
                 let receiver_ty = receiver_tast.get_ty();
+                let method_name_str = field.to_ident_name();
                 if let Some(method_ty) = lookup_inherent_method_for_ty(
                     genv,
                     &receiver_ty,
-                    &tast::TastIdent(field.to_ident_name()),
+                    &tast::TastIdent(method_name_str.clone()),
                 ) {
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
                     let mut arg_types = Vec::with_capacity(args.len() + 1);
@@ -2391,8 +2562,39 @@ impl Typer {
                         args_tast.push(arg_tast);
                     }
 
+                    let call_range = self.expr_range(call_expr_id);
+                    if matches!(receiver_ty, tast::Ty::THashMap { .. })
+                        && matches!(
+                            method_name_str.as_str(),
+                            "get" | "set" | "remove" | "contains"
+                        )
+                        && arg_types.len() >= 2
+                    {
+                        let key_ty = arg_types[1].clone();
+                        if !self.ensure_hashmap_key_traits(
+                            local_env,
+                            diagnostics,
+                            &key_ty,
+                            call_range,
+                        ) {
+                            return self.error_expr(None);
+                        }
+                    }
+
                     let inst_method_ty = self.inst_ty(&method_ty);
-                    let ret_ty = self.fresh_ty_var();
+                    let ret_ty = match &inst_method_ty {
+                        tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
+                        _ => {
+                            super::util::push_ice(
+                                diagnostics,
+                                format!(
+                                    "Expected inherent method {} to have a function type",
+                                    method_name_str
+                                ),
+                            );
+                            return self.error_expr(None);
+                        }
+                    };
                     let call_site_ty = tast::Ty::TFunc {
                         params: arg_types,
                         ret_ty: Box::new(ret_ty.clone()),
@@ -2408,7 +2610,7 @@ impl Typer {
                         func,
                         NameRefElab::InherentMethod {
                             receiver_ty: receiver_ty.clone(),
-                            method_name: tast::TastIdent(field.to_ident_name()),
+                            method_name: tast::TastIdent(method_name_str.clone()),
                             ty: inst_method_ty.clone(),
                             astptr: None,
                         },
@@ -2418,7 +2620,7 @@ impl Typer {
                         CallElab {
                             callee: CalleeElab::InherentMethod {
                                 receiver_ty: receiver_ty.clone(),
-                                method_name: tast::TastIdent(field.to_ident_name()),
+                                method_name: tast::TastIdent(method_name_str.clone()),
                                 ty: inst_method_ty.clone(),
                                 astptr: None,
                             },
@@ -2430,7 +2632,7 @@ impl Typer {
                     tast::Expr::ECall {
                         func: Box::new(tast::Expr::EInherentMethod {
                             receiver_ty: receiver_ty.clone(),
-                            method_name: tast::TastIdent(field.to_ident_name()),
+                            method_name: tast::TastIdent(method_name_str),
                             ty: inst_method_ty,
                             astptr: None,
                         }),

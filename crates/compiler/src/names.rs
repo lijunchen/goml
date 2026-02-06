@@ -67,7 +67,8 @@ fn inherent_base(receiver_ty: &tast::Ty) -> String {
         | tast::Ty::TStruct { .. }
         | tast::Ty::TApp { .. }
         | tast::Ty::TVec { .. }
-        | tast::Ty::TRef { .. } => receiver_ty.get_constr_name_unsafe(),
+        | tast::Ty::TRef { .. }
+        | tast::Ty::THashMap { .. } => receiver_ty.get_constr_name_unsafe(),
         other => ty_compact(other),
     }
 }
