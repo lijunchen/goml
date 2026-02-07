@@ -4,12 +4,14 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
+use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
 const PRETTY_WIDTH: usize = 120;
+const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -20,10 +22,23 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Run(RunArgs),
+    Check,
+    Build,
+    Compiler(CompilerArgs),
+}
+
+#[derive(Args, Debug)]
+struct CompilerArgs {
+    #[command(subcommand)]
+    command: CompilerCommands,
+}
+
+#[derive(Subcommand, Debug)]
+enum CompilerCommands {
     Check(PackageCommandArgs),
     Build(PackageCommandArgs),
     Link(LinkArgs),
+    RunSingle(RunArgs),
 }
 
 #[derive(Args, Debug)]
@@ -124,6 +139,11 @@ struct LinkOptions {
     output: PathBuf,
 }
 
+struct ProjectContext {
+    module_dir: PathBuf,
+    entry_path: PathBuf,
+}
+
 fn main() {
     if let Err(err) = run_cli() {
         eprintln!("{err}");
@@ -135,38 +155,46 @@ fn run_cli() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Run(args) => {
+        Commands::Check => execute_project_check(),
+        Commands::Build => execute_project_build(),
+        Commands::Compiler(args) => execute_compiler_command(args.command),
+    }
+}
+
+fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
+    match command {
+        CompilerCommands::RunSingle(args) => {
             let dumps = run_dumps(&args);
             let options = RunOptions {
                 file_path: args.file,
                 dumps,
             };
-            execute_run(options)
+            execute_run_single(options)
         }
-        Commands::Check(args) => {
+        CompilerCommands::Check(args) => {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
                 interface_paths: args.interface_path,
                 output: args.output,
             };
-            execute_check(options)
+            execute_compiler_check(options)
         }
-        Commands::Build(args) => {
+        CompilerCommands::Build(args) => {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
                 interface_paths: args.interface_path,
                 output: args.output,
             };
-            execute_build(options)
+            execute_compiler_build(options)
         }
-        Commands::Link(args) => {
+        CompilerCommands::Link(args) => {
             let options = LinkOptions {
                 input_cores: args.input,
                 output: args.output,
             };
-            execute_link(options)
+            execute_compiler_link(options)
         }
     }
 }
@@ -205,7 +233,7 @@ fn run_dumps(args: &RunArgs) -> Vec<DumpStage> {
     dumps
 }
 
-fn execute_run(options: RunOptions) -> anyhow::Result<()> {
+fn execute_run_single(options: RunOptions) -> anyhow::Result<()> {
     let src = fs::read_to_string(&options.file_path)
         .with_context(|| format!("error reading goml file: {}", options.file_path.display()))?;
 
@@ -228,7 +256,7 @@ fn execute_run(options: RunOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_check(options: PackageCommandOptions) -> anyhow::Result<()> {
+fn execute_compiler_check(options: PackageCommandOptions) -> anyhow::Result<()> {
     let unit =
         compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
@@ -247,7 +275,7 @@ fn execute_check(options: PackageCommandOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_build(options: PackageCommandOptions) -> anyhow::Result<()> {
+fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> {
     let unit =
         compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
@@ -278,7 +306,7 @@ fn execute_build(options: PackageCommandOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_link(options: LinkOptions) -> anyhow::Result<()> {
+fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
     let mut units = Vec::new();
     for path in options.input_cores {
         let unit = compiler::pipeline::separate::read_core(&path)
@@ -296,6 +324,60 @@ fn execute_link(options: LinkOptions) -> anyhow::Result<()> {
     fs::write(&options.output, go_source)
         .with_context(|| format!("failed to write {}", options.output.display()))?;
     Ok(())
+}
+
+fn execute_project_check() -> anyhow::Result<()> {
+    let project = load_project_from_cwd()?;
+    let src = fs::read_to_string(&project.entry_path)
+        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
+
+    match compiler::pipeline::pipeline::typecheck_with_packages(&project.entry_path, &src) {
+        Ok((_tast, _genv, _diagnostics)) => Ok(()),
+        Err(err) => {
+            report_compilation_error(&project.entry_path, &src, err);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn execute_project_build() -> anyhow::Result<()> {
+    let project = load_project_from_cwd()?;
+    let src = fs::read_to_string(&project.entry_path)
+        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
+
+    let compilation = match compile(&project.entry_path, &src) {
+        Ok(compilation) => compilation,
+        Err(err) => {
+            report_compilation_error(&project.entry_path, &src, err);
+            std::process::exit(1);
+        }
+    };
+
+    let output = project.module_dir.join(PROJECT_GO_OUTPUT);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+
+    let go_source = compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH);
+    fs::write(&output, go_source)
+        .with_context(|| format!("failed to write {}", output.display()))?;
+    Ok(())
+}
+
+fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
+    let cwd = std::env::current_dir().context("failed to read current directory")?;
+    let Some((module_dir, config)) = GomlConfig::find_module_root(&cwd) else {
+        bail!(
+            "no goml.toml with [module] section found in ancestors of {}",
+            cwd.display()
+        );
+    };
+
+    Ok(ProjectContext {
+        entry_path: module_dir.join(config.package.entry),
+        module_dir,
+    })
 }
 
 fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {

@@ -1,11 +1,26 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use expect_test::expect;
 use tempfile::TempDir;
 
 const HELLO_PROGRAM: &str = r#"fn main() -> unit {
+    string_println("hello")
+}
+"#;
+
+const PROJECT_CONFIG: &str = r#"[module]
+name = "demo"
+
+[package]
+name = "Main"
+entry = "main.gom"
+"#;
+
+const PROJECT_MAIN: &str = r#"package Main;
+
+fn main() -> unit {
     string_println("hello")
 }
 "#;
@@ -21,11 +36,21 @@ fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
     Ok((dir, path))
 }
 
+fn write_project(root: &Path) -> anyhow::Result<()> {
+    fs::write(root.join("goml.toml"), PROJECT_CONFIG)?;
+    fs::write(root.join("main.gom"), PROJECT_MAIN)?;
+    Ok(())
+}
+
 #[test]
-fn run_executes_program() -> anyhow::Result<()> {
+fn compiler_run_single_executes_program() -> anyhow::Result<()> {
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
-    let output = Command::new(goml_bin()).arg("run").arg(&path).output()?;
+    let output = Command::new(goml_bin())
+        .arg("compiler")
+        .arg("run-single")
+        .arg(&path)
+        .output()?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
@@ -37,11 +62,12 @@ fn run_executes_program() -> anyhow::Result<()> {
 }
 
 #[test]
-fn run_dumps_requested_stages() -> anyhow::Result<()> {
+fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
     let output = Command::new(goml_bin())
-        .arg("run")
+        .arg("compiler")
+        .arg("run-single")
         .args([
             "--dump-ast",
             "--dump-hir",
@@ -142,6 +168,61 @@ fn run_dumps_requested_stages() -> anyhow::Result<()> {
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+
+    let output = Command::new(goml_bin())
+        .arg("check")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    write_project(dir.path())?;
+
+    let output = Command::new(goml_bin())
+        .arg("build")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![""].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    let go_file = dir.path().join("target/goml/main.go");
+    assert!(go_file.exists());
+
+    let go_output = Command::new("go")
+        .arg("run")
+        .arg(&go_file)
+        .current_dir(dir.path())
+        .output()?;
+
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["hello\n"].assert_eq(&go_stdout);
 
     Ok(())
 }

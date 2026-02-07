@@ -77,7 +77,7 @@ fn main() -> unit {
     let main_interface = out.join("Main.interface");
     cmd!(
         sh,
-        "{bin} check --package Main --input {main_gom} --output {main_interface}"
+        "{bin} compiler check --package Main --input {main_gom} --output {main_interface}"
     )
     .run()?;
     assert_snapshot_file("single", "Main.interface", &main_interface, root)?;
@@ -88,7 +88,7 @@ fn main() -> unit {
     let main_out = out.join("Main");
     cmd!(
         sh,
-        "{bin} build --package Main --input {main_gom} --output {main_out}"
+        "{bin} compiler build --package Main --input {main_gom} --output {main_out}"
     )
     .run()?;
     assert!(out.join("Main.interface").exists());
@@ -99,7 +99,11 @@ fn main() -> unit {
 
     let go_file = out.join("main.go");
     let main_core = out.join("Main.core");
-    cmd!(sh, "{bin} link --input {main_core} --output {go_file}").run()?;
+    cmd!(
+        sh,
+        "{bin} compiler link --input {main_core} --output {go_file}"
+    )
+    .run()?;
     assert_snapshot_file("single", "main.go", &go_file, root)?;
     let output = run_go(&sh, &go_file)?;
     {
@@ -149,13 +153,13 @@ fn main() -> unit {
     let main_interface = out.join("Main.interface");
     cmd!(
         sh,
-        "{bin} check --package Lib --input {lib_gom} --output {lib_interface}"
+        "{bin} compiler check --package Lib --input {lib_gom} --output {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Lib.interface", &lib_interface, root)?;
     cmd!(
         sh,
-        "{bin} check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
+        "{bin} compiler check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Main.interface", &main_interface, root)?;
@@ -164,12 +168,12 @@ fn main() -> unit {
     let main_out = out.join("Main");
     cmd!(
         sh,
-        "{bin} build --package Lib --input {lib_gom} --output {lib_out}"
+        "{bin} compiler build --package Lib --input {lib_gom} --output {lib_out}"
     )
     .run()?;
     cmd!(
         sh,
-        "{bin} build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
+        "{bin} compiler build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Lib.core", &out.join("Lib.core"), root)?;
@@ -180,7 +184,7 @@ fn main() -> unit {
     let main_core = out.join("Main.core");
     cmd!(
         sh,
-        "{bin} link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.go", &go_file, root)?;
@@ -247,7 +251,7 @@ fn main() -> unit {
     let lib_interface = out.join("Lib.interface");
     cmd!(
         sh,
-        "{bin} check --package Lib --input {lib_gom_v1} --output {lib_interface}"
+        "{bin} compiler check --package Lib --input {lib_gom_v1} --output {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Lib.interface", &lib_interface, root)?;
@@ -255,7 +259,7 @@ fn main() -> unit {
     let main_interface = out.join("Main.interface");
     cmd!(
         sh,
-        "{bin} check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
+        "{bin} compiler check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Main.interface", &main_interface, root)?;
@@ -263,7 +267,7 @@ fn main() -> unit {
     let lib_out = out.join("Lib");
     cmd!(
         sh,
-        "{bin} build --package Lib --input {lib_gom_v2} --output {lib_out}"
+        "{bin} compiler build --package Lib --input {lib_gom_v2} --output {lib_out}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Lib.core", &out.join("Lib.core"), root)?;
@@ -271,7 +275,7 @@ fn main() -> unit {
     let main_out = out.join("Main");
     cmd!(
         sh,
-        "{bin} build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
+        "{bin} compiler build --package Main --input {main_gom} --output {main_out} --interface-path {out}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Main.core", &out.join("Main.core"), root)?;
@@ -281,7 +285,7 @@ fn main() -> unit {
     let main_core = out.join("Main.core");
     let err = cmd!(
         sh,
-        "{bin} link --input {lib_core} {main_core} --output {go_file}"
+        "{bin} compiler link --input {lib_core} {main_core} --output {go_file}"
     )
     .read_stderr()?;
 
