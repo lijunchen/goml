@@ -3,7 +3,8 @@ use std::path::Path;
 use tempfile::tempdir;
 
 use crate::query::{
-    colon_colon_completions, dot_completions, hover_type, signature_help, value_completions,
+    colon_colon_completions, dot_completions, hover_type, inlay_hints, signature_help,
+    value_completions,
 };
 
 fn check(src: &str, line: u32, col: u32, expected: Expect) {
@@ -58,6 +59,11 @@ fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
 
 fn check_signature_help(src: &str, line: u32, col: u32, expected: Expect) {
     let result = signature_help(Path::new("dummy"), src, line, col);
+    expected.assert_debug_eq(&result);
+}
+
+fn check_inlay_hints(src: &str, expected: Expect) {
+    let result = inlay_hints(Path::new("dummy"), src).unwrap_or_default();
     expected.assert_debug_eq(&result);
 }
 
@@ -254,6 +260,55 @@ fn main() {
                 active_parameter: 0,
             },
         )
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn inlay_hints_for_let_bindings() {
+    let src = r#"
+fn main() {
+    let x = 1;
+    let y: int32 = 2;
+    let _ = 3;
+    ()
+}
+"#;
+
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 23,
+                label: ": int32",
+                kind: Type,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn inlay_hints_for_closure_params() {
+    let src = r#"
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#;
+
+    check_inlay_hints(src, expect![[r#"
+        [
+            InlayHintItem {
+                offset: 23,
+                label: ": (int32) -> int32",
+                kind: Type,
+            },
+            InlayHintItem {
+                offset: 27,
+                label: ": int32",
+                kind: Type,
+            },
+        ]
     "#]]);
 }
 

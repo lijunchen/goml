@@ -122,6 +122,39 @@ fn format_signature_help(signature_help: Option<SignatureHelp>) -> String {
     )
 }
 
+fn format_inlay_hints(hints: Option<Vec<InlayHint>>) -> String {
+    let Some(hints) = hints else {
+        return "no hints".to_string();
+    };
+    if hints.is_empty() {
+        return "empty hints".to_string();
+    }
+
+    hints
+        .into_iter()
+        .map(|hint| {
+            let label = match hint.label {
+                InlayHintLabel::String(text) => text,
+                InlayHintLabel::LabelParts(parts) => parts
+                    .into_iter()
+                    .map(|part| part.value)
+                    .collect::<Vec<_>>()
+                    .join(""),
+            };
+            let kind = match hint.kind {
+                Some(tower_lsp::lsp_types::InlayHintKind::TYPE) => "type",
+                Some(tower_lsp::lsp_types::InlayHintKind::PARAMETER) => "parameter",
+                _ => "unknown",
+            };
+            format!(
+                "{}:{} {} {}",
+                hint.position.line, hint.position.character, kind, label
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn check_diagnostics(src: &str, expect: Expect) {
     let path = PathBuf::from("test.gom");
     let doc = Document::new(src.to_string());
@@ -148,6 +181,13 @@ fn check_signature_help(src: &str, line: u32, character: u32, expect: Expect) {
     let position = Position { line, character };
     let signature_help = handlers::signature_help(&path, src, position);
     expect.assert_eq(&format_signature_help(signature_help));
+}
+
+fn check_inlay_hints(src: &str, range: Range, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let doc = Document::new(src.to_string());
+    let hints = handlers::inlay_hints(&path, src, range, &doc);
+    expect.assert_eq(&format_inlay_hints(hints));
 }
 
 fn check_module_diagnostics(project_name: &str, expect: Expect) {
@@ -713,6 +753,91 @@ fn main() {
                 label: () -> string
                 active_parameter: 0
                 parameters: "#]],
+        );
+    }
+}
+
+mod inlay_hint_tests {
+    use super::*;
+
+    #[test]
+    fn inlay_hints_for_let_bindings() {
+        check_inlay_hints(
+            r#"
+package Main;
+
+fn main() {
+    let x = 1;
+    let y: int32 = 2;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 99,
+                    character: 0,
+                },
+            },
+            expect![[r#"
+                4:10 type : int32"#]],
+        );
+    }
+
+    #[test]
+    fn inlay_hints_for_closure_params() {
+        check_inlay_hints(
+            r#"
+package Main;
+
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 99,
+                    character: 0,
+                },
+            },
+            expect![[r#"
+                4:10 type : (int32) -> int32
+                4:14 type : int32"#]],
+        );
+    }
+
+    #[test]
+    fn inlay_hints_respect_range() {
+        check_inlay_hints(
+            r#"
+package Main;
+
+fn main() {
+    let a = 1;
+    let b = 2;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 5,
+                    character: 0,
+                },
+                end: Position {
+                    line: 6,
+                    character: 0,
+                },
+            },
+            expect![[r#"
+                5:10 type : int32"#]],
         );
     }
 }

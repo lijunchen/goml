@@ -3,7 +3,7 @@ use std::path::Path;
 
 use compiler::query::{
     self, ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
-    SignatureHelpItem, ValueCompletionItem,
+    InlayHintItem, InlayHintKind as QueryInlayHintKind, SignatureHelpItem, ValueCompletionItem,
 };
 use tower_lsp::lsp_types::*;
 
@@ -152,6 +152,15 @@ pub fn signature_help(path: &Path, src: &str, position: Position) -> Option<Sign
     Some(signature_item_to_lsp(item))
 }
 
+pub fn inlay_hints(path: &Path, src: &str, range: Range, doc: &Document) -> Option<Vec<InlayHint>> {
+    let items = query::inlay_hints(path, src)?;
+    let hints = items
+        .into_iter()
+        .filter_map(|item| inlay_item_to_lsp(item, range, doc))
+        .collect::<Vec<_>>();
+    Some(hints)
+}
+
 fn dot_item_to_completion(item: DotCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
@@ -208,6 +217,26 @@ fn signature_item_to_lsp(item: SignatureHelpItem) -> SignatureHelp {
         active_signature: Some(0),
         active_parameter: Some(item.active_parameter),
     }
+}
+
+fn inlay_item_to_lsp(item: InlayHintItem, range: Range, doc: &Document) -> Option<InlayHint> {
+    let position = doc.position(item.offset)?;
+    if !position_in_range(position, range) {
+        return None;
+    }
+
+    Some(InlayHint {
+        position,
+        label: InlayHintLabel::String(item.label),
+        kind: Some(match item.kind {
+            QueryInlayHintKind::Type => tower_lsp::lsp_types::InlayHintKind::TYPE,
+        }),
+        text_edits: None,
+        tooltip: None,
+        padding_left: Some(true),
+        padding_right: None,
+        data: None,
+    })
 }
 
 pub fn goto_definition(

@@ -65,6 +65,7 @@ impl LanguageServer for Backend {
                     retrigger_characters: Some(vec![",".to_string()]),
                     ..Default::default()
                 }),
+                inlay_hint_provider: Some(OneOf::Left(true)),
                 definition_provider: Some(OneOf::Left(true)),
                 ..Default::default()
             },
@@ -147,6 +148,20 @@ impl LanguageServer for Backend {
         };
 
         Ok(handlers::signature_help(&path, &doc.content, position))
+    }
+
+    async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+        let uri = &params.text_document.uri;
+        let range = params.range;
+
+        let Some(doc) = self.documents.get(uri) else {
+            return Ok(None);
+        };
+        let Some(path) = self.get_file_path(uri) else {
+            return Ok(None);
+        };
+
+        Ok(handlers::inlay_hints(&path, &doc.content, range, &doc))
     }
 
     async fn goto_definition(
