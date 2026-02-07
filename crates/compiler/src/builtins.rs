@@ -9,7 +9,9 @@ use parser::{self, syntax::MySyntaxNode};
 use crate::{
     artifact::{InterfaceUnit, PackageExports},
     env::{FnOrigin, FnScheme, GlobalTypeEnv, TraitEnv, TypeEnv, ValueEnv},
-    hir, interface, tast, typer,
+    hir, interface,
+    package_names::BUILTIN_PACKAGE,
+    tast, typer,
 };
 
 /// The embedded builtin.gom source code
@@ -40,7 +42,7 @@ fn parse_builtin_ast() -> ast::File {
     let mut ast_file = lower_result
         .into_result()
         .expect("failed to lower builtin.gom AST");
-    ast_file.package = ast::AstIdent::new("Builtin");
+    ast_file.package = ast::AstIdent::new(BUILTIN_PACKAGE);
 
     match derive::expand(ast_file) {
         Ok(ast) => ast,
@@ -78,7 +80,7 @@ fn build_builtin_artifacts() -> BuiltinArtifacts {
         hir_table,
         base_env,
         GlobalTypeEnv::new_empty(),
-        "Builtin",
+        BUILTIN_PACKAGE,
         HashMap::new(),
     );
     diagnostics.append(&mut hir_diagnostics);
@@ -126,8 +128,14 @@ pub fn builtin_interface_hash() -> String {
         trait_env: genv.trait_env.clone(),
         value_env: genv.value_env.clone(),
     };
-    let iface = interface::PackageInterface::from_exports("Builtin", &exports);
-    InterfaceUnit::new("Builtin".to_string(), exports, iface, Default::default()).interface_hash
+    let iface = interface::PackageInterface::from_exports(BUILTIN_PACKAGE, &exports);
+    InterfaceUnit::new(
+        BUILTIN_PACKAGE.to_string(),
+        exports,
+        iface,
+        Default::default(),
+    )
+    .interface_hash
 }
 
 fn make_fn_scheme(params: Vec<tast::Ty>, ret: tast::Ty) -> FnScheme {

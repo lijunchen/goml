@@ -7,6 +7,8 @@ use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
 use std::collections::HashSet;
 use text_size::TextRange;
 
+const DEFAULT_PACKAGE_NAME: &str = "Main";
+
 pub struct LowerResult {
     ast: Option<ast::File>,
     diagnostics: Diagnostics,
@@ -114,7 +116,7 @@ pub fn lower(node: cst::File) -> LowerResult {
         .package_decl()
         .and_then(|decl| decl.name_token())
         .map(|token| ast::AstIdent::new(&token.to_string()))
-        .unwrap_or_else(|| ast::AstIdent::new("Main"));
+        .unwrap_or_else(|| ast::AstIdent::new(DEFAULT_PACKAGE_NAME));
     let mut imports = Vec::new();
     let mut use_traits = Vec::new();
     for decl in node.use_decls() {

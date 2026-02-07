@@ -6,6 +6,7 @@ use text_size::TextRange;
 
 use crate::common::{self, Prim};
 use crate::hir::{self};
+use crate::package_names::BUILTIN_PACKAGE;
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::results::{
     CallElab, CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
@@ -3841,7 +3842,7 @@ fn lookup_function_path(
 
     let full_name = path.display();
     let package = path.segments().first()?.seg().as_str();
-    if package == "Builtin" {
+    if package == BUILTIN_PACKAGE {
         let name = path.last_ident()?.clone();
         return genv
             .builtins()

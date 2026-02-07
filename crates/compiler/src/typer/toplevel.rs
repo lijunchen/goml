@@ -8,6 +8,7 @@ use crate::{
     builtins,
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
+    package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
     typer::{
         Typer,
@@ -214,7 +215,7 @@ fn is_local_name(current_package: &str, name: &str) -> bool {
     if let Some((package, _)) = name.split_once("::") {
         package == current_package
     } else {
-        current_package == "Main" || current_package == "main" || current_package == "Builtin"
+        is_special_unqualified_package(current_package)
     }
 }
 
@@ -225,7 +226,7 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
         }
         tast::Ty::TApp { ty, .. } => is_local_nominal_type(current_package, ty),
         tast::Ty::TVec { .. } | tast::Ty::TRef { .. } | tast::Ty::THashMap { .. } => {
-            current_package == "Builtin"
+            current_package == BUILTIN_PACKAGE
         }
         _ => false,
     }
@@ -886,7 +887,7 @@ pub fn check_file(
         hir_table,
         env::GlobalTypeEnv::new(),
         builtins::builtin_env(),
-        "Main",
+        ROOT_PACKAGE,
         HashMap::new(),
     )
 }

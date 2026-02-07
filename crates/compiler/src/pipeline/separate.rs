@@ -10,6 +10,9 @@ use crate::hir;
 use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
+use crate::package_names::{
+    BUILTIN_PACKAGE, ENTRY_FUNCTION, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE, is_builtin_package,
+};
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 use diagnostics::Diagnostics;
@@ -71,9 +74,9 @@ fn load_interface_from_paths(
                 candidate.display()
             )));
         }
-        if unit.package != "Builtin" {
+        if !is_builtin_package(&unit.package) {
             let expected = builtins::builtin_interface_hash();
-            let Some(actual) = unit.deps.get("Builtin") else {
+            let Some(actual) = unit.deps.get(BUILTIN_PACKAGE) else {
                 return Err(compile_error(format!(
                     "interface {} is missing implicit Builtin dependency (rebuild {})",
                     candidate.display(),
@@ -193,12 +196,15 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
     let mut deps_interfaces = HashMap::new();
     let mut dep_hashes = BTreeMap::new();
 
-    if opts.package != "Builtin" {
-        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    if opts.package != BUILTIN_PACKAGE {
+        dep_hashes.insert(
+            BUILTIN_PACKAGE.to_string(),
+            builtins::builtin_interface_hash(),
+        );
     }
 
     for dep in deps {
-        if dep == "Builtin" || dep == opts.package {
+        if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
         let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
@@ -231,12 +237,15 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
     let mut dep_hashes = BTreeMap::new();
     let mut dep_units = Vec::new();
 
-    if opts.package != "Builtin" {
-        dep_hashes.insert("Builtin".to_string(), builtins::builtin_interface_hash());
+    if opts.package != BUILTIN_PACKAGE {
+        dep_hashes.insert(
+            BUILTIN_PACKAGE.to_string(),
+            builtins::builtin_interface_hash(),
+        );
     }
 
     for dep in deps {
-        if dep == "Builtin" || dep == opts.package {
+        if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
         let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
@@ -306,12 +315,17 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     }
 
     let Some((main_package, main)) = by_name
-        .get_key_value("main")
-        .or_else(|| by_name.get_key_value("Main"))
+        .get_key_value(ROOT_PACKAGE)
+        .or_else(|| by_name.get_key_value(LEGACY_ROOT_PACKAGE))
     else {
         return Err(compile_error("missing main package core".to_string()));
     };
-    if !main.core_ir.toplevels.iter().any(|f| f.name == "main") {
+    if !main
+        .core_ir
+        .toplevels
+        .iter()
+        .any(|f| f.name == ENTRY_FUNCTION)
+    {
         return Err(compile_error(format!(
             "{} package missing main function",
             main_package
@@ -321,7 +335,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     let builtin_hash = builtins::builtin_interface_hash();
     for (pkg, unit) in by_name.iter() {
         for (dep, expected_hash) in unit.deps.iter() {
-            if dep == "Builtin" {
+            if dep == BUILTIN_PACKAGE {
                 if expected_hash != &builtin_hash {
                     return Err(compile_error(format!(
                         "package {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",

@@ -6,6 +6,7 @@ use crate::{
         mangle::{encode_ty, go_ident},
     },
     names::{trait_impl_fn_name, ty_compact},
+    package_names::ENTRY_FUNCTION,
     tast,
 };
 
@@ -37,7 +38,7 @@ fn ty_contains_type_param(ty: &tast::Ty) -> bool {
 pub fn make_runtime() -> Vec<goast::Item> {
     let mut items = vec![
         Item::Package(Package {
-            name: "main".to_string(),
+            name: ENTRY_FUNCTION.to_string(),
         }),
         Item::Import(ImportDecl {
             specs: vec![

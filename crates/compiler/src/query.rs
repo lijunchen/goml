@@ -9,6 +9,7 @@ use cst::nodes::{ArgList, BinaryExpr, CallExpr};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::{TextRange, TextSize};
 
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::{artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
@@ -1420,7 +1421,7 @@ fn index_source_file_symbols(
         .package_decl()
         .and_then(|d| d.name_token())
         .map(|t| t.to_string())
-        .unwrap_or_else(|| "Main".to_string());
+        .unwrap_or_else(|| ROOT_PACKAGE.to_string());
 
     for item in cst_file.items() {
         match item {
@@ -1645,7 +1646,7 @@ fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
 }
 
 fn qualify_name(package: &str, name: &str) -> String {
-    if package == "Main" || package == "main" || package == "Builtin" {
+    if is_special_unqualified_package(package) {
         name.to_string()
     } else {
         format!("{}::{}", package, name)
@@ -2010,7 +2011,7 @@ fn lookup_symbol_locations_for_path(
     let mut locations = Vec::new();
     let full_name = segments.join("::");
 
-    if segments[0] != "Builtin"
+    if segments[0] != BUILTIN_PACKAGE
         && token.to_string() == segments[0]
         && graph
             .and_then(|g| g.package_dirs.get(&segments[0]))

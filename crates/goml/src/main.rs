@@ -6,12 +6,15 @@ use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
 use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
+use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
 use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
 const PRETTY_WIDTH: usize = 120;
 const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
+const DEFAULT_LIB_PACKAGE: &str = "lib";
+const DEFAULT_ENTRY_FILE: &str = "main.gom";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -180,7 +183,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
 
     let project_dir = args.path.join(&args.project_name);
     ensure_project_dir_ready(&project_dir)?;
-    let lib_dir = project_dir.join("lib");
+    let lib_dir = project_dir.join(DEFAULT_LIB_PACKAGE);
     fs::create_dir_all(&lib_dir)
         .with_context(|| format!("failed to create directory {}", lib_dir.display()))?;
 
@@ -245,39 +248,42 @@ fn render_root_goml_toml(project_name: &str) -> String {
 name = "{project_name}"
 
 [package]
-name = "main"
-entry = "main.gom"
+name = "{ROOT_PACKAGE}"
+entry = "{DEFAULT_ENTRY_FILE}"
 "#
     )
 }
 
 fn render_main_gom() -> String {
-    r#"package main;
+    format!(
+        r#"package {ROOT_PACKAGE};
 
-use lib;
+use {DEFAULT_LIB_PACKAGE};
 
-fn main() -> unit {
-    string_println(lib::message())
-}
+fn {ENTRY_FUNCTION}() -> unit {{
+    string_println({DEFAULT_LIB_PACKAGE}::message())
+}}
 "#
-    .to_string()
+    )
 }
 
 fn render_lib_goml_toml() -> String {
-    r#"[package]
-name = "lib"
+    format!(
+        r#"[package]
+name = "{DEFAULT_LIB_PACKAGE}"
 "#
-    .to_string()
+    )
 }
 
 fn render_lib_gom() -> String {
-    r#"package lib;
+    format!(
+        r#"package {DEFAULT_LIB_PACKAGE};
 
-fn message() -> string {
+fn message() -> string {{
     "hello from lib"
-}
+}}
 "#
-    .to_string()
+    )
 }
 
 fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {

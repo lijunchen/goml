@@ -5,6 +5,7 @@ use line_index::LineIndex;
 pub use super::builtins::builtin_function_names;
 use crate::{
     common::{self, Constructor},
+    package_names::BUILTIN_PACKAGE,
     tast::{self, TastIdent},
 };
 use std::cell::Cell;
@@ -691,7 +692,7 @@ impl PackageTypeEnv {
     }
 
     pub fn env_for_package(&self, package: &str) -> Option<&GlobalTypeEnv> {
-        if package == "Builtin" {
+        if package == BUILTIN_PACKAGE {
             return Some(&self.builtins);
         }
         if package == self.package {

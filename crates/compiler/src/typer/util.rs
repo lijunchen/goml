@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use crate::{
     env::{GlobalTypeEnv, PackageTypeEnv},
     hir,
+    package_names::{BUILTIN_PACKAGE, is_special_unqualified_package},
     tast::{self},
 };
 use diagnostics::{Severity, Stage};
@@ -498,10 +499,11 @@ pub(crate) fn resolve_type_name<'a>(
     }
 
     if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
+        if package == BUILTIN_PACKAGE {
             return (rest.to_string(), genv.builtins());
         }
-        if is_root_package(package) && is_root_package(&genv.package) {
+        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -513,7 +515,7 @@ pub(crate) fn resolve_type_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if is_root_package(&genv.package) {
+    let current_name = if is_special_unqualified_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)
@@ -563,10 +565,11 @@ pub(crate) fn normalize_trait_name<'a>(
     }
 
     if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
+        if package == BUILTIN_PACKAGE {
             return (rest.to_string(), genv.builtins());
         }
-        if is_root_package(package) && is_root_package(&genv.package) {
+        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -578,7 +581,7 @@ pub(crate) fn normalize_trait_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if is_root_package(&genv.package) {
+    let current_name = if is_special_unqualified_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)
@@ -599,8 +602,4 @@ pub(crate) fn normalize_trait_name<'a>(
 
 pub(crate) fn type_param_name_set(tparams: &[hir::HirIdent]) -> HashSet<String> {
     tparams.iter().map(|param| param.to_ident_name()).collect()
-}
-
-fn is_root_package(package: &str) -> bool {
-    package == "Builtin" || package == "Main" || package == "main"
 }

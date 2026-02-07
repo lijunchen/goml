@@ -7,6 +7,7 @@ use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
+use crate::package_names::{BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE};
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
 use crate::{
@@ -76,10 +77,10 @@ struct PackageInterface {
 }
 
 fn root_package_name(package_names: &[String]) -> Option<String> {
-    if package_names.iter().any(|name| name == "main") {
-        Some("main".to_string())
-    } else if package_names.iter().any(|name| name == "Main") {
-        Some("Main".to_string())
+    if package_names.iter().any(|name| name == ROOT_PACKAGE) {
+        Some(ROOT_PACKAGE.to_string())
+    } else if package_names.iter().any(|name| name == LEGACY_ROOT_PACKAGE) {
+        Some(LEGACY_ROOT_PACKAGE.to_string())
     } else {
         None
     }
@@ -87,7 +88,7 @@ fn root_package_name(package_names: &[String]) -> Option<String> {
 
 fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     let mut ids = HashMap::new();
-    ids.insert("Builtin".to_string(), hir::PackageId(0));
+    ids.insert(BUILTIN_PACKAGE.to_string(), hir::PackageId(0));
 
     let root_package = root_package_name(package_names);
     if let Some(root_package) = &root_package {
@@ -98,7 +99,7 @@ fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
     sorted.sort();
     let mut next_id = 2u32;
     for name in sorted {
-        if name == "Builtin" || Some(name.as_str()) == root_package.as_deref() {
+        if name == BUILTIN_PACKAGE || Some(name.as_str()) == root_package.as_deref() {
             continue;
         }
         ids.insert(name, hir::PackageId(next_id));

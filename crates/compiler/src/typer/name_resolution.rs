@@ -7,6 +7,9 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
+use crate::package_names::{
+    BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package,
+};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -53,19 +56,15 @@ struct ResolutionContext<'a> {
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
-    if is_root_package(package) {
+    if is_special_unqualified_package(package) {
         name.to_string()
     } else {
         format!("{}::{}", package, name)
     }
 }
 
-fn is_root_package(package: &str) -> bool {
-    package == "Builtin" || package == "Main" || package == "main"
-}
-
 fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
-    package == current_package || package == "Builtin" || imports.contains(package)
+    package == current_package || package == BUILTIN_PACKAGE || imports.contains(package)
 }
 
 struct ConstructorIndex {
@@ -81,7 +80,10 @@ impl ConstructorIndex {
             enums_by_package: HashMap::new(),
         };
         index.add_files(files);
-        if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
+        if !files
+            .iter()
+            .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
+        {
             let builtin_ast = builtins::get_builtin_ast();
             let builtin_file = hir::SourceFileAst {
                 path: "<builtin>".into(),
@@ -161,7 +163,10 @@ impl TraitIndex {
             traits_by_package: HashMap::new(),
         };
         index.add_files(files);
-        if !files.iter().any(|file| file.ast.package.0 == "Builtin") {
+        if !files
+            .iter()
+            .any(|file| file.ast.package.0 == BUILTIN_PACKAGE)
+        {
             let builtin_ast = builtins::get_builtin_ast();
             let builtin_file = hir::SourceFileAst {
                 path: "<builtin>".into(),
@@ -193,7 +198,9 @@ impl TraitIndex {
 
 impl ResolutionContext<'_> {
     fn package_allowed(&self, package: &str) -> bool {
-        package == self.current_package || package == "Builtin" || self.imports.contains(package)
+        package == self.current_package
+            || package == BUILTIN_PACKAGE
+            || self.imports.contains(package)
     }
 }
 
@@ -243,11 +250,12 @@ impl NameResolution {
                     .enum_has_variant(ctx.current_package, enum_name, variant)
                 {
                     Some(constructor_path(ctx.current_package, enum_name, variant))
-                } else if ctx
-                    .constructor_index
-                    .enum_has_variant("Builtin", enum_name, variant)
-                {
-                    Some(constructor_path("Builtin", enum_name, variant))
+                } else if ctx.constructor_index.enum_has_variant(
+                    BUILTIN_PACKAGE,
+                    enum_name,
+                    variant,
+                ) {
+                    Some(constructor_path(BUILTIN_PACKAGE, enum_name, variant))
                 } else {
                     None
                 }
@@ -286,10 +294,10 @@ impl NameResolution {
         let package_name = files
             .first()
             .map(|file| file.package.0.as_str())
-            .unwrap_or("Main");
+            .unwrap_or(LEGACY_ROOT_PACKAGE);
         let package_id = match package_name {
-            "Builtin" => hir::PackageId(0),
-            "Main" | "main" => hir::PackageId(1),
+            BUILTIN_PACKAGE => hir::PackageId(0),
+            LEGACY_ROOT_PACKAGE | ROOT_PACKAGE => hir::PackageId(1),
             _ => hir::PackageId(2),
         };
         let files = files
@@ -561,7 +569,7 @@ impl NameResolution {
                     .file_name()
                     .and_then(|name| name.to_str())
                     .unwrap_or("<unknown>");
-                let path = if is_root_package(&package) {
+                let path = if is_special_unqualified_package(&package) {
                     file_name.to_string()
                 } else {
                     format!("{}/{}", package, file_name)
@@ -790,7 +798,7 @@ impl NameResolution {
                         .map(|seg| seg.ident().0.as_str())
                         .unwrap_or_default();
                     if package != ctx.current_package
-                        && package != "Builtin"
+                        && package != BUILTIN_PACKAGE
                         && ctx.deps.contains_key(package)
                         && !ctx.imports.contains(package)
                     {
@@ -800,7 +808,7 @@ impl NameResolution {
                         ));
                     }
 
-                    let res = if package == ctx.current_package || package == "Builtin" {
+                    let res = if package == ctx.current_package || package == BUILTIN_PACKAGE {
                         ctx.def_names
                             .get(&full_name)
                             .copied()
@@ -834,7 +842,7 @@ impl NameResolution {
                         hir::NameRef::Unresolved(_)
                             if path.len() == 2
                                 && (package == ctx.current_package
-                                    || package == "Builtin"
+                                    || package == BUILTIN_PACKAGE
                                     || ctx.deps.contains_key(package)) =>
                         {
                             self.alloc_expr_with_ptr(
@@ -1611,7 +1619,7 @@ impl NameResolution {
             if ctx.trait_index.has_trait(ctx.current_package, &name) {
                 return local;
             }
-            if ctx.trait_index.has_trait("Builtin", &name) {
+            if ctx.trait_index.has_trait(BUILTIN_PACKAGE, &name) {
                 return name;
             }
             return local;
@@ -1733,7 +1741,7 @@ fn type_param_set(params: &[ast::AstIdent]) -> HashSet<String> {
 }
 
 fn full_def_path(package: &str, name: &str) -> hir::Path {
-    if is_root_package(package) {
+    if is_special_unqualified_package(package) {
         hir::Path::from_ident(name.to_string())
     } else {
         hir::Path::from_idents(vec![package.to_string(), name.to_string()])
@@ -1741,7 +1749,7 @@ fn full_def_path(package: &str, name: &str) -> hir::Path {
 }
 
 fn constructor_path(package: &str, enum_name: &str, variant: &str) -> hir::Path {
-    if is_root_package(package) {
+    if is_special_unqualified_package(package) {
         hir::Path::from_idents(vec![enum_name.to_string(), variant.to_string()])
     } else {
         hir::Path::from_idents(vec![

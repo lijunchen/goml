@@ -6,6 +6,8 @@ use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use crate::package_names::{BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE};
+
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
     pub path: PathBuf,
@@ -144,10 +146,10 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
     let package_name = files
         .first()
         .map(|file| file.ast.package.0.as_str())
-        .unwrap_or("Main");
+        .unwrap_or(LEGACY_ROOT_PACKAGE);
     let package_id = match package_name {
-        "Builtin" => PackageId(0),
-        "Main" | "main" => PackageId(1),
+        BUILTIN_PACKAGE => PackageId(0),
+        LEGACY_ROOT_PACKAGE | ROOT_PACKAGE => PackageId(1),
         _ => PackageId(2),
     };
     lower_to_hir_files_with_env(package_id, files, &deps)
@@ -166,7 +168,7 @@ pub fn lower_to_hir_files_with_env(
         .files
         .first()
         .map(|file| file.package.clone())
-        .unwrap_or_else(|| PackageName("Main".to_string()));
+        .unwrap_or_else(|| PackageName(ROOT_PACKAGE.to_string()));
     let mut imports: Vec<PackageName> = resolved
         .files
         .iter()
@@ -214,10 +216,10 @@ pub fn lower_to_project_hir_files_with_env(
             .push(file);
     }
 
-    let root_package = if grouped.contains_key(&PackageName("main".to_string())) {
-        Some("main")
-    } else if grouped.contains_key(&PackageName("Main".to_string())) {
-        Some("Main")
+    let root_package = if grouped.contains_key(&PackageName(ROOT_PACKAGE.to_string())) {
+        Some(ROOT_PACKAGE)
+    } else if grouped.contains_key(&PackageName(LEGACY_ROOT_PACKAGE.to_string())) {
+        Some(LEGACY_ROOT_PACKAGE)
     } else {
         None
     };
@@ -236,7 +238,7 @@ pub fn lower_to_project_hir_files_with_env(
     package_order.extend(other_packages);
 
     let mut package_index = HashMap::new();
-    package_index.insert(PackageName("Builtin".to_string()), PackageId(0));
+    package_index.insert(PackageName(BUILTIN_PACKAGE.to_string()), PackageId(0));
     if let Some(root_package) = root_package {
         package_index.insert(PackageName(root_package.to_string()), PackageId(1));
     }
