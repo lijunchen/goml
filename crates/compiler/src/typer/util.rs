@@ -501,7 +501,7 @@ pub(crate) fn resolve_type_name<'a>(
         if package == "Builtin" {
             return (rest.to_string(), genv.builtins());
         }
-        if package == "Main" && genv.package == "Main" {
+        if is_root_package(package) && is_root_package(&genv.package) {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -513,7 +513,7 @@ pub(crate) fn resolve_type_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+    let current_name = if is_root_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)
@@ -566,7 +566,7 @@ pub(crate) fn normalize_trait_name<'a>(
         if package == "Builtin" {
             return (rest.to_string(), genv.builtins());
         }
-        if package == "Main" && genv.package == "Main" {
+        if is_root_package(package) && is_root_package(&genv.package) {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -578,7 +578,7 @@ pub(crate) fn normalize_trait_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+    let current_name = if is_root_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)
@@ -599,4 +599,8 @@ pub(crate) fn normalize_trait_name<'a>(
 
 pub(crate) fn type_param_name_set(tparams: &[hir::HirIdent]) -> HashSet<String> {
     tparams.iter().map(|param| param.to_ident_name()).collect()
+}
+
+fn is_root_package(package: &str) -> bool {
+    package == "Builtin" || package == "Main" || package == "main"
 }

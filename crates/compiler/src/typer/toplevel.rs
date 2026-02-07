@@ -214,7 +214,7 @@ fn is_local_name(current_package: &str, name: &str) -> bool {
     if let Some((package, _)) = name.split_once("::") {
         package == current_package
     } else {
-        current_package == "Main" || current_package == "Builtin"
+        current_package == "Main" || current_package == "main" || current_package == "Builtin"
     }
 }
 

@@ -53,11 +53,15 @@ struct ResolutionContext<'a> {
 }
 
 fn full_def_name(package: &str, name: &str) -> String {
-    if package == "Builtin" || package == "Main" {
+    if is_root_package(package) {
         name.to_string()
     } else {
         format!("{}::{}", package, name)
     }
+}
+
+fn is_root_package(package: &str) -> bool {
+    package == "Builtin" || package == "Main" || package == "main"
 }
 
 fn package_allowed(package: &str, current_package: &str, imports: &HashSet<String>) -> bool {
@@ -285,7 +289,7 @@ impl NameResolution {
             .unwrap_or("Main");
         let package_id = match package_name {
             "Builtin" => hir::PackageId(0),
-            "Main" => hir::PackageId(1),
+            "Main" | "main" => hir::PackageId(1),
             _ => hir::PackageId(2),
         };
         let files = files
@@ -557,7 +561,7 @@ impl NameResolution {
                     .file_name()
                     .and_then(|name| name.to_str())
                     .unwrap_or("<unknown>");
-                let path = if package == "Main" || package == "Builtin" {
+                let path = if is_root_package(&package) {
                     file_name.to_string()
                 } else {
                     format!("{}/{}", package, file_name)
@@ -1729,7 +1733,7 @@ fn type_param_set(params: &[ast::AstIdent]) -> HashSet<String> {
 }
 
 fn full_def_path(package: &str, name: &str) -> hir::Path {
-    if package == "Builtin" || package == "Main" {
+    if is_root_package(package) {
         hir::Path::from_ident(name.to_string())
     } else {
         hir::Path::from_idents(vec![package.to_string(), name.to_string()])
@@ -1737,7 +1741,7 @@ fn full_def_path(package: &str, name: &str) -> hir::Path {
 }
 
 fn constructor_path(package: &str, enum_name: &str, variant: &str) -> hir::Path {
-    if package == "Builtin" || package == "Main" {
+    if is_root_package(package) {
         hir::Path::from_idents(vec![enum_name.to_string(), variant.to_string()])
     } else {
         hir::Path::from_idents(vec![

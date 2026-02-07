@@ -75,6 +75,39 @@ struct PackageInterface {
     package_interface: interface::PackageInterface,
 }
 
+fn root_package_name(package_names: &[String]) -> Option<String> {
+    if package_names.iter().any(|name| name == "main") {
+        Some("main".to_string())
+    } else if package_names.iter().any(|name| name == "Main") {
+        Some("Main".to_string())
+    } else {
+        None
+    }
+}
+
+fn package_id_map(package_names: &[String]) -> HashMap<String, hir::PackageId> {
+    let mut ids = HashMap::new();
+    ids.insert("Builtin".to_string(), hir::PackageId(0));
+
+    let root_package = root_package_name(package_names);
+    if let Some(root_package) = &root_package {
+        ids.insert(root_package.clone(), hir::PackageId(1));
+    }
+
+    let mut sorted = package_names.to_vec();
+    sorted.sort();
+    let mut next_id = 2u32;
+    for name in sorted {
+        if name == "Builtin" || Some(name.as_str()) == root_package.as_deref() {
+            continue;
+        }
+        ids.insert(name, hir::PackageId(next_id));
+        next_id += 1;
+    }
+
+    ids
+}
+
 fn build_package<'a>(
     gensym: &Gensym,
     diagnostics: &mut Diagnostics,
@@ -233,17 +266,7 @@ fn typecheck_packages(
     let mut artifacts_by_name: HashMap<String, PackageArtifact> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
-    let mut package_ids = HashMap::new();
-    package_ids.insert("Builtin".to_string(), hir::PackageId(0));
-    package_ids.insert("Main".to_string(), hir::PackageId(1));
-    let mut next_id = 2u32;
-    for name in package_names {
-        if name == "Builtin" || name == "Main" {
-            continue;
-        }
-        package_ids.insert(name, hir::PackageId(next_id));
-        next_id += 1;
-    }
+    let package_ids = package_id_map(&package_names);
 
     for name in order.iter() {
         let package = graph
@@ -461,17 +484,7 @@ pub fn typecheck_with_packages_and_results(
     let mut artifacts_by_name: HashMap<String, PackageInterface> = HashMap::new();
     let mut package_names: Vec<String> = graph.packages.keys().cloned().collect();
     package_names.sort();
-    let mut package_ids = HashMap::new();
-    package_ids.insert("Builtin".to_string(), hir::PackageId(0));
-    package_ids.insert("Main".to_string(), hir::PackageId(1));
-    let mut next_id = 2u32;
-    for name in package_names {
-        if name == "Builtin" || name == "Main" {
-            continue;
-        }
-        package_ids.insert(name, hir::PackageId(next_id));
-        next_id += 1;
-    }
+    let package_ids = package_id_map(&package_names);
 
     let mut entry_hir_table = None;
     let mut entry_results = None;

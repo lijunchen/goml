@@ -52,17 +52,21 @@ impl PackageInterface {
 }
 
 fn belongs_to_package(package: &str, name: &str) -> bool {
-    if package == "Main" || package == "Builtin" {
+    if is_root_package(package) {
         !name.contains("::")
     } else {
         name.starts_with(&format!("{}::", package))
     }
 }
 
+fn is_root_package(package: &str) -> bool {
+    package == "Builtin" || package == "Main" || package == "main"
+}
+
 pub fn package_id_for_name(name: &str) -> hir::PackageId {
     match name {
         "Builtin" => hir::PackageId(0),
-        "Main" => hir::PackageId(1),
+        "Main" | "main" => hir::PackageId(1),
         other => {
             let digest = sha2::Sha256::digest(other.as_bytes());
             let mut bytes = [0u8; 4];

@@ -147,7 +147,7 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
         .unwrap_or("Main");
     let package_id = match package_name {
         "Builtin" => PackageId(0),
-        "Main" => PackageId(1),
+        "Main" | "main" => PackageId(1),
         _ => PackageId(2),
     };
     lower_to_hir_files_with_env(package_id, files, &deps)
@@ -214,27 +214,35 @@ pub fn lower_to_project_hir_files_with_env(
             .push(file);
     }
 
+    let root_package = if grouped.contains_key(&PackageName("main".to_string())) {
+        Some("main")
+    } else if grouped.contains_key(&PackageName("Main".to_string())) {
+        Some("Main")
+    } else {
+        None
+    };
+
     let mut other_packages: Vec<PackageName> = grouped
         .keys()
-        .filter(|name| name.as_str() != "Main")
+        .filter(|name| Some(name.as_str()) != root_package)
         .cloned()
         .collect();
     other_packages.sort_by(|a, b| a.0.cmp(&b.0));
 
     let mut package_order = Vec::new();
-    if grouped.contains_key(&PackageName("Main".to_string())) {
-        package_order.push(PackageName("Main".to_string()));
+    if let Some(root_package) = root_package {
+        package_order.push(PackageName(root_package.to_string()));
     }
     package_order.extend(other_packages);
 
     let mut package_index = HashMap::new();
     package_index.insert(PackageName("Builtin".to_string()), PackageId(0));
-    if package_order.iter().any(|name| name.as_str() == "Main") {
-        package_index.insert(PackageName("Main".to_string()), PackageId(1));
+    if let Some(root_package) = root_package {
+        package_index.insert(PackageName(root_package.to_string()), PackageId(1));
     }
     let mut next_id = 2u32;
     for name in package_order.iter() {
-        if name.as_str() == "Main" {
+        if Some(name.as_str()) == root_package {
             continue;
         }
         package_index.insert(name.clone(), PackageId(next_id));

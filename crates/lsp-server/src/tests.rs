@@ -1747,14 +1747,14 @@ fn main() -> unit {
 name = "tmpmod"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package Main;
+package main;
 use Pkg;
 
 fn main() {
@@ -1799,14 +1799,14 @@ fn a() -> int32 { 0 }
 name = "tmpmod"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package Main;
+package main;
 use A;
 use B;
 

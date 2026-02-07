@@ -305,13 +305,17 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         by_name.insert(core.package.clone(), core);
     }
 
-    let Some(main) = by_name.get("Main") else {
-        return Err(compile_error("missing Main package core".to_string()));
+    let Some((main_package, main)) = by_name
+        .get_key_value("main")
+        .or_else(|| by_name.get_key_value("Main"))
+    else {
+        return Err(compile_error("missing main package core".to_string()));
     };
     if !main.core_ir.toplevels.iter().any(|f| f.name == "main") {
-        return Err(compile_error(
-            "Main package missing main function".to_string(),
-        ));
+        return Err(compile_error(format!(
+            "{} package missing main function",
+            main_package
+        )));
     }
 
     let builtin_hash = builtins::builtin_interface_hash();

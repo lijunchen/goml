@@ -180,7 +180,7 @@ fn execute_new(args: NewArgs) -> anyhow::Result<()> {
 
     let project_dir = args.path.join(&args.project_name);
     ensure_project_dir_ready(&project_dir)?;
-    let lib_dir = project_dir.join("Lib");
+    let lib_dir = project_dir.join("lib");
     fs::create_dir_all(&lib_dir)
         .with_context(|| format!("failed to create directory {}", lib_dir.display()))?;
 
@@ -245,19 +245,19 @@ fn render_root_goml_toml(project_name: &str) -> String {
 name = "{project_name}"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#
     )
 }
 
 fn render_main_gom() -> String {
-    r#"package Main;
+    r#"package main;
 
-use Lib;
+use lib;
 
 fn main() -> unit {
-    string_println(Lib::message())
+    string_println(lib::message())
 }
 "#
     .to_string()
@@ -265,16 +265,16 @@ fn main() -> unit {
 
 fn render_lib_goml_toml() -> String {
     r#"[package]
-name = "Lib"
+name = "lib"
 "#
     .to_string()
 }
 
 fn render_lib_gom() -> String {
-    r#"package Lib;
+    r#"package lib;
 
 fn message() -> string {
-    "hello from Lib"
+    "hello from lib"
 }
 "#
     .to_string()

@@ -283,6 +283,14 @@ pub fn discover_packages_from_config(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
+    if config.is_module_root() && config.package.name != "main" {
+        return Err(compile_error(format!(
+            "module root package must be `main`, found `{}` in {}",
+            config.package.name,
+            module_dir.join("goml.toml").display()
+        )));
+    }
+
     let entry_file = entry_path
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| module_dir.join(&config.package.entry));

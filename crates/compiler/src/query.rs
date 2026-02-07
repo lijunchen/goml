@@ -1645,7 +1645,7 @@ fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
 }
 
 fn qualify_name(package: &str, name: &str) -> String {
-    if package == "Main" || package == "Builtin" {
+    if package == "Main" || package == "main" || package == "Builtin" {
         name.to_string()
     } else {
         format!("{}::{}", package, name)

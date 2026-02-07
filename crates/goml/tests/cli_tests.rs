@@ -14,11 +14,11 @@ const PROJECT_CONFIG: &str = r#"[module]
 name = "demo"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#;
 
-const PROJECT_MAIN: &str = r#"package Main;
+const PROJECT_MAIN: &str = r#"package main;
 
 fn main() -> unit {
     string_println("hello")
@@ -247,16 +247,17 @@ fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
     let project_dir = dir.path().join("demo");
     let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
     let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
-    let lib_toml = fs::read_to_string(project_dir.join("Lib/goml.toml"))?;
-    let lib_gom = fs::read_to_string(project_dir.join("Lib/lib.gom"))?;
+    let lib_toml = fs::read_to_string(project_dir.join("lib/goml.toml"))?;
+    let lib_gom = fs::read_to_string(project_dir.join("lib/lib.gom"))?;
 
     assert!(root_toml.contains("[module]"));
     assert!(root_toml.contains("name = \"demo\""));
     assert!(root_toml.contains("entry = \"main.gom\""));
-    assert!(main_gom.contains("package Main;"));
-    assert!(main_gom.contains("use Lib;"));
-    assert!(lib_toml.contains("name = \"Lib\""));
-    assert!(lib_gom.contains("package Lib;"));
+    assert!(root_toml.contains("name = \"main\""));
+    assert!(main_gom.contains("package main;"));
+    assert!(main_gom.contains("use lib;"));
+    assert!(lib_toml.contains("name = \"lib\""));
+    assert!(lib_gom.contains("package lib;"));
     assert!(lib_gom.contains("fn message() -> string"));
 
     Ok(())
@@ -322,7 +323,7 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
     let go_stdout = String::from_utf8_lossy(&go_output.stdout);
     let go_stderr = String::from_utf8_lossy(&go_output.stderr);
     assert!(go_output.status.success(), "stderr: {go_stderr}");
-    expect!["hello from Lib\n"].assert_eq(&go_stdout);
+    expect!["hello from lib\n"].assert_eq(&go_stdout);
 
     Ok(())
 }
