@@ -19,7 +19,11 @@ mod robustness_tests {
     #[test]
     fn lsp_handles_sampled_prefixes_of_hm_typechecker_without_panicking() {
         let input = include_str!("../../compiler/src/tests/pipeline/080_hm_typechecker/main.gom");
-        assert_lsp_handles_sampled_prefixes_without_panicking("pipeline_080_hm_typechecker", input);
+        assert_lsp_handles_sampled_prefixes_without_panicking_with_stack(
+            "pipeline_080_hm_typechecker",
+            input,
+            16 * 1024 * 1024,
+        );
     }
 
     #[test]
@@ -414,6 +418,24 @@ fn assert_lsp_handles_sampled_prefixes_without_panicking(case_name: &str, input:
                 "lsp panicked for case={case_name}, prefix_end={end}, panic={panic_message}, prefix_tail={tail:?}"
             );
         }
+    }
+}
+
+fn assert_lsp_handles_sampled_prefixes_without_panicking_with_stack(
+    case_name: &str,
+    input: &str,
+    stack_size: usize,
+) {
+    let case_name = case_name.to_string();
+    let input = input.to_string();
+    let handle = std::thread::Builder::new()
+        .stack_size(stack_size)
+        .spawn(move || {
+            assert_lsp_handles_sampled_prefixes_without_panicking(&case_name, &input);
+        })
+        .unwrap();
+    if let Err(payload) = handle.join() {
+        std::panic::resume_unwind(payload);
     }
 }
 
