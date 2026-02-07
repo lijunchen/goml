@@ -7,7 +7,7 @@ use parser::syntax::{MySyntaxKind, MySyntaxNodePtr};
 use std::collections::HashSet;
 use text_size::TextRange;
 
-const DEFAULT_PACKAGE_NAME: &str = "Main";
+const DEFAULT_PACKAGE_NAME: &str = "main";
 
 pub struct LowerResult {
     ast: Option<ast::File>,

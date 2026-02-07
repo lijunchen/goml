@@ -87,7 +87,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
         == AST ==
-        package Main;
+        package main;
         fn main() -> unit {
           string_println("hello");
         }
@@ -95,7 +95,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
 
         == HIR ==
-        package Main
+        package main
         file main.gom
           fn main() -> unit {
               string_println("hello");

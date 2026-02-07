@@ -10,9 +10,7 @@ use crate::hir;
 use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
-use crate::package_names::{
-    BUILTIN_PACKAGE, ENTRY_FUNCTION, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE, is_builtin_package,
-};
+use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 use diagnostics::Diagnostics;
@@ -78,14 +76,14 @@ fn load_interface_from_paths(
             let expected = builtins::builtin_interface_hash();
             let Some(actual) = unit.deps.get(BUILTIN_PACKAGE) else {
                 return Err(compile_error(format!(
-                    "interface {} is missing implicit Builtin dependency (rebuild {})",
+                    "interface {} is missing implicit builtin dependency (rebuild {})",
                     candidate.display(),
                     unit.package
                 )));
             };
             if actual != &expected {
                 return Err(compile_error(format!(
-                    "interface {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                    "interface {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
                     candidate.display(),
                     actual,
                     expected,
@@ -314,10 +312,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         by_name.insert(core.package.clone(), core);
     }
 
-    let Some((main_package, main)) = by_name
-        .get_key_value(ROOT_PACKAGE)
-        .or_else(|| by_name.get_key_value(LEGACY_ROOT_PACKAGE))
-    else {
+    let Some((main_package, main)) = by_name.get_key_value(ROOT_PACKAGE) else {
         return Err(compile_error("missing main package core".to_string()));
     };
     if !main
@@ -338,7 +333,7 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
             if dep == BUILTIN_PACKAGE {
                 if expected_hash != &builtin_hash {
                     return Err(compile_error(format!(
-                        "package {} expects Builtin interface_hash {}, but compiler has {} (rebuild {})",
+                        "package {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
                         pkg, expected_hash, builtin_hash, pkg
                     )));
                 }

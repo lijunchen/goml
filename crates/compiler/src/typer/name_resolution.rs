@@ -7,9 +7,7 @@ use crate::env;
 use crate::hir;
 use crate::hir::HirIdent;
 use crate::interface;
-use crate::package_names::{
-    BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package,
-};
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
 
@@ -294,10 +292,10 @@ impl NameResolution {
         let package_name = files
             .first()
             .map(|file| file.package.0.as_str())
-            .unwrap_or(LEGACY_ROOT_PACKAGE);
+            .unwrap_or(ROOT_PACKAGE);
         let package_id = match package_name {
             BUILTIN_PACKAGE => hir::PackageId(0),
-            LEGACY_ROOT_PACKAGE | ROOT_PACKAGE => hir::PackageId(1),
+            ROOT_PACKAGE => hir::PackageId(1),
             _ => hir::PackageId(2),
         };
         let files = files

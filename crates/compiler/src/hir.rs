@@ -6,7 +6,7 @@ use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
-use crate::package_names::{BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE};
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
@@ -146,10 +146,10 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
     let package_name = files
         .first()
         .map(|file| file.ast.package.0.as_str())
-        .unwrap_or(LEGACY_ROOT_PACKAGE);
+        .unwrap_or(ROOT_PACKAGE);
     let package_id = match package_name {
         BUILTIN_PACKAGE => PackageId(0),
-        LEGACY_ROOT_PACKAGE | ROOT_PACKAGE => PackageId(1),
+        ROOT_PACKAGE => PackageId(1),
         _ => PackageId(2),
     };
     lower_to_hir_files_with_env(package_id, files, &deps)
@@ -216,13 +216,9 @@ pub fn lower_to_project_hir_files_with_env(
             .push(file);
     }
 
-    let root_package = if grouped.contains_key(&PackageName(ROOT_PACKAGE.to_string())) {
-        Some(ROOT_PACKAGE)
-    } else if grouped.contains_key(&PackageName(LEGACY_ROOT_PACKAGE.to_string())) {
-        Some(LEGACY_ROOT_PACKAGE)
-    } else {
-        None
-    };
+    let root_package = grouped
+        .contains_key(&PackageName(ROOT_PACKAGE.to_string()))
+        .then_some(ROOT_PACKAGE);
 
     let mut other_packages: Vec<PackageName> = grouped
         .keys()

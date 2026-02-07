@@ -4,9 +4,7 @@ use sha2::Digest;
 
 use crate::artifact::PackageExports;
 use crate::hir;
-use crate::package_names::{
-    BUILTIN_PACKAGE, LEGACY_ROOT_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package,
-};
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct PackageInterface {
@@ -65,7 +63,7 @@ fn belongs_to_package(package: &str, name: &str) -> bool {
 pub fn package_id_for_name(name: &str) -> hir::PackageId {
     match name {
         BUILTIN_PACKAGE => hir::PackageId(0),
-        LEGACY_ROOT_PACKAGE | ROOT_PACKAGE => hir::PackageId(1),
+        ROOT_PACKAGE => hir::PackageId(1),
         other => {
             let digest = sha2::Sha256::digest(other.as_bytes());
             let mut bytes = [0u8; 4];
