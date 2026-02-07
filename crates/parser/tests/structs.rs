@@ -287,3 +287,123 @@ fn parses_namespaced_type() {
                   RBrace@24..25 "}""#]],
     );
 }
+
+fn utf8_prefixes(input: &str) -> impl Iterator<Item = usize> + '_ {
+    std::iter::once(0)
+        .chain(input.char_indices().map(|(idx, _)| idx).skip(1))
+        .chain(std::iter::once(input.len()))
+}
+
+fn assert_prefix_parsing_never_panics(case_name: &str, input: &str) {
+    let path = Path::new("prefix_robustness.gom");
+    for end in utf8_prefixes(input) {
+        let prefix = &input[..end];
+        let result = std::panic::catch_unwind(|| {
+            let parsed = parse(path, prefix);
+            let _ = parsed.format_errors(prefix);
+        });
+        if let Err(payload) = result {
+            let panic_message = if let Some(message) = payload.downcast_ref::<String>() {
+                message.clone()
+            } else if let Some(message) = payload.downcast_ref::<&str>() {
+                message.to_string()
+            } else {
+                "non-string panic payload".to_string()
+            };
+            panic!(
+                "parser panicked for case={case_name}, prefix_end={end}, panic={panic_message}, prefix={:?}",
+                prefix
+            );
+        }
+    }
+}
+
+#[test]
+fn parser_handles_all_prefixes_of_hm_typechecker_without_panicking() {
+    let input = include_str!("../../compiler/src/tests/pipeline/080_hm_typechecker/main.gom");
+    assert_prefix_parsing_never_panics("pipeline_080_hm_typechecker", input);
+}
+
+#[test]
+fn parser_handles_tricky_inputs_without_panicking() {
+    let cases = [
+        (
+            "unterminated_string_and_block",
+            "fn main() { let msg = \"hello\\nworld; if true { msg }",
+        ),
+        (
+            "unterminated_char_and_tuple_pattern",
+            "fn main() { let (a, b, _) = (1, 2, 3); let c = '\\u12",
+        ),
+        (
+            "attribute_and_extern_mixture",
+            "#[derive(ToString)] #[cfg(test) fn foo[T: Eq + Hash](x: T) -> dyn Show {",
+        ),
+        (
+            "dense_operators_and_partial_tokens",
+            "fn main(){let x=1<<<<=>>>==!=&&||::..,,;;",
+        ),
+        (
+            "deep_nesting",
+            "fn main() { (((((((((((((((((((((1))))))))))))))))))))) }",
+        ),
+        (
+            "multiline_string_prefixes",
+            "fn main() { let s = \\\\line1\\n  \\\\line2\\n    \\\\line3\\nlet x = 1; }",
+        ),
+        (
+            "invalid_tokens_and_escape_like_sequence",
+            "package Main; fn main() { let y = \\u2028; @@@ }",
+        ),
+        (
+            "unbalanced_generics_and_trait_bounds",
+            "trait T { fn f(Self) -> Self; } fn id[T: A + B +](x: T) -> T { x }",
+        ),
+    ];
+
+    for (case_name, input) in cases {
+        assert_prefix_parsing_never_panics(case_name, input);
+    }
+}
+
+fn assert_recovers_and_parses_following_fn(input: &str, following_fn_name: &str) {
+    let path = Path::new("recovery.gom");
+    let result = parse(path, input);
+    assert!(result.has_errors(), "expected parse errors for malformed input");
+
+    let tree = debug_tree(&result.green_node);
+    let fn_count = tree.matches("FN@").count();
+    assert!(
+        fn_count >= 2,
+        "expected parser to recover and parse at least two top-level functions, got {fn_count}\n{tree}"
+    );
+    assert!(
+        tree.contains(&format!("\"{following_fn_name}\"")),
+        "expected recovered tree to contain function name `{following_fn_name}`\n{tree}"
+    );
+}
+
+#[test]
+fn missing_block_rbrace_does_not_block_following_top_level_fn() {
+    let input = r#"fn broken() {
+    let x = 1;
+
+fn after() {
+    let y = 2;
+}
+"#;
+    assert_recovers_and_parses_following_fn(input, "after");
+}
+
+#[test]
+fn missing_param_rparen_does_not_block_following_top_level_fn() {
+    let input = r#"fn broken(x: int32 {
+    let x = 1;
+}
+
+fn after() {
+    let y = 2;
+}
+"#;
+    assert_recovers_and_parses_following_fn(input, "after");
+}

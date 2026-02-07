@@ -557,6 +557,18 @@ fn generic_list(p: &mut Parser, allow_bounds: bool) {
 }
 
 const PARAM_LIST_RECOVERY: &[TokenKind] = &[T![->], T!['{'], T![fn]];
+const BLOCK_RECOVERY: &[TokenKind] = &[
+    T![#],
+    T![fn],
+    T![extern],
+    T![struct],
+    T![enum],
+    T![trait],
+    T![impl],
+    T![package],
+    T![use],
+    T![import],
+];
 fn param_list(p: &mut Parser) {
     assert!(p.at(T!['(']));
     let m = p.open();
@@ -790,6 +802,11 @@ pub fn block(p: &mut Parser) {
 
         if p.eat(T![;]) {
             continue;
+        }
+
+        if p.at_any(BLOCK_RECOVERY) {
+            p.error("expected `}` to close block");
+            break;
         }
 
         p.advance_with_error("expected a statement or expression");
