@@ -226,3 +226,103 @@ fn project_build_writes_target_goml_main_go() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+fn new_creates_two_package_scaffold() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+
+    let output = Command::new(goml_bin())
+        .arg("new")
+        .arg("demo")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    assert!(stdout.contains("Created project at"));
+    expect![""].assert_eq(&stderr);
+
+    let project_dir = dir.path().join("demo");
+    let root_toml = fs::read_to_string(project_dir.join("goml.toml"))?;
+    let main_gom = fs::read_to_string(project_dir.join("main.gom"))?;
+    let lib_toml = fs::read_to_string(project_dir.join("Lib/goml.toml"))?;
+    let lib_gom = fs::read_to_string(project_dir.join("Lib/lib.gom"))?;
+
+    assert!(root_toml.contains("[module]"));
+    assert!(root_toml.contains("name = \"demo\""));
+    assert!(root_toml.contains("entry = \"main.gom\""));
+    assert!(main_gom.contains("package Main;"));
+    assert!(main_gom.contains("use Lib;"));
+    assert!(lib_toml.contains("name = \"Lib\""));
+    assert!(lib_gom.contains("package Lib;"));
+    assert!(lib_gom.contains("fn message() -> string"));
+
+    Ok(())
+}
+
+#[test]
+fn new_fails_when_target_exists_and_not_empty() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let project_dir = dir.path().join("demo");
+    fs::create_dir_all(&project_dir)?;
+    fs::write(project_dir.join("keep.txt"), "x")?;
+
+    let output = Command::new(goml_bin())
+        .arg("new")
+        .arg("demo")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(!output.status.success());
+    assert!(stderr.contains("already exists and is not empty"));
+
+    Ok(())
+}
+
+#[test]
+fn new_project_can_check_and_build() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+
+    let new_output = Command::new(goml_bin())
+        .arg("new")
+        .arg("demo")
+        .current_dir(dir.path())
+        .output()?;
+    let new_stderr = String::from_utf8_lossy(&new_output.stderr);
+    assert!(new_output.status.success(), "stderr: {new_stderr}");
+
+    let project_dir = dir.path().join("demo");
+
+    let check_output = Command::new(goml_bin())
+        .arg("check")
+        .current_dir(&project_dir)
+        .output()?;
+    let check_stderr = String::from_utf8_lossy(&check_output.stderr);
+    assert!(check_output.status.success(), "stderr: {check_stderr}");
+
+    let build_output = Command::new(goml_bin())
+        .arg("build")
+        .current_dir(&project_dir)
+        .output()?;
+    let build_stderr = String::from_utf8_lossy(&build_output.stderr);
+    assert!(build_output.status.success(), "stderr: {build_stderr}");
+
+    let go_file = project_dir.join("target/goml/main.go");
+    assert!(go_file.exists());
+
+    let go_output = Command::new("go")
+        .arg("run")
+        .arg(&go_file)
+        .current_dir(&project_dir)
+        .output()?;
+
+    let go_stdout = String::from_utf8_lossy(&go_output.stdout);
+    let go_stderr = String::from_utf8_lossy(&go_output.stderr);
+    assert!(go_output.status.success(), "stderr: {go_stderr}");
+    expect!["hello from Lib\n"].assert_eq(&go_stdout);
+
+    Ok(())
+}

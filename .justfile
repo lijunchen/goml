@@ -25,3 +25,6 @@ install-lsp:
 vscode-ext:
     just install-lsp
     cd editors/vscode && npm install && npm run compile
+
+install:
+    cargo install --path ./crates/goml --debug --offline --root ~/.goml --force --locked

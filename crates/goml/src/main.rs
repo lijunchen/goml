@@ -22,9 +22,17 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
+    New(NewArgs),
     Check,
     Build,
     Compiler(CompilerArgs),
+}
+
+#[derive(Args, Debug)]
+struct NewArgs {
+    project_name: String,
+    #[arg(long, default_value = ".")]
+    path: PathBuf,
 }
 
 #[derive(Args, Debug)]
@@ -155,10 +163,121 @@ fn run_cli() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
+        Commands::New(args) => execute_new(args),
         Commands::Check => execute_project_check(),
         Commands::Build => execute_project_build(),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
+}
+
+fn execute_new(args: NewArgs) -> anyhow::Result<()> {
+    if !is_valid_identifier(&args.project_name) {
+        bail!(
+            "invalid project name `{}`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
+            args.project_name
+        );
+    }
+
+    let project_dir = args.path.join(&args.project_name);
+    ensure_project_dir_ready(&project_dir)?;
+    let lib_dir = project_dir.join("Lib");
+    fs::create_dir_all(&lib_dir)
+        .with_context(|| format!("failed to create directory {}", lib_dir.display()))?;
+
+    write_file_with_dirs(
+        &project_dir.join("goml.toml"),
+        &render_root_goml_toml(&args.project_name),
+    )?;
+    write_file_with_dirs(&project_dir.join("main.gom"), &render_main_gom())?;
+    write_file_with_dirs(&lib_dir.join("goml.toml"), &render_lib_goml_toml())?;
+    write_file_with_dirs(&lib_dir.join("lib.gom"), &render_lib_gom())?;
+
+    println!("Created project at {}", project_dir.display());
+    println!("Next steps:");
+    println!("  cd {}", project_dir.display());
+    println!("  goml check");
+    println!("  goml build");
+
+    Ok(())
+}
+
+fn is_valid_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first == '_' || first.is_ascii_alphabetic()) {
+        return false;
+    }
+    chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
+}
+
+fn ensure_project_dir_ready(path: &Path) -> anyhow::Result<()> {
+    if !path.exists() {
+        fs::create_dir_all(path)
+            .with_context(|| format!("failed to create directory {}", path.display()))?;
+        return Ok(());
+    }
+
+    let mut entries = fs::read_dir(path)
+        .with_context(|| format!("failed to read directory {}", path.display()))?;
+    if entries.next().is_some() {
+        bail!(
+            "target directory {} already exists and is not empty",
+            path.display()
+        );
+    }
+    Ok(())
+}
+
+fn write_file_with_dirs(path: &Path, content: &str) -> anyhow::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(path, content).with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(())
+}
+
+fn render_root_goml_toml(project_name: &str) -> String {
+    format!(
+        r#"[module]
+name = "{project_name}"
+
+[package]
+name = "Main"
+entry = "main.gom"
+"#
+    )
+}
+
+fn render_main_gom() -> String {
+    r#"package Main;
+
+use Lib;
+
+fn main() -> unit {
+    string_println(Lib::message())
+}
+"#
+    .to_string()
+}
+
+fn render_lib_goml_toml() -> String {
+    r#"[package]
+name = "Lib"
+"#
+    .to_string()
+}
+
+fn render_lib_gom() -> String {
+    r#"package Lib;
+
+fn message() -> string {
+    "hello from Lib"
+}
+"#
+    .to_string()
 }
 
 fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
