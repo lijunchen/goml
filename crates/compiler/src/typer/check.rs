@@ -43,6 +43,7 @@ impl Typer {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn apply_fn_scheme_constraints(
         &mut self,
         genv: &PackageTypeEnv,

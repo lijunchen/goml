@@ -114,7 +114,7 @@ fn foo() -> int32 {
     let main_path = dir.path().join("main.gom");
     std::fs::write(
         &main_path,
-        &format!(
+        format!(
             r#"
 package {ROOT_PACKAGE};
 
