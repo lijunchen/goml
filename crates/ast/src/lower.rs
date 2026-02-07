@@ -2298,7 +2298,9 @@ fn lower_constructor_path_from_constr_pat(
 fn lower_path(ctx: &mut LowerCtx, path: &cst::Path) -> Option<ast::Path> {
     let segments: Vec<ast::PathSegment> = path
         .ident_tokens()
-        .map(|token| ast::PathSegment::new(ast::AstIdent(token.to_string())))
+        .map(|token| {
+            ast::PathSegment::with_range(ast::AstIdent(token.to_string()), Some(token.text_range()))
+        })
         .collect();
 
     if segments.is_empty() {

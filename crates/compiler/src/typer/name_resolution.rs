@@ -1432,57 +1432,27 @@ impl NameResolution {
                     .collect(),
             },
             ast::TypeExpr::TCon { path } => {
-                let qualified = if path.len() == 1 {
-                    let name = match path.last_ident() {
-                        Some(ident) => ident.0.clone(),
-                        None => {
-                            self.ice("type path length 1 missing last ident");
-                            "<error>".to_string()
-                        }
-                    };
-                    hir::QualifiedPath {
-                        package: None,
-                        path: hir::Path::from_ident(name),
-                    }
-                } else {
-                    let qualified: hir::QualifiedPath = path.into();
-                    if let Some(package) = &qualified.package
-                        && !package_allowed(package.as_str(), current_package, imports)
-                    {
-                        self.error(format!(
-                            "package {} not imported in package {}",
-                            package.0, current_package
-                        ));
-                    }
-                    qualified
-                };
+                let qualified: hir::QualifiedPath = path.into();
+                if let Some(package) = &qualified.package
+                    && !package_allowed(package.as_str(), current_package, imports)
+                {
+                    self.error(format!(
+                        "package {} not imported in package {}",
+                        package.0, current_package
+                    ));
+                }
                 hir::TypeExpr::TCon { path: qualified }
             }
             ast::TypeExpr::TDyn { trait_path } => {
-                let qualified = if trait_path.len() == 1 {
-                    let name = match trait_path.last_ident() {
-                        Some(ident) => ident.0.clone(),
-                        None => {
-                            self.ice("trait path length 1 missing last ident");
-                            "<error>".to_string()
-                        }
-                    };
-                    hir::QualifiedPath {
-                        package: None,
-                        path: hir::Path::from_ident(name),
-                    }
-                } else {
-                    let qualified: hir::QualifiedPath = trait_path.into();
-                    if let Some(package) = &qualified.package
-                        && !package_allowed(package.as_str(), current_package, imports)
-                    {
-                        self.error(format!(
-                            "package {} not imported in package {}",
-                            package.0, current_package
-                        ));
-                    }
-                    qualified
-                };
+                let qualified: hir::QualifiedPath = trait_path.into();
+                if let Some(package) = &qualified.package
+                    && !package_allowed(package.as_str(), current_package, imports)
+                {
+                    self.error(format!(
+                        "package {} not imported in package {}",
+                        package.0, current_package
+                    ));
+                }
                 hir::TypeExpr::TDyn {
                     trait_path: qualified,
                 }

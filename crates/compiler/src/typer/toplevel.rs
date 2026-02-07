@@ -14,7 +14,7 @@ use crate::{
         Typer,
         localenv::LocalTypeEnv,
         name_resolution,
-        util::{type_param_name_set, validate_ty},
+        util::{type_expr_range, type_param_name_set, validate_ty},
     },
 };
 
@@ -59,11 +59,18 @@ fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def
         .map(|(vcon, typs)| {
             let typs = typs
                 .iter()
-                .map(|ast_ty| tast::Ty::from_hir(env, ast_ty, &params_env))
+                .map(|ast_ty| {
+                    let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
+                    validate_ty(
+                        env,
+                        diagnostics,
+                        &ty,
+                        type_expr_range(ast_ty),
+                        &tparam_names,
+                    );
+                    ty
+                })
                 .collect::<Vec<_>>();
-            for ty in typs.iter() {
-                validate_ty(env, diagnostics, ty, &tparam_names);
-            }
             (tast::TastIdent(vcon.to_ident_name()), typs)
         })
         .collect();
@@ -94,7 +101,13 @@ fn define_struct(
         .iter()
         .map(|(fname, ast_ty)| {
             let ty = tast::Ty::from_hir(env, ast_ty, &params_env);
-            validate_ty(env, diagnostics, &ty, &tparam_names);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(ast_ty),
+                &tparam_names,
+            );
             (tast::TastIdent(fname.to_ident_name()), ty)
         })
         .collect();
@@ -246,7 +259,13 @@ fn define_trait_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(env, diagnostics, &for_ty, &impl_tparams);
+    validate_ty(
+        env,
+        diagnostics,
+        &for_ty,
+        type_expr_range(&impl_block.for_type),
+        &impl_tparams,
+    );
     let trait_name_raw = trait_name.to_ident_name();
     let Some((trait_name_str, trait_env)) = super::util::resolve_trait_name(env, &trait_name_raw)
     else {
@@ -360,16 +379,28 @@ fn define_trait_impl(
         let params = m
             .params
             .iter()
-            .map(|(_, ty)| {
-                let ty = tast::Ty::from_hir(env, ty, &all_generics_tast);
-                validate_ty(env, diagnostics, &ty, &tparam_names);
+            .map(|(_, hir_ty)| {
+                let ty = tast::Ty::from_hir(env, hir_ty, &all_generics_tast);
+                validate_ty(
+                    env,
+                    diagnostics,
+                    &ty,
+                    type_expr_range(hir_ty),
+                    &tparam_names,
+                );
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
-            Some(ty) => {
-                let ret = tast::Ty::from_hir(env, ty, &all_generics_tast);
-                validate_ty(env, diagnostics, &ret, &tparam_names);
+            Some(hir_ty) => {
+                let ret = tast::Ty::from_hir(env, hir_ty, &all_generics_tast);
+                validate_ty(
+                    env,
+                    diagnostics,
+                    &ret,
+                    type_expr_range(hir_ty),
+                    &tparam_names,
+                );
                 instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -517,7 +548,13 @@ fn define_inherent_impl(
         .map(|g| tast::TastIdent(g.to_ident_name()))
         .collect();
     let for_ty = tast::Ty::from_hir(env, &impl_block.for_type, &impl_generics_tast);
-    validate_ty(env, diagnostics, &for_ty, &impl_tparams);
+    validate_ty(
+        env,
+        diagnostics,
+        &for_ty,
+        type_expr_range(&impl_block.for_type),
+        &impl_tparams,
+    );
     if !is_local_nominal_type(&env.package, &for_ty) {
         diagnostics.push(Diagnostic::new(
             Stage::Typer,
@@ -580,16 +617,28 @@ fn define_inherent_impl(
         let params = m
             .params
             .iter()
-            .map(|(_, ty)| {
-                let ty = tast::Ty::from_hir(env, ty, &all_generics_tast);
-                validate_ty(env, diagnostics, &ty, &tparam_names);
+            .map(|(_, hir_ty)| {
+                let ty = tast::Ty::from_hir(env, hir_ty, &all_generics_tast);
+                validate_ty(
+                    env,
+                    diagnostics,
+                    &ty,
+                    type_expr_range(hir_ty),
+                    &tparam_names,
+                );
                 instantiate_self_ty(&ty, &for_ty)
             })
             .collect::<Vec<_>>();
         let ret = match &m.ret_ty {
-            Some(ty) => {
-                let ret = tast::Ty::from_hir(env, ty, &all_generics_tast);
-                validate_ty(env, diagnostics, &ret, &tparam_names);
+            Some(hir_ty) => {
+                let ret = tast::Ty::from_hir(env, hir_ty, &all_generics_tast);
+                validate_ty(
+                    env,
+                    diagnostics,
+                    &ret,
+                    type_expr_range(hir_ty),
+                    &tparam_names,
+                );
                 instantiate_self_ty(&ret, &for_ty)
             }
             None => tast::Ty::TUnit,
@@ -641,16 +690,28 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
     let params = func
         .params
         .iter()
-        .map(|(_, ty)| {
-            let ty = tast::Ty::from_hir(env, ty, &generics_tast);
-            validate_ty(env, diagnostics, &ty, &tparam_names);
+        .map(|(_, hir_ty)| {
+            let ty = tast::Ty::from_hir(env, hir_ty, &generics_tast);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(hir_ty),
+                &tparam_names,
+            );
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &func.ret_ty {
-        Some(ty) => {
-            let ret = tast::Ty::from_hir(env, ty, &generics_tast);
-            validate_ty(env, diagnostics, &ret, &tparam_names);
+        Some(hir_ty) => {
+            let ret = tast::Ty::from_hir(env, hir_ty, &generics_tast);
+            validate_ty(
+                env,
+                diagnostics,
+                &ret,
+                type_expr_range(hir_ty),
+                &tparam_names,
+            );
             ret
         }
         None => tast::Ty::TUnit,
@@ -699,16 +760,28 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
     let params = ext
         .params
         .iter()
-        .map(|(_, ty)| {
-            let ty = tast::Ty::from_hir(env, ty, &[]);
-            validate_ty(env, diagnostics, &ty, &HashSet::new());
+        .map(|(_, hir_ty)| {
+            let ty = tast::Ty::from_hir(env, hir_ty, &[]);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(hir_ty),
+                &HashSet::new(),
+            );
             ty
         })
         .collect::<Vec<_>>();
     let ret = match &ext.ret_ty {
-        Some(ty) => {
-            let ret = tast::Ty::from_hir(env, ty, &[]);
-            validate_ty(env, diagnostics, &ret, &HashSet::new());
+        Some(hir_ty) => {
+            let ret = tast::Ty::from_hir(env, hir_ty, &[]);
+            validate_ty(
+                env,
+                diagnostics,
+                &ret,
+                type_expr_range(hir_ty),
+                &HashSet::new(),
+            );
             ret
         }
         None => tast::Ty::TUnit,
@@ -750,16 +823,28 @@ fn define_extern_builtin(
     let params = ext
         .params
         .iter()
-        .map(|(_, ty)| {
-            let ty = tast::Ty::from_hir(env, ty, &tparams);
-            validate_ty(env, diagnostics, &ty, &tparam_names);
+        .map(|(_, hir_ty)| {
+            let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(hir_ty),
+                &tparam_names,
+            );
             ty
         })
         .collect::<Vec<_>>();
     let ret_ty = match &ext.ret_ty {
-        Some(ty) => {
-            let ty = tast::Ty::from_hir(env, ty, &tparams);
-            validate_ty(env, diagnostics, &ty, &tparam_names);
+        Some(hir_ty) => {
+            let ty = tast::Ty::from_hir(env, hir_ty, &tparams);
+            validate_ty(
+                env,
+                diagnostics,
+                &ty,
+                type_expr_range(hir_ty),
+                &tparam_names,
+            );
             ty
         }
         None => tast::Ty::TUnit,

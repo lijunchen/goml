@@ -5,6 +5,7 @@ use la_arena::{Arena, Idx};
 use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use text_size::TextRange;
 
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
 
@@ -828,15 +829,24 @@ impl NameRef {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathSegment {
     pub seg: String,
+    pub range: Option<TextRange>,
 }
 
 impl PathSegment {
     pub fn new(seg: String) -> Self {
-        Self { seg }
+        Self { seg, range: None }
+    }
+
+    pub fn with_range(seg: String, range: Option<TextRange>) -> Self {
+        Self { seg, range }
     }
 
     pub fn seg(&self) -> &String {
         &self.seg
+    }
+
+    pub fn range(&self) -> Option<TextRange> {
+        self.range
     }
 }
 
@@ -844,6 +854,7 @@ impl From<&ast::PathSegment> for PathSegment {
     fn from(seg: &ast::PathSegment) -> Self {
         PathSegment {
             seg: seg.ident.0.clone(),
+            range: seg.range(),
         }
     }
 }

@@ -1,4 +1,5 @@
 use parser::syntax::MySyntaxNodePtr;
+use text_size::TextRange;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AstIdent(pub String);
@@ -12,15 +13,24 @@ impl AstIdent {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct PathSegment {
     pub ident: AstIdent,
+    pub range: Option<TextRange>,
 }
 
 impl PathSegment {
     pub fn new(ident: AstIdent) -> Self {
-        Self { ident }
+        Self { ident, range: None }
+    }
+
+    pub fn with_range(ident: AstIdent, range: Option<TextRange>) -> Self {
+        Self { ident, range }
     }
 
     pub fn ident(&self) -> &AstIdent {
         &self.ident
+    }
+
+    pub fn range(&self) -> Option<TextRange> {
+        self.range
     }
 }
 
