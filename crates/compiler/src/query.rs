@@ -5,7 +5,7 @@ use std::{
 };
 
 use cst::cst::CstNode;
-use cst::nodes::BinaryExpr;
+use cst::nodes::{ArgList, BinaryExpr, CallExpr};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::{TextRange, TextSize};
 
@@ -304,6 +304,13 @@ pub struct ValueCompletionItem {
     pub detail: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SignatureHelpItem {
+    pub label: String,
+    pub parameters: Vec<String>,
+    pub active_parameter: u32,
+}
+
 pub fn dot_completions(
     path: &Path,
     src: &str,
@@ -384,7 +391,7 @@ pub fn dot_completions(
 }
 
 pub fn value_completions(
-    _path: &Path,
+    path: &Path,
     src: &str,
     line: u32,
     col: u32,
@@ -414,7 +421,12 @@ pub fn value_completions(
         return None;
     }
 
-    let genv = builtins::builtin_env();
+    let (_hir_table, _results, genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
+        .ok()?;
     let mut items = genv
         .value_env
         .funcs
@@ -432,10 +444,154 @@ pub fn value_completions(
     Some(items)
 }
 
+pub fn signature_help(path: &Path, src: &str, line: u32, col: u32) -> Option<SignatureHelpItem> {
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index.offset(line_index::LineCol { line, col })?;
+    let result = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let file = cst::cst::File::cast(root.clone())?;
+    let (call_expr, active_parameter) = call_expr_and_active_parameter(file.syntax(), offset)?;
+
+    let (hir_table, results, _genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
+        .ok()?;
+    let index = HirResultsIndex::new(&hir_table);
+    let call_expr_id = index.expr_id(&MySyntaxNodePtr::new(call_expr.syntax()))?;
+    let (parameter_types, return_type) =
+        signature_for_call_expr(&hir_table, &results, call_expr_id)?;
+
+    let parameters = parameter_types
+        .iter()
+        .map(|ty| ty.to_pretty(80))
+        .collect::<Vec<_>>();
+    let label = format!(
+        "({}) -> {}",
+        parameters.join(", "),
+        return_type.to_pretty(80)
+    );
+    let active_parameter = if parameters.is_empty() {
+        0
+    } else {
+        active_parameter.min((parameters.len() - 1) as u32)
+    };
+
+    Some(SignatureHelpItem {
+        label,
+        parameters,
+        active_parameter,
+    })
+}
+
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TRef { elem } => normalize_completion_ty(*elem),
         other => other,
+    }
+}
+
+fn call_expr_and_active_parameter(
+    root: &MySyntaxNode,
+    offset: TextSize,
+) -> Option<(CallExpr, u32)> {
+    let token = token_at_offset_for_query(root, offset)
+        .or_else(|| token_at_offset_for_query(root, offset.checked_sub(TextSize::from(1))?))?;
+
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(call_expr) = CallExpr::cast(node.clone())
+            && let Some(arg_list) = call_expr.arg_list()
+        {
+            let range = arg_list.syntax().text_range();
+            if range.start() <= offset && offset <= range.end() {
+                let active_parameter = active_parameter_in_arg_list(&arg_list, offset);
+                return Some((call_expr, active_parameter));
+            }
+        }
+        current = node.parent();
+    }
+
+    None
+}
+
+fn token_at_offset_for_query(root: &MySyntaxNode, offset: TextSize) -> Option<MySyntaxToken> {
+    match root.token_at_offset(offset) {
+        rowan::TokenAtOffset::None => None,
+        rowan::TokenAtOffset::Single(token) => Some(token),
+        rowan::TokenAtOffset::Between(left, right) => {
+            if right.kind() == MySyntaxKind::Ident
+                || right.kind() == MySyntaxKind::LParen
+                || right.kind() == MySyntaxKind::Comma
+            {
+                Some(right)
+            } else {
+                Some(left)
+            }
+        }
+    }
+}
+
+fn active_parameter_in_arg_list(arg_list: &ArgList, offset: TextSize) -> u32 {
+    let capped_offset = offset.min(arg_list.syntax().text_range().end());
+    let mut depth: i32 = 0;
+    let mut commas: u32 = 0;
+
+    for token in arg_list
+        .syntax()
+        .descendants_with_tokens()
+        .filter_map(|it| it.into_token())
+    {
+        if token.text_range().start() >= capped_offset {
+            break;
+        }
+
+        match token.kind() {
+            MySyntaxKind::LParen | MySyntaxKind::LBrace | MySyntaxKind::LBracket => depth += 1,
+            MySyntaxKind::RParen | MySyntaxKind::RBrace | MySyntaxKind::RBracket => depth -= 1,
+            MySyntaxKind::Comma if depth == 1 => commas += 1,
+            _ => {}
+        }
+    }
+
+    commas
+}
+
+fn signature_for_call_expr(
+    hir_table: &hir::HirTable,
+    results: &crate::typer::results::TypeckResults,
+    call_expr_id: hir::ExprId,
+) -> Option<(Vec<tast::Ty>, tast::Ty)> {
+    let hir::Expr::ECall { func, .. } = hir_table.expr(call_expr_id) else {
+        return None;
+    };
+
+    let call_ty = call_callee_type(results, call_expr_id)?;
+    let tast::Ty::TFunc { params, ret_ty } = call_ty else {
+        return None;
+    };
+
+    let mut params = params;
+    if matches!(hir_table.expr(*func), hir::Expr::EField { .. }) && !params.is_empty() {
+        params.remove(0);
+    }
+
+    Some((params, *ret_ty))
+}
+
+fn call_callee_type(
+    results: &crate::typer::results::TypeckResults,
+    call_expr_id: hir::ExprId,
+) -> Option<tast::Ty> {
+    let call_elab = results.call_elab(call_expr_id)?;
+    match &call_elab.callee {
+        crate::typer::results::CalleeElab::Expr(expr_id) => results.expr_ty(*expr_id).cloned(),
+        crate::typer::results::CalleeElab::Var { ty, .. }
+        | crate::typer::results::CalleeElab::TraitMethod { ty, .. }
+        | crate::typer::results::CalleeElab::DynTraitMethod { ty, .. }
+        | crate::typer::results::CalleeElab::InherentMethod { ty, .. }
+        | crate::typer::results::CalleeElab::Error { ty, .. } => Some(ty.clone()),
     }
 }
 

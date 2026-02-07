@@ -60,6 +60,11 @@ impl LanguageServer for Backend {
                     resolve_provider: Some(false),
                     ..Default::default()
                 }),
+                signature_help_provider: Some(SignatureHelpOptions {
+                    trigger_characters: Some(vec!["(".to_string(), ",".to_string()]),
+                    retrigger_characters: Some(vec![",".to_string()]),
+                    ..Default::default()
+                }),
                 definition_provider: Some(OneOf::Left(true)),
                 ..Default::default()
             },
@@ -128,6 +133,20 @@ impl LanguageServer for Backend {
         };
 
         Ok(handlers::completion(&path, &doc.content, position))
+    }
+
+    async fn signature_help(&self, params: SignatureHelpParams) -> Result<Option<SignatureHelp>> {
+        let uri = &params.text_document_position_params.text_document.uri;
+        let position = params.text_document_position_params.position;
+
+        let Some(doc) = self.documents.get(uri) else {
+            return Ok(None);
+        };
+        let Some(path) = self.get_file_path(uri) else {
+            return Ok(None);
+        };
+
+        Ok(handlers::signature_help(&path, &doc.content, position))
     }
 
     async fn goto_definition(

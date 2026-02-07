@@ -2,7 +2,9 @@ use expect_test::{Expect, expect};
 use std::path::Path;
 use tempfile::tempdir;
 
-use crate::query::{colon_colon_completions, dot_completions, hover_type, value_completions};
+use crate::query::{
+    colon_colon_completions, dot_completions, hover_type, signature_help, value_completions,
+};
 
 fn check(src: &str, line: u32, col: u32, expected: Expect) {
     let result = hover_type(Path::new("dummy"), src, line, col);
@@ -51,6 +53,11 @@ fn check_colon_colon_completions_with_path(
 
 fn check_value_completions(src: &str, line: u32, col: u32, expected: Expect) {
     let result = value_completions(Path::new("dummy"), src, line, col).unwrap_or_default();
+    expected.assert_debug_eq(&result);
+}
+
+fn check_signature_help(src: &str, line: u32, col: u32, expected: Expect) {
+    let result = signature_help(Path::new("dummy"), src, line, col);
     expected.assert_debug_eq(&result);
 }
 
@@ -160,6 +167,93 @@ fn main() {
                 ),
             },
         ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn user_value_completions() {
+    let src = r#"
+fn helper() -> int32 {
+    42
+}
+
+fn main() {
+    hel
+}
+"#;
+
+    check_value_completions(src, 6, 7, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "helper",
+                kind: Function,
+                detail: Some(
+                    "() -> int32",
+                ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn signature_help_for_function_call() {
+    let src = r#"
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#;
+
+    check_signature_help(src, 6, 16, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "(int32, string) -> bool",
+                parameters: [
+                    "int32",
+                    "string",
+                ],
+                active_parameter: 0,
+            },
+        )
+    "#]]);
+
+    check_signature_help(src, 6, 18, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "(int32, string) -> bool",
+                parameters: [
+                    "int32",
+                    "string",
+                ],
+                active_parameter: 1,
+            },
+        )
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn signature_help_for_method_call_hides_receiver() {
+    let src = r#"
+fn main() {
+    let x = 1;
+    let _ = x.to_string();
+}
+"#;
+
+    check_signature_help(src, 3, 24, expect![[r#"
+        Some(
+            SignatureHelpItem {
+                label: "() -> string",
+                parameters: [],
+                active_parameter: 0,
+            },
+        )
     "#]]);
 }
 

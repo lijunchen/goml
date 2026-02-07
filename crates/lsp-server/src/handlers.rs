@@ -3,7 +3,7 @@ use std::path::Path;
 
 use compiler::query::{
     self, ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
-    ValueCompletionItem,
+    SignatureHelpItem, ValueCompletionItem,
 };
 use tower_lsp::lsp_types::*;
 
@@ -147,6 +147,11 @@ pub fn completion(path: &Path, src: &str, position: Position) -> Option<Completi
     None
 }
 
+pub fn signature_help(path: &Path, src: &str, position: Position) -> Option<SignatureHelp> {
+    let item = query::signature_help(path, src, position.line, position.character)?;
+    Some(signature_item_to_lsp(item))
+}
+
 fn dot_item_to_completion(item: DotCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
@@ -180,6 +185,28 @@ fn value_item_to_completion(item: ValueCompletionItem) -> CompletionItem {
         kind: Some(CompletionItemKind::FUNCTION),
         detail: item.detail,
         ..Default::default()
+    }
+}
+
+fn signature_item_to_lsp(item: SignatureHelpItem) -> SignatureHelp {
+    let parameters = item
+        .parameters
+        .into_iter()
+        .map(|parameter| ParameterInformation {
+            label: ParameterLabel::Simple(parameter),
+            documentation: None,
+        })
+        .collect::<Vec<_>>();
+
+    SignatureHelp {
+        signatures: vec![SignatureInformation {
+            label: item.label,
+            documentation: None,
+            parameters: Some(parameters),
+            active_parameter: Some(item.active_parameter),
+        }],
+        active_signature: Some(0),
+        active_parameter: Some(item.active_parameter),
     }
 }
 

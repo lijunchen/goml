@@ -87,6 +87,41 @@ fn format_completion(completion: Option<CompletionResponse>) -> String {
     }
 }
 
+fn format_signature_help(signature_help: Option<SignatureHelp>) -> String {
+    let Some(signature_help) = signature_help else {
+        return "no signature".to_string();
+    };
+    let Some(signature) = signature_help.signatures.first() else {
+        return "empty signature".to_string();
+    };
+
+    let active_parameter = signature_help.active_parameter.unwrap_or(0);
+    let parameters = signature
+        .parameters
+        .as_ref()
+        .map(|parameters| {
+            parameters
+                .iter()
+                .map(|parameter| match &parameter.label {
+                    ParameterLabel::Simple(label) => label.clone(),
+                    ParameterLabel::LabelOffsets([start, end]) => signature
+                        .label
+                        .chars()
+                        .skip(*start as usize)
+                        .take((*end - *start) as usize)
+                        .collect::<String>(),
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_default();
+
+    format!(
+        "label: {}\nactive_parameter: {}\nparameters: {}",
+        signature.label, active_parameter, parameters
+    )
+}
+
 fn check_diagnostics(src: &str, expect: Expect) {
     let path = PathBuf::from("test.gom");
     let doc = Document::new(src.to_string());
@@ -106,6 +141,13 @@ fn check_completion(src: &str, line: u32, character: u32, expect: Expect) {
     let position = Position { line, character };
     let completion = handlers::completion(&path, src, position);
     expect.assert_eq(&format_completion(completion));
+}
+
+fn check_signature_help(src: &str, line: u32, character: u32, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let position = Position { line, character };
+    let signature_help = handlers::signature_help(&path, src, position);
+    expect.assert_eq(&format_signature_help(signature_help));
 }
 
 fn check_module_diagnostics(project_name: &str, expect: Expect) {
@@ -583,7 +625,7 @@ fn main() {
 "#,
             8,
             15,
-            expect!["empty completion"],
+            expect!["helper"],
         );
     }
 
@@ -604,6 +646,73 @@ fn main() {
             8,
             4,
             expect!["empty completion"],
+        );
+    }
+}
+
+mod signature_help_tests {
+    use super::*;
+
+    #[test]
+    fn signature_help_for_function_call() {
+        check_signature_help(
+            r#"
+package Main;
+
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#,
+            8,
+            16,
+            expect![[r#"
+                label: (int32, string) -> bool
+                active_parameter: 0
+                parameters: int32, string"#]],
+        );
+
+        check_signature_help(
+            r#"
+package Main;
+
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#,
+            8,
+            18,
+            expect![[r#"
+                label: (int32, string) -> bool
+                active_parameter: 1
+                parameters: int32, string"#]],
+        );
+    }
+
+    #[test]
+    fn signature_help_for_method_call_hides_receiver() {
+        check_signature_help(
+            r#"
+package Main;
+
+fn main() {
+    let x = 1;
+    let _ = x.to_string();
+}
+"#,
+            5,
+            24,
+            expect![[r#"
+                label: () -> string
+                active_parameter: 0
+                parameters: "#]],
         );
     }
 }
