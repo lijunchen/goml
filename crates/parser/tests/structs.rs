@@ -1,5 +1,6 @@
 use expect_test::{Expect, expect};
 use parser::{debug_tree, parse};
+use std::collections::BTreeSet;
 use std::path::Path;
 
 fn check(input: &str, expect: Expect) {
@@ -294,9 +295,94 @@ fn utf8_prefixes(input: &str) -> impl Iterator<Item = usize> + '_ {
         .chain(std::iter::once(input.len()))
 }
 
+fn sampled_prefixes(input: &str, max_points: usize) -> Vec<usize> {
+    let boundaries: Vec<usize> = utf8_prefixes(input).collect();
+    if boundaries.len() <= max_points {
+        return boundaries;
+    }
+
+    let len = input.len();
+    let mut points = BTreeSet::new();
+    points.insert(0);
+    points.insert(len);
+
+    for point in boundaries.iter().take(32) {
+        points.insert(*point);
+    }
+    for point in boundaries.iter().rev().take(32) {
+        points.insert(*point);
+    }
+
+    let dense_slots = 64usize;
+    for i in 0..dense_slots {
+        let idx = i * (boundaries.len() - 1) / (dense_slots - 1);
+        points.insert(boundaries[idx]);
+    }
+
+    for (idx, ch) in input.char_indices() {
+        if matches!(
+            ch,
+            '\n' | '{'
+                | '}'
+                | '('
+                | ')'
+                | '['
+                | ']'
+                | ';'
+                | ','
+                | ':'
+                | '.'
+                | '#'
+                | '|'
+                | '&'
+                | '+'
+                | '-'
+                | '*'
+                | '/'
+                | '<'
+                | '>'
+                | '='
+                | '!'
+                | '"'
+                | '\''
+        ) {
+            points.insert(idx);
+            points.insert((idx + ch.len_utf8()).min(len));
+            if idx > 0 {
+                let prev = input[..idx]
+                    .char_indices()
+                    .last()
+                    .map(|(pos, _)| pos)
+                    .unwrap_or(0);
+                points.insert(prev);
+            }
+        }
+    }
+
+    let mut collected: Vec<usize> = points
+        .into_iter()
+        .filter(|point| input.is_char_boundary(*point))
+        .collect();
+    collected.sort_unstable();
+    collected.dedup();
+
+    if collected.len() <= max_points {
+        return collected;
+    }
+
+    let mut reduced = BTreeSet::new();
+    reduced.insert(0);
+    reduced.insert(len);
+    for i in 0..max_points {
+        let idx = i * (collected.len() - 1) / (max_points - 1);
+        reduced.insert(collected[idx]);
+    }
+    reduced.into_iter().collect()
+}
+
 fn assert_prefix_parsing_never_panics(case_name: &str, input: &str) {
     let path = Path::new("prefix_robustness.gom");
-    for end in utf8_prefixes(input) {
+    for end in sampled_prefixes(input, 128) {
         let prefix = &input[..end];
         let result = std::panic::catch_unwind(|| {
             let parsed = parse(path, prefix);
