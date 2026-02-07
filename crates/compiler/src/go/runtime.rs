@@ -6,6 +6,7 @@ use crate::{
         mangle::{encode_ty, go_ident},
     },
     names::{trait_impl_fn_name, ty_compact},
+    package_names::ENTRY_FUNCTION,
     tast,
 };
 
@@ -37,7 +38,7 @@ fn ty_contains_type_param(ty: &tast::Ty) -> bool {
 pub fn make_runtime() -> Vec<goast::Item> {
     let mut items = vec![
         Item::Package(Package {
-            name: "main".to_string(),
+            name: ENTRY_FUNCTION.to_string(),
         }),
         Item::Import(ImportDecl {
             specs: vec![
@@ -476,9 +477,35 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
             },
         };
 
+        let ptr_eq_fn = goast::Fn {
+            name: ref_helper_fn_name("ptr_eq", ty),
+            params: vec![
+                ("a".to_string(), ref_go_ty.clone()),
+                ("b".to_string(), ref_go_ty.clone()),
+            ],
+            ret_ty: Some(goty::GoType::TBool),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(goast::Expr::BinaryOp {
+                        op: GoBinaryOp::Eq,
+                        lhs: Box::new(goast::Expr::Var {
+                            name: "a".to_string(),
+                            ty: ref_go_ty.clone(),
+                        }),
+                        rhs: Box::new(goast::Expr::Var {
+                            name: "b".to_string(),
+                            ty: ref_go_ty.clone(),
+                        }),
+                        ty: goty::GoType::TBool,
+                    }),
+                }],
+            },
+        };
+
         items.push(goast::Item::Fn(new_fn));
         items.push(goast::Item::Fn(get_fn));
         items.push(goast::Item::Fn(set_fn));
+        items.push(goast::Item::Fn(ptr_eq_fn));
 
         let eq_name = go_ident(&trait_impl_fn_name(
             &tast::TastIdent("Eq".to_string()),

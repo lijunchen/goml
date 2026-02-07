@@ -21,11 +21,22 @@
         "funcs": {
           "Lib::msg": {
             "type_params": [],
-            "constraints": null,
+            "constraints": [],
             "ty": {
               "TFunc": {
                 "params": [],
                 "ret_ty": "TString"
+              }
+            },
+            "origin": "User"
+          },
+          "Lib::extra": {
+            "type_params": [],
+            "constraints": [],
+            "ty": {
+              "TFunc": {
+                "params": [],
+                "ret_ty": "TInt32"
               }
             },
             "origin": "User"
@@ -37,14 +48,15 @@
     "interface": {
       "package": "Lib",
       "value_exports": {
-        "Lib::msg": 0
+        "Lib::extra": 0,
+        "Lib::msg": 1
       },
       "enum_variants": {}
     },
     "deps": {
-      "Builtin": "20496b696a8eea8096fbcef7bc10368374bf3fc949867dff526d91021e4b666b"
+      "builtin": "ddb5185ddb659623fb112d94e957e471fe773b91251094eded91d5f642c0f3bd"
     },
-    "interface_hash": "447785ce1969f875e7f4a3b0352ab9dd13a8768dd3da2596c6f48fdb4b18ab6f"
+    "interface_hash": "1104164cb881b3bf0a6198f47a5e22408a6cca77591f013dc2d5c989da39ecaa"
   },
   "core_ir": {
     "toplevels": [
@@ -57,19 +69,35 @@
           "EPrim": {
             "value": {
               "String": {
-                "value": "hi"
+                "value": "v2"
               }
             },
             "ty": "TString"
+          }
+        }
+      },
+      {
+        "name": "Lib::extra",
+        "generics": [],
+        "params": [],
+        "ret_ty": "TInt32",
+        "body": {
+          "EPrim": {
+            "value": {
+              "Int32": {
+                "value": 2
+              }
+            },
+            "ty": "TInt32"
           }
         }
       }
     ]
   },
   "deps": {
-    "Builtin": "20496b696a8eea8096fbcef7bc10368374bf3fc949867dff526d91021e4b666b"
+    "builtin": "ddb5185ddb659623fb112d94e957e471fe773b91251094eded91d5f642c0f3bd"
   },
   "sources": [
-    "<TMP>/lib.gom"
+    "<TMP>/lib_v2.gom"
   ]
 }

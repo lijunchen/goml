@@ -6,6 +6,7 @@ use crate::{
     go::mangle::{encode_ty, go_ident},
     lift::{GlobalLiftEnv, is_closure_env_struct},
     names::{inherent_method_fn_name, trait_impl_fn_name},
+    package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
     tast::{self, TastIdent},
 };
 
@@ -1325,7 +1326,7 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     ty: tast_ty_to_go_type(ty),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
-                && (*name == "ref" || *name == "ref_get" || *name == "ref_set")
+                && (*name == "ref" || *name == "ref_get" || *name == "ref_set" || *name == "ptr_eq")
             {
                 let (helper, helper_ty) = if name == "ref" {
                     let tast::Ty::TRef { elem } = ty else {
@@ -1338,6 +1339,19 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                         goty::GoType::TFunc {
                             params: vec![elem_go_ty],
                             ret_ty: Box::new(ref_go_ty),
+                        },
+                    )
+                } else if name == "ptr_eq" {
+                    let ref_ty = imm_ty(&args[0]);
+                    let tast::Ty::TRef { .. } = &ref_ty else {
+                        panic!("ptr_eq expects reference arguments, got {:?}", ref_ty);
+                    };
+                    let ref_go_ty = tast_ty_to_go_type(&ref_ty);
+                    (
+                        runtime::ref_helper_fn_name("ptr_eq", &ref_ty),
+                        goty::GoType::TFunc {
+                            params: vec![ref_go_ty.clone(), ref_go_ty.clone()],
+                            ret_ty: Box::new(goty::GoType::TBool),
                         },
                     )
                 } else {
@@ -2285,9 +2299,9 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
 
     let go_ret_ty = tast_ty_to_go_type(&f.ret_ty);
 
-    let is_entry = f.name == "main" || f.name.ends_with("::main");
+    let is_entry = f.name == ENTRY_FUNCTION || f.name.ends_with(&format!("::{}", ENTRY_FUNCTION));
     let patched_name = if is_entry {
-        "main0".to_string()
+        ENTRY_WRAPPER_FUNCTION.to_string()
     } else {
         go_ident(&f.name)
     };
@@ -2428,13 +2442,13 @@ pub fn go_file(
     }
     all.extend(toplevels);
     all.push(goast::Item::Fn(goast::Fn {
-        name: "main".to_string(),
+        name: ENTRY_FUNCTION.to_string(),
         params: vec![],
         ret_ty: None,
         body: goast::Block {
             stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
                 func: Box::new(goast::Expr::Var {
-                    name: "main0".to_string(),
+                    name: ENTRY_WRAPPER_FUNCTION.to_string(),
                     ty: goty::GoType::TFunc {
                         params: vec![],
                         ret_ty: Box::new(goty::GoType::TVoid),

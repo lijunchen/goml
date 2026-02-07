@@ -1,6 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::go::goast as ast;
+use crate::package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION};
 
 // Public entry: eliminate unused local variables from Go AST while
 // preserving side-effecting expressions (primarily calls).
@@ -703,7 +704,7 @@ fn prune_dead_functions(file: ast::File) -> ast::File {
 
     let mut reachable: HashSet<String> = HashSet::new();
     let mut stack: Vec<String> = Vec::new();
-    for root in ["main", "main0"] {
+    for root in [ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION] {
         if fn_map.contains_key(root) {
             stack.push(root.to_string());
         }

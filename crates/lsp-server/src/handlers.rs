@@ -1,8 +1,9 @@
+use std::collections::HashSet;
 use std::path::Path;
 
 use compiler::query::{
     self, ColonColonCompletionItem, ColonColonCompletionKind, DotCompletionItem, DotCompletionKind,
-    ValueCompletionItem,
+    InlayHintItem, InlayHintKind as QueryInlayHintKind, SignatureHelpItem, ValueCompletionItem,
 };
 use tower_lsp::lsp_types::*;
 
@@ -48,15 +49,80 @@ pub fn get_diagnostics(path: &Path, src: &str, doc: &Document) -> Vec<Diagnostic
 }
 
 pub fn hover(path: &Path, src: &str, position: Position) -> Option<Hover> {
-    let type_info = query::hover_type(path, src, position.line, position.character).ok()?;
+    let type_info = query::hover_type(path, src, position.line, position.character).ok();
+    let diagnostics = diagnostics_for_hover(path, src, position);
+    if type_info.is_none() && diagnostics.is_empty() {
+        return None;
+    }
+
+    let mut sections = Vec::new();
+    if let Some(type_info) = type_info {
+        sections.push(format!("```goml\n{}\n```", type_info));
+    }
+    if !diagnostics.is_empty() {
+        let lines = diagnostics
+            .iter()
+            .map(|(severity, message)| {
+                let marker = match severity {
+                    diagnostics::Severity::Error => "-",
+                    diagnostics::Severity::Warning => "+",
+                };
+                format!("{} {}", marker, message)
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        sections.push(format!("**Diagnostics**\n```diff\n{}\n```", lines));
+    }
 
     Some(Hover {
         contents: HoverContents::Markup(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: format!("```goml\n{}\n```", type_info),
+            value: sections.join("\n\n"),
         }),
         range: None,
     })
+}
+
+fn diagnostics_for_hover(
+    path: &Path,
+    src: &str,
+    position: Position,
+) -> Vec<(diagnostics::Severity, String)> {
+    let doc = Document::new(src.to_string());
+    let mut messages = Vec::new();
+    let mut seen: HashSet<(diagnostics::Severity, String)> = HashSet::new();
+    let result = compiler::pipeline::pipeline::compile(path, src);
+    let diagnostics = match result {
+        Ok(_) => return messages,
+        Err(err) => err.into_diagnostics(),
+    };
+    for diagnostic in diagnostics.iter() {
+        let Some(text_range) = diagnostic.range() else {
+            continue;
+        };
+        let Some(range) = doc.range(text_range) else {
+            continue;
+        };
+        if !position_in_range(position, range) {
+            continue;
+        }
+        let item = (diagnostic.severity(), diagnostic.message().to_string());
+        if seen.insert(item.clone()) {
+            messages.push(item);
+        }
+    }
+    messages
+}
+
+fn position_in_range(position: Position, range: Range) -> bool {
+    let at_or_after_start = position.line > range.start.line
+        || (position.line == range.start.line && position.character >= range.start.character);
+    let strictly_before_end = position.line < range.end.line
+        || (position.line == range.end.line && position.character < range.end.character);
+    let zero_width_match = range.start == range.end
+        && position.line == range.start.line
+        && position.character == range.start.character;
+    at_or_after_start && (strictly_before_end || zero_width_match)
 }
 
 pub fn completion(path: &Path, src: &str, position: Position) -> Option<CompletionResponse> {
@@ -79,6 +145,20 @@ pub fn completion(path: &Path, src: &str, position: Position) -> Option<Completi
     }
 
     None
+}
+
+pub fn signature_help(path: &Path, src: &str, position: Position) -> Option<SignatureHelp> {
+    let item = query::signature_help(path, src, position.line, position.character)?;
+    Some(signature_item_to_lsp(item))
+}
+
+pub fn inlay_hints(path: &Path, src: &str, range: Range, doc: &Document) -> Option<Vec<InlayHint>> {
+    let items = query::inlay_hints(path, src)?;
+    let hints = items
+        .into_iter()
+        .filter_map(|item| inlay_item_to_lsp(item, range, doc))
+        .collect::<Vec<_>>();
+    Some(hints)
 }
 
 fn dot_item_to_completion(item: DotCompletionItem) -> CompletionItem {
@@ -115,6 +195,66 @@ fn value_item_to_completion(item: ValueCompletionItem) -> CompletionItem {
         detail: item.detail,
         ..Default::default()
     }
+}
+
+fn signature_item_to_lsp(item: SignatureHelpItem) -> SignatureHelp {
+    let parameters = item
+        .parameters
+        .into_iter()
+        .map(|parameter| ParameterInformation {
+            label: ParameterLabel::Simple(parameter),
+            documentation: None,
+        })
+        .collect::<Vec<_>>();
+
+    SignatureHelp {
+        signatures: vec![SignatureInformation {
+            label: item.label,
+            documentation: None,
+            parameters: Some(parameters),
+            active_parameter: Some(item.active_parameter),
+        }],
+        active_signature: Some(0),
+        active_parameter: Some(item.active_parameter),
+    }
+}
+
+fn inlay_item_to_lsp(item: InlayHintItem, range: Range, doc: &Document) -> Option<InlayHint> {
+    let offset = adjust_inlay_offset(item.offset, doc);
+    let position = doc.position(offset)?;
+    if !position_in_range(position, range) {
+        return None;
+    }
+
+    Some(InlayHint {
+        position,
+        label: InlayHintLabel::String(item.label),
+        kind: Some(match item.kind {
+            QueryInlayHintKind::Type => tower_lsp::lsp_types::InlayHintKind::TYPE,
+        }),
+        text_edits: None,
+        tooltip: None,
+        padding_left: None,
+        padding_right: Some(true),
+        data: None,
+    })
+}
+
+fn adjust_inlay_offset(offset: text_size::TextSize, doc: &Document) -> text_size::TextSize {
+    let bytes = doc.content.as_bytes();
+    let mut idx = u32::from(offset) as usize;
+    if idx > bytes.len() {
+        return offset;
+    }
+
+    while idx > 0 {
+        match bytes[idx - 1] {
+            b' ' | b'\t' => idx -= 1,
+            _ => break,
+        }
+    }
+
+    text_size::TextSize::from(idx as u32)
 }
 
 pub fn goto_definition(

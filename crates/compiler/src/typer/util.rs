@@ -3,6 +3,7 @@ use std::collections::HashSet;
 use crate::{
     env::{GlobalTypeEnv, PackageTypeEnv},
     hir,
+    package_names::{BUILTIN_PACKAGE, is_special_unqualified_package},
     tast::{self},
 };
 use diagnostics::{Severity, Stage};
@@ -23,6 +24,73 @@ pub(crate) fn push_error_with_range(
 
 pub(crate) fn push_ice(diagnostics: &mut Diagnostics, message: impl Into<String>) {
     push_error(diagnostics, format!("Internal error: {}", message.into()));
+}
+
+pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
+    match ty {
+        tast::Ty::TVar(_) => "unknown".to_string(),
+        tast::Ty::TUnit => "unit".to_string(),
+        tast::Ty::TBool => "bool".to_string(),
+        tast::Ty::TInt8 => "int8".to_string(),
+        tast::Ty::TInt16 => "int16".to_string(),
+        tast::Ty::TInt32 => "int32".to_string(),
+        tast::Ty::TInt64 => "int64".to_string(),
+        tast::Ty::TUint8 => "uint8".to_string(),
+        tast::Ty::TUint16 => "uint16".to_string(),
+        tast::Ty::TUint32 => "uint32".to_string(),
+        tast::Ty::TUint64 => "uint64".to_string(),
+        tast::Ty::TFloat32 => "float32".to_string(),
+        tast::Ty::TFloat64 => "float64".to_string(),
+        tast::Ty::TString => "string".to_string(),
+        tast::Ty::TChar => "char".to_string(),
+        tast::Ty::TTuple { typs } => {
+            let items = typs
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({})", items)
+        }
+        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => name.clone(),
+        tast::Ty::TDyn { trait_name } => format!("dyn {}", trait_name),
+        tast::Ty::TApp { ty, args } => {
+            let base = format_ty_for_diag(ty.as_ref());
+            if args.is_empty() {
+                base
+            } else {
+                let args = args
+                    .iter()
+                    .map(format_ty_for_diag)
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                format!("{}[{}]", base, args)
+            }
+        }
+        tast::Ty::TArray { len, elem } => {
+            let rendered_len = if *len == tast::ARRAY_WILDCARD_LEN {
+                "_".to_string()
+            } else {
+                len.to_string()
+            };
+            format!("[{}; {}]", format_ty_for_diag(elem.as_ref()), rendered_len)
+        }
+        tast::Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_diag(elem.as_ref())),
+        tast::Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_diag(elem.as_ref())),
+        tast::Ty::THashMap { key, value } => format!(
+            "HashMap[{}, {}]",
+            format_ty_for_diag(key.as_ref()),
+            format_ty_for_diag(value.as_ref())
+        ),
+        tast::Ty::TParam { name } => name.clone(),
+        tast::Ty::TFunc { params, ret_ty } => {
+            let params = params
+                .iter()
+                .map(format_ty_for_diag)
+                .collect::<Vec<_>>()
+                .join(", ");
+            format!("({}) -> {}", params, format_ty_for_diag(ret_ty.as_ref()))
+        }
+    }
 }
 
 pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
@@ -136,7 +204,10 @@ pub(crate) fn validate_ty(
             let Some(base_name) = try_constr_name(ty.as_ref()) else {
                 push_error(
                     diagnostics,
-                    format!("Expected a type constructor, got: {:?}", ty),
+                    format!(
+                        "Expected a type constructor, got {}",
+                        format_ty_for_diag(ty.as_ref())
+                    ),
                 );
                 return;
             };
@@ -428,10 +499,11 @@ pub(crate) fn resolve_type_name<'a>(
     }
 
     if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
+        if package == BUILTIN_PACKAGE {
             return (rest.to_string(), genv.builtins());
         }
-        if package == "Main" && genv.package == "Main" {
+        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -443,7 +515,7 @@ pub(crate) fn resolve_type_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+    let current_name = if is_special_unqualified_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)
@@ -467,6 +539,10 @@ fn type_constructor_exists(env: &GlobalTypeEnv, name: &str) -> bool {
     env.enums().contains_key(&ident)
         || env.structs().contains_key(&ident)
         || env.type_env.extern_types.contains_key(name)
+        || env
+            .trait_env
+            .inherent_impls
+            .contains_key(&crate::env::InherentImplKey::Constr(name.to_string()))
 }
 
 pub(crate) fn resolve_trait_name<'a>(
@@ -489,10 +565,11 @@ pub(crate) fn normalize_trait_name<'a>(
     }
 
     if let Some((package, rest)) = name.split_once("::") {
-        if package == "Builtin" {
+        if package == BUILTIN_PACKAGE {
             return (rest.to_string(), genv.builtins());
         }
-        if package == "Main" && genv.package == "Main" {
+        if is_special_unqualified_package(package) && is_special_unqualified_package(&genv.package)
+        {
             return (rest.to_string(), genv.current());
         }
         if package == genv.package {
@@ -504,7 +581,7 @@ pub(crate) fn normalize_trait_name<'a>(
         return (name.to_string(), genv.current());
     }
 
-    let current_name = if genv.package == "Main" || genv.package == "Builtin" {
+    let current_name = if is_special_unqualified_package(&genv.package) {
         name.to_string()
     } else {
         format!("{}::{}", genv.package, name)

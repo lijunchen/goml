@@ -6,6 +6,7 @@ use ast::ast;
 
 use crate::config::GomlConfig;
 use crate::hir::SourceFileAst;
+use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 
@@ -283,6 +284,14 @@ pub fn discover_packages_from_config(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
+    if config.is_module_root() && config.package.name != ROOT_PACKAGE {
+        return Err(compile_error(format!(
+            "module root package must be `main`, found `{}` in {}",
+            config.package.name,
+            module_dir.join("goml.toml").display()
+        )));
+    }
+
     let entry_file = entry_path
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| module_dir.join(&config.package.entry));

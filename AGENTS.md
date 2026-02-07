@@ -12,7 +12,7 @@ The file extension for goml source files is `.gom`.
 
 ## Project Snapshot
 - Go/Rust-inspired language frontend lowers through `lexer → parser → CST → AST → HIR → typed AST → Core -> Mono -> Lift → ANF` before emitting Go (`crates/compiler/src/go`).
-- The CLI driver in `crates/compiler/src/main.rs` prints generated Go; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
+- The CLI driver in `crates/goml/src/main.rs` handles both project-level commands and compiler subcommands; regression tests in `crates/compiler/src/tests` compare every IR stage and execute the Go output.
 - The `webapp` folder hosts a Vite/React playground using Wasm bindings from `crates/wasm-app`; it can display each IR stage while execution is stubbed out.
 - `typer/name_resolution.rs` should only handle AST → HIR lowering plus pure name/visibility resolution; avoid making decisions that depend on `GlobalTypeEnv` or type information.
 - `typer/check.rs` should only handle HIR → TAST type inference, checking, and constraint generation; avoid name-resolution responsibilities such as "fallback resolution paths" or cross-package name lookup.
@@ -51,7 +51,7 @@ name = "utils"
 ### Minimal Example (no module section, backward compatible)
 ```toml
 [package]
-name = "Main"
+name = "main"
 ```
 
 ### Fields
@@ -64,6 +64,7 @@ name = "Main"
 ### Project Discovery
 - The LSP and CLI search upward from the current file to find `goml.toml` with a `[module]` section
 - If found, uses `package.entry` as the compilation entry point
+- For module roots, `package.name` must be `main`
 - Sub-packages are discovered from subdirectories when imported, using their own `goml.toml` if present
 - Package names can be any valid identifier (lowercase or PascalCase)
 
@@ -93,7 +94,7 @@ name = "Main"
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test`
-- CLI: run goml programs via `cargo run -- run <file.gom>`; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to print IR stages before execution.
+- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check` and `cargo run -p goml -- build` for project-level workflows; use `cargo run -p goml -- compiler run-single <file.gom>` for single-file execution; use `cargo run -p goml -- compiler check|build|link ...` for separate compilation workflows; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
@@ -119,7 +120,7 @@ name = "Main"
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `cargo run -- crates/compiler/src/tests/pipeline/001/main.gom`
+- You can quick check a test case with: `cargo run -p goml -- compiler run-single crates/compiler/src/tests/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
 
@@ -128,14 +129,14 @@ name = "Main"
 - Each project directory follows the pattern `projectNNN/` (e.g., `project001/`, `project002/`) or `projectNNN_description/`.
 - Structure of a multi-module project:
   - `goml.toml` - module configuration with `[module]` and `[package]` sections
-  - `main.gom` - the entry point with `package Main;` declaration
+  - `main.gom` - the entry point with `package main;` declaration
   - `PackageName/goml.toml` - sub-package configuration with `[package]` section
   - `PackageName/lib.gom` - library package files, each with its own `package PackageName;` declaration
   - `main.gom.out` - expected execution output
 - Package naming conventions:
-  - The main package is typically declared as `package Main;` and contains the `fn main()` entry point
-  - Library packages use PascalCase names (e.g., `package Lib;`, `package Util;`, `package Math;`)
-  - Directory names must match the package names (e.g., `Lib/lib.gom` contains `package Lib;`)
+  - The main package is declared as `package main;` and contains the `fn main()` entry point
+  - Library packages can use any valid identifier; the default template generated by `goml new` uses lowercase `lib`
+  - Directory names must match the package names (e.g., `lib/lib.gom` contains `package lib;`)
 - Packages can import other packages using `use PackageName;` syntax
 - Inter-package dependencies:
   - Packages can import and use types, functions, and enums from other packages
@@ -144,7 +145,7 @@ name = "Main"
 - To add a new multi-module test:
   1. Create a new directory under `crates/compiler/src/tests/module/` (e.g., `project011/`)
   2. Create `goml.toml` with `[module]` and `[package]` sections
-  3. Create `main.gom` with `package Main;` and `fn main()`
+  3. Create `main.gom` with `package main;` and `fn main()`
   4. Create subdirectories for each library package with their `goml.toml` and `lib.gom` files
   5. Run `env UPDATE_EXPECT=1 cargo test` to generate the expected output file
 - Note: Multi-module tests only generate `.out` files, not intermediate IR stages like pipeline tests
@@ -254,7 +255,7 @@ name = "Main"
 
 ### Testing / snapshots gotchas
 
-* Adding/changing builtins changes the Builtin interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
+* Adding/changing builtins changes the `builtin` interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
 * Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
 
 ### Name collisions

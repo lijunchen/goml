@@ -5,10 +5,11 @@ use std::{
 };
 
 use cst::cst::CstNode;
-use cst::nodes::BinaryExpr;
+use cst::nodes::{ArgList, BinaryExpr, CallExpr};
 use parser::syntax::{MySyntaxKind, MySyntaxNode, MySyntaxNodePtr, MySyntaxToken};
 use text_size::{TextRange, TextSize};
 
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package};
 use crate::{artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
@@ -304,6 +305,25 @@ pub struct ValueCompletionItem {
     pub detail: Option<String>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SignatureHelpItem {
+    pub label: String,
+    pub parameters: Vec<String>,
+    pub active_parameter: u32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum InlayHintKind {
+    Type,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct InlayHintItem {
+    pub offset: TextSize,
+    pub label: String,
+    pub kind: InlayHintKind,
+}
+
 pub fn dot_completions(
     path: &Path,
     src: &str,
@@ -384,7 +404,7 @@ pub fn dot_completions(
 }
 
 pub fn value_completions(
-    _path: &Path,
+    path: &Path,
     src: &str,
     line: u32,
     col: u32,
@@ -414,7 +434,12 @@ pub fn value_completions(
         return None;
     }
 
-    let genv = builtins::builtin_env();
+    let (_hir_table, _results, genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
+        .ok()?;
     let mut items = genv
         .value_env
         .funcs
@@ -432,10 +457,307 @@ pub fn value_completions(
     Some(items)
 }
 
+pub fn signature_help(path: &Path, src: &str, line: u32, col: u32) -> Option<SignatureHelpItem> {
+    let line_index = line_index::LineIndex::new(src);
+    let offset = line_index.offset(line_index::LineCol { line, col })?;
+    let result = parser::parse(path, src);
+    let root = MySyntaxNode::new_root(result.green_node);
+    let file = cst::cst::File::cast(root.clone())?;
+    let (call_expr, active_parameter) = call_expr_and_active_parameter(file.syntax(), offset)?;
+
+    let (hir_table, results, _genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
+        .ok()?;
+    let index = HirResultsIndex::new(&hir_table);
+    let call_expr_id = index.expr_id(&MySyntaxNodePtr::new(call_expr.syntax()))?;
+    let (parameter_types, return_type) =
+        signature_for_call_expr(&hir_table, &results, call_expr_id)?;
+
+    let parameters = parameter_types
+        .iter()
+        .map(|ty| ty.to_pretty(80))
+        .collect::<Vec<_>>();
+    let label = format!(
+        "({}) -> {}",
+        parameters.join(", "),
+        return_type.to_pretty(80)
+    );
+    let active_parameter = if parameters.is_empty() {
+        0
+    } else {
+        active_parameter.min((parameters.len() - 1) as u32)
+    };
+
+    Some(SignatureHelpItem {
+        label,
+        parameters,
+        active_parameter,
+    })
+}
+
+pub fn inlay_hints(path: &Path, src: &str) -> Option<Vec<InlayHintItem>> {
+    let (hir_table, results, _genv, _diagnostics) = typecheck_single_file_for_query(path, src)
+        .or_else(|_| {
+            pipeline::pipeline::typecheck_with_packages_and_results(path, src)
+                .map_err(|e| format!("{:?}", e))
+        })
+        .ok()?;
+
+    let mut hints = Vec::new();
+    for idx in 0..hir_table.expr_count() {
+        let expr_id = hir::ExprId {
+            pkg: hir_table.package(),
+            idx: idx as u32,
+        };
+        match hir_table.expr(expr_id) {
+            hir::Expr::ELet {
+                pat, annotation, ..
+            } => {
+                if annotation.is_some() {
+                    continue;
+                }
+
+                let mut local_defs = Vec::new();
+                collect_pattern_locals(&hir_table, *pat, &mut local_defs);
+                for (local_id, astptr) in local_defs {
+                    if !should_emit_type_inlay_hint(&hir_table, local_id) {
+                        continue;
+                    }
+                    let Some(ty) = results.local_ty(local_id).cloned() else {
+                        continue;
+                    };
+                    if contains_type_var(&ty) {
+                        continue;
+                    }
+                    hints.push(InlayHintItem {
+                        offset: astptr.text_range().end(),
+                        label: format!(": {}", ty.to_pretty(80)),
+                        kind: InlayHintKind::Type,
+                    });
+                }
+            }
+            hir::Expr::EClosure { params, .. } => {
+                for param in params {
+                    if param.ty.is_some() {
+                        continue;
+                    }
+                    if !should_emit_type_inlay_hint(&hir_table, param.name) {
+                        continue;
+                    }
+                    let Some(ty) = results.local_ty(param.name).cloned() else {
+                        continue;
+                    };
+                    if contains_type_var(&ty) {
+                        continue;
+                    }
+                    hints.push(InlayHintItem {
+                        offset: param.astptr.text_range().end(),
+                        label: format!(": {}", ty.to_pretty(80)),
+                        kind: InlayHintKind::Type,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    hints.sort_by(|a, b| {
+        a.offset
+            .cmp(&b.offset)
+            .then(a.label.cmp(&b.label))
+            .then(a.kind.cmp(&b.kind))
+    });
+    hints.dedup_by(|a, b| a.offset == b.offset && a.label == b.label && a.kind == b.kind);
+
+    Some(hints)
+}
+
 fn normalize_completion_ty(ty: tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TRef { elem } => normalize_completion_ty(*elem),
         other => other,
+    }
+}
+
+fn collect_pattern_locals(
+    hir_table: &hir::HirTable,
+    pat_id: hir::PatId,
+    out: &mut Vec<(hir::LocalId, MySyntaxNodePtr)>,
+) {
+    match hir_table.pat(pat_id) {
+        hir::Pat::PVar { name, astptr } => out.push((*name, *astptr)),
+        hir::Pat::PConstr { args, .. } => {
+            for arg in args {
+                collect_pattern_locals(hir_table, *arg, out);
+            }
+        }
+        hir::Pat::PStruct { fields, .. } => {
+            for (_, pat) in fields {
+                collect_pattern_locals(hir_table, *pat, out);
+            }
+        }
+        hir::Pat::PTuple { pats } => {
+            for pat in pats {
+                collect_pattern_locals(hir_table, *pat, out);
+            }
+        }
+        hir::Pat::PUnit
+        | hir::Pat::PBool { .. }
+        | hir::Pat::PInt { .. }
+        | hir::Pat::PInt8 { .. }
+        | hir::Pat::PInt16 { .. }
+        | hir::Pat::PInt32 { .. }
+        | hir::Pat::PInt64 { .. }
+        | hir::Pat::PUInt8 { .. }
+        | hir::Pat::PUInt16 { .. }
+        | hir::Pat::PUInt32 { .. }
+        | hir::Pat::PUInt64 { .. }
+        | hir::Pat::PString { .. }
+        | hir::Pat::PChar { .. }
+        | hir::Pat::PWild => {}
+    }
+}
+
+fn should_emit_type_inlay_hint(hir_table: &hir::HirTable, local_id: hir::LocalId) -> bool {
+    hir_table.local_hint(local_id) != "_"
+}
+
+fn contains_type_var(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TVar(_) => true,
+        tast::Ty::TTuple { typs } => typs.iter().any(contains_type_var),
+        tast::Ty::TFunc { params, ret_ty } => {
+            params.iter().any(contains_type_var) || contains_type_var(ret_ty)
+        }
+        tast::Ty::TApp { ty, args } => contains_type_var(ty) || args.iter().any(contains_type_var),
+        tast::Ty::TArray { elem, .. } => contains_type_var(elem),
+        tast::Ty::TVec { elem } => contains_type_var(elem),
+        tast::Ty::TRef { elem } => contains_type_var(elem),
+        tast::Ty::THashMap { key, value } => contains_type_var(key) || contains_type_var(value),
+        tast::Ty::TUnit
+        | tast::Ty::TBool
+        | tast::Ty::TInt8
+        | tast::Ty::TInt16
+        | tast::Ty::TInt32
+        | tast::Ty::TInt64
+        | tast::Ty::TUint8
+        | tast::Ty::TUint16
+        | tast::Ty::TUint32
+        | tast::Ty::TUint64
+        | tast::Ty::TFloat32
+        | tast::Ty::TFloat64
+        | tast::Ty::TString
+        | tast::Ty::TChar
+        | tast::Ty::TEnum { .. }
+        | tast::Ty::TStruct { .. }
+        | tast::Ty::TDyn { .. }
+        | tast::Ty::TParam { .. } => false,
+    }
+}
+
+fn call_expr_and_active_parameter(
+    root: &MySyntaxNode,
+    offset: TextSize,
+) -> Option<(CallExpr, u32)> {
+    let token = token_at_offset_for_query(root, offset)
+        .or_else(|| token_at_offset_for_query(root, offset.checked_sub(TextSize::from(1))?))?;
+
+    let mut current = token.parent();
+    while let Some(node) = current {
+        if let Some(call_expr) = CallExpr::cast(node.clone())
+            && let Some(arg_list) = call_expr.arg_list()
+        {
+            let range = arg_list.syntax().text_range();
+            if range.start() <= offset && offset <= range.end() {
+                let active_parameter = active_parameter_in_arg_list(&arg_list, offset);
+                return Some((call_expr, active_parameter));
+            }
+        }
+        current = node.parent();
+    }
+
+    None
+}
+
+fn token_at_offset_for_query(root: &MySyntaxNode, offset: TextSize) -> Option<MySyntaxToken> {
+    match root.token_at_offset(offset) {
+        rowan::TokenAtOffset::None => None,
+        rowan::TokenAtOffset::Single(token) => Some(token),
+        rowan::TokenAtOffset::Between(left, right) => {
+            if right.kind() == MySyntaxKind::Ident
+                || right.kind() == MySyntaxKind::LParen
+                || right.kind() == MySyntaxKind::Comma
+            {
+                Some(right)
+            } else {
+                Some(left)
+            }
+        }
+    }
+}
+
+fn active_parameter_in_arg_list(arg_list: &ArgList, offset: TextSize) -> u32 {
+    let capped_offset = offset.min(arg_list.syntax().text_range().end());
+    let mut depth: i32 = 0;
+    let mut commas: u32 = 0;
+
+    for token in arg_list
+        .syntax()
+        .descendants_with_tokens()
+        .filter_map(|it| it.into_token())
+    {
+        if token.text_range().start() >= capped_offset {
+            break;
+        }
+
+        match token.kind() {
+            MySyntaxKind::LParen | MySyntaxKind::LBrace | MySyntaxKind::LBracket => depth += 1,
+            MySyntaxKind::RParen | MySyntaxKind::RBrace | MySyntaxKind::RBracket => depth -= 1,
+            MySyntaxKind::Comma if depth == 1 => commas += 1,
+            _ => {}
+        }
+    }
+
+    commas
+}
+
+fn signature_for_call_expr(
+    hir_table: &hir::HirTable,
+    results: &crate::typer::results::TypeckResults,
+    call_expr_id: hir::ExprId,
+) -> Option<(Vec<tast::Ty>, tast::Ty)> {
+    let hir::Expr::ECall { func, .. } = hir_table.expr(call_expr_id) else {
+        return None;
+    };
+
+    let call_ty = call_callee_type(results, call_expr_id)?;
+    let tast::Ty::TFunc { params, ret_ty } = call_ty else {
+        return None;
+    };
+
+    let mut params = params;
+    if matches!(hir_table.expr(*func), hir::Expr::EField { .. }) && !params.is_empty() {
+        params.remove(0);
+    }
+
+    Some((params, *ret_ty))
+}
+
+fn call_callee_type(
+    results: &crate::typer::results::TypeckResults,
+    call_expr_id: hir::ExprId,
+) -> Option<tast::Ty> {
+    let call_elab = results.call_elab(call_expr_id)?;
+    match &call_elab.callee {
+        crate::typer::results::CalleeElab::Expr(expr_id) => results.expr_ty(*expr_id).cloned(),
+        crate::typer::results::CalleeElab::Var { ty, .. }
+        | crate::typer::results::CalleeElab::TraitMethod { ty, .. }
+        | crate::typer::results::CalleeElab::DynTraitMethod { ty, .. }
+        | crate::typer::results::CalleeElab::InherentMethod { ty, .. }
+        | crate::typer::results::CalleeElab::Error { ty, .. } => Some(ty.clone()),
     }
 }
 
@@ -1099,7 +1421,7 @@ fn index_source_file_symbols(
         .package_decl()
         .and_then(|d| d.name_token())
         .map(|t| t.to_string())
-        .unwrap_or_else(|| "Main".to_string());
+        .unwrap_or_else(|| ROOT_PACKAGE.to_string());
 
     for item in cst_file.items() {
         match item {
@@ -1324,7 +1646,7 @@ fn ident_tokens_to_segments(path: &cst::nodes::Path) -> Vec<String> {
 }
 
 fn qualify_name(package: &str, name: &str) -> String {
-    if package == "Main" || package == "Builtin" {
+    if is_special_unqualified_package(package) {
         name.to_string()
     } else {
         format!("{}::{}", package, name)
@@ -1689,7 +2011,7 @@ fn lookup_symbol_locations_for_path(
     let mut locations = Vec::new();
     let full_name = segments.join("::");
 
-    if segments[0] != "Builtin"
+    if segments[0] != BUILTIN_PACKAGE
         && token.to_string() == segments[0]
         && graph
             .and_then(|g| g.package_dirs.get(&segments[0]))

@@ -837,7 +837,7 @@ fn transform_closure(
         CLOSURE_APPLY_METHOD.to_string(),
         FnScheme {
             type_params: vec![],
-            constraints: (),
+            constraints: vec![],
             ty: apply_fn_ty,
             origin: FnOrigin::Compiler,
         },

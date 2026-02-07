@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use expect_test::{Expect, expect};
@@ -10,6 +11,58 @@ fn test_module_dir() -> PathBuf {
         .parent()
         .unwrap()
         .join("compiler/src/tests/module")
+}
+
+mod robustness_tests {
+    use super::*;
+
+    #[test]
+    fn lsp_handles_sampled_prefixes_of_hm_typechecker_without_panicking() {
+        let input = include_str!("../../compiler/src/tests/pipeline/080_hm_typechecker/main.gom");
+        assert_lsp_handles_sampled_prefixes_without_panicking_with_stack(
+            "pipeline_080_hm_typechecker",
+            input,
+            16 * 1024 * 1024,
+        );
+    }
+
+    #[test]
+    fn lsp_handles_tricky_inputs_without_panicking() {
+        let cases = [
+            (
+                "unterminated_string_and_block",
+                "package main;\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
+            ),
+            (
+                "unterminated_char_and_comment",
+                "package main;\nfn main() {\n  let c = '\\u12\n  // trailing",
+            ),
+            (
+                "dense_operators_and_partial_tokens",
+                "package main;\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
+            ),
+            (
+                "nested_brackets_missing_closers",
+                "package main;\nfn main() { let _ = ((([1, 2, 3]); }\n",
+            ),
+            (
+                "attribute_generics_and_dyn_partial",
+                "#[derive(ToString)]\nfn f[T: Eq + Hash +](x: T) -> dyn Show {\n",
+            ),
+            (
+                "invalid_tokens_and_escape_like_sequence",
+                "package main;\nfn main() { let y = \\u2028; @@@ }\n",
+            ),
+            (
+                "deeply_nested_expressions",
+                "package main;\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
+            ),
+        ];
+
+        for (case_name, input) in cases {
+            assert_lsp_handles_sampled_prefixes_without_panicking(case_name, input);
+        }
+    }
 }
 
 fn pipeline_dir() -> PathBuf {
@@ -87,6 +140,74 @@ fn format_completion(completion: Option<CompletionResponse>) -> String {
     }
 }
 
+fn format_signature_help(signature_help: Option<SignatureHelp>) -> String {
+    let Some(signature_help) = signature_help else {
+        return "no signature".to_string();
+    };
+    let Some(signature) = signature_help.signatures.first() else {
+        return "empty signature".to_string();
+    };
+
+    let active_parameter = signature_help.active_parameter.unwrap_or(0);
+    let parameters = signature
+        .parameters
+        .as_ref()
+        .map(|parameters| {
+            parameters
+                .iter()
+                .map(|parameter| match &parameter.label {
+                    ParameterLabel::Simple(label) => label.clone(),
+                    ParameterLabel::LabelOffsets([start, end]) => signature
+                        .label
+                        .chars()
+                        .skip(*start as usize)
+                        .take((*end - *start) as usize)
+                        .collect::<String>(),
+                })
+                .collect::<Vec<_>>()
+                .join(", ")
+        })
+        .unwrap_or_default();
+
+    format!(
+        "label: {}\nactive_parameter: {}\nparameters: {}",
+        signature.label, active_parameter, parameters
+    )
+}
+
+fn format_inlay_hints(hints: Option<Vec<InlayHint>>) -> String {
+    let Some(hints) = hints else {
+        return "no hints".to_string();
+    };
+    if hints.is_empty() {
+        return "empty hints".to_string();
+    }
+
+    hints
+        .into_iter()
+        .map(|hint| {
+            let label = match hint.label {
+                InlayHintLabel::String(text) => text,
+                InlayHintLabel::LabelParts(parts) => parts
+                    .into_iter()
+                    .map(|part| part.value)
+                    .collect::<Vec<_>>()
+                    .join(""),
+            };
+            let kind = match hint.kind {
+                Some(tower_lsp::lsp_types::InlayHintKind::TYPE) => "type",
+                Some(tower_lsp::lsp_types::InlayHintKind::PARAMETER) => "parameter",
+                _ => "unknown",
+            };
+            format!(
+                "{}:{} {} {}",
+                hint.position.line, hint.position.character, kind, label
+            )
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 fn check_diagnostics(src: &str, expect: Expect) {
     let path = PathBuf::from("test.gom");
     let doc = Document::new(src.to_string());
@@ -106,6 +227,20 @@ fn check_completion(src: &str, line: u32, character: u32, expect: Expect) {
     let position = Position { line, character };
     let completion = handlers::completion(&path, src, position);
     expect.assert_eq(&format_completion(completion));
+}
+
+fn check_signature_help(src: &str, line: u32, character: u32, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let position = Position { line, character };
+    let signature_help = handlers::signature_help(&path, src, position);
+    expect.assert_eq(&format_signature_help(signature_help));
+}
+
+fn check_inlay_hints(src: &str, range: Range, expect: Expect) {
+    let path = PathBuf::from("test.gom");
+    let doc = Document::new(src.to_string());
+    let hints = handlers::inlay_hints(&path, src, range, &doc);
+    expect.assert_eq(&format_inlay_hints(hints));
 }
 
 fn check_module_diagnostics(project_name: &str, expect: Expect) {
@@ -130,6 +265,180 @@ fn check_pipeline_diagnostics(case_name: &str, expect: Expect) {
     expect.assert_eq(&format_diagnostics(&diags));
 }
 
+fn utf8_prefixes(input: &str) -> impl Iterator<Item = usize> + '_ {
+    std::iter::once(0)
+        .chain(input.char_indices().map(|(idx, _)| idx).skip(1))
+        .chain(std::iter::once(input.len()))
+}
+
+fn sampled_prefixes(input: &str, max_points: usize) -> Vec<usize> {
+    let boundaries: Vec<usize> = utf8_prefixes(input).collect();
+    if boundaries.len() <= max_points {
+        return boundaries;
+    }
+
+    let len = input.len();
+    let mut points = BTreeSet::new();
+    points.insert(0);
+    points.insert(len);
+
+    for point in boundaries.iter().take(32) {
+        points.insert(*point);
+    }
+    for point in boundaries.iter().rev().take(32) {
+        points.insert(*point);
+    }
+
+    let dense_slots = 64usize;
+    for i in 0..dense_slots {
+        let idx = i * (boundaries.len() - 1) / (dense_slots - 1);
+        points.insert(boundaries[idx]);
+    }
+
+    for (idx, ch) in input.char_indices() {
+        if matches!(
+            ch,
+            '\n' | '{'
+                | '}'
+                | '('
+                | ')'
+                | '['
+                | ']'
+                | ';'
+                | ','
+                | ':'
+                | '.'
+                | '#'
+                | '|'
+                | '&'
+                | '+'
+                | '-'
+                | '*'
+                | '/'
+                | '<'
+                | '>'
+                | '='
+                | '!'
+                | '"'
+                | '\''
+        ) {
+            points.insert(idx);
+            points.insert((idx + ch.len_utf8()).min(len));
+            if idx > 0 {
+                let prev = input[..idx]
+                    .char_indices()
+                    .last()
+                    .map(|(pos, _)| pos)
+                    .unwrap_or(0);
+                points.insert(prev);
+            }
+        }
+    }
+
+    let mut collected: Vec<usize> = points
+        .into_iter()
+        .filter(|point| input.is_char_boundary(*point))
+        .collect();
+    collected.sort_unstable();
+    collected.dedup();
+
+    if collected.len() <= max_points {
+        return collected;
+    }
+
+    let mut reduced = BTreeSet::new();
+    reduced.insert(0);
+    reduced.insert(len);
+    for i in 0..max_points {
+        let idx = i * (collected.len() - 1) / (max_points - 1);
+        reduced.insert(collected[idx]);
+    }
+    reduced.into_iter().collect()
+}
+
+fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> String {
+    if let Some(message) = payload.downcast_ref::<String>() {
+        return message.clone();
+    }
+    if let Some(message) = payload.downcast_ref::<&str>() {
+        return message.to_string();
+    }
+    "non-string panic payload".to_string()
+}
+
+fn end_position(doc: &Document, src: &str) -> Position {
+    let Ok(offset) = u32::try_from(src.len()) else {
+        return Position {
+            line: 0,
+            character: 0,
+        };
+    };
+    doc.position(text_size::TextSize::from(offset))
+        .unwrap_or(Position {
+            line: 0,
+            character: 0,
+        })
+}
+
+fn assert_lsp_handles_sampled_prefixes_without_panicking(case_name: &str, input: &str) {
+    let path = std::env::temp_dir().join(format!("{case_name}.gom"));
+    let uri = Url::from_file_path(&path).ok().unwrap_or_else(|| {
+        Url::parse("file:///tmp/goml_lsp_robustness.gom")
+            .unwrap_or_else(|err| panic!("failed to create fallback file uri: {err}"))
+    });
+    let start = Position {
+        line: 0,
+        character: 0,
+    };
+
+    let prefixes = sampled_prefixes(input, 128);
+    for (idx, end) in prefixes.iter().copied().enumerate() {
+        let prefix = &input[..end];
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let doc = Document::new(prefix.to_string());
+            let at_end = end_position(&doc, prefix);
+            let _ = handlers::get_diagnostics(&path, prefix, &doc);
+            if idx % 8 == 0 || end == input.len() {
+                let _ = handlers::hover(&path, prefix, start);
+                let _ = handlers::hover(&path, prefix, at_end);
+                let _ = handlers::completion(&path, prefix, start);
+                let _ = handlers::completion(&path, prefix, at_end);
+                let _ = handlers::goto_definition(&uri, &path, prefix, start, &doc);
+                let _ = handlers::goto_definition(&uri, &path, prefix, at_end, &doc);
+            }
+        }));
+        if let Err(payload) = result {
+            let panic_message = panic_payload_message(payload.as_ref());
+            let tail = if prefix.len() > 160 {
+                &prefix[prefix.len() - 160..]
+            } else {
+                prefix
+            };
+            panic!(
+                "lsp panicked for case={case_name}, prefix_end={end}, panic={panic_message}, prefix_tail={tail:?}"
+            );
+        }
+    }
+}
+
+fn assert_lsp_handles_sampled_prefixes_without_panicking_with_stack(
+    case_name: &str,
+    input: &str,
+    stack_size: usize,
+) {
+    let case_name = case_name.to_string();
+    let input = input.to_string();
+    let handle = std::thread::Builder::new()
+        .stack_size(stack_size)
+        .spawn(move || {
+            assert_lsp_handles_sampled_prefixes_without_panicking(&case_name, &input);
+        })
+        .unwrap();
+    if let Err(payload) = handle.join() {
+        std::panic::resume_unwind(payload);
+    }
+}
+
 mod diagnostics_tests {
     use super::*;
 
@@ -137,7 +446,7 @@ mod diagnostics_tests {
     fn valid_code_no_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -152,7 +461,7 @@ fn main() {
     fn undefined_variable_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     println(undefined_var.to_string());
@@ -160,13 +469,13 @@ fn main() {
 "#,
             expect![[r#"
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
+                [4:12] error: Method to_string not found for type unknown
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 2 }
-                [4:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [4:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(4)], TString), origin: Some(32..66) }]
-                [4:4] error: Type variable TypeVar(2) not resolved
-                [4:4] error: Type variable TypeVar(4) not resolved"#]],
+                [4:12] error: Method to_string not found for type unknown
+                [4:4] error: Could not solve all type constraints
+                [4:4] error: Type inference failed due to unresolved constraints
+                [4:4] error: Could not infer type
+                [4:4] error: Could not infer type"#]],
         );
     }
 
@@ -174,7 +483,7 @@ fn main() {
     fn type_mismatch_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -185,12 +494,9 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [8:21] error: Types are not equal: TString and TInt32
-                [8:21] error: Type mismatch: expected TString, found TInt32
-                [8:17] error: Types are not equal: TInt32 and TString
-                [8:17] error: Type mismatch: expected TFunc([TInt32, TInt32], TInt32), found TFunc([TString, TInt32], TVar(0))
-                [8:8] error: Type variable TypeVar(0) not resolved
-                [8:8] error: Type variable TypeVar(0) not resolved"#]],
+                [8:21] error: Type mismatch: expected string, found int32
+                [8:17] error: Type mismatch: expected int32, found string
+                [8:8] error: Could not infer type"#]],
         );
     }
 
@@ -198,7 +504,7 @@ fn main() {
     fn parse_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main( {
     let x = 42;
@@ -217,7 +523,7 @@ fn main( {
     fn missing_return_type() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) {
     x + y
@@ -228,10 +534,8 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [4:4] error: Types are not equal: TInt32 and TUnit
-                [4:4] error: Type mismatch: expected TVar(0), found TUnit
-                [3:27] error: Types are not equal: TInt32 and TUnit
-                [3:27] error: Type mismatch: expected TVar(0), found TUnit"#]],
+                [4:4] error: Type mismatch: expected int32, found unit
+                [3:27] error: Type mismatch: expected int32, found unit"#]],
         );
     }
 
@@ -258,7 +562,7 @@ mod hover_tests {
     fn hover_on_variable() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -278,7 +582,7 @@ fn main() {
     fn hover_on_function_name() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -301,7 +605,7 @@ fn main() {
     fn hover_on_function_call() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -324,7 +628,7 @@ fn main() {
     fn hover_on_struct_field() {
         check_hover(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -349,7 +653,7 @@ fn main() {
     fn hover_on_enum_variant() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -374,7 +678,7 @@ fn main() {
     fn hover_on_parameter() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -397,7 +701,7 @@ fn main() {
     fn hover_on_let_binding() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let result: int32 = 42;
@@ -417,7 +721,7 @@ fn main() {
     fn hover_on_match_arm_binding() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Option {
     Some(int32),
@@ -449,7 +753,7 @@ mod completion_tests {
     fn dot_completion_on_struct() {
         check_completion(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -471,7 +775,7 @@ fn main() {
     fn dot_completion_on_int() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -488,7 +792,7 @@ fn main() {
     fn colon_colon_completion_on_enum() {
         check_completion(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -510,7 +814,7 @@ fn main() {
     fn dot_completion_on_builtin_vec() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let v: Vec[int32] = Vec::new();
@@ -527,7 +831,7 @@ fn main() {
     fn dot_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let m: HashMap[string, int32] = HashMap::new();
@@ -544,7 +848,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_vec() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let _ = Vec::
@@ -560,7 +864,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let _ = HashMap::
@@ -576,7 +880,7 @@ fn main() {
     fn value_completion_suggests_functions() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn helper() -> int32 {
     42
@@ -588,7 +892,7 @@ fn main() {
 "#,
             8,
             15,
-            expect!["empty completion"],
+            expect!["helper"],
         );
     }
 
@@ -596,7 +900,7 @@ fn main() {
     fn completion_in_empty_function_body() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn greet(name: string) -> string {
     name
@@ -609,6 +913,156 @@ fn main() {
             8,
             4,
             expect!["empty completion"],
+        );
+    }
+}
+
+mod signature_help_tests {
+    use super::*;
+
+    #[test]
+    fn signature_help_for_function_call() {
+        check_signature_help(
+            r#"
+package main;
+
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#,
+            8,
+            16,
+            expect![[r#"
+                label: (int32, string) -> bool
+                active_parameter: 0
+                parameters: int32, string"#]],
+        );
+
+        check_signature_help(
+            r#"
+package main;
+
+fn add(x: int32, y: string) -> bool {
+    true
+}
+
+fn main() {
+    let _ = add(1, 2);
+}
+"#,
+            8,
+            18,
+            expect![[r#"
+                label: (int32, string) -> bool
+                active_parameter: 1
+                parameters: int32, string"#]],
+        );
+    }
+
+    #[test]
+    fn signature_help_for_method_call_hides_receiver() {
+        check_signature_help(
+            r#"
+package main;
+
+fn main() {
+    let x = 1;
+    let _ = x.to_string();
+}
+"#,
+            5,
+            24,
+            expect![[r#"
+                label: () -> string
+                active_parameter: 0
+                parameters: "#]],
+        );
+    }
+}
+
+mod inlay_hint_tests {
+    use super::*;
+
+    #[test]
+    fn inlay_hints_for_let_bindings() {
+        check_inlay_hints(
+            r#"
+package main;
+
+fn main() {
+    let x = 1;
+    let y: int32 = 2;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 99,
+                    character: 0,
+                },
+            },
+            expect!["4:9 type : int32"],
+        );
+    }
+
+    #[test]
+    fn inlay_hints_for_closure_params() {
+        check_inlay_hints(
+            r#"
+package main;
+
+fn main() {
+    let f = |x| x + 1;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 0,
+                    character: 0,
+                },
+                end: Position {
+                    line: 99,
+                    character: 0,
+                },
+            },
+            expect![[r#"
+                4:9 type : (int32) -> int32
+                4:14 type : int32"#]],
+        );
+    }
+
+    #[test]
+    fn inlay_hints_respect_range() {
+        check_inlay_hints(
+            r#"
+package main;
+
+fn main() {
+    let a = 1;
+    let b = 2;
+    ()
+}
+"#,
+            Range {
+                start: Position {
+                    line: 5,
+                    character: 0,
+                },
+                end: Position {
+                    line: 6,
+                    character: 0,
+                },
+            },
+            expect!["5:9 type : int32"],
         );
     }
 }
@@ -727,7 +1181,7 @@ mod goto_definition_tests {
     fn goto_definition_local_variable() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -744,7 +1198,7 @@ fn main() {
     fn goto_definition_local_variable_via_token_search() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -761,7 +1215,7 @@ fn main() {
     fn goto_definition_function() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn helper() -> int32 {
     42
@@ -781,7 +1235,7 @@ fn main() {
     fn goto_definition_struct_field() {
         check_goto(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -803,7 +1257,7 @@ fn main() {
     fn goto_definition_parameter() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -1241,7 +1695,7 @@ fn main() {
     fn goto_definition_builtin_vec_new() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() -> unit {
     let v: Vec[int32] = vec_new();
@@ -1258,7 +1712,7 @@ fn main() -> unit {
     fn goto_definition_builtin_ref_get() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() -> unit {
     let r = ref(1);
@@ -1276,7 +1730,7 @@ fn main() -> unit {
     #[test]
     fn goto_definition_builtin_hashmap_methods() {
         let src = r#"
-package Main;
+package main;
 
 #[derive(Hash, Eq)]
 enum Key {
@@ -1315,14 +1769,14 @@ fn main() -> unit {
 name = "tmpmod"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package Main;
+package main;
 use Pkg;
 
 fn main() {
@@ -1367,14 +1821,14 @@ fn a() -> int32 { 0 }
 name = "tmpmod"
 
 [package]
-name = "Main"
+name = "main"
 entry = "main.gom"
 "#,
         );
         write_file(
             &root.join("main.gom"),
             r#"
-package Main;
+package main;
 use A;
 use B;
 
@@ -1545,7 +1999,7 @@ mod complex_code_tests {
     fn generics_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn identity[T](x: T) -> T {
     x
@@ -1569,7 +2023,7 @@ fn main() {
     fn trait_method_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 trait Greet {
     fn greet(Self) -> string;
@@ -1603,7 +2057,7 @@ fn main() {
     fn closure_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let add = |x: int32, y: int32| -> int32 { x + y };
@@ -1621,7 +2075,7 @@ fn main() {
     fn match_expression_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Result {
     Ok(int32),
@@ -1649,7 +2103,7 @@ fn main() {
     fn ref_type_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let counter = ref(0);
@@ -1670,7 +2124,7 @@ fn main() {
     fn array_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -1690,7 +2144,7 @@ fn main() {
     fn tuple_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let pair = (42, "hello");
@@ -1710,7 +2164,7 @@ fn main() {
     fn while_loop_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let i: Ref[int32] = ref(0);
@@ -1721,12 +2175,12 @@ fn main() {
 }
 "#,
             expect![[r#"
-                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [8:12] error: Method to_string not found for type ExprId { pkg: PackageId(1), idx: 24 }
-                [8:4] error: Could not solve all constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [8:4] error: Type inference failed, remaining constraints: [Overloaded { op: TastIdent("to_string"), trait_name: TastIdent("ToString"), call_site_type: TFunc([TVar(17)], TString), origin: Some(135..166) }]
-                [8:4] error: Type variable TypeVar(14) not resolved
-                [8:4] error: Type variable TypeVar(17) not resolved"#]],
+                [8:12] error: Method to_string not found for type unknown
+                [8:12] error: Method to_string not found for type unknown
+                [8:4] error: Could not solve all type constraints
+                [8:4] error: Type inference failed due to unresolved constraints
+                [8:4] error: Could not infer type
+                [8:4] error: Could not infer type"#]],
         );
     }
 
@@ -1734,7 +2188,7 @@ fn main() {
     fn extern_function_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "value: 42";
@@ -1756,14 +2210,14 @@ mod edge_case_tests {
 
     #[test]
     fn only_package_declaration() {
-        check_diagnostics("package Main;", expect!["no diagnostics"]);
+        check_diagnostics("package main;", expect!["no diagnostics"]);
     }
 
     #[test]
     fn unicode_in_strings() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "你好世界 🌍";
@@ -1778,7 +2232,7 @@ fn main() {
     fn deeply_nested_expressions() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x: int32 = ((((1 + 2) * 3) - 4) / 2);
@@ -1793,7 +2247,7 @@ fn main() {
     fn multiline_string() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "line1 line2 line3";
@@ -1806,18 +2260,18 @@ fn main() {
 
     #[test]
     fn hover_at_file_start() {
-        check_hover("package Main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
+        check_hover("package main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
     }
 
     #[test]
     fn hover_at_file_end() {
-        check_hover("package Main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
+        check_hover("package main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
     }
 
     #[test]
     fn completion_at_file_start() {
         check_completion(
-            "package Main;\n\nfn main() {}",
+            "package main;\n\nfn main() {}",
             0,
             0,
             expect!["empty completion"],
@@ -1829,7 +2283,7 @@ fn main() {
         let long_string = "a".repeat(1000);
         let src = format!(
             r#"
-package Main;
+package main;
 
 fn main() {{
     let s = "{}";
@@ -1843,7 +2297,7 @@ fn main() {{
 
     #[test]
     fn many_functions() {
-        let mut src = "package Main;\n\n".to_string();
+        let mut src = "package main;\n\n".to_string();
         for i in 0..100 {
             src.push_str(&format!("fn func{}() -> int32 {{ {} }}\n", i, i));
         }
@@ -1859,7 +2313,7 @@ mod builtin_tests {
     fn builtin_println() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     println("hello");
@@ -1873,7 +2327,7 @@ fn main() {
     fn builtin_print() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     print("hello");
@@ -1887,7 +2341,7 @@ fn main() {
     fn builtin_ref_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let r = ref(42);
@@ -1903,7 +2357,7 @@ fn main() {
     fn builtin_vec_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let v = vec_new();
@@ -1921,7 +2375,7 @@ fn main() {
     fn builtin_array_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -1937,7 +2391,7 @@ fn main() {
     fn builtin_string_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "hello";
@@ -1953,7 +2407,7 @@ fn main() {
     fn builtin_hashmap_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let m = hashmap_new();
@@ -1972,7 +2426,7 @@ fn main() {
     fn builtin_to_string_trait() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let n: int32 = 42;
@@ -1991,7 +2445,7 @@ mod exhaustiveness_tests {
     fn exhaustive_bool_match() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2008,7 +2462,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_false() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2024,7 +2478,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_true() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2040,7 +2494,7 @@ fn main() -> int32 {
     fn exhaustive_enum_match() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2065,7 +2519,7 @@ fn main() -> int32 {
     fn non_exhaustive_enum_missing_variants() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2088,7 +2542,7 @@ fn main() -> int32 {
     fn exhaustive_enum_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2112,7 +2566,7 @@ fn main() -> int32 {
     fn exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Option[T] {
     Some(T),
@@ -2135,7 +2589,7 @@ fn main() -> int32 {
     fn non_exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Option[T] {
     Some(T),
@@ -2157,7 +2611,7 @@ fn main() -> int32 {
     fn exhaustive_int_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 42 {
@@ -2175,7 +2629,7 @@ fn main() -> int32 {
     fn non_exhaustive_int_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 42 {
@@ -2192,7 +2646,7 @@ fn main() -> int32 {
     fn exhaustive_string_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match "hello" {
@@ -2209,7 +2663,7 @@ fn main() -> int32 {
     fn non_exhaustive_string_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match "hello" {
@@ -2226,7 +2680,7 @@ fn main() -> int32 {
     fn non_exhaustive_char_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 'a' {
@@ -2243,7 +2697,7 @@ fn main() -> int32 {
     fn non_exhaustive_nested_tuple() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     let pair = (true, false);

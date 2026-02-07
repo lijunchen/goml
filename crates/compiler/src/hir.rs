@@ -6,6 +6,8 @@ use parser::syntax::MySyntaxNodePtr;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
+
 #[derive(Debug, Clone)]
 pub struct SourceFileAst {
     pub path: PathBuf,
@@ -144,10 +146,10 @@ pub fn lower_to_hir_files(files: Vec<SourceFileAst>) -> (PackageHir, HirTable, D
     let package_name = files
         .first()
         .map(|file| file.ast.package.0.as_str())
-        .unwrap_or("Main");
+        .unwrap_or(ROOT_PACKAGE);
     let package_id = match package_name {
-        "Builtin" => PackageId(0),
-        "Main" => PackageId(1),
+        BUILTIN_PACKAGE => PackageId(0),
+        ROOT_PACKAGE => PackageId(1),
         _ => PackageId(2),
     };
     lower_to_hir_files_with_env(package_id, files, &deps)
@@ -166,7 +168,7 @@ pub fn lower_to_hir_files_with_env(
         .files
         .first()
         .map(|file| file.package.clone())
-        .unwrap_or_else(|| PackageName("Main".to_string()));
+        .unwrap_or_else(|| PackageName(ROOT_PACKAGE.to_string()));
     let mut imports: Vec<PackageName> = resolved
         .files
         .iter()
@@ -214,27 +216,31 @@ pub fn lower_to_project_hir_files_with_env(
             .push(file);
     }
 
+    let root_package = grouped
+        .contains_key(&PackageName(ROOT_PACKAGE.to_string()))
+        .then_some(ROOT_PACKAGE);
+
     let mut other_packages: Vec<PackageName> = grouped
         .keys()
-        .filter(|name| name.as_str() != "Main")
+        .filter(|name| Some(name.as_str()) != root_package)
         .cloned()
         .collect();
     other_packages.sort_by(|a, b| a.0.cmp(&b.0));
 
     let mut package_order = Vec::new();
-    if grouped.contains_key(&PackageName("Main".to_string())) {
-        package_order.push(PackageName("Main".to_string()));
+    if let Some(root_package) = root_package {
+        package_order.push(PackageName(root_package.to_string()));
     }
     package_order.extend(other_packages);
 
     let mut package_index = HashMap::new();
-    package_index.insert(PackageName("Builtin".to_string()), PackageId(0));
-    if package_order.iter().any(|name| name.as_str() == "Main") {
-        package_index.insert(PackageName("Main".to_string()), PackageId(1));
+    package_index.insert(PackageName(BUILTIN_PACKAGE.to_string()), PackageId(0));
+    if let Some(root_package) = root_package {
+        package_index.insert(PackageName(root_package.to_string()), PackageId(1));
     }
     let mut next_id = 2u32;
     for name in package_order.iter() {
-        if name.as_str() == "Main" {
+        if Some(name.as_str()) == root_package {
             continue;
         }
         package_index.insert(name.clone(), PackageId(next_id));
@@ -737,6 +743,7 @@ pub enum BuiltinId {
     Ref,
     RefGet,
     RefSet,
+    PtrEq,
     VecNew,
     VecPush,
     VecGet,
@@ -758,6 +765,7 @@ impl BuiltinId {
             "ref" => Some(BuiltinId::Ref),
             "ref_get" => Some(BuiltinId::RefGet),
             "ref_set" => Some(BuiltinId::RefSet),
+            "ptr_eq" => Some(BuiltinId::PtrEq),
             "vec_new" => Some(BuiltinId::VecNew),
             "vec_push" => Some(BuiltinId::VecPush),
             "vec_get" => Some(BuiltinId::VecGet),
@@ -779,6 +787,7 @@ impl BuiltinId {
             BuiltinId::Ref => "ref".to_string(),
             BuiltinId::RefGet => "ref_get".to_string(),
             BuiltinId::RefSet => "ref_set".to_string(),
+            BuiltinId::PtrEq => "ptr_eq".to_string(),
             BuiltinId::VecNew => "vec_new".to_string(),
             BuiltinId::VecPush => "vec_push".to_string(),
             BuiltinId::VecGet => "vec_get".to_string(),

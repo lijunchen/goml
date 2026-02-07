@@ -4,12 +4,17 @@ use std::process::{Command, Stdio};
 
 use anyhow::{Context, anyhow, bail};
 use clap::{Args, Parser, Subcommand};
+use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
+use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
 use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
 const PRETTY_WIDTH: usize = 120;
+const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
+const DEFAULT_LIB_PACKAGE: &str = "lib";
+const DEFAULT_ENTRY_FILE: &str = "main.gom";
 
 #[derive(Parser, Debug)]
 #[command(name = "goml", arg_required_else_help = true)]
@@ -20,10 +25,31 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Commands {
-    Run(RunArgs),
+    New(NewArgs),
+    Check,
+    Build,
+    Compiler(CompilerArgs),
+}
+
+#[derive(Args, Debug)]
+struct NewArgs {
+    project_name: String,
+    #[arg(long, default_value = ".")]
+    path: PathBuf,
+}
+
+#[derive(Args, Debug)]
+struct CompilerArgs {
+    #[command(subcommand)]
+    command: CompilerCommands,
+}
+
+#[derive(Subcommand, Debug)]
+enum CompilerCommands {
     Check(PackageCommandArgs),
     Build(PackageCommandArgs),
     Link(LinkArgs),
+    RunSingle(RunArgs),
 }
 
 #[derive(Args, Debug)]
@@ -124,6 +150,11 @@ struct LinkOptions {
     output: PathBuf,
 }
 
+struct ProjectContext {
+    module_dir: PathBuf,
+    entry_path: PathBuf,
+}
+
 fn main() {
     if let Err(err) = run_cli() {
         eprintln!("{err}");
@@ -135,38 +166,160 @@ fn run_cli() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
     match cli.command {
-        Commands::Run(args) => {
+        Commands::New(args) => execute_new(args),
+        Commands::Check => execute_project_check(),
+        Commands::Build => execute_project_build(),
+        Commands::Compiler(args) => execute_compiler_command(args.command),
+    }
+}
+
+fn execute_new(args: NewArgs) -> anyhow::Result<()> {
+    if !is_valid_identifier(&args.project_name) {
+        bail!(
+            "invalid project name `{}`: expected identifier [A-Za-z_][A-Za-z0-9_]*",
+            args.project_name
+        );
+    }
+
+    let project_dir = args.path.join(&args.project_name);
+    ensure_project_dir_ready(&project_dir)?;
+    let lib_dir = project_dir.join(DEFAULT_LIB_PACKAGE);
+    fs::create_dir_all(&lib_dir)
+        .with_context(|| format!("failed to create directory {}", lib_dir.display()))?;
+
+    write_file_with_dirs(
+        &project_dir.join("goml.toml"),
+        &render_root_goml_toml(&args.project_name),
+    )?;
+    write_file_with_dirs(&project_dir.join("main.gom"), &render_main_gom())?;
+    write_file_with_dirs(&lib_dir.join("goml.toml"), &render_lib_goml_toml())?;
+    write_file_with_dirs(&lib_dir.join("lib.gom"), &render_lib_gom())?;
+
+    println!("Created project at {}", project_dir.display());
+    println!("Next steps:");
+    println!("  cd {}", project_dir.display());
+    println!("  goml check");
+    println!("  goml build");
+
+    Ok(())
+}
+
+fn is_valid_identifier(name: &str) -> bool {
+    let mut chars = name.chars();
+    let Some(first) = chars.next() else {
+        return false;
+    };
+    if !(first == '_' || first.is_ascii_alphabetic()) {
+        return false;
+    }
+    chars.all(|ch| ch == '_' || ch.is_ascii_alphanumeric())
+}
+
+fn ensure_project_dir_ready(path: &Path) -> anyhow::Result<()> {
+    if !path.exists() {
+        fs::create_dir_all(path)
+            .with_context(|| format!("failed to create directory {}", path.display()))?;
+        return Ok(());
+    }
+
+    let mut entries = fs::read_dir(path)
+        .with_context(|| format!("failed to read directory {}", path.display()))?;
+    if entries.next().is_some() {
+        bail!(
+            "target directory {} already exists and is not empty",
+            path.display()
+        );
+    }
+    Ok(())
+}
+
+fn write_file_with_dirs(path: &Path, content: &str) -> anyhow::Result<()> {
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+    fs::write(path, content).with_context(|| format!("failed to write {}", path.display()))?;
+    Ok(())
+}
+
+fn render_root_goml_toml(project_name: &str) -> String {
+    format!(
+        r#"[module]
+name = "{project_name}"
+
+[package]
+name = "{ROOT_PACKAGE}"
+entry = "{DEFAULT_ENTRY_FILE}"
+"#
+    )
+}
+
+fn render_main_gom() -> String {
+    format!(
+        r#"package {ROOT_PACKAGE};
+
+use {DEFAULT_LIB_PACKAGE};
+
+fn {ENTRY_FUNCTION}() -> unit {{
+    string_println({DEFAULT_LIB_PACKAGE}::message())
+}}
+"#
+    )
+}
+
+fn render_lib_goml_toml() -> String {
+    format!(
+        r#"[package]
+name = "{DEFAULT_LIB_PACKAGE}"
+"#
+    )
+}
+
+fn render_lib_gom() -> String {
+    format!(
+        r#"package {DEFAULT_LIB_PACKAGE};
+
+fn message() -> string {{
+    "hello from lib"
+}}
+"#
+    )
+}
+
+fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
+    match command {
+        CompilerCommands::RunSingle(args) => {
             let dumps = run_dumps(&args);
             let options = RunOptions {
                 file_path: args.file,
                 dumps,
             };
-            execute_run(options)
+            execute_run_single(options)
         }
-        Commands::Check(args) => {
+        CompilerCommands::Check(args) => {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
                 interface_paths: args.interface_path,
                 output: args.output,
             };
-            execute_check(options)
+            execute_compiler_check(options)
         }
-        Commands::Build(args) => {
+        CompilerCommands::Build(args) => {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
                 interface_paths: args.interface_path,
                 output: args.output,
             };
-            execute_build(options)
+            execute_compiler_build(options)
         }
-        Commands::Link(args) => {
+        CompilerCommands::Link(args) => {
             let options = LinkOptions {
                 input_cores: args.input,
                 output: args.output,
             };
-            execute_link(options)
+            execute_compiler_link(options)
         }
     }
 }
@@ -205,7 +358,7 @@ fn run_dumps(args: &RunArgs) -> Vec<DumpStage> {
     dumps
 }
 
-fn execute_run(options: RunOptions) -> anyhow::Result<()> {
+fn execute_run_single(options: RunOptions) -> anyhow::Result<()> {
     let src = fs::read_to_string(&options.file_path)
         .with_context(|| format!("error reading goml file: {}", options.file_path.display()))?;
 
@@ -228,7 +381,7 @@ fn execute_run(options: RunOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_check(options: PackageCommandOptions) -> anyhow::Result<()> {
+fn execute_compiler_check(options: PackageCommandOptions) -> anyhow::Result<()> {
     let unit =
         compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
@@ -247,7 +400,7 @@ fn execute_check(options: PackageCommandOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_build(options: PackageCommandOptions) -> anyhow::Result<()> {
+fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> {
     let unit =
         compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
@@ -278,7 +431,7 @@ fn execute_build(options: PackageCommandOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_link(options: LinkOptions) -> anyhow::Result<()> {
+fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
     let mut units = Vec::new();
     for path in options.input_cores {
         let unit = compiler::pipeline::separate::read_core(&path)
@@ -296,6 +449,60 @@ fn execute_link(options: LinkOptions) -> anyhow::Result<()> {
     fs::write(&options.output, go_source)
         .with_context(|| format!("failed to write {}", options.output.display()))?;
     Ok(())
+}
+
+fn execute_project_check() -> anyhow::Result<()> {
+    let project = load_project_from_cwd()?;
+    let src = fs::read_to_string(&project.entry_path)
+        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
+
+    match compiler::pipeline::pipeline::typecheck_with_packages(&project.entry_path, &src) {
+        Ok((_tast, _genv, _diagnostics)) => Ok(()),
+        Err(err) => {
+            report_compilation_error(&project.entry_path, &src, err);
+            std::process::exit(1);
+        }
+    }
+}
+
+fn execute_project_build() -> anyhow::Result<()> {
+    let project = load_project_from_cwd()?;
+    let src = fs::read_to_string(&project.entry_path)
+        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
+
+    let compilation = match compile(&project.entry_path, &src) {
+        Ok(compilation) => compilation,
+        Err(err) => {
+            report_compilation_error(&project.entry_path, &src, err);
+            std::process::exit(1);
+        }
+    };
+
+    let output = project.module_dir.join(PROJECT_GO_OUTPUT);
+    if let Some(parent) = output.parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+    }
+
+    let go_source = compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH);
+    fs::write(&output, go_source)
+        .with_context(|| format!("failed to write {}", output.display()))?;
+    Ok(())
+}
+
+fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
+    let cwd = std::env::current_dir().context("failed to read current directory")?;
+    let Some((module_dir, config)) = GomlConfig::find_module_root(&cwd) else {
+        bail!(
+            "no goml.toml with [module] section found in ancestors of {}",
+            cwd.display()
+        );
+    };
+
+    Ok(ProjectContext {
+        entry_path: module_dir.join(config.package.entry),
+        module_dir,
+    })
 }
 
 fn print_dumps(compilation: &Compilation, dumps: &[DumpStage]) {
@@ -398,11 +605,13 @@ fn try_execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<Option<Stri
         .output()
         .with_context(|| "failed to execute yaegi")?;
 
-    if output.status.success() {
-        return Ok(Some(String::from_utf8_lossy(&output.stdout).to_string()));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("yaegi failed: {}", stderr.trim());
     }
 
-    Ok(None)
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(Some(stdout.to_string()))
 }
 
 fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
@@ -415,17 +624,13 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
-        .with_context(|| "failed to execute go")?;
+        .with_context(|| "failed to execute go run")?;
 
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        if stderr.is_empty() {
-            bail!("go run failed:\n{}", stdout.trim_end());
-        } else {
-            bail!("go run failed:\n{}", stderr.trim_end());
-        }
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("go run failed: {}", stderr.trim());
     }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.to_string())
 }

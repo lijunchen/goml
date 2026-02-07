@@ -78,7 +78,10 @@ fn occurs(
                     Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        format!("occurs check failed: {:?} occurs in {:?}", var, ty),
+                        format!(
+                            "Type inference failed: recursive type involving {}",
+                            super::util::format_ty_for_diag(ty)
+                        ),
                     )
                     .with_range(origin),
                 );
@@ -275,6 +278,7 @@ impl Typer {
         match constraint {
             Constraint::TypeEqual(_, _, origin) => *origin,
             Constraint::Overloaded { origin, .. } => *origin,
+            Constraint::Implements { origin, .. } => *origin,
             Constraint::StructFieldAccess { origin, .. } => *origin,
         }
     }
@@ -343,6 +347,13 @@ impl Typer {
                         None
                     }
                 }
+                Constraint::Implements { for_ty, origin, .. } => {
+                    if Self::ty_mentions_var(for_ty, var) {
+                        *origin
+                    } else {
+                        None
+                    }
+                }
                 Constraint::StructFieldAccess {
                     expr_ty,
                     result_ty,
@@ -361,6 +372,7 @@ impl Typer {
 
     pub fn solve(&mut self, genv: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
         let mut constraints = std::mem::take(&mut self.constraints);
+        self.reported_unresolved_type_vars.clear();
         let mut changed = true;
 
         fn is_concrete(norm_ty: &tast::Ty) -> bool {
@@ -402,16 +414,7 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r, origin) => {
-                        if !self.unify(diagnostics, &l, &r, origin) {
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!("Type mismatch: expected {:?}, found {:?}", l, r),
-                                )
-                                .with_range(origin),
-                            );
-                        } else {
+                        if self.unify(diagnostics, &l, &r, origin) {
                             changed = true;
                         }
                     }
@@ -477,8 +480,10 @@ impl Typer {
                                                     Stage::Typer,
                                                     Severity::Error,
                                                     format!(
-                                                        "No instance found for trait {}<{:?}> for operator {}",
-                                                        trait_name.0, ty, op.0
+                                                        "No instance found for trait {}<{}> for operator {}",
+                                                        trait_name.0,
+                                                        super::util::format_ty_for_diag(ty),
+                                                        op.0
                                                     ),
                                                 ).with_range(origin))
                                             }
@@ -487,8 +492,10 @@ impl Typer {
                                                     Stage::Typer,
                                                     Severity::Error,
                                                     format!(
-                                                        "Multiple instances found for trait {}<{:?}> for operator {}",
-                                                        trait_name.0, ty, op.0
+                                                        "Multiple instances found for trait {}<{}> for operator {}",
+                                                        trait_name.0,
+                                                        super::util::format_ty_for_diag(ty),
+                                                        op.0
                                                     ),
                                                 ).with_range(origin))
                                             }
@@ -508,8 +515,8 @@ impl Typer {
                                             Stage::Typer,
                                             Severity::Error,
                                             format!(
-                                                "Overload resolution failed for non-concrete, non-variable type {:?}",
-                                                self_ty
+                                                "Overload resolution failed for non-concrete type {}",
+                                                super::util::format_ty_for_diag(self_ty)
                                             ),
                                         ).with_range(origin));
                                     }
@@ -532,10 +539,48 @@ impl Typer {
                                 Stage::Typer,
                                 Severity::Error,
                                 format!(
-                                    "Overloaded constraint does not involve a function type: {:?}",
-                                    norm_call_site_type
+                                    "Overloaded constraint does not involve a function type: {}",
+                                    super::util::format_ty_for_diag(&norm_call_site_type)
                                 ),
                             ).with_range(origin));
+                        }
+                    }
+                    Constraint::Implements {
+                        trait_name,
+                        for_ty,
+                        origin,
+                    } => {
+                        let norm_for_ty = self.norm(&for_ty);
+                        let impl_found =
+                            genv.builtins().has_trait_impl(&trait_name.0, &norm_for_ty)
+                                || genv.current().has_trait_impl(&trait_name.0, &norm_for_ty)
+                                || genv
+                                    .deps
+                                    .values()
+                                    .any(|env| env.has_trait_impl(&trait_name.0, &norm_for_ty));
+                        if impl_found {
+                            changed = true;
+                        } else if matches!(norm_for_ty, tast::Ty::TVar(_))
+                            || !is_concrete(&norm_for_ty)
+                        {
+                            still_pending.push(Constraint::Implements {
+                                trait_name,
+                                for_ty: norm_for_ty,
+                                origin,
+                            });
+                        } else {
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
+                                        "No instance found for trait {}<{}>",
+                                        trait_name.0,
+                                        super::util::format_ty_for_diag(&norm_for_ty)
+                                    ),
+                                )
+                                .with_range(origin),
+                            );
                         }
                     }
                     Constraint::StructFieldAccess {
@@ -587,7 +632,7 @@ impl Typer {
                     Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        format!("Could not solve all constraints: {:?}", constraints),
+                        "Could not solve all type constraints".to_string(),
                     )
                     .with_range(Self::first_constraint_origin(&constraints)),
                 );
@@ -599,10 +644,7 @@ impl Typer {
                 Diagnostic::new(
                     Stage::Typer,
                     Severity::Error,
-                    format!(
-                        "Type inference failed, remaining constraints: {:?}",
-                        constraints
-                    ),
+                    "Type inference failed due to unresolved constraints".to_string(),
                 )
                 .with_range(Self::first_constraint_origin(&constraints)),
             );
@@ -685,7 +727,7 @@ impl Typer {
                         Diagnostic::new(
                             Stage::Typer,
                             Severity::Error,
-                            format!("Failed to unify type variables {:?} and {:?}", a, b),
+                            "Type inference failed while unifying unknown types".to_string(),
                         )
                         .with_range(origin),
                     );
@@ -702,7 +744,10 @@ impl Typer {
                         Diagnostic::new(
                             Stage::Typer,
                             Severity::Error,
-                            format!("Failed to unify type variable {:?} with {:?}", a, t),
+                            format!(
+                                "Type inference failed while unifying unknown type with {}",
+                                super::util::format_ty_for_diag(t)
+                            ),
                         )
                         .with_range(origin),
                     );
@@ -730,7 +775,11 @@ impl Typer {
                         Diagnostic::new(
                             Stage::Typer,
                             Severity::Error,
-                            format!("Tuple types have different lengths: {:?} and {:?}", l, r),
+                            format!(
+                                "Tuple length mismatch: expected {}, found {}",
+                                super::util::format_ty_for_diag(&l_norm),
+                                super::util::format_ty_for_diag(&r_norm)
+                            ),
                         )
                         .with_range(origin),
                     );
@@ -758,7 +807,11 @@ impl Typer {
                         Diagnostic::new(
                             Stage::Typer,
                             Severity::Error,
-                            format!("Array types have different lengths: {:?} and {:?}", l, r),
+                            format!(
+                                "Array length mismatch: expected {}, found {}",
+                                super::util::format_ty_for_diag(&l_norm),
+                                super::util::format_ty_for_diag(&r_norm)
+                            ),
                         )
                         .with_range(origin),
                     );
@@ -811,8 +864,9 @@ impl Typer {
                             Stage::Typer,
                             Severity::Error,
                             format!(
-                                "Function types have different parameter lengths: {:?} and {:?}",
-                                l, r
+                                "Function arity mismatch: expected {}, found {}",
+                                super::util::format_ty_for_diag(&l_norm),
+                                super::util::format_ty_for_diag(&r_norm)
                             ),
                         )
                         .with_range(origin),
@@ -834,7 +888,11 @@ impl Typer {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        format!("Constructor types are different: {:?} and {:?}", l, r),
+                        format!(
+                            "Type mismatch: expected {}, found {}",
+                            super::util::format_ty_for_diag(&l_norm),
+                            super::util::format_ty_for_diag(&r_norm)
+                        ),
                     ));
                     return false;
                 }
@@ -844,7 +902,11 @@ impl Typer {
                     diagnostics.push(Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        format!("Dyn trait types are different: {:?} and {:?}", l, r),
+                        format!(
+                            "Type mismatch: expected {}, found {}",
+                            super::util::format_ty_for_diag(&l_norm),
+                            super::util::format_ty_for_diag(&r_norm)
+                        ),
                     ));
                     return false;
                 }
@@ -865,8 +927,9 @@ impl Typer {
                             Stage::Typer,
                             Severity::Error,
                             format!(
-                                "Constructor types have different argument lengths: {:?} and {:?}",
-                                l, r
+                                "Type argument arity mismatch: expected {}, found {}",
+                                super::util::format_ty_for_diag(&l_norm),
+                                super::util::format_ty_for_diag(&r_norm)
                             ),
                         )
                         .with_range(origin),
@@ -888,7 +951,11 @@ impl Typer {
                         Diagnostic::new(
                             Stage::Typer,
                             Severity::Error,
-                            format!("Type parameters are different: {:?} and {:?}", l, r),
+                            format!(
+                                "Type mismatch: expected {}, found {}",
+                                super::util::format_ty_for_diag(&l_norm),
+                                super::util::format_ty_for_diag(&r_norm)
+                            ),
                         )
                         .with_range(origin),
                     );
@@ -901,8 +968,9 @@ impl Typer {
                         Stage::Typer,
                         Severity::Error,
                         format!(
-                            "Cannot unify type parameter {:?} with concrete type {:?}",
-                            name, ty
+                            "Type mismatch: expected {}, found {}",
+                            name,
+                            super::util::format_ty_for_diag(ty)
                         ),
                     )
                     .with_range(origin),
@@ -914,7 +982,11 @@ impl Typer {
                     Diagnostic::new(
                         Stage::Typer,
                         Severity::Error,
-                        format!("Types are not equal: {:?} and {:?}", l_norm, r_norm),
+                        format!(
+                            "Type mismatch: expected {}, found {}",
+                            super::util::format_ty_for_diag(&l_norm),
+                            super::util::format_ty_for_diag(&r_norm)
+                        ),
                     )
                     .with_range(origin),
                 );
@@ -1018,18 +1090,22 @@ impl Typer {
                 if let Some(value) = self.uni.probe_value(*v) {
                     self.subst_ty(diagnostics, &value, origin)
                 } else {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!("Type variable {:?} not resolved", v),
-                        )
-                        .with_range(
-                            origin
-                                .or_else(|| self.origin_for_unresolved_type_var(*v))
-                                .or_else(|| diagnostics.iter().filter_map(|d| d.range()).last()),
-                        ),
-                    );
+                    if self.reported_unresolved_type_vars.insert(*v) {
+                        diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                "Could not infer type".to_string(),
+                            )
+                            .with_range(
+                                origin
+                                    .or_else(|| self.origin_for_unresolved_type_var(*v))
+                                    .or_else(|| {
+                                        diagnostics.iter().filter_map(|d| d.range()).last()
+                                    }),
+                            ),
+                        );
+                    }
                     tast::Ty::TVar(*v)
                 }
             }

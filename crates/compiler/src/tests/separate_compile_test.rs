@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use expect_test::expect_file;
 
+use crate::package_names::ROOT_PACKAGE;
 use crate::pipeline::{packages, pipeline, separate};
 
 fn gom_files_in_dir(dir: &Path) -> anyhow::Result<Vec<PathBuf>> {
@@ -113,29 +114,31 @@ fn foo() -> int32 {
     let main_path = dir.path().join("main.gom");
     std::fs::write(
         &main_path,
-        r#"
-package Main;
+        format!(
+            r#"
+package {ROOT_PACKAGE};
 
 use Lib;
 
-fn main() -> unit {
+fn main() -> unit {{
     string_println(int32_to_string(Lib::foo()))
-}
-"#,
+}}
+"#
+        ),
     )?;
 
     let main_unit = separate::build_package(separate::PackageInputs {
-        package: "Main".to_string(),
+        package: ROOT_PACKAGE.to_string(),
         input_files: vec![main_path.clone()],
         interface_paths: vec![iface_dir.clone()],
     })
-    .map_err(|err| anyhow::anyhow!("build Main failed: {:?}", err))?;
+    .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
     std::fs::write(
-        iface_dir.join("Main.interface"),
+        iface_dir.join(format!("{ROOT_PACKAGE}.interface")),
         serde_json::to_string_pretty(&main_unit.interface)?,
     )?;
     std::fs::write(
-        iface_dir.join("Main.core"),
+        iface_dir.join(format!("{ROOT_PACKAGE}.core")),
         serde_json::to_string_pretty(&main_unit)?,
     )?;
 
@@ -169,8 +172,8 @@ fn bar() -> int32 {
         serde_json::to_string_pretty(&lib_unit_v2)?,
     )?;
 
-    let main_core = separate::read_core(&iface_dir.join("Main.core"))
-        .map_err(|err| anyhow::anyhow!("failed to read Main.core: {:?}", err))?;
+    let main_core = separate::read_core(&iface_dir.join(format!("{ROOT_PACKAGE}.core")))
+        .map_err(|err| anyhow::anyhow!("failed to read main.core: {:?}", err))?;
     let lib_core = separate::read_core(&iface_dir.join("Lib.core"))
         .map_err(|err| anyhow::anyhow!("failed to read Lib.core: {:?}", err))?;
 

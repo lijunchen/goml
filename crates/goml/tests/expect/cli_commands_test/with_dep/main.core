@@ -1,11 +1,11 @@
 {
   "format_version": 4,
   "compiler_abi": 1,
-  "package": "Main",
+  "package": "main",
   "interface": {
     "format_version": 4,
     "compiler_abi": 1,
-    "package": "Main",
+    "package": "main",
     "exports": {
       "type_env": {
         "enums": {},
@@ -21,7 +21,7 @@
         "funcs": {
           "main": {
             "type_params": [],
-            "constraints": null,
+            "constraints": [],
             "ty": {
               "TFunc": {
                 "params": [],
@@ -35,16 +35,17 @@
       }
     },
     "interface": {
-      "package": "Main",
+      "package": "main",
       "value_exports": {
         "main": 0
       },
       "enum_variants": {}
     },
     "deps": {
-      "Builtin": "20496b696a8eea8096fbcef7bc10368374bf3fc949867dff526d91021e4b666b"
+      "Lib": "0ab88f7af8bf0929bed06432b5919c6ea6279f3bbc7109e1a85b9b5989d370a6",
+      "builtin": "ddb5185ddb659623fb112d94e957e471fe773b91251094eded91d5f642c0f3bd"
     },
-    "interface_hash": "77e8473a04578e924d13044afca6326aafd49b6fc60c59ad40a47c69eaf72ff8"
+    "interface_hash": "bf31a48220100af5536c2e482f3a181ac00e4c5b7337ab31bbff3b7ceeca7f3c"
   },
   "core_ir": {
     "toplevels": [
@@ -70,12 +71,19 @@
             },
             "args": [
               {
-                "EPrim": {
-                  "value": {
-                    "String": {
-                      "value": "ok"
+                "ECall": {
+                  "func": {
+                    "EVar": {
+                      "name": "Lib::msg",
+                      "ty": {
+                        "TFunc": {
+                          "params": [],
+                          "ret_ty": "TString"
+                        }
+                      }
                     }
                   },
+                  "args": [],
                   "ty": "TString"
                 }
               }
@@ -87,7 +95,8 @@
     ]
   },
   "deps": {
-    "Builtin": "20496b696a8eea8096fbcef7bc10368374bf3fc949867dff526d91021e4b666b"
+    "Lib": "0ab88f7af8bf0929bed06432b5919c6ea6279f3bbc7109e1a85b9b5989d370a6",
+    "builtin": "ddb5185ddb659623fb112d94e957e471fe773b91251094eded91d5f642c0f3bd"
   },
   "sources": [
     "<TMP>/main.gom"

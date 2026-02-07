@@ -23,6 +23,7 @@ fn env_registers_builtin_function_signatures() {
             "ref",
             "ref_get",
             "ref_set",
+            "ptr_eq",
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
@@ -30,7 +31,8 @@ fn env_registers_builtin_function_signatures() {
             uint8_to_string: Some(TFunc([TUint8], TString))
             ref: Some(TFunc([TParam(T)], TRef(TParam(T))))
             ref_get: Some(TFunc([TRef(TParam(T))], TParam(T)))
-            ref_set: Some(TFunc([TRef(TParam(T)), TParam(T)], TUnit))"#]],
+            ref_set: Some(TFunc([TRef(TParam(T)), TParam(T)], TUnit))
+            ptr_eq: Some(TFunc([TRef(TParam(T)), TRef(TParam(T))], TBool))"#]],
     );
 }
 
@@ -121,6 +123,7 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "ref"));
     assert!(names.iter().any(|n| n == "ref_get"));
     assert!(names.iter().any(|n| n == "ref_set"));
+    assert!(names.iter().any(|n| n == "ptr_eq"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
 }

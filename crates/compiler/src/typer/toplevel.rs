@@ -8,6 +8,7 @@ use crate::{
     builtins,
     env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
+    package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
     typer::{
         Typer,
@@ -132,7 +133,7 @@ fn define_trait(env: &mut PackageTypeEnv, trait_def: &hir::TraitDef) {
             method_name.to_ident_name(),
             FnScheme {
                 type_params: vec![],
-                constraints: (),
+                constraints: vec![],
                 ty: fn_ty,
                 origin: FnOrigin::User,
             },
@@ -145,11 +146,76 @@ fn define_trait(env: &mut PackageTypeEnv, trait_def: &hir::TraitDef) {
         .insert(trait_def.name.to_ident_name(), env::TraitDef { methods });
 }
 
+fn add_fn_constraints_from_bounds(
+    env: &PackageTypeEnv,
+    known_type_params: &HashSet<String>,
+    bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    constraints: &mut Vec<env::FnConstraint>,
+) {
+    for (param, traits) in bounds.iter() {
+        let param_name = param.to_ident_name();
+        if !known_type_params.contains(&param_name) {
+            continue;
+        }
+        for trait_path in traits.iter() {
+            let raw_trait_name = trait_path.display();
+            let trait_name = if let Some((resolved_trait, _trait_env)) =
+                super::util::resolve_trait_name(env, &raw_trait_name)
+            {
+                resolved_trait
+            } else {
+                raw_trait_name
+            };
+            let constraint = env::FnConstraint {
+                type_param: param_name.clone(),
+                trait_name: tast::TastIdent(trait_name),
+            };
+            if !constraints.contains(&constraint) {
+                constraints.push(constraint);
+            }
+        }
+    }
+}
+
+fn build_fn_constraints(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    generics: &[hir::HirIdent],
+    bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+) -> Vec<env::FnConstraint> {
+    let known_type_params = generics
+        .iter()
+        .map(|param| param.to_ident_name())
+        .collect::<HashSet<_>>();
+    let mut constraints = Vec::new();
+    let _ = diagnostics;
+    add_fn_constraints_from_bounds(env, &known_type_params, bounds, &mut constraints);
+    constraints
+}
+
+fn build_method_constraints(
+    env: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    all_generics: &[hir::HirIdent],
+    impl_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+    method_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+) -> Vec<env::FnConstraint> {
+    let known_type_params = all_generics
+        .iter()
+        .map(|param| param.to_ident_name())
+        .collect::<HashSet<_>>();
+    let mut constraints = Vec::new();
+    let _ = diagnostics;
+    add_fn_constraints_from_bounds(env, &known_type_params, impl_bounds, &mut constraints);
+    add_fn_constraints_from_bounds(env, &known_type_params, method_bounds, &mut constraints);
+    constraints
+}
+
 fn is_local_name(current_package: &str, name: &str) -> bool {
     if let Some((package, _)) = name.split_once("::") {
         package == current_package
     } else {
-        current_package == "Main" || current_package == "Builtin"
+        is_special_unqualified_package(current_package)
     }
 }
 
@@ -160,7 +226,7 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
         }
         tast::Ty::TApp { ty, .. } => is_local_nominal_type(current_package, ty),
         tast::Ty::TVec { .. } | tast::Ty::TRef { .. } | tast::Ty::THashMap { .. } => {
-            current_package == "Builtin"
+            current_package == BUILTIN_PACKAGE
         }
         _ => false,
     }
@@ -188,8 +254,9 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Trait {} is not defined, cannot implement it for {:?}",
-                trait_name_raw, for_ty
+                "Trait {} is not defined, cannot implement it for {}",
+                trait_name_raw,
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -209,8 +276,10 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Impl violates orphan rule: trait {} and type {:?} are not local to package {}",
-                trait_name_str, for_ty, env.package
+                "Impl violates orphan rule: trait {} and type {} are not local to package {}",
+                trait_name_str,
+                super::util::format_ty_for_diag(&for_ty),
+                env.package
             ),
         ));
         return;
@@ -222,8 +291,9 @@ fn define_trait_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Trait {} implementation for {:?} is already defined",
-                trait_name_str, for_ty
+                "Trait {} implementation for {} is already defined",
+                trait_name_str,
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -347,8 +417,12 @@ fn define_trait_impl(
                             Stage::Typer,
                             Severity::Error,
                             format!(
-                                "Trait {}::{} parameter {} expected type {:?} but found {:?}",
-                                trait_name_str, method_name_str, idx, expected, actual
+                                "Trait {}::{} parameter {} expected type {} but found {}",
+                                trait_name_str,
+                                method_name_str,
+                                idx,
+                                super::util::format_ty_for_diag(expected),
+                                super::util::format_ty_for_diag(actual)
                             ),
                         ));
                         method_ok = false;
@@ -360,8 +434,11 @@ fn define_trait_impl(
                         Stage::Typer,
                         Severity::Error,
                         format!(
-                            "Trait {}::{} expected return type {:?} but found {:?}",
-                            trait_name_str, method_name_str, expected_ret, impl_ret
+                            "Trait {}::{} expected return type {} but found {}",
+                            trait_name_str,
+                            method_name_str,
+                            super::util::format_ty_for_diag(expected_ret),
+                            super::util::format_ty_for_diag(impl_ret)
                         ),
                     ));
                     method_ok = false;
@@ -381,16 +458,19 @@ fn define_trait_impl(
         }
 
         if method_ok {
-            let type_params: Vec<String> = impl_block
-                .generics
-                .iter()
-                .map(|g| g.to_ident_name())
-                .collect();
+            let type_params: Vec<String> = all_generics.iter().map(|g| g.to_ident_name()).collect();
+            let constraints = build_method_constraints(
+                env,
+                diagnostics,
+                &all_generics,
+                &impl_block.generic_bounds,
+                &m.generic_bounds,
+            );
             impl_methods.insert(
                 method_name_str.clone(),
                 env::FnScheme {
                     type_params,
-                    constraints: (),
+                    constraints,
                     ty: impl_method_ty,
                     origin: FnOrigin::User,
                 },
@@ -404,8 +484,10 @@ fn define_trait_impl(
                 Stage::Typer,
                 Severity::Error,
                 format!(
-                    "Trait {} implementation for {:?} is missing method {}",
-                    trait_name_str, for_ty, method_name
+                    "Trait {} implementation for {} is missing method {}",
+                    trait_name_str,
+                    super::util::format_ty_for_diag(&for_ty),
+                    method_name
                 ),
             ));
         }
@@ -441,8 +523,8 @@ fn define_inherent_impl(
             Stage::Typer,
             Severity::Error,
             format!(
-                "Inherent impl for non-local type {:?} is not allowed",
-                for_ty
+                "Inherent impl for non-local type {} is not allowed",
+                super::util::format_ty_for_diag(&for_ty)
             ),
         ));
         return;
@@ -453,8 +535,8 @@ fn define_inherent_impl(
             super::util::push_ice(
                 diagnostics,
                 format!(
-                    "expected constructor type in inherent impl, got {:?}",
-                    for_ty
+                    "Expected constructor type in inherent impl, got {}",
+                    super::util::format_ty_for_diag(&for_ty)
                 ),
             );
             return;
@@ -478,8 +560,9 @@ fn define_inherent_impl(
                 Stage::Typer,
                 Severity::Error,
                 format!(
-                    "Method {} implemented multiple times in impl for {:?}",
-                    method_name_str, for_ty
+                    "Method {} implemented multiple times in impl for {}",
+                    method_name_str,
+                    super::util::format_ty_for_diag(&for_ty)
                 ),
             ));
             continue;
@@ -517,18 +600,20 @@ fn define_inherent_impl(
             ret_ty: Box::new(ret.clone()),
         };
 
-        // Store impl generics as type parameters for the method scheme
-        let type_params: Vec<String> = impl_block
-            .generics
-            .iter()
-            .map(|g| g.to_ident_name())
-            .collect();
+        let type_params: Vec<String> = all_generics.iter().map(|g| g.to_ident_name()).collect();
+        let constraints = build_method_constraints(
+            env,
+            diagnostics,
+            &all_generics,
+            &impl_block.generic_bounds,
+            &m.generic_bounds,
+        );
 
         methods_to_add.insert(
             method_name_str,
             env::FnScheme {
                 type_params,
-                constraints: (),
+                constraints,
                 ty: impl_method_ty,
                 origin: FnOrigin::User,
             },
@@ -570,11 +655,13 @@ fn define_function(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, func
         }
         None => tast::Ty::TUnit,
     };
+    let fn_constraints =
+        build_fn_constraints(env, diagnostics, &func.generics, &func.generic_bounds);
     env.current_mut().value_env.funcs.insert(
         name,
         FnScheme {
-            type_params: vec![],
-            constraints: (),
+            type_params: func.generics.iter().map(|g| g.to_ident_name()).collect(),
+            constraints: fn_constraints,
             ty: tast::Ty::TFunc {
                 params,
                 ret_ty: Box::new(ret),
@@ -677,12 +764,13 @@ fn define_extern_builtin(
         }
         None => tast::Ty::TUnit,
     };
+    let fn_constraints = build_fn_constraints(env, diagnostics, &ext.generics, &ext.generic_bounds);
 
     env.current_mut().value_env.funcs.insert(
         ext.name.to_ident_name(),
         FnScheme {
-            type_params: vec![],
-            constraints: (),
+            type_params: ext.generics.iter().map(|g| g.to_ident_name()).collect(),
+            constraints: fn_constraints,
             ty: tast::Ty::TFunc {
                 params,
                 ret_ty: Box::new(ret_ty),
@@ -799,7 +887,7 @@ pub fn check_file(
         hir_table,
         env::GlobalTypeEnv::new(),
         builtins::builtin_env(),
-        "Main",
+        ROOT_PACKAGE,
         HashMap::new(),
     )
 }
