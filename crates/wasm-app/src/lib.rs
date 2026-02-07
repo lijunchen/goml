@@ -420,6 +420,7 @@ pub fn value_completions(src: &str, line: u32, col: u32) -> String {
 
         let kind_str = match kind {
             compiler::query::ValueCompletionKind::Function => "function",
+            compiler::query::ValueCompletionKind::Keyword => "keyword",
         };
 
         let mut entry = format!(

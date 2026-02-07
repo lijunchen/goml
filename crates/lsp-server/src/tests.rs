@@ -897,6 +897,46 @@ fn main() {
     }
 
     #[test]
+    fn value_completion_suggests_keywords() {
+        check_completion(
+            r#"
+package main;
+
+fn main() {
+    le
+}
+"#,
+            4,
+            6,
+            expect!["let"],
+        );
+    }
+
+    #[test]
+    fn value_completion_keyword_kind_is_keyword() {
+        let src = r#"
+package main;
+
+fn main() {
+    le
+}
+"#;
+        let path = PathBuf::from("test.gom");
+        let position = Position {
+            line: 4,
+            character: 6,
+        };
+        let completion = handlers::completion(&path, src, position);
+        let Some(CompletionResponse::Array(items)) = completion else {
+            panic!("expected completion items");
+        };
+        let Some(item) = items.into_iter().find(|item| item.label == "let") else {
+            panic!("expected let completion item");
+        };
+        assert_eq!(item.kind, Some(CompletionItemKind::KEYWORD));
+    }
+
+    #[test]
     fn completion_in_empty_function_body() {
         check_completion(
             r#"

@@ -191,7 +191,10 @@ fn colon_item_to_completion(item: ColonColonCompletionItem) -> CompletionItem {
 fn value_item_to_completion(item: ValueCompletionItem) -> CompletionItem {
     CompletionItem {
         label: item.name.clone(),
-        kind: Some(CompletionItemKind::FUNCTION),
+        kind: Some(match item.kind {
+            query::ValueCompletionKind::Function => CompletionItemKind::FUNCTION,
+            query::ValueCompletionKind::Keyword => CompletionItemKind::KEYWORD,
+        }),
         detail: item.detail,
         ..Default::default()
     }
