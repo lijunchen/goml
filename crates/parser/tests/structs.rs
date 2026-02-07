@@ -439,7 +439,7 @@ fn parser_handles_tricky_inputs_without_panicking() {
         ),
         (
             "invalid_tokens_and_escape_like_sequence",
-            "package Main; fn main() { let y = \\u2028; @@@ }",
+            "package main; fn main() { let y = \\u2028; @@@ }",
         ),
         (
             "unbalanced_generics_and_trait_bounds",

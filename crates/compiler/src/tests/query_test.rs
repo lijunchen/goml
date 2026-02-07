@@ -609,7 +609,7 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let hover_src = r#"package Main;
+    let hover_src = r#"package main;
 use Lib;
 
 fn main() {
@@ -619,7 +619,7 @@ fn main() {
     let p = Lib::Point { x: 1, y: 2 };
 }
 "#;
-    let completion_src = r#"package Main;
+    let completion_src = r#"package main;
 use Lib;
 
 fn main() {
@@ -692,14 +692,14 @@ fn color_to_int(c: Color) -> int32 {
     let lib_path = lib_dir.join("main.gom");
     std::fs::write(&lib_path, lib_src).unwrap();
 
-    let src = r#"package Main;
+    let src = r#"package main;
 use Lib;
 
 fn main() {
     let _ = Lib::;
 }
 "#;
-    let src_with_prefix = r#"package Main;
+    let src_with_prefix = r#"package main;
 use Lib;
 
 fn main() {

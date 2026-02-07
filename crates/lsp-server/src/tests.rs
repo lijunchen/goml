@@ -27,19 +27,19 @@ mod robustness_tests {
         let cases = [
             (
                 "unterminated_string_and_block",
-                "package Main;\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
+                "package main;\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
             ),
             (
                 "unterminated_char_and_comment",
-                "package Main;\nfn main() {\n  let c = '\\u12\n  // trailing",
+                "package main;\nfn main() {\n  let c = '\\u12\n  // trailing",
             ),
             (
                 "dense_operators_and_partial_tokens",
-                "package Main;\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
+                "package main;\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
             ),
             (
                 "nested_brackets_missing_closers",
-                "package Main;\nfn main() { let _ = ((([1, 2, 3]); }\n",
+                "package main;\nfn main() { let _ = ((([1, 2, 3]); }\n",
             ),
             (
                 "attribute_generics_and_dyn_partial",
@@ -47,11 +47,11 @@ mod robustness_tests {
             ),
             (
                 "invalid_tokens_and_escape_like_sequence",
-                "package Main;\nfn main() { let y = \\u2028; @@@ }\n",
+                "package main;\nfn main() { let y = \\u2028; @@@ }\n",
             ),
             (
                 "deeply_nested_expressions",
-                "package Main;\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
+                "package main;\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
             ),
         ];
 
@@ -424,7 +424,7 @@ mod diagnostics_tests {
     fn valid_code_no_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -439,7 +439,7 @@ fn main() {
     fn undefined_variable_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     println(undefined_var.to_string());
@@ -461,7 +461,7 @@ fn main() {
     fn type_mismatch_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -482,7 +482,7 @@ fn main() {
     fn parse_error() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main( {
     let x = 42;
@@ -501,7 +501,7 @@ fn main( {
     fn missing_return_type() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) {
     x + y
@@ -540,7 +540,7 @@ mod hover_tests {
     fn hover_on_variable() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -560,7 +560,7 @@ fn main() {
     fn hover_on_function_name() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -583,7 +583,7 @@ fn main() {
     fn hover_on_function_call() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: int32) -> int32 {
     x + y
@@ -606,7 +606,7 @@ fn main() {
     fn hover_on_struct_field() {
         check_hover(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -631,7 +631,7 @@ fn main() {
     fn hover_on_enum_variant() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -656,7 +656,7 @@ fn main() {
     fn hover_on_parameter() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -679,7 +679,7 @@ fn main() {
     fn hover_on_let_binding() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let result: int32 = 42;
@@ -699,7 +699,7 @@ fn main() {
     fn hover_on_match_arm_binding() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Option {
     Some(int32),
@@ -731,7 +731,7 @@ mod completion_tests {
     fn dot_completion_on_struct() {
         check_completion(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -753,7 +753,7 @@ fn main() {
     fn dot_completion_on_int() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -770,7 +770,7 @@ fn main() {
     fn colon_colon_completion_on_enum() {
         check_completion(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -792,7 +792,7 @@ fn main() {
     fn dot_completion_on_builtin_vec() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let v: Vec[int32] = Vec::new();
@@ -809,7 +809,7 @@ fn main() {
     fn dot_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let m: HashMap[string, int32] = HashMap::new();
@@ -826,7 +826,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_vec() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let _ = Vec::
@@ -842,7 +842,7 @@ fn main() {
     fn colon_colon_completion_on_builtin_hashmap() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn main() {
     let _ = HashMap::
@@ -858,7 +858,7 @@ fn main() {
     fn value_completion_suggests_functions() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn helper() -> int32 {
     42
@@ -878,7 +878,7 @@ fn main() {
     fn completion_in_empty_function_body() {
         check_completion(
             r#"
-package Main;
+package main;
 
 fn greet(name: string) -> string {
     name
@@ -902,7 +902,7 @@ mod signature_help_tests {
     fn signature_help_for_function_call() {
         check_signature_help(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: string) -> bool {
     true
@@ -922,7 +922,7 @@ fn main() {
 
         check_signature_help(
             r#"
-package Main;
+package main;
 
 fn add(x: int32, y: string) -> bool {
     true
@@ -945,7 +945,7 @@ fn main() {
     fn signature_help_for_method_call_hides_receiver() {
         check_signature_help(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 1;
@@ -969,7 +969,7 @@ mod inlay_hint_tests {
     fn inlay_hints_for_let_bindings() {
         check_inlay_hints(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 1;
@@ -995,7 +995,7 @@ fn main() {
     fn inlay_hints_for_closure_params() {
         check_inlay_hints(
             r#"
-package Main;
+package main;
 
 fn main() {
     let f = |x| x + 1;
@@ -1022,7 +1022,7 @@ fn main() {
     fn inlay_hints_respect_range() {
         check_inlay_hints(
             r#"
-package Main;
+package main;
 
 fn main() {
     let a = 1;
@@ -1159,7 +1159,7 @@ mod goto_definition_tests {
     fn goto_definition_local_variable() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -1176,7 +1176,7 @@ fn main() {
     fn goto_definition_local_variable_via_token_search() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x = 42;
@@ -1193,7 +1193,7 @@ fn main() {
     fn goto_definition_function() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn helper() -> int32 {
     42
@@ -1213,7 +1213,7 @@ fn main() {
     fn goto_definition_struct_field() {
         check_goto(
             r#"
-package Main;
+package main;
 
 struct Point {
     x: int32,
@@ -1235,7 +1235,7 @@ fn main() {
     fn goto_definition_parameter() {
         check_goto(
             r#"
-package Main;
+package main;
 
 fn double(n: int32) -> int32 {
     n * 2
@@ -1673,7 +1673,7 @@ fn main() {
     fn goto_definition_builtin_vec_new() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() -> unit {
     let v: Vec[int32] = vec_new();
@@ -1690,7 +1690,7 @@ fn main() -> unit {
     fn goto_definition_builtin_ref_get() {
         check_goto_token(
             r#"
-package Main;
+package main;
 
 fn main() -> unit {
     let r = ref(1);
@@ -1708,7 +1708,7 @@ fn main() -> unit {
     #[test]
     fn goto_definition_builtin_hashmap_methods() {
         let src = r#"
-package Main;
+package main;
 
 #[derive(Hash, Eq)]
 enum Key {
@@ -1977,7 +1977,7 @@ mod complex_code_tests {
     fn generics_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn identity[T](x: T) -> T {
     x
@@ -2001,7 +2001,7 @@ fn main() {
     fn trait_method_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 trait Greet {
     fn greet(Self) -> string;
@@ -2035,7 +2035,7 @@ fn main() {
     fn closure_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let add = |x: int32, y: int32| -> int32 { x + y };
@@ -2053,7 +2053,7 @@ fn main() {
     fn match_expression_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 enum Result {
     Ok(int32),
@@ -2081,7 +2081,7 @@ fn main() {
     fn ref_type_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let counter = ref(0);
@@ -2102,7 +2102,7 @@ fn main() {
     fn array_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -2122,7 +2122,7 @@ fn main() {
     fn tuple_hover() {
         check_hover(
             r#"
-package Main;
+package main;
 
 fn main() {
     let pair = (42, "hello");
@@ -2142,7 +2142,7 @@ fn main() {
     fn while_loop_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let i: Ref[int32] = ref(0);
@@ -2166,7 +2166,7 @@ fn main() {
     fn extern_function_diagnostics() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "value: 42";
@@ -2188,14 +2188,14 @@ mod edge_case_tests {
 
     #[test]
     fn only_package_declaration() {
-        check_diagnostics("package Main;", expect!["no diagnostics"]);
+        check_diagnostics("package main;", expect!["no diagnostics"]);
     }
 
     #[test]
     fn unicode_in_strings() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "你好世界 🌍";
@@ -2210,7 +2210,7 @@ fn main() {
     fn deeply_nested_expressions() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let x: int32 = ((((1 + 2) * 3) - 4) / 2);
@@ -2225,7 +2225,7 @@ fn main() {
     fn multiline_string() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "line1 line2 line3";
@@ -2238,18 +2238,18 @@ fn main() {
 
     #[test]
     fn hover_at_file_start() {
-        check_hover("package Main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
+        check_hover("package main;\n\nfn main() {}", 0, 0, expect!["no hover"]);
     }
 
     #[test]
     fn hover_at_file_end() {
-        check_hover("package Main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
+        check_hover("package main;\n\nfn main() {}", 2, 10, expect!["no hover"]);
     }
 
     #[test]
     fn completion_at_file_start() {
         check_completion(
-            "package Main;\n\nfn main() {}",
+            "package main;\n\nfn main() {}",
             0,
             0,
             expect!["empty completion"],
@@ -2261,7 +2261,7 @@ fn main() {
         let long_string = "a".repeat(1000);
         let src = format!(
             r#"
-package Main;
+package main;
 
 fn main() {{
     let s = "{}";
@@ -2275,7 +2275,7 @@ fn main() {{
 
     #[test]
     fn many_functions() {
-        let mut src = "package Main;\n\n".to_string();
+        let mut src = "package main;\n\n".to_string();
         for i in 0..100 {
             src.push_str(&format!("fn func{}() -> int32 {{ {} }}\n", i, i));
         }
@@ -2291,7 +2291,7 @@ mod builtin_tests {
     fn builtin_println() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     println("hello");
@@ -2305,7 +2305,7 @@ fn main() {
     fn builtin_print() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     print("hello");
@@ -2319,7 +2319,7 @@ fn main() {
     fn builtin_ref_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let r = ref(42);
@@ -2335,7 +2335,7 @@ fn main() {
     fn builtin_vec_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let v = vec_new();
@@ -2353,7 +2353,7 @@ fn main() {
     fn builtin_array_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let arr: [int32; 3] = [1, 2, 3];
@@ -2369,7 +2369,7 @@ fn main() {
     fn builtin_string_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let s = "hello";
@@ -2385,7 +2385,7 @@ fn main() {
     fn builtin_hashmap_operations() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let m = hashmap_new();
@@ -2404,7 +2404,7 @@ fn main() {
     fn builtin_to_string_trait() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() {
     let n: int32 = 42;
@@ -2423,7 +2423,7 @@ mod exhaustiveness_tests {
     fn exhaustive_bool_match() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2440,7 +2440,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_false() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2456,7 +2456,7 @@ fn main() -> int32 {
     fn non_exhaustive_bool_missing_true() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match true {
@@ -2472,7 +2472,7 @@ fn main() -> int32 {
     fn exhaustive_enum_match() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2497,7 +2497,7 @@ fn main() -> int32 {
     fn non_exhaustive_enum_missing_variants() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2520,7 +2520,7 @@ fn main() -> int32 {
     fn exhaustive_enum_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Color {
     Red,
@@ -2544,7 +2544,7 @@ fn main() -> int32 {
     fn exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Option[T] {
     Some(T),
@@ -2567,7 +2567,7 @@ fn main() -> int32 {
     fn non_exhaustive_generic_enum() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 enum Option[T] {
     Some(T),
@@ -2589,7 +2589,7 @@ fn main() -> int32 {
     fn exhaustive_int_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 42 {
@@ -2607,7 +2607,7 @@ fn main() -> int32 {
     fn non_exhaustive_int_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 42 {
@@ -2624,7 +2624,7 @@ fn main() -> int32 {
     fn exhaustive_string_with_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match "hello" {
@@ -2641,7 +2641,7 @@ fn main() -> int32 {
     fn non_exhaustive_string_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match "hello" {
@@ -2658,7 +2658,7 @@ fn main() -> int32 {
     fn non_exhaustive_char_no_wildcard() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     match 'a' {
@@ -2675,7 +2675,7 @@ fn main() -> int32 {
     fn non_exhaustive_nested_tuple() {
         check_diagnostics(
             r#"
-package Main;
+package main;
 
 fn main() -> int32 {
     let pair = (true, false);
