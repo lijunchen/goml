@@ -93,7 +93,7 @@ name = "Main"
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test`
-- CLI: run goml programs via `cargo run -- run <file.gom>`; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to print IR stages before execution.
+- CLI: run goml programs via `cargo run -p goml -- run <file.gom>`; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to print IR stages before execution.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
@@ -119,7 +119,7 @@ name = "Main"
   - `main.gom` - the input source file
   - `main.gom.cst`, `main.gom.ast`, `main.gom.hir`, `main.gom.tast`, `main.gom.core`, `main.gom.mono`, `main.gom.anf`, `main.gom.go` - expected IR outputs at each compilation stage
   - `main.gom.out` - expected execution output
-- You can quick check a test case with: `cargo run -- crates/compiler/src/tests/pipeline/001/main.gom`
+- You can quick check a test case with: `cargo run -p goml -- crates/compiler/src/tests/pipeline/001/main.gom`
 - You should NEVER manually modify the generated files (`.cst`, `.ast`, `.hir`, `.tast`, `.core`, `.mono`, `.anf`, `.go`, `.out`). The only way to update them is by running: `env UPDATE_EXPECT=1 cargo test`.
 - When asked to "add pipeline tests", create a new directory (e.g., `063/` or `063_feature_name/`) under `crates/compiler/src/tests/pipeline/` with a `main.gom` file, then run `env UPDATE_EXPECT=1 cargo test` to generate the expected outputs.
 

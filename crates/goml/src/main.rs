@@ -398,11 +398,13 @@ fn try_execute_with_yaegi(dir: &Path, file: &Path) -> anyhow::Result<Option<Stri
         .output()
         .with_context(|| "failed to execute yaegi")?;
 
-    if output.status.success() {
-        return Ok(Some(String::from_utf8_lossy(&output.stdout).to_string()));
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("yaegi failed: {}", stderr.trim());
     }
 
-    Ok(None)
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(Some(stdout.to_string()))
 }
 
 fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
@@ -415,17 +417,13 @@ fn execute_with_go_run(dir: &Path, file: &Path) -> anyhow::Result<String> {
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .output()
-        .with_context(|| "failed to execute go")?;
+        .with_context(|| "failed to execute go run")?;
 
-    if output.status.success() {
-        Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
-        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        if stderr.is_empty() {
-            bail!("go run failed:\n{}", stdout.trim_end());
-        } else {
-            bail!("go run failed:\n{}", stderr.trim_end());
-        }
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("go run failed: {}", stderr.trim());
     }
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Ok(stdout.to_string())
 }

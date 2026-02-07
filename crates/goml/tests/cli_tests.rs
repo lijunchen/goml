@@ -10,8 +10,8 @@ const HELLO_PROGRAM: &str = r#"fn main() -> unit {
 }
 "#;
 
-fn compiler_bin() -> PathBuf {
-    PathBuf::from(env!("CARGO_BIN_EXE_compiler"))
+fn goml_bin() -> PathBuf {
+    PathBuf::from(env!("CARGO_BIN_EXE_goml"))
 }
 
 fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
@@ -25,10 +25,7 @@ fn write_program(contents: &str) -> anyhow::Result<(TempDir, PathBuf)> {
 fn run_executes_program() -> anyhow::Result<()> {
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
-    let output = Command::new(compiler_bin())
-        .arg("run")
-        .arg(&path)
-        .output()?;
+    let output = Command::new(goml_bin()).arg("run").arg(&path).output()?;
     let stdout = String::from_utf8_lossy(&output.stdout);
     let stderr = String::from_utf8_lossy(&output.stderr);
 
@@ -43,7 +40,7 @@ fn run_executes_program() -> anyhow::Result<()> {
 fn run_dumps_requested_stages() -> anyhow::Result<()> {
     let (_dir, path) = write_program(HELLO_PROGRAM)?;
 
-    let output = Command::new(compiler_bin())
+    let output = Command::new(goml_bin())
         .arg("run")
         .args([
             "--dump-ast",

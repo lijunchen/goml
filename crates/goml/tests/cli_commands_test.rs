@@ -5,7 +5,7 @@ use expect_test::expect_file;
 use xshell::{Shell, cmd};
 
 fn goml_bin() -> PathBuf {
-    PathBuf::from(env!("CARGO_BIN_EXE_compiler"))
+    PathBuf::from(env!("CARGO_BIN_EXE_goml"))
 }
 
 fn write_file(path: &Path, content: &str) -> anyhow::Result<()> {
@@ -201,14 +201,30 @@ fn cli_check_build_link_rejects_hash_mismatch() -> anyhow::Result<()> {
     let out = root.join("out");
     std::fs::create_dir_all(&out)?;
 
-    let lib_gom = root.join("lib.gom");
+    let lib_gom_v1 = root.join("lib_v1.gom");
     write_file(
-        &lib_gom,
+        &lib_gom_v1,
         r#"
 package Lib;
 
 fn msg() -> string {
     "v1"
+}
+"#,
+    )?;
+
+    let lib_gom_v2 = root.join("lib_v2.gom");
+    write_file(
+        &lib_gom_v2,
+        r#"
+package Lib;
+
+fn msg() -> string {
+    "v2"
+}
+
+fn extra() -> int32 {
+    2
 }
 "#,
     )?;
@@ -231,16 +247,27 @@ fn main() -> unit {
     let lib_interface = out.join("Lib.interface");
     cmd!(
         sh,
-        "{bin} check --package Lib --input {lib_gom} --output {lib_interface}"
+        "{bin} check --package Lib --input {lib_gom_v1} --output {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "Lib.interface", &lib_interface, root)?;
+
+    let main_interface = out.join("Main.interface");
+    cmd!(
+        sh,
+        "{bin} check --package Main --input {main_gom} --output {main_interface} --interface-path {out}"
+    )
+    .run()?;
+    assert_snapshot_file("hash_mismatch", "Main.interface", &main_interface, root)?;
+
     let lib_out = out.join("Lib");
     cmd!(
         sh,
-        "{bin} build --package Lib --input {lib_gom} --output {lib_out}"
+        "{bin} build --package Lib --input {lib_gom_v2} --output {lib_out}"
     )
     .run()?;
+    assert_snapshot_file("hash_mismatch", "Lib.core", &out.join("Lib.core"), root)?;
+
     let main_out = out.join("Main");
     cmd!(
         sh,
@@ -249,44 +276,18 @@ fn main() -> unit {
     .run()?;
     assert_snapshot_file("hash_mismatch", "Main.core", &out.join("Main.core"), root)?;
 
-    write_file(
-        &lib_gom,
-        r#"
-package Lib;
-
-fn msg() -> string {
-    "v2"
-}
-
-fn extra() -> int32 {
-    2
-}
-"#,
-    )?;
-    cmd!(
-        sh,
-        "{bin} build --package Lib --input {lib_gom} --output {lib_out}"
-    )
-    .run()?;
-    assert_snapshot_file("hash_mismatch", "Lib.core", &out.join("Lib.core"), root)?;
-
     let go_file = out.join("main.go");
-    let main_core = out.join("Main.core");
     let lib_core = out.join("Lib.core");
-    let result = cmd!(
+    let main_core = out.join("Main.core");
+    let err = cmd!(
         sh,
-        "{bin} link --input {main_core} {lib_core} --output {go_file}"
+        "{bin} link --input {lib_core} {main_core} --output {go_file}"
     )
-    .ignore_status()
-    .output()?;
-    assert!(!result.status.success());
-    let stderr = String::from_utf8_lossy(&result.stderr);
-    assert!(stderr.contains("expects interface_hash"));
-    {
-        let expected = snapshot_path("hash_mismatch", "stderr.txt");
-        let normalized = normalize_temp_paths(stderr.as_ref(), root);
-        expect_file![expected].assert_eq(&normalized);
-    }
+    .read_stderr()?;
+
+    let normalized = normalize_temp_paths(&err, root);
+    let expected = snapshot_path("hash_mismatch", "stderr.txt");
+    expect_file![expected].assert_eq(&normalized);
 
     Ok(())
 }
