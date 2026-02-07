@@ -369,7 +369,10 @@ fn parser_handles_tricky_inputs_without_panicking() {
 fn assert_recovers_and_parses_following_fn(input: &str, following_fn_name: &str) {
     let path = Path::new("recovery.gom");
     let result = parse(path, input);
-    assert!(result.has_errors(), "expected parse errors for malformed input");
+    assert!(
+        result.has_errors(),
+        "expected parse errors for malformed input"
+    );
 
     let tree = debug_tree(&result.green_node);
     let fn_count = tree.matches("FN@").count();

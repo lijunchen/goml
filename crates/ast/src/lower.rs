@@ -224,13 +224,19 @@ fn lower_item(ctx: &mut LowerCtx, node: cst::Item) -> Option<ast::Item> {
 
 fn lower_enum(ctx: &mut LowerCtx, node: cst::Enum) -> Option<ast::EnumDef> {
     let attrs = lower_attributes(node.attributes());
-    let name = node.uident().unwrap().to_string();
+    let name = match node.uident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(Some(node.syntax().text_range()), "Enum is missing a name");
+            return None;
+        }
+    };
     let generics: Vec<ast::AstIdent> = node
         .generic_list()
         .map(|list| {
             list.generics()
-                .flat_map(|x| {
-                    let name = x.uident().unwrap().to_string();
+                .flat_map(|generic| {
+                    let name = generic.uident()?.to_string();
                     Some(ast::AstIdent::new(&name))
                 })
                 .collect()
@@ -298,7 +304,13 @@ fn lower_struct_field(
 
 fn lower_trait(ctx: &mut LowerCtx, node: cst::Trait) -> Option<ast::TraitDef> {
     let attrs = lower_attributes(node.attributes());
-    let name = node.uident().unwrap().to_string();
+    let name = match node.uident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(Some(node.syntax().text_range()), "Trait is missing a name");
+            return None;
+        }
+    };
     let methods = if let Some(list) = node.trait_method_list() {
         list.methods()
             .flat_map(|method| lower_trait_method(ctx, method))
@@ -321,7 +333,16 @@ fn lower_trait_method(
     ctx: &mut LowerCtx,
     node: cst::TraitMethod,
 ) -> Option<ast::TraitMethodSignature> {
-    let name = node.lident().unwrap().to_string();
+    let name = match node.lident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Trait method is missing a name",
+            );
+            return None;
+        }
+    };
     let params = if let Some(list) = node.type_list() {
         list.types().flat_map(|ty| lower_ty(ctx, ty)).collect()
     } else {
@@ -406,7 +427,16 @@ fn lower_variant(
     ctx: &mut LowerCtx,
     node: cst::Variant,
 ) -> Option<(ast::AstIdent, Vec<ast::TypeExpr>)> {
-    let name = node.uident().unwrap().to_string();
+    let name = match node.uident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Enum variant is missing a name",
+            );
+            return None;
+        }
+    };
     let typs = match node.type_list() {
         None => vec![],
         Some(xs) => xs.types().flat_map(|ty| lower_ty(ctx, ty)).collect(),
@@ -532,7 +562,16 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
 
 fn lower_fn(ctx: &mut LowerCtx, node: cst::Fn) -> Option<ast::Fn> {
     let attrs = lower_attributes(node.attributes());
-    let name = node.lident().unwrap().to_string();
+    let name = match node.lident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Function declaration is missing a name",
+            );
+            return None;
+        }
+    };
     let (generics, generic_bounds): (Vec<ast::AstIdent>, Vec<(ast::AstIdent, Vec<ast::Path>)>) =
         node.generic_list()
             .map(|list| {
@@ -849,7 +888,16 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
 }
 
 fn lower_param(ctx: &mut LowerCtx, node: cst::Param) -> Option<(ast::AstIdent, ast::TypeExpr)> {
-    let name = node.lident().unwrap().to_string();
+    let name = match node.lident() {
+        Some(name) => name.to_string(),
+        None => {
+            ctx.push_error(
+                Some(node.syntax().text_range()),
+                "Parameter is missing a name",
+            );
+            return None;
+        }
+    };
     let ty = match node.ty().and_then(|ty| lower_ty(ctx, ty)) {
         Some(ty) => ty,
         None => {
@@ -1237,10 +1285,13 @@ fn lower_expr_with_args(
                 return match callee {
                     cst::Expr::IdentExpr(ident_expr) => {
                         let constructor = lower_constructor_path_from_ident_expr(ctx, &ident_expr)?;
-                        let variant_ident = constructor
-                            .last_ident()
-                            .cloned()
-                            .expect("paths must contain at least one segment");
+                        let Some(variant_ident) = constructor.last_ident().cloned() else {
+                            ctx.push_error(
+                                Some(it.syntax().text_range()),
+                                "Path expression is missing a name",
+                            );
+                            return None;
+                        };
                         let callee_astptr = MySyntaxNodePtr::new(ident_expr.syntax());
 
                         if ctx.is_constructor(&variant_ident) {
@@ -1561,10 +1612,13 @@ fn lower_expr_with_args(
         cst::Expr::IdentExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let constructor = lower_constructor_path_from_ident_expr(ctx, &it)?;
-            let variant_ident = constructor
-                .last_ident()
-                .cloned()
-                .expect("paths must contain at least one segment");
+            let Some(variant_ident) = constructor.last_ident().cloned() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Path expression is missing a name",
+                );
+                return None;
+            };
             if ctx.is_constructor(&variant_ident) {
                 let expr = ast::Expr::EConstr {
                     constructor,
@@ -1917,7 +1971,10 @@ fn apply_trailing_args(
             for arg in trailing_args {
                 let call_astptr = match &result {
                     ast::Expr::ECall { astptr, .. } => *astptr,
-                    _ => unreachable!(),
+                    _ => {
+                        ctx.push_error(range, "Invalid call expression while applying arguments");
+                        return None;
+                    }
                 };
                 result = ast::Expr::ECall {
                     func: Box::new(result),
@@ -2012,7 +2069,16 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
     match node {
         cst::Pattern::VarPat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
-            let name = it.lident().unwrap().to_string();
+            let name = match it.lident() {
+                Some(name) => name.to_string(),
+                None => {
+                    ctx.push_error(
+                        Some(it.syntax().text_range()),
+                        "Variable pattern is missing a name",
+                    );
+                    return None;
+                }
+            };
             let ident = ast::AstIdent(name);
             if ctx.is_constructor(&ident) {
                 Some(ast::Pat::PConstr {

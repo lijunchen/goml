@@ -23,7 +23,7 @@ impl Document {
     }
 
     pub fn position(&self, offset: text_size::TextSize) -> Option<Position> {
-        let line_col = self.line_index.line_col(offset);
+        let line_col = self.line_index.try_line_col(offset)?;
         Some(Position {
             line: line_col.line,
             character: line_col.col,

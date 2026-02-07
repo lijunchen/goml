@@ -1,3 +1,4 @@
+use std::collections::BTreeSet;
 use std::path::PathBuf;
 
 use expect_test::{Expect, expect};
@@ -10,6 +11,54 @@ fn test_module_dir() -> PathBuf {
         .parent()
         .unwrap()
         .join("compiler/src/tests/module")
+}
+
+mod robustness_tests {
+    use super::*;
+
+    #[test]
+    fn lsp_handles_sampled_prefixes_of_hm_typechecker_without_panicking() {
+        let input = include_str!("../../compiler/src/tests/pipeline/080_hm_typechecker/main.gom");
+        assert_lsp_handles_sampled_prefixes_without_panicking("pipeline_080_hm_typechecker", input);
+    }
+
+    #[test]
+    fn lsp_handles_tricky_inputs_without_panicking() {
+        let cases = [
+            (
+                "unterminated_string_and_block",
+                "package Main;\nfn main() {\n  let s = \"hello\n  let x = 1;\n",
+            ),
+            (
+                "unterminated_char_and_comment",
+                "package Main;\nfn main() {\n  let c = '\\u12\n  // trailing",
+            ),
+            (
+                "dense_operators_and_partial_tokens",
+                "package Main;\nfn main() { let x = 1<<<<=>>>==!=&&||::..,,;; }\n",
+            ),
+            (
+                "nested_brackets_missing_closers",
+                "package Main;\nfn main() { let _ = ((([1, 2, 3]); }\n",
+            ),
+            (
+                "attribute_generics_and_dyn_partial",
+                "#[derive(ToString)]\nfn f[T: Eq + Hash +](x: T) -> dyn Show {\n",
+            ),
+            (
+                "invalid_tokens_and_escape_like_sequence",
+                "package Main;\nfn main() { let y = \\u2028; @@@ }\n",
+            ),
+            (
+                "deeply_nested_expressions",
+                "package Main;\nfn main() { let _ = (((((((((((((1 + 2))))))))))))); }\n",
+            ),
+        ];
+
+        for (case_name, input) in cases {
+            assert_lsp_handles_sampled_prefixes_without_panicking(case_name, input);
+        }
+    }
 }
 
 fn pipeline_dir() -> PathBuf {
@@ -210,6 +259,162 @@ fn check_pipeline_diagnostics(case_name: &str, expect: Expect) {
     let doc = Document::new(src.clone());
     let diags = handlers::get_diagnostics(&main_path, &src, &doc);
     expect.assert_eq(&format_diagnostics(&diags));
+}
+
+fn utf8_prefixes(input: &str) -> impl Iterator<Item = usize> + '_ {
+    std::iter::once(0)
+        .chain(input.char_indices().map(|(idx, _)| idx).skip(1))
+        .chain(std::iter::once(input.len()))
+}
+
+fn sampled_prefixes(input: &str, max_points: usize) -> Vec<usize> {
+    let boundaries: Vec<usize> = utf8_prefixes(input).collect();
+    if boundaries.len() <= max_points {
+        return boundaries;
+    }
+
+    let len = input.len();
+    let mut points = BTreeSet::new();
+    points.insert(0);
+    points.insert(len);
+
+    for point in boundaries.iter().take(32) {
+        points.insert(*point);
+    }
+    for point in boundaries.iter().rev().take(32) {
+        points.insert(*point);
+    }
+
+    let dense_slots = 64usize;
+    for i in 0..dense_slots {
+        let idx = i * (boundaries.len() - 1) / (dense_slots - 1);
+        points.insert(boundaries[idx]);
+    }
+
+    for (idx, ch) in input.char_indices() {
+        if matches!(
+            ch,
+            '\n' | '{'
+                | '}'
+                | '('
+                | ')'
+                | '['
+                | ']'
+                | ';'
+                | ','
+                | ':'
+                | '.'
+                | '#'
+                | '|'
+                | '&'
+                | '+'
+                | '-'
+                | '*'
+                | '/'
+                | '<'
+                | '>'
+                | '='
+                | '!'
+                | '"'
+                | '\''
+        ) {
+            points.insert(idx);
+            points.insert((idx + ch.len_utf8()).min(len));
+            if idx > 0 {
+                let prev = input[..idx]
+                    .char_indices()
+                    .last()
+                    .map(|(pos, _)| pos)
+                    .unwrap_or(0);
+                points.insert(prev);
+            }
+        }
+    }
+
+    let mut collected: Vec<usize> = points
+        .into_iter()
+        .filter(|point| input.is_char_boundary(*point))
+        .collect();
+    collected.sort_unstable();
+    collected.dedup();
+
+    if collected.len() <= max_points {
+        return collected;
+    }
+
+    let mut reduced = BTreeSet::new();
+    reduced.insert(0);
+    reduced.insert(len);
+    for i in 0..max_points {
+        let idx = i * (collected.len() - 1) / (max_points - 1);
+        reduced.insert(collected[idx]);
+    }
+    reduced.into_iter().collect()
+}
+
+fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> String {
+    if let Some(message) = payload.downcast_ref::<String>() {
+        return message.clone();
+    }
+    if let Some(message) = payload.downcast_ref::<&str>() {
+        return message.to_string();
+    }
+    "non-string panic payload".to_string()
+}
+
+fn end_position(doc: &Document, src: &str) -> Position {
+    let Ok(offset) = u32::try_from(src.len()) else {
+        return Position {
+            line: 0,
+            character: 0,
+        };
+    };
+    doc.position(text_size::TextSize::from(offset))
+        .unwrap_or(Position {
+            line: 0,
+            character: 0,
+        })
+}
+
+fn assert_lsp_handles_sampled_prefixes_without_panicking(case_name: &str, input: &str) {
+    let path = std::env::temp_dir().join(format!("{case_name}.gom"));
+    let uri = Url::from_file_path(&path).ok().unwrap_or_else(|| {
+        Url::parse("file:///tmp/goml_lsp_robustness.gom")
+            .unwrap_or_else(|err| panic!("failed to create fallback file uri: {err}"))
+    });
+    let start = Position {
+        line: 0,
+        character: 0,
+    };
+
+    let prefixes = sampled_prefixes(input, 128);
+    for (idx, end) in prefixes.iter().copied().enumerate() {
+        let prefix = &input[..end];
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            let doc = Document::new(prefix.to_string());
+            let at_end = end_position(&doc, prefix);
+            let _ = handlers::get_diagnostics(&path, prefix, &doc);
+            if idx % 8 == 0 || end == input.len() {
+                let _ = handlers::hover(&path, prefix, start);
+                let _ = handlers::hover(&path, prefix, at_end);
+                let _ = handlers::completion(&path, prefix, start);
+                let _ = handlers::completion(&path, prefix, at_end);
+                let _ = handlers::goto_definition(&uri, &path, prefix, start, &doc);
+                let _ = handlers::goto_definition(&uri, &path, prefix, at_end, &doc);
+            }
+        }));
+        if let Err(payload) = result {
+            let panic_message = panic_payload_message(payload.as_ref());
+            let tail = if prefix.len() > 160 {
+                &prefix[prefix.len() - 160..]
+            } else {
+                prefix
+            };
+            panic!(
+                "lsp panicked for case={case_name}, prefix_end={end}, panic={panic_message}, prefix_tail={tail:?}"
+            );
+        }
+    }
 }
 
 mod diagnostics_tests {
