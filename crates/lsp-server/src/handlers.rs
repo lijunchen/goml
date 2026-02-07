@@ -220,7 +220,8 @@ fn signature_item_to_lsp(item: SignatureHelpItem) -> SignatureHelp {
 }
 
 fn inlay_item_to_lsp(item: InlayHintItem, range: Range, doc: &Document) -> Option<InlayHint> {
-    let position = doc.position(item.offset)?;
+    let offset = adjust_inlay_offset(item.offset, doc);
+    let position = doc.position(offset)?;
     if !position_in_range(position, range) {
         return None;
     }
@@ -233,10 +234,27 @@ fn inlay_item_to_lsp(item: InlayHintItem, range: Range, doc: &Document) -> Optio
         }),
         text_edits: None,
         tooltip: None,
-        padding_left: Some(true),
-        padding_right: None,
+        padding_left: None,
+        padding_right: Some(true),
         data: None,
     })
+}
+
+fn adjust_inlay_offset(offset: text_size::TextSize, doc: &Document) -> text_size::TextSize {
+    let bytes = doc.content.as_bytes();
+    let mut idx = u32::from(offset) as usize;
+    if idx > bytes.len() {
+        return offset;
+    }
+
+    while idx > 0 {
+        match bytes[idx - 1] {
+            b' ' | b'\t' => idx -= 1,
+            _ => break,
+        }
+    }
+
+    text_size::TextSize::from(idx as u32)
 }
 
 pub fn goto_definition(

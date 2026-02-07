@@ -987,8 +987,7 @@ fn main() {
                     character: 0,
                 },
             },
-            expect![[r#"
-                4:10 type : int32"#]],
+            expect!["4:9 type : int32"],
         );
     }
 
@@ -1014,7 +1013,7 @@ fn main() {
                 },
             },
             expect![[r#"
-                4:10 type : (int32) -> int32
+                4:9 type : (int32) -> int32
                 4:14 type : int32"#]],
         );
     }
@@ -1041,8 +1040,7 @@ fn main() {
                     character: 0,
                 },
             },
-            expect![[r#"
-                5:10 type : int32"#]],
+            expect!["5:9 type : int32"],
         );
     }
 }
