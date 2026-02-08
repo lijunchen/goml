@@ -666,6 +666,7 @@ fn apply_coercions(
 }
 
 fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::PatId) -> tast::Pat {
+    let astptr = hir_table.pat_ptr(pat_id);
     match hir_table.pat(pat_id).clone() {
         hir::Pat::PVar { name, astptr } => {
             let ty = results
@@ -682,74 +683,87 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
         hir::Pat::PUnit => tast::Pat::PPrim {
             value: Prim::unit(),
             ty: tast::Ty::TUnit,
+            astptr,
         },
         hir::Pat::PBool { value } => tast::Pat::PPrim {
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,
+            astptr,
         },
         hir::Pat::PInt { value } => tast::Pat::PPrim {
             value: Prim::Int32 {
                 value: parse_signed(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt32),
+            astptr,
         },
         hir::Pat::PInt8 { value } => tast::Pat::PPrim {
             value: Prim::Int8 {
                 value: parse_signed(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt8),
+            astptr,
         },
         hir::Pat::PInt16 { value } => tast::Pat::PPrim {
             value: Prim::Int16 {
                 value: parse_signed(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt16),
+            astptr,
         },
         hir::Pat::PInt32 { value } => tast::Pat::PPrim {
             value: Prim::Int32 {
                 value: parse_signed(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt32),
+            astptr,
         },
         hir::Pat::PInt64 { value } => tast::Pat::PPrim {
             value: Prim::Int64 {
                 value: parse_signed(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt64),
+            astptr,
         },
         hir::Pat::PUInt8 { value } => tast::Pat::PPrim {
             value: Prim::UInt8 {
                 value: parse_unsigned(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint8),
+            astptr,
         },
         hir::Pat::PUInt16 { value } => tast::Pat::PPrim {
             value: Prim::UInt16 {
                 value: parse_unsigned(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint16),
+            astptr,
         },
         hir::Pat::PUInt32 { value } => tast::Pat::PPrim {
             value: Prim::UInt32 {
                 value: parse_unsigned(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint32),
+            astptr,
         },
         hir::Pat::PUInt64 { value } => tast::Pat::PPrim {
             value: Prim::UInt64 {
                 value: parse_unsigned(&value).unwrap_or(0),
             },
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint64),
+            astptr,
         },
         hir::Pat::PString { value } => tast::Pat::PPrim {
             value: Prim::string(value),
             ty: tast::Ty::TString,
+            astptr,
         },
         hir::Pat::PChar { value } => tast::Pat::PPrim {
             value: Prim::Char {
                 value: parse_char_literal(&value).unwrap_or('\0'),
             },
             ty: tast::Ty::TChar,
+            astptr,
         },
         hir::Pat::PConstr { args, .. } => {
             let constructor = results
@@ -766,12 +780,14 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                 constructor,
                 args,
                 ty,
+                astptr,
             }
         }
         hir::Pat::PStruct { .. } => {
             let Some(elab) = results.struct_pat_elab(pat_id) else {
                 return tast::Pat::PWild {
                     ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit),
+                    astptr,
                 };
             };
             let args = elab
@@ -781,6 +797,7 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                     StructPatArgElab::Pat(p) => build_pat(hir_table, results, *p),
                     StructPatArgElab::MissingWild { expected_ty } => tast::Pat::PWild {
                         ty: expected_ty.clone(),
+                        astptr: None,
                     },
                 })
                 .collect::<Vec<_>>();
@@ -789,6 +806,7 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                 constructor: elab.constructor.clone(),
                 args,
                 ty,
+                astptr,
             }
         }
         hir::Pat::PTuple { pats } => {
@@ -798,10 +816,11 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
                 .map(|p| build_pat(hir_table, results, p))
                 .collect::<Vec<_>>();
             let ty = results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit);
-            tast::Pat::PTuple { items, ty }
+            tast::Pat::PTuple { items, ty, astptr }
         }
         hir::Pat::PWild => tast::Pat::PWild {
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUnit),
+            astptr,
         },
     }
 }

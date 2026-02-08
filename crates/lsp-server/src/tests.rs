@@ -501,6 +501,30 @@ fn main() {
     }
 
     #[test]
+    fn pattern_constructor_wrong_arity_reports_pattern_location() {
+        check_diagnostics(
+            r#"
+package main;
+
+enum Maybe {
+    Some(int32),
+    None,
+}
+
+fn main() -> int32 {
+    let x: Maybe = Some(1);
+    match x {
+        Some(a, b) => 1,
+        None => 0,
+    }
+}
+"#,
+            expect![[r#"
+                [11:8] error: Constructor Some expects 1 arguments, but got 2"#]],
+        );
+    }
+
+    #[test]
     fn parse_error() {
         check_diagnostics(
             r#"

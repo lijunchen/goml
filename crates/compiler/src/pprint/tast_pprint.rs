@@ -566,11 +566,12 @@ impl Pat {
                 .append(RcDoc::text(":"))
                 .append(RcDoc::space())
                 .append(ty.to_doc()),
-            Pat::PPrim { value, ty: _ } => RcDoc::text(value.to_string()),
+            Pat::PPrim { value, ty: _, .. } => RcDoc::text(value.to_string()),
             Pat::PConstr {
                 constructor,
                 args,
                 ty: _,
+                ..
             } => {
                 let args_docs = args.iter().map(|arg| arg.to_doc(genv));
                 let struct_def = constructor
@@ -578,7 +579,7 @@ impl Pat {
                     .and_then(|s| genv.structs().get(&s.type_name));
                 constructor_to_doc(constructor, args_docs, struct_def)
             }
-            Pat::PTuple { items, ty: _ } => {
+            Pat::PTuple { items, ty: _, .. } => {
                 if items.is_empty() {
                     RcDoc::text("()")
                 } else {
@@ -589,7 +590,7 @@ impl Pat {
                     RcDoc::text("(").append(items_doc).append(RcDoc::text(")"))
                 }
             }
-            Pat::PWild { ty } => RcDoc::text("_")
+            Pat::PWild { ty, .. } => RcDoc::text("_")
                 .append(RcDoc::text(" : "))
                 .append(ty.to_doc()),
         }

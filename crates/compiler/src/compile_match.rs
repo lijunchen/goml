@@ -92,7 +92,7 @@ fn move_variable_patterns(row: &mut Row) {
             };
             false
         }
-        Pat::PWild { ty: _ } => false,
+        Pat::PWild { ty: _, astptr: _ } => false,
         _ => true,
     });
 }
@@ -152,8 +152,11 @@ fn push_compile_ice(
 
 fn pat_range(pat: &Pat) -> Option<TextRange> {
     match pat {
-        Pat::PVar { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
-        Pat::PPrim { .. } | Pat::PConstr { .. } | Pat::PTuple { .. } | Pat::PWild { .. } => None,
+        Pat::PVar { astptr, .. }
+        | Pat::PPrim { astptr, .. }
+        | Pat::PConstr { astptr, .. }
+        | Pat::PTuple { astptr, .. }
+        | Pat::PWild { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
     }
 }
 
@@ -369,6 +372,7 @@ fn compile_constructor_cases(
                 constructor,
                 args,
                 ty: _,
+                ..
             } = col.pat
             {
                 let Some(enum_ctor) = constructor.as_enum() else {
@@ -654,6 +658,7 @@ fn compile_struct_case(
                         constructor,
                         args,
                         ty: _,
+                        ..
                     } if constructor.is_struct() => {
                         if field_vars.len() != args.len() {
                             push_compile_ice(
@@ -735,7 +740,7 @@ fn compile_tuple_case(
         let mut cols = vec![];
         for Column { var, pat } in row.columns {
             if var == bvar.name {
-                if let PTuple { items, ty: _ } = pat {
+                if let PTuple { items, ty: _, .. } = pat {
                     if items.len() != names.len() {
                         push_compile_ice(
                             diagnostics,
@@ -826,7 +831,7 @@ fn compile_bool_case(
         if let Some(col) = r.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
+                Pat::PPrim { value, ty: _, .. } => {
                     if let Some(value) = value.as_bool() {
                         if value {
                             true_rows.push(r);
@@ -1086,7 +1091,7 @@ where
         if let Some(col) = row.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
+                Pat::PPrim { value, ty: _, .. } => {
                     if let Some(key) = extract(&value) {
                         let entry = value_rows
                             .entry(key)
@@ -1210,7 +1215,7 @@ fn compile_string_case(
         if let Some(col) = row.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
+                Pat::PPrim { value, ty: _, .. } => {
                     if let Some(key) = value.as_str() {
                         let entry = value_rows
                             .entry(key.to_string())
@@ -1684,7 +1689,10 @@ fn compile_block_exprs(
                 Row {
                     columns: vec![Column {
                         var: x.clone(),
-                        pat: Pat::PWild { ty: pat.get_ty() },
+                        pat: Pat::PWild {
+                            ty: pat.get_ty(),
+                            astptr: None,
+                        },
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
@@ -1830,7 +1838,10 @@ fn compile_expr(
                 Row {
                     columns: vec![Column {
                         var: x.clone(),
-                        pat: Pat::PWild { ty: pat.get_ty() },
+                        pat: Pat::PWild {
+                            ty: pat.get_ty(),
+                            astptr: None,
+                        },
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
