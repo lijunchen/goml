@@ -79,7 +79,7 @@ struct PackageCommandArgs {
     package: String,
     #[arg(long, required = true, num_args = 1..)]
     input: Vec<PathBuf>,
-    #[arg(long = "interface-path")]
+    #[arg(long = "interface-path", value_name = "INTERFACE_FILE")]
     interface_path: Vec<PathBuf>,
     #[arg(long)]
     output: PathBuf,
@@ -141,7 +141,7 @@ struct RunOptions {
 struct PackageCommandOptions {
     package: String,
     input_files: Vec<PathBuf>,
-    interface_paths: Vec<PathBuf>,
+    interface_files: Vec<PathBuf>,
     output: PathBuf,
 }
 
@@ -300,7 +300,7 @@ fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
-                interface_paths: args.interface_path,
+                interface_files: args.interface_path,
                 output: args.output,
             };
             execute_compiler_check(options)
@@ -309,7 +309,7 @@ fn execute_compiler_command(command: CompilerCommands) -> anyhow::Result<()> {
             let options = PackageCommandOptions {
                 package: args.package,
                 input_files: args.input,
-                interface_paths: args.interface_path,
+                interface_files: args.interface_path,
                 output: args.output,
             };
             execute_compiler_build(options)
@@ -386,7 +386,7 @@ fn execute_compiler_check(options: PackageCommandOptions) -> anyhow::Result<()> 
         compiler::pipeline::separate::check_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
             input_files: options.input_files,
-            interface_paths: options.interface_paths,
+            interface_files: options.interface_files,
         })
         .map_err(|err| anyhow!("check failed: {:?}", err))?;
 
@@ -405,7 +405,7 @@ fn execute_compiler_build(options: PackageCommandOptions) -> anyhow::Result<()> 
         compiler::pipeline::separate::build_package(compiler::pipeline::separate::PackageInputs {
             package: options.package,
             input_files: options.input_files,
-            interface_paths: options.interface_paths,
+            interface_files: options.interface_files,
         })
         .map_err(|err| anyhow!("build failed: {:?}", err))?;
 

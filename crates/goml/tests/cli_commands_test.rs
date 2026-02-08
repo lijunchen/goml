@@ -169,7 +169,7 @@ fn main() -> unit {{
     assert_snapshot_file("with_dep", "Lib.interface", &lib_interface, root)?;
     cmd!(
         sh,
-        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {out}"
+        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "main.interface", &main_interface, root)?;
@@ -183,7 +183,7 @@ fn main() -> unit {{
     .run()?;
     cmd!(
         sh,
-        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {out}"
+        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("with_dep", "Lib.core", &out.join("Lib.core"), root)?;
@@ -276,7 +276,7 @@ fn main() -> unit {{
     let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
     cmd!(
         sh,
-        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {out}"
+        "{bin} compiler check --package {ROOT_PACKAGE} --input {main_gom} --output {main_interface} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file("hash_mismatch", "main.interface", &main_interface, root)?;
@@ -292,7 +292,7 @@ fn main() -> unit {{
     let main_out = out.join(ROOT_PACKAGE);
     cmd!(
         sh,
-        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {out}"
+        "{bin} compiler build --package {ROOT_PACKAGE} --input {main_gom} --output {main_out} --interface-path {lib_interface}"
     )
     .run()?;
     assert_snapshot_file(
@@ -314,6 +314,50 @@ fn main() -> unit {{
     let normalized = normalize_temp_paths(&err, root);
     let expected = snapshot_path("hash_mismatch", "stderr.txt");
     expect_file![expected].assert_eq(&normalized);
+
+    Ok(())
+}
+
+#[test]
+fn cli_check_rejects_interface_directory_path() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+    let out = root.join("out");
+    std::fs::create_dir_all(&out)?;
+
+    let main_gom = root.join("main.gom");
+    write_file(
+        &main_gom,
+        &format!(
+            r#"
+package {ROOT_PACKAGE};
+
+use Lib;
+
+fn main() -> unit {{
+    string_println(Lib::msg())
+}}
+"#
+        ),
+    )?;
+
+    let main_interface = out.join(format!("{ROOT_PACKAGE}.interface"));
+    let output = std::process::Command::new(goml_bin())
+        .arg("compiler")
+        .arg("check")
+        .arg("--package")
+        .arg(ROOT_PACKAGE)
+        .arg("--input")
+        .arg(&main_gom)
+        .arg("--output")
+        .arg(&main_interface)
+        .arg("--interface-path")
+        .arg(&out)
+        .output()?;
+
+    assert!(!output.status.success());
+    let stderr = String::from_utf8(output.stderr)?;
+    assert!(stderr.contains("is a directory"));
 
     Ok(())
 }

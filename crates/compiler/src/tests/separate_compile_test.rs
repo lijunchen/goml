@@ -35,6 +35,7 @@ fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
 
     let outdir = tempfile::tempdir()?;
     let iface_dir = outdir.path().to_path_buf();
+    let mut interface_files = Vec::new();
 
     for pkg in order.iter() {
         let pkg_dir = graph
@@ -45,17 +46,18 @@ fn separate_build_link_matches_project_008() -> anyhow::Result<()> {
         let unit = separate::build_package(separate::PackageInputs {
             package: pkg.clone(),
             input_files: inputs,
-            interface_paths: vec![iface_dir.clone()],
+            interface_files: interface_files.clone(),
         })
         .map_err(|err| anyhow::anyhow!("build failed for {}: {:?}", pkg, err))?;
 
         let interface_path = iface_dir.join(format!("{}.interface", pkg));
         let core_path = iface_dir.join(format!("{}.core", pkg));
         std::fs::write(
-            interface_path,
+            &interface_path,
             serde_json::to_string_pretty(&unit.interface)?,
         )?;
         std::fs::write(core_path, serde_json::to_string_pretty(&unit)?)?;
+        interface_files.push(interface_path);
     }
 
     let mut cores = Vec::new();
@@ -99,7 +101,7 @@ fn foo() -> int32 {
     let lib_unit_v1 = separate::build_package(separate::PackageInputs {
         package: "Lib".to_string(),
         input_files: vec![lib_path.clone()],
-        interface_paths: vec![iface_dir.clone()],
+        interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("build Lib failed: {:?}", err))?;
     std::fs::write(
@@ -130,7 +132,7 @@ fn main() -> unit {{
     let main_unit = separate::build_package(separate::PackageInputs {
         package: ROOT_PACKAGE.to_string(),
         input_files: vec![main_path.clone()],
-        interface_paths: vec![iface_dir.clone()],
+        interface_files: vec![iface_dir.join("Lib.interface")],
     })
     .map_err(|err| anyhow::anyhow!("build main failed: {:?}", err))?;
     std::fs::write(
@@ -160,7 +162,7 @@ fn bar() -> int32 {
     let lib_unit_v2 = separate::build_package(separate::PackageInputs {
         package: "Lib".to_string(),
         input_files: vec![lib_path],
-        interface_paths: vec![iface_dir.clone()],
+        interface_files: vec![],
     })
     .map_err(|err| anyhow::anyhow!("rebuild Lib failed: {:?}", err))?;
     std::fs::write(

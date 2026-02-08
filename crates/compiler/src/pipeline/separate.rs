@@ -18,7 +18,7 @@ use diagnostics::Diagnostics;
 pub struct PackageInputs {
     pub package: String,
     pub input_files: Vec<PathBuf>,
-    pub interface_paths: Vec<PathBuf>,
+    pub interface_files: Vec<PathBuf>,
 }
 
 #[derive(Debug)]
@@ -35,73 +35,97 @@ pub struct LinkOutput {
     pub anfenv: crate::anf::GlobalAnfEnv,
 }
 
-fn load_interface_from_paths(
-    package: &str,
-    interface_paths: &[PathBuf],
-) -> Result<InterfaceUnit, CompilationError> {
-    for dir in interface_paths {
-        let candidate = dir.join(format!("{}.interface", package));
-        if !candidate.exists() {
-            continue;
+fn validate_interface_unit(path: &Path, unit: &InterfaceUnit) -> Result<(), CompilationError> {
+    if !unit.validate_hash() {
+        return Err(compile_error(format!(
+            "interface {} has invalid interface_hash",
+            path.display()
+        )));
+    }
+    if !is_builtin_package(&unit.package) {
+        let expected = builtins::builtin_interface_hash();
+        let Some(actual) = unit.deps.get(BUILTIN_PACKAGE) else {
+            return Err(compile_error(format!(
+                "interface {} is missing implicit builtin dependency (rebuild {})",
+                path.display(),
+                unit.package
+            )));
+        };
+        if actual != &expected {
+            return Err(compile_error(format!(
+                "interface {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
+                path.display(),
+                actual,
+                expected,
+                unit.package
+            )));
         }
-        let json = fs::read_to_string(&candidate).map_err(|err| {
+    }
+    Ok(())
+}
+
+fn load_interface_files(
+    interface_files: &[PathBuf],
+) -> Result<HashMap<String, (PathBuf, InterfaceUnit)>, CompilationError> {
+    let mut units: HashMap<String, (PathBuf, InterfaceUnit)> = HashMap::new();
+
+    for path in interface_files {
+        if path.is_dir() {
+            return Err(compile_error(format!(
+                "interface path {} is a directory; pass a concrete .interface file",
+                path.display()
+            )));
+        }
+        let json = fs::read_to_string(path).map_err(|err| {
             compile_error(format!(
                 "failed to read interface {}: {}",
-                candidate.display(),
+                path.display(),
                 err
             ))
         })?;
         let unit: InterfaceUnit = serde_json::from_str(&json).map_err(|err| {
             compile_error(format!(
                 "failed to parse interface {}: {}",
-                candidate.display(),
+                path.display(),
                 err
             ))
         })?;
-        if unit.package != package {
+        validate_interface_unit(path, &unit)?;
+        if let Some((prev_path, _)) = units.get(&unit.package) {
             return Err(compile_error(format!(
-                "interface {} declares package {}, expected {}",
-                candidate.display(),
+                "multiple interface files provided for package {}: {} and {}",
                 unit.package,
-                package
+                prev_path.display(),
+                path.display()
             )));
         }
-        if !unit.validate_hash() {
-            return Err(compile_error(format!(
-                "interface {} has invalid interface_hash",
-                candidate.display()
-            )));
-        }
-        if !is_builtin_package(&unit.package) {
-            let expected = builtins::builtin_interface_hash();
-            let Some(actual) = unit.deps.get(BUILTIN_PACKAGE) else {
-                return Err(compile_error(format!(
-                    "interface {} is missing implicit builtin dependency (rebuild {})",
-                    candidate.display(),
-                    unit.package
-                )));
-            };
-            if actual != &expected {
-                return Err(compile_error(format!(
-                    "interface {} expects builtin interface_hash {}, but compiler has {} (rebuild {})",
-                    candidate.display(),
-                    actual,
-                    expected,
-                    unit.package
-                )));
-            }
-        }
-        return Ok(unit);
+        units.insert(unit.package.clone(), (path.clone(), unit));
+    }
+
+    Ok(units)
+}
+
+fn load_interface_for_package(
+    package: &str,
+    interface_files: &[PathBuf],
+    units: &HashMap<String, (PathBuf, InterfaceUnit)>,
+) -> Result<InterfaceUnit, CompilationError> {
+    if let Some((_, unit)) = units.get(package) {
+        return Ok(unit.clone());
     }
 
     Err(compile_error(format!(
-        "missing interface for package {} (searched: {})",
+        "missing interface file for package {} (provided: {})",
         package,
-        interface_paths
-            .iter()
-            .map(|p| p.display().to_string())
-            .collect::<Vec<_>>()
-            .join(", ")
+        if interface_files.is_empty() {
+            "<none>".to_string()
+        } else {
+            interface_files
+                .iter()
+                .map(|p| p.display().to_string())
+                .collect::<Vec<_>>()
+                .join(", ")
+        }
     )))
 }
 
@@ -185,6 +209,7 @@ fn typecheck_single_package(
 
 pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationError> {
     let (files, imports, _sources) = read_source_files(&opts.package, &opts.input_files)?;
+    let interface_units = load_interface_files(&opts.interface_files)?;
 
     let mut deps: Vec<String> = imports.into_iter().collect();
     deps.sort();
@@ -205,7 +230,7 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
         if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
-        let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
+        let unit = load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
         deps_interfaces.insert(dep.clone(), unit.interface.clone());
         dep_hashes.insert(dep, unit.interface_hash.clone());
@@ -225,6 +250,7 @@ pub fn check_package(opts: PackageInputs) -> Result<InterfaceUnit, CompilationEr
 
 pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> {
     let (files, imports, sources) = read_source_files(&opts.package, &opts.input_files)?;
+    let interface_units = load_interface_files(&opts.interface_files)?;
 
     let mut deps: Vec<String> = imports.into_iter().collect();
     deps.sort();
@@ -246,7 +272,7 @@ pub fn build_package(opts: PackageInputs) -> Result<CoreUnit, CompilationError> 
         if dep == BUILTIN_PACKAGE || dep == opts.package {
             continue;
         }
-        let unit = load_interface_from_paths(&dep, &opts.interface_paths)?;
+        let unit = load_interface_for_package(&dep, &opts.interface_files, &interface_units)?;
         deps_envs.insert(dep.clone(), unit.exports.to_genv());
         deps_interfaces.insert(dep.clone(), unit.interface.clone());
         dep_hashes.insert(dep.clone(), unit.interface_hash.clone());
