@@ -116,6 +116,14 @@ extern fn vec_push[T](vec: Vec[T], elem: T) -> Vec[T]
 extern fn vec_get[T](vec: Vec[T], index: int32) -> T
 #[builtin]
 extern fn vec_len[T](vec: Vec[T]) -> int32
+#[builtin]
+extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T]
+#[builtin]
+extern fn slice_get[T](s: Slice[T], index: int32) -> T
+#[builtin]
+extern fn slice_len[T](s: Slice[T]) -> int32
+#[builtin]
+extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T]
 
 #[builtin]
 extern fn hashmap_new[K, V]() -> HashMap[K, V]
@@ -431,6 +439,20 @@ impl [T] Vec[T] {
 
     fn len(self: Self) -> int32 {
         vec_len(self)
+    }
+}
+
+impl [T] Slice[T] {
+    fn get(self: Self, index: int32) -> T {
+        slice_get(self, index)
+    }
+
+    fn len(self: Self) -> int32 {
+        slice_len(self)
+    }
+
+    fn sub(self: Self, start: int32, end: int32) -> Self {
+        slice_sub(self, start, end)
     }
 }
 

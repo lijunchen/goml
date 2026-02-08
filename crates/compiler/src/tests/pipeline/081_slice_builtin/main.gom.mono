@@ -1,0 +1,21 @@
+fn main() -> unit {
+  let v/0 = vec_new() in
+  let v/1 = vec_push(v/0, 10) in
+  let v/2 = vec_push(v/1, 20) in
+  let v/3 = vec_push(v/2, 30) in
+  let v/4 = vec_push(v/3, 40) in
+  let s/5 = slice(v/4, 1, 4) in
+  let _wild0 = println__T_int32(slice_len(s/5)) in
+  let _wild1 = println__T_int32(slice_get(s/5, 0)) in
+  let _wild2 = println__T_int32(slice_get(s/5, 1)) in
+  let _wild3 = println__T_int32(slice_get(s/5, 2)) in
+  let t/6 = slice_sub(s/5, 1, 3) in
+  let _wild4 = println__T_int32(slice_len(t/6)) in
+  let _wild5 = println__T_int32(slice_get(t/6, 0)) in
+  let _wild6 = println__T_int32(slice_get(t/6, 1)) in
+  ()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  string_println(int32_to_string(value/1))
+}

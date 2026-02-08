@@ -238,9 +238,10 @@ fn is_local_nominal_type(current_package: &str, ty: &tast::Ty) -> bool {
             is_local_name(current_package, name)
         }
         tast::Ty::TApp { ty, .. } => is_local_nominal_type(current_package, ty),
-        tast::Ty::TVec { .. } | tast::Ty::TRef { .. } | tast::Ty::THashMap { .. } => {
-            current_package == BUILTIN_PACKAGE
-        }
+        tast::Ty::TSlice { .. }
+        | tast::Ty::TVec { .. }
+        | tast::Ty::TRef { .. }
+        | tast::Ty::THashMap { .. } => current_package == BUILTIN_PACKAGE,
         _ => false,
     }
 }
@@ -908,6 +909,9 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         },
         tast::Ty::TArray { len, elem } => tast::Ty::TArray {
             len: *len,
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
         tast::Ty::TVec { elem } => tast::Ty::TVec {

@@ -74,6 +74,7 @@ pub(crate) fn format_ty_for_diag(ty: &tast::Ty) -> String {
             };
             format!("[{}; {}]", format_ty_for_diag(elem.as_ref()), rendered_len)
         }
+        tast::Ty::TSlice { elem } => format!("Slice[{}]", format_ty_for_diag(elem.as_ref())),
         tast::Ty::TVec { elem } => format!("Vec[{}]", format_ty_for_diag(elem.as_ref())),
         tast::Ty::TRef { elem } => format!("Ref[{}]", format_ty_for_diag(elem.as_ref())),
         tast::Ty::THashMap { key, value } => format!(
@@ -97,6 +98,7 @@ pub(crate) fn try_constr_name(ty: &tast::Ty) -> Option<String> {
     match ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
         tast::Ty::TApp { ty, .. } => try_constr_name(ty),
+        tast::Ty::TSlice { .. } => Some("Slice".to_string()),
         tast::Ty::TVec { .. } => Some("Vec".to_string()),
         tast::Ty::TRef { .. } => Some("Ref".to_string()),
         tast::Ty::THashMap { .. } => Some("HashMap".to_string()),
@@ -137,6 +139,9 @@ pub(crate) fn validate_ty(
                 validate_ty(genv, diagnostics, param, range, tparams);
             }
             validate_ty(genv, diagnostics, ret_ty.as_ref(), range, tparams);
+        }
+        tast::Ty::TSlice { elem } => {
+            validate_ty(genv, diagnostics, elem, range, tparams);
         }
         tast::Ty::TVec { elem } => {
             validate_ty(genv, diagnostics, elem, range, tparams);
@@ -349,6 +354,7 @@ fn ty_contains_self(ty: &tast::Ty) -> bool {
         tast::Ty::TTuple { typs } => typs.iter().any(ty_contains_self),
         tast::Ty::TApp { ty, args } => ty_contains_self(ty) || args.iter().any(ty_contains_self),
         tast::Ty::TArray { elem, .. } => ty_contains_self(elem),
+        tast::Ty::TSlice { elem } => ty_contains_self(elem),
         tast::Ty::TVec { elem } => ty_contains_self(elem),
         tast::Ty::TRef { elem } => ty_contains_self(elem),
         tast::Ty::THashMap { key, value } => ty_contains_self(key) || ty_contains_self(value),
@@ -433,6 +439,17 @@ impl tast::Ty {
                 }
             }
             hir::TypeExpr::TApp { ty, args } => {
+                if let hir::TypeExpr::TCon { path } = ty.as_ref()
+                    && path.package.is_none()
+                    && path.len() == 1
+                    && path.last_ident().is_some_and(|name| name == "Slice")
+                    && args.len() == 1
+                    && let Some(arg0) = args.first()
+                {
+                    return Self::TSlice {
+                        elem: Box::new(Self::from_hir(genv, arg0, tparams_env)),
+                    };
+                }
                 if let hir::TypeExpr::TCon { path } = ty.as_ref()
                     && path.package.is_none()
                     && path.len() == 1

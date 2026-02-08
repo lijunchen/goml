@@ -128,6 +128,11 @@ fn occurs(
                 return false;
             }
         }
+        tast::Ty::TSlice { elem } => {
+            if !occurs(diagnostics, origin, var, elem) {
+                return false;
+            }
+        }
         tast::Ty::TVec { elem } => {
             if !occurs(diagnostics, origin, var, elem) {
                 return false;
@@ -202,6 +207,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             .unwrap_or_else(|| tast::Ty::TParam { name: name.clone() }),
         tast::Ty::TArray { len, elem } => tast::Ty::TArray {
             len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
         tast::Ty::TVec { elem } => tast::Ty::TVec {
@@ -314,6 +322,7 @@ impl Typer {
                 Self::ty_mentions_var(ty, var) || args.iter().any(|t| Self::ty_mentions_var(t, var))
             }
             tast::Ty::TArray { elem, .. } => Self::ty_mentions_var(elem, var),
+            tast::Ty::TSlice { elem } => Self::ty_mentions_var(elem, var),
             tast::Ty::TVec { elem } => Self::ty_mentions_var(elem, var),
             tast::Ty::TRef { elem } => Self::ty_mentions_var(elem, var),
             tast::Ty::THashMap { key, value } => {
@@ -400,6 +409,7 @@ impl Typer {
                     is_concrete(ty.as_ref()) && args.iter().all(is_concrete)
                 }
                 tast::Ty::TArray { elem, .. } => is_concrete(elem),
+                tast::Ty::TSlice { elem } => is_concrete(elem),
                 tast::Ty::TVec { elem } => is_concrete(elem),
                 tast::Ty::TRef { elem } => is_concrete(elem),
                 tast::Ty::THashMap { key, value } => is_concrete(key) && is_concrete(value),
@@ -693,6 +703,9 @@ impl Typer {
                 len: *len,
                 elem: Box::new(self.norm(elem)),
             },
+            tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+                elem: Box::new(self.norm(elem)),
+            },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
                 elem: Box::new(self.norm(elem)),
             },
@@ -823,6 +836,11 @@ impl Typer {
                 }
             }
             (tast::Ty::TRef { elem: elem1 }, tast::Ty::TRef { elem: elem2 }) => {
+                if !self.unify(diagnostics, elem1, elem2, origin) {
+                    return false;
+                }
+            }
+            (tast::Ty::TSlice { elem: elem1 }, tast::Ty::TSlice { elem: elem2 }) => {
                 if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
                 }
@@ -1050,6 +1068,9 @@ impl Typer {
                 len: *len,
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
+            tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+                elem: Box::new(self._go_inst_ty(elem, subst)),
+            },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
                 elem: Box::new(self._go_inst_ty(elem, subst)),
             },
@@ -1147,6 +1168,9 @@ impl Typer {
                 len: *len,
                 elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
+            tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+                elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
+            },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
                 elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
@@ -1205,6 +1229,9 @@ impl Typer {
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
                 len: *len,
+                elem: Box::new(self.subst_ty_silent(elem)),
+            },
+            tast::Ty::TSlice { elem } => tast::Ty::TSlice {
                 elem: Box::new(self.subst_ty_silent(elem)),
             },
             tast::Ty::TVec { elem } => tast::Ty::TVec {

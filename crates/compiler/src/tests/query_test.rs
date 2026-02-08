@@ -138,6 +138,34 @@ fn main() {
     check_value_completions(src, 2, 5, expect![[r#"
         [
             ValueCompletionItem {
+                name: "slice",
+                kind: Function,
+                detail: Some(
+                    "(Vec[T], int32, int32) -> Slice[T]",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_get",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T], int32) -> T",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_len",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T]) -> int32",
+                ),
+            },
+            ValueCompletionItem {
+                name: "slice_sub",
+                kind: Function,
+                detail: Some(
+                    "(Slice[T], int32, int32) -> Slice[T]",
+                ),
+            },
+            ValueCompletionItem {
                 name: "string",
                 kind: Keyword,
                 detail: None,
@@ -565,6 +593,33 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn builtin_slice_dot_method_completion() {
+    let src = r#"
+fn main() {
+    let v: Vec[int32] = Vec::new();
+    let v = v.push(1);
+    let v = v.push(2);
+    let s: Slice[int32] = slice(v, 0, 2);
+    s.
+}
+"#;
+
+    check_completion_labels(
+        src,
+        6,
+        6,
+        expect![[r#"
+            [
+                "get",
+                "len",
+                "sub",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn enum_variant_completion() {
     let src = r#"enum Color { Red, Green }
 
@@ -643,6 +698,29 @@ fn main() {
                 "new",
                 "remove",
                 "set",
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
+fn builtin_slice_colon_colon_method_completion() {
+    let src = r#"
+fn main() {
+    let _ = Slice::;
+}
+"#;
+
+    check_colon_colon_completion_labels(
+        src,
+        2,
+        19,
+        expect![[r#"
+            [
+                "get",
+                "len",
+                "sub",
             ]
         "#]],
     );

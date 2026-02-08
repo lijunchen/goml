@@ -24,6 +24,10 @@ fn env_registers_builtin_function_signatures() {
             "ref_get",
             "ref_set",
             "ptr_eq",
+            "slice",
+            "slice_get",
+            "slice_len",
+            "slice_sub",
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
@@ -32,7 +36,11 @@ fn env_registers_builtin_function_signatures() {
             ref: Some(TFunc([TParam(T)], TRef(TParam(T))))
             ref_get: Some(TFunc([TRef(TParam(T))], TParam(T)))
             ref_set: Some(TFunc([TRef(TParam(T)), TParam(T)], TUnit))
-            ptr_eq: Some(TFunc([TRef(TParam(T)), TRef(TParam(T))], TBool))"#]],
+            ptr_eq: Some(TFunc([TRef(TParam(T)), TRef(TParam(T))], TBool))
+            slice: Some(TFunc([TVec(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
+            slice_get: Some(TFunc([TSlice(TParam(T)), TInt32], TParam(T)))
+            slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
+            slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))"#]],
     );
 }
 
@@ -118,12 +126,48 @@ fn env_registers_builtin_vec_inherent_methods() {
 }
 
 #[test]
+fn env_registers_builtin_slice_inherent_methods() {
+    let env = builtins::builtin_env();
+    let receiver = tast::Ty::TSlice {
+        elem: Box::new(tast::Ty::TInt32),
+    };
+
+    let get = env.lookup_inherent_method(&receiver, &tast::TastIdent("get".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TSlice(TParam(T)), TInt32], TParam(T)),
+        )
+    "#]]
+    .assert_debug_eq(&get);
+
+    let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TSlice(TParam(T))], TInt32),
+        )
+    "#]]
+    .assert_debug_eq(&len);
+
+    let sub = env.lookup_inherent_method(&receiver, &tast::TastIdent("sub".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))),
+        )
+    "#]]
+    .assert_debug_eq(&sub);
+}
+
+#[test]
 fn builtin_function_names_include_ref_builtins() {
     let names = builtins::builtin_function_names();
     assert!(names.iter().any(|n| n == "ref"));
     assert!(names.iter().any(|n| n == "ref_get"));
     assert!(names.iter().any(|n| n == "ref_set"));
     assert!(names.iter().any(|n| n == "ptr_eq"));
+    assert!(names.iter().any(|n| n == "slice"));
+    assert!(names.iter().any(|n| n == "slice_get"));
+    assert!(names.iter().any(|n| n == "slice_len"));
+    assert!(names.iter().any(|n| n == "slice_sub"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
 }

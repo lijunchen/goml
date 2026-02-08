@@ -94,7 +94,7 @@ name = "main"
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test`
-- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check` and `cargo run -p goml -- build` for project-level workflows; use `cargo run -p goml -- compiler run-single <file.gom>` for single-file execution; use `cargo run -p goml -- compiler check|build|link ...` for separate compilation workflows; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
+- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check` and `cargo run -p goml -- build` for project-level workflows (they orchestrate `compiler check/build/link` across packages); use `cargo run -p goml -- check --dry-run` and `cargo run -p goml -- build --dry-run` to print planned subcommands without executing them; use `cargo run -p goml -- compiler run-single <file.gom>` for single-file execution; use `cargo run -p goml -- compiler check|build|link ...` for separate compilation workflows; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.
@@ -195,6 +195,10 @@ name = "main"
 * Fixed-length arrays `[T; N]`, literals `[1, 2, 3]`, accessed via `array_get/array_set`.
 * Mutable references `Ref[T]`: created with `ref(x)`, accessed and updated via `ref_get/ref_set`; nested references are supported.
 * Built-in growable vectors `Vec[T]`: `vec_new/vec_push/vec_get/vec_len`.
+* Built-in read-only slices `Slice[T]`: `slice/slice_get/slice_len/slice_sub`.
+  * `slice(vec, start, end)` creates a bounded view over `Vec[T]`.
+  * `Slice[T]` methods: `get`, `len`, `sub`.
+  * Current model is read-only view type; no `slice_set`/`push` on `Slice[T]`.
 
 ### Control Flow and Expressions
 
@@ -247,6 +251,17 @@ name = "main"
 * Builtin API: `hashmap_new`, `hashmap_get -> Option[V]`, `hashmap_set -> unit`, `hashmap_remove -> unit`, `hashmap_len -> int32`, `hashmap_contains -> bool`.
 * Key requirements: `K` must have both `Hash` and `Eq`.
 
+### Builtin `Slice`
+
+* Builtin type: `Slice[T]`, a bounded read-only view over contiguous `Vec[T]` storage.
+* Builtin API:
+  * `slice(vec: Vec[T], start: int32, end: int32) -> Slice[T]`
+  * `slice_get(s: Slice[T], index: int32) -> T`
+  * `slice_len(s: Slice[T]) -> int32`
+  * `slice_sub(s: Slice[T], start: int32, end: int32) -> Slice[T]`
+* Inherent methods on `Slice[T]`: `get`, `len`, `sub`.
+* Current limitation: mutable slice operations are intentionally not provided.
+
 ### Builtin traits `Eq` / `Hash`
 
 * `trait Eq { fn eq(Self, Self) -> bool; }`
@@ -255,7 +270,7 @@ name = "main"
 
 ### Testing / snapshots gotchas
 
-* Adding/changing builtins changes the `builtin` interface hash, which can break `crates/compiler/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
+* Adding/changing builtins changes the `builtin` interface hash, which can break `crates/goml/tests/expect/cli_commands_test/*`; update via `env UPDATE_EXPECT=1 cargo test`.
 * Pipeline tests under `crates/compiler/src/tests/pipeline/` must only be updated via `env UPDATE_EXPECT=1 cargo test` (never hand-edit `.cst/.ast/.hir/.tast/.core/.mono/.anf/.go/.out`).
 
 ### Name collisions

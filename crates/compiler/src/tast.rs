@@ -94,6 +94,7 @@ pub enum Ty {
     TDyn { trait_name: String },
     TApp { ty: Box<Ty>, args: Vec<Ty> },
     TArray { len: usize, elem: Box<Ty> },
+    TSlice { elem: Box<Ty> },
     TVec { elem: Box<Ty> },
     TRef { elem: Box<Ty> },
     THashMap { key: Box<Ty>, value: Box<Ty> },
@@ -125,6 +126,7 @@ impl std::fmt::Debug for Ty {
             Self::TDyn { trait_name } => write!(f, "TDyn({})", trait_name),
             Self::TApp { ty, args } => write!(f, "TApp({:?}, {:?})", ty, args),
             Self::TArray { len, elem } => write!(f, "TArray({}, {:?})", len, elem),
+            Self::TSlice { elem } => write!(f, "TSlice({:?})", elem),
             Self::TVec { elem } => write!(f, "TVec({:?})", elem),
             Self::TRef { elem } => write!(f, "TRef({:?})", elem),
             Self::THashMap { key, value } => write!(f, "THashMap({:?}, {:?})", key, value),
@@ -139,6 +141,7 @@ impl Ty {
         match self {
             Self::TEnum { name } | Self::TStruct { name } => name.clone(),
             Self::TApp { ty, .. } => ty.get_constr_name_unsafe(),
+            Self::TSlice { .. } => "Slice".to_string(),
             Self::TVec { .. } => "Vec".to_string(),
             Self::TRef { .. } => "Ref".to_string(),
             Self::THashMap { .. } => "HashMap".to_string(),

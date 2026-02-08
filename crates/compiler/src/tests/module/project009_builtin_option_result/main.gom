@@ -1,15 +1,15 @@
 package main;
 
-use Lib;
+use lib;
 
 fn main() {
-  let x = Lib::maybe_one();
+  let x = lib::maybe_one();
   match x {
     Option::Some(v) => println(v),
     Option::None => println("none"),
   };
 
-  let r = Lib::maybe_err(0);
+  let r = lib::maybe_err(0);
   match r {
     Result::Ok(v) => println(v),
     Result::Err(e) => println(e),

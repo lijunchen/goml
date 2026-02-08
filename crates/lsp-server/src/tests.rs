@@ -1401,7 +1401,7 @@ fn main() {
 
     #[test]
     fn goto_definition_use_package_to_goml_toml() {
-        check_module_goto("project001", "main.gom", 1, 6, expect!["Lib/goml.toml:0:0"]);
+        check_module_goto("project001", "main.gom", 1, 6, expect!["lib/goml.toml:0:0"]);
     }
 
     #[test]
@@ -1411,7 +1411,7 @@ fn main() {
             "main.gom",
             1,
             17,
-            expect!["TraitPkg/lib.gom:2:6"],
+            expect!["traitpkg/lib.gom:2:6"],
         );
     }
 
@@ -1422,18 +1422,18 @@ fn main() {
             "main.gom",
             6,
             18,
-            expect!["DataPkg/lib.gom:8:7"],
+            expect!["datapkg/lib.gom:8:7"],
         );
     }
 
     #[test]
     fn goto_definition_enum_variant_across_package() {
-        check_module_goto("project001", "main.gom", 4, 42, expect!["Lib/lib.gom:4:4"]);
+        check_module_goto("project001", "main.gom", 4, 42, expect!["lib/lib.gom:4:4"]);
     }
 
     #[test]
     fn goto_definition_struct_field_across_package() {
-        check_module_goto("project001", "main.gom", 5, 25, expect!["Lib/lib.gom:15:4"]);
+        check_module_goto("project001", "main.gom", 5, 25, expect!["lib/lib.gom:15:4"]);
     }
 
     #[test]
@@ -1441,9 +1441,9 @@ fn main() {
         check_module_goto_token(
             "project002",
             "main.gom",
-            "use Util;",
-            "Util",
-            expect!["Util/goml.toml:0:0"],
+            "use util;",
+            "util",
+            expect!["util/goml.toml:0:0"],
         );
     }
 
@@ -1452,9 +1452,9 @@ fn main() {
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use Math;",
-            "Math",
-            expect!["Math/goml.toml:0:0"],
+            "use math;",
+            "math",
+            expect!["math/goml.toml:0:0"],
         );
     }
 
@@ -1463,9 +1463,9 @@ fn main() {
         check_module_goto_token(
             "project003",
             "main.gom",
-            "use Stats;",
-            "Stats",
-            expect!["Stats/goml.toml:0:0"],
+            "use stats;",
+            "stats",
+            expect!["stats/goml.toml:0:0"],
         );
     }
 
@@ -1474,9 +1474,9 @@ fn main() {
         check_module_goto_token(
             "project004",
             "main.gom",
-            "use Util;",
-            "Util",
-            expect!["Util/goml.toml:0:0"],
+            "use util;",
+            "util",
+            expect!["util/goml.toml:0:0"],
         );
     }
 
@@ -1485,9 +1485,9 @@ fn main() {
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use Shape;",
-            "Shape",
-            expect!["Shape/goml.toml:0:0"],
+            "use shape;",
+            "shape",
+            expect!["shape/goml.toml:0:0"],
         );
     }
 
@@ -1496,9 +1496,9 @@ fn main() {
         check_module_goto_token(
             "project005",
             "main.gom",
-            "use Geo;",
-            "Geo",
-            expect!["Geo/goml.toml:0:0"],
+            "use geo;",
+            "geo",
+            expect!["geo/goml.toml:0:0"],
         );
     }
 
@@ -1507,9 +1507,9 @@ fn main() {
         check_module_goto_token(
             "project006",
             "main.gom",
-            "use Shape;",
-            "Shape",
-            expect!["Shape/goml.toml:0:0"],
+            "use shape;",
+            "shape",
+            expect!["shape/goml.toml:0:0"],
         );
     }
 
@@ -1518,9 +1518,9 @@ fn main() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use DataPkg;",
-            "DataPkg",
-            expect!["DataPkg/goml.toml:0:0"],
+            "use datapkg;",
+            "datapkg",
+            expect!["datapkg/goml.toml:0:0"],
         );
     }
 
@@ -1529,9 +1529,9 @@ fn main() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "use UsePkg;",
-            "UsePkg",
-            expect!["UsePkg/goml.toml:0:0"],
+            "use usepkg;",
+            "usepkg",
+            expect!["usepkg/goml.toml:0:0"],
         );
     }
 
@@ -1540,9 +1540,9 @@ fn main() {
         check_module_goto_token(
             "project007_trait_impl_orphan_ok",
             "main.gom",
-            "use TraitPkg::Show;",
-            "TraitPkg",
-            expect!["TraitPkg/goml.toml:0:0"],
+            "use traitpkg::Show;",
+            "traitpkg",
+            expect!["traitpkg/goml.toml:0:0"],
         );
     }
 
@@ -1550,10 +1550,10 @@ fn main() {
     fn goto_definition_use_package_in_subpackage_project008_datapkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "DataPkg/lib.gom",
-            "use TraitPkg;",
-            "TraitPkg",
-            expect!["TraitPkg/goml.toml:0:0"],
+            "datapkg/lib.gom",
+            "use traitpkg;",
+            "traitpkg",
+            expect!["traitpkg/goml.toml:0:0"],
         );
     }
 
@@ -1561,10 +1561,10 @@ fn main() {
     fn goto_definition_use_package_in_subpackage_project008_usepkg_traitpkg() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "UsePkg/lib.gom",
-            "use TraitPkg;",
-            "TraitPkg",
-            expect!["TraitPkg/goml.toml:0:0"],
+            "usepkg/lib.gom",
+            "use traitpkg;",
+            "traitpkg",
+            expect!["traitpkg/goml.toml:0:0"],
         );
     }
 
@@ -1573,9 +1573,9 @@ fn main() {
         check_module_goto_token(
             "project002",
             "main.gom",
-            "Util::adjust",
+            "util::adjust",
             "adjust",
-            expect!["Util/lib.gom:11:3"],
+            expect!["util/lib.gom:11:3"],
         );
     }
 
@@ -1584,9 +1584,9 @@ fn main() {
         check_module_goto_token(
             "project002",
             "main.gom",
-            "Util::dec",
+            "util::dec",
             "dec",
-            expect!["Util/lib.gom:7:3"],
+            expect!["util/lib.gom:7:3"],
         );
     }
 
@@ -1595,9 +1595,9 @@ fn main() {
         check_module_goto_token(
             "project003",
             "main.gom",
-            "Math::Pair",
+            "math::Pair",
             "Pair",
-            expect!["Math/lib.gom:2:7"],
+            expect!["math/lib.gom:2:7"],
         );
     }
 
@@ -1606,9 +1606,9 @@ fn main() {
         check_module_goto_token(
             "project003",
             "main.gom",
-            "Stats::sum",
+            "stats::sum",
             "sum",
-            expect!["Stats/lib.gom:3:3"],
+            expect!["stats/lib.gom:3:3"],
         );
     }
 
@@ -1616,10 +1616,10 @@ fn main() {
     fn goto_definition_variant_project003_add() {
         check_module_goto_token(
             "project003",
-            "Stats/lib.gom",
-            "Math::Op::Add",
+            "stats/lib.gom",
+            "math::Op::Add",
             "Add",
-            expect!["Math/lib.gom:8:4"],
+            expect!["math/lib.gom:8:4"],
         );
     }
 
@@ -1630,7 +1630,7 @@ fn main() {
             "main.gom",
             "a: 9",
             "a",
-            expect!["Math/lib.gom:3:4"],
+            expect!["math/lib.gom:3:4"],
         );
     }
 
@@ -1639,9 +1639,9 @@ fn main() {
         check_module_goto_token(
             "project005",
             "main.gom",
-            "Geo::move",
+            "geo::move",
             "move",
-            expect!["Geo/lib.gom:8:3"],
+            expect!["geo/lib.gom:8:3"],
         );
     }
 
@@ -1649,10 +1649,10 @@ fn main() {
     fn goto_definition_type_project005_shape_point_in_pattern() {
         check_module_goto_token(
             "project005",
-            "Geo/lib.gom",
-            "Shape::Point { x: x, y: y }",
+            "geo/lib.gom",
+            "shape::Point { x: x, y: y }",
             "Point",
-            expect!["Shape/lib.gom:2:7"],
+            expect!["shape/lib.gom:2:7"],
         );
     }
 
@@ -1661,9 +1661,9 @@ fn main() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
             "main.gom",
-            "UsePkg::bar_it",
+            "usepkg::bar_it",
             "bar_it",
-            expect!["UsePkg/lib.gom:11:3"],
+            expect!["usepkg/lib.gom:11:3"],
         );
     }
 
@@ -1671,10 +1671,10 @@ fn main() {
     fn goto_definition_type_in_generic_bound_project008_trait_c() {
         check_module_goto_token(
             "project008_trait_bounds_across_packages",
-            "UsePkg/lib.gom",
-            "TraitPkg::C",
+            "usepkg/lib.gom",
+            "traitpkg::C",
             "C",
-            expect!["TraitPkg/lib.gom:10:6"],
+            expect!["traitpkg/lib.gom:10:6"],
         );
     }
 
@@ -1683,9 +1683,9 @@ fn main() {
         check_module_goto_token(
             "project001",
             "main.gom",
-            "Lib::Color::Green",
-            "Lib",
-            expect!["Lib/goml.toml:0:0"],
+            "lib::Color::Green",
+            "lib",
+            expect!["lib/goml.toml:0:0"],
         );
     }
 
@@ -1694,9 +1694,9 @@ fn main() {
         check_module_goto_token(
             "project001",
             "main.gom",
-            "Lib::Color::Green",
+            "lib::Color::Green",
             "Color",
-            expect!["Lib/lib.gom:2:5"],
+            expect!["lib/lib.gom:2:5"],
         );
     }
 
@@ -1705,9 +1705,9 @@ fn main() {
         check_module_goto_token(
             "project001",
             "main.gom",
-            "Lib::sum_point",
+            "lib::sum_point",
             "sum_point",
-            expect!["Lib/lib.gom:19:3"],
+            expect!["lib/lib.gom:19:3"],
         );
     }
 
@@ -1716,9 +1716,9 @@ fn main() {
         check_module_goto_token(
             "project001",
             "main.gom",
-            "Lib::Point",
+            "lib::Point",
             "Point",
-            expect!["Lib/lib.gom:14:7"],
+            expect!["lib/lib.gom:14:7"],
         );
     }
 
@@ -1727,9 +1727,9 @@ fn main() {
         check_module_goto_token(
             "project006",
             "main.gom",
-            "Shape::inc",
+            "shape::inc",
             "inc",
-            expect!["Shape/ops.gom:2:3"],
+            expect!["shape/ops.gom:2:3"],
         );
     }
 
@@ -1738,9 +1738,9 @@ fn main() {
         check_module_goto_token(
             "project006",
             "main.gom",
-            "Shape::sum",
+            "shape::sum",
             "sum",
-            expect!["Shape/ops.gom:6:3"],
+            expect!["shape/ops.gom:6:3"],
         );
     }
 
@@ -1787,7 +1787,7 @@ fn main() -> unit {
 "#,
             "ref_get(r)",
             "ref_get",
-            expect!["src/builtin.gom:465:10"],
+            expect!["src/builtin.gom:487:10"],
         );
     }
 
@@ -1812,13 +1812,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:437:7"],
+            expect!["src/builtin.gom:459:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:445:7"],
+            expect!["src/builtin.gom:467:7"],
         );
     }
 

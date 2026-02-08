@@ -154,6 +154,12 @@ pub enum Expr {
         index: Box<Expr>,
         ty: goty::GoType,
     },
+    Slice {
+        array: Box<Expr>,
+        start: Box<Expr>,
+        end: Box<Expr>,
+        ty: goty::GoType,
+    },
     Cast {
         expr: Box<Expr>,
         ty: goty::GoType,
@@ -190,6 +196,7 @@ impl Expr {
             | Expr::BinaryOp { ty, .. }
             | Expr::FieldAccess { ty, .. }
             | Expr::Index { ty, .. }
+            | Expr::Slice { ty, .. }
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::ArrayLiteral { ty, .. }
@@ -330,6 +337,9 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
             len: *len,
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
+        tast::Ty::TSlice { elem } => goty::GoType::TSlice {
+            elem: Box::new(tast_ty_to_go_type(elem)),
+        },
         tast::Ty::TVec { elem } => goty::GoType::TSlice {
             elem: Box::new(tast_ty_to_go_type(elem)),
         },
@@ -387,6 +397,10 @@ pub fn go_type_name_for(ty: &tast::Ty) -> String {
         tast::Ty::TArray { len, elem } => format!(
             "Array{}_{}",
             len,
+            go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
+        ),
+        tast::Ty::TSlice { elem } => format!(
+            "Slice_{}",
             go_type_name_for(elem).replace(['{', '}', ' ', '[', ']', ','], "_")
         ),
         tast::Ty::TVec { elem } => format!(

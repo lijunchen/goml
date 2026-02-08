@@ -34,6 +34,7 @@ pub fn encode_ty(ty: &tast::Ty) -> String {
             }
         }
         tast::Ty::TArray { len, elem } => format!("Array_{}_{}", len, encode_ty(elem)),
+        tast::Ty::TSlice { elem } => format!("Slice_{}", encode_ty(elem)),
         tast::Ty::TVec { elem } => format!("Vec_{}", encode_ty(elem)),
         tast::Ty::TRef { elem } => format!("Ref_{}", encode_ty(elem)),
         tast::Ty::THashMap { key, value } => {
