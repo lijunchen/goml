@@ -487,18 +487,22 @@ pub enum Pat {
     PPrim {
         value: Prim,
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
     PConstr {
         constructor: Constructor,
         args: Vec<Pat>,
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
     PTuple {
         items: Vec<Pat>,
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
     PWild {
         ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
     },
 }
 

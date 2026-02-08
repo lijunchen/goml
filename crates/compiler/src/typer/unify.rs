@@ -11,10 +11,11 @@ use text_size::TextRange;
 
 fn pat_origin(pat: &tast::Pat) -> Option<TextRange> {
     match pat {
-        tast::Pat::PVar { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
-        tast::Pat::PConstr { args, .. } => args.first().and_then(pat_origin),
-        tast::Pat::PTuple { items, .. } => items.first().and_then(pat_origin),
-        tast::Pat::PPrim { .. } | tast::Pat::PWild { .. } => None,
+        tast::Pat::PVar { astptr, .. }
+        | tast::Pat::PPrim { astptr, .. }
+        | tast::Pat::PConstr { astptr, .. }
+        | tast::Pat::PTuple { astptr, .. }
+        | tast::Pat::PWild { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
     }
 }
 
@@ -1235,19 +1236,25 @@ impl Typer {
                     astptr,
                 }
             }
-            tast::Pat::PPrim { value, ty } => {
-                let ty = self.subst_ty(diagnostics, &ty, None);
+            tast::Pat::PPrim { value, ty, astptr } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
                 tast::Pat::PPrim {
                     value,
                     ty: ty.clone(),
+                    astptr,
                 }
             }
             tast::Pat::PConstr {
                 constructor,
                 args,
                 ty,
+                astptr,
             } => {
-                let origin = args.first().and_then(pat_origin);
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| args.first().and_then(pat_origin));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let args = args
                     .into_iter()
@@ -1257,10 +1264,14 @@ impl Typer {
                     constructor,
                     args,
                     ty: ty.clone(),
+                    astptr,
                 }
             }
-            tast::Pat::PTuple { items, ty } => {
-                let origin = items.first().and_then(pat_origin);
+            tast::Pat::PTuple { items, ty, astptr } => {
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| items.first().and_then(pat_origin));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
                 let items = items
                     .into_iter()
@@ -1269,11 +1280,16 @@ impl Typer {
                 tast::Pat::PTuple {
                     items,
                     ty: ty.clone(),
+                    astptr,
                 }
             }
-            tast::Pat::PWild { ty } => {
-                let ty = self.subst_ty(diagnostics, &ty, None);
-                tast::Pat::PWild { ty: ty.clone() }
+            tast::Pat::PWild { ty, astptr } => {
+                let origin = astptr.as_ref().map(|ptr| ptr.text_range());
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                tast::Pat::PWild {
+                    ty: ty.clone(),
+                    astptr,
+                }
             }
         }
     }

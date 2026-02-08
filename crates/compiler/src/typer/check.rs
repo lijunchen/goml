@@ -27,6 +27,10 @@ impl Typer {
         self.hir_table.pat_ptr(pat_id).map(|ptr| ptr.text_range())
     }
 
+    fn pat_astptr(&self, pat_id: hir::PatId) -> Option<MySyntaxNodePtr> {
+        self.hir_table.pat_ptr(pat_id)
+    }
+
     fn error_expr(&mut self, astptr: Option<MySyntaxNodePtr>) -> tast::Expr {
         tast::Expr::EVar {
             name: "<error>".to_string(),
@@ -2991,40 +2995,41 @@ impl Typer {
     ) -> tast::Pat {
         let pat_node = self.hir_table.pat(pat).clone();
         let range = self.pat_range(pat);
+        let astptr = self.pat_astptr(pat);
         let out = match pat_node {
             hir::Pat::PVar { name, astptr } => {
                 self.check_pat_var(local_env, diagnostics, name, Some(astptr), ty)
             }
-            hir::Pat::PUnit => self.check_pat_unit(),
-            hir::Pat::PBool { value } => self.check_pat_bool(value),
-            hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range),
+            hir::Pat::PUnit => self.check_pat_unit(astptr),
+            hir::Pat::PBool { value } => self.check_pat_bool(value, astptr),
+            hir::Pat::PInt { value } => self.check_pat_int(diagnostics, &value, ty, range, astptr),
             hir::Pat::PInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt8, ty, range, astptr)
             }
             hir::Pat::PInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt16, ty, range, astptr)
             }
             hir::Pat::PInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt32, ty, range, astptr)
             }
             hir::Pat::PInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TInt64, ty, range, astptr)
             }
             hir::Pat::PUInt8 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint8, ty, range, astptr)
             }
             hir::Pat::PUInt16 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint16, ty, range, astptr)
             }
             hir::Pat::PUInt32 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint32, ty, range, astptr)
             }
             hir::Pat::PUInt64 { value } => {
-                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range)
+                self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range, astptr)
             }
-            hir::Pat::PString { value } => self.check_pat_string(&value, ty, range),
+            hir::Pat::PString { value } => self.check_pat_string(&value, ty, range, astptr),
             hir::Pat::PChar { value } => {
-                self.check_pat_char(diagnostics, value.as_str(), ty, range)
+                self.check_pat_char(diagnostics, value.as_str(), ty, range, astptr)
             }
             hir::Pat::PConstr { .. } => {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
@@ -3033,9 +3038,9 @@ impl Typer {
                 self.check_pat_constructor(genv, local_env, diagnostics, pat, ty)
             }
             hir::Pat::PTuple { pats } => {
-                self.check_pat_tuple(genv, local_env, diagnostics, &pats, ty)
+                self.check_pat_tuple(genv, local_env, diagnostics, pat, &pats, ty)
             }
-            hir::Pat::PWild => self.check_pat_wild(ty),
+            hir::Pat::PWild => self.check_pat_wild(ty, astptr),
         };
         self.results.record_pat_ty(pat, out.get_ty());
         out
@@ -3059,17 +3064,19 @@ impl Typer {
         }
     }
 
-    fn check_pat_unit(&self) -> tast::Pat {
+    fn check_pat_unit(&self, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
         tast::Pat::PPrim {
             value: Prim::Unit { value: () },
             ty: tast::Ty::TUnit,
+            astptr,
         }
     }
 
-    fn check_pat_bool(&self, value: bool) -> tast::Pat {
+    fn check_pat_bool(&self, value: bool, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
         tast::Pat::PPrim {
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,
+            astptr,
         }
     }
 
@@ -3079,6 +3086,7 @@ impl Typer {
         value: &str,
         ty: &tast::Ty,
         range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
         let target_ty = integer_literal_target(ty).unwrap_or(tast::Ty::TInt32);
         let prim = self
@@ -3088,6 +3096,7 @@ impl Typer {
         tast::Pat::PPrim {
             value: prim,
             ty: ty.clone(),
+            astptr,
         }
     }
 
@@ -3098,6 +3107,7 @@ impl Typer {
         literal_ty: &tast::Ty,
         expected_ty: &tast::Ty,
         range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
         let prim = self
             .parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
@@ -3110,6 +3120,7 @@ impl Typer {
         tast::Pat::PPrim {
             value: prim,
             ty: literal_ty.clone(),
+            astptr,
         }
     }
 
@@ -3118,11 +3129,13 @@ impl Typer {
         value: &String,
         ty: &tast::Ty,
         range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
         self.push_constraint(Constraint::TypeEqual(tast::Ty::TString, ty.clone(), range));
         tast::Pat::PPrim {
             value: Prim::string(value.to_owned()),
             ty: tast::Ty::TString,
+            astptr,
         }
     }
 
@@ -3132,6 +3145,7 @@ impl Typer {
         value: &str,
         ty: &tast::Ty,
         range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
     ) -> tast::Pat {
         self.push_constraint(Constraint::TypeEqual(tast::Ty::TChar, ty.clone(), range));
         let ch = self
@@ -3140,6 +3154,7 @@ impl Typer {
         tast::Pat::PPrim {
             value: Prim::character(ch),
             ty: tast::Ty::TChar,
+            astptr,
         }
     }
 
@@ -3169,13 +3184,13 @@ impl Typer {
                             format!("Ambiguous constructor {}", path.display()),
                             self.pat_range(pat),
                         );
-                        return self.check_pat_wild(ty);
+                        return self.check_pat_wild(ty, self.pat_astptr(pat));
                     }
                 };
 
                 let Some(variant_ident) = constructor_path.last_ident() else {
                     super::util::push_ice(diagnostics, "Constructor path missing final segment");
-                    return self.check_pat_wild(ty);
+                    return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
                 let variant_name = tast::TastIdent(variant_ident.clone());
                 let namespace = constructor_path.namespace_segments();
@@ -3201,7 +3216,7 @@ impl Typer {
                         ),
                         self.pat_range(pat),
                     );
-                    return self.check_pat_wild(ty);
+                    return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
 
                 let expected_arity = match &constructor {
@@ -3216,7 +3231,7 @@ impl Typer {
                                     constructor.name().0
                                 ),
                             );
-                            return self.check_pat_wild(ty);
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
                         };
                         let variant = def.variants.get(enum_constructor.index);
                         let Some((_, tys)) = variant else {
@@ -3227,7 +3242,7 @@ impl Typer {
                                     enum_constructor.type_name.0, enum_constructor.index
                                 ),
                             );
-                            return self.check_pat_wild(ty);
+                            return self.check_pat_wild(ty, self.pat_astptr(pat));
                         };
                         tys.len()
                     }
@@ -3240,7 +3255,7 @@ impl Typer {
                             ),
                             self.pat_range(pat),
                         );
-                        return self.check_pat_wild(ty);
+                        return self.check_pat_wild(ty, self.pat_astptr(pat));
                     }
                 };
 
@@ -3255,7 +3270,7 @@ impl Typer {
                         ),
                         self.pat_range(pat),
                     );
-                    return self.check_pat_wild(ty);
+                    return self.check_pat_wild(ty, self.pat_astptr(pat));
                 }
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
@@ -3287,6 +3302,7 @@ impl Typer {
                     constructor,
                     args: args_tast,
                     ty: ret_ty,
+                    astptr: self.pat_astptr(pat),
                 }
             }
             hir::Pat::PStruct { name, fields } => {
@@ -3299,7 +3315,7 @@ impl Typer {
                         format!("Struct {} not found when checking pattern", type_name),
                         self.pat_range(pat),
                     );
-                    return self.check_pat_wild(ty);
+                    return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
                 let struct_fields = struct_def.fields.clone();
                 if struct_fields.len() != fields.len() {
@@ -3336,7 +3352,7 @@ impl Typer {
                         diagnostics,
                         format!("Struct {} not found when checking constructor", type_name),
                     );
-                    return self.check_pat_wild(ty);
+                    return self.check_pat_wild(ty, self.pat_astptr(pat));
                 };
 
                 let inst_constr_ty = self.inst_ty(&constr_ty);
@@ -3379,7 +3395,7 @@ impl Typer {
                                 ),
                                 self.pat_range(pat),
                             );
-                            let wild = self.check_pat_wild(&expected_ty);
+                            let wild = self.check_pat_wild(&expected_ty, None);
                             elab_args.push(StructPatArgElab::MissingWild {
                                 expected_ty: wild.get_ty(),
                             });
@@ -3418,11 +3434,12 @@ impl Typer {
                     constructor,
                     args: args_tast,
                     ty: ret_ty,
+                    astptr: self.pat_astptr(pat),
                 }
             }
             _ => {
                 super::util::push_ice(diagnostics, "Expected constructor pattern");
-                self.check_pat_wild(ty)
+                self.check_pat_wild(ty, self.pat_astptr(pat))
             }
         }
     }
@@ -3432,6 +3449,7 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
+        pat_id: hir::PatId,
         pats: &[hir::PatId],
         ty: &tast::Ty,
     ) -> tast::Pat {
@@ -3452,13 +3470,14 @@ impl Typer {
         tast::Pat::PTuple {
             items: pats_tast,
             ty: pat_ty,
+            astptr: self.pat_astptr(pat_id),
         }
     }
 
-    fn check_pat_wild(&mut self, ty: &tast::Ty) -> tast::Pat {
+    fn check_pat_wild(&mut self, ty: &tast::Ty, astptr: Option<MySyntaxNodePtr>) -> tast::Pat {
         let pat_ty = self.fresh_ty_var();
         self.push_constraint(Constraint::TypeEqual(pat_ty.clone(), ty.clone(), None));
-        tast::Pat::PWild { ty: pat_ty }
+        tast::Pat::PWild { ty: pat_ty, astptr }
     }
 }
 

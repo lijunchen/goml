@@ -108,6 +108,7 @@ pub(crate) fn validate_ty(
     genv: &PackageTypeEnv,
     diagnostics: &mut Diagnostics,
     ty: &tast::Ty,
+    range: Option<TextRange>,
     tparams: &HashSet<String>,
 ) {
     match ty {
@@ -128,29 +129,29 @@ pub(crate) fn validate_ty(
         | tast::Ty::TChar => {}
         tast::Ty::TTuple { typs } => {
             for ty in typs.iter() {
-                validate_ty(genv, diagnostics, ty, tparams);
+                validate_ty(genv, diagnostics, ty, range, tparams);
             }
         }
         tast::Ty::TFunc { params, ret_ty } => {
             for param in params.iter() {
-                validate_ty(genv, diagnostics, param, tparams);
+                validate_ty(genv, diagnostics, param, range, tparams);
             }
-            validate_ty(genv, diagnostics, ret_ty.as_ref(), tparams);
+            validate_ty(genv, diagnostics, ret_ty.as_ref(), range, tparams);
         }
         tast::Ty::TVec { elem } => {
-            validate_ty(genv, diagnostics, elem, tparams);
+            validate_ty(genv, diagnostics, elem, range, tparams);
         }
         tast::Ty::THashMap { key, value } => {
-            validate_ty(genv, diagnostics, key, tparams);
-            validate_ty(genv, diagnostics, value, tparams);
+            validate_ty(genv, diagnostics, key, range, tparams);
+            validate_ty(genv, diagnostics, value, range, tparams);
         }
         tast::Ty::TParam { name } => {
             if !tparams.contains(name) {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
+                push_error_with_range(
+                    diagnostics,
                     format!("Unknown type parameter {}", name),
-                ));
+                    range,
+                );
             }
         }
         tast::Ty::TDyn { trait_name } => {
@@ -164,50 +165,51 @@ pub(crate) fn validate_ty(
             let ident = tast::TastIdent::new(&resolved);
             if let Some(enum_def) = env.enums().get(&ident) {
                 if !enum_def.generics.is_empty() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
+                    push_error_with_range(
+                        diagnostics,
                         format!(
                             "Type {} expects {} type arguments, but got 0",
                             name,
                             enum_def.generics.len()
                         ),
-                    ));
+                        range,
+                    );
                 }
             } else if let Some(struct_def) = env.structs().get(&ident) {
                 if !struct_def.generics.is_empty() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
+                    push_error_with_range(
+                        diagnostics,
                         format!(
                             "Type {} expects {} type arguments, but got 0",
                             name,
                             struct_def.generics.len()
                         ),
-                    ));
+                        range,
+                    );
                 }
             } else if env.type_env.extern_types.contains_key(&resolved) {
                 // Extern types do not have generics.
             } else {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
+                push_error_with_range(
+                    diagnostics,
                     format!("Unknown type constructor {}", name),
-                ));
+                    range,
+                );
             }
         }
         tast::Ty::TApp { ty, args } => {
             for arg in args.iter() {
-                validate_ty(genv, diagnostics, arg, tparams);
+                validate_ty(genv, diagnostics, arg, range, tparams);
             }
 
             let Some(base_name) = try_constr_name(ty.as_ref()) else {
-                push_error(
+                push_error_with_range(
                     diagnostics,
                     format!(
                         "Expected a type constructor, got {}",
                         format_ty_for_diag(ty.as_ref())
                     ),
+                    range,
                 );
                 return;
             };
@@ -218,53 +220,53 @@ pub(crate) fn validate_ty(
                 let expected = enum_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
+                    push_error_with_range(
+                        diagnostics,
                         format!(
                             "Type {} expects {} type arguments, but got {}",
                             base_name, expected, actual
                         ),
-                    ));
+                        range,
+                    );
                 }
             } else if let Some(struct_def) = env.structs().get(&ident) {
                 let expected = struct_def.generics.len();
                 let actual = args.len();
                 if expected != actual {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
+                    push_error_with_range(
+                        diagnostics,
                         format!(
                             "Type {} expects {} type arguments, but got {}",
                             base_name, expected, actual
                         ),
-                    ));
+                        range,
+                    );
                 }
             } else if env.type_env.extern_types.contains_key(&resolved) {
                 if !args.is_empty() {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
+                    push_error_with_range(
+                        diagnostics,
                         format!(
                             "Type {} does not accept type arguments, but got {}",
                             base_name,
                             args.len()
                         ),
-                    ));
+                        range,
+                    );
                 }
             } else {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
+                push_error_with_range(
+                    diagnostics,
                     format!("Unknown type constructor {}", base_name),
-                ));
+                    range,
+                );
             }
         }
         tast::Ty::TArray { elem, .. } => {
-            validate_ty(genv, diagnostics, elem, tparams);
+            validate_ty(genv, diagnostics, elem, range, tparams);
         }
         tast::Ty::TRef { elem } => {
-            validate_ty(genv, diagnostics, elem, tparams);
+            validate_ty(genv, diagnostics, elem, range, tparams);
         }
     }
 }
@@ -487,6 +489,55 @@ impl tast::Ty {
                 ret_ty: Box::new(Self::from_hir(genv, ret_ty, tparams_env)),
             },
         }
+    }
+}
+
+pub(crate) fn type_expr_range(ty: &hir::TypeExpr) -> Option<TextRange> {
+    match ty {
+        hir::TypeExpr::TCon { path } => path
+            .path
+            .last()
+            .and_then(|segment| segment.range())
+            .or_else(|| {
+                path.path
+                    .segments()
+                    .iter()
+                    .find_map(|segment| segment.range())
+            }),
+        hir::TypeExpr::TDyn { trait_path } => trait_path
+            .path
+            .last()
+            .and_then(|segment| segment.range())
+            .or_else(|| {
+                trait_path
+                    .path
+                    .segments()
+                    .iter()
+                    .find_map(|segment| segment.range())
+            }),
+        hir::TypeExpr::TApp { ty, args } => {
+            type_expr_range(ty).or_else(|| args.iter().find_map(type_expr_range))
+        }
+        hir::TypeExpr::TTuple { typs } => typs.iter().find_map(type_expr_range),
+        hir::TypeExpr::TArray { elem, .. } => type_expr_range(elem),
+        hir::TypeExpr::TFunc { params, ret_ty } => params
+            .iter()
+            .find_map(type_expr_range)
+            .or_else(|| type_expr_range(ret_ty)),
+        hir::TypeExpr::TUnit
+        | hir::TypeExpr::TBool
+        | hir::TypeExpr::TInt8
+        | hir::TypeExpr::TInt16
+        | hir::TypeExpr::TInt32
+        | hir::TypeExpr::TInt64
+        | hir::TypeExpr::TUint8
+        | hir::TypeExpr::TUint16
+        | hir::TypeExpr::TUint32
+        | hir::TypeExpr::TUint64
+        | hir::TypeExpr::TFloat32
+        | hir::TypeExpr::TFloat64
+        | hir::TypeExpr::TString
+        | hir::TypeExpr::TChar => None,
     }
 }
 

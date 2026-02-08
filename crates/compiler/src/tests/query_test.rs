@@ -138,6 +138,11 @@ fn main() {
     check_value_completions(src, 2, 5, expect![[r#"
         [
             ValueCompletionItem {
+                name: "string",
+                kind: Keyword,
+                detail: None,
+            },
+            ValueCompletionItem {
                 name: "string_get",
                 kind: Function,
                 detail: Some(
@@ -172,6 +177,11 @@ fn main() {
                     "(string) -> unit",
                 ),
             },
+            ValueCompletionItem {
+                name: "struct",
+                kind: Keyword,
+                detail: None,
+            },
         ]
     "#]]);
 }
@@ -197,6 +207,64 @@ fn main() {
                 detail: Some(
                     "() -> int32",
                 ),
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn keyword_value_completions() {
+    let src = r#"
+fn main() {
+    le
+}
+"#;
+
+    check_value_completions(src, 2, 6, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "let",
+                kind: Keyword,
+                detail: None,
+            },
+        ]
+    "#]]);
+}
+
+#[test]
+#[rustfmt::skip]
+fn keyword_and_function_value_completions() {
+    let src = r#"
+fn map() -> int32 {
+    1
+}
+
+fn main() {
+    ma
+}
+"#;
+
+    check_value_completions(src, 6, 6, expect![[r#"
+        [
+            ValueCompletionItem {
+                name: "main",
+                kind: Function,
+                detail: Some(
+                    "() -> unit",
+                ),
+            },
+            ValueCompletionItem {
+                name: "map",
+                kind: Function,
+                detail: Some(
+                    "() -> int32",
+                ),
+            },
+            ValueCompletionItem {
+                name: "match",
+                kind: Keyword,
+                detail: None,
             },
         ]
     "#]]);

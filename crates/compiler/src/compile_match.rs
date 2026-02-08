@@ -92,7 +92,7 @@ fn move_variable_patterns(row: &mut Row) {
             };
             false
         }
-        Pat::PWild { ty: _ } => false,
+        Pat::PWild { ty: _, astptr: _ } => false,
         _ => true,
     });
 }
@@ -126,6 +126,50 @@ fn emissing(ty: &Ty) -> core::Expr {
             ty: Ty::TString,
         }],
         ty: ty.clone(),
+    }
+}
+
+fn push_compile_error(
+    diagnostics: &mut Diagnostics,
+    message: impl Into<String>,
+    range: Option<TextRange>,
+) {
+    diagnostics
+        .push(Diagnostic::new(Stage::other("compile"), Severity::Error, message).with_range(range));
+}
+
+fn push_compile_ice(
+    diagnostics: &mut Diagnostics,
+    message: impl Into<String>,
+    range: Option<TextRange>,
+) {
+    push_compile_error(
+        diagnostics,
+        format!("Internal compiler error: {}", message.into()),
+        range,
+    );
+}
+
+fn pat_range(pat: &Pat) -> Option<TextRange> {
+    match pat {
+        Pat::PVar { astptr, .. }
+        | Pat::PPrim { astptr, .. }
+        | Pat::PConstr { astptr, .. }
+        | Pat::PTuple { astptr, .. }
+        | Pat::PWild { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+    }
+}
+
+fn expr_range(expr: &Expr) -> Option<TextRange> {
+    match expr {
+        Expr::EVar { astptr, .. }
+        | Expr::EMatch { astptr, .. }
+        | Expr::EField { astptr, .. }
+        | Expr::ETraitMethod { astptr, .. }
+        | Expr::EDynTraitMethod { astptr, .. }
+        | Expr::EInherentMethod { astptr, .. }
+        | Expr::EToDyn { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
+        _ => None,
     }
 }
 
@@ -244,14 +288,24 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
     }
 }
 
-fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(String, Ty)> {
+fn instantiate_struct_fields(
+    diagnostics: &mut Diagnostics,
+    struct_def: &StructDef,
+    type_args: &[Ty],
+    range: Option<TextRange>,
+) -> Option<Vec<(String, Ty)>> {
     if struct_def.generics.len() != type_args.len() {
-        panic!(
-            "Struct {} expects {} type arguments, but got {}",
-            struct_def.name.0,
-            struct_def.generics.len(),
-            type_args.len()
+        push_compile_error(
+            diagnostics,
+            format!(
+                "Struct {} expects {} type arguments, but got {}",
+                struct_def.name.0,
+                struct_def.generics.len(),
+                type_args.len()
+            ),
+            range,
         );
+        return None;
     }
 
     let mut subst = HashMap::new();
@@ -259,11 +313,13 @@ fn instantiate_struct_fields(struct_def: &StructDef, type_args: &[Ty]) -> Vec<(S
         subst.insert(param.0.clone(), arg.clone());
     }
 
-    struct_def
-        .fields
-        .iter()
-        .map(|(fname, fty)| (fname.0.clone(), substitute_ty_params(fty, &subst)))
-        .collect()
+    Some(
+        struct_def
+            .fields
+            .iter()
+            .map(|(fname, fty)| (fname.0.clone(), substitute_ty_params(fty, &subst)))
+            .collect(),
+    )
 }
 
 fn decompose_struct_type(ty: &Ty) -> Option<(TastIdent, Vec<Ty>)> {
@@ -311,34 +367,81 @@ fn compile_constructor_cases(
     let mut has_wildcard = false;
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
+            let col_range = pat_range(&col.pat).or(match_range);
             if let Pat::PConstr {
                 constructor,
                 args,
                 ty: _,
+                ..
             } = col.pat
             {
-                let idx = constructor
-                    .as_enum()
-                    .expect("expected enum constructor in compile_constructor_cases")
-                    .enum_index();
+                let Some(enum_ctor) = constructor.as_enum() else {
+                    push_compile_ice(
+                        diagnostics,
+                        "expected enum constructor while compiling match arms",
+                        col_range,
+                    );
+                    has_wildcard = true;
+                    for ConstructorCase { rows, .. } in &mut cases {
+                        rows.push(row.clone());
+                    }
+                    continue;
+                };
+                let idx = enum_ctor.enum_index();
+                let Some(case) = cases.get_mut(idx) else {
+                    push_compile_ice(
+                        diagnostics,
+                        format!(
+                            "enum constructor index {} is out of range for type {}",
+                            idx, enum_ctor.type_name.0
+                        ),
+                        col_range,
+                    );
+                    has_wildcard = true;
+                    for ConstructorCase { rows, .. } in &mut cases {
+                        rows.push(row.clone());
+                    }
+                    continue;
+                };
+                if case.vars.len() != args.len() {
+                    push_compile_ice(
+                        diagnostics,
+                        format!(
+                            "constructor {}::{} expects {} fields, but pattern provided {}",
+                            enum_ctor.type_name.0,
+                            enum_ctor.variant.0,
+                            case.vars.len(),
+                            args.len()
+                        ),
+                        col_range,
+                    );
+                }
                 let mut cols = row.columns;
-                for (var, pat) in cases[idx].vars.iter().zip(args.into_iter()) {
+                for (var, pat) in case.vars.iter().zip(args.into_iter()) {
                     cols.push(Column {
                         var: var.name.clone(),
                         pat,
-                    })
+                    });
                 }
                 cases[idx].rows.push(Row {
                     columns: cols,
                     body: row.body,
-                })
+                });
             } else {
-                unreachable!()
+                push_compile_ice(
+                    diagnostics,
+                    "expected constructor pattern while compiling enum match",
+                    col_range,
+                );
+                has_wildcard = true;
+                for ConstructorCase { rows, .. } in &mut cases {
+                    rows.push(row.clone());
+                }
             }
         } else {
             has_wildcard = true;
             for ConstructorCase { rows, .. } in &mut cases {
-                rows.push(row.clone())
+                rows.push(row.clone());
             }
         }
     }
@@ -357,10 +460,7 @@ fn compile_constructor_cases(
                 if missing.len() > 1 { "s" } else { "" },
                 missing.join(", ")
             );
-            diagnostics.push(
-                Diagnostic::new(Stage::other("compile"), Severity::Error, message)
-                    .with_range(match_range),
-            );
+            push_compile_error(diagnostics, message, match_range);
         }
     }
 
@@ -391,11 +491,14 @@ fn compile_enum_case(
     name: &TastIdent,
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let tydef = genv
-        .enums()
-        .get(name)
-        .cloned()
-        .unwrap_or_else(|| panic!("Enum {} not found", name.0));
+    let Some(tydef) = genv.enums().get(name).cloned() else {
+        push_compile_ice(
+            diagnostics,
+            format!("enum {} not found during match compilation", name.0),
+            match_range,
+        );
+        return emissing(ty);
+    };
     let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
 
     let type_args = decompose_enum_type(&bvar.ty)
@@ -493,11 +596,14 @@ fn compile_struct_case(
     type_args: &[Ty],
     match_range: Option<TextRange>,
 ) -> core::Expr {
-    let struct_def = genv
-        .structs()
-        .get(name)
-        .cloned()
-        .unwrap_or_else(|| panic!("Unknown struct {}", name.0));
+    let Some(struct_def) = genv.structs().get(name).cloned() else {
+        push_compile_ice(
+            diagnostics,
+            format!("struct {} not found during match compilation", name.0),
+            match_range,
+        );
+        return emissing(ty);
+    };
 
     let inst_fields = if struct_def.generics.is_empty() {
         struct_def
@@ -506,7 +612,12 @@ fn compile_struct_case(
             .map(|(fname, fty)| (fname.0.clone(), fty.clone()))
             .collect::<Vec<_>>()
     } else {
-        instantiate_struct_fields(&struct_def, type_args)
+        let Some(fields) =
+            instantiate_struct_fields(diagnostics, &struct_def, type_args, match_range)
+        else {
+            return emissing(ty);
+        };
+        fields
     };
 
     let field_vars: Vec<Variable> = inst_fields
@@ -547,7 +658,21 @@ fn compile_struct_case(
                         constructor,
                         args,
                         ty: _,
+                        ..
                     } if constructor.is_struct() => {
+                        if field_vars.len() != args.len() {
+                            push_compile_ice(
+                                diagnostics,
+                                format!(
+                                    "struct pattern for {} expects {} fields, but got {}",
+                                    name.0,
+                                    field_vars.len(),
+                                    args.len()
+                                ),
+                                match_range,
+                            );
+                            return emissing(ty);
+                        }
                         for (var, arg_pat) in field_vars.iter().zip(args.into_iter()) {
                             cols.push(Column {
                                 var: var.name.clone(),
@@ -555,7 +680,14 @@ fn compile_struct_case(
                             });
                         }
                     }
-                    _ => unreachable!("expected struct pattern"),
+                    _ => {
+                        push_compile_ice(
+                            diagnostics,
+                            "expected struct pattern while compiling struct match",
+                            pat_range(&pat).or(match_range),
+                        );
+                        return emissing(ty);
+                    }
                 }
             } else {
                 cols.push(Column { var, pat });
@@ -608,7 +740,19 @@ fn compile_tuple_case(
         let mut cols = vec![];
         for Column { var, pat } in row.columns {
             if var == bvar.name {
-                if let PTuple { items, ty: _ } = pat {
+                if let PTuple { items, ty: _, .. } = pat {
+                    if items.len() != names.len() {
+                        push_compile_ice(
+                            diagnostics,
+                            format!(
+                                "tuple pattern expects {} elements, but got {}",
+                                names.len(),
+                                items.len()
+                            ),
+                            match_range,
+                        );
+                        return emissing(ty);
+                    }
                     for (i, item) in items.into_iter().enumerate() {
                         cols.push(Column {
                             var: names[i].clone(),
@@ -616,9 +760,12 @@ fn compile_tuple_case(
                         });
                     }
                 } else {
-                    // since the type of bvar.ty is Tuple,
-                    // so we should not reach here
-                    unreachable!()
+                    push_compile_ice(
+                        diagnostics,
+                        "expected tuple pattern while compiling tuple match",
+                        pat_range(&pat).or(match_range),
+                    );
+                    return emissing(ty);
                 }
             } else {
                 cols.push(Column { var, pat });
@@ -682,11 +829,23 @@ fn compile_bool_case(
     let mut has_wildcard = false;
     for mut r in rows {
         if let Some(col) = r.remove_column(&bvar.name) {
+            let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
-                    if value.as_bool().expect("expected boolean primitive pattern") {
-                        true_rows.push(r);
+                Pat::PPrim { value, ty: _, .. } => {
+                    if let Some(value) = value.as_bool() {
+                        if value {
+                            true_rows.push(r);
+                        } else {
+                            false_rows.push(r);
+                        }
                     } else {
+                        push_compile_ice(
+                            diagnostics,
+                            "expected boolean literal pattern while compiling bool match",
+                            col_range,
+                        );
+                        has_wildcard = true;
+                        true_rows.push(r.clone());
                         false_rows.push(r);
                     }
                 }
@@ -695,7 +854,16 @@ fn compile_bool_case(
                     true_rows.push(r.clone());
                     false_rows.push(r);
                 }
-                _ => unreachable!("expected bool pattern"),
+                _ => {
+                    push_compile_ice(
+                        diagnostics,
+                        "expected bool pattern while compiling bool match",
+                        col_range,
+                    );
+                    has_wildcard = true;
+                    true_rows.push(r.clone());
+                    false_rows.push(r);
+                }
             }
         } else {
             has_wildcard = true;
@@ -721,10 +889,7 @@ fn compile_bool_case(
             if missing.len() > 1 { "s " } else { " " },
             missing.join(", ")
         );
-        diagnostics.push(
-            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
-                .with_range(match_range),
-        );
+        push_compile_error(diagnostics, message, match_range);
     }
 
     core::Expr::EMatch {
@@ -887,7 +1052,15 @@ fn compile_int_case(
         _ => {}
     }
 
-    unreachable!("expected integer type");
+    push_compile_ice(
+        diagnostics,
+        format!(
+            "expected integer or char literal type while compiling integer match, got {:?}",
+            literal_ty
+        ),
+        match_range,
+    );
+    emissing(ty)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -916,13 +1089,27 @@ where
 
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
+            let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
-                    let key = extract(&value).expect("expected integer primitive pattern");
-                    let entry = value_rows
-                        .entry(key)
-                        .or_insert_with(|| fallback_rows.clone());
-                    entry.push(row);
+                Pat::PPrim { value, ty: _, .. } => {
+                    if let Some(key) = extract(&value) {
+                        let entry = value_rows
+                            .entry(key)
+                            .or_insert_with(|| fallback_rows.clone());
+                        entry.push(row);
+                    } else {
+                        push_compile_ice(
+                            diagnostics,
+                            "expected integer literal pattern while compiling integer match",
+                            col_range,
+                        );
+                        let row_clone = row.clone();
+                        for rows in value_rows.values_mut() {
+                            rows.push(row_clone.clone());
+                        }
+                        fallback_rows.push(row_clone.clone());
+                        default_rows.push(row);
+                    }
                 }
                 Pat::PWild { .. } => {
                     let row_clone = row.clone();
@@ -932,7 +1119,19 @@ where
                     fallback_rows.push(row_clone.clone());
                     default_rows.push(row);
                 }
-                _ => unreachable!("expected integer pattern"),
+                _ => {
+                    push_compile_ice(
+                        diagnostics,
+                        "expected integer pattern while compiling integer match",
+                        col_range,
+                    );
+                    let row_clone = row.clone();
+                    for rows in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
             }
         } else {
             let row_clone = row.clone();
@@ -961,10 +1160,7 @@ where
             "non-exhaustive match on {} literal; add a wildcard arm `_`",
             type_name
         );
-        diagnostics.push(
-            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
-                .with_range(match_range),
-        );
+        push_compile_error(diagnostics, message, match_range);
         return emissing(ty);
     }
 
@@ -1017,16 +1213,27 @@ fn compile_string_case(
 
     for mut row in rows {
         if let Some(col) = row.remove_column(&bvar.name) {
+            let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { value, ty: _ } => {
-                    let key = value
-                        .as_str()
-                        .expect("expected string primitive pattern")
-                        .to_string();
-                    let entry = value_rows
-                        .entry(key)
-                        .or_insert_with(|| fallback_rows.clone());
-                    entry.push(row);
+                Pat::PPrim { value, ty: _, .. } => {
+                    if let Some(key) = value.as_str() {
+                        let entry = value_rows
+                            .entry(key.to_string())
+                            .or_insert_with(|| fallback_rows.clone());
+                        entry.push(row);
+                    } else {
+                        push_compile_ice(
+                            diagnostics,
+                            "expected string literal pattern while compiling string match",
+                            col_range,
+                        );
+                        let row_clone = row.clone();
+                        for rows in value_rows.values_mut() {
+                            rows.push(row_clone.clone());
+                        }
+                        fallback_rows.push(row_clone.clone());
+                        default_rows.push(row);
+                    }
                 }
                 Pat::PWild { .. } => {
                     let row_clone = row.clone();
@@ -1036,7 +1243,19 @@ fn compile_string_case(
                     fallback_rows.push(row_clone.clone());
                     default_rows.push(row);
                 }
-                _ => unreachable!("expected string pattern"),
+                _ => {
+                    push_compile_ice(
+                        diagnostics,
+                        "expected string pattern while compiling string match",
+                        col_range,
+                    );
+                    let row_clone = row.clone();
+                    for rows in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
             }
         } else {
             let row_clone = row.clone();
@@ -1050,10 +1269,7 @@ fn compile_string_case(
 
     if default_rows.is_empty() {
         let message = "non-exhaustive match on string literal; add a wildcard arm `_`".to_string();
-        diagnostics.push(
-            Diagnostic::new(Stage::other("compile"), Severity::Error, message)
-                .with_range(match_range),
-        );
+        push_compile_error(diagnostics, message, match_range);
         return emissing(ty);
     }
 
@@ -1107,7 +1323,14 @@ fn compile_rows(
 
     let bvar = branch_variable(&rows);
     match &bvar.ty {
-        Ty::TVar(..) => unreachable!(),
+        Ty::TVar(..) => {
+            push_compile_ice(
+                diagnostics,
+                "unresolved type variable reached match compilation",
+                match_range,
+            );
+            emissing(ty)
+        }
         Ty::TUnit => compile_unit_case(genv, gensym, diagnostics, rows, &bvar, match_range),
         Ty::TBool => compile_bool_case(genv, gensym, diagnostics, rows, &bvar, match_range),
         Ty::TInt32 => compile_int_case(
@@ -1191,7 +1414,12 @@ fn compile_rows(
             match_range,
         ),
         Ty::TFloat32 | Ty::TFloat64 => {
-            panic!("Matching on floating point types is not supported")
+            push_compile_error(
+                diagnostics,
+                "matching on floating point types is not supported",
+                match_range,
+            );
+            emissing(ty)
         }
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TChar => compile_int_case(
@@ -1259,7 +1487,17 @@ fn compile_rows(
                     match_range,
                 )
             }
-            _ => panic!("Expected TEnum or TStruct inside TApp, got {:?}", base),
+            _ => {
+                push_compile_ice(
+                    diagnostics,
+                    format!(
+                        "expected enum or struct type constructor inside applied type in match, got {:?}",
+                        base
+                    ),
+                    match_range,
+                );
+                emissing(ty)
+            }
         },
         Ty::TTuple { typs } => compile_tuple_case(
             genv,
@@ -1271,13 +1509,62 @@ fn compile_rows(
             ty,
             match_range,
         ),
-        Ty::TArray { .. } => unreachable!("Array pattern matching is not supported"),
-        Ty::TVec { .. } => panic!("Matching on Vec types is not supported"),
-        Ty::THashMap { .. } => panic!("Matching on HashMap types is not supported"),
-        Ty::TFunc { .. } => unreachable!(),
-        Ty::TParam { .. } => unreachable!(),
-        Ty::TRef { .. } => panic!("Matching on reference types is not supported"),
-        Ty::TDyn { .. } => panic!("Matching on dyn trait objects is not supported"),
+        Ty::TArray { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on array types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TVec { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on Vec types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::THashMap { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on HashMap types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TFunc { .. } => {
+            push_compile_ice(
+                diagnostics,
+                "function type reached match compilation unexpectedly",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TParam { .. } => {
+            push_compile_ice(
+                diagnostics,
+                "type parameter reached match compilation unexpectedly",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TRef { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on reference types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
+        Ty::TDyn { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on dyn trait objects is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
     }
 }
 
@@ -1402,7 +1689,10 @@ fn compile_block_exprs(
                 Row {
                     columns: vec![Column {
                         var: x.clone(),
-                        pat: Pat::PWild { ty: pat.get_ty() },
+                        pat: Pat::PWild {
+                            ty: pat.get_ty(),
+                            astptr: None,
+                        },
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
@@ -1548,7 +1838,10 @@ fn compile_expr(
                 Row {
                     columns: vec![Column {
                         var: x.clone(),
-                        pat: Pat::PWild { ty: pat.get_ty() },
+                        pat: Pat::PWild {
+                            ty: pat.get_ty(),
+                            astptr: None,
+                        },
                     }],
                     body: ECall {
                         func: Box::new(Expr::EVar {
@@ -1708,9 +2001,14 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                let (receiver, other_args) = args
-                    .split_first()
-                    .expect("dyn trait call expects a receiver argument");
+                let Some((receiver, other_args)) = args.split_first() else {
+                    push_compile_ice(
+                        diagnostics,
+                        "dyn trait call expects a receiver argument",
+                        expr_range(func),
+                    );
+                    return emissing(ty);
+                };
                 return core::Expr::EDynCall {
                     trait_name: trait_name.clone(),
                     method_name: method_name.clone(),
@@ -1726,9 +2024,14 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                let (receiver, other_args) = args
-                    .split_first()
-                    .expect("trait call expects a receiver argument");
+                let Some((receiver, other_args)) = args.split_first() else {
+                    push_compile_ice(
+                        diagnostics,
+                        "trait call expects a receiver argument",
+                        expr_range(func),
+                    );
+                    return emissing(ty);
+                };
                 let for_ty = receiver.get_ty();
                 if (trait_name.0 == "ToString" && method_name.0 == "to_string")
                     || has_tparam(&for_ty)
@@ -1750,7 +2053,15 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                let for_ty = args[0].get_ty();
+                let Some(receiver) = args.first() else {
+                    push_compile_ice(
+                        diagnostics,
+                        "trait call expects at least one argument",
+                        expr_range(func),
+                    );
+                    return emissing(ty);
+                };
+                let for_ty = receiver.get_ty();
                 core::Expr::EVar {
                     name: trait_impl_fn_name(trait_name, &for_ty, &method_name.0),
                     ty: method_ty.clone(),
@@ -1797,27 +2108,38 @@ fn compile_expr(
                 ty: ty.clone(),
             }
         }
-        ETraitMethod { ty, .. } => {
-            // ETraitMethod should only appear as the func of ECall
-            // If it appears standalone, we can't resolve the implementation without knowing the self type
-            panic!(
-                "ETraitMethod should only appear as the function in ECall, not standalone. Type: {:?}",
-                ty
+        ETraitMethod { ty, astptr, .. } => {
+            push_compile_ice(
+                diagnostics,
+                format!(
+                    "trait method value appeared outside call context with type {:?}",
+                    ty
+                ),
+                astptr.as_ref().map(|ptr| ptr.text_range()),
             );
+            emissing(ty)
         }
-        EDynTraitMethod { ty, .. } => {
-            panic!(
-                "EDynTraitMethod should only appear as the function in ECall, not standalone. Type: {:?}",
-                ty
+        EDynTraitMethod { ty, astptr, .. } => {
+            push_compile_ice(
+                diagnostics,
+                format!(
+                    "dyn trait method value appeared outside call context with type {:?}",
+                    ty
+                ),
+                astptr.as_ref().map(|ptr| ptr.text_range()),
             );
+            emissing(ty)
         }
-        EInherentMethod { ty, .. } => {
-            // EInherentMethod should only appear as the func of ECall
-            // If it appears standalone, we can't resolve the implementation without knowing the self type
-            panic!(
-                "EInherentMethod should only appear as the function in ECall, not standalone. Type: {:?}",
-                ty
+        EInherentMethod { ty, astptr, .. } => {
+            push_compile_ice(
+                diagnostics,
+                format!(
+                    "inherent method value appeared outside call context with type {:?}",
+                    ty
+                ),
+                astptr.as_ref().map(|ptr| ptr.text_range()),
             );
+            emissing(ty)
         }
         EToDyn {
             trait_name,
@@ -1846,22 +2168,50 @@ fn compile_expr(
             expr,
             field_name,
             ty,
-            ..
+            astptr,
         } => {
             let base_ty = expr.get_ty();
+            let field_range = astptr.as_ref().map(|ptr| ptr.text_range());
             let expr_core = compile_expr(expr, genv, gensym, diagnostics);
-            let (type_name, type_args) = decompose_struct_type(&base_ty)
-                .unwrap_or_else(|| panic!("Field access on non-struct type {:?}", base_ty));
-            let struct_def = genv
-                .structs()
-                .get(&type_name)
-                .unwrap_or_else(|| panic!("Struct {} not found", type_name.0));
-            let inst_fields = instantiate_struct_fields(struct_def, &type_args);
-            let (field_index, _) = inst_fields
+            let Some((type_name, type_args)) = decompose_struct_type(&base_ty) else {
+                push_compile_error(
+                    diagnostics,
+                    format!(
+                        "field access is only valid on struct types, got {:?}",
+                        base_ty
+                    ),
+                    field_range,
+                );
+                return emissing(ty);
+            };
+            let Some(struct_def) = genv.structs().get(&type_name) else {
+                push_compile_ice(
+                    diagnostics,
+                    format!(
+                        "struct {} not found while compiling field access",
+                        type_name.0
+                    ),
+                    field_range,
+                );
+                return emissing(ty);
+            };
+            let Some(inst_fields) =
+                instantiate_struct_fields(diagnostics, struct_def, &type_args, field_range)
+            else {
+                return emissing(ty);
+            };
+            let Some((field_index, _)) = inst_fields
                 .iter()
                 .enumerate()
                 .find(|(_, (name, _))| name == field_name)
-                .unwrap_or_else(|| panic!("Struct {} has no field {}", type_name.0, field_name));
+            else {
+                push_compile_error(
+                    diagnostics,
+                    format!("struct {} has no field {}", type_name.0, field_name),
+                    field_range,
+                );
+                return emissing(ty);
+            };
             core::Expr::EConstrGet {
                 expr: Box::new(expr_core),
                 constructor: common::Constructor::Struct(common::StructConstructor { type_name }),

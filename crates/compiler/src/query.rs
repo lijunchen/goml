@@ -13,6 +13,12 @@ use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified
 use crate::{artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline, tast};
 
 const COMPLETION_PLACEHOLDER: &str = "completion_placeholder";
+const VALUE_COMPLETION_KEYWORDS: &[&str] = &[
+    "array", "bool", "char", "dyn", "else", "enum", "extern", "false", "float32", "float64", "fn",
+    "for", "go", "if", "impl", "import", "in", "int8", "int16", "int32", "int64", "let", "match",
+    "package", "return", "string", "struct", "trait", "true", "type", "uint8", "uint16", "uint32",
+    "uint64", "unit", "use", "while", "_",
+];
 
 #[derive(Debug, Clone)]
 struct HirResultsIndex {
@@ -296,6 +302,7 @@ pub struct ColonColonCompletionItem {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ValueCompletionKind {
     Function,
+    Keyword,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -434,23 +441,43 @@ pub fn value_completions(
         return None;
     }
 
-    let (_hir_table, _results, genv, _diagnostics) = typecheck_single_file_for_query(path, src)
-        .or_else(|_| {
+    let mut items = Vec::new();
+    if let Ok((_hir_table, _results, genv, _diagnostics)) =
+        typecheck_single_file_for_query(path, src).or_else(|_| {
             pipeline::pipeline::typecheck_with_packages_and_results(path, src)
                 .map_err(|e| format!("{:?}", e))
         })
-        .ok()?;
-    let mut items = genv
-        .value_env
-        .funcs
+    {
+        items.extend(
+            genv.value_env
+                .funcs
+                .iter()
+                .filter(|(name, _scheme)| !name.contains("::") && name.starts_with(&prefix))
+                .map(|(name, scheme)| ValueCompletionItem {
+                    name: name.clone(),
+                    kind: ValueCompletionKind::Function,
+                    detail: Some(scheme.ty.to_pretty(80)),
+                }),
+        );
+    }
+
+    let mut seen = items
         .iter()
-        .filter(|(name, _scheme)| !name.contains("::") && name.starts_with(&prefix))
-        .map(|(name, scheme)| ValueCompletionItem {
-            name: name.clone(),
-            kind: ValueCompletionKind::Function,
-            detail: Some(scheme.ty.to_pretty(80)),
-        })
-        .collect::<Vec<_>>();
+        .map(|item| item.name.clone())
+        .collect::<HashSet<_>>();
+    for keyword in VALUE_COMPLETION_KEYWORDS {
+        if !keyword.starts_with(&prefix) {
+            continue;
+        }
+        if !seen.insert((*keyword).to_string()) {
+            continue;
+        }
+        items.push(ValueCompletionItem {
+            name: (*keyword).to_string(),
+            kind: ValueCompletionKind::Keyword,
+            detail: None,
+        });
+    }
 
     items.sort_by(|a, b| a.name.cmp(&b.name));
     items.truncate(50);
