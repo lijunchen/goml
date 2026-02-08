@@ -383,6 +383,14 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
 
     let go_file = project_dir.join("target/goml/main.go");
     assert!(go_file.exists());
+    assert!(project_dir.join("target/goml/build/main.core").exists());
+    assert!(
+        project_dir
+            .join("target/goml/build/main.interface")
+            .exists()
+    );
+    assert!(project_dir.join("target/goml/build/lib.core").exists());
+    assert!(project_dir.join("target/goml/build/lib.interface").exists());
 
     let go_output = Command::new("go")
         .arg("run")
@@ -567,6 +575,66 @@ fn value() -> int32 {
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
+
+    Ok(())
+}
+
+#[test]
+fn project_build_dry_run_preserves_entry_directory_structure() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let root = dir.path();
+
+    fs::write(
+        root.join("goml.toml"),
+        r#"[module]
+name = "demo"
+
+[package]
+name = "main"
+entry = "main.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("main.gom"),
+        r#"package main;
+
+use Lib;
+
+fn main() -> unit {
+    string_println(Lib::msg())
+}
+"#,
+    )?;
+
+    fs::create_dir_all(root.join("Lib/src"))?;
+    fs::write(
+        root.join("Lib/goml.toml"),
+        r#"[package]
+name = "Lib"
+entry = "src/lib_entry.gom"
+"#,
+    )?;
+    fs::write(
+        root.join("Lib/src/lib_entry.gom"),
+        r#"package Lib;
+
+fn msg() -> string {
+    "ok"
+}
+"#,
+    )?;
+
+    let output = run_goml(&["build", "--dry-run"], root)?;
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![[r#"
+        goml compiler build --package Lib --input Lib/src/lib_entry.gom --output target/goml/build/Lib
+        goml compiler build --package main --input main.gom --interface-path target/goml/build/Lib.interface --output target/goml/build/main
+        goml compiler link --input target/goml/build/Lib.core target/goml/build/main.core --output target/goml/main.go
+    "#]]
+    .assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
 
     Ok(())
 }

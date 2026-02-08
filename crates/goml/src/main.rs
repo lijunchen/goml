@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -165,21 +165,74 @@ struct ProjectContext {
     entry_path: PathBuf,
 }
 
-struct PlannedCommand {
-    args: Vec<OsString>,
+struct PackageCompilerCommand {
+    package: String,
+    input_files: Vec<PathBuf>,
+    interface_files: Vec<PathBuf>,
+    output: PathBuf,
 }
 
-impl PlannedCommand {
+struct LinkCompilerCommand {
+    input_cores: Vec<PathBuf>,
+    output: PathBuf,
+}
+
+enum PlannedCompilerCommand {
+    Check(PackageCompilerCommand),
+    Build(PackageCompilerCommand),
+    Link(LinkCompilerCommand),
+}
+
+impl PlannedCompilerCommand {
+    fn to_args(&self) -> Vec<OsString> {
+        match self {
+            PlannedCompilerCommand::Check(cmd) => package_command_args("check", cmd),
+            PlannedCompilerCommand::Build(cmd) => package_command_args("build", cmd),
+            PlannedCompilerCommand::Link(cmd) => {
+                let mut args = vec![
+                    OsString::from("compiler"),
+                    OsString::from("link"),
+                    OsString::from("--input"),
+                ];
+                args.extend(
+                    cmd.input_cores
+                        .iter()
+                        .map(|path| path.clone().into_os_string()),
+                );
+                args.push(OsString::from("--output"));
+                args.push(cmd.output.clone().into_os_string());
+                args
+            }
+        }
+    }
+
     fn display(&self) -> String {
-        let mut parts = Vec::with_capacity(self.args.len() + 1);
+        let args = self.to_args();
+        let mut parts = Vec::with_capacity(args.len() + 1);
         parts.push("goml".to_string());
-        parts.extend(
-            self.args
-                .iter()
-                .map(|arg| shell_escape(&arg.to_string_lossy())),
-        );
+        parts.extend(args.iter().map(|arg| shell_escape(&arg.to_string_lossy())));
         parts.join(" ")
     }
+}
+
+fn package_command_args(kind: &str, cmd: &PackageCompilerCommand) -> Vec<OsString> {
+    let mut args = vec![
+        OsString::from("compiler"),
+        OsString::from(kind),
+        OsString::from("--package"),
+        OsString::from(&cmd.package),
+    ];
+    for input in cmd.input_files.iter() {
+        args.push(OsString::from("--input"));
+        args.push(input.clone().into_os_string());
+    }
+    for interface in cmd.interface_files.iter() {
+        args.push(OsString::from("--interface-path"));
+        args.push(interface.clone().into_os_string());
+    }
+    args.push(OsString::from("--output"));
+    args.push(cmd.output.clone().into_os_string());
+    args
 }
 
 fn main() {
@@ -490,7 +543,9 @@ fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
     execute_planned_commands(&project.module_dir, commands, args.dry_run)
 }
 
-fn build_project_check_commands(project: &ProjectContext) -> anyhow::Result<Vec<PlannedCommand>> {
+fn build_project_check_commands(
+    project: &ProjectContext,
+) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
     let graph = compiler::pipeline::packages::discover_packages(
         &project.module_dir,
         Some(&project.entry_path),
@@ -500,15 +555,22 @@ fn build_project_check_commands(project: &ProjectContext) -> anyhow::Result<Vec<
     let order = compiler::pipeline::packages::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project check failed: {:?}", err))?;
 
+    let artifact_outputs =
+        package_artifact_outputs(&graph, &project.module_dir, PROJECT_CHECK_OUTPUT_DIR)?;
     let mut commands = Vec::new();
-    let mut interface_outputs: HashMap<String, PathBuf> = HashMap::new();
+    let mut interface_outputs = HashMap::new();
 
     for package_name in order.iter() {
         let package = graph
             .packages
             .get(package_name)
             .ok_or_else(|| anyhow!("project check failed: missing package {}", package_name))?;
-        let output_base = PathBuf::from(PROJECT_CHECK_OUTPUT_DIR).join(package_name);
+        let output_base = artifact_outputs.get(package_name).cloned().ok_or_else(|| {
+            anyhow!(
+                "project check failed: missing artifact output for package {}",
+                package_name
+            )
+        })?;
         let interface_files = package_interface_inputs(
             &graph,
             package_name,
@@ -516,24 +578,12 @@ fn build_project_check_commands(project: &ProjectContext) -> anyhow::Result<Vec<
             &interface_outputs,
             "project check",
         )?;
-
-        let mut args = vec![
-            OsString::from("compiler"),
-            OsString::from("check"),
-            OsString::from("--package"),
-            OsString::from(package_name),
-        ];
-        for input in sorted_package_inputs(&project.module_dir, package) {
-            args.push(OsString::from("--input"));
-            args.push(input.into_os_string());
-        }
-        for interface in interface_files {
-            args.push(OsString::from("--interface-path"));
-            args.push(interface.into_os_string());
-        }
-        args.push(OsString::from("--output"));
-        args.push(output_base.clone().into_os_string());
-        commands.push(PlannedCommand { args });
+        commands.push(PlannedCompilerCommand::Check(PackageCompilerCommand {
+            package: package_name.clone(),
+            input_files: sorted_package_inputs(&project.module_dir, package),
+            interface_files,
+            output: output_base.clone(),
+        }));
         interface_outputs.insert(
             package_name.clone(),
             output_base.with_extension("interface"),
@@ -543,7 +593,9 @@ fn build_project_check_commands(project: &ProjectContext) -> anyhow::Result<Vec<
     Ok(commands)
 }
 
-fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<PlannedCommand>> {
+fn build_project_build_commands(
+    project: &ProjectContext,
+) -> anyhow::Result<Vec<PlannedCompilerCommand>> {
     let graph = compiler::pipeline::packages::discover_packages(
         &project.module_dir,
         Some(&project.entry_path),
@@ -553,8 +605,10 @@ fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<
     let order = compiler::pipeline::packages::topo_sort_packages(&graph)
         .map_err(|err| anyhow!("project build failed: {:?}", err))?;
 
+    let artifact_outputs =
+        package_artifact_outputs(&graph, &project.module_dir, PROJECT_BUILD_OUTPUT_DIR)?;
     let mut commands = Vec::new();
-    let mut interface_outputs: HashMap<String, PathBuf> = HashMap::new();
+    let mut interface_outputs = HashMap::new();
     let mut core_outputs = Vec::new();
 
     for package_name in order.iter() {
@@ -562,7 +616,12 @@ fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<
             .packages
             .get(package_name)
             .ok_or_else(|| anyhow!("project build failed: missing package {}", package_name))?;
-        let output_base = PathBuf::from(PROJECT_BUILD_OUTPUT_DIR).join(package_name);
+        let output_base = artifact_outputs.get(package_name).cloned().ok_or_else(|| {
+            anyhow!(
+                "project build failed: missing artifact output for package {}",
+                package_name
+            )
+        })?;
         let interface_files = package_interface_inputs(
             &graph,
             package_name,
@@ -570,24 +629,12 @@ fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<
             &interface_outputs,
             "project build",
         )?;
-
-        let mut args = vec![
-            OsString::from("compiler"),
-            OsString::from("build"),
-            OsString::from("--package"),
-            OsString::from(package_name),
-        ];
-        for input in sorted_package_inputs(&project.module_dir, package) {
-            args.push(OsString::from("--input"));
-            args.push(input.into_os_string());
-        }
-        for interface in interface_files {
-            args.push(OsString::from("--interface-path"));
-            args.push(interface.into_os_string());
-        }
-        args.push(OsString::from("--output"));
-        args.push(output_base.clone().into_os_string());
-        commands.push(PlannedCommand { args });
+        commands.push(PlannedCompilerCommand::Build(PackageCompilerCommand {
+            package: package_name.clone(),
+            input_files: sorted_package_inputs(&project.module_dir, package),
+            interface_files,
+            output: output_base.clone(),
+        }));
         interface_outputs.insert(
             package_name.clone(),
             output_base.with_extension("interface"),
@@ -595,25 +642,121 @@ fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<
         core_outputs.push(output_base.with_extension("core"));
     }
 
-    let mut link_args = vec![
-        OsString::from("compiler"),
-        OsString::from("link"),
-        OsString::from("--input"),
-    ];
-    for core in core_outputs {
-        link_args.push(core.into_os_string());
-    }
-    link_args.push(OsString::from("--output"));
-    link_args.push(PathBuf::from(PROJECT_GO_OUTPUT).into_os_string());
-    commands.push(PlannedCommand { args: link_args });
+    commands.push(PlannedCompilerCommand::Link(LinkCompilerCommand {
+        input_cores: core_outputs,
+        output: PathBuf::from(PROJECT_GO_OUTPUT),
+    }));
 
     Ok(commands)
+}
+
+fn package_artifact_outputs(
+    graph: &compiler::pipeline::packages::PackageGraph,
+    module_dir: &Path,
+    output_root: &str,
+) -> anyhow::Result<HashMap<String, PathBuf>> {
+    let mut names: Vec<String> = graph.packages.keys().cloned().collect();
+    names.sort();
+
+    let mut outputs = HashMap::new();
+    let mut seen = HashMap::new();
+
+    for package_name in names {
+        let base = package_artifact_base(graph, module_dir, &package_name)?;
+        let output = PathBuf::from(output_root).join(base);
+
+        if let Some(existing) = seen.insert(output.clone(), package_name.clone()) {
+            bail!(
+                "artifact path conflict in {}: packages {} and {} both map to {}",
+                output_root,
+                existing,
+                package_name,
+                output.display()
+            );
+        }
+
+        outputs.insert(package_name, output);
+    }
+
+    Ok(outputs)
+}
+
+fn package_artifact_base(
+    graph: &compiler::pipeline::packages::PackageGraph,
+    module_dir: &Path,
+    package_name: &str,
+) -> anyhow::Result<PathBuf> {
+    let package_dir = graph
+        .package_dirs
+        .get(package_name)
+        .ok_or_else(|| anyhow!("missing package dir for {}", package_name))?;
+    let package = graph
+        .packages
+        .get(package_name)
+        .ok_or_else(|| anyhow!("missing package {}", package_name))?;
+
+    let base = relative_to_module(module_dir, package_dir);
+    if !base.as_os_str().is_empty() {
+        return Ok(base);
+    }
+
+    let entry_relative = package_entry_relative_path(package, package_dir)?;
+    let stem = entry_relative
+        .file_stem()
+        .ok_or_else(|| anyhow!("invalid root package entry {}", entry_relative.display()))?;
+    let base = PathBuf::from(stem);
+
+    if base.as_os_str().is_empty() {
+        bail!(
+            "package {} resolved to empty artifact path from {}",
+            package_name,
+            entry_relative.display()
+        );
+    }
+
+    Ok(base)
+}
+
+fn package_entry_relative_path(
+    package: &compiler::pipeline::packages::PackageUnit,
+    package_dir: &Path,
+) -> anyhow::Result<PathBuf> {
+    if let Some(config) = GomlConfig::find_package_config(package_dir) {
+        return Ok(PathBuf::from(config.package.entry));
+    }
+
+    let default_entry = package_dir.join("lib.gom");
+    if default_entry.exists() {
+        return Ok(PathBuf::from("lib.gom"));
+    }
+
+    let mut files: Vec<PathBuf> = package.files.iter().map(|file| file.path.clone()).collect();
+    files.sort();
+
+    if files.len() == 1 {
+        return files[0]
+            .strip_prefix(package_dir)
+            .map(Path::to_path_buf)
+            .map_err(|_| {
+                anyhow!(
+                    "failed to compute entry path for package {} from {}",
+                    package.name,
+                    files[0].display()
+                )
+            });
+    }
+
+    bail!(
+        "package {} in {} has multiple .gom files and no goml.toml entry",
+        package.name,
+        package_dir.display()
+    )
 }
 
 fn package_interface_inputs(
     graph: &compiler::pipeline::packages::PackageGraph,
     package_name: &str,
-    imports: &std::collections::HashSet<String>,
+    imports: &HashSet<String>,
     interface_outputs: &HashMap<String, PathBuf>,
     stage: &str,
 ) -> anyhow::Result<Vec<PathBuf>> {
@@ -663,11 +806,11 @@ fn relative_to_module(module_dir: &Path, path: &Path) -> PathBuf {
 
 fn execute_planned_commands(
     module_dir: &Path,
-    commands: Vec<PlannedCommand>,
+    commands: Vec<PlannedCompilerCommand>,
     dry_run: bool,
 ) -> anyhow::Result<()> {
     if dry_run {
-        for command in commands {
+        for command in commands.iter() {
             println!("{}", command.display());
         }
         return Ok(());
@@ -677,8 +820,9 @@ fn execute_planned_commands(
         std::env::current_exe().context("failed to resolve current executable for subcommands")?;
     for command in commands {
         let display = command.display();
+        let args = command.to_args();
         let status = Command::new(&executable)
-            .args(&command.args)
+            .args(args)
             .current_dir(module_dir)
             .status()
             .with_context(|| format!("failed to execute {}", display))?;
