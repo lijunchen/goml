@@ -1,0 +1,25 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
+fn main() -> unit {
+    let v/0: Vec[int32] = (Vec[int32]::new : () -> Vec[int32])();
+    let v/1: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/0 : Vec[int32]), 10);
+    let v/2: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/1 : Vec[int32]), 20);
+    let v/3: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/2 : Vec[int32]), 30);
+    let v/4: Vec[int32] = (Vec[int32]::push : (Vec[int32], int32) -> Vec[int32])((v/3 : Vec[int32]), 40);
+    let s/5: Slice[int32] = (slice : (Vec[int32], int32, int32) -> Slice[int32])((v/4 : Vec[int32]), 1, 4);
+    (println : (int32) -> unit)((Slice[int32]::len : (Slice[int32]) -> int32)((s/5 : Slice[int32])));
+    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((s/5 : Slice[int32]), 0));
+    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((s/5 : Slice[int32]), 1));
+    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((s/5 : Slice[int32]), 2));
+    let t/6: Slice[int32] = (Slice[int32]::sub : (Slice[int32], int32, int32) -> Slice[int32])((s/5 : Slice[int32]), 1, 3);
+    (println : (int32) -> unit)((Slice[int32]::len : (Slice[int32]) -> int32)((t/6 : Slice[int32])));
+    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((t/6 : Slice[int32]), 0));
+    (println : (int32) -> unit)((Slice[int32]::get : (Slice[int32], int32) -> int32)((t/6 : Slice[int32]), 1));
+    ();
+}
