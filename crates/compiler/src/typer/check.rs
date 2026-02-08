@@ -3489,6 +3489,7 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
             is_concrete_dyn_target(ty) && args.iter().all(is_concrete_dyn_target)
         }
         tast::Ty::TArray { elem, .. } => is_concrete_dyn_target(elem),
+        tast::Ty::TSlice { elem } => is_concrete_dyn_target(elem),
         tast::Ty::TVec { elem } => is_concrete_dyn_target(elem),
         tast::Ty::TRef { elem } => is_concrete_dyn_target(elem),
         tast::Ty::THashMap { key, value } => {
@@ -3952,6 +3953,11 @@ fn collect_type_param_substitution(
                 collect_type_param_substitution(elem, actual_elem, subst);
             }
         }
+        tast::Ty::TSlice { elem } => {
+            if let tast::Ty::TSlice { elem: actual_elem } = actual {
+                collect_type_param_substitution(elem, actual_elem, subst);
+            }
+        }
         tast::Ty::TVec { elem } => {
             if let tast::Ty::TVec { elem: actual_elem } = actual {
                 collect_type_param_substitution(elem, actual_elem, subst);
@@ -4077,6 +4083,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             len: *len,
             elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
         },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+            elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
+        },
         tast::Ty::TVec { elem } => tast::Ty::TVec {
             elem: Box::new(substitute_ty_params(elem.as_ref(), subst)),
         },
@@ -4108,7 +4117,10 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
             env
         }
         tast::Ty::TApp { ty, .. } => env_for_receiver_ty(genv, ty),
-        tast::Ty::TRef { .. } | tast::Ty::TVec { .. } | tast::Ty::THashMap { .. } => genv.current(),
+        tast::Ty::TSlice { .. }
+        | tast::Ty::TRef { .. }
+        | tast::Ty::TVec { .. }
+        | tast::Ty::THashMap { .. } => genv.current(),
         _ => genv.current(),
     }
 }
@@ -4156,6 +4168,9 @@ fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
         },
         tast::Ty::TArray { len, elem } => tast::Ty::TArray {
             len: *len,
+            elem: Box::new(instantiate_self_ty(elem, self_ty)),
+        },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
             elem: Box::new(instantiate_self_ty(elem, self_ty)),
         },
         tast::Ty::TVec { elem } => tast::Ty::TVec {

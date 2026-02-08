@@ -361,6 +361,9 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
             len: *len,
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
+        tast::Ty::TSlice { elem } => tast::Ty::TSlice {
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
         tast::Ty::TVec { elem } => tast::Ty::TVec {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
@@ -576,6 +579,9 @@ fn collect_runtime_types(
                         self.collect_type(elem);
                     }
                 }
+                tast::Ty::TSlice { elem } => {
+                    self.collect_type(elem);
+                }
                 tast::Ty::TRef { elem } => {
                     if self.refs.insert(ty.clone()) {
                         self.collect_type(elem);
@@ -672,6 +678,7 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
                 }
             }
             tast::Ty::TArray { elem, .. } => collect_ty(req, elem),
+            tast::Ty::TSlice { elem } => collect_ty(req, elem),
             tast::Ty::TVec { elem } => collect_ty(req, elem),
             tast::Ty::TRef { elem } => collect_ty(req, elem),
             tast::Ty::TFunc { params, ret_ty } => {
@@ -1443,6 +1450,62 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
                     }),
                     args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
+                }
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && (*name == "slice"
+                    || *name == "slice_get"
+                    || *name == "slice_len"
+                    || *name == "slice_sub")
+            {
+                match name.as_str() {
+                    "slice" | "slice_sub" => {
+                        let mut args_iter = compiled_args.into_iter();
+                        let array_arg = args_iter.next().unwrap();
+                        let start_arg = args_iter.next().unwrap();
+                        let end_arg = args_iter.next().unwrap();
+                        goast::Expr::Slice {
+                            array: Box::new(array_arg),
+                            start: Box::new(start_arg),
+                            end: Box::new(end_arg),
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    "slice_get" => {
+                        let mut args_iter = compiled_args.into_iter();
+                        let slice_arg = args_iter.next().unwrap();
+                        let index_arg = args_iter.next().unwrap();
+                        goast::Expr::Index {
+                            array: Box::new(slice_arg),
+                            index: Box::new(index_arg),
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    "slice_len" => {
+                        let mut args_iter = compiled_args.into_iter();
+                        let slice_arg = args_iter.next().unwrap();
+                        goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "int32".to_string(),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![goty::GoType::TInt32],
+                                    ret_ty: Box::new(goty::GoType::TInt32),
+                                },
+                            }),
+                            args: vec![goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: "len".to_string(),
+                                    ty: goty::GoType::TFunc {
+                                        params: vec![tast_ty_to_go_type(&imm_ty(&args[0]))],
+                                        ret_ty: Box::new(goty::GoType::TInt32),
+                                    },
+                                }),
+                                args: vec![slice_arg],
+                                ty: goty::GoType::TInt32,
+                            }],
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    }
+                    _ => unreachable!(),
                 }
             } else if let anf::ImmExpr::ImmVar { name, .. } = &func
                 && (*name == "vec_new"

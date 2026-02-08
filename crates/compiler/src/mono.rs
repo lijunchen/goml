@@ -273,6 +273,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TEnum { .. } | Ty::TStruct { .. } | Ty::TDyn { .. } => false,
         Ty::TApp { ty, args } => has_tparam(ty.as_ref()) || args.iter().any(has_tparam),
         Ty::TArray { elem, .. } => has_tparam(elem),
+        Ty::TSlice { elem } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
         Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
@@ -349,6 +350,9 @@ fn subst_ty(ty: &Ty, s: &Subst) -> Ty {
         },
         Ty::TArray { len, elem } => Ty::TArray {
             len: *len,
+            elem: Box::new(subst_ty(elem, s)),
+        },
+        Ty::TSlice { elem } => Ty::TSlice {
             elem: Box::new(subst_ty(elem, s)),
         },
         Ty::TVec { elem } => Ty::TVec {
@@ -465,6 +469,7 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
             }
             unify(le, re, subst)
         }
+        (Ty::TSlice { elem: le }, Ty::TSlice { elem: re }) => unify(le, re, subst),
         (Ty::TRef { elem: le }, Ty::TRef { elem: re }) => unify(le, re, subst),
         (
             Ty::TFunc {
@@ -1049,6 +1054,9 @@ impl<'a> TypeMono<'a> {
             Ty::TStruct { name } => Ty::TStruct { name: name.clone() },
             Ty::TArray { len, elem } => Ty::TArray {
                 len: *len,
+                elem: Box::new(self.collapse_type_apps(elem)),
+            },
+            Ty::TSlice { elem } => Ty::TSlice {
                 elem: Box::new(self.collapse_type_apps(elem)),
             },
             Ty::TRef { elem } => Ty::TRef {

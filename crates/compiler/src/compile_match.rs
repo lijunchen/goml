@@ -197,6 +197,7 @@ fn has_tparam(ty: &Ty) -> bool {
         Ty::TTuple { typs } => typs.iter().any(has_tparam),
         Ty::TApp { ty, args } => has_tparam(ty) || args.iter().any(has_tparam),
         Ty::TArray { elem, .. } => has_tparam(elem),
+        Ty::TSlice { elem } => has_tparam(elem),
         Ty::TVec { elem } => has_tparam(elem),
         Ty::TRef { elem } => has_tparam(elem),
         Ty::THashMap { key, value } => has_tparam(key) || has_tparam(value),
@@ -266,6 +267,9 @@ fn substitute_ty_params(ty: &Ty, subst: &HashMap<String, Ty>) -> Ty {
             .unwrap_or_else(|| Ty::TParam { name: name.clone() }),
         Ty::TArray { len, elem } => Ty::TArray {
             len: *len,
+            elem: Box::new(substitute_ty_params(elem, subst)),
+        },
+        Ty::TSlice { elem } => Ty::TSlice {
             elem: Box::new(substitute_ty_params(elem, subst)),
         },
         Ty::TVec { elem } => Ty::TVec {
@@ -1525,6 +1529,14 @@ fn compile_rows(
             );
             emissing(ty)
         }
+        Ty::TSlice { .. } => {
+            push_compile_error(
+                diagnostics,
+                "matching on Slice types is not supported",
+                match_range,
+            );
+            emissing(ty)
+        }
         Ty::THashMap { .. } => {
             push_compile_error(
                 diagnostics,
@@ -2074,6 +2086,12 @@ fn compile_expr(
             } = func.as_ref()
             {
                 let builtin = match receiver_ty {
+                    tast::Ty::TSlice { .. } => match method_name.0.as_str() {
+                        "get" => Some("slice_get"),
+                        "len" => Some("slice_len"),
+                        "sub" => Some("slice_sub"),
+                        _ => None,
+                    },
                     tast::Ty::TVec { .. } => match method_name.0.as_str() {
                         "new" => Some("vec_new"),
                         "push" => Some("vec_push"),

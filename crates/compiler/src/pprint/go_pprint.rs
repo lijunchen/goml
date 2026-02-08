@@ -724,6 +724,18 @@ impl Expr {
                 .append(RcDoc::text("["))
                 .append(index.to_doc(goenv))
                 .append(RcDoc::text("]")),
+            Expr::Slice {
+                array,
+                start,
+                end,
+                ty: _,
+            } => array
+                .to_doc(goenv)
+                .append(RcDoc::text("["))
+                .append(start.to_doc(goenv))
+                .append(RcDoc::text(":"))
+                .append(end.to_doc(goenv))
+                .append(RcDoc::text("]")),
             Expr::Cast { expr, ty } => expr
                 .to_doc(goenv)
                 .append(RcDoc::text(".("))

@@ -661,6 +661,7 @@ fn contains_type_var(ty: &tast::Ty) -> bool {
         }
         tast::Ty::TApp { ty, args } => contains_type_var(ty) || args.iter().any(contains_type_var),
         tast::Ty::TArray { elem, .. } => contains_type_var(elem),
+        tast::Ty::TSlice { elem } => contains_type_var(elem),
         tast::Ty::TVec { elem } => contains_type_var(elem),
         tast::Ty::TRef { elem } => contains_type_var(elem),
         tast::Ty::THashMap { key, value } => contains_type_var(key) || contains_type_var(value),
@@ -1249,6 +1250,7 @@ fn completion_constructor_name(ty: &tast::Ty) -> Option<String> {
     match ty {
         tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => Some(name.clone()),
         tast::Ty::TApp { .. }
+        | tast::Ty::TSlice { .. }
         | tast::Ty::TVec { .. }
         | tast::Ty::TRef { .. }
         | tast::Ty::THashMap { .. } => Some(ty.get_constr_name_unsafe()),
@@ -2003,6 +2005,7 @@ fn tast_ty_constr_candidates(ty: &tast::Ty) -> Vec<String> {
         match ty {
             tast::Ty::TStruct { name } | tast::Ty::TEnum { name } => out.push(name.clone()),
             tast::Ty::TApp { ty, .. } => inner(ty, out),
+            tast::Ty::TSlice { .. } => out.push("Slice".to_string()),
             tast::Ty::TRef { .. } => out.push("Ref".to_string()),
             tast::Ty::TVec { .. } => out.push("Vec".to_string()),
             tast::Ty::THashMap { .. } => out.push("HashMap".to_string()),

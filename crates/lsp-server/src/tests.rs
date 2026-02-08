@@ -1787,7 +1787,7 @@ fn main() -> unit {
 "#,
             "ref_get(r)",
             "ref_get",
-            expect!["src/builtin.gom:465:10"],
+            expect!["src/builtin.gom:487:10"],
         );
     }
 
@@ -1812,13 +1812,13 @@ fn main() -> unit {
             src,
             "HashMap::new()",
             "new",
-            expect!["src/builtin.gom:437:7"],
+            expect!["src/builtin.gom:459:7"],
         );
         check_goto_token(
             src,
             "m.set(Key::A, 1)",
             "set",
-            expect!["src/builtin.gom:445:7"],
+            expect!["src/builtin.gom:467:7"],
         );
     }
 

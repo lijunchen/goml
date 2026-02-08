@@ -282,6 +282,17 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             index: Box::new(dce_expr(*index)),
             ty,
         },
+        ast::Expr::Slice {
+            array,
+            start,
+            end,
+            ty,
+        } => ast::Expr::Slice {
+            array: Box::new(dce_expr(*array)),
+            start: Box::new(dce_expr(*start)),
+            end: Box::new(dce_expr(*end)),
+            ty,
+        },
         ast::Expr::Cast { expr, ty } => ast::Expr::Cast {
             expr: Box::new(dce_expr(*expr)),
             ty,
@@ -392,6 +403,13 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         ast::Expr::Index { array, index, .. } => {
             s.extend(vars_used_in_expr(array));
             s.extend(vars_used_in_expr(index));
+        }
+        ast::Expr::Slice {
+            array, start, end, ..
+        } => {
+            s.extend(vars_used_in_expr(array));
+            s.extend(vars_used_in_expr(start));
+            s.extend(vars_used_in_expr(end));
         }
         ast::Expr::UnaryOp { expr, .. } => {
             s.extend(vars_used_in_expr(expr));
@@ -612,6 +630,13 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         ast::Expr::FieldAccess { obj, .. } => expr_has_side_effects(obj),
         ast::Expr::Index { array, index, .. } => {
             expr_has_side_effects(array) || expr_has_side_effects(index)
+        }
+        ast::Expr::Slice {
+            array, start, end, ..
+        } => {
+            expr_has_side_effects(array)
+                || expr_has_side_effects(start)
+                || expr_has_side_effects(end)
         }
         ast::Expr::UnaryOp { expr, .. } => expr_has_side_effects(expr),
         ast::Expr::BinaryOp { lhs, rhs, .. } => {
@@ -847,6 +872,13 @@ fn collect_called_in_expr(
             collect_called_in_expr(array, calls, fn_names);
             collect_called_in_expr(index, calls, fn_names);
         }
+        ast::Expr::Slice {
+            array, start, end, ..
+        } => {
+            collect_called_in_expr(array, calls, fn_names);
+            collect_called_in_expr(start, calls, fn_names);
+            collect_called_in_expr(end, calls, fn_names);
+        }
         ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
@@ -1063,6 +1095,13 @@ fn collect_packages_in_expr(
         ast::Expr::Index { array, index, .. } => {
             collect_packages_in_expr(array, imports, used);
             collect_packages_in_expr(index, imports, used);
+        }
+        ast::Expr::Slice {
+            array, start, end, ..
+        } => {
+            collect_packages_in_expr(array, imports, used);
+            collect_packages_in_expr(start, imports, used);
+            collect_packages_in_expr(end, imports, used);
         }
         ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
         ast::Expr::StructLiteral { fields, .. } => {
