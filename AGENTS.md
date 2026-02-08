@@ -94,7 +94,7 @@ name = "main"
 ## Build, Test, and Development Commands
 - Rust build: `cargo build` (workspace). Specific crate: `cargo build -p parser`.
 - Rust tests: `cargo test`
-- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check` and `cargo run -p goml -- build` for project-level workflows; use `cargo run -p goml -- compiler run-single <file.gom>` for single-file execution; use `cargo run -p goml -- compiler check|build|link ...` for separate compilation workflows; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
+- CLI: use `cargo run -p goml -- new <project_name>` to scaffold a module with `main` and `lib` packages; use `cargo run -p goml -- check` and `cargo run -p goml -- build` for project-level workflows (they orchestrate `compiler check/build/link` across packages); use `cargo run -p goml -- check --dry-run` and `cargo run -p goml -- build --dry-run` to print planned subcommands without executing them; use `cargo run -p goml -- compiler run-single <file.gom>` for single-file execution; use `cargo run -p goml -- compiler check|build|link ...` for separate compilation workflows; add `--dump-ast|--dump-hir|--dump-tast|--dump-core|--dump-mono|--dump-lift|--dump-anf|--dump-go` to `compiler run-single` to print IR stages before execution.
 - Lint (Rust): `just clippy` (equivalent to `cargo clippy --all-targets --all-features --locked -- -D warnings`).
 - Format (Rust): `cargo fmt`.
 - Wasm build: `wasm-pack build ./crates/wasm-app`.

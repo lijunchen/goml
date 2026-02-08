@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+use std::ffi::OsString;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
@@ -13,6 +15,8 @@ use tempfile::tempdir;
 
 const PRETTY_WIDTH: usize = 120;
 const PROJECT_GO_OUTPUT: &str = "target/goml/main.go";
+const PROJECT_CHECK_OUTPUT_DIR: &str = "target/goml/check";
+const PROJECT_BUILD_OUTPUT_DIR: &str = "target/goml/build";
 const DEFAULT_LIB_PACKAGE: &str = "lib";
 const DEFAULT_ENTRY_FILE: &str = "main.gom";
 
@@ -26,9 +30,15 @@ struct Cli {
 #[derive(Subcommand, Debug)]
 enum Commands {
     New(NewArgs),
-    Check,
-    Build,
+    Check(ProjectCommandArgs),
+    Build(ProjectCommandArgs),
     Compiler(CompilerArgs),
+}
+
+#[derive(Args, Debug, Clone, Copy)]
+struct ProjectCommandArgs {
+    #[arg(long = "dry-run")]
+    dry_run: bool,
 }
 
 #[derive(Args, Debug)]
@@ -155,6 +165,23 @@ struct ProjectContext {
     entry_path: PathBuf,
 }
 
+struct PlannedCommand {
+    args: Vec<OsString>,
+}
+
+impl PlannedCommand {
+    fn display(&self) -> String {
+        let mut parts = Vec::with_capacity(self.args.len() + 1);
+        parts.push("goml".to_string());
+        parts.extend(
+            self.args
+                .iter()
+                .map(|arg| shell_escape(&arg.to_string_lossy())),
+        );
+        parts.join(" ")
+    }
+}
+
 fn main() {
     if let Err(err) = run_cli() {
         eprintln!("{err}");
@@ -167,8 +194,8 @@ fn run_cli() -> anyhow::Result<()> {
 
     match cli.command {
         Commands::New(args) => execute_new(args),
-        Commands::Check => execute_project_check(),
-        Commands::Build => execute_project_build(),
+        Commands::Check(args) => execute_project_check(args),
+        Commands::Build(args) => execute_project_build(args),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
 }
@@ -451,43 +478,226 @@ fn execute_compiler_link(options: LinkOptions) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn execute_project_check() -> anyhow::Result<()> {
+fn execute_project_check(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let src = fs::read_to_string(&project.entry_path)
-        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
-
-    match compiler::pipeline::pipeline::typecheck_with_packages(&project.entry_path, &src) {
-        Ok((_tast, _genv, _diagnostics)) => Ok(()),
-        Err(err) => {
-            report_compilation_error(&project.entry_path, &src, err);
-            std::process::exit(1);
-        }
-    }
+    let commands = build_project_check_commands(&project)?;
+    execute_planned_commands(&project.module_dir, commands, args.dry_run)
 }
 
-fn execute_project_build() -> anyhow::Result<()> {
+fn execute_project_build(args: ProjectCommandArgs) -> anyhow::Result<()> {
     let project = load_project_from_cwd()?;
-    let src = fs::read_to_string(&project.entry_path)
-        .with_context(|| format!("error reading goml file: {}", project.entry_path.display()))?;
+    let commands = build_project_build_commands(&project)?;
+    execute_planned_commands(&project.module_dir, commands, args.dry_run)
+}
 
-    let compilation = match compile(&project.entry_path, &src) {
-        Ok(compilation) => compilation,
-        Err(err) => {
-            report_compilation_error(&project.entry_path, &src, err);
-            std::process::exit(1);
+fn build_project_check_commands(project: &ProjectContext) -> anyhow::Result<Vec<PlannedCommand>> {
+    let graph = compiler::pipeline::packages::discover_packages(
+        &project.module_dir,
+        Some(&project.entry_path),
+        None,
+    )
+    .map_err(|err| anyhow!("project check failed: {:?}", err))?;
+    let order = compiler::pipeline::packages::topo_sort_packages(&graph)
+        .map_err(|err| anyhow!("project check failed: {:?}", err))?;
+
+    let mut commands = Vec::new();
+    let mut interface_outputs: HashMap<String, PathBuf> = HashMap::new();
+
+    for package_name in order.iter() {
+        let package = graph
+            .packages
+            .get(package_name)
+            .ok_or_else(|| anyhow!("project check failed: missing package {}", package_name))?;
+        let output_base = PathBuf::from(PROJECT_CHECK_OUTPUT_DIR).join(package_name);
+        let interface_files = package_interface_inputs(
+            &graph,
+            package_name,
+            &package.imports,
+            &interface_outputs,
+            "project check",
+        )?;
+
+        let mut args = vec![
+            OsString::from("compiler"),
+            OsString::from("check"),
+            OsString::from("--package"),
+            OsString::from(package_name),
+        ];
+        for input in sorted_package_inputs(&project.module_dir, package) {
+            args.push(OsString::from("--input"));
+            args.push(input.into_os_string());
         }
-    };
-
-    let output = project.module_dir.join(PROJECT_GO_OUTPUT);
-    if let Some(parent) = output.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create directory {}", parent.display()))?;
+        for interface in interface_files {
+            args.push(OsString::from("--interface-path"));
+            args.push(interface.into_os_string());
+        }
+        args.push(OsString::from("--output"));
+        args.push(output_base.clone().into_os_string());
+        commands.push(PlannedCommand { args });
+        interface_outputs.insert(
+            package_name.clone(),
+            output_base.with_extension("interface"),
+        );
     }
 
-    let go_source = compilation.go.to_pretty(&compilation.goenv, PRETTY_WIDTH);
-    fs::write(&output, go_source)
-        .with_context(|| format!("failed to write {}", output.display()))?;
+    Ok(commands)
+}
+
+fn build_project_build_commands(project: &ProjectContext) -> anyhow::Result<Vec<PlannedCommand>> {
+    let graph = compiler::pipeline::packages::discover_packages(
+        &project.module_dir,
+        Some(&project.entry_path),
+        None,
+    )
+    .map_err(|err| anyhow!("project build failed: {:?}", err))?;
+    let order = compiler::pipeline::packages::topo_sort_packages(&graph)
+        .map_err(|err| anyhow!("project build failed: {:?}", err))?;
+
+    let mut commands = Vec::new();
+    let mut interface_outputs: HashMap<String, PathBuf> = HashMap::new();
+    let mut core_outputs = Vec::new();
+
+    for package_name in order.iter() {
+        let package = graph
+            .packages
+            .get(package_name)
+            .ok_or_else(|| anyhow!("project build failed: missing package {}", package_name))?;
+        let output_base = PathBuf::from(PROJECT_BUILD_OUTPUT_DIR).join(package_name);
+        let interface_files = package_interface_inputs(
+            &graph,
+            package_name,
+            &package.imports,
+            &interface_outputs,
+            "project build",
+        )?;
+
+        let mut args = vec![
+            OsString::from("compiler"),
+            OsString::from("build"),
+            OsString::from("--package"),
+            OsString::from(package_name),
+        ];
+        for input in sorted_package_inputs(&project.module_dir, package) {
+            args.push(OsString::from("--input"));
+            args.push(input.into_os_string());
+        }
+        for interface in interface_files {
+            args.push(OsString::from("--interface-path"));
+            args.push(interface.into_os_string());
+        }
+        args.push(OsString::from("--output"));
+        args.push(output_base.clone().into_os_string());
+        commands.push(PlannedCommand { args });
+        interface_outputs.insert(
+            package_name.clone(),
+            output_base.with_extension("interface"),
+        );
+        core_outputs.push(output_base.with_extension("core"));
+    }
+
+    let mut link_args = vec![
+        OsString::from("compiler"),
+        OsString::from("link"),
+        OsString::from("--input"),
+    ];
+    for core in core_outputs {
+        link_args.push(core.into_os_string());
+    }
+    link_args.push(OsString::from("--output"));
+    link_args.push(PathBuf::from(PROJECT_GO_OUTPUT).into_os_string());
+    commands.push(PlannedCommand { args: link_args });
+
+    Ok(commands)
+}
+
+fn package_interface_inputs(
+    graph: &compiler::pipeline::packages::PackageGraph,
+    package_name: &str,
+    imports: &std::collections::HashSet<String>,
+    interface_outputs: &HashMap<String, PathBuf>,
+    stage: &str,
+) -> anyhow::Result<Vec<PathBuf>> {
+    let mut deps: Vec<String> = imports.iter().cloned().collect();
+    deps.sort();
+    deps.dedup();
+
+    let mut outputs = Vec::new();
+    for dep in deps {
+        if dep == compiler::package_names::BUILTIN_PACKAGE || dep == package_name {
+            continue;
+        }
+        if !graph.packages.contains_key(&dep) {
+            continue;
+        }
+        let dep_interface = interface_outputs.get(&dep).ok_or_else(|| {
+            anyhow!(
+                "{} failed: missing interface artifact for dependency {} of package {}",
+                stage,
+                dep,
+                package_name
+            )
+        })?;
+        outputs.push(dep_interface.clone());
+    }
+    Ok(outputs)
+}
+
+fn sorted_package_inputs(
+    module_dir: &Path,
+    package: &compiler::pipeline::packages::PackageUnit,
+) -> Vec<PathBuf> {
+    let mut inputs: Vec<PathBuf> = package
+        .files
+        .iter()
+        .map(|file| relative_to_module(module_dir, &file.path))
+        .collect();
+    inputs.sort();
+    inputs
+}
+
+fn relative_to_module(module_dir: &Path, path: &Path) -> PathBuf {
+    path.strip_prefix(module_dir)
+        .map(Path::to_path_buf)
+        .unwrap_or_else(|_| path.to_path_buf())
+}
+
+fn execute_planned_commands(
+    module_dir: &Path,
+    commands: Vec<PlannedCommand>,
+    dry_run: bool,
+) -> anyhow::Result<()> {
+    if dry_run {
+        for command in commands {
+            println!("{}", command.display());
+        }
+        return Ok(());
+    }
+
+    let executable =
+        std::env::current_exe().context("failed to resolve current executable for subcommands")?;
+    for command in commands {
+        let display = command.display();
+        let status = Command::new(&executable)
+            .args(&command.args)
+            .current_dir(module_dir)
+            .status()
+            .with_context(|| format!("failed to execute {}", display))?;
+        if !status.success() {
+            bail!("subcommand failed: {}", display);
+        }
+    }
     Ok(())
+}
+
+fn shell_escape(arg: &str) -> String {
+    if arg
+        .chars()
+        .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '/' | '.' | '_' | '-' | ':' | '='))
+    {
+        arg.to_string()
+    } else {
+        format!("{arg:?}")
+    }
 }
 
 fn load_project_from_cwd() -> anyhow::Result<ProjectContext> {
