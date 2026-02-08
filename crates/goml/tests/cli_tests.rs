@@ -389,8 +389,12 @@ fn new_project_can_check_and_build() -> anyhow::Result<()> {
             .join("target/goml/build/main.interface")
             .exists()
     );
-    assert!(project_dir.join("target/goml/build/lib.core").exists());
-    assert!(project_dir.join("target/goml/build/lib.interface").exists());
+    assert!(project_dir.join("target/goml/build/lib/lib.core").exists());
+    assert!(
+        project_dir
+            .join("target/goml/build/lib/lib.interface")
+            .exists()
+    );
 
     let go_output = Command::new("go")
         .arg("run")
@@ -415,10 +419,10 @@ fn project_check_dry_run_prints_compiler_check_commands() -> anyhow::Result<()> 
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler check --package traitpkg --input traitpkg/lib.gom --output target/goml/check/traitpkg
-        goml compiler check --package datapkg --input datapkg/lib.gom --interface-path target/goml/check/traitpkg.interface --output target/goml/check/datapkg
-        goml compiler check --package usepkg --input usepkg/lib.gom --interface-path target/goml/check/traitpkg.interface --output target/goml/check/usepkg
-        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg.interface --interface-path target/goml/check/usepkg.interface --output target/goml/check/main
+        goml compiler check --package traitpkg --input traitpkg/lib.gom --output target/goml/check/traitpkg/traitpkg
+        goml compiler check --package datapkg --input datapkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/datapkg/datapkg
+        goml compiler check --package usepkg --input usepkg/lib.gom --interface-path target/goml/check/traitpkg/traitpkg.interface --output target/goml/check/usepkg/usepkg
+        goml compiler check --package main --input main.gom --interface-path target/goml/check/datapkg/datapkg.interface --interface-path target/goml/check/usepkg/usepkg.interface --output target/goml/check/main
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/check/main.interface").exists());
@@ -436,11 +440,11 @@ fn project_build_dry_run_prints_compiler_build_and_link_commands() -> anyhow::Re
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package traitpkg --input traitpkg/lib.gom --output target/goml/build/traitpkg
-        goml compiler build --package datapkg --input datapkg/lib.gom --interface-path target/goml/build/traitpkg.interface --output target/goml/build/datapkg
-        goml compiler build --package usepkg --input usepkg/lib.gom --interface-path target/goml/build/traitpkg.interface --output target/goml/build/usepkg
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg.interface --interface-path target/goml/build/usepkg.interface --output target/goml/build/main
-        goml compiler link --input target/goml/build/traitpkg.core target/goml/build/datapkg.core target/goml/build/usepkg.core target/goml/build/main.core --output target/goml/main.go
+        goml compiler build --package traitpkg --input traitpkg/lib.gom --output target/goml/build/traitpkg/traitpkg
+        goml compiler build --package datapkg --input datapkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/datapkg/datapkg
+        goml compiler build --package usepkg --input usepkg/lib.gom --interface-path target/goml/build/traitpkg/traitpkg.interface --output target/goml/build/usepkg/usepkg
+        goml compiler build --package main --input main.gom --interface-path target/goml/build/datapkg/datapkg.interface --interface-path target/goml/build/usepkg/usepkg.interface --output target/goml/build/main
+        goml compiler link --input target/goml/build/traitpkg/traitpkg.core target/goml/build/datapkg/datapkg.core target/goml/build/usepkg/usepkg.core target/goml/build/main.core --output target/goml/main.go
     "#]]
     .assert_eq(&stdout);
     assert!(!dir.path().join("target/goml/main.go").exists());
@@ -571,7 +575,7 @@ fn value() -> int32 {
     assert!(!output.status.success());
     expect![[r#"
         build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(39..58) }] } }
-        subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B.interface --output target/goml/build/A
+        subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
     "#]]
     .assert_eq(&stderr);
     assert!(!root.join("target/goml/main.go").exists());
@@ -629,9 +633,9 @@ fn msg() -> string {
     let stderr = String::from_utf8_lossy(&output.stderr);
     assert!(output.status.success(), "stderr: {stderr}");
     expect![[r#"
-        goml compiler build --package Lib --input Lib/src/lib_entry.gom --output target/goml/build/Lib
-        goml compiler build --package main --input main.gom --interface-path target/goml/build/Lib.interface --output target/goml/build/main
-        goml compiler link --input target/goml/build/Lib.core target/goml/build/main.core --output target/goml/main.go
+        goml compiler build --package Lib --input Lib/src/lib_entry.gom --output target/goml/build/Lib/Lib
+        goml compiler build --package main --input main.gom --interface-path target/goml/build/Lib/Lib.interface --output target/goml/build/main
+        goml compiler link --input target/goml/build/Lib/Lib.core target/goml/build/main.core --output target/goml/main.go
     "#]]
     .assert_eq(&stdout);
     expect![""].assert_eq(&stderr);
