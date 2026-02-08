@@ -697,7 +697,7 @@ fn package_artifact_base(
 
     let base = relative_to_module(module_dir, package_dir);
     if !base.as_os_str().is_empty() {
-        return Ok(base);
+        return Ok(base.join(&package.name));
     }
 
     let entry_relative = package_entry_relative_path(package, package_dir)?;
