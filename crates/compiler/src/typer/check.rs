@@ -1802,6 +1802,7 @@ impl Typer {
         };
 
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
+        self.check_irrefutable_let_pattern(diagnostics, pat);
         // ELet without body returns unit type
         tast::Expr::ELet {
             pat: pat_tast,
@@ -1888,6 +1889,7 @@ impl Typer {
         };
 
         let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
+        self.check_irrefutable_let_pattern(diagnostics, pat);
         // Standalone ELet returns unit
 
         tast::Expr::ELet {
@@ -3310,6 +3312,43 @@ impl Typer {
                 super::util::push_ice(diagnostics, "Expected constructor pattern");
                 self.check_pat_wild(ty, self.pat_astptr(pat))
             }
+        }
+    }
+
+    fn check_irrefutable_let_pattern(&mut self, diagnostics: &mut Diagnostics, pat_id: hir::PatId) {
+        if self.is_irrefutable_pat(pat_id) {
+            return;
+        }
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                "Refutable pattern is not allowed in let binding; use match instead".to_string(),
+            )
+            .with_range(self.pat_range(pat_id)),
+        );
+    }
+
+    fn is_irrefutable_pat(&self, pat_id: hir::PatId) -> bool {
+        match self.hir_table.pat(pat_id) {
+            hir::Pat::PVar { .. } | hir::Pat::PWild | hir::Pat::PUnit => true,
+            hir::Pat::PTuple { pats } => pats.iter().all(|pat| self.is_irrefutable_pat(*pat)),
+            hir::Pat::PStruct { fields, .. } => {
+                fields.iter().all(|(_, pat)| self.is_irrefutable_pat(*pat))
+            }
+            hir::Pat::PBool { .. }
+            | hir::Pat::PInt { .. }
+            | hir::Pat::PInt8 { .. }
+            | hir::Pat::PInt16 { .. }
+            | hir::Pat::PInt32 { .. }
+            | hir::Pat::PInt64 { .. }
+            | hir::Pat::PUInt8 { .. }
+            | hir::Pat::PUInt16 { .. }
+            | hir::Pat::PUInt32 { .. }
+            | hir::Pat::PUInt64 { .. }
+            | hir::Pat::PString { .. }
+            | hir::Pat::PChar { .. }
+            | hir::Pat::PConstr { .. } => false,
         }
     }
 

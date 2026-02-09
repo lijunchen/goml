@@ -26,10 +26,14 @@ fn magnitude(p: point) -> int32 {
 }
 
 fn main() -> int32 {
-  let some(result) = make_some(5);
-  let pt = build_point(result, 7);
-  match some(pt.x) {
-      some(value) => value + magnitude(pt),
+  match make_some(5) {
+      some(result) => {
+            let pt = build_point(result, 7);
+            match some(pt.x) {
+                some(value) => value + magnitude(pt),
+                none => 0,
+            };
+        },
       none => 0,
   };
 }

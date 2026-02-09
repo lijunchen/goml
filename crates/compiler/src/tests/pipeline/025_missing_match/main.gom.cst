@@ -1,4 +1,4 @@
-FILE@0..125
+FILE@0..137
   STRUCT@0..41
     StructKeyword@0..6 "struct"
     Whitespace@6..7 " "
@@ -24,7 +24,7 @@ FILE@0..125
           Whitespace@37..38 "\n"
       RBrace@38..39 "}"
       Whitespace@39..41 "\n\n"
-  FN@41..125
+  FN@41..137
     FnKeyword@41..43 "fn"
     Whitespace@43..44 " "
     Ident@44..48 "main"
@@ -32,7 +32,7 @@ FILE@0..125
       LParen@48..49 "("
       RParen@49..50 ")"
       Whitespace@50..51 " "
-    BLOCK@51..125
+    BLOCK@51..137
       LBrace@51..52 "{"
       Whitespace@52..55 "\n  "
       STMT_LET@55..88
@@ -68,42 +68,55 @@ FILE@0..125
             RBrace@83..84 "}"
         Semi@84..85 ";"
         Whitespace@85..88 "\n  "
-      STMT_LET@88..120
+      STMT_LET@88..115
         LetKeyword@88..91 "let"
         Whitespace@91..92 " "
-        PATTERN_CONSTR@92..112
+        PATTERN_CONSTR@92..107
           PATH@92..98
             Ident@92..97 "Point"
             Whitespace@97..98 " "
-          STRUCT_PATTERN_FIELD_LIST@98..112
+          STRUCT_PATTERN_FIELD_LIST@98..107
             LBrace@98..99 "{"
             Whitespace@99..100 " "
-            STRUCT_PATTERN_FIELD@100..104
+            STRUCT_PATTERN_FIELD@100..101
               Ident@100..101 "x"
-              Colon@101..102 ":"
-              Whitespace@102..103 " "
-              PATTERN_INT@103..104
-                Int@103..104 "0"
-            Comma@104..105 ","
-            Whitespace@105..106 " "
-            STRUCT_PATTERN_FIELD@106..110
-              Ident@106..107 "y"
-              Colon@107..108 ":"
-              Whitespace@108..109 " "
-              PATTERN_INT@109..110
-                Int@109..110 "0"
-            RBrace@110..111 "}"
-            Whitespace@111..112 " "
-        Eq@112..113 "="
-        Whitespace@113..114 " "
-        EXPR_IDENT@114..116
-          PATH@114..116
-            Ident@114..116 "p0"
-        Semi@116..117 ";"
-        Whitespace@117..120 "\n  "
-      EXPR_UNIT@120..123
-        LParen@120..121 "("
-        RParen@121..122 ")"
-        Whitespace@122..123 "\n"
-      RBrace@123..124 "}"
-      Whitespace@124..125 "\n"
+            Comma@101..102 ","
+            Whitespace@102..103 " "
+            STRUCT_PATTERN_FIELD@103..105
+              Ident@103..104 "y"
+              Whitespace@104..105 " "
+            RBrace@105..106 "}"
+            Whitespace@106..107 " "
+        Eq@107..108 "="
+        Whitespace@108..109 " "
+        EXPR_IDENT@109..111
+          PATH@109..111
+            Ident@109..111 "p0"
+        Semi@111..112 ";"
+        Whitespace@112..115 "\n  "
+      STMT_LET@115..132
+        LetKeyword@115..118 "let"
+        Whitespace@118..119 " "
+        PATTERN_WILDCARD@119..121
+          WildcardKeyword@119..120 "_"
+          Whitespace@120..121 " "
+        Eq@121..122 "="
+        Whitespace@122..123 " "
+        EXPR_BINARY@123..128
+          EXPR_IDENT@123..125
+            PATH@123..125
+              Ident@123..124 "x"
+              Whitespace@124..125 " "
+          Plus@125..126 "+"
+          Whitespace@126..127 " "
+          EXPR_IDENT@127..128
+            PATH@127..128
+              Ident@127..128 "y"
+        Semi@128..129 ";"
+        Whitespace@129..132 "\n  "
+      EXPR_UNIT@132..135
+        LParen@132..133 "("
+        RParen@133..134 ")"
+        Whitespace@134..135 "\n"
+      RBrace@135..136 "}"
+      Whitespace@136..137 "\n"
