@@ -2436,106 +2436,20 @@ impl Typer {
                     let bounds = local_env.tparam_trait_bounds(name).unwrap_or(&[]);
                     let candidates = lookup_bound_trait_methods(genv, bounds, &method_name);
                     match candidates.as_slice() {
-                        [(trait_name, method_ty)] => {
-                            let inst_method_ty = self.inst_ty(method_ty);
-                            let inst_method_ty_for_call =
-                                instantiate_self_ty(&inst_method_ty, &receiver_ty);
-
-                            let (params, ret_ty) = match &inst_method_ty_for_call {
-                                tast::Ty::TFunc { params, ret_ty } => {
-                                    (params.clone(), (**ret_ty).clone())
-                                }
-                                _ => {
-                                    super::util::push_ice(
-                                        diagnostics,
-                                        format!(
-                                            "Expected trait method {}::{} to have a function type",
-                                            trait_name.0, method_name.0
-                                        ),
-                                    );
-                                    return self.error_expr(None);
-                                }
-                            };
-
-                            if params.len() != args.len() + 1 {
-                                super::util::push_error_with_range(
-                                    diagnostics,
-                                    format!(
-                                        "Trait method {}::{} expects {} arguments but got {}",
-                                        trait_name.0,
-                                        method_name.0,
-                                        params.len(),
-                                        args.len() + 1
-                                    ),
-                                    self.expr_range(call_expr_id),
-                                );
-                                return self.error_expr(None);
-                            }
-
-                            let mut args_tast = Vec::with_capacity(args.len() + 1);
-                            args_tast.push(receiver_tast);
-                            for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
-                                args_tast.push(self.check_expr(
-                                    genv,
-                                    local_env,
-                                    diagnostics,
-                                    *arg,
-                                    expected_ty,
-                                ));
-                            }
-
-                            let receiver_param_ty = params.first().cloned().unwrap_or_else(|| {
-                                super::util::push_ice(
-                                    diagnostics,
-                                    format!(
-                                        "trait method {}::{} missing receiver parameter",
-                                        trait_name.0, method_name.0
-                                    ),
-                                );
-                                self.fresh_ty_var()
-                            });
-                            self.push_constraint(Constraint::TypeEqual(
-                                receiver_ty.clone(),
-                                receiver_param_ty,
-                                self.expr_range(call_expr_id),
-                            ));
-
-                            self.results.record_call_elab(
-                                call_expr_id,
-                                CallElab {
-                                    callee: CalleeElab::TraitMethod {
-                                        trait_name: trait_name.clone(),
-                                        method_name: method_name.clone(),
-                                        ty: inst_method_ty_for_call.clone(),
-                                        astptr: None,
-                                    },
-                                    args: std::iter::once(receiver_expr)
-                                        .chain(args.iter().copied())
-                                        .collect(),
-                                },
-                            );
-                            self.results
-                                .record_expr_ty(func, inst_method_ty_for_call.clone());
-                            self.results.record_name_ref_elab(
-                                func,
-                                NameRefElab::TraitMethod {
-                                    trait_name: trait_name.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: inst_method_ty_for_call.clone(),
-                                    astptr: None,
-                                },
-                            );
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::ETraitMethod {
-                                    trait_name: trait_name.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: inst_method_ty_for_call,
-                                    astptr: None,
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        }
+                        [(trait_name, method_ty)] => self.build_trait_method_call_expr(
+                            genv,
+                            local_env,
+                            diagnostics,
+                            call_expr_id,
+                            func,
+                            receiver_expr,
+                            receiver_tast,
+                            &receiver_ty,
+                            trait_name,
+                            &method_name,
+                            method_ty,
+                            args,
+                        ),
                         [] => {
                             diagnostics.push(
                                 Diagnostic::new(
@@ -2587,106 +2501,20 @@ impl Typer {
                         &method_name,
                     );
                     match candidates.as_slice() {
-                        [(trait_name, method_ty)] => {
-                            let inst_method_ty = self.inst_ty(method_ty);
-                            let inst_method_ty_for_call =
-                                instantiate_self_ty(&inst_method_ty, &receiver_ty);
-
-                            let (params, ret_ty) = match &inst_method_ty_for_call {
-                                tast::Ty::TFunc { params, ret_ty } => {
-                                    (params.clone(), (**ret_ty).clone())
-                                }
-                                _ => {
-                                    super::util::push_ice(
-                                        diagnostics,
-                                        format!(
-                                            "Expected trait method {}::{} to have a function type",
-                                            trait_name.0, method_name.0
-                                        ),
-                                    );
-                                    return self.error_expr(None);
-                                }
-                            };
-
-                            if params.len() != args.len() + 1 {
-                                super::util::push_error_with_range(
-                                    diagnostics,
-                                    format!(
-                                        "Trait method {}::{} expects {} arguments but got {}",
-                                        trait_name.0,
-                                        method_name.0,
-                                        params.len(),
-                                        args.len() + 1
-                                    ),
-                                    self.expr_range(call_expr_id),
-                                );
-                                return self.error_expr(None);
-                            }
-
-                            let mut args_tast = Vec::with_capacity(args.len() + 1);
-                            args_tast.push(receiver_tast);
-                            for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
-                                args_tast.push(self.check_expr(
-                                    genv,
-                                    local_env,
-                                    diagnostics,
-                                    *arg,
-                                    expected_ty,
-                                ));
-                            }
-
-                            let receiver_param_ty = params.first().cloned().unwrap_or_else(|| {
-                                super::util::push_ice(
-                                    diagnostics,
-                                    format!(
-                                        "trait method {}::{} missing receiver parameter",
-                                        trait_name.0, method_name.0
-                                    ),
-                                );
-                                self.fresh_ty_var()
-                            });
-                            self.push_constraint(Constraint::TypeEqual(
-                                receiver_ty.clone(),
-                                receiver_param_ty,
-                                self.expr_range(call_expr_id),
-                            ));
-
-                            self.results.record_call_elab(
-                                call_expr_id,
-                                CallElab {
-                                    callee: CalleeElab::TraitMethod {
-                                        trait_name: trait_name.clone(),
-                                        method_name: method_name.clone(),
-                                        ty: inst_method_ty_for_call.clone(),
-                                        astptr: None,
-                                    },
-                                    args: std::iter::once(receiver_expr)
-                                        .chain(args.iter().copied())
-                                        .collect(),
-                                },
-                            );
-                            self.results
-                                .record_expr_ty(func, inst_method_ty_for_call.clone());
-                            self.results.record_name_ref_elab(
-                                func,
-                                NameRefElab::TraitMethod {
-                                    trait_name: trait_name.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: inst_method_ty_for_call.clone(),
-                                    astptr: None,
-                                },
-                            );
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::ETraitMethod {
-                                    trait_name: trait_name.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: inst_method_ty_for_call,
-                                    astptr: None,
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
-                            }
-                        }
+                        [(trait_name, method_ty)] => self.build_trait_method_call_expr(
+                            genv,
+                            local_env,
+                            diagnostics,
+                            call_expr_id,
+                            func,
+                            receiver_expr,
+                            receiver_tast,
+                            &receiver_ty,
+                            trait_name,
+                            &method_name,
+                            method_ty,
+                            args,
+                        ),
                         [] => {
                             super::util::push_error_with_range(
                                 diagnostics,
@@ -2801,6 +2629,113 @@ impl Typer {
                     resolution: tast::UnaryResolution::Builtin,
                 }
             }
+        }
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn build_trait_method_call_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        call_expr_id: hir::ExprId,
+        func_expr_id: hir::ExprId,
+        receiver_expr_id: hir::ExprId,
+        receiver_tast: tast::Expr,
+        receiver_ty: &tast::Ty,
+        trait_name: &tast::TastIdent,
+        method_name: &tast::TastIdent,
+        method_ty: &tast::Ty,
+        args: &[hir::ExprId],
+    ) -> tast::Expr {
+        let inst_method_ty = self.inst_ty(method_ty);
+        let inst_method_ty_for_call = instantiate_self_ty(&inst_method_ty, receiver_ty);
+
+        let (params, ret_ty) = match &inst_method_ty_for_call {
+            tast::Ty::TFunc { params, ret_ty } => (params.clone(), (**ret_ty).clone()),
+            _ => {
+                super::util::push_ice(
+                    diagnostics,
+                    format!(
+                        "Expected trait method {}::{} to have a function type",
+                        trait_name.0, method_name.0
+                    ),
+                );
+                return self.error_expr(None);
+            }
+        };
+
+        if params.len() != args.len() + 1 {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Trait method {}::{} expects {} arguments but got {}",
+                    trait_name.0,
+                    method_name.0,
+                    params.len(),
+                    args.len() + 1
+                ),
+                self.expr_range(call_expr_id),
+            );
+            return self.error_expr(None);
+        }
+
+        let mut args_tast = Vec::with_capacity(args.len() + 1);
+        args_tast.push(receiver_tast);
+        for (arg, expected_ty) in args.iter().zip(params.iter().skip(1)) {
+            args_tast.push(self.check_expr(genv, local_env, diagnostics, *arg, expected_ty));
+        }
+
+        let receiver_param_ty = params.first().cloned().unwrap_or_else(|| {
+            super::util::push_ice(
+                diagnostics,
+                format!(
+                    "trait method {}::{} missing receiver parameter",
+                    trait_name.0, method_name.0
+                ),
+            );
+            self.fresh_ty_var()
+        });
+        self.push_constraint(Constraint::TypeEqual(
+            receiver_ty.clone(),
+            receiver_param_ty,
+            self.expr_range(call_expr_id),
+        ));
+
+        self.results.record_call_elab(
+            call_expr_id,
+            CallElab {
+                callee: CalleeElab::TraitMethod {
+                    trait_name: trait_name.clone(),
+                    method_name: method_name.clone(),
+                    ty: inst_method_ty_for_call.clone(),
+                    astptr: None,
+                },
+                args: std::iter::once(receiver_expr_id)
+                    .chain(args.iter().copied())
+                    .collect(),
+            },
+        );
+        self.results
+            .record_expr_ty(func_expr_id, inst_method_ty_for_call.clone());
+        self.results.record_name_ref_elab(
+            func_expr_id,
+            NameRefElab::TraitMethod {
+                trait_name: trait_name.clone(),
+                method_name: method_name.clone(),
+                ty: inst_method_ty_for_call.clone(),
+                astptr: None,
+            },
+        );
+        tast::Expr::ECall {
+            func: Box::new(tast::Expr::ETraitMethod {
+                trait_name: trait_name.clone(),
+                method_name: method_name.clone(),
+                ty: inst_method_ty_for_call,
+                astptr: None,
+            }),
+            args: args_tast,
+            ty: ret_ty,
         }
     }
 
