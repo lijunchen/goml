@@ -70,27 +70,42 @@ fn collect_imports(files: &[SourceFileAst]) -> HashSet<String> {
         .collect()
 }
 
+fn source_override_for_dir<'a>(
+    package_dir: &Path,
+    source_override: Option<(&'a Path, &'a ast::File)>,
+) -> Option<(&'a Path, &'a ast::File)> {
+    source_override.filter(|(path, _)| {
+        path.parent()
+            .map(|parent| {
+                if parent.as_os_str().is_empty() {
+                    Path::new(".")
+                } else {
+                    parent
+                }
+            })
+            .is_some_and(|parent| parent == package_dir)
+    })
+}
+
 fn load_package(
     package_dir: &Path,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
+    source_override: Option<(&Path, &ast::File)>,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
     let mut package_name = None;
 
-    if let Some(ast) = entry_ast {
+    let source_override = source_override_for_dir(package_dir, source_override);
+
+    if let Some((path, ast)) = source_override {
         package_name = Some(ast.package.0.clone());
-        let path = entry_path.ok_or_else(|| {
-            compile_error("entry path missing when entry ast is provided".to_string())
-        })?;
         files.push(SourceFileAst {
             path: path.to_path_buf(),
-            ast,
+            ast: ast.clone(),
         });
     }
 
     for path in read_gom_sources(package_dir)? {
-        if entry_path.is_some_and(|entry| entry == path) {
+        if source_override.is_some_and(|(override_path, _)| override_path == path.as_path()) {
             continue;
         }
         let src = fs::read_to_string(&path)
@@ -129,17 +144,18 @@ fn load_package(
 fn load_package_from_config(
     package_dir: &Path,
     config: &GomlConfig,
-    entry_path: Option<&Path>,
-    entry_ast: Option<ast::File>,
+    source_override: Option<(&Path, &ast::File)>,
 ) -> Result<PackageUnit, CompilationError> {
     let mut files = Vec::new();
     let entry_file_path = package_dir.join(&config.package.entry);
+    let source_override = source_override_for_dir(package_dir, source_override);
 
-    if let Some(ast) = entry_ast {
-        let path = entry_path.unwrap_or(&entry_file_path);
+    if let Some((path, ast)) = source_override
+        && path == entry_file_path.as_path()
+    {
         files.push(SourceFileAst {
             path: path.to_path_buf(),
-            ast,
+            ast: ast.clone(),
         });
     } else if entry_file_path.exists() {
         let src = fs::read_to_string(&entry_file_path).map_err(|err| {
@@ -159,7 +175,24 @@ fn load_package_from_config(
     let expected_package_name = &config.package.name;
 
     for path in read_gom_sources(package_dir)? {
-        if path == entry_file_path || entry_path.is_some_and(|ep| ep == path) {
+        if path == entry_file_path {
+            continue;
+        }
+        if let Some((override_path, override_ast)) = source_override
+            && override_path == path.as_path()
+        {
+            if &override_ast.package.0 != expected_package_name {
+                return Err(compile_error(format!(
+                    "package mismatch in {}: expected {}, found {}",
+                    override_path.display(),
+                    expected_package_name,
+                    override_ast.package.0
+                )));
+            }
+            files.push(SourceFileAst {
+                path: override_path.to_path_buf(),
+                ast: override_ast.clone(),
+            });
             continue;
         }
         let src = fs::read_to_string(&path)
@@ -228,7 +261,11 @@ pub fn discover_packages(
         return discover_packages_from_config(root_dir, &config, entry_path, entry_ast);
     }
 
-    let entry_package = load_package(root_dir, entry_path, entry_ast)?;
+    let source_override = match (entry_path, entry_ast.as_ref()) {
+        (Some(path), Some(ast)) => Some((path, ast)),
+        _ => None,
+    };
+    let entry_package = load_package(root_dir, source_override_for_dir(root_dir, source_override))?;
     let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();
@@ -247,10 +284,11 @@ pub fn discover_packages(
             continue;
         }
         let package_dir = root_dir.join(&package_name);
+        let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(&package_dir, &config, None, None)?
+            load_package_from_config(&package_dir, &config, package_override)?
         } else {
-            load_package(&package_dir, None, None)?
+            load_package(&package_dir, package_override)?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {
@@ -292,25 +330,15 @@ pub fn discover_packages_from_config(
         )));
     }
 
-    let entry_file = entry_path
-        .map(|p| p.to_path_buf())
-        .unwrap_or_else(|| module_dir.join(&config.package.entry));
-
-    let entry_ast = if let Some(ast) = entry_ast {
-        ast
-    } else {
-        let src = fs::read_to_string(&entry_file).map_err(|e| {
-            compile_error(format!(
-                "failed to read entry file {}: {}",
-                entry_file.display(),
-                e
-            ))
-        })?;
-        parse_ast_file(&entry_file, &src)?
+    let source_override = match (entry_path, entry_ast.as_ref()) {
+        (Some(path), Some(ast)) => Some((path, ast)),
+        _ => None,
     };
-
-    let entry_package =
-        load_package_from_config(module_dir, config, Some(&entry_file), Some(entry_ast))?;
+    let entry_package = load_package_from_config(
+        module_dir,
+        config,
+        source_override_for_dir(module_dir, source_override),
+    )?;
     let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();
@@ -329,10 +357,11 @@ pub fn discover_packages_from_config(
             continue;
         }
         let package_dir = module_dir.join(&package_name);
+        let package_override = source_override_for_dir(&package_dir, source_override);
         let package = if let Some(pkg_config) = GomlConfig::find_package_config(&package_dir) {
-            load_package_from_config(&package_dir, &pkg_config, None, None)?
+            load_package_from_config(&package_dir, &pkg_config, package_override)?
         } else {
-            load_package(&package_dir, None, None)?
+            load_package(&package_dir, package_override)?
         };
         let declared_name = package.name.clone();
         if package.name != package_name {

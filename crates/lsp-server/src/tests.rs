@@ -252,6 +252,15 @@ fn check_module_diagnostics(project_name: &str, expect: Expect) {
     expect.assert_eq(&format_diagnostics(&diags));
 }
 
+fn check_module_file_diagnostics(project_name: &str, rel_file: &str, expect: Expect) {
+    let project_dir = test_module_dir().join(project_name);
+    let path = project_dir.join(rel_file);
+    let src = std::fs::read_to_string(&path).unwrap();
+    let doc = Document::new(src.clone());
+    let diags = handlers::get_diagnostics(&path, &src, &doc);
+    expect.assert_eq(&format_diagnostics(&diags));
+}
+
 fn check_pipeline_diagnostics(case_name: &str, expect: Expect) {
     let case_dir = pipeline_dir().join(case_name);
     let main_path = case_dir.join("main.gom");
@@ -576,6 +585,24 @@ fn main() {
     #[test]
     fn module_project003_no_errors() {
         check_module_diagnostics("project003", expect!["no diagnostics"]);
+    }
+
+    #[test]
+    fn module_project011_math_package_no_missing_dir_errors() {
+        check_module_file_diagnostics(
+            "project011_complex_dependency_graph",
+            "math/lib.gom",
+            expect!["no diagnostics"],
+        );
+    }
+
+    #[test]
+    fn module_project011_pipeline_package_no_missing_dir_errors() {
+        check_module_file_diagnostics(
+            "project011_complex_dependency_graph",
+            "pipeline/lib.gom",
+            expect!["no diagnostics"],
+        );
     }
 }
 

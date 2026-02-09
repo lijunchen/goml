@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
@@ -253,11 +253,8 @@ fn typecheck_packages(
     path: &Path,
     entry_ast: ast::File,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
+    let graph =
+        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
@@ -357,6 +354,16 @@ fn typecheck_packages(
         graph,
         artifacts: artifacts_by_name,
     })
+}
+
+fn discovery_root_for_file(path: &Path) -> PathBuf {
+    if let Ok((module_dir, _)) = packages::discover_project_from_file(path) {
+        return module_dir;
+    }
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf()
 }
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
@@ -472,11 +479,8 @@ pub fn typecheck_with_packages_and_results(
 > {
     let (_green_node, _cst, entry_ast, mut diagnostics) =
         parse_ast_from_source_allow_parse_errors(path, src)?;
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
+    let graph =
+        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut genv = builtins::builtin_env();
