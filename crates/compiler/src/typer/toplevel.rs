@@ -172,12 +172,10 @@ fn add_fn_constraints_from_bounds(
         }
         for trait_path in traits.iter() {
             let raw_trait_name = trait_path.display();
-            let trait_name = if let Some((resolved_trait, _trait_env)) =
+            let Some((trait_name, _trait_env)) =
                 super::util::resolve_trait_name(env, &raw_trait_name)
-            {
-                resolved_trait
-            } else {
-                raw_trait_name
+            else {
+                continue;
             };
             let constraint = env::FnConstraint {
                 type_param: param_name.clone(),

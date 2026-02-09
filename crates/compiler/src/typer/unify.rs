@@ -562,13 +562,7 @@ impl Typer {
                         origin,
                     } => {
                         let norm_for_ty = self.norm(&for_ty);
-                        let impl_found =
-                            genv.builtins().has_trait_impl(&trait_name.0, &norm_for_ty)
-                                || genv.current().has_trait_impl(&trait_name.0, &norm_for_ty)
-                                || genv
-                                    .deps
-                                    .values()
-                                    .any(|env| env.has_trait_impl(&trait_name.0, &norm_for_ty));
+                        let impl_found = genv.has_trait_impl_visible(&trait_name.0, &norm_for_ty);
                         if impl_found {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))

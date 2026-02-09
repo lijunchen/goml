@@ -87,22 +87,27 @@ impl Typer {
         required_trait: &tast::TastIdent,
         range: Option<TextRange>,
     ) -> bool {
-        let resolved_trait = super::util::resolve_trait_name(genv, &required_trait.0)
-            .map(|(name, _env)| name)
-            .unwrap_or_else(|| required_trait.0.clone());
+        let resolved_trait =
+            if let Some((name, _env)) = super::util::resolve_trait_name(genv, &required_trait.0) {
+                name
+            } else if required_trait.0.contains("::") {
+                required_trait.0.clone()
+            } else {
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        format!("Unknown trait {}", required_trait.0),
+                    )
+                    .with_range(range),
+                );
+                return false;
+            };
 
         match target_ty {
-            tast::Ty::TDyn { trait_name }
-                if trait_name == &resolved_trait || trait_name == &required_trait.0 =>
-            {
-                true
-            }
+            tast::Ty::TDyn { trait_name } if trait_name == &resolved_trait => true,
             tast::Ty::TParam { name } => {
-                let in_bounds = local_env.tparam_trait_bounds(name).is_some_and(|bounds| {
-                    bounds
-                        .iter()
-                        .any(|t| t.0 == resolved_trait || t.0 == required_trait.0)
-                });
+                let in_bounds = tparam_has_trait_bound(local_env, name, &resolved_trait);
                 if in_bounds {
                     true
                 } else {
@@ -574,15 +579,9 @@ impl Typer {
         }
 
         let range = self.expr_range(expr_id);
-        let Some((resolved_trait, _env)) = super::util::resolve_trait_name(genv, trait_name) else {
-            diagnostics.push(
-                Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!("Unknown trait {}", trait_name),
-                )
-                .with_range(range),
-            );
+        let Some(resolved_trait) =
+            resolve_trait_name_or_report(genv, diagnostics, trait_name, range)
+        else {
             return expr;
         };
 
@@ -603,7 +602,7 @@ impl Typer {
             return expr;
         }
 
-        if !has_visible_trait_impl(genv, &resolved_trait, &for_ty) {
+        if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
             diagnostics.push(
                 Diagnostic::new(
                     Stage::Typer,
@@ -3518,17 +3517,34 @@ fn is_concrete_dyn_target(ty: &tast::Ty) -> bool {
     }
 }
 
-fn has_visible_trait_impl(genv: &PackageTypeEnv, trait_name: &str, for_ty: &tast::Ty) -> bool {
-    let key = (trait_name.to_string(), for_ty.clone());
-    if genv.builtins().trait_env.trait_impls.contains_key(&key) {
-        return true;
-    }
-    if genv.current().trait_env.trait_impls.contains_key(&key) {
-        return true;
-    }
-    genv.deps
-        .values()
-        .any(|env| env.trait_env.trait_impls.contains_key(&key))
+fn tparam_has_trait_bound(local_env: &LocalTypeEnv, tparam_name: &str, trait_name: &str) -> bool {
+    local_env
+        .tparam_trait_bounds(tparam_name)
+        .is_some_and(|bounds| bounds.iter().any(|bound| bound.0 == trait_name))
+}
+
+fn is_concrete_trait_impl_target(ty: &tast::Ty) -> bool {
+    !matches!(ty, tast::Ty::TDyn { .. }) && is_concrete_dyn_target(ty)
+}
+
+fn resolve_trait_name_or_report(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    trait_name: &str,
+    range: Option<TextRange>,
+) -> Option<String> {
+    let Some((resolved, _env)) = super::util::resolve_trait_name(genv, trait_name) else {
+        diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!("Unknown trait {}", trait_name),
+            )
+            .with_range(range),
+        );
+        return None;
+    };
+    Some(resolved)
 }
 
 fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
@@ -4228,7 +4244,9 @@ fn lookup_in_scope_trait_methods(
             continue;
         };
         let resolved_ident = tast::TastIdent(resolved_trait);
-        if !has_visible_trait_impl(genv, &resolved_ident.0, receiver_ty) {
+        if !is_concrete_trait_impl_target(receiver_ty)
+            || !genv.has_trait_impl_visible(&resolved_ident.0, receiver_ty)
+        {
             continue;
         }
         if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {

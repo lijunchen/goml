@@ -715,6 +715,15 @@ impl PackageTypeEnv {
             .map(|scheme| scheme.ty)
     }
 
+    pub fn has_trait_impl_visible(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
+        self.builtins.has_trait_impl(trait_name, type_name)
+            || self.current.has_trait_impl(trait_name, type_name)
+            || self
+                .deps
+                .values()
+                .any(|env| env.has_trait_impl(trait_name, type_name))
+    }
+
     pub fn get_function_scheme_unqualified(&self, name: &str) -> Option<FnScheme> {
         self.current
             .get_function_scheme(name)
