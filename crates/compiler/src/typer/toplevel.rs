@@ -1133,25 +1133,23 @@ fn build_in_scope_traits(
     traits
 }
 
-fn typecheck_fn(
-    genv: &PackageTypeEnv,
-    typer: &mut Typer,
-    diagnostics: &mut Diagnostics,
-    f: &hir::Fn,
-    in_scope_traits: &[tast::TastIdent],
-) {
-    let mut local_env = LocalTypeEnv::new();
-    local_env.set_in_scope_traits(in_scope_traits.to_vec());
-    let tparams: Vec<tast::TastIdent> = f
-        .generics
-        .iter()
-        .map(|g| tast::TastIdent(g.to_ident_name()))
-        .collect();
+fn init_trait_bounds(
+    tparams: &[tast::TastIdent],
+) -> indexmap::IndexMap<String, Vec<tast::TastIdent>> {
     let mut bounds = indexmap::IndexMap::new();
     for param in tparams.iter() {
         bounds.insert(param.0.clone(), Vec::new());
     }
-    for (param, traits) in f.generic_bounds.iter() {
+    bounds
+}
+
+fn extend_trait_bounds(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    bounds: &mut indexmap::IndexMap<String, Vec<tast::TastIdent>>,
+    generic_bounds: &[(hir::HirIdent, Vec<hir::Path>)],
+) {
+    for (param, traits) in generic_bounds.iter() {
         let param_name = param.to_ident_name();
         let Some(out) = bounds.get_mut(&param_name) else {
             continue;
@@ -1169,10 +1167,32 @@ fn typecheck_fn(
             }
         }
     }
+}
+
+fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::TastIdent>>) {
     for traits in bounds.values_mut() {
         traits.sort_by(|a, b| a.0.cmp(&b.0));
         traits.dedup_by(|a, b| a.0 == b.0);
     }
+}
+
+fn typecheck_fn(
+    genv: &PackageTypeEnv,
+    typer: &mut Typer,
+    diagnostics: &mut Diagnostics,
+    f: &hir::Fn,
+    in_scope_traits: &[tast::TastIdent],
+) {
+    let mut local_env = LocalTypeEnv::new();
+    local_env.set_in_scope_traits(in_scope_traits.to_vec());
+    let tparams: Vec<tast::TastIdent> = f
+        .generics
+        .iter()
+        .map(|g| tast::TastIdent(g.to_ident_name()))
+        .collect();
+    let mut bounds = init_trait_bounds(&tparams);
+    extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+    normalize_trait_bounds(&mut bounds);
     local_env.set_tparam_trait_bounds(bounds);
     let param_types: Vec<(hir::LocalId, tast::Ty)> = f
         .params
@@ -1230,50 +1250,10 @@ fn typecheck_impl_block(
             .map(|g| tast::TastIdent(g.to_ident_name()))
             .collect();
 
-        let mut bounds = indexmap::IndexMap::new();
-        for param in all_generics_tast.iter() {
-            bounds.insert(param.0.clone(), Vec::new());
-        }
-        for (param, traits) in impl_block.generic_bounds.iter() {
-            let param_name = param.to_ident_name();
-            let Some(out) = bounds.get_mut(&param_name) else {
-                continue;
-            };
-            for trait_path in traits.iter() {
-                let name = trait_path.display();
-                if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
-                    out.push(tast::TastIdent(resolved));
-                } else {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Unknown trait {}", name),
-                    ));
-                }
-            }
-        }
-        for (param, traits) in f.generic_bounds.iter() {
-            let param_name = param.to_ident_name();
-            let Some(out) = bounds.get_mut(&param_name) else {
-                continue;
-            };
-            for trait_path in traits.iter() {
-                let name = trait_path.display();
-                if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
-                    out.push(tast::TastIdent(resolved));
-                } else {
-                    diagnostics.push(Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Unknown trait {}", name),
-                    ));
-                }
-            }
-        }
-        for traits in bounds.values_mut() {
-            traits.sort_by(|a, b| a.0.cmp(&b.0));
-            traits.dedup_by(|a, b| a.0 == b.0);
-        }
+        let mut bounds = init_trait_bounds(&all_generics_tast);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &impl_block.generic_bounds);
+        extend_trait_bounds(genv, diagnostics, &mut bounds, &f.generic_bounds);
+        normalize_trait_bounds(&mut bounds);
         local_env.set_tparam_trait_bounds(bounds);
 
         let param_types: Vec<(hir::LocalId, tast::Ty)> = f
