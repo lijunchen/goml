@@ -121,6 +121,21 @@ pub(crate) fn builtin_print_tast() -> tast::File {
     tast::File { toplevels }
 }
 
+pub(crate) fn builtin_collection_impl_tast() -> tast::File {
+    let toplevels = builtin_tast()
+        .toplevels
+        .into_iter()
+        .filter(|item| match item {
+            tast::Item::ImplBlock(impl_block) => matches!(
+                &impl_block.for_type,
+                tast::Ty::TVec { .. } | tast::Ty::TSlice { .. } | tast::Ty::THashMap { .. }
+            ),
+            _ => false,
+        })
+        .collect();
+    tast::File { toplevels }
+}
+
 pub fn builtin_interface_hash() -> String {
     let genv = builtin_env();
     let exports = PackageExports {

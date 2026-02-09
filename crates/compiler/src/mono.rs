@@ -436,7 +436,8 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         | (Ty::TUint64, Ty::TUint64)
         | (Ty::TFloat32, Ty::TFloat32)
         | (Ty::TFloat64, Ty::TFloat64)
-        | (Ty::TString, Ty::TString) => Ok(()),
+        | (Ty::TString, Ty::TString)
+        | (Ty::TChar, Ty::TChar) => Ok(()),
         (Ty::TTuple { typs: l }, Ty::TTuple { typs: r }) => {
             if l.len() != r.len() {
                 return Err("tuple length mismatch".to_string());
@@ -470,7 +471,12 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
             unify(le, re, subst)
         }
         (Ty::TSlice { elem: le }, Ty::TSlice { elem: re }) => unify(le, re, subst),
+        (Ty::TVec { elem: le }, Ty::TVec { elem: re }) => unify(le, re, subst),
         (Ty::TRef { elem: le }, Ty::TRef { elem: re }) => unify(le, re, subst),
+        (Ty::THashMap { key: lk, value: lv }, Ty::THashMap { key: rk, value: rv }) => {
+            unify(lk, rk, subst)?;
+            unify(lv, rv, subst)
+        }
         (
             Ty::TFunc {
                 params: lp,
