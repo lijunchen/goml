@@ -2442,76 +2442,11 @@ impl Typer {
                         args: args_tast,
                         ty: ret_ty,
                     }
-                } else if let tast::Ty::TParam { name } = &receiver_ty {
-                    let method_name = tast::TastIdent(field.to_ident_name());
-                    let bounds = local_env.tparam_trait_bounds(name).unwrap_or(&[]);
-                    let candidates = lookup_bound_trait_methods(genv, bounds, &method_name);
-                    match candidates.as_slice() {
-                        [(trait_name, method_ty)] => self.build_trait_method_call_expr(
-                            genv,
-                            local_env,
-                            diagnostics,
-                            call_expr_id,
-                            func,
-                            receiver_expr,
-                            receiver_tast,
-                            &receiver_ty,
-                            trait_name,
-                            &method_name,
-                            method_ty,
-                            args,
-                        ),
-                        [] => {
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                        "Method {} is not available for type parameter {}",
-                                        method_name.0, name
-                                    ),
-                                )
-                                .with_range(self.expr_range(call_expr_id)),
-                            );
-                            tast::Expr::EVar {
-                                name: "<error>".to_string(),
-                                ty: self.fresh_ty_var(),
-                                astptr: None,
-                            }
-                        }
-                        _ => {
-                            let trait_names = candidates
-                                .iter()
-                                .map(|(t, _)| t.0.clone())
-                                .collect::<Vec<_>>()
-                                .join(", ");
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                        "Ambiguous method {} for type parameter {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
-                                        method_name.0, name, trait_names, method_name.0
-                                    ),
-                                )
-                                .with_range(self.expr_range(call_expr_id)),
-                            );
-                            tast::Expr::EVar {
-                                name: "<error>".to_string(),
-                                ty: self.fresh_ty_var(),
-                                astptr: None,
-                            }
-                        }
-                    }
                 } else {
                     let method_name = tast::TastIdent(field.to_ident_name());
-                    let candidates = lookup_in_scope_trait_methods(
-                        genv,
-                        local_env.in_scope_traits(),
-                        &receiver_ty,
-                        &method_name,
-                    );
-                    match candidates.as_slice() {
+                    let lookup =
+                        lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
+                    match lookup.candidates.as_slice() {
                         [(trait_name, method_ty)] => self.build_trait_method_call_expr(
                             genv,
                             local_env,
@@ -2527,36 +2462,25 @@ impl Typer {
                             args,
                         ),
                         [] => {
-                            super::util::push_error_with_range(
+                            report_method_not_found(
                                 diagnostics,
-                                format!(
-                                    "Method {} not found for type {}",
-                                    field.to_ident_name(),
-                                    super::util::format_ty_for_diag(&receiver_ty)
-                                ),
+                                &method_name,
+                                &lookup.receiver,
                                 self.expr_range(call_expr_id),
                             );
-                            self.error_expr(None)
+                            tast::Expr::EVar {
+                                name: "<error>".to_string(),
+                                ty: self.fresh_ty_var(),
+                                astptr: None,
+                            }
                         }
                         _ => {
-                            let trait_names = candidates
-                                .iter()
-                                .map(|(t, _)| t.0.clone())
-                                .collect::<Vec<_>>()
-                                .join(", ");
-                            diagnostics.push(
-                                Diagnostic::new(
-                                    Stage::Typer,
-                                    Severity::Error,
-                                    format!(
-                                        "Ambiguous method {} for type {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
-                                        method_name.0,
-                                        super::util::format_ty_for_diag(&receiver_ty),
-                                        trait_names,
-                                        method_name.0
-                                    ),
-                                )
-                                .with_range(self.expr_range(call_expr_id)),
+                            report_ambiguous_method(
+                                diagnostics,
+                                &method_name,
+                                &lookup.receiver,
+                                &lookup.candidates,
+                                self.expr_range(call_expr_id),
                             );
                             tast::Expr::EVar {
                                 name: "<error>".to_string(),
@@ -4221,4 +4145,99 @@ fn lookup_trait_methods(
         }
     }
     result
+}
+
+struct TraitMethodLookup {
+    receiver: MethodLookupReceiver,
+    candidates: Vec<(tast::TastIdent, tast::Ty)>,
+}
+
+enum MethodLookupReceiver {
+    TypeParam(String),
+    Concrete(tast::Ty),
+}
+
+fn lookup_trait_method_candidates(
+    genv: &PackageTypeEnv,
+    local_env: &LocalTypeEnv,
+    receiver_ty: &tast::Ty,
+    method: &tast::TastIdent,
+) -> TraitMethodLookup {
+    if let tast::Ty::TParam { name } = receiver_ty {
+        let bounds = local_env.tparam_trait_bounds(name).unwrap_or(&[]);
+        return TraitMethodLookup {
+            receiver: MethodLookupReceiver::TypeParam(name.clone()),
+            candidates: lookup_bound_trait_methods(genv, bounds, method),
+        };
+    }
+    TraitMethodLookup {
+        receiver: MethodLookupReceiver::Concrete(receiver_ty.clone()),
+        candidates: lookup_in_scope_trait_methods(
+            genv,
+            local_env.in_scope_traits(),
+            receiver_ty,
+            method,
+        ),
+    }
+}
+
+fn report_method_not_found(
+    diagnostics: &mut Diagnostics,
+    method_name: &tast::TastIdent,
+    receiver: &MethodLookupReceiver,
+    range: Option<TextRange>,
+) {
+    match receiver {
+        MethodLookupReceiver::TypeParam(name) => diagnostics.push(
+            Diagnostic::new(
+                Stage::Typer,
+                Severity::Error,
+                format!(
+                    "Method {} is not available for type parameter {}",
+                    method_name.0, name
+                ),
+            )
+            .with_range(range),
+        ),
+        MethodLookupReceiver::Concrete(ty) => super::util::push_error_with_range(
+            diagnostics,
+            format!(
+                "Method {} not found for type {}",
+                method_name.0,
+                super::util::format_ty_for_diag(ty)
+            ),
+            range,
+        ),
+    }
+}
+
+fn report_ambiguous_method(
+    diagnostics: &mut Diagnostics,
+    method_name: &tast::TastIdent,
+    receiver: &MethodLookupReceiver,
+    candidates: &[(tast::TastIdent, tast::Ty)],
+    range: Option<TextRange>,
+) {
+    let trait_names = candidates
+        .iter()
+        .map(|(t, _)| t.0.clone())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let receiver_label = match receiver {
+        MethodLookupReceiver::TypeParam(name) => format!("type parameter {}", name),
+        MethodLookupReceiver::Concrete(ty) => {
+            format!("type {}", super::util::format_ty_for_diag(ty))
+        }
+    };
+    diagnostics.push(
+        Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!(
+                "Ambiguous method {} for {} (candidates: {}). Use UFCS like Trait::{}(...) to disambiguate",
+                method_name.0, receiver_label, trait_names, method_name.0
+            ),
+        )
+        .with_range(range),
+    );
 }
