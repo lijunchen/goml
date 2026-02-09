@@ -541,7 +541,8 @@ impl Typer {
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
-        let expr_tast = self.coerce_to_expected_dyn(genv, diagnostics, e, expr_tast, expected);
+        let expr_tast =
+            self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
         self.push_constraint(Constraint::TypeEqual(
             expr_tast.get_ty(),
             expected.clone(),
@@ -554,6 +555,7 @@ impl Typer {
     fn coerce_to_expected_dyn(
         &mut self,
         genv: &PackageTypeEnv,
+        local_env: &LocalTypeEnv,
         diagnostics: &mut Diagnostics,
         expr_id: hir::ExprId,
         expr: tast::Expr,
@@ -575,36 +577,56 @@ impl Typer {
         };
 
         let for_ty = expr.get_ty();
-        if !is_concrete_dyn_target(&for_ty) {
-            diagnostics.push(
-                Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Cannot convert non-concrete type {} to dyn {}",
-                        super::util::format_ty_for_diag(&for_ty),
-                        resolved_trait
-                    ),
-                )
-                .with_range(range),
-            );
-            return expr;
-        }
+        match &for_ty {
+            tast::Ty::TParam { name } => {
+                if !tparam_has_trait_bound(local_env, name, &resolved_trait) {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Type parameter {} is not constrained by trait {}",
+                                name, resolved_trait
+                            ),
+                        )
+                        .with_range(range),
+                    );
+                    return expr;
+                }
+            }
+            _ => {
+                if !is_concrete_dyn_target(&for_ty) {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Cannot convert non-concrete type {} to dyn {}",
+                                super::util::format_ty_for_diag(&for_ty),
+                                resolved_trait
+                            ),
+                        )
+                        .with_range(range),
+                    );
+                    return expr;
+                }
 
-        if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
-            diagnostics.push(
-                Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "Type {} does not implement trait {}",
-                        super::util::format_ty_for_diag(&for_ty),
-                        resolved_trait
-                    ),
-                )
-                .with_range(range),
-            );
-            return expr;
+                if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "Type {} does not implement trait {}",
+                                super::util::format_ty_for_diag(&for_ty),
+                                resolved_trait
+                            ),
+                        )
+                        .with_range(range),
+                    );
+                    return expr;
+                }
+            }
         }
 
         self.results.push_coercion(

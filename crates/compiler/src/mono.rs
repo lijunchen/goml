@@ -454,6 +454,12 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
             }
             Ok(())
         }
+        (Ty::TDyn { trait_name: ln }, Ty::TDyn { trait_name: rn }) => {
+            if ln != rn {
+                return Err("dyn trait mismatch".to_string());
+            }
+            Ok(())
+        }
         (Ty::TApp { ty: lt, args: la }, Ty::TApp { ty: rt, args: ra }) => {
             if la.len() != ra.len() {
                 return Err("type constructor mismatch".to_string());

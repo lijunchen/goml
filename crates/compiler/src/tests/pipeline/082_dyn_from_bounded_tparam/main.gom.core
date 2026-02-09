@@ -1,0 +1,21 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trait_impl#Display#S#show(self/0: S) -> string {
+  "ok"
+}
+
+fn to_dyn(x/1: T) -> dyn Display {
+  to_dyn[Display]{T}(x/1)
+}
+
+fn main() -> unit {
+  let mtmp0 = to_dyn(S {}) in
+  let _wild1 = println("ok") in
+  ()
+}
