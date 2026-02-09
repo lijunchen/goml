@@ -8,7 +8,7 @@ use crate::{
     package_names::BUILTIN_PACKAGE,
     tast::{self, TastIdent},
 };
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -690,6 +690,13 @@ pub struct PackageTypeEnv {
     pub builtins: GlobalTypeEnv,
     pub current: GlobalTypeEnv,
     pub deps: HashMap<String, GlobalTypeEnv>,
+    lookup_cache: PackageTypeEnvLookupCache,
+}
+
+#[derive(Debug, Clone, Default)]
+struct PackageTypeEnvLookupCache {
+    trait_impl_visibility: RefCell<HashMap<(String, tast::Ty), bool>>,
+    trait_impl_schemes: RefCell<HashMap<(String, tast::Ty, String), Vec<FnScheme>>>,
 }
 
 impl PackageTypeEnv {
@@ -704,7 +711,13 @@ impl PackageTypeEnv {
             builtins,
             current,
             deps,
+            lookup_cache: PackageTypeEnvLookupCache::default(),
         }
+    }
+
+    fn clear_lookup_cache(&self) {
+        self.lookup_cache.trait_impl_visibility.borrow_mut().clear();
+        self.lookup_cache.trait_impl_schemes.borrow_mut().clear();
     }
 
     pub fn builtins(&self) -> &GlobalTypeEnv {
@@ -716,6 +729,7 @@ impl PackageTypeEnv {
     }
 
     pub fn current_mut(&mut self) -> &mut GlobalTypeEnv {
+        self.clear_lookup_cache();
         &mut self.current
     }
 
@@ -736,12 +750,23 @@ impl PackageTypeEnv {
     }
 
     pub fn has_trait_impl_visible(&self, trait_name: &str, type_name: &tast::Ty) -> bool {
-        self.builtins.has_trait_impl(trait_name, type_name)
+        let key = (trait_name.to_string(), type_name.clone());
+        if let Some(cached) = self.lookup_cache.trait_impl_visibility.borrow().get(&key) {
+            return *cached;
+        }
+
+        let found = self.builtins.has_trait_impl(trait_name, type_name)
             || self.current.has_trait_impl(trait_name, type_name)
             || self
                 .deps
                 .values()
-                .any(|env| env.has_trait_impl(trait_name, type_name))
+                .any(|env| env.has_trait_impl(trait_name, type_name));
+
+        self.lookup_cache
+            .trait_impl_visibility
+            .borrow_mut()
+            .insert(key, found);
+        found
     }
 
     pub fn collect_visible_trait_impl_schemes(
@@ -750,6 +775,11 @@ impl PackageTypeEnv {
         type_name: &tast::Ty,
         func_name: &TastIdent,
     ) -> Vec<FnScheme> {
+        let key = (trait_name.0.clone(), type_name.clone(), func_name.0.clone());
+        if let Some(cached) = self.lookup_cache.trait_impl_schemes.borrow().get(&key) {
+            return cached.clone();
+        }
+
         let mut result = Vec::new();
         result.extend(
             self.builtins
@@ -762,6 +792,10 @@ impl PackageTypeEnv {
         for env in self.deps.values() {
             result.extend(env.collect_trait_impl_schemes(trait_name, type_name, func_name));
         }
+        self.lookup_cache
+            .trait_impl_schemes
+            .borrow_mut()
+            .insert(key, result.clone());
         result
     }
 
