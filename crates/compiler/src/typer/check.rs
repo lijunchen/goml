@@ -4150,19 +4150,7 @@ fn lookup_bound_trait_methods(
     bounds: &[tast::TastIdent],
     method: &tast::TastIdent,
 ) -> Vec<(tast::TastIdent, tast::Ty)> {
-    let mut result = Vec::new();
-    for trait_name in bounds.iter() {
-        let Some((resolved_trait, trait_env)) =
-            super::util::resolve_trait_name(genv, &trait_name.0)
-        else {
-            continue;
-        };
-        let resolved_ident = tast::TastIdent(resolved_trait);
-        if let Some(method_ty) = trait_env.lookup_trait_method(&resolved_ident, method) {
-            result.push((resolved_ident, method_ty));
-        }
-    }
-    result
+    lookup_trait_methods(genv, bounds, method, None)
 }
 
 fn lookup_in_scope_trait_methods(
@@ -4171,16 +4159,26 @@ fn lookup_in_scope_trait_methods(
     receiver_ty: &tast::Ty,
     method: &tast::TastIdent,
 ) -> Vec<(tast::TastIdent, tast::Ty)> {
+    lookup_trait_methods(genv, in_scope_traits, method, Some(receiver_ty))
+}
+
+fn lookup_trait_methods(
+    genv: &PackageTypeEnv,
+    trait_names: &[tast::TastIdent],
+    method: &tast::TastIdent,
+    receiver_ty: Option<&tast::Ty>,
+) -> Vec<(tast::TastIdent, tast::Ty)> {
     let mut result = Vec::new();
-    for trait_name in in_scope_traits.iter() {
+    for trait_name in trait_names.iter() {
         let Some((resolved_trait, trait_env)) =
             super::util::resolve_trait_name(genv, &trait_name.0)
         else {
             continue;
         };
         let resolved_ident = tast::TastIdent(resolved_trait);
-        if !is_concrete_trait_impl_target(receiver_ty)
-            || !genv.has_trait_impl_visible(&resolved_ident.0, receiver_ty)
+        if let Some(ty) = receiver_ty
+            && (!is_concrete_trait_impl_target(ty)
+                || !genv.has_trait_impl_visible(&resolved_ident.0, ty))
         {
             continue;
         }
