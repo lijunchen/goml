@@ -447,31 +447,14 @@ impl Typer {
                                         let (resolved, _env) =
                                             super::util::normalize_trait_name(genv, &trait_name.0);
                                         let trait_ident = TastIdent(resolved);
-                                        let mut impls = Vec::new();
-                                        if let Some(impl_scheme) = genv.builtins().get_trait_impl(
+                                        let impls = genv.collect_visible_trait_impl_schemes(
                                             &trait_ident,
                                             self_ty,
                                             &op,
-                                        ) {
-                                            impls.push(impl_scheme);
-                                        }
-                                        if let Some(impl_scheme) = genv.current().get_trait_impl(
-                                            &trait_ident,
-                                            self_ty,
-                                            &op,
-                                        ) {
-                                            impls.push(impl_scheme);
-                                        }
-                                        for dep in genv.deps.values() {
-                                            if let Some(impl_scheme) =
-                                                dep.get_trait_impl(&trait_ident, self_ty, &op)
-                                            {
-                                                impls.push(impl_scheme);
-                                            }
-                                        }
+                                        );
                                         match impls.as_slice() {
                                             [impl_scheme] => {
-                                                let impl_fun_ty = self.inst_ty(impl_scheme);
+                                                let impl_fun_ty = self.inst_ty(&impl_scheme.ty);
 
                                                 let call_fun_ty = tast::Ty::TFunc {
                                                     params: norm_arg_types.clone(),

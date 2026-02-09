@@ -489,6 +489,26 @@ impl TraitEnv {
             })
     }
 
+    pub fn collect_trait_impl_schemes(
+        &self,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Vec<FnScheme> {
+        self.trait_impls
+            .iter()
+            .filter_map(|((impl_trait_name, impl_for_ty), impl_def)| {
+                if impl_trait_name != &trait_name.0 {
+                    return None;
+                }
+                if !trait_impl_matches(impl_for_ty, type_name) {
+                    return None;
+                }
+                impl_def.methods.get(&func_name.0).cloned()
+            })
+            .collect()
+    }
+
     pub fn lookup_inherent_method(
         &self,
         receiver_ty: &tast::Ty,
@@ -724,6 +744,27 @@ impl PackageTypeEnv {
                 .any(|env| env.has_trait_impl(trait_name, type_name))
     }
 
+    pub fn collect_visible_trait_impl_schemes(
+        &self,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Vec<FnScheme> {
+        let mut result = Vec::new();
+        result.extend(
+            self.builtins
+                .collect_trait_impl_schemes(trait_name, type_name, func_name),
+        );
+        result.extend(
+            self.current
+                .collect_trait_impl_schemes(trait_name, type_name, func_name),
+        );
+        for env in self.deps.values() {
+            result.extend(env.collect_trait_impl_schemes(trait_name, type_name, func_name));
+        }
+        result
+    }
+
     pub fn get_function_scheme_unqualified(&self, name: &str) -> Option<FnScheme> {
         self.current
             .get_function_scheme(name)
@@ -887,6 +928,16 @@ impl GlobalTypeEnv {
     ) -> Option<FnScheme> {
         self.trait_env
             .lookup_inherent_method_by_constr(constr, method)
+    }
+
+    pub fn collect_trait_impl_schemes(
+        &self,
+        trait_name: &TastIdent,
+        type_name: &tast::Ty,
+        func_name: &TastIdent,
+    ) -> Vec<FnScheme> {
+        self.trait_env
+            .collect_trait_impl_schemes(trait_name, type_name, func_name)
     }
 
     pub fn get_function_scheme(&self, func: &str) -> Option<FnScheme> {
