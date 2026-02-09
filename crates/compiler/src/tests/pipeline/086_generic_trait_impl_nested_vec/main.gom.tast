@@ -6,22 +6,16 @@ fn println(value/1: T) -> unit {
     (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
 }
 
-impl Size for Wrap[int32]{
-  fn size(self/0: Wrap[int32]) -> int32 {
-      10;
-  }
-}
-
-impl Size for Wrap[string]{
-  fn size(self/1: Wrap[string]) -> int32 {
-      20;
+impl Size for Wrap[T]{
+  fn size(self/0: Wrap[T]) -> int32 {
+      1;
   }
 }
 
 fn main() -> unit {
-    let a/2: Wrap[int32] = Wrap { value: 1 };
-    let b/3: Wrap[string] = Wrap { value: "x" };
-    (println : (string) -> unit)((int32_to_string : (int32) -> string)((Size::size : (Wrap[int32]) -> int32)((a/2 : Wrap[int32]))));
-    (println : (string) -> unit)((int32_to_string : (int32) -> string)((Size::size : (Wrap[string]) -> int32)((b/3 : Wrap[string]))));
+    let a/1: Wrap[int32] = Wrap { value: 1 };
+    let b/2: Wrap[string] = Wrap { value: "x" };
+    (println : (string) -> unit)((int32_to_string : (int32) -> string)((Size::size : (Wrap[int32]) -> int32)((a/1 : Wrap[int32]))));
+    (println : (string) -> unit)((int32_to_string : (int32) -> string)((Size::size : (Wrap[string]) -> int32)((b/2 : Wrap[string]))));
     ();
 }

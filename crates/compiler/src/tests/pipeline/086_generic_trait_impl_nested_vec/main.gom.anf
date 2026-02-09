@@ -1,23 +1,23 @@
-fn trait_impl#Size#Wrap[int32]#size(self/0: Wrap__int32) -> int32 {
-  10
-}
-
-fn trait_impl#Size#Wrap[string]#size(self/1: Wrap__string) -> int32 {
-  20
-}
-
 fn main() -> unit {
-  let a/2 = Wrap__int32 { value: 1 } in
-  let b/3 = Wrap__string { value: "x" } in
-  let t3 = trait_impl#Size#Wrap[int32]#size(a/2) in
+  let a/1 = Wrap__int32 { value: 1 } in
+  let b/2 = Wrap__string { value: "x" } in
+  let t3 = trait_impl#Size#Wrap[T]#size__T_int32(a/1) in
   let t2 = int32_to_string(t3) in
   let _wild0 = println__T_string(t2) in
-  let t5 = trait_impl#Size#Wrap[string]#size(b/3) in
+  let t5 = trait_impl#Size#Wrap[T]#size__T_string(b/2) in
   let t4 = int32_to_string(t5) in
   let _wild1 = println__T_string(t4) in
   ()
 }
 
+fn trait_impl#Size#Wrap[T]#size__T_int32(self/0: Wrap__int32) -> int32 {
+  1
+}
+
 fn println__T_string(value/1: string) -> unit {
   string_println(value/1)
+}
+
+fn trait_impl#Size#Wrap[T]#size__T_string(self/0: Wrap__string) -> int32 {
+  1
 }

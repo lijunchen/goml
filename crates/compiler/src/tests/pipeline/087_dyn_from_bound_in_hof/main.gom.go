@@ -4,14 +4,6 @@ import (
     "fmt"
 )
 
-func bool_to_string(x bool) string {
-    if x {
-        return "true"
-    } else {
-        return "false"
-    }
-}
-
 func int32_to_string(x int32) string {
     return fmt.Sprintf("%d", x)
 }
@@ -21,6 +13,10 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type closure_env_mk_renderer_T_int32_0 struct {
+    d_0 dyn__Display
+}
+
 type dyn__Display_vtable struct {
     show func(any) string
 }
@@ -28,16 +24,6 @@ type dyn__Display_vtable struct {
 type dyn__Display struct {
     data any
     vtable *dyn__Display_vtable
-}
-
-func dyn__Display__wrap__bool__show(self any) string {
-    return _goml_trait_impl_Display_bool_show(self.(bool))
-}
-
-func dyn__Display__vtable__bool() *dyn__Display_vtable {
-    return &dyn__Display_vtable{
-        show: dyn__Display__wrap__bool__show,
-    }
 }
 
 func dyn__Display__wrap__int32__show(self any) string {
@@ -51,57 +37,43 @@ func dyn__Display__vtable__int32() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_int32_show(self__0 int32) string {
-    var ret10 string
-    ret10 = int32_to_string(self__0)
-    return ret10
-}
-
-func _goml_trait_impl_Display_bool_show(self__1 bool) string {
-    var ret11 string
-    ret11 = bool_to_string(self__1)
-    return ret11
+    var ret3 string
+    ret3 = int32_to_string(self__0)
+    return ret3
 }
 
 func main0() struct{} {
-    var ret12 struct{}
-    var t2 string = render_twice__T_int32(42)
+    var ret4 struct{}
+    var f__3 closure_env_mk_renderer_T_int32_0 = mk_renderer__T_int32(42)
+    var t2 string = _goml_inherent_closure_env_mk_renderer_T_int32_0_closure_env_mk_renderer_T_int32_0_apply(f__3)
     println__T_string(t2)
-    var t3 string = render_twice__T_bool(true)
-    println__T_string(t3)
-    ret12 = struct{}{}
-    return ret12
+    ret4 = struct{}{}
+    return ret4
 }
 
-func render_twice__T_int32(x__2 int32) string {
-    var ret13 string
-    var d__3 dyn__Display = dyn__Display{
-        data: x__2,
+func mk_renderer__T_int32(x__1 int32) closure_env_mk_renderer_T_int32_0 {
+    var ret5 closure_env_mk_renderer_T_int32_0
+    var d__2 dyn__Display = dyn__Display{
+        data: x__1,
         vtable: dyn__Display__vtable__int32(),
     }
-    var t5 string = d__3.vtable.show(d__3.data)
-    var t4 string = t5 + ","
-    var t6 string = d__3.vtable.show(d__3.data)
-    ret13 = t4 + t6
-    return ret13
+    ret5 = closure_env_mk_renderer_T_int32_0{
+        d_0: d__2,
+    }
+    return ret5
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret14 struct{}
-    ret14 = string_println(value__1)
-    return ret14
+    var ret6 struct{}
+    ret6 = string_println(value__1)
+    return ret6
 }
 
-func render_twice__T_bool(x__2 bool) string {
-    var ret15 string
-    var d__3 dyn__Display = dyn__Display{
-        data: x__2,
-        vtable: dyn__Display__vtable__bool(),
-    }
-    var t8 string = d__3.vtable.show(d__3.data)
-    var t7 string = t8 + ","
-    var t9 string = d__3.vtable.show(d__3.data)
-    ret15 = t7 + t9
-    return ret15
+func _goml_inherent_closure_env_mk_renderer_T_int32_0_closure_env_mk_renderer_T_int32_0_apply(env1 closure_env_mk_renderer_T_int32_0) string {
+    var ret7 string
+    var d__2 dyn__Display = env1.d_0
+    ret7 = d__2.vtable.show(d__2.data)
+    return ret7
 }
 
 func main() {

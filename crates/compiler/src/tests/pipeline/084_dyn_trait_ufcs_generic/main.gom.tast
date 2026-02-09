@@ -8,17 +8,20 @@ fn println(value/1: T) -> unit {
 
 impl Display for Point{
   fn show(self/0: Point) -> string {
-      "P(" + (int32_to_string : (int32) -> string)((self/0 : Point).x) + "," + (int32_to_string : (int32) -> string)((self/0 : Point).y) + ")";
+      (int32_to_string : (int32) -> string)((self/0 : Point).value);
   }
 }
 
-fn render(x/1: dyn Display) -> string {
-    (dyn Display::show : (dyn Display) -> string)((x/1 : dyn Display));
+fn to_dyn(x/1: T) -> dyn Display {
+    to_dyn[Display]{T}((x/1 : T));
+}
+
+fn render(x/2: dyn Display) -> string {
+    (dyn Display::show : (dyn Display) -> string)((x/2 : dyn Display));
 }
 
 fn main() -> unit {
-    let p/2: Point = Point { x: 7, y: 9 };
-    let d/3: dyn Display = to_dyn[Display]{Point}((p/2 : Point));
+    let d/3: dyn Display = (to_dyn : (Point) -> dyn Display)(Point { value: 7 });
     (println : (string) -> unit)((render : (dyn Display) -> string)((d/3 : dyn Display)));
     ();
 }

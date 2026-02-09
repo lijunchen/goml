@@ -409,7 +409,8 @@ pub fn lambda_lift(
     }
 
     // Convert newly generated closure apply functions to LiftFn
-    for f in state.new_functions.into_iter() {
+    let new_functions = std::mem::take(&mut state.new_functions);
+    for f in new_functions {
         toplevels.push(LiftFn {
             name: f.name,
             params: f.params,
@@ -418,7 +419,298 @@ pub fn lambda_lift(
         });
     }
 
+    let toplevels = stabilize_lifted_calls(&mut state, toplevels);
+
     (LiftFile { toplevels }, liftenv)
+}
+
+fn stabilize_lifted_calls(state: &mut State<'_>, mut toplevels: Vec<LiftFn>) -> Vec<LiftFn> {
+    for _ in 0..8 {
+        let mut changed = false;
+        let mut rewritten = Vec::with_capacity(toplevels.len());
+        for mut f in toplevels.into_iter() {
+            let mut scope = Scope::new();
+            scope.push_layer();
+            for (name, ty) in f.params.iter() {
+                let closure_struct = state.closure_struct_for_ty(ty);
+                scope.insert(
+                    name.clone(),
+                    ScopeEntry {
+                        ty: ty.clone(),
+                        closure_struct,
+                    },
+                );
+            }
+            let body = rewrite_lift_expr_with_final_types(state, &mut scope, f.body);
+            scope.pop_layer();
+            let body_ty = body.get_ty();
+            let ret_ty = if body_ty != f.ret_ty && state.ty_contains_closure(&body_ty) {
+                body_ty
+            } else {
+                f.ret_ty.clone()
+            };
+            if ret_ty != f.ret_ty {
+                changed = true;
+            }
+            let fn_ty = Ty::TFunc {
+                params: f.params.iter().map(|(_, ty)| ty.clone()).collect(),
+                ret_ty: Box::new(ret_ty.clone()),
+            };
+            state.liftenv.insert_func(f.name.clone(), fn_ty);
+            f.ret_ty = ret_ty;
+            f.body = body;
+            rewritten.push(f);
+        }
+        toplevels = rewritten;
+        if !changed {
+            break;
+        }
+    }
+    toplevels
+}
+
+fn rewrite_lift_expr_with_final_types(
+    state: &State<'_>,
+    scope: &mut Scope,
+    expr: LiftExpr,
+) -> LiftExpr {
+    match expr {
+        LiftExpr::EVar { name, ty } => {
+            if let Some(entry) = scope.get(&name) {
+                if let Some(struct_name) = entry.closure_struct.clone() {
+                    LiftExpr::EVar {
+                        name,
+                        ty: Ty::TStruct { name: struct_name },
+                    }
+                } else {
+                    LiftExpr::EVar {
+                        name,
+                        ty: entry.ty.clone(),
+                    }
+                }
+            } else if let Some(func_ty) = state.liftenv.get_func(&name) {
+                LiftExpr::EVar { name, ty: func_ty }
+            } else {
+                LiftExpr::EVar { name, ty }
+            }
+        }
+        LiftExpr::EPrim { value, ty } => LiftExpr::EPrim { value, ty },
+        LiftExpr::EConstr {
+            constructor,
+            args,
+            ty,
+        } => LiftExpr::EConstr {
+            constructor,
+            args: args
+                .into_iter()
+                .map(|arg| rewrite_lift_expr_with_final_types(state, scope, arg))
+                .collect(),
+            ty,
+        },
+        LiftExpr::ETuple { items, ty: _ } => {
+            let items = items
+                .into_iter()
+                .map(|item| rewrite_lift_expr_with_final_types(state, scope, item))
+                .collect::<Vec<_>>();
+            let typs = items.iter().map(|item| item.get_ty()).collect();
+            LiftExpr::ETuple {
+                items,
+                ty: Ty::TTuple { typs },
+            }
+        }
+        LiftExpr::EArray { items, ty } => LiftExpr::EArray {
+            items: items
+                .into_iter()
+                .map(|item| rewrite_lift_expr_with_final_types(state, scope, item))
+                .collect(),
+            ty,
+        },
+        LiftExpr::ELet {
+            name, value, body, ..
+        } => {
+            let value = rewrite_lift_expr_with_final_types(state, scope, *value);
+            let value_ty = value.get_ty();
+            scope.push_layer();
+            scope.insert(
+                name.clone(),
+                ScopeEntry {
+                    closure_struct: state.closure_struct_for_ty(&value_ty),
+                    ty: value_ty,
+                },
+            );
+            let body = rewrite_lift_expr_with_final_types(state, scope, *body);
+            scope.pop_layer();
+            let body_ty = body.get_ty();
+            LiftExpr::ELet {
+                name,
+                value: Box::new(value),
+                body: Box::new(body),
+                ty: body_ty,
+            }
+        }
+        LiftExpr::EMatch {
+            expr,
+            arms,
+            default,
+            ty,
+        } => LiftExpr::EMatch {
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            arms: arms
+                .into_iter()
+                .map(|arm| LiftArm {
+                    lhs: rewrite_lift_expr_with_final_types(state, scope, arm.lhs),
+                    body: rewrite_lift_expr_with_final_types(state, scope, arm.body),
+                })
+                .collect(),
+            default: default
+                .map(|d| Box::new(rewrite_lift_expr_with_final_types(state, scope, *d))),
+            ty,
+        },
+        LiftExpr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ty,
+        } => LiftExpr::EIf {
+            cond: Box::new(rewrite_lift_expr_with_final_types(state, scope, *cond)),
+            then_branch: Box::new(rewrite_lift_expr_with_final_types(
+                state,
+                scope,
+                *then_branch,
+            )),
+            else_branch: Box::new(rewrite_lift_expr_with_final_types(
+                state,
+                scope,
+                *else_branch,
+            )),
+            ty,
+        },
+        LiftExpr::EWhile { cond, body, ty } => LiftExpr::EWhile {
+            cond: Box::new(rewrite_lift_expr_with_final_types(state, scope, *cond)),
+            body: Box::new(rewrite_lift_expr_with_final_types(state, scope, *body)),
+            ty,
+        },
+        LiftExpr::EGo { expr, ty } => LiftExpr::EGo {
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            ty,
+        },
+        LiftExpr::EConstrGet {
+            expr,
+            constructor,
+            field_index,
+            ty,
+        } => LiftExpr::EConstrGet {
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            constructor,
+            field_index,
+            ty,
+        },
+        LiftExpr::EUnary { op, expr, ty } => LiftExpr::EUnary {
+            op,
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            ty,
+        },
+        LiftExpr::EBinary { op, lhs, rhs, ty } => LiftExpr::EBinary {
+            op,
+            lhs: Box::new(rewrite_lift_expr_with_final_types(state, scope, *lhs)),
+            rhs: Box::new(rewrite_lift_expr_with_final_types(state, scope, *rhs)),
+            ty,
+        },
+        LiftExpr::ECall { func, args, ty } => {
+            let func_expr = rewrite_lift_expr_with_final_types(state, scope, *func);
+            let args = args
+                .into_iter()
+                .map(|arg| rewrite_lift_expr_with_final_types(state, scope, arg))
+                .collect::<Vec<_>>();
+
+            if let LiftExpr::EVar { name, .. } = &func_expr
+                && let Some(entry) = scope.get(name)
+                && let Some(struct_name) = entry
+                    .closure_struct
+                    .clone()
+                    .or_else(|| state.closure_struct_for_ty(&entry.ty))
+                && let Some(apply_fn) = state.apply_fn_for_struct(&struct_name)
+            {
+                let mut call_args = Vec::with_capacity(args.len() + 1);
+                call_args.push(LiftExpr::EVar {
+                    name: name.clone(),
+                    ty: Ty::TStruct {
+                        name: struct_name.clone(),
+                    },
+                });
+                call_args.extend(args);
+                let apply_fn_ty = state
+                    .liftenv
+                    .get_func(apply_fn)
+                    .unwrap_or_else(|| Ty::TFunc {
+                        params: vec![],
+                        ret_ty: Box::new(ty.clone()),
+                    });
+                let call_ty = match &apply_fn_ty {
+                    Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+                    _ => ty.clone(),
+                };
+                return LiftExpr::ECall {
+                    func: Box::new(LiftExpr::EVar {
+                        name: apply_fn.to_string(),
+                        ty: apply_fn_ty,
+                    }),
+                    args: call_args,
+                    ty: call_ty,
+                };
+            }
+
+            let func_ty = func_expr.get_ty();
+            let call_ty = match func_ty {
+                Ty::TFunc { ret_ty, .. } => *ret_ty,
+                _ => ty,
+            };
+            LiftExpr::ECall {
+                func: Box::new(func_expr),
+                args,
+                ty: call_ty,
+            }
+        }
+        LiftExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => LiftExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
+            ty,
+        },
+        LiftExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => LiftExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(rewrite_lift_expr_with_final_types(state, scope, *receiver)),
+            args: args
+                .into_iter()
+                .map(|arg| rewrite_lift_expr_with_final_types(state, scope, arg))
+                .collect(),
+            ty,
+        },
+        LiftExpr::EProj { tuple, index, ty } => {
+            let tuple = Box::new(rewrite_lift_expr_with_final_types(state, scope, *tuple));
+            let proj_ty = match tuple.get_ty() {
+                Ty::TTuple { typs } if index < typs.len() => typs[index].clone(),
+                _ => ty,
+            };
+            LiftExpr::EProj {
+                tuple,
+                index,
+                ty: proj_ty,
+            }
+        }
+    }
 }
 
 fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> LiftExpr {

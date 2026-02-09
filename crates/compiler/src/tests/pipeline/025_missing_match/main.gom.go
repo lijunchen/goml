@@ -6,6 +6,12 @@ func missing(s string) struct{} {
     return struct{}{}
 }
 
+func missing__unit(s string) struct{} {
+    missing(s)
+    var ret struct{}
+    return ret
+}
+
 type Point struct {
     x int32
     y int32
@@ -21,15 +27,15 @@ func main0() struct{} {
     var x1 int32 = mtmp0.x
     var x2 int32 = mtmp0.y
     switch x2 {
-    case 8:
+    case 0:
         switch x1 {
-        case 10:
+        case 0:
             ret3 = struct{}{}
         default:
-            ret3 = missing("")
+            ret3 = missing__unit("")
         }
     default:
-        ret3 = missing("")
+        ret3 = missing__unit("")
     }
     return ret3
 }

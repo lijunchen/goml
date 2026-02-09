@@ -545,8 +545,14 @@ impl Typer {
                         origin,
                     } => {
                         let norm_for_ty = self.norm(&for_ty);
+                        let dyn_satisfied = matches!(
+                            &norm_for_ty,
+                            tast::Ty::TDyn {
+                                trait_name: dyn_trait_name
+                            } if dyn_trait_name == &trait_name.0
+                        );
                         let impl_found = genv.has_trait_impl_visible(&trait_name.0, &norm_for_ty);
-                        if impl_found {
+                        if dyn_satisfied || impl_found {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
@@ -1619,6 +1625,19 @@ impl Typer {
                 let for_ty = self.subst_ty(diagnostics, &for_ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
+                if let (
+                    tast::Ty::TDyn {
+                        trait_name: from_trait_name,
+                    },
+                    tast::Ty::TDyn {
+                        trait_name: to_trait_name,
+                    },
+                ) = (&for_ty, &ty)
+                    && from_trait_name == to_trait_name
+                    && to_trait_name == &trait_name.0
+                {
+                    return *expr;
+                }
                 tast::Expr::EToDyn {
                     trait_name,
                     for_ty,

@@ -421,12 +421,14 @@ fn collect_runtime_types(
     IndexSet<tast::Ty>,
     IndexSet<tast::Ty>,
     IndexSet<tast::Ty>,
+    IndexSet<tast::Ty>,
 ) {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
         arrays: IndexSet<tast::Ty>,
         refs: IndexSet<tast::Ty>,
         hashmaps: IndexSet<tast::Ty>,
+        missings: IndexSet<tast::Ty>,
     }
 
     impl Collector {
@@ -438,11 +440,18 @@ fn collect_runtime_types(
             IndexSet<tast::Ty>,
             IndexSet<tast::Ty>,
             IndexSet<tast::Ty>,
+            IndexSet<tast::Ty>,
         ) {
             for item in &file.toplevels {
                 self.collect_fn(item);
             }
-            (self.tuples, self.arrays, self.refs, self.hashmaps)
+            (
+                self.tuples,
+                self.arrays,
+                self.refs,
+                self.hashmaps,
+                self.missings,
+            )
         }
 
         fn collect_fn(&mut self, item: &anf::Fn) {
@@ -525,6 +534,11 @@ fn collect_runtime_types(
                     self.collect_imm(func);
                     for arg in args {
                         self.collect_imm(arg);
+                    }
+                    if let anf::ImmExpr::ImmVar { name, .. } = func
+                        && name == "missing"
+                    {
+                        self.missings.insert(ty.clone());
                     }
                     self.collect_type(ty);
                 }
@@ -619,6 +633,7 @@ fn collect_runtime_types(
         arrays: IndexSet::new(),
         refs: IndexSet::new(),
         hashmaps: IndexSet::new(),
+        missings: IndexSet::new(),
     }
     .collect_file(file)
 }
@@ -1321,6 +1336,21 @@ fn compile_cexpr(goenv: &GlobalGoEnv, e: &anf::CExpr) -> goast::Expr {
             let func_ty = tast_ty_to_go_type(&imm_ty(func));
 
             if let anf::ImmExpr::ImmVar { name, .. } = &func
+                && *name == "missing"
+            {
+                let helper_name = runtime::missing_helper_fn_name(ty);
+                goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: helper_name,
+                        ty: goty::GoType::TFunc {
+                            params: vec![goty::GoType::TString],
+                            ret_ty: Box::new(tast_ty_to_go_type(ty)),
+                        },
+                    }),
+                    args: compiled_args,
+                    ty: tast_ty_to_go_type(ty),
+                }
+            } else if let anf::ImmExpr::ImmVar { name, .. } = &func
                 && (*name == "array_get" || *name == "array_set")
             {
                 let helper = runtime::array_helper_fn_name(name, &imm_ty(&args[0]));
@@ -2412,12 +2442,14 @@ pub fn go_file(
     let goenv = GlobalGoEnv::from_anf_env(anfenv);
     let mut all = Vec::new();
 
-    let (tuple_types, array_types, ref_types, hashmap_types) = collect_runtime_types(&file);
+    let (tuple_types, array_types, ref_types, hashmap_types, missing_types) =
+        collect_runtime_types(&file);
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
     all.extend(runtime::make_hashmap_runtime(&goenv.genv, &hashmap_types));
+    all.extend(runtime::make_missing_runtime(&missing_types));
 
     if !goenv.genv.value_env.extern_funcs.is_empty() || !goenv.genv.type_env.extern_types.is_empty()
     {

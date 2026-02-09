@@ -8,26 +8,20 @@ file main.gom
         value: T,
     }
     
-    impl Size for Wrap[int32] {
-      fn size(local/1/0: Wrap[int32]) -> int32 {
-        10;
-      }
-    }
-    
-    impl Size for Wrap[string] {
-      fn size(local/1/1: Wrap[string]) -> int32 {
-        20;
+    impl[T] Size for Wrap[T] {
+      fn size(local/1/0: Wrap[T]) -> int32 {
+        1;
       }
     }
     
     fn main() {
-      let local/1/2 = Wrap {
+      let local/1/1 = Wrap {
           value: 1
       };
-      let local/1/3 = Wrap {
+      let local/1/2 = Wrap {
           value: "x"
       };
-      println(int32_to_string(Size::size(a/2)));
-      println(int32_to_string(Size::size(b/3)));
+      println(int32_to_string(Size::size(a/1)));
+      println(int32_to_string(Size::size(b/2)));
       ();
     }

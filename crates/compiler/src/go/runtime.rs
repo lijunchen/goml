@@ -294,6 +294,53 @@ pub fn hashmap_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
     format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
+pub fn missing_helper_fn_name(ty: &tast::Ty) -> String {
+    format!("missing__{}", go_ident(&encode_ty(ty)))
+}
+
+pub fn make_missing_runtime(missing_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
+    let mut items = Vec::new();
+    for ty in missing_types {
+        let ret_go_ty = goast::tast_ty_to_go_type(ty);
+        let helper_fn = goast::Fn {
+            name: missing_helper_fn_name(ty),
+            params: vec![("s".to_string(), goty::GoType::TString)],
+            ret_ty: Some(ret_go_ty.clone()),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::Expr(goast::Expr::Call {
+                        func: Box::new(goast::Expr::Var {
+                            name: "missing".to_string(),
+                            ty: goty::GoType::TFunc {
+                                params: vec![goty::GoType::TString],
+                                ret_ty: Box::new(goty::GoType::TUnit),
+                            },
+                        }),
+                        args: vec![goast::Expr::Var {
+                            name: "s".to_string(),
+                            ty: goty::GoType::TString,
+                        }],
+                        ty: goty::GoType::TUnit,
+                    }),
+                    goast::Stmt::VarDecl {
+                        name: "ret".to_string(),
+                        ty: ret_go_ty.clone(),
+                        value: None,
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Var {
+                            name: "ret".to_string(),
+                            ty: ret_go_ty,
+                        }),
+                    },
+                ],
+            },
+        };
+        items.push(goast::Item::Fn(helper_fn));
+    }
+    items
+}
+
 pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     let mut items = Vec::new();
     for ty in array_types {

@@ -3,14 +3,17 @@ trait Display {
 }
 
 struct Point {
-    x: int32,
-    y: int32,
+    value: int32,
 }
 
 impl Display for Point {
     fn show(self: Point) -> string {
-        "P(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")"
+        int32_to_string(self.value)
     }
+}
+
+fn to_dyn[T: Display](x: T) -> dyn Display {
+    x
 }
 
 fn render(x: dyn Display) -> string {
@@ -18,7 +21,6 @@ fn render(x: dyn Display) -> string {
 }
 
 fn main() {
-    let p = Point { x: 7, y: 9 };
-    let d: dyn Display = p;
+    let d = to_dyn(Point { value: 7 });
     println(render(d));
 }

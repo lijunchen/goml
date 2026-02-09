@@ -2,26 +2,17 @@ fn trait_impl#Display#int32#show(self/0: int32) -> string {
   int32_to_string(self/0)
 }
 
-fn trait_impl#Display#bool#show(self/1: bool) -> string {
-  bool_to_string(self/1)
-}
-
 fn main() -> unit {
-  let _wild0 = println__T_string(render_twice__T_int32(42)) in
-  let _wild1 = println__T_string(render_twice__T_bool(true)) in
+  let f/3 = mk_renderer__T_int32(42) in
+  let _wild0 = println__T_string(f/3()) in
   ()
 }
 
-fn render_twice__T_int32(x/2: int32) -> string {
-  let d/3 = to_dyn[Display]{int32}(x/2) in
-  ((dyn_call[Display::show](d/3) + ",") + dyn_call[Display::show](d/3))
+fn mk_renderer__T_int32(x/1: int32) -> () -> string {
+  let d/2 = to_dyn[Display]{int32}(x/1) in
+  || dyn_call[Display::show](d/2)
 }
 
 fn println__T_string(value/1: string) -> unit {
   string_println(value/1)
-}
-
-fn render_twice__T_bool(x/2: bool) -> string {
-  let d/3 = to_dyn[Display]{bool}(x/2) in
-  ((dyn_call[Display::show](d/3) + ",") + dyn_call[Display::show](d/3))
 }

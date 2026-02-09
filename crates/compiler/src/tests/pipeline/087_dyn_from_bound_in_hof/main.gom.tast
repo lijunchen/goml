@@ -12,19 +12,13 @@ impl Display for int32{
   }
 }
 
-impl Display for bool{
-  fn show(self/1: bool) -> string {
-      (bool_to_string : (bool) -> string)((self/1 : bool));
-  }
-}
-
-fn render_twice(x/2: T) -> string {
-    let d/3: dyn Display = to_dyn[Display]{T}((x/2 : T));
-    (dyn Display::show : (dyn Display) -> string)((d/3 : dyn Display)) + "," + (dyn Display::show : (dyn Display) -> string)((d/3 : dyn Display));
+fn mk_renderer(x/1: T) -> () -> string {
+    let d/2: dyn Display = to_dyn[Display]{T}((x/1 : T));
+    || => (dyn Display::show : (dyn Display) -> string)((d/2 : dyn Display));
 }
 
 fn main() -> unit {
-    (println : (string) -> unit)((render_twice : (int32) -> string)(42));
-    (println : (string) -> unit)((render_twice : (bool) -> string)(true));
+    let f/3: () -> string = (mk_renderer : (int32) -> () -> string)(42);
+    (println : (string) -> unit)((f/3 : () -> string)());
     ();
 }

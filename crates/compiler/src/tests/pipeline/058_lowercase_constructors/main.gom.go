@@ -6,6 +6,12 @@ func missing(s string) struct{} {
     return struct{}{}
 }
 
+func missing__int32(s string) int32 {
+    missing(s)
+    var ret int32
+    return ret
+}
+
 type point struct {
     x int32
     y int32
@@ -75,7 +81,7 @@ func main0() int32 {
             ret12 = 0
         }
     case none:
-        ret12 = missing("")
+        ret12 = missing__int32("")
     }
     return ret12
 }

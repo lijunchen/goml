@@ -47,6 +47,20 @@ pub fn parse_inherent_method_fn_name(name: &str) -> Option<(&str, &str)> {
     Some((base, method))
 }
 
+pub fn parse_trait_impl_fn_name(name: &str) -> Option<(&str, &str, &str)> {
+    let mut parts = name.split('#');
+    if parts.next()? != "trait_impl" {
+        return None;
+    }
+    let trait_name = parts.next()?;
+    let for_ty = parts.next()?;
+    let method_name = parts.next()?;
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((trait_name, for_ty, method_name))
+}
+
 fn inherent_base(receiver_ty: &tast::Ty) -> String {
     match receiver_ty {
         tast::Ty::TUnit => "unit".to_string(),
