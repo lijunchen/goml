@@ -1118,14 +1118,8 @@ fn build_in_scope_traits(
         .collect::<Vec<_>>();
     for use_trait in hir.use_traits.iter() {
         let name = use_trait.display();
-        if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
-            traits.push(tast::TastIdent(resolved));
-        } else {
-            diagnostics.push(Diagnostic::new(
-                Stage::Typer,
-                Severity::Error,
-                format!("Unknown trait {}", name),
-            ));
+        if let Some(resolved) = resolve_trait_ident_or_report(genv, diagnostics, &name) {
+            traits.push(resolved);
         }
     }
     traits.sort_by(|a, b| a.0.cmp(&b.0));
@@ -1156,17 +1150,27 @@ fn extend_trait_bounds(
         };
         for trait_path in traits.iter() {
             let name = trait_path.display();
-            if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &name) {
-                out.push(tast::TastIdent(resolved));
-            } else {
-                diagnostics.push(Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!("Unknown trait {}", name),
-                ));
+            if let Some(resolved) = resolve_trait_ident_or_report(genv, diagnostics, &name) {
+                out.push(resolved);
             }
         }
     }
+}
+
+fn resolve_trait_ident_or_report(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    name: &str,
+) -> Option<tast::TastIdent> {
+    if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, name) {
+        return Some(tast::TastIdent(resolved));
+    }
+    diagnostics.push(Diagnostic::new(
+        Stage::Typer,
+        Severity::Error,
+        format!("Unknown trait {}", name),
+    ));
+    None
 }
 
 fn normalize_trait_bounds(bounds: &mut indexmap::IndexMap<String, Vec<tast::TastIdent>>) {
