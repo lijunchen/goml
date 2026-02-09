@@ -87,22 +87,11 @@ impl Typer {
         required_trait: &tast::TastIdent,
         range: Option<TextRange>,
     ) -> bool {
-        let resolved_trait =
-            if let Some((name, _env)) = super::util::resolve_trait_name(genv, &required_trait.0) {
-                name
-            } else if required_trait.0.contains("::") {
-                required_trait.0.clone()
-            } else {
-                diagnostics.push(
-                    Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("Unknown trait {}", required_trait.0),
-                    )
-                    .with_range(range),
-                );
-                return false;
-            };
+        let Some(resolved_trait) =
+            resolve_required_trait_name_or_report(genv, diagnostics, required_trait, range)
+        else {
+            return false;
+        };
 
         match target_ty {
             tast::Ty::TDyn { trait_name } if trait_name == &resolved_trait => true,
@@ -3480,6 +3469,29 @@ fn resolve_trait_name_or_report(
         return None;
     };
     Some(resolved)
+}
+
+fn resolve_required_trait_name_or_report(
+    genv: &PackageTypeEnv,
+    diagnostics: &mut Diagnostics,
+    required_trait: &tast::TastIdent,
+    range: Option<TextRange>,
+) -> Option<String> {
+    if let Some((resolved, _env)) = super::util::resolve_trait_name(genv, &required_trait.0) {
+        return Some(resolved);
+    }
+    if required_trait.0.contains("::") {
+        return Some(required_trait.0.clone());
+    }
+    diagnostics.push(
+        Diagnostic::new(
+            Stage::Typer,
+            Severity::Error,
+            format!("Unknown trait {}", required_trait.0),
+        )
+        .with_range(range),
+    );
+    None
 }
 
 fn integer_literal_target(expected: &tast::Ty) -> Option<tast::Ty> {
