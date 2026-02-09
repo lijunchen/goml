@@ -1,0 +1,31 @@
+package main
+file main.gom
+  trait Render {
+      fn format(Self) -> string;
+    }
+    
+    struct Boxed {
+        value: int32,
+    }
+    
+    impl Boxed {
+      fn format(local/1/0: Self) -> string {
+        "inherent";
+      }
+    }
+    
+    impl Render for Boxed {
+      fn format(local/1/1: Boxed) -> string {
+        int32_to_string(self/1.value);
+      }
+    }
+    
+    fn main() {
+      println(Boxed::format(Boxed {
+              value: 9
+          }));
+      println(Render::format(Boxed {
+              value: 9
+          }));
+      ();
+    }

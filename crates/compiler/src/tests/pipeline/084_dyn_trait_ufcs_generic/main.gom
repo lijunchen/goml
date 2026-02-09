@@ -1,0 +1,24 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string {
+        "P(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")"
+    }
+}
+
+fn render(x: dyn Display) -> string {
+    Display::show(x)
+}
+
+fn main() {
+    let p = Point { x: 7, y: 9 };
+    let d: dyn Display = p;
+    println(render(d));
+}

@@ -1,0 +1,26 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  int32_to_string(self/0)
+}
+
+fn trait_impl#Display#bool#show(self/1: bool) -> string {
+  bool_to_string(self/1)
+}
+
+fn render_twice(x/2: T) -> string {
+  let d/3 = to_dyn[Display]{T}(x/2) in
+  ((dyn_call[Display::show](d/3) + ",") + dyn_call[Display::show](d/3))
+}
+
+fn main() -> unit {
+  let _wild0 = println(render_twice(42)) in
+  let _wild1 = println(render_twice(true)) in
+  ()
+}

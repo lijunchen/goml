@@ -1,0 +1,33 @@
+package main
+file main.gom
+  trait Size {
+      fn size(Self) -> int32;
+    }
+    
+    struct Wrap[T] {
+        value: T,
+    }
+    
+    impl Size for Wrap[int32] {
+      fn size(local/1/0: Wrap[int32]) -> int32 {
+        10;
+      }
+    }
+    
+    impl Size for Wrap[string] {
+      fn size(local/1/1: Wrap[string]) -> int32 {
+        20;
+      }
+    }
+    
+    fn main() {
+      let local/1/2 = Wrap {
+          value: 1
+      };
+      let local/1/3 = Wrap {
+          value: "x"
+      };
+      println(int32_to_string(Size::size(a/2)));
+      println(int32_to_string(Size::size(b/3)));
+      ();
+    }

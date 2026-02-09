@@ -57,6 +57,26 @@ fn multi_package_compile_project_011() -> anyhow::Result<()> {
     run_project("project011_complex_dependency_graph")
 }
 
+#[test]
+fn multi_package_compile_project_012() -> anyhow::Result<()> {
+    run_project("project012_trait_scope_and_ufcs")
+}
+
+#[test]
+fn multi_package_compile_project_013() -> anyhow::Result<()> {
+    run_project("project013_dyn_coercion_across_packages")
+}
+
+#[test]
+fn multi_package_compile_project_014() -> anyhow::Result<()> {
+    run_project("project014_generic_bounds_cross_package_ufcs")
+}
+
+#[test]
+fn multi_package_compile_project_015() -> anyhow::Result<()> {
+    run_project("project015_trait_impl_visibility_for_builtin_container")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")

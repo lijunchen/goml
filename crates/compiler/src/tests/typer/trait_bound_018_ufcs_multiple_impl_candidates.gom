@@ -1,0 +1,20 @@
+trait Pick {
+    fn pick(Self) -> int32;
+}
+
+impl Pick for int32 {
+    fn pick(self: int32) -> int32 {
+        1
+    }
+}
+
+impl[T] Pick for T {
+    fn pick(self: T) -> int32 {
+        2
+    }
+}
+
+fn main() {
+    let _ = Pick::pick(1);
+    ()
+}

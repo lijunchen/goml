@@ -1,0 +1,19 @@
+fn trait_impl#Size#Wrap[int32]#size(self/0: Wrap__int32) -> int32 {
+  10
+}
+
+fn trait_impl#Size#Wrap[string]#size(self/1: Wrap__string) -> int32 {
+  20
+}
+
+fn main() -> unit {
+  let a/2 = Wrap__int32 { value: 1 } in
+  let b/3 = Wrap__string { value: "x" } in
+  let _wild0 = println__T_string(int32_to_string(trait_impl#Size#Wrap[int32]#size(a/2))) in
+  let _wild1 = println__T_string(int32_to_string(trait_impl#Size#Wrap[string]#size(b/3))) in
+  ()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

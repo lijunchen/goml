@@ -1,0 +1,35 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  int32_to_string(self/0)
+}
+
+fn trait_impl#Display#bool#show(self/1: bool) -> string {
+  bool_to_string(self/1)
+}
+
+fn main() -> unit {
+  let t2 = render_twice__T_int32(42) in
+  let _wild0 = println__T_string(t2) in
+  let t3 = render_twice__T_bool(true) in
+  let _wild1 = println__T_string(t3) in
+  ()
+}
+
+fn render_twice__T_int32(x/2: int32) -> string {
+  let d/3 = to_dyn[Display]{int32}(x/2) in
+  let t5 = dyn_call[Display::show](d/3) in
+  let t4 = (t5 + ",") in
+  let t6 = dyn_call[Display::show](d/3) in
+  (t4 + t6)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn render_twice__T_bool(x/2: bool) -> string {
+  let d/3 = to_dyn[Display]{bool}(x/2) in
+  let t8 = dyn_call[Display::show](d/3) in
+  let t7 = (t8 + ",") in
+  let t9 = dyn_call[Display::show](d/3) in
+  (t7 + t9)
+}

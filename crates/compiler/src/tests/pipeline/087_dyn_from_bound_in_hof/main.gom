@@ -1,0 +1,25 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+impl Display for int32 {
+    fn show(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Display for bool {
+    fn show(self: bool) -> string {
+        bool_to_string(self)
+    }
+}
+
+fn render_twice[T: Display](x: T) -> string {
+    let d: dyn Display = x;
+    Display::show(d) + "," + Display::show(d)
+}
+
+fn main() {
+    println(render_twice(42));
+    println(render_twice(true));
+}

@@ -1,0 +1,33 @@
+package main;
+trait Size {
+  fn size(Self) -> int32;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl Size for Wrap[int32] {
+  fn size(self: Wrap[int32]) -> int32 {
+    10;
+  }
+}
+
+impl Size for Wrap[string] {
+  fn size(self: Wrap[string]) -> int32 {
+    20;
+  }
+}
+
+fn main() {
+  let a = Wrap {
+      value: 1
+  };
+  let b = Wrap {
+      value: "x"
+  };
+  println(int32_to_string(Size::size(a)));
+  println(int32_to_string(Size::size(b)));
+  ();
+}
+

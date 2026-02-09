@@ -1,0 +1,33 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
+impl A for S{
+  fn pick(self/0: S) -> int32 {
+      10;
+  }
+}
+
+impl B for S{
+  fn pick(self/1: S) -> int32 {
+      20;
+  }
+}
+
+fn pick_a(x/2: T) -> int32 {
+    (A::pick : (T) -> int32)((x/2 : T));
+}
+
+fn pick_b(x/3: T) -> int32 {
+    (B::pick : (T) -> int32)((x/3 : T));
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((int32_to_string : (int32) -> string)((pick_a : (S) -> int32)(S {})));
+    (println : (string) -> unit)((int32_to_string : (int32) -> string)((pick_b : (S) -> int32)(S {})));
+    ();
+}
