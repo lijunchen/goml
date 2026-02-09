@@ -10,8 +10,8 @@ use crate::hir;
 use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
-use crate::names::parse_inherent_method_fn_name;
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
+use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 use diagnostics::Diagnostics;
@@ -175,129 +175,6 @@ fn read_source_files(
 }
 
 type ReadSourceFilesResult = (Vec<hir::SourceFileAst>, HashSet<String>, Vec<String>);
-
-fn collect_required_builtin_collection_methods_from_core(
-    core: &crate::core::File,
-) -> HashSet<(String, String)> {
-    let mut required = HashSet::new();
-    for func in core.toplevels.iter() {
-        collect_required_builtin_collection_methods_from_expr(&func.body, &mut required);
-    }
-    required
-}
-
-fn collect_required_builtin_collection_methods_from_expr(
-    expr: &crate::core::Expr,
-    required: &mut HashSet<(String, String)>,
-) {
-    match expr {
-        crate::core::Expr::EVar { .. } | crate::core::Expr::EPrim { .. } => {}
-        crate::core::Expr::EConstr { args, .. }
-        | crate::core::Expr::ETuple { items: args, .. }
-        | crate::core::Expr::EArray { items: args, .. } => {
-            for arg in args.iter() {
-                collect_required_builtin_collection_methods_from_expr(arg, required);
-            }
-        }
-        crate::core::Expr::EClosure { body, .. } => {
-            collect_required_builtin_collection_methods_from_expr(body, required);
-        }
-        crate::core::Expr::ELet { value, body, .. } => {
-            collect_required_builtin_collection_methods_from_expr(value, required);
-            collect_required_builtin_collection_methods_from_expr(body, required);
-        }
-        crate::core::Expr::EMatch {
-            expr,
-            arms,
-            default,
-            ..
-        } => {
-            collect_required_builtin_collection_methods_from_expr(expr, required);
-            for arm in arms.iter() {
-                collect_required_builtin_collection_methods_from_expr(&arm.lhs, required);
-                collect_required_builtin_collection_methods_from_expr(&arm.body, required);
-            }
-            if let Some(default) = default {
-                collect_required_builtin_collection_methods_from_expr(default, required);
-            }
-        }
-        crate::core::Expr::EIf {
-            cond,
-            then_branch,
-            else_branch,
-            ..
-        } => {
-            collect_required_builtin_collection_methods_from_expr(cond, required);
-            collect_required_builtin_collection_methods_from_expr(then_branch, required);
-            collect_required_builtin_collection_methods_from_expr(else_branch, required);
-        }
-        crate::core::Expr::EWhile { cond, body, .. } => {
-            collect_required_builtin_collection_methods_from_expr(cond, required);
-            collect_required_builtin_collection_methods_from_expr(body, required);
-        }
-        crate::core::Expr::EGo { expr, .. }
-        | crate::core::Expr::EConstrGet { expr, .. }
-        | crate::core::Expr::EUnary { expr, .. }
-        | crate::core::Expr::EToDyn { expr, .. }
-        | crate::core::Expr::EProj { tuple: expr, .. } => {
-            collect_required_builtin_collection_methods_from_expr(expr, required);
-        }
-        crate::core::Expr::EBinary { lhs, rhs, .. } => {
-            collect_required_builtin_collection_methods_from_expr(lhs, required);
-            collect_required_builtin_collection_methods_from_expr(rhs, required);
-        }
-        crate::core::Expr::ECall { func, args, .. } => {
-            if let crate::core::Expr::EVar { name, .. } = func.as_ref()
-                && let Some((base, method)) = parse_inherent_method_fn_name(name)
-                && matches!(base, "Vec" | "Slice" | "HashMap")
-            {
-                required.insert((base.to_string(), method.to_string()));
-            }
-            collect_required_builtin_collection_methods_from_expr(func, required);
-            for arg in args.iter() {
-                collect_required_builtin_collection_methods_from_expr(arg, required);
-            }
-        }
-        crate::core::Expr::EDynCall { receiver, args, .. }
-        | crate::core::Expr::ETraitCall { receiver, args, .. } => {
-            collect_required_builtin_collection_methods_from_expr(receiver, required);
-            for arg in args.iter() {
-                collect_required_builtin_collection_methods_from_expr(arg, required);
-            }
-        }
-    }
-}
-
-fn compile_builtin_collection_methods(
-    required: &HashSet<(String, String)>,
-    gensym: &Gensym,
-) -> Result<crate::core::File, CompilationError> {
-    if required.is_empty() {
-        return Ok(crate::core::File {
-            toplevels: Vec::new(),
-        });
-    }
-    let mut diagnostics = Diagnostics::new();
-    let core = crate::compile_match::compile_file(
-        &builtins::builtin_env(),
-        gensym,
-        &mut diagnostics,
-        &builtins::builtin_collection_impl_tast(),
-    );
-    if diagnostics.has_errors() {
-        return Err(CompilationError::Compile { diagnostics });
-    }
-    let toplevels = core
-        .toplevels
-        .into_iter()
-        .filter(|f| {
-            parse_inherent_method_fn_name(&f.name)
-                .map(|(base, method)| required.contains(&(base.to_string(), method.to_string())))
-                .unwrap_or(false)
-        })
-        .collect();
-    Ok(crate::core::File { toplevels })
-}
 
 fn typecheck_single_package(
     package: &str,
@@ -541,9 +418,13 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     }
 
     let gensym = Gensym::new();
-    let required_builtin_methods = collect_required_builtin_collection_methods_from_core(&linked);
-    let builtin_collection_core =
-        compile_builtin_collection_methods(&required_builtin_methods, &gensym)?;
+    let required_builtin_methods = builtin_inherent::collect_required_builtin_collection_methods(
+        std::slice::from_ref(&linked),
+    );
+    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
+        &required_builtin_methods,
+        &gensym,
+    )?;
     if !builtin_collection_core.toplevels.is_empty() {
         linked.toplevels.extend(builtin_collection_core.toplevels);
     }
