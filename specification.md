@@ -2261,3 +2261,230 @@ Trait 参与：无。
    - dyn coercion（`IMP` 或 bound 检查）。
 3. 求解器是渐进式：优先求解 concrete 情况，非 concrete 延期，最终残留即报错。
 4. 逐语法结构细化后，所有表达式与模式节点都具备明确的“约束生成/求解/失败”定义。
+
+---
+
+## 32. 双向类型检查系统（Bidirectional Typing）
+
+本章给出当前实现中双向类型检查的完整规则。记号采用：
+
+1. `Γ ⊢ e ⇒ τ`：在环境 `Γ` 下对 `e` 做推断（infer），得到类型 `τ`。
+2. `Γ ⊢ e ⇐ τ`：在环境 `Γ` 下按期望类型 `τ` 检查 `e`（check）。
+
+这里的 `Γ` 包含：
+
+1. 局部变量类型环境。
+2. 当前可见 trait 集合（含 builtin trait + `use` 导入 trait）。
+3. 当前类型参数及其 trait bound。
+
+### 32.1 总体算法
+
+实现中的 `check_expr` 可抽象为：
+
+1. 先按语法结构尝试“专用 check 分支”。
+2. 若无专用分支，回退到 `infer_expr`。
+3. 若期望类型是 `dyn Trait`，执行 dyn coercion（`coerce_to_expected_dyn`）。
+4. 统一追加 `TEQ(type(e_checked), expected)`。
+
+可写成：
+
+1. `Γ ⊢ e ⇐ τ` 先计算 `e0 = check_special(Γ, e, τ) or infer(Γ, e)`。
+2. `e1 = maybe_coerce_to_dyn(Γ, e0, τ)`。
+3. 生成约束 `type(e1) = τ`。
+
+### 32.2 边界：何时触发 `solve`
+
+类型求解不是“每个表达式后立即执行”，而是函数/方法级批处理：
+
+1. 普通函数：先 `check_expr(body, declared_ret)`，再 `solve`。
+2. impl 方法：每个方法体 `check_expr(body, declared_ret)` 后调用 `solve`。
+
+因此双向检查阶段主要做“约束生成”，统一求解在函数边界完成。
+
+### 32.3 `check_expr` 的专用分支（实现顺序）
+
+当进入 `Γ ⊢ e ⇐ τ` 时，按实现分支顺序：
+
+1. `-inner` 且 `τ` 是数值类型：递归 `inner ⇐ τ`，结果类型直接取 `τ`。
+2. `lhs (+|-|*|/) rhs` 且 `τ` 是数值类型：左右都按 `τ` 检查，结果类型取 `τ`。
+3. `closure`：进入闭包专用 check。
+4. `let`：进入 `check_let_expr`。
+5. `block`：进入 `check_block_expr`。
+6. `tuple` 且 `τ` 是同长度 tuple：逐项按对应元素类型检查。
+7. `if`：条件按 `bool` 检查，两个分支都按 `τ` 检查。
+8. `match`：先推断被匹配表达式类型，再每个 arm body 按 `τ` 检查。
+9. 其它全部回退 `infer_expr`。
+
+### 32.4 回退规则（Infer-then-Equal）
+
+若语法结构不在专用 `check` 分支，当前实现使用统一模板：
+
+1. 先推断：`Γ ⊢ e ⇒ τ0`。
+2. （若需要）做 dyn coercion。
+3. 追加 `TEQ(τ0_or_dyn, τ_expected)`。
+
+这就是双向系统中的“下行期望不足时上行推断兜底”机制。
+
+### 32.5 闭包的双向规则
+
+`closure` 在双向系统中是强特化节点：
+
+1. 若 `τ_expected` 是函数类型且参数个数匹配：
+   - 参数有注解时，生成 `TEQ(annotation, expected_param)`。
+   - 参数无注解时直接采用 `expected_param`。
+   - body 按 `expected_ret` 检查。
+2. 否则回退闭包推断：参数无注解用 fresh TVar，body 推断得到返回类型。
+
+形式化：
+
+1. `Γ ⊢ |p| body ⇐ (A1..An)->R`：逐参检查后 `Γ,p:A ⊢ body ⇐ R`。
+2. 若目标非函数或 arity 不符，则 `Γ ⊢ |p| body ⇒ (T1..Tn)->Tr`。
+
+### 32.6 Block 的双向规则
+
+1. `Γ ⊢ {e1; ...; en} ⇐ τ`：
+   - 前 `n-1` 个表达式都走 `infer`。
+   - 最后一个表达式走 `check`（按 `τ`）。
+2. 空 block 在实现里推断为 `unit`，最后由外层 `TEQ(unit, τ)` 决定是否匹配。
+
+### 32.7 Match 的双向规则
+
+`check` 模式下 `match` 的关键点：
+
+1. scrutinee 不按 `expected` 检查，而是先推断 `S`。
+2. 每个 arm pattern 按 `S` 检查。
+3. 每个 arm body 按 `τ_expected` 检查。
+
+即：
+
+1. `Γ ⊢ scrutinee ⇒ S`。
+2. 对每个 arm：`Γ ⊢ pat ⇐ S`，`Γ_pat ⊢ body ⇐ τ_expected`。
+
+### 32.8 If 的双向规则
+
+1. 条件永远按 `bool` 检查。
+2. `then` 与 `else` 在 check 模式下都按同一个 `τ_expected` 检查。
+
+形式化：
+
+1. `Γ ⊢ if c then t else f ⇐ τ` 需要 `Γ ⊢ c ⇐ bool`, `Γ ⊢ t ⇐ τ`, `Γ ⊢ f ⇐ τ`。
+
+### 32.9 Let 的双向规则
+
+`let` 的 `_expected` 在当前实现中不参与内部检查，语义是：
+
+1. 先检查/推断右值（有注解走 check，无注解走 infer）。
+2. pattern 按右值类型检查。
+3. 做不可反驳性检查。
+4. `let` 表达式本身类型固定 `unit`。
+5. 回到 `check_expr` 外层再做 `TEQ(unit, expected)`。
+
+该行为意味着：`let` 在任何 check 上下文都先返回 `unit`，再由外层等式判断是否满足期望。
+
+### 32.10 Tuple 的双向规则
+
+1. 仅当 `expected` 是同长度 tuple 时，才走逐项 check。
+2. 否则回退 infer，再通过外层 `TEQ` 与 expected 统一。
+
+这是一种“可用则精确检查，不可用则回退推断”的典型双向策略。
+
+### 32.11 数值表达式的双向特化
+
+当前实现对数值运算有两类专用 check：
+
+1. 一元负号：`-e` 在 `expected` 为数值时递归按该数值类型检查。
+2. 二元算术：`+,-,*,/` 在 `expected` 为数值时左右都按该类型检查。
+
+其余数值场景仍依赖 infer + 约束统一。
+
+### 32.12 调用表达式中的双向成分
+
+`infer_call_expr` 内部虽然是 infer 路径，但会在可用时“局部双向化”参数：
+
+1. 当函数/方法类型已知且参数个数匹配：参数使用 `check_expr(arg, param_ty)`。
+2. 否则参数先 `infer`。
+
+因此调用系统是“infer 主导，参数局部 check 优化”的混合双向策略。
+
+### 32.13 Pattern 是“单向 check”子系统
+
+pattern 没有 `infer_pat` 入口，只有 `check_pat(pat, expected_ty)`。
+
+即：
+
+1. 表达式产生被匹配类型。
+2. pattern 仅在该类型上下文下检查并生成绑定/约束。
+
+这使得模式系统本质上是双向系统中的“下行检查分支”。
+
+### 32.14 dyn coercion 在双向系统中的位置
+
+dyn coercion 发生在 `check_expr` 尾部、`TEQ` 之前：
+
+1. 仅当 `expected` 是 `dyn Trait` 时触发。
+2. 先判断来源类型：`TParam`/`TVar`/concrete。
+3. 可能生成 `IMP(trait, for_ty)`，或直接报错，或包装成 `EToDyn`。
+4. 最后再做 `TEQ(type(after_coercion), expected_dyn)`。
+
+这确保了“expected 驱动的向下转换”属于双向检查的一部分，而不是 infer 阶段行为。
+
+### 32.15 双向系统中的 trait 分派规则
+
+在双向框架下，trait 分派主要出现在调用：
+
+1. `x.method(...)`：
+   - 先 inherent。
+   - 后 trait 候选（`TParam` 看 bound，concrete 看 in-scope+visible impl）。
+2. `Trait::method(...)`：
+   - 静态 trait 调用路径。
+   - receiver concrete 时可走 `OVL`；receiver 为 `TParam` 时走 bound 检查 + `TEQ`。
+3. dyn receiver 的 UFCS 调用在静态成员调用分支专门处理。
+
+### 32.16 双向系统中的失败恢复
+
+1. check 分支失败通常返回错误占位表达式（fresh TVar）并继续。
+2. 约束无法立即求解会延期，函数边界统一求解时集中报错。
+3. 最终仍未收敛的 TVar 会在替换阶段报 `Could not infer type`。
+
+---
+
+## 33. 双向规则总表（按语法结构）
+
+该表只关注“入口模式”，具体约束细节见第 27-31 节。
+
+1. `ENameRef`: 默认 `infer`，在 `check` 中走 infer 回退。
+2. `EStaticMember`: 默认 `infer`，在 `check` 中走 infer 回退。
+3. `EUnit`: infer。
+4. `EBool`: infer。
+5. `EInt* / EUInt*`: infer。
+6. `EFloat*`: infer。
+7. `EString`: infer。
+8. `EChar`: infer。
+9. `EConstr`: infer。
+10. `EStructLiteral`: infer。
+11. `ETuple`: check 仅在 expected 为同长度 tuple 时特化，否则 infer。
+12. `EArray`: infer。
+13. `EClosure`: check 有专用分支，不匹配时 infer。
+14. `ELet`: check 有专用分支（返回 unit），infer 也有分支。
+15. `EBlock`: check 有专用分支（最后一个 check），infer 也有分支。
+16. `EMatch`: check 有专用分支（arm body check），infer 也有分支。
+17. `EIf`: check 有专用分支，infer 也有分支。
+18. `EWhile`: infer（check 回退 infer）。
+19. `EGo`: infer（check 回退 infer）。
+20. `ECall`: infer 主分支，内部对参数做局部 check。
+21. `EUnary`: check 仅对数值 `-` 特化，其余 infer。
+22. `EBinary`: check 仅对数值算术特化，其余 infer。
+23. `EProj`: infer。
+24. `EField`: infer。
+25. `P*` 全部：仅 check（pattern 子系统）。
+
+---
+
+## 34. 双向类型检查的规范性结论
+
+1. GoML 当前实现是“check 优先、infer 回退”的双向系统，而不是纯 HM 风格全局推断。
+2. `expected` 信息最强影响点：闭包、if、match、block 末尾、tuple（同长度）、数值算术特化、dyn coercion。
+3. 调用系统采用“infer 外壳 + 参数 check 内核”的混合方案。
+4. pattern 系统是严格 check-only 设计，天然依赖表达式侧提供期望类型。
+5. 约束求解延后到函数/方法边界，决定了错误报告常表现为“后置聚合”。
+
