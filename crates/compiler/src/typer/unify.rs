@@ -447,31 +447,14 @@ impl Typer {
                                         let (resolved, _env) =
                                             super::util::normalize_trait_name(genv, &trait_name.0);
                                         let trait_ident = TastIdent(resolved);
-                                        let mut impls = Vec::new();
-                                        if let Some(impl_scheme) = genv.builtins().get_trait_impl(
+                                        let impls = genv.collect_visible_trait_impl_schemes(
                                             &trait_ident,
                                             self_ty,
                                             &op,
-                                        ) {
-                                            impls.push(impl_scheme);
-                                        }
-                                        if let Some(impl_scheme) = genv.current().get_trait_impl(
-                                            &trait_ident,
-                                            self_ty,
-                                            &op,
-                                        ) {
-                                            impls.push(impl_scheme);
-                                        }
-                                        for dep in genv.deps.values() {
-                                            if let Some(impl_scheme) =
-                                                dep.get_trait_impl(&trait_ident, self_ty, &op)
-                                            {
-                                                impls.push(impl_scheme);
-                                            }
-                                        }
+                                        );
                                         match impls.as_slice() {
                                             [impl_scheme] => {
-                                                let impl_fun_ty = self.inst_ty(impl_scheme);
+                                                let impl_fun_ty = self.inst_ty(&impl_scheme.ty);
 
                                                 let call_fun_ty = tast::Ty::TFunc {
                                                     params: norm_arg_types.clone(),
@@ -562,14 +545,14 @@ impl Typer {
                         origin,
                     } => {
                         let norm_for_ty = self.norm(&for_ty);
-                        let impl_found =
-                            genv.builtins().has_trait_impl(&trait_name.0, &norm_for_ty)
-                                || genv.current().has_trait_impl(&trait_name.0, &norm_for_ty)
-                                || genv
-                                    .deps
-                                    .values()
-                                    .any(|env| env.has_trait_impl(&trait_name.0, &norm_for_ty));
-                        if impl_found {
+                        let dyn_satisfied = matches!(
+                            &norm_for_ty,
+                            tast::Ty::TDyn {
+                                trait_name: dyn_trait_name
+                            } if dyn_trait_name == &trait_name.0
+                        );
+                        let impl_found = genv.has_trait_impl_visible(&trait_name.0, &norm_for_ty);
+                        if dyn_satisfied || impl_found {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
@@ -1642,6 +1625,19 @@ impl Typer {
                 let for_ty = self.subst_ty(diagnostics, &for_ty, origin);
                 let expr = Box::new(self.subst(diagnostics, *expr));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
+                if let (
+                    tast::Ty::TDyn {
+                        trait_name: from_trait_name,
+                    },
+                    tast::Ty::TDyn {
+                        trait_name: to_trait_name,
+                    },
+                ) = (&for_ty, &ty)
+                    && from_trait_name == to_trait_name
+                    && to_trait_name == &trait_name.0
+                {
+                    return *expr;
+                }
                 tast::Expr::EToDyn {
                     trait_name,
                     for_ty,

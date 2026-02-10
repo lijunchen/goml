@@ -519,14 +519,7 @@ impl NameResolution {
                             .map(|(param, traits)| {
                                 let traits = traits
                                     .iter()
-                                    .map(|path| {
-                                        hir::Path::new(
-                                            path.segments()
-                                                .iter()
-                                                .map(hir::PathSegment::from)
-                                                .collect(),
-                                        )
-                                    })
+                                    .map(|path| self.lower_trait_path(path, &ctx))
                                     .collect::<Vec<_>>();
                                 (HirIdent::name(&param.0), traits)
                             })
@@ -686,9 +679,7 @@ impl NameResolution {
             .map(|(param, traits)| {
                 let traits = traits
                     .iter()
-                    .map(|path| {
-                        hir::Path::new(path.segments().iter().map(hir::PathSegment::from).collect())
-                    })
+                    .map(|path| self.lower_trait_path(path, ctx))
                     .collect::<Vec<_>>();
                 (HirIdent::name(&param.0), traits)
             })
@@ -1573,6 +1564,11 @@ impl NameResolution {
         }
     }
 
+    fn lower_trait_path(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> hir::Path {
+        let lowered = self.lower_impl_trait_name(path, ctx);
+        hir::Path::from_idents(lowered.split("::").map(|s| s.to_string()).collect())
+    }
+
     fn lower_impl_trait_name(&mut self, path: &ast::Path, ctx: &ResolutionContext) -> String {
         if path.len() == 1 {
             let name = match path.last_ident() {
@@ -1584,10 +1580,20 @@ impl NameResolution {
             };
 
             let local = full_def_name(ctx.current_package, &name);
-            if ctx.trait_index.has_trait(ctx.current_package, &name) {
+            let has_local = ctx.trait_index.has_trait(ctx.current_package, &name);
+            let has_builtin = ctx.trait_index.has_trait(BUILTIN_PACKAGE, &name);
+
+            if has_local && has_builtin && local != name {
+                self.error(format!(
+                    "Ambiguous trait {}. Use {}::{} or {}::{}",
+                    name, ctx.current_package, name, BUILTIN_PACKAGE, name
+                ));
+            }
+
+            if has_local {
                 return local;
             }
-            if ctx.trait_index.has_trait(BUILTIN_PACKAGE, &name) {
+            if has_builtin {
                 return name;
             }
             return local;

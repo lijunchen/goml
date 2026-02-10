@@ -11,6 +11,7 @@ use crate::interface;
 use crate::lift::{self, GlobalLiftEnv, LiftFile};
 use crate::mono::{self, GlobalMonoEnv};
 use crate::package_names::{BUILTIN_PACKAGE, ENTRY_FUNCTION, ROOT_PACKAGE, is_builtin_package};
+use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::pipeline::{CompilationError, parse_ast_file};
 use diagnostics::Diagnostics;
@@ -417,6 +418,16 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     }
 
     let gensym = Gensym::new();
+    let required_builtin_methods = builtin_inherent::collect_required_builtin_collection_methods(
+        std::slice::from_ref(&linked),
+    );
+    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods_checked(
+        &required_builtin_methods,
+        &gensym,
+    )?;
+    if !builtin_collection_core.toplevels.is_empty() {
+        linked.toplevels.extend(builtin_collection_core.toplevels);
+    }
     let (mono, monoenv) = mono::mono(genv.clone(), linked.clone());
     let (lifted, liftenv) = lift::lambda_lift(monoenv.clone(), &gensym, mono.clone());
     let (anf, anfenv) = crate::anf::anf_file(liftenv.clone(), &gensym, lifted.clone());

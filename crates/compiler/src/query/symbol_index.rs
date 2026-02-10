@@ -442,19 +442,11 @@ fn discover_packages_for_query(
     path: &Path,
     src: &str,
 ) -> Result<crate::pipeline::packages::PackageGraph, String> {
-    if let Ok((module_dir, config)) = crate::pipeline::packages::discover_project_from_file(path) {
-        let entry_path = module_dir.join(&config.package.entry);
-        let entry_ast = if entry_path == path {
-            Some(parse_ast_for_discovery(path, src)?)
-        } else {
-            None
-        };
-        let graph = crate::pipeline::packages::discover_packages(
-            &module_dir,
-            Some(entry_path.as_path()),
-            entry_ast,
-        )
-        .map_err(|e| format!("{:?}", e))?;
+    let entry_ast = parse_ast_for_discovery(path, src)?;
+    if let Ok((module_dir, _)) = crate::pipeline::packages::discover_project_from_file(path) {
+        let graph =
+            crate::pipeline::packages::discover_packages(&module_dir, Some(path), Some(entry_ast))
+                .map_err(|e| format!("{:?}", e))?;
         return Ok(graph);
     }
 
@@ -462,7 +454,6 @@ fn discover_packages_for_query(
         .parent()
         .filter(|parent| !parent.as_os_str().is_empty())
         .unwrap_or_else(|| Path::new("."));
-    let entry_ast = parse_ast_for_discovery(path, src)?;
     crate::pipeline::packages::discover_packages(root_dir, Some(path), Some(entry_ast))
         .map_err(|e| format!("{:?}", e))
 }

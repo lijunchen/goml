@@ -2085,35 +2085,8 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                let builtin = match receiver_ty {
-                    tast::Ty::TSlice { .. } => match method_name.0.as_str() {
-                        "get" => Some("slice_get"),
-                        "len" => Some("slice_len"),
-                        "sub" => Some("slice_sub"),
-                        _ => None,
-                    },
-                    tast::Ty::TVec { .. } => match method_name.0.as_str() {
-                        "new" => Some("vec_new"),
-                        "push" => Some("vec_push"),
-                        "get" => Some("vec_get"),
-                        "len" => Some("vec_len"),
-                        _ => None,
-                    },
-                    tast::Ty::THashMap { .. } => match method_name.0.as_str() {
-                        "new" => Some("hashmap_new"),
-                        "get" => Some("hashmap_get"),
-                        "set" => Some("hashmap_set"),
-                        "remove" => Some("hashmap_remove"),
-                        "len" => Some("hashmap_len"),
-                        "contains" => Some("hashmap_contains"),
-                        _ => None,
-                    },
-                    _ => None,
-                };
                 core::Expr::EVar {
-                    name: builtin
-                        .map(|name| name.to_string())
-                        .unwrap_or_else(|| inherent_method_fn_name(receiver_ty, &method_name.0)),
+                    name: inherent_method_fn_name(receiver_ty, &method_name.0),
                     ty: method_ty.clone(),
                 }
             } else {

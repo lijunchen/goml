@@ -1,0 +1,26 @@
+trait Display {
+    fn show(Self) -> string;
+}
+
+struct Point {
+    value: int32,
+}
+
+impl Display for Point {
+    fn show(self: Point) -> string {
+        int32_to_string(self.value)
+    }
+}
+
+fn to_dyn[T: Display](x: T) -> dyn Display {
+    x
+}
+
+fn render(x: dyn Display) -> string {
+    Display::show(x)
+}
+
+fn main() {
+    let d = to_dyn(Point { value: 7 });
+    println(render(d));
+}

@@ -1,6 +1,7 @@
 use crate::pipeline::pipeline::CompilationError;
 use diagnostics::Diagnostics;
 
+pub(crate) mod builtin_inherent;
 pub mod packages;
 #[allow(clippy::module_inception)]
 pub mod pipeline;

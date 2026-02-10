@@ -1,37 +1,14 @@
 package main
 
-func missing(s string) struct{} {
-    println("missing: " + s)
-    panic("")
-    return struct{}{}
-}
-
 type Point struct {
     x int32
     y int32
 }
 
 func main0() struct{} {
-    var ret3 struct{}
-    var p0__0 Point = Point{
-        x: 0,
-        y: 0,
-    }
-    var mtmp0 Point = p0__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    switch x2 {
-    case 8:
-        switch x1 {
-        case 10:
-            ret3 = struct{}{}
-        default:
-            ret3 = missing("")
-        }
-    default:
-        ret3 = missing("")
-    }
-    return ret3
+    var ret4 struct{}
+    ret4 = struct{}{}
+    return ret4
 }
 
 func main() {

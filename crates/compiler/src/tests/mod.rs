@@ -133,11 +133,18 @@ fn execute_with_go_run(label: &str, dir: &Path, file: &Path) -> anyhow::Result<S
         eprintln!("[go_run] spawned label={} pid={}", label, child.id());
     }
     let output = child.wait_with_output()?;
-    let ret = if !output.status.success() {
-        String::from_utf8_lossy(&output.stderr).to_string()
-    } else {
-        String::from_utf8_lossy(&output.stdout).to_string()
-    };
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        bail!(
+            "go run failed for {} (status: {}):\nstdout:\n{}\nstderr:\n{}",
+            label,
+            output.status,
+            stdout,
+            stderr
+        );
+    }
+    let ret = String::from_utf8_lossy(&output.stdout).to_string();
     if test_log_enabled() {
         eprintln!(
             "[go_run] done label={} status={} elapsed={:?}",
@@ -236,6 +243,30 @@ fn execute_go_source(source: &str, label: &str) -> anyhow::Result<String> {
     }
 
     Ok(ret.replace(dir.path().to_str().unwrap(), "${WORKDIR}"))
+}
+
+#[test]
+fn go_run_failure_is_error() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let main_go_file = dir.path().join("main.go");
+    std::fs::write(
+        &main_go_file,
+        r#"
+package main
+
+func main() {
+    undefined_symbol()
+}
+"#,
+    )?;
+    let err = execute_with_go_run("go_run_failure_is_error", dir.path(), &main_go_file)
+        .expect_err("go run should fail for invalid source");
+    let msg = format!("{err:#}");
+    assert!(
+        msg.contains("go run failed"),
+        "unexpected error message: {msg}"
+    );
+    Ok(())
 }
 
 fn run_test_cases(dir: &Path) -> anyhow::Result<()> {

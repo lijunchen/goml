@@ -1,0 +1,24 @@
+fn trait_impl#Display#Point#show(self/0: Point) -> string {
+  let t1 = Point.value(self/0) in
+  int32_to_string(t1)
+}
+
+fn render(x/2: dyn Display) -> string {
+  dyn_call[Display::show](x/2)
+}
+
+fn main() -> unit {
+  let t2 = Point { value: 7 } in
+  let d/3 = to_dyn__T_Point(t2) in
+  let t3 = render(d/3) in
+  let _wild0 = println__T_string(t3) in
+  ()
+}
+
+fn to_dyn__T_Point(x/1: Point) -> dyn Display {
+  to_dyn[Display]{Point}(x/1)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

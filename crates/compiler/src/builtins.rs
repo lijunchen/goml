@@ -1,4 +1,8 @@
-use std::{collections::HashMap, path::Path, sync::OnceLock};
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+    sync::OnceLock,
+};
 
 use crate::derive;
 use ::ast::{ast, lower};
@@ -19,6 +23,7 @@ const BUILTIN_GOM: &str = include_str!("builtin.gom");
 
 static BUILTIN_AST: OnceLock<ast::File> = OnceLock::new();
 static BUILTIN_ARTIFACTS: OnceLock<BuiltinArtifacts> = OnceLock::new();
+static BUILTIN_COLLECTION_METHOD_KEYS: OnceLock<HashSet<(String, String)>> = OnceLock::new();
 
 #[derive(Debug, Clone)]
 struct BuiltinArtifacts {
@@ -119,6 +124,39 @@ pub(crate) fn builtin_print_tast() -> tast::File {
         })
         .collect();
     tast::File { toplevels }
+}
+
+pub(crate) fn builtin_collection_impl_tast() -> tast::File {
+    let toplevels = builtin_tast()
+        .toplevels
+        .into_iter()
+        .filter(|item| match item {
+            tast::Item::ImplBlock(impl_block) => matches!(
+                &impl_block.for_type,
+                tast::Ty::TVec { .. } | tast::Ty::TSlice { .. } | tast::Ty::THashMap { .. }
+            ),
+            _ => false,
+        })
+        .collect();
+    tast::File { toplevels }
+}
+
+fn build_builtin_collection_method_keys() -> HashSet<(String, String)> {
+    let mut keys = HashSet::new();
+    for item in builtin_collection_impl_tast().toplevels {
+        let tast::Item::ImplBlock(impl_block) = item else {
+            continue;
+        };
+        let base = impl_block.for_type.get_constr_name_unsafe();
+        for method in impl_block.methods {
+            keys.insert((base.clone(), method.name));
+        }
+    }
+    keys
+}
+
+pub(crate) fn builtin_collection_method_keys() -> &'static HashSet<(String, String)> {
+    BUILTIN_COLLECTION_METHOD_KEYS.get_or_init(build_builtin_collection_method_keys)
 }
 
 pub fn builtin_interface_hash() -> String {

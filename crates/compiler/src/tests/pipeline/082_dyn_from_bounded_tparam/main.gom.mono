@@ -1,0 +1,17 @@
+fn trait_impl#Display#S#show(self/0: S) -> string {
+  "ok"
+}
+
+fn main() -> unit {
+  let mtmp0 = to_dyn__T_S(S {}) in
+  let _wild1 = println__T_string("ok") in
+  ()
+}
+
+fn to_dyn__T_S(x/1: S) -> dyn Display {
+  to_dyn[Display]{S}(x/1)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

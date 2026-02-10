@@ -1,0 +1,27 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+}
+
+impl Display for Point{
+  fn show(self/0: Point) -> string {
+      (int32_to_string : (int32) -> string)((self/0 : Point).value);
+  }
+}
+
+fn to_dyn(x/1: T) -> dyn Display {
+    to_dyn[Display]{T}((x/1 : T));
+}
+
+fn render(x/2: dyn Display) -> string {
+    (dyn Display::show : (dyn Display) -> string)((x/2 : dyn Display));
+}
+
+fn main() -> unit {
+    let d/3: dyn Display = (to_dyn : (Point) -> dyn Display)(Point { value: 7 });
+    (println : (string) -> unit)((render : (dyn Display) -> string)((d/3 : dyn Display)));
+    ();
+}

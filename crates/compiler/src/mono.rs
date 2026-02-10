@@ -1,7 +1,9 @@
 use crate::common::{self, Constructor, Prim};
 use crate::core::{self, Ty};
 use crate::env::{EnumDef, GlobalTypeEnv, StructDef};
-use crate::names::{parse_inherent_method_fn_name, trait_impl_fn_name, ty_compact};
+use crate::names::{
+    parse_inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact,
+};
 use crate::tast::{self, TastIdent};
 use indexmap::{IndexMap, IndexSet};
 use std::collections::VecDeque;
@@ -436,7 +438,8 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         | (Ty::TUint64, Ty::TUint64)
         | (Ty::TFloat32, Ty::TFloat32)
         | (Ty::TFloat64, Ty::TFloat64)
-        | (Ty::TString, Ty::TString) => Ok(()),
+        | (Ty::TString, Ty::TString)
+        | (Ty::TChar, Ty::TChar) => Ok(()),
         (Ty::TTuple { typs: l }, Ty::TTuple { typs: r }) => {
             if l.len() != r.len() {
                 return Err("tuple length mismatch".to_string());
@@ -450,6 +453,12 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
         | (Ty::TStruct { name: ln }, Ty::TStruct { name: rn }) => {
             if ln != rn {
                 return Err("type constructor mismatch".to_string());
+            }
+            Ok(())
+        }
+        (Ty::TDyn { trait_name: ln }, Ty::TDyn { trait_name: rn }) => {
+            if ln != rn {
+                return Err("dyn trait mismatch".to_string());
             }
             Ok(())
         }
@@ -470,7 +479,12 @@ fn unify(template: &Ty, actual: &Ty, subst: &mut Subst) -> Result<(), String> {
             unify(le, re, subst)
         }
         (Ty::TSlice { elem: le }, Ty::TSlice { elem: re }) => unify(le, re, subst),
+        (Ty::TVec { elem: le }, Ty::TVec { elem: re }) => unify(le, re, subst),
         (Ty::TRef { elem: le }, Ty::TRef { elem: re }) => unify(le, re, subst),
+        (Ty::THashMap { key: lk, value: lv }, Ty::THashMap { key: rk, value: rv }) => {
+            unify(lk, rk, subst)?;
+            unify(lv, rv, subst)
+        }
         (
             Ty::TFunc {
                 params: lp,
@@ -504,15 +518,18 @@ struct Ctx {
     // Index for inherent methods: (base_type, method_name) -> generic_func_name
     // Example: ("Point", "new") -> "impl_inherent_Point_TParam_U_TParam_V_new"
     inherent_method_index: IndexMap<(String, String), String>,
+    // Index for trait impl methods: (trait_name, method_name) -> generic_func_names
+    trait_impl_method_index: IndexMap<(String, String), Vec<String>>,
 }
 
 impl Ctx {
     fn new(orig_fns: IndexMap<String, core::Fn>) -> Self {
         let mut inherent_method_index = IndexMap::new();
+        let mut trait_impl_method_index: IndexMap<(String, String), Vec<String>> = IndexMap::new();
 
         // Build index for generic inherent methods
         for (fname, f) in orig_fns.iter() {
-            if !f.generics.is_empty()
+            if fn_is_generic(f)
                 && fname.starts_with("inherent#")
                 && let Some((base_type, method_name)) = parse_inherent_method_fn_name(fname)
             {
@@ -520,6 +537,15 @@ impl Ctx {
                     (base_type.to_string(), method_name.to_string()),
                     fname.clone(),
                 );
+            }
+            if fn_is_generic(f)
+                && fname.starts_with("trait_impl#")
+                && let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(fname)
+            {
+                trait_impl_method_index
+                    .entry((trait_name.to_string(), method_name.to_string()))
+                    .or_default()
+                    .push(fname.clone());
             }
         }
 
@@ -530,7 +556,70 @@ impl Ctx {
             out: Vec::new(),
             work: VecDeque::new(),
             inherent_method_index,
+            trait_impl_method_index,
         }
+    }
+
+    fn find_generic_trait_impl(
+        &self,
+        trait_name: &str,
+        method_name: &str,
+        arg_tys: &[Ty],
+        ret_ty: &Ty,
+    ) -> Option<String> {
+        let candidates = self
+            .trait_impl_method_index
+            .get(&(trait_name.to_string(), method_name.to_string()))?;
+        let mut matched: Option<String> = None;
+        for candidate_name in candidates {
+            let Some(callee) = self.orig_fns.get(candidate_name) else {
+                continue;
+            };
+            if callee.params.len() != arg_tys.len() {
+                continue;
+            }
+            let mut trial_subst = Subst::new();
+            let mut ok = true;
+            for ((_, param_ty), arg_ty) in callee.params.iter().zip(arg_tys.iter()) {
+                if unify(param_ty, arg_ty, &mut trial_subst).is_err() {
+                    ok = false;
+                    break;
+                }
+            }
+            if !ok {
+                continue;
+            }
+            if unify(&callee.ret_ty, ret_ty, &mut trial_subst).is_err() {
+                continue;
+            }
+            if matched.is_some() {
+                return None;
+            }
+            matched = Some(candidate_name.clone());
+        }
+        matched
+    }
+
+    fn resolve_generic_callee_name(
+        &self,
+        func_name: &str,
+        arg_tys: &[Ty],
+        ret_ty: &Ty,
+    ) -> Option<String> {
+        if self.orig_fns.contains_key(func_name) {
+            return Some(func_name.to_string());
+        }
+        if let Some((base_type, method_name)) = parse_inherent_method_fn_name(func_name)
+            && let Some(generic_fname) = self
+                .inherent_method_index
+                .get(&(base_type.to_string(), method_name.to_string()))
+        {
+            return Some(generic_fname.clone());
+        }
+        if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(func_name) {
+            return self.find_generic_trait_impl(trait_name, method_name, arg_tys, ret_ty);
+        }
+        None
     }
 
     // Ensure an instance exists (or is queued) and return its specialized name
@@ -673,6 +762,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             let new_func = mono_expr(ctx, &func, s);
             let new_args: Vec<MonoExpr> = args.iter().map(|a| mono_expr(ctx, a, s)).collect();
             let new_ty = subst_ty(&ty, s);
+            let arg_tys = new_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
 
             let MonoExpr::EVar {
                 name: func_name, ..
@@ -685,18 +775,16 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 };
             };
 
-            // If function is not in current file (runtime/built-in), leave as is
-            // For inherent methods, try to find generic version if exact match fails
-            let callee_opt = ctx.orig_fns.get(func_name).or_else(|| {
-                // Use index to find generic inherent method
-                parse_inherent_method_fn_name(func_name).and_then(|(base_type, method_name)| {
-                    ctx.inherent_method_index
-                        .get(&(base_type.to_string(), method_name.to_string()))
-                        .and_then(|generic_fname| ctx.orig_fns.get(generic_fname))
-                })
-            });
-
-            let Some(callee) = callee_opt else {
+            let Some(generic_func_name) =
+                ctx.resolve_generic_callee_name(func_name, &arg_tys, &new_ty)
+            else {
+                return MonoExpr::ECall {
+                    func: Box::new(new_func),
+                    args: new_args,
+                    ty: new_ty,
+                };
+            };
+            let Some(callee) = ctx.orig_fns.get(&generic_func_name) else {
                 return MonoExpr::ECall {
                     func: Box::new(new_func),
                     args: new_args,
@@ -712,12 +800,9 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 };
             }
 
-            let generic_func_name = callee.name.clone();
-
             // Derive concrete substitution for this call by unifying callee param/ret with arg/call types
             let mut call_subst: Subst = IndexMap::new();
             let callee_param_tys = callee.params.iter().map(|(_, t)| t).collect::<Vec<_>>();
-            let arg_tys = new_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
             for (pt, at) in callee_param_tys.iter().zip(arg_tys.iter()) {
                 if let Err(e) = unify(pt, at, &mut call_subst) {
                     panic!(
@@ -875,13 +960,29 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             }
 
             let receiver = mono_expr(ctx, &receiver, s);
-            let mut all_args = Vec::with_capacity(args.len() + 1);
-            all_args.push(receiver);
-            for arg in args.iter() {
-                all_args.push(mono_expr(ctx, arg, s));
+            let dyn_args = args
+                .iter()
+                .map(|arg| mono_expr(ctx, arg, s))
+                .collect::<Vec<_>>();
+            let new_ty = subst_ty(&ty, s);
+
+            if let Ty::TDyn {
+                trait_name: dyn_trait_name,
+            } = receiver.get_ty()
+                && dyn_trait_name == trait_name.0
+            {
+                return MonoExpr::EDynCall {
+                    trait_name,
+                    method_name,
+                    receiver: Box::new(receiver),
+                    args: dyn_args,
+                    ty: new_ty,
+                };
             }
 
-            let new_ty = subst_ty(&ty, s);
+            let mut all_args = Vec::with_capacity(args.len() + 1);
+            all_args.push(receiver);
+            all_args.extend(dyn_args);
             let receiver_ty = all_args[0].get_ty();
             let func_name = trait_impl_fn_name(&trait_name, &receiver_ty, &method_name.0);
             let param_tys = all_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();

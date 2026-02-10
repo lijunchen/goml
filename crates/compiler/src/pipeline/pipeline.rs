@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use ast::ast;
 use cst::cst::{CstNode, File as CstFile};
@@ -8,6 +8,7 @@ use parser::{self, syntax::MySyntaxNode};
 use rowan::GreenNode;
 
 use crate::package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE};
+use crate::pipeline::builtin_inherent;
 use crate::pipeline::compile_error;
 use crate::pipeline::packages;
 use crate::{
@@ -253,11 +254,8 @@ fn typecheck_packages(
     path: &Path,
     entry_ast: ast::File,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
+    let graph =
+        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
@@ -359,6 +357,16 @@ fn typecheck_packages(
     })
 }
 
+fn discovery_root_for_file(path: &Path) -> PathBuf {
+    if let Ok((module_dir, _)) = packages::discover_project_from_file(path) {
+        return module_dir;
+    }
+    path.parent()
+        .filter(|parent| !parent.as_os_str().is_empty())
+        .unwrap_or_else(|| Path::new("."))
+        .to_path_buf()
+}
+
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
@@ -420,6 +428,16 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
             build_package(&gensym, &mut diagnostics, artifact, &dep_interfaces);
         package_cores.push(core);
     }
+    let required_builtin_methods =
+        builtin_inherent::collect_required_builtin_collection_methods(&package_cores);
+    let builtin_collection_core = builtin_inherent::compile_builtin_collection_methods(
+        &required_builtin_methods,
+        &gensym,
+        &mut diagnostics,
+    );
+    if !builtin_collection_core.toplevels.is_empty() {
+        package_cores.push(builtin_collection_core);
+    }
     let core = link_packages(package_cores);
     if diagnostics.has_errors() {
         return Err(CompilationError::Compile { diagnostics });
@@ -472,11 +490,8 @@ pub fn typecheck_with_packages_and_results(
 > {
     let (_green_node, _cst, entry_ast, mut diagnostics) =
         parse_ast_from_source_allow_parse_errors(path, src)?;
-    let root_dir = path
-        .parent()
-        .filter(|parent| !parent.as_os_str().is_empty())
-        .unwrap_or_else(|| Path::new("."));
-    let graph = packages::discover_packages(root_dir, Some(path), Some(entry_ast))?;
+    let graph =
+        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut genv = builtins::builtin_env();

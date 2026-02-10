@@ -1,0 +1,24 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  int32_to_string(self/0)
+}
+
+fn main() -> unit {
+  let f/3 = mk_renderer__T_int32(42) in
+  let t2 = inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(f/3) in
+  let _wild0 = println__T_string(t2) in
+  ()
+}
+
+fn mk_renderer__T_int32(x/1: int32) -> closure_env_mk_renderer_T_int32_0 {
+  let d/2 = to_dyn[Display]{int32}(x/1) in
+  closure_env_mk_renderer_T_int32_0 { d_0: d/2 }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn inherent#closure_env_mk_renderer_T_int32_0#closure_env_mk_renderer_T_int32_0#apply(env1: closure_env_mk_renderer_T_int32_0) -> string {
+  let d/2 = closure_env_mk_renderer_T_int32_0.d_0(env1) in
+  dyn_call[Display::show](d/2)
+}

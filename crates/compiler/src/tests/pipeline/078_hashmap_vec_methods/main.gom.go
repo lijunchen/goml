@@ -248,45 +248,45 @@ func print_opt_int(x__9 Option__int32) struct{} {
 
 func main0() struct{} {
     var ret43 struct{}
-    var v__11 []int32 = nil
-    var v__12 []int32 = append(v__11, 10)
-    var v__13 []int32 = append(v__12, 20)
-    var v__14 []int32 = append(v__13, 30)
-    var t23 int32 = v__14[0]
+    var v__11 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__new__T_int32()
+    var v__12 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(v__11, 10)
+    var v__13 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(v__12, 20)
+    var v__14 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(v__13, 30)
+    var t23 int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__get__T_int32(v__14, 0)
     println__T_int32(t23)
-    var t24 int32 = v__14[1]
+    var t24 int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__get__T_int32(v__14, 1)
     println__T_int32(t24)
-    var t25 int32 = v__14[2]
+    var t25 int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__get__T_int32(v__14, 2)
     println__T_int32(t25)
-    var t26 int32 = int32(len(v__14))
+    var t26 int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__len__T_int32(v__14)
     println__T_int32(t26)
-    var m__15 *hashmap_key_int32_x = hashmap_new__HashMap_Key_int32()
+    var m__15 *hashmap_key_int32_x = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32()
     var t27 Key = A{}
-    hashmap_set__HashMap_Key_int32(m__15, t27, 10)
+    _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(m__15, t27, 10)
     var t28 Key = B{
         _0: 1,
     }
-    hashmap_set__HashMap_Key_int32(m__15, t28, 20)
-    var t29 int32 = hashmap_len__HashMap_Key_int32(m__15)
+    _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(m__15, t28, 20)
+    var t29 int32 = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(m__15)
     println__T_int32(t29)
     var t31 Key = A{}
-    var t30 Option__int32 = hashmap_get__HashMap_Key_int32(m__15, t31)
+    var t30 Option__int32 = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(m__15, t31)
     print_opt_int(t30)
     var t33 Key = B{
         _0: 1,
     }
-    var t32 bool = hashmap_contains__HashMap_Key_int32(m__15, t33)
+    var t32 bool = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(m__15, t33)
     println__T_bool(t32)
     var t34 Key = B{
         _0: 1,
     }
-    hashmap_remove__HashMap_Key_int32(m__15, t34)
+    _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__remove__K_Key__V_int32(m__15, t34)
     var t36 Key = B{
         _0: 1,
     }
-    var t35 bool = hashmap_contains__HashMap_Key_int32(m__15, t36)
+    var t35 bool = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(m__15, t36)
     println__T_bool(t35)
-    var t37 int32 = hashmap_len__HashMap_Key_int32(m__15)
+    var t37 int32 = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(m__15)
     println__T_int32(t37)
     ret43 = struct{}{}
     return ret43
@@ -305,11 +305,71 @@ func println__T_int32(value__1 int32) struct{} {
     return ret45
 }
 
-func println__T_bool(value__1 bool) struct{} {
-    var ret46 struct{}
-    var t39 string = bool_to_string(value__1)
-    ret46 = string_println(t39)
+func _goml_inherent_Vec_Vec_x5b_T_x5d__new__T_int32() []int32 {
+    var ret46 []int32
+    ret46 = nil
     return ret46
+}
+
+func _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(self__66 []int32, elem__67 int32) []int32 {
+    var ret47 []int32
+    ret47 = append(self__66, elem__67)
+    return ret47
+}
+
+func _goml_inherent_Vec_Vec_x5b_T_x5d__get__T_int32(self__68 []int32, index__69 int32) int32 {
+    var ret48 int32
+    ret48 = self__68[index__69]
+    return ret48
+}
+
+func _goml_inherent_Vec_Vec_x5b_T_x5d__len__T_int32(self__70 []int32) int32 {
+    var ret49 int32
+    ret49 = int32(len(self__70))
+    return ret49
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_Key__V_int32() *hashmap_key_int32_x {
+    var ret50 *hashmap_key_int32_x
+    ret50 = hashmap_new__HashMap_Key_int32()
+    return ret50
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_Key__V_int32(self__79 *hashmap_key_int32_x, key__80 Key, value__81 int32) struct{} {
+    var ret51 struct{}
+    ret51 = hashmap_set__HashMap_Key_int32(self__79, key__80, value__81)
+    return ret51
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__84 *hashmap_key_int32_x) int32 {
+    var ret52 int32
+    ret52 = hashmap_len__HashMap_Key_int32(self__84)
+    return ret52
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__77 *hashmap_key_int32_x, key__78 Key) Option__int32 {
+    var ret53 Option__int32
+    ret53 = hashmap_get__HashMap_Key_int32(self__77, key__78)
+    return ret53
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__85 *hashmap_key_int32_x, key__86 Key) bool {
+    var ret54 bool
+    ret54 = hashmap_contains__HashMap_Key_int32(self__85, key__86)
+    return ret54
+}
+
+func println__T_bool(value__1 bool) struct{} {
+    var ret55 struct{}
+    var t39 string = bool_to_string(value__1)
+    ret55 = string_println(t39)
+    return ret55
+}
+
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__remove__K_Key__V_int32(self__82 *hashmap_key_int32_x, key__83 Key) struct{} {
+    var ret56 struct{}
+    ret56 = hashmap_remove__HashMap_Key_int32(self__82, key__83)
+    return ret56
 }
 
 func main() {

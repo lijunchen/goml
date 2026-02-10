@@ -1,0 +1,17 @@
+trait Label {
+    fn label(Self) -> string;
+}
+
+struct S {}
+
+impl Label for S {
+    fn label(self: S) -> string {
+        "s"
+    }
+}
+
+fn main() {
+    let s = S {};
+    let _ = s.label();
+    ()
+}

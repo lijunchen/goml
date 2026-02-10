@@ -1,11 +1,5 @@
 package main
 
-func missing(s string) struct{} {
-    println("missing: " + s)
-    panic("")
-    return struct{}{}
-}
-
 type point struct {
     x int32
     y int32
@@ -75,7 +69,7 @@ func main0() int32 {
             ret12 = 0
         }
     case none:
-        ret12 = missing("")
+        ret12 = 0
     }
     return ret12
 }
