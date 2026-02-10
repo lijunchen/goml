@@ -1339,3 +1339,925 @@ fn main() -> unit {
    - 在 `let` 绑定使用不可反驳模式。
 
 本规范即当前编译器行为的语义基线。
+
+---
+
+## 25. 按语法结构细化：Trait、约束生成、约束求解
+
+本章给出实现级细化，直接对应 typer 中的表达式/模式检查分支。
+
+统一前提：
+
+1. 任何表达式进入 `check_expr(e, expected)` 后，都会在末尾追加 `TypeEqual(type(e), expected)`。
+2. `check_expr` 末尾会尝试 `coerce_to_expected_dyn`，即当 `expected` 是 `dyn Trait` 时先做 dyn 强制，再做类型等式。
+3. 因此，下面每个结构都分为“推断路径（infer）”和“检查路径（check）”两种语义。
+
+### 25.1 约束类型速记
+
+1. `TEQ(a, b)` = `TypeEqual(a, b)`。
+2. `OVL(op, trait, call_ty)` = `Overloaded`。
+3. `IMP(trait, ty)` = `Implements`。
+4. `SFA(expr_ty, field, result_ty)` = `StructFieldAccess`。
+
+---
+
+## 26. 顶层语法结构（声明层）
+
+### 26.1 `trait` 定义
+
+Trait 参与：
+
+1. 直接向 trait 环境注册方法签名（`FnScheme`，无函数体）。
+
+约束生成：
+
+1. 声明阶段不生成运行时表达式约束。
+2. 仅在后续调用或 impl 校验时转化为约束/比较。
+
+求解路径：
+
+1. 无直接 solver 输入。
+2. 影响 `resolve_trait_name`、方法查找与 `OVL/IMP` 的合法性。
+
+失败诊断：
+
+1. 若 trait 名无法解析，后续使用点报 `Unknown trait`。
+
+### 26.2 `impl Trait for Type`
+
+Trait 参与：
+
+1. 校验 orphan rule。
+2. 校验方法完整性与签名严格一致性。
+
+约束生成：
+
+1. impl 注册时不直接推送 `Constraint`。
+2. 方法体类型检查时，方法调用和表达式会生成普通约束。
+
+求解路径：
+
+1. 由方法体中的约束进入 `solve`。
+2. solver 在 `OVL/IMP` 查询中可见该 impl。
+
+失败诊断：
+
+1. trait 不存在。
+2. orphan rule 违规。
+3. 重复 impl。
+4. 缺失方法。
+5. 额外方法。
+6. 参数个数/参数类型/返回类型与 trait 签名不一致。
+
+### 26.3 `impl Type`（inherent impl）
+
+Trait 参与：
+
+1. 不涉及 trait 实现表，但会写入 inherent 方法表。
+
+约束生成：
+
+1. 注册阶段无直接 `Constraint`。
+2. 方法体检查中会生成常规约束。
+
+求解路径：
+
+1. 调用点优先命中 inherent 方法，再进入函数类型统一。
+
+失败诊断：
+
+1. 对非本地类型定义 inherent impl。
+2. 同一 impl 中方法重复。
+
+### 26.4 顶层函数 `fn`
+
+Trait 参与：
+
+1. 泛型 bound 进入 `FnScheme.constraints`。
+
+约束生成：
+
+1. 函数体 `check_expr(body, ret_ty)` 生成表达式约束。
+2. 调用点才会将 `FnScheme.constraints` 转成 `IMP` 或 bound 检查。
+
+求解路径：
+
+1. 每个函数体类型检查后都会运行 `solve`。
+
+失败诊断：
+
+1. 返回类型不匹配。
+2. 泛型参数/约束使用错误会在类型验证或调用点报错。
+
+### 26.5 `extern` / `extern builtin`
+
+Trait 参与：
+
+1. `extern builtin` 可携带泛型 bound，进入 `FnScheme.constraints`。
+
+约束生成：
+
+1. 声明时不生成求解约束。
+2. 调用时按普通函数调用生成 `TEQ/IMP`。
+
+求解路径：
+
+1. 与普通函数调用一致。
+
+失败诊断：
+
+1. 类型构造器未知、泛型参数个数错误、非法类型参数等。
+
+---
+
+## 27. 表达式结构逐项细化
+
+### 27.1 `ENameRef`
+
+Trait 参与：
+
+1. 无直接 trait 分派。
+2. 若引用的是函数值，后续调用时才触发 trait bound 约束。
+
+约束生成：
+
+1. `infer` 阶段仅产出类型（局部变量类型或实例化后的函数类型）。
+2. `check` 阶段统一追加 `TEQ(type(expr), expected)`。
+
+求解路径：
+
+1. 仅通过外层 `TEQ` 参与统一。
+
+失败诊断：
+
+1. 未解析名称：`Unresolved name ...`。
+
+### 27.2 `EStaticMember`（非调用）
+
+Trait 参与：
+
+1. 可能解析成 `ETraitMethod` 或 `EInherentMethod` 的函数值。
+
+约束生成：
+
+1. 仅产出方法函数类型，不立即生成 `OVL`。
+2. 在 `check` 路径上会追加 `TEQ`。
+
+求解路径：
+
+1. 后续若被调用，才进入对应调用分支求解。
+
+失败诊断：
+
+1. 类型或 trait 不存在。
+2. 方法不存在。
+
+### 27.3 `EUnit`
+
+Trait 参与：无。
+
+约束生成：
+
+1. `infer` 得到 `unit`。
+2. `check` 追加 `TEQ(unit, expected)`。
+
+求解路径：仅统一。
+
+失败诊断：通常是外层类型不匹配。
+
+### 27.4 `EBool`
+
+Trait 参与：无。
+
+约束生成：
+
+1. `infer` 得到 `bool`。
+2. `check` 追加 `TEQ(bool, expected)`。
+
+求解路径：仅统一。
+
+### 27.5 `EInt/EInt8/EInt16/EInt32/EInt64/EUInt8/EUInt16/EUInt32/EUInt64`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. `infer` 直接给定对应整数类型（无后缀 `int` 默认为 `int32`）。
+2. `check` 追加 `TEQ(lit_ty, expected)`。
+
+求解路径：
+
+1. 普通统一。
+
+失败诊断：
+
+1. 字面量解析失败。
+2. 越界（不适配目标位宽）。
+
+### 27.6 `EFloat/EFloat32/EFloat64`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. `infer` 给定浮点类型（无后缀默认 `float64`）。
+2. `check` 追加 `TEQ(lit_ty, expected)`。
+
+求解路径：普通统一。
+
+失败诊断：
+
+1. 非法浮点字面量。
+2. `float32` 范围不适配。
+
+### 27.7 `EString`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. `infer` 为 `string`。
+2. `check` 追加 `TEQ(string, expected)`。
+
+求解路径：普通统一。
+
+### 27.8 `EChar`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. `infer` 为 `char`。
+2. `check` 追加 `TEQ(char, expected)`。
+
+求解路径：普通统一。
+
+失败诊断：
+
+1. 非法字符字面量。
+
+### 27.9 `EConstr`（构造器表达式）
+
+Trait 参与：
+
+1. 无直接 trait 方法分派。
+
+约束生成：
+
+1. 校验构造器参数个数。
+2. 构造器类型实例化后：
+   - 若有参数，生成 `TEQ(inst_constr_ty, (arg_types) -> ret_ty)`。
+   - 若无参数，生成 `TEQ(inst_constr_ty, ret_ty)`。
+3. 各参数按构造器参数类型进入 `check_expr`，内部再生成约束。
+
+求解路径：
+
+1. 由 `TEQ` 统一构造器参数与返回类型。
+
+失败诊断：
+
+1. 构造器不存在。
+2. 构造器歧义。
+3. 参数个数不匹配。
+
+### 27.10 `EStructLiteral`
+
+Trait 参与：无直接 trait 分派。
+
+约束生成：
+
+1. 字段名映射并做重复/未知检查。
+2. 每个字段按构造器参数预期类型 `check_expr`。
+3. 最终生成与 `EConstr` 同形态 `TEQ`。
+4. 缺失字段会补占位表达式，仍参与约束。
+
+求解路径：
+
+1. 与 `EConstr` 一致。
+
+失败诊断：
+
+1. 目标不是结构体构造器。
+2. 未知字段、重复字段、缺失字段。
+
+### 27.11 `ETuple`
+
+Trait 参与：无。
+
+约束生成：
+
+1. `infer` 对每个元素递归推断，不直接生成额外 `Constraint`。
+2. `check` 场景若 `expected` 为同长度 tuple，会逐项 `check_expr`；最终仍有外层 `TEQ`。
+
+求解路径：
+
+1. 外层统一时逐项统一。
+
+### 27.12 `EArray`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 生成 fresh `elem_ty`。
+2. 每个元素推断后生成 `TEQ(item_ty, elem_ty)`。
+3. 数组表达式类型为 `[elem_ty; len]`。
+
+求解路径：
+
+1. 通过 `TEQ` 将元素类型收敛。
+
+失败诊断：
+
+1. 元素类型不一致导致统一失败。
+
+### 27.13 `EClosure`
+
+Trait 参与：
+
+1. 无直接 trait 分派。
+2. 但闭包可在 expected=`dyn Trait` 时触发 dyn coercion（如果闭包类型可满足）。
+
+约束生成：
+
+1. `infer`：参数无注解时 fresh TVar；体推断后形成函数类型。
+2. `check`（expected 为函数类型且参数个数匹配）：
+   - 参数注解存在时生成 `TEQ(annotation_ty, expected_param_ty)`。
+   - 体按 expected return 检查。
+3. `check` 末尾统一追加 `TEQ`。
+
+求解路径：
+
+1. 参数与返回的等式约束统一。
+
+失败诊断：
+
+1. 参数个数/类型与 expected 函数类型不匹配。
+
+### 27.14 `ELet`
+
+Trait 参与：
+
+1. 无直接 trait 分派。
+
+约束生成：
+
+1. 有注解：`value` 走 `check_expr(value, ann_ty)`。
+2. 无注解：`value` 走 `infer_expr`。
+3. `check_pat(pat, value_ty)` 会生成 pattern 相关约束。
+4. `let` 自身类型固定 `unit`。
+
+求解路径：
+
+1. 来自 value 与 pattern 的约束进入 solver。
+
+失败诊断：
+
+1. 可反驳模式用于 `let`。
+
+### 27.15 `EBlock`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. `infer`：逐个推断，最后一个表达式类型为 block 类型。
+2. `check`：最后一个表达式按 `expected` 检查。
+3. `check` 末尾追加 `TEQ(block_ty, expected)`。
+
+求解路径：由子表达式约束驱动。
+
+### 27.16 `EMatch`
+
+Trait 参与：无直接 trait 分派。
+
+约束生成：
+
+1. 推断 scrutinee 类型 `S`。
+2. 每个 arm pattern 执行 `check_pat(..., S)`。
+3. `infer` 模式：每个 arm body 生成 `TEQ(arm_body_ty, arm_result_ty)`（共享 fresh）。
+4. `check` 模式：每个 arm body 直接 `check_expr(..., expected)`。
+
+求解路径：
+
+1. 统一 arm body 类型。
+2. pattern 约束统一 scrutinee 与各模式子类型。
+
+失败诊断：
+
+1. 构造器模式错误。
+2. 模式参数个数错误。
+3. 结构体模式字段错误。
+
+### 27.17 `EIf`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 条件生成 `TEQ(cond_ty, bool)`。
+2. `infer` 模式：then/else 各自与 fresh result_ty 生成 `TEQ`。
+3. `check` 模式：then/else 直接按 `expected` 检查，末尾再 `TEQ`。
+
+求解路径：统一分支结果类型。
+
+### 27.18 `EWhile`
+
+Trait 参与：无。
+
+约束生成：
+
+1. `TEQ(cond_ty, bool)`。
+2. `TEQ(body_ty, unit)`。
+3. 表达式类型 `unit`，`check` 场景再 `TEQ(unit, expected)`。
+
+求解路径：普通统一。
+
+### 27.19 `EGo`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 生成 `TEQ(expr_ty, () -> unit)`。
+2. 表达式类型 `unit`，`check` 场景追加 `TEQ(unit, expected)`。
+
+求解路径：普通统一。
+
+### 27.20 `ECall`（总入口）
+
+`ECall` 是 trait 与约束最密集节点，需按 callee 形态分流。
+
+#### 27.20.1 调用局部变量函数值
+
+Trait 参与：
+
+1. 无直接 trait 查找。
+
+约束生成：
+
+1. 先推断所有参数，构造 `call_site_ty = (arg_tys) -> ret_ty`。
+2. 生成 `TEQ(var_ty, call_site_ty)`。
+
+求解路径：
+
+1. 统一变量函数类型与调用点函数类型。
+
+#### 27.20.2 调用顶层函数/内建函数
+
+Trait 参与：
+
+1. 读取 `FnScheme.constraints`，每条 bound 通过 `apply_fn_scheme_constraints` 处理。
+
+约束生成：
+
+1. 函数类型实例化 `inst_ty = inst_ty(scheme.ty)`。
+2. 参数数量匹配且有参数时，按参数类型 `check_expr`；否则先 `infer` 参数。
+3. 构造 `call_site_ty = (arg_tys) -> ret_ty`。
+4. 生成 `TEQ(inst_ty, call_site_ty)`。
+5. 对 bound：
+   - 实参对应类型为 `dyn Trait` 且同 trait：直接满足。
+   - 为 `TParam`：要求 local bound 含该 trait，否则报错。
+   - 其余类型：生成 `IMP(trait, actual_ty)`。
+
+求解路径：
+
+1. `TEQ` 统一参数/返回。
+2. `IMP` 在 solver 中检查 impl 可见性或 dyn 满足性。
+
+#### 27.20.3 单段未解析名称的函数回退调用
+
+Trait 参与与约束生成：与 27.20.2 相同（通过 unqualified 函数查找）。
+
+#### 27.20.4 `TypeOrTrait::member(...)`（静态成员调用）
+
+分两类：
+
+1. 解析为 trait 方法。
+2. 解析为 inherent 方法。
+
+##### A. 解析为 trait 方法
+
+Trait 参与：
+
+1. 通过 type name 识别 trait。
+2. receiver 在参数第 1 位。
+
+约束生成：
+
+1. 先实例化方法类型，再用 receiver 进行 `Self` 替换。
+2. 若第一个实参是 `dyn Trait` 且 trait 匹配：
+   - 构造 dyn 方法调用，不生成 `OVL`，按参数 `check_expr`。
+3. 若 receiver 是 `TParam`：
+   - 检查其 bound 是否包含 trait；满足时生成 `TEQ(call_site_ty, method_ty_after_self)`。
+4. 若 receiver 是非 `TParam`：
+   - 生成 `OVL(method_name, trait_name, call_site_ty)`。
+
+求解路径：
+
+1. `TParam` 路径走 `TEQ` 直接统一。
+2. `OVL` 路径在 solver 中：
+   - receiver concrete 时收集可见 impl。
+   - 1 个 impl -> 转化为 `TEQ(call_site_ty, impl_fun_ty)`。
+   - 0 或多 -> 报错。
+   - receiver 非 concrete -> 延期。
+
+##### B. 解析为 inherent 方法
+
+Trait 参与：
+
+1. 不走 trait 表。
+
+约束生成：
+
+1. 实例化方法类型，检查参数个数。
+2. 每个参数 `check_expr`。
+3. 构造 `call_site_ty` 并生成 `TEQ(inst_method_ty, call_site_ty)`。
+4. 应用方法 scheme 的泛型 bound，必要时生成 `IMP`。
+
+求解路径：
+
+1. `TEQ` + `IMP`。
+
+#### 27.20.5 `x.method(...)`（字段式方法调用）
+
+Trait 参与：
+
+1. 先查 inherent。
+2. 未命中再查 trait 候选。
+
+约束生成：
+
+1. inherent 命中：
+   - 构造包含 receiver 的 `call_site_ty`。
+   - 生成 `TEQ(inst_method_ty, call_site_ty)`。
+   - 应用方法 bound，必要时生成 `IMP`。
+2. trait 命中且唯一：
+   - 方法类型实例化并以 receiver 替换 `Self`。
+   - 参数按 expected 检查。
+   - 生成 `TEQ(receiver_ty, receiver_param_ty)`。
+3. 无候选或多候选：不生成有效调用约束，直接错误占位。
+
+求解路径：
+
+1. inherent 路径：`TEQ/IMP`。
+2. trait 唯一路径：receiver 等式统一 + 子参数约束。
+
+失败诊断：
+
+1. method not found。
+2. ambiguous method（提示 UFCS）。
+
+### 27.21 `EUnary`
+
+Trait 参与：无。
+
+约束生成：
+
+1. `!`：`TEQ(expr_ty, bool)`。
+2. `-`：当前实现仅生成 `TEQ(expr_ty, expr_ty)`（形式上恒真），数值性主要依赖上下文。
+
+求解路径：
+
+1. `!` 通过普通统一收敛到 `bool`。
+2. `-` 的数值约束更多来自外部 `check` 期望或后续运算约束。
+
+### 27.22 `EBinary`
+
+Trait 参与：无直接 trait 分派。
+
+约束生成：
+
+1. `+/-/*//`：
+   - `ret_ty` 在 infer 下 fresh。
+   - 生成 `TEQ(lhs_ty, ret_ty)` 与 `TEQ(rhs_ty, ret_ty)`。
+2. `&&/||`：`TEQ(lhs_ty, bool)` 与 `TEQ(rhs_ty, bool)`，结果 `bool`。
+3. 比较运算：`TEQ(lhs_ty, rhs_ty)`，结果 `bool`。
+
+求解路径：普通统一。
+
+### 27.23 `EProj`
+
+Trait 参与：无。
+
+约束生成：
+
+1. tuple 正常时直接返回投影类型，不新增约束。
+2. 非 tuple 或越界报错并返回 fresh TVar 占位。
+
+求解路径：通过外层约束继续。
+
+### 27.24 `EField`
+
+Trait 参与：无直接 trait。
+
+约束生成：
+
+1. 若能立即解析结构体字段类型，直接返回该类型。
+2. 否则生成 `SFA(base_ty, field, result_ty)`。
+
+求解路径：
+
+1. `SFA` 在 solver 中：
+   - 当 `expr_ty` 可分解为 struct 类型后，实例化字段类型。
+   - 再统一 `result_ty` 与实例化字段类型。
+   - 不能分解时延期。
+
+失败诊断：
+
+1. 结构体不存在。
+2. 字段不存在。
+
+### 27.25 `EToDyn`（由 coercion 产生）
+
+Trait 参与：
+
+1. 核心是 `dyn` 强制。
+
+约束生成：
+
+1. 若源类型是 `TVar`，生成 `IMP(trait, for_ty)`。
+2. 若源类型是 `TParam`，检查 bound，不生成 `IMP`。
+3. 若源类型是 concrete，检查 impl 可见性，不生成 `IMP`。
+4. 结果类型固定为 `dyn Trait`，随后还有外层 `TEQ`。
+
+求解路径：
+
+1. `IMP` 在 solver 验证 impl。
+
+失败诊断：
+
+1. `TParam` 无对应 bound。
+2. 源类型非 concrete 且不是 `TVar` 可延期情形。
+3. concrete 类型无 trait impl。
+
+---
+
+## 28. 模式结构逐项细化
+
+### 28.1 `PVar`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 不生成 `Constraint`。
+2. 直接把期望类型绑定到变量。
+
+求解路径：
+
+1. 无新增约束，依赖上下文表达式约束。
+
+### 28.2 `PWild`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 生成 fresh `pat_ty`。
+2. 生成 `TEQ(pat_ty, expected_ty)`。
+
+求解路径：普通统一。
+
+### 28.3 `PUnit`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 当前实现直接返回 `unit` 模式类型。
+2. 不额外推送 `TEQ(unit, expected)`。
+
+求解路径：
+
+1. 主要依赖外层其它约束。
+
+边界说明：
+
+1. 这是当前实现细节，与“严格检查 unit 模式类型”直觉可能不同。
+
+### 28.4 `PBool`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 当前实现直接返回 `bool` 模式类型。
+2. 不额外推送 `TEQ(bool, expected)`。
+
+求解路径：主要依赖外层。
+
+边界说明：
+
+1. 同 28.3，为当前实现细节。
+
+### 28.5 `PInt`（无后缀）
+
+Trait 参与：无。
+
+约束生成：
+
+1. 若 expected 是整数类型，则字面量按该整数类型解析。
+2. 否则按 `int32` 解析。
+3. 生成 `TEQ(target_int_ty, expected_ty)`。
+
+求解路径：普通统一。
+
+### 28.6 `PInt8/PInt16/PInt32/PInt64/PUInt8/PUInt16/PUInt32/PUInt64`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 字面量按固定类型解析。
+2. 生成 `TEQ(literal_ty, expected_ty)`。
+
+求解路径：普通统一。
+
+### 28.7 `PString`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 生成 `TEQ(string, expected_ty)`。
+
+### 28.8 `PChar`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 生成 `TEQ(char, expected_ty)`。
+
+### 28.9 `PTuple`
+
+Trait 参与：无。
+
+约束生成：
+
+1. 对每个子模式递归 `check_pat`。
+2. 形成 `pat_tuple_ty`。
+3. 生成 `TEQ(pat_tuple_ty, expected_ty)`。
+
+求解路径：普通统一。
+
+### 28.10 `PConstr`（构造器模式）
+
+Trait 参与：无直接 trait 分派。
+
+约束生成：
+
+1. 构造器解析并实例化类型。
+2. 子模式按构造器参数类型检查。
+3. 生成 `TEQ(constructor_ret_ty, expected_ty)`。
+
+求解路径：
+
+1. 统一构造器返回类型与匹配目标类型。
+
+失败诊断：
+
+1. 构造器歧义。
+2. 构造器不存在。
+3. 参数个数错误。
+4. 结构体构造器误用为位置参数模式。
+
+### 28.11 `PStruct`（结构体字段模式）
+
+Trait 参与：无。
+
+约束生成：
+
+1. 校验结构体定义与字段集合。
+2. 每个字段子模式按对应字段类型检查。
+3. 缺失字段补 `wild` 并生成其约束。
+4. 生成 `TEQ(struct_ret_ty, expected_ty)`。
+
+求解路径：普通统一。
+
+失败诊断：
+
+1. 结构体不存在。
+2. 字段缺失/重复/未知。
+
+---
+
+## 29. 约束求解的状态机细化
+
+本节把 solver 行为写成“可求解/延期/失败”三态。
+
+### 29.1 `TEQ` 状态机
+
+1. 可求解：
+   - 两侧结构可统一。
+2. 延期：
+   - 不延期，`TEQ` 直接尝试统一。
+3. 失败：
+   - 结构不兼容、arity 不匹配、`TParam` 与具体类型冲突、occurs-check 失败。
+
+### 29.2 `OVL` 状态机
+
+1. 可求解：
+   - `call_site_type` 归一化后是函数类型，且 receiver 已 concrete。
+   - 可见 impl 数量恰好为 1。
+   - 转化为 `TEQ(call_fun_ty, impl_fun_ty)`。
+2. 延期：
+   - receiver 仍是 `TVar` 或非 concrete。
+3. 失败：
+   - 无 impl。
+   - 多个 impl。
+   - call_site_type 非函数类型。
+
+### 29.3 `IMP` 状态机
+
+1. 可求解：
+   - `for_ty` 是 `dyn Trait` 且同 trait；或
+   - 可见 impl 存在。
+2. 延期：
+   - `for_ty` 非 concrete（如含 TVar）。
+3. 失败：
+   - 类型 concrete 且找不到 impl。
+
+### 29.4 `SFA` 状态机
+
+1. 可求解：
+   - `expr_ty` 可分解到 struct 构造子。
+   - 字段存在并可实例化字段类型。
+   - 统一 `result_ty` 与字段类型。
+2. 延期：
+   - `expr_ty` 当前无法分解（尚不 concrete）。
+3. 失败：
+   - struct 不存在或字段不存在。
+
+### 29.5 求解停止条件
+
+1. 一轮迭代中无任何变化，且仍有未决约束 -> 报 `Could not solve all type constraints`。
+2. 退出后仍有残余约束 -> 报 `Type inference failed due to unresolved constraints`。
+3. 替换阶段遇到未绑定 TVar -> 报 `Could not infer type`。
+
+---
+
+## 30. 语法结构 -> 约束映射清单（完整）
+
+### 30.1 表达式节点
+
+1. `ENameRef`: `TEQ`（仅 check 末尾）。
+2. `EStaticMember`: `TEQ`（仅 check 末尾）。
+3. `EUnit`: `TEQ(unit, expected)`（check）。
+4. `EBool`: `TEQ(bool, expected)`（check）。
+5. `EInt* / EUInt*`: `TEQ(lit_ty, expected)`（check）。
+6. `EFloat*`: `TEQ(lit_ty, expected)`（check）。
+7. `EString`: `TEQ(string, expected)`（check）。
+8. `EChar`: `TEQ(char, expected)`（check）。
+9. `EConstr`: `TEQ(inst_constr_ty, call_like_ty)`。
+10. `EStructLiteral`: `TEQ(inst_constr_ty, call_like_ty)`。
+11. `ETuple`: 无特定约束（子表达式产生）。
+12. `EArray`: 每元素 `TEQ(item_ty, elem_ty)`。
+13. `EClosure`: 注解参数与 expected 参数的 `TEQ`（check closure）。
+14. `ELet`: 来自 value + pattern 的约束；`ELet` 自身无新约束。
+15. `EBlock`: 无特定约束（子表达式产生）。
+16. `EMatch`: 每 arm `TEQ(arm_body_ty, arm_result_ty)`（infer）。
+17. `EIf`: `TEQ(cond_ty, bool)` + 两分支到同一结果类型。
+18. `EWhile`: `TEQ(cond_ty, bool)` + `TEQ(body_ty, unit)`。
+19. `EGo`: `TEQ(expr_ty, () -> unit)`。
+20. `ECall(local fn value)`: `TEQ(var_ty, call_site_ty)`。
+21. `ECall(top-level/builtin)`: `TEQ(inst_fn_ty, call_site_ty)` + bound 导出的 `IMP`。
+22. `ECall(static trait)`: `OVL` 或 `TEQ`（TParam 路径）或 dyn 特化。
+23. `ECall(static inherent)`: `TEQ(inst_method_ty, call_site_ty)` + 可能 `IMP`。
+24. `ECall(field inherent)`: `TEQ(inst_method_ty, call_site_ty)` + 可能 `IMP`。
+25. `ECall(field trait unique)`: `TEQ(receiver_ty, receiver_param_ty)`。
+26. `EUnary(!)`: `TEQ(expr_ty, bool)`。
+27. `EUnary(-)`: 仅自等式（实现细节）。
+28. `EBinary(add/sub/mul/div)`: `TEQ(lhs, ret)` + `TEQ(rhs, ret)`。
+29. `EBinary(logical)`: `TEQ(lhs, bool)` + `TEQ(rhs, bool)`。
+30. `EBinary(compare)`: `TEQ(lhs, rhs)`。
+31. `EProj`: 无新约束。
+32. `EField`: `SFA(...)`（延迟场景）。
+33. `EToDyn`: 可能 `IMP(trait, for_ty)`（当 `for_ty` 是 TVar）。
+
+### 30.2 模式节点
+
+1. `PVar`: 无新约束。
+2. `PWild`: `TEQ(fresh, expected)`。
+3. `PUnit`: 当前实现无显式 `TEQ(unit, expected)`。
+4. `PBool`: 当前实现无显式 `TEQ(bool, expected)`。
+5. `PInt`: `TEQ(target_int_ty, expected)`。
+6. `PInt*/PUInt*`: `TEQ(lit_ty, expected)`。
+7. `PString`: `TEQ(string, expected)`。
+8. `PChar`: `TEQ(char, expected)`。
+9. `PTuple`: `TEQ(tuple_pat_ty, expected)`。
+10. `PConstr`: `TEQ(constr_ret_ty, expected)`。
+11. `PStruct`: `TEQ(struct_ret_ty, expected)`。
+
+---
+
+## 31. 规范性补充结论（针对 trait 与约束系统）
+
+1. GoML 的 trait 语义不是“语法糖分派”，而是“方法查找 + 约束生成 + 统一求解”的组合系统。
+2. trait 相关约束来源集中在三处：
+   - 泛型 bound（`FnScheme.constraints` -> `IMP`）。
+   - 静态 trait 调用（`OVL` 或 receiver `TEQ`）。
+   - dyn coercion（`IMP` 或 bound 检查）。
+3. 求解器是渐进式：优先求解 concrete 情况，非 concrete 延期，最终残留即报错。
+4. 逐语法结构细化后，所有表达式与模式节点都具备明确的“约束生成/求解/失败”定义。
