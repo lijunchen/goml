@@ -8,11 +8,11 @@ fn println(value/1: T) -> unit {
 
 impl ToString for Color{
   fn to_string(self/0: Color) -> string {
-    match (self/0 : Color) {
-        Color::Red => "Color::Red",
-        Color::Green => "Color::Green",
-        Color::Blue => "Color::Blue",
-    }
+      match (self/0 : Color) {
+          Color::Red => "Color::Red",
+          Color::Green => "Color::Green",
+          Color::Blue => "Color::Blue",
+      };
   }
 }
 
@@ -44,10 +44,10 @@ impl Line{
 
 impl ToString for LineList{
   fn to_string(self/15: LineList) -> string {
-    match (self/15 : LineList) {
-        LineList::Nil => "LineList::Nil",
-        LineList::Cons(__field0/16: Line, __field1/17: LineList) => "LineList::Cons(" + (ToString::to_string : (Line) -> string)((__field0/16 : Line)) + ", " + (ToString::to_string : (LineList) -> string)((__field1/17 : LineList)) + ")",
-    }
+      match (self/15 : LineList) {
+          LineList::Nil => "LineList::Nil",
+          LineList::Cons(__field0/16: Line, __field1/17: LineList) => "LineList::Cons(" + (ToString::to_string : (Line) -> string)((__field0/16 : Line)) + ", " + (ToString::to_string : (LineList) -> string)((__field1/17 : LineList)) + ")",
+      };
   }
 }
 

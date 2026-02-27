@@ -7,16 +7,16 @@ struct Point {
 
 impl Eq for Point {
   fn eq(self: Point, other: Point) -> bool {
-    true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
+      true && Eq::eq(self.x, other.x) && Eq::eq(self.y, other.y)
   }
 }
 
 impl Hash for Point {
   fn hash(self: Point) -> uint64 {
-    let h: uint64 = 14695981039346656037u64;
-    let h = h * 1099511628211u64 + Hash::hash(self.x);
-    let h = h * 1099511628211u64 + Hash::hash(self.y);
-    h;
+      let h: uint64 = 14695981039346656037u64;
+      let h = h * 1099511628211u64 + Hash::hash(self.x);
+      let h = h * 1099511628211u64 + Hash::hash(self.y);
+      h
   }
 }
 
@@ -29,69 +29,68 @@ enum Key {
 
 impl Eq for Key {
   fn eq(self: Key, other: Key) -> bool {
-    match (self, other) {
-        (Key::A, Key::A) => true,
-        (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
-        (Key::P(__l2_0), Key::P(__r2_0)) => true && Eq::eq(__l2_0, __r2_0),
-        _ => false,
-    }
+      match (self, other) {
+          (Key::A, Key::A) => true,
+          (Key::B(__l1_0), Key::B(__r1_0)) => true && Eq::eq(__l1_0, __r1_0),
+          (Key::P(__l2_0), Key::P(__r2_0)) => true && Eq::eq(__l2_0, __r2_0),
+          _ => false,
+      }
   }
 }
 
 impl Hash for Key {
   fn hash(self: Key) -> uint64 {
-    match self {
-        Key::A => {
-              let h: uint64 = 14695981039346656037u64 + 1u64;
-              h;
-          },
-        Key::B(__field1_0) => {
-              let h: uint64 = 14695981039346656037u64 + 2u64;
-              let h = h * 1099511628211u64 + Hash::hash(__field1_0);
-              h;
-          },
-        Key::P(__field2_0) => {
-              let h: uint64 = 14695981039346656037u64 + 3u64;
-              let h = h * 1099511628211u64 + Hash::hash(__field2_0);
-              h;
-          },
-    }
+      match self {
+          Key::A => {
+                let h: uint64 = 14695981039346656037u64 + 1u64;
+                h
+            },
+          Key::B(__field1_0) => {
+                let h: uint64 = 14695981039346656037u64 + 2u64;
+                let h = h * 1099511628211u64 + Hash::hash(__field1_0);
+                h
+            },
+          Key::P(__field2_0) => {
+                let h: uint64 = 14695981039346656037u64 + 3u64;
+                let h = h * 1099511628211u64 + Hash::hash(__field2_0);
+                h
+            },
+      }
   }
 }
 
 fn print_opt_int(x: Option[int32]) -> unit {
-  match x {
-      Option::Some(v) => println(v),
-      Option::None => println("none"),
-  };
+    match x {
+        Option::Some(v) => println(v),
+        Option::None => println("none"),
+    }
 }
 
 fn main() -> unit {
-  let m1 = hashmap_new();
-  hashmap_set(m1, Key::A, 10);
-  hashmap_set(m1, Key::B(1), 20);
-  println(hashmap_len(m1));
-  print_opt_int(hashmap_get(m1, Key::A));
-  println(hashmap_contains(m1, Key::B(1)));
-  hashmap_remove(m1, Key::B(1));
-  println(hashmap_contains(m1, Key::B(1)));
-  println(hashmap_len(m1));
-  let m2 = hashmap_new();
-  let p1 = ref(Point {
-        x: 1,
-        y: 2
-    });
-  let p2 = ref(Point {
-        x: 1,
-        y: 2
-    });
-  hashmap_set(m2, p1, 99);
-  print_opt_int(hashmap_get(m2, p2));
-  let m3 = hashmap_new();
-  let k1 = ref(Key::B(7));
-  let k2 = ref(Key::B(7));
-  hashmap_set(m3, k1, 123);
-  print_opt_int(hashmap_get(m3, k2));
-  ();
+    let m1 = hashmap_new();
+    hashmap_set(m1, Key::A, 10);
+    hashmap_set(m1, Key::B(1), 20);
+    println(hashmap_len(m1));
+    print_opt_int(hashmap_get(m1, Key::A));
+    println(hashmap_contains(m1, Key::B(1)));
+    hashmap_remove(m1, Key::B(1));
+    println(hashmap_contains(m1, Key::B(1)));
+    println(hashmap_len(m1));
+    let m2 = hashmap_new();
+    let p1 = ref(Point {
+          x: 1,
+          y: 2
+      });
+    let p2 = ref(Point {
+          x: 1,
+          y: 2
+      });
+    hashmap_set(m2, p1, 99);
+    print_opt_int(hashmap_get(m2, p2));
+    let m3 = hashmap_new();
+    let k1 = ref(Key::B(7));
+    let k2 = ref(Key::B(7));
+    hashmap_set(m3, k1, 123);
+    print_opt_int(hashmap_get(m3, k2));
 }
 

@@ -15,11 +15,11 @@ impl ToString for Point{
 
 impl ToString for Message{
   fn to_string(self/3: Message) -> string {
-    match (self/3 : Message) {
-        Message::Quit => "Message::Quit",
-        Message::Move(__field0/4: int32, __field1/5: int32) => "Message::Move(" + (int32::to_string : (int32) -> string)((__field0/4 : int32)) + ", " + (int32::to_string : (int32) -> string)((__field1/5 : int32)) + ")",
-        Message::Write(__field0/6: string) => "Message::Write(" + (__field0/6 : string) + ")",
-    }
+      match (self/3 : Message) {
+          Message::Quit => "Message::Quit",
+          Message::Move(__field0/4: int32, __field1/5: int32) => "Message::Move(" + (int32::to_string : (int32) -> string)((__field0/4 : int32)) + ", " + (int32::to_string : (int32) -> string)((__field1/5 : int32)) + ")",
+          Message::Write(__field0/6: string) => "Message::Write(" + (__field0/6 : string) + ")",
+      };
   }
 }
 

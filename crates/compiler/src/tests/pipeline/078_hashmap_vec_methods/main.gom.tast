@@ -8,27 +8,27 @@ fn println(value/1: T) -> unit {
 
 impl Eq for Key{
   fn eq(self/0: Key, other/1: Key) -> bool {
-    match ((self/0 : Key), (other/1 : Key)) {
-        (Key::A, Key::A) => true,
-        (Key::B(__l1_0/2: int32), Key::B(__r1_0/3: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/2 : int32), (__r1_0/3 : int32)),
-        _ : (Key, Key) => false,
-    }
+      match ((self/0 : Key), (other/1 : Key)) {
+          (Key::A, Key::A) => true,
+          (Key::B(__l1_0/2: int32), Key::B(__r1_0/3: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/2 : int32), (__r1_0/3 : int32)),
+          _ : (Key, Key) => false,
+      };
   }
 }
 
 impl Hash for Key{
   fn hash(self/4: Key) -> uint64 {
-    match (self/4 : Key) {
-        Key::A => {
-              let h/5: uint64 = 14695981039346656037 + 1;
-              (h/5 : uint64);
-          },
-        Key::B(__field1_0/6: int32) => {
-              let h/7: uint64 = 14695981039346656037 + 2;
-              let h/8: uint64 = (h/7 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/6 : int32));
-              (h/8 : uint64);
-          },
-    }
+      match (self/4 : Key) {
+          Key::A => {
+                let h/5: uint64 = 14695981039346656037 + 1;
+                (h/5 : uint64);
+            },
+          Key::B(__field1_0/6: int32) => {
+                let h/7: uint64 = 14695981039346656037 + 2;
+                let h/8: uint64 = (h/7 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/6 : int32));
+                (h/8 : uint64);
+            },
+      };
   }
 }
 

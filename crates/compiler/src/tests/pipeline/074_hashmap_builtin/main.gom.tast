@@ -8,7 +8,7 @@ fn println(value/1: T) -> unit {
 
 impl Eq for Point{
   fn eq(self/0: Point, other/1: Point) -> bool {
-    true && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).x, (other/1 : Point).x) && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).y, (other/1 : Point).y)
+      true && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).x, (other/1 : Point).x) && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).y, (other/1 : Point).y);
   }
 }
 
@@ -23,33 +23,33 @@ impl Hash for Point{
 
 impl Eq for Key{
   fn eq(self/6: Key, other/7: Key) -> bool {
-    match ((self/6 : Key), (other/7 : Key)) {
-        (Key::A, Key::A) => true,
-        (Key::B(__l1_0/8: int32), Key::B(__r1_0/9: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/8 : int32), (__r1_0/9 : int32)),
-        (Key::P(__l2_0/10: Point), Key::P(__r2_0/11: Point)) => true && (Eq::eq : (Point, Point) -> bool)((__l2_0/10 : Point), (__r2_0/11 : Point)),
-        _ : (Key, Key) => false,
-    }
+      match ((self/6 : Key), (other/7 : Key)) {
+          (Key::A, Key::A) => true,
+          (Key::B(__l1_0/8: int32), Key::B(__r1_0/9: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/8 : int32), (__r1_0/9 : int32)),
+          (Key::P(__l2_0/10: Point), Key::P(__r2_0/11: Point)) => true && (Eq::eq : (Point, Point) -> bool)((__l2_0/10 : Point), (__r2_0/11 : Point)),
+          _ : (Key, Key) => false,
+      };
   }
 }
 
 impl Hash for Key{
   fn hash(self/12: Key) -> uint64 {
-    match (self/12 : Key) {
-        Key::A => {
-              let h/13: uint64 = 14695981039346656037 + 1;
-              (h/13 : uint64);
-          },
-        Key::B(__field1_0/14: int32) => {
-              let h/15: uint64 = 14695981039346656037 + 2;
-              let h/16: uint64 = (h/15 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/14 : int32));
-              (h/16 : uint64);
-          },
-        Key::P(__field2_0/17: Point) => {
-              let h/18: uint64 = 14695981039346656037 + 3;
-              let h/19: uint64 = (h/18 : uint64) * 1099511628211 + (Hash::hash : (Point) -> uint64)((__field2_0/17 : Point));
-              (h/19 : uint64);
-          },
-    }
+      match (self/12 : Key) {
+          Key::A => {
+                let h/13: uint64 = 14695981039346656037 + 1;
+                (h/13 : uint64);
+            },
+          Key::B(__field1_0/14: int32) => {
+                let h/15: uint64 = 14695981039346656037 + 2;
+                let h/16: uint64 = (h/15 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/14 : int32));
+                (h/16 : uint64);
+            },
+          Key::P(__field2_0/17: Point) => {
+                let h/18: uint64 = 14695981039346656037 + 3;
+                let h/19: uint64 = (h/18 : uint64) * 1099511628211 + (Hash::hash : (Point) -> uint64)((__field2_0/17 : Point));
+                (h/19 : uint64);
+            },
+      };
   }
 }
 

@@ -9,23 +9,22 @@ struct Point {
 
 impl Display for Point {
   fn show(self: Point) -> string {
-    int32_to_string(self.value);
+      int32_to_string(self.value)
   }
 }
 
 fn to_dyn(x: T) -> dyn Display {
-  x;
+    x
 }
 
 fn render(x: dyn Display) -> string {
-  Display::show(x);
+    Display::show(x)
 }
 
 fn main() {
-  let d = to_dyn(Point {
-        value: 7
-    });
-  println(render(d));
-  ();
+    let d = to_dyn(Point {
+          value: 7
+      });
+    println(render(d));
 }
 

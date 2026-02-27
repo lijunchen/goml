@@ -16,34 +16,34 @@ struct S {
 
 impl A for S {
   fn foo(self: S) -> string {
-    "A";
+      "A"
   }
 }
 
 impl B for S {
   fn foo(self: S) -> string {
-    "B";
+      "B"
   }
 }
 
 impl C for S {
   fn bar(self: S) -> string {
-    "C";
+      "C"
   }
 }
 
 fn pick_a(x: T) -> string {
-  A::foo(x);
+    A::foo(x)
 }
 
 fn bar_it(x: T) -> string {
-  x.bar();
+    x.bar()
 }
 
 fn main() {
-  let s = S {};
-  let _ = println(pick_a(s));
-  let _ = println(bar_it(s));
-  ();
+    let s = S {};
+    let _ = println(pick_a(s));
+    let _ = println(bar_it(s));
+    ()
 }
 
