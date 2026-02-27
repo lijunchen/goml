@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use crate::{
     common::{self, Constructor, Prim, StructConstructor},
     env::{EnumDef, FnOrigin, FnScheme, Gensym, ImplDef, InherentImplKey, StructDef},
-    mono::{GlobalMonoEnv, MonoExpr, MonoFile},
+    mono::{GlobalMonoEnv, MonoBlock, MonoExpr, MonoFile, MonoLetStmt},
     names::inherent_method_fn_name,
     tast::{self, TastIdent, Ty},
 };
@@ -381,7 +381,7 @@ pub fn lambda_lift(
         if let Some(ctx) = fn_context.as_ref() {
             state.push_context_name(ctx.clone());
         }
-        let body = transform_expr(&mut state, &mut scope, f.body);
+        let body = transform_block(&mut state, &mut scope, f.body);
         if fn_context.is_some() {
             state.pop_context_name();
         }
@@ -793,35 +793,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
         MonoExpr::EClosure { params, body, ty } => {
             transform_closure(state, scope, params, *body, ty, None)
         }
-        MonoExpr::ELet {
-            name, value, body, ..
-        } => {
-            let value = match *value {
-                MonoExpr::EClosure { params, body, ty } => {
-                    transform_closure(state, scope, params, *body, ty, Some(name.clone()))
-                }
-                other => transform_expr(state, scope, other),
-            };
-            let value_ty = value.get_ty();
-            scope.push_layer();
-            let closure_struct = state.closure_struct_for_ty(&value_ty);
-            scope.insert(
-                name.clone(),
-                ScopeEntry {
-                    ty: value_ty.clone(),
-                    closure_struct,
-                },
-            );
-            let body = transform_expr(state, scope, *body);
-            scope.pop_layer();
-            let body_ty = body.get_ty();
-            LiftExpr::ELet {
-                name,
-                value: Box::new(value),
-                body: Box::new(body),
-                ty: body_ty,
-            }
-        }
+        MonoExpr::EBlock { block, ty: _ } => transform_block(state, scope, *block),
         MonoExpr::EMatch {
             expr,
             arms,
@@ -983,6 +955,54 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 ty: proj_ty,
             }
         }
+    }
+}
+
+fn transform_block(state: &mut State<'_>, scope: &mut Scope, block: MonoBlock) -> LiftExpr {
+    transform_block_parts(state, scope, &block.stmts, block.tail.as_deref())
+}
+
+fn transform_block_parts(
+    state: &mut State<'_>,
+    scope: &mut Scope,
+    stmts: &[MonoLetStmt],
+    tail: Option<&MonoExpr>,
+) -> LiftExpr {
+    if stmts.is_empty() {
+        return tail
+            .cloned()
+            .map(|tail| transform_expr(state, scope, tail))
+            .unwrap_or_else(|| LiftExpr::EPrim {
+                value: Prim::unit(),
+                ty: Ty::TUnit,
+            });
+    }
+
+    let first = &stmts[0];
+    let value = match first.value.clone() {
+        MonoExpr::EClosure { params, body, ty } => {
+            transform_closure(state, scope, params, *body, ty, Some(first.name.clone()))
+        }
+        other => transform_expr(state, scope, other),
+    };
+    let value_ty = value.get_ty();
+    scope.push_layer();
+    let closure_struct = state.closure_struct_for_ty(&value_ty);
+    scope.insert(
+        first.name.clone(),
+        ScopeEntry {
+            ty: value_ty.clone(),
+            closure_struct,
+        },
+    );
+    let body = transform_block_parts(state, scope, &stmts[1..], tail);
+    scope.pop_layer();
+    let body_ty = body.get_ty();
+    LiftExpr::ELet {
+        name: first.name.clone(),
+        value: Box::new(value),
+        body: Box::new(body),
+        ty: body_ty,
     }
 }
 

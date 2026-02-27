@@ -14,7 +14,7 @@ pub(crate) fn collect_required_builtin_collection_methods(
     let mut required = HashSet::new();
     for file in files {
         for func in &file.toplevels {
-            collect_required_builtin_collection_methods_from_expr(
+            collect_required_builtin_collection_methods_from_block(
                 &func.body,
                 builtin_keys,
                 &mut required,
@@ -22,6 +22,19 @@ pub(crate) fn collect_required_builtin_collection_methods(
         }
     }
     required
+}
+
+fn collect_required_builtin_collection_methods_from_block(
+    block: &crate::core::Block,
+    builtin_keys: &HashSet<(String, String)>,
+    required: &mut HashSet<(String, String)>,
+) {
+    for stmt in &block.stmts {
+        collect_required_builtin_collection_methods_from_expr(&stmt.value, builtin_keys, required);
+    }
+    if let Some(tail) = &block.tail {
+        collect_required_builtin_collection_methods_from_expr(tail, builtin_keys, required);
+    }
 }
 
 fn collect_required_builtin_collection_methods_from_expr(
@@ -41,9 +54,8 @@ fn collect_required_builtin_collection_methods_from_expr(
         crate::core::Expr::EClosure { body, .. } => {
             collect_required_builtin_collection_methods_from_expr(body, builtin_keys, required);
         }
-        crate::core::Expr::ELet { value, body, .. } => {
-            collect_required_builtin_collection_methods_from_expr(value, builtin_keys, required);
-            collect_required_builtin_collection_methods_from_expr(body, builtin_keys, required);
+        crate::core::Expr::EBlock { block, .. } => {
+            collect_required_builtin_collection_methods_from_block(block, builtin_keys, required);
         }
         crate::core::Expr::EMatch {
             expr,

@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 
 use crate::{
-    mono::{GlobalMonoEnv, MonoArm, MonoExpr, MonoFile, MonoFn},
+    mono::{GlobalMonoEnv, MonoArm, MonoBlock, MonoExpr, MonoFile, MonoFn, MonoLetStmt},
     pprint::common_pprint::{constr_get_accessor_doc, constructor_to_doc},
 };
 
@@ -61,6 +61,38 @@ impl MonoFn {
     }
 }
 
+impl MonoLetStmt {
+    pub fn to_doc(&self, monoenv: &GlobalMonoEnv) -> RcDoc<'_, ()> {
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.clone()))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(monoenv))
+            .append(RcDoc::space())
+            .append(RcDoc::text("in"))
+    }
+}
+
+impl MonoBlock {
+    pub fn to_doc(&self, monoenv: &GlobalMonoEnv) -> RcDoc<'_, ()> {
+        let mut docs = self
+            .stmts
+            .iter()
+            .map(|stmt| stmt.to_doc(monoenv))
+            .collect::<Vec<_>>();
+        if let Some(tail) = &self.tail {
+            docs.push(tail.to_doc(monoenv));
+        }
+        if docs.is_empty() {
+            RcDoc::text("()")
+        } else {
+            RcDoc::intersperse(docs, RcDoc::hardline())
+        }
+    }
+}
+
 impl MonoExpr {
     pub fn to_doc(&self, monoenv: &GlobalMonoEnv) -> RcDoc<'_, ()> {
         match self {
@@ -104,23 +136,14 @@ impl MonoExpr {
                 }
             }
 
-            MonoExpr::ELet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => RcDoc::text("let")
-                .append(RcDoc::space())
-                .append(RcDoc::text(name))
-                .append(RcDoc::space())
-                .append(RcDoc::text("="))
-                .append(RcDoc::space())
-                .append(value.to_doc(monoenv))
-                .append(RcDoc::space())
-                .append(RcDoc::text("in"))
-                .append(RcDoc::hardline())
-                .append(body.to_doc(monoenv))
-                .group(),
+            MonoExpr::EBlock { block, ty: _ } => RcDoc::text("{")
+                .append(
+                    RcDoc::hardline()
+                        .append(block.to_doc(monoenv))
+                        .append(RcDoc::hardline())
+                        .nest(2),
+                )
+                .append(RcDoc::text("}")),
 
             MonoExpr::EMatch {
                 expr,

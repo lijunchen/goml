@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 
 use crate::{
-    core::{Arm, Expr, File, Fn},
+    core::{Arm, Block, Expr, File, Fn, LetStmt},
     env::GlobalTypeEnv,
     pprint::common_pprint::{constr_get_accessor_doc, constructor_to_doc},
 };
@@ -59,6 +59,38 @@ impl Fn {
         let mut w = Vec::new();
         self.to_doc(genv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl LetStmt {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.clone()))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(genv))
+            .append(RcDoc::space())
+            .append(RcDoc::text("in"))
+    }
+}
+
+impl Block {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        let mut docs = self
+            .stmts
+            .iter()
+            .map(|stmt| stmt.to_doc(genv))
+            .collect::<Vec<_>>();
+        if let Some(tail) = &self.tail {
+            docs.push(tail.to_doc(genv));
+        }
+        if docs.is_empty() {
+            RcDoc::text("()")
+        } else {
+            RcDoc::intersperse(docs, RcDoc::hardline())
+        }
     }
 }
 
@@ -131,23 +163,14 @@ impl Expr {
                     .group()
             }
 
-            Expr::ELet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => RcDoc::text("let")
-                .append(RcDoc::space())
-                .append(RcDoc::text(name))
-                .append(RcDoc::space())
-                .append(RcDoc::text("="))
-                .append(RcDoc::space())
-                .append(value.to_doc(genv))
-                .append(RcDoc::space())
-                .append(RcDoc::text("in"))
-                .append(RcDoc::hardline())
-                .append(body.to_doc(genv))
-                .group(),
+            Expr::EBlock { block, ty: _ } => RcDoc::text("{")
+                .append(
+                    RcDoc::hardline()
+                        .append(block.to_doc(genv))
+                        .append(RcDoc::hardline())
+                        .nest(2),
+                )
+                .append(RcDoc::text("}")),
 
             Expr::EMatch {
                 expr,
