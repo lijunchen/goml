@@ -1,6 +1,7 @@
 use crate::ast::{
-    Arm, AstIdent, Attribute, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo, ExternType,
-    File, Fn, ImplBlock, Item, Pat, Path, StructDef, TraitDef, TraitMethodSignature, TypeExpr,
+    Arm, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo,
+    ExternType, File, Fn, ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef, TraitDef,
+    TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
 
@@ -94,6 +95,59 @@ impl TypeExpr {
         let mut w = Vec::new();
         self.to_doc().render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl LetStmt {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        let base_pat_doc = self.pat.to_doc();
+        let pat_doc = if let Some(ty) = &self.annotation {
+            base_pat_doc.append(RcDoc::text(": ")).append(ty.to_doc())
+        } else {
+            base_pat_doc
+        };
+
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(pat_doc)
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc())
+            .group()
+    }
+}
+
+impl Stmt {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        match self {
+            Self::Let(stmt) => stmt.to_doc(),
+            Self::Expr(stmt) => stmt.expr.to_doc(),
+        }
+    }
+}
+
+impl Block {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        if self.stmts.is_empty() && self.tail.is_none() {
+            RcDoc::text("{}")
+        } else {
+            let stmts_doc = RcDoc::concat(self.stmts.iter().map(|stmt| {
+                RcDoc::hardline()
+                    .append(stmt.to_doc())
+                    .append(RcDoc::text(";"))
+            }));
+            let tail_doc = if let Some(tail) = &self.tail {
+                RcDoc::hardline().append(tail.to_doc())
+            } else {
+                RcDoc::nil()
+            };
+            RcDoc::text("{")
+                .append(stmts_doc.append(tail_doc).nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group()
+        }
     }
 }
 
@@ -221,28 +275,6 @@ impl Expr {
                     .append(RcDoc::text("| "))
                     .append(body.to_doc())
             }
-            Self::ELet {
-                pat,
-                annotation,
-                value,
-                astptr: _,
-            } => {
-                let base_pat_doc = pat.to_doc();
-                let pat_doc = if let Some(ty) = annotation {
-                    base_pat_doc.append(RcDoc::text(": ")).append(ty.to_doc())
-                } else {
-                    base_pat_doc
-                };
-
-                RcDoc::text("let")
-                    .append(RcDoc::space())
-                    .append(pat_doc)
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("="))
-                    .append(RcDoc::space())
-                    .append(value.to_doc())
-                    .group()
-            }
 
             Self::EMatch {
                 expr,
@@ -368,22 +400,7 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
-            Self::EBlock { exprs, astptr: _ } => {
-                if exprs.is_empty() {
-                    RcDoc::text("{}")
-                } else {
-                    let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
-                        RcDoc::hardline()
-                            .append(e.to_doc())
-                            .append(RcDoc::text(";"))
-                    }));
-                    RcDoc::text("{")
-                        .append(exprs_doc.nest(4))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}"))
-                        .group()
-                }
-            }
+            Self::EBlock { block, astptr: _ } => block.to_doc(),
         }
     }
 
@@ -745,28 +762,7 @@ impl Fn {
                 .append(RcDoc::text(")"))
                 .append(ret_ty_doc)
                 .append(RcDoc::space())
-                .append(match &self.body {
-                    Expr::EBlock { exprs, astptr: _ } => {
-                        if exprs.is_empty() {
-                            RcDoc::text("{}")
-                        } else {
-                            let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
-                                RcDoc::hardline()
-                                    .append(e.to_doc())
-                                    .append(RcDoc::text(";"))
-                            }));
-                            RcDoc::text("{")
-                                .append(exprs_doc.nest(2))
-                                .append(RcDoc::hardline())
-                                .append(RcDoc::text("}"))
-                                .group()
-                        }
-                    }
-                    _ => RcDoc::text("{")
-                        .append(RcDoc::hardline().append(self.body.to_doc()).nest(2))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}")),
-                }),
+                .append(self.body.to_doc()),
         )
     }
 

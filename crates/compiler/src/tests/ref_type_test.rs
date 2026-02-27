@@ -41,23 +41,6 @@ fn describe_path(path: &ast::ast::Path) -> String {
 
 fn describe_expr(expr: &ast::ast::Expr) -> String {
     match expr {
-        ast::ast::Expr::ELet {
-            pat,
-            annotation,
-            value,
-            ..
-        } => {
-            let annotation = annotation
-                .as_ref()
-                .map(|ty| format!(": {ty:?}"))
-                .unwrap_or_default();
-            format!(
-                "let {}{} = {}",
-                describe_pat(pat),
-                annotation,
-                describe_expr(value)
-            )
-        }
         ast::ast::Expr::ECall { func, args, .. } => {
             let args = args
                 .iter()
@@ -68,15 +51,33 @@ fn describe_expr(expr: &ast::ast::Expr) -> String {
         }
         ast::ast::Expr::EPath { path, .. } => describe_path(path),
         ast::ast::Expr::EInt { value, .. } => value.clone(),
-        ast::ast::Expr::EBlock { exprs, .. } => format!(
-            "block [{}]",
-            exprs
-                .iter()
-                .map(describe_expr)
-                .collect::<Vec<_>>()
-                .join("; ")
-        ),
+        ast::ast::Expr::EBlock { block, .. } => {
+            let mut items: Vec<String> = block.stmts.iter().map(describe_stmt).collect();
+            if let Some(tail) = &block.tail {
+                items.push(describe_expr(tail));
+            }
+            format!("block [{}]", items.join("; "))
+        }
         other => format!("{other:?}"),
+    }
+}
+
+fn describe_stmt(stmt: &ast::ast::Stmt) -> String {
+    match stmt {
+        ast::ast::Stmt::Let(stmt) => {
+            let annotation = stmt
+                .annotation
+                .as_ref()
+                .map(|ty| format!(": {ty:?}"))
+                .unwrap_or_default();
+            format!(
+                "let {}{} = {}",
+                describe_pat(&stmt.pat),
+                annotation,
+                describe_expr(&stmt.value)
+            )
+        }
+        ast::ast::Stmt::Expr(stmt) => describe_expr(&stmt.expr),
     }
 }
 
@@ -97,16 +98,15 @@ fn main() -> int32 {
         other => panic!("expected function, got {:?}", other),
     };
 
-    // The function body is now an EBlock containing the statements
-    let exprs = match &main_fn.body {
-        ast::ast::Expr::EBlock { exprs, .. } => exprs,
-        other => panic!("unexpected main body, expected EBlock: {:?}", other),
-    };
+    let mut exprs: Vec<String> = main_fn.body.stmts.iter().map(describe_stmt).collect();
+    if let Some(tail) = &main_fn.body.tail {
+        exprs.push(describe_expr(tail));
+    }
 
     let mut lines = Vec::new();
     lines.push(format!("expr_count={}", exprs.len()));
     for (index, expr) in exprs.iter().enumerate() {
-        lines.push(format!("expr{index}={}", describe_expr(expr)));
+        lines.push(format!("expr{index}={}", expr));
     }
     let messages: Vec<String> = diagnostics
         .iter()

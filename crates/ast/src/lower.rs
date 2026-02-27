@@ -818,28 +818,26 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
     }))
 }
 
-fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Expr> {
-    let mut exprs: Vec<ast::Expr> = Vec::new();
+fn lower_block(ctx: &mut LowerCtx, node: cst::Block) -> Option<ast::Block> {
+    let mut stmts: Vec<ast::Stmt> = Vec::new();
     let astptr = MySyntaxNodePtr::new(node.syntax());
 
     for stmt in node.stmts() {
-        if let Some(expr) = lower_stmt(ctx, stmt) {
-            exprs.push(expr);
+        if let Some(stmt) = lower_stmt(ctx, stmt) {
+            stmts.push(stmt);
         }
     }
 
-    if let Some(tail_expr) = node.expr() {
-        if let Some(expr) = lower_expr(ctx, tail_expr) {
-            exprs.push(expr);
-        }
-    } else {
-        exprs.push(ast::Expr::EUnit { astptr });
-    }
+    let tail = node.expr().and_then(|tail_expr| lower_expr(ctx, tail_expr));
 
-    Some(ast::Expr::EBlock { exprs, astptr })
+    Some(ast::Block {
+        stmts,
+        tail: tail.map(Box::new),
+        astptr,
+    })
 }
 
-fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
+fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Stmt> {
     match stmt {
         cst::Stmt::LetStmt(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -866,14 +864,15 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
             };
             let annotation = it.ty().and_then(|ty| lower_ty(ctx, ty));
             let value = lower_expr(ctx, value_node)?;
-            Some(ast::Expr::ELet {
+            Some(ast::Stmt::Let(ast::LetStmt {
                 pat,
                 annotation,
                 value: Box::new(value),
                 astptr,
-            })
+            }))
         }
         cst::Stmt::ExprStmt(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
             let expr_node = match it.expr() {
                 Some(expr) => expr,
                 None => {
@@ -884,7 +883,8 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Expr> {
                     return None;
                 }
             };
-            lower_expr(ctx, expr_node)
+            let expr = lower_expr(ctx, expr_node)?;
+            Some(ast::Stmt::Expr(ast::ExprStmt { expr, astptr }))
         }
     }
 }
@@ -1457,7 +1457,12 @@ fn lower_expr_with_args(
             let then_branch = match it.then_branch() {
                 Some(branch) => {
                     if let Some(block) = branch.block() {
-                        lower_block(ctx, block)
+                        let astptr = MySyntaxNodePtr::new(block.syntax());
+                        let block = lower_block(ctx, block)?;
+                        Some(ast::Expr::EBlock {
+                            block: Box::new(block),
+                            astptr,
+                        })
                     } else if let Some(expr) = branch.expr() {
                         lower_expr(ctx, expr)
                     } else {
@@ -1480,7 +1485,12 @@ fn lower_expr_with_args(
             let else_branch = match it.else_branch() {
                 Some(branch) => {
                     if let Some(block) = branch.block() {
-                        lower_block(ctx, block)
+                        let astptr = MySyntaxNodePtr::new(block.syntax());
+                        let block = lower_block(ctx, block)?;
+                        Some(ast::Expr::EBlock {
+                            block: Box::new(block),
+                            astptr,
+                        })
                     } else if let Some(expr) = branch.expr() {
                         lower_expr(ctx, expr)
                     } else {
@@ -1536,7 +1546,12 @@ fn lower_expr_with_args(
             let body = match it.body() {
                 Some(body) => {
                     if let Some(block) = body.block() {
-                        lower_block(ctx, block)
+                        let astptr = MySyntaxNodePtr::new(block.syntax());
+                        let block = lower_block(ctx, block)?;
+                        Some(ast::Expr::EBlock {
+                            block: Box::new(block),
+                            astptr,
+                        })
                     } else if let Some(expr) = body.expr() {
                         lower_expr(ctx, expr)
                     } else {
@@ -1932,7 +1947,12 @@ fn lower_expr_with_args(
             };
 
             let body = if let Some(block) = body_node.block() {
-                lower_block(ctx, block)?
+                let astptr = MySyntaxNodePtr::new(block.syntax());
+                let block = lower_block(ctx, block)?;
+                ast::Expr::EBlock {
+                    block: Box::new(block),
+                    astptr,
+                }
             } else if let Some(expr) = body_node.expr() {
                 lower_expr(ctx, expr)?
             } else {
@@ -2058,7 +2078,12 @@ fn lower_arm(ctx: &mut LowerCtx, node: cst::MatchArm) -> Option<ast::Arm> {
     let body = if let Some(expr) = node.expr() {
         lower_expr(ctx, expr)
     } else if let Some(block) = support::child::<cst::Block>(node.syntax()) {
-        lower_block(ctx, block)
+        let astptr = MySyntaxNodePtr::new(block.syntax());
+        let block = lower_block(ctx, block)?;
+        Some(ast::Expr::EBlock {
+            block: Box::new(block),
+            astptr,
+        })
     } else {
         ctx.push_error(Some(node.syntax().text_range()), "Match arm has no body");
         None

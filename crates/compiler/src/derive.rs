@@ -1,5 +1,6 @@
 use ::ast::ast::{
-    self, Arm, AstIdent, Attribute, EnumDef, Expr, ImplBlock, Item, Pat, Path, StructDef,
+    self, Arm, AstIdent, Attribute, Block, EnumDef, Expr, ImplBlock, Item, LetStmt, Pat, Path,
+    Stmt, StructDef,
 };
 use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use parser::syntax::MySyntaxNodePtr;
@@ -131,6 +132,42 @@ fn parse_derive_targets(attr: &Attribute) -> Option<Vec<String>> {
     }
 }
 
+fn expr_as_fn_body(expr: Expr, attr_ptr: &MySyntaxNodePtr) -> Block {
+    match expr {
+        Expr::EBlock { block, .. } => *block,
+        tail => Block {
+            stmts: Vec::new(),
+            tail: Some(Box::new(tail)),
+            astptr: *attr_ptr,
+        },
+    }
+}
+
+fn let_stmt(
+    pat: Pat,
+    annotation: Option<ast::TypeExpr>,
+    value: Expr,
+    attr_ptr: &MySyntaxNodePtr,
+) -> Stmt {
+    Stmt::Let(LetStmt {
+        pat,
+        annotation,
+        value: Box::new(value),
+        astptr: *attr_ptr,
+    })
+}
+
+fn block_expr(stmts: Vec<Stmt>, tail: Expr, attr_ptr: &MySyntaxNodePtr) -> Expr {
+    Expr::EBlock {
+        block: Box::new(Block {
+            stmts,
+            tail: Some(Box::new(tail)),
+            astptr: *attr_ptr,
+        }),
+        astptr: *attr_ptr,
+    }
+}
+
 fn derive_struct_tostring(
     struct_def: &StructDef,
     attr_ptr: &MySyntaxNodePtr,
@@ -149,7 +186,7 @@ fn derive_struct_tostring(
             ty_for_ident(&struct_def.name),
         )],
         ret_ty: Some(ast::TypeExpr::TString),
-        body: build_struct_body(struct_def, attr_ptr),
+        body: expr_as_fn_body(build_struct_body(struct_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -177,7 +214,7 @@ fn derive_enum_tostring(
         generic_bounds: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
-        body: build_enum_body(enum_def, attr_ptr),
+        body: expr_as_fn_body(build_enum_body(enum_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -212,7 +249,7 @@ fn derive_struct_tojson(
             ty_for_ident(&struct_def.name),
         )],
         ret_ty: Some(ast::TypeExpr::TString),
-        body: build_struct_json_body(struct_def, attr_ptr),
+        body: expr_as_fn_body(build_struct_json_body(struct_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -240,7 +277,7 @@ fn derive_enum_tojson(
         generic_bounds: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TString),
-        body: build_enum_json_body(enum_def, attr_ptr),
+        body: expr_as_fn_body(build_enum_json_body(enum_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -282,7 +319,7 @@ fn derive_struct_eq(
             ),
         ],
         ret_ty: Some(ast::TypeExpr::TBool),
-        body: build_struct_eq_body(struct_def, attr_ptr),
+        body: expr_as_fn_body(build_struct_eq_body(struct_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -318,7 +355,7 @@ fn derive_enum_eq(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Result<Impl
             ),
         ],
         ret_ty: Some(ast::TypeExpr::TBool),
-        body: build_enum_eq_body(enum_def, attr_ptr),
+        body: expr_as_fn_body(build_enum_eq_body(enum_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -354,7 +391,7 @@ fn derive_struct_hash(
             ty_for_ident(&struct_def.name),
         )],
         ret_ty: Some(ast::TypeExpr::TUint64),
-        body: build_struct_hash_body(struct_def, attr_ptr),
+        body: expr_as_fn_body(build_struct_hash_body(struct_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -387,7 +424,7 @@ fn derive_enum_hash(
         generic_bounds: Vec::new(),
         params: vec![(AstIdent::new(SELF_PARAM_NAME), ty_for_ident(&enum_def.name))],
         ret_ty: Some(ast::TypeExpr::TUint64),
-        body: build_enum_hash_body(enum_def, attr_ptr),
+        body: expr_as_fn_body(build_enum_hash_body(enum_def, attr_ptr), attr_ptr),
     };
 
     Ok(ImplBlock {
@@ -441,34 +478,32 @@ fn build_struct_json_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
     });
 
     let body = concat_parts(parts, attr_ptr);
-    Expr::EBlock {
-        exprs: vec![
-            Expr::ELet {
-                pat: Pat::PStruct {
-                    name: Path::from_ident(struct_def.name.clone()),
-                    fields: struct_def
-                        .fields
-                        .iter()
-                        .map(|(field_name, _)| {
-                            (
-                                field_name.clone(),
-                                Pat::PVar {
-                                    name: field_name.clone(),
-                                    astptr: *attr_ptr,
-                                },
-                            )
-                        })
-                        .collect(),
-                    astptr: *attr_ptr,
-                },
-                annotation: None,
-                value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
+    block_expr(
+        vec![let_stmt(
+            Pat::PStruct {
+                name: Path::from_ident(struct_def.name.clone()),
+                fields: struct_def
+                    .fields
+                    .iter()
+                    .map(|(field_name, _)| {
+                        (
+                            field_name.clone(),
+                            Pat::PVar {
+                                name: field_name.clone(),
+                                astptr: *attr_ptr,
+                            },
+                        )
+                    })
+                    .collect(),
                 astptr: *attr_ptr,
             },
-            body,
-        ],
-        astptr: *attr_ptr,
-    }
+            None,
+            var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr),
+            attr_ptr,
+        )],
+        body,
+        attr_ptr,
+    )
 }
 
 fn build_enum_json_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -583,34 +618,32 @@ fn build_struct_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr
     });
 
     let body = concat_parts(parts, attr_ptr);
-    Expr::EBlock {
-        exprs: vec![
-            Expr::ELet {
-                pat: Pat::PStruct {
-                    name: Path::from_ident(struct_def.name.clone()),
-                    fields: struct_def
-                        .fields
-                        .iter()
-                        .map(|(field_name, _)| {
-                            (
-                                field_name.clone(),
-                                Pat::PVar {
-                                    name: field_name.clone(),
-                                    astptr: *attr_ptr,
-                                },
-                            )
-                        })
-                        .collect(),
-                    astptr: *attr_ptr,
-                },
-                annotation: None,
-                value: Box::new(var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr)),
+    block_expr(
+        vec![let_stmt(
+            Pat::PStruct {
+                name: Path::from_ident(struct_def.name.clone()),
+                fields: struct_def
+                    .fields
+                    .iter()
+                    .map(|(field_name, _)| {
+                        (
+                            field_name.clone(),
+                            Pat::PVar {
+                                name: field_name.clone(),
+                                astptr: *attr_ptr,
+                            },
+                        )
+                    })
+                    .collect(),
                 astptr: *attr_ptr,
             },
-            body,
-        ],
-        astptr: *attr_ptr,
-    }
+            None,
+            var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr),
+            attr_ptr,
+        )],
+        body,
+        attr_ptr,
+    )
 }
 
 fn build_enum_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -801,19 +834,19 @@ fn build_enum_eq_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
 }
 
 fn build_struct_hash_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
-    let mut exprs = Vec::new();
-    exprs.push(Expr::ELet {
-        pat: Pat::PVar {
+    let mut stmts = Vec::new();
+    stmts.push(let_stmt(
+        Pat::PVar {
             name: AstIdent::new("h"),
             astptr: *attr_ptr,
         },
-        annotation: Some(ast::TypeExpr::TUint64),
-        value: Box::new(Expr::EUInt64 {
+        Some(ast::TypeExpr::TUint64),
+        Expr::EUInt64 {
             value: "14695981039346656037".to_string(),
             astptr: *attr_ptr,
-        }),
-        astptr: *attr_ptr,
-    });
+        },
+        attr_ptr,
+    ));
 
     let self_var = var_expr(&AstIdent::new(SELF_PARAM_NAME), attr_ptr);
     for (field_name, _field_ty) in struct_def.fields.iter() {
@@ -837,23 +870,18 @@ fn build_struct_hash_body(struct_def: &StructDef, attr_ptr: &MySyntaxNodePtr) ->
             rhs: Box::new(field_hash),
             astptr: *attr_ptr,
         };
-        exprs.push(Expr::ELet {
-            pat: Pat::PVar {
+        stmts.push(let_stmt(
+            Pat::PVar {
                 name: AstIdent::new("h"),
                 astptr: *attr_ptr,
             },
-            annotation: None,
-            value: Box::new(h_next),
-            astptr: *attr_ptr,
-        });
+            None,
+            h_next,
+            attr_ptr,
+        ));
     }
 
-    exprs.push(var_expr(&AstIdent::new("h"), attr_ptr));
-
-    Expr::EBlock {
-        exprs,
-        astptr: *attr_ptr,
-    }
+    block_expr(stmts, var_expr(&AstIdent::new("h"), attr_ptr), attr_ptr)
 }
 
 fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr {
@@ -878,14 +906,14 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
             astptr: *attr_ptr,
         };
 
-        let mut exprs = Vec::new();
-        exprs.push(Expr::ELet {
-            pat: Pat::PVar {
+        let mut stmts = Vec::new();
+        stmts.push(let_stmt(
+            Pat::PVar {
                 name: AstIdent::new("h"),
                 astptr: *attr_ptr,
             },
-            annotation: Some(ast::TypeExpr::TUint64),
-            value: Box::new(Expr::EBinary {
+            Some(ast::TypeExpr::TUint64),
+            Expr::EBinary {
                 op: common_defs::BinaryOp::Add,
                 lhs: Box::new(Expr::EUInt64 {
                     value: "14695981039346656037".to_string(),
@@ -893,9 +921,9 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 }),
                 rhs: Box::new(tag),
                 astptr: *attr_ptr,
-            }),
-            astptr: *attr_ptr,
-        });
+            },
+            attr_ptr,
+        ));
 
         for binding in bindings.iter() {
             let field_hash = trait_call(
@@ -918,22 +946,18 @@ fn build_enum_hash_body(enum_def: &EnumDef, attr_ptr: &MySyntaxNodePtr) -> Expr 
                 rhs: Box::new(field_hash),
                 astptr: *attr_ptr,
             };
-            exprs.push(Expr::ELet {
-                pat: Pat::PVar {
+            stmts.push(let_stmt(
+                Pat::PVar {
                     name: AstIdent::new("h"),
                     astptr: *attr_ptr,
                 },
-                annotation: None,
-                value: Box::new(h_next),
-                astptr: *attr_ptr,
-            });
+                None,
+                h_next,
+                attr_ptr,
+            ));
         }
 
-        exprs.push(var_expr(&AstIdent::new("h"), attr_ptr));
-        let body = Expr::EBlock {
-            exprs,
-            astptr: *attr_ptr,
-        };
+        let body = block_expr(stmts, var_expr(&AstIdent::new("h"), attr_ptr), attr_ptr);
 
         arms.push(Arm {
             pat: Pat::PConstr {
