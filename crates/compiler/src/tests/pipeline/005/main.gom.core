@@ -8,47 +8,49 @@ fn println(value/1: T) -> unit {
 
 fn main() -> unit {
   let a/0 = (Color::Blue, Color::Red) in
-  let x0 = a/0.0 in
-  let x1 = a/0.1 in
-  match x1 {
-    Color::Red => {
-      match x0 {
-        Color::Red => {
-          print(1)
-        },
-        Color::Green => {
-          print(3)
-        },
-        Color::Blue => {
-          print(3)
-        },
-      }
-    },
-    Color::Green => {
-      match x0 {
-        Color::Red => {
-          print(0)
-        },
-        Color::Green => {
-          print(3)
-        },
-        Color::Blue => {
-          print(3)
-        },
-      }
-    },
-    Color::Blue => {
-      match x0 {
-        Color::Red => {
-          print(3)
-        },
-        Color::Green => {
-          print(3)
-        },
-        Color::Blue => {
-          print(2)
-        },
-      }
-    },
+  {
+    let x0 = a/0.0 in
+    let x1 = a/0.1 in
+    match x1 {
+      Color::Red => {
+        match x0 {
+          Color::Red => {
+            print(1)
+          },
+          Color::Green => {
+            print(3)
+          },
+          Color::Blue => {
+            print(3)
+          },
+        }
+      },
+      Color::Green => {
+        match x0 {
+          Color::Red => {
+            print(0)
+          },
+          Color::Green => {
+            print(3)
+          },
+          Color::Blue => {
+            print(3)
+          },
+        }
+      },
+      Color::Blue => {
+        match x0 {
+          Color::Red => {
+            print(3)
+          },
+          Color::Green => {
+            print(3)
+          },
+          Color::Blue => {
+            print(2)
+          },
+        }
+      },
+    }
   }
 }

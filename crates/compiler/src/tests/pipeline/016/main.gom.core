@@ -12,10 +12,14 @@ fn list_length(xs/0: List[T]) -> int32 {
       0
     },
     List::Cons(x0, x1) => {
-      let x0 = List::Cons._0(xs/0) in
-      let x1 = List::Cons._1(xs/0) in
-      let tail/1 = x1 in
-      (1 + list_length(tail/1))
+      {
+        let x0 = List::Cons._0(xs/0) in
+        let x1 = List::Cons._1(xs/0) in
+        {
+          let tail/1 = x1 in
+          (1 + list_length(tail/1))
+        }
+      }
     },
   }
 }
@@ -26,10 +30,14 @@ fn int_list_length(xs/2: List[int32]) -> int32 {
       0
     },
     List::Cons(x2, x3) => {
-      let x2 = List::Cons._0(xs/2) in
-      let x3 = List::Cons._1(xs/2) in
-      let tail/3 = x3 in
-      (1 + int_list_length(tail/3))
+      {
+        let x2 = List::Cons._0(xs/2) in
+        let x3 = List::Cons._1(xs/2) in
+        {
+          let tail/3 = x3 in
+          (1 + int_list_length(tail/3))
+        }
+      }
     },
   }
 }
@@ -37,21 +45,33 @@ fn int_list_length(xs/2: List[int32]) -> int32 {
 fn main() -> unit {
   let x/4 = List::Cons(1, List::Nil) in
   let length/5 = list_length(x/4) in
-  let mtmp35 = println(length/5) in
-  let x/6 = List::Cons(1, List::Cons(2, List::Nil)) in
-  let length/7 = list_length(x/6) in
-  let mtmp51 = println(length/7) in
-  let x/8 = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil))) in
-  let length/9 = int_list_length(x/8) in
-  let mtmp59 = println(length/9) in
-  let x/10 = List::Cons((), List::Nil) in
-  let length/11 = list_length(x/10) in
-  let mtmp63 = println(length/11) in
-  let x/12 = List::Cons((), List::Cons((), List::Nil)) in
-  let length/13 = list_length(x/12) in
-  let mtmp65 = println(length/13) in
-  let x/14 = List::Cons(true, List::Cons(false, List::Nil)) in
-  let length/15 = list_length(x/14) in
-  let mtmp66 = println(length/15) in
-  ()
+  let mtmp4 = println(length/5) in
+  {
+    let x/6 = List::Cons(1, List::Cons(2, List::Nil)) in
+    let length/7 = list_length(x/6) in
+    let mtmp5 = println(length/7) in
+    {
+      let x/8 = List::Cons(0, List::Cons(1, List::Cons(2, List::Nil))) in
+      let length/9 = int_list_length(x/8) in
+      let mtmp6 = println(length/9) in
+      {
+        let x/10 = List::Cons((), List::Nil) in
+        let length/11 = list_length(x/10) in
+        let mtmp7 = println(length/11) in
+        {
+          let x/12 = List::Cons((), List::Cons((), List::Nil)) in
+          let length/13 = list_length(x/12) in
+          let mtmp8 = println(length/13) in
+          {
+            let x/14 = List::Cons(true, List::Cons(false, List::Nil)) in
+            let length/15 = list_length(x/14) in
+            let mtmp9 = println(length/15) in
+            {
+              ()
+            }
+          }
+        }
+      }
+    }
+  }
 }

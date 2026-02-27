@@ -23,35 +23,35 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret17 struct{}
+    var ret6 struct{}
     var x__0 int32 = 1
     var y__1 int8 = 1
     print__T_string("int32: ")
     println__T_int32(x__0)
     print__T_string("int8: ")
     println__T_int8(y__1)
-    ret17 = struct{}{}
-    return ret17
+    ret6 = struct{}{}
+    return ret6
 }
 
 func print__T_string(value__0 string) struct{} {
-    var ret18 struct{}
-    ret18 = string_print(value__0)
-    return ret18
+    var ret7 struct{}
+    ret7 = string_print(value__0)
+    return ret7
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var ret19 struct{}
-    var t15 string = int32_to_string(value__1)
-    ret19 = string_println(t15)
-    return ret19
+    var ret8 struct{}
+    var t4 string = int32_to_string(value__1)
+    ret8 = string_println(t4)
+    return ret8
 }
 
 func println__T_int8(value__1 int8) struct{} {
-    var ret20 struct{}
-    var t16 string = int8_to_string(value__1)
-    ret20 = string_println(t16)
-    return ret20
+    var ret9 struct{}
+    var t5 string = int8_to_string(value__1)
+    ret9 = string_println(t5)
+    return ret9
 }
 
 func main() {

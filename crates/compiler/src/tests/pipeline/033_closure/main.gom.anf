@@ -2,12 +2,12 @@ fn test() -> unit {
   let y/0 = 3 in
   let z/1 = 5 in
   let f/3 = closure_env_f_0 { y_0: y/0, z_1: z/1 } in
-  let t95 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
-  let t94 = int32_to_string(t95) in
-  let mtmp0 = string_println(t94) in
-  let t97 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
-  let t96 = int32_to_string(t97) in
-  string_println(t96)
+  let t18 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 2) in
+  let t17 = int32_to_string(t18) in
+  let mtmp0 = string_println(t17) in
+  let t20 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, 3) in
+  let t19 = int32_to_string(t20) in
+  string_println(t19)
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
@@ -19,75 +19,75 @@ fn main() -> unit {
   let add_base/8 = closure_env_add_base_1 { base_0: base/6 } in
   let result/9 = inherent#closure_env_add_base_1#closure_env_add_base_1#apply(add_base/8, 7) in
   let printer/13 = closure_env_printer_2 {} in
-  let mtmp44 = inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
+  let mtmp1 = inherent#closure_env_printer_2#closure_env_printer_2#apply(printer/13, "result: ", result/9) in
   let unused/15 = closure_env_unused_3 { result_0: result/9 } in
   let no_capture/17 = closure_env_no_capture_4 {} in
   let doubled/18 = inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(no_capture/17, 3) in
-  let t98 = int32_to_string(doubled/18) in
-  let mtmp66 = string_println(t98) in
-  let mtmp77 = test() in
-  let t101 = Tag_0 in
-  let t100 = IntList::Cons(3, t101) in
-  let t99 = IntList::Cons(2, t100) in
-  let list123/19 = IntList::Cons(1, t99) in
+  let t21 = int32_to_string(doubled/18) in
+  let mtmp2 = string_println(t21) in
+  let mtmp3 = test() in
+  let t24 = Tag_0 in
+  let t23 = IntList::Cons(3, t24) in
+  let t22 = IntList::Cons(2, t23) in
+  let list123/19 = IntList::Cons(1, t22) in
   let point/20 = Point { x: 10, y: 20 } in
   let play_list_and_point/25 = closure_env_play_list_and_point_5 { list123_0: list123/19, point_1: point/20 } in
-  let mtmp78 = inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(play_list_and_point/25) in
+  let mtmp10 = inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(play_list_and_point/25) in
   ()
 }
 
-fn inherent#closure_env_f_0#closure_env_f_0#apply(env88: closure_env_f_0, x/2: int32) -> int32 {
-  let y/0 = closure_env_f_0.y_0(env88) in
-  let z/1 = closure_env_f_0.z_1(env88) in
-  let t102 = (x/2 * y/0) in
-  (t102 * z/1)
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env11: closure_env_f_0, x/2: int32) -> int32 {
+  let y/0 = closure_env_f_0.y_0(env11) in
+  let z/1 = closure_env_f_0.z_1(env11) in
+  let t25 = (x/2 * y/0) in
+  (t25 * z/1)
 }
 
-fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(env89: closure_env_add_base_1, x/7: int32) -> int32 {
-  let base/6 = closure_env_add_base_1.base_0(env89) in
+fn inherent#closure_env_add_base_1#closure_env_add_base_1#apply(env12: closure_env_add_base_1, x/7: int32) -> int32 {
+  let base/6 = closure_env_add_base_1.base_0(env12) in
   (x/7 + base/6)
 }
 
-fn inherent#closure_env_printer_2#closure_env_printer_2#apply(env90: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
-  let t103 = int32_to_string(value/11) in
-  let message/12 = (prefix/10 + t103) in
+fn inherent#closure_env_printer_2#closure_env_printer_2#apply(env13: closure_env_printer_2, prefix/10: string, value/11: int32) -> unit {
+  let t26 = int32_to_string(value/11) in
+  let message/12 = (prefix/10 + t26) in
   string_println(message/12)
 }
 
-fn inherent#closure_env_unused_3#closure_env_unused_3#apply(env91: closure_env_unused_3, y/14: int32) -> int32 {
-  let result/9 = closure_env_unused_3.result_0(env91) in
+fn inherent#closure_env_unused_3#closure_env_unused_3#apply(env14: closure_env_unused_3, y/14: int32) -> int32 {
+  let result/9 = closure_env_unused_3.result_0(env14) in
   (y/14 + result/9)
 }
 
-fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(env92: closure_env_no_capture_4, z/16: int32) -> int32 {
+fn inherent#closure_env_no_capture_4#closure_env_no_capture_4#apply(env15: closure_env_no_capture_4, z/16: int32) -> int32 {
   (z/16 * 2)
 }
 
-fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(env93: closure_env_play_list_and_point_5) -> unit {
-  let list123/19 = closure_env_play_list_and_point_5.list123_0(env93) in
-  let point/20 = closure_env_play_list_and_point_5.point_1(env93) in
+fn inherent#closure_env_play_list_and_point_5#closure_env_play_list_and_point_5#apply(env16: closure_env_play_list_and_point_5) -> unit {
+  let list123/19 = closure_env_play_list_and_point_5.list123_0(env16) in
+  let point/20 = closure_env_play_list_and_point_5.point_1(env16) in
   match list123/19 {
     Tag_0 => {
       string_println("Empty list")
     },
     Tag_1 => {
-      let x79 = IntList::Cons._0(list123/19) in
-      let x80 = IntList::Cons._1(list123/19) in
-      let tail/22 = x80 in
-      let head/21 = x79 in
-      let t104 = int32_to_string(head/21) in
-      let mtmp84 = string_println(t104) in
-      let x85 = Point.x(point/20) in
-      let x86 = Point.y(point/20) in
-      let y/24 = x86 in
-      let x/23 = x85 in
-      let t109 = int32_to_string(x/23) in
-      let t108 = ("Point: (" + t109) in
-      let t107 = (t108 + ", ") in
-      let t110 = int32_to_string(y/24) in
-      let t106 = (t107 + t110) in
-      let t105 = (t106 + ")") in
-      let mtmp87 = string_println(t105) in
+      let x4 = IntList::Cons._0(list123/19) in
+      let x5 = IntList::Cons._1(list123/19) in
+      let tail/22 = x5 in
+      let head/21 = x4 in
+      let t27 = int32_to_string(head/21) in
+      let mtmp6 = string_println(t27) in
+      let x7 = Point.x(point/20) in
+      let x8 = Point.y(point/20) in
+      let y/24 = x8 in
+      let x/23 = x7 in
+      let t32 = int32_to_string(x/23) in
+      let t31 = ("Point: (" + t32) in
+      let t30 = (t31 + ", ") in
+      let t33 = int32_to_string(y/24) in
+      let t29 = (t30 + t33) in
+      let t28 = (t29 + ")") in
+      let mtmp9 = string_println(t28) in
       ()
     },
   }

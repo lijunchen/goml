@@ -11,7 +11,9 @@ fn test() -> unit {
   let z/1 = 5 in
   let f/3 = |x/2: int32| => ((x/2 * y/0) * z/1) in
   let mtmp0 = string_println(int32_to_string(f/3(2))) in
-  string_println(int32_to_string(f/3(3)))
+  {
+    string_println(int32_to_string(f/3(3)))
+  }
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
@@ -22,34 +24,66 @@ fn main() -> unit {
   let base/6 = 5 in
   let add_base/8 = |x/7: int32| => (x/7 + base/6) in
   let result/9 = add_base/8(7) in
-  let printer/13 = |prefix/10: string, value/11: int32| => let message/12 = (prefix/10 + int32_to_string(value/11)) in
-  string_println(message/12) in
-  let mtmp44 = printer/13("result: ", result/9) in
-  let unused/15 = |y/14: int32| => (y/14 + result/9) in
-  let no_capture/17 = |z/16: int32| => (z/16 * 2) in
-  let doubled/18 = no_capture/17(3) in
-  let mtmp66 = string_println(int32_to_string(doubled/18)) in
-  let mtmp77 = test() in
-  let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
-  let point/20 = Point { x: 10, y: 20 } in
-  let play_list_and_point/25 = || => match list123/19 {
-    IntList::Nil => {
-      string_println("Empty list")
-    },
-    IntList::Cons(x79, x80) => {
-      let x79 = IntList::Cons._0(list123/19) in
-      let x80 = IntList::Cons._1(list123/19) in
-      let tail/22 = x80 in
-      let head/21 = x79 in
-      let mtmp84 = string_println(int32_to_string(head/21)) in
-      let x85 = Point.x(point/20) in
-      let x86 = Point.y(point/20) in
-      let y/24 = x86 in
-      let x/23 = x85 in
-      let mtmp87 = string_println((((("Point: (" + int32_to_string(x/23)) + ", ") + int32_to_string(y/24)) + ")")) in
-      ()
-    },
+  let printer/13 = |prefix/10: string, value/11: int32| => {
+    let message/12 = (prefix/10 + int32_to_string(value/11)) in
+    string_println(message/12)
   } in
-  let mtmp78 = play_list_and_point/25() in
-  ()
+  let mtmp1 = printer/13("result: ", result/9) in
+  {
+    let unused/15 = |y/14: int32| => (y/14 + result/9) in
+    let no_capture/17 = |z/16: int32| => (z/16 * 2) in
+    let doubled/18 = no_capture/17(3) in
+    let mtmp2 = string_println(int32_to_string(doubled/18)) in
+    {
+      let mtmp3 = test() in
+      {
+        let list123/19 = IntList::Cons(1, IntList::Cons(2, IntList::Cons(3, IntList::Nil))) in
+        let point/20 = Point { x: 10, y: 20 } in
+        let play_list_and_point/25 = || => {
+          match list123/19 {
+            IntList::Nil => {
+              string_println("Empty list")
+            },
+            IntList::Cons(x4, x5) => {
+              {
+                let x4 = IntList::Cons._0(list123/19) in
+                let x5 = IntList::Cons._1(list123/19) in
+                {
+                  let tail/22 = x5 in
+                  {
+                    let head/21 = x4 in
+                    {
+                      let mtmp6 = string_println(int32_to_string(head/21)) in
+                      {
+                        {
+                          let x7 = Point.x(point/20) in
+                          let x8 = Point.y(point/20) in
+                          {
+                            let y/24 = x8 in
+                            {
+                              let x/23 = x7 in
+                              {
+                                let mtmp9 = string_println((((("Point: (" + int32_to_string(x/23)) + ", ") + int32_to_string(y/24)) + ")")) in
+                                {
+                                  ()
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+          }
+        } in
+        let mtmp10 = play_list_and_point/25() in
+        {
+          ()
+        }
+      }
+    }
+  }
 }

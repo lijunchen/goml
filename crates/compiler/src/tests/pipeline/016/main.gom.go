@@ -59,134 +59,134 @@ type List__bool_Cons struct {
 func (_ List__bool_Cons) isList__bool() {}
 
 func int_list_length(xs__2 List__int32) int32 {
-    var ret83 int32
+    var ret26 int32
     switch xs__2 := xs__2.(type) {
     case List__int32_Nil:
-        ret83 = 0
+        ret26 = 0
     case List__int32_Cons:
         var x3 List__int32 = xs__2._1
         var tail__3 List__int32 = x3
-        var t67 int32 = int_list_length(tail__3)
-        ret83 = 1 + t67
+        var t10 int32 = int_list_length(tail__3)
+        ret26 = 1 + t10
     }
-    return ret83
+    return ret26
 }
 
 func main0() struct{} {
-    var ret84 struct{}
-    var t68 List__int32 = List__int32_Nil{}
+    var ret27 struct{}
+    var t11 List__int32 = List__int32_Nil{}
     var x__4 List__int32 = List__int32_Cons{
         _0: 1,
-        _1: t68,
+        _1: t11,
     }
     var length__5 int32 = list_length__T_int32(x__4)
     println__T_int32(length__5)
-    var t70 List__int32 = List__int32_Nil{}
-    var t69 List__int32 = List__int32_Cons{
+    var t13 List__int32 = List__int32_Nil{}
+    var t12 List__int32 = List__int32_Cons{
         _0: 2,
-        _1: t70,
+        _1: t13,
     }
     var x__6 List__int32 = List__int32_Cons{
         _0: 1,
-        _1: t69,
+        _1: t12,
     }
     var length__7 int32 = list_length__T_int32(x__6)
     println__T_int32(length__7)
-    var t73 List__int32 = List__int32_Nil{}
-    var t72 List__int32 = List__int32_Cons{
+    var t16 List__int32 = List__int32_Nil{}
+    var t15 List__int32 = List__int32_Cons{
         _0: 2,
-        _1: t73,
+        _1: t16,
     }
-    var t71 List__int32 = List__int32_Cons{
+    var t14 List__int32 = List__int32_Cons{
         _0: 1,
-        _1: t72,
+        _1: t15,
     }
     var x__8 List__int32 = List__int32_Cons{
         _0: 0,
-        _1: t71,
+        _1: t14,
     }
     var length__9 int32 = int_list_length(x__8)
     println__T_int32(length__9)
-    var t74 List__unit = List__unit_Nil{}
+    var t17 List__unit = List__unit_Nil{}
     var x__10 List__unit = List__unit_Cons{
         _0: struct{}{},
-        _1: t74,
+        _1: t17,
     }
     var length__11 int32 = list_length__T_unit(x__10)
     println__T_int32(length__11)
-    var t76 List__unit = List__unit_Nil{}
-    var t75 List__unit = List__unit_Cons{
+    var t19 List__unit = List__unit_Nil{}
+    var t18 List__unit = List__unit_Cons{
         _0: struct{}{},
-        _1: t76,
+        _1: t19,
     }
     var x__12 List__unit = List__unit_Cons{
         _0: struct{}{},
-        _1: t75,
+        _1: t18,
     }
     var length__13 int32 = list_length__T_unit(x__12)
     println__T_int32(length__13)
-    var t78 List__bool = List__bool_Nil{}
-    var t77 List__bool = List__bool_Cons{
+    var t21 List__bool = List__bool_Nil{}
+    var t20 List__bool = List__bool_Cons{
         _0: false,
-        _1: t78,
+        _1: t21,
     }
     var x__14 List__bool = List__bool_Cons{
         _0: true,
-        _1: t77,
+        _1: t20,
     }
     var length__15 int32 = list_length__T_bool(x__14)
     println__T_int32(length__15)
-    ret84 = struct{}{}
-    return ret84
+    ret27 = struct{}{}
+    return ret27
 }
 
 func list_length__T_int32(xs__0 List__int32) int32 {
-    var ret85 int32
+    var ret28 int32
     switch xs__0 := xs__0.(type) {
     case List__int32_Nil:
-        ret85 = 0
+        ret28 = 0
     case List__int32_Cons:
         var x1 List__int32 = xs__0._1
         var tail__1 List__int32 = x1
-        var t79 int32 = list_length__T_int32(tail__1)
-        ret85 = 1 + t79
+        var t22 int32 = list_length__T_int32(tail__1)
+        ret28 = 1 + t22
     }
-    return ret85
+    return ret28
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var ret86 struct{}
-    var t80 string = int32_to_string(value__1)
-    ret86 = string_println(t80)
-    return ret86
+    var ret29 struct{}
+    var t23 string = int32_to_string(value__1)
+    ret29 = string_println(t23)
+    return ret29
 }
 
 func list_length__T_unit(xs__0 List__unit) int32 {
-    var ret87 int32
+    var ret30 int32
     switch xs__0 := xs__0.(type) {
     case List__unit_Nil:
-        ret87 = 0
+        ret30 = 0
     case List__unit_Cons:
         var x1 List__unit = xs__0._1
         var tail__1 List__unit = x1
-        var t81 int32 = list_length__T_unit(tail__1)
-        ret87 = 1 + t81
+        var t24 int32 = list_length__T_unit(tail__1)
+        ret30 = 1 + t24
     }
-    return ret87
+    return ret30
 }
 
 func list_length__T_bool(xs__0 List__bool) int32 {
-    var ret88 int32
+    var ret31 int32
     switch xs__0 := xs__0.(type) {
     case List__bool_Nil:
-        ret88 = 0
+        ret31 = 0
     case List__bool_Cons:
         var x1 List__bool = xs__0._1
         var tail__1 List__bool = x1
-        var t82 int32 = list_length__T_bool(tail__1)
-        ret88 = 1 + t82
+        var t25 int32 = list_length__T_bool(tail__1)
+        ret31 = 1 + t25
     }
-    return ret88
+    return ret31
 }
 
 func main() {

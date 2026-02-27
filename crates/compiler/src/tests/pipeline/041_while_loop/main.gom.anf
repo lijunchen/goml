@@ -1,14 +1,14 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1 = ref(0) in
   let i/2 = ref(0) in
-  let mtmp3 = while let t23 = ref_get(i/2) in
-  (t23 < limit/0) {
+  let mtmp2 = while let t10 = ref_get(i/2) in
+  (t10 < limit/0) {
     let current/3 = ref_get(i/2) in
-    let t25 = ref_get(acc/1) in
-    let t24 = (t25 + current/3) in
-    let mtmp1 = ref_set(acc/1, t24) in
-    let t26 = (current/3 + 1) in
-    let mtmp2 = ref_set(i/2, t26) in
+    let t12 = ref_get(acc/1) in
+    let t11 = (t12 + current/3) in
+    let mtmp0 = ref_set(acc/1, t11) in
+    let t13 = (current/3 + 1) in
+    let mtmp1 = ref_set(i/2, t13) in
     ()
   } in
   ref_get(acc/1)
@@ -18,18 +18,18 @@ fn sum_even(limit/4: int32) -> int32 {
   let acc/5 = ref(0) in
   let i/6 = ref(0) in
   let is_even/7 = ref(true) in
-  let mtmp7 = while let t27 = ref_get(i/6) in
-  (t27 < limit/4) {
+  let mtmp5 = while let t14 = ref_get(i/6) in
+  (t14 < limit/4) {
     let current/8 = ref_get(i/6) in
-    let t28 = (current/8 + 1) in
-    let mtmp5 = ref_set(i/6, t28) in
+    let t15 = (current/8 + 1) in
+    let mtmp3 = ref_set(i/6, t15) in
     let add_now/9 = ref_get(is_even/7) in
-    let t29 = (!add_now/9) in
-    let mtmp6 = ref_set(is_even/7, t29) in
+    let t16 = (!add_now/9) in
+    let mtmp4 = ref_set(is_even/7, t16) in
     if add_now/9 {
-      let t31 = ref_get(acc/5) in
-      let t30 = (t31 + current/8) in
-      ref_set(acc/5, t30)
+      let t18 = ref_get(acc/5) in
+      let t17 = (t18 + current/8) in
+      ref_set(acc/5, t17)
     } else {
       ()
     }
@@ -40,10 +40,10 @@ fn sum_even(limit/4: int32) -> int32 {
 fn main() -> unit {
   let first/10 = sum_to(5) in
   let evens/11 = sum_even(6) in
-  let mtmp15 = print__T_string("sum_to(5)=") in
-  let mtmp19 = println__T_int32(first/10) in
-  let mtmp21 = print__T_string("sum_even(6)=") in
-  let mtmp22 = println__T_int32(evens/11) in
+  let mtmp6 = print__T_string("sum_to(5)=") in
+  let mtmp7 = println__T_int32(first/10) in
+  let mtmp8 = print__T_string("sum_even(6)=") in
+  let mtmp9 = println__T_int32(evens/11) in
   ()
 }
 
@@ -52,6 +52,6 @@ fn print__T_string(value/0: string) -> unit {
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t32 = int32_to_string(value/1) in
-  string_println(t32)
+  let t19 = int32_to_string(value/1) in
+  string_println(t19)
 }

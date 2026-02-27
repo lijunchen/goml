@@ -7,18 +7,22 @@ fn println(value/1: T) -> unit {
 }
 
 fn fib(x/0: int32) -> int32 {
-  let mtmp0 = (x/0 < 2) in
-  match mtmp0 {
-    true => {
-      1
-    },
-    false => {
-      (fib((x/0 - 1)) + fib((x/0 - 2)))
-    },
+  {
+    let mtmp0 = (x/0 < 2) in
+    match mtmp0 {
+      true => {
+        1
+      },
+      false => {
+        (fib((x/0 - 1)) + fib((x/0 - 2)))
+      },
+    }
   }
 }
 
 fn main() -> unit {
   let mtmp1 = print(fib(10)) in
-  ()
+  {
+    ()
+  }
 }

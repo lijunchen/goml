@@ -8,16 +8,24 @@ fn println(value/1: T) -> unit {
 
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
   if flag/0 {
-      x/1
+      {
+        x/1
+      }
   } else {
-      y/2
+      {
+        y/2
+      }
   }
 }
 
 fn main() -> unit {
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let mtmp1 = string_println(("yes=" + int32_to_string(yes/3))) in
-  let mtmp2 = string_println(("no=" + int32_to_string(no/4))) in
-  ()
+  let mtmp0 = string_println(("yes=" + int32_to_string(yes/3))) in
+  {
+    let mtmp1 = string_println(("no=" + int32_to_string(no/4))) in
+    {
+      ()
+    }
+  }
 }

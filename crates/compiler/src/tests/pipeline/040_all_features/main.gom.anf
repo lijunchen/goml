@@ -10,12 +10,12 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   let flag/5 = ref_get(toggled/3) in
   let with_label/6 = ("Tracker(" + label/1) in
   let with_count_label/7 = (with_label/6 + ", count: ") in
-  let t283 = int32_to_string(current/4) in
-  let with_count/8 = (with_count_label/7 + t283) in
+  let t35 = int32_to_string(current/4) in
+  let with_count/8 = (with_count_label/7 + t35) in
   let with_flag_label/9 = (with_count/8 + ", toggled: ") in
-  let t285 = bool_to_string(flag/5) in
-  let t284 = (with_flag_label/9 + t285) in
-  (t284 + ")")
+  let t37 = bool_to_string(flag/5) in
+  let t36 = (with_flag_label/9 + t37) in
+  (t36 + ")")
 }
 
 fn trait_impl#Describe#Record[int32]#describe(self/10: Record__int32) -> string {
@@ -23,21 +23,21 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record__int32) -> string 
     Tag_0 => {
       let x4 = Record__int32::Value._0(self/10) in
       let value/11 = x4 in
-      let t287 = int32_to_string(value/11) in
-      let t286 = ("Value(" + t287) in
-      (t286 + ")")
+      let t39 = int32_to_string(value/11) in
+      let t38 = ("Value(" + t39) in
+      (t38 + ")")
     },
     Tag_1 => {
       let x5 = Record__int32::Pair._0(self/10) in
       let x6 = Record__int32::Pair._1(self/10) in
       let after/13 = x6 in
       let before/12 = x5 in
-      let t288 = int32_to_string(before/12) in
-      let prefix/14 = ("Pair(" + t288) in
-      let t290 = (prefix/14 + ", ") in
-      let t291 = int32_to_string(after/13) in
-      let t289 = (t290 + t291) in
-      (t289 + ")")
+      let t40 = int32_to_string(before/12) in
+      let prefix/14 = ("Pair(" + t40) in
+      let t42 = (prefix/14 + ", ") in
+      let t43 = int32_to_string(after/13) in
+      let t41 = (t42 + t43) in
+      (t41 + ")")
     },
     Tag_2 => {
       "Empty"
@@ -50,8 +50,8 @@ fn trait_impl#Describe#Record[string]#describe(self/15: Record__string) -> strin
     Tag_0 => {
       let x7 = Record__string::Value._0(self/15) in
       let text/16 = x7 in
-      let t292 = ("Value(" + text/16) in
-      (t292 + ")")
+      let t44 = ("Value(" + text/16) in
+      (t44 + ")")
     },
     Tag_1 => {
       let x8 = Record__string::Pair._0(self/15) in
@@ -59,9 +59,9 @@ fn trait_impl#Describe#Record[string]#describe(self/15: Record__string) -> strin
       let after/18 = x9 in
       let before/17 = x8 in
       let prefix/19 = ("Pair(" + before/17) in
-      let t294 = (prefix/19 + ", ") in
-      let t293 = (t294 + after/18) in
-      (t293 + ")")
+      let t46 = (prefix/19 + ", ") in
+      let t45 = (t46 + after/18) in
+      (t45 + ")")
     },
     Tag_2 => {
       "Empty"
@@ -70,8 +70,8 @@ fn trait_impl#Describe#Record[string]#describe(self/15: Record__string) -> strin
 }
 
 fn format_total(total/26: int32) -> string {
-  let t295 = int32_to_string(total/26) in
-  ("total: " + t295)
+  let t47 = int32_to_string(total/26) in
+  ("total: " + t47)
 }
 
 fn increment(value/27: int32) -> int32 {
@@ -88,8 +88,8 @@ fn pair_join(parts/29: (string, string)) -> string {
   let x13 = mtmp11.1 in
   let right/31 = x13 in
   let left/30 = x12 in
-  let t296 = (left/30 + " -> ") in
-  (t296 + right/31)
+  let t48 = (left/30 + " -> ") in
+  (t48 + right/31)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -97,8 +97,8 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
   let second/35 = array_get(transforms/33, 1) in
   let first_result/36 = first/34(value/32) in
   let second_result/37 = second/35(first_result/36) in
-  let t297 = [first_result/36, value/32] in
-  array_set(t297, 1, second_result/37)
+  let t49 = [first_result/36, value/32] in
+  array_set(t49, 1, second_result/37)
 }
 
 fn gather(record/38: Record__int32) -> Maybe__int32 {
@@ -131,15 +131,15 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, closure_env_sna
 }
 
 fn main() -> unit {
-  let mtmp147 = build_counter("goml", 2) in
-  let x148 = mtmp147.0 in
-  let x149 = mtmp147.1 in
-  let x150 = mtmp147.2 in
-  let x151 = mtmp147.3 in
-  let flip/56 = x151 in
-  let bump/55 = x150 in
-  let snapshot/54 = x149 in
-  let tracker/53 = x148 in
+  let mtmp19 = build_counter("goml", 2) in
+  let x20 = mtmp19.0 in
+  let x21 = mtmp19.1 in
+  let x22 = mtmp19.2 in
+  let x23 = mtmp19.3 in
+  let flip/56 = x23 in
+  let bump/55 = x22 in
+  let snapshot/54 = x21 in
+  let tracker/53 = x20 in
   let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
   let first_record/58 = inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(snapshot/54) in
   let bumped_record/59 = inherent#closure_env_bump_1#closure_env_bump_1#apply(bump/55, 5) in
@@ -152,33 +152,33 @@ fn main() -> unit {
   let results/66 = run_transforms(4, transforms/65) in
   let first_result/67 = array_get(results/66, 0) in
   let second_result/68 = array_get(results/66, 1) in
-  let t298 = (first_result/67 < second_result/68) in
-  let order_check/69 = (t298 && true) in
+  let t50 = (first_result/67 < second_result/68) in
+  let order_check/69 = (t50 && true) in
   let first_text/70 = trait_impl#Describe#Record[int32]#describe(first_record/58) in
   let bumped_text/71 = trait_impl#Describe#Record[int32]#describe(bumped_record/59) in
   let flipped_text/72 = trait_impl#Describe#Record[string]#describe(flipped_record/60) in
   let summary/74 = match stringified/64 {
     Tag_0 => {
-      let x279 = Maybe__string::Some._0(stringified/64) in
-      let text/73 = x279 in
+      let x24 = Maybe__string::Some._0(stringified/64) in
+      let text/73 = x24 in
       ("Snapshot: " + text/73)
     },
     Tag_1 => {
       "Snapshot: none"
     },
   } in
-  let t300 = int32_to_string(first_result/67) in
-  let t301 = int32_to_string(second_result/68) in
-  let t299 = (t300, t301) in
-  let pair_text/75 = pair_join(t299) in
+  let t52 = int32_to_string(first_result/67) in
+  let t53 = int32_to_string(second_result/68) in
+  let t51 = (t52, t53) in
+  let pair_text/75 = pair_join(t51) in
   let bool_text/76 = bool_to_string(order_check/69) in
-  let mtmp215 = string_println(tracker_info/57) in
-  let mtmp247 = string_println(first_text/70) in
-  let mtmp263 = string_println(bumped_text/71) in
-  let mtmp271 = string_println(flipped_text/72) in
-  let mtmp275 = string_println(summary/74) in
-  let mtmp277 = string_println(pair_text/75) in
-  let mtmp278 = string_println(bool_text/76) in
+  let mtmp25 = string_println(tracker_info/57) in
+  let mtmp26 = string_println(first_text/70) in
+  let mtmp27 = string_println(bumped_text/71) in
+  let mtmp28 = string_println(flipped_text/72) in
+  let mtmp29 = string_println(summary/74) in
+  let mtmp30 = string_println(pair_text/75) in
+  let mtmp31 = string_println(bool_text/76) in
   ()
 }
 
@@ -195,8 +195,8 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
     Tag_0 => {
       let x10 = Maybe__int32::Some._0(value/23) in
       let inner/25 = x10 in
-      let t302 = f/24(inner/25) in
-      Maybe__string::Some(t302)
+      let t54 = f/24(inner/25) in
+      Maybe__string::Some(t54)
     },
     Tag_1 => {
       Tag_1
@@ -204,28 +204,28 @@ fn map_maybe__T_int32__U_string(value/23: Maybe__int32, f/24: (int32) -> string)
   }
 }
 
-fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env280: closure_env_snapshot_0) -> Record__int32 {
-  let count/43 = closure_env_snapshot_0.count_0(env280) in
-  let t303 = ref_get(count/43) in
-  Record__int32::Value(t303)
+fn inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(env32: closure_env_snapshot_0) -> Record__int32 {
+  let count/43 = closure_env_snapshot_0.count_0(env32) in
+  let t55 = ref_get(count/43) in
+  Record__int32::Value(t55)
 }
 
-fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env281: closure_env_bump_1, delta/47: int32) -> Record__int32 {
-  let count/43 = closure_env_bump_1.count_0(env281) in
+fn inherent#closure_env_bump_1#closure_env_bump_1#apply(env33: closure_env_bump_1, delta/47: int32) -> Record__int32 {
+  let count/43 = closure_env_bump_1.count_0(env33) in
   let before/48 = ref_get(count/43) in
-  let t304 = (before/48 + delta/47) in
-  let mtmp18 = ref_set(count/43, t304) in
-  let t305 = ref_get(count/43) in
-  Record__int32::Pair(before/48, t305)
+  let t56 = (before/48 + delta/47) in
+  let mtmp17 = ref_set(count/43, t56) in
+  let t57 = ref_get(count/43) in
+  Record__int32::Pair(before/48, t57)
 }
 
-fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env282: closure_env_flip_2) -> Record__string {
-  let toggled/44 = closure_env_flip_2.toggled_0(env282) in
+fn inherent#closure_env_flip_2#closure_env_flip_2#apply(env34: closure_env_flip_2) -> Record__string {
+  let toggled/44 = closure_env_flip_2.toggled_0(env34) in
   let before/50 = ref_get(toggled/44) in
-  let t306 = (!before/50) in
-  let mtmp17 = ref_set(toggled/44, t306) in
+  let t58 = (!before/50) in
+  let mtmp18 = ref_set(toggled/44, t58) in
   let after/51 = ref_get(toggled/44) in
-  let t307 = bool_to_string(before/50) in
-  let t308 = bool_to_string(after/51) in
-  Record__string::Pair(t307, t308)
+  let t59 = bool_to_string(before/50) in
+  let t60 = bool_to_string(after/51) in
+  Record__string::Pair(t59, t60)
 }

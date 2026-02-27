@@ -28,12 +28,12 @@ func main0() struct{} {
         _0: true,
         _1: false,
     }
-    var x5 bool = a__0._0
-    var x6 bool = a__0._1
+    var x0 bool = a__0._0
+    var x1 bool = a__0._1
     var b__1 Tuple2_bool_bool
-    switch x6 {
+    switch x1 {
     case true:
-        switch x5 {
+        switch x0 {
         case true:
             b__1 = Tuple2_bool_bool{
                 _0: false,
@@ -46,7 +46,7 @@ func main0() struct{} {
             }
         }
     case false:
-        switch x5 {
+        switch x0 {
         case true:
             b__1 = Tuple2_bool_bool{
                 _0: false,
@@ -59,19 +59,19 @@ func main0() struct{} {
             }
         }
     }
-    var x4 bool = b__1._1
-    var w__2 bool = x4
+    var x3 bool = b__1._1
+    var w__2 bool = x3
     var b_1__3 bool = w__2
-    var mtmp0 Tuple2_bool_bool = Tuple2_bool_bool{
+    var mtmp4 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: b_1__3,
     }
-    var x1 bool = mtmp0._0
-    var x2 bool = mtmp0._1
+    var x5 bool = mtmp4._0
+    var x6 bool = mtmp4._1
     var c__4 struct{}
-    switch x2 {
+    switch x6 {
     case true:
-        switch x1 {
+        switch x5 {
         case true:
             var t7 string = int32_to_string(3)
             c__4 = string_print(t7)
@@ -80,7 +80,7 @@ func main0() struct{} {
             c__4 = string_print(t8)
         }
     case false:
-        switch x1 {
+        switch x5 {
         case true:
             var t9 string = int32_to_string(2)
             c__4 = string_print(t9)

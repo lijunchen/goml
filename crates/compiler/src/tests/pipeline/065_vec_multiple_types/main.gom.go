@@ -22,7 +22,7 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret68 struct{}
+    var ret11 struct{}
     var vi__0 []int32 = nil
     var vi__1 []int32 = append(vi__0, 42)
     var val_i__2 int32 = vi__1[0]
@@ -37,19 +37,19 @@ func main0() struct{} {
     var vb__11 []bool = append(vb__10, false)
     var val_b__12 bool = vb__11[0]
     var len_b__13 int32 = int32(len(vb__11))
-    var t63 string = int32_to_string(val_i__2)
-    string_println(t63)
-    var t64 string = int32_to_string(len_i__3)
-    string_println(t64)
+    var t6 string = int32_to_string(val_i__2)
+    string_println(t6)
+    var t7 string = int32_to_string(len_i__3)
+    string_println(t7)
     string_println(val_s__7)
-    var t65 string = int32_to_string(len_s__8)
-    string_println(t65)
-    var t66 string = bool_to_string(val_b__12)
-    string_println(t66)
-    var t67 string = int32_to_string(len_b__13)
-    string_println(t67)
-    ret68 = struct{}{}
-    return ret68
+    var t8 string = int32_to_string(len_s__8)
+    string_println(t8)
+    var t9 string = bool_to_string(val_b__12)
+    string_println(t9)
+    var t10 string = int32_to_string(len_b__13)
+    string_println(t10)
+    ret11 = struct{}{}
+    return ret11
 }
 
 func main() {

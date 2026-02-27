@@ -46,7 +46,7 @@ type closure_env_reset_1 struct {
 }
 
 func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
-    var ret146 Tuple2_closure_env_next_0_closure_env_reset_1
+    var ret20 Tuple2_closure_env_next_0_closure_env_reset_1
     var cell__0 *ref_int32_x = ref__Ref_int32(0)
     var next__2 closure_env_next_0 = closure_env_next_0{
         cell_0: cell__0,
@@ -54,58 +54,58 @@ func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
     var reset__3 closure_env_reset_1 = closure_env_reset_1{
         cell_0: cell__0,
     }
-    ret146 = Tuple2_closure_env_next_0_closure_env_reset_1{
+    ret20 = Tuple2_closure_env_next_0_closure_env_reset_1{
         _0: next__2,
         _1: reset__3,
     }
-    return ret146
+    return ret20
 }
 
 func main0() struct{} {
-    var ret147 struct{}
+    var ret21 struct{}
     var counter__4 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
-    var mtmp69 Tuple2_closure_env_next_0_closure_env_reset_1 = counter__4
-    var x70 closure_env_next_0 = mtmp69._0
-    var x71 closure_env_reset_1 = mtmp69._1
-    var reset__6 closure_env_reset_1 = x71
-    var next__5 closure_env_next_0 = x70
+    var mtmp2 Tuple2_closure_env_next_0_closure_env_reset_1 = counter__4
+    var x3 closure_env_next_0 = mtmp2._0
+    var x4 closure_env_reset_1 = mtmp2._1
+    var reset__6 closure_env_reset_1 = x4
+    var next__5 closure_env_next_0 = x3
     var first__7 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
     var second__8 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
     _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__6)
     var third__9 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
     var new_counter__10 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
-    var mtmp121 Tuple2_closure_env_next_0_closure_env_reset_1 = new_counter__10
-    var x122 closure_env_next_0 = mtmp121._0
-    var new_next__11 closure_env_next_0 = x122
+    var mtmp6 Tuple2_closure_env_next_0_closure_env_reset_1 = new_counter__10
+    var x7 closure_env_next_0 = mtmp6._0
+    var new_next__11 closure_env_next_0 = x7
     var fourth__12 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(new_next__11)
-    var t141 string = int32_to_string(first__7)
-    string_println(t141)
-    var t142 string = int32_to_string(second__8)
-    string_println(t142)
-    var t143 string = int32_to_string(third__9)
-    string_println(t143)
-    var t144 string = int32_to_string(fourth__12)
-    string_println(t144)
-    ret147 = struct{}{}
-    return ret147
+    var t15 string = int32_to_string(first__7)
+    string_println(t15)
+    var t16 string = int32_to_string(second__8)
+    string_println(t16)
+    var t17 string = int32_to_string(third__9)
+    string_println(t17)
+    var t18 string = int32_to_string(fourth__12)
+    string_println(t18)
+    ret21 = struct{}{}
+    return ret21
 }
 
-func _goml_inherent_closure_env_next_0_closure_env_next_0_apply(env139 closure_env_next_0) int32 {
-    var ret148 int32
-    var cell__0 *ref_int32_x = env139.cell_0
-    var t145 int32 = ref_get__Ref_int32(cell__0)
-    var next__1 int32 = t145 + 1
+func _goml_inherent_closure_env_next_0_closure_env_next_0_apply(env13 closure_env_next_0) int32 {
+    var ret22 int32
+    var cell__0 *ref_int32_x = env13.cell_0
+    var t19 int32 = ref_get__Ref_int32(cell__0)
+    var next__1 int32 = t19 + 1
     ref_set__Ref_int32(cell__0, next__1)
-    ret148 = next__1
-    return ret148
+    ret22 = next__1
+    return ret22
 }
 
-func _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(env140 closure_env_reset_1) struct{} {
-    var ret149 struct{}
-    var cell__0 *ref_int32_x = env140.cell_0
+func _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(env14 closure_env_reset_1) struct{} {
+    var ret23 struct{}
+    var cell__0 *ref_int32_x = env14.cell_0
     ref_set__Ref_int32(cell__0, 0)
-    ret149 = struct{}{}
-    return ret149
+    ret23 = struct{}{}
+    return ret23
 }
 
 func main() {

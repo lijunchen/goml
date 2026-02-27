@@ -564,9 +564,7 @@ fn main() {
     let _ = add(1, 2);
 }
 "#,
-            expect![[r#"
-                [4:4] error: Type mismatch: expected int32, found unit
-                [3:27] error: Type mismatch: expected int32, found unit"#]],
+            expect!["[4:4] error: Type mismatch: expected int32, found unit"],
         );
     }
 

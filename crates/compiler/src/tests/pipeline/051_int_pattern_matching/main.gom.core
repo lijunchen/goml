@@ -55,37 +55,41 @@ fn is_special64(value/3: int64) -> bool {
 }
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
-  let x0 = values/4.0 in
-  let x1 = values/4.1 in
-  match x1 {
-    2 => {
-      match x0 {
-        1 => {
-          true
-        },
-        _ => false,
-      }
-    },
-    _ => false,
+  {
+    let x0 = values/4.0 in
+    let x1 = values/4.1 in
+    match x1 {
+      2 => {
+        match x0 {
+          1 => {
+            true
+          },
+          _ => false,
+        }
+      },
+      _ => false,
+    }
   }
 }
 
 fn match_struct(pair/5: PairData) -> bool {
-  let x2 = PairData.head(pair/5) in
-  let x3 = PairData.tail(pair/5) in
-  match x3 {
-    200 => {
-      match x2 {
-        100 => {
-          true
-        },
-        _ => false,
-      }
-    },
-    300 => {
-      true
-    },
-    _ => false,
+  {
+    let x2 = PairData.head(pair/5) in
+    let x3 = PairData.tail(pair/5) in
+    match x3 {
+      200 => {
+        match x2 {
+          100 => {
+            true
+          },
+          _ => false,
+        }
+      },
+      300 => {
+        true
+      },
+      _ => false,
+    }
   }
 }
 
@@ -111,5 +115,7 @@ fn main() -> unit {
   let part9/22 = report(",struct_second=", pair_second/13) in
   let message/23 = ((((((((part1/14 + part2/15) + part3/16) + part4/17) + part5/18) + part6/19) + part7/20) + part8/21) + part9/22) in
   let mtmp4 = string_println(message/23) in
-  ()
+  {
+    ()
+  }
 }
