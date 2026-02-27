@@ -1,14 +1,14 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Eq for Point{
   fn eq(self/0: Point, other/1: Point) -> bool {
-      true && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).x, (other/1 : Point).x) && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).y, (other/1 : Point).y);
+      true && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).x, (other/1 : Point).x) && (Eq::eq : (int32, int32) -> bool)((self/0 : Point).y, (other/1 : Point).y)
   }
 }
 
@@ -17,7 +17,7 @@ impl Hash for Point{
       let h/3: uint64 = 14695981039346656037;
       let h/4: uint64 = (h/3 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((self/2 : Point).x);
       let h/5: uint64 = (h/4 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((self/2 : Point).y);
-      (h/5 : uint64);
+      (h/5 : uint64)
   }
 }
 
@@ -28,7 +28,7 @@ impl Eq for Key{
           (Key::B(__l1_0/8: int32), Key::B(__r1_0/9: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/8 : int32), (__r1_0/9 : int32)),
           (Key::P(__l2_0/10: Point), Key::P(__r2_0/11: Point)) => true && (Eq::eq : (Point, Point) -> bool)((__l2_0/10 : Point), (__r2_0/11 : Point)),
           _ : (Key, Key) => false,
-      };
+      }
   }
 }
 
@@ -37,19 +37,19 @@ impl Hash for Key{
       match (self/12 : Key) {
           Key::A => {
                 let h/13: uint64 = 14695981039346656037 + 1;
-                (h/13 : uint64);
+                (h/13 : uint64)
             },
           Key::B(__field1_0/14: int32) => {
                 let h/15: uint64 = 14695981039346656037 + 2;
                 let h/16: uint64 = (h/15 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/14 : int32));
-                (h/16 : uint64);
+                (h/16 : uint64)
             },
           Key::P(__field2_0/17: Point) => {
                 let h/18: uint64 = 14695981039346656037 + 3;
                 let h/19: uint64 = (h/18 : uint64) * 1099511628211 + (Hash::hash : (Point) -> uint64)((__field2_0/17 : Point));
-                (h/19 : uint64);
+                (h/19 : uint64)
             },
-      };
+      }
   }
 }
 
@@ -57,7 +57,7 @@ fn print_opt_int(x/20: Option[int32]) -> unit {
     match (x/20 : Option[int32]) {
         Option::Some(v/21: int32) => (println : (int32) -> unit)((v/21 : int32)),
         Option::None => (println : (string) -> unit)("none"),
-    };
+    }
 }
 
 fn main() -> unit {
@@ -80,5 +80,4 @@ fn main() -> unit {
     let k2/28: Ref[Key] = (ref : (Key) -> Ref[Key])(Key::B(7));
     (hashmap_set : (HashMap[Ref[Key], int32], Ref[Key], int32) -> unit)((m3/26 : HashMap[Ref[Key], int32]), (k1/27 : Ref[Key]), 123);
     (print_opt_int : (Option[int32]) -> unit)((hashmap_get : (HashMap[Ref[Key], int32], Ref[Key]) -> Option[int32])((m3/26 : HashMap[Ref[Key], int32]), (k2/28 : Ref[Key])));
-    ();
 }

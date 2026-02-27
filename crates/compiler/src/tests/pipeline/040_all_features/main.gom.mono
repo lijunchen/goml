@@ -111,25 +111,25 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record__i
   let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
   let snapshot/46 = || Record__int32::Value(ref_get(count/43)) in
   let bump/49 = |delta/47| let before/48 = ref_get(count/43) in
-  let mtmp17 = ref_set(count/43, (before/48 + delta/47)) in
+  let mtmp18 = ref_set(count/43, (before/48 + delta/47)) in
   Record__int32::Pair(before/48, ref_get(count/43)) in
   let flip/52 = || let before/50 = ref_get(toggled/44) in
-  let mtmp18 = ref_set(toggled/44, (!before/50)) in
+  let mtmp17 = ref_set(toggled/44, (!before/50)) in
   let after/51 = ref_get(toggled/44) in
   Record__string::Pair(bool_to_string(before/50), bool_to_string(after/51)) in
   (tracker/45, snapshot/46, bump/49, flip/52)
 }
 
 fn main() -> unit {
-  let mtmp19 = build_counter("goml", 2) in
-  let x20 = mtmp19.0 in
-  let x21 = mtmp19.1 in
-  let x22 = mtmp19.2 in
-  let x23 = mtmp19.3 in
-  let flip/56 = x23 in
-  let bump/55 = x22 in
-  let snapshot/54 = x21 in
-  let tracker/53 = x20 in
+  let mtmp147 = build_counter("goml", 2) in
+  let x148 = mtmp147.0 in
+  let x149 = mtmp147.1 in
+  let x150 = mtmp147.2 in
+  let x151 = mtmp147.3 in
+  let flip/56 = x151 in
+  let bump/55 = x150 in
+  let snapshot/54 = x149 in
+  let tracker/53 = x148 in
   let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
   let first_record/58 = snapshot/54() in
   let bumped_record/59 = bump/55(5) in
@@ -147,9 +147,9 @@ fn main() -> unit {
   let bumped_text/71 = trait_impl#Describe#Record[int32]#describe(bumped_record/59) in
   let flipped_text/72 = trait_impl#Describe#Record[string]#describe(flipped_record/60) in
   let summary/74 = match stringified/64 {
-    Maybe__string::Some(x24) => {
-      let x24 = Maybe__string::Some._0(stringified/64) in
-      let text/73 = x24 in
+    Maybe__string::Some(x279) => {
+      let x279 = Maybe__string::Some._0(stringified/64) in
+      let text/73 = x279 in
       ("Snapshot: " + text/73)
     },
     Maybe__string::None => {
@@ -158,13 +158,13 @@ fn main() -> unit {
   } in
   let pair_text/75 = pair_join((int32_to_string(first_result/67), int32_to_string(second_result/68))) in
   let bool_text/76 = bool_to_string(order_check/69) in
-  let mtmp25 = string_println(tracker_info/57) in
-  let mtmp26 = string_println(first_text/70) in
-  let mtmp27 = string_println(bumped_text/71) in
-  let mtmp28 = string_println(flipped_text/72) in
-  let mtmp29 = string_println(summary/74) in
-  let mtmp30 = string_println(pair_text/75) in
-  let mtmp31 = string_println(bool_text/76) in
+  let mtmp215 = string_println(tracker_info/57) in
+  let mtmp247 = string_println(first_text/70) in
+  let mtmp263 = string_println(bumped_text/71) in
+  let mtmp271 = string_println(flipped_text/72) in
+  let mtmp275 = string_println(summary/74) in
+  let mtmp277 = string_println(pair_text/75) in
+  let mtmp278 = string_println(bool_text/76) in
   ()
 }
 

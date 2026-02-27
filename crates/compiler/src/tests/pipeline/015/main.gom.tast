@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn print_int_list(xs/0: IntList) -> unit {
@@ -16,33 +16,33 @@ fn print_int_list(xs/0: IntList) -> unit {
               let _ : unit = (string_print : (string) -> unit)(", ");
               let _ : unit = (print_int_list : (IntList) -> unit)((xs/2 : IntList));
               let _ : unit = (string_print : (string) -> unit)(")");
-              ();
+              ()
           },
-    };
+    }
 }
 
 fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
     match (xs/3 : IntList) {
         IntList::Nil => (acc/4 : IntList),
         IntList::Cons(head/5: int32, tail/6: IntList) => (int_list_rev_aux : (IntList, IntList) -> IntList)((tail/6 : IntList), IntList::Cons((head/5 : int32), (acc/4 : IntList))),
-    };
+    }
 }
 
 fn int_list_rev(xs/7: IntList) -> IntList {
-    (int_list_rev_aux : (IntList, IntList) -> IntList)((xs/7 : IntList), IntList::Nil);
+    (int_list_rev_aux : (IntList, IntList) -> IntList)((xs/7 : IntList), IntList::Nil)
 }
 
 fn int_list_length(xs/8: IntList) -> int32 {
     match (xs/8 : IntList) {
         IntList::Nil => 0,
         IntList::Cons(_ : int32, xs/9: IntList) => 1 + (int_list_length : (IntList) -> int32)((xs/9 : IntList)),
-    };
+    }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
     let _ : unit = (string_print : (string) -> unit)("Length: ");
     let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((int_list_length : (IntList) -> int32)((xs/10 : IntList))));
-    ();
+    ()
 }
 
 fn main() -> unit {
@@ -61,5 +61,5 @@ fn main() -> unit {
     let y/14: IntList = (int_list_rev : (IntList) -> IntList)((x/13 : IntList));
     let _ : unit = (print_int_list : (IntList) -> unit)((y/14 : IntList));
     let _ : unit = (string_println : (string) -> unit)("");
-    ();
+    ()
 }

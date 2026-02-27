@@ -1,29 +1,29 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn double(x/0: int32) -> int32 {
-    (x/0 : int32) * 2;
+    (x/0 : int32) * 2
 }
 
 fn increment(x/1: int32) -> int32 {
-    (x/1 : int32) + 1;
+    (x/1 : int32) + 1
 }
 
 fn chooser(flag/2: bool) -> (int32) -> int32 {
     if (flag/2 : bool) {
         {
-            (double : (int32) -> int32);
+            (double : (int32) -> int32)
         }
     } else {
         {
-            (increment : (int32) -> int32);
+            (increment : (int32) -> int32)
         }
-    };
+    }
 }
 
 fn main() -> unit {
@@ -37,5 +37,5 @@ fn main() -> unit {
     let printer/9: (string) -> unit = (string_println : (string) -> unit);
     let _ : unit = (printer/9 : (string) -> unit)((int32_to_string : (int32) -> string)((applied/7 : int32)));
     let _ : unit = (printer/9 : (string) -> unit)((int32_to_string : (int32) -> string)((direct/8 : int32)));
-    ();
+    ()
 }

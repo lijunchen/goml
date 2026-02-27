@@ -1,117 +1,117 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Display for int32{
   fn show(self/0: int32) -> string {
-      (int32_to_string : (int32) -> string)((self/0 : int32));
+      (int32_to_string : (int32) -> string)((self/0 : int32))
   }
 }
 
 impl Debug for int32{
   fn show(self/1: int32) -> string {
-      "i32(" + (int32_to_string : (int32) -> string)((self/1 : int32)) + ")";
+      "i32(" + (int32_to_string : (int32) -> string)((self/1 : int32)) + ")"
   }
 }
 
 impl MyEq for int32{
   fn eq(self/2: int32, other/3: int32) -> bool {
-      (self/2 : int32) == (other/3 : int32);
+      (self/2 : int32) == (other/3 : int32)
   }
 }
 
 impl MyHash for int32{
   fn hash(self/4: int32) -> int32 {
-      (self/4 : int32) * 16777619 + 216613626;
+      (self/4 : int32) * 16777619 + 216613626
   }
 }
 
 impl Add for int32{
   fn add(self/5: int32, other/6: int32) -> int32 {
-      (self/5 : int32) + (other/6 : int32);
+      (self/5 : int32) + (other/6 : int32)
   }
 }
 
 impl Scale for int32{
   fn scale(self/7: int32, factor/8: int32) -> int32 {
-      (self/7 : int32) * (factor/8 : int32);
+      (self/7 : int32) * (factor/8 : int32)
   }
 }
 
 impl Inspect for int32{
   fn inspect(self/9: int32) -> string {
-      "<" + (int32_to_string : (int32) -> string)((self/9 : int32)) + ">";
+      "<" + (int32_to_string : (int32) -> string)((self/9 : int32)) + ">"
   }
 }
 
 impl Display for Boxed{
   fn show(self/10: Boxed) -> string {
-      "Boxed(" + (int32_to_string : (int32) -> string)((self/10 : Boxed).value) + ")";
+      "Boxed(" + (int32_to_string : (int32) -> string)((self/10 : Boxed).value) + ")"
   }
 }
 
 impl Debug for Boxed{
   fn show(self/11: Boxed) -> string {
-      "Boxed{value=" + (int32_to_string : (int32) -> string)((self/11 : Boxed).value) + "}";
+      "Boxed{value=" + (int32_to_string : (int32) -> string)((self/11 : Boxed).value) + "}"
   }
 }
 
 impl MyEq for Boxed{
   fn eq(self/12: Boxed, other/13: Boxed) -> bool {
-      (self/12 : Boxed).value == (other/13 : Boxed).value;
+      (self/12 : Boxed).value == (other/13 : Boxed).value
   }
 }
 
 impl MyHash for Boxed{
   fn hash(self/14: Boxed) -> int32 {
-      (self/14 : Boxed).value * 31 + 7 * 1315423911;
+      (self/14 : Boxed).value * 31 + 7 * 1315423911
   }
 }
 
 impl Add for Boxed{
   fn add(self/15: Boxed, other/16: Boxed) -> Boxed {
-      Boxed { value: (self/15 : Boxed).value + (other/16 : Boxed).value };
+      Boxed { value: (self/15 : Boxed).value + (other/16 : Boxed).value }
   }
 }
 
 impl Scale for Boxed{
   fn scale(self/17: Boxed, factor/18: int32) -> Boxed {
-      Boxed { value: (self/17 : Boxed).value * (factor/18 : int32) };
+      Boxed { value: (self/17 : Boxed).value * (factor/18 : int32) }
   }
 }
 
 impl Inspect for Boxed{
   fn inspect(self/19: Boxed) -> string {
-      "[" + (int32_to_string : (int32) -> string)((self/19 : Boxed).value) + "]";
+      "[" + (int32_to_string : (int32) -> string)((self/19 : Boxed).value) + "]"
   }
 }
 
 fn bool_text(x/20: bool) -> string {
     if (x/20 : bool) {
         {
-            "true";
+            "true"
         }
     } else {
         {
-            "false";
+            "false"
         }
-    };
+    }
 }
 
 fn show_both(x/21: T) -> string {
-    (Debug::show : (T) -> string)((x/21 : T)) + " / " + (Display::show : (T) -> string)((x/21 : T));
+    (Debug::show : (T) -> string)((x/21 : T)) + " / " + (Display::show : (T) -> string)((x/21 : T))
 }
 
 fn tag_text(tag/22: Q) -> string {
-    (Debug::show : (Q) -> string)((tag/22 : Q)) + "#" + (int32_to_string : (int32) -> string)((MyHash::hash : (Q) -> int32)((tag/22 : Q)));
+    (Debug::show : (Q) -> string)((tag/22 : Q)) + "#" + (int32_to_string : (int32) -> string)((MyHash::hash : (Q) -> int32)((tag/22 : Q)))
 }
 
 fn combine_scaled(a/23: T, b/24: T, factor/25: int32) -> T {
-    (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/23 : T), (b/24 : T)), (factor/25 : int32));
+    (Scale::scale : (T, int32) -> T)((Add::add : (T, T) -> T)((a/23 : T), (b/24 : T)), (factor/25 : int32))
 }
 
 fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
@@ -119,19 +119,19 @@ fn report_pair(tag/26: Q, a/27: T, b/28: T, combined/29: T) -> string {
     let header/31: string = (tag_text : (Q) -> string)((tag/26 : Q));
     let repr/32: string = (show_both : (T) -> string)((combined/29 : T));
     let h/33: int32 = (MyHash::hash : (T) -> int32)((combined/29 : T));
-    (header/31 : string) + " " + (repr/32 : string) + " | eq=" + (bool_text : (bool) -> string)((same/30 : bool)) + " | hash=" + (int32_to_string : (int32) -> string)((h/33 : int32));
+    (header/31 : string) + " " + (repr/32 : string) + " | eq=" + (bool_text : (bool) -> string)((same/30 : bool)) + " | hash=" + (int32_to_string : (int32) -> string)((h/33 : int32))
 }
 
 fn full_report(tag/34: Q, a/35: T, b/36: T) -> string {
     let combined/37: T = (combine_scaled : (T, T, int32) -> T)((a/35 : T), (b/36 : T), 2);
-    (report_pair : (Q, T, T, T) -> string)((tag/34 : Q), (a/35 : T), (b/36 : T), (combined/37 : T));
+    (report_pair : (Q, T, T, T) -> string)((tag/34 : Q), (a/35 : T), (b/36 : T), (combined/37 : T))
 }
 
 fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
     let total/42: T = (Add::add : (T, T) -> T)((Add::add : (T, T) -> T)((x/39 : T), (y/40 : T)), (z/41 : T));
     let header/43: string = (tag_text : (Q) -> string)((tag/38 : Q));
     let h/44: int32 = (MyHash::hash : (T) -> int32)((total/42 : T));
-    (header/43 : string) + " " + (Inspect::inspect : (T) -> string)((total/42 : T)) + " @" + (int32_to_string : (int32) -> string)((h/44 : int32));
+    (header/43 : string) + " " + (Inspect::inspect : (T) -> string)((total/42 : T)) + " @" + (int32_to_string : (int32) -> string)((h/44 : int32))
 }
 
 fn main() -> unit {
@@ -139,5 +139,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)((full_report : (Boxed, Boxed, Boxed) -> string)(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 }));
     let _ : unit = (string_println : (string) -> unit)((sum_and_tag : (int32, int32, int32, int32) -> string)(0, 1, 2, 3));
     let _ : unit = (string_println : (string) -> unit)((sum_and_tag : (Boxed, Boxed, Boxed, Boxed) -> string)(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 }));
-    ();
+    ()
 }

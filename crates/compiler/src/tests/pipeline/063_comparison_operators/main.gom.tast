@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn test_int_comparisons() -> unit {
@@ -30,7 +30,7 @@ fn test_int_comparisons() -> unit {
     let _ : unit = (string_println : (string) -> unit)("10 != 20: " + (bool_to_string : (bool) -> string)((neq1/11 : bool)));
     let neq2/12: bool = (a/0 : int32) != (c/2 : int32);
     let _ : unit = (string_println : (string) -> unit)("10 != 10: " + (bool_to_string : (bool) -> string)((neq2/12 : bool)));
-    ();
+    ()
 }
 
 fn test_float_comparisons() -> unit {
@@ -57,7 +57,7 @@ fn test_float_comparisons() -> unit {
     let _ : unit = (string_println : (string) -> unit)("3.14 != 2.71: " + (bool_to_string : (bool) -> string)((neq1/24 : bool)));
     let neq2/25: bool = (x/13 : float64) != (z/15 : float64);
     let _ : unit = (string_println : (string) -> unit)("3.14 != 3.14: " + (bool_to_string : (bool) -> string)((neq2/25 : bool)));
-    ();
+    ()
 }
 
 fn main() -> unit {
@@ -66,5 +66,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)("");
     let _ : unit = (string_println : (string) -> unit)("=== Float Comparisons ===");
     let _ : unit = (test_float_comparisons : () -> unit)();
-    ();
+    ()
 }

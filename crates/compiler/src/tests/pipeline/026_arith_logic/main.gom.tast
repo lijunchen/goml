@@ -1,19 +1,19 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn show_int(label/0: string, value/1: int32) -> unit {
     let _ : unit = (string_println : (string) -> unit)((label/0 : string) + (int32_to_string : (int32) -> string)((value/1 : int32)));
-    ();
+    ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
     let _ : unit = (string_println : (string) -> unit)((label/2 : string) + (bool_to_string : (bool) -> string)((value/3 : bool)));
-    ();
+    ()
 }
 
 fn main() -> unit {
@@ -40,5 +40,5 @@ fn main() -> unit {
     let _ : unit = (show_bool : (string, bool) -> unit)("or=", (or_result/10 : bool));
     let _ : unit = (show_bool : (string, bool) -> unit)("not=", (not_result/11 : bool));
     let _ : unit = (show_bool : (string, bool) -> unit)("mixed=", (mixed/12 : bool));
-    ();
+    ()
 }

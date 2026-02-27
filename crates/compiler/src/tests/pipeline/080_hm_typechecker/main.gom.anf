@@ -1,18 +1,18 @@
 fn state_new() -> CheckerState {
-  let t204 = ref(0) in
-  let t205 = ref(1) in
-  CheckerState { gensym_counter: t204, current_level: t205 }
+  let t207 = ref(0) in
+  let t208 = ref(1) in
+  CheckerState { gensym_counter: t207, current_level: t208 }
 }
 
 fn reset_gensym(st/0: CheckerState) -> unit {
-  let t206 = CheckerState.gensym_counter(st/0) in
-  let mtmp0 = ref_set(t206, 0) in
+  let t209 = CheckerState.gensym_counter(st/0) in
+  let mtmp0 = ref_set(t209, 0) in
   ()
 }
 
 fn reset_level(st/1: CheckerState) -> unit {
-  let t207 = CheckerState.current_level(st/1) in
-  let mtmp1 = ref_set(t207, 1) in
+  let t210 = CheckerState.current_level(st/1) in
+  let mtmp1 = ref_set(t210, 1) in
   ()
 }
 
@@ -22,26 +22,26 @@ fn reset_type_variables(st/2: CheckerState) -> unit {
 }
 
 fn enter_level(st/3: CheckerState) -> unit {
-  let t208 = CheckerState.current_level(st/3) in
-  let l/4 = ref_get(t208) in
-  let t209 = CheckerState.current_level(st/3) in
-  let t210 = (l/4 + 1) in
-  let mtmp3 = ref_set(t209, t210) in
+  let t211 = CheckerState.current_level(st/3) in
+  let l/4 = ref_get(t211) in
+  let t212 = CheckerState.current_level(st/3) in
+  let t213 = (l/4 + 1) in
+  let mtmp3 = ref_set(t212, t213) in
   ()
 }
 
 fn leave_level(st/5: CheckerState) -> unit {
-  let t211 = CheckerState.current_level(st/5) in
-  let l/6 = ref_get(t211) in
-  let t212 = CheckerState.current_level(st/5) in
-  let t213 = (l/6 - 1) in
-  let mtmp4 = ref_set(t212, t213) in
+  let t214 = CheckerState.current_level(st/5) in
+  let l/6 = ref_get(t214) in
+  let t215 = CheckerState.current_level(st/5) in
+  let t216 = (l/6 - 1) in
+  let mtmp4 = ref_set(t215, t216) in
   ()
 }
 
 fn min_i32(a/7: int32, b/8: int32) -> int32 {
-  let t214 = (a/7 < b/8) in
-  if t214 {
+  let t217 = (a/7 < b/8) in
+  if t217 {
     a/7
   } else {
     b/8
@@ -133,28 +133,28 @@ fn nth_letter(n/9: int32) -> char {
 }
 
 fn gensym(st/10: CheckerState) -> string {
-  let t215 = CheckerState.gensym_counter(st/10) in
-  let n/11 = ref_get(t215) in
-  let t216 = CheckerState.gensym_counter(st/10) in
-  let t217 = (n/11 + 1) in
-  let mtmp5 = ref_set(t216, t217) in
-  let t218 = (n/11 < 26) in
-  if t218 {
-    let t219 = nth_letter(n/11) in
-    char_to_string(t219)
+  let t218 = CheckerState.gensym_counter(st/10) in
+  let n/11 = ref_get(t218) in
+  let t219 = CheckerState.gensym_counter(st/10) in
+  let t220 = (n/11 + 1) in
+  let mtmp5 = ref_set(t219, t220) in
+  let t221 = (n/11 < 26) in
+  if t221 {
+    let t222 = nth_letter(n/11) in
+    char_to_string(t222)
   } else {
-    let t220 = int32_to_string(n/11) in
-    ("t" + t220)
+    let t223 = int32_to_string(n/11) in
+    ("t" + t223)
   }
 }
 
 fn newvar(st/12: CheckerState) -> Typ {
   let name/13 = gensym(st/12) in
-  let t221 = CheckerState.current_level(st/12) in
-  let level/14 = ref_get(t221) in
-  let t223 = Tv::Unbound(name/13, level/14) in
-  let t222 = ref(t223) in
-  Typ::TVar(t222)
+  let t224 = CheckerState.current_level(st/12) in
+  let level/14 = ref_get(t224) in
+  let t226 = Tv::Unbound(name/13, level/14) in
+  let t225 = ref(t226) in
+  Typ::TVar(t225)
 }
 
 fn typ_is_arrow(ty/15: Typ) -> bool {
@@ -218,17 +218,17 @@ fn typ_to_string(ty/18: Typ) -> string {
       let x17 = Typ::TArrow._1(ty/18) in
       let t2/24 = x17 in
       let t1/23 = x16 in
-      let t224 = typ_is_arrow(t1/23) in
-      let s1/25 = if t224 {
-        let t226 = typ_to_string(t1/23) in
-        let t225 = ("(" + t226) in
-        (t225 + ")")
+      let t227 = typ_is_arrow(t1/23) in
+      let s1/25 = if t227 {
+        let t229 = typ_to_string(t1/23) in
+        let t228 = ("(" + t229) in
+        (t228 + ")")
       } else {
         typ_to_string(t1/23)
       } in
       let s2/26 = typ_to_string(t2/24) in
-      let t227 = (s1/25 + " -> ") in
-      (t227 + s2/26)
+      let t230 = (s1/25 + " -> ") in
+      (t230 + s2/26)
     },
   }
 }
@@ -239,60 +239,60 @@ fn env_empty() -> Vec[EnvEntry] {
 }
 
 fn env_lookup(env/28: Vec[EnvEntry], name/29: string) -> Option__Typ {
-  let t229 = vec_len(env/28) in
-  let t228 = (t229 - 1) in
-  let i/30 = ref(t228) in
-  let t230 = Tag_0 in
-  let found/31 = ref(t230) in
+  let t232 = vec_len(env/28) in
+  let t231 = (t232 - 1) in
+  let i/30 = ref(t231) in
+  let t233 = Tag_0 in
+  let found/31 = ref(t233) in
   let done/32 = ref(false) in
-  let mtmp23 = while let t232 = ref_get(done/32) in
-  let t231 = (!t232) in
-  let t234 = ref_get(i/30) in
-  let t233 = (t234 >= 0) in
-  (t231 && t233) {
-    let t235 = ref_get(i/30) in
-    let entry/33 = vec_get(env/28, t235) in
-    let t237 = EnvEntry.name(entry/33) in
-    let t236 = (t237 == name/29) in
-    if t236 {
-      let t239 = EnvEntry.ty(entry/33) in
-      let t238 = Option__Typ::Some(t239) in
-      let mtmp22 = ref_set(found/31, t238) in
+  let mtmp23 = while let t235 = ref_get(done/32) in
+  let t234 = (!t235) in
+  let t237 = ref_get(i/30) in
+  let t236 = (t237 >= 0) in
+  (t234 && t236) {
+    let t238 = ref_get(i/30) in
+    let entry/33 = vec_get(env/28, t238) in
+    let t240 = EnvEntry.name(entry/33) in
+    let t239 = (t240 == name/29) in
+    if t239 {
+      let t242 = EnvEntry.ty(entry/33) in
+      let t241 = Option__Typ::Some(t242) in
+      let mtmp22 = ref_set(found/31, t241) in
       ref_set(done/32, true)
     } else {
-      let t241 = ref_get(i/30) in
-      let t240 = (t241 - 1) in
-      ref_set(i/30, t240)
+      let t244 = ref_get(i/30) in
+      let t243 = (t244 - 1) in
+      ref_set(i/30, t243)
     }
   } in
   ref_get(found/31)
 }
 
 fn subst_lookup(subst/34: Vec[SubstEntry], name/35: string) -> Option__Typ {
-  let t243 = vec_len(subst/34) in
-  let t242 = (t243 - 1) in
-  let i/36 = ref(t242) in
-  let t244 = Tag_0 in
-  let found/37 = ref(t244) in
+  let t246 = vec_len(subst/34) in
+  let t245 = (t246 - 1) in
+  let i/36 = ref(t245) in
+  let t247 = Tag_0 in
+  let found/37 = ref(t247) in
   let done/38 = ref(false) in
-  let mtmp25 = while let t246 = ref_get(done/38) in
-  let t245 = (!t246) in
-  let t248 = ref_get(i/36) in
-  let t247 = (t248 >= 0) in
-  (t245 && t247) {
-    let t249 = ref_get(i/36) in
-    let entry/39 = vec_get(subst/34, t249) in
-    let t251 = SubstEntry.name(entry/39) in
-    let t250 = (t251 == name/35) in
-    if t250 {
-      let t253 = SubstEntry.ty(entry/39) in
-      let t252 = Option__Typ::Some(t253) in
-      let mtmp24 = ref_set(found/37, t252) in
+  let mtmp25 = while let t249 = ref_get(done/38) in
+  let t248 = (!t249) in
+  let t251 = ref_get(i/36) in
+  let t250 = (t251 >= 0) in
+  (t248 && t250) {
+    let t252 = ref_get(i/36) in
+    let entry/39 = vec_get(subst/34, t252) in
+    let t254 = SubstEntry.name(entry/39) in
+    let t253 = (t254 == name/35) in
+    if t253 {
+      let t256 = SubstEntry.ty(entry/39) in
+      let t255 = Option__Typ::Some(t256) in
+      let mtmp24 = ref_set(found/37, t255) in
       ref_set(done/38, true)
     } else {
-      let t255 = ref_get(i/36) in
-      let t254 = (t255 - 1) in
-      ref_set(i/36, t254)
+      let t258 = ref_get(i/36) in
+      let t257 = (t258 - 1) in
+      ref_set(i/36, t257)
     }
   } in
   ref_get(found/37)
@@ -303,8 +303,8 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
     Tag_0 => {
       let x26 = Typ::TVar._0(ty/42) in
       let tvr2/43 = x26 in
-      let t256 = ptr_eq(tvr/41, tvr2/43) in
-      if t256 {
+      let t259 = ptr_eq(tvr/41, tvr2/43) in
+      if t259 {
         Result__unit__string::Err("occurs check")
       } else {
         let mtmp30 = ref_get(tvr2/43) in
@@ -314,21 +314,21 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result__unit__str
             let x32 = Tv::Unbound._1(mtmp30) in
             let l2/45 = x32 in
             let name/44 = x31 in
-            let mtmp34 = ref_get(tvr/41) in
-            let min_level/47 = match mtmp34 {
+            let mtmp35 = ref_get(tvr/41) in
+            let min_level/47 = match mtmp35 {
               Tag_0 => {
-                let x35 = Tv::Unbound._0(mtmp34) in
-                let x36 = Tv::Unbound._1(mtmp34) in
-                let l/46 = x36 in
+                let x36 = Tv::Unbound._0(mtmp35) in
+                let x37 = Tv::Unbound._1(mtmp35) in
+                let l/46 = x37 in
                 min_i32(l/46, l2/45)
               },
               Tag_1 => {
-                let x37 = Tv::Link._0(mtmp34) in
+                let x38 = Tv::Link._0(mtmp35) in
                 l2/45
               },
             } in
-            let t257 = Tv::Unbound(name/44, min_level/47) in
-            let mtmp38 = ref_set(tvr2/43, t257) in
+            let t260 = Tv::Unbound(name/44, min_level/47) in
+            let mtmp34 = ref_set(tvr2/43, t260) in
             Result__unit__string::Ok(())
           },
           Tag_1 => {
@@ -376,8 +376,8 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
           let x49 = Typ::TVar._0(x43) in
           let r1/55 = x49 in
           let r2/56 = x45 in
-          let t258 = ptr_eq(r1/55, r2/56) in
-          if t258 {
+          let t261 = ptr_eq(r1/55, r2/56) in
+          if t261 {
             Result__unit__string::Ok(())
           } else {
             let mtmp53 = ref_get(r1/55) in
@@ -390,14 +390,14 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                   Tag_0 => {
                     let x58 = Tv::Unbound._0(mtmp57) in
                     let x59 = Tv::Unbound._1(mtmp57) in
-                    let t259 = Typ::TVar(r2/56) in
-                    let mtmp61 = occurs(st/52, r1/55, t259) in
+                    let t262 = Typ::TVar(r2/56) in
+                    let mtmp61 = occurs(st/52, r1/55, t262) in
                     match mtmp61 {
                       Tag_0 => {
                         let x62 = Result__unit__string::Ok._0(mtmp61) in
-                        let t261 = Typ::TVar(r2/56) in
-                        let t260 = Tv::Link(t261) in
-                        let mtmp64 = ref_set(r1/55, t260) in
+                        let t264 = Typ::TVar(r2/56) in
+                        let t263 = Tv::Link(t264) in
+                        let mtmp64 = ref_set(r1/55, t263) in
                         Result__unit__string::Ok(())
                       },
                       Tag_1 => {
@@ -410,16 +410,16 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
                   Tag_1 => {
                     let x60 = Tv::Link._0(mtmp57) in
                     let inner/58 = x60 in
-                    let t262 = Typ::TVar(r1/55) in
-                    unify(st/52, t262, inner/58)
+                    let t265 = Typ::TVar(r1/55) in
+                    unify(st/52, t265, inner/58)
                   },
                 }
               },
               Tag_1 => {
                 let x56 = Tv::Link._0(mtmp53) in
                 let inner/57 = x56 in
-                let t263 = Typ::TVar(r2/56) in
-                unify(st/52, inner/57, t263)
+                let t266 = Typ::TVar(r2/56) in
+                unify(st/52, inner/57, t266)
               },
             }
           }
@@ -437,8 +437,8 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               match mtmp69 {
                 Tag_0 => {
                   let x70 = Result__unit__string::Ok._0(mtmp69) in
-                  let t264 = Tv::Link(other/64) in
-                  let mtmp72 = ref_set(r2/65, t264) in
+                  let t267 = Tv::Link(other/64) in
+                  let mtmp72 = ref_set(r2/65, t267) in
                   Result__unit__string::Ok(())
                 },
                 Tag_1 => {
@@ -469,8 +469,8 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               match mtmp77 {
                 Tag_0 => {
                   let x78 = Result__unit__string::Ok._0(mtmp77) in
-                  let t265 = Tv::Link(other/64) in
-                  let mtmp80 = ref_set(r2/65, t265) in
+                  let t268 = Tv::Link(other/64) in
+                  let mtmp80 = ref_set(r2/65, t268) in
                   Result__unit__string::Ok(())
                 },
                 Tag_1 => {
@@ -505,8 +505,8 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               match mtmp89 {
                 Tag_0 => {
                   let x90 = Result__unit__string::Ok._0(mtmp89) in
-                  let t266 = Tv::Link(other/61) in
-                  let mtmp92 = ref_set(r1/60, t266) in
+                  let t269 = Tv::Link(other/61) in
+                  let mtmp92 = ref_set(r1/60, t269) in
                   Result__unit__string::Ok(())
                 },
                 Tag_1 => {
@@ -551,8 +551,8 @@ fn unify(st/52: CheckerState, t1/53: Typ, t2/54: Typ) -> Result__unit__string {
               match mtmp101 {
                 Tag_0 => {
                   let x102 = Result__unit__string::Ok._0(mtmp101) in
-                  let t267 = Tv::Link(other/61) in
-                  let mtmp104 = ref_set(r1/60, t267) in
+                  let t270 = Tv::Link(other/61) in
+                  let mtmp104 = ref_set(r1/60, t270) in
                   Result__unit__string::Ok(())
                 },
                 Tag_1 => {
@@ -610,10 +610,10 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
           let x114 = Tv::Unbound._1(mtmp112) in
           let l/77 = x114 in
           let name/76 = x113 in
-          let t268 = CheckerState.current_level(st/73) in
-          let cur/78 = ref_get(t268) in
-          let t269 = (l/77 > cur/78) in
-          if t269 {
+          let t271 = CheckerState.current_level(st/73) in
+          let cur/78 = ref_get(t271) in
+          let t272 = (l/77 > cur/78) in
+          if t272 {
             Typ::QVar(name/76)
           } else {
             Typ::TVar(tvref/75)
@@ -636,9 +636,9 @@ fn gen(st/73: CheckerState, ty/74: Typ) -> Typ {
       let x111 = Typ::TArrow._1(ty/74) in
       let t2/81 = x111 in
       let t1/80 = x110 in
-      let t270 = gen(st/73, t1/80) in
-      let t271 = gen(st/73, t2/81) in
-      Typ::TArrow(t270, t271)
+      let t273 = gen(st/73, t1/80) in
+      let t274 = gen(st/73, t2/81) in
+      Typ::TArrow(t273, t274)
     },
   }
 }
@@ -653,8 +653,8 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
         Tag_0 => {
           let x121 = Tv::Unbound._0(mtmp120) in
           let x122 = Tv::Unbound._1(mtmp120) in
-          let t272 = Typ::TVar(tvref/90) in
-          (t272, subst/84)
+          let t275 = Typ::TVar(tvref/90) in
+          (t275, subst/84)
         },
         Tag_1 => {
           let x123 = Tv::Link._0(mtmp120) in
@@ -670,8 +670,8 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
       match mtmp124 {
         Tag_0 => {
           let tv/88 = newvar(st/83) in
-          let t273 = SubstEntry { name: name/86, ty: tv/88 } in
-          let new_subst/89 = vec_push(subst/84, t273) in
+          let t276 = SubstEntry { name: name/86, ty: tv/88 } in
+          let new_subst/89 = vec_push(subst/84, t276) in
           (tv/88, new_subst/89)
         },
         Tag_1 => {
@@ -686,138 +686,138 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
       let x119 = Typ::TArrow._1(ty/85) in
       let t2/93 = x119 in
       let t1/92 = x118 in
-      let mtmp126 = inst_loop(st/83, subst/84, t1/92) in
-      let x127 = mtmp126.0 in
-      let x128 = mtmp126.1 in
-      let subst1/95 = x128 in
-      let ty1/94 = x127 in
-      let mtmp129 = inst_loop(st/83, subst1/95, t2/93) in
+      let mtmp129 = inst_loop(st/83, subst/84, t1/92) in
       let x130 = mtmp129.0 in
       let x131 = mtmp129.1 in
-      let subst2/97 = x131 in
-      let ty2/96 = x130 in
-      let t274 = Typ::TArrow(ty1/94, ty2/96) in
-      (t274, subst2/97)
+      let subst1/95 = x131 in
+      let ty1/94 = x130 in
+      let mtmp132 = inst_loop(st/83, subst1/95, t2/93) in
+      let x133 = mtmp132.0 in
+      let x134 = mtmp132.1 in
+      let subst2/97 = x134 in
+      let ty2/96 = x133 in
+      let t277 = Typ::TArrow(ty1/94, ty2/96) in
+      (t277, subst2/97)
     },
   }
 }
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   let subst0/100 = vec_new() in
-  let mtmp132 = inst_loop(st/98, subst0/100, ty/99) in
-  let x133 = mtmp132.0 in
-  let x134 = mtmp132.1 in
-  let t/101 = x133 in
+  let mtmp135 = inst_loop(st/98, subst0/100, ty/99) in
+  let x136 = mtmp135.0 in
+  let x137 = mtmp135.1 in
+  let t/101 = x136 in
   t/101
 }
 
 fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result__Typ__string {
   match e/104 {
     Tag_0 => {
-      let x135 = Exp::Var._0(e/104) in
-      let x/105 = x135 in
-      let mtmp143 = env_lookup(env/103, x/105) in
-      match mtmp143 {
+      let x138 = Exp::Var._0(e/104) in
+      let x/105 = x138 in
+      let mtmp146 = env_lookup(env/103, x/105) in
+      match mtmp146 {
         Tag_0 => {
           Result__Typ__string::Err("unbound var")
         },
         Tag_1 => {
-          let x144 = Option__Typ::Some._0(mtmp143) in
-          let ty/106 = x144 in
-          let t275 = inst(st/102, ty/106) in
-          Result__Typ__string::Ok(t275)
+          let x147 = Option__Typ::Some._0(mtmp146) in
+          let ty/106 = x147 in
+          let t278 = inst(st/102, ty/106) in
+          Result__Typ__string::Ok(t278)
         },
       }
     },
     Tag_1 => {
-      let x136 = Exp::App._0(e/104) in
-      let x137 = Exp::App._1(e/104) in
-      let e2/114 = x137 in
-      let e1/113 = x136 in
-      let mtmp145 = typeof(st/102, env/103, e1/113) in
-      match mtmp145 {
+      let x139 = Exp::App._0(e/104) in
+      let x140 = Exp::App._1(e/104) in
+      let e2/114 = x140 in
+      let e1/113 = x139 in
+      let mtmp148 = typeof(st/102, env/103, e1/113) in
+      match mtmp148 {
         Tag_0 => {
-          let x146 = Result__Typ__string::Ok._0(mtmp145) in
-          let ty_fun/116 = x146 in
-          let mtmp148 = typeof(st/102, env/103, e2/114) in
-          match mtmp148 {
+          let x149 = Result__Typ__string::Ok._0(mtmp148) in
+          let ty_fun/116 = x149 in
+          let mtmp151 = typeof(st/102, env/103, e2/114) in
+          match mtmp151 {
             Tag_0 => {
-              let x149 = Result__Typ__string::Ok._0(mtmp148) in
-              let ty_arg/118 = x149 in
+              let x152 = Result__Typ__string::Ok._0(mtmp151) in
+              let ty_arg/118 = x152 in
               let ty_res/119 = newvar(st/102) in
               let arrow/120 = Typ::TArrow(ty_arg/118, ty_res/119) in
-              let mtmp151 = unify(st/102, ty_fun/116, arrow/120) in
-              match mtmp151 {
+              let mtmp154 = unify(st/102, ty_fun/116, arrow/120) in
+              match mtmp154 {
                 Tag_0 => {
-                  let x152 = Result__unit__string::Ok._0(mtmp151) in
+                  let x155 = Result__unit__string::Ok._0(mtmp154) in
                   Result__Typ__string::Ok(ty_res/119)
                 },
                 Tag_1 => {
-                  let x153 = Result__unit__string::Err._0(mtmp151) in
-                  let e/121 = x153 in
+                  let x156 = Result__unit__string::Err._0(mtmp154) in
+                  let e/121 = x156 in
                   Result__Typ__string::Err(e/121)
                 },
               }
             },
             Tag_1 => {
-              let x150 = Result__Typ__string::Err._0(mtmp148) in
-              let e/117 = x150 in
+              let x153 = Result__Typ__string::Err._0(mtmp151) in
+              let e/117 = x153 in
               Result__Typ__string::Err(e/117)
             },
           }
         },
         Tag_1 => {
-          let x147 = Result__Typ__string::Err._0(mtmp145) in
-          let e/115 = x147 in
+          let x150 = Result__Typ__string::Err._0(mtmp148) in
+          let e/115 = x150 in
           Result__Typ__string::Err(e/115)
         },
       }
     },
     Tag_2 => {
-      let x138 = Exp::Lam._0(e/104) in
-      let x139 = Exp::Lam._1(e/104) in
-      let body/108 = x139 in
-      let x/107 = x138 in
+      let x141 = Exp::Lam._0(e/104) in
+      let x142 = Exp::Lam._1(e/104) in
+      let body/108 = x142 in
+      let x/107 = x141 in
       let ty_x/109 = newvar(st/102) in
-      let t276 = EnvEntry { name: x/107, ty: ty_x/109 } in
-      let env2/110 = vec_push(env/103, t276) in
-      let mtmp154 = typeof(st/102, env2/110, body/108) in
-      match mtmp154 {
+      let t279 = EnvEntry { name: x/107, ty: ty_x/109 } in
+      let env2/110 = vec_push(env/103, t279) in
+      let mtmp157 = typeof(st/102, env2/110, body/108) in
+      match mtmp157 {
         Tag_0 => {
-          let x155 = Result__Typ__string::Ok._0(mtmp154) in
-          let ty_e/111 = x155 in
-          let t277 = Typ::TArrow(ty_x/109, ty_e/111) in
-          Result__Typ__string::Ok(t277)
+          let x158 = Result__Typ__string::Ok._0(mtmp157) in
+          let ty_e/111 = x158 in
+          let t280 = Typ::TArrow(ty_x/109, ty_e/111) in
+          Result__Typ__string::Ok(t280)
         },
         Tag_1 => {
-          let x156 = Result__Typ__string::Err._0(mtmp154) in
-          let e/112 = x156 in
+          let x159 = Result__Typ__string::Err._0(mtmp157) in
+          let e/112 = x159 in
           Result__Typ__string::Err(e/112)
         },
       }
     },
     Tag_3 => {
-      let x140 = Exp::Let._0(e/104) in
-      let x141 = Exp::Let._1(e/104) in
-      let x142 = Exp::Let._2(e/104) in
-      let e2/124 = x142 in
-      let e1/123 = x141 in
-      let x/122 = x140 in
-      let _wild157 = enter_level(st/102) in
+      let x143 = Exp::Let._0(e/104) in
+      let x144 = Exp::Let._1(e/104) in
+      let x145 = Exp::Let._2(e/104) in
+      let e2/124 = x145 in
+      let e1/123 = x144 in
+      let x/122 = x143 in
+      let _wild163 = enter_level(st/102) in
       let ty_e/125 = typeof(st/102, env/103, e1/123) in
-      let _wild158 = leave_level(st/102) in
+      let _wild162 = leave_level(st/102) in
       match ty_e/125 {
         Tag_0 => {
-          let x159 = Result__Typ__string::Ok._0(ty_e/125) in
-          let ty1/127 = x159 in
-          let t279 = gen(st/102, ty1/127) in
-          let t278 = EnvEntry { name: x/122, ty: t279 } in
-          let env2/128 = vec_push(env/103, t278) in
+          let x160 = Result__Typ__string::Ok._0(ty_e/125) in
+          let ty1/127 = x160 in
+          let t282 = gen(st/102, ty1/127) in
+          let t281 = EnvEntry { name: x/122, ty: t282 } in
+          let env2/128 = vec_push(env/103, t281) in
           typeof(st/102, env2/128, e2/124)
         },
         Tag_1 => {
-          let x160 = Result__Typ__string::Err._0(ty_e/125) in
-          let e/126 = x160 in
+          let x161 = Result__Typ__string::Err._0(ty_e/125) in
+          let e/126 = x161 in
           Result__Typ__string::Err(e/126)
         },
       }
@@ -844,217 +844,217 @@ fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
 fn show_result(label/137: string, res/138: Result__Typ__string) -> unit {
   match res/138 {
     Tag_0 => {
-      let x161 = Result__Typ__string::Ok._0(res/138) in
-      let ty/139 = x161 in
-      let t281 = (label/137 + ": ") in
-      let t282 = typ_to_string(ty/139) in
-      let t280 = (t281 + t282) in
-      string_println(t280)
+      let x164 = Result__Typ__string::Ok._0(res/138) in
+      let ty/139 = x164 in
+      let t284 = (label/137 + ": ") in
+      let t285 = typ_to_string(ty/139) in
+      let t283 = (t284 + t285) in
+      string_println(t283)
     },
     Tag_1 => {
-      let x162 = Result__Typ__string::Err._0(res/138) in
-      let e/140 = x162 in
-      let t284 = (label/137 + ": ") in
-      let t283 = (t284 + e/140) in
-      string_println(t283)
+      let x165 = Result__Typ__string::Err._0(res/138) in
+      let e/140 = x165 in
+      let t287 = (label/137 + ": ") in
+      let t286 = (t287 + e/140) in
+      string_println(t286)
     },
   }
 }
 
 fn main() -> unit {
   let st/141 = state_new() in
-  let t285 = exp_var("x") in
-  let id/142 = exp_lam("x", t285) in
   let t288 = exp_var("x") in
-  let t289 = exp_var("y") in
-  let t287 = exp_app(t288, t289) in
-  let t286 = exp_lam("y", t287) in
-  let c1/143 = exp_lam("x", t286) in
-  let _wild163 = reset_type_variables(st/141) in
-  let t291 = env_empty() in
-  let t290 = typeof(st/141, t291, id/142) in
-  let _wild164 = show_result("id", t290) in
-  let _wild165 = reset_type_variables(st/141) in
-  let t293 = env_empty() in
-  let t292 = typeof(st/141, t293, c1/143) in
-  let _wild166 = show_result("c1", t292) in
-  let _wild167 = reset_type_variables(st/141) in
-  let t295 = env_empty() in
-  let t297 = exp_var("x") in
-  let t296 = exp_let("x", c1/143, t297) in
-  let t294 = typeof(st/141, t295, t296) in
-  let _wild168 = show_result("let_x_c1_x", t294) in
-  let _wild169 = reset_type_variables(st/141) in
-  let t299 = env_empty() in
-  let t302 = exp_var("z") in
-  let t301 = exp_lam("z", t302) in
-  let t303 = exp_var("y") in
-  let t300 = exp_let("y", t301, t303) in
-  let t298 = typeof(st/141, t299, t300) in
-  let _wild170 = show_result("let_y_id_y", t298) in
-  let _wild171 = reset_type_variables(st/141) in
-  let t305 = env_empty() in
-  let t309 = exp_var("z") in
-  let t308 = exp_lam("z", t309) in
-  let t310 = exp_var("y") in
-  let t307 = exp_let("y", t308, t310) in
-  let t306 = exp_lam("x", t307) in
-  let t304 = typeof(st/141, t305, t306) in
-  let _wild172 = show_result("lam_x_let_y_id_y", t304) in
-  let _wild173 = reset_type_variables(st/141) in
-  let t312 = env_empty() in
-  let t316 = exp_var("z") in
-  let t315 = exp_lam("z", t316) in
-  let t318 = exp_var("y") in
-  let t319 = exp_var("x") in
-  let t317 = exp_app(t318, t319) in
-  let t314 = exp_let("y", t315, t317) in
-  let t313 = exp_lam("x", t314) in
-  let t311 = typeof(st/141, t312, t313) in
-  let _wild174 = show_result("lam_x_let_y_id_yx", t311) in
-  let _wild175 = reset_type_variables(st/141) in
-  let t321 = env_empty() in
-  let t324 = exp_var("x") in
-  let t325 = exp_var("x") in
-  let t323 = exp_app(t324, t325) in
-  let t322 = exp_lam("x", t323) in
-  let t320 = typeof(st/141, t321, t322) in
-  let _wild176 = show_result("self_apply", t320) in
-  let _wild177 = reset_type_variables(st/141) in
-  let t327 = env_empty() in
-  let t329 = exp_var("x") in
-  let t330 = exp_var("x") in
-  let t328 = exp_let("x", t329, t330) in
-  let t326 = typeof(st/141, t327, t328) in
-  let _wild178 = show_result("unbound_var", t326) in
-  let _wild179 = reset_type_variables(st/141) in
-  let t332 = env_empty() in
-  let t335 = exp_var("y") in
+  let id/142 = exp_lam("x", t288) in
+  let t291 = exp_var("x") in
+  let t292 = exp_var("y") in
+  let t290 = exp_app(t291, t292) in
+  let t289 = exp_lam("y", t290) in
+  let c1/143 = exp_lam("x", t289) in
+  let _wild206 = reset_type_variables(st/141) in
+  let t294 = env_empty() in
+  let t293 = typeof(st/141, t294, id/142) in
+  let _wild205 = show_result("id", t293) in
+  let _wild204 = reset_type_variables(st/141) in
+  let t296 = env_empty() in
+  let t295 = typeof(st/141, t296, c1/143) in
+  let _wild203 = show_result("c1", t295) in
+  let _wild202 = reset_type_variables(st/141) in
+  let t298 = env_empty() in
+  let t300 = exp_var("x") in
+  let t299 = exp_let("x", c1/143, t300) in
+  let t297 = typeof(st/141, t298, t299) in
+  let _wild201 = show_result("let_x_c1_x", t297) in
+  let _wild200 = reset_type_variables(st/141) in
+  let t302 = env_empty() in
+  let t305 = exp_var("z") in
+  let t304 = exp_lam("z", t305) in
+  let t306 = exp_var("y") in
+  let t303 = exp_let("y", t304, t306) in
+  let t301 = typeof(st/141, t302, t303) in
+  let _wild199 = show_result("let_y_id_y", t301) in
+  let _wild198 = reset_type_variables(st/141) in
+  let t308 = env_empty() in
+  let t312 = exp_var("z") in
+  let t311 = exp_lam("z", t312) in
+  let t313 = exp_var("y") in
+  let t310 = exp_let("y", t311, t313) in
+  let t309 = exp_lam("x", t310) in
+  let t307 = typeof(st/141, t308, t309) in
+  let _wild197 = show_result("lam_x_let_y_id_y", t307) in
+  let _wild196 = reset_type_variables(st/141) in
+  let t315 = env_empty() in
+  let t319 = exp_var("z") in
+  let t318 = exp_lam("z", t319) in
+  let t321 = exp_var("y") in
+  let t322 = exp_var("x") in
+  let t320 = exp_app(t321, t322) in
+  let t317 = exp_let("y", t318, t320) in
+  let t316 = exp_lam("x", t317) in
+  let t314 = typeof(st/141, t315, t316) in
+  let _wild195 = show_result("lam_x_let_y_id_yx", t314) in
+  let _wild194 = reset_type_variables(st/141) in
+  let t324 = env_empty() in
+  let t327 = exp_var("x") in
+  let t328 = exp_var("x") in
+  let t326 = exp_app(t327, t328) in
+  let t325 = exp_lam("x", t326) in
+  let t323 = typeof(st/141, t324, t325) in
+  let _wild193 = show_result("self_apply", t323) in
+  let _wild192 = reset_type_variables(st/141) in
+  let t330 = env_empty() in
+  let t332 = exp_var("x") in
+  let t333 = exp_var("x") in
+  let t331 = exp_let("x", t332, t333) in
+  let t329 = typeof(st/141, t330, t331) in
+  let _wild191 = show_result("unbound_var", t329) in
+  let _wild190 = reset_type_variables(st/141) in
+  let t335 = env_empty() in
   let t338 = exp_var("y") in
-  let t339 = exp_var("z") in
+  let t341 = exp_var("y") in
+  let t342 = exp_var("z") in
+  let t340 = exp_app(t341, t342) in
+  let t339 = exp_lam("z", t340) in
   let t337 = exp_app(t338, t339) in
-  let t336 = exp_lam("z", t337) in
-  let t334 = exp_app(t335, t336) in
-  let t333 = exp_lam("y", t334) in
-  let t331 = typeof(st/141, t332, t333) in
-  let _wild180 = show_result("max_heiber", t331) in
-  let _wild181 = reset_type_variables(st/141) in
-  let t341 = env_empty() in
-  let t347 = exp_var("k") in
+  let t336 = exp_lam("y", t337) in
+  let t334 = typeof(st/141, t335, t336) in
+  let _wild189 = show_result("max_heiber", t334) in
+  let _wild188 = reset_type_variables(st/141) in
+  let t344 = env_empty() in
   let t350 = exp_var("k") in
-  let t351 = exp_var("x") in
+  let t353 = exp_var("k") in
+  let t354 = exp_var("x") in
+  let t352 = exp_app(t353, t354) in
+  let t355 = exp_var("y") in
+  let t351 = exp_app(t352, t355) in
   let t349 = exp_app(t350, t351) in
-  let t352 = exp_var("y") in
-  let t348 = exp_app(t349, t352) in
-  let t346 = exp_app(t347, t348) in
-  let t355 = exp_var("k") in
-  let t356 = exp_var("y") in
-  let t354 = exp_app(t355, t356) in
-  let t357 = exp_var("x") in
-  let t353 = exp_app(t354, t357) in
-  let t345 = exp_app(t346, t353) in
-  let t344 = exp_lam("k", t345) in
-  let t343 = exp_lam("y", t344) in
-  let t342 = exp_lam("x", t343) in
-  let t340 = typeof(st/141, t341, t342) in
-  let _wild182 = show_result("kirang", t340) in
-  let _wild183 = reset_type_variables(st/141) in
-  let t359 = env_empty() in
-  let t362 = exp_var("id") in
-  let t363 = exp_var("id") in
-  let t361 = exp_app(t362, t363) in
-  let t360 = exp_let("id", id/142, t361) in
-  let t358 = typeof(st/141, t359, t360) in
-  let _wild184 = show_result("let_id_idid", t358) in
-  let _wild185 = reset_type_variables(st/141) in
-  let t365 = env_empty() in
-  let t370 = exp_var("x") in
-  let t369 = exp_app(t370, id/142) in
-  let t371 = exp_var("z") in
-  let t368 = exp_let("z", t369, t371) in
-  let t372 = exp_var("y") in
-  let t367 = exp_let("y", t368, t372) in
-  let t366 = exp_let("x", c1/143, t367) in
-  let t364 = typeof(st/141, t365, t366) in
-  let _wild186 = show_result("nested_lets", t364) in
-  let _wild187 = reset_type_variables(st/141) in
-  let t374 = env_empty() in
-  let t379 = exp_var("x") in
-  let t380 = exp_var("y") in
-  let t378 = exp_app(t379, t380) in
+  let t358 = exp_var("k") in
+  let t359 = exp_var("y") in
+  let t357 = exp_app(t358, t359) in
+  let t360 = exp_var("x") in
+  let t356 = exp_app(t357, t360) in
+  let t348 = exp_app(t349, t356) in
+  let t347 = exp_lam("k", t348) in
+  let t346 = exp_lam("y", t347) in
+  let t345 = exp_lam("x", t346) in
+  let t343 = typeof(st/141, t344, t345) in
+  let _wild187 = show_result("kirang", t343) in
+  let _wild186 = reset_type_variables(st/141) in
+  let t362 = env_empty() in
+  let t365 = exp_var("id") in
+  let t366 = exp_var("id") in
+  let t364 = exp_app(t365, t366) in
+  let t363 = exp_let("id", id/142, t364) in
+  let t361 = typeof(st/141, t362, t363) in
+  let _wild185 = show_result("let_id_idid", t361) in
+  let _wild184 = reset_type_variables(st/141) in
+  let t368 = env_empty() in
+  let t373 = exp_var("x") in
+  let t372 = exp_app(t373, id/142) in
+  let t374 = exp_var("z") in
+  let t371 = exp_let("z", t372, t374) in
+  let t375 = exp_var("y") in
+  let t370 = exp_let("y", t371, t375) in
+  let t369 = exp_let("x", c1/143, t370) in
+  let t367 = typeof(st/141, t368, t369) in
+  let _wild183 = show_result("nested_lets", t367) in
+  let _wild182 = reset_type_variables(st/141) in
+  let t377 = env_empty() in
+  let t382 = exp_var("x") in
   let t383 = exp_var("y") in
-  let t384 = exp_var("x") in
-  let t382 = exp_app(t383, t384) in
-  let t381 = exp_lam("x", t382) in
-  let t377 = exp_let("x", t378, t381) in
-  let t376 = exp_lam("y", t377) in
-  let t375 = exp_lam("x", t376) in
-  let t373 = typeof(st/141, t374, t375) in
-  let _wild188 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t373) in
-  let _wild189 = reset_type_variables(st/141) in
-  let t386 = env_empty() in
-  let t389 = exp_var("x") in
-  let t390 = exp_var("y") in
-  let t388 = exp_let("y", t389, t390) in
-  let t387 = exp_lam("x", t388) in
-  let t385 = typeof(st/141, t386, t387) in
-  let _wild190 = show_result("sound_gen_1", t385) in
-  let _wild191 = reset_type_variables(st/141) in
-  let t392 = env_empty() in
-  let t396 = exp_var("x") in
-  let t395 = exp_lam("z", t396) in
-  let t397 = exp_var("y") in
-  let t394 = exp_let("y", t395, t397) in
-  let t393 = exp_lam("x", t394) in
-  let t391 = typeof(st/141, t392, t393) in
-  let _wild192 = show_result("sound_gen_2", t391) in
-  let _wild193 = reset_type_variables(st/141) in
-  let t399 = env_empty() in
-  let t404 = exp_var("x") in
-  let t405 = exp_var("z") in
-  let t403 = exp_app(t404, t405) in
-  let t402 = exp_lam("z", t403) in
-  let t406 = exp_var("y") in
-  let t401 = exp_let("y", t402, t406) in
-  let t400 = exp_lam("x", t401) in
-  let t398 = typeof(st/141, t399, t400) in
-  let _wild194 = show_result("sound_gen_3", t398) in
-  let _wild195 = reset_type_variables(st/141) in
-  let t408 = env_empty() in
-  let t413 = exp_var("x") in
-  let t414 = exp_var("y") in
-  let t412 = exp_app(t413, t414) in
+  let t381 = exp_app(t382, t383) in
+  let t386 = exp_var("y") in
+  let t387 = exp_var("x") in
+  let t385 = exp_app(t386, t387) in
+  let t384 = exp_lam("x", t385) in
+  let t380 = exp_let("x", t381, t384) in
+  let t379 = exp_lam("y", t380) in
+  let t378 = exp_lam("x", t379) in
+  let t376 = typeof(st/141, t377, t378) in
+  let _wild181 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", t376) in
+  let _wild180 = reset_type_variables(st/141) in
+  let t389 = env_empty() in
+  let t392 = exp_var("x") in
+  let t393 = exp_var("y") in
+  let t391 = exp_let("y", t392, t393) in
+  let t390 = exp_lam("x", t391) in
+  let t388 = typeof(st/141, t389, t390) in
+  let _wild179 = show_result("sound_gen_1", t388) in
+  let _wild178 = reset_type_variables(st/141) in
+  let t395 = env_empty() in
+  let t399 = exp_var("x") in
+  let t398 = exp_lam("z", t399) in
+  let t400 = exp_var("y") in
+  let t397 = exp_let("y", t398, t400) in
+  let t396 = exp_lam("x", t397) in
+  let t394 = typeof(st/141, t395, t396) in
+  let _wild177 = show_result("sound_gen_2", t394) in
+  let _wild176 = reset_type_variables(st/141) in
+  let t402 = env_empty() in
+  let t407 = exp_var("x") in
+  let t408 = exp_var("z") in
+  let t406 = exp_app(t407, t408) in
+  let t405 = exp_lam("z", t406) in
+  let t409 = exp_var("y") in
+  let t404 = exp_let("y", t405, t409) in
+  let t403 = exp_lam("x", t404) in
+  let t401 = typeof(st/141, t402, t403) in
+  let _wild175 = show_result("sound_gen_3", t401) in
+  let _wild174 = reset_type_variables(st/141) in
+  let t411 = env_empty() in
   let t416 = exp_var("x") in
   let t417 = exp_var("y") in
   let t415 = exp_app(t416, t417) in
-  let t411 = exp_let("x", t412, t415) in
-  let t410 = exp_lam("y", t411) in
-  let t409 = exp_lam("x", t410) in
-  let t407 = typeof(st/141, t408, t409) in
-  let _wild196 = show_result("double_apply", t407) in
-  let _wild197 = reset_type_variables(st/141) in
-  let t419 = env_empty() in
-  let t422 = exp_var("x") in
-  let t424 = exp_var("y") in
-  let t425 = exp_var("y") in
-  let t423 = exp_app(t424, t425) in
-  let t421 = exp_let("y", t422, t423) in
-  let t420 = exp_lam("x", t421) in
-  let t418 = typeof(st/141, t419, t420) in
-  let _wild198 = show_result("sound_gen_occurs", t418) in
-  let _wild199 = reset_gensym(st/141) in
-  let t427 = env_empty() in
-  let t432 = exp_var("x") in
-  let t431 = exp_app(t432, id/142) in
-  let t433 = exp_var("z") in
-  let t430 = exp_let("z", t431, t433) in
-  let t434 = exp_var("y") in
-  let t429 = exp_let("y", t430, t434) in
-  let t428 = exp_lam("x", t429) in
-  let t426 = typeof(st/141, t427, t428) in
-  let _wild200 = show_result("fun_x_let_y_let_z_x_id_z_y", t426) in
-  let _wild201 = string_println("") in
-  let _wild202 = string_println("All Done") in
-  let _wild203 = string_println("") in
+  let t419 = exp_var("x") in
+  let t420 = exp_var("y") in
+  let t418 = exp_app(t419, t420) in
+  let t414 = exp_let("x", t415, t418) in
+  let t413 = exp_lam("y", t414) in
+  let t412 = exp_lam("x", t413) in
+  let t410 = typeof(st/141, t411, t412) in
+  let _wild173 = show_result("double_apply", t410) in
+  let _wild172 = reset_type_variables(st/141) in
+  let t422 = env_empty() in
+  let t425 = exp_var("x") in
+  let t427 = exp_var("y") in
+  let t428 = exp_var("y") in
+  let t426 = exp_app(t427, t428) in
+  let t424 = exp_let("y", t425, t426) in
+  let t423 = exp_lam("x", t424) in
+  let t421 = typeof(st/141, t422, t423) in
+  let _wild171 = show_result("sound_gen_occurs", t421) in
+  let _wild170 = reset_gensym(st/141) in
+  let t430 = env_empty() in
+  let t435 = exp_var("x") in
+  let t434 = exp_app(t435, id/142) in
+  let t436 = exp_var("z") in
+  let t433 = exp_let("z", t434, t436) in
+  let t437 = exp_var("y") in
+  let t432 = exp_let("y", t433, t437) in
+  let t431 = exp_lam("x", t432) in
+  let t429 = typeof(st/141, t430, t431) in
+  let _wild169 = show_result("fun_x_let_y_let_z_x_id_z_y", t429) in
+  let _wild168 = string_println("") in
+  let _wild167 = string_println("All Done") in
+  let _wild166 = string_println("") in
   ()
 }

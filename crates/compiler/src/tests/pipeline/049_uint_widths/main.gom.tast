@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn main() -> unit {
@@ -25,5 +25,4 @@ fn main() -> unit {
     let diff64/15: uint64 = (sum64/14 : uint64) - (add64/13 : uint64);
     let message/16: string = (uint8_to_string : (uint8) -> string)((sum8/2 : uint8)) + ", " + (uint8_to_string : (uint8) -> string)((neg8/3 : uint8)) + "; " + (uint16_to_string : (uint16) -> string)((diff16/7 : uint16)) + "; " + (uint32_to_string : (uint32) -> string)((neg32/11 : uint32)) + "; " + (uint64_to_string : (uint64) -> string)((diff64/15 : uint64));
     (string_println : (string) -> unit)((message/16 : string));
-    ();
 }

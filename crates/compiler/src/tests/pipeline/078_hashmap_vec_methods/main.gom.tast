@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Eq for Key{
@@ -12,7 +12,7 @@ impl Eq for Key{
           (Key::A, Key::A) => true,
           (Key::B(__l1_0/2: int32), Key::B(__r1_0/3: int32)) => true && (Eq::eq : (int32, int32) -> bool)((__l1_0/2 : int32), (__r1_0/3 : int32)),
           _ : (Key, Key) => false,
-      };
+      }
   }
 }
 
@@ -21,14 +21,14 @@ impl Hash for Key{
       match (self/4 : Key) {
           Key::A => {
                 let h/5: uint64 = 14695981039346656037 + 1;
-                (h/5 : uint64);
+                (h/5 : uint64)
             },
           Key::B(__field1_0/6: int32) => {
                 let h/7: uint64 = 14695981039346656037 + 2;
                 let h/8: uint64 = (h/7 : uint64) * 1099511628211 + (Hash::hash : (int32) -> uint64)((__field1_0/6 : int32));
-                (h/8 : uint64);
+                (h/8 : uint64)
             },
-      };
+      }
   }
 }
 
@@ -36,7 +36,7 @@ fn print_opt_int(x/9: Option[int32]) -> unit {
     match (x/9 : Option[int32]) {
         Option::Some(v/10: int32) => (println : (int32) -> unit)((v/10 : int32)),
         Option::None => (println : (string) -> unit)("none"),
-    };
+    }
 }
 
 fn main() -> unit {
@@ -57,5 +57,4 @@ fn main() -> unit {
     (HashMap[Key, int32]::remove : (HashMap[Key, int32], Key) -> unit)((m/15 : HashMap[Key, int32]), Key::B(1));
     (println : (bool) -> unit)((HashMap[Key, int32]::contains : (HashMap[Key, int32], Key) -> bool)((m/15 : HashMap[Key, int32]), Key::B(1)));
     (println : (int32) -> unit)((HashMap[Key, int32]::len : (HashMap[Key, int32]) -> int32)((m/15 : HashMap[Key, int32])));
-    ();
 }

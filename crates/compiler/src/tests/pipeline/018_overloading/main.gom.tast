@@ -1,34 +1,34 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Arith for int32{
   fn add(self/0: int32, other/1: int32) -> int32 {
-      (self/0 : int32) + (other/1 : int32);
+      (self/0 : int32) + (other/1 : int32)
   }
   fn less(self/2: int32, other/3: int32) -> bool {
-      (self/2 : int32) < (other/3 : int32);
+      (self/2 : int32) < (other/3 : int32)
   }
 }
 
 impl Output for int32{
   fn output(self/4: int32) -> unit {
-      (string_println : (string) -> unit)((ToString::to_string : (int32) -> string)((self/4 : int32)));
+      (string_println : (string) -> unit)((ToString::to_string : (int32) -> string)((self/4 : int32)))
   }
 }
 
 impl Output for bool{
   fn output(self/5: bool) -> unit {
-      (string_println : (string) -> unit)((ToString::to_string : (bool) -> string)((self/5 : bool)));
+      (string_println : (string) -> unit)((ToString::to_string : (bool) -> string)((self/5 : bool)))
   }
 }
 
 fn id(x/6: T) -> T {
-    (x/6 : T);
+    (x/6 : T)
 }
 
 fn main() -> unit {
@@ -42,5 +42,5 @@ fn main() -> unit {
     let _ : unit = (Output::output : (bool) -> unit)((c/12 : bool));
     let _ : string = (id : (string) -> string)("abc");
     let _ : bool = (id : (bool) -> bool)(true);
-    ();
+    ()
 }

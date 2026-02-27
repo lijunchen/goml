@@ -1,23 +1,23 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn list_length(xs/0: List[T]) -> int32 {
     match (xs/0 : List[T]) {
         List::Nil => 0,
         List::Cons(_ : T, tail/1: List[T]) => 1 + (list_length : (List[T]) -> int32)((tail/1 : List[T])),
-    };
+    }
 }
 
 fn int_list_length(xs/2: List[int32]) -> int32 {
     match (xs/2 : List[int32]) {
         List::Nil => 0,
         List::Cons(_ : int32, tail/3: List[int32]) => 1 + (int_list_length : (List[int32]) -> int32)((tail/3 : List[int32])),
-    };
+    }
 }
 
 fn main() -> unit {
@@ -39,5 +39,5 @@ fn main() -> unit {
     let x/14: List[bool] = List::Cons(true, List::Cons(false, List::Nil));
     let length/15: int32 = (list_length : (List[bool]) -> int32)((x/14 : List[bool]));
     let _ : unit = (println : (int32) -> unit)((length/15 : int32));
-    ();
+    ()
 }

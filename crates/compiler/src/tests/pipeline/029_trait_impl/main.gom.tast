@@ -1,14 +1,14 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Display for Point{
   fn show(self/0: Point) -> string {
-      "Point";
+      "Point"
   }
 }
 
@@ -17,20 +17,20 @@ impl Display for Maybe[int32]{
       match (self/1 : Maybe[int32]) {
           Maybe::Just(value/2: int32) => "Just(" + (int32_to_string : (int32) -> string)((value/2 : int32)) + ")",
           Maybe::Nothing => "Nothing",
-      };
+      }
   }
 }
 
 fn make_maybe(flag/3: bool) -> Maybe[int32] {
     if (flag/3 : bool) {
         {
-            Maybe::Just(42);
+            Maybe::Just(42)
         }
     } else {
         {
-            Maybe::Nothing;
+            Maybe::Nothing
         }
-    };
+    }
 }
 
 fn main() -> unit {
@@ -40,5 +40,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)((Display::show : (Point) -> string)((point/4 : Point)));
     let _ : unit = (string_println : (string) -> unit)((Display::show : (Maybe[int32]) -> string)((some_number/5 : Maybe[int32])));
     let _ : unit = (string_println : (string) -> unit)((Display::show : (Maybe[int32]) -> string)((none_number/6 : Maybe[int32])));
-    ();
+    ()
 }

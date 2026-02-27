@@ -10,46 +10,46 @@ func string_println(s string) struct{} {
 }
 
 func classify(x__0 int32) string {
-    var ret12 string
-    var t6 bool = x__0 < 0
-    if t6 {
-        ret12 = "negative"
+    var ret69 string
+    var t63 bool = x__0 < 0
+    if t63 {
+        ret69 = "negative"
     } else {
-        var t7 bool = 0 < x__0
-        if t7 {
-            ret12 = "positive"
+        var t64 bool = 0 < x__0
+        if t64 {
+            ret69 = "positive"
         } else {
-            ret12 = "zero"
+            ret69 = "zero"
         }
     }
-    return ret12
+    return ret69
 }
 
 func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
-    var ret13 string
-    var t8 bool = a__1 < b__2
-    if t8 {
-        var t9 bool = b__2 < c__3
-        if t9 {
-            ret13 = "ascending"
+    var ret70 string
+    var t65 bool = a__1 < b__2
+    if t65 {
+        var t66 bool = b__2 < c__3
+        if t66 {
+            ret70 = "ascending"
         } else {
-            ret13 = "peak"
+            ret70 = "peak"
         }
     } else {
-        var t10 bool = a__1 < c__3
-        if t10 {
-            ret13 = "valley"
+        var t67 bool = a__1 < c__3
+        if t67 {
+            ret70 = "valley"
         } else {
-            ret13 = "flat"
+            ret70 = "flat"
         }
     }
-    return ret13
+    return ret70
 }
 
 func main0() struct{} {
-    var ret14 struct{}
-    var t11 int32 = -42
-    var first__4 string = classify(t11)
+    var ret71 struct{}
+    var t68 int32 = -42
+    var first__4 string = classify(t68)
     var second__5 string = classify(0)
     var third__6 string = classify(17)
     var shape1__7 string = triangle_type(1, 2, 3)
@@ -61,8 +61,8 @@ func main0() struct{} {
     string_println(shape1__7)
     string_println(shape2__8)
     string_println(shape3__9)
-    ret14 = struct{}{}
-    return ret14
+    ret71 = struct{}{}
+    return ret71
 }
 
 func main() {

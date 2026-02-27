@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
@@ -16,7 +16,7 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
               (false, true) => (string_println : (string) -> unit)("case3"),
               _ : (bool, bool) => (string_println : (string) -> unit)("case4"),
           },
-    };
+    }
 }
 
 fn main() -> unit {
@@ -24,5 +24,5 @@ fn main() -> unit {
     let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((true, false), (true, false));
     let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (false, true));
     let _ : unit = (test_nested_match : ((bool, bool), (bool, bool)) -> unit)((false, true), (true, false));
-    ();
+    ()
 }

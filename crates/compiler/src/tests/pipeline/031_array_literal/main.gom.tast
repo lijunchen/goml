@@ -1,13 +1,13 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn make_array() -> [int32; 3] {
-    [1, 2, 3];
+    [1, 2, 3]
 }
 
 fn main() -> unit {
@@ -16,5 +16,5 @@ fn main() -> unit {
     let _ : unit = (print : (string) -> unit)("array literal");
     let _ : [int32; 3] = (arr/0 : [int32; 3]);
     let _ : [int32; 3] = (inline/1 : [int32; 3]);
-    ();
+    ()
 }

@@ -14,56 +14,56 @@ func string_println(s string) struct{} {
 }
 
 func match_string(s__0 string) int32 {
-    var ret17 int32
+    var ret43 int32
     switch s__0 {
     case "hello":
-        ret17 = 1
+        ret43 = 1
     case "world":
-        ret17 = 2
+        ret43 = 2
     default:
-        ret17 = 3
+        ret43 = 3
     }
-    return ret17
+    return ret43
 }
 
 func wildcard_position(s__1 string) int32 {
-    var ret18 int32
-    ret18 = 4
-    return ret18
+    var ret44 int32
+    ret44 = 4
+    return ret44
 }
 
 func repeated_string(s__2 string) int32 {
-    var ret19 int32
+    var ret45 int32
     switch s__2 {
     case "hello":
-        ret19 = 6
+        ret45 = 6
     default:
-        ret19 = 8
+        ret45 = 8
     }
-    return ret19
+    return ret45
 }
 
 func main0() struct{} {
-    var ret20 struct{}
-    var t6 int32 = match_string("hello")
-    var t5 string = int32_to_string(t6)
-    string_println(t5)
-    var t8 int32 = match_string("planet")
-    var t7 string = int32_to_string(t8)
-    string_println(t7)
-    var t10 int32 = wildcard_position("world")
-    var t9 string = int32_to_string(t10)
-    string_println(t9)
-    var t12 int32 = wildcard_position("sun")
-    var t11 string = int32_to_string(t12)
-    string_println(t11)
-    var t14 int32 = repeated_string("hello")
-    var t13 string = int32_to_string(t14)
-    string_println(t13)
-    var t16 int32 = repeated_string("mars")
-    var t15 string = int32_to_string(t16)
-    ret20 = string_println(t15)
-    return ret20
+    var ret46 struct{}
+    var t32 int32 = match_string("hello")
+    var t31 string = int32_to_string(t32)
+    string_println(t31)
+    var t34 int32 = match_string("planet")
+    var t33 string = int32_to_string(t34)
+    string_println(t33)
+    var t36 int32 = wildcard_position("world")
+    var t35 string = int32_to_string(t36)
+    string_println(t35)
+    var t38 int32 = wildcard_position("sun")
+    var t37 string = int32_to_string(t38)
+    string_println(t37)
+    var t40 int32 = repeated_string("hello")
+    var t39 string = int32_to_string(t40)
+    string_println(t39)
+    var t42 int32 = repeated_string("mars")
+    var t41 string = int32_to_string(t42)
+    ret46 = string_println(t41)
+    return ret46
 }
 
 func main() {

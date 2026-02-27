@@ -1,19 +1,19 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl ToString for S{
   fn to_string(self/0: S) -> string {
-      "S(" + (int32_to_string : (int32) -> string)((self/0 : S).value) + ")";
+      "S(" + (int32_to_string : (int32) -> string)((self/0 : S).value) + ")"
   }
 }
 
 fn main() -> unit {
     let s/1: S = S { value: 7 };
     (println : (string) -> unit)((ToString::to_string : (S) -> string)((s/1 : S)));
-    ();
+    ()
 }

@@ -1,23 +1,22 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Display for S{
   fn show(self/0: S) -> string {
-      "ok";
+      "ok"
   }
 }
 
 fn to_dyn(x/1: T) -> dyn Display {
-    to_dyn[Display]{T}((x/1 : T));
+    to_dyn[Display]{T}((x/1 : T))
 }
 
 fn main() -> unit {
     let _ : dyn Display = (to_dyn : (S) -> dyn Display)(S {});
     (println : (string) -> unit)("ok");
-    ();
 }

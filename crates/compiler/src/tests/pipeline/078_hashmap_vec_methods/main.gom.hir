@@ -8,54 +8,53 @@ enum Key {
     
     impl Eq for Key {
       fn eq(local/1/0: Key, local/1/1: Key) -> bool {
-        match (self/0, other/1) {
-            (ctor(def/1/0::v0), ctor(def/1/0::v0)) => true,
-            (ctor(def/1/0::v1)(local/1/2), ctor(def/1/0::v1)(local/1/3)) => true && Eq::eq(__l1_0/2, __r1_0/3),
-            _ => false,
-        };
+          match (self/0, other/1) {
+              (ctor(def/1/0::v0), ctor(def/1/0::v0)) => true,
+              (ctor(def/1/0::v1)(local/1/2), ctor(def/1/0::v1)(local/1/3)) => true && Eq::eq(__l1_0/2, __r1_0/3),
+              _ => false,
+          }
       }
     }
     
     impl Hash for Key {
       fn hash(local/1/4: Key) -> uint64 {
-        match self/4 {
-            ctor(def/1/0::v0) => {
-                  let local/1/5: uint64 = 14695981039346656037u64 + 1u64;
-                  h/5;
-              },
-            ctor(def/1/0::v1)(local/1/6) => {
-                  let local/1/7: uint64 = 14695981039346656037u64 + 2u64;
-                  let local/1/8 = h/7 * 1099511628211u64 + Hash::hash(__field1_0/6);
-                  h/8;
-              },
-        };
+          match self/4 {
+              ctor(def/1/0::v0) => {
+                    let local/1/5: uint64 = 14695981039346656037u64 + 1u64;
+                    h/5
+                },
+              ctor(def/1/0::v1)(local/1/6) => {
+                    let local/1/7: uint64 = 14695981039346656037u64 + 2u64;
+                    let local/1/8 = h/7 * 1099511628211u64 + Hash::hash(__field1_0/6);
+                    h/8
+                },
+          }
       }
     }
     
     fn print_opt_int(local/1/9: Option[int32]) -> unit {
-      match x/9 {
-          Option::Some(local/1/10) => println(v/10),
-          Option::None => println("none"),
-      };
+        match x/9 {
+            Option::Some(local/1/10) => println(v/10),
+            Option::None => println("none"),
+        }
     }
     
     fn main() -> unit {
-      let local/1/11 = Vec::new();
-      let local/1/12 = v/11.push(10);
-      let local/1/13 = v/12.push(20);
-      let local/1/14 = v/13.push(30);
-      println(v/14.get(0));
-      println(v/14.get(1));
-      println(v/14.get(2));
-      println(v/14.len());
-      let local/1/15 = HashMap::new();
-      m/15.set(ctor(def/1/0::v0), 10);
-      m/15.set(ctor(def/1/0::v1)(1), 20);
-      println(m/15.len());
-      def/1/3(m/15.get(ctor(def/1/0::v0)));
-      println(m/15.contains(ctor(def/1/0::v1)(1)));
-      m/15.remove(ctor(def/1/0::v1)(1));
-      println(m/15.contains(ctor(def/1/0::v1)(1)));
-      println(m/15.len());
-      ();
+        let local/1/11 = Vec::new();
+        let local/1/12 = v/11.push(10);
+        let local/1/13 = v/12.push(20);
+        let local/1/14 = v/13.push(30);
+        println(v/14.get(0));
+        println(v/14.get(1));
+        println(v/14.get(2));
+        println(v/14.len());
+        let local/1/15 = HashMap::new();
+        m/15.set(ctor(def/1/0::v0), 10);
+        m/15.set(ctor(def/1/0::v1)(1), 20);
+        println(m/15.len());
+        def/1/3(m/15.get(ctor(def/1/0::v0)));
+        println(m/15.contains(ctor(def/1/0::v1)(1)));
+        m/15.remove(ctor(def/1/0::v1)(1));
+        println(m/15.contains(ctor(def/1/0::v1)(1)));
+        println(m/15.len());
     }

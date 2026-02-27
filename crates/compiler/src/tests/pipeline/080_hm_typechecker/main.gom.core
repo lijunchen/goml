@@ -269,20 +269,20 @@ fn occurs(st/40: CheckerState, tvr/41: Ref[Tv], ty/42: Typ) -> Result[unit, stri
               let x32 = Tv::Unbound._1(mtmp30) in
               let l2/45 = x32 in
               let name/44 = x31 in
-              let min_level/47 = let mtmp34 = ref_get(tvr/41) in
-              match mtmp34 {
-                Tv::Unbound(x35, x36) => {
-                  let x35 = Tv::Unbound._0(mtmp34) in
-                  let x36 = Tv::Unbound._1(mtmp34) in
-                  let l/46 = x36 in
+              let min_level/47 = let mtmp35 = ref_get(tvr/41) in
+              match mtmp35 {
+                Tv::Unbound(x36, x37) => {
+                  let x36 = Tv::Unbound._0(mtmp35) in
+                  let x37 = Tv::Unbound._1(mtmp35) in
+                  let l/46 = x37 in
                   min_i32(l/46, l2/45)
                 },
-                Tv::Link(x37) => {
-                  let x37 = Tv::Link._0(mtmp34) in
+                Tv::Link(x38) => {
+                  let x38 = Tv::Link._0(mtmp35) in
                   l2/45
                 },
               } in
-              let mtmp38 = ref_set(tvr2/43, Tv::Unbound(name/44, min_level/47)) in
+              let mtmp34 = ref_set(tvr2/43, Tv::Unbound(name/44, min_level/47)) in
               Result::Ok(())
             },
             Tv::Link(x33) => {
@@ -624,16 +624,16 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
       let x119 = Typ::TArrow._1(ty/85) in
       let t2/93 = x119 in
       let t1/92 = x118 in
-      let mtmp126 = inst_loop(st/83, subst/84, t1/92) in
-      let x127 = mtmp126.0 in
-      let x128 = mtmp126.1 in
-      let subst1/95 = x128 in
-      let ty1/94 = x127 in
-      let mtmp129 = inst_loop(st/83, subst1/95, t2/93) in
+      let mtmp129 = inst_loop(st/83, subst/84, t1/92) in
       let x130 = mtmp129.0 in
       let x131 = mtmp129.1 in
-      let subst2/97 = x131 in
-      let ty2/96 = x130 in
+      let subst1/95 = x131 in
+      let ty1/94 = x130 in
+      let mtmp132 = inst_loop(st/83, subst1/95, t2/93) in
+      let x133 = mtmp132.0 in
+      let x134 = mtmp132.1 in
+      let subst2/97 = x134 in
+      let ty2/96 = x133 in
       (Typ::TArrow(ty1/94, ty2/96), subst2/97)
     },
   }
@@ -641,115 +641,115 @@ fn inst_loop(st/83: CheckerState, subst/84: Vec[SubstEntry], ty/85: Typ) -> (Typ
 
 fn inst(st/98: CheckerState, ty/99: Typ) -> Typ {
   let subst0/100 = vec_new() in
-  let mtmp132 = inst_loop(st/98, subst0/100, ty/99) in
-  let x133 = mtmp132.0 in
-  let x134 = mtmp132.1 in
-  let t/101 = x133 in
+  let mtmp135 = inst_loop(st/98, subst0/100, ty/99) in
+  let x136 = mtmp135.0 in
+  let x137 = mtmp135.1 in
+  let t/101 = x136 in
   t/101
 }
 
 fn typeof(st/102: CheckerState, env/103: Vec[EnvEntry], e/104: Exp) -> Result[Typ, string] {
   match e/104 {
-    Exp::Var(x135) => {
-      let x135 = Exp::Var._0(e/104) in
-      let x/105 = x135 in
-      let mtmp143 = env_lookup(env/103, x/105) in
-      match mtmp143 {
+    Exp::Var(x138) => {
+      let x138 = Exp::Var._0(e/104) in
+      let x/105 = x138 in
+      let mtmp146 = env_lookup(env/103, x/105) in
+      match mtmp146 {
         Option::None => {
           Result::Err("unbound var")
         },
-        Option::Some(x144) => {
-          let x144 = Option::Some._0(mtmp143) in
-          let ty/106 = x144 in
+        Option::Some(x147) => {
+          let x147 = Option::Some._0(mtmp146) in
+          let ty/106 = x147 in
           Result::Ok(inst(st/102, ty/106))
         },
       }
     },
-    Exp::App(x136, x137) => {
-      let x136 = Exp::App._0(e/104) in
-      let x137 = Exp::App._1(e/104) in
-      let e2/114 = x137 in
-      let e1/113 = x136 in
-      let mtmp145 = typeof(st/102, env/103, e1/113) in
-      match mtmp145 {
-        Result::Ok(x146) => {
-          let x146 = Result::Ok._0(mtmp145) in
-          let ty_fun/116 = x146 in
-          let mtmp148 = typeof(st/102, env/103, e2/114) in
-          match mtmp148 {
-            Result::Ok(x149) => {
-              let x149 = Result::Ok._0(mtmp148) in
-              let ty_arg/118 = x149 in
+    Exp::App(x139, x140) => {
+      let x139 = Exp::App._0(e/104) in
+      let x140 = Exp::App._1(e/104) in
+      let e2/114 = x140 in
+      let e1/113 = x139 in
+      let mtmp148 = typeof(st/102, env/103, e1/113) in
+      match mtmp148 {
+        Result::Ok(x149) => {
+          let x149 = Result::Ok._0(mtmp148) in
+          let ty_fun/116 = x149 in
+          let mtmp151 = typeof(st/102, env/103, e2/114) in
+          match mtmp151 {
+            Result::Ok(x152) => {
+              let x152 = Result::Ok._0(mtmp151) in
+              let ty_arg/118 = x152 in
               let ty_res/119 = newvar(st/102) in
               let arrow/120 = Typ::TArrow(ty_arg/118, ty_res/119) in
-              let mtmp151 = unify(st/102, ty_fun/116, arrow/120) in
-              match mtmp151 {
-                Result::Ok(x152) => {
-                  let x152 = Result::Ok._0(mtmp151) in
+              let mtmp154 = unify(st/102, ty_fun/116, arrow/120) in
+              match mtmp154 {
+                Result::Ok(x155) => {
+                  let x155 = Result::Ok._0(mtmp154) in
                   Result::Ok(ty_res/119)
                 },
-                Result::Err(x153) => {
-                  let x153 = Result::Err._0(mtmp151) in
-                  let e/121 = x153 in
+                Result::Err(x156) => {
+                  let x156 = Result::Err._0(mtmp154) in
+                  let e/121 = x156 in
                   Result::Err(e/121)
                 },
               }
             },
-            Result::Err(x150) => {
-              let x150 = Result::Err._0(mtmp148) in
-              let e/117 = x150 in
+            Result::Err(x153) => {
+              let x153 = Result::Err._0(mtmp151) in
+              let e/117 = x153 in
               Result::Err(e/117)
             },
           }
         },
-        Result::Err(x147) => {
-          let x147 = Result::Err._0(mtmp145) in
-          let e/115 = x147 in
+        Result::Err(x150) => {
+          let x150 = Result::Err._0(mtmp148) in
+          let e/115 = x150 in
           Result::Err(e/115)
         },
       }
     },
-    Exp::Lam(x138, x139) => {
-      let x138 = Exp::Lam._0(e/104) in
-      let x139 = Exp::Lam._1(e/104) in
-      let body/108 = x139 in
-      let x/107 = x138 in
+    Exp::Lam(x141, x142) => {
+      let x141 = Exp::Lam._0(e/104) in
+      let x142 = Exp::Lam._1(e/104) in
+      let body/108 = x142 in
+      let x/107 = x141 in
       let ty_x/109 = newvar(st/102) in
       let env2/110 = vec_push(env/103, EnvEntry { name: x/107, ty: ty_x/109 }) in
-      let mtmp154 = typeof(st/102, env2/110, body/108) in
-      match mtmp154 {
-        Result::Ok(x155) => {
-          let x155 = Result::Ok._0(mtmp154) in
-          let ty_e/111 = x155 in
+      let mtmp157 = typeof(st/102, env2/110, body/108) in
+      match mtmp157 {
+        Result::Ok(x158) => {
+          let x158 = Result::Ok._0(mtmp157) in
+          let ty_e/111 = x158 in
           Result::Ok(Typ::TArrow(ty_x/109, ty_e/111))
         },
-        Result::Err(x156) => {
-          let x156 = Result::Err._0(mtmp154) in
-          let e/112 = x156 in
+        Result::Err(x159) => {
+          let x159 = Result::Err._0(mtmp157) in
+          let e/112 = x159 in
           Result::Err(e/112)
         },
       }
     },
-    Exp::Let(x140, x141, x142) => {
-      let x140 = Exp::Let._0(e/104) in
-      let x141 = Exp::Let._1(e/104) in
-      let x142 = Exp::Let._2(e/104) in
-      let e2/124 = x142 in
-      let e1/123 = x141 in
-      let x/122 = x140 in
-      let _wild157 = enter_level(st/102) in
+    Exp::Let(x143, x144, x145) => {
+      let x143 = Exp::Let._0(e/104) in
+      let x144 = Exp::Let._1(e/104) in
+      let x145 = Exp::Let._2(e/104) in
+      let e2/124 = x145 in
+      let e1/123 = x144 in
+      let x/122 = x143 in
+      let _wild163 = enter_level(st/102) in
       let ty_e/125 = typeof(st/102, env/103, e1/123) in
-      let _wild158 = leave_level(st/102) in
+      let _wild162 = leave_level(st/102) in
       match ty_e/125 {
-        Result::Ok(x159) => {
-          let x159 = Result::Ok._0(ty_e/125) in
-          let ty1/127 = x159 in
+        Result::Ok(x160) => {
+          let x160 = Result::Ok._0(ty_e/125) in
+          let ty1/127 = x160 in
           let env2/128 = vec_push(env/103, EnvEntry { name: x/122, ty: gen(st/102, ty1/127) }) in
           typeof(st/102, env2/128, e2/124)
         },
-        Result::Err(x160) => {
-          let x160 = Result::Err._0(ty_e/125) in
-          let e/126 = x160 in
+        Result::Err(x161) => {
+          let x161 = Result::Err._0(ty_e/125) in
+          let e/126 = x161 in
           Result::Err(e/126)
         },
       }
@@ -775,14 +775,14 @@ fn exp_let(name/134: string, a/135: Exp, b/136: Exp) -> Exp {
 
 fn show_result(label/137: string, res/138: Result[Typ, string]) -> unit {
   match res/138 {
-    Result::Ok(x161) => {
-      let x161 = Result::Ok._0(res/138) in
-      let ty/139 = x161 in
+    Result::Ok(x164) => {
+      let x164 = Result::Ok._0(res/138) in
+      let ty/139 = x164 in
       string_println(((label/137 + ": ") + typ_to_string(ty/139)))
     },
-    Result::Err(x162) => {
-      let x162 = Result::Err._0(res/138) in
-      let e/140 = x162 in
+    Result::Err(x165) => {
+      let x165 = Result::Err._0(res/138) in
+      let e/140 = x165 in
       string_println(((label/137 + ": ") + e/140))
     },
   }
@@ -792,46 +792,46 @@ fn main() -> unit {
   let st/141 = state_new() in
   let id/142 = exp_lam("x", exp_var("x")) in
   let c1/143 = exp_lam("x", exp_lam("y", exp_app(exp_var("x"), exp_var("y")))) in
-  let _wild163 = reset_type_variables(st/141) in
-  let _wild164 = show_result("id", typeof(st/141, env_empty(), id/142)) in
-  let _wild165 = reset_type_variables(st/141) in
-  let _wild166 = show_result("c1", typeof(st/141, env_empty(), c1/143)) in
-  let _wild167 = reset_type_variables(st/141) in
-  let _wild168 = show_result("let_x_c1_x", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_var("x")))) in
-  let _wild169 = reset_type_variables(st/141) in
-  let _wild170 = show_result("let_y_id_y", typeof(st/141, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))) in
-  let _wild171 = reset_type_variables(st/141) in
-  let _wild172 = show_result("lam_x_let_y_id_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))))) in
-  let _wild173 = reset_type_variables(st/141) in
-  let _wild174 = show_result("lam_x_let_y_id_yx", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_app(exp_var("y"), exp_var("x")))))) in
-  let _wild175 = reset_type_variables(st/141) in
-  let _wild176 = show_result("self_apply", typeof(st/141, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x"))))) in
-  let _wild177 = reset_type_variables(st/141) in
-  let _wild178 = show_result("unbound_var", typeof(st/141, env_empty(), exp_let("x", exp_var("x"), exp_var("x")))) in
-  let _wild179 = reset_type_variables(st/141) in
-  let _wild180 = show_result("max_heiber", typeof(st/141, env_empty(), exp_lam("y", exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z"))))))) in
-  let _wild181 = reset_type_variables(st/141) in
-  let _wild182 = show_result("kirang", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_lam("k", exp_app(exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))), exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")))))))) in
-  let _wild183 = reset_type_variables(st/141) in
-  let _wild184 = show_result("let_id_idid", typeof(st/141, env_empty(), exp_let("id", id/142, exp_app(exp_var("id"), exp_var("id"))))) in
-  let _wild185 = reset_type_variables(st/141) in
-  let _wild186 = show_result("nested_lets", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
-  let _wild187 = reset_type_variables(st/141) in
-  let _wild188 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_lam("x", exp_app(exp_var("y"), exp_var("x")))))))) in
-  let _wild189 = reset_type_variables(st/141) in
-  let _wild190 = show_result("sound_gen_1", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y"))))) in
-  let _wild191 = reset_type_variables(st/141) in
-  let _wild192 = show_result("sound_gen_2", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))))) in
-  let _wild193 = reset_type_variables(st/141) in
-  let _wild194 = show_result("sound_gen_3", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_app(exp_var("x"), exp_var("z"))), exp_var("y"))))) in
-  let _wild195 = reset_type_variables(st/141) in
-  let _wild196 = show_result("double_apply", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_app(exp_var("x"), exp_var("y"))))))) in
-  let _wild197 = reset_type_variables(st/141) in
-  let _wild198 = show_result("sound_gen_occurs", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))))) in
-  let _wild199 = reset_gensym(st/141) in
-  let _wild200 = show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
-  let _wild201 = string_println("") in
-  let _wild202 = string_println("All Done") in
-  let _wild203 = string_println("") in
+  let _wild206 = reset_type_variables(st/141) in
+  let _wild205 = show_result("id", typeof(st/141, env_empty(), id/142)) in
+  let _wild204 = reset_type_variables(st/141) in
+  let _wild203 = show_result("c1", typeof(st/141, env_empty(), c1/143)) in
+  let _wild202 = reset_type_variables(st/141) in
+  let _wild201 = show_result("let_x_c1_x", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_var("x")))) in
+  let _wild200 = reset_type_variables(st/141) in
+  let _wild199 = show_result("let_y_id_y", typeof(st/141, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))) in
+  let _wild198 = reset_type_variables(st/141) in
+  let _wild197 = show_result("lam_x_let_y_id_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))))) in
+  let _wild196 = reset_type_variables(st/141) in
+  let _wild195 = show_result("lam_x_let_y_id_yx", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_app(exp_var("y"), exp_var("x")))))) in
+  let _wild194 = reset_type_variables(st/141) in
+  let _wild193 = show_result("self_apply", typeof(st/141, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x"))))) in
+  let _wild192 = reset_type_variables(st/141) in
+  let _wild191 = show_result("unbound_var", typeof(st/141, env_empty(), exp_let("x", exp_var("x"), exp_var("x")))) in
+  let _wild190 = reset_type_variables(st/141) in
+  let _wild189 = show_result("max_heiber", typeof(st/141, env_empty(), exp_lam("y", exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z"))))))) in
+  let _wild188 = reset_type_variables(st/141) in
+  let _wild187 = show_result("kirang", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_lam("k", exp_app(exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))), exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")))))))) in
+  let _wild186 = reset_type_variables(st/141) in
+  let _wild185 = show_result("let_id_idid", typeof(st/141, env_empty(), exp_let("id", id/142, exp_app(exp_var("id"), exp_var("id"))))) in
+  let _wild184 = reset_type_variables(st/141) in
+  let _wild183 = show_result("nested_lets", typeof(st/141, env_empty(), exp_let("x", c1/143, exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
+  let _wild182 = reset_type_variables(st/141) in
+  let _wild181 = show_result("fun_x_fun_y_let_x_xy_fun_x_yx", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_lam("x", exp_app(exp_var("y"), exp_var("x")))))))) in
+  let _wild180 = reset_type_variables(st/141) in
+  let _wild179 = show_result("sound_gen_1", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y"))))) in
+  let _wild178 = reset_type_variables(st/141) in
+  let _wild177 = show_result("sound_gen_2", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))))) in
+  let _wild176 = reset_type_variables(st/141) in
+  let _wild175 = show_result("sound_gen_3", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_app(exp_var("x"), exp_var("z"))), exp_var("y"))))) in
+  let _wild174 = reset_type_variables(st/141) in
+  let _wild173 = show_result("double_apply", typeof(st/141, env_empty(), exp_lam("x", exp_lam("y", exp_let("x", exp_app(exp_var("x"), exp_var("y")), exp_app(exp_var("x"), exp_var("y"))))))) in
+  let _wild172 = reset_type_variables(st/141) in
+  let _wild171 = show_result("sound_gen_occurs", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))))) in
+  let _wild170 = reset_gensym(st/141) in
+  let _wild169 = show_result("fun_x_let_y_let_z_x_id_z_y", typeof(st/141, env_empty(), exp_lam("x", exp_let("y", exp_let("z", exp_app(exp_var("x"), id/142), exp_var("z")), exp_var("y"))))) in
+  let _wild168 = string_println("") in
+  let _wild167 = string_println("All Done") in
+  let _wild166 = string_println("") in
   ()
 }

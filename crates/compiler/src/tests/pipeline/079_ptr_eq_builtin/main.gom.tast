@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn main() -> unit {
@@ -12,5 +12,4 @@ fn main() -> unit {
     let c/2: Ref[int32] = (ref : (int32) -> Ref[int32])(1);
     (println : (bool) -> unit)((ptr_eq : (Ref[int32], Ref[int32]) -> bool)((a/0 : Ref[int32]), (b/1 : Ref[int32])));
     (println : (bool) -> unit)((ptr_eq : (Ref[int32], Ref[int32]) -> bool)((a/0 : Ref[int32]), (c/2 : Ref[int32])));
-    ();
 }

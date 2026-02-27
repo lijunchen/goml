@@ -6,9 +6,9 @@ type Point struct {
 }
 
 func main0() struct{} {
-    var ret4 struct{}
-    ret4 = struct{}{}
-    return ret4
+    var ret5 struct{}
+    ret5 = struct{}{}
+    return ret5
 }
 
 func main() {

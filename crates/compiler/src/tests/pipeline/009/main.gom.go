@@ -29,11 +29,11 @@ type B struct {
 func (_ B) isT() {}
 
 func test(t__0 T) struct{} {
-    var ret15 struct{}
+    var ret26 struct{}
     switch t__0 := t__0.(type) {
     case A:
-        var t6 string = int32_to_string(1)
-        ret15 = string_print(t6)
+        var t17 string = int32_to_string(1)
+        ret26 = string_print(t17)
     case B:
         var x0 bool = t__0._0
         var x1 bool = t__0._1
@@ -41,47 +41,47 @@ func test(t__0 T) struct{} {
         case true:
             switch x0 {
             case true:
-                var t7 string = int32_to_string(4)
-                ret15 = string_print(t7)
+                var t18 string = int32_to_string(4)
+                ret26 = string_print(t18)
             case false:
-                var t8 string = int32_to_string(3)
-                ret15 = string_print(t8)
+                var t19 string = int32_to_string(3)
+                ret26 = string_print(t19)
             }
         case false:
             switch x0 {
             case true:
-                var t9 string = int32_to_string(4)
-                ret15 = string_print(t9)
+                var t20 string = int32_to_string(4)
+                ret26 = string_print(t20)
             case false:
-                var t10 string = int32_to_string(2)
-                ret15 = string_print(t10)
+                var t21 string = int32_to_string(2)
+                ret26 = string_print(t21)
             }
         }
     }
-    return ret15
+    return ret26
 }
 
 func main0() struct{} {
-    var ret16 struct{}
-    var t11 T = B{
+    var ret27 struct{}
+    var t22 T = B{
         _0: true,
         _1: true,
     }
-    test(t11)
-    var t12 T = B{
+    test(t22)
+    var t23 T = B{
         _0: false,
         _1: true,
     }
-    test(t12)
-    var t13 T = B{
+    test(t23)
+    var t24 T = B{
         _0: false,
         _1: false,
     }
-    test(t13)
-    var t14 T = A{}
-    test(t14)
-    ret16 = struct{}{}
-    return ret16
+    test(t24)
+    var t25 T = A{}
+    test(t25)
+    ret27 = struct{}{}
+    return ret27
 }
 
 func main() {

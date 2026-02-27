@@ -1,19 +1,18 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn fib(x/0: int32) -> int32 {
     match (x/0 : int32) < 2 {
         false => (fib : (int32) -> int32)((x/0 : int32) - 1) + (fib : (int32) -> int32)((x/0 : int32) - 2),
         true => 1,
-    };
+    }
 }
 
 fn main() -> unit {
     let _ : unit = (print : (int32) -> unit)((fib : (int32) -> int32)(10));
-    ();
 }

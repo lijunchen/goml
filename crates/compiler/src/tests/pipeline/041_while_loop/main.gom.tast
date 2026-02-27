@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn sum_to(limit/0: int32) -> int32 {
@@ -14,10 +14,10 @@ fn sum_to(limit/0: int32) -> int32 {
             let current/3: int32 = (ref_get : (Ref[int32]) -> int32)((i/2 : Ref[int32]));
             let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((acc/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32])) + (current/3 : int32));
             let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((i/2 : Ref[int32]), (current/3 : int32) + 1);
-            ();
+            ()
         }
     };
-    (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32]));
+    (ref_get : (Ref[int32]) -> int32)((acc/1 : Ref[int32]))
 }
 
 fn sum_even(limit/4: int32) -> int32 {
@@ -32,16 +32,16 @@ fn sum_even(limit/4: int32) -> int32 {
             let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((is_even/7 : Ref[bool]), !(add_now/9 : bool));
             if (add_now/9 : bool) {
                 {
-                    (ref_set : (Ref[int32], int32) -> unit)((acc/5 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32])) + (current/8 : int32));
+                    (ref_set : (Ref[int32], int32) -> unit)((acc/5 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32])) + (current/8 : int32))
                 }
             } else {
                 {
-                    ();
+                    ()
                 }
-            };
+            }
         }
     };
-    (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32]));
+    (ref_get : (Ref[int32]) -> int32)((acc/5 : Ref[int32]))
 }
 
 fn main() -> unit {
@@ -51,5 +51,5 @@ fn main() -> unit {
     let _ : unit = (println : (int32) -> unit)((first/10 : int32));
     let _ : unit = (print : (string) -> unit)("sum_even(6)=");
     let _ : unit = (println : (int32) -> unit)((evens/11 : int32));
-    ();
+    ()
 }

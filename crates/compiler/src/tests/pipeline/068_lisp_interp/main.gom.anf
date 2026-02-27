@@ -1,7 +1,7 @@
 fn is_digit(ch/0: char) -> bool {
-  let t148 = (ch/0 >= '0') in
-  let t149 = (ch/0 <= '9') in
-  (t148 && t149)
+  let t158 = (ch/0 >= '0') in
+  let t159 = (ch/0 <= '9') in
+  (t158 && t159)
 }
 
 fn digit_value(ch/1: char) -> int32 {
@@ -42,45 +42,45 @@ fn digit_value(ch/1: char) -> int32 {
 
 fn is_int_text(text/2: string) -> bool {
   let len/3 = string_len(text/2) in
-  let t150 = (len/3 == 0) in
-  if t150 {
+  let t160 = (len/3 == 0) in
+  if t160 {
     false
   } else {
     let i/4 = ref(0) in
     let saw_digit/5 = ref(false) in
     let ok/6 = ref(true) in
     let started/7 = ref(false) in
-    let mtmp3 = while let t151 = ref_get(ok/6) in
-    let t153 = ref_get(i/4) in
-    let t152 = (t153 < len/3) in
-    (t151 && t152) {
-      let t154 = ref_get(i/4) in
-      let ch/8 = string_get(text/2, t154) in
-      let t157 = ref_get(started/7) in
-      let t156 = (!t157) in
-      let t158 = (ch/8 == '-') in
-      let t155 = (t156 && t158) in
-      if t155 {
+    let mtmp4 = while let t161 = ref_get(ok/6) in
+    let t163 = ref_get(i/4) in
+    let t162 = (t163 < len/3) in
+    (t161 && t162) {
+      let t164 = ref_get(i/4) in
+      let ch/8 = string_get(text/2, t164) in
+      let t167 = ref_get(started/7) in
+      let t166 = (!t167) in
+      let t168 = (ch/8 == '-') in
+      let t165 = (t166 && t168) in
+      if t165 {
         let mtmp0 = ref_set(started/7, true) in
-        let t160 = ref_get(i/4) in
-        let t159 = (t160 + 1) in
-        ref_set(i/4, t159)
+        let t170 = ref_get(i/4) in
+        let t169 = (t170 + 1) in
+        ref_set(i/4, t169)
       } else {
-        let t161 = is_digit(ch/8) in
-        if t161 {
-          let mtmp1 = ref_set(started/7, true) in
-          let mtmp2 = ref_set(saw_digit/5, true) in
-          let t163 = ref_get(i/4) in
-          let t162 = (t163 + 1) in
-          ref_set(i/4, t162)
+        let t171 = is_digit(ch/8) in
+        if t171 {
+          let mtmp2 = ref_set(started/7, true) in
+          let mtmp3 = ref_set(saw_digit/5, true) in
+          let t173 = ref_get(i/4) in
+          let t172 = (t173 + 1) in
+          ref_set(i/4, t172)
         } else {
           ref_set(ok/6, false)
         }
       }
     } in
-    let t164 = ref_get(ok/6) in
-    let t165 = ref_get(saw_digit/5) in
-    (t164 && t165)
+    let t174 = ref_get(ok/6) in
+    let t175 = ref_get(saw_digit/5) in
+    (t174 && t175)
   }
 }
 
@@ -90,47 +90,47 @@ fn parse_int32(text/9: string) -> int32 {
   let negative/12 = ref(false) in
   let started/13 = ref(false) in
   let acc/14 = ref(0) in
-  let mtmp8 = while let t166 = ref_get(i/11) in
-  (t166 < len/10) {
-    let t167 = ref_get(i/11) in
-    let ch/15 = string_get(text/9, t167) in
-    let t170 = ref_get(started/13) in
-    let t169 = (!t170) in
-    let t171 = (ch/15 == '-') in
-    let t168 = (t169 && t171) in
-    if t168 {
-      let mtmp4 = ref_set(started/13, true) in
-      let mtmp5 = ref_set(negative/12, true) in
-      let t173 = ref_get(i/11) in
-      let t172 = (t173 + 1) in
-      ref_set(i/11, t172)
-    } else {
+  let mtmp11 = while let t176 = ref_get(i/11) in
+  (t176 < len/10) {
+    let t177 = ref_get(i/11) in
+    let ch/15 = string_get(text/9, t177) in
+    let t180 = ref_get(started/13) in
+    let t179 = (!t180) in
+    let t181 = (ch/15 == '-') in
+    let t178 = (t179 && t181) in
+    if t178 {
       let mtmp6 = ref_set(started/13, true) in
+      let mtmp7 = ref_set(negative/12, true) in
+      let t183 = ref_get(i/11) in
+      let t182 = (t183 + 1) in
+      ref_set(i/11, t182)
+    } else {
+      let mtmp9 = ref_set(started/13, true) in
       let d/16 = digit_value(ch/15) in
-      let t176 = ref_get(acc/14) in
-      let t175 = (t176 * 10) in
-      let t174 = (t175 + d/16) in
-      let mtmp7 = ref_set(acc/14, t174) in
-      let t178 = ref_get(i/11) in
-      let t177 = (t178 + 1) in
-      ref_set(i/11, t177)
+      let t186 = ref_get(acc/14) in
+      let t185 = (t186 * 10) in
+      let t184 = (t185 + d/16) in
+      let mtmp10 = ref_set(acc/14, t184) in
+      let t188 = ref_get(i/11) in
+      let t187 = (t188 + 1) in
+      ref_set(i/11, t187)
     }
   } in
-  let t179 = ref_get(negative/12) in
-  if t179 {
-    let t180 = ref_get(acc/14) in
-    (0 - t180)
+  let t189 = ref_get(negative/12) in
+  if t189 {
+    let t190 = ref_get(acc/14) in
+    (0 - t190)
   } else {
     ref_get(acc/14)
   }
 }
 
 fn is_delim(ch/17: char) -> bool {
-  let t182 = (ch/17 == '(') in
-  let t183 = (ch/17 == ')') in
-  let t181 = (t182 || t183) in
-  let t184 = (ch/17 == ' ') in
-  (t181 || t184)
+  let t192 = (ch/17 == '(') in
+  let t193 = (ch/17 == ')') in
+  let t191 = (t192 || t193) in
+  let t194 = (ch/17 == ' ') in
+  (t191 || t194)
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
@@ -138,24 +138,24 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
   let text/21 = ref("") in
   let i/22 = ref(start/19) in
   let done/23 = ref(false) in
-  let mtmp10 = while let t186 = ref_get(done/23) in
-  let t185 = (!t186) in
-  let t188 = ref_get(i/22) in
-  let t187 = (t188 < len/20) in
-  (t185 && t187) {
-    let t189 = ref_get(i/22) in
-    let ch/24 = string_get(source/18, t189) in
-    let t190 = is_delim(ch/24) in
-    if t190 {
+  let mtmp13 = while let t196 = ref_get(done/23) in
+  let t195 = (!t196) in
+  let t198 = ref_get(i/22) in
+  let t197 = (t198 < len/20) in
+  (t195 && t197) {
+    let t199 = ref_get(i/22) in
+    let ch/24 = string_get(source/18, t199) in
+    let t200 = is_delim(ch/24) in
+    if t200 {
       ref_set(done/23, true)
     } else {
-      let t192 = ref_get(text/21) in
-      let t193 = char_to_string(ch/24) in
-      let t191 = (t192 + t193) in
-      let mtmp9 = ref_set(text/21, t191) in
-      let t195 = ref_get(i/22) in
-      let t194 = (t195 + 1) in
-      ref_set(i/22, t194)
+      let t202 = ref_get(text/21) in
+      let t203 = char_to_string(ch/24) in
+      let t201 = (t202 + t203) in
+      let mtmp12 = ref_set(text/21, t201) in
+      let t205 = ref_get(i/22) in
+      let t204 = (t205 + 1) in
+      ref_set(i/22, t204)
     }
   } in
   let atom/25 = ref_get(text/21) in
@@ -166,16 +166,16 @@ fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
     "false" => {
       Token::Bool(false)
     },
-    _ => let t196 = is_int_text(atom/25) in
-    if t196 {
-      let t197 = parse_int32(atom/25) in
-      Token::Int(t197)
+    _ => let t206 = is_int_text(atom/25) in
+    if t206 {
+      let t207 = parse_int32(atom/25) in
+      Token::Int(t207)
     } else {
       Token::Sym(atom/25)
     },
   } in
-  let t198 = ref_get(i/22) in
-  (token/26, t198)
+  let t208 = ref_get(i/22) in
+  (token/26, t208)
 }
 
 fn lex(source/27: string) -> Vec[Token] {
@@ -183,45 +183,45 @@ fn lex(source/27: string) -> Vec[Token] {
   let toks0/29 = vec_new() in
   let toks/30 = ref(toks0/29) in
   let i/31 = ref(0) in
-  let mtmp17 = while let t199 = ref_get(i/31) in
-  (t199 < len/28) {
-    let t200 = ref_get(i/31) in
-    let ch/32 = string_get(source/27, t200) in
-    let t201 = (ch/32 == '(') in
-    if t201 {
-      let t203 = ref_get(toks/30) in
-      let t204 = Tag_0 in
-      let t202 = vec_push(t203, t204) in
-      let mtmp11 = ref_set(toks/30, t202) in
-      let t206 = ref_get(i/31) in
-      let t205 = (t206 + 1) in
-      ref_set(i/31, t205)
+  let mtmp21 = while let t209 = ref_get(i/31) in
+  (t209 < len/28) {
+    let t210 = ref_get(i/31) in
+    let ch/32 = string_get(source/27, t210) in
+    let t211 = (ch/32 == '(') in
+    if t211 {
+      let t213 = ref_get(toks/30) in
+      let t214 = Tag_0 in
+      let t212 = vec_push(t213, t214) in
+      let mtmp14 = ref_set(toks/30, t212) in
+      let t216 = ref_get(i/31) in
+      let t215 = (t216 + 1) in
+      ref_set(i/31, t215)
     } else {
-      let t207 = (ch/32 == ')') in
-      if t207 {
-        let t209 = ref_get(toks/30) in
-        let t210 = Tag_1 in
-        let t208 = vec_push(t209, t210) in
-        let mtmp12 = ref_set(toks/30, t208) in
-        let t212 = ref_get(i/31) in
-        let t211 = (t212 + 1) in
-        ref_set(i/31, t211)
+      let t217 = (ch/32 == ')') in
+      if t217 {
+        let t219 = ref_get(toks/30) in
+        let t220 = Tag_1 in
+        let t218 = vec_push(t219, t220) in
+        let mtmp15 = ref_set(toks/30, t218) in
+        let t222 = ref_get(i/31) in
+        let t221 = (t222 + 1) in
+        ref_set(i/31, t221)
       } else {
-        let t213 = (ch/32 == ' ') in
-        if t213 {
-          let t215 = ref_get(i/31) in
-          let t214 = (t215 + 1) in
-          ref_set(i/31, t214)
+        let t223 = (ch/32 == ' ') in
+        if t223 {
+          let t225 = ref_get(i/31) in
+          let t224 = (t225 + 1) in
+          ref_set(i/31, t224)
         } else {
-          let t216 = ref_get(i/31) in
-          let mtmp13 = lex_atom(source/27, t216) in
-          let x14 = mtmp13.0 in
-          let x15 = mtmp13.1 in
-          let next/34 = x15 in
-          let tok/33 = x14 in
-          let t218 = ref_get(toks/30) in
-          let t217 = vec_push(t218, tok/33) in
-          let mtmp16 = ref_set(toks/30, t217) in
+          let t226 = ref_get(i/31) in
+          let mtmp17 = lex_atom(source/27, t226) in
+          let x18 = mtmp17.0 in
+          let x19 = mtmp17.1 in
+          let next/34 = x19 in
+          let tok/33 = x18 in
+          let t228 = ref_get(toks/30) in
+          let t227 = vec_push(t228, tok/33) in
+          let mtmp20 = ref_set(toks/30, t227) in
           ref_set(i/31, next/34)
         }
       }
@@ -231,50 +231,50 @@ fn lex(source/27: string) -> Vec[Token] {
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  let t220 = vec_len(env/35) in
-  let t219 = (t220 - 1) in
-  let i/37 = ref(t219) in
-  let t221 = Tag_3 in
-  let result/38 = ref(t221) in
+  let t230 = vec_len(env/35) in
+  let t229 = (t230 - 1) in
+  let i/37 = ref(t229) in
+  let t231 = Tag_3 in
+  let result/38 = ref(t231) in
   let done/39 = ref(false) in
-  let mtmp19 = while let t223 = ref_get(done/39) in
-  let t222 = (!t223) in
-  let t225 = ref_get(i/37) in
-  let t224 = (t225 >= 0) in
-  (t222 && t224) {
-    let t226 = ref_get(i/37) in
-    let binding/40 = vec_get(env/35, t226) in
-    let t228 = Binding.name(binding/40) in
-    let t227 = (t228 == name/36) in
-    if t227 {
-      let t229 = Binding.value(binding/40) in
-      let mtmp18 = ref_set(result/38, t229) in
+  let mtmp23 = while let t233 = ref_get(done/39) in
+  let t232 = (!t233) in
+  let t235 = ref_get(i/37) in
+  let t234 = (t235 >= 0) in
+  (t232 && t234) {
+    let t236 = ref_get(i/37) in
+    let binding/40 = vec_get(env/35, t236) in
+    let t238 = Binding.name(binding/40) in
+    let t237 = (t238 == name/36) in
+    if t237 {
+      let t239 = Binding.value(binding/40) in
+      let mtmp22 = ref_set(result/38, t239) in
       ref_set(done/39, true)
     } else {
-      let t231 = ref_get(i/37) in
-      let t230 = (t231 - 1) in
-      ref_set(i/37, t230)
+      let t241 = ref_get(i/37) in
+      let t240 = (t241 - 1) in
+      ref_set(i/37, t240)
     }
   } in
   ref_get(result/38)
 }
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
-  let mtmp20 = env_lookup(local/41, name/43) in
-  match mtmp20 {
+  let mtmp24 = env_lookup(local/41, name/43) in
+  match mtmp24 {
     Tag_0 => {
-      let x21 = Value::Int._0(mtmp20) in
-      let other/44 = mtmp20 in
+      let x25 = Value::Int._0(mtmp24) in
+      let other/44 = mtmp24 in
       other/44
     },
     Tag_1 => {
-      let x22 = Value::Bool._0(mtmp20) in
-      let other/44 = mtmp20 in
+      let x26 = Value::Bool._0(mtmp24) in
+      let other/44 = mtmp24 in
       other/44
     },
     Tag_2 => {
-      let x23 = Value::Func._0(mtmp20) in
-      let other/44 = mtmp20 in
+      let x27 = Value::Func._0(mtmp24) in
+      let other/44 = mtmp24 in
       other/44
     },
     Tag_3 => {
@@ -288,117 +288,117 @@ fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
   let exprs/48 = ref(acc/47) in
   let i/49 = ref(start/46) in
   let done/50 = ref(false) in
-  let mtmp45 = while let t233 = ref_get(done/50) in
-  let t232 = (!t233) in
-  let t235 = ref_get(i/49) in
-  let t236 = vec_len(tokens/45) in
-  let t234 = (t235 < t236) in
-  (t232 && t234) {
-    let t237 = ref_get(i/49) in
-    let mtmp24 = vec_get(tokens/45, t237) in
-    match mtmp24 {
+  let mtmp53 = while let t243 = ref_get(done/50) in
+  let t242 = (!t243) in
+  let t245 = ref_get(i/49) in
+  let t246 = vec_len(tokens/45) in
+  let t244 = (t245 < t246) in
+  (t242 && t244) {
+    let t247 = ref_get(i/49) in
+    let mtmp28 = vec_get(tokens/45, t247) in
+    match mtmp28 {
       Tag_0 => {
-        let t238 = ref_get(i/49) in
-        let mtmp28 = parse_expr(tokens/45, t238) in
-        let x29 = mtmp28.0 in
-        let x30 = mtmp28.1 in
-        let next/52 = x30 in
-        let expr/51 = x29 in
-        let t240 = ref_get(exprs/48) in
-        let t239 = vec_push(t240, expr/51) in
-        let mtmp31 = ref_set(exprs/48, t239) in
-        ref_set(i/49, next/52)
-      },
-      Tag_1 => {
-        let mtmp32 = ref_set(done/50, true) in
-        let t242 = ref_get(i/49) in
-        let t241 = (t242 + 1) in
-        ref_set(i/49, t241)
-      },
-      Tag_2 => {
-        let x25 = Token::Sym._0(mtmp24) in
-        let t243 = ref_get(i/49) in
-        let mtmp33 = parse_expr(tokens/45, t243) in
+        let t248 = ref_get(i/49) in
+        let mtmp33 = parse_expr(tokens/45, t248) in
         let x34 = mtmp33.0 in
         let x35 = mtmp33.1 in
         let next/52 = x35 in
         let expr/51 = x34 in
-        let t245 = ref_get(exprs/48) in
-        let t244 = vec_push(t245, expr/51) in
-        let mtmp36 = ref_set(exprs/48, t244) in
+        let t250 = ref_get(exprs/48) in
+        let t249 = vec_push(t250, expr/51) in
+        let mtmp36 = ref_set(exprs/48, t249) in
+        ref_set(i/49, next/52)
+      },
+      Tag_1 => {
+        let mtmp37 = ref_set(done/50, true) in
+        let t252 = ref_get(i/49) in
+        let t251 = (t252 + 1) in
+        ref_set(i/49, t251)
+      },
+      Tag_2 => {
+        let x29 = Token::Sym._0(mtmp28) in
+        let t253 = ref_get(i/49) in
+        let mtmp39 = parse_expr(tokens/45, t253) in
+        let x40 = mtmp39.0 in
+        let x41 = mtmp39.1 in
+        let next/52 = x41 in
+        let expr/51 = x40 in
+        let t255 = ref_get(exprs/48) in
+        let t254 = vec_push(t255, expr/51) in
+        let mtmp42 = ref_set(exprs/48, t254) in
         ref_set(i/49, next/52)
       },
       Tag_3 => {
-        let x26 = Token::Int._0(mtmp24) in
-        let t246 = ref_get(i/49) in
-        let mtmp37 = parse_expr(tokens/45, t246) in
-        let x38 = mtmp37.0 in
-        let x39 = mtmp37.1 in
-        let next/52 = x39 in
-        let expr/51 = x38 in
-        let t248 = ref_get(exprs/48) in
-        let t247 = vec_push(t248, expr/51) in
-        let mtmp40 = ref_set(exprs/48, t247) in
+        let x30 = Token::Int._0(mtmp28) in
+        let t256 = ref_get(i/49) in
+        let mtmp44 = parse_expr(tokens/45, t256) in
+        let x45 = mtmp44.0 in
+        let x46 = mtmp44.1 in
+        let next/52 = x46 in
+        let expr/51 = x45 in
+        let t258 = ref_get(exprs/48) in
+        let t257 = vec_push(t258, expr/51) in
+        let mtmp47 = ref_set(exprs/48, t257) in
         ref_set(i/49, next/52)
       },
       Tag_4 => {
-        let x27 = Token::Bool._0(mtmp24) in
-        let t249 = ref_get(i/49) in
-        let mtmp41 = parse_expr(tokens/45, t249) in
-        let x42 = mtmp41.0 in
-        let x43 = mtmp41.1 in
-        let next/52 = x43 in
-        let expr/51 = x42 in
-        let t251 = ref_get(exprs/48) in
-        let t250 = vec_push(t251, expr/51) in
-        let mtmp44 = ref_set(exprs/48, t250) in
+        let x31 = Token::Bool._0(mtmp28) in
+        let t259 = ref_get(i/49) in
+        let mtmp49 = parse_expr(tokens/45, t259) in
+        let x50 = mtmp49.0 in
+        let x51 = mtmp49.1 in
+        let next/52 = x51 in
+        let expr/51 = x50 in
+        let t261 = ref_get(exprs/48) in
+        let t260 = vec_push(t261, expr/51) in
+        let mtmp52 = ref_set(exprs/48, t260) in
         ref_set(i/49, next/52)
       },
     }
   } in
-  let t252 = ref_get(exprs/48) in
-  let t253 = ref_get(i/49) in
-  (t252, t253)
+  let t262 = ref_get(exprs/48) in
+  let t263 = ref_get(i/49) in
+  (t262, t263)
 }
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
-  let mtmp46 = vec_get(tokens/53, start/54) in
-  match mtmp46 {
+  let mtmp54 = vec_get(tokens/53, start/54) in
+  match mtmp54 {
     Tag_0 => {
-      let t254 = (start/54 + 1) in
-      let mtmp50 = parse_list(tokens/53, t254) in
-      let x51 = mtmp50.0 in
-      let x52 = mtmp50.1 in
-      let next/56 = x52 in
-      let items/55 = x51 in
-      let t255 = SExpr::List(items/55) in
-      (t255, next/56)
+      let t264 = (start/54 + 1) in
+      let mtmp58 = parse_list(tokens/53, t264) in
+      let x59 = mtmp58.0 in
+      let x60 = mtmp58.1 in
+      let next/56 = x60 in
+      let items/55 = x59 in
+      let t265 = SExpr::List(items/55) in
+      (t265, next/56)
     },
     Tag_1 => {
-      let t256 = SExpr::Sym(")") in
-      let t257 = (start/54 + 1) in
-      (t256, t257)
+      let t266 = SExpr::Sym(")") in
+      let t267 = (start/54 + 1) in
+      (t266, t267)
     },
     Tag_2 => {
-      let x47 = Token::Sym._0(mtmp46) in
-      let name/59 = x47 in
-      let t258 = SExpr::Sym(name/59) in
-      let t259 = (start/54 + 1) in
-      (t258, t259)
+      let x55 = Token::Sym._0(mtmp54) in
+      let name/59 = x55 in
+      let t268 = SExpr::Sym(name/59) in
+      let t269 = (start/54 + 1) in
+      (t268, t269)
     },
     Tag_3 => {
-      let x48 = Token::Int._0(mtmp46) in
-      let n/58 = x48 in
-      let t260 = SExpr::Int(n/58) in
-      let t261 = (start/54 + 1) in
-      (t260, t261)
+      let x56 = Token::Int._0(mtmp54) in
+      let n/58 = x56 in
+      let t270 = SExpr::Int(n/58) in
+      let t271 = (start/54 + 1) in
+      (t270, t271)
     },
     Tag_4 => {
-      let x49 = Token::Bool._0(mtmp46) in
-      let b/57 = x49 in
-      let t262 = SExpr::Bool(b/57) in
-      let t263 = (start/54 + 1) in
-      (t262, t263)
+      let x57 = Token::Bool._0(mtmp54) in
+      let b/57 = x57 in
+      let t272 = SExpr::Bool(b/57) in
+      let t273 = (start/54 + 1) in
+      (t272, t273)
     },
   }
 }
@@ -407,18 +407,18 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
   let i/61 = ref(0) in
   let acc/62 = vec_new() in
   let exprs/63 = ref(acc/62) in
-  let mtmp57 = while let t264 = ref_get(i/61) in
-  let t265 = vec_len(tokens/60) in
-  (t264 < t265) {
-    let t266 = ref_get(i/61) in
-    let mtmp53 = parse_expr(tokens/60, t266) in
-    let x54 = mtmp53.0 in
-    let x55 = mtmp53.1 in
-    let next/65 = x55 in
-    let expr/64 = x54 in
-    let t268 = ref_get(exprs/63) in
-    let t267 = vec_push(t268, expr/64) in
-    let mtmp56 = ref_set(exprs/63, t267) in
+  let mtmp66 = while let t274 = ref_get(i/61) in
+  let t275 = vec_len(tokens/60) in
+  (t274 < t275) {
+    let t276 = ref_get(i/61) in
+    let mtmp62 = parse_expr(tokens/60, t276) in
+    let x63 = mtmp62.0 in
+    let x64 = mtmp62.1 in
+    let next/65 = x64 in
+    let expr/64 = x63 in
+    let t278 = ref_get(exprs/63) in
+    let t277 = vec_push(t278, expr/64) in
+    let mtmp65 = ref_set(exprs/63, t277) in
     ref_set(i/61, next/65)
   } in
   ref_get(exprs/63)
@@ -427,17 +427,17 @@ fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
 fn value_to_string(value/66: Value) -> string {
   match value/66 {
     Tag_0 => {
-      let x58 = Value::Int._0(value/66) in
-      let n/67 = x58 in
+      let x67 = Value::Int._0(value/66) in
+      let n/67 = x67 in
       int32_to_string(n/67)
     },
     Tag_1 => {
-      let x59 = Value::Bool._0(value/66) in
-      let b/68 = x59 in
+      let x68 = Value::Bool._0(value/66) in
+      let b/68 = x68 in
       bool_to_string(b/68)
     },
     Tag_2 => {
-      let x60 = Value::Func._0(value/66) in
+      let x69 = Value::Func._0(value/66) in
       "<lambda>"
     },
     Tag_3 => {
@@ -449,17 +449,17 @@ fn value_to_string(value/66: Value) -> string {
 fn truthy(value/69: Value) -> bool {
   match value/69 {
     Tag_0 => {
-      let x61 = Value::Int._0(value/69) in
-      let n/71 = x61 in
+      let x70 = Value::Int._0(value/69) in
+      let n/71 = x70 in
       (n/71 != 0)
     },
     Tag_1 => {
-      let x62 = Value::Bool._0(value/69) in
-      let b/70 = x62 in
+      let x71 = Value::Bool._0(value/69) in
+      let b/70 = x71 in
       b/70
     },
     Tag_2 => {
-      let x63 = Value::Func._0(value/69) in
+      let x72 = Value::Func._0(value/69) in
       true
     },
     Tag_3 => {
@@ -471,56 +471,56 @@ fn truthy(value/69: Value) -> bool {
 fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) -> Value {
   match expr/72 {
     Tag_0 => {
-      let x64 = SExpr::Int._0(expr/72) in
-      let n/75 = x64 in
+      let x73 = SExpr::Int._0(expr/72) in
+      let n/75 = x73 in
       Value::Int(n/75)
     },
     Tag_1 => {
-      let x65 = SExpr::Bool._0(expr/72) in
-      let b/76 = x65 in
+      let x74 = SExpr::Bool._0(expr/72) in
+      let b/76 = x74 in
       Value::Bool(b/76)
     },
     Tag_2 => {
-      let x66 = SExpr::Sym._0(expr/72) in
-      let name/77 = x66 in
-      let t269 = ref_get(global/74) in
-      lookup(local/73, t269, name/77)
+      let x75 = SExpr::Sym._0(expr/72) in
+      let name/77 = x75 in
+      let t279 = ref_get(global/74) in
+      lookup(local/73, t279, name/77)
     },
     Tag_3 => {
-      let x67 = SExpr::List._0(expr/72) in
-      let items/78 = x67 in
+      let x76 = SExpr::List._0(expr/72) in
+      let items/78 = x76 in
       eval_list(items/78, local/73, global/74)
     },
   }
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  let t271 = vec_len(items/79) in
-  let t270 = (t271 == 0) in
-  if t270 {
+  let t281 = vec_len(items/79) in
+  let t280 = (t281 == 0) in
+  if t280 {
     Tag_3
   } else {
     let head/82 = vec_get(items/79, 0) in
     match head/82 {
       Tag_0 => {
-        let x68 = SExpr::Int._0(head/82) in
+        let x77 = SExpr::Int._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
         apply(f/84, args/85, global/81)
       },
       Tag_1 => {
-        let x69 = SExpr::Bool._0(head/82) in
+        let x78 = SExpr::Bool._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
         apply(f/84, args/85, global/81)
       },
       Tag_2 => {
-        let x70 = SExpr::Sym._0(head/82) in
-        let name/83 = x70 in
+        let x79 = SExpr::Sym._0(head/82) in
+        let name/83 = x79 in
         eval_list_sym(name/83, items/79, local/80, global/81)
       },
       Tag_3 => {
-        let x71 = SExpr::List._0(head/82) in
+        let x80 = SExpr::List._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
         apply(f/84, args/85, global/81)
@@ -535,32 +535,32 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
       eval_begin(items/87, 1, local/88, global/89)
     },
     "define" => {
-      let t273 = vec_len(items/87) in
-      let t272 = (t273 == 3) in
-      if t272 {
-        let mtmp72 = vec_get(items/87, 1) in
-        match mtmp72 {
+      let t283 = vec_len(items/87) in
+      let t282 = (t283 == 3) in
+      if t282 {
+        let mtmp81 = vec_get(items/87, 1) in
+        match mtmp81 {
           Tag_0 => {
-            let x73 = SExpr::Int._0(mtmp72) in
+            let x82 = SExpr::Int._0(mtmp81) in
             Tag_3
           },
           Tag_1 => {
-            let x74 = SExpr::Bool._0(mtmp72) in
+            let x83 = SExpr::Bool._0(mtmp81) in
             Tag_3
           },
           Tag_2 => {
-            let x75 = SExpr::Sym._0(mtmp72) in
-            let var/90 = x75 in
-            let t274 = vec_get(items/87, 2) in
-            let value/91 = eval(t274, local/88, global/89) in
+            let x84 = SExpr::Sym._0(mtmp81) in
+            let var/90 = x84 in
+            let t284 = vec_get(items/87, 2) in
+            let value/91 = eval(t284, local/88, global/89) in
             let env/92 = ref_get(global/89) in
-            let t275 = Binding { name: var/90, value: value/91 } in
-            let updated/93 = vec_push(env/92, t275) in
-            let mtmp77 = ref_set(global/89, updated/93) in
+            let t285 = Binding { name: var/90, value: value/91 } in
+            let updated/93 = vec_push(env/92, t285) in
+            let mtmp86 = ref_set(global/89, updated/93) in
             value/91
           },
           Tag_3 => {
-            let x76 = SExpr::List._0(mtmp72) in
+            let x85 = SExpr::List._0(mtmp81) in
             Tag_3
           },
         }
@@ -569,48 +569,48 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
       }
     },
     "if" => {
-      let t277 = vec_len(items/87) in
-      let t276 = (t277 == 4) in
-      if t276 {
-        let t278 = vec_get(items/87, 1) in
-        let cond/94 = eval(t278, local/88, global/89) in
-        let t279 = truthy(cond/94) in
-        if t279 {
-          let t280 = vec_get(items/87, 2) in
-          eval(t280, local/88, global/89)
+      let t287 = vec_len(items/87) in
+      let t286 = (t287 == 4) in
+      if t286 {
+        let t288 = vec_get(items/87, 1) in
+        let cond/94 = eval(t288, local/88, global/89) in
+        let t289 = truthy(cond/94) in
+        if t289 {
+          let t290 = vec_get(items/87, 2) in
+          eval(t290, local/88, global/89)
         } else {
-          let t281 = vec_get(items/87, 3) in
-          eval(t281, local/88, global/89)
+          let t291 = vec_get(items/87, 3) in
+          eval(t291, local/88, global/89)
         }
       } else {
         Tag_3
       }
     },
     "lambda" => {
-      let t283 = vec_len(items/87) in
-      let t282 = (t283 == 3) in
-      if t282 {
-        let mtmp78 = vec_get(items/87, 1) in
-        match mtmp78 {
+      let t293 = vec_len(items/87) in
+      let t292 = (t293 == 3) in
+      if t292 {
+        let mtmp87 = vec_get(items/87, 1) in
+        match mtmp87 {
           Tag_0 => {
-            let x79 = SExpr::Int._0(mtmp78) in
+            let x88 = SExpr::Int._0(mtmp87) in
             Tag_3
           },
           Tag_1 => {
-            let x80 = SExpr::Bool._0(mtmp78) in
+            let x89 = SExpr::Bool._0(mtmp87) in
             Tag_3
           },
           Tag_2 => {
-            let x81 = SExpr::Sym._0(mtmp78) in
+            let x90 = SExpr::Sym._0(mtmp87) in
             Tag_3
           },
           Tag_3 => {
-            let x82 = SExpr::List._0(mtmp78) in
-            let params_exprs/95 = x82 in
+            let x91 = SExpr::List._0(mtmp87) in
+            let params_exprs/95 = x91 in
             let params/96 = params_from_sexprs(params_exprs/95) in
             let body/97 = vec_get(items/87, 2) in
-            let t284 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
-            Value::Func(t284)
+            let t294 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
+            Value::Func(t294)
           },
         }
       } else {
@@ -618,27 +618,27 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
       }
     },
     "+" => {
-      let t285 = eval_args(items/87, 1, local/88, global/89) in
-      apply_builtin("+", t285)
+      let t295 = eval_args(items/87, 1, local/88, global/89) in
+      apply_builtin("+", t295)
     },
     "-" => {
-      let t286 = eval_args(items/87, 1, local/88, global/89) in
-      apply_builtin("-", t286)
+      let t296 = eval_args(items/87, 1, local/88, global/89) in
+      apply_builtin("-", t296)
     },
     "*" => {
-      let t287 = eval_args(items/87, 1, local/88, global/89) in
-      apply_builtin("*", t287)
+      let t297 = eval_args(items/87, 1, local/88, global/89) in
+      apply_builtin("*", t297)
     },
     "/" => {
-      let t288 = eval_args(items/87, 1, local/88, global/89) in
-      apply_builtin("/", t288)
+      let t298 = eval_args(items/87, 1, local/88, global/89) in
+      apply_builtin("/", t298)
     },
     "=" => {
-      let t289 = eval_args(items/87, 1, local/88, global/89) in
-      apply_builtin("=", t289)
+      let t299 = eval_args(items/87, 1, local/88, global/89) in
+      apply_builtin("=", t299)
     },
-    _ => let t290 = SExpr::Sym(name/86) in
-    let f/98 = eval(t290, local/88, global/89) in
+    _ => let t300 = SExpr::Sym(name/86) in
+    let f/98 = eval(t300, local/88, global/89) in
     let args/99 = eval_args(items/87, 1, local/88, global/89) in
     apply(f/98, args/99, global/89),
   }
@@ -646,18 +646,18 @@ fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], 
 
 fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
   let i/104 = ref(start/101) in
-  let t291 = Tag_3 in
-  let last/105 = ref(t291) in
-  let mtmp84 = while let t292 = ref_get(i/104) in
-  let t293 = vec_len(items/100) in
-  (t292 < t293) {
-    let t295 = ref_get(i/104) in
-    let t294 = vec_get(items/100, t295) in
-    let v/106 = eval(t294, local/102, global/103) in
-    let mtmp83 = ref_set(last/105, v/106) in
-    let t297 = ref_get(i/104) in
-    let t296 = (t297 + 1) in
-    ref_set(i/104, t296)
+  let t301 = Tag_3 in
+  let last/105 = ref(t301) in
+  let mtmp93 = while let t302 = ref_get(i/104) in
+  let t303 = vec_len(items/100) in
+  (t302 < t303) {
+    let t305 = ref_get(i/104) in
+    let t304 = vec_get(items/100, t305) in
+    let v/106 = eval(t304, local/102, global/103) in
+    let mtmp92 = ref_set(last/105, v/106) in
+    let t307 = ref_get(i/104) in
+    let t306 = (t307 + 1) in
+    ref_set(i/104, t306)
   } in
   ref_get(last/105)
 }
@@ -666,39 +666,39 @@ fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
   let i/108 = ref(0) in
   let acc/109 = vec_new() in
   let params/110 = ref(acc/109) in
-  let mtmp91 = while let t298 = ref_get(i/108) in
-  let t299 = vec_len(items/107) in
-  (t298 < t299) {
-    let t300 = ref_get(i/108) in
-    let mtmp85 = vec_get(items/107, t300) in
-    match mtmp85 {
+  let mtmp100 = while let t308 = ref_get(i/108) in
+  let t309 = vec_len(items/107) in
+  (t308 < t309) {
+    let t310 = ref_get(i/108) in
+    let mtmp94 = vec_get(items/107, t310) in
+    match mtmp94 {
       Tag_0 => {
-        let x86 = SExpr::Int._0(mtmp85) in
-        let t302 = ref_get(i/108) in
-        let t301 = (t302 + 1) in
-        ref_set(i/108, t301)
+        let x95 = SExpr::Int._0(mtmp94) in
+        let t312 = ref_get(i/108) in
+        let t311 = (t312 + 1) in
+        ref_set(i/108, t311)
       },
       Tag_1 => {
-        let x87 = SExpr::Bool._0(mtmp85) in
-        let t304 = ref_get(i/108) in
-        let t303 = (t304 + 1) in
-        ref_set(i/108, t303)
+        let x96 = SExpr::Bool._0(mtmp94) in
+        let t314 = ref_get(i/108) in
+        let t313 = (t314 + 1) in
+        ref_set(i/108, t313)
       },
       Tag_2 => {
-        let x88 = SExpr::Sym._0(mtmp85) in
-        let name/111 = x88 in
-        let t306 = ref_get(params/110) in
-        let t305 = vec_push(t306, name/111) in
-        let mtmp90 = ref_set(params/110, t305) in
-        let t308 = ref_get(i/108) in
-        let t307 = (t308 + 1) in
-        ref_set(i/108, t307)
+        let x97 = SExpr::Sym._0(mtmp94) in
+        let name/111 = x97 in
+        let t316 = ref_get(params/110) in
+        let t315 = vec_push(t316, name/111) in
+        let mtmp99 = ref_set(params/110, t315) in
+        let t318 = ref_get(i/108) in
+        let t317 = (t318 + 1) in
+        ref_set(i/108, t317)
       },
       Tag_3 => {
-        let x89 = SExpr::List._0(mtmp85) in
-        let t310 = ref_get(i/108) in
-        let t309 = (t310 + 1) in
-        ref_set(i/108, t309)
+        let x98 = SExpr::List._0(mtmp94) in
+        let t320 = ref_get(i/108) in
+        let t319 = (t320 + 1) in
+        ref_set(i/108, t319)
       },
     }
   } in
@@ -709,18 +709,18 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
   let i/116 = ref(start/113) in
   let acc/117 = vec_new() in
   let args/118 = ref(acc/117) in
-  let mtmp93 = while let t311 = ref_get(i/116) in
-  let t312 = vec_len(items/112) in
-  (t311 < t312) {
-    let t314 = ref_get(i/116) in
-    let t313 = vec_get(items/112, t314) in
-    let v/119 = eval(t313, local/114, global/115) in
-    let t316 = ref_get(args/118) in
-    let t315 = vec_push(t316, v/119) in
-    let mtmp92 = ref_set(args/118, t315) in
-    let t318 = ref_get(i/116) in
-    let t317 = (t318 + 1) in
-    ref_set(i/116, t317)
+  let mtmp102 = while let t321 = ref_get(i/116) in
+  let t322 = vec_len(items/112) in
+  (t321 < t322) {
+    let t324 = ref_get(i/116) in
+    let t323 = vec_get(items/112, t324) in
+    let v/119 = eval(t323, local/114, global/115) in
+    let t326 = ref_get(args/118) in
+    let t325 = vec_push(t326, v/119) in
+    let mtmp101 = ref_set(args/118, t325) in
+    let t328 = ref_get(i/116) in
+    let t327 = (t328 + 1) in
+    ref_set(i/116, t327)
   } in
   ref_get(args/118)
 }
@@ -728,31 +728,31 @@ fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], g
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
   match name/120 {
     "=" => {
-      let t320 = vec_len(args/121) in
-      let t319 = (t320 == 2) in
-      if t319 {
-        let t321 = vec_get(args/121, 0) in
-        let t322 = vec_get(args/121, 1) in
-        let mtmp94 = (t321, t322) in
-        let x95 = mtmp94.0 in
-        let x96 = mtmp94.1 in
-        match x96 {
+      let t330 = vec_len(args/121) in
+      let t329 = (t330 == 2) in
+      if t329 {
+        let t331 = vec_get(args/121, 0) in
+        let t332 = vec_get(args/121, 1) in
+        let mtmp103 = (t331, t332) in
+        let x104 = mtmp103.0 in
+        let x105 = mtmp103.1 in
+        match x105 {
           Tag_0 => {
-            let x97 = Value::Int._0(x96) in
-            match x95 {
+            let x106 = Value::Int._0(x105) in
+            match x104 {
               Tag_0 => {
-                let x100 = Value::Int._0(x95) in
-                let a/122 = x100 in
-                let b/123 = x97 in
-                let t323 = (a/122 == b/123) in
-                Value::Bool(t323)
+                let x109 = Value::Int._0(x104) in
+                let a/122 = x109 in
+                let b/123 = x106 in
+                let t333 = (a/122 == b/123) in
+                Value::Bool(t333)
               },
               Tag_1 => {
-                let x101 = Value::Bool._0(x95) in
+                let x110 = Value::Bool._0(x104) in
                 Value::Bool(false)
               },
               Tag_2 => {
-                let x102 = Value::Func._0(x95) in
+                let x111 = Value::Func._0(x104) in
                 Value::Bool(false)
               },
               Tag_3 => {
@@ -761,21 +761,21 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
             }
           },
           Tag_1 => {
-            let x98 = Value::Bool._0(x96) in
-            match x95 {
+            let x107 = Value::Bool._0(x105) in
+            match x104 {
               Tag_0 => {
-                let x103 = Value::Int._0(x95) in
+                let x112 = Value::Int._0(x104) in
                 Value::Bool(false)
               },
               Tag_1 => {
-                let x104 = Value::Bool._0(x95) in
-                let a/124 = x104 in
-                let b/125 = x98 in
-                let t324 = (a/124 == b/125) in
-                Value::Bool(t324)
+                let x113 = Value::Bool._0(x104) in
+                let a/124 = x113 in
+                let b/125 = x107 in
+                let t334 = (a/124 == b/125) in
+                Value::Bool(t334)
               },
               Tag_2 => {
-                let x105 = Value::Func._0(x95) in
+                let x114 = Value::Func._0(x104) in
                 Value::Bool(false)
               },
               Tag_3 => {
@@ -784,7 +784,7 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
             }
           },
           Tag_2 => {
-            let x99 = Value::Func._0(x96) in
+            let x108 = Value::Func._0(x105) in
             Value::Bool(false)
           },
           Tag_3 => {
@@ -798,103 +798,103 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
     "+" => {
       let i/126 = ref(0) in
       let acc/127 = ref(0) in
-      let mtmp111 = while let t325 = ref_get(i/126) in
-      let t326 = vec_len(args/121) in
-      (t325 < t326) {
-        let t327 = ref_get(i/126) in
-        let mtmp106 = vec_get(args/121, t327) in
-        match mtmp106 {
+      let mtmp120 = while let t335 = ref_get(i/126) in
+      let t336 = vec_len(args/121) in
+      (t335 < t336) {
+        let t337 = ref_get(i/126) in
+        let mtmp115 = vec_get(args/121, t337) in
+        match mtmp115 {
           Tag_0 => {
-            let x107 = Value::Int._0(mtmp106) in
-            let n/128 = x107 in
-            let t329 = ref_get(acc/127) in
-            let t328 = (t329 + n/128) in
-            let mtmp110 = ref_set(acc/127, t328) in
-            let t331 = ref_get(i/126) in
-            let t330 = (t331 + 1) in
-            ref_set(i/126, t330)
+            let x116 = Value::Int._0(mtmp115) in
+            let n/128 = x116 in
+            let t339 = ref_get(acc/127) in
+            let t338 = (t339 + n/128) in
+            let mtmp119 = ref_set(acc/127, t338) in
+            let t341 = ref_get(i/126) in
+            let t340 = (t341 + 1) in
+            ref_set(i/126, t340)
           },
           Tag_1 => {
-            let x108 = Value::Bool._0(mtmp106) in
-            let t333 = ref_get(i/126) in
-            let t332 = (t333 + 1) in
-            ref_set(i/126, t332)
+            let x117 = Value::Bool._0(mtmp115) in
+            let t343 = ref_get(i/126) in
+            let t342 = (t343 + 1) in
+            ref_set(i/126, t342)
           },
           Tag_2 => {
-            let x109 = Value::Func._0(mtmp106) in
-            let t335 = ref_get(i/126) in
-            let t334 = (t335 + 1) in
-            ref_set(i/126, t334)
+            let x118 = Value::Func._0(mtmp115) in
+            let t345 = ref_get(i/126) in
+            let t344 = (t345 + 1) in
+            ref_set(i/126, t344)
           },
           Tag_3 => {
-            let t337 = ref_get(i/126) in
-            let t336 = (t337 + 1) in
-            ref_set(i/126, t336)
+            let t347 = ref_get(i/126) in
+            let t346 = (t347 + 1) in
+            ref_set(i/126, t346)
           },
         }
       } in
-      let t338 = ref_get(acc/127) in
-      Value::Int(t338)
+      let t348 = ref_get(acc/127) in
+      Value::Int(t348)
     },
     "*" => {
       let i/129 = ref(0) in
       let acc/130 = ref(1) in
-      let mtmp117 = while let t339 = ref_get(i/129) in
-      let t340 = vec_len(args/121) in
-      (t339 < t340) {
-        let t341 = ref_get(i/129) in
-        let mtmp112 = vec_get(args/121, t341) in
-        match mtmp112 {
+      let mtmp126 = while let t349 = ref_get(i/129) in
+      let t350 = vec_len(args/121) in
+      (t349 < t350) {
+        let t351 = ref_get(i/129) in
+        let mtmp121 = vec_get(args/121, t351) in
+        match mtmp121 {
           Tag_0 => {
-            let x113 = Value::Int._0(mtmp112) in
-            let n/131 = x113 in
-            let t343 = ref_get(acc/130) in
-            let t342 = (t343 * n/131) in
-            let mtmp116 = ref_set(acc/130, t342) in
-            let t345 = ref_get(i/129) in
-            let t344 = (t345 + 1) in
-            ref_set(i/129, t344)
+            let x122 = Value::Int._0(mtmp121) in
+            let n/131 = x122 in
+            let t353 = ref_get(acc/130) in
+            let t352 = (t353 * n/131) in
+            let mtmp125 = ref_set(acc/130, t352) in
+            let t355 = ref_get(i/129) in
+            let t354 = (t355 + 1) in
+            ref_set(i/129, t354)
           },
           Tag_1 => {
-            let x114 = Value::Bool._0(mtmp112) in
-            let t347 = ref_get(i/129) in
-            let t346 = (t347 + 1) in
-            ref_set(i/129, t346)
+            let x123 = Value::Bool._0(mtmp121) in
+            let t357 = ref_get(i/129) in
+            let t356 = (t357 + 1) in
+            ref_set(i/129, t356)
           },
           Tag_2 => {
-            let x115 = Value::Func._0(mtmp112) in
-            let t349 = ref_get(i/129) in
-            let t348 = (t349 + 1) in
-            ref_set(i/129, t348)
+            let x124 = Value::Func._0(mtmp121) in
+            let t359 = ref_get(i/129) in
+            let t358 = (t359 + 1) in
+            ref_set(i/129, t358)
           },
           Tag_3 => {
-            let t351 = ref_get(i/129) in
-            let t350 = (t351 + 1) in
-            ref_set(i/129, t350)
+            let t361 = ref_get(i/129) in
+            let t360 = (t361 + 1) in
+            ref_set(i/129, t360)
           },
         }
       } in
-      let t352 = ref_get(acc/130) in
-      Value::Int(t352)
+      let t362 = ref_get(acc/130) in
+      Value::Int(t362)
     },
     "-" => {
-      let mtmp118 = vec_len(args/121) in
-      match mtmp118 {
+      let mtmp127 = vec_len(args/121) in
+      match mtmp127 {
         1 => {
-          let mtmp119 = vec_get(args/121, 0) in
-          match mtmp119 {
+          let mtmp128 = vec_get(args/121, 0) in
+          match mtmp128 {
             Tag_0 => {
-              let x120 = Value::Int._0(mtmp119) in
-              let n/132 = x120 in
-              let t353 = (0 - n/132) in
-              Value::Int(t353)
+              let x129 = Value::Int._0(mtmp128) in
+              let n/132 = x129 in
+              let t363 = (0 - n/132) in
+              Value::Int(t363)
             },
             Tag_1 => {
-              let x121 = Value::Bool._0(mtmp119) in
+              let x130 = Value::Bool._0(mtmp128) in
               Tag_3
             },
             Tag_2 => {
-              let x122 = Value::Func._0(mtmp119) in
+              let x131 = Value::Func._0(mtmp128) in
               Tag_3
             },
             Tag_3 => {
@@ -903,28 +903,28 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
           }
         },
         2 => {
-          let t354 = vec_get(args/121, 0) in
-          let t355 = vec_get(args/121, 1) in
-          let mtmp123 = (t354, t355) in
-          let x124 = mtmp123.0 in
-          let x125 = mtmp123.1 in
-          match x125 {
+          let t364 = vec_get(args/121, 0) in
+          let t365 = vec_get(args/121, 1) in
+          let mtmp132 = (t364, t365) in
+          let x133 = mtmp132.0 in
+          let x134 = mtmp132.1 in
+          match x134 {
             Tag_0 => {
-              let x126 = Value::Int._0(x125) in
-              match x124 {
+              let x135 = Value::Int._0(x134) in
+              match x133 {
                 Tag_0 => {
-                  let x129 = Value::Int._0(x124) in
-                  let a/133 = x129 in
-                  let b/134 = x126 in
-                  let t356 = (a/133 - b/134) in
-                  Value::Int(t356)
+                  let x138 = Value::Int._0(x133) in
+                  let a/133 = x138 in
+                  let b/134 = x135 in
+                  let t366 = (a/133 - b/134) in
+                  Value::Int(t366)
                 },
                 Tag_1 => {
-                  let x130 = Value::Bool._0(x124) in
+                  let x139 = Value::Bool._0(x133) in
                   Tag_3
                 },
                 Tag_2 => {
-                  let x131 = Value::Func._0(x124) in
+                  let x140 = Value::Func._0(x133) in
                   Tag_3
                 },
                 Tag_3 => {
@@ -933,11 +933,11 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
               }
             },
             Tag_1 => {
-              let x127 = Value::Bool._0(x125) in
+              let x136 = Value::Bool._0(x134) in
               Tag_3
             },
             Tag_2 => {
-              let x128 = Value::Func._0(x125) in
+              let x137 = Value::Func._0(x134) in
               Tag_3
             },
             Tag_3 => {
@@ -949,31 +949,31 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
       }
     },
     "/" => {
-      let t358 = vec_len(args/121) in
-      let t357 = (t358 == 2) in
-      if t357 {
-        let t359 = vec_get(args/121, 0) in
-        let t360 = vec_get(args/121, 1) in
-        let mtmp132 = (t359, t360) in
-        let x133 = mtmp132.0 in
-        let x134 = mtmp132.1 in
-        match x134 {
+      let t368 = vec_len(args/121) in
+      let t367 = (t368 == 2) in
+      if t367 {
+        let t369 = vec_get(args/121, 0) in
+        let t370 = vec_get(args/121, 1) in
+        let mtmp141 = (t369, t370) in
+        let x142 = mtmp141.0 in
+        let x143 = mtmp141.1 in
+        match x143 {
           Tag_0 => {
-            let x135 = Value::Int._0(x134) in
-            match x133 {
+            let x144 = Value::Int._0(x143) in
+            match x142 {
               Tag_0 => {
-                let x138 = Value::Int._0(x133) in
-                let a/135 = x138 in
-                let b/136 = x135 in
-                let t361 = (a/135 / b/136) in
-                Value::Int(t361)
+                let x147 = Value::Int._0(x142) in
+                let a/135 = x147 in
+                let b/136 = x144 in
+                let t371 = (a/135 / b/136) in
+                Value::Int(t371)
               },
               Tag_1 => {
-                let x139 = Value::Bool._0(x133) in
+                let x148 = Value::Bool._0(x142) in
                 Tag_3
               },
               Tag_2 => {
-                let x140 = Value::Func._0(x133) in
+                let x149 = Value::Func._0(x142) in
                 Tag_3
               },
               Tag_3 => {
@@ -982,11 +982,11 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
             }
           },
           Tag_1 => {
-            let x136 = Value::Bool._0(x134) in
+            let x145 = Value::Bool._0(x143) in
             Tag_3
           },
           Tag_2 => {
-            let x137 = Value::Func._0(x134) in
+            let x146 = Value::Func._0(x143) in
             Tag_3
           },
           Tag_3 => {
@@ -1004,16 +1004,16 @@ fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
 fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -> Value {
   match func/137 {
     Tag_0 => {
-      let x141 = Value::Int._0(func/137) in
+      let x150 = Value::Int._0(func/137) in
       Tag_3
     },
     Tag_1 => {
-      let x142 = Value::Bool._0(func/137) in
+      let x151 = Value::Bool._0(func/137) in
       Tag_3
     },
     Tag_2 => {
-      let x143 = Value::Func._0(func/137) in
-      let fun/140 = x143 in
+      let x152 = Value::Func._0(func/137) in
+      let fun/140 = x152 in
       apply_lambda(fun/140, args/138)
     },
     Tag_3 => {
@@ -1023,53 +1023,53 @@ fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-  let t362 = Lambda.env(lambda/141) in
-  let env/143 = ref(t362) in
+  let t372 = Lambda.env(lambda/141) in
+  let env/143 = ref(t372) in
   let i/144 = ref(0) in
-  let mtmp145 = while let t364 = ref_get(i/144) in
-  let t366 = Lambda.params(lambda/141) in
-  let t365 = vec_len(t366) in
-  let t363 = (t364 < t365) in
-  let t368 = ref_get(i/144) in
-  let t369 = vec_len(args/142) in
-  let t367 = (t368 < t369) in
-  (t363 && t367) {
-    let t370 = Lambda.params(lambda/141) in
-    let t371 = ref_get(i/144) in
-    let name/145 = vec_get(t370, t371) in
-    let t372 = ref_get(i/144) in
-    let value/146 = vec_get(args/142, t372) in
-    let t373 = ref_get(env/143) in
-    let t374 = Binding { name: name/145, value: value/146 } in
-    let updated/147 = vec_push(t373, t374) in
-    let mtmp144 = ref_set(env/143, updated/147) in
-    let t376 = ref_get(i/144) in
-    let t375 = (t376 + 1) in
-    ref_set(i/144, t375)
+  let mtmp154 = while let t374 = ref_get(i/144) in
+  let t376 = Lambda.params(lambda/141) in
+  let t375 = vec_len(t376) in
+  let t373 = (t374 < t375) in
+  let t378 = ref_get(i/144) in
+  let t379 = vec_len(args/142) in
+  let t377 = (t378 < t379) in
+  (t373 && t377) {
+    let t380 = Lambda.params(lambda/141) in
+    let t381 = ref_get(i/144) in
+    let name/145 = vec_get(t380, t381) in
+    let t382 = ref_get(i/144) in
+    let value/146 = vec_get(args/142, t382) in
+    let t383 = ref_get(env/143) in
+    let t384 = Binding { name: name/145, value: value/146 } in
+    let updated/147 = vec_push(t383, t384) in
+    let mtmp153 = ref_set(env/143, updated/147) in
+    let t386 = ref_get(i/144) in
+    let t385 = (t386 + 1) in
+    ref_set(i/144, t385)
   } in
-  let t377 = Lambda.body(lambda/141) in
-  let t378 = ref_get(env/143) in
-  let t379 = Lambda.global(lambda/141) in
-  eval(t377, t378, t379)
+  let t387 = Lambda.body(lambda/141) in
+  let t388 = ref_get(env/143) in
+  let t389 = Lambda.global(lambda/141) in
+  eval(t387, t388, t389)
 }
 
 fn main() -> unit {
-  let t380 = vec_new() in
-  let global/148 = ref(t380) in
+  let t390 = vec_new() in
+  let global/148 = ref(t390) in
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
-  let t381 = lex(program/149) in
-  let exprs/150 = parse_program(t381) in
-  let t382 = vec_get(exprs/150, 0) in
-  let t383 = vec_new() in
-  let result/151 = eval(t382, t383, global/148) in
-  let t384 = value_to_string(result/151) in
-  let mtmp146 = string_println(t384) in
-  let t385 = lex("(add3 10 20 30)") in
-  let exprs2/152 = parse_program(t385) in
-  let t386 = vec_get(exprs2/152, 0) in
-  let t387 = vec_new() in
-  let result2/153 = eval(t386, t387, global/148) in
-  let t388 = value_to_string(result2/153) in
-  let mtmp147 = string_println(t388) in
+  let t391 = lex(program/149) in
+  let exprs/150 = parse_program(t391) in
+  let t392 = vec_get(exprs/150, 0) in
+  let t393 = vec_new() in
+  let result/151 = eval(t392, t393, global/148) in
+  let t394 = value_to_string(result/151) in
+  let mtmp156 = string_println(t394) in
+  let t395 = lex("(add3 10 20 30)") in
+  let exprs2/152 = parse_program(t395) in
+  let t396 = vec_get(exprs2/152, 0) in
+  let t397 = vec_new() in
+  let result2/153 = eval(t396, t397, global/148) in
+  let t398 = value_to_string(result2/153) in
+  let mtmp157 = string_println(t398) in
   ()
 }

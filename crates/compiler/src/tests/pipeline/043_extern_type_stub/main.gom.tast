@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 extern type Time
@@ -20,22 +20,21 @@ extern "go" "fmt" format_duration(format: string, value: Duration) -> string
 
 fn describe_epoch() -> string {
     let epoch/0: Time = (unix : (int32, int32) -> Time)(946684800, 500000000);
-    (format_time : (string, Time) -> string)("epoch snapshot => %v", (epoch/0 : Time));
+    (format_time : (string, Time) -> string)("epoch snapshot => %v", (epoch/0 : Time))
 }
 
 fn describe_planned_launch() -> string {
     let launch/1: Time = (unix : (int32, int32) -> Time)(1709294730, 250000000);
-    (format_time : (string, Time) -> string)("planned launch => %v", (launch/1 : Time));
+    (format_time : (string, Time) -> string)("planned launch => %v", (launch/1 : Time))
 }
 
 fn describe_duration() -> string {
     let parsed/2: Duration = (duration : (int32) -> Duration)(1500000000);
-    (format_duration : (string, Duration) -> string)("parsed duration => %v", (parsed/2 : Duration));
+    (format_duration : (string, Duration) -> string)("parsed duration => %v", (parsed/2 : Duration))
 }
 
 fn main() -> unit {
     (string_println : (string) -> unit)((describe_epoch : () -> string)());
     (string_println : (string) -> unit)((describe_planned_launch : () -> string)());
     (string_println : (string) -> unit)((describe_duration : () -> string)());
-    ();
 }

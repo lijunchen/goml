@@ -11,8 +11,8 @@ fn apply_once(f/2: (int32) -> int32, value/3: int32) -> int32 {
 }
 
 fn compose(f/4: (int32) -> int32, g/5: (int32) -> int32, value/6: int32) -> int32 {
-  let t7 = g/5(value/6) in
-  f/4(t7)
+  let t18 = g/5(value/6) in
+  f/4(t18)
 }
 
 fn main() -> unit {
@@ -26,25 +26,25 @@ fn main() -> unit {
   let composer_closure/18 = closure_env_composer_closure_2 {} in
   let composed_by_closure/19 = inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(composer_closure/18, 5) in
   let printer/20 = string_println in
-  let t8 = int32_to_string(composed/9) in
-  let mtmp0 = printer/20(t8) in
-  let t9 = int32_to_string(closure_result/12) in
-  let mtmp1 = printer/20(t9) in
-  let t10 = int32_to_string(invoked_with_global/16) in
-  let mtmp2 = printer/20(t10) in
-  let t11 = int32_to_string(composed_by_closure/19) in
-  let mtmp3 = printer/20(t11) in
+  let t19 = int32_to_string(composed/9) in
+  let mtmp7 = printer/20(t19) in
+  let t20 = int32_to_string(closure_result/12) in
+  let mtmp11 = printer/20(t20) in
+  let t21 = int32_to_string(invoked_with_global/16) in
+  let mtmp13 = printer/20(t21) in
+  let t22 = int32_to_string(composed_by_closure/19) in
+  let mtmp14 = printer/20(t22) in
   ()
 }
 
-fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env4: closure_env_closure_apply_0, value/10: int32) -> int32 {
+fn inherent#closure_env_closure_apply_0#closure_env_closure_apply_0#apply(env15: closure_env_closure_apply_0, value/10: int32) -> int32 {
   apply_once(increment, value/10)
 }
 
-fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env5: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
+fn inherent#closure_env_global_invoker_1#closure_env_global_invoker_1#apply(env16: closure_env_global_invoker_1, func_to_call/13: (int32) -> int32, value/14: int32) -> int32 {
   apply_once(func_to_call/13, value/14)
 }
 
-fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env6: closure_env_composer_closure_2, value/17: int32) -> int32 {
+fn inherent#closure_env_composer_closure_2#closure_env_composer_closure_2#apply(env17: closure_env_composer_closure_2, value/17: int32) -> int32 {
   compose(double, increment, value/17)
 }

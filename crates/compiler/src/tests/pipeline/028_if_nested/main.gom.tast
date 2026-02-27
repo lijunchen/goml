@@ -1,29 +1,29 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn classify(x/0: int32) -> string {
     if (x/0 : int32) < 0 {
         {
-            "negative";
+            "negative"
         }
     } else {
         {
             if 0 < (x/0 : int32) {
                 {
-                    "positive";
+                    "positive"
                 }
             } else {
                 {
-                    "zero";
+                    "zero"
                 }
-            };
+            }
         }
-    };
+    }
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
@@ -31,27 +31,27 @@ fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
         {
             if (b/2 : int32) < (c/3 : int32) {
                 {
-                    "ascending";
+                    "ascending"
                 }
             } else {
                 {
-                    "peak";
+                    "peak"
                 }
-            };
+            }
         }
     } else {
         {
             if (a/1 : int32) < (c/3 : int32) {
                 {
-                    "valley";
+                    "valley"
                 }
             } else {
                 {
-                    "flat";
+                    "flat"
                 }
-            };
+            }
         }
-    };
+    }
 }
 
 fn main() -> unit {
@@ -67,5 +67,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)((shape1/7 : string));
     let _ : unit = (string_println : (string) -> unit)((shape2/8 : string));
     let _ : unit = (string_println : (string) -> unit)((shape3/9 : string));
-    ();
+    ()
 }

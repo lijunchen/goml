@@ -1,31 +1,31 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn show32(label/0: string, value/1: float32) -> unit {
     let message/2: string = (label/0 : string) + (float32_to_string : (float32) -> string)((value/1 : float32));
     let _ : unit = (string_println : (string) -> unit)((message/2 : string));
-    ();
+    ()
 }
 
 fn show64(label/3: string, value/4: float64) -> unit {
     let message/5: string = (label/3 : string) + (float64_to_string : (float64) -> string)((value/4 : float64));
     let _ : unit = (string_println : (string) -> unit)((message/5 : string));
-    ();
+    ()
 }
 
 fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
     let delta/9: float32 = (b/7 : float32) - (a/6 : float32);
-    (a/6 : float32) + (delta/9 : float32) * (weight/8 : float32);
+    (a/6 : float32) + (delta/9 : float32) * (weight/8 : float32)
 }
 
 fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
     let sum/12: float64 = (x/10 : float64) * (x/10 : float64) + (y/11 : float64) * (y/11 : float64);
-    (sum/12 : float64) / 2;
+    (sum/12 : float64) / 2
 }
 
 fn main() -> unit {
@@ -53,5 +53,4 @@ fn main() -> unit {
     (show64 : (string, float64) -> unit)("neg_dx=", (neg_dx/25 : float64));
     (show64 : (string, float64) -> unit)("adjusted=", (adjusted/26 : float64));
     let _ : unit = (string_println : (string) -> unit)("less64=" + (bool_to_string : (bool) -> string)((less64/28 : bool)));
-    ();
 }
