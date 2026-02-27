@@ -596,6 +596,17 @@ impl HirTable {
         &self.def_data[id.idx as usize]
     }
 
+    pub fn def_count(&self) -> usize {
+        self.def_data.len()
+    }
+
+    pub fn def_id_at(&self, idx: usize) -> DefId {
+        DefId {
+            pkg: self.package,
+            idx: idx as u32,
+        }
+    }
+
     pub fn def_mut(&mut self, id: DefId) -> &mut Def {
         assert_eq!(id.pkg, self.package);
         &mut self.def_data[id.idx as usize]
@@ -1115,7 +1126,7 @@ pub struct Fn {
     pub generic_bounds: Vec<(HirIdent, Vec<Path>)>,
     pub params: Vec<(LocalId, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
-    pub body: ExprId,
+    pub body: Block,
 }
 
 #[derive(Debug, Clone)]
@@ -1287,6 +1298,30 @@ pub struct ImplBlock {
 }
 
 #[derive(Debug, Clone)]
+pub struct Block {
+    pub stmts: Vec<Stmt>,
+    pub tail: Option<ExprId>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Stmt {
+    Let(LetStmt),
+    Expr(ExprStmt),
+}
+
+#[derive(Debug, Clone)]
+pub struct LetStmt {
+    pub pat: PatId,
+    pub annotation: Option<TypeExpr>,
+    pub value: ExprId,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExprStmt {
+    pub expr: ExprId,
+}
+
+#[derive(Debug, Clone)]
 pub enum Expr {
     ENameRef {
         res: NameRef,
@@ -1357,11 +1392,6 @@ pub enum Expr {
     EArray {
         items: Vec<ExprId>,
     },
-    ELet {
-        pat: PatId,
-        annotation: Option<TypeExpr>,
-        value: ExprId,
-    },
     EClosure {
         params: Vec<ClosureParam>,
         body: ExprId,
@@ -1404,7 +1434,7 @@ pub enum Expr {
         field: HirIdent,
     },
     EBlock {
-        exprs: Vec<ExprId>,
+        block: Block,
     },
 }
 

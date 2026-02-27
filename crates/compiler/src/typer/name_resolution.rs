@@ -359,7 +359,10 @@ impl NameResolution {
                                 generic_bounds: Vec::new(),
                                 params: Vec::new(),
                                 ret_ty: None,
-                                body: hir_table.dummy_expr(),
+                                body: hir::Block {
+                                    stmts: Vec::new(),
+                                    tail: None,
+                                },
                             }),
                         );
                         def_names.insert(full_name, id);
@@ -630,7 +633,10 @@ impl NameResolution {
                 generic_bounds: Vec::new(),
                 params: Vec::new(),
                 ret_ty: None,
-                body: hir_table.dummy_expr(),
+                body: hir::Block {
+                    stmts: Vec::new(),
+                    tail: None,
+                },
             }),
         );
         hir_table.set_current_owner(def_id);
@@ -725,44 +731,14 @@ impl NameResolution {
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
-    ) -> hir::ExprId {
+    ) -> hir::LetStmt {
         let new_value = self.resolve_expr(&stmt.value, env, ctx, hir_table);
         let new_pat = self.resolve_pat(&stmt.pat, env, ctx, hir_table);
-        self.alloc_expr_with_ptr(
-            hir_table,
-            stmt.astptr,
-            hir::Expr::ELet {
-                pat: new_pat,
-                annotation: stmt.annotation.as_ref().map(|t| t.into()),
-                value: new_value,
-            },
-        )
-    }
-
-    fn resolve_block_exprs(
-        &mut self,
-        block: &ast::Block,
-        env: &mut ResolveLocalEnv,
-        ctx: &ResolutionContext,
-        hir_table: &mut HirTable,
-    ) -> Vec<hir::ExprId> {
-        let mut exprs = Vec::new();
-        for stmt in &block.stmts {
-            match stmt {
-                ast::Stmt::Let(stmt) => {
-                    exprs.push(self.resolve_let_stmt(stmt, env, ctx, hir_table));
-                }
-                ast::Stmt::Expr(stmt) => {
-                    exprs.push(self.resolve_expr(&stmt.expr, env, ctx, hir_table));
-                }
-            }
+        hir::LetStmt {
+            pat: new_pat,
+            annotation: stmt.annotation.as_ref().map(|t| t.into()),
+            value: new_value,
         }
-        if let Some(tail) = &block.tail {
-            exprs.push(self.resolve_expr(tail, env, ctx, hir_table));
-        } else {
-            exprs.push(self.alloc_expr_with_ptr(hir_table, block.astptr, hir::Expr::EUnit));
-        }
-        exprs
     }
 
     fn resolve_block(
@@ -771,9 +747,27 @@ impl NameResolution {
         env: &mut ResolveLocalEnv,
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
-    ) -> hir::ExprId {
-        let exprs = self.resolve_block_exprs(block, env, ctx, hir_table);
-        self.alloc_expr_with_ptr(hir_table, block.astptr, hir::Expr::EBlock { exprs })
+    ) -> hir::Block {
+        let mut stmts = Vec::new();
+        for stmt in &block.stmts {
+            match stmt {
+                ast::Stmt::Let(stmt) => {
+                    stmts.push(hir::Stmt::Let(
+                        self.resolve_let_stmt(stmt, env, ctx, hir_table),
+                    ));
+                }
+                ast::Stmt::Expr(stmt) => {
+                    stmts.push(hir::Stmt::Expr(hir::ExprStmt {
+                        expr: self.resolve_expr(&stmt.expr, env, ctx, hir_table),
+                    }));
+                }
+            }
+        }
+        let tail = block
+            .tail
+            .as_ref()
+            .map(|tail| self.resolve_expr(tail, env, ctx, hir_table));
+        hir::Block { stmts, tail }
     }
 
     fn resolve_expr(
@@ -1257,8 +1251,8 @@ impl NameResolution {
                 )
             }
             ast::Expr::EBlock { block, astptr } => {
-                let exprs = self.resolve_block_exprs(block, env, ctx, hir_table);
-                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EBlock { exprs })
+                let block = self.resolve_block(block, env, ctx, hir_table);
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EBlock { block })
             }
         }
     }

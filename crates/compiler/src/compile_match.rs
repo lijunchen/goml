@@ -72,8 +72,8 @@ fn move_variable_patterns(row: &mut Row) {
             let old_body = row.body.clone();
             let old_body_ty = old_body.get_ty();
             row.body = EBlock {
-                exprs: vec![
-                    ELet {
+                block: Box::new(tast::Block {
+                    stmts: vec![tast::Stmt::Let(tast::LetStmt {
                         pat: Pat::PVar {
                             name: name.clone(),
                             ty: ty.clone(),
@@ -84,10 +84,9 @@ fn move_variable_patterns(row: &mut Row) {
                             ty: col.pat.get_ty(),
                             astptr: None,
                         }),
-                        ty: Ty::TUnit,
-                    },
-                    old_body,
-                ],
+                    })],
+                    tail: Some(Box::new(old_body)),
+                }),
                 ty: old_body_ty,
             };
             false
@@ -1616,7 +1615,7 @@ pub fn compile_file(
                             .map(|(name, ty)| (name.clone(), ty.clone()))
                             .collect(),
                         ret_ty: m.ret_ty.clone(),
-                        body: compile_expr(&m.body, genv, gensym, diagnostics),
+                        body: compile_block(&m.body, &m.ret_ty, genv, gensym, diagnostics),
                     };
 
                     toplevels.push(f);
@@ -1632,7 +1631,7 @@ pub fn compile_file(
                         .map(|(name, ty)| (name.clone(), ty.clone()))
                         .collect(),
                     ret_ty: f.ret_ty.clone(),
-                    body: compile_expr(&f.body, genv, gensym, diagnostics),
+                    body: compile_block(&f.body, &f.ret_ty, genv, gensym, diagnostics),
                 });
             }
             tast::Item::ExternGo(_) => {}
@@ -1642,28 +1641,53 @@ pub fn compile_file(
     core::File { toplevels }
 }
 
-/// Compile a block of TAST expressions into Core nested ELet chain
-fn compile_block_exprs(
+fn block_expr_from_parts(stmts: &[tast::Stmt], tail: Option<&Expr>, ty: &Ty) -> Expr {
+    Expr::EBlock {
+        block: Box::new(tast::Block {
+            stmts: stmts.to_vec(),
+            tail: tail.cloned().map(Box::new),
+        }),
+        ty: ty.clone(),
+    }
+}
+
+fn compile_block(
+    block: &tast::Block,
+    ty: &Ty,
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
     diagnostics: &mut Diagnostics,
-    exprs: &[Expr],
+) -> core::Expr {
+    compile_block_parts(
+        genv,
+        gensym,
+        diagnostics,
+        &block.stmts,
+        block.tail.as_deref(),
+        ty,
+    )
+}
+
+fn compile_block_parts(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    stmts: &[tast::Stmt],
+    tail: Option<&Expr>,
     ty: &Ty,
 ) -> core::Expr {
-    if exprs.is_empty() {
-        return core::eunit();
+    if stmts.is_empty() {
+        return tail
+            .map(|tail| compile_expr(tail, genv, gensym, diagnostics))
+            .unwrap_or_else(core::eunit);
     }
 
-    if exprs.len() == 1 {
-        return compile_expr(&exprs[0], genv, gensym, diagnostics);
-    }
-
-    // Compile to nested ELet in Core
-    let first = &exprs[0];
-    let rest = &exprs[1..];
+    let first = &stmts[0];
+    let rest = &stmts[1..];
+    let core_body = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
 
     match first {
-        ELet {
+        tast::Stmt::Let(tast::LetStmt {
             pat:
                 Pat::PVar {
                     name,
@@ -1671,10 +1695,8 @@ fn compile_block_exprs(
                     astptr: _,
                 },
             value,
-            ty: _,
-        } => {
+        }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
-            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
             core::Expr::ELet {
                 name: name.clone(),
                 value: Box::new(core_value),
@@ -1682,14 +1704,10 @@ fn compile_block_exprs(
                 ty: pat_ty.clone(),
             }
         }
-        ELet { pat, value, ty: _ } => {
-            // Complex pattern: needs pattern matching
+        tast::Stmt::Let(tast::LetStmt { pat, value }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
-            let body_expr = Expr::EBlock {
-                exprs: rest.to_vec(),
-                ty: ty.clone(),
-            };
+            let body_expr = block_expr_from_parts(rest, tail, ty);
             let rows = vec![
                 Row {
                     columns: vec![Column {
@@ -1730,16 +1748,14 @@ fn compile_block_exprs(
                 ty: ty.clone(),
             }
         }
-        _ => {
-            // Non-let expression: wrap in wildcard let
-            let core_value = compile_expr(first, genv, gensym, diagnostics);
+        tast::Stmt::Expr(tast::ExprStmt { expr }) => {
+            let core_value = compile_expr(expr, genv, gensym, diagnostics);
             let x = gensym.gensym("_wild");
-            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
             core::Expr::ELet {
                 name: x,
                 value: Box::new(core_value),
                 body: Box::new(core_body),
-                ty: first.get_ty(),
+                ty: expr.get_ty(),
             }
         }
     }
@@ -1813,73 +1829,7 @@ fn compile_expr(
                 ty: ty.clone(),
             }
         }
-        ELet {
-            pat:
-                Pat::PVar {
-                    name,
-                    ty: _pat_ty,
-                    astptr: _,
-                },
-            value,
-            ty,
-        } => {
-            // ELet with simple var pattern and no body - just produces unit
-            core::Expr::ELet {
-                name: name.clone(),
-                value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
-                body: Box::new(core::eunit()),
-                ty: ty.clone(),
-            }
-        }
-        ELet { pat, value, ty } => {
-            let core_value = compile_expr(value, genv, gensym, diagnostics);
-            let x = gensym.gensym("mtmp");
-            // A standalone ELet with a complex pattern - needs pattern match
-            // but has no body, just returns unit
-            let rows = vec![
-                Row {
-                    columns: vec![Column {
-                        var: x.clone(),
-                        pat: pat.clone(),
-                    }],
-                    body: Expr::EPrim {
-                        value: Prim::unit(),
-                        ty: Ty::TUnit,
-                    },
-                },
-                Row {
-                    columns: vec![Column {
-                        var: x.clone(),
-                        pat: Pat::PWild {
-                            ty: pat.get_ty(),
-                            astptr: None,
-                        },
-                    }],
-                    body: ECall {
-                        func: Box::new(Expr::EVar {
-                            name: "missing".to_string(),
-                            ty: Ty::TFunc {
-                                params: vec![Ty::TString],
-                                ret_ty: Box::new(Ty::TUnit),
-                            },
-                            astptr: None,
-                        }),
-                        args: vec![Expr::EPrim {
-                            value: Prim::string("".to_string()),
-                            ty: Ty::TString,
-                        }],
-                        ty: Ty::TUnit,
-                    },
-                },
-            ];
-            core::Expr::ELet {
-                name: x,
-                value: Box::new(core_value),
-                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
-                ty: ty.clone(),
-            }
-        }
-        EBlock { exprs, ty } => compile_block_exprs(genv, gensym, diagnostics, exprs, ty),
+        EBlock { block, ty } => compile_block(block, ty, genv, gensym, diagnostics),
         EMatch {
             expr,
             arms,

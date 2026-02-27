@@ -40,7 +40,7 @@ pub struct Fn {
     pub name: String,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
-    pub body: Expr,
+    pub body: Block,
 }
 
 #[derive(Debug, Clone)]
@@ -360,13 +360,8 @@ pub enum Expr {
         ty: Ty,
         captures: Vec<(String, Ty)>,
     },
-    ELet {
-        pat: Pat,
-        value: Box<Expr>,
-        ty: Ty,
-    },
     EBlock {
-        exprs: Vec<Expr>,
+        block: Box<Block>,
         ty: Ty,
     },
     EMatch {
@@ -455,7 +450,6 @@ impl Expr {
             Self::ETuple { ty, .. } => ty.clone(),
             Self::EArray { ty, .. } => ty.clone(),
             Self::EClosure { ty, .. } => ty.clone(),
-            Self::ELet { ty, .. } => ty.clone(),
             Self::EBlock { ty, .. } => ty.clone(),
             Self::EMatch { ty, .. } => ty.clone(),
             Self::EIf { ty, .. } => ty.clone(),
@@ -472,6 +466,29 @@ impl Expr {
             Self::EToDyn { ty, .. } => ty.clone(),
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct Block {
+    pub stmts: Vec<Stmt>,
+    pub tail: Option<Box<Expr>>,
+}
+
+#[derive(Debug, Clone)]
+pub enum Stmt {
+    Let(LetStmt),
+    Expr(ExprStmt),
+}
+
+#[derive(Debug, Clone)]
+pub struct LetStmt {
+    pub pat: Pat,
+    pub value: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExprStmt {
+    pub expr: Expr,
 }
 
 #[derive(Debug, Clone)]
