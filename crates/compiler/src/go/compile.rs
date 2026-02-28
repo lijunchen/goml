@@ -2537,11 +2537,25 @@ fn compile_call(
     args: &[anf::ImmExpr],
     ty: &tast::Ty,
 ) -> goast::Expr {
+    let func_tast_ty = imm_ty(func);
+    let param_types: Vec<tast::Ty> = match &func_tast_ty {
+        tast::Ty::TFunc { params, .. } => params.clone(),
+        _ => Vec::new(),
+    };
     let compiled_args = args
         .iter()
-        .map(|arg| compile_imm(goenv, arg))
+        .enumerate()
+        .map(|(i, arg)| {
+            let arg_ty = imm_ty(arg);
+            if let Some(param_ty) = param_types.get(i)
+                && needs_closure_to_func_wrap(&arg_ty, param_ty)
+            {
+                return closure_to_func_lit(goenv, arg, param_ty);
+            }
+            compile_imm(goenv, arg)
+        })
         .collect::<Vec<_>>();
-    let func_ty = tast_ty_to_go_type(&imm_ty(func));
+    let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
     if let anf::ImmExpr::Var { id, .. } = func
         && id.0 == "missing"
@@ -3278,19 +3292,93 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
     stmts
 }
 
+fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
+    if let tast::Ty::TStruct { name } = arg_ty
+        && is_closure_env_struct(name)
+        && matches!(param_ty, tast::Ty::TFunc { .. })
+    {
+        return true;
+    }
+    false
+}
+
+fn closure_to_func_lit(
+    goenv: &GlobalGoEnv,
+    closure_imm: &anf::ImmExpr,
+    func_ty: &tast::Ty,
+) -> goast::Expr {
+    let closure_ty = imm_ty(closure_imm);
+    let apply = find_closure_apply_fn(goenv, &closure_ty)
+        .expect("closure struct must have an apply method");
+
+    let tast::Ty::TFunc { params: func_params, ret_ty: func_ret } = func_ty else {
+        unreachable!("closure_to_func_lit called with non-function target type");
+    };
+
+    let param_names: Vec<String> = func_params
+        .iter()
+        .enumerate()
+        .map(|(i, _)| format!("p{}", i))
+        .collect();
+
+    let go_params: Vec<(String, goty::GoType)> = param_names
+        .iter()
+        .zip(func_params.iter())
+        .map(|(name, ty)| (name.clone(), tast_ty_to_go_type(ty)))
+        .collect();
+
+    let mut call_args: Vec<goast::Expr> = vec![compile_imm(goenv, closure_imm)];
+    for (name, ty) in &go_params {
+        call_args.push(goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        });
+    }
+
+    let apply_expr = goast::Expr::Var {
+        name: go_ident(&apply.name),
+        ty: tast_ty_to_go_type(&apply.ty),
+    };
+
+    let go_ret_ty = tast_ty_to_go_type(func_ret);
+    let call_expr = goast::Expr::Call {
+        func: Box::new(apply_expr),
+        args: call_args,
+        ty: go_ret_ty.clone(),
+    };
+
+    let body = vec![goast::Stmt::Return {
+        expr: Some(call_expr),
+    }];
+
+    let func_go_ty = tast_ty_to_go_type(func_ty);
+
+    goast::Expr::FuncLit {
+        params: go_params,
+        body,
+        ty: func_go_ty,
+    }
+}
+
 fn compile_jump_args(
     goenv: &GlobalGoEnv,
     params: &[(anf::LocalId, tast::Ty)],
     args: &[anf::ImmExpr],
 ) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
-    for ((param_id, _), arg) in params.iter().zip(args.iter()) {
+    for ((param_id, param_ty), arg) in params.iter().zip(args.iter()) {
         if param_id.0 == "_" {
             continue;
         }
+        let arg_ty = imm_ty(arg);
+        let value = if needs_closure_to_func_wrap(&arg_ty, param_ty) {
+            closure_to_func_lit(goenv, arg, param_ty)
+        } else {
+            compile_imm(goenv, arg)
+        };
         stmts.push(goast::Stmt::Assignment {
             name: go_ident(&param_id.0),
-            value: compile_imm(goenv, arg),
+            value,
         });
     }
     stmts

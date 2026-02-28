@@ -827,6 +827,45 @@ impl Expr {
 
                 RcDoc::text("{").append(content).append(RcDoc::text("}"))
             }
+            Expr::FuncLit { params, body, ty } => {
+                let ret_ty = match ty {
+                    GoType::TFunc { ret_ty, .. } => Some(ret_ty.as_ref()),
+                    _ => None,
+                };
+                let params_doc = RcDoc::intersperse(
+                    params.iter().map(|(name, param_ty)| {
+                        RcDoc::text(name)
+                            .append(RcDoc::space())
+                            .append(go_type_doc(param_ty))
+                    }),
+                    RcDoc::text(", "),
+                );
+                let ret_doc = match ret_ty {
+                    Some(rt) if !matches!(rt, GoType::TUnit) => {
+                        RcDoc::space().append(go_type_doc(rt))
+                    }
+                    _ => RcDoc::nil(),
+                };
+                let body_doc = if body.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let stmts = RcDoc::intersperse(
+                        body.iter().map(|stmt| stmt.to_doc(goenv)),
+                        RcDoc::hardline(),
+                    );
+                    RcDoc::text("{")
+                        .append(RcDoc::hardline().append(stmts).nest(4))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                };
+                RcDoc::text("func")
+                    .append(RcDoc::text("("))
+                    .append(params_doc)
+                    .append(RcDoc::text(")"))
+                    .append(ret_doc)
+                    .append(RcDoc::space())
+                    .append(body_doc)
+            }
         }
     }
 

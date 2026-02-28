@@ -304,7 +304,23 @@ impl TypeckResultsBuilder {
 
     pub fn push_coercion(&mut self, expr: hir::ExprId, coercion: Coercion) {
         if let Some(slot) = self.results.coercions.get_mut(expr.idx as usize) {
-            slot.push(coercion);
+            let dominated = slot.iter().any(|existing| match (existing, &coercion) {
+                (
+                    Coercion::ToDyn {
+                        trait_name: t1,
+                        for_ty: f1,
+                        ..
+                    },
+                    Coercion::ToDyn {
+                        trait_name: t2,
+                        for_ty: f2,
+                        ..
+                    },
+                ) => t1.0 == t2.0 && f1 == f2,
+            });
+            if !dominated {
+                slot.push(coercion);
+            }
         }
     }
 

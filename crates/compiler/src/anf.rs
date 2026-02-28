@@ -1196,7 +1196,12 @@ pub mod anf_renamer {
 
 pub mod anf_verify {
     use crate::anf;
+    use crate::lift::is_closure_env_struct;
     use std::collections::{HashMap, HashSet};
+
+    fn is_closure_struct(ty: &anf::Ty) -> bool {
+        matches!(ty, anf::Ty::TStruct { name } if is_closure_env_struct(name))
+    }
 
     #[derive(Debug, Clone)]
     struct JoinSig {
@@ -1397,7 +1402,14 @@ pub mod anf_verify {
                     && pa.iter().zip(pb.iter()).all(|(a, b)| tys_compatible(a, b))
                     && tys_compatible(ra, rb)
             }
-            _ => a == b,
+            _ => {
+                if is_closure_struct(a) && matches!(b, anf::Ty::TFunc { .. })
+                    || is_closure_struct(b) && matches!(a, anf::Ty::TFunc { .. })
+                {
+                    return true;
+                }
+                a == b
+            }
         }
     }
 

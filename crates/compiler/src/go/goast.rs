@@ -177,6 +177,11 @@ pub enum Expr {
         expr: Option<Box<Expr>>,
         ty: goty::GoType,
     },
+    FuncLit {
+        params: Vec<(String, goty::GoType)>,
+        body: Vec<Stmt>,
+        ty: goty::GoType,
+    },
 }
 
 impl Expr {
@@ -200,7 +205,8 @@ impl Expr {
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::ArrayLiteral { ty, .. }
-            | Expr::Block { ty, .. } => ty,
+            | Expr::Block { ty, .. }
+            | Expr::FuncLit { ty, .. } => ty,
         }
     }
 }

@@ -113,6 +113,7 @@ fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => false,
+        ast::Expr::FuncLit { body, .. } => body.iter().any(stmt_has_label_or_goto),
     }
 }
 
@@ -436,6 +437,11 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             args: args.into_iter().map(dce_expr).collect(),
             ty,
         },
+        ast::Expr::FuncLit { params, body, ty } => ast::Expr::FuncLit {
+            params,
+            body,
+            ty,
+        },
         // Leaves
         e @ ast::Expr::Nil { .. }
         | e @ ast::Expr::Make { .. }
@@ -636,6 +642,19 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for st in body {
+                match st {
+                    ast::Stmt::Return { expr: Some(e) } => {
+                        s.extend(vars_used_in_expr(e));
+                    }
+                    ast::Stmt::Expr(e) => {
+                        s.extend(vars_used_in_expr(e));
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
     s
 }
@@ -766,6 +785,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         }
         ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_side_effects),
         ast::Expr::Make { .. } => false,
+        ast::Expr::FuncLit { .. } => false,
         ast::Expr::Var { .. }
         | ast::Expr::Nil { .. }
         | ast::Expr::Void { .. }
@@ -1037,6 +1057,11 @@ fn collect_called_in_expr(
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for st in body {
+                collect_called_in_stmt(st, calls, fn_names);
+            }
+        }
     }
 }
 
@@ -1258,6 +1283,11 @@ fn collect_packages_in_expr(
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for stmt in body {
+                collect_packages_in_stmt(stmt, imports, used);
+            }
+        }
     }
 }
 
