@@ -691,6 +691,41 @@ fn mono_block(ctx: &mut Ctx, block: &core::Block, s: &Subst) -> MonoBlock {
     }
 }
 
+fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
+    let method_keys: Vec<(String, String)> = ctx
+        .trait_impl_method_index
+        .keys()
+        .filter(|(tn, _)| tn == trait_name)
+        .cloned()
+        .collect();
+
+    for (tn, method_name) in method_keys {
+        let impl_fn_name =
+            trait_impl_fn_name(&TastIdent(tn.clone()), for_ty, &method_name);
+        if ctx.orig_fns.contains_key(&impl_fn_name) {
+            continue;
+        }
+        let candidates = match ctx.trait_impl_method_index.get(&(tn, method_name)) {
+            Some(c) => c.clone(),
+            None => continue,
+        };
+        for candidate_name in candidates {
+            let callee = match ctx.orig_fns.get(&candidate_name) {
+                Some(c) => c.clone(),
+                None => continue,
+            };
+            if callee.params.is_empty() {
+                continue;
+            }
+            let mut trial_subst = Subst::new();
+            if unify(&callee.params[0].1, for_ty, &mut trial_subst).is_ok() {
+                ctx.ensure_instance(&candidate_name, trial_subst);
+                break;
+            }
+        }
+    }
+}
+
 // Transform an expression under a given substitution; queue any needed instances
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
@@ -894,12 +929,16 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             for_ty,
             expr,
             ty,
-        } => MonoExpr::EToDyn {
-            trait_name,
-            for_ty: subst_ty(&for_ty, s),
-            expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty(&ty, s),
-        },
+        } => {
+            let concrete_for_ty = subst_ty(&for_ty, s);
+            ensure_trait_impls_for_dyn(ctx, &trait_name.0, &concrete_for_ty);
+            MonoExpr::EToDyn {
+                trait_name,
+                for_ty: concrete_for_ty,
+                expr: Box::new(mono_expr(ctx, &expr, s)),
+                ty: subst_ty(&ty, s),
+            }
+        }
         core::Expr::EDynCall {
             trait_name,
             method_name,

@@ -5,7 +5,7 @@ use crate::{
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     go::mangle::{encode_ty, go_ident},
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    names::{inherent_method_fn_name, trait_impl_fn_name},
+    names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
     tast::{self, TastIdent},
 };
@@ -921,7 +921,34 @@ fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<g
     items
 }
 
-fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::Item> {
+fn build_trait_impl_name_map(
+    toplevels: &[anf::Fn],
+) -> std::collections::HashMap<(String, String, String), String> {
+    let mut map = std::collections::HashMap::new();
+    for tl in toplevels {
+        if let Some((trait_name, for_ty_str, method_name)) =
+            parse_trait_impl_fn_name(&tl.name)
+        {
+            let base_method = method_name.split("__").next().unwrap_or(method_name);
+            let go_name = go_ident(&tl.name);
+            map.insert(
+                (
+                    trait_name.to_string(),
+                    for_ty_str.to_string(),
+                    base_method.to_string(),
+                ),
+                go_name,
+            );
+        }
+    }
+    map
+}
+
+fn gen_dyn_helper_fns(
+    goenv: &GlobalGoEnv,
+    req: &DynRequirements,
+    impl_name_map: &std::collections::HashMap<(String, String, String), String>,
+) -> Vec<goast::Item> {
     let mut vtables: Vec<(String, tast::Ty)> = req.vtables.iter().cloned().collect();
     vtables.sort_by(|(t1, ty1), (t2, ty2)| {
         let k1 = (t1.clone(), encode_ty(ty1));
@@ -940,6 +967,7 @@ fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::
                 method_name,
                 params,
                 ret_ty,
+                impl_name_map,
             )));
         }
 
@@ -958,6 +986,7 @@ fn gen_dyn_wrap_fn(
     method_name: &str,
     params: &[tast::Ty],
     ret_ty: &tast::Ty,
+    impl_name_map: &std::collections::HashMap<(String, String, String), String>,
 ) -> goast::Fn {
     let fn_name = dyn_wrap_go_name(trait_name, for_ty, method_name);
 
@@ -968,8 +997,18 @@ fn gen_dyn_wrap_fn(
     }
 
     let trait_ident = TastIdent(trait_name.to_string());
-    let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
-    let impl_go_name = go_ident(&impl_name);
+    let for_ty_compact = ty_compact(for_ty);
+    let impl_go_name = impl_name_map
+        .get(&(
+            trait_name.to_string(),
+            for_ty_compact,
+            method_name.to_string(),
+        ))
+        .cloned()
+        .unwrap_or_else(|| {
+            let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
+            go_ident(&impl_name)
+        });
 
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
     let ret_go_ty = tast_ty_to_go_type(ret_ty);
@@ -4232,7 +4271,8 @@ pub fn go_file(
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
-    toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req));
+    let impl_name_map = build_trait_impl_name_map(&file.toplevels);
+    toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     for item in file.toplevels {
         let gof = compile_fn(&goenv, gensym, item);
         toplevels.push(goast::Item::Fn(gof));
