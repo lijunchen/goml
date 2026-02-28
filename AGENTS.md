@@ -19,6 +19,116 @@ The file extension for goml source files is `.gom`.
 - Any "ambiguity" should produce recoverable diagnostics; never `panic!` inside env/lookup. When multiple candidates exist, return `None` and report the error at a higher level.
 
 
+## ANF IR and Join Points
+
+The ANF (A-Normal Form) IR is the last intermediate representation before Go code generation. It lives in `crates/compiler/src/anf.rs` and is produced by the `anf_file` pass from the Lift IR.
+
+### Core Data Types
+
+```
+Block { binds: Vec<Bind>, term: Term }
+```
+A block is a sequence of bindings followed by a terminal. This is the fundamental unit of ANF.
+
+- **`Bind::Let(LetBind)`** — `let x = expr in ...` — binds a value expression to a local variable.
+- **`Bind::Join(JoinBind)`** — `join k(params) { body } in ...` — declares a non-recursive join point (a local continuation).
+- **`Bind::JoinRec(Vec<JoinBind>)`** — `joinrec { join k(params) { body } } in ...` — declares mutually recursive join points (used for loops).
+
+Terminal terms (`Term`):
+- **`Return(imm)`** — return a value from the function.
+- **`Jump { target, args }`** — jump to a join point, passing arguments.
+- **`If { cond, then_, else_ }`** — conditional branch; each branch is a `Block`.
+- **`Match { scrut, arms, default }`** — pattern match; each arm body is a `Block`.
+- **`Unreachable`** — marks dead code.
+
+### What Are Join Points?
+
+Join points are local continuations that represent "where control flow merges." They are the ANF equivalent of phi nodes in SSA, but are more structured — they have parameters (like function arguments) and a body.
+
+**Key insight**: join points are NOT functions. They cannot escape their scope, are always called in tail position via `Jump`, and are guaranteed to be called exactly in the lexical scope where they are defined.
+
+### How GoML Source Maps to ANF Join Points
+
+**if-else expressions** (when used as expressions or with code after them):
+```
+// GoML source:
+let result = if cond { a } else { b };
+use(result)
+
+// ANF:
+join k(result) { use(result) } in    // k is the continuation after the if
+if cond {
+    jump k(a)                         // both branches jump to k
+} else {
+    jump k(b)
+}
+```
+
+**Nested if-else** chains produce nested joins:
+```
+// GoML source:
+let r = if c1 { "a" } else if c2 { "b" } else { "c" };
+
+// ANF:
+join k_outer(r) { ... } in
+if c1 {
+    jump k_outer("a")
+} else {
+    join k_inner(tmp) { jump k_outer(tmp) } in
+    if c2 { jump k_inner("b") } else { jump k_inner("c") }
+}
+```
+
+**match expressions** produce similar patterns — all arms jump to the same continuation join.
+
+**while loops** lower to `JoinRec`:
+```
+// GoML source:
+while ref_get(i) < limit {
+    body;
+}
+
+// ANF:
+join exit() { ... } in
+joinrec {
+    join loop() {
+        let cond = ref_get(i) < limit in
+        if cond {
+            <body binds>
+            jump loop()           // continue → self-jump
+        } else {
+            jump exit()           // break → jump to exit
+        }
+    }
+} in
+jump loop()
+```
+
+### Go Code Generation from ANF (`crates/compiler/src/go/compile.rs`)
+
+The Go emitter produces structured code (if/else, switch, for) — never goto/label. It works by recognizing patterns in the ANF:
+
+**Pattern 1 — Continuation join**: When all branches of an `If` or `Match` jump to the same join `k`, the emitter outputs the if/switch with only argument assignments in each branch, then emits `k`'s body AFTER the if/switch as straight-line code. This is the most common pattern.
+
+**Pattern 2 — While loop**: When a `JoinRec` has a single member whose body is `if cond { <body>; jump self() } else { jump exit() }`, it emits `for { if !cond { break }; <body> }`. The `terminates_at` helper checks whether a branch eventually reaches the self-jump (through arbitrary let-binds and nested joins), not just immediate self-jumps.
+
+**Pattern 3 — Inline join at Jump**: When a `Jump` targets a join that is NOT a pending continuation (e.g., a join defined in an outer scope), its body is inlined at the jump site.
+
+Key functions in the emitter:
+- `compile_fn` — entry point; builds a flat `JoinEnv` of all joins, then calls `compile_block_structured`.
+- `build_join_env` / `collect_joins_from_block` — recursively collects all non-while-loop joins into a flat lookup table. While-loop `JoinRec` members are excluded.
+- `compile_block_structured` — walks `binds` sequentially, collects `pending_joins` from `Bind::Join`, compiles `Bind::JoinRec` as while loops, then dispatches the terminal.
+- `compile_term_with_continuations` — checks if all branches target the same pending join (via `all_branches_jump_to`); if so, emits the branching construct with arg assignments, then emits the join body.
+- `compile_while_loop` — emits `for { if !cond { break }; body }`. Adds the loop's `JoinId` to `continue_targets` in `JoinEnv` so that self-jumps inside the body are compiled as implicit continue (empty statement at end of loop iteration).
+- `compile_term_leaf` — fallback for terms that don't match a continuation pattern; inlines join bodies at `Jump` sites.
+
+### Design Invariants
+
+- The `JoinEnv` is a flat `HashMap<JoinId, JoinBind>` built once per function. While-loop `JoinRec` members are NOT in `JoinEnv` — they are compiled directly by `compile_while_loop`.
+- `continue_targets: HashSet<JoinId>` tracks which `JoinId`s represent the current enclosing while loop. A `Jump` to a continue target emits nothing (the `for` loop naturally continues).
+- Join bodies form a DAG (except `JoinRec` which is handled specially). The emitter inlines join bodies at their use sites, which is safe because each non-recursive join is used at most once in the continuation position and any remaining uses are in tail position.
+- DCE (`crates/compiler/src/go/dce.rs`) runs on the Go AST after emission. Since the structured emitter produces no goto/label, DCE is always enabled.
+
 ## Project Structure & Module Organization
 - Rust workspace in `crates/*`:
   - `lexer`, `parser`, `cst`, `ast`, `compiler` (core pipeline and tests), `wasm-app` (Rust → Wasm bindings), `lsp-server` (Language Server Protocol).
