@@ -2181,25 +2181,24 @@ impl Typer {
                 ..
             } => {
                 let name = &hint;
-                let mut args_tast = Vec::new();
-                let mut arg_types = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                    arg_types.push(arg_tast.get_ty());
-                    args_tast.push(arg_tast);
-                }
                 if let Some(func_scheme) = lookup_function_scheme_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        args_tast.clear();
-                        arg_types.clear();
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
                             let arg_tast =
                                 self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
                             arg_types.push(expected_ty.clone());
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                            arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }
                     }
