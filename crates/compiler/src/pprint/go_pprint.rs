@@ -841,9 +841,7 @@ impl Expr {
                     RcDoc::text(", "),
                 );
                 let ret_doc = match ret_ty {
-                    Some(rt) if !matches!(rt, GoType::TUnit) => {
-                        RcDoc::space().append(go_type_doc(rt))
-                    }
+                    Some(rt) => RcDoc::space().append(go_type_doc(rt)),
                     _ => RcDoc::nil(),
                 };
                 let body_doc = if body.is_empty() {
