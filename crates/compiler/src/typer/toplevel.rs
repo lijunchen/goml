@@ -1173,6 +1173,9 @@ fn build_in_scope_traits(
         .cloned()
         .map(tast::TastIdent)
         .collect::<Vec<_>>();
+    for trait_name in genv.current().trait_env.trait_defs.keys() {
+        traits.push(tast::TastIdent(trait_name.clone()));
+    }
     for use_trait in hir.use_traits.iter() {
         let name = use_trait.display();
         if let Some(resolved) = resolve_trait_ident_or_report(genv, diagnostics, &name) {
