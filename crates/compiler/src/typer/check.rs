@@ -2502,7 +2502,7 @@ impl Typer {
                             }
                             result
                         }
-                        [] if matches!(receiver_ty, tast::Ty::TVar(_)) => {
+                        [] if contains_tvar(&receiver_ty) => {
                             let mut args_tast = Vec::with_capacity(args.len() + 1);
                             let mut arg_types = Vec::with_capacity(args.len() + 1);
                             arg_types.push(receiver_ty.clone());
@@ -4391,6 +4391,18 @@ enum MethodLookupReceiver {
     Deferred(tast::Ty),
 }
 
+fn contains_tvar(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TVar(_) => true,
+        tast::Ty::TTuple { typs } => typs.iter().any(contains_tvar),
+        tast::Ty::TApp { ty, args } => contains_tvar(ty) || args.iter().any(contains_tvar),
+        tast::Ty::TArray { elem, .. } | tast::Ty::TSlice { elem } | tast::Ty::TVec { elem } | tast::Ty::TRef { elem } => contains_tvar(elem),
+        tast::Ty::THashMap { key, value } => contains_tvar(key) || contains_tvar(value),
+        tast::Ty::TFunc { params, ret_ty } => params.iter().any(contains_tvar) || contains_tvar(ret_ty),
+        _ => false,
+    }
+}
+
 fn lookup_trait_method_candidates(
     genv: &PackageTypeEnv,
     local_env: &LocalTypeEnv,
@@ -4404,7 +4416,7 @@ fn lookup_trait_method_candidates(
             candidates: lookup_bound_trait_methods(genv, bounds, method),
         };
     }
-    if matches!(receiver_ty, tast::Ty::TVar(_)) {
+    if contains_tvar(receiver_ty) {
         return TraitMethodLookup {
             receiver: MethodLookupReceiver::Deferred(receiver_ty.clone()),
             candidates: lookup_trait_methods(genv, local_env.in_scope_traits(), method, None),
