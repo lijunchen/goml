@@ -40,78 +40,162 @@ type Write struct {
 func (_ Write) isMessage() {}
 
 func _goml_trait_impl_ToString_Point_to_string(self__0 Point) string {
-    var ret26 string
-    var mtmp0 Point = self__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    var y__2 int32 = x2
-    var x__1 int32 = x1
-    var t14 string = "Point { " + "x: "
-    var t15 string = int32_to_string(x__1)
-    var t13 string = t14 + t15
-    var t12 string = t13 + ", "
-    var t11 string = t12 + "y: "
-    var t16 string = int32_to_string(y__2)
-    var t10 string = t11 + t16
-    ret26 = t10 + " }"
-    return ret26
+    var mtmp0 Point
+    var x1 int32
+    var x2 int32
+    var y__2 int32
+    var x__1 int32
+    var t10 string
+    var t11 string
+    var t12 string
+    var t13 string
+    var t14 string
+    var t15 string
+    var t16 string
+    var t17 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp0 = self__0
+            x1 = mtmp0.x
+            x2 = mtmp0.y
+            y__2 = x2
+            x__1 = x1
+            t10 = "Point { " + "x: "
+            t11 = int32_to_string(x__1)
+            t12 = t10 + t11
+            t13 = t12 + ", "
+            t14 = t13 + "y: "
+            t15 = int32_to_string(y__2)
+            t16 = t14 + t15
+            t17 = t16 + " }"
+            return t17
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_trait_impl_ToString_Message_to_string(self__3 Message) string {
-    var ret27 string
-    switch self__3 := self__3.(type) {
-    case Quit:
-        ret27 = "Message::Quit"
-    case Move:
-        var x3 int32 = self__3._0
-        var x4 int32 = self__3._1
-        var __field1__5 int32 = x4
-        var __field0__4 int32 = x3
-        var t20 string = int32_to_string(__field0__4)
-        var t19 string = "Message::Move(" + t20
-        var t18 string = t19 + ", "
-        var t21 string = int32_to_string(__field1__5)
-        var t17 string = t18 + t21
-        ret27 = t17 + ")"
-    case Write:
-        var x5 string = self__3._0
-        var __field0__6 string = x5
-        var t22 string = "Message::Write(" + __field0__6
-        ret27 = t22 + ")"
+    var jp19 string
+    var x3 int32
+    var x4 int32
+    var __field1__5 int32
+    var __field0__4 int32
+    var t20 string
+    var t21 string
+    var t22 string
+    var t23 string
+    var t24 string
+    var t25 string
+    var x5 string
+    var __field0__6 string
+    var t26 string
+    var t27 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch self__3.(type) {
+            case Quit:
+                pc = 2
+            case Move:
+                pc = 3
+            case Write:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp19
+        case 2:
+            jp19 = "Message::Quit"
+            pc = 1
+        case 3:
+            x3 = self__3.(Move)._0
+            x4 = self__3.(Move)._1
+            __field1__5 = x4
+            __field0__4 = x3
+            t20 = int32_to_string(__field0__4)
+            t21 = "Message::Move(" + t20
+            t22 = t21 + ", "
+            t23 = int32_to_string(__field1__5)
+            t24 = t22 + t23
+            t25 = t24 + ")"
+            jp19 = t25
+            pc = 1
+        case 4:
+            x5 = self__3.(Write)._0
+            __field0__6 = x5
+            t26 = "Message::Write(" + __field0__6
+            t27 = t26 + ")"
+            jp19 = t27
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret27
 }
 
 func main0() struct{} {
-    var ret28 struct{}
-    var point__7 Point = Point{
-        x: 4,
-        y: 7,
+    var point__7 Point
+    var summary__8 string
+    var t28 Message
+    var mv__9 string
+    var t29 Message
+    var text__10 string
+    var exit__11 string
+    var _wild6 struct{}
+    var _wild7 struct{}
+    var _wild8 struct{}
+    var _wild9 struct{}
+    _ = _wild6
+    _ = _wild7
+    _ = _wild8
+    _ = _wild9
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            point__7 = Point{
+                x: 4,
+                y: 7,
+            }
+            summary__8 = _goml_trait_impl_ToString_Point_to_string(point__7)
+            t28 = Move{
+                _0: 1,
+                _1: 2,
+            }
+            mv__9 = _goml_trait_impl_ToString_Message_to_string(t28)
+            t29 = Write{
+                _0: "done",
+            }
+            text__10 = _goml_trait_impl_ToString_Message_to_string(t29)
+            exit__11 = _goml_trait_impl_ToString_Message_to_string(Quit{})
+            println__T_string(summary__8)
+            println__T_string(mv__9)
+            println__T_string(text__10)
+            println__T_string(exit__11)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
     }
-    var summary__8 string = _goml_trait_impl_ToString_Point_to_string(point__7)
-    var t23 Message = Move{
-        _0: 1,
-        _1: 2,
-    }
-    var mv__9 string = _goml_trait_impl_ToString_Message_to_string(t23)
-    var t24 Message = Write{
-        _0: "done",
-    }
-    var text__10 string = _goml_trait_impl_ToString_Message_to_string(t24)
-    var t25 Message = Quit{}
-    var exit__11 string = _goml_trait_impl_ToString_Message_to_string(t25)
-    println__T_string(summary__8)
-    println__T_string(mv__9)
-    println__T_string(text__10)
-    println__T_string(exit__11)
-    ret28 = struct{}{}
-    return ret28
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret29 struct{}
-    ret29 = string_println(value__1)
-    return ret29
+    var t30 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t30 = string_println(value__1)
+            return t30
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

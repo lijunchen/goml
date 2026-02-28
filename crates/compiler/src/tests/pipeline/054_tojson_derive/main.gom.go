@@ -61,103 +61,210 @@ type Rgb struct {
 func (_ Rgb) isColor() {}
 
 func _goml_inherent_Point_Point_to_json(self__0 Point) string {
-    var ret44 string
-    var mtmp0 Point = self__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    var y__2 int32 = x2
-    var x__1 int32 = x1
-    var t18 string = "{" + "\"x\":"
-    var t19 string = int32_to_string(x__1)
-    var t17 string = t18 + t19
-    var t16 string = t17 + ","
-    var t15 string = t16 + "\"y\":"
-    var t20 string = int32_to_string(y__2)
-    var t14 string = t15 + t20
-    ret44 = t14 + "}"
-    return ret44
+    var mtmp0 Point
+    var x1 int32
+    var x2 int32
+    var y__2 int32
+    var x__1 int32
+    var t14 string
+    var t15 string
+    var t16 string
+    var t17 string
+    var t18 string
+    var t19 string
+    var t20 string
+    var t21 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp0 = self__0
+            x1 = mtmp0.x
+            x2 = mtmp0.y
+            y__2 = x2
+            x__1 = x1
+            t14 = "{" + "\"x\":"
+            t15 = int32_to_string(x__1)
+            t16 = t14 + t15
+            t17 = t16 + ","
+            t18 = t17 + "\"y\":"
+            t19 = int32_to_string(y__2)
+            t20 = t18 + t19
+            t21 = t20 + "}"
+            return t21
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_Person_Person_to_json(self__3 Person) string {
-    var ret45 string
-    var mtmp3 Person = self__3
-    var x4 string = mtmp3.name
-    var x5 int32 = mtmp3.age
-    var x6 bool = mtmp3.active
-    var active__6 bool = x6
-    var age__5 int32 = x5
-    var name__4 string = x4
-    var t28 string = "{" + "\"name\":"
-    var t29 string = json_escape_string(name__4)
-    var t27 string = t28 + t29
-    var t26 string = t27 + ","
-    var t25 string = t26 + "\"age\":"
-    var t30 string = int32_to_string(age__5)
-    var t24 string = t25 + t30
-    var t23 string = t24 + ","
-    var t22 string = t23 + "\"active\":"
-    var t31 string = bool_to_json(active__6)
-    var t21 string = t22 + t31
-    ret45 = t21 + "}"
-    return ret45
+    var mtmp3 Person
+    var x4 string
+    var x5 int32
+    var x6 bool
+    var active__6 bool
+    var age__5 int32
+    var name__4 string
+    var t22 string
+    var t23 string
+    var t24 string
+    var t25 string
+    var t26 string
+    var t27 string
+    var t28 string
+    var t29 string
+    var t30 string
+    var t31 string
+    var t32 string
+    var t33 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp3 = self__3
+            x4 = mtmp3.name
+            x5 = mtmp3.age
+            x6 = mtmp3.active
+            active__6 = x6
+            age__5 = x5
+            name__4 = x4
+            t22 = "{" + "\"name\":"
+            t23 = json_escape_string(name__4)
+            t24 = t22 + t23
+            t25 = t24 + ","
+            t26 = t25 + "\"age\":"
+            t27 = int32_to_string(age__5)
+            t28 = t26 + t27
+            t29 = t28 + ","
+            t30 = t29 + "\"active\":"
+            t31 = bool_to_json(active__6)
+            t32 = t30 + t31
+            t33 = t32 + "}"
+            return t33
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_Color_Color_to_json(self__7 Color) string {
-    var ret46 string
-    switch self__7 := self__7.(type) {
-    case Red:
-        ret46 = "{\"tag\":\"Red\"}"
-    case Green:
-        ret46 = "{\"tag\":\"Green\"}"
-    case Blue:
-        ret46 = "{\"tag\":\"Blue\"}"
-    case Rgb:
-        var x7 int32 = self__7._0
-        var x8 int32 = self__7._1
-        var x9 int32 = self__7._2
-        var __field2__10 int32 = x9
-        var __field1__9 int32 = x8
-        var __field0__8 int32 = x7
-        var t37 string = int32_to_string(__field0__8)
-        var t36 string = "{\"tag\":\"Rgb\",\"fields\":[" + t37
-        var t35 string = t36 + ","
-        var t38 string = int32_to_string(__field1__9)
-        var t34 string = t35 + t38
-        var t33 string = t34 + ","
-        var t39 string = int32_to_string(__field2__10)
-        var t32 string = t33 + t39
-        ret46 = t32 + "]}"
+    var jp35 string
+    var x7 int32
+    var x8 int32
+    var x9 int32
+    var __field2__10 int32
+    var __field1__9 int32
+    var __field0__8 int32
+    var t36 string
+    var t37 string
+    var t38 string
+    var t39 string
+    var t40 string
+    var t41 string
+    var t42 string
+    var t43 string
+    var t44 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch self__7.(type) {
+            case Red:
+                pc = 2
+            case Green:
+                pc = 3
+            case Blue:
+                pc = 4
+            case Rgb:
+                pc = 5
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp35
+        case 2:
+            jp35 = "{\"tag\":\"Red\"}"
+            pc = 1
+        case 3:
+            jp35 = "{\"tag\":\"Green\"}"
+            pc = 1
+        case 4:
+            jp35 = "{\"tag\":\"Blue\"}"
+            pc = 1
+        case 5:
+            x7 = self__7.(Rgb)._0
+            x8 = self__7.(Rgb)._1
+            x9 = self__7.(Rgb)._2
+            __field2__10 = x9
+            __field1__9 = x8
+            __field0__8 = x7
+            t36 = int32_to_string(__field0__8)
+            t37 = "{\"tag\":\"Rgb\",\"fields\":[" + t36
+            t38 = t37 + ","
+            t39 = int32_to_string(__field1__9)
+            t40 = t38 + t39
+            t41 = t40 + ","
+            t42 = int32_to_string(__field2__10)
+            t43 = t41 + t42
+            t44 = t43 + "]}"
+            jp35 = t44
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret46
 }
 
 func main0() struct{} {
-    var ret47 struct{}
-    var p__11 Point = Point{
-        x: 10,
-        y: 20,
+    var p__11 Point
+    var person__12 Person
+    var c1__13 Color
+    var c2__14 Color
+    var t45 string
+    var _wild10 struct{}
+    var t46 string
+    var _wild11 struct{}
+    var t47 string
+    var _wild12 struct{}
+    var t48 string
+    var _wild13 struct{}
+    _ = _wild10
+    _ = _wild11
+    _ = _wild12
+    _ = _wild13
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            p__11 = Point{
+                x: 10,
+                y: 20,
+            }
+            person__12 = Person{
+                name: "Alice",
+                age: 30,
+                active: true,
+            }
+            c1__13 = Red{}
+            c2__14 = Rgb{
+                _0: 255,
+                _1: 128,
+                _2: 0,
+            }
+            t45 = _goml_inherent_Point_Point_to_json(p__11)
+            string_println(t45)
+            t46 = _goml_inherent_Person_Person_to_json(person__12)
+            string_println(t46)
+            t47 = _goml_inherent_Color_Color_to_json(c1__13)
+            string_println(t47)
+            t48 = _goml_inherent_Color_Color_to_json(c2__14)
+            string_println(t48)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
     }
-    var person__12 Person = Person{
-        name: "Alice",
-        age: 30,
-        active: true,
-    }
-    var c1__13 Color = Red{}
-    var c2__14 Color = Rgb{
-        _0: 255,
-        _1: 128,
-        _2: 0,
-    }
-    var t40 string = _goml_inherent_Point_Point_to_json(p__11)
-    string_println(t40)
-    var t41 string = _goml_inherent_Person_Person_to_json(person__12)
-    string_println(t41)
-    var t42 string = _goml_inherent_Color_Color_to_json(c1__13)
-    string_println(t42)
-    var t43 string = _goml_inherent_Color_Color_to_json(c2__14)
-    string_println(t43)
-    ret47 = struct{}{}
-    return ret47
 }
 
 func main() {

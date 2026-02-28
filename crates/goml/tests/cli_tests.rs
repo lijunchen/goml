@@ -179,7 +179,8 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
         == ANF ==
         fn main() -> unit {
-          string_println("hello")
+          let t0 = string_println("hello") in
+          t0
         }
 
         == Go ==
@@ -195,9 +196,17 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         func main0() struct{} {
-            var ret0 struct{}
-            ret0 = string_println("hello")
-            return ret0
+            var t0 struct{}
+            var pc int32 = 0
+            for {
+                switch pc {
+                case 0:
+                    t0 = string_println("hello")
+                    return t0
+                default:
+                    panic("invalid pc")
+                }
+            }
         }
 
         func main() {

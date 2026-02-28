@@ -4,19 +4,21 @@ fn inherent#Boxed#Boxed#format(self/0: Boxed) -> string {
 
 fn trait_impl#Render#Boxed#format(self/1: Boxed) -> string {
   let t2 = Boxed.value(self/1) in
-  int32_to_string(t2)
+  let t3 = int32_to_string(t2) in
+  t3
 }
 
 fn main() -> unit {
   let t4 = Boxed { value: 9 } in
-  let t3 = inherent#Boxed#Boxed#format(t4) in
-  let _wild0 = println__T_string(t3) in
+  let t5 = inherent#Boxed#Boxed#format(t4) in
+  let _wild0 = println__T_string(t5) in
   let t6 = Boxed { value: 9 } in
-  let t5 = trait_impl#Render#Boxed#format(t6) in
-  let _wild1 = println__T_string(t5) in
+  let t7 = trait_impl#Render#Boxed#format(t6) in
+  let _wild1 = println__T_string(t7) in
   ()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  string_println(value/1)
+  let t8 = string_println(value/1) in
+  t8
 }

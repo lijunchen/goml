@@ -41,116 +41,253 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func point32_to_string(p__0 Point) string {
-    var ret27 string
-    var mtmp0 Point = p__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    var y__2 int32 = x2
-    var x__1 int32 = x1
-    var t14 string = int32_to_string(x__1)
-    var t13 string = "Point { x: " + t14
-    var t12 string = t13 + ", y: "
-    var t15 string = int32_to_string(y__2)
-    var t11 string = t12 + t15
-    ret27 = t11 + " }"
-    return ret27
+    var mtmp0 Point
+    var x1 int32
+    var x2 int32
+    var y__2 int32
+    var x__1 int32
+    var t11 string
+    var t12 string
+    var t13 string
+    var t14 string
+    var t15 string
+    var t16 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp0 = p__0
+            x1 = mtmp0.x
+            x2 = mtmp0.y
+            y__2 = x2
+            x__1 = x1
+            t11 = int32_to_string(x__1)
+            t12 = "Point { x: " + t11
+            t13 = t12 + ", y: "
+            t14 = int32_to_string(y__2)
+            t15 = t13 + t14
+            t16 = t15 + " }"
+            return t16
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func color_to_string(c__3 Color) string {
-    var ret28 string
-    switch c__3.(type) {
-    case Red:
-        ret28 = "Red"
-    case Green:
-        ret28 = "Green"
-    case Blue:
-        ret28 = "Blue"
+    var jp18 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch c__3.(type) {
+            case Red:
+                pc = 2
+            case Green:
+                pc = 3
+            case Blue:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp18
+        case 2:
+            jp18 = "Red"
+            pc = 1
+        case 3:
+            jp18 = "Green"
+            pc = 1
+        case 4:
+            jp18 = "Blue"
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret28
 }
 
 func line_to_string(l__4 Line) string {
-    var ret29 string
-    var mtmp3 Line = l__4
-    var x4 Point = mtmp3.from
-    var x5 Point = mtmp3.to
-    var x6 Color = mtmp3.color
-    var color__7 Color = x6
-    var to__6 Point = x5
-    var from__5 Point = x4
-    var t21 string = point32_to_string(from__5)
-    var t20 string = "Line { from: " + t21
-    var t19 string = t20 + ", to: "
-    var t22 string = point32_to_string(to__6)
-    var t18 string = t19 + t22
-    var t17 string = t18 + ", color: "
-    var t23 string = color_to_string(color__7)
-    var t16 string = t17 + t23
-    ret29 = t16 + " }"
-    return ret29
+    var mtmp3 Line
+    var x4 Point
+    var x5 Point
+    var x6 Color
+    var color__7 Color
+    var to__6 Point
+    var from__5 Point
+    var t19 string
+    var t20 string
+    var t21 string
+    var t22 string
+    var t23 string
+    var t24 string
+    var t25 string
+    var t26 string
+    var t27 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp3 = l__4
+            x4 = mtmp3.from
+            x5 = mtmp3.to
+            x6 = mtmp3.color
+            color__7 = x6
+            to__6 = x5
+            from__5 = x4
+            t19 = point32_to_string(from__5)
+            t20 = "Line { from: " + t19
+            t21 = t20 + ", to: "
+            t22 = point32_to_string(to__6)
+            t23 = t21 + t22
+            t24 = t23 + ", color: "
+            t25 = color_to_string(color__7)
+            t26 = t24 + t25
+            t27 = t26 + " }"
+            return t27
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func point_type(p__8 Point) string {
-    var ret30 string
-    var x7 int32 = p__8.x
-    var x8 int32 = p__8.y
-    switch x7 {
-    case 0:
-        switch x8 {
+    var x7 int32
+    var x8 int32
+    var jp29 string
+    var jp31 string
+    var y__9 int32
+    var mtmp9 bool
+    var jp33 string
+    var jp35 string
+    var pc int32 = 0
+    for {
+        switch pc {
         case 0:
-            ret30 = "origin"
+            x7 = p__8.x
+            x8 = p__8.y
+            switch x7 {
+            case 0:
+                pc = 2
+            case 1:
+                pc = 10
+            default:
+                pc = 14
+            }
         case 1:
-            ret30 = "up"
-        default:
-            var y__9 int32 = x8
-            var mtmp9 bool = 0 < y__9
+            return jp29
+        case 2:
+            switch x8 {
+            case 0:
+                pc = 4
+            case 1:
+                pc = 5
+            default:
+                pc = 6
+            }
+        case 3:
+            jp29 = jp31
+            pc = 1
+        case 4:
+            jp31 = "origin"
+            pc = 3
+        case 5:
+            jp31 = "up"
+            pc = 3
+        case 6:
+            y__9 = x8
+            mtmp9 = 0 < y__9
             switch mtmp9 {
             case true:
-                ret30 = "above"
+                pc = 8
             case false:
-                ret30 = "below"
+                pc = 9
+            default:
+                panic("non-exhaustive match")
             }
-        }
-    case 1:
-        switch x8 {
-        case 0:
-            ret30 = "right"
+        case 7:
+            jp31 = jp33
+            pc = 3
+        case 8:
+            jp33 = "above"
+            pc = 7
+        case 9:
+            jp33 = "below"
+            pc = 7
+        case 10:
+            switch x8 {
+            case 0:
+                pc = 12
+            default:
+                pc = 13
+            }
+        case 11:
+            jp29 = jp35
+            pc = 1
+        case 12:
+            jp35 = "right"
+            pc = 11
+        case 13:
+            jp35 = "unknown"
+            pc = 11
+        case 14:
+            jp29 = "unknown"
+            pc = 1
         default:
-            ret30 = "unknown"
+            panic("invalid pc")
         }
-    default:
-        ret30 = "unknown"
     }
-    return ret30
 }
 
 func main0() struct{} {
-    var ret31 struct{}
-    var p0__10 Point = Point{
-        x: 0,
-        y: 0,
+    var p0__10 Point
+    var t36 string
+    var mtmp10 struct{}
+    var p1__11 Point
+    var line__12 Line
+    var t37 string
+    var t38 struct{}
+    _ = mtmp10
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            p0__10 = Point{
+                x: 0,
+                y: 0,
+            }
+            t36 = point_type(p0__10)
+            println__T_string(t36)
+            p1__11 = Point{
+                x: 10,
+                y: 10,
+            }
+            line__12 = Line{
+                from: p0__10,
+                to: p1__11,
+                color: Red{},
+            }
+            t37 = line_to_string(line__12)
+            t38 = println__T_string(t37)
+            return t38
+        default:
+            panic("invalid pc")
+        }
     }
-    var t24 string = point_type(p0__10)
-    println__T_string(t24)
-    var p1__11 Point = Point{
-        x: 10,
-        y: 10,
-    }
-    var t25 Color = Red{}
-    var line__12 Line = Line{
-        from: p0__10,
-        to: p1__11,
-        color: t25,
-    }
-    var t26 string = line_to_string(line__12)
-    ret31 = println__T_string(t26)
-    return ret31
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret32 struct{}
-    ret32 = string_println(value__1)
-    return ret32
+    var t39 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t39 = string_println(value__1)
+            return t39
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

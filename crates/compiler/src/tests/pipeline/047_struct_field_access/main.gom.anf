@@ -1,22 +1,25 @@
 fn make_point(base/0: int32) -> Point {
   let t0 = (base/0 + 1) in
-  Point { x: base/0, y: t0 }
+  let t1 = Point { x: base/0, y: t0 } in
+  t1
 }
 
 fn sum_point(p/1: Point) -> int32 {
-  let t1 = Point.x(p/1) in
-  let t2 = Point.y(p/1) in
-  (t1 + t2)
+  let t2 = Point.x(p/1) in
+  let t3 = Point.y(p/1) in
+  let t4 = (t2 + t3) in
+  t4
 }
 
 fn main() -> int32 {
   let p/2 = make_point(5) in
-  let t4 = Point.x(p/2) in
-  let t3 = (t4 + 1) in
-  let t6 = Point.y(p/2) in
-  let t5 = (t6 - 2) in
-  let shifted/3 = Point { x: t3, y: t5 } in
-  let t7 = Point.x(shifted/3) in
-  let t8 = sum_point(shifted/3) in
-  (t7 + t8)
+  let t5 = Point.x(p/2) in
+  let t6 = (t5 + 1) in
+  let t7 = Point.y(p/2) in
+  let t8 = (t7 - 2) in
+  let shifted/3 = Point { x: t6, y: t8 } in
+  let t9 = Point.x(shifted/3) in
+  let t10 = sum_point(shifted/3) in
+  let t11 = (t9 + t10) in
+  t11
 }

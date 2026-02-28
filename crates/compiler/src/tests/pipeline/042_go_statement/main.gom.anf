@@ -1,20 +1,33 @@
 fn child(signal/0: Ref[int32]) -> unit {
-  ref_set(signal/0, 1)
+  let t4 = ref_set(signal/0, 1) in
+  t4
 }
 
 fn main() -> unit {
   let signal/1 = ref(0) in
-  let t4 = closure_env_main_0 { signal_0: signal/1 } in
-  let _wild0 = go t4 in
-  let _wild1 = while let t5 = ref_get(signal/1) in
-  (t5 < 1) {
+  let t5 = closure_env_main_0 { signal_0: signal/1 } in
+  let _wild0 = go t5 in
+  join exit6() -> unit {
+    let _wild1 = () in
+    let _wild2 = string_println("main") in
     ()
   } in
-  let _wild2 = string_println("main") in
-  ()
+  joinrec {
+    join loop7() -> unit {
+      let t8 = ref_get(signal/1) in
+      let t9 = (t8 < 1) in
+      if t9 {
+        jump loop7()
+      } else {
+        jump exit6()
+      }
+    } in
+  } in
+  jump loop7()
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env3: closure_env_main_0) -> unit {
   let signal/1 = closure_env_main_0.signal_0(env3) in
-  child(signal/1)
+  let t10 = child(signal/1) in
+  t10
 }

@@ -32,23 +32,47 @@ func ptr_eq__Ref_int32(a *ref_int32_x, b *ref_int32_x) bool {
 }
 
 func main0() struct{} {
-    var ret5 struct{}
-    var a__0 *ref_int32_x = ref__Ref_int32(1)
-    var b__1 *ref_int32_x = a__0
-    var c__2 *ref_int32_x = ref__Ref_int32(1)
-    var t2 bool = ptr_eq__Ref_int32(a__0, b__1)
-    println__T_bool(t2)
-    var t3 bool = ptr_eq__Ref_int32(a__0, c__2)
-    println__T_bool(t3)
-    ret5 = struct{}{}
-    return ret5
+    var a__0 *ref_int32_x
+    var b__1 *ref_int32_x
+    var c__2 *ref_int32_x
+    var t2 bool
+    var _wild0 struct{}
+    var t3 bool
+    var _wild1 struct{}
+    _ = _wild0
+    _ = _wild1
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = ref__Ref_int32(1)
+            b__1 = a__0
+            c__2 = ref__Ref_int32(1)
+            t2 = ptr_eq__Ref_int32(a__0, b__1)
+            println__T_bool(t2)
+            t3 = ptr_eq__Ref_int32(a__0, c__2)
+            println__T_bool(t3)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var ret6 struct{}
-    var t4 string = bool_to_string(value__1)
-    ret6 = string_println(t4)
-    return ret6
+    var t4 string
+    var t5 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t4 = bool_to_string(value__1)
+            t5 = string_println(t4)
+            return t5
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

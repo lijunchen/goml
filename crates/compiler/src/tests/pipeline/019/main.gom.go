@@ -27,137 +27,280 @@ type Wrapper__Point struct {
 }
 
 func make_point() Point {
-    var ret55 Point
-    ret55 = Point{
-        x: 0,
-        y: 0,
+    var t28 Point
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t28 = Point{
+                x: 0,
+                y: 0,
+            }
+            return t28
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret55
 }
 
 func flip(point__0 Point) Point {
-    var ret56 Point
-    var mtmp0 Point = point__0
-    var x1 int32 = mtmp0.x
-    var x2 int32 = mtmp0.y
-    var y__2 int32 = x2
-    var x__1 int32 = x1
-    ret56 = Point{
-        x: y__2,
-        y: x__1,
+    var mtmp0 Point
+    var x1 int32
+    var x2 int32
+    var y__2 int32
+    var x__1 int32
+    var t29 Point
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp0 = point__0
+            x1 = mtmp0.x
+            x2 = mtmp0.y
+            y__2 = x2
+            x__1 = x1
+            t29 = Point{
+                x: y__2,
+                y: x__1,
+            }
+            return t29
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret56
 }
 
 func wrap_int(x__3 int32) Wrapper__int32 {
-    var ret57 Wrapper__int32
-    ret57 = Wrapper__int32{
-        value: x__3,
+    var t30 Wrapper__int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t30 = Wrapper__int32{
+                value: x__3,
+            }
+            return t30
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret57
 }
 
 func x_add_1(p__4 Point) Point {
-    var ret58 Point
-    var mtmp3 Point = p__4
-    var x4 int32 = mtmp3.x
-    var x5 int32 = mtmp3.y
-    var y__6 int32 = x5
-    var x__5 int32 = x4
-    var t28 int32 = x__5 + 1
-    ret58 = Point{
-        x: t28,
-        y: y__6,
+    var mtmp3 Point
+    var x4 int32
+    var x5 int32
+    var y__6 int32
+    var x__5 int32
+    var t31 int32
+    var t32 Point
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp3 = p__4
+            x4 = mtmp3.x
+            x5 = mtmp3.y
+            y__6 = x5
+            x__5 = x4
+            t31 = x__5 + 1
+            t32 = Point{
+                x: t31,
+                y: y__6,
+            }
+            return t32
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret58
 }
 
 func point32_to_string(p__13 Point) string {
-    var ret61 string
-    var mtmp12 Point = p__13
-    var x13 int32 = mtmp12.x
-    var x14 int32 = mtmp12.y
-    var y__15 int32 = x14
-    var x__14 int32 = x13
-    var t32 string = int32_to_string(x__14)
-    var t31 string = "Point { x: " + t32
-    var t30 string = t31 + ", y: "
-    var t33 string = int32_to_string(y__15)
-    var t29 string = t30 + t33
-    ret61 = t29 + "}"
-    return ret61
+    var mtmp12 Point
+    var x13 int32
+    var x14 int32
+    var y__15 int32
+    var x__14 int32
+    var t33 string
+    var t34 string
+    var t35 string
+    var t36 string
+    var t37 string
+    var t38 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp12 = p__13
+            x13 = mtmp12.x
+            x14 = mtmp12.y
+            y__15 = x14
+            x__14 = x13
+            t33 = int32_to_string(x__14)
+            t34 = "Point { x: " + t33
+            t35 = t34 + ", y: "
+            t36 = int32_to_string(y__15)
+            t37 = t35 + t36
+            t38 = t37 + "}"
+            return t38
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func point32_to_string2(p__16 Point) string {
-    var ret62 string
-    var mtmp15 Point = p__16
-    var x16 int32 = mtmp15.x
-    var x17 int32 = mtmp15.y
-    var y__18 int32 = x17
-    var x__17 int32 = x16
-    var t37 string = int32_to_string(x__17)
-    var t36 string = "Point { x: " + t37
-    var t35 string = t36 + ", y: "
-    var t38 string = int32_to_string(y__18)
-    var t34 string = t35 + t38
-    ret62 = t34 + "}"
-    return ret62
+    var mtmp15 Point
+    var x16 int32
+    var x17 int32
+    var y__18 int32
+    var x__17 int32
+    var t39 string
+    var t40 string
+    var t41 string
+    var t42 string
+    var t43 string
+    var t44 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp15 = p__16
+            x16 = mtmp15.x
+            x17 = mtmp15.y
+            y__18 = x17
+            x__17 = x16
+            t39 = int32_to_string(x__17)
+            t40 = "Point { x: " + t39
+            t41 = t40 + ", y: "
+            t42 = int32_to_string(y__18)
+            t43 = t41 + t42
+            t44 = t43 + "}"
+            return t44
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func point32_to_string3(p__19 Point) string {
-    var ret63 string
-    var mtmp18 Point = p__19
-    var x19 int32 = mtmp18.x
-    var x20 int32 = mtmp18.y
-    var y__21 int32 = x20
-    var x__20 int32 = x19
-    var t42 string = int32_to_string(x__20)
-    var t41 string = "Point { x: " + t42
-    var t40 string = t41 + ", y: "
-    var t43 string = int32_to_string(y__21)
-    var t39 string = t40 + t43
-    ret63 = t39 + "}"
-    return ret63
+    var mtmp18 Point
+    var x19 int32
+    var x20 int32
+    var y__21 int32
+    var x__20 int32
+    var t45 string
+    var t46 string
+    var t47 string
+    var t48 string
+    var t49 string
+    var t50 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp18 = p__19
+            x19 = mtmp18.x
+            x20 = mtmp18.y
+            y__21 = x20
+            x__20 = x19
+            t45 = int32_to_string(x__20)
+            t46 = "Point { x: " + t45
+            t47 = t46 + ", y: "
+            t48 = int32_to_string(y__21)
+            t49 = t47 + t48
+            t50 = t49 + "}"
+            return t50
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func point32_to_string4(p__22 Point) string {
-    var ret64 string
-    var mtmp21 Point = p__22
-    var x22 int32 = mtmp21.x
-    var x23 int32 = mtmp21.y
-    var y__24 int32 = x23
-    var x__23 int32 = x22
-    var t47 string = int32_to_string(x__23)
-    var t46 string = "Point { x: " + t47
-    var t45 string = t46 + ", y: "
-    var t48 string = int32_to_string(y__24)
-    var t44 string = t45 + t48
-    ret64 = t44 + "}"
-    return ret64
+    var mtmp21 Point
+    var x22 int32
+    var x23 int32
+    var y__24 int32
+    var x__23 int32
+    var t51 string
+    var t52 string
+    var t53 string
+    var t54 string
+    var t55 string
+    var t56 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp21 = p__22
+            x22 = mtmp21.x
+            x23 = mtmp21.y
+            y__24 = x23
+            x__23 = x22
+            t51 = int32_to_string(x__23)
+            t52 = "Point { x: " + t51
+            t53 = t52 + ", y: "
+            t54 = int32_to_string(y__24)
+            t55 = t53 + t54
+            t56 = t55 + "}"
+            return t56
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main0() struct{} {
-    var ret65 struct{}
-    var start__25 Point = make_point()
-    var t49 string = point32_to_string(start__25)
-    string_println(t49)
-    var t50 Point = Point{
-        x: 1,
-        y: 2,
+    var start__25 Point
+    var t57 string
+    var mtmp24 struct{}
+    var t58 Point
+    var swapped__26 Point
+    var t59 string
+    var mtmp25 struct{}
+    var boxed__27 Wrapper__int32
+    var point_box__28 Wrapper__Point
+    var a__29 Point
+    var t60 string
+    var mtmp26 struct{}
+    var t61 Point
+    var a__30 Point
+    var t62 string
+    var mtmp27 struct{}
+    _ = mtmp24
+    _ = mtmp25
+    _ = boxed__27
+    _ = point_box__28
+    _ = mtmp26
+    _ = mtmp27
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            start__25 = make_point()
+            t57 = point32_to_string(start__25)
+            string_println(t57)
+            t58 = Point{
+                x: 1,
+                y: 2,
+            }
+            swapped__26 = flip(t58)
+            t59 = point32_to_string2(swapped__26)
+            string_println(t59)
+            wrap_int(3)
+            a__29 = x_add_1(start__25)
+            t60 = point32_to_string3(a__29)
+            string_println(t60)
+            t61 = x_add_1(start__25)
+            a__30 = flip(t61)
+            t62 = point32_to_string4(a__30)
+            string_println(t62)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
     }
-    var swapped__26 Point = flip(t50)
-    var t51 string = point32_to_string2(swapped__26)
-    string_println(t51)
-    wrap_int(3)
-    var a__29 Point = x_add_1(start__25)
-    var t52 string = point32_to_string3(a__29)
-    string_println(t52)
-    var t53 Point = x_add_1(start__25)
-    var a__30 Point = flip(t53)
-    var t54 string = point32_to_string4(a__30)
-    string_println(t54)
-    ret65 = struct{}{}
-    return ret65
 }
 
 func main() {

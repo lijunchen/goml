@@ -14,75 +14,170 @@ func string_println(s string) struct{} {
 }
 
 func match_int(n__0 int32) int32 {
-    var ret23 int32
-    switch n__0 {
-    case 0:
-        ret23 = 10
-    case 1:
-        ret23 = 20
-    default:
-        ret23 = 30
+    var jp8 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch n__0 {
+            case 0:
+                pc = 2
+            case 1:
+                pc = 3
+            default:
+                pc = 4
+            }
+        case 1:
+            return jp8
+        case 2:
+            jp8 = 10
+            pc = 1
+        case 3:
+            jp8 = 20
+            pc = 1
+        case 4:
+            jp8 = 30
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret23
 }
 
 func wildcard_first(n__1 int32) int32 {
-    var ret24 int32
-    ret24 = 40
-    return ret24
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            return 40
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func wildcard_middle(n__2 int32) int32 {
-    var ret25 int32
-    switch n__2 {
-    case 2:
-        ret25 = 90
-    case 3:
-        ret25 = 100
-    default:
-        ret25 = 100
+    var jp10 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch n__2 {
+            case 2:
+                pc = 2
+            case 3:
+                pc = 3
+            default:
+                pc = 4
+            }
+        case 1:
+            return jp10
+        case 2:
+            jp10 = 90
+            pc = 1
+        case 3:
+            jp10 = 100
+            pc = 1
+        case 4:
+            jp10 = 100
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret25
 }
 
 func repeated(n__3 int32) int32 {
-    var ret26 int32
-    switch n__3 {
-    case 1:
-        ret26 = 60
-    default:
-        ret26 = 80
+    var jp12 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch n__3 {
+            case 1:
+                pc = 2
+            default:
+                pc = 3
+            }
+        case 1:
+            return jp12
+        case 2:
+            jp12 = 60
+            pc = 1
+        case 3:
+            jp12 = 80
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret26
 }
 
 func main0() struct{} {
-    var ret27 struct{}
-    var t8 int32 = match_int(0)
-    var t7 string = int32_to_string(t8)
-    string_println(t7)
-    var t10 int32 = match_int(5)
-    var t9 string = int32_to_string(t10)
-    string_println(t9)
-    var t12 int32 = wildcard_first(0)
-    var t11 string = int32_to_string(t12)
-    string_println(t11)
-    var t14 int32 = wildcard_first(2)
-    var t13 string = int32_to_string(t14)
-    string_println(t13)
-    var t16 int32 = wildcard_middle(2)
-    var t15 string = int32_to_string(t16)
-    string_println(t15)
-    var t18 int32 = wildcard_middle(3)
-    var t17 string = int32_to_string(t18)
-    string_println(t17)
-    var t20 int32 = repeated(1)
-    var t19 string = int32_to_string(t20)
-    string_println(t19)
-    var t22 int32 = repeated(3)
-    var t21 string = int32_to_string(t22)
-    ret27 = string_println(t21)
-    return ret27
+    var t13 int32
+    var t14 string
+    var mtmp0 struct{}
+    var t15 int32
+    var t16 string
+    var mtmp1 struct{}
+    var t17 int32
+    var t18 string
+    var mtmp2 struct{}
+    var t19 int32
+    var t20 string
+    var mtmp3 struct{}
+    var t21 int32
+    var t22 string
+    var mtmp4 struct{}
+    var t23 int32
+    var t24 string
+    var mtmp5 struct{}
+    var t25 int32
+    var t26 string
+    var mtmp6 struct{}
+    var t27 int32
+    var t28 string
+    var t29 struct{}
+    _ = mtmp0
+    _ = mtmp1
+    _ = mtmp2
+    _ = mtmp3
+    _ = mtmp4
+    _ = mtmp5
+    _ = mtmp6
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t13 = match_int(0)
+            t14 = int32_to_string(t13)
+            string_println(t14)
+            t15 = match_int(5)
+            t16 = int32_to_string(t15)
+            string_println(t16)
+            t17 = wildcard_first(0)
+            t18 = int32_to_string(t17)
+            string_println(t18)
+            t19 = wildcard_first(2)
+            t20 = int32_to_string(t19)
+            string_println(t20)
+            t21 = wildcard_middle(2)
+            t22 = int32_to_string(t21)
+            string_println(t22)
+            t23 = wildcard_middle(3)
+            t24 = int32_to_string(t23)
+            string_println(t24)
+            t25 = repeated(1)
+            t26 = int32_to_string(t25)
+            string_println(t26)
+            t27 = repeated(3)
+            t28 = int32_to_string(t27)
+            t29 = string_println(t28)
+            return t29
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

@@ -12,48 +12,101 @@ func string_println(s string) struct{} {
 type Shape struct {}
 
 func _goml_inherent_Shape_Shape_name(self__0 Shape) string {
-    var ret5 string
-    ret5 = "Shape"
-    return ret5
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            return "Shape"
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_Shape_Shape_rename(self__1 Shape, suffix__2 string) string {
-    var ret6 string
-    var t2 string = _goml_inherent_Shape_Shape_name(self__1)
-    ret6 = t2 + suffix__2
-    return ret6
+    var t2 string
+    var t3 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t2 = _goml_inherent_Shape_Shape_name(self__1)
+            t3 = t2 + suffix__2
+            return t3
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_Shape_Shape_join(self__3 Shape, left__4 string, right__5 string) string {
-    var ret7 string
-    var t4 string = _goml_inherent_Shape_Shape_name(self__3)
-    var t3 string = left__4 + t4
-    ret7 = t3 + right__5
-    return ret7
+    var t4 string
+    var t5 string
+    var t6 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t4 = _goml_inherent_Shape_Shape_name(self__3)
+            t5 = left__4 + t4
+            t6 = t5 + right__5
+            return t6
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func announce(shape__6 Shape) struct{} {
-    var ret8 struct{}
-    var base__7 string = _goml_inherent_Shape_Shape_name(shape__6)
-    var with_suffix__8 string = _goml_inherent_Shape_Shape_rename(shape__6, "!")
-    var combined__9 string = _goml_inherent_Shape_Shape_join(shape__6, base__7, with_suffix__8)
-    println__T_string(combined__9)
-    ret8 = struct{}{}
-    return ret8
+    var base__7 string
+    var with_suffix__8 string
+    var combined__9 string
+    var mtmp0 struct{}
+    _ = mtmp0
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            base__7 = _goml_inherent_Shape_Shape_name(shape__6)
+            with_suffix__8 = _goml_inherent_Shape_Shape_rename(shape__6, "!")
+            combined__9 = _goml_inherent_Shape_Shape_join(shape__6, base__7, with_suffix__8)
+            println__T_string(combined__9)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main0() struct{} {
-    var ret9 struct{}
-    var shape__10 Shape = Shape{}
-    announce(shape__10)
-    ret9 = struct{}{}
-    return ret9
+    var shape__10 Shape
+    var _wild1 struct{}
+    _ = _wild1
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            shape__10 = Shape{}
+            announce(shape__10)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret10 struct{}
-    ret10 = string_println(value__1)
-    return ret10
+    var t7 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t7 = string_println(value__1)
+            return t7
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

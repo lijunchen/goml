@@ -1,24 +1,27 @@
 fn describe_epoch() -> string {
   let epoch/0 = unix(946684800, 500000000) in
-  format_time("epoch snapshot => %v", epoch/0)
+  let t3 = format_time("epoch snapshot => %v", epoch/0) in
+  t3
 }
 
 fn describe_planned_launch() -> string {
   let launch/1 = unix(1709294730, 250000000) in
-  format_time("planned launch => %v", launch/1)
+  let t4 = format_time("planned launch => %v", launch/1) in
+  t4
 }
 
 fn describe_duration() -> string {
   let parsed/2 = duration(1500000000) in
-  format_duration("parsed duration => %v", parsed/2)
+  let t5 = format_duration("parsed duration => %v", parsed/2) in
+  t5
 }
 
 fn main() -> unit {
-  let t3 = describe_epoch() in
-  let _wild0 = string_println(t3) in
-  let t4 = describe_planned_launch() in
-  let _wild1 = string_println(t4) in
-  let t5 = describe_duration() in
-  let _wild2 = string_println(t5) in
+  let t6 = describe_epoch() in
+  let _wild0 = string_println(t6) in
+  let t7 = describe_planned_launch() in
+  let _wild1 = string_println(t7) in
+  let t8 = describe_duration() in
+  let _wild2 = string_println(t8) in
   ()
 }

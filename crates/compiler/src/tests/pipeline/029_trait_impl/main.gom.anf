@@ -3,25 +3,33 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
 }
 
 fn trait_impl#Display#Maybe[int32]#show(self/1: Maybe__int32) -> string {
+  join k4(jp5: string) -> string {
+    jp5
+  } in
   match self/1 {
     Tag_0 => {
       let x0 = Maybe__int32::Just._0(self/1) in
       let value/2 = x0 in
-      let t5 = int32_to_string(value/2) in
-      let t4 = ("Just(" + t5) in
-      (t4 + ")")
+      let t6 = int32_to_string(value/2) in
+      let t7 = ("Just(" + t6) in
+      let t8 = (t7 + ")") in
+      jump k4(t8)
     },
     Tag_1 => {
-      "Nothing"
+      jump k4("Nothing")
     },
   }
 }
 
 fn make_maybe(flag/3: bool) -> Maybe__int32 {
+  join k9(jp10: Maybe__int32) -> Maybe__int32 {
+    jp10
+  } in
   if flag/3 {
-    Maybe__int32::Just(42)
+    let t11 = Maybe__int32::Just(42) in
+    jump k9(t11)
   } else {
-    Tag_1
+    jump k9(Tag_1)
   }
 }
 
@@ -29,11 +37,11 @@ fn main() -> unit {
   let point/4 = Point { x: 1, y: 2 } in
   let some_number/5 = make_maybe(true) in
   let none_number/6 = make_maybe(false) in
-  let t6 = trait_impl#Display#Point#show(point/4) in
-  let mtmp1 = string_println(t6) in
-  let t7 = trait_impl#Display#Maybe[int32]#show(some_number/5) in
-  let mtmp2 = string_println(t7) in
-  let t8 = trait_impl#Display#Maybe[int32]#show(none_number/6) in
-  let mtmp3 = string_println(t8) in
+  let t12 = trait_impl#Display#Point#show(point/4) in
+  let mtmp1 = string_println(t12) in
+  let t13 = trait_impl#Display#Maybe[int32]#show(some_number/5) in
+  let mtmp2 = string_println(t13) in
+  let t14 = trait_impl#Display#Maybe[int32]#show(none_number/6) in
+  let mtmp3 = string_println(t14) in
   ()
 }

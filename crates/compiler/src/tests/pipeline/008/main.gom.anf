@@ -1,23 +1,35 @@
 fn main() -> unit {
   let t/0 = T::B(true, ()) in
+  join k2() -> unit {
+    ()
+  } in
   match t/0 {
     Tag_0 => {
-      let t2 = int32_to_string(1) in
-      string_print(t2)
+      let t3 = int32_to_string(1) in
+      let t4 = string_print(t3) in
+      jump k2()
     },
     Tag_1 => {
       let x0 = T::B._0(t/0) in
       let x1 = T::B._1(t/0) in
+      join k5() -> unit {
+        jump k2()
+      } in
       match x1 {
         () => {
+          join k6() -> unit {
+            jump k5()
+          } in
           match x0 {
             true => {
-              let t3 = int32_to_string(2) in
-              string_print(t3)
+              let t7 = int32_to_string(2) in
+              let t8 = string_print(t7) in
+              jump k6()
             },
             false => {
-              let t4 = int32_to_string(3) in
-              string_print(t4)
+              let t9 = int32_to_string(3) in
+              let t10 = string_print(t9) in
+              jump k6()
             },
           }
         },

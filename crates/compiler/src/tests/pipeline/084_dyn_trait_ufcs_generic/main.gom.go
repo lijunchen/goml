@@ -37,43 +37,87 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    var ret4 string
-    var t1 int32 = self__0.value
-    ret4 = int32_to_string(t1)
-    return ret4
+    var t1 int32
+    var t2 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t1 = self__0.value
+            t2 = int32_to_string(t1)
+            return t2
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func render(x__2 dyn__Display) string {
-    var ret5 string
-    ret5 = x__2.vtable.show(x__2.data)
-    return ret5
+    var t3 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t3 = x__2.vtable.show(x__2.data)
+            return t3
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main0() struct{} {
-    var ret6 struct{}
-    var t2 Point = Point{
-        value: 7,
+    var t4 Point
+    var d__3 dyn__Display
+    var t5 string
+    var _wild0 struct{}
+    _ = _wild0
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t4 = Point{
+                value: 7,
+            }
+            d__3 = to_dyn__T_Point(t4)
+            t5 = render(d__3)
+            println__T_string(t5)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
     }
-    var d__3 dyn__Display = to_dyn__T_Point(t2)
-    var t3 string = render(d__3)
-    println__T_string(t3)
-    ret6 = struct{}{}
-    return ret6
 }
 
 func to_dyn__T_Point(x__1 Point) dyn__Display {
-    var ret7 dyn__Display
-    ret7 = dyn__Display{
-        data: x__1,
-        vtable: dyn__Display__vtable__Point(),
+    var t6 dyn__Display
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t6 = dyn__Display{
+                data: x__1,
+                vtable: dyn__Display__vtable__Point(),
+            }
+            return t6
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret7
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret8 struct{}
-    ret8 = string_println(value__1)
-    return ret8
+    var t7 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t7 = string_println(value__1)
+            return t7
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

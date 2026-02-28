@@ -10,16 +10,31 @@ func string_println(s string) struct{} {
 }
 
 func _goml_Lib_x3a__x3a_msg() string {
-    var ret1 string
-    ret1 = "hi"
-    return ret1
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            return "hi"
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main0() struct{} {
-    var ret2 struct{}
-    var t0 string = _goml_Lib_x3a__x3a_msg()
-    ret2 = string_println(t0)
-    return ret2
+    var t0 string
+    var t1 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t0 = _goml_Lib_x3a__x3a_msg()
+            t1 = string_println(t0)
+            return t1
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

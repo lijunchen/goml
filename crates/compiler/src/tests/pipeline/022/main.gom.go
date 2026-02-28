@@ -14,56 +14,125 @@ func string_println(s string) struct{} {
 }
 
 func match_string(s__0 string) int32 {
-    var ret17 int32
-    switch s__0 {
-    case "hello":
-        ret17 = 1
-    case "world":
-        ret17 = 2
-    default:
-        ret17 = 3
+    var jp6 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch s__0 {
+            case "hello":
+                pc = 2
+            case "world":
+                pc = 3
+            default:
+                pc = 4
+            }
+        case 1:
+            return jp6
+        case 2:
+            jp6 = 1
+            pc = 1
+        case 3:
+            jp6 = 2
+            pc = 1
+        case 4:
+            jp6 = 3
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret17
 }
 
 func wildcard_position(s__1 string) int32 {
-    var ret18 int32
-    ret18 = 4
-    return ret18
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            return 4
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func repeated_string(s__2 string) int32 {
-    var ret19 int32
-    switch s__2 {
-    case "hello":
-        ret19 = 6
-    default:
-        ret19 = 8
+    var jp8 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch s__2 {
+            case "hello":
+                pc = 2
+            default:
+                pc = 3
+            }
+        case 1:
+            return jp8
+        case 2:
+            jp8 = 6
+            pc = 1
+        case 3:
+            jp8 = 8
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret19
 }
 
 func main0() struct{} {
-    var ret20 struct{}
-    var t6 int32 = match_string("hello")
-    var t5 string = int32_to_string(t6)
-    string_println(t5)
-    var t8 int32 = match_string("planet")
-    var t7 string = int32_to_string(t8)
-    string_println(t7)
-    var t10 int32 = wildcard_position("world")
-    var t9 string = int32_to_string(t10)
-    string_println(t9)
-    var t12 int32 = wildcard_position("sun")
-    var t11 string = int32_to_string(t12)
-    string_println(t11)
-    var t14 int32 = repeated_string("hello")
-    var t13 string = int32_to_string(t14)
-    string_println(t13)
-    var t16 int32 = repeated_string("mars")
-    var t15 string = int32_to_string(t16)
-    ret20 = string_println(t15)
-    return ret20
+    var t9 int32
+    var t10 string
+    var mtmp0 struct{}
+    var t11 int32
+    var t12 string
+    var mtmp1 struct{}
+    var t13 int32
+    var t14 string
+    var mtmp2 struct{}
+    var t15 int32
+    var t16 string
+    var mtmp3 struct{}
+    var t17 int32
+    var t18 string
+    var mtmp4 struct{}
+    var t19 int32
+    var t20 string
+    var t21 struct{}
+    _ = mtmp0
+    _ = mtmp1
+    _ = mtmp2
+    _ = mtmp3
+    _ = mtmp4
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t9 = match_string("hello")
+            t10 = int32_to_string(t9)
+            string_println(t10)
+            t11 = match_string("planet")
+            t12 = int32_to_string(t11)
+            string_println(t12)
+            t13 = wildcard_position("world")
+            t14 = int32_to_string(t13)
+            string_println(t14)
+            t15 = wildcard_position("sun")
+            t16 = int32_to_string(t15)
+            string_println(t16)
+            t17 = repeated_string("hello")
+            t18 = int32_to_string(t17)
+            string_println(t18)
+            t19 = repeated_string("mars")
+            t20 = int32_to_string(t19)
+            t21 = string_println(t20)
+            return t21
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

@@ -71,183 +71,390 @@ type Shape__unit_Origin struct {}
 func (_ Shape__unit_Origin) isShape__unit() {}
 
 func bounce_int(shape__0 Shape__int32) Shape__int32 {
-    var ret57 Shape__int32
-    switch shape__0 := shape__0.(type) {
-    case Shape__int32_Dot:
-        var x0 Point = shape__0._0
-        var point__1 Point = x0
-        ret57 = Shape__int32_Dot{
-            _0: point__1,
+    var jp26 Shape__int32
+    var x0 Point
+    var point__1 Point
+    var t27 Shape__int32
+    var x1 Wrapper__int32
+    var inner__2 Wrapper__int32
+    var t28 Shape__int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch shape__0.(type) {
+            case Shape__int32_Dot:
+                pc = 2
+            case Shape__int32_Wrapped:
+                pc = 3
+            case Shape__int32_Origin:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp26
+        case 2:
+            x0 = shape__0.(Shape__int32_Dot)._0
+            point__1 = x0
+            t27 = Shape__int32_Dot{
+                _0: point__1,
+            }
+            jp26 = t27
+            pc = 1
+        case 3:
+            x1 = shape__0.(Shape__int32_Wrapped)._0
+            inner__2 = x1
+            t28 = Shape__int32_Wrapped{
+                _0: inner__2,
+            }
+            jp26 = t28
+            pc = 1
+        case 4:
+            jp26 = Shape__int32_Origin{}
+            pc = 1
+        default:
+            panic("invalid pc")
         }
-    case Shape__int32_Wrapped:
-        var x1 Wrapper__int32 = shape__0._0
-        var inner__2 Wrapper__int32 = x1
-        ret57 = Shape__int32_Wrapped{
-            _0: inner__2,
-        }
-    case Shape__int32_Origin:
-        ret57 = Shape__int32_Origin{}
     }
-    return ret57
 }
 
 func point32_to_string(point__8 Point) string {
-    var ret60 string
-    var mtmp4 Point = point__8
-    var x5 int32 = mtmp4.x
-    var x6 int32 = mtmp4.y
-    var y__10 int32 = x6
-    var x__9 int32 = x5
-    var t25 string = int32_to_string(x__9)
-    var with_x__11 string = "Point { x: " + t25
-    var with_y_label__12 string = with_x__11 + ", y: "
-    var t26 string = int32_to_string(y__10)
-    var with_y__13 string = with_y_label__12 + t26
-    ret60 = with_y__13 + " }"
-    return ret60
+    var mtmp4 Point
+    var x5 int32
+    var x6 int32
+    var y__10 int32
+    var x__9 int32
+    var t34 string
+    var with_x__11 string
+    var with_y_label__12 string
+    var t35 string
+    var with_y__13 string
+    var t36 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp4 = point__8
+            x5 = mtmp4.x
+            x6 = mtmp4.y
+            y__10 = x6
+            x__9 = x5
+            t34 = int32_to_string(x__9)
+            with_x__11 = "Point { x: " + t34
+            with_y_label__12 = with_x__11 + ", y: "
+            t35 = int32_to_string(y__10)
+            with_y__13 = with_y_label__12 + t35
+            t36 = with_y__13 + " }"
+            return t36
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func wrapper_int32_to_string(wrapper__14 Wrapper__int32) string {
-    var ret61 string
-    var mtmp7 Wrapper__int32 = wrapper__14
-    var x8 int32 = mtmp7.value
-    var value__15 int32 = x8
-    var t27 string = int32_to_string(value__15)
-    var prefix__16 string = "Wrapper[int32] { value: " + t27
-    ret61 = prefix__16 + " }"
-    return ret61
+    var mtmp7 Wrapper__int32
+    var x8 int32
+    var value__15 int32
+    var t37 string
+    var prefix__16 string
+    var t38 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp7 = wrapper__14
+            x8 = mtmp7.value
+            value__15 = x8
+            t37 = int32_to_string(value__15)
+            prefix__16 = "Wrapper[int32] { value: " + t37
+            t38 = prefix__16 + " }"
+            return t38
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
-    var ret62 string
-    var mtmp9 Wrapper__unit = wrapper__17
-    var x10 struct{} = mtmp9.value
-    var value__18 struct{} = x10
-    var t28 string = unit_to_string(value__18)
-    var prefix__19 string = "Wrapper[unit] { value: " + t28
-    ret62 = prefix__19 + " }"
-    return ret62
+    var mtmp9 Wrapper__unit
+    var x10 struct{}
+    var value__18 struct{}
+    var t39 string
+    var prefix__19 string
+    var t40 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            mtmp9 = wrapper__17
+            x10 = mtmp9.value
+            value__18 = x10
+            t39 = unit_to_string(value__18)
+            prefix__19 = "Wrapper[unit] { value: " + t39
+            t40 = prefix__19 + " }"
+            return t40
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func shape_int32_to_string(shape__20 Shape__int32) string {
-    var ret63 string
-    switch shape__20 := shape__20.(type) {
-    case Shape__int32_Dot:
-        var x11 Point = shape__20._0
-        var point__21 Point = x11
-        var t29 string = point32_to_string(point__21)
-        var prefix__22 string = "Shape::Dot(" + t29
-        ret63 = prefix__22 + ")"
-    case Shape__int32_Wrapped:
-        var x12 Wrapper__int32 = shape__20._0
-        var wrapper__23 Wrapper__int32 = x12
-        var t30 string = wrapper_int32_to_string(wrapper__23)
-        var prefix__24 string = "Shape::Wrapped(" + t30
-        ret63 = prefix__24 + ")"
-    case Shape__int32_Origin:
-        ret63 = "Shape::Origin"
+    var jp42 string
+    var x11 Point
+    var point__21 Point
+    var t43 string
+    var prefix__22 string
+    var t44 string
+    var x12 Wrapper__int32
+    var wrapper__23 Wrapper__int32
+    var t45 string
+    var prefix__24 string
+    var t46 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch shape__20.(type) {
+            case Shape__int32_Dot:
+                pc = 2
+            case Shape__int32_Wrapped:
+                pc = 3
+            case Shape__int32_Origin:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp42
+        case 2:
+            x11 = shape__20.(Shape__int32_Dot)._0
+            point__21 = x11
+            t43 = point32_to_string(point__21)
+            prefix__22 = "Shape::Dot(" + t43
+            t44 = prefix__22 + ")"
+            jp42 = t44
+            pc = 1
+        case 3:
+            x12 = shape__20.(Shape__int32_Wrapped)._0
+            wrapper__23 = x12
+            t45 = wrapper_int32_to_string(wrapper__23)
+            prefix__24 = "Shape::Wrapped(" + t45
+            t46 = prefix__24 + ")"
+            jp42 = t46
+            pc = 1
+        case 4:
+            jp42 = "Shape::Origin"
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret63
 }
 
 func shape_unit_to_string(shape__25 Shape__unit) string {
-    var ret64 string
-    switch shape__25 := shape__25.(type) {
-    case Shape__unit_Dot:
-        var x13 Point = shape__25._0
-        var point__26 Point = x13
-        var t31 string = point32_to_string(point__26)
-        var prefix__27 string = "Shape::Dot(" + t31
-        ret64 = prefix__27 + ")"
-    case Shape__unit_Wrapped:
-        var x14 Wrapper__unit = shape__25._0
-        var wrapper__28 Wrapper__unit = x14
-        var t32 string = wrapper_unit_to_string(wrapper__28)
-        var prefix__29 string = "Shape::Wrapped(" + t32
-        ret64 = prefix__29 + ")"
-    case Shape__unit_Origin:
-        ret64 = "Shape::Origin"
+    var jp48 string
+    var x13 Point
+    var point__26 Point
+    var t49 string
+    var prefix__27 string
+    var t50 string
+    var x14 Wrapper__unit
+    var wrapper__28 Wrapper__unit
+    var t51 string
+    var prefix__29 string
+    var t52 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch shape__25.(type) {
+            case Shape__unit_Dot:
+                pc = 2
+            case Shape__unit_Wrapped:
+                pc = 3
+            case Shape__unit_Origin:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp48
+        case 2:
+            x13 = shape__25.(Shape__unit_Dot)._0
+            point__26 = x13
+            t49 = point32_to_string(point__26)
+            prefix__27 = "Shape::Dot(" + t49
+            t50 = prefix__27 + ")"
+            jp48 = t50
+            pc = 1
+        case 3:
+            x14 = shape__25.(Shape__unit_Wrapped)._0
+            wrapper__28 = x14
+            t51 = wrapper_unit_to_string(wrapper__28)
+            prefix__29 = "Shape::Wrapped(" + t51
+            t52 = prefix__29 + ")"
+            jp48 = t52
+            pc = 1
+        case 4:
+            jp48 = "Shape::Origin"
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret64
 }
 
 func main0() struct{} {
-    var ret65 struct{}
-    var t34 Point = Point{
-        x: 3,
-        y: 4,
+    var t53 Point
+    var t54 string
+    var mtmp15 struct{}
+    var t55 Wrapper__int32
+    var t56 string
+    var mtmp16 struct{}
+    var t57 Wrapper__unit
+    var t58 string
+    var mtmp17 struct{}
+    var bounced_origin__30 Shape__int32
+    var t59 Point
+    var t60 Shape__int32
+    var t61 string
+    var mtmp18 struct{}
+    var t62 Wrapper__int32
+    var t63 Shape__int32
+    var t64 string
+    var mtmp19 struct{}
+    var t65 string
+    var mtmp20 struct{}
+    var t66 Point
+    var t67 Shape__unit
+    var t68 string
+    var mtmp21 struct{}
+    var t69 Wrapper__unit
+    var t70 Shape__unit
+    var t71 string
+    var mtmp22 struct{}
+    var t72 string
+    var mtmp23 struct{}
+    var t73 Shape__int32
+    var mtmp24 int32
+    var t74 struct{}
+    _ = mtmp15
+    _ = mtmp16
+    _ = mtmp17
+    _ = mtmp18
+    _ = mtmp19
+    _ = mtmp20
+    _ = mtmp21
+    _ = mtmp22
+    _ = mtmp23
+    _ = mtmp24
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t53 = Point{
+                x: 3,
+                y: 4,
+            }
+            t54 = point32_to_string(t53)
+            string_println(t54)
+            t55 = Wrapper__int32{
+                value: 7,
+            }
+            t56 = wrapper_int32_to_string(t55)
+            string_println(t56)
+            t57 = Wrapper__unit{
+                value: struct{}{},
+            }
+            t58 = wrapper_unit_to_string(t57)
+            string_println(t58)
+            bounced_origin__30 = bounce_int(Shape__int32_Origin{})
+            t59 = Point{
+                x: 3,
+                y: 4,
+            }
+            t60 = Shape__int32_Dot{
+                _0: t59,
+            }
+            t61 = shape_int32_to_string(t60)
+            string_println(t61)
+            t62 = Wrapper__int32{
+                value: 7,
+            }
+            t63 = Shape__int32_Wrapped{
+                _0: t62,
+            }
+            t64 = shape_int32_to_string(t63)
+            string_println(t64)
+            t65 = shape_int32_to_string(bounced_origin__30)
+            string_println(t65)
+            t66 = Point{
+                x: 3,
+                y: 4,
+            }
+            t67 = Shape__unit_Dot{
+                _0: t66,
+            }
+            t68 = shape_unit_to_string(t67)
+            string_println(t68)
+            t69 = Wrapper__unit{
+                value: struct{}{},
+            }
+            t70 = Shape__unit_Wrapped{
+                _0: t69,
+            }
+            t71 = shape_unit_to_string(t70)
+            string_println(t71)
+            t72 = shape_unit_to_string(Shape__unit_Origin{})
+            string_println(t72)
+            t73 = bounce_int(Shape__int32_Origin{})
+            describe__T_int32(t73)
+            t74 = string_println("struct enums!")
+            return t74
+        default:
+            panic("invalid pc")
+        }
     }
-    var t33 string = point32_to_string(t34)
-    string_println(t33)
-    var t36 Wrapper__int32 = Wrapper__int32{
-        value: 7,
-    }
-    var t35 string = wrapper_int32_to_string(t36)
-    string_println(t35)
-    var t38 Wrapper__unit = Wrapper__unit{
-        value: struct{}{},
-    }
-    var t37 string = wrapper_unit_to_string(t38)
-    string_println(t37)
-    var t39 Shape__int32 = Shape__int32_Origin{}
-    var bounced_origin__30 Shape__int32 = bounce_int(t39)
-    var t42 Point = Point{
-        x: 3,
-        y: 4,
-    }
-    var t41 Shape__int32 = Shape__int32_Dot{
-        _0: t42,
-    }
-    var t40 string = shape_int32_to_string(t41)
-    string_println(t40)
-    var t45 Wrapper__int32 = Wrapper__int32{
-        value: 7,
-    }
-    var t44 Shape__int32 = Shape__int32_Wrapped{
-        _0: t45,
-    }
-    var t43 string = shape_int32_to_string(t44)
-    string_println(t43)
-    var t46 string = shape_int32_to_string(bounced_origin__30)
-    string_println(t46)
-    var t49 Point = Point{
-        x: 3,
-        y: 4,
-    }
-    var t48 Shape__unit = Shape__unit_Dot{
-        _0: t49,
-    }
-    var t47 string = shape_unit_to_string(t48)
-    string_println(t47)
-    var t52 Wrapper__unit = Wrapper__unit{
-        value: struct{}{},
-    }
-    var t51 Shape__unit = Shape__unit_Wrapped{
-        _0: t52,
-    }
-    var t50 string = shape_unit_to_string(t51)
-    string_println(t50)
-    var t54 Shape__unit = Shape__unit_Origin{}
-    var t53 string = shape_unit_to_string(t54)
-    string_println(t53)
-    var t56 Shape__int32 = Shape__int32_Origin{}
-    var t55 Shape__int32 = bounce_int(t56)
-    describe__T_int32(t55)
-    ret65 = string_println("struct enums!")
-    return ret65
 }
 
 func describe__T_int32(shape__7 Shape__int32) int32 {
-    var ret66 int32
-    switch shape__7.(type) {
-    case Shape__int32_Dot:
-        ret66 = 1
-    case Shape__int32_Wrapped:
-        ret66 = 2
-    case Shape__int32_Origin:
-        ret66 = 0
+    var jp76 int32
+    var x2 Point
+    var x3 Wrapper__int32
+    _ = x2
+    _ = x3
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            switch shape__7.(type) {
+            case Shape__int32_Dot:
+                pc = 2
+            case Shape__int32_Wrapped:
+                pc = 3
+            case Shape__int32_Origin:
+                pc = 4
+            default:
+                panic("non-exhaustive match")
+            }
+        case 1:
+            return jp76
+        case 2:
+            jp76 = 1
+            pc = 1
+        case 3:
+            jp76 = 2
+            pc = 1
+        case 4:
+            jp76 = 0
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret66
 }
 
 func main() {

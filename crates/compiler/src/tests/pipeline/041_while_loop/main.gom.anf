@@ -1,40 +1,68 @@
 fn sum_to(limit/0: int32) -> int32 {
   let acc/1 = ref(0) in
   let i/2 = ref(0) in
-  let mtmp2 = while let t10 = ref_get(i/2) in
-  (t10 < limit/0) {
-    let current/3 = ref_get(i/2) in
-    let t12 = ref_get(acc/1) in
-    let t11 = (t12 + current/3) in
-    let mtmp0 = ref_set(acc/1, t11) in
-    let t13 = (current/3 + 1) in
-    let mtmp1 = ref_set(i/2, t13) in
-    ()
+  join exit10() -> int32 {
+    let mtmp2 = () in
+    let t11 = ref_get(acc/1) in
+    t11
   } in
-  ref_get(acc/1)
+  joinrec {
+    join loop12() -> int32 {
+      let t13 = ref_get(i/2) in
+      let t14 = (t13 < limit/0) in
+      if t14 {
+        let current/3 = ref_get(i/2) in
+        let t15 = ref_get(acc/1) in
+        let t16 = (t15 + current/3) in
+        let mtmp0 = ref_set(acc/1, t16) in
+        let t17 = (current/3 + 1) in
+        let mtmp1 = ref_set(i/2, t17) in
+        jump loop12()
+      } else {
+        jump exit10()
+      }
+    } in
+  } in
+  jump loop12()
 }
 
 fn sum_even(limit/4: int32) -> int32 {
   let acc/5 = ref(0) in
   let i/6 = ref(0) in
   let is_even/7 = ref(true) in
-  let mtmp5 = while let t14 = ref_get(i/6) in
-  (t14 < limit/4) {
-    let current/8 = ref_get(i/6) in
-    let t15 = (current/8 + 1) in
-    let mtmp3 = ref_set(i/6, t15) in
-    let add_now/9 = ref_get(is_even/7) in
-    let t16 = (!add_now/9) in
-    let mtmp4 = ref_set(is_even/7, t16) in
-    if add_now/9 {
-      let t18 = ref_get(acc/5) in
-      let t17 = (t18 + current/8) in
-      ref_set(acc/5, t17)
-    } else {
-      ()
-    }
+  join exit18() -> int32 {
+    let mtmp5 = () in
+    let t19 = ref_get(acc/5) in
+    t19
   } in
-  ref_get(acc/5)
+  joinrec {
+    join loop20() -> int32 {
+      let t21 = ref_get(i/6) in
+      let t22 = (t21 < limit/4) in
+      if t22 {
+        let current/8 = ref_get(i/6) in
+        let t23 = (current/8 + 1) in
+        let mtmp3 = ref_set(i/6, t23) in
+        let add_now/9 = ref_get(is_even/7) in
+        let t24 = (!add_now/9) in
+        let mtmp4 = ref_set(is_even/7, t24) in
+        join k25() -> int32 {
+          jump loop20()
+        } in
+        if add_now/9 {
+          let t26 = ref_get(acc/5) in
+          let t27 = (t26 + current/8) in
+          let t28 = ref_set(acc/5, t27) in
+          jump k25()
+        } else {
+          jump k25()
+        }
+      } else {
+        jump exit18()
+      }
+    } in
+  } in
+  jump loop20()
 }
 
 fn main() -> unit {
@@ -48,10 +76,12 @@ fn main() -> unit {
 }
 
 fn print__T_string(value/0: string) -> unit {
-  string_print(value/0)
+  let t29 = string_print(value/0) in
+  t29
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t19 = int32_to_string(value/1) in
-  string_println(t19)
+  let t30 = int32_to_string(value/1) in
+  let t31 = string_println(t30) in
+  t31
 }

@@ -15,14 +15,16 @@ fn show64(label/3: string, value/4: float64) -> unit {
 fn lerp32(a/6: float32, b/7: float32, weight/8: float32) -> float32 {
   let delta/9 = (b/7 - a/6) in
   let t12 = (delta/9 * weight/8) in
-  (a/6 + t12)
+  let t13 = (a/6 + t12) in
+  t13
 }
 
 fn midpoint_energy(x/10: float64, y/11: float64) -> float64 {
-  let t13 = (x/10 * x/10) in
-  let t14 = (y/11 * y/11) in
-  let sum/12 = (t13 + t14) in
-  (sum/12 / 2)
+  let t14 = (x/10 * x/10) in
+  let t15 = (y/11 * y/11) in
+  let sum/12 = (t14 + t15) in
+  let t16 = (sum/12 / 2) in
+  t16
 }
 
 fn main() -> unit {
@@ -39,22 +41,22 @@ fn main() -> unit {
   let quarter/23 = 0.25 in
   let energy/24 = midpoint_energy(dx/21, dy/22) in
   let neg_dx/25 = (-dx/21) in
-  let t15 = (energy/24 + dy/22) in
-  let t16 = (dx/21 * quarter/23) in
-  let adjusted/26 = (t15 - t16) in
+  let t17 = (energy/24 + dy/22) in
+  let t18 = (dx/21 * quarter/23) in
+  let adjusted/26 = (t17 - t18) in
   let threshold/27 = 4 in
   let less64/28 = (adjusted/26 < threshold/27) in
   let _wild2 = show32("mid32=", mid32/17) in
   let _wild3 = show32("neg_end32=", neg_end32/18) in
   let _wild4 = show32("ratio32=", ratio32/19) in
-  let t18 = bool_to_string(less32/20) in
-  let t17 = ("less32=" + t18) in
-  let mtmp5 = string_println(t17) in
+  let t19 = bool_to_string(less32/20) in
+  let t20 = ("less32=" + t19) in
+  let mtmp5 = string_println(t20) in
   let _wild6 = show64("energy=", energy/24) in
   let _wild7 = show64("neg_dx=", neg_dx/25) in
   let _wild8 = show64("adjusted=", adjusted/26) in
-  let t20 = bool_to_string(less64/28) in
-  let t19 = ("less64=" + t20) in
-  let mtmp9 = string_println(t19) in
+  let t21 = bool_to_string(less64/28) in
+  let t22 = ("less64=" + t21) in
+  let mtmp9 = string_println(t22) in
   ()
 }

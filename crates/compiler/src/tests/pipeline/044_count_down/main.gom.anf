@@ -2,22 +2,44 @@ fn main() -> unit {
   let counter/0 = ref(0) in
   let t5 = closure_env_main_0 { counter_0: counter/0 } in
   let _wild3 = go t5 in
-  while let t6 = ref_get(counter/0) in
-  (t6 < 10) {
+  join exit6() -> unit {
     ()
-  }
+  } in
+  joinrec {
+    join loop7() -> unit {
+      let t8 = ref_get(counter/0) in
+      let t9 = (t8 < 10) in
+      if t9 {
+        jump loop7()
+      } else {
+        jump exit6()
+      }
+    } in
+  } in
+  jump loop7()
 }
 
 fn inherent#closure_env_main_0#closure_env_main_0#apply(env4: closure_env_main_0) -> unit {
   let counter/0 = closure_env_main_0.counter_0(env4) in
-  while let t7 = ref_get(counter/0) in
-  (t7 < 10) {
-    let _wild0 = string_println("hello") in
-    let t8 = duration(1000) in
-    let _wild1 = sleep(t8) in
-    let t10 = ref_get(counter/0) in
-    let t9 = (t10 + 1) in
-    let _wild2 = ref_set(counter/0, t9) in
+  join exit10() -> unit {
     ()
-  }
+  } in
+  joinrec {
+    join loop11() -> unit {
+      let t12 = ref_get(counter/0) in
+      let t13 = (t12 < 10) in
+      if t13 {
+        let _wild0 = string_println("hello") in
+        let t14 = duration(1000) in
+        let _wild1 = sleep(t14) in
+        let t15 = ref_get(counter/0) in
+        let t16 = (t15 + 1) in
+        let _wild2 = ref_set(counter/0, t16) in
+        jump loop11()
+      } else {
+        jump exit10()
+      }
+    } in
+  } in
+  jump loop11()
 }

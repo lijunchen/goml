@@ -14,15 +14,31 @@ type Buffer struct {
 }
 
 func main0() struct{} {
-    var ret1 struct{}
-    ret1 = print__T_string("array")
-    return ret1
+    var t0 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t0 = print__T_string("array")
+            return t0
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func print__T_string(value__0 string) struct{} {
-    var ret2 struct{}
-    ret2 = string_print(value__0)
-    return ret2
+    var t1 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t1 = string_print(value__0)
+            return t1
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

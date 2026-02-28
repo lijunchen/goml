@@ -2,28 +2,41 @@ fn main() -> unit {
   let a/0 = (true, true) in
   let x0 = a/0.0 in
   let x1 = a/0.1 in
+  join k2() -> unit {
+    ()
+  } in
   match x1 {
     true => {
+      join k3() -> unit {
+        jump k2()
+      } in
       match x0 {
         true => {
-          let t2 = int32_to_string(789) in
-          string_print(t2)
+          let t4 = int32_to_string(789) in
+          let t5 = string_print(t4) in
+          jump k3()
         },
         false => {
-          let t3 = int32_to_string(456) in
-          string_print(t3)
+          let t6 = int32_to_string(456) in
+          let t7 = string_print(t6) in
+          jump k3()
         },
       }
     },
     false => {
+      join k8() -> unit {
+        jump k2()
+      } in
       match x0 {
         true => {
-          let t4 = int32_to_string(123) in
-          string_print(t4)
+          let t9 = int32_to_string(123) in
+          let t10 = string_print(t9) in
+          jump k8()
         },
         false => {
-          let t5 = int32_to_string(789) in
-          string_print(t5)
+          let t11 = int32_to_string(789) in
+          let t12 = string_print(t11) in
+          jump k8()
         },
       }
     },

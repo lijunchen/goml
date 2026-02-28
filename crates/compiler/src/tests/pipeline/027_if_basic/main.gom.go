@@ -14,27 +14,58 @@ func string_println(s string) struct{} {
 }
 
 func choose(flag__0 bool, x__1 int32, y__2 int32) int32 {
-    var ret6 int32
-    if flag__0 {
-        ret6 = x__1
-    } else {
-        ret6 = y__2
+    var jp3 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            if flag__0 {
+                pc = 2
+            } else {
+                pc = 3
+            }
+        case 1:
+            return jp3
+        case 2:
+            jp3 = x__1
+            pc = 1
+        case 3:
+            jp3 = y__2
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret6
 }
 
 func main0() struct{} {
-    var ret7 struct{}
-    var yes__3 int32 = choose(true, 10, 99)
-    var no__4 int32 = choose(false, 10, 99)
-    var t3 string = int32_to_string(yes__3)
-    var t2 string = "yes=" + t3
-    string_println(t2)
-    var t5 string = int32_to_string(no__4)
-    var t4 string = "no=" + t5
-    string_println(t4)
-    ret7 = struct{}{}
-    return ret7
+    var yes__3 int32
+    var no__4 int32
+    var t4 string
+    var t5 string
+    var mtmp0 struct{}
+    var t6 string
+    var t7 string
+    var mtmp1 struct{}
+    _ = mtmp0
+    _ = mtmp1
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            yes__3 = choose(true, 10, 99)
+            no__4 = choose(false, 10, 99)
+            t4 = int32_to_string(yes__3)
+            t5 = "yes=" + t4
+            string_println(t5)
+            t6 = int32_to_string(no__4)
+            t7 = "no=" + t6
+            string_println(t7)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

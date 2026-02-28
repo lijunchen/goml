@@ -42,91 +42,171 @@ type closure_env_f1_3 struct {
 }
 
 func main0() struct{} {
-    var ret11 struct{}
-    var a__0 int32 = 10
-    var f1__11 closure_env_f1_3 = closure_env_f1_3{
-        a_0: a__0,
+    var a__0 int32
+    var f1__11 closure_env_f1_3
+    var result__12 int32
+    var t4 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = 10
+            f1__11 = closure_env_f1_3{
+                a_0: a__0,
+            }
+            result__12 = _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(f1__11, 1)
+            t4 = println__T_int32(result__12)
+            return t4
+        default:
+            panic("invalid pc")
+        }
     }
-    var result__12 int32 = _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(f1__11, 1)
-    ret11 = println__T_int32(result__12)
-    return ret11
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var ret12 struct{}
-    var t4 string = int32_to_string(value__1)
-    ret12 = string_println(t4)
-    return ret12
+    var t5 string
+    var t6 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t5 = int32_to_string(value__1)
+            t6 = string_println(t5)
+            return t6
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(env0 closure_env_f4_0, w__7 int32) int32 {
-    var ret13 int32
-    var a__0 int32 = env0.a_0
-    var b__2 int32 = env0.b_1
-    var c__4 int32 = env0.c_2
-    var d__6 int32 = env0.d_3
-    var x__1 int32 = env0.x_4
-    var y__3 int32 = env0.y_5
-    var z__5 int32 = env0.z_6
-    var t10 int32 = a__0 + b__2
-    var t9 int32 = t10 + c__4
-    var t8 int32 = t9 + d__6
-    var t7 int32 = t8 + x__1
-    var t6 int32 = t7 + y__3
-    var t5 int32 = t6 + z__5
-    ret13 = t5 + w__7
-    return ret13
+    var a__0 int32
+    var b__2 int32
+    var c__4 int32
+    var d__6 int32
+    var x__1 int32
+    var y__3 int32
+    var z__5 int32
+    var t7 int32
+    var t8 int32
+    var t9 int32
+    var t10 int32
+    var t11 int32
+    var t12 int32
+    var t13 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = env0.a_0
+            b__2 = env0.b_1
+            c__4 = env0.c_2
+            d__6 = env0.d_3
+            x__1 = env0.x_4
+            y__3 = env0.y_5
+            z__5 = env0.z_6
+            t7 = a__0 + b__2
+            t8 = t7 + c__4
+            t9 = t8 + d__6
+            t10 = t9 + x__1
+            t11 = t10 + y__3
+            t12 = t11 + z__5
+            t13 = t12 + w__7
+            return t13
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(env1 closure_env_f3_1, z__5 int32) int32 {
-    var ret14 int32
-    var a__0 int32 = env1.a_0
-    var b__2 int32 = env1.b_1
-    var c__4 int32 = env1.c_2
-    var x__1 int32 = env1.x_3
-    var y__3 int32 = env1.y_4
-    var d__6 int32 = 40
-    var f4__8 closure_env_f4_0 = closure_env_f4_0{
-        a_0: a__0,
-        b_1: b__2,
-        c_2: c__4,
-        d_3: d__6,
-        x_4: x__1,
-        y_5: y__3,
-        z_6: z__5,
+    var a__0 int32
+    var b__2 int32
+    var c__4 int32
+    var x__1 int32
+    var y__3 int32
+    var d__6 int32
+    var f4__8 closure_env_f4_0
+    var t14 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = env1.a_0
+            b__2 = env1.b_1
+            c__4 = env1.c_2
+            x__1 = env1.x_3
+            y__3 = env1.y_4
+            d__6 = 40
+            f4__8 = closure_env_f4_0{
+                a_0: a__0,
+                b_1: b__2,
+                c_2: c__4,
+                d_3: d__6,
+                x_4: x__1,
+                y_5: y__3,
+                z_6: z__5,
+            }
+            t14 = _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(f4__8, 4)
+            return t14
+        default:
+            panic("invalid pc")
+        }
     }
-    ret14 = _goml_inherent_closure_env_f4_0_closure_env_f4_0_apply(f4__8, 4)
-    return ret14
 }
 
 func _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(env2 closure_env_f2_2, y__3 int32) int32 {
-    var ret15 int32
-    var a__0 int32 = env2.a_0
-    var b__2 int32 = env2.b_1
-    var x__1 int32 = env2.x_2
-    var c__4 int32 = 30
-    var f3__9 closure_env_f3_1 = closure_env_f3_1{
-        a_0: a__0,
-        b_1: b__2,
-        c_2: c__4,
-        x_3: x__1,
-        y_4: y__3,
+    var a__0 int32
+    var b__2 int32
+    var x__1 int32
+    var c__4 int32
+    var f3__9 closure_env_f3_1
+    var t15 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = env2.a_0
+            b__2 = env2.b_1
+            x__1 = env2.x_2
+            c__4 = 30
+            f3__9 = closure_env_f3_1{
+                a_0: a__0,
+                b_1: b__2,
+                c_2: c__4,
+                x_3: x__1,
+                y_4: y__3,
+            }
+            t15 = _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(f3__9, 3)
+            return t15
+        default:
+            panic("invalid pc")
+        }
     }
-    ret15 = _goml_inherent_closure_env_f3_1_closure_env_f3_1_apply(f3__9, 3)
-    return ret15
 }
 
 func _goml_inherent_closure_env_f1_3_closure_env_f1_3_apply(env3 closure_env_f1_3, x__1 int32) int32 {
-    var ret16 int32
-    var a__0 int32 = env3.a_0
-    var b__2 int32 = 20
-    var f2__10 closure_env_f2_2 = closure_env_f2_2{
-        a_0: a__0,
-        b_1: b__2,
-        x_2: x__1,
+    var a__0 int32
+    var b__2 int32
+    var f2__10 closure_env_f2_2
+    var t16 int32
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            a__0 = env3.a_0
+            b__2 = 20
+            f2__10 = closure_env_f2_2{
+                a_0: a__0,
+                b_1: b__2,
+                x_2: x__1,
+            }
+            t16 = _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(f2__10, 2)
+            return t16
+        default:
+            panic("invalid pc")
+        }
     }
-    ret16 = _goml_inherent_closure_env_f2_2_closure_env_f2_2_apply(f2__10, 2)
-    return ret16
 }
 
 func main() {

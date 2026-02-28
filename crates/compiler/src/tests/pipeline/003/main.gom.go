@@ -26,34 +26,75 @@ func string_print(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret7 struct{}
-    print__T_unit(struct{}{})
-    print__T_bool(true)
-    print__T_bool(false)
-    print__T_int32(123)
-    ret7 = struct{}{}
-    return ret7
+    var mtmp0 struct{}
+    var mtmp1 struct{}
+    var mtmp2 struct{}
+    var mtmp3 struct{}
+    _ = mtmp0
+    _ = mtmp1
+    _ = mtmp2
+    _ = mtmp3
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            print__T_unit(struct{}{})
+            print__T_bool(true)
+            print__T_bool(false)
+            print__T_int32(123)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func print__T_unit(value__0 struct{}) struct{} {
-    var ret8 struct{}
-    var t4 string = unit_to_string(value__0)
-    ret8 = string_print(t4)
-    return ret8
+    var t4 string
+    var t5 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t4 = unit_to_string(value__0)
+            t5 = string_print(t4)
+            return t5
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var ret9 struct{}
-    var t5 string = bool_to_string(value__0)
-    ret9 = string_print(t5)
-    return ret9
+    var t6 string
+    var t7 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t6 = bool_to_string(value__0)
+            t7 = string_print(t6)
+            return t7
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var ret10 struct{}
-    var t6 string = int32_to_string(value__0)
-    ret10 = string_print(t6)
-    return ret10
+    var t8 string
+    var t9 struct{}
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t8 = int32_to_string(value__0)
+            t9 = string_print(t8)
+            return t9
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func main() {

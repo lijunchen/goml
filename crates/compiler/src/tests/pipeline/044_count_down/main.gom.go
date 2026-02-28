@@ -36,43 +36,85 @@ type closure_env_main_0 struct {
 type Duration = time.Duration
 
 func main0() struct{} {
-    var ret11 struct{}
-    var counter__0 *ref_int32_x = ref__Ref_int32(0)
-    var t5 closure_env_main_0 = closure_env_main_0{
-        counter_0: counter__0,
-    }
-    go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
-    var cond12 bool
+    var counter__0 *ref_int32_x
+    var t5 closure_env_main_0
+    var _wild3 struct{}
+    var t8 int32
+    var t9 bool
+    _ = _wild3
+    var pc int32 = 0
     for {
-        var t6 int32 = ref_get__Ref_int32(counter__0)
-        cond12 = t6 < 10
-        if !cond12 {
-            break
+        switch pc {
+        case 0:
+            counter__0 = ref__Ref_int32(0)
+            t5 = closure_env_main_0{
+                counter_0: counter__0,
+            }
+            go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
+            pc = 2
+        case 1:
+            return struct{}{}
+        case 2:
+            t8 = ref_get__Ref_int32(counter__0)
+            t9 = t8 < 10
+            if t9 {
+                pc = 3
+            } else {
+                pc = 4
+            }
+        case 3:
+            pc = 2
+        case 4:
+            pc = 1
+        default:
+            panic("invalid pc")
         }
     }
-    ret11 = struct{}{}
-    return ret11
 }
 
 func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
-    var ret13 struct{}
-    var counter__0 *ref_int32_x = env4.counter_0
-    var cond14 bool
+    var counter__0 *ref_int32_x
+    var t12 int32
+    var t13 bool
+    var _wild0 struct{}
+    var t14 Duration
+    var _wild1 struct{}
+    var t15 int32
+    var t16 int32
+    var _wild2 struct{}
+    _ = _wild0
+    _ = _wild1
+    _ = _wild2
+    var pc int32 = 0
     for {
-        var t7 int32 = ref_get__Ref_int32(counter__0)
-        cond14 = t7 < 10
-        if !cond14 {
-            break
+        switch pc {
+        case 0:
+            counter__0 = env4.counter_0
+            pc = 2
+        case 1:
+            return struct{}{}
+        case 2:
+            t12 = ref_get__Ref_int32(counter__0)
+            t13 = t12 < 10
+            if t13 {
+                pc = 3
+            } else {
+                pc = 4
+            }
+        case 3:
+            string_println("hello")
+            t14 = time.Duration(1000)
+            time.Sleep(t14)
+            t15 = ref_get__Ref_int32(counter__0)
+            t16 = t15 + 1
+            ref_set__Ref_int32(counter__0, t16)
+            pc = 2
+        case 4:
+            pc = 1
+        default:
+            panic("invalid pc")
         }
-        string_println("hello")
-        var t8 Duration = time.Duration(1000)
-        time.Sleep(t8)
-        var t10 int32 = ref_get__Ref_int32(counter__0)
-        var t9 int32 = t10 + 1
-        ref_set__Ref_int32(counter__0, t9)
     }
-    ret13 = struct{}{}
-    return ret13
 }
 
 func main() {

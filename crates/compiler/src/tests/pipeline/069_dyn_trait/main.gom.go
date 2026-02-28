@@ -52,52 +52,99 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    var ret12 string
-    var t6 int32 = self__0.x
-    var t5 string = int32_to_string(t6)
-    var t4 string = "Point(" + t5
-    var t3 string = t4 + ","
-    var t8 int32 = self__0.y
-    var t7 string = int32_to_string(t8)
-    var t2 string = t3 + t7
-    ret12 = t2 + ")"
-    return ret12
+    var t2 int32
+    var t3 string
+    var t4 string
+    var t5 string
+    var t6 int32
+    var t7 string
+    var t8 string
+    var t9 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t2 = self__0.x
+            t3 = int32_to_string(t2)
+            t4 = "Point(" + t3
+            t5 = t4 + ","
+            t6 = self__0.y
+            t7 = int32_to_string(t6)
+            t8 = t5 + t7
+            t9 = t8 + ")"
+            return t9
+        default:
+            panic("invalid pc")
+        }
+    }
 }
 
 func _goml_trait_impl_Display_Flag_show(self__1 Flag) string {
-    var ret13 string
-    var t9 bool = self__1.value
-    if t9 {
-        ret13 = "Flag(true)"
-    } else {
-        ret13 = "Flag(false)"
+    var t12 bool
+    var jp11 string
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            t12 = self__1.value
+            if t12 {
+                pc = 2
+            } else {
+                pc = 3
+            }
+        case 1:
+            return jp11
+        case 2:
+            jp11 = "Flag(true)"
+            pc = 1
+        case 3:
+            jp11 = "Flag(false)"
+            pc = 1
+        default:
+            panic("invalid pc")
+        }
     }
-    return ret13
 }
 
 func main0() struct{} {
-    var ret14 struct{}
-    var p__2 Point = Point{
-        x: 1,
-        y: 2,
+    var p__2 Point
+    var t__3 Flag
+    var dp__4 dyn__Display
+    var dt__5 dyn__Display
+    var t13 string
+    var mtmp0 struct{}
+    var t14 string
+    var mtmp1 struct{}
+    _ = mtmp0
+    _ = mtmp1
+    var pc int32 = 0
+    for {
+        switch pc {
+        case 0:
+            p__2 = Point{
+                x: 1,
+                y: 2,
+            }
+            t__3 = Flag{
+                value: true,
+            }
+            dp__4 = dyn__Display{
+                data: p__2,
+                vtable: dyn__Display__vtable__Point(),
+            }
+            dt__5 = dyn__Display{
+                data: t__3,
+                vtable: dyn__Display__vtable__Flag(),
+            }
+            t13 = dp__4.vtable.show(dp__4.data)
+            string_println(t13)
+            t14 = dt__5.vtable.show(dt__5.data)
+            string_println(t14)
+            return struct{}{}
+        default:
+            panic("invalid pc")
+        }
     }
-    var t__3 Flag = Flag{
-        value: true,
-    }
-    var dp__4 dyn__Display = dyn__Display{
-        data: p__2,
-        vtable: dyn__Display__vtable__Point(),
-    }
-    var dt__5 dyn__Display = dyn__Display{
-        data: t__3,
-        vtable: dyn__Display__vtable__Flag(),
-    }
-    var t10 string = dp__4.vtable.show(dp__4.data)
-    string_println(t10)
-    var t11 string = dt__5.vtable.show(dt__5.data)
-    string_println(t11)
-    ret14 = struct{}{}
-    return ret14
 }
 
 func main() {

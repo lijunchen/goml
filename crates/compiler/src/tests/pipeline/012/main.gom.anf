@@ -1,26 +1,31 @@
 fn fib(x/0: int32) -> int32 {
   let mtmp0 = (x/0 < 2) in
+  join k2(jp3: int32) -> int32 {
+    jp3
+  } in
   match mtmp0 {
     true => {
-      1
+      jump k2(1)
     },
     false => {
-      let t3 = (x/0 - 1) in
-      let t2 = fib(t3) in
-      let t5 = (x/0 - 2) in
-      let t4 = fib(t5) in
-      (t2 + t4)
+      let t4 = (x/0 - 1) in
+      let t5 = fib(t4) in
+      let t6 = (x/0 - 2) in
+      let t7 = fib(t6) in
+      let t8 = (t5 + t7) in
+      jump k2(t8)
     },
   }
 }
 
 fn main() -> unit {
-  let t6 = fib(10) in
-  let mtmp1 = print__T_int32(t6) in
+  let t9 = fib(10) in
+  let mtmp1 = print__T_int32(t9) in
   ()
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  let t7 = int32_to_string(value/0) in
-  string_print(t7)
+  let t10 = int32_to_string(value/0) in
+  let t11 = string_print(t10) in
+  t11
 }
