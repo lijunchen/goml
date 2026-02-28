@@ -2386,17 +2386,26 @@ impl Typer {
                 );
                 let inherent_lookup = inherent_lookup;
                 if let Some(method_scheme) = inherent_lookup {
+                    let inst_method_ty = self.inst_ty(&method_scheme.ty);
+                    let method_params = match &inst_method_ty {
+                        tast::Ty::TFunc { params, .. } => params.clone(),
+                        _ => Vec::new(),
+                    };
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
                     let mut arg_types = Vec::with_capacity(args.len() + 1);
                     arg_types.push(receiver_ty.clone());
                     args_tast.push(receiver_tast);
-                    for arg in args.iter() {
-                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                        arg_types.push(arg_tast.get_ty());
+                    for (i, arg) in args.iter().enumerate() {
+                        let expected_param_ty = method_params.get(i + 1);
+                        let arg_tast = if let Some(expected_param_ty) = expected_param_ty {
+                            self.check_expr(genv, local_env, diagnostics, *arg, expected_param_ty)
+                        } else {
+                            self.infer_expr(genv, local_env, diagnostics, *arg)
+                        };
+                        let ty_for_call_site = expected_param_ty.cloned().unwrap_or_else(|| arg_tast.get_ty());
+                        arg_types.push(ty_for_call_site);
                         args_tast.push(arg_tast);
                     }
-
-                    let inst_method_ty = self.inst_ty(&method_scheme.ty);
                     let ret_ty = match &inst_method_ty {
                         tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
                         _ => {
