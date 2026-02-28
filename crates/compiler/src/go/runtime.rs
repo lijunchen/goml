@@ -2047,6 +2047,10 @@ fn json_escape_string() -> goast::Fn {
 }
 
 fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
+    let fmt_spec = match &ty {
+        goty::GoType::TFloat32 | goty::GoType::TFloat64 => "%g",
+        _ => "%d",
+    };
     let fmt_ty = goty::GoType::TFunc {
         params: vec![goty::GoType::TString, ty.clone()],
         ret_ty: Box::new(goty::GoType::TString),
@@ -2064,7 +2068,7 @@ fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
                     }),
                     args: vec![
                         goast::Expr::String {
-                            value: "%d".to_string(),
+                            value: fmt_spec.to_string(),
                             ty: goty::GoType::TString,
                         },
                         goast::Expr::Var {
