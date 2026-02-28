@@ -1,0 +1,17 @@
+fn first[T](items: Vec[T]) -> Option[T] {
+    if vec_len(items) > 0 {
+        Option::Some(vec_get(items, 0))
+    } else {
+        Option::None
+    }
+}
+
+fn main() {
+    let v = vec_new();
+    let v = vec_push(v, 42);
+    let r = first(v);
+    match r {
+        Option::Some(x) => string_println(x.to_string()),
+        Option::None => string_println("none"),
+    };
+}
