@@ -525,6 +525,7 @@ impl Typer {
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
+        self.record_expr_result(e, &expr_tast);
         let expr_tast =
             self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
         self.push_constraint(Constraint::TypeEqual(
@@ -532,7 +533,6 @@ impl Typer {
             expected.clone(),
             self.expr_range(e),
         ));
-        self.record_expr_result(e, &expr_tast);
         expr_tast
     }
 
