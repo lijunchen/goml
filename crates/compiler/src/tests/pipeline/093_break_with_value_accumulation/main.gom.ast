@@ -1,0 +1,25 @@
+package main;
+fn main() {
+    let sum = ref(0i32);
+    let i = ref(0i32);
+    while ref_get(i) < 20i32 {
+        {
+            ref_set(i, ref_get(i) + 1i32);
+            if ref_get(i) > 5i32 {
+                {
+                    break
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            ref_set(sum, ref_get(sum) + ref_get(i));
+        }
+    };
+    let _ = print("sum: ");
+    let _ = println(ref_get(sum));
+    let _ = print("i at break: ");
+    let _ = println(ref_get(i));
+}
+

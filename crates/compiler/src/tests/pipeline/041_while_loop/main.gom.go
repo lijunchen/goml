@@ -71,6 +71,7 @@ func sum_to(limit__0 int32) int32 {
         ref_set__Ref_int32(acc__1, t16)
         var t17 int32 = current__3 + 1
         ref_set__Ref_int32(i__2, t17)
+        continue
     }
     var t11 int32 = ref_get__Ref_int32(acc__1)
     return t11
@@ -97,6 +98,7 @@ func sum_even(limit__4 int32) int32 {
             var t27 int32 = t26 + current__8
             ref_set__Ref_int32(acc__5, t27)
         } else {}
+        continue
     }
     var t19 int32 = ref_get__Ref_int32(acc__5)
     return t19

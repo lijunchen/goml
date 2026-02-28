@@ -522,6 +522,7 @@ func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
             var t274 int32 = t273 - 1
             ref_set__Ref_int32(i__30, t274)
         }
+        continue
     }
     var t259 Option__Typ = ref_get__Ref_Option__Typ(found__31)
     return t259
@@ -558,6 +559,7 @@ func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
             var t294 int32 = t293 - 1
             ref_set__Ref_int32(i__36, t294)
         }
+        continue
     }
     var t279 Option__Typ = ref_get__Ref_Option__Typ(found__37)
     return t279

@@ -1,0 +1,36 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let i/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 8 {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
+            if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 3 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 6 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            let _ : unit = (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
+        }
+    };
+    let _ : unit = (println : (string) -> unit)("done");
+}

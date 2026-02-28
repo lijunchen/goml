@@ -359,6 +359,7 @@ func main0() struct{} {
         var t89 int32 = ref_get__Ref_int32(i__54)
         var t90 int32 = t89 + 1
         ref_set__Ref_int32(i__54, t90)
+        continue
     }
     var t82 string = int32_to_string(vlen__52)
     var t83 string = "len:" + t82

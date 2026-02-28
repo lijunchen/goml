@@ -47,6 +47,7 @@ func main0() struct{} {
         if !t9 {
             break
         }
+        continue
     }
     return struct{}{}
 }
@@ -65,6 +66,7 @@ func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env
         var t15 int32 = ref_get__Ref_int32(counter__0)
         var t16 int32 = t15 + 1
         ref_set__Ref_int32(counter__0, t16)
+        continue
     }
     return struct{}{}
 }

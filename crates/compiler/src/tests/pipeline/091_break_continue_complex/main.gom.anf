@@ -1,0 +1,88 @@
+fn main() -> unit {
+  let sum/0 = ref(0) in
+  let i/1 = ref(1) in
+  join exit12() -> unit {
+    let _wild3 = () in
+    let mtmp4 = print__T_string("sum up to break: ") in
+    let t13 = ref_get(sum/0) in
+    let mtmp5 = println__T_int32(t13) in
+    let even_sum/2 = ref(0) in
+    let j/3 = ref(1) in
+    join exit14() -> unit {
+      let _wild9 = () in
+      let mtmp10 = print__T_string("even sum: ") in
+      let t15 = ref_get(even_sum/2) in
+      let mtmp11 = println__T_int32(t15) in
+      ()
+    } in
+    joinrec {
+      join loop16() -> unit {
+        let t17 = ref_get(j/3) in
+        let t18 = (t17 <= 10) in
+        if t18 {
+          let cur/4 = ref_get(j/3) in
+          let t19 = (cur/4 + 1) in
+          let _wild6 = ref_set(j/3, t19) in
+          let t21 = (cur/4 / 2) in
+          let t22 = (t21 * 2) in
+          let t23 = (cur/4 == t22) in
+          join k20() -> unit {
+            let _wild8 = () in
+            jump loop16()
+          } in
+          if t23 {
+            let t24 = ref_get(even_sum/2) in
+            let t25 = (t24 + cur/4) in
+            let _wild7 = ref_set(even_sum/2, t25) in
+            jump loop16()
+          } else {
+            jump k20()
+          }
+        } else {
+          jump exit14()
+        }
+      } in
+    } in
+    jump loop16()
+  } in
+  joinrec {
+    join loop26() -> unit {
+      let t27 = ref_get(i/1) in
+      let t28 = (t27 <= 100) in
+      if t28 {
+        let t35 = ref_get(i/1) in
+        let t36 = (t35 == 50) in
+        join k29() -> unit {
+          let _wild0 = () in
+          let t30 = ref_get(sum/0) in
+          let t31 = ref_get(i/1) in
+          let t32 = (t30 + t31) in
+          let _wild1 = ref_set(sum/0, t32) in
+          let t33 = ref_get(i/1) in
+          let t34 = (t33 + 1) in
+          let _wild2 = ref_set(i/1, t34) in
+          jump loop26()
+        } in
+        if t36 {
+          jump exit12()
+        } else {
+          jump k29()
+        }
+      } else {
+        jump exit12()
+      }
+    } in
+  } in
+  jump loop26()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  let t37 = string_print(value/0) in
+  t37
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t38 = int32_to_string(value/1) in
+  let t39 = string_println(t38) in
+  t39
+}

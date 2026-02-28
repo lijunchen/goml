@@ -391,6 +391,7 @@ func is_int_text(text__2 string) bool {
                 var t171 int32 = ref_get__Ref_int32(i__4)
                 var t172 int32 = t171 + 1
                 ref_set__Ref_int32(i__4, t172)
+                continue
             } else {
                 var t175 bool = is_digit(ch__8)
                 if t175 {
@@ -402,6 +403,7 @@ func is_int_text(text__2 string) bool {
                 } else {
                     ref_set__Ref_bool(ok__6, false)
                 }
+                continue
             }
         }
         var t157 bool = ref_get__Ref_bool(ok__6)
@@ -447,6 +449,7 @@ func parse_int32(text__9 string) int32 {
             var t203 int32 = t202 + 1
             ref_set__Ref_int32(i__11, t203)
         }
+        continue
     }
     var t183 bool = ref_get__Ref_bool(negative__12)
     var jp182 int32
@@ -498,6 +501,7 @@ func lex_atom(source__18 string, start__19 int32) Tuple2_Token_int32 {
             var t237 int32 = t236 + 1
             ref_set__Ref_int32(i__22, t237)
         }
+        continue
     }
     var atom__25 string = ref_get__Ref_string(text__21)
     var jp212 Token
@@ -573,6 +577,7 @@ func lex(source__27 string) []Token {
             var t249 int32 = ref_get__Ref_int32(i__31)
             var t250 int32 = t249 + 1
             ref_set__Ref_int32(i__31, t250)
+            continue
         } else {
             var t253 bool = ch__32 == 41
             if t253 {
@@ -582,6 +587,7 @@ func lex(source__27 string) []Token {
                 var t256 int32 = ref_get__Ref_int32(i__31)
                 var t257 int32 = t256 + 1
                 ref_set__Ref_int32(i__31, t257)
+                continue
             } else {
                 var t260 bool = ch__32 == 32
                 if t260 {
@@ -600,6 +606,7 @@ func lex(source__27 string) []Token {
                     ref_set__Ref_Vec_Token(toks__30, t266)
                     ref_set__Ref_int32(i__31, next__34)
                 }
+                continue
             }
         }
     }
@@ -635,6 +642,7 @@ func env_lookup(env__35 []Binding, name__36 string) Value {
             var t285 int32 = t284 - 1
             ref_set__Ref_int32(i__37, t285)
         }
+        continue
     }
     var t271 Value = ref_get__Ref_Value(result__38)
     return t271
@@ -732,6 +740,7 @@ func parse_list(tokens__45 []Token, start__46 int32) Tuple2_Vec_SExpr_int32 {
         default:
             panic("non-exhaustive match")
         }
+        continue
     }
     var t291 []SExpr = ref_get__Ref_Vec_SExpr(exprs__48)
     var t292 int32 = ref_get__Ref_int32(i__49)
@@ -834,6 +843,7 @@ func parse_program(tokens__60 []Token) []SExpr {
         var t347 []SExpr = append(t346, expr__64)
         ref_set__Ref_Vec_SExpr(exprs__63, t347)
         ref_set__Ref_int32(i__61, next__65)
+        continue
     }
     var t340 []SExpr = ref_get__Ref_Vec_SExpr(exprs__63)
     return t340
@@ -1122,6 +1132,7 @@ func eval_begin(items__100 []SExpr, start__101 int32, local__102 []Binding, glob
         var t424 int32 = ref_get__Ref_int32(i__104)
         var t425 int32 = t424 + 1
         ref_set__Ref_int32(i__104, t425)
+        continue
     }
     var t417 Value = ref_get__Ref_Value(last__105)
     return t417
@@ -1165,6 +1176,7 @@ func params_from_sexprs(items__107 []SExpr) []string {
         default:
             panic("non-exhaustive match")
         }
+        continue
     }
     var t428 []string = ref_get__Ref_Vec_string(params__110)
     return t428
@@ -1190,6 +1202,7 @@ func eval_args(items__112 []SExpr, start__113 int32, local__114 []Binding, globa
         var t459 int32 = ref_get__Ref_int32(i__116)
         var t460 int32 = t459 + 1
         ref_set__Ref_int32(i__116, t460)
+        continue
     }
     var t450 []Value = ref_get__Ref_Vec_Value(args__118)
     return t450
@@ -1347,6 +1360,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
             default:
                 panic("non-exhaustive match")
             }
+            continue
         }
         var t490 int32 = ref_get__Ref_int32(acc__127)
         var t491 Value = Value_Int{
@@ -1391,6 +1405,7 @@ func apply_builtin(name__120 string, args__121 []Value) Value {
             default:
                 panic("non-exhaustive match")
             }
+            continue
         }
         var t513 int32 = ref_get__Ref_int32(acc__130)
         var t514 Value = Value_Int{
@@ -1607,6 +1622,7 @@ func apply_lambda(lambda__141 Lambda, args__142 []Value) Value {
         var t584 int32 = ref_get__Ref_int32(i__144)
         var t585 int32 = t584 + 1
         ref_set__Ref_int32(i__144, t585)
+        continue
     }
     var t566 SExpr = lambda__141.body
     var t567 []Binding = ref_get__Ref_Vec_Binding(env__143)

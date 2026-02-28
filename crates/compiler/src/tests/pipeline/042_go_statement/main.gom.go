@@ -49,6 +49,7 @@ func main0() struct{} {
         if !t9 {
             break
         }
+        continue
     }
     string_println("main")
     return struct{}{}

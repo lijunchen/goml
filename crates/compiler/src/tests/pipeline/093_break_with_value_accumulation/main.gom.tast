@@ -1,0 +1,31 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let sum/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let i/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) < 20 {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((i/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) + 1);
+            if (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])) > 5 {
+                {
+                    break
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            (ref_set : (Ref[int32], int32) -> unit)((sum/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])));
+        }
+    };
+    let _ : unit = (print : (string) -> unit)("sum: ");
+    let _ : unit = (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((sum/0 : Ref[int32])));
+    let _ : unit = (print : (string) -> unit)("i at break: ");
+    let _ : unit = (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((i/1 : Ref[int32])));
+}
