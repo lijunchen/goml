@@ -3214,7 +3214,8 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                             if needs_closure_wrap {
                                 closure_to_func_lit(goenv, expr, for_ty)
                             } else {
-                                compile_imm(goenv, expr)
+                                let compiled = compile_imm(goenv, expr);
+                                ensure_typed_for_any(compiled, for_ty)
                             }
                         }),
                         ("vtable".to_string(), vtable_expr),
@@ -3464,6 +3465,37 @@ fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
         return true;
     }
     false
+}
+
+fn ensure_typed_for_any(expr: goast::Expr, for_ty: &tast::Ty) -> goast::Expr {
+    let type_name = match for_ty {
+        tast::Ty::TInt8 => Some("int8"),
+        tast::Ty::TInt16 => Some("int16"),
+        tast::Ty::TInt32 => Some("int32"),
+        tast::Ty::TInt64 => Some("int64"),
+        tast::Ty::TUint8 => Some("uint8"),
+        tast::Ty::TUint16 => Some("uint16"),
+        tast::Ty::TUint32 => Some("uint32"),
+        tast::Ty::TUint64 => Some("uint64"),
+        tast::Ty::TFloat32 => Some("float32"),
+        tast::Ty::TFloat64 => Some("float64"),
+        tast::Ty::TChar => Some("rune"),
+        tast::Ty::TBool => Some("bool"),
+        _ => None,
+    };
+    if let Some(name) = type_name {
+        let go_ty = tast_ty_to_go_type(for_ty);
+        goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: name.to_string(),
+                ty: go_ty.clone(),
+            }),
+            args: vec![expr],
+            ty: go_ty,
+        }
+    } else {
+        expr
+    }
 }
 
 fn closure_to_func_lit(
