@@ -1121,17 +1121,21 @@ impl<'a> TypeMono<'a> {
     }
 
     fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> TastIdent {
-        let key = (name.to_string(), args.to_vec());
+        let collapsed_args: Vec<Ty> = args.iter().map(|a| self.collapse_type_apps(a)).collect();
+        let key = (name.to_string(), collapsed_args.clone());
         if let Some(u) = self.map.get(&key) {
             return u.clone();
         }
-        // Create a fresh concrete type name
-        let suffix = if args.is_empty() {
+        let suffix = if collapsed_args.is_empty() {
             "".to_string()
         } else {
             format!(
                 "__{}",
-                args.iter().map(ty_compact).collect::<Vec<_>>().join("__")
+                collapsed_args
+                    .iter()
+                    .map(ty_compact)
+                    .collect::<Vec<_>>()
+                    .join("__")
             )
         };
         let new_name = TastIdent::new(&format!("{}{}", name, suffix));
@@ -1140,17 +1144,16 @@ impl<'a> TypeMono<'a> {
         let ident = TastIdent::new(name);
 
         if let Some(generic_def) = self.enum_base.get(&ident) {
-            // Build substitution from generics to args
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
-            if generic_def.generics.len() != args.len() {
+            if generic_def.generics.len() != collapsed_args.len() {
                 panic!(
                     "enum generic argument length mismatch for {}: expected {}, got {}",
                     name,
                     generic_def.generics.len(),
-                    args.len()
+                    collapsed_args.len()
                 );
             }
-            for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+            for (g, a) in generic_def.generics.iter().zip(collapsed_args.iter()) {
                 subst.insert(g.0.clone(), a.clone());
             }
 
@@ -1176,15 +1179,15 @@ impl<'a> TypeMono<'a> {
             self.monoenv.insert_enum(new_def);
         } else if let Some(generic_def) = self.struct_base.get(&ident).cloned() {
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
-            if generic_def.generics.len() != args.len() {
+            if generic_def.generics.len() != collapsed_args.len() {
                 panic!(
                     "struct generic argument length mismatch for {}: expected {}, got {}",
                     name,
                     generic_def.generics.len(),
-                    args.len()
+                    collapsed_args.len()
                 );
             }
-            for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+            for (g, a) in generic_def.generics.iter().zip(collapsed_args.iter()) {
                 subst.insert(g.0.clone(), a.clone());
             }
 
@@ -1255,6 +1258,10 @@ impl<'a> TypeMono<'a> {
             },
             Ty::TVec { elem } => Ty::TVec {
                 elem: Box::new(self.collapse_type_apps(elem)),
+            },
+            Ty::THashMap { key, value } => Ty::THashMap {
+                key: Box::new(self.collapse_type_apps(key)),
+                value: Box::new(self.collapse_type_apps(value)),
             },
             _ => ty.clone(),
         }

@@ -4203,7 +4203,7 @@ pub fn go_file(
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
-    all.extend(runtime::make_hashmap_runtime(&goenv.genv, &hashmap_types));
+    all.extend(runtime::make_hashmap_runtime(&goenv, &hashmap_types));
     all.extend(runtime::make_missing_runtime(&missing_types));
 
     if !goenv.genv.value_env.extern_funcs.is_empty() || !goenv.genv.type_env.extern_types.is_empty()
