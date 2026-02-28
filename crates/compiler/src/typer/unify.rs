@@ -756,7 +756,7 @@ impl Typer {
                         origin,
                     } => {
                         let norm_receiver_ty = self.norm(&receiver_ty);
-                        if matches!(norm_receiver_ty, tast::Ty::TVar(_)) {
+                        if super::check::contains_tvar(&norm_receiver_ty) {
                             still_pending.push(Constraint::InherentMethodCall {
                                 receiver_ty: norm_receiver_ty,
                                 method,

@@ -4390,7 +4390,7 @@ enum MethodLookupReceiver {
     Deferred(tast::Ty),
 }
 
-fn contains_tvar(ty: &tast::Ty) -> bool {
+pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
     match ty {
         tast::Ty::TVar(_) => true,
         tast::Ty::TTuple { typs } => typs.iter().any(contains_tvar),
