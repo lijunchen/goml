@@ -1,0 +1,23 @@
+trait Renderable {
+    fn render(Self) -> string;
+}
+
+struct Container[T] {
+    content: T,
+    label: string,
+}
+
+struct Text { value: string }
+
+impl Renderable for Text {
+    fn render(self: Text) -> string { self.value }
+}
+
+fn render_container(c: Container[dyn Renderable]) -> string {
+    "[" + c.label + ": " + Renderable::render(c.content) + "]"
+}
+
+fn main() {
+    let c: Container[dyn Renderable] = Container { content: Text { value: "hello" }, label: "greeting" };
+    string_println(render_container(c));
+}
