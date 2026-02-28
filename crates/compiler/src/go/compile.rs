@@ -3338,27 +3338,37 @@ struct WhileLoop {
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
-    any_path_reaches_with_joins(block, target, &HashMap::new())
+    any_path_reaches_with_joins(block, target, &HashMap::new(), &mut HashSet::new())
 }
 
 fn any_path_reaches_with_joins(
     block: &anf::Block,
     target: &anf::JoinId,
     parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
 ) -> bool {
     let mut local_joins = parent_joins.clone();
     for bind in &block.binds {
-        if let anf::Bind::Join(jb) = bind {
-            local_joins.insert(&jb.id, jb);
+        match bind {
+            anf::Bind::Join(jb) => {
+                local_joins.insert(&jb.id, jb);
+            }
+            anf::Bind::JoinRec(group) => {
+                for jb in group {
+                    local_joins.insert(&jb.id, jb);
+                }
+            }
+            anf::Bind::Let(_) => {}
         }
     }
-    any_path_reaches_term(&block.term, target, &local_joins)
+    any_path_reaches_term(&block.term, target, &local_joins, visited)
 }
 
 fn any_path_reaches_term(
     term: &anf::Term,
     target: &anf::JoinId,
     joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
 ) -> bool {
     match term {
         anf::Term::Jump {
@@ -3367,22 +3377,26 @@ fn any_path_reaches_term(
             if t == target && args.is_empty() {
                 return true;
             }
+            if visited.contains(t) {
+                return false;
+            }
             if let Some(jb) = joins.get(t) {
-                any_path_reaches_with_joins(&jb.body, target, joins)
+                visited.insert(t.clone());
+                any_path_reaches_with_joins(&jb.body, target, joins, visited)
             } else {
                 false
             }
         }
         anf::Term::If { then_, else_, .. } => {
-            any_path_reaches_with_joins(then_, target, joins)
-                || any_path_reaches_with_joins(else_, target, joins)
+            any_path_reaches_with_joins(then_, target, joins, visited)
+                || any_path_reaches_with_joins(else_, target, joins, visited)
         }
         anf::Term::Match { arms, default, .. } => {
             arms.iter()
-                .any(|arm| any_path_reaches_with_joins(&arm.body, target, joins))
+                .any(|arm| any_path_reaches_with_joins(&arm.body, target, joins, visited))
                 || default
                     .as_deref()
-                    .is_some_and(|d| any_path_reaches_with_joins(d, target, joins))
+                    .is_some_and(|d| any_path_reaches_with_joins(d, target, joins, visited))
         }
         _ => false,
     }
