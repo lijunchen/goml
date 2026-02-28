@@ -2914,6 +2914,24 @@ fn compile_call(
         };
     }
 
+    if let tast::Ty::TStruct { name } = &func_tast_ty
+        && is_closure_env_struct(name)
+    {
+        if let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty) {
+            let apply_expr = goast::Expr::Var {
+                name: go_ident(&apply.name),
+                ty: tast_ty_to_go_type(&apply.ty),
+            };
+            let mut call_args = vec![compile_imm(goenv, func)];
+            call_args.extend(compiled_args);
+            return goast::Expr::Call {
+                func: Box::new(apply_expr),
+                args: call_args,
+                ty: tast_ty_to_go_type(ty),
+            };
+        }
+    }
+
     goast::Expr::Call {
         func: Box::new(compile_imm(goenv, func)),
         args: compiled_args,
