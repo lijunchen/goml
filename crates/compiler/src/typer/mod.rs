@@ -1,7 +1,7 @@
 use ena::unify::InPlaceUnificationTable;
 use std::collections::{HashMap, HashSet};
 
-use crate::tast;
+use crate::{hir, tast};
 use crate::typer::results::TypeckResultsBuilder;
 use crate::{env::Constraint, tast::TypeVar};
 
@@ -31,6 +31,13 @@ pub(crate) struct DeferredArithmeticCheck {
     pub origin: Option<text_size::TextRange>,
 }
 
+#[derive(Debug, Clone)]
+pub(crate) struct DeferredDynCoercion {
+    pub expr_id: hir::ExprId,
+    pub concrete_ty: tast::Ty,
+    pub expected_ty: tast::Ty,
+}
+
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
@@ -40,6 +47,7 @@ pub struct Typer {
     pub(crate) while_depth: u32,
     pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
     pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
+    pub(crate) deferred_dyn_coercions: Vec<DeferredDynCoercion>,
 }
 
 impl Typer {
@@ -54,6 +62,7 @@ impl Typer {
             while_depth: 0,
             deferred_arithmetic_checks: Vec::new(),
             tparam_trait_bounds: HashMap::new(),
+            deferred_dyn_coercions: Vec::new(),
         }
     }
 

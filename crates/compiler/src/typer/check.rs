@@ -545,8 +545,27 @@ impl Typer {
         expr: tast::Expr,
         expected: &tast::Ty,
     ) -> tast::Expr {
-        let tast::Ty::TDyn { trait_name } = expected else {
-            return expr;
+        let expected_norm = self.norm(expected);
+        match &expected_norm {
+            tast::Ty::TVar(_) => {
+                let for_ty = expr.get_ty();
+                if !matches!(for_ty, tast::Ty::TVar(_) | tast::Ty::TDyn { .. }) {
+                    self.deferred_dyn_coercions.push(
+                        super::DeferredDynCoercion {
+                            expr_id,
+                            concrete_ty: for_ty,
+                            expected_ty: expected_norm,
+                        },
+                    );
+                }
+                return expr;
+            }
+            tast::Ty::TDyn { .. } => {}
+            _ => return expr,
+        }
+
+        let tast::Ty::TDyn { trait_name } = &expected_norm else {
+            unreachable!()
         };
 
         if matches!(expr.get_ty(), tast::Ty::TDyn { .. }) {
@@ -625,7 +644,7 @@ impl Typer {
             Coercion::ToDyn {
                 trait_name: tast::TastIdent(resolved_trait.clone()),
                 for_ty: for_ty.clone(),
-                ty: expected.clone(),
+                ty: expected_norm.clone(),
                 astptr: None,
             },
         );
@@ -633,7 +652,7 @@ impl Typer {
             trait_name: tast::TastIdent(resolved_trait.clone()),
             for_ty,
             expr: Box::new(expr),
-            ty: expected.clone(),
+            ty: expected_norm.clone(),
             astptr: None,
         }
     }
@@ -2172,7 +2191,7 @@ impl Typer {
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
                             let arg_tast =
                                 self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
-                            arg_types.push(arg_tast.get_ty());
+                            arg_types.push(expected_ty.clone());
                             args_tast.push(arg_tast);
                         }
                     }

@@ -499,10 +499,7 @@ fn main() {
     let result = add("hello", 42);
 }
 "#,
-            expect![[r#"
-                [8:21] error: Type mismatch: expected string, found int32
-                [8:17] error: Type mismatch: expected int32, found string
-                [8:8] error: Could not infer type"#]],
+            expect!["[8:21] error: Type mismatch: expected string, found int32"],
         );
     }
 

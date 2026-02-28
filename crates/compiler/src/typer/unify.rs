@@ -433,7 +433,18 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r, origin) => {
-                        if self.unify(diagnostics, &l, &r, origin) {
+                        let l_norm = self.norm(&l);
+                        let r_norm = self.norm(&r);
+                        let dyn_coercion_ok = match (&l_norm, &r_norm) {
+                            (tast::Ty::TDyn { trait_name }, concrete)
+                            | (concrete, tast::Ty::TDyn { trait_name })
+                                if !matches!(concrete, tast::Ty::TVar(_) | tast::Ty::TDyn { .. }) =>
+                            {
+                                genv.has_trait_impl_visible(trait_name, concrete)
+                            }
+                            _ => false,
+                        };
+                        if dyn_coercion_ok || self.unify(diagnostics, &l, &r, origin) {
                             changed = true;
                         }
                     }
@@ -750,6 +761,29 @@ impl Typer {
             );
         }
         self.constraints = constraints;
+
+        let deferred = std::mem::take(&mut self.deferred_dyn_coercions);
+        for coercion in deferred {
+            let expected_norm = self.norm(&coercion.expected_ty);
+            let tast::Ty::TDyn { ref trait_name } = expected_norm else {
+                continue;
+            };
+            let concrete_norm = self.norm(&coercion.concrete_ty);
+            if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
+                continue;
+            }
+            if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
+                self.results.push_coercion(
+                    coercion.expr_id,
+                    crate::typer::results::Coercion::ToDyn {
+                        trait_name: tast::TastIdent(trait_name.clone()),
+                        for_ty: concrete_norm,
+                        ty: expected_norm,
+                        astptr: None,
+                    },
+                );
+            }
+        }
     }
 
     pub(crate) fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
