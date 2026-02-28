@@ -1,0 +1,25 @@
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Dog { name: string }
+struct Cat { name: string }
+
+impl Describable for Dog {
+    fn describe(self: Dog) -> string {
+        self.name
+    }
+}
+
+impl Describable for Cat {
+    fn describe(self: Cat) -> string {
+        self.name
+    }
+}
+
+fn main() {
+    let d = Dog { name: "Rex" };
+    let c = Cat { name: "Whiskers" };
+    println(d.describe());
+    println(c.describe());
+}
