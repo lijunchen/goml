@@ -1099,10 +1099,25 @@ mod legacy_anf_codegen {
             } => match constructor {
                 Constructor::Enum(enum_constructor) => {
                     let variant_ty = variant_ty_by_index(goenv, ty, enum_constructor.index);
+                    let variant_field_types = goenv
+                        .get_enum(&enum_constructor.type_name)
+                        .and_then(|def| def.variants.get(enum_constructor.index))
+                        .map(|(_, fields)| fields.as_slice());
                     let fields = args
                         .iter()
                         .enumerate()
-                        .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                        .map(|(i, a)| {
+                            let field_ty = variant_field_types.and_then(|f| f.get(i));
+                            let arg_ty = imm_ty(a);
+                            let val = if let Some(ft) = field_ty
+                                && needs_closure_to_func_wrap(&arg_ty, ft)
+                            {
+                                closure_to_func_lit(goenv, a, ft)
+                            } else {
+                                compile_imm(goenv, a)
+                            };
+                            (format!("_{}", i), val)
+                        })
                         .collect();
                     goast::Expr::StructLiteral {
                         ty: variant_ty,
@@ -2880,10 +2895,25 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
                 let variant_ty = variant_ty_by_index(goenv, ty, enum_constructor.index);
+                let variant_field_types = goenv
+                    .get_enum(&enum_constructor.type_name)
+                    .and_then(|def| def.variants.get(enum_constructor.index))
+                    .map(|(_, fields)| fields.as_slice());
                 let fields = args
                     .iter()
                     .enumerate()
-                    .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                    .map(|(i, a)| {
+                        let field_ty = variant_field_types.and_then(|f| f.get(i));
+                        let arg_ty = imm_ty(a);
+                        let val = if let Some(ft) = field_ty
+                            && needs_closure_to_func_wrap(&arg_ty, ft)
+                        {
+                            closure_to_func_lit(goenv, a, ft)
+                        } else {
+                            compile_imm(goenv, a)
+                        };
+                        (format!("_{}", i), val)
+                    })
                     .collect();
                 CompiledValue {
                     stmts: Vec::new(),
