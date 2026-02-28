@@ -1099,13 +1099,38 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             let func_name = trait_impl_fn_name(&trait_name, &receiver_ty, &method_name.0);
             let param_tys = all_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
             let func_ty = Ty::TFunc {
-                params: param_tys,
+                params: param_tys.clone(),
                 ret_ty: Box::new(new_ty.clone()),
+            };
+
+            let resolved_name = if ctx.orig_fns.contains_key(&func_name) {
+                func_name.clone()
+            } else if let Some(generic_name) =
+                ctx.resolve_generic_callee_name(&func_name, &param_tys, &new_ty)
+            {
+                if let Some(callee) = ctx.orig_fns.get(&generic_name).cloned()
+                    && fn_is_generic(&callee)
+                {
+                    let mut call_subst: Subst = IndexMap::new();
+                    for ((_, pt), at) in callee.params.iter().zip(param_tys.iter()) {
+                        let _ = unify(pt, at, &mut call_subst);
+                    }
+                    let _ = unify(&callee.ret_ty, &new_ty, &mut call_subst);
+                    if !call_subst.values().any(has_tparam) {
+                        ctx.ensure_instance(&generic_name, call_subst)
+                    } else {
+                        func_name.clone()
+                    }
+                } else {
+                    generic_name
+                }
+            } else {
+                func_name.clone()
             };
 
             MonoExpr::ECall {
                 func: Box::new(MonoExpr::EVar {
-                    name: func_name,
+                    name: resolved_name,
                     ty: func_ty,
                 }),
                 args: all_args,

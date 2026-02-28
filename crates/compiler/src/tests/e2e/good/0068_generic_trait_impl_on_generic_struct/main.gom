@@ -1,0 +1,21 @@
+trait Container {
+    fn size(Self) -> int32;
+}
+
+struct Wrapper[T] { value: T }
+
+impl[T] Container for Wrapper[T] {
+    fn size(self: Wrapper[T]) -> int32 { let _ = self; 1 }
+}
+
+fn show_size[T: Container](c: T) -> int32 {
+    Container::size(c)
+}
+
+fn main() {
+    let w1 = Wrapper { value: 42 };
+    let w2 = Wrapper { value: "hello" };
+    let _ = println(show_size(w1));
+    let _ = println(show_size(w2));
+    let _ = println(w1.size());
+}
