@@ -478,10 +478,9 @@ fn main() {
 "#,
             expect![[r#"
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type unknown
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Method to_string not found for type unknown
-                [4:12] error: Could not infer type
+                [4:12] error: Could not solve all type constraints
+                [4:12] error: Type inference failed due to unresolved constraints
                 [4:12] error: Could not infer type"#]],
         );
     }
@@ -2263,11 +2262,7 @@ fn main() {
     println(ref_get(i).to_string());
 }
 "#,
-            expect![[r#"
-                [8:12] error: Method to_string not found for type unknown
-                [8:12] error: Method to_string not found for type unknown
-                [8:12] error: Could not infer type
-                [8:12] error: Could not infer type"#]],
+            expect!["no diagnostics"],
         );
     }
 
