@@ -2434,21 +2434,45 @@ impl Typer {
                     let method_name = tast::TastIdent(field.to_ident_name());
                     let lookup =
                         lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
+                    let is_deferred = matches!(lookup.receiver, MethodLookupReceiver::Deferred(_));
                     match lookup.candidates.as_slice() {
-                        [(trait_name, method_ty)] => self.build_trait_method_call_expr(
-                            genv,
-                            local_env,
-                            diagnostics,
-                            call_expr_id,
-                            func,
-                            receiver_expr,
-                            receiver_tast,
-                            &receiver_ty,
-                            trait_name,
-                            &method_name,
-                            method_ty,
-                            args,
-                        ),
+                        [(trait_name, method_ty)] => {
+                            let result = self.build_trait_method_call_expr(
+                                genv,
+                                local_env,
+                                diagnostics,
+                                call_expr_id,
+                                func,
+                                receiver_expr,
+                                receiver_tast,
+                                &receiver_ty,
+                                trait_name,
+                                &method_name,
+                                method_ty,
+                                args,
+                            );
+                            if is_deferred {
+                                let call_site_type = if let tast::Expr::ECall { func: _, ref args, ref ty } = result {
+                                    let mut params = Vec::with_capacity(args.len());
+                                    for arg in args.iter() {
+                                        params.push(arg.get_ty());
+                                    }
+                                    tast::Ty::TFunc {
+                                        params,
+                                        ret_ty: Box::new(ty.clone()),
+                                    }
+                                } else {
+                                    self.fresh_ty_var()
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: method_name.clone(),
+                                    trait_name: trait_name.clone(),
+                                    call_site_type,
+                                    origin: self.expr_range(call_expr_id),
+                                });
+                            }
+                            result
+                        }
                         [] => {
                             report_method_not_found(
                                 diagnostics,
@@ -4277,6 +4301,7 @@ struct TraitMethodLookup {
 enum MethodLookupReceiver {
     TypeParam(String),
     Concrete(tast::Ty),
+    Deferred(tast::Ty),
 }
 
 fn lookup_trait_method_candidates(
@@ -4290,6 +4315,12 @@ fn lookup_trait_method_candidates(
         return TraitMethodLookup {
             receiver: MethodLookupReceiver::TypeParam(name.clone()),
             candidates: lookup_bound_trait_methods(genv, bounds, method),
+        };
+    }
+    if matches!(receiver_ty, tast::Ty::TVar(_)) {
+        return TraitMethodLookup {
+            receiver: MethodLookupReceiver::Deferred(receiver_ty.clone()),
+            candidates: lookup_trait_methods(genv, local_env.in_scope_traits(), method, None),
         };
     }
     TraitMethodLookup {
@@ -4321,15 +4352,17 @@ fn report_method_not_found(
             )
             .with_range(range),
         ),
-        MethodLookupReceiver::Concrete(ty) => super::util::push_error_with_range(
-            diagnostics,
-            format!(
-                "Method {} not found for type {}",
-                method_name.0,
-                super::util::format_ty_for_diag(ty)
-            ),
-            range,
-        ),
+        MethodLookupReceiver::Concrete(ty) | MethodLookupReceiver::Deferred(ty) => {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Method {} not found for type {}",
+                    method_name.0,
+                    super::util::format_ty_for_diag(ty)
+                ),
+                range,
+            )
+        }
     }
 }
 
@@ -4347,7 +4380,7 @@ fn report_ambiguous_method(
         .join(", ");
     let receiver_label = match receiver {
         MethodLookupReceiver::TypeParam(name) => format!("type parameter {}", name),
-        MethodLookupReceiver::Concrete(ty) => {
+        MethodLookupReceiver::Concrete(ty) | MethodLookupReceiver::Deferred(ty) => {
             format!("type {}", super::util::format_ty_for_diag(ty))
         }
     };
