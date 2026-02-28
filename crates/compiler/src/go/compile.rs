@@ -2927,7 +2927,7 @@ fn compile_call(
             return goast::Expr::Call {
                 func: Box::new(apply_expr),
                 args: call_args,
-                ty: tast_ty_to_go_type(ty),
+                ty: tast_ty_to_go_type(&apply.ret_ty),
             };
         }
     }
@@ -3428,9 +3428,17 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
             stmts.push(goast::Stmt::Expr(compiled.expr));
         }
     } else {
+        let expr_go_ty = compiled.expr.get_ty();
+        let var_ty = if let goty::GoType::TName { name } = expr_go_ty
+            && is_closure_env_struct(name)
+        {
+            expr_go_ty.clone()
+        } else {
+            tast_ty_to_go_type(&bind.ty)
+        };
         stmts.push(goast::Stmt::VarDecl {
             name: go_ident(&bind.id.0),
-            ty: tast_ty_to_go_type(&bind.ty),
+            ty: var_ty,
             value: Some(compiled.expr),
         });
     }
