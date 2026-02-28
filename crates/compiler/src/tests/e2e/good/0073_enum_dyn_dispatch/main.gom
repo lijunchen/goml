@@ -1,0 +1,26 @@
+trait Area {
+    fn area(Self) -> int32;
+}
+
+enum Shape {
+    Circle(int32),
+    Rect(int32, int32),
+}
+
+impl Area for Shape {
+    fn area(self: Shape) -> int32 {
+        match self {
+            Shape::Circle(r) => 3 * r * r,
+            Shape::Rect(w, h) => w * h,
+        }
+    }
+}
+
+fn print_area(a: dyn Area) {
+    string_println("area=" + Area::area(a).to_string());
+}
+
+fn main() {
+    print_area(Shape::Circle(5));
+    print_area(Shape::Rect(3, 4));
+}

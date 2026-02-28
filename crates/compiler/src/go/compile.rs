@@ -962,6 +962,7 @@ fn gen_dyn_helper_fns(
 
         for (method_name, params, ret_ty) in &methods {
             items.push(goast::Item::Fn(gen_dyn_wrap_fn(
+                goenv,
                 &trait_name,
                 &for_ty,
                 method_name,
@@ -981,6 +982,7 @@ fn gen_dyn_helper_fns(
 }
 
 fn gen_dyn_wrap_fn(
+    goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
     method_name: &str,
@@ -1016,42 +1018,109 @@ fn gen_dyn_wrap_fn(
     impl_param_tys.push(receiver_go_ty.clone());
     impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
 
-    let asserted_self = goast::Expr::Cast {
-        expr: Box::new(goast::Expr::Var {
-            name: "self".to_string(),
-            ty: any_go_type(),
-        }),
-        ty: receiver_go_ty.clone(),
+    let enum_name = match for_ty {
+        tast::Ty::TEnum { name } => Some(name.clone()),
+        _ => None,
     };
+    let is_enum = enum_name
+        .as_ref()
+        .and_then(|n| goenv.get_enum(&TastIdent::new(n)))
+        .is_some();
 
-    let mut args = Vec::with_capacity(params.len() + 1);
-    args.push(asserted_self);
-    for (i, pty) in params.iter().enumerate() {
+    if is_enum {
+        let mut args = Vec::with_capacity(params.len() + 1);
         args.push(goast::Expr::Var {
-            name: format!("p{}", i),
-            ty: tast_ty_to_go_type(pty),
+            name: "v".to_string(),
+            ty: receiver_go_ty.clone(),
         });
-    }
-
-    let call = goast::Expr::Call {
-        func: Box::new(goast::Expr::Var {
-            name: impl_go_name,
-            ty: goty::GoType::TFunc {
-                params: impl_param_tys,
-                ret_ty: Box::new(ret_go_ty.clone()),
+        for (i, pty) in params.iter().enumerate() {
+            args.push(goast::Expr::Var {
+                name: format!("p{}", i),
+                ty: tast_ty_to_go_type(pty),
+            });
+        }
+        let call = goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: impl_go_name,
+                ty: goty::GoType::TFunc {
+                    params: impl_param_tys,
+                    ret_ty: Box::new(ret_go_ty.clone()),
+                },
+            }),
+            args,
+            ty: ret_go_ty.clone(),
+        };
+        let switch_stmt = goast::Stmt::SwitchType {
+            bind: Some("v".to_string()),
+            expr: goast::Expr::Var {
+                name: "self".to_string(),
+                ty: any_go_type(),
             },
-        }),
-        args,
-        ty: ret_go_ty.clone(),
-    };
+            cases: vec![(
+                receiver_go_ty,
+                goast::Block {
+                    stmts: vec![goast::Stmt::Return {
+                        expr: Some(call),
+                    }],
+                },
+            )],
+            default: Some(goast::Block {
+                stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "panic".to_string(),
+                        ty: goty::GoType::TUnit,
+                    }),
+                    args: vec![goast::Expr::String { value: "unexpected type".to_string(), ty: goty::GoType::TString }],
+                    ty: goty::GoType::TUnit,
+                })],
+            }),
+        };
+        goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![switch_stmt],
+            },
+        }
+    } else {
+        let asserted_self = goast::Expr::Cast {
+            expr: Box::new(goast::Expr::Var {
+                name: "self".to_string(),
+                ty: any_go_type(),
+            }),
+            ty: receiver_go_ty.clone(),
+        };
 
-    goast::Fn {
-        name: fn_name,
-        params: go_params,
-        ret_ty: Some(ret_go_ty),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return { expr: Some(call) }],
-        },
+        let mut args = Vec::with_capacity(params.len() + 1);
+        args.push(asserted_self);
+        for (i, pty) in params.iter().enumerate() {
+            args.push(goast::Expr::Var {
+                name: format!("p{}", i),
+                ty: tast_ty_to_go_type(pty),
+            });
+        }
+
+        let call = goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: impl_go_name,
+                ty: goty::GoType::TFunc {
+                    params: impl_param_tys,
+                    ret_ty: Box::new(ret_go_ty.clone()),
+                },
+            }),
+            args,
+            ty: ret_go_ty.clone(),
+        };
+
+        goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return { expr: Some(call) }],
+            },
+        }
     }
 }
 
