@@ -815,7 +815,9 @@ impl Typer {
                     }
                     tast::Ty::TDyn { trait_name } => {
                         let concrete_norm = self.norm(&coercion.concrete_ty);
-                        if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
+                        if matches!(concrete_norm, tast::Ty::TVar(_)) {
+                            still_deferred.push(coercion);
+                        } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
                             changed = true;
                         } else if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
                             self.results.push_coercion(

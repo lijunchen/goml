@@ -551,15 +551,17 @@ impl Typer {
         match &expected_norm {
             tast::Ty::TVar(_) => {
                 let for_ty = expr.get_ty();
-                if !matches!(for_ty, tast::Ty::TVar(_) | tast::Ty::TDyn { .. }) {
+                if !matches!(for_ty, tast::Ty::TDyn { .. }) {
                     self.deferred_dyn_coercions.push(
                         super::DeferredDynCoercion {
                             expr_id,
-                            concrete_ty: for_ty,
+                            concrete_ty: for_ty.clone(),
                             expected_ty: expected_norm,
                         },
                     );
-                    return (expr, true);
+                    if !matches!(for_ty, tast::Ty::TVar(_)) {
+                        return (expr, true);
+                    }
                 }
                 return (expr, false);
             }
