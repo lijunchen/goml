@@ -1,6 +1,5 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
-use anyhow::bail;
 use diagnostics::Diagnostics;
 use parser::format_parser_diagnostics;
 
@@ -32,10 +31,10 @@ pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
 
     case_paths.sort();
 
-    if let Ok(filter) = std::env::var("GOML_TEST_FILTER") {
-        if !filter.is_empty() {
-            case_paths.retain(|p| p.to_string_lossy().contains(&filter));
-        }
+    if let Ok(filter) = std::env::var("GOML_TEST_FILTER")
+        && !filter.is_empty()
+    {
+        case_paths.retain(|p| p.to_string_lossy().contains(&filter));
     }
 
     for p in case_paths {

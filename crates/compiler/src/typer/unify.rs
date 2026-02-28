@@ -654,7 +654,7 @@ impl Typer {
         self.constraints = constraints;
     }
 
-    fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
+    pub(crate) fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {

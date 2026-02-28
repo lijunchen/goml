@@ -1,6 +1,7 @@
 use ena::unify::InPlaceUnificationTable;
 use std::collections::HashSet;
 
+use crate::tast;
 use crate::typer::results::TypeckResultsBuilder;
 use crate::{env::Constraint, tast::TypeVar};
 
@@ -16,6 +17,20 @@ mod util;
 pub use toplevel::check_file_with_env_and_results;
 pub use toplevel::{check_file, check_file_with_env};
 
+#[derive(Debug, Clone)]
+pub(crate) enum ArithmeticKind {
+    NumericOrString,
+    Numeric,
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct DeferredArithmeticCheck {
+    pub kind: ArithmeticKind,
+    pub ty: tast::Ty,
+    pub op: &'static str,
+    pub origin: Option<text_size::TextRange>,
+}
+
 pub struct Typer {
     pub uni: InPlaceUnificationTable<TypeVar>,
     pub(crate) constraints: Vec<Constraint>,
@@ -23,6 +38,7 @@ pub struct Typer {
     pub hir_table: name_resolution::HirTable,
     pub results: TypeckResultsBuilder,
     pub(crate) while_depth: u32,
+    pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
 }
 
 impl Typer {
@@ -35,6 +51,7 @@ impl Typer {
             hir_table,
             results,
             while_depth: 0,
+            deferred_arithmetic_checks: Vec::new(),
         }
     }
 

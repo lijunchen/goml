@@ -1223,6 +1223,7 @@ fn typecheck_fn(
     local_env.clear_tparams_env();
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
+    typer.validate_deferred_arithmetic_checks(diagnostics);
 }
 
 fn typecheck_impl_block(
@@ -1293,5 +1294,6 @@ fn typecheck_impl_block(
         local_env.clear_tparams_env();
         local_env.clear_tparam_trait_bounds();
         typer.solve(genv, diagnostics);
+        typer.validate_deferred_arithmetic_checks(diagnostics);
     }
 }

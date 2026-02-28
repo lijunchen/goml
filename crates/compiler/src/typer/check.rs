@@ -2685,23 +2685,80 @@ impl Typer {
             | common_defs::BinaryOp::GreaterEq
             | common_defs::BinaryOp::Eq
             | common_defs::BinaryOp::NotEq => tast::Ty::TBool,
-            _ => self.fresh_ty_var(),
+            common_defs::BinaryOp::Add => {
+                let norm_lhs = self.norm(&lhs_ty);
+                if is_numeric_ty(&norm_lhs) || matches!(norm_lhs, tast::Ty::TString) {
+                    norm_lhs
+                } else if matches!(norm_lhs, tast::Ty::TVar(..)) {
+                    let tv = self.fresh_ty_var();
+                    self.deferred_arithmetic_checks.push(
+                        super::DeferredArithmeticCheck {
+                            kind: super::ArithmeticKind::NumericOrString,
+                            ty: tv.clone(),
+                            op: "+",
+                            origin: self.expr_range(lhs),
+                        },
+                    );
+                    tv
+                } else {
+                    super::util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Operator + is not defined for type {}",
+                            super::util::format_ty_for_diag(&norm_lhs)
+                        ),
+                        self.expr_range(lhs),
+                    );
+                    norm_lhs
+                }
+            }
+            common_defs::BinaryOp::Sub
+            | common_defs::BinaryOp::Mul
+            | common_defs::BinaryOp::Div => {
+                let norm_lhs = self.norm(&lhs_ty);
+                if is_numeric_ty(&norm_lhs) {
+                    norm_lhs
+                } else if matches!(norm_lhs, tast::Ty::TVar(..)) {
+                    let tv = self.fresh_ty_var();
+                    let op_str = match op {
+                        common_defs::BinaryOp::Sub => "-",
+                        common_defs::BinaryOp::Mul => "*",
+                        common_defs::BinaryOp::Div => "/",
+                        _ => unreachable!(),
+                    };
+                    self.deferred_arithmetic_checks.push(
+                        super::DeferredArithmeticCheck {
+                            kind: super::ArithmeticKind::Numeric,
+                            ty: tv.clone(),
+                            op: op_str,
+                            origin: self.expr_range(lhs),
+                        },
+                    );
+                    tv
+                } else {
+                    let op_str = match op {
+                        common_defs::BinaryOp::Sub => "-",
+                        common_defs::BinaryOp::Mul => "*",
+                        common_defs::BinaryOp::Div => "/",
+                        _ => unreachable!(),
+                    };
+                    super::util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Operator {} is not defined for type {}",
+                            op_str,
+                            super::util::format_ty_for_diag(&norm_lhs)
+                        ),
+                        self.expr_range(lhs),
+                    );
+                    norm_lhs
+                }
+            }
         };
 
         match op {
-            common_defs::BinaryOp::Add => {
-                self.push_constraint(Constraint::TypeEqual(
-                    lhs_ty.clone(),
-                    ret_ty.clone(),
-                    self.expr_range(lhs),
-                ));
-                self.push_constraint(Constraint::TypeEqual(
-                    rhs_ty.clone(),
-                    ret_ty.clone(),
-                    self.expr_range(rhs),
-                ));
-            }
-            common_defs::BinaryOp::Sub
+            common_defs::BinaryOp::Add
+            | common_defs::BinaryOp::Sub
             | common_defs::BinaryOp::Mul
             | common_defs::BinaryOp::Div => {
                 self.push_constraint(Constraint::TypeEqual(
@@ -3493,6 +3550,35 @@ fn is_float_ty(ty: &tast::Ty) -> bool {
 
 fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
+}
+
+impl Typer {
+    pub(crate) fn validate_deferred_arithmetic_checks(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+    ) {
+        let checks = std::mem::take(&mut self.deferred_arithmetic_checks);
+        for check in checks {
+            let norm_ty = self.norm(&check.ty);
+            let valid = match check.kind {
+                super::ArithmeticKind::NumericOrString => {
+                    is_numeric_ty(&norm_ty) || matches!(norm_ty, tast::Ty::TString)
+                }
+                super::ArithmeticKind::Numeric => is_numeric_ty(&norm_ty),
+            };
+            if !valid && !matches!(norm_ty, tast::Ty::TVar(..)) {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "Operator {} is not defined for type {}",
+                        check.op,
+                        super::util::format_ty_for_diag(&norm_ty)
+                    ),
+                    check.origin,
+                );
+            }
+        }
+    }
 }
 
 impl Typer {
