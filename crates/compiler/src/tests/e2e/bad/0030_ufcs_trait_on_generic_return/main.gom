@@ -1,0 +1,20 @@
+trait Printable {
+  fn to_str(Self) -> string;
+}
+
+impl Printable for int32 {
+  fn to_str(self: int32) -> string { int32_to_string(self) }
+}
+
+fn identity[T](x: T) -> T {
+  x
+}
+
+fn show[T: Printable](x: T) -> string {
+  let y = identity(x);
+  Printable::to_str(y)
+}
+
+fn main() -> unit {
+  println(show(42))
+}
