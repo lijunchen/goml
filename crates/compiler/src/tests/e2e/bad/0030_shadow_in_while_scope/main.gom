@@ -1,0 +1,9 @@
+fn main() {
+    let x = 10;
+    let i = ref(0);
+    while ref_get(i) < 1 {
+        let x = x + 1;
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println(int32_to_string(x));
+}
