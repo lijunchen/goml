@@ -2241,6 +2241,7 @@ mod legacy_anf_codegen {
 
         stmts.push(goast::Stmt::Loop {
             body: goast::Block { stmts: loop_body },
+            label: None,
         });
         stmts
     }
@@ -3943,6 +3944,9 @@ fn compile_term_leaf(
                 return vec![goast::Stmt::Continue];
             }
             if join_env.break_targets.contains(target) {
+                if let Some(label) = join_env.break_labels.get(target) {
+                    return vec![goast::Stmt::BreakLabel(label.clone())];
+                }
                 return vec![goast::Stmt::Break];
             }
             if let Some(join_bind) = join_env.get(target) {
@@ -4156,21 +4160,66 @@ fn compile_while_loop(
         else_: None,
     });
 
+    let loop_label = format!("Loop_{}", go_ident(&wl.loop_id.0));
+
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
     if let Some(exit_id) = &wl.exit_id {
         inner_env.break_targets.insert(exit_id.clone());
+        inner_env
+            .break_labels
+            .insert(exit_id.clone(), loop_label.clone());
     }
     loop_body_stmts.extend(compile_block_structured(goenv, &wl.loop_body, &inner_env));
 
+    let has_break_label = stmts_contain_break_label(&loop_body_stmts, &loop_label);
     let mut stmts = vec![goast::Stmt::Loop {
         body: goast::Block {
             stmts: loop_body_stmts,
         },
+        label: if has_break_label { Some(loop_label) } else { None },
     }];
 
     stmts.extend(compile_block_structured(goenv, &wl.after, join_env));
     stmts
+}
+
+fn stmts_contain_break_label(stmts: &[goast::Stmt], label: &str) -> bool {
+    stmts.iter().any(|s| stmt_contains_break_label(s, label))
+}
+
+fn stmt_contains_break_label(stmt: &goast::Stmt, label: &str) -> bool {
+    match stmt {
+        goast::Stmt::BreakLabel(lbl) => lbl == label,
+        goast::Stmt::If { then, else_, .. } => {
+            stmts_contain_break_label(&then.stmts, label)
+                || else_
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::SwitchExpr {
+            cases, default, ..
+        } => {
+            cases
+                .iter()
+                .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))
+                || default
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::SwitchType {
+            cases, default, ..
+        } => {
+            cases
+                .iter()
+                .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))
+                || default
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::Loop { body, .. } => stmts_contain_break_label(&body.stmts, label),
+        _ => false,
+    }
 }
 
 fn build_join_env(block: &anf::Block) -> JoinEnv {
@@ -4184,6 +4233,7 @@ struct JoinEnv {
     joins: HashMap<anf::JoinId, anf::JoinBind>,
     continue_targets: HashSet<anf::JoinId>,
     break_targets: HashSet<anf::JoinId>,
+    break_labels: HashMap<anf::JoinId, String>,
 }
 
 impl JoinEnv {

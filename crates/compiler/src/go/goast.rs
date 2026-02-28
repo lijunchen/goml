@@ -279,8 +279,10 @@ pub enum Stmt {
     },
     Loop {
         body: Block,
+        label: Option<String>,
     },
     Break,
+    BreakLabel(String),
     Continue,
     // switch <expr> { case <value>: ...; default: ... }
     SwitchExpr {

@@ -1,0 +1,13 @@
+fn main() {
+    let i = ref(0);
+    while true {
+        let v = ref_get(i);
+        match v {
+            0 => string_println("zero"),
+            1 => string_println("one"),
+            _ => break,
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println("done");
+}

@@ -508,7 +508,7 @@ impl Stmt {
                     return_stmt
                 }
             }
-            Stmt::Loop { body } => {
+            Stmt::Loop { body, label } => {
                 let body_doc = if body.stmts.is_empty() {
                     RcDoc::nil()
                 } else {
@@ -521,13 +521,22 @@ impl Stmt {
                         .append(RcDoc::hardline())
                 };
 
-                RcDoc::text("for")
+                let loop_doc = RcDoc::text("for")
                     .append(RcDoc::space())
                     .append(RcDoc::text("{"))
                     .append(body_doc)
-                    .append(RcDoc::text("}"))
+                    .append(RcDoc::text("}"));
+
+                if let Some(lbl) = label {
+                    RcDoc::text(format!("{}:", lbl))
+                        .append(RcDoc::hardline())
+                        .append(loop_doc)
+                } else {
+                    loop_doc
+                }
             }
             Stmt::Break => RcDoc::text("break"),
+            Stmt::BreakLabel(lbl) => RcDoc::text(format!("break {}", lbl)),
             Stmt::Continue => RcDoc::text("continue"),
             Stmt::If { cond, then, else_ } => {
                 let if_part = RcDoc::text("if")

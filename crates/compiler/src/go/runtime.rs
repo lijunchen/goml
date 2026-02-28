@@ -1057,7 +1057,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::Bool {
@@ -1300,7 +1300,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::StructLiteral {
@@ -1542,7 +1542,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     let entry_lit = goast::Expr::StructLiteral {
                         fields: vec![
@@ -1905,7 +1905,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::Unit {
@@ -2582,6 +2582,7 @@ fn string_hash() -> goast::Fn {
                             },
                         ],
                     },
+                    label: None,
                 },
                 goast::Stmt::Return {
                     expr: Some(goast::Expr::Var {
