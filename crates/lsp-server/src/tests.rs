@@ -1158,7 +1158,9 @@ mod goto_definition_tests {
     use super::*;
 
     fn test_file_path() -> PathBuf {
-        std::env::temp_dir().join("goml_test.gom")
+        let dir = std::env::temp_dir().join("goml_lsp_goto_test");
+        std::fs::create_dir_all(&dir).unwrap();
+        dir.join("goml_test.gom")
     }
 
     fn test_file_uri() -> Url {
