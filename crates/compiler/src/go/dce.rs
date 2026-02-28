@@ -103,6 +103,13 @@ fn dce_block_with_live(
             ast::Stmt::Assignment { name, value } => {
                 let value = dce_expr(value);
                 let used_rhs = vars_used_in_expr(&value);
+                if name == "_" {
+                    for u in &used_rhs {
+                        live.insert(u.clone());
+                    }
+                    out.push(ast::Stmt::Assignment { name, value });
+                    continue;
+                }
                 if live.contains(&name) {
                     // This assignment feeds a later rvalue use; keep it and require a prior decl
                     for u in &used_rhs {
