@@ -498,12 +498,16 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
         cst::Type::StringTy(_) => Some(ast::TypeExpr::TString),
         cst::Type::CharTy(_) => Some(ast::TypeExpr::TChar),
         cst::Type::TupleTy(it) => {
-            let typs = it
+            let typs: Vec<ast::TypeExpr> = it
                 .type_list()?
                 .types()
                 .flat_map(|ty| lower_ty(ctx, ty))
                 .collect();
-            Some(ast::TypeExpr::TTuple { typs })
+            if typs.len() == 1 {
+                Some(typs.into_iter().next().unwrap())
+            } else {
+                Some(ast::TypeExpr::TTuple { typs })
+            }
         }
         cst::Type::TAppTy(it) => {
             let path = it.path().and_then(|path| lower_path(ctx, &path))?;

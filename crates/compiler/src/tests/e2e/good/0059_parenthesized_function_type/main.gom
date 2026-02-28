@@ -1,0 +1,19 @@
+fn make_counter() -> (() -> int32) {
+    let count = ref(0);
+    || {
+        ref_set(count, ref_get(count) + 1);
+        ref_get(count)
+    }
+}
+
+fn identity(f: (() -> int32)) -> (() -> int32) {
+    f
+}
+
+fn main() {
+    let counter = make_counter();
+    string_println(int32_to_string(counter()));
+    string_println(int32_to_string(counter()));
+    let f = identity(|| 99);
+    string_println(int32_to_string(f()));
+}
