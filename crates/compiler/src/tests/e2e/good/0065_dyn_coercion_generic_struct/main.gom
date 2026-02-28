@@ -1,0 +1,28 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Wrapper[T] { inner: T }
+
+impl Show for Wrapper[int32] {
+    fn show(self: Wrapper[int32]) -> string { "Wrapper(" + self.inner.to_string() + ")" }
+}
+
+impl Show for Wrapper[string] {
+    fn show(self: Wrapper[string]) -> string { "Wrapper(" + self.inner + ")" }
+}
+
+fn wrap_int(n: int32) -> dyn Show {
+    Wrapper { inner: n }
+}
+
+fn wrap_str(s: string) -> dyn Show {
+    Wrapper { inner: s }
+}
+
+fn main() {
+    let a = wrap_int(42);
+    let b = wrap_str("hello");
+    let _ = string_println(Show::show(a));
+    let _ = string_println(Show::show(b));
+}

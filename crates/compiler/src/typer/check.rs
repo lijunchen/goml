@@ -607,6 +607,13 @@ impl Typer {
                     origin: range,
                 });
             }
+            _ if contains_tvar(&for_ty) => {
+                self.push_constraint(Constraint::Implements {
+                    trait_name: tast::TastIdent(resolved_trait.clone()),
+                    for_ty: for_ty.clone(),
+                    origin: range,
+                });
+            }
             _ => {
                 if !is_concrete_dyn_target(&for_ty) {
                     diagnostics.push(
