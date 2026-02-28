@@ -352,6 +352,10 @@ impl Expr {
                 .append(RcDoc::space())
                 .append(expr.to_doc()),
 
+            Self::EBreak { .. } => RcDoc::text("break"),
+
+            Self::EContinue { .. } => RcDoc::text("continue"),
+
             Self::ECall {
                 func,
                 args,

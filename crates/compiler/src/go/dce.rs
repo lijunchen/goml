@@ -68,7 +68,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
             expr_has_label_or_goto(target) || expr_has_label_or_goto(value)
         }
         ast::Stmt::Return { expr } => expr.as_ref().is_some_and(expr_has_label_or_goto),
-        ast::Stmt::Break => false,
+        ast::Stmt::Break | ast::Stmt::Continue => false,
     }
 }
 
@@ -271,6 +271,9 @@ fn dce_block_with_live(
             }
             ast::Stmt::Break => {
                 out.push(ast::Stmt::Break);
+            }
+            ast::Stmt::Continue => {
+                out.push(ast::Stmt::Continue);
             }
             ast::Stmt::If { cond, then, else_ } => {
                 let cond = dce_expr(cond);
@@ -486,7 +489,7 @@ fn assigned_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Loop { body } => {
                 s.extend(assigned_vars_in_block(body));
             }
-            ast::Stmt::Break => {}
+            ast::Stmt::Break | ast::Stmt::Continue => {}
             _ => {}
         }
     }
@@ -617,7 +620,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                         used.extend(free_vars_in_block(body));
                     }
                     ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
-                    ast::Stmt::Break => {}
+                    ast::Stmt::Break | ast::Stmt::Continue => {}
                 }
             }
             s.extend(&used - &declared);
@@ -714,7 +717,7 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
                 used.extend(free_vars_in_block(body));
             }
             ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
-            ast::Stmt::Break => {}
+            ast::Stmt::Break | ast::Stmt::Continue => {}
         }
     }
     &used - &declared
@@ -789,7 +792,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::FieldAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
         ast::Stmt::Loop { body } => body.stmts.iter().any(stmt_has_side_effects),
-        ast::Stmt::Break => false,
+        ast::Stmt::Break | ast::Stmt::Continue => false,
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
                 || then.stmts.iter().any(stmt_has_side_effects)
@@ -969,7 +972,7 @@ fn collect_called_in_stmt(
         ast::Stmt::Loop { body } => {
             collect_called_in_block(body, calls, fn_names);
         }
-        ast::Stmt::Break => {}
+        ast::Stmt::Break | ast::Stmt::Continue => {}
     }
 }
 
@@ -1186,7 +1189,7 @@ fn collect_packages_in_stmt(
         ast::Stmt::Loop { body } => {
             collect_packages_in_block(body, imports, used);
         }
-        ast::Stmt::Break => {}
+        ast::Stmt::Break | ast::Stmt::Continue => {}
     }
 }
 

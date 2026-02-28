@@ -138,6 +138,7 @@ fn collect_required_builtin_collection_methods_from_expr(
                 collect_required_builtin_collection_methods_from_expr(arg, builtin_keys, required);
             }
         }
+        crate::core::Expr::EBreak { .. } | crate::core::Expr::EContinue { .. } => {}
     }
 }
 

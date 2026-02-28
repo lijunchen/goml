@@ -1,5 +1,7 @@
 pub type Ty = crate::tast::Ty;
 
+use std::cell::RefCell;
+
 use crate::common::{Constructor, Prim};
 use crate::env::Gensym;
 use crate::env::{EnumDef, StructDef};
@@ -8,13 +10,23 @@ use crate::tast::TastIdent;
 use common_defs::{BinaryOp, UnaryOp};
 
 #[derive(Debug, Clone)]
+struct LoopCtx {
+    loop_id: JoinId,
+    exit_id: JoinId,
+}
+
+#[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {
     pub liftenv: GlobalLiftEnv,
+    loop_ctx: RefCell<Option<LoopCtx>>,
 }
 
 impl GlobalAnfEnv {
     pub fn from_lift_env(liftenv: GlobalLiftEnv) -> Self {
-        GlobalAnfEnv { liftenv }
+        GlobalAnfEnv {
+            liftenv,
+            loop_ctx: RefCell::new(None),
+        }
     }
 
     pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
@@ -574,6 +586,12 @@ fn lower<'a>(
             let loop_id_in_body = loop_id.clone();
             let exit_ret_ty_in_body = exit_ret_ty.clone();
 
+            let prev_ctx = anfenv.loop_ctx.borrow().clone();
+            *anfenv.loop_ctx.borrow_mut() = Some(LoopCtx {
+                loop_id: loop_id.clone(),
+                exit_id: exit_id.clone(),
+            });
+
             let loop_body = lower(
                 anfenv,
                 gensym,
@@ -618,6 +636,8 @@ fn lower<'a>(
                 }),
             );
 
+            *anfenv.loop_ctx.borrow_mut() = prev_ctx;
+
             Block {
                 binds: vec![
                     Bind::Join(exit),
@@ -632,6 +652,36 @@ fn lower<'a>(
                     target: loop_id,
                     args: Vec::new(),
                     ret_ty: exit_ret_ty,
+                },
+            }
+        }
+        LiftExpr::EBreak { ty: _ } => {
+            let ctx = anfenv
+                .loop_ctx
+                .borrow()
+                .clone()
+                .expect("break outside while loop");
+            Block {
+                binds: Vec::new(),
+                term: Term::Jump {
+                    target: ctx.exit_id,
+                    args: Vec::new(),
+                    ret_ty: Ty::TUnit,
+                },
+            }
+        }
+        LiftExpr::EContinue { ty: _ } => {
+            let ctx = anfenv
+                .loop_ctx
+                .borrow()
+                .clone()
+                .expect("continue outside while loop");
+            Block {
+                binds: Vec::new(),
+                term: Term::Jump {
+                    target: ctx.loop_id,
+                    args: Vec::new(),
+                    ret_ty: Ty::TUnit,
                 },
             }
         }

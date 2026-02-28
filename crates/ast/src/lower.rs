@@ -1428,6 +1428,28 @@ fn lower_expr_with_args(
                 astptr,
             })
         }
+        cst::Expr::BreakExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to break expression",
+                );
+                return None;
+            }
+            Some(ast::Expr::EBreak { astptr })
+        }
+        cst::Expr::ContinueExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to continue expression",
+                );
+                return None;
+            }
+            Some(ast::Expr::EContinue { astptr })
+        }
         cst::Expr::IfExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {

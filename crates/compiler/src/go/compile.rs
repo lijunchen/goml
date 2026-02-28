@@ -3176,14 +3176,18 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
     else {
         return None;
     };
-    let then_reaches = terminates_at(then_, &join.id);
-    let else_reaches = terminates_at(else_, &join.id);
+    let then_reaches = any_path_reaches(then_, &join.id);
+    let else_reaches = any_path_reaches(else_, &join.id);
     let (continue_block, break_block, negate) = if then_reaches && !else_reaches {
         (then_.as_ref(), else_.as_ref(), false)
     } else if else_reaches && !then_reaches {
         (else_.as_ref(), then_.as_ref(), true)
     } else {
         return None;
+    };
+    let exit_id = match &break_block.term {
+        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target.clone()),
+        _ => None,
     };
     Some(WhileLoop {
         cond_binds: body.binds.clone(),
@@ -3192,6 +3196,7 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
         loop_body: continue_block.clone(),
         after: break_block.clone(),
         loop_id: join.id.clone(),
+        exit_id,
     })
 }
 
@@ -3202,13 +3207,14 @@ struct WhileLoop {
     loop_body: anf::Block,
     after: anf::Block,
     loop_id: anf::JoinId,
+    exit_id: Option<anf::JoinId>,
 }
 
-fn terminates_at(block: &anf::Block, target: &anf::JoinId) -> bool {
-    terminates_at_with_joins(block, target, &HashMap::new())
+fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
+    any_path_reaches_with_joins(block, target, &HashMap::new())
 }
 
-fn terminates_at_with_joins(
+fn any_path_reaches_with_joins(
     block: &anf::Block,
     target: &anf::JoinId,
     parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
@@ -3219,10 +3225,10 @@ fn terminates_at_with_joins(
             local_joins.insert(&jb.id, jb);
         }
     }
-    terminates_at_term(&block.term, target, &local_joins)
+    any_path_reaches_term(&block.term, target, &local_joins)
 }
 
-fn terminates_at_term(
+fn any_path_reaches_term(
     term: &anf::Term,
     target: &anf::JoinId,
     joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
@@ -3235,21 +3241,21 @@ fn terminates_at_term(
                 return true;
             }
             if let Some(jb) = joins.get(t) {
-                terminates_at_with_joins(&jb.body, target, joins)
+                any_path_reaches_with_joins(&jb.body, target, joins)
             } else {
                 false
             }
         }
         anf::Term::If { then_, else_, .. } => {
-            terminates_at_with_joins(then_, target, joins)
-                && terminates_at_with_joins(else_, target, joins)
+            any_path_reaches_with_joins(then_, target, joins)
+                || any_path_reaches_with_joins(else_, target, joins)
         }
         anf::Term::Match { arms, default, .. } => {
             arms.iter()
-                .all(|arm| terminates_at_with_joins(&arm.body, target, joins))
-                && default
+                .any(|arm| any_path_reaches_with_joins(&arm.body, target, joins))
+                || default
                     .as_deref()
-                    .is_none_or(|d| terminates_at_with_joins(d, target, joins))
+                    .is_some_and(|d| any_path_reaches_with_joins(d, target, joins))
         }
         _ => false,
     }
@@ -3650,7 +3656,10 @@ fn compile_term_leaf(
         }],
         anf::Term::Jump { target, args, .. } => {
             if join_env.continue_targets.contains(target) {
-                return vec![];
+                return vec![goast::Stmt::Continue];
+            }
+            if join_env.break_targets.contains(target) {
+                return vec![goast::Stmt::Break];
             }
             if let Some(join_bind) = join_env.get(target) {
                 let mut stmts = compile_jump_args(goenv, &join_bind.params, args);
@@ -3865,6 +3874,9 @@ fn compile_while_loop(
 
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
+    if let Some(exit_id) = &wl.exit_id {
+        inner_env.break_targets.insert(exit_id.clone());
+    }
     loop_body_stmts.extend(compile_block_structured(goenv, &wl.loop_body, &inner_env));
 
     let mut stmts = vec![goast::Stmt::Loop {
@@ -3887,6 +3899,7 @@ fn build_join_env(block: &anf::Block) -> JoinEnv {
 struct JoinEnv {
     joins: HashMap<anf::JoinId, anf::JoinBind>,
     continue_targets: HashSet<anf::JoinId>,
+    break_targets: HashSet<anf::JoinId>,
 }
 
 impl JoinEnv {

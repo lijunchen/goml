@@ -528,6 +528,7 @@ impl Stmt {
                     .append(RcDoc::text("}"))
             }
             Stmt::Break => RcDoc::text("break"),
+            Stmt::Continue => RcDoc::text("continue"),
             Stmt::If { cond, then, else_ } => {
                 let if_part = RcDoc::text("if")
                     .append(RcDoc::space())

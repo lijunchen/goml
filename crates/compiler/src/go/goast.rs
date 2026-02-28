@@ -275,6 +275,7 @@ pub enum Stmt {
         body: Block,
     },
     Break,
+    Continue,
     // switch <expr> { case <value>: ...; default: ... }
     SwitchExpr {
         expr: Expr,

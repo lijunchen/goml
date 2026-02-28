@@ -78,6 +78,12 @@ pub enum MonoExpr {
         body: Box<MonoExpr>,
         ty: Ty,
     },
+    EBreak {
+        ty: Ty,
+    },
+    EContinue {
+        ty: Ty,
+    },
     EGo {
         expr: Box<MonoExpr>,
         ty: Ty,
@@ -142,6 +148,8 @@ impl MonoExpr {
             MonoExpr::EMatch { ty, .. } => ty.clone(),
             MonoExpr::EIf { ty, .. } => ty.clone(),
             MonoExpr::EWhile { ty, .. } => ty.clone(),
+            MonoExpr::EBreak { ty, .. } => ty.clone(),
+            MonoExpr::EContinue { ty, .. } => ty.clone(),
             MonoExpr::EGo { ty, .. } => ty.clone(),
             MonoExpr::EConstrGet { ty, .. } => ty.clone(),
             MonoExpr::EUnary { ty, .. } => ty.clone(),
@@ -749,6 +757,12 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             body: Box::new(mono_expr(ctx, &body, s)),
             ty: subst_ty(&ty, s),
         },
+        core::Expr::EBreak { ty } => MonoExpr::EBreak {
+            ty: subst_ty(&ty, s),
+        },
+        core::Expr::EContinue { ty } => MonoExpr::EContinue {
+            ty: subst_ty(&ty, s),
+        },
         core::Expr::EGo { expr, ty } => MonoExpr::EGo {
             expr: Box::new(mono_expr(ctx, &expr, s)),
             ty: subst_ty(&ty, s),
@@ -1303,6 +1317,12 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
         MonoExpr::EWhile { cond, body, ty } => MonoExpr::EWhile {
             cond: Box::new(rewrite_expr_types(*cond, m)),
             body: Box::new(rewrite_expr_types(*body, m)),
+            ty: m.collapse_type_apps(&ty),
+        },
+        MonoExpr::EBreak { ty } => MonoExpr::EBreak {
+            ty: m.collapse_type_apps(&ty),
+        },
+        MonoExpr::EContinue { ty } => MonoExpr::EContinue {
             ty: m.collapse_type_apps(&ty),
         },
         MonoExpr::EGo { expr, ty } => MonoExpr::EGo {

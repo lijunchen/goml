@@ -273,6 +273,10 @@ impl LiftExpr {
                 .append(RcDoc::space())
                 .append(expr.to_doc(liftenv)),
 
+            LiftExpr::EBreak { .. } => RcDoc::text("break"),
+
+            LiftExpr::EContinue { .. } => RcDoc::text("continue"),
+
             LiftExpr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(liftenv);
                 RcDoc::text("(")

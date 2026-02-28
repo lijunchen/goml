@@ -231,6 +231,10 @@ impl MonoExpr {
                 .append(RcDoc::space())
                 .append(expr.to_doc(monoenv)),
 
+            MonoExpr::EBreak { .. } => RcDoc::text("break"),
+
+            MonoExpr::EContinue { .. } => RcDoc::text("continue"),
+
             MonoExpr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(monoenv);
                 RcDoc::text("(")

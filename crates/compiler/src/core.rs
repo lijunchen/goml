@@ -78,6 +78,12 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
+    EBreak {
+        ty: Ty,
+    },
+    EContinue {
+        ty: Ty,
+    },
     EGo {
         expr: Box<Expr>,
         ty: Ty,
@@ -144,6 +150,8 @@ impl Expr {
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),
             Expr::EWhile { ty, .. } => ty.clone(),
+            Expr::EBreak { ty, .. } => ty.clone(),
+            Expr::EContinue { ty, .. } => ty.clone(),
             Expr::EGo { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::EUnary { ty, .. } => ty.clone(),
