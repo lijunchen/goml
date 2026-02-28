@@ -3179,7 +3179,6 @@ enum FlatTerm {
 
 #[derive(Debug, Clone)]
 struct FlatCfg {
-    entry: usize,
     blocks: Vec<FlatBlock>,
     joins: HashMap<anf::JoinId, JoinInfo>,
     locals: Vec<(anf::LocalId, tast::Ty)>,
@@ -3314,7 +3313,7 @@ impl FlatCfgBuilder {
         *slot = Some(flat);
     }
 
-    fn finish(self, entry: usize) -> FlatCfg {
+    fn finish(self) -> FlatCfg {
         let blocks = self
             .blocks
             .into_iter()
@@ -3334,7 +3333,6 @@ impl FlatCfgBuilder {
             })
             .collect::<Vec<_>>();
         FlatCfg {
-            entry,
             blocks,
             joins: self.joins,
             locals,
@@ -3410,21 +3408,52 @@ fn collect_used_locals(cfg: &FlatCfg) -> HashSet<anf::LocalId> {
     used
 }
 
-fn pc_ty() -> goty::GoType {
-    goty::GoType::TInt32
+fn collect_target_labels(cfg: &FlatCfg) -> HashSet<usize> {
+    let mut labels = HashSet::new();
+    for block in &cfg.blocks {
+        match &block.term {
+            FlatTerm::Return(_) | FlatTerm::Unreachable => {}
+            FlatTerm::Jump { target, .. } => {
+                let join = cfg
+                    .joins
+                    .get(target)
+                    .unwrap_or_else(|| panic!("unknown join {:?}", target));
+                labels.insert(join.label);
+            }
+            FlatTerm::If {
+                then_label,
+                else_label,
+                ..
+            } => {
+                labels.insert(*then_label);
+                labels.insert(*else_label);
+            }
+            FlatTerm::Match { arms, default, .. } => {
+                for (_pat, label) in arms {
+                    labels.insert(*label);
+                }
+                if let Some(label) = default {
+                    labels.insert(*label);
+                }
+            }
+        }
+    }
+    labels
 }
 
-fn pc_lit(label: usize) -> goast::Expr {
-    goast::Expr::Int {
-        value: label.to_string(),
-        ty: pc_ty(),
+fn block_label_name(label: usize) -> String {
+    format!("b{}", label)
+}
+
+fn label_stmt(label: usize) -> goast::Stmt {
+    goast::Stmt::Label {
+        name: block_label_name(label),
     }
 }
 
-fn pc_assign(label: usize) -> goast::Stmt {
-    goast::Stmt::Assignment {
-        name: "pc".to_string(),
-        value: pc_lit(label),
+fn goto_stmt(label: usize) -> goast::Stmt {
+    goast::Stmt::Goto {
+        label: block_label_name(label),
     }
 }
 
@@ -3445,7 +3474,12 @@ fn panic_stmt(msg: &str) -> goast::Stmt {
     })
 }
 
-fn compile_flat_term(goenv: &GlobalGoEnv, cfg: &FlatCfg, term: &FlatTerm) -> Vec<goast::Stmt> {
+fn compile_flat_term(
+    goenv: &GlobalGoEnv,
+    cfg: &FlatCfg,
+    used_locals: &HashSet<anf::LocalId>,
+    term: &FlatTerm,
+) -> Vec<goast::Stmt> {
     match term {
         FlatTerm::Return(imm) => vec![goast::Stmt::Return {
             expr: Some(compile_imm(goenv, imm)),
@@ -3465,12 +3499,15 @@ fn compile_flat_term(goenv: &GlobalGoEnv, cfg: &FlatCfg, term: &FlatTerm) -> Vec
             }
             let mut stmts = Vec::new();
             for (param, arg) in join.params.iter().zip(args.iter()) {
+                if param.0 == "_" || !used_locals.contains(param) {
+                    continue;
+                }
                 stmts.push(goast::Stmt::Assignment {
                     name: go_ident(&param.0),
                     value: compile_imm(goenv, arg),
                 });
             }
-            stmts.push(pc_assign(join.label));
+            stmts.push(goto_stmt(join.label));
             stmts
         }
         FlatTerm::If {
@@ -3480,23 +3517,24 @@ fn compile_flat_term(goenv: &GlobalGoEnv, cfg: &FlatCfg, term: &FlatTerm) -> Vec
         } => vec![goast::Stmt::If {
             cond: compile_imm(goenv, cond),
             then: goast::Block {
-                stmts: vec![pc_assign(*then_label)],
+                stmts: vec![goto_stmt(*then_label)],
             },
             else_: Some(goast::Block {
-                stmts: vec![pc_assign(*else_label)],
+                stmts: vec![goto_stmt(*else_label)],
             }),
         }],
         FlatTerm::Match {
             scrut,
             arms,
             default,
-        } => compile_match_term(goenv, scrut, arms, *default),
+        } => compile_match_term(goenv, used_locals, scrut, arms, *default),
         FlatTerm::Unreachable => vec![panic_stmt("unreachable")],
     }
 }
 
 fn compile_match_term(
     goenv: &GlobalGoEnv,
+    used_locals: &HashSet<anf::LocalId>,
     scrut: &anf::ImmExpr,
     arms: &[(anf::ImmExpr, usize)],
     default: Option<usize>,
@@ -3523,26 +3561,44 @@ fn compile_match_term(
             .or(var_default.map(|(_, label)| label))
             .or(default)
             .unwrap_or_else(|| panic!("unit match without arms"));
-        return vec![pc_assign(target)];
+        return vec![goto_stmt(target)];
     }
 
     match scrut_ty {
-        tast::Ty::TEnum { .. } => {
-            compile_enum_match(goenv, scrut, &literal_arms, var_default, default)
-        }
+        tast::Ty::TEnum { .. } => compile_enum_match(
+            goenv,
+            used_locals,
+            scrut,
+            &literal_arms,
+            var_default,
+            default,
+        ),
         tast::Ty::TApp { ty, .. } => match ty.as_ref() {
-            tast::Ty::TEnum { .. } => {
-                compile_enum_match(goenv, scrut, &literal_arms, var_default, default)
-            }
+            tast::Ty::TEnum { .. } => compile_enum_match(
+                goenv,
+                used_locals,
+                scrut,
+                &literal_arms,
+                var_default,
+                default,
+            ),
             other => panic!("unsupported match scrutinee type {:?}", other),
         },
         tast::Ty::TStruct { .. } => panic!("struct matches are not supported in Go backend"),
-        _ => compile_switch_match(goenv, scrut, &literal_arms, var_default, default),
+        _ => compile_switch_match(
+            goenv,
+            used_locals,
+            scrut,
+            &literal_arms,
+            var_default,
+            default,
+        ),
     }
 }
 
 fn compile_enum_match(
     goenv: &GlobalGoEnv,
+    used_locals: &HashSet<anf::LocalId>,
     scrut: &anf::ImmExpr,
     arms: &[(anf::ImmExpr, usize)],
     var_default: Option<(anf::LocalId, usize)>,
@@ -3557,24 +3613,24 @@ fn compile_enum_match(
         cases.push((
             vty,
             goast::Block {
-                stmts: vec![pc_assign(*label)],
+                stmts: vec![goto_stmt(*label)],
             },
         ));
     }
 
     let default_block = if let Some((id, label)) = var_default {
-        Some(goast::Block {
-            stmts: vec![
-                goast::Stmt::Assignment {
-                    name: go_ident(&id.0),
-                    value: compile_imm(goenv, scrut),
-                },
-                pc_assign(label),
-            ],
-        })
+        let mut stmts = Vec::new();
+        if id.0 != "_" && used_locals.contains(&id) {
+            stmts.push(goast::Stmt::Assignment {
+                name: go_ident(&id.0),
+                value: compile_imm(goenv, scrut),
+            });
+        }
+        stmts.push(goto_stmt(label));
+        Some(goast::Block { stmts })
     } else if let Some(label) = default {
         Some(goast::Block {
-            stmts: vec![pc_assign(label)],
+            stmts: vec![goto_stmt(label)],
         })
     } else {
         Some(goast::Block {
@@ -3592,6 +3648,7 @@ fn compile_enum_match(
 
 fn compile_switch_match(
     goenv: &GlobalGoEnv,
+    used_locals: &HashSet<anf::LocalId>,
     scrut: &anf::ImmExpr,
     arms: &[(anf::ImmExpr, usize)],
     var_default: Option<(anf::LocalId, usize)>,
@@ -3602,24 +3659,24 @@ fn compile_switch_match(
         cases.push((
             compile_imm(goenv, pat),
             goast::Block {
-                stmts: vec![pc_assign(*label)],
+                stmts: vec![goto_stmt(*label)],
             },
         ));
     }
 
     let default_block = if let Some((id, label)) = var_default {
-        Some(goast::Block {
-            stmts: vec![
-                goast::Stmt::Assignment {
-                    name: go_ident(&id.0),
-                    value: compile_imm(goenv, scrut),
-                },
-                pc_assign(label),
-            ],
-        })
+        let mut stmts = Vec::new();
+        if id.0 != "_" && used_locals.contains(&id) {
+            stmts.push(goast::Stmt::Assignment {
+                name: go_ident(&id.0),
+                value: compile_imm(goenv, scrut),
+            });
+        }
+        stmts.push(goto_stmt(label));
+        Some(goast::Block { stmts })
     } else if let Some(label) = default {
         Some(goast::Block {
-            stmts: vec![pc_assign(label)],
+            stmts: vec![goto_stmt(label)],
         })
     } else {
         Some(goast::Block {
@@ -3634,18 +3691,33 @@ fn compile_switch_match(
     }]
 }
 
-fn compile_case_block(goenv: &GlobalGoEnv, cfg: &FlatCfg, block: &FlatBlock) -> goast::Block {
+fn compile_case_block(
+    goenv: &GlobalGoEnv,
+    cfg: &FlatCfg,
+    used_locals: &HashSet<anf::LocalId>,
+    block: &FlatBlock,
+) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
     for bind in &block.lets {
         let compiled = compile_value_expr(goenv, &bind.value);
         stmts.extend(compiled.stmts);
-        stmts.push(goast::Stmt::Assignment {
-            name: go_ident(&bind.id.0),
-            value: compiled.expr,
-        });
+        if bind.id.0 == "_" {
+            if matches!(compiled.expr, goast::Expr::Call { .. }) {
+                stmts.push(goast::Stmt::Expr(compiled.expr));
+            }
+            continue;
+        }
+        if used_locals.contains(&bind.id) {
+            stmts.push(goast::Stmt::Assignment {
+                name: go_ident(&bind.id.0),
+                value: compiled.expr,
+            });
+        } else if matches!(compiled.expr, goast::Expr::Call { .. }) {
+            stmts.push(goast::Stmt::Expr(compiled.expr));
+        }
     }
-    stmts.extend(compile_flat_term(goenv, cfg, &block.term));
-    goast::Block { stmts }
+    stmts.extend(compile_flat_term(goenv, cfg, used_locals, &block.term));
+    stmts
 }
 
 fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: anf::Fn) -> goast::Fn {
@@ -3669,57 +3741,33 @@ fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: anf::Fn) -> goast::Fn {
     };
 
     let mut builder = FlatCfgBuilder::new();
-    let entry = builder.flatten_block(f.body);
-    let cfg = builder.finish(entry);
+    builder.flatten_block(f.body);
+    let cfg = builder.finish();
     let used_locals = collect_used_locals(&cfg);
+    let target_labels = collect_target_labels(&cfg);
 
     let mut stmts = Vec::new();
     for (id, ty) in &cfg.locals {
-        stmts.push(goast::Stmt::VarDecl {
-            name: go_ident(&id.0),
-            ty: tast_ty_to_go_type(ty),
-            value: None,
-        });
-    }
-    for (id, ty) in &cfg.locals {
-        if !used_locals.contains(id) {
-            let name = go_ident(&id.0);
-            if name != "_" {
-                stmts.push(goast::Stmt::Assignment {
-                    name: "_".to_string(),
-                    value: goast::Expr::Var {
-                        name,
-                        ty: tast_ty_to_go_type(ty),
-                    },
-                });
-            }
+        if id.0 != "_" && used_locals.contains(id) {
+            stmts.push(goast::Stmt::VarDecl {
+                name: go_ident(&id.0),
+                ty: tast_ty_to_go_type(ty),
+                value: None,
+            });
         }
     }
-    stmts.push(goast::Stmt::VarDecl {
-        name: "pc".to_string(),
-        ty: pc_ty(),
-        value: Some(pc_lit(cfg.entry)),
-    });
-
-    let mut cases = Vec::new();
     for (label, block) in cfg.blocks.iter().enumerate() {
-        cases.push((pc_lit(label), compile_case_block(goenv, &cfg, block)));
+        let needs_label = target_labels.contains(&label);
+        if label == 0 && !needs_label {
+            stmts.extend(compile_case_block(goenv, &cfg, &used_locals, block));
+            continue;
+        }
+        if !needs_label {
+            continue;
+        }
+        stmts.push(label_stmt(label));
+        stmts.extend(compile_case_block(goenv, &cfg, &used_locals, block));
     }
-
-    stmts.push(goast::Stmt::Loop {
-        body: goast::Block {
-            stmts: vec![goast::Stmt::SwitchExpr {
-                expr: goast::Expr::Var {
-                    name: "pc".to_string(),
-                    ty: pc_ty(),
-                },
-                cases,
-                default: Some(goast::Block {
-                    stmts: vec![panic_stmt("invalid pc")],
-                }),
-            }],
-        },
-    });
 
     goast::Fn {
         name: patched_name,

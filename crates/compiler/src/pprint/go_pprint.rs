@@ -447,6 +447,10 @@ impl Stmt {
             Stmt::Go { call } => RcDoc::text("go")
                 .append(RcDoc::space())
                 .append(call.to_doc(goenv)),
+            Stmt::Label { name } => RcDoc::text(name).append(RcDoc::text(":")),
+            Stmt::Goto { label } => RcDoc::text("goto")
+                .append(RcDoc::space())
+                .append(RcDoc::text(label)),
             Stmt::VarDecl { name, ty, value } => {
                 let var_decl = RcDoc::text("var")
                     .append(RcDoc::space())

@@ -17,13 +17,102 @@ fn dce_item(item: ast::Item) -> ast::Item {
         ast::Item::Package(pkg) => ast::Item::Package(pkg),
         ast::Item::Import(imports) => ast::Item::Import(imports),
         ast::Item::Fn(mut f) => {
-            let live_out: HashSet<String> = HashSet::new();
-            f.body = dce_block_with_live(f.body, &live_out).0;
+            if !block_has_label_or_goto(&f.body) {
+                let live_out: HashSet<String> = HashSet::new();
+                f.body = dce_block_with_live(f.body, &live_out).0;
+            }
             ast::Item::Fn(f)
         }
         ast::Item::Struct(s) => ast::Item::Struct(s),
         ast::Item::TypeAlias(a) => ast::Item::TypeAlias(a),
         ast::Item::Interface(i) => ast::Item::Interface(i),
+    }
+}
+
+fn block_has_label_or_goto(block: &ast::Block) -> bool {
+    block.stmts.iter().any(stmt_has_label_or_goto)
+}
+
+fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
+    match stmt {
+        ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => true,
+        ast::Stmt::If { then, else_, .. } => {
+            block_has_label_or_goto(then) || else_.as_ref().is_some_and(block_has_label_or_goto)
+        }
+        ast::Stmt::SwitchExpr { cases, default, .. } => {
+            cases.iter().any(|(_e, b)| block_has_label_or_goto(b))
+                || default.as_ref().is_some_and(block_has_label_or_goto)
+        }
+        ast::Stmt::SwitchType { cases, default, .. } => {
+            cases.iter().any(|(_t, b)| block_has_label_or_goto(b))
+                || default.as_ref().is_some_and(block_has_label_or_goto)
+        }
+        ast::Stmt::Loop { body } => block_has_label_or_goto(body),
+        ast::Stmt::Expr(e) => expr_has_label_or_goto(e),
+        ast::Stmt::Go { call } => expr_has_label_or_goto(call),
+        ast::Stmt::VarDecl { value, .. } => value.as_ref().is_some_and(expr_has_label_or_goto),
+        ast::Stmt::Assignment { value, .. } => expr_has_label_or_goto(value),
+        ast::Stmt::IndexAssign {
+            array,
+            index,
+            value,
+        } => {
+            expr_has_label_or_goto(array)
+                || expr_has_label_or_goto(index)
+                || expr_has_label_or_goto(value)
+        }
+        ast::Stmt::PointerAssign { pointer, value } => {
+            expr_has_label_or_goto(pointer) || expr_has_label_or_goto(value)
+        }
+        ast::Stmt::FieldAssign { target, value } => {
+            expr_has_label_or_goto(target) || expr_has_label_or_goto(value)
+        }
+        ast::Stmt::Return { expr } => expr.as_ref().is_some_and(expr_has_label_or_goto),
+        ast::Stmt::Break => false,
+    }
+}
+
+fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
+    match expr {
+        ast::Expr::Block { stmts, expr, .. } => {
+            stmts.iter().any(stmt_has_label_or_goto)
+                || expr
+                    .as_ref()
+                    .map(|e| expr_has_label_or_goto(e))
+                    .unwrap_or(false)
+        }
+        ast::Expr::Call { func, args, .. } => {
+            expr_has_label_or_goto(func) || args.iter().any(expr_has_label_or_goto)
+        }
+        ast::Expr::FieldAccess { obj, .. } => expr_has_label_or_goto(obj),
+        ast::Expr::Index { array, index, .. } => {
+            expr_has_label_or_goto(array) || expr_has_label_or_goto(index)
+        }
+        ast::Expr::Slice {
+            array, start, end, ..
+        } => {
+            expr_has_label_or_goto(array)
+                || expr_has_label_or_goto(start)
+                || expr_has_label_or_goto(end)
+        }
+        ast::Expr::Cast { expr, .. } => expr_has_label_or_goto(expr),
+        ast::Expr::StructLiteral { fields, .. } => {
+            fields.iter().any(|(_n, e)| expr_has_label_or_goto(e))
+        }
+        ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_label_or_goto),
+        ast::Expr::UnaryOp { expr, .. } => expr_has_label_or_goto(expr),
+        ast::Expr::BinaryOp { lhs, rhs, .. } => {
+            expr_has_label_or_goto(lhs) || expr_has_label_or_goto(rhs)
+        }
+        ast::Expr::Nil { .. }
+        | ast::Expr::Make { .. }
+        | ast::Expr::Void { .. }
+        | ast::Expr::Unit { .. }
+        | ast::Expr::Var { .. }
+        | ast::Expr::Bool { .. }
+        | ast::Expr::Int { .. }
+        | ast::Expr::Float { .. }
+        | ast::Expr::String { .. } => false,
     }
 }
 
@@ -50,6 +139,12 @@ fn dce_block_with_live(
                 let call = dce_expr(call);
                 add_uses_expr(&mut live, &call);
                 out.push(ast::Stmt::Go { call });
+            }
+            ast::Stmt::Label { name } => {
+                out.push(ast::Stmt::Label { name });
+            }
+            ast::Stmt::Goto { label } => {
+                out.push(ast::Stmt::Goto { label });
             }
             ast::Stmt::VarDecl { name, ty, value } => {
                 let value = value.map(dce_expr);
@@ -521,6 +616,7 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                     ast::Stmt::Loop { body } => {
                         used.extend(free_vars_in_block(body));
                     }
+                    ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
                     ast::Stmt::Break => {}
                 }
             }
@@ -617,6 +713,7 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Loop { body } => {
                 used.extend(free_vars_in_block(body));
             }
+            ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
             ast::Stmt::Break => {}
         }
     }
@@ -670,6 +767,8 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
     match s {
         ast::Stmt::Expr(e) => expr_has_side_effects(e),
         ast::Stmt::Go { call: _ } => true,
+        ast::Stmt::Label { .. } => false,
+        ast::Stmt::Goto { .. } => false,
         ast::Stmt::VarDecl { value, .. } => {
             value.as_ref().map(expr_has_side_effects).unwrap_or(false)
         }
@@ -792,6 +891,7 @@ fn collect_called_in_stmt(
     match stmt {
         ast::Stmt::Expr(e) => collect_called_in_expr(e, calls, fn_names),
         ast::Stmt::Go { call } => collect_called_in_expr(call, calls, fn_names),
+        ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
         ast::Stmt::VarDecl { value, .. } => {
             if let Some(v) = value {
                 collect_called_in_expr(v, calls, fn_names);
@@ -1008,6 +1108,7 @@ fn collect_packages_in_stmt(
     match stmt {
         ast::Stmt::Expr(e) => collect_packages_in_expr(e, imports, used),
         ast::Stmt::Go { call } => collect_packages_in_expr(call, imports, used),
+        ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
         ast::Stmt::VarDecl { value, .. } => {
             if let Some(v) = value {
                 collect_packages_in_expr(v, imports, used);
