@@ -26,7 +26,6 @@ impl ResolveLocalEnv {
         Self(im::Vector::new())
     }
 
-    #[allow(unused)]
     pub fn enter_scope(&self) -> Self {
         Self(self.0.clone())
     }
@@ -1108,8 +1107,9 @@ impl NameResolution {
                 let new_arms = arms
                     .iter()
                     .map(|arm| {
-                        let new_pat = self.resolve_pat(&arm.pat, env, ctx, hir_table);
-                        let new_body = self.resolve_expr(&arm.body, env, ctx, hir_table);
+                        let mut arm_env = env.enter_scope();
+                        let new_pat = self.resolve_pat(&arm.pat, &mut arm_env, ctx, hir_table);
+                        let new_body = self.resolve_expr(&arm.body, &mut arm_env, ctx, hir_table);
                         hir::Arm {
                             pat: new_pat,
                             body: new_body,
@@ -1132,8 +1132,10 @@ impl NameResolution {
                 astptr,
             } => {
                 let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
-                let new_then = self.resolve_expr(then_branch, env, ctx, hir_table);
-                let new_else = self.resolve_expr(else_branch, env, ctx, hir_table);
+                let mut then_env = env.enter_scope();
+                let new_then = self.resolve_expr(then_branch, &mut then_env, ctx, hir_table);
+                let mut else_env = env.enter_scope();
+                let new_else = self.resolve_expr(else_branch, &mut else_env, ctx, hir_table);
                 self.alloc_expr_with_ptr(
                     hir_table,
                     *astptr,
@@ -1146,7 +1148,8 @@ impl NameResolution {
             }
             ast::Expr::EWhile { cond, body, astptr } => {
                 let new_cond = self.resolve_expr(cond, env, ctx, hir_table);
-                let new_body = self.resolve_expr(body, env, ctx, hir_table);
+                let mut body_env = env.enter_scope();
+                let new_body = self.resolve_expr(body, &mut body_env, ctx, hir_table);
                 self.alloc_expr_with_ptr(
                     hir_table,
                     *astptr,
