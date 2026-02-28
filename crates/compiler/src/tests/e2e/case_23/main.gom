@@ -1,0 +1,17 @@
+trait Printable {
+  fn print_it(Self) -> unit;
+}
+
+fn show_all[T: Printable](items: Vec[T]) -> unit {
+  ()
+}
+
+struct Raw {
+  data: int32,
+}
+
+fn main() -> unit {
+  let items = vec_new();
+  vec_push(items, Raw { data: 42 });
+  show_all(items)
+}

@@ -16,6 +16,7 @@ use crate::{
 };
 
 mod builtin_functions_test;
+mod e2e;
 mod module;
 mod multiline_string_test;
 mod query_test;
@@ -85,6 +86,13 @@ fn test_compile_error_cases() -> anyhow::Result<()> {
     let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
     let diagnostics_dir = root_dir.join("src/tests/diagnostics/compile");
     run_compile_error_cases(&diagnostics_dir)
+}
+
+#[test]
+fn test_e2e_cases() -> anyhow::Result<()> {
+    let root_dir = std::path::PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap());
+    let e2e_dir = root_dir.join("src/tests/e2e");
+    e2e::run_e2e_cases(&e2e_dir)
 }
 
 #[test]
