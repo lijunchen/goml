@@ -729,10 +729,32 @@ fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
 // Transform an expression under a given substitution; queue any needed instances
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
-        core::Expr::EVar { name, ty } => MonoExpr::EVar {
-            name,
-            ty: subst_ty(&ty, s),
-        },
+        core::Expr::EVar { name, ty } => {
+            let concrete_ty = subst_ty(&ty, s);
+            if let Some(callee) = ctx.orig_fns.get(&name).cloned()
+                && fn_is_generic(&callee)
+                && !has_tparam(&concrete_ty)
+            {
+                let generic_ty = Ty::TFunc {
+                    params: callee.params.iter().map(|(_, t)| t.clone()).collect(),
+                    ret_ty: Box::new(callee.ret_ty.clone()),
+                };
+                let mut call_subst = Subst::new();
+                if unify(&generic_ty, &concrete_ty, &mut call_subst).is_ok()
+                    && !call_subst.values().any(has_tparam)
+                {
+                    let spec = ctx.ensure_instance(&name, call_subst);
+                    return MonoExpr::EVar {
+                        name: spec,
+                        ty: concrete_ty,
+                    };
+                }
+            }
+            MonoExpr::EVar {
+                name,
+                ty: concrete_ty,
+            }
+        }
         core::Expr::EPrim { value, ty } => {
             let ty = subst_ty(&ty, s);
             MonoExpr::EPrim { value, ty }

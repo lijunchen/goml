@@ -37,13 +37,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func _goml_trait_impl_Size_Wrap__int32_size__T_int32(self__0 Wrap__int32) int32 {
-    return 1
-}
-
 func println__T_string(value__1 string) struct{} {
     var t6 struct{} = string_println(value__1)
     return t6
+}
+
+func _goml_trait_impl_Size_Wrap__int32_size__T_int32(self__0 Wrap__int32) int32 {
+    return 1
 }
 
 func _goml_trait_impl_Size_Wrap__string_size__T_string(self__0 Wrap__string) int32 {

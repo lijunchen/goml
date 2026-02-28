@@ -354,14 +354,14 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__7
     return t58
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__85 *hashmap_key_int32_x, key__86 Key) bool {
-    var t59 bool = hashmap_contains__HashMap_Key_int32(self__85, key__86)
-    return t59
+func println__T_bool(value__1 bool) struct{} {
+    var t59 string = bool_to_string(value__1)
+    var t60 struct{} = string_println(t59)
+    return t60
 }
 
-func println__T_bool(value__1 bool) struct{} {
-    var t60 string = bool_to_string(value__1)
-    var t61 struct{} = string_println(t60)
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__contains__K_Key__V_int32(self__85 *hashmap_key_int32_x, key__86 Key) bool {
+    var t61 bool = hashmap_contains__HashMap_Key_int32(self__85, key__86)
     return t61
 }
 

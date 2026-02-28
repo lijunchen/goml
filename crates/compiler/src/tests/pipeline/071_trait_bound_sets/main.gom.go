@@ -28,13 +28,13 @@ func main0() struct{} {
     return struct{}{}
 }
 
-func pick_a__T_S(x__3 S) string {
-    var t4 string = _goml_trait_impl_A_S_foo(x__3)
+func println__T_string(value__1 string) struct{} {
+    var t4 struct{} = string_println(value__1)
     return t4
 }
 
-func println__T_string(value__1 string) struct{} {
-    var t5 struct{} = string_println(value__1)
+func pick_a__T_S(x__3 S) string {
+    var t5 string = _goml_trait_impl_A_S_foo(x__3)
     return t5
 }
 

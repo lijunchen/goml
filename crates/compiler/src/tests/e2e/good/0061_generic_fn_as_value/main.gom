@@ -1,0 +1,23 @@
+fn identity[T](x: T) -> T { x }
+
+fn apply[T, U](f: (T) -> U, x: T) -> U { f(x) }
+
+fn pipe[A, B, C](f: (A) -> B, g: (B) -> C, x: A) -> C {
+    g(f(x))
+}
+
+fn double(x: int32) -> int32 { x * 2 }
+
+fn main() {
+    let result = apply(identity, 42);
+    string_println(int32_to_string(result));
+
+    let result2 = apply(double, 21);
+    string_println(int32_to_string(result2));
+
+    let result3 = pipe(identity, double, 10);
+    string_println(int32_to_string(result3));
+
+    let f = identity;
+    string_println(int32_to_string(f(99)));
+}
