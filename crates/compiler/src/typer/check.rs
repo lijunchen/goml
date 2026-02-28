@@ -4145,7 +4145,7 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
     }
 }
 
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
         tast::Ty::TUnit => tast::Ty::TUnit,

@@ -361,6 +361,26 @@ impl TypeckResultsBuilder {
                     *ty = typer.subst_ty_silent(ty);
                 }
             }
+            if let NameRefElab::TraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } = elab
+            {
+                if let tast::Ty::TFunc { params, .. } = ty {
+                    if let Some(tast::Ty::TDyn { trait_name: recv_trait }) = params.first() {
+                        if *recv_trait == trait_name.0 {
+                            *elab = NameRefElab::DynTraitMethod {
+                                trait_name: trait_name.clone(),
+                                method_name: method_name.clone(),
+                                ty: ty.clone(),
+                                astptr: *astptr,
+                            };
+                        }
+                    }
+                }
+            }
         }
         for elab in self.results.call_elab.iter_mut().filter_map(Option::as_mut) {
             match &mut elab.callee {
@@ -375,6 +395,26 @@ impl TypeckResultsBuilder {
                     *ty = typer.subst_ty_silent(ty);
                 }
                 CalleeElab::Error { ty, .. } => *ty = typer.subst_ty_silent(ty),
+            }
+            if let CalleeElab::TraitMethod {
+                trait_name,
+                method_name,
+                ty,
+                astptr,
+            } = &mut elab.callee
+            {
+                if let tast::Ty::TFunc { params, .. } = ty {
+                    if let Some(tast::Ty::TDyn { trait_name: recv_trait }) = params.first() {
+                        if *recv_trait == trait_name.0 {
+                            elab.callee = CalleeElab::DynTraitMethod {
+                                trait_name: trait_name.clone(),
+                                method_name: method_name.clone(),
+                                ty: ty.clone(),
+                                astptr: *astptr,
+                            };
+                        }
+                    }
+                }
             }
         }
         for elab in self

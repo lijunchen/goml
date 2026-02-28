@@ -451,6 +451,97 @@ impl Typer {
                         {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
+                                    tast::Ty::TParam { name }
+                                        if self
+                                            .tparam_trait_bounds
+                                            .get(name)
+                                            .is_some_and(|bounds| {
+                                                let (resolved, _) =
+                                                    super::util::normalize_trait_name(
+                                                        genv,
+                                                        &trait_name.0,
+                                                    );
+                                                bounds.contains(&resolved)
+                                            }) =>
+                                    {
+                                        let (resolved, env) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        if let Some(method_scheme) =
+                                            env.lookup_trait_method_scheme(&trait_ident, &op)
+                                        {
+                                            let method_ty = self.inst_ty(&method_scheme.ty);
+                                            let method_ty = super::check::instantiate_self_ty(
+                                                &method_ty,
+                                                self_ty,
+                                            );
+                                            let call_fun_ty = tast::Ty::TFunc {
+                                                params: norm_arg_types.clone(),
+                                                ret_ty: norm_ret_ty.clone(),
+                                            };
+                                            still_pending.push(Constraint::TypeEqual(
+                                                call_fun_ty,
+                                                method_ty,
+                                                origin,
+                                            ));
+                                            changed = true;
+                                        } else {
+                                            diagnostics.push(
+                                                Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "Method {} not found in trait {}",
+                                                        op.0, trait_name.0
+                                                    ),
+                                                )
+                                                .with_range(origin),
+                                            );
+                                        }
+                                    }
+                                    tast::Ty::TDyn {
+                                        trait_name: dyn_trait,
+                                    } if {
+                                        let (resolved, _) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        *dyn_trait == resolved
+                                    } =>
+                                    {
+                                        let (resolved, env) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        if let Some(method_scheme) =
+                                            env.lookup_trait_method_scheme(&trait_ident, &op)
+                                        {
+                                            let method_ty = self.inst_ty(&method_scheme.ty);
+                                            let method_ty = super::check::instantiate_self_ty(
+                                                &method_ty,
+                                                self_ty,
+                                            );
+                                            let call_fun_ty = tast::Ty::TFunc {
+                                                params: norm_arg_types.clone(),
+                                                ret_ty: norm_ret_ty.clone(),
+                                            };
+                                            still_pending.push(Constraint::TypeEqual(
+                                                call_fun_ty,
+                                                method_ty,
+                                                origin,
+                                            ));
+                                            changed = true;
+                                        } else {
+                                            diagnostics.push(
+                                                Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "Method {} not found in trait {}",
+                                                        op.0, trait_name.0
+                                                    ),
+                                                )
+                                                .with_range(origin),
+                                            );
+                                        }
+                                    }
                                     ty if is_concrete(ty) => {
                                         let (resolved, _env) =
                                             super::util::normalize_trait_name(genv, &trait_name.0);
