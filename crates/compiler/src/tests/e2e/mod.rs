@@ -19,12 +19,18 @@ fn format_lower_diagnostics(diagnostics: &Diagnostics) -> Vec<String> {
 
 pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
     let mut case_paths = Vec::new();
-    for entry in std::fs::read_dir(dir)? {
-        let entry = entry?;
-        if entry.file_type()?.is_dir() {
-            let main_gom = entry.path().join("main.gom");
-            if main_gom.exists() {
-                case_paths.push(main_gom);
+    for subdir_name in ["good", "bad"] {
+        let subdir = dir.join(subdir_name);
+        if !subdir.exists() {
+            continue;
+        }
+        for entry in std::fs::read_dir(&subdir)? {
+            let entry = entry?;
+            if entry.file_type()?.is_dir() {
+                let main_gom = entry.path().join("main.gom");
+                if main_gom.exists() {
+                    case_paths.push(main_gom);
+                }
             }
         }
     }
