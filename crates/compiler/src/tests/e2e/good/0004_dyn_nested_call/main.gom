@@ -1,0 +1,22 @@
+trait Greet {
+    fn greet(Self) -> string;
+}
+
+struct Person {
+    name: string,
+}
+
+impl Greet for Person {
+    fn greet(self: Person) -> string {
+        self.name
+    }
+}
+
+fn say_hello(g: dyn Greet) -> string {
+    Greet::greet(g)
+}
+
+fn main() {
+    let p = Person { name: "Alice" };
+    string_println(say_hello(p));
+}
