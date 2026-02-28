@@ -1599,8 +1599,13 @@ impl Typer {
         };
 
         if !args_tast.is_empty() {
+            let actual_params: Vec<_> = args_tast
+                .iter()
+                .enumerate()
+                .map(|(i, arg)| param_tys.get(i).cloned().unwrap_or_else(|| arg.get_ty()))
+                .collect();
             let actual_ty = tast::Ty::TFunc {
-                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::TypeEqual(
