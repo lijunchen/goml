@@ -1,0 +1,19 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { val: int32 }
+
+impl Show for Num {
+    fn show(self: Num) -> string {
+        int32_to_string(self.val)
+    }
+}
+
+fn main() {
+    let opt: Option[dyn Show] = Option::Some(Num { val: 42 });
+    match opt {
+        Option::Some(x) => println(Show::show(x)),
+        Option::None => println("none"),
+    };
+}
