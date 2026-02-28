@@ -254,8 +254,20 @@ fn typecheck_packages(
     path: &Path,
     entry_ast: ast::File,
 ) -> Result<TypecheckPackagesResult, CompilationError> {
-    let graph =
-        packages::discover_packages(&discovery_root_for_file(path), Some(path), Some(entry_ast))?;
+    typecheck_packages_inner(path, entry_ast, false)
+}
+
+fn typecheck_packages_inner(
+    path: &Path,
+    entry_ast: ast::File,
+    single_file: bool,
+) -> Result<TypecheckPackagesResult, CompilationError> {
+    let root = discovery_root_for_file(path);
+    let graph = if single_file {
+        packages::discover_packages_single_file(&root, path, entry_ast)?
+    } else {
+        packages::discover_packages(&root, Some(path), Some(entry_ast))?
+    };
     let order = packages::topo_sort_packages(&graph)?;
 
     let mut diagnostics = Diagnostics::new();
@@ -368,9 +380,13 @@ fn discovery_root_for_file(path: &Path) -> PathBuf {
 }
 
 pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    compile_inner(path, src, false)
+}
+
+fn compile_inner(path: &Path, src: &str, single_file: bool) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
-    let typecheck = typecheck_packages(path, entry_ast.clone())?;
+    let typecheck = typecheck_packages_inner(path, entry_ast.clone(), single_file)?;
     let TypecheckPackagesResult {
         full_tast,
         genv,
@@ -465,6 +481,10 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
         anf,
         go,
     })
+}
+
+pub fn compile_single_file(path: &Path, src: &str) -> Result<Compilation, CompilationError> {
+    compile_inner(path, src, true)
 }
 
 pub fn typecheck_with_packages(

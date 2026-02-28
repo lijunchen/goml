@@ -236,6 +236,19 @@ fn load_package_from_config(
     })
 }
 
+fn load_single_file_package(path: &Path, ast: &ast::File) -> PackageUnit {
+    let files = vec![SourceFileAst {
+        path: path.to_path_buf(),
+        ast: ast.clone(),
+    }];
+    let imports = collect_imports(&files);
+    PackageUnit {
+        name: ast.package.0.clone(),
+        files,
+        imports,
+    }
+}
+
 pub fn discover_project_from_file(
     file_path: &Path,
 ) -> Result<(PathBuf, GomlConfig), CompilationError> {
@@ -257,15 +270,40 @@ pub fn discover_packages(
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
 ) -> Result<PackageGraph, CompilationError> {
+    discover_packages_inner(root_dir, entry_path, entry_ast, false)
+}
+
+pub fn discover_packages_single_file(
+    root_dir: &Path,
+    entry_path: &Path,
+    entry_ast: ast::File,
+) -> Result<PackageGraph, CompilationError> {
+    discover_packages_inner(root_dir, Some(entry_path), Some(entry_ast), true)
+}
+
+fn discover_packages_inner(
+    root_dir: &Path,
+    entry_path: Option<&Path>,
+    entry_ast: Option<ast::File>,
+    single_file: bool,
+) -> Result<PackageGraph, CompilationError> {
     if let Some(config) = GomlConfig::find_package_config(root_dir) {
-        return discover_packages_from_config(root_dir, &config, entry_path, entry_ast);
+        return discover_packages_from_config(root_dir, &config, entry_path, entry_ast, single_file);
     }
 
     let source_override = match (entry_path, entry_ast.as_ref()) {
         (Some(path), Some(ast)) => Some((path, ast)),
         _ => None,
     };
-    let entry_package = load_package(root_dir, source_override_for_dir(root_dir, source_override))?;
+    let entry_package = if single_file {
+        if let Some((path, ast)) = source_override {
+            load_single_file_package(path, ast)
+        } else {
+            load_package(root_dir, source_override_for_dir(root_dir, source_override))?
+        }
+    } else {
+        load_package(root_dir, source_override_for_dir(root_dir, source_override))?
+    };
     let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();
@@ -321,6 +359,7 @@ pub fn discover_packages_from_config(
     config: &GomlConfig,
     entry_path: Option<&Path>,
     entry_ast: Option<ast::File>,
+    single_file: bool,
 ) -> Result<PackageGraph, CompilationError> {
     if config.is_module_root() && config.package.name != ROOT_PACKAGE {
         return Err(compile_error(format!(
@@ -334,11 +373,23 @@ pub fn discover_packages_from_config(
         (Some(path), Some(ast)) => Some((path, ast)),
         _ => None,
     };
-    let entry_package = load_package_from_config(
-        module_dir,
-        config,
-        source_override_for_dir(module_dir, source_override),
-    )?;
+    let entry_package = if single_file {
+        if let Some((path, ast)) = source_override {
+            load_single_file_package(path, ast)
+        } else {
+            load_package_from_config(
+                module_dir,
+                config,
+                source_override_for_dir(module_dir, source_override),
+            )?
+        }
+    } else {
+        load_package_from_config(
+            module_dir,
+            config,
+            source_override_for_dir(module_dir, source_override),
+        )?
+    };
     let entry_name = entry_package.name.clone();
 
     let mut packages = HashMap::new();

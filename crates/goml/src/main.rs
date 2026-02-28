@@ -9,7 +9,7 @@ use clap::{Args, Parser, Subcommand};
 use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
-use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile};
+use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 
@@ -442,7 +442,7 @@ fn execute_run_single(options: RunOptions) -> anyhow::Result<()> {
     let src = fs::read_to_string(&options.file_path)
         .with_context(|| format!("error reading goml file: {}", options.file_path.display()))?;
 
-    let compilation = match compile(&options.file_path, &src) {
+    let compilation = match compile_single_file(&options.file_path, &src) {
         Ok(compilation) => compilation,
         Err(err) => {
             report_compilation_error(&options.file_path, &src, err);
