@@ -526,13 +526,15 @@ impl Typer {
         };
 
         self.record_expr_result(e, &expr_tast);
-        let expr_tast =
+        let (expr_tast, deferred_dyn) =
             self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
-        self.push_constraint(Constraint::TypeEqual(
-            expr_tast.get_ty(),
-            expected.clone(),
-            self.expr_range(e),
-        ));
+        if !deferred_dyn {
+            self.push_constraint(Constraint::TypeEqual(
+                expr_tast.get_ty(),
+                expected.clone(),
+                self.expr_range(e),
+            ));
+        }
         expr_tast
     }
 
@@ -544,7 +546,7 @@ impl Typer {
         expr_id: hir::ExprId,
         expr: tast::Expr,
         expected: &tast::Ty,
-    ) -> tast::Expr {
+    ) -> (tast::Expr, bool) {
         let expected_norm = self.norm(expected);
         match &expected_norm {
             tast::Ty::TVar(_) => {
@@ -557,11 +559,12 @@ impl Typer {
                             expected_ty: expected_norm,
                         },
                     );
+                    return (expr, true);
                 }
-                return expr;
+                return (expr, false);
             }
             tast::Ty::TDyn { .. } => {}
-            _ => return expr,
+            _ => return (expr, false),
         }
 
         let tast::Ty::TDyn { trait_name } = &expected_norm else {
@@ -569,14 +572,14 @@ impl Typer {
         };
 
         if matches!(expr.get_ty(), tast::Ty::TDyn { .. }) {
-            return expr;
+            return (expr, false);
         }
 
         let range = self.expr_range(expr_id);
         let Some(resolved_trait) =
             resolve_trait_name_or_report(genv, diagnostics, trait_name, range)
         else {
-            return expr;
+            return (expr, false);
         };
 
         let for_ty = expr.get_ty();
@@ -594,7 +597,7 @@ impl Typer {
                         )
                         .with_range(range),
                     );
-                    return expr;
+                    return (expr, false);
                 }
             }
             tast::Ty::TVar(_) => {
@@ -618,7 +621,7 @@ impl Typer {
                         )
                         .with_range(range),
                     );
-                    return expr;
+                    return (expr, false);
                 }
 
                 if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
@@ -634,7 +637,7 @@ impl Typer {
                         )
                         .with_range(range),
                     );
-                    return expr;
+                    return (expr, false);
                 }
             }
         }
@@ -648,13 +651,13 @@ impl Typer {
                 astptr: None,
             },
         );
-        tast::Expr::EToDyn {
+        (tast::Expr::EToDyn {
             trait_name: tast::TastIdent(resolved_trait.clone()),
             for_ty,
             expr: Box::new(expr),
             ty: expected_norm.clone(),
             astptr: None,
-        }
+        }, false)
     }
 
     fn infer_res_expr(
@@ -1379,8 +1382,13 @@ impl Typer {
         }
 
         if !args_tast.is_empty() {
+            let actual_params: Vec<tast::Ty> = if param_tys.is_empty() {
+                args_tast.iter().map(|arg| arg.get_ty()).collect()
+            } else {
+                param_tys
+            };
             let actual_ty = tast::Ty::TFunc {
-                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::TypeEqual(

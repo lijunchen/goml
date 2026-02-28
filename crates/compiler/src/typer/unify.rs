@@ -738,6 +738,62 @@ impl Typer {
             }
             constraints.extend(still_pending);
 
+            let deferred = std::mem::take(&mut self.deferred_dyn_coercions);
+            let mut still_deferred = Vec::new();
+            for coercion in deferred {
+                let expected_norm = self.norm(&coercion.expected_ty);
+                match &expected_norm {
+                    tast::Ty::TVar(_) => {
+                        still_deferred.push(coercion);
+                    }
+                    tast::Ty::TDyn { trait_name } => {
+                        let concrete_norm = self.norm(&coercion.concrete_ty);
+                        if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
+                            changed = true;
+                        } else if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
+                            self.results.push_coercion(
+                                coercion.expr_id,
+                                crate::typer::results::Coercion::ToDyn {
+                                    trait_name: tast::TastIdent(trait_name.clone()),
+                                    for_ty: concrete_norm,
+                                    ty: expected_norm,
+                                    astptr: None,
+                                },
+                            );
+                            changed = true;
+                        } else {
+                            constraints.push(Constraint::TypeEqual(
+                                coercion.concrete_ty,
+                                coercion.expected_ty,
+                                None,
+                            ));
+                        }
+                    }
+                    _ => {
+                        constraints.push(Constraint::TypeEqual(
+                            coercion.concrete_ty,
+                            coercion.expected_ty,
+                            None,
+                        ));
+                        changed = true;
+                    }
+                }
+            }
+            self.deferred_dyn_coercions = still_deferred;
+
+            if !changed && !self.deferred_dyn_coercions.is_empty() {
+                let remaining = std::mem::take(&mut self.deferred_dyn_coercions);
+                for coercion in remaining {
+                    constraints.push(Constraint::TypeEqual(
+                        coercion.concrete_ty,
+                        coercion.expected_ty,
+                        None,
+                    ));
+                }
+                changed = true;
+                continue;
+            }
+
             if !changed && !constraints.is_empty() {
                 diagnostics.push(
                     Diagnostic::new(
@@ -761,29 +817,6 @@ impl Typer {
             );
         }
         self.constraints = constraints;
-
-        let deferred = std::mem::take(&mut self.deferred_dyn_coercions);
-        for coercion in deferred {
-            let expected_norm = self.norm(&coercion.expected_ty);
-            let tast::Ty::TDyn { ref trait_name } = expected_norm else {
-                continue;
-            };
-            let concrete_norm = self.norm(&coercion.concrete_ty);
-            if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
-                continue;
-            }
-            if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
-                self.results.push_coercion(
-                    coercion.expr_id,
-                    crate::typer::results::Coercion::ToDyn {
-                        trait_name: tast::TastIdent(trait_name.clone()),
-                        for_ty: concrete_norm,
-                        ty: expected_norm,
-                        astptr: None,
-                    },
-                );
-            }
-        }
     }
 
     pub(crate) fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
