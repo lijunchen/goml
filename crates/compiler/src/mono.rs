@@ -201,6 +201,14 @@ impl GlobalMonoEnv {
             .filter(|def| def.generics.is_empty())
     }
 
+    pub fn get_enum_mut(&mut self, name: &TastIdent) -> Option<&mut EnumDef> {
+        if self.mono_enums.contains_key(name) {
+            self.mono_enums.get_mut(name)
+        } else {
+            self.genv.enum_def_mut(name)
+        }
+    }
+
     pub fn enums_cloned(&self) -> IndexMap<TastIdent, EnumDef> {
         let mut result = self.genv.enums().clone();
         result.extend(self.mono_enums.clone());
@@ -1474,6 +1482,37 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
     // Drop all generic enum defs to avoid Go backend panics
     m.monoenv.retain_enums(|_n, def| def.generics.is_empty());
     m.monoenv.retain_structs(|_n, def| def.generics.is_empty());
+
+    // Collapse field types of non-generic structs/enums that reference generic types
+    let struct_names: Vec<TastIdent> = m.monoenv.structs().map(|(n, _)| n.clone()).collect();
+    for name in struct_names {
+        let fields = m.monoenv.struct_def_mut(&name).map(|d| d.fields.clone());
+        if let Some(fields) = fields {
+            let new_fields: Vec<(TastIdent, Ty)> = fields
+                .iter()
+                .map(|(fname, fty)| (fname.clone(), m.collapse_type_apps(fty)))
+                .collect();
+            if let Some(def) = m.monoenv.struct_def_mut(&name) {
+                def.fields = new_fields;
+            }
+        }
+    }
+    let enum_names: Vec<TastIdent> = m.monoenv.enums().map(|(n, _)| n.clone()).collect();
+    for name in enum_names {
+        let variants = m.monoenv.get_enum_mut(&name).map(|d| d.variants.clone());
+        if let Some(variants) = variants {
+            let new_variants: Vec<(TastIdent, Vec<Ty>)> = variants
+                .iter()
+                .map(|(vname, vtys)| {
+                    let new_tys: Vec<Ty> = vtys.iter().map(|t| m.collapse_type_apps(t)).collect();
+                    (vname.clone(), new_tys)
+                })
+                .collect();
+            if let Some(def) = m.monoenv.get_enum_mut(&name) {
+                def.variants = new_variants;
+            }
+        }
+    }
 
     let result = MonoFile { toplevels: new_fns };
     (result, monoenv)

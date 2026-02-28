@@ -173,6 +173,10 @@ impl TypeEnv {
         self.structs.get_mut(name)
     }
 
+    pub fn enum_def_mut(&mut self, name: &TastIdent) -> Option<&mut EnumDef> {
+        self.enums.get_mut(name)
+    }
+
     pub fn insert_struct(&mut self, def: StructDef) {
         self.structs.insert(def.name.clone(), def);
     }
@@ -873,6 +877,10 @@ impl GlobalTypeEnv {
 
     pub fn struct_def_mut(&mut self, name: &TastIdent) -> Option<&mut StructDef> {
         self.type_env.struct_def_mut(name)
+    }
+
+    pub fn enum_def_mut(&mut self, name: &TastIdent) -> Option<&mut EnumDef> {
+        self.type_env.enum_def_mut(name)
     }
 
     pub fn insert_struct(&mut self, def: StructDef) {

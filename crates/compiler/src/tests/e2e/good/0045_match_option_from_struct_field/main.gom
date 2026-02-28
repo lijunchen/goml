@@ -1,0 +1,16 @@
+package main;
+
+struct Container {
+    value: Option[int32],
+    label: string,
+}
+
+fn main() {
+    let c = Container { value: Option::Some(42), label: "test" };
+    let v = c.value;
+    let result = match v {
+        Option::Some(x) => c.label + ":" + x.to_string(),
+        Option::None => "none",
+    };
+    string_println(result);
+}
