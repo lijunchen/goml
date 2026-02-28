@@ -14,10 +14,8 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var value__0 int32
-    var text__1 string
-    value__0 = 42
-    text__1 = int32_to_string(value__0)
+    var value__0 int32 = 42
+    var text__1 string = int32_to_string(value__0)
     string_println(text__1)
     return struct{}{}
 }

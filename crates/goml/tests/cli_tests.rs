@@ -196,8 +196,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         }
 
         func main0() struct{} {
-            var t0 struct{}
-            t0 = string_println("hello")
+            var t0 struct{} = string_println("hello")
             return t0
         }
 

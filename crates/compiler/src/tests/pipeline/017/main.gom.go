@@ -31,23 +31,17 @@ func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple
 }
 
 func main0() struct{} {
-    var x__1 int32
-    var t3 string
-    var x__2 bool
-    var t4 string
-    var x__3 Tuple2_int32_int32
-    var t5 string
-    x__1 = 123
-    t3 = int32_to_string(x__1)
+    var x__1 int32 = 123
+    var t3 string = int32_to_string(x__1)
     string_println(t3)
-    x__2 = true
-    t4 = bool_to_string(x__2)
+    var x__2 bool = true
+    var t4 string = bool_to_string(x__2)
     string_println(t4)
-    x__3 = Tuple2_int32_int32{
+    var x__3 Tuple2_int32_int32 = Tuple2_int32_int32{
         _0: 3,
         _1: 4,
     }
-    t5 = _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(x__3)
+    var t5 string = _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(x__3)
     string_println(t5)
     return struct{}{}
 }

@@ -19,67 +19,40 @@ type Tuple2_bool_bool struct {
 }
 
 func main0() struct{} {
-    var a__0 Tuple2_bool_bool
-    var x0 bool
-    var x1 bool
-    var t4 string
-    var t6 string
-    var t9 string
-    var t11 string
-    a__0 = Tuple2_bool_bool{
+    var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: true,
     }
-    x0 = a__0._0
-    x1 = a__0._1
+    var x0 bool = a__0._0
+    var x1 bool = a__0._1
     switch x1 {
     case true:
-        goto b2
+        switch x0 {
+        case true:
+            var t4 string = int32_to_string(789)
+            string_print(t4)
+        case false:
+            var t6 string = int32_to_string(456)
+            string_print(t6)
+        default:
+            panic("non-exhaustive match")
+        }
+        return struct{}{}
     case false:
-        goto b6
+        switch x0 {
+        case true:
+            var t9 string = int32_to_string(123)
+            string_print(t9)
+        case false:
+            var t11 string = int32_to_string(789)
+            string_print(t11)
+        default:
+            panic("non-exhaustive match")
+        }
+        return struct{}{}
     default:
         panic("non-exhaustive match")
     }
-    b1:
-    return struct{}{}
-    b2:
-    switch x0 {
-    case true:
-        goto b4
-    case false:
-        goto b5
-    default:
-        panic("non-exhaustive match")
-    }
-    b3:
-    goto b1
-    b4:
-    t4 = int32_to_string(789)
-    string_print(t4)
-    goto b3
-    b5:
-    t6 = int32_to_string(456)
-    string_print(t6)
-    goto b3
-    b6:
-    switch x0 {
-    case true:
-        goto b8
-    case false:
-        goto b9
-    default:
-        panic("non-exhaustive match")
-    }
-    b7:
-    goto b1
-    b8:
-    t9 = int32_to_string(123)
-    string_print(t9)
-    goto b7
-    b9:
-    t11 = int32_to_string(789)
-    string_print(t11)
-    goto b7
 }
 
 func main() {

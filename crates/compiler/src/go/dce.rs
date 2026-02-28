@@ -166,7 +166,7 @@ fn dce_block_with_live(
                                 live.insert(u.clone());
                             }
                             // Keep side effects before the declaration in final order
-                            out.push(ast::Stmt::Expr(v));
+                            out.push(emit_side_effect(v));
                         }
                         // Keep declaration without initializer
                         out.push(ast::Stmt::VarDecl {
@@ -191,7 +191,7 @@ fn dce_block_with_live(
                         for u in &used_rhs {
                             live.insert(u.clone());
                         }
-                        out.push(ast::Stmt::Expr(v));
+                        out.push(emit_side_effect(v));
                     }
                 }
             }
@@ -219,7 +219,7 @@ fn dce_block_with_live(
                         for u in &used_rhs {
                             live.insert(u.clone());
                         }
-                        out.push(ast::Stmt::Expr(value));
+                        out.push(emit_side_effect(value));
                     }
                 }
             }
@@ -718,6 +718,17 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
         }
     }
     &used - &declared
+}
+
+fn emit_side_effect(e: ast::Expr) -> ast::Stmt {
+    if matches!(e, ast::Expr::Call { .. }) {
+        ast::Stmt::Expr(e)
+    } else {
+        ast::Stmt::Assignment {
+            name: "_".to_string(),
+            value: e,
+        }
+    }
 }
 
 fn expr_has_side_effects(e: &ast::Expr) -> bool {

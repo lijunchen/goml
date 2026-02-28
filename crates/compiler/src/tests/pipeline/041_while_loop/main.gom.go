@@ -57,99 +57,54 @@ func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
 }
 
 func sum_to(limit__0 int32) int32 {
-    var acc__1 *ref_int32_x
-    var i__2 *ref_int32_x
-    var t11 int32
-    var t13 int32
-    var t14 bool
-    var current__3 int32
-    var t15 int32
-    var t16 int32
-    var t17 int32
-    acc__1 = ref__Ref_int32(0)
-    i__2 = ref__Ref_int32(0)
-    goto b2
-    b1:
-    t11 = ref_get__Ref_int32(acc__1)
-    return t11
-    b2:
-    t13 = ref_get__Ref_int32(i__2)
-    t14 = t13 < limit__0
-    if t14 {
-        goto b3
-    } else {
-        goto b4
+    var acc__1 *ref_int32_x = ref__Ref_int32(0)
+    var i__2 *ref_int32_x = ref__Ref_int32(0)
+    for {
+        var t13 int32 = ref_get__Ref_int32(i__2)
+        var t14 bool = t13 < limit__0
+        if !t14 {
+            break
+        }
+        var current__3 int32 = ref_get__Ref_int32(i__2)
+        var t15 int32 = ref_get__Ref_int32(acc__1)
+        var t16 int32 = t15 + current__3
+        ref_set__Ref_int32(acc__1, t16)
+        var t17 int32 = current__3 + 1
+        ref_set__Ref_int32(i__2, t17)
     }
-    b3:
-    current__3 = ref_get__Ref_int32(i__2)
-    t15 = ref_get__Ref_int32(acc__1)
-    t16 = t15 + current__3
-    ref_set__Ref_int32(acc__1, t16)
-    t17 = current__3 + 1
-    ref_set__Ref_int32(i__2, t17)
-    goto b2
-    b4:
-    goto b1
+    var t11 int32 = ref_get__Ref_int32(acc__1)
+    return t11
 }
 
 func sum_even(limit__4 int32) int32 {
-    var acc__5 *ref_int32_x
-    var i__6 *ref_int32_x
-    var is_even__7 *ref_bool_x
-    var t19 int32
-    var t21 int32
-    var t22 bool
-    var current__8 int32
-    var t23 int32
-    var add_now__9 bool
-    var t24 bool
-    var t26 int32
-    var t27 int32
-    acc__5 = ref__Ref_int32(0)
-    i__6 = ref__Ref_int32(0)
-    is_even__7 = ref__Ref_bool(true)
-    goto b2
-    b1:
-    t19 = ref_get__Ref_int32(acc__5)
+    var acc__5 *ref_int32_x = ref__Ref_int32(0)
+    var i__6 *ref_int32_x = ref__Ref_int32(0)
+    var is_even__7 *ref_bool_x = ref__Ref_bool(true)
+    for {
+        var t21 int32 = ref_get__Ref_int32(i__6)
+        var t22 bool = t21 < limit__4
+        if !t22 {
+            break
+        }
+        var current__8 int32 = ref_get__Ref_int32(i__6)
+        var t23 int32 = current__8 + 1
+        ref_set__Ref_int32(i__6, t23)
+        var add_now__9 bool = ref_get__Ref_bool(is_even__7)
+        var t24 bool = !add_now__9
+        ref_set__Ref_bool(is_even__7, t24)
+        if add_now__9 {
+            var t26 int32 = ref_get__Ref_int32(acc__5)
+            var t27 int32 = t26 + current__8
+            ref_set__Ref_int32(acc__5, t27)
+        } else {}
+    }
+    var t19 int32 = ref_get__Ref_int32(acc__5)
     return t19
-    b2:
-    t21 = ref_get__Ref_int32(i__6)
-    t22 = t21 < limit__4
-    if t22 {
-        goto b3
-    } else {
-        goto b7
-    }
-    b3:
-    current__8 = ref_get__Ref_int32(i__6)
-    t23 = current__8 + 1
-    ref_set__Ref_int32(i__6, t23)
-    add_now__9 = ref_get__Ref_bool(is_even__7)
-    t24 = !add_now__9
-    ref_set__Ref_bool(is_even__7, t24)
-    if add_now__9 {
-        goto b5
-    } else {
-        goto b6
-    }
-    b4:
-    goto b2
-    b5:
-    t26 = ref_get__Ref_int32(acc__5)
-    t27 = t26 + current__8
-    ref_set__Ref_int32(acc__5, t27)
-    goto b4
-    b6:
-    goto b4
-    b7:
-    goto b1
 }
 
 func main0() struct{} {
-    var first__10 int32
-    var evens__11 int32
-    first__10 = sum_to(5)
-    evens__11 = sum_even(6)
+    var first__10 int32 = sum_to(5)
+    var evens__11 int32 = sum_even(6)
     print__T_string("sum_to(5)=")
     println__T_int32(first__10)
     print__T_string("sum_even(6)=")
@@ -158,16 +113,13 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t29 struct{}
-    t29 = string_print(value__0)
+    var t29 struct{} = string_print(value__0)
     return t29
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t30 string
-    var t31 struct{}
-    t30 = int32_to_string(value__1)
-    t31 = string_println(t30)
+    var t30 string = int32_to_string(value__1)
+    var t31 struct{} = string_println(t30)
     return t31
 }
 

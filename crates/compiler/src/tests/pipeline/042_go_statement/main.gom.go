@@ -33,44 +33,30 @@ type closure_env_main_0 struct {
 }
 
 func child(signal__0 *ref_int32_x) struct{} {
-    var t4 struct{}
-    t4 = ref_set__Ref_int32(signal__0, 1)
+    var t4 struct{} = ref_set__Ref_int32(signal__0, 1)
     return t4
 }
 
 func main0() struct{} {
-    var signal__1 *ref_int32_x
-    var t5 closure_env_main_0
-    var t8 int32
-    var t9 bool
-    signal__1 = ref__Ref_int32(0)
-    t5 = closure_env_main_0{
+    var signal__1 *ref_int32_x = ref__Ref_int32(0)
+    var t5 closure_env_main_0 = closure_env_main_0{
         signal_0: signal__1,
     }
     go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
-    goto b2
-    b1:
+    for {
+        var t8 int32 = ref_get__Ref_int32(signal__1)
+        var t9 bool = t8 < 1
+        if !t9 {
+            break
+        }
+    }
     string_println("main")
     return struct{}{}
-    b2:
-    t8 = ref_get__Ref_int32(signal__1)
-    t9 = t8 < 1
-    if t9 {
-        goto b3
-    } else {
-        goto b4
-    }
-    b3:
-    goto b2
-    b4:
-    goto b1
 }
 
 func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env3 closure_env_main_0) struct{} {
-    var signal__1 *ref_int32_x
-    var t10 struct{}
-    signal__1 = env3.signal_0
-    t10 = child(signal__1)
+    var signal__1 *ref_int32_x = env3.signal_0
+    var t10 struct{} = child(signal__1)
     return t10
 }
 

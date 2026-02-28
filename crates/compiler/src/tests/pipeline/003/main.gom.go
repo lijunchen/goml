@@ -34,26 +34,20 @@ func main0() struct{} {
 }
 
 func print__T_unit(value__0 struct{}) struct{} {
-    var t4 string
-    var t5 struct{}
-    t4 = unit_to_string(value__0)
-    t5 = string_print(t4)
+    var t4 string = unit_to_string(value__0)
+    var t5 struct{} = string_print(t4)
     return t5
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t6 string
-    var t7 struct{}
-    t6 = bool_to_string(value__0)
-    t7 = string_print(t6)
+    var t6 string = bool_to_string(value__0)
+    var t7 struct{} = string_print(t6)
     return t7
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t8 string
-    var t9 struct{}
-    t8 = int32_to_string(value__0)
-    t9 = string_print(t8)
+    var t8 string = int32_to_string(value__0)
+    var t9 struct{} = string_print(t8)
     return t9
 }
 

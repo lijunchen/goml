@@ -3145,318 +3145,6 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
     }
 }
 
-#[derive(Debug, Clone)]
-struct JoinInfo {
-    label: usize,
-    params: Vec<anf::LocalId>,
-}
-
-#[derive(Debug, Clone)]
-struct FlatBlock {
-    lets: Vec<anf::LetBind>,
-    term: FlatTerm,
-}
-
-#[derive(Debug, Clone)]
-enum FlatTerm {
-    Return(anf::ImmExpr),
-    Jump {
-        target: anf::JoinId,
-        args: Vec<anf::ImmExpr>,
-    },
-    If {
-        cond: anf::ImmExpr,
-        then_label: usize,
-        else_label: usize,
-    },
-    Match {
-        scrut: anf::ImmExpr,
-        arms: Vec<(anf::ImmExpr, usize)>,
-        default: Option<usize>,
-    },
-    Unreachable,
-}
-
-#[derive(Debug, Clone)]
-struct FlatCfg {
-    blocks: Vec<FlatBlock>,
-    joins: HashMap<anf::JoinId, JoinInfo>,
-    locals: Vec<(anf::LocalId, tast::Ty)>,
-}
-
-struct FlatCfgBuilder {
-    blocks: Vec<Option<FlatBlock>>,
-    joins: HashMap<anf::JoinId, JoinInfo>,
-    local_types: HashMap<anf::LocalId, tast::Ty>,
-    local_order: Vec<anf::LocalId>,
-}
-
-impl FlatCfgBuilder {
-    fn new() -> Self {
-        Self {
-            blocks: Vec::new(),
-            joins: HashMap::new(),
-            local_types: HashMap::new(),
-            local_order: Vec::new(),
-        }
-    }
-
-    fn alloc_label(&mut self) -> usize {
-        let label = self.blocks.len();
-        self.blocks.push(None);
-        label
-    }
-
-    fn record_local(&mut self, id: &anf::LocalId, ty: &tast::Ty) {
-        if let Some(prev) = self.local_types.get(id) {
-            if prev != ty {
-                panic!(
-                    "local {:?} has conflicting types {:?} and {:?}",
-                    id, prev, ty
-                );
-            }
-            return;
-        }
-        self.local_types.insert(id.clone(), ty.clone());
-        self.local_order.push(id.clone());
-    }
-
-    fn flatten_block(&mut self, block: anf::Block) -> usize {
-        let label = self.alloc_label();
-        self.flatten_into(label, block);
-        label
-    }
-
-    fn flatten_join(&mut self, join_bind: anf::JoinBind) {
-        let label = self.alloc_label();
-        let params = join_bind.params.iter().map(|(id, _)| id.clone()).collect();
-        self.joins
-            .insert(join_bind.id.clone(), JoinInfo { label, params });
-        for (id, ty) in &join_bind.params {
-            self.record_local(id, ty);
-        }
-        self.flatten_into(label, join_bind.body);
-    }
-
-    fn flatten_joinrec(&mut self, group: Vec<anf::JoinBind>) {
-        let mut pending = Vec::new();
-        for join_bind in group {
-            let label = self.alloc_label();
-            let params = join_bind.params.iter().map(|(id, _)| id.clone()).collect();
-            self.joins
-                .insert(join_bind.id.clone(), JoinInfo { label, params });
-            for (id, ty) in &join_bind.params {
-                self.record_local(id, ty);
-            }
-            pending.push((label, join_bind.body));
-        }
-        for (label, body) in pending {
-            self.flatten_into(label, body);
-        }
-    }
-
-    fn flatten_into(&mut self, label: usize, block: anf::Block) {
-        let mut lets = Vec::new();
-        for bind in block.binds {
-            match bind {
-                anf::Bind::Let(let_bind) => {
-                    self.record_local(&let_bind.id, &let_bind.ty);
-                    lets.push(let_bind);
-                }
-                anf::Bind::Join(join_bind) => self.flatten_join(join_bind),
-                anf::Bind::JoinRec(group) => self.flatten_joinrec(group),
-            }
-        }
-
-        let term = match block.term {
-            anf::Term::Return(imm) => FlatTerm::Return(imm),
-            anf::Term::Jump { target, args, .. } => FlatTerm::Jump { target, args },
-            anf::Term::If {
-                cond, then_, else_, ..
-            } => {
-                let then_label = self.flatten_block(*then_);
-                let else_label = self.flatten_block(*else_);
-                FlatTerm::If {
-                    cond,
-                    then_label,
-                    else_label,
-                }
-            }
-            anf::Term::Match {
-                scrut,
-                arms,
-                default,
-                ..
-            } => {
-                let arms = arms
-                    .into_iter()
-                    .map(|arm| {
-                        let arm_label = self.flatten_block(arm.body);
-                        (arm.lhs, arm_label)
-                    })
-                    .collect();
-                let default = default.map(|b| self.flatten_block(*b));
-                FlatTerm::Match {
-                    scrut,
-                    arms,
-                    default,
-                }
-            }
-            anf::Term::Unreachable { .. } => FlatTerm::Unreachable,
-        };
-
-        let flat = FlatBlock { lets, term };
-        let slot = self.blocks.get_mut(label).expect("missing label");
-        if slot.is_some() {
-            panic!("label {} already filled", label);
-        }
-        *slot = Some(flat);
-    }
-
-    fn finish(self) -> FlatCfg {
-        let blocks = self
-            .blocks
-            .into_iter()
-            .enumerate()
-            .map(|(label, b)| b.unwrap_or_else(|| panic!("missing block {}", label)))
-            .collect::<Vec<_>>();
-        let locals = self
-            .local_order
-            .into_iter()
-            .map(|id| {
-                let ty = self
-                    .local_types
-                    .get(&id)
-                    .unwrap_or_else(|| panic!("missing local {:?}", id))
-                    .clone();
-                (id, ty)
-            })
-            .collect::<Vec<_>>();
-        FlatCfg {
-            blocks,
-            joins: self.joins,
-            locals,
-        }
-    }
-}
-
-fn collect_used_locals(cfg: &FlatCfg) -> HashSet<anf::LocalId> {
-    fn collect_imm(out: &mut HashSet<anf::LocalId>, imm: &anf::ImmExpr) {
-        if let anf::ImmExpr::Var { id, .. } = imm {
-            out.insert(id.clone());
-        }
-    }
-
-    fn collect_value_expr(out: &mut HashSet<anf::LocalId>, expr: &anf::ValueExpr) {
-        match expr {
-            anf::ValueExpr::Imm(imm) => collect_imm(out, imm),
-            anf::ValueExpr::Constr { args, .. } => {
-                for arg in args {
-                    collect_imm(out, arg);
-                }
-            }
-            anf::ValueExpr::Tuple { items, .. } | anf::ValueExpr::Array { items, .. } => {
-                for item in items {
-                    collect_imm(out, item);
-                }
-            }
-            anf::ValueExpr::ConstrGet { expr, .. } => collect_imm(out, expr),
-            anf::ValueExpr::Unary { expr, .. } => collect_imm(out, expr),
-            anf::ValueExpr::Binary { lhs, rhs, .. } => {
-                collect_imm(out, lhs);
-                collect_imm(out, rhs);
-            }
-            anf::ValueExpr::Call { func, args, .. } => {
-                collect_imm(out, func);
-                for arg in args {
-                    collect_imm(out, arg);
-                }
-            }
-            anf::ValueExpr::ToDyn { expr, .. } => collect_imm(out, expr),
-            anf::ValueExpr::DynCall { receiver, args, .. } => {
-                collect_imm(out, receiver);
-                for arg in args {
-                    collect_imm(out, arg);
-                }
-            }
-            anf::ValueExpr::Go { closure, .. } => collect_imm(out, closure),
-            anf::ValueExpr::Proj { tuple, .. } => collect_imm(out, tuple),
-        }
-    }
-
-    fn collect_term(out: &mut HashSet<anf::LocalId>, term: &FlatTerm) {
-        match term {
-            FlatTerm::Return(imm) => collect_imm(out, imm),
-            FlatTerm::Jump { args, .. } => {
-                for arg in args {
-                    collect_imm(out, arg);
-                }
-            }
-            FlatTerm::If { cond, .. } => collect_imm(out, cond),
-            FlatTerm::Match { scrut, .. } => collect_imm(out, scrut),
-            FlatTerm::Unreachable => {}
-        }
-    }
-
-    let mut used = HashSet::new();
-    for block in &cfg.blocks {
-        for let_bind in &block.lets {
-            collect_value_expr(&mut used, &let_bind.value);
-        }
-        collect_term(&mut used, &block.term);
-    }
-    used
-}
-
-fn collect_target_labels(cfg: &FlatCfg) -> HashSet<usize> {
-    let mut labels = HashSet::new();
-    for block in &cfg.blocks {
-        match &block.term {
-            FlatTerm::Return(_) | FlatTerm::Unreachable => {}
-            FlatTerm::Jump { target, .. } => {
-                let join = cfg
-                    .joins
-                    .get(target)
-                    .unwrap_or_else(|| panic!("unknown join {:?}", target));
-                labels.insert(join.label);
-            }
-            FlatTerm::If {
-                then_label,
-                else_label,
-                ..
-            } => {
-                labels.insert(*then_label);
-                labels.insert(*else_label);
-            }
-            FlatTerm::Match { arms, default, .. } => {
-                for (_pat, label) in arms {
-                    labels.insert(*label);
-                }
-                if let Some(label) = default {
-                    labels.insert(*label);
-                }
-            }
-        }
-    }
-    labels
-}
-
-fn block_label_name(label: usize) -> String {
-    format!("b{}", label)
-}
-
-fn label_stmt(label: usize) -> goast::Stmt {
-    goast::Stmt::Label {
-        name: block_label_name(label),
-    }
-}
-
-fn goto_stmt(label: usize) -> goast::Stmt {
-    goast::Stmt::Goto {
-        label: block_label_name(label),
-    }
-}
-
 fn panic_stmt(msg: &str) -> goast::Stmt {
     goast::Stmt::Expr(goast::Expr::Call {
         func: Box::new(goast::Expr::Var {
@@ -3474,163 +3162,423 @@ fn panic_stmt(msg: &str) -> goast::Stmt {
     })
 }
 
-fn compile_flat_term(
-    goenv: &GlobalGoEnv,
-    cfg: &FlatCfg,
-    used_locals: &HashSet<anf::LocalId>,
-    term: &FlatTerm,
-) -> Vec<goast::Stmt> {
-    match term {
-        FlatTerm::Return(imm) => vec![goast::Stmt::Return {
-            expr: Some(compile_imm(goenv, imm)),
-        }],
-        FlatTerm::Jump { target, args } => {
-            let join = cfg
-                .joins
-                .get(target)
-                .unwrap_or_else(|| panic!("unknown join {:?}", target));
-            if join.params.len() != args.len() {
-                panic!(
-                    "jump to {:?} expects {} args, got {}",
-                    target,
-                    join.params.len(),
-                    args.len()
-                );
-            }
-            let mut stmts = Vec::new();
-            for (param, arg) in join.params.iter().zip(args.iter()) {
-                if param.0 == "_" || !used_locals.contains(param) {
-                    continue;
-                }
-                stmts.push(goast::Stmt::Assignment {
-                    name: go_ident(&param.0),
-                    value: compile_imm(goenv, arg),
-                });
-            }
-            stmts.push(goto_stmt(join.label));
-            stmts
+fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
+    if !join.params.is_empty() {
+        return None;
+    }
+    let body = &join.body;
+    let anf::Term::If {
+        cond,
+        then_,
+        else_,
+        ..
+    } = &body.term
+    else {
+        return None;
+    };
+    let then_reaches = terminates_at(then_, &join.id);
+    let else_reaches = terminates_at(else_, &join.id);
+    let (continue_block, break_block, negate) = if then_reaches && !else_reaches {
+        (then_.as_ref(), else_.as_ref(), false)
+    } else if else_reaches && !then_reaches {
+        (else_.as_ref(), then_.as_ref(), true)
+    } else {
+        return None;
+    };
+    Some(WhileLoop {
+        cond_binds: body.binds.clone(),
+        cond: cond.clone(),
+        negate,
+        loop_body: continue_block.clone(),
+        after: break_block.clone(),
+        loop_id: join.id.clone(),
+    })
+}
+
+struct WhileLoop {
+    cond_binds: Vec<anf::Bind>,
+    cond: anf::ImmExpr,
+    negate: bool,
+    loop_body: anf::Block,
+    after: anf::Block,
+    loop_id: anf::JoinId,
+}
+
+fn terminates_at(block: &anf::Block, target: &anf::JoinId) -> bool {
+    terminates_at_with_joins(block, target, &HashMap::new())
+}
+
+fn terminates_at_with_joins(
+    block: &anf::Block,
+    target: &anf::JoinId,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+) -> bool {
+    let mut local_joins = parent_joins.clone();
+    for bind in &block.binds {
+        if let anf::Bind::Join(jb) = bind {
+            local_joins.insert(&jb.id, jb);
         }
-        FlatTerm::If {
-            cond,
-            then_label,
-            else_label,
-        } => vec![goast::Stmt::If {
-            cond: compile_imm(goenv, cond),
-            then: goast::Block {
-                stmts: vec![goto_stmt(*then_label)],
-            },
-            else_: Some(goast::Block {
-                stmts: vec![goto_stmt(*else_label)],
-            }),
-        }],
-        FlatTerm::Match {
-            scrut,
-            arms,
-            default,
-        } => compile_match_term(goenv, used_locals, scrut, arms, *default),
-        FlatTerm::Unreachable => vec![panic_stmt("unreachable")],
+    }
+    terminates_at_term(&block.term, target, &local_joins)
+}
+
+fn terminates_at_term(
+    term: &anf::Term,
+    target: &anf::JoinId,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+) -> bool {
+    match term {
+        anf::Term::Jump {
+            target: t, args, ..
+        } => {
+            if t == target && args.is_empty() {
+                return true;
+            }
+            if let Some(jb) = joins.get(t) {
+                terminates_at_with_joins(&jb.body, target, joins)
+            } else {
+                false
+            }
+        }
+        anf::Term::If { then_, else_, .. } => {
+            terminates_at_with_joins(then_, target, joins)
+                && terminates_at_with_joins(else_, target, joins)
+        }
+        anf::Term::Match { arms, default, .. } => {
+            arms.iter()
+                .all(|arm| terminates_at_with_joins(&arm.body, target, joins))
+                && default
+                    .as_deref()
+                    .is_none_or(|d| terminates_at_with_joins(d, target, joins))
+        }
+        _ => false,
     }
 }
 
-fn compile_match_term(
+fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt> {
+    let compiled = compile_value_expr(goenv, &bind.value);
+    let mut stmts = compiled.stmts;
+    if bind.id.0 == "_" {
+        if matches!(compiled.expr, goast::Expr::Call { .. }) {
+            stmts.push(goast::Stmt::Expr(compiled.expr));
+        }
+    } else {
+        stmts.push(goast::Stmt::VarDecl {
+            name: go_ident(&bind.id.0),
+            ty: tast_ty_to_go_type(&bind.ty),
+            value: Some(compiled.expr),
+        });
+    }
+    stmts
+}
+
+fn compile_jump_args(
     goenv: &GlobalGoEnv,
-    used_locals: &HashSet<anf::LocalId>,
+    params: &[(anf::LocalId, tast::Ty)],
+    args: &[anf::ImmExpr],
+) -> Vec<goast::Stmt> {
+    let mut stmts = Vec::new();
+    for ((param_id, _), arg) in params.iter().zip(args.iter()) {
+        if param_id.0 == "_" {
+            continue;
+        }
+        stmts.push(goast::Stmt::Assignment {
+            name: go_ident(&param_id.0),
+            value: compile_imm(goenv, arg),
+        });
+    }
+    stmts
+}
+
+fn all_branches_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
+    match term {
+        anf::Term::Jump { target, .. } => Some(target),
+        anf::Term::If { then_, else_, .. } => {
+            let t = block_tail_target(then_)?;
+            let e = block_tail_target(else_)?;
+            if t == e { Some(t) } else { None }
+        }
+        anf::Term::Match {
+            arms, default, ..
+        } => {
+            let mut result: Option<&anf::JoinId> = None;
+            for arm in arms {
+                let t = block_tail_target(&arm.body)?;
+                if let Some(prev) = result {
+                    if prev != t {
+                        return None;
+                    }
+                } else {
+                    result = Some(t);
+                }
+            }
+            if let Some(def) = default {
+                let t = block_tail_target(def)?;
+                if let Some(prev) = result {
+                    if prev != t {
+                        return None;
+                    }
+                } else {
+                    result = Some(t);
+                }
+            }
+            result
+        }
+        _ => None,
+    }
+}
+
+fn block_tail_target(block: &anf::Block) -> Option<&anf::JoinId> {
+    all_branches_jump_to(&block.term)
+}
+
+fn compile_block_structured(
+    goenv: &GlobalGoEnv,
+    block: &anf::Block,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let mut stmts = Vec::new();
+    let mut pending_joins: Vec<&anf::JoinBind> = Vec::new();
+    let mut while_loop_ids: Vec<anf::JoinId> = Vec::new();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Let(let_bind) => {
+                stmts.extend(compile_let_bind(goenv, let_bind));
+            }
+            anf::Bind::Join(join_bind) => {
+                for (id, ty) in &join_bind.params {
+                    if id.0 != "_" {
+                        stmts.push(goast::Stmt::VarDecl {
+                            name: go_ident(&id.0),
+                            ty: tast_ty_to_go_type(ty),
+                            value: None,
+                        });
+                    }
+                }
+                pending_joins.push(join_bind);
+            }
+            anf::Bind::JoinRec(group) => {
+                for j in group {
+                    if is_while_loop(j).is_some() {
+                        while_loop_ids.push(j.id.clone());
+                    }
+                }
+                stmts.extend(compile_joinrec(goenv, group, join_env));
+            }
+        }
+    }
+
+    if let anf::Term::Jump { target, args, .. } = &block.term
+        && args.is_empty()
+        && while_loop_ids.contains(target)
+    {
+        return stmts;
+    }
+
+    stmts.extend(compile_term_with_continuations(
+        goenv,
+        &block.term,
+        join_env,
+        &pending_joins,
+    ));
+    stmts
+}
+
+fn compile_term_with_continuations(
+    goenv: &GlobalGoEnv,
+    term: &anf::Term,
+    join_env: &JoinEnv,
+    pending_joins: &[&anf::JoinBind],
+) -> Vec<goast::Stmt> {
+    if let Some(target) = all_branches_jump_to(term)
+        && let Some(join_bind) = join_env.get(target)
+        && pending_joins.iter().any(|j| j.id == *target)
+    {
+        let mut stmts = compile_term_jump_to(goenv, term, target, join_bind, join_env);
+        stmts.extend(compile_block_structured(goenv, &join_bind.body, join_env));
+        return stmts;
+    }
+    compile_term_leaf(goenv, term, join_env)
+}
+
+fn compile_term_jump_to(
+    goenv: &GlobalGoEnv,
+    term: &anf::Term,
+    target: &anf::JoinId,
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    match term {
+        anf::Term::Jump { args, .. } => compile_jump_args(goenv, &join_bind.params, args),
+        anf::Term::If {
+            cond,
+            then_,
+            else_,
+            ..
+        } => {
+            let then_stmts = compile_branch_to_join(goenv, then_, target, join_bind, join_env);
+            let else_stmts = compile_branch_to_join(goenv, else_, target, join_bind, join_env);
+            vec![goast::Stmt::If {
+                cond: compile_imm(goenv, cond),
+                then: goast::Block { stmts: then_stmts },
+                else_: Some(goast::Block { stmts: else_stmts }),
+            }]
+        }
+        anf::Term::Match {
+            scrut,
+            arms,
+            default,
+            ..
+        } => compile_match_to_join(goenv, scrut, arms, default.as_deref(), target, join_bind, join_env),
+        _ => compile_term_leaf(goenv, term, join_env),
+    }
+}
+
+fn compile_branch_to_join(
+    goenv: &GlobalGoEnv,
+    block: &anf::Block,
+    target: &anf::JoinId,
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let mut stmts = Vec::new();
+    let mut inner_pending: Vec<&anf::JoinBind> = Vec::new();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Let(let_bind) => {
+                stmts.extend(compile_let_bind(goenv, let_bind));
+            }
+            anf::Bind::Join(jb) => {
+                for (id, ty) in &jb.params {
+                    if id.0 != "_" {
+                        stmts.push(goast::Stmt::VarDecl {
+                            name: go_ident(&id.0),
+                            ty: tast_ty_to_go_type(ty),
+                            value: None,
+                        });
+                    }
+                }
+                inner_pending.push(jb);
+            }
+            anf::Bind::JoinRec(group) => {
+                stmts.extend(compile_joinrec(goenv, group, join_env));
+            }
+        }
+    }
+
+    if let Some(inner_target) = all_branches_jump_to(&block.term) {
+        if inner_target == target {
+            stmts.extend(compile_term_jump_to(goenv, &block.term, target, join_bind, join_env));
+            return stmts;
+        }
+        if let Some(inner_join) = join_env.get(inner_target)
+            && inner_pending.iter().any(|j| j.id == *inner_target)
+        {
+            stmts.extend(compile_term_jump_to(
+                goenv,
+                &block.term,
+                inner_target,
+                inner_join,
+                join_env,
+            ));
+            stmts.extend(compile_branch_to_join(
+                goenv,
+                &inner_join.body,
+                target,
+                join_bind,
+                join_env,
+            ));
+            return stmts;
+        }
+    }
+    stmts.extend(compile_term_with_continuations(goenv, &block.term, join_env, &inner_pending));
+    stmts
+}
+
+fn compile_match_to_join(
+    goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
-    arms: &[(anf::ImmExpr, usize)],
-    default: Option<usize>,
+    arms: &[anf::Arm],
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
 ) -> Vec<goast::Stmt> {
     let scrut_ty = imm_ty(scrut);
 
-    let mut var_default: Option<(anf::LocalId, usize)> = None;
+    let mut var_arm: Option<(&anf::LocalId, &anf::Block)> = None;
     let mut literal_arms = Vec::new();
-    for (pat, label) in arms {
-        match pat {
+    for arm in arms {
+        match &arm.lhs {
             anf::ImmExpr::Var { id, .. } => {
-                if var_default.replace((id.clone(), *label)).is_some() {
-                    panic!("match has multiple var patterns");
-                }
+                var_arm = Some((id, &arm.body));
             }
-            other => literal_arms.push((other.clone(), *label)),
+            _ => literal_arms.push((&arm.lhs, &arm.body)),
         }
     }
 
     if scrut_ty == tast::Ty::TUnit {
-        let target = literal_arms
+        let block = literal_arms
             .first()
-            .map(|(_, label)| *label)
-            .or(var_default.map(|(_, label)| label))
-            .or(default)
-            .unwrap_or_else(|| panic!("unit match without arms"));
-        return vec![goto_stmt(target)];
+            .map(|(_, b)| *b)
+            .or(var_arm.map(|(_, b)| b))
+            .or(default);
+        if let Some(block) = block {
+            return compile_branch_to_join(goenv, block, target, join_bind, join_env);
+        }
+        return vec![panic_stmt("non-exhaustive match")];
     }
 
-    match scrut_ty {
-        tast::Ty::TEnum { .. } => compile_enum_match(
-            goenv,
-            used_locals,
-            scrut,
-            &literal_arms,
-            var_default,
-            default,
+    match &scrut_ty {
+        tast::Ty::TEnum { .. } => compile_enum_match_to_join(
+            goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
         ),
-        tast::Ty::TApp { ty, .. } => match ty.as_ref() {
-            tast::Ty::TEnum { .. } => compile_enum_match(
-                goenv,
-                used_locals,
-                scrut,
-                &literal_arms,
-                var_default,
-                default,
-            ),
-            other => panic!("unsupported match scrutinee type {:?}", other),
-        },
-        tast::Ty::TStruct { .. } => panic!("struct matches are not supported in Go backend"),
-        _ => compile_switch_match(
-            goenv,
-            used_locals,
-            scrut,
-            &literal_arms,
-            var_default,
-            default,
+        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
+            compile_enum_match_to_join(
+                goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
+            )
+        }
+        _ => compile_switch_match_to_join(
+            goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
         ),
     }
 }
 
-fn compile_enum_match(
+#[allow(clippy::too_many_arguments)]
+fn compile_enum_match_to_join(
     goenv: &GlobalGoEnv,
-    used_locals: &HashSet<anf::LocalId>,
     scrut: &anf::ImmExpr,
-    arms: &[(anf::ImmExpr, usize)],
-    var_default: Option<(anf::LocalId, usize)>,
-    default: Option<usize>,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
 ) -> Vec<goast::Stmt> {
     let mut cases = Vec::new();
-    for (pat, label) in arms {
+    for (pat, body) in arms {
         let anf::ImmExpr::Tag { index, ty } = pat else {
             panic!("expected tag pattern in enum match, got {:?}", pat);
         };
         let vty = variant_ty_by_index(goenv, ty, *index);
-        cases.push((
-            vty,
-            goast::Block {
-                stmts: vec![goto_stmt(*label)],
-            },
-        ));
+        let stmts = compile_branch_to_join(goenv, body, target, join_bind, join_env);
+        cases.push((vty, goast::Block { stmts }));
     }
 
-    let default_block = if let Some((id, label)) = var_default {
+    let default_block = if let Some((id, body)) = var_default {
         let mut stmts = Vec::new();
-        if id.0 != "_" && used_locals.contains(&id) {
-            stmts.push(goast::Stmt::Assignment {
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
                 name: go_ident(&id.0),
-                value: compile_imm(goenv, scrut),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.push(goto_stmt(label));
+        stmts.extend(compile_branch_to_join(goenv, body, target, join_bind, join_env));
         Some(goast::Block { stmts })
-    } else if let Some(label) = default {
+    } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: vec![goto_stmt(label)],
+            stmts: compile_branch_to_join(goenv, def_block, target, join_bind, join_env),
         })
     } else {
         Some(goast::Block {
@@ -3646,37 +3594,37 @@ fn compile_enum_match(
     }]
 }
 
-fn compile_switch_match(
+#[allow(clippy::too_many_arguments)]
+fn compile_switch_match_to_join(
     goenv: &GlobalGoEnv,
-    used_locals: &HashSet<anf::LocalId>,
     scrut: &anf::ImmExpr,
-    arms: &[(anf::ImmExpr, usize)],
-    var_default: Option<(anf::LocalId, usize)>,
-    default: Option<usize>,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
 ) -> Vec<goast::Stmt> {
     let mut cases = Vec::new();
-    for (pat, label) in arms {
-        cases.push((
-            compile_imm(goenv, pat),
-            goast::Block {
-                stmts: vec![goto_stmt(*label)],
-            },
-        ));
+    for (pat, body) in arms {
+        let stmts = compile_branch_to_join(goenv, body, target, join_bind, join_env);
+        cases.push((compile_imm(goenv, pat), goast::Block { stmts }));
     }
 
-    let default_block = if let Some((id, label)) = var_default {
+    let default_block = if let Some((id, body)) = var_default {
         let mut stmts = Vec::new();
-        if id.0 != "_" && used_locals.contains(&id) {
-            stmts.push(goast::Stmt::Assignment {
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
                 name: go_ident(&id.0),
-                value: compile_imm(goenv, scrut),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.push(goto_stmt(label));
+        stmts.extend(compile_branch_to_join(goenv, body, target, join_bind, join_env));
         Some(goast::Block { stmts })
-    } else if let Some(label) = default {
+    } else if let Some(def_block) = default {
         Some(goast::Block {
-            stmts: vec![goto_stmt(label)],
+            stmts: compile_branch_to_join(goenv, def_block, target, join_bind, join_env),
         })
     } else {
         Some(goast::Block {
@@ -3691,33 +3639,295 @@ fn compile_switch_match(
     }]
 }
 
-fn compile_case_block(
+fn compile_term_leaf(
     goenv: &GlobalGoEnv,
-    cfg: &FlatCfg,
-    used_locals: &HashSet<anf::LocalId>,
-    block: &FlatBlock,
+    term: &anf::Term,
+    join_env: &JoinEnv,
 ) -> Vec<goast::Stmt> {
-    let mut stmts = Vec::new();
-    for bind in &block.lets {
-        let compiled = compile_value_expr(goenv, &bind.value);
-        stmts.extend(compiled.stmts);
-        if bind.id.0 == "_" {
-            if matches!(compiled.expr, goast::Expr::Call { .. }) {
-                stmts.push(goast::Stmt::Expr(compiled.expr));
+    match term {
+        anf::Term::Return(imm) => vec![goast::Stmt::Return {
+            expr: Some(compile_imm(goenv, imm)),
+        }],
+        anf::Term::Jump { target, args, .. } => {
+            if join_env.continue_targets.contains(target) {
+                return vec![];
             }
-            continue;
+            if let Some(join_bind) = join_env.get(target) {
+                let mut stmts = compile_jump_args(goenv, &join_bind.params, args);
+                stmts.extend(compile_block_structured(goenv, &join_bind.body, join_env));
+                stmts
+            } else {
+                vec![panic_stmt(&format!("unknown join {:?}", target))]
+            }
         }
-        if used_locals.contains(&bind.id) {
-            stmts.push(goast::Stmt::Assignment {
-                name: go_ident(&bind.id.0),
-                value: compiled.expr,
-            });
-        } else if matches!(compiled.expr, goast::Expr::Call { .. }) {
-            stmts.push(goast::Stmt::Expr(compiled.expr));
+        anf::Term::If {
+            cond,
+            then_,
+            else_,
+            ..
+        } => {
+            let then_stmts = compile_block_structured(goenv, then_, join_env);
+            let else_stmts = compile_block_structured(goenv, else_, join_env);
+            vec![goast::Stmt::If {
+                cond: compile_imm(goenv, cond),
+                then: goast::Block { stmts: then_stmts },
+                else_: Some(goast::Block { stmts: else_stmts }),
+            }]
+        }
+        anf::Term::Match {
+            scrut,
+            arms,
+            default,
+            ..
+        } => compile_match_leaf(goenv, scrut, arms, default.as_deref(), join_env),
+        anf::Term::Unreachable { .. } => vec![panic_stmt("unreachable")],
+    }
+}
+
+fn compile_match_leaf(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[anf::Arm],
+    default: Option<&anf::Block>,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let scrut_ty = imm_ty(scrut);
+
+    let mut var_arm: Option<(&anf::LocalId, &anf::Block)> = None;
+    let mut literal_arms = Vec::new();
+    for arm in arms {
+        match &arm.lhs {
+            anf::ImmExpr::Var { id, .. } => {
+                var_arm = Some((id, &arm.body));
+            }
+            _ => literal_arms.push((&arm.lhs, &arm.body)),
         }
     }
-    stmts.extend(compile_flat_term(goenv, cfg, used_locals, &block.term));
+
+    if scrut_ty == tast::Ty::TUnit {
+        let block = literal_arms
+            .first()
+            .map(|(_, b)| *b)
+            .or(var_arm.map(|(_, b)| b))
+            .or(default);
+        if let Some(block) = block {
+            return compile_block_structured(goenv, block, join_env);
+        }
+        return vec![panic_stmt("non-exhaustive match")];
+    }
+
+    match &scrut_ty {
+        tast::Ty::TEnum { .. } => compile_enum_match_leaf(
+            goenv, scrut, &literal_arms, var_arm, default, join_env,
+        ),
+        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
+            compile_enum_match_leaf(
+                goenv, scrut, &literal_arms, var_arm, default, join_env,
+            )
+        }
+        _ => compile_switch_match_leaf(
+            goenv, scrut, &literal_arms, var_arm, default, join_env,
+        ),
+    }
+}
+
+fn compile_enum_match_leaf(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let mut cases = Vec::new();
+    for (pat, body) in arms {
+        let anf::ImmExpr::Tag { index, ty } = pat else {
+            panic!("expected tag pattern in enum match, got {:?}", pat);
+        };
+        let vty = variant_ty_by_index(goenv, ty, *index);
+        let stmts = compile_block_structured(goenv, body, join_env);
+        cases.push((vty, goast::Block { stmts }));
+    }
+
+    let default_block = if let Some((id, body)) = var_default {
+        let mut stmts = Vec::new();
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
+                name: go_ident(&id.0),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
+            });
+        }
+        stmts.extend(compile_block_structured(goenv, body, join_env));
+        Some(goast::Block { stmts })
+    } else if let Some(def_block) = default {
+        Some(goast::Block {
+            stmts: compile_block_structured(goenv, def_block, join_env),
+        })
+    } else {
+        Some(goast::Block {
+            stmts: vec![panic_stmt("non-exhaustive match")],
+        })
+    };
+
+    vec![goast::Stmt::SwitchType {
+        bind: None,
+        expr: compile_imm(goenv, scrut),
+        cases,
+        default: default_block,
+    }]
+}
+
+fn compile_switch_match_leaf(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let mut cases = Vec::new();
+    for (pat, body) in arms {
+        let stmts = compile_block_structured(goenv, body, join_env);
+        cases.push((compile_imm(goenv, pat), goast::Block { stmts }));
+    }
+
+    let default_block = if let Some((id, body)) = var_default {
+        let mut stmts = Vec::new();
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
+                name: go_ident(&id.0),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
+            });
+        }
+        stmts.extend(compile_block_structured(goenv, body, join_env));
+        Some(goast::Block { stmts })
+    } else if let Some(def_block) = default {
+        Some(goast::Block {
+            stmts: compile_block_structured(goenv, def_block, join_env),
+        })
+    } else {
+        Some(goast::Block {
+            stmts: vec![panic_stmt("non-exhaustive match")],
+        })
+    };
+
+    vec![goast::Stmt::SwitchExpr {
+        expr: compile_imm(goenv, scrut),
+        cases,
+        default: default_block,
+    }]
+}
+
+fn compile_joinrec(
+    goenv: &GlobalGoEnv,
+    group: &[anf::JoinBind],
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    if group.len() == 1
+        && let Some(wl) = is_while_loop(&group[0])
+    {
+        return compile_while_loop(goenv, &wl, join_env);
+    }
+    Vec::new()
+}
+
+fn compile_while_loop(
+    goenv: &GlobalGoEnv,
+    wl: &WhileLoop,
+    join_env: &JoinEnv,
+) -> Vec<goast::Stmt> {
+    let mut loop_body_stmts = Vec::new();
+    for bind in &wl.cond_binds {
+        if let anf::Bind::Let(let_bind) = bind {
+            loop_body_stmts.extend(compile_let_bind(goenv, let_bind));
+        }
+    }
+
+    let cond_expr = compile_imm(goenv, &wl.cond);
+    let break_cond = if wl.negate {
+        cond_expr
+    } else {
+        goast::Expr::UnaryOp {
+            op: goast::GoUnaryOp::Not,
+            expr: Box::new(cond_expr),
+            ty: goty::GoType::TBool,
+        }
+    };
+    loop_body_stmts.push(goast::Stmt::If {
+        cond: break_cond,
+        then: goast::Block {
+            stmts: vec![goast::Stmt::Break],
+        },
+        else_: None,
+    });
+
+    let mut inner_env = join_env.clone();
+    inner_env.continue_targets.insert(wl.loop_id.clone());
+    loop_body_stmts.extend(compile_block_structured(goenv, &wl.loop_body, &inner_env));
+
+    let mut stmts = vec![goast::Stmt::Loop {
+        body: goast::Block {
+            stmts: loop_body_stmts,
+        },
+    }];
+
+    stmts.extend(compile_block_structured(goenv, &wl.after, join_env));
     stmts
+}
+
+fn build_join_env(block: &anf::Block) -> JoinEnv {
+    let mut env = JoinEnv::default();
+    collect_joins_from_block(block, &mut env);
+    env
+}
+
+#[derive(Default, Clone)]
+struct JoinEnv {
+    joins: HashMap<anf::JoinId, anf::JoinBind>,
+    continue_targets: HashSet<anf::JoinId>,
+}
+
+impl JoinEnv {
+    fn get(&self, id: &anf::JoinId) -> Option<&anf::JoinBind> {
+        self.joins.get(id)
+    }
+}
+
+fn collect_joins_from_block(block: &anf::Block, env: &mut JoinEnv) {
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(join_bind) => {
+                env.joins.insert(join_bind.id.clone(), join_bind.clone());
+                collect_joins_from_block(&join_bind.body, env);
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    if is_while_loop(join_bind).is_none() {
+                        env.joins.insert(join_bind.id.clone(), join_bind.clone());
+                    }
+                    collect_joins_from_block(&join_bind.body, env);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    match &block.term {
+        anf::Term::If { then_, else_, .. } => {
+            collect_joins_from_block(then_, env);
+            collect_joins_from_block(else_, env);
+        }
+        anf::Term::Match { arms, default, .. } => {
+            for arm in arms {
+                collect_joins_from_block(&arm.body, env);
+            }
+            if let Some(def) = default {
+                collect_joins_from_block(def, env);
+            }
+        }
+        _ => {}
+    }
 }
 
 fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: anf::Fn) -> goast::Fn {
@@ -3740,34 +3950,8 @@ fn compile_fn(goenv: &GlobalGoEnv, _gensym: &Gensym, f: anf::Fn) -> goast::Fn {
         go_ident(&f.name)
     };
 
-    let mut builder = FlatCfgBuilder::new();
-    builder.flatten_block(f.body);
-    let cfg = builder.finish();
-    let used_locals = collect_used_locals(&cfg);
-    let target_labels = collect_target_labels(&cfg);
-
-    let mut stmts = Vec::new();
-    for (id, ty) in &cfg.locals {
-        if id.0 != "_" && used_locals.contains(id) {
-            stmts.push(goast::Stmt::VarDecl {
-                name: go_ident(&id.0),
-                ty: tast_ty_to_go_type(ty),
-                value: None,
-            });
-        }
-    }
-    for (label, block) in cfg.blocks.iter().enumerate() {
-        let needs_label = target_labels.contains(&label);
-        if label == 0 && !needs_label {
-            stmts.extend(compile_case_block(goenv, &cfg, &used_locals, block));
-            continue;
-        }
-        if !needs_label {
-            continue;
-        }
-        stmts.push(label_stmt(label));
-        stmts.extend(compile_case_block(goenv, &cfg, &used_locals, block));
-    }
+    let join_env = build_join_env(&f.body);
+    let stmts = compile_block_structured(goenv, &f.body, &join_env);
 
     goast::Fn {
         name: patched_name,

@@ -22,47 +22,35 @@ func string_println(s string) struct{} {
 }
 
 func _goml_trait_impl_Arith_int32_add(self__0 int32, other__1 int32) int32 {
-    var t4 int32
-    t4 = self__0 + other__1
+    var t4 int32 = self__0 + other__1
     return t4
 }
 
 func _goml_trait_impl_Arith_int32_less(self__2 int32, other__3 int32) bool {
-    var t5 bool
-    t5 = self__2 < other__3
+    var t5 bool = self__2 < other__3
     return t5
 }
 
 func _goml_trait_impl_Output_int32_output(self__4 int32) struct{} {
-    var t6 string
-    var t7 struct{}
-    t6 = int32_to_string(self__4)
-    t7 = string_println(t6)
+    var t6 string = int32_to_string(self__4)
+    var t7 struct{} = string_println(t6)
     return t7
 }
 
 func _goml_trait_impl_Output_bool_output(self__5 bool) struct{} {
-    var t8 string
-    var t9 struct{}
-    t8 = bool_to_string(self__5)
-    t9 = string_println(t8)
+    var t8 string = bool_to_string(self__5)
+    var t9 struct{} = string_println(t8)
     return t9
 }
 
 func main0() struct{} {
-    var a__7 int32
-    var b__8 int32
-    var c__9 int32
-    var a__10 int32
-    var b__11 int32
-    var c__12 bool
-    a__7 = id__T_int32(1)
-    b__8 = id__T_int32(2)
-    c__9 = _goml_trait_impl_Arith_int32_add(a__7, b__8)
+    var a__7 int32 = id__T_int32(1)
+    var b__8 int32 = id__T_int32(2)
+    var c__9 int32 = _goml_trait_impl_Arith_int32_add(a__7, b__8)
     _goml_trait_impl_Output_int32_output(c__9)
-    a__10 = id__T_int32(3)
-    b__11 = id__T_int32(4)
-    c__12 = _goml_trait_impl_Arith_int32_less(a__10, b__11)
+    var a__10 int32 = id__T_int32(3)
+    var b__11 int32 = id__T_int32(4)
+    var c__12 bool = _goml_trait_impl_Arith_int32_less(a__10, b__11)
     _goml_trait_impl_Output_bool_output(c__12)
     id__T_string("abc")
     id__T_bool(true)

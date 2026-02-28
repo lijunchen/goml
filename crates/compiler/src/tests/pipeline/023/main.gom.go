@@ -42,310 +42,191 @@ type Both struct {
 func (_ Both) isMixed() {}
 
 func match_mixed_pair(pair__0 Tuple2_int32_string) int32 {
-    var x0 int32
-    var x1 string
+    var x0 int32 = pair__0._0
+    var x1 string = pair__0._1
     var jp19 int32
-    var jp21 int32
-    var jp23 int32
-    var jp25 int32
-    x0 = pair__0._0
-    x1 = pair__0._1
     switch x1 {
     case "zero":
-        goto b2
+        var jp21 int32
+        switch x0 {
+        case 0:
+            jp21 = 1
+        default:
+            jp21 = 4
+        }
+        jp19 = jp21
+        return jp19
     case "one":
-        goto b6
+        var jp23 int32
+        switch x0 {
+        case 0:
+            jp23 = 2
+        case 1:
+            jp23 = 3
+        default:
+            jp23 = 5
+        }
+        jp19 = jp23
+        return jp19
     default:
-        goto b11
+        var jp25 int32
+        switch x0 {
+        case 0:
+            jp25 = 2
+        default:
+            jp25 = 5
+        }
+        jp19 = jp25
+        return jp19
     }
-    b1:
-    return jp19
-    b2:
-    switch x0 {
-    case 0:
-        goto b4
-    default:
-        goto b5
-    }
-    b3:
-    jp19 = jp21
-    goto b1
-    b4:
-    jp21 = 1
-    goto b3
-    b5:
-    jp21 = 4
-    goto b3
-    b6:
-    switch x0 {
-    case 0:
-        goto b8
-    case 1:
-        goto b9
-    default:
-        goto b10
-    }
-    b7:
-    jp19 = jp23
-    goto b1
-    b8:
-    jp23 = 2
-    goto b7
-    b9:
-    jp23 = 3
-    goto b7
-    b10:
-    jp23 = 5
-    goto b7
-    b11:
-    switch x0 {
-    case 0:
-        goto b13
-    default:
-        goto b14
-    }
-    b12:
-    jp19 = jp25
-    goto b1
-    b13:
-    jp25 = 2
-    goto b12
-    b14:
-    jp25 = 5
-    goto b12
 }
 
 func match_mixed_enum(value__1 Mixed) int32 {
     var jp27 int32
-    var x2 int32
-    var jp29 int32
-    var x3 string
-    var jp31 int32
-    var x4 int32
-    var x5 string
-    var jp33 int32
-    var jp35 int32
-    var jp37 int32
     switch value__1.(type) {
     case OnlyInt:
-        goto b2
+        var x2 int32 = value__1.(OnlyInt)._0
+        var jp29 int32
+        switch x2 {
+        case 0:
+            jp29 = 6
+        default:
+            jp29 = 7
+        }
+        jp27 = jp29
+        return jp27
     case OnlyStr:
-        goto b6
+        var x3 string = value__1.(OnlyStr)._0
+        var jp31 int32
+        switch x3 {
+        case "zero":
+            jp31 = 8
+        default:
+            jp31 = 9
+        }
+        jp27 = jp31
+        return jp27
     case Both:
-        goto b10
+        var x4 int32 = value__1.(Both)._0
+        var x5 string = value__1.(Both)._1
+        var jp33 int32
+        switch x5 {
+        case "zero":
+            var jp35 int32
+            switch x4 {
+            case 0:
+                jp35 = 10
+            default:
+                jp35 = 12
+            }
+            jp33 = jp35
+            jp27 = jp33
+            return jp27
+        default:
+            var jp37 int32
+            switch x4 {
+            case 0:
+                jp37 = 11
+            default:
+                jp37 = 13
+            }
+            jp33 = jp37
+            jp27 = jp33
+            return jp27
+        }
     default:
         panic("non-exhaustive match")
     }
-    b1:
-    return jp27
-    b2:
-    x2 = value__1.(OnlyInt)._0
-    switch x2 {
-    case 0:
-        goto b4
-    default:
-        goto b5
-    }
-    b3:
-    jp27 = jp29
-    goto b1
-    b4:
-    jp29 = 6
-    goto b3
-    b5:
-    jp29 = 7
-    goto b3
-    b6:
-    x3 = value__1.(OnlyStr)._0
-    switch x3 {
-    case "zero":
-        goto b8
-    default:
-        goto b9
-    }
-    b7:
-    jp27 = jp31
-    goto b1
-    b8:
-    jp31 = 8
-    goto b7
-    b9:
-    jp31 = 9
-    goto b7
-    b10:
-    x4 = value__1.(Both)._0
-    x5 = value__1.(Both)._1
-    switch x5 {
-    case "zero":
-        goto b12
-    default:
-        goto b16
-    }
-    b11:
-    jp27 = jp33
-    goto b1
-    b12:
-    switch x4 {
-    case 0:
-        goto b14
-    default:
-        goto b15
-    }
-    b13:
-    jp33 = jp35
-    goto b11
-    b14:
-    jp35 = 10
-    goto b13
-    b15:
-    jp35 = 12
-    goto b13
-    b16:
-    switch x4 {
-    case 0:
-        goto b18
-    default:
-        goto b19
-    }
-    b17:
-    jp33 = jp37
-    goto b11
-    b18:
-    jp37 = 11
-    goto b17
-    b19:
-    jp37 = 13
-    goto b17
 }
 
 func main0() struct{} {
-    var t38 Tuple2_int32_string
-    var t39 int32
-    var t40 string
-    var t41 Tuple2_int32_string
-    var t42 int32
-    var t43 string
-    var t44 Tuple2_int32_string
-    var t45 int32
-    var t46 string
-    var t47 Tuple2_int32_string
-    var t48 int32
-    var t49 string
-    var t50 Tuple2_int32_string
-    var t51 int32
-    var t52 string
-    var t53 Mixed
-    var t54 int32
-    var t55 string
-    var t56 Mixed
-    var t57 int32
-    var t58 string
-    var t59 Mixed
-    var t60 int32
-    var t61 string
-    var t62 Mixed
-    var t63 int32
-    var t64 string
-    var t65 Mixed
-    var t66 int32
-    var t67 string
-    var t68 Mixed
-    var t69 int32
-    var t70 string
-    var t71 Mixed
-    var t72 int32
-    var t73 string
-    var t74 Mixed
-    var t75 int32
-    var t76 string
-    var t77 struct{}
-    t38 = Tuple2_int32_string{
+    var t38 Tuple2_int32_string = Tuple2_int32_string{
         _0: 0,
         _1: "zero",
     }
-    t39 = match_mixed_pair(t38)
-    t40 = int32_to_string(t39)
+    var t39 int32 = match_mixed_pair(t38)
+    var t40 string = int32_to_string(t39)
     string_println(t40)
-    t41 = Tuple2_int32_string{
+    var t41 Tuple2_int32_string = Tuple2_int32_string{
         _0: 0,
         _1: "other",
     }
-    t42 = match_mixed_pair(t41)
-    t43 = int32_to_string(t42)
+    var t42 int32 = match_mixed_pair(t41)
+    var t43 string = int32_to_string(t42)
     string_println(t43)
-    t44 = Tuple2_int32_string{
+    var t44 Tuple2_int32_string = Tuple2_int32_string{
         _0: 1,
         _1: "one",
     }
-    t45 = match_mixed_pair(t44)
-    t46 = int32_to_string(t45)
+    var t45 int32 = match_mixed_pair(t44)
+    var t46 string = int32_to_string(t45)
     string_println(t46)
-    t47 = Tuple2_int32_string{
+    var t47 Tuple2_int32_string = Tuple2_int32_string{
         _0: 2,
         _1: "zero",
     }
-    t48 = match_mixed_pair(t47)
-    t49 = int32_to_string(t48)
+    var t48 int32 = match_mixed_pair(t47)
+    var t49 string = int32_to_string(t48)
     string_println(t49)
-    t50 = Tuple2_int32_string{
+    var t50 Tuple2_int32_string = Tuple2_int32_string{
         _0: 2,
         _1: "two",
     }
-    t51 = match_mixed_pair(t50)
-    t52 = int32_to_string(t51)
+    var t51 int32 = match_mixed_pair(t50)
+    var t52 string = int32_to_string(t51)
     string_println(t52)
-    t53 = OnlyInt{
+    var t53 Mixed = OnlyInt{
         _0: 0,
     }
-    t54 = match_mixed_enum(t53)
-    t55 = int32_to_string(t54)
+    var t54 int32 = match_mixed_enum(t53)
+    var t55 string = int32_to_string(t54)
     string_println(t55)
-    t56 = OnlyInt{
+    var t56 Mixed = OnlyInt{
         _0: 5,
     }
-    t57 = match_mixed_enum(t56)
-    t58 = int32_to_string(t57)
+    var t57 int32 = match_mixed_enum(t56)
+    var t58 string = int32_to_string(t57)
     string_println(t58)
-    t59 = OnlyStr{
+    var t59 Mixed = OnlyStr{
         _0: "zero",
     }
-    t60 = match_mixed_enum(t59)
-    t61 = int32_to_string(t60)
+    var t60 int32 = match_mixed_enum(t59)
+    var t61 string = int32_to_string(t60)
     string_println(t61)
-    t62 = OnlyStr{
+    var t62 Mixed = OnlyStr{
         _0: "hello",
     }
-    t63 = match_mixed_enum(t62)
-    t64 = int32_to_string(t63)
+    var t63 int32 = match_mixed_enum(t62)
+    var t64 string = int32_to_string(t63)
     string_println(t64)
-    t65 = Both{
+    var t65 Mixed = Both{
         _0: 0,
         _1: "zero",
     }
-    t66 = match_mixed_enum(t65)
-    t67 = int32_to_string(t66)
+    var t66 int32 = match_mixed_enum(t65)
+    var t67 string = int32_to_string(t66)
     string_println(t67)
-    t68 = Both{
+    var t68 Mixed = Both{
         _0: 0,
         _1: "hello",
     }
-    t69 = match_mixed_enum(t68)
-    t70 = int32_to_string(t69)
+    var t69 int32 = match_mixed_enum(t68)
+    var t70 string = int32_to_string(t69)
     string_println(t70)
-    t71 = Both{
+    var t71 Mixed = Both{
         _0: 2,
         _1: "zero",
     }
-    t72 = match_mixed_enum(t71)
-    t73 = int32_to_string(t72)
+    var t72 int32 = match_mixed_enum(t71)
+    var t73 string = int32_to_string(t72)
     string_println(t73)
-    t74 = Both{
+    var t74 Mixed = Both{
         _0: 3,
         _1: "three",
     }
-    t75 = match_mixed_enum(t74)
-    t76 = int32_to_string(t75)
-    t77 = string_println(t76)
+    var t75 int32 = match_mixed_enum(t74)
+    var t76 string = int32_to_string(t75)
+    var t77 struct{} = string_println(t76)
     return t77
 }
 

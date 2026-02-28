@@ -37,35 +37,28 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    var t1 int32
-    var t2 string
-    t1 = self__0.value
-    t2 = int32_to_string(t1)
+    var t1 int32 = self__0.value
+    var t2 string = int32_to_string(t1)
     return t2
 }
 
 func render(x__2 dyn__Display) string {
-    var t3 string
-    t3 = x__2.vtable.show(x__2.data)
+    var t3 string = x__2.vtable.show(x__2.data)
     return t3
 }
 
 func main0() struct{} {
-    var t4 Point
-    var d__3 dyn__Display
-    var t5 string
-    t4 = Point{
+    var t4 Point = Point{
         value: 7,
     }
-    d__3 = to_dyn__T_Point(t4)
-    t5 = render(d__3)
+    var d__3 dyn__Display = to_dyn__T_Point(t4)
+    var t5 string = render(d__3)
     println__T_string(t5)
     return struct{}{}
 }
 
 func to_dyn__T_Point(x__1 Point) dyn__Display {
-    var t6 dyn__Display
-    t6 = dyn__Display{
+    var t6 dyn__Display = dyn__Display{
         data: x__1,
         vtable: dyn__Display__vtable__Point(),
     }
@@ -73,8 +66,7 @@ func to_dyn__T_Point(x__1 Point) dyn__Display {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t7 struct{}
-    t7 = string_println(value__1)
+    var t7 struct{} = string_println(value__1)
     return t7
 }
 

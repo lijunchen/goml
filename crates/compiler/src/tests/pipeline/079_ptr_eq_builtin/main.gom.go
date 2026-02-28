@@ -32,26 +32,19 @@ func ptr_eq__Ref_int32(a *ref_int32_x, b *ref_int32_x) bool {
 }
 
 func main0() struct{} {
-    var a__0 *ref_int32_x
-    var b__1 *ref_int32_x
-    var c__2 *ref_int32_x
-    var t2 bool
-    var t3 bool
-    a__0 = ref__Ref_int32(1)
-    b__1 = a__0
-    c__2 = ref__Ref_int32(1)
-    t2 = ptr_eq__Ref_int32(a__0, b__1)
+    var a__0 *ref_int32_x = ref__Ref_int32(1)
+    var b__1 *ref_int32_x = a__0
+    var c__2 *ref_int32_x = ref__Ref_int32(1)
+    var t2 bool = ptr_eq__Ref_int32(a__0, b__1)
     println__T_bool(t2)
-    t3 = ptr_eq__Ref_int32(a__0, c__2)
+    var t3 bool = ptr_eq__Ref_int32(a__0, c__2)
     println__T_bool(t3)
     return struct{}{}
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t4 string
-    var t5 struct{}
-    t4 = bool_to_string(value__1)
-    t5 = string_println(t4)
+    var t4 string = bool_to_string(value__1)
+    var t5 struct{} = string_println(t4)
     return t5
 }
 

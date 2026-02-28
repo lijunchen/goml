@@ -33,96 +33,65 @@ type Location struct {
 func (_ Location) isShape() {}
 
 func _goml_trait_impl_TypeName_Point_type_name(self__0 Point) string {
-    var mtmp0 Point
-    var x1 int32
-    var x2 int32
-    var y__2 int32
-    var x__1 int32
-    var t7 string
-    var prefix__3 string
-    var t8 string
-    var t9 string
-    var t10 string
-    var t11 string
-    mtmp0 = self__0
-    x1 = mtmp0.x
-    x2 = mtmp0.y
-    y__2 = x2
-    x__1 = x1
-    t7 = int32_to_string(x__1)
-    prefix__3 = "Point(" + t7
-    t8 = prefix__3 + ", "
-    t9 = int32_to_string(y__2)
-    t10 = t8 + t9
-    t11 = t10 + ")"
+    var mtmp0 Point = self__0
+    var x1 int32 = mtmp0.x
+    var x2 int32 = mtmp0.y
+    var y__2 int32 = x2
+    var x__1 int32 = x1
+    var t7 string = int32_to_string(x__1)
+    var prefix__3 string = "Point(" + t7
+    var t8 string = prefix__3 + ", "
+    var t9 string = int32_to_string(y__2)
+    var t10 string = t8 + t9
+    var t11 string = t10 + ")"
     return t11
 }
 
 func _goml_trait_impl_TypeName_Shape_type_name(self__4 Shape) string {
     var jp13 string
-    var x3 Point
-    var point__5 Point
-    var t14 string
-    var t15 string
     switch self__4.(type) {
     case Unit:
-        goto b2
+        jp13 = "Unit"
     case Location:
-        goto b3
+        var x3 Point = self__4.(Location)._0
+        var point__5 Point = x3
+        var t14 string = _goml_trait_impl_TypeName_Point_type_name(point__5)
+        var t15 string = "Shape::" + t14
+        jp13 = t15
     default:
         panic("non-exhaustive match")
     }
-    b1:
     return jp13
-    b2:
-    jp13 = "Unit"
-    goto b1
-    b3:
-    x3 = self__4.(Location)._0
-    point__5 = x3
-    t14 = _goml_trait_impl_TypeName_Point_type_name(point__5)
-    t15 = "Shape::" + t14
-    jp13 = t15
-    goto b1
 }
 
 func show_point(point__6 Point) string {
-    var t16 string
-    t16 = _goml_trait_impl_TypeName_Point_type_name(point__6)
+    var t16 string = _goml_trait_impl_TypeName_Point_type_name(point__6)
     return t16
 }
 
 func show_shape(shape__7 Shape) string {
-    var t17 string
-    t17 = _goml_trait_impl_TypeName_Shape_type_name(shape__7)
+    var t17 string = _goml_trait_impl_TypeName_Shape_type_name(shape__7)
     return t17
 }
 
 func main0() struct{} {
-    var point__8 Point
-    var t18 string
-    var unit_shape__9 Shape
-    var t19 string
-    var t20 Point
-    var location_shape__10 Shape
-    var t21 string
-    point__8 = Point{
+    var point__8 Point = Point{
         x: 7,
         y: 9,
     }
-    t18 = show_point(point__8)
+    var t18 string = show_point(point__8)
     string_println(t18)
-    unit_shape__9 = Unit{}
-    t19 = show_shape(unit_shape__9)
+    var unit_shape__9 Shape = Unit{}
+    var t19 string = show_shape(unit_shape__9)
     string_println(t19)
-    t20 = Point{
+    var t20 Point = Point{
         x: 1,
         y: 2,
     }
-    location_shape__10 = Location{
+    var location_shape__10 Shape = Location{
         _0: t20,
     }
-    t21 = show_shape(location_shape__10)
+    var t21 string = show_shape(location_shape__10)
     string_println(t21)
     return struct{}{}
 }
