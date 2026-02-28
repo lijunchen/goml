@@ -1128,7 +1128,15 @@ mod legacy_anf_codegen {
                         .fields
                         .iter()
                         .zip(args.iter())
-                        .map(|((fname, _), arg)| (go_ident(&fname.0), compile_imm(goenv, arg)))
+                        .map(|((fname, field_ty), arg)| {
+                            let arg_ty = imm_ty(arg);
+                            let val = if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                                closure_to_func_lit(goenv, arg, field_ty)
+                            } else {
+                                compile_imm(goenv, arg)
+                            };
+                            (go_ident(&fname.0), val)
+                        })
                         .collect();
                     goast::Expr::StructLiteral { ty: go_ty, fields }
                 }
@@ -2902,7 +2910,15 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                     .fields
                     .iter()
                     .zip(args.iter())
-                    .map(|((fname, _), arg)| (go_ident(&fname.0), compile_imm(goenv, arg)))
+                    .map(|((fname, field_ty), arg)| {
+                        let arg_ty = imm_ty(arg);
+                        let val = if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                            closure_to_func_lit(goenv, arg, field_ty)
+                        } else {
+                            compile_imm(goenv, arg)
+                        };
+                        (go_ident(&fname.0), val)
+                    })
                     .collect();
                 CompiledValue {
                     stmts: Vec::new(),

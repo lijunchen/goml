@@ -758,24 +758,6 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 .map(|arg| transform_expr(state, scope, arg))
                 .collect::<Vec<_>>();
 
-            if let Constructor::Struct(struct_constructor) = &constructor {
-                let closure_field_types: Vec<_> = args
-                    .iter()
-                    .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
-                    .collect();
-
-                if let Some(struct_def) =
-                    state.liftenv.struct_def_mut(&struct_constructor.type_name)
-                {
-                    for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
-                    {
-                        if let Some(struct_name) = closure_struct_name {
-                            struct_def.fields[index].1 = Ty::TStruct { name: struct_name };
-                        }
-                    }
-                }
-            }
-
             LiftExpr::EConstr {
                 constructor,
                 args,
