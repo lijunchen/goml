@@ -1,0 +1,25 @@
+fn find_first(v: Vec[int32], pred: (int32) -> bool) -> Option[int32] {
+    let i = ref(0);
+    let result: Ref[Option[int32]] = ref(Option::None);
+    while ref_get(i) < vec_len(v) {
+        let item = vec_get(v, ref_get(i));
+        if pred(item) {
+            ref_set(result, Option::Some(item));
+            break
+        } else { () };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let v = vec_new();
+    let v = vec_push(v, 10);
+    let v = vec_push(v, 20);
+    let v = vec_push(v, 30);
+    let result = find_first(v, |x| x > 15);
+    match result {
+        Option::Some(n) => string_println("found: " + int32_to_string(n)),
+        Option::None => string_println("not found"),
+    };
+}

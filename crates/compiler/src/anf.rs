@@ -13,6 +13,7 @@ use common_defs::{BinaryOp, UnaryOp};
 struct LoopCtx {
     loop_id: JoinId,
     exit_id: JoinId,
+    exit_ret_ty: Ty,
 }
 
 #[derive(Debug, Clone)]
@@ -592,6 +593,7 @@ fn lower<'a>(
             *anfenv.loop_ctx.borrow_mut() = Some(LoopCtx {
                 loop_id: loop_id.clone(),
                 exit_id: exit_id.clone(),
+                exit_ret_ty: exit_ret_ty.clone(),
             });
 
             let loop_body = lower(
@@ -668,7 +670,7 @@ fn lower<'a>(
                 term: Term::Jump {
                     target: ctx.exit_id,
                     args: Vec::new(),
-                    ret_ty: Ty::TUnit,
+                    ret_ty: ctx.exit_ret_ty,
                 },
             }
         }
@@ -683,7 +685,7 @@ fn lower<'a>(
                 term: Term::Jump {
                     target: ctx.loop_id,
                     args: Vec::new(),
-                    ret_ty: Ty::TUnit,
+                    ret_ty: ctx.exit_ret_ty,
                 },
             }
         }
