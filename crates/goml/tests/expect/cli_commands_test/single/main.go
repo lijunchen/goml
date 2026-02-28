@@ -11,16 +11,8 @@ func string_println(s string) struct{} {
 
 func main0() struct{} {
     var t0 struct{}
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            t0 = string_println("ok")
-            return t0
-        default:
-            panic("invalid pc")
-        }
-    }
+    t0 = string_println("ok")
+    return t0
 }
 
 func main() {

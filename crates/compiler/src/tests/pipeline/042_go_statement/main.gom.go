@@ -34,74 +34,44 @@ type closure_env_main_0 struct {
 
 func child(signal__0 *ref_int32_x) struct{} {
     var t4 struct{}
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            t4 = ref_set__Ref_int32(signal__0, 1)
-            return t4
-        default:
-            panic("invalid pc")
-        }
-    }
+    t4 = ref_set__Ref_int32(signal__0, 1)
+    return t4
 }
 
 func main0() struct{} {
     var signal__1 *ref_int32_x
     var t5 closure_env_main_0
-    var _wild0 struct{}
-    var _wild1 struct{}
-    var _wild2 struct{}
     var t8 int32
     var t9 bool
-    _ = _wild0
-    _ = _wild1
-    _ = _wild2
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            signal__1 = ref__Ref_int32(0)
-            t5 = closure_env_main_0{
-                signal_0: signal__1,
-            }
-            go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
-            pc = 2
-        case 1:
-            string_println("main")
-            return struct{}{}
-        case 2:
-            t8 = ref_get__Ref_int32(signal__1)
-            t9 = t8 < 1
-            if t9 {
-                pc = 3
-            } else {
-                pc = 4
-            }
-        case 3:
-            pc = 2
-        case 4:
-            pc = 1
-        default:
-            panic("invalid pc")
-        }
+    signal__1 = ref__Ref_int32(0)
+    t5 = closure_env_main_0{
+        signal_0: signal__1,
     }
+    go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
+    goto b2
+    b1:
+    string_println("main")
+    return struct{}{}
+    b2:
+    t8 = ref_get__Ref_int32(signal__1)
+    t9 = t8 < 1
+    if t9 {
+        goto b3
+    } else {
+        goto b4
+    }
+    b3:
+    goto b2
+    b4:
+    goto b1
 }
 
 func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env3 closure_env_main_0) struct{} {
     var signal__1 *ref_int32_x
     var t10 struct{}
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            signal__1 = env3.signal_0
-            t10 = child(signal__1)
-            return t10
-        default:
-            panic("invalid pc")
-        }
-    }
+    signal__1 = env3.signal_0
+    t10 = child(signal__1)
+    return t10
 }
 
 func main() {

@@ -197,16 +197,8 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 
         func main0() struct{} {
             var t0 struct{}
-            var pc int32 = 0
-            for {
-                switch pc {
-                case 0:
-                    t0 = string_println("hello")
-                    return t0
-                default:
-                    panic("invalid pc")
-                }
-            }
+            t0 = string_println("hello")
+            return t0
         }
 
         func main() {

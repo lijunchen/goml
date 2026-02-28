@@ -46,120 +46,102 @@ func main0() bool {
     var jp6 bool
     var jp8 bool
     var jp10 bool
-    var mtmp2 struct{}
-    _ = mtmp2
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            a__0 = Tuple2_Color_Color{
-                _0: Blue{},
-                _1: Blue{},
-            }
-            x0 = a__0._0
-            x1 = a__0._1
-            switch x1.(type) {
-            case Red:
-                pc = 2
-            case Green:
-                pc = 7
-            case Blue:
-                pc = 12
-            default:
-                panic("non-exhaustive match")
-            }
-        case 1:
-            return jp4
-        case 2:
-            switch x0.(type) {
-            case Red:
-                pc = 4
-            case Green:
-                pc = 5
-            case Blue:
-                pc = 6
-            default:
-                panic("non-exhaustive match")
-            }
-        case 3:
-            jp4 = jp6
-            pc = 1
-        case 4:
-            jp6 = true
-            pc = 3
-        case 5:
-            jp6 = false
-            pc = 3
-        case 6:
-            jp6 = false
-            pc = 3
-        case 7:
-            switch x0.(type) {
-            case Red:
-                pc = 9
-            case Green:
-                pc = 10
-            case Blue:
-                pc = 11
-            default:
-                panic("non-exhaustive match")
-            }
-        case 8:
-            jp4 = jp8
-            pc = 1
-        case 9:
-            jp8 = true
-            pc = 8
-        case 10:
-            jp8 = false
-            pc = 8
-        case 11:
-            jp8 = false
-            pc = 8
-        case 12:
-            switch x0.(type) {
-            case Red:
-                pc = 14
-            case Green:
-                pc = 15
-            case Blue:
-                pc = 16
-            default:
-                panic("non-exhaustive match")
-            }
-        case 13:
-            jp4 = jp10
-            pc = 1
-        case 14:
-            jp10 = false
-            pc = 13
-        case 15:
-            jp10 = false
-            pc = 13
-        case 16:
-            print__T_bool(true)
-            jp10 = false
-            pc = 13
-        default:
-            panic("invalid pc")
-        }
+    a__0 = Tuple2_Color_Color{
+        _0: Blue{},
+        _1: Blue{},
     }
+    x0 = a__0._0
+    x1 = a__0._1
+    switch x1.(type) {
+    case Red:
+        goto b2
+    case Green:
+        goto b7
+    case Blue:
+        goto b12
+    default:
+        panic("non-exhaustive match")
+    }
+    b1:
+    return jp4
+    b2:
+    switch x0.(type) {
+    case Red:
+        goto b4
+    case Green:
+        goto b5
+    case Blue:
+        goto b6
+    default:
+        panic("non-exhaustive match")
+    }
+    b3:
+    jp4 = jp6
+    goto b1
+    b4:
+    jp6 = true
+    goto b3
+    b5:
+    jp6 = false
+    goto b3
+    b6:
+    jp6 = false
+    goto b3
+    b7:
+    switch x0.(type) {
+    case Red:
+        goto b9
+    case Green:
+        goto b10
+    case Blue:
+        goto b11
+    default:
+        panic("non-exhaustive match")
+    }
+    b8:
+    jp4 = jp8
+    goto b1
+    b9:
+    jp8 = true
+    goto b8
+    b10:
+    jp8 = false
+    goto b8
+    b11:
+    jp8 = false
+    goto b8
+    b12:
+    switch x0.(type) {
+    case Red:
+        goto b14
+    case Green:
+        goto b15
+    case Blue:
+        goto b16
+    default:
+        panic("non-exhaustive match")
+    }
+    b13:
+    jp4 = jp10
+    goto b1
+    b14:
+    jp10 = false
+    goto b13
+    b15:
+    jp10 = false
+    goto b13
+    b16:
+    print__T_bool(true)
+    jp10 = false
+    goto b13
 }
 
 func print__T_bool(value__0 bool) struct{} {
     var t11 string
     var t12 struct{}
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            t11 = bool_to_string(value__0)
-            t12 = string_print(t11)
-            return t12
-        default:
-            panic("invalid pc")
-        }
-    }
+    t11 = bool_to_string(value__0)
+    t12 = string_print(t11)
+    return t12
 }
 
 func main() {

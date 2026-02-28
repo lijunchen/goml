@@ -17,76 +17,38 @@ type Duration = time.Duration
 func describe_epoch() string {
     var epoch__0 Time
     var t3 string
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            epoch__0 = time.Unix(946684800, 500000000)
-            t3 = fmt.Sprintf("epoch snapshot => %v", epoch__0)
-            return t3
-        default:
-            panic("invalid pc")
-        }
-    }
+    epoch__0 = time.Unix(946684800, 500000000)
+    t3 = fmt.Sprintf("epoch snapshot => %v", epoch__0)
+    return t3
 }
 
 func describe_planned_launch() string {
     var launch__1 Time
     var t4 string
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            launch__1 = time.Unix(1709294730, 250000000)
-            t4 = fmt.Sprintf("planned launch => %v", launch__1)
-            return t4
-        default:
-            panic("invalid pc")
-        }
-    }
+    launch__1 = time.Unix(1709294730, 250000000)
+    t4 = fmt.Sprintf("planned launch => %v", launch__1)
+    return t4
 }
 
 func describe_duration() string {
     var parsed__2 Duration
     var t5 string
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            parsed__2 = time.Duration(1500000000)
-            t5 = fmt.Sprintf("parsed duration => %v", parsed__2)
-            return t5
-        default:
-            panic("invalid pc")
-        }
-    }
+    parsed__2 = time.Duration(1500000000)
+    t5 = fmt.Sprintf("parsed duration => %v", parsed__2)
+    return t5
 }
 
 func main0() struct{} {
     var t6 string
-    var _wild0 struct{}
     var t7 string
-    var _wild1 struct{}
     var t8 string
-    var _wild2 struct{}
-    _ = _wild0
-    _ = _wild1
-    _ = _wild2
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            t6 = describe_epoch()
-            string_println(t6)
-            t7 = describe_planned_launch()
-            string_println(t7)
-            t8 = describe_duration()
-            string_println(t8)
-            return struct{}{}
-        default:
-            panic("invalid pc")
-        }
-    }
+    t6 = describe_epoch()
+    string_println(t6)
+    t7 = describe_planned_launch()
+    string_println(t7)
+    t8 = describe_duration()
+    string_println(t8)
+    return struct{}{}
 }
 
 func main() {

@@ -50,26 +50,18 @@ func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
     var next__2 closure_env_next_0
     var reset__3 closure_env_reset_1
     var t15 Tuple2_closure_env_next_0_closure_env_reset_1
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            cell__0 = ref__Ref_int32(0)
-            next__2 = closure_env_next_0{
-                cell_0: cell__0,
-            }
-            reset__3 = closure_env_reset_1{
-                cell_0: cell__0,
-            }
-            t15 = Tuple2_closure_env_next_0_closure_env_reset_1{
-                _0: next__2,
-                _1: reset__3,
-            }
-            return t15
-        default:
-            panic("invalid pc")
-        }
+    cell__0 = ref__Ref_int32(0)
+    next__2 = closure_env_next_0{
+        cell_0: cell__0,
     }
+    reset__3 = closure_env_reset_1{
+        cell_0: cell__0,
+    }
+    t15 = Tuple2_closure_env_next_0_closure_env_reset_1{
+        _0: next__2,
+        _1: reset__3,
+    }
+    return t15
 }
 
 func main0() struct{} {
@@ -81,98 +73,58 @@ func main0() struct{} {
     var next__5 closure_env_next_0
     var first__7 int32
     var second__8 int32
-    var mtmp5 struct{}
     var third__9 int32
     var new_counter__10 Tuple2_closure_env_next_0_closure_env_reset_1
     var mtmp6 Tuple2_closure_env_next_0_closure_env_reset_1
     var x7 closure_env_next_0
-    var x8 closure_env_reset_1
     var new_next__11 closure_env_next_0
     var fourth__12 int32
     var t16 string
-    var mtmp9 struct{}
     var t17 string
-    var mtmp10 struct{}
     var t18 string
-    var mtmp11 struct{}
     var t19 string
-    var mtmp12 struct{}
-    _ = mtmp5
-    _ = x8
-    _ = mtmp9
-    _ = mtmp10
-    _ = mtmp11
-    _ = mtmp12
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            counter__4 = make_counter()
-            mtmp2 = counter__4
-            x3 = mtmp2._0
-            x4 = mtmp2._1
-            reset__6 = x4
-            next__5 = x3
-            first__7 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-            second__8 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-            _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__6)
-            third__9 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-            new_counter__10 = make_counter()
-            mtmp6 = new_counter__10
-            x7 = mtmp6._0
-            new_next__11 = x7
-            fourth__12 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(new_next__11)
-            t16 = int32_to_string(first__7)
-            string_println(t16)
-            t17 = int32_to_string(second__8)
-            string_println(t17)
-            t18 = int32_to_string(third__9)
-            string_println(t18)
-            t19 = int32_to_string(fourth__12)
-            string_println(t19)
-            return struct{}{}
-        default:
-            panic("invalid pc")
-        }
-    }
+    counter__4 = make_counter()
+    mtmp2 = counter__4
+    x3 = mtmp2._0
+    x4 = mtmp2._1
+    reset__6 = x4
+    next__5 = x3
+    first__7 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
+    second__8 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
+    _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__6)
+    third__9 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
+    new_counter__10 = make_counter()
+    mtmp6 = new_counter__10
+    x7 = mtmp6._0
+    new_next__11 = x7
+    fourth__12 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(new_next__11)
+    t16 = int32_to_string(first__7)
+    string_println(t16)
+    t17 = int32_to_string(second__8)
+    string_println(t17)
+    t18 = int32_to_string(third__9)
+    string_println(t18)
+    t19 = int32_to_string(fourth__12)
+    string_println(t19)
+    return struct{}{}
 }
 
 func _goml_inherent_closure_env_next_0_closure_env_next_0_apply(env13 closure_env_next_0) int32 {
     var cell__0 *ref_int32_x
     var t20 int32
     var next__1 int32
-    var mtmp0 struct{}
-    _ = mtmp0
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            cell__0 = env13.cell_0
-            t20 = ref_get__Ref_int32(cell__0)
-            next__1 = t20 + 1
-            ref_set__Ref_int32(cell__0, next__1)
-            return next__1
-        default:
-            panic("invalid pc")
-        }
-    }
+    cell__0 = env13.cell_0
+    t20 = ref_get__Ref_int32(cell__0)
+    next__1 = t20 + 1
+    ref_set__Ref_int32(cell__0, next__1)
+    return next__1
 }
 
 func _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(env14 closure_env_reset_1) struct{} {
     var cell__0 *ref_int32_x
-    var mtmp1 struct{}
-    _ = mtmp1
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            cell__0 = env14.cell_0
-            ref_set__Ref_int32(cell__0, 0)
-            return struct{}{}
-        default:
-            panic("invalid pc")
-        }
-    }
+    cell__0 = env14.cell_0
+    ref_set__Ref_int32(cell__0, 0)
+    return struct{}{}
 }
 
 func main() {

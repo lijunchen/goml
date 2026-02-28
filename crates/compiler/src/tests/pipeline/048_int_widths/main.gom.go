@@ -47,43 +47,33 @@ func main0() struct{} {
     var t11 string
     var t12 string
     var message__12 string
-    var _wild0 struct{}
-    _ = _wild0
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            start16__0 = 300
-            delta16__1 = 45
-            sum16__2 = start16__0 + delta16__1
-            flipped16__3 = -start16__0
-            base32__4 = 100000
-            more32__5 = 200000
-            sum32__6 = base32__4 + more32__5
-            diff32__7 = sum32__6 - base32__4
-            big64__8 = 5000000000
-            step64__9 = 2000000000
-            remain64__10 = big64__8 - step64__9
-            neg64__11 = -step64__9
-            t1 = int16_to_string(sum16__2)
-            t2 = t1 + ", "
-            t3 = int16_to_string(flipped16__3)
-            t4 = t2 + t3
-            t5 = t4 + "; "
-            t6 = int32_to_string(diff32__7)
-            t7 = t5 + t6
-            t8 = t7 + "; "
-            t9 = int64_to_string(remain64__10)
-            t10 = t8 + t9
-            t11 = t10 + "; "
-            t12 = int64_to_string(neg64__11)
-            message__12 = t11 + t12
-            string_println(message__12)
-            return struct{}{}
-        default:
-            panic("invalid pc")
-        }
-    }
+    start16__0 = 300
+    delta16__1 = 45
+    sum16__2 = start16__0 + delta16__1
+    flipped16__3 = -start16__0
+    base32__4 = 100000
+    more32__5 = 200000
+    sum32__6 = base32__4 + more32__5
+    diff32__7 = sum32__6 - base32__4
+    big64__8 = 5000000000
+    step64__9 = 2000000000
+    remain64__10 = big64__8 - step64__9
+    neg64__11 = -step64__9
+    t1 = int16_to_string(sum16__2)
+    t2 = t1 + ", "
+    t3 = int16_to_string(flipped16__3)
+    t4 = t2 + t3
+    t5 = t4 + "; "
+    t6 = int32_to_string(diff32__7)
+    t7 = t5 + t6
+    t8 = t7 + "; "
+    t9 = int64_to_string(remain64__10)
+    t10 = t8 + t9
+    t11 = t10 + "; "
+    t12 = int64_to_string(neg64__11)
+    message__12 = t11 + t12
+    string_println(message__12)
+    return struct{}{}
 }
 
 func main() {

@@ -26,77 +26,51 @@ func (_ Yellow) isSignal() {}
 
 func color_is_red(color__0 Color) bool {
     var jp2 bool
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            switch color__0.(type) {
-            case Color_Red:
-                pc = 2
-            case Green:
-                pc = 3
-            default:
-                panic("non-exhaustive match")
-            }
-        case 1:
-            return jp2
-        case 2:
-            jp2 = true
-            pc = 1
-        case 3:
-            jp2 = false
-            pc = 1
-        default:
-            panic("invalid pc")
-        }
+    switch color__0.(type) {
+    case Color_Red:
+        goto b2
+    case Green:
+        goto b3
+    default:
+        panic("non-exhaustive match")
     }
+    b1:
+    return jp2
+    b2:
+    jp2 = true
+    goto b1
+    b3:
+    jp2 = false
+    goto b1
 }
 
 func toggle_signal(signal__1 Signal) Signal {
     var jp4 Signal
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            switch signal__1.(type) {
-            case Signal_Red:
-                pc = 2
-            case Yellow:
-                pc = 3
-            default:
-                panic("non-exhaustive match")
-            }
-        case 1:
-            return jp4
-        case 2:
-            jp4 = Yellow{}
-            pc = 1
-        case 3:
-            jp4 = Signal_Red{}
-            pc = 1
-        default:
-            panic("invalid pc")
-        }
+    switch signal__1.(type) {
+    case Signal_Red:
+        goto b2
+    case Yellow:
+        goto b3
+    default:
+        panic("non-exhaustive match")
     }
+    b1:
+    return jp4
+    b2:
+    jp4 = Yellow{}
+    goto b1
+    b3:
+    jp4 = Signal_Red{}
+    goto b1
 }
 
 func main0() Signal {
     var current__2 Color
-    var mtmp0 bool
     var t5 Signal
-    _ = mtmp0
-    var pc int32 = 0
-    for {
-        switch pc {
-        case 0:
-            current__2 = Color_Red{}
-            color_is_red(current__2)
-            t5 = toggle_signal(Signal_Red{})
-            return t5
-        default:
-            panic("invalid pc")
-        }
-    }
+    current__2 = Color_Red{}
+    color_is_red(current__2)
+    t5 = toggle_signal(Signal_Red{})
+    return t5
 }
 
 func main() {
