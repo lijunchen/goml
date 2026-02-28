@@ -3205,7 +3205,18 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 stmts: Vec::new(),
                 expr: goast::Expr::StructLiteral {
                     fields: vec![
-                        ("data".to_string(), compile_imm(goenv, expr)),
+                        ("data".to_string(), {
+                            let data_expr_ty = imm_ty(expr);
+                            let needs_closure_wrap = matches!(
+                                &data_expr_ty,
+                                tast::Ty::TStruct { name } if is_closure_env_struct(name)
+                            ) && matches!(for_ty, tast::Ty::TFunc { .. });
+                            if needs_closure_wrap {
+                                closure_to_func_lit(goenv, expr, for_ty)
+                            } else {
+                                compile_imm(goenv, expr)
+                            }
+                        }),
                         ("vtable".to_string(), vtable_expr),
                     ],
                     ty: dyn_struct_ty,
