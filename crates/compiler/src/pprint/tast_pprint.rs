@@ -8,7 +8,9 @@ use crate::tast::File;
 use crate::tast::Fn;
 use crate::tast::ImplBlock;
 use crate::tast::Item;
+use crate::tast::LetStmt;
 use crate::tast::Pat;
+use crate::tast::Stmt;
 use crate::tast::Ty;
 
 impl File {
@@ -95,8 +97,6 @@ impl Fn {
 
         let ret_ty = self.ret_ty.to_doc();
 
-        let body = self.body.to_doc(genv);
-
         RcDoc::text("fn")
             .append(RcDoc::space())
             .append(name)
@@ -108,19 +108,65 @@ impl Fn {
             .append(RcDoc::space())
             .append(ret_ty)
             .append(RcDoc::space())
-            .append(match &self.body {
-                Expr::EBlock { .. } => body,
-                _ => RcDoc::text("{")
-                    .append(RcDoc::hardline().append(body).nest(2))
-                    .append(RcDoc::hardline())
-                    .append(RcDoc::text("}")),
-            })
+            .append(self.body.to_doc(genv))
     }
 
     pub fn to_pretty(&self, genv: &GlobalTypeEnv, width: usize) -> String {
         let mut w = Vec::new();
         self.to_doc(genv).render(width, &mut w).unwrap();
         String::from_utf8(w).unwrap()
+    }
+}
+
+impl LetStmt {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(self.pat.to_doc(genv))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(genv))
+            .group()
+    }
+}
+
+impl crate::tast::ExprStmt {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        self.expr.to_doc(genv)
+    }
+}
+
+impl Stmt {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        match self {
+            Self::Let(stmt) => stmt.to_doc(genv),
+            Self::Expr(stmt) => stmt.to_doc(genv),
+        }
+    }
+}
+
+impl crate::tast::Block {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        if self.stmts.is_empty() && self.tail.is_none() {
+            RcDoc::text("{}")
+        } else {
+            let stmts_doc = RcDoc::concat(self.stmts.iter().map(|stmt| {
+                RcDoc::hardline()
+                    .append(stmt.to_doc(genv))
+                    .append(RcDoc::text(";"))
+            }));
+            let tail_doc = if let Some(tail) = &self.tail {
+                RcDoc::hardline().append(tail.to_doc(genv))
+            } else {
+                RcDoc::nil()
+            };
+            RcDoc::text("{")
+                .append(stmts_doc.append(tail_doc).nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group()
+        }
     }
 }
 
@@ -355,31 +401,7 @@ impl Expr {
                     .group()
             }
 
-            Self::ELet { pat, value, ty: _ } => RcDoc::text("let")
-                .append(RcDoc::space())
-                .append(pat.to_doc(genv))
-                .append(RcDoc::space())
-                .append(RcDoc::text("="))
-                .append(RcDoc::space())
-                .append(value.to_doc(genv))
-                .group(),
-
-            Self::EBlock { exprs, ty: _ } => {
-                if exprs.is_empty() {
-                    RcDoc::text("{}")
-                } else {
-                    let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
-                        RcDoc::hardline()
-                            .append(e.to_doc(genv))
-                            .append(RcDoc::text(";"))
-                    }));
-                    RcDoc::text("{")
-                        .append(exprs_doc.nest(4))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}"))
-                        .group()
-                }
-            }
+            Self::EBlock { block, ty: _ } => block.to_doc(genv),
 
             Self::EMatch {
                 expr,

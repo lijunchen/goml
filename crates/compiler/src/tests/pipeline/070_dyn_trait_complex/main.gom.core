@@ -24,17 +24,25 @@ fn trait_impl#Display#Point#bump(self/5: Point, delta/6: int32) -> int32 {
 
 fn trait_impl#Display#Flag#show(self/7: Flag) -> string {
   if Flag.value(self/7) {
-      "Flag(true)"
+      {
+        "Flag(true)"
+      }
   } else {
-      "Flag(false)"
+      {
+        "Flag(false)"
+      }
   }
 }
 
 fn trait_impl#Display#Flag#show_with(self/8: Flag, prefix/9: string, suffix/10: string) -> string {
   if Flag.value(self/8) {
-      ((prefix/9 + "Flag(true)") + suffix/10)
+      {
+        ((prefix/9 + "Flag(true)") + suffix/10)
+      }
   } else {
-      ((prefix/9 + "Flag(false)") + suffix/10)
+      {
+        ((prefix/9 + "Flag(false)") + suffix/10)
+      }
   }
 }
 
@@ -44,9 +52,13 @@ fn trait_impl#Display#Flag#tick(self/11: Flag) -> unit {
 
 fn trait_impl#Display#Flag#bump(self/12: Flag, delta/13: int32) -> int32 {
   if Flag.value(self/12) {
-      delta/13
+      {
+        delta/13
+      }
   } else {
-      (-delta/13)
+      {
+        (-delta/13)
+      }
   }
 }
 
@@ -61,13 +73,17 @@ fn trait_impl#Display#Counter#show_with(self/15: Counter, prefix/16: string, suf
 fn trait_impl#Display#Counter#tick(self/18: Counter) -> unit {
   let next/19 = (ref_get(Counter.cell(self/18)) + 1) in
   let mtmp0 = ref_set(Counter.cell(self/18), next/19) in
-  ()
+  {
+    ()
+  }
 }
 
 fn trait_impl#Display#Counter#bump(self/20: Counter, delta/21: int32) -> int32 {
   let next/22 = (ref_get(Counter.cell(self/20)) + delta/21) in
   let mtmp1 = ref_set(Counter.cell(self/20), next/22) in
-  next/22
+  {
+    next/22
+  }
 }
 
 fn show_dyn(x/23: dyn Display) -> string {
@@ -85,7 +101,9 @@ fn make_renderer(tag/29: string) -> (dyn Display) -> string {
 
 fn bump_and_show(x/31: dyn Display, delta/32: int32) -> string {
   let mtmp2 = dyn_call[Display::tick](x/31) in
-  ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
+  {
+    ((dyn_call[Display::show_with](x/31, "[", "]") + ":") + int32_to_string(dyn_call[Display::bump](x/31, delta/32)))
+  }
 }
 
 fn main() -> unit {
@@ -116,16 +134,32 @@ fn main() -> unit {
     _ => 5,
   } in
   let mtmp3 = string_println(s0/45) in
-  let mtmp4 = string_println(s1/46) in
-  let mtmp5 = string_println(s2/47) in
-  let i/54 = ref(0) in
-  let mtmp8 = while (ref_get(i/54) < 3) {
-      let line/55 = bump_and_show(dc/42, delta/53) in
-      let _wild6 = string_println(line/55) in
-      let mtmp7 = ref_set(i/54, (ref_get(i/54) + 1)) in
-      ()
-  } in
-  let mtmp9 = string_println(("len:" + int32_to_string(vlen/52))) in
-  let mtmp10 = string_println(("delta:" + int32_to_string(delta/53))) in
-  ()
+  {
+    let mtmp4 = string_println(s1/46) in
+    {
+      let mtmp5 = string_println(s2/47) in
+      {
+        let i/54 = ref(0) in
+        let mtmp8 = while (ref_get(i/54) < 3) {
+            {
+              let line/55 = bump_and_show(dc/42, delta/53) in
+              let _wild6 = string_println(line/55) in
+              let mtmp7 = ref_set(i/54, (ref_get(i/54) + 1)) in
+              {
+                ()
+              }
+            }
+        } in
+        {
+          let mtmp9 = string_println(("len:" + int32_to_string(vlen/52))) in
+          {
+            let mtmp10 = string_println(("delta:" + int32_to_string(delta/53))) in
+            {
+              ()
+            }
+          }
+        }
+      }
+    }
+  }
 }

@@ -2,10 +2,18 @@ fn main() -> unit {
   let x/0 = 1 in
   let y/1 = 1 in
   let mtmp0 = print__T_string("int32: ") in
-  let mtmp1 = println__T_int32(x/0) in
-  let mtmp2 = print__T_string("int8: ") in
-  let mtmp3 = println__T_int8(y/1) in
-  ()
+  {
+    let mtmp1 = println__T_int32(x/0) in
+    {
+      let mtmp2 = print__T_string("int8: ") in
+      {
+        let mtmp3 = println__T_int8(y/1) in
+        {
+          ()
+        }
+      }
+    }
+  }
 }
 
 fn print__T_string(value/0: string) -> unit {

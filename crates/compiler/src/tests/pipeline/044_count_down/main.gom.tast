@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 extern type Duration
@@ -20,13 +20,10 @@ fn main() -> unit {
                 (string_println : (string) -> unit)("hello");
                 (sleep : (Duration) -> unit)((duration : (int32) -> Duration)(1000));
                 (ref_set : (Ref[int32], int32) -> unit)((counter/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1);
-                ();
             }
-        };
-    };
-    while (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) < 10 {
-        {
-            ();
         }
     };
+    while (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) < 10 {
+        {}
+    }
 }

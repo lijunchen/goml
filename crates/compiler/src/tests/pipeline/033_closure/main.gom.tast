@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn test() -> unit {
@@ -11,11 +11,11 @@ fn test() -> unit {
     let z/1: int32 = 5;
     let f/3: (int32) -> int32 = |x/2: int32| => (x/2 : int32) * (y/0 : int32) * (z/1 : int32);
     let _ : unit = (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((f/3 : (int32) -> int32)(2)));
-    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((f/3 : (int32) -> int32)(3)));
+    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((f/3 : (int32) -> int32)(3)))
 }
 
 fn call_int_id(f/4: (int32) -> int32, v/5: int32) -> int32 {
-    (f/4 : (int32) -> int32)((v/5 : int32));
+    (f/4 : (int32) -> int32)((v/5 : int32))
 }
 
 fn main() -> unit {
@@ -24,7 +24,7 @@ fn main() -> unit {
     let result/9: int32 = (add_base/8 : (int32) -> int32)(7);
     let printer/13: (string, int32) -> unit = |prefix/10: string, value/11: int32| => {
         let message/12: string = (prefix/10 : string) + (int32_to_string : (int32) -> string)((value/11 : int32));
-        (string_println : (string) -> unit)((message/12 : string));
+        (string_println : (string) -> unit)((message/12 : string))
     };
     let _ : unit = (printer/13 : (string, int32) -> unit)("result: ", (result/9 : int32));
     let unused/15: (int32) -> int32 = |y/14: int32| => (y/14 : int32) + (result/9 : int32);
@@ -42,12 +42,12 @@ fn main() -> unit {
                   match (point/20 : Point) {
                       Point { x: x/23: int32, y: y/24: int32 } => {
                             let _ : unit = (string_println : (string) -> unit)("Point: (" + (int32_to_string : (int32) -> string)((x/23 : int32)) + ", " + (int32_to_string : (int32) -> string)((y/24 : int32)) + ")");
-                            ();
+                            ()
                         },
-                  };
+                  }
               },
-        };
+        }
     };
     let _ : unit = (play_list_and_point/25 : () -> unit)();
-    ();
+    ()
 }

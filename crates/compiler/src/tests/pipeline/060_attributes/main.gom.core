@@ -8,11 +8,19 @@ fn println(value/1: T) -> unit {
 
 fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
   let mtmp0 = self/0 in
-  let x1 = Point.x(mtmp0) in
-  let x2 = Point.y(mtmp0) in
-  let y/2 = x2 in
-  let x/1 = x1 in
-  (((((("Point { " + "x: ") + int32_to_string(x/1)) + ", ") + "y: ") + int32_to_string(y/2)) + " }")
+  {
+    let x1 = Point.x(mtmp0) in
+    let x2 = Point.y(mtmp0) in
+    {
+      let y/2 = x2 in
+      {
+        let x/1 = x1 in
+        {
+          (((((("Point { " + "x: ") + int32_to_string(x/1)) + ", ") + "y: ") + int32_to_string(y/2)) + " }")
+        }
+      }
+    }
+  }
 }
 
 fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
@@ -21,16 +29,26 @@ fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
       "Message::Quit"
     },
     Message::Move(x3, x4) => {
-      let x3 = Message::Move._0(self/3) in
-      let x4 = Message::Move._1(self/3) in
-      let __field1/5 = x4 in
-      let __field0/4 = x3 in
-      (((("Message::Move(" + int32_to_string(__field0/4)) + ", ") + int32_to_string(__field1/5)) + ")")
+      {
+        let x3 = Message::Move._0(self/3) in
+        let x4 = Message::Move._1(self/3) in
+        {
+          let __field1/5 = x4 in
+          {
+            let __field0/4 = x3 in
+            (((("Message::Move(" + int32_to_string(__field0/4)) + ", ") + int32_to_string(__field1/5)) + ")")
+          }
+        }
+      }
     },
     Message::Write(x5) => {
-      let x5 = Message::Write._0(self/3) in
-      let __field0/6 = x5 in
-      (("Message::Write(" + __field0/6) + ")")
+      {
+        let x5 = Message::Write._0(self/3) in
+        {
+          let __field0/6 = x5 in
+          (("Message::Write(" + __field0/6) + ")")
+        }
+      }
     },
   }
 }
@@ -45,5 +63,4 @@ fn main() -> unit {
   let _wild7 = println(mv/9) in
   let _wild8 = println(text/10) in
   let _wild9 = println(exit/11) in
-  ()
 }

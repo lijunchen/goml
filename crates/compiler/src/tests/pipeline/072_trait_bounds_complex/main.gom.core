@@ -64,9 +64,13 @@ fn trait_impl#Inspect#Boxed#inspect(self/19: Boxed) -> string {
 
 fn bool_text(x/20: bool) -> string {
   if x/20 {
-      "true"
+      {
+        "true"
+      }
   } else {
-      "false"
+      {
+        "false"
+      }
   }
 }
 
@@ -104,8 +108,16 @@ fn sum_and_tag(tag/38: Q, x/39: T, y/40: T, z/41: T) -> string {
 
 fn main() -> unit {
   let mtmp0 = string_println(full_report(7, 10, 32)) in
-  let mtmp1 = string_println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 })) in
-  let mtmp2 = string_println(sum_and_tag(0, 1, 2, 3)) in
-  let mtmp3 = string_println(sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
-  ()
+  {
+    let mtmp1 = string_println(full_report(Boxed { value: 99 }, Boxed { value: 3 }, Boxed { value: 4 })) in
+    {
+      let mtmp2 = string_println(sum_and_tag(0, 1, 2, 3)) in
+      {
+        let mtmp3 = string_println(sum_and_tag(Boxed { value: 1 }, Boxed { value: 5 }, Boxed { value: 6 }, Boxed { value: 7 })) in
+        {
+          ()
+        }
+      }
+    }
+  }
 }

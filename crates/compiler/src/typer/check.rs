@@ -358,13 +358,8 @@ impl Typer {
             hir::Expr::EClosure { params, body } => {
                 self.infer_closure_expr(genv, local_env, diagnostics, &params, body)
             }
-            hir::Expr::ELet {
-                pat,
-                annotation,
-                value,
-            } => self.infer_let_expr(genv, local_env, diagnostics, pat, &annotation, value),
-            hir::Expr::EBlock { exprs } => {
-                self.infer_block_expr(genv, local_env, diagnostics, &exprs)
+            hir::Expr::EBlock { block } => {
+                self.infer_block_expr(genv, local_env, diagnostics, &block)
             }
             hir::Expr::EMatch { expr, arms } => self.infer_match_expr(
                 genv,
@@ -455,21 +450,8 @@ impl Typer {
             hir::Expr::EClosure { params, body } => {
                 self.check_closure_expr(genv, local_env, diagnostics, &params, body, expected)
             }
-            hir::Expr::ELet {
-                pat,
-                annotation,
-                value,
-            } => self.check_let_expr(
-                genv,
-                local_env,
-                diagnostics,
-                pat,
-                &annotation,
-                value,
-                expected,
-            ),
-            hir::Expr::EBlock { exprs } => {
-                self.check_block_expr(genv, local_env, diagnostics, &exprs, expected)
+            hir::Expr::EBlock { block } => {
+                self.check_block_expr(genv, local_env, diagnostics, &block, expected)
             }
             hir::Expr::ETuple { items } if matches!(expected, tast::Ty::TTuple { typs } if typs.len() == items.len()) =>
             {
@@ -1775,40 +1757,112 @@ impl Typer {
         }
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn infer_let_expr(
+    fn infer_let_stmt(
         &mut self,
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        pat: hir::PatId,
-        annotation: &Option<hir::TypeExpr>,
-        value: hir::ExprId,
-    ) -> tast::Expr {
+        stmt: &hir::LetStmt,
+    ) -> tast::LetStmt {
         let current_tparams_env = local_env.current_tparams_env();
-        let annotated_ty = annotation
+        let annotated_ty = stmt
+            .annotation
             .as_ref()
             .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
 
         let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
             (
-                self.check_expr(genv, local_env, diagnostics, value, ann_ty),
+                self.check_expr(genv, local_env, diagnostics, stmt.value, ann_ty),
                 ann_ty.clone(),
             )
         } else {
-            let tast = self.infer_expr(genv, local_env, diagnostics, value);
+            let tast = self.infer_expr(genv, local_env, diagnostics, stmt.value);
             let ty = tast.get_ty();
             (tast, ty)
         };
 
-        let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
-        self.check_irrefutable_let_pattern(diagnostics, pat);
-        // ELet without body returns unit type
-        tast::Expr::ELet {
+        let pat_tast = self.check_pat(genv, local_env, diagnostics, stmt.pat, &value_ty);
+        self.check_irrefutable_let_pattern(diagnostics, stmt.pat);
+        tast::LetStmt {
             pat: pat_tast,
             value: Box::new(value_tast),
-            ty: tast::Ty::TUnit,
         }
+    }
+
+    fn infer_block(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        block: &hir::Block,
+    ) -> tast::Block {
+        let mut stmts = Vec::new();
+        for stmt in &block.stmts {
+            match stmt {
+                hir::Stmt::Let(stmt) => {
+                    stmts.push(tast::Stmt::Let(self.infer_let_stmt(
+                        genv,
+                        local_env,
+                        diagnostics,
+                        stmt,
+                    )));
+                }
+                hir::Stmt::Expr(stmt) => {
+                    stmts.push(tast::Stmt::Expr(tast::ExprStmt {
+                        expr: self.infer_expr(genv, local_env, diagnostics, stmt.expr),
+                    }));
+                }
+            }
+        }
+        let tail = block
+            .tail
+            .map(|tail| Box::new(self.infer_expr(genv, local_env, diagnostics, tail)));
+        tast::Block { stmts, tail }
+    }
+
+    pub fn check_block(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        block: &hir::Block,
+        expected: &tast::Ty,
+    ) -> tast::Block {
+        let mut stmts = Vec::new();
+        for stmt in &block.stmts {
+            match stmt {
+                hir::Stmt::Let(stmt) => {
+                    stmts.push(tast::Stmt::Let(self.infer_let_stmt(
+                        genv,
+                        local_env,
+                        diagnostics,
+                        stmt,
+                    )));
+                }
+                hir::Stmt::Expr(stmt) => {
+                    stmts.push(tast::Stmt::Expr(tast::ExprStmt {
+                        expr: self.infer_expr(genv, local_env, diagnostics, stmt.expr),
+                    }));
+                }
+            }
+        }
+        let tail = if let Some(tail) = block.tail {
+            Some(Box::new(self.check_expr(
+                genv,
+                local_env,
+                diagnostics,
+                tail,
+                expected,
+            )))
+        } else {
+            self.push_constraint(Constraint::TypeEqual(
+                tast::Ty::TUnit,
+                expected.clone(),
+                None,
+            ));
+            None
+        };
+        tast::Block { stmts, tail }
     }
 
     fn infer_block_expr(
@@ -1816,86 +1870,19 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[hir::ExprId],
+        block: &hir::Block,
     ) -> tast::Expr {
-        if exprs.is_empty() {
-            return tast::Expr::EPrim {
-                value: Prim::unit(),
-                ty: tast::Ty::TUnit,
-            };
-        }
-
         local_env.push_scope();
-        let result = self.infer_block_exprs(genv, local_env, diagnostics, exprs);
+        let block = self.infer_block(genv, local_env, diagnostics, block);
         local_env.pop_scope(diagnostics);
-        result
-    }
-
-    fn infer_block_exprs(
-        &mut self,
-        genv: &PackageTypeEnv,
-        local_env: &mut LocalTypeEnv,
-        diagnostics: &mut Diagnostics,
-        exprs: &[hir::ExprId],
-    ) -> tast::Expr {
-        if exprs.is_empty() {
-            return tast::Expr::EPrim {
-                value: Prim::unit(),
-                ty: tast::Ty::TUnit,
-            };
-        }
-
-        let mut tast_exprs = Vec::new();
-        for expr in exprs {
-            let tast_expr = self.infer_expr(genv, local_env, diagnostics, *expr);
-            tast_exprs.push(tast_expr);
-        }
-
-        let ty = tast_exprs
-            .last()
-            .map(|e| e.get_ty())
+        let ty = block
+            .tail
+            .as_ref()
+            .map(|expr| expr.get_ty())
             .unwrap_or(tast::Ty::TUnit);
         tast::Expr::EBlock {
-            exprs: tast_exprs,
+            block: Box::new(block),
             ty,
-        }
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn check_let_expr(
-        &mut self,
-        genv: &PackageTypeEnv,
-        local_env: &mut LocalTypeEnv,
-        diagnostics: &mut Diagnostics,
-        pat: hir::PatId,
-        annotation: &Option<hir::TypeExpr>,
-        value: hir::ExprId,
-        _expected: &tast::Ty,
-    ) -> tast::Expr {
-        let current_tparams_env = local_env.current_tparams_env();
-        let annotated_ty = annotation
-            .as_ref()
-            .map(|ty| tast::Ty::from_hir(genv, ty, &current_tparams_env));
-
-        let (value_tast, value_ty) = if let Some(ann_ty) = &annotated_ty {
-            (
-                self.check_expr(genv, local_env, diagnostics, value, ann_ty),
-                ann_ty.clone(),
-            )
-        } else {
-            let tast = self.infer_expr(genv, local_env, diagnostics, value);
-            let ty = tast.get_ty();
-            (tast, ty)
-        };
-
-        let pat_tast = self.check_pat(genv, local_env, diagnostics, pat, &value_ty);
-        self.check_irrefutable_let_pattern(diagnostics, pat);
-        // Standalone ELet returns unit
-
-        tast::Expr::ELet {
-            pat: pat_tast,
-            value: Box::new(value_tast),
-            ty: tast::Ty::TUnit,
         }
     }
 
@@ -1904,58 +1891,19 @@ impl Typer {
         genv: &PackageTypeEnv,
         local_env: &mut LocalTypeEnv,
         diagnostics: &mut Diagnostics,
-        exprs: &[hir::ExprId],
+        block: &hir::Block,
         expected: &tast::Ty,
     ) -> tast::Expr {
-        if exprs.is_empty() {
-            return tast::Expr::EPrim {
-                value: Prim::unit(),
-                ty: tast::Ty::TUnit,
-            };
-        }
-
         local_env.push_scope();
-        let result = self.check_block_exprs(genv, local_env, diagnostics, exprs, expected);
+        let block = self.check_block(genv, local_env, diagnostics, block, expected);
         local_env.pop_scope(diagnostics);
-        result
-    }
-
-    fn check_block_exprs(
-        &mut self,
-        genv: &PackageTypeEnv,
-        local_env: &mut LocalTypeEnv,
-        diagnostics: &mut Diagnostics,
-        exprs: &[hir::ExprId],
-        expected: &tast::Ty,
-    ) -> tast::Expr {
-        if exprs.is_empty() {
-            return tast::Expr::EPrim {
-                value: Prim::unit(),
-                ty: tast::Ty::TUnit,
-            };
-        }
-
-        // For check mode, we infer all expressions except the last one
-        // which we check against expected
-        let mut tast_exprs = Vec::new();
-        let len = exprs.len();
-        for (i, expr) in exprs.iter().enumerate() {
-            let tast_expr = if i == len - 1 {
-                // Last expression: check against expected type
-                self.check_expr(genv, local_env, diagnostics, *expr, expected)
-            } else {
-                // Not last: just infer
-                self.infer_expr(genv, local_env, diagnostics, *expr)
-            };
-            tast_exprs.push(tast_expr);
-        }
-
-        let ty = tast_exprs
-            .last()
-            .map(|e| e.get_ty())
+        let ty = block
+            .tail
+            .as_ref()
+            .map(|expr| expr.get_ty())
             .unwrap_or(tast::Ty::TUnit);
         tast::Expr::EBlock {
-            exprs: tast_exprs,
+            block: Box::new(block),
             ty,
         }
     }

@@ -72,8 +72,8 @@ fn move_variable_patterns(row: &mut Row) {
             let old_body = row.body.clone();
             let old_body_ty = old_body.get_ty();
             row.body = EBlock {
-                exprs: vec![
-                    ELet {
+                block: Box::new(tast::Block {
+                    stmts: vec![tast::Stmt::Let(tast::LetStmt {
                         pat: Pat::PVar {
                             name: name.clone(),
                             ty: ty.clone(),
@@ -84,10 +84,9 @@ fn move_variable_patterns(row: &mut Row) {
                             ty: col.pat.get_ty(),
                             astptr: None,
                         }),
-                        ty: Ty::TUnit,
-                    },
-                    old_body,
-                ],
+                    })],
+                    tail: Some(Box::new(old_body)),
+                }),
                 ty: old_body_ty,
             };
             false
@@ -540,26 +539,25 @@ fn compile_enum_case(
         })
         .collect();
 
-    let mut results = Vec::new();
-
-    for case in cases.iter().take(tydef.variants.len()) {
-        let hole = core::eunit();
-        let mut result = hole;
-        for (field, var) in case.vars.iter().enumerate().rev() {
-            result = core::Expr::ELet {
-                name: var.name.clone(),
-                value: Box::new(core::Expr::EConstrGet {
-                    expr: Box::new(bvar.to_core()),
-                    constructor: case.constructor.clone(),
-                    field_index: field,
-                    ty: var.ty.clone(),
-                }),
-                body: Box::new(result),
-                ty: ty.clone(),
-            }
-        }
-        results.push(result);
-    }
+    let case_let_stmts = cases
+        .iter()
+        .map(|case| {
+            case.vars
+                .iter()
+                .enumerate()
+                .map(|(field_index, var)| core::LetStmt {
+                    name: var.name.clone(),
+                    value: core::Expr::EConstrGet {
+                        expr: Box::new(bvar.to_core()),
+                        constructor: case.constructor.clone(),
+                        field_index,
+                        ty: var.ty.clone(),
+                    },
+                    ty: ty.clone(),
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
 
     let arms = compile_constructor_cases(
         genv,
@@ -574,9 +572,8 @@ fn compile_enum_case(
     );
 
     let mut new_arms = vec![];
-    for (mut res, mut arm) in results.into_iter().zip(arms.into_iter()) {
-        replace_default_expr(&mut res, arm.body);
-        arm.body = res;
+    for (let_stmts, mut arm) in case_let_stmts.into_iter().zip(arms.into_iter()) {
+        arm.body = prepend_lets_to_expr(let_stmts, arm.body, ty);
         new_arms.push(arm);
     }
 
@@ -636,22 +633,6 @@ fn compile_struct_case(
         type_name: name.clone(),
     });
 
-    let hole = core::eunit();
-    let mut result = hole;
-    for (field_index, var) in field_vars.iter().enumerate().rev() {
-        result = core::Expr::ELet {
-            name: var.name.clone(),
-            value: Box::new(core::Expr::EConstrGet {
-                expr: Box::new(bvar.to_core()),
-                constructor: constructor.clone(),
-                field_index,
-                ty: var.ty.clone(),
-            }),
-            body: Box::new(result),
-            ty: ty.clone(),
-        };
-    }
-
     let mut new_rows = vec![];
     for row in rows {
         let mut cols = vec![];
@@ -704,8 +685,21 @@ fn compile_struct_case(
     }
 
     let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
-    replace_default_expr(&mut result, inner);
-    result
+    let let_stmts = field_vars
+        .iter()
+        .enumerate()
+        .map(|(field_index, var)| core::LetStmt {
+            name: var.name.clone(),
+            value: core::Expr::EConstrGet {
+                expr: Box::new(bvar.to_core()),
+                constructor: constructor.clone(),
+                field_index,
+                ty: var.ty.clone(),
+            },
+            ty: ty.clone(),
+        })
+        .collect();
+    prepend_lets_to_expr(let_stmts, inner, ty)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -721,24 +715,6 @@ fn compile_tuple_case(
 ) -> core::Expr {
     let names = typs.iter().map(|_| gensym.gensym("x")).collect::<Vec<_>>();
     let mut new_rows = vec![];
-
-    let hole = core::eunit();
-    // Create a let expression that extracts tuple elements
-    let mut result = hole;
-
-    // For each element in the tuple, create a binding
-    for (i, name) in names.iter().enumerate().rev() {
-        result = core::Expr::ELet {
-            name: name.clone(),
-            value: Box::new(core::Expr::EProj {
-                tuple: Box::new(bvar.to_core()),
-                index: i,
-                ty: typs[i].clone(),
-            }),
-            body: Box::new(result),
-            ty: ty.clone(),
-        };
-    }
 
     for row in rows {
         let mut cols = vec![];
@@ -782,10 +758,20 @@ fn compile_tuple_case(
     }
 
     let inner = compile_rows(genv, gensym, diagnostics, new_rows, ty, match_range);
-
-    // Replace the empty default result with the actual compiled rows
-    replace_default_expr(&mut result, inner);
-    result
+    let let_stmts = names
+        .iter()
+        .enumerate()
+        .map(|(i, name)| core::LetStmt {
+            name: name.clone(),
+            value: core::Expr::EProj {
+                tuple: Box::new(bvar.to_core()),
+                index: i,
+                ty: typs[i].clone(),
+            },
+            ty: ty.clone(),
+        })
+        .collect();
+    prepend_lets_to_expr(let_stmts, inner, ty)
 }
 
 fn compile_unit_case(
@@ -1580,11 +1566,17 @@ fn compile_rows(
     }
 }
 
-// Helper function to replace the default empty expression with the actual compiled inner expression
-fn replace_default_expr(expr: &mut core::Expr, replacement: core::Expr) {
-    match expr {
-        core::Expr::ELet { body, .. } => replace_default_expr(body, replacement),
-        _ => *expr = replacement,
+fn prepend_lets_to_expr(let_stmts: Vec<core::LetStmt>, body: core::Expr, ty: &Ty) -> core::Expr {
+    if let_stmts.is_empty() {
+        body
+    } else {
+        core::Expr::EBlock {
+            block: Box::new(core::Block {
+                stmts: let_stmts,
+                tail: Some(Box::new(body)),
+            }),
+            ty: ty.clone(),
+        }
     }
 }
 
@@ -1616,7 +1608,7 @@ pub fn compile_file(
                             .map(|(name, ty)| (name.clone(), ty.clone()))
                             .collect(),
                         ret_ty: m.ret_ty.clone(),
-                        body: compile_expr(&m.body, genv, gensym, diagnostics),
+                        body: compile_block(&m.body, &m.ret_ty, genv, gensym, diagnostics),
                     };
 
                     toplevels.push(f);
@@ -1632,7 +1624,7 @@ pub fn compile_file(
                         .map(|(name, ty)| (name.clone(), ty.clone()))
                         .collect(),
                     ret_ty: f.ret_ty.clone(),
-                    body: compile_expr(&f.body, genv, gensym, diagnostics),
+                    body: compile_block(&f.body, &f.ret_ty, genv, gensym, diagnostics),
                 });
             }
             tast::Item::ExternGo(_) => {}
@@ -1642,28 +1634,53 @@ pub fn compile_file(
     core::File { toplevels }
 }
 
-/// Compile a block of TAST expressions into Core nested ELet chain
-fn compile_block_exprs(
+fn block_expr_from_parts(stmts: &[tast::Stmt], tail: Option<&Expr>, ty: &Ty) -> Expr {
+    Expr::EBlock {
+        block: Box::new(tast::Block {
+            stmts: stmts.to_vec(),
+            tail: tail.cloned().map(Box::new),
+        }),
+        ty: ty.clone(),
+    }
+}
+
+fn compile_block(
+    block: &tast::Block,
+    ty: &Ty,
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
     diagnostics: &mut Diagnostics,
-    exprs: &[Expr],
+) -> core::Block {
+    compile_block_parts(
+        genv,
+        gensym,
+        diagnostics,
+        &block.stmts,
+        block.tail.as_deref(),
+        ty,
+    )
+}
+
+fn compile_block_parts(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    stmts: &[tast::Stmt],
+    tail: Option<&Expr>,
     ty: &Ty,
-) -> core::Expr {
-    if exprs.is_empty() {
-        return core::eunit();
+) -> core::Block {
+    if stmts.is_empty() {
+        return core::Block {
+            stmts: vec![],
+            tail: tail.map(|tail| Box::new(compile_expr(tail, genv, gensym, diagnostics))),
+        };
     }
 
-    if exprs.len() == 1 {
-        return compile_expr(&exprs[0], genv, gensym, diagnostics);
-    }
-
-    // Compile to nested ELet in Core
-    let first = &exprs[0];
-    let rest = &exprs[1..];
+    let first = &stmts[0];
+    let rest = &stmts[1..];
 
     match first {
-        ELet {
+        tast::Stmt::Let(tast::LetStmt {
             pat:
                 Pat::PVar {
                     name,
@@ -1671,25 +1688,25 @@ fn compile_block_exprs(
                     astptr: _,
                 },
             value,
-            ty: _,
-        } => {
+        }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
-            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
-            core::Expr::ELet {
+            let mut rest_block = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
+            let mut new_stmts = Vec::with_capacity(rest_block.stmts.len() + 1);
+            new_stmts.push(core::LetStmt {
                 name: name.clone(),
-                value: Box::new(core_value),
-                body: Box::new(core_body),
+                value: core_value,
                 ty: pat_ty.clone(),
+            });
+            new_stmts.append(&mut rest_block.stmts);
+            core::Block {
+                stmts: new_stmts,
+                tail: rest_block.tail,
             }
         }
-        ELet { pat, value, ty: _ } => {
-            // Complex pattern: needs pattern matching
+        tast::Stmt::Let(tast::LetStmt { pat, value }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
-            let body_expr = Expr::EBlock {
-                exprs: rest.to_vec(),
-                ty: ty.clone(),
-            };
+            let body_expr = block_expr_from_parts(rest, tail, ty);
             let rows = vec![
                 Row {
                     columns: vec![Column {
@@ -1723,23 +1740,36 @@ fn compile_block_exprs(
                     },
                 },
             ];
-            core::Expr::ELet {
-                name: x,
-                value: Box::new(core_value),
-                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
-                ty: ty.clone(),
+            core::Block {
+                stmts: vec![core::LetStmt {
+                    name: x,
+                    value: core_value,
+                    ty: ty.clone(),
+                }],
+                tail: Some(Box::new(compile_rows(
+                    genv,
+                    gensym,
+                    diagnostics,
+                    rows,
+                    ty,
+                    None,
+                ))),
             }
         }
-        _ => {
-            // Non-let expression: wrap in wildcard let
-            let core_value = compile_expr(first, genv, gensym, diagnostics);
+        tast::Stmt::Expr(tast::ExprStmt { expr }) => {
+            let core_value = compile_expr(expr, genv, gensym, diagnostics);
             let x = gensym.gensym("_wild");
-            let core_body = compile_block_exprs(genv, gensym, diagnostics, rest, ty);
-            core::Expr::ELet {
+            let mut rest_block = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
+            let mut new_stmts = Vec::with_capacity(rest_block.stmts.len() + 1);
+            new_stmts.push(core::LetStmt {
                 name: x,
-                value: Box::new(core_value),
-                body: Box::new(core_body),
-                ty: first.get_ty(),
+                value: core_value,
+                ty: expr.get_ty(),
+            });
+            new_stmts.append(&mut rest_block.stmts);
+            core::Block {
+                stmts: new_stmts,
+                tail: rest_block.tail,
             }
         }
     }
@@ -1813,73 +1843,10 @@ fn compile_expr(
                 ty: ty.clone(),
             }
         }
-        ELet {
-            pat:
-                Pat::PVar {
-                    name,
-                    ty: _pat_ty,
-                    astptr: _,
-                },
-            value,
-            ty,
-        } => {
-            // ELet with simple var pattern and no body - just produces unit
-            core::Expr::ELet {
-                name: name.clone(),
-                value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
-                body: Box::new(core::eunit()),
-                ty: ty.clone(),
-            }
-        }
-        ELet { pat, value, ty } => {
-            let core_value = compile_expr(value, genv, gensym, diagnostics);
-            let x = gensym.gensym("mtmp");
-            // A standalone ELet with a complex pattern - needs pattern match
-            // but has no body, just returns unit
-            let rows = vec![
-                Row {
-                    columns: vec![Column {
-                        var: x.clone(),
-                        pat: pat.clone(),
-                    }],
-                    body: Expr::EPrim {
-                        value: Prim::unit(),
-                        ty: Ty::TUnit,
-                    },
-                },
-                Row {
-                    columns: vec![Column {
-                        var: x.clone(),
-                        pat: Pat::PWild {
-                            ty: pat.get_ty(),
-                            astptr: None,
-                        },
-                    }],
-                    body: ECall {
-                        func: Box::new(Expr::EVar {
-                            name: "missing".to_string(),
-                            ty: Ty::TFunc {
-                                params: vec![Ty::TString],
-                                ret_ty: Box::new(Ty::TUnit),
-                            },
-                            astptr: None,
-                        }),
-                        args: vec![Expr::EPrim {
-                            value: Prim::string("".to_string()),
-                            ty: Ty::TString,
-                        }],
-                        ty: Ty::TUnit,
-                    },
-                },
-            ];
-            core::Expr::ELet {
-                name: x,
-                value: Box::new(core_value),
-                body: Box::new(compile_rows(genv, gensym, diagnostics, rows, ty, None)),
-                ty: ty.clone(),
-            }
-        }
-        EBlock { exprs, ty } => compile_block_exprs(genv, gensym, diagnostics, exprs, ty),
+        EBlock { block, ty } => core::Expr::EBlock {
+            block: Box::new(compile_block(block, ty, genv, gensym, diagnostics)),
+            ty: ty.clone(),
+        },
         EMatch {
             expr,
             arms,
@@ -1905,10 +1872,15 @@ fn compile_expr(
                 let core_expr = compile_expr(expr, genv, gensym, diagnostics);
                 let match_range = astptr.as_ref().map(|ptr| ptr.text_range());
                 let core_rows = compile_rows(genv, gensym, diagnostics, rows, ty, match_range);
-                core::Expr::ELet {
-                    name: mtmp,
-                    value: Box::new(core_expr),
-                    body: Box::new(core_rows),
+                core::Expr::EBlock {
+                    block: Box::new(core::Block {
+                        stmts: vec![core::LetStmt {
+                            name: mtmp,
+                            value: core_expr,
+                            ty: ty.clone(),
+                        }],
+                        tail: Some(Box::new(core_rows)),
+                    }),
                     ty: ty.clone(),
                 }
             }

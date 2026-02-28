@@ -1,25 +1,24 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn child(signal/0: Ref[int32]) -> unit {
-    (ref_set : (Ref[int32], int32) -> unit)((signal/0 : Ref[int32]), 1);
+    (ref_set : (Ref[int32], int32) -> unit)((signal/0 : Ref[int32]), 1)
 }
 
 fn main() -> unit {
     let signal/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
     go || => {
-        (child : (Ref[int32]) -> unit)((signal/1 : Ref[int32]));
+        (child : (Ref[int32]) -> unit)((signal/1 : Ref[int32]))
     };
     while (ref_get : (Ref[int32]) -> int32)((signal/1 : Ref[int32])) < 1 {
         {
-            ();
+            ()
         }
     };
     (string_println : (string) -> unit)("main");
-    ();
 }

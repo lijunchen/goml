@@ -1,14 +1,14 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl ToString for (int32, int32){
   fn to_string(self/0: (int32, int32)) -> string {
-      "(?, ?)";
+      "(?, ?)"
   }
 }
 
@@ -19,5 +19,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)((ToString::to_string : (bool) -> string)((x/2 : bool)));
     let x/3: (int32, int32) = (3, 4);
     let _ : unit = (string_println : (string) -> unit)((ToString::to_string : ((int32, int32)) -> string)((x/3 : (int32, int32))));
-    ();
+    ()
 }

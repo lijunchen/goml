@@ -18,7 +18,20 @@ pub struct MonoFn {
     pub name: String,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
-    pub body: MonoExpr,
+    pub body: MonoBlock,
+}
+
+#[derive(Debug, Clone)]
+pub struct MonoLetStmt {
+    pub name: String,
+    pub value: MonoExpr,
+    pub ty: Ty,
+}
+
+#[derive(Debug, Clone)]
+pub struct MonoBlock {
+    pub stmts: Vec<MonoLetStmt>,
+    pub tail: Option<Box<MonoExpr>>,
 }
 
 #[derive(Debug, Clone)]
@@ -44,10 +57,8 @@ pub enum MonoExpr {
         items: Vec<MonoExpr>,
         ty: Ty,
     },
-    ELet {
-        name: String,
-        value: Box<MonoExpr>,
-        body: Box<MonoExpr>,
+    EBlock {
+        block: Box<MonoBlock>,
         ty: Ty,
     },
     EMatch {
@@ -127,7 +138,7 @@ impl MonoExpr {
             MonoExpr::ETuple { ty, .. } => ty.clone(),
             MonoExpr::EArray { ty, .. } => ty.clone(),
             MonoExpr::EClosure { ty, .. } => ty.clone(),
-            MonoExpr::ELet { ty, .. } => ty.clone(),
+            MonoExpr::EBlock { ty, .. } => ty.clone(),
             MonoExpr::EMatch { ty, .. } => ty.clone(),
             MonoExpr::EIf { ty, .. } => ty.clone(),
             MonoExpr::EWhile { ty, .. } => ty.clone(),
@@ -640,6 +651,24 @@ impl Ctx {
     }
 }
 
+fn mono_block(ctx: &mut Ctx, block: &core::Block, s: &Subst) -> MonoBlock {
+    MonoBlock {
+        stmts: block
+            .stmts
+            .iter()
+            .map(|stmt| MonoLetStmt {
+                name: stmt.name.clone(),
+                value: mono_expr(ctx, &stmt.value, s),
+                ty: subst_ty(&stmt.ty, s),
+            })
+            .collect(),
+        tail: block
+            .tail
+            .as_ref()
+            .map(|tail| Box::new(mono_expr(ctx, tail, s))),
+    }
+}
+
 // Transform an expression under a given substitution; queue any needed instances
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
@@ -683,15 +712,8 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        core::Expr::ELet {
-            name,
-            value,
-            body,
-            ty,
-        } => MonoExpr::ELet {
-            name,
-            value: Box::new(mono_expr(ctx, &value, s)),
-            body: Box::new(mono_expr(ctx, &body, s)),
+        core::Expr::EBlock { block, ty } => MonoExpr::EBlock {
+            block: Box::new(mono_block(ctx, &block, s)),
             ty: subst_ty(&ty, s),
         },
         core::Expr::EMatch {
@@ -1179,6 +1201,23 @@ fn rewrite_closure_param_types(
     }
 }
 
+fn rewrite_block_types(block: MonoBlock, m: &mut TypeMono<'_>) -> MonoBlock {
+    MonoBlock {
+        stmts: block
+            .stmts
+            .into_iter()
+            .map(|stmt| MonoLetStmt {
+                name: stmt.name,
+                value: rewrite_expr_types(stmt.value, m),
+                ty: m.collapse_type_apps(&stmt.ty),
+            })
+            .collect(),
+        tail: block
+            .tail
+            .map(|tail| Box::new(rewrite_expr_types(*tail, m))),
+    }
+}
+
 fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
     match e {
         MonoExpr::EVar { name, ty } => MonoExpr::EVar {
@@ -1229,15 +1268,8 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
                 ty: new_ty,
             }
         }
-        MonoExpr::ELet {
-            name,
-            value,
-            body,
-            ty,
-        } => MonoExpr::ELet {
-            name,
-            value: Box::new(rewrite_expr_types(*value, m)),
-            body: Box::new(rewrite_expr_types(*body, m)),
+        MonoExpr::EBlock { block, ty } => MonoExpr::EBlock {
+            block: Box::new(rewrite_block_types(*block, m)),
             ty: m.collapse_type_apps(&ty),
         },
         MonoExpr::EMatch {
@@ -1381,7 +1413,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
             .map(|(n, t)| (n.clone(), subst_ty(t, &s)))
             .collect();
         let new_ret = subst_ty(&orig_ret, &s);
-        let new_body = mono_expr(&mut ctx, &orig_body, &s);
+        let new_body = mono_block(&mut ctx, &orig_body, &s);
 
         ctx.out.push(MonoFn {
             name: spec_name,
@@ -1401,7 +1433,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
             .map(|(n, t)| (n, m.collapse_type_apps(&t)))
             .collect();
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
-        let body = rewrite_expr_types(f.body, &mut m);
+        let body = rewrite_block_types(f.body, &mut m);
 
         // Store the function type in monoenv for use by later phases
         let fn_ty = Ty::TFunc {

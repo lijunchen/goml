@@ -1,47 +1,49 @@
 fn main() -> unit {
   let a/0 = (Color::Blue, Color::Red) in
-  let x0 = a/0.0 in
-  let x1 = a/0.1 in
-  match x1 {
-    Color::Red => {
-      match x0 {
-        Color::Red => {
-          print__T_int32(1)
-        },
-        Color::Green => {
-          print__T_int32(3)
-        },
-        Color::Blue => {
-          print__T_int32(3)
-        },
-      }
-    },
-    Color::Green => {
-      match x0 {
-        Color::Red => {
-          print__T_int32(0)
-        },
-        Color::Green => {
-          print__T_int32(3)
-        },
-        Color::Blue => {
-          print__T_int32(3)
-        },
-      }
-    },
-    Color::Blue => {
-      match x0 {
-        Color::Red => {
-          print__T_int32(3)
-        },
-        Color::Green => {
-          print__T_int32(3)
-        },
-        Color::Blue => {
-          print__T_int32(2)
-        },
-      }
-    },
+  {
+    let x0 = a/0.0 in
+    let x1 = a/0.1 in
+    match x1 {
+      Color::Red => {
+        match x0 {
+          Color::Red => {
+            print__T_int32(1)
+          },
+          Color::Green => {
+            print__T_int32(3)
+          },
+          Color::Blue => {
+            print__T_int32(3)
+          },
+        }
+      },
+      Color::Green => {
+        match x0 {
+          Color::Red => {
+            print__T_int32(0)
+          },
+          Color::Green => {
+            print__T_int32(3)
+          },
+          Color::Blue => {
+            print__T_int32(3)
+          },
+        }
+      },
+      Color::Blue => {
+        match x0 {
+          Color::Red => {
+            print__T_int32(3)
+          },
+          Color::Green => {
+            print__T_int32(3)
+          },
+          Color::Blue => {
+            print__T_int32(2)
+          },
+        }
+      },
+    }
   }
 }
 

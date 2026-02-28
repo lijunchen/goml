@@ -140,7 +140,7 @@ fn build_fn(
         name: func.name.clone(),
         params,
         ret_ty,
-        body: build_expr(hir_table, results, func.body),
+        body: build_block(hir_table, results, &func.body),
     }
 }
 
@@ -405,12 +405,6 @@ fn build_expr(
                 captures,
             }
         }
-        hir::Expr::ELet { pat, value, .. } => {
-            let pat = build_pat(hir_table, results, pat);
-            let value = Box::new(build_expr(hir_table, results, value));
-            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
-            tast::Expr::ELet { pat, value, ty }
-        }
         hir::Expr::EMatch { expr, arms } => {
             let scrutinee = Box::new(build_expr(hir_table, results, expr));
             let arms = arms
@@ -518,17 +512,48 @@ fn build_expr(
                 astptr: None,
             }
         }
-        hir::Expr::EBlock { exprs } => {
-            let exprs = exprs
-                .iter()
-                .copied()
-                .map(|e| build_expr(hir_table, results, e))
-                .collect::<Vec<_>>();
+        hir::Expr::EBlock { block } => {
+            let block = Box::new(build_block(hir_table, results, &block));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
-            tast::Expr::EBlock { exprs, ty }
+            tast::Expr::EBlock { block, ty }
         }
     };
     apply_coercions(results, expr_id, built)
+}
+
+fn build_let_stmt(
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+    stmt: &hir::LetStmt,
+) -> tast::LetStmt {
+    let pat = build_pat(hir_table, results, stmt.pat);
+    let value = Box::new(build_expr(hir_table, results, stmt.value));
+    tast::LetStmt { pat, value }
+}
+
+fn build_stmt(hir_table: &hir::HirTable, results: &TypeckResults, stmt: &hir::Stmt) -> tast::Stmt {
+    match stmt {
+        hir::Stmt::Let(stmt) => tast::Stmt::Let(build_let_stmt(hir_table, results, stmt)),
+        hir::Stmt::Expr(stmt) => tast::Stmt::Expr(tast::ExprStmt {
+            expr: build_expr(hir_table, results, stmt.expr),
+        }),
+    }
+}
+
+fn build_block(
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+    block: &hir::Block,
+) -> tast::Block {
+    let stmts = block
+        .stmts
+        .iter()
+        .map(|stmt| build_stmt(hir_table, results, stmt))
+        .collect();
+    let tail = block
+        .tail
+        .map(|tail| Box::new(build_expr(hir_table, results, tail)));
+    tast::Block { stmts, tail }
 }
 
 fn error_constructor() -> Constructor {

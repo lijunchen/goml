@@ -129,7 +129,7 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         == AST ==
         package main;
         fn main() -> unit {
-          string_println("hello");
+            string_println("hello")
         }
 
 
@@ -138,20 +138,20 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         package main
         file main.gom
           fn main() -> unit {
-              string_println("hello");
+                string_println("hello")
             }
 
         == Typed AST ==
         fn print(value/0: T) -> unit {
-            (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+            (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
         }
 
         fn println(value/1: T) -> unit {
-            (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+            (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
         }
 
         fn main() -> unit {
-            (string_println : (string) -> unit)("hello");
+            (string_println : (string) -> unit)("hello")
         }
 
         == Core ==
@@ -574,7 +574,7 @@ fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(39..58) }] } }
+        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }] } }
         subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
     "#]]
     .assert_eq(&stderr);

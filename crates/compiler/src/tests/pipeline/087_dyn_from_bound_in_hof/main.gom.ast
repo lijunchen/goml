@@ -5,18 +5,17 @@ trait Display {
 
 impl Display for int32 {
   fn show(self: int32) -> string {
-    int32_to_string(self);
+      int32_to_string(self)
   }
 }
 
 fn mk_renderer(x: T) -> () -> string {
-  let d: dyn Display = x;
-  || Display::show(d);
+    let d: dyn Display = x;
+    || Display::show(d)
 }
 
 fn main() {
-  let f = mk_renderer(42);
-  println(f());
-  ();
+    let f = mk_renderer(42);
+    println(f());
 }
 

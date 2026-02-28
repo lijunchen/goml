@@ -19,13 +19,21 @@ fn main() -> unit {
   let b/8 = id__T_int32(2) in
   let c/9 = trait_impl#Arith#int32#add(a/7, b/8) in
   let mtmp0 = trait_impl#Output#int32#output(c/9) in
-  let a/10 = id__T_int32(3) in
-  let b/11 = id__T_int32(4) in
-  let c/12 = trait_impl#Arith#int32#less(a/10, b/11) in
-  let mtmp1 = trait_impl#Output#bool#output(c/12) in
-  let mtmp2 = id__T_string("abc") in
-  let mtmp3 = id__T_bool(true) in
-  ()
+  {
+    let a/10 = id__T_int32(3) in
+    let b/11 = id__T_int32(4) in
+    let c/12 = trait_impl#Arith#int32#less(a/10, b/11) in
+    let mtmp1 = trait_impl#Output#bool#output(c/12) in
+    {
+      let mtmp2 = id__T_string("abc") in
+      {
+        let mtmp3 = id__T_bool(true) in
+        {
+          ()
+        }
+      }
+    }
+  }
 }
 
 fn id__T_int32(x/6: int32) -> int32 {

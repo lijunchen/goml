@@ -1,31 +1,31 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn a_value() -> int8 {
-    90;
+    90
 }
 
 fn b_value() -> int8 {
-    -20;
+    -20
 }
 
 fn c_value() -> int8 {
-    3;
+    3
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
     let _ : unit = (string_println : (string) -> unit)((label/0 : string) + (int8_to_string : (int8) -> string)((value/1 : int8)));
-    ();
+    ()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
     let _ : unit = (string_println : (string) -> unit)((label/2 : string) + (bool_to_string : (bool) -> string)((value/3 : bool)));
-    ();
+    ()
 }
 
 fn main() -> unit {
@@ -47,5 +47,5 @@ fn main() -> unit {
     let _ : unit = (show_int8 : (string, int8) -> unit)("quot=", (quot/10 : int8));
     let _ : unit = (show_int8 : (string, int8) -> unit)("neg=", (neg/11 : int8));
     let _ : unit = (show_bool : (string, bool) -> unit)("b<a=", (less/12 : bool));
-    ();
+    ()
 }

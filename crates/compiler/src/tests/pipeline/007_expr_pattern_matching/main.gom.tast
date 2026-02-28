@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn main() -> unit {
@@ -16,5 +16,5 @@ fn main() -> unit {
         Expr::Mul(Expr::Add(x/5: Expr, y/6: Expr), z/7: Expr) => (print : (int32) -> unit)(4),
         Expr::Add(x/8: Expr, Expr::Zero) => (print : (int32) -> unit)(5),
         x/9: Expr => (print : (int32) -> unit)(6),
-    };
+    }
 }

@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl Describe for Tracker{
@@ -15,7 +15,7 @@ impl Describe for Tracker{
       let with_count_label/7: string = (with_label/6 : string) + ", count: ";
       let with_count/8: string = (with_count_label/7 : string) + (int32_to_string : (int32) -> string)((current/4 : int32));
       let with_flag_label/9: string = (with_count/8 : string) + ", toggled: ";
-      (with_flag_label/9 : string) + (bool_to_string : (bool) -> string)((flag/5 : bool)) + ")";
+      (with_flag_label/9 : string) + (bool_to_string : (bool) -> string)((flag/5 : bool)) + ")"
   }
 }
 
@@ -25,10 +25,10 @@ impl Describe for Record[int32]{
           Record::Value(value/11: int32) => "Value(" + (int32_to_string : (int32) -> string)((value/11 : int32)) + ")",
           Record::Pair(before/12: int32, after/13: int32) => {
                 let prefix/14: string = "Pair(" + (int32_to_string : (int32) -> string)((before/12 : int32));
-                (prefix/14 : string) + ", " + (int32_to_string : (int32) -> string)((after/13 : int32)) + ")";
+                (prefix/14 : string) + ", " + (int32_to_string : (int32) -> string)((after/13 : int32)) + ")"
             },
           Record::Empty => "Empty",
-      };
+      }
   }
 }
 
@@ -38,47 +38,47 @@ impl Describe for Record[string]{
           Record::Value(text/16: string) => "Value(" + (text/16 : string) + ")",
           Record::Pair(before/17: string, after/18: string) => {
                 let prefix/19: string = "Pair(" + (before/17 : string);
-                (prefix/19 : string) + ", " + (after/18 : string) + ")";
+                (prefix/19 : string) + ", " + (after/18 : string) + ")"
             },
           Record::Empty => "Empty",
-      };
+      }
   }
 }
 
 fn choose(flag/20: bool, when_true/21: T, when_false/22: T) -> T {
     if (flag/20 : bool) {
         {
-            (when_true/21 : T);
+            (when_true/21 : T)
         }
     } else {
         {
-            (when_false/22 : T);
+            (when_false/22 : T)
         }
-    };
+    }
 }
 
 fn map_maybe(value/23: Maybe[T], f/24: (T) -> U) -> Maybe[U] {
     match (value/23 : Maybe[T]) {
         Maybe::Some(inner/25: T) => Maybe::Some((f/24 : (T) -> U)((inner/25 : T))),
         Maybe::None => Maybe::None,
-    };
+    }
 }
 
 fn format_total(total/26: int32) -> string {
-    "total: " + (int32_to_string : (int32) -> string)((total/26 : int32));
+    "total: " + (int32_to_string : (int32) -> string)((total/26 : int32))
 }
 
 fn increment(value/27: int32) -> int32 {
-    (value/27 : int32) + 1;
+    (value/27 : int32) + 1
 }
 
 fn triple(value/28: int32) -> int32 {
-    (value/28 : int32) * 3;
+    (value/28 : int32) * 3
 }
 
 fn pair_join(parts/29: (string, string)) -> string {
     let (left/30: string, right/31: string) = (parts/29 : (string, string));
-    (left/30 : string) + " -> " + (right/31 : string);
+    (left/30 : string) + " -> " + (right/31 : string)
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
@@ -86,7 +86,7 @@ fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int
     let second/35: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 1);
     let first_result/36: int32 = (first/34 : (int32) -> int32)((value/32 : int32));
     let second_result/37: int32 = (second/35 : (int32) -> int32)((first_result/36 : int32));
-    (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32));
+    (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32))
 }
 
 fn gather(record/38: Record[int32]) -> Maybe[int32] {
@@ -94,7 +94,7 @@ fn gather(record/38: Record[int32]) -> Maybe[int32] {
         Record::Value(value/39: int32) => Maybe::Some((value/39 : int32)),
         Record::Pair(_ : int32, after/40: int32) => Maybe::Some((after/40 : int32)),
         Record::Empty => Maybe::None,
-    };
+    }
 }
 
 fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[int32], (int32) -> Record[int32], () -> Record[string]) {
@@ -102,20 +102,20 @@ fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record[in
     let toggled/44: Ref[bool] = (ref : (bool) -> Ref[bool])(false);
     let tracker/45: Tracker = Tracker { label: (label/41 : string), count: (count/43 : Ref[int32]), toggled: (toggled/44 : Ref[bool]) };
     let snapshot/46: () -> Record[int32] = || => {
-        Record::Value((ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])));
+        Record::Value((ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])))
     };
     let bump/49: (int32) -> Record[int32] = |delta/47: int32| => {
         let before/48: int32 = (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32]));
         let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((count/43 : Ref[int32]), (before/48 : int32) + (delta/47 : int32));
-        Record::Pair((before/48 : int32), (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])));
+        Record::Pair((before/48 : int32), (ref_get : (Ref[int32]) -> int32)((count/43 : Ref[int32])))
     };
     let flip/52: () -> Record[string] = || => {
         let before/50: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool]));
         let _ : unit = (ref_set : (Ref[bool], bool) -> unit)((toggled/44 : Ref[bool]), !(before/50 : bool));
         let after/51: bool = (ref_get : (Ref[bool]) -> bool)((toggled/44 : Ref[bool]));
-        Record::Pair((bool_to_string : (bool) -> string)((before/50 : bool)), (bool_to_string : (bool) -> string)((after/51 : bool)));
+        Record::Pair((bool_to_string : (bool) -> string)((before/50 : bool)), (bool_to_string : (bool) -> string)((after/51 : bool)))
     };
-    ((tracker/45 : Tracker), (snapshot/46 : () -> Record[int32]), (bump/49 : (int32) -> Record[int32]), (flip/52 : () -> Record[string]));
+    ((tracker/45 : Tracker), (snapshot/46 : () -> Record[int32]), (bump/49 : (int32) -> Record[int32]), (flip/52 : () -> Record[string]))
 }
 
 fn main() -> unit {
@@ -149,5 +149,5 @@ fn main() -> unit {
     let _ : unit = (string_println : (string) -> unit)((summary/74 : string));
     let _ : unit = (string_println : (string) -> unit)((pair_text/75 : string));
     let _ : unit = (string_println : (string) -> unit)((bool_text/76 : string));
-    ();
+    ()
 }

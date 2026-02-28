@@ -40,7 +40,20 @@ pub struct Fn {
     pub name: String,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
-    pub body: AExpr,
+    pub body: Block,
+}
+
+#[derive(Debug, Clone)]
+pub struct LetStmt {
+    pub name: String,
+    pub value: CExpr,
+    pub ty: Ty,
+}
+
+#[derive(Debug, Clone)]
+pub struct Block {
+    pub stmts: Vec<LetStmt>,
+    pub tail: CExpr,
 }
 
 #[derive(Debug, Clone)]
@@ -72,18 +85,18 @@ pub enum CExpr {
     EMatch {
         expr: Box<ImmExpr>,
         arms: Vec<Arm>,
-        default: Option<Box<AExpr>>,
+        default: Option<Box<Block>>,
         ty: Ty,
     },
     EIf {
         cond: Box<ImmExpr>,
-        then: Box<AExpr>,
-        else_: Box<AExpr>,
+        then: Box<Block>,
+        else_: Box<Block>,
         ty: Ty,
     },
     EWhile {
-        cond: Box<AExpr>,
-        body: Box<AExpr>,
+        cond: Box<Block>,
+        body: Box<Block>,
         ty: Ty,
     },
     EConstrGet {
@@ -154,10 +167,39 @@ impl AExpr {
     }
 }
 
+impl Block {
+    pub fn get_ty(&self) -> Ty {
+        cexpr_tast_ty(&self.tail)
+    }
+}
+
+fn aexpr_to_block(expr: AExpr) -> Block {
+    let mut stmts = Vec::new();
+    let mut current = expr;
+    loop {
+        match current {
+            AExpr::ACExpr { expr } => return Block { stmts, tail: expr },
+            AExpr::ALet {
+                name,
+                value,
+                body,
+                ty,
+            } => {
+                stmts.push(LetStmt {
+                    name,
+                    value: *value,
+                    ty,
+                });
+                current = *body;
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct Arm {
     pub lhs: ImmExpr,
-    pub body: AExpr,
+    pub body: Block,
 }
 
 // Helper function to convert lift immediate expressions to ANF immediate expressions
@@ -236,7 +278,7 @@ fn compile_match_arms_to_anf<'a>(
                 );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
-                    body: anf_body,
+                    body: aexpr_to_block(anf_body),
                 });
             }
             LiftExpr::EConstr {
@@ -257,7 +299,7 @@ fn compile_match_arms_to_anf<'a>(
                 );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
-                    body: anf_body,
+                    body: aexpr_to_block(anf_body),
                 });
             }
             LiftExpr::EConstr {
@@ -278,7 +320,7 @@ fn compile_match_arms_to_anf<'a>(
                 );
                 anf_arms.push(Arm {
                     lhs: anf_lhs,
-                    body: anf_body,
+                    body: aexpr_to_block(anf_body),
                 });
             }
             _ => {
@@ -289,12 +331,12 @@ fn compile_match_arms_to_anf<'a>(
 
     // Convert default case
     let anf_default = default.map(|def_body| {
-        Box::new(anf(
+        Box::new(aexpr_to_block(anf(
             anfenv,
             gensym,
             *def_body,
             Box::new(|c| AExpr::ACExpr { expr: c }),
-        ))
+        )))
     });
 
     k(CExpr::EMatch {
@@ -419,8 +461,8 @@ fn anf<'a>(
                     );
                     k(CExpr::EIf {
                         cond: Box::new(cond_imm),
-                        then: Box::new(then_a),
-                        else_: Box::new(else_a),
+                        then: Box::new(aexpr_to_block(then_a)),
+                        else_: Box::new(aexpr_to_block(else_a)),
                         ty: ty_clone.clone(),
                     })
                 }),
@@ -443,8 +485,8 @@ fn anf<'a>(
                 Box::new(|c| AExpr::ACExpr { expr: c }),
             );
             k(CExpr::EWhile {
-                cond: Box::new(cond_a),
-                body: Box::new(body_a),
+                cond: Box::new(aexpr_to_block(cond_a)),
+                body: Box::new(aexpr_to_block(body_a)),
                 ty: ty_clone,
             })
         }
@@ -710,7 +752,7 @@ pub fn anf_file(liftenv: GlobalLiftEnv, gensym: &Gensym, file: LiftFile) -> (Fil
             name,
             params,
             ret_ty,
-            body,
+            body: aexpr_to_block(body),
         });
     }
     (File { toplevels }, anfenv)
@@ -734,7 +776,7 @@ pub mod anf_renamer {
                 .map(|(n, t)| (n.replace("/", "__"), t))
                 .collect(),
             ret_ty: f.ret_ty,
-            body: rename_aexpr(f.body),
+            body: rename_block(f.body),
         }
     }
 
@@ -782,10 +824,10 @@ pub mod anf_renamer {
                     .into_iter()
                     .map(|arm| anf::Arm {
                         lhs: rename_imm(arm.lhs),
-                        body: rename_aexpr(arm.body),
+                        body: rename_block(arm.body),
                     })
                     .collect(),
-                default: default.map(|d| Box::new(rename_aexpr(*d))),
+                default: default.map(|d| Box::new(rename_block(*d))),
                 ty,
             },
             anf::CExpr::EIf {
@@ -795,13 +837,13 @@ pub mod anf_renamer {
                 ty,
             } => anf::CExpr::EIf {
                 cond: Box::new(rename_imm(*cond)),
-                then: Box::new(rename_aexpr(*then)),
-                else_: Box::new(rename_aexpr(*else_)),
+                then: Box::new(rename_block(*then)),
+                else_: Box::new(rename_block(*else_)),
                 ty,
             },
             anf::CExpr::EWhile { cond, body, ty } => anf::CExpr::EWhile {
-                cond: Box::new(rename_aexpr(*cond)),
-                body: Box::new(rename_aexpr(*body)),
+                cond: Box::new(rename_block(*cond)),
+                body: Box::new(rename_block(*body)),
                 ty,
             },
             anf::CExpr::EConstrGet {
@@ -867,22 +909,18 @@ pub mod anf_renamer {
         }
     }
 
-    fn rename_aexpr(e: anf::AExpr) -> anf::AExpr {
-        match e {
-            anf::AExpr::ACExpr { expr } => anf::AExpr::ACExpr {
-                expr: rename_cexpr(expr),
-            },
-            anf::AExpr::ALet {
-                name,
-                value,
-                body,
-                ty,
-            } => anf::AExpr::ALet {
-                name: name.replace("/", "__"),
-                value: Box::new(rename_cexpr(*value)),
-                body: Box::new(rename_aexpr(*body)),
-                ty,
-            },
+    fn rename_block(block: anf::Block) -> anf::Block {
+        anf::Block {
+            stmts: block
+                .stmts
+                .into_iter()
+                .map(|stmt| anf::LetStmt {
+                    name: stmt.name.replace("/", "__"),
+                    value: rename_cexpr(stmt.value),
+                    ty: stmt.ty,
+                })
+                .collect(),
+            tail: rename_cexpr(block.tail),
         }
     }
 }

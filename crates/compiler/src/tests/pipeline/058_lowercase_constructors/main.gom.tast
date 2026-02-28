@@ -1,22 +1,22 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn make_some(value/0: int32) -> option[int32] {
-    option::some((value/0 : int32));
+    option::some((value/0 : int32))
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
-    point { x: (x/1 : int32), y: (y/2 : int32) };
+    point { x: (x/1 : int32), y: (y/2 : int32) }
 }
 
 fn magnitude(p/3: point) -> int32 {
     let point { x: x/4: int32, y: y/5: int32 } = (p/3 : point);
-    (x/4 : int32) + (y/5 : int32);
+    (x/4 : int32) + (y/5 : int32)
 }
 
 fn main() -> int32 {
@@ -26,8 +26,8 @@ fn main() -> int32 {
               match option::some((pt/7 : point).x) {
                   option::some(value/8: int32) => (value/8 : int32) + (magnitude : (point) -> int32)((pt/7 : point)),
                   option::none => 0,
-              };
+              }
           },
         option::none => 0,
-    };
+    }
 }

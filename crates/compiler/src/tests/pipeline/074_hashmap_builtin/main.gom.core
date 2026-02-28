@@ -18,83 +18,125 @@ fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
 }
 
 fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
-  let mtmp0 = (self/6, other/7) in
-  let x1 = mtmp0.0 in
-  let x2 = mtmp0.1 in
-  match x2 {
-    Key::A => {
-      match x1 {
+  {
+    let mtmp0 = (self/6, other/7) in
+    {
+      let x1 = mtmp0.0 in
+      let x2 = mtmp0.1 in
+      match x2 {
         Key::A => {
-          true
+          match x1 {
+            Key::A => {
+              true
+            },
+            Key::B(x5) => {
+              {
+                let x5 = Key::B._0(x1) in
+                false
+              }
+            },
+            Key::P(x6) => {
+              {
+                let x6 = Key::P._0(x1) in
+                false
+              }
+            },
+          }
         },
-        Key::B(x5) => {
-          let x5 = Key::B._0(x1) in
-          false
+        Key::B(x3) => {
+          {
+            let x3 = Key::B._0(x2) in
+            match x1 {
+              Key::A => {
+                false
+              },
+              Key::B(x7) => {
+                {
+                  let x7 = Key::B._0(x1) in
+                  {
+                    let __l1_0/8 = x7 in
+                    {
+                      let __r1_0/9 = x3 in
+                      (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
+                    }
+                  }
+                }
+              },
+              Key::P(x8) => {
+                {
+                  let x8 = Key::P._0(x1) in
+                  false
+                }
+              },
+            }
+          }
         },
-        Key::P(x6) => {
-          let x6 = Key::P._0(x1) in
-          false
+        Key::P(x4) => {
+          {
+            let x4 = Key::P._0(x2) in
+            match x1 {
+              Key::A => {
+                false
+              },
+              Key::B(x9) => {
+                {
+                  let x9 = Key::B._0(x1) in
+                  false
+                }
+              },
+              Key::P(x10) => {
+                {
+                  let x10 = Key::P._0(x1) in
+                  {
+                    let __l2_0/10 = x10 in
+                    {
+                      let __r2_0/11 = x4 in
+                      (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
+                    }
+                  }
+                }
+              },
+            }
+          }
         },
       }
-    },
-    Key::B(x3) => {
-      let x3 = Key::B._0(x2) in
-      match x1 {
-        Key::A => {
-          false
-        },
-        Key::B(x7) => {
-          let x7 = Key::B._0(x1) in
-          let __l1_0/8 = x7 in
-          let __r1_0/9 = x3 in
-          (true && trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9))
-        },
-        Key::P(x8) => {
-          let x8 = Key::P._0(x1) in
-          false
-        },
-      }
-    },
-    Key::P(x4) => {
-      let x4 = Key::P._0(x2) in
-      match x1 {
-        Key::A => {
-          false
-        },
-        Key::B(x9) => {
-          let x9 = Key::B._0(x1) in
-          false
-        },
-        Key::P(x10) => {
-          let x10 = Key::P._0(x1) in
-          let __l2_0/10 = x10 in
-          let __r2_0/11 = x4 in
-          (true && trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11))
-        },
-      }
-    },
+    }
   }
 }
 
 fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
   match self/12 {
     Key::A => {
-      let h/13 = (14695981039346656037 + 1) in
-      h/13
+      {
+        let h/13 = (14695981039346656037 + 1) in
+        h/13
+      }
     },
     Key::B(x11) => {
-      let x11 = Key::B._0(self/12) in
-      let __field1_0/14 = x11 in
-      let h/15 = (14695981039346656037 + 2) in
-      let h/16 = ((h/15 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/14)) in
-      h/16
+      {
+        let x11 = Key::B._0(self/12) in
+        {
+          let __field1_0/14 = x11 in
+          {
+            let h/15 = (14695981039346656037 + 2) in
+            let h/16 = ((h/15 * 1099511628211) + trait_impl#Hash#int32#hash(__field1_0/14)) in
+            h/16
+          }
+        }
+      }
     },
     Key::P(x12) => {
-      let x12 = Key::P._0(self/12) in
-      let __field2_0/17 = x12 in
-      let h/18 = (14695981039346656037 + 3) in
-      let h/19 = ((h/18 * 1099511628211) + trait_impl#Hash#Point#hash(__field2_0/17)) in
-      h/19
+      {
+        let x12 = Key::P._0(self/12) in
+        {
+          let __field2_0/17 = x12 in
+          {
+            let h/18 = (14695981039346656037 + 3) in
+            let h/19 = ((h/18 * 1099511628211) + trait_impl#Hash#Point#hash(__field2_0/17)) in
+            h/19
+          }
+        }
+      }
     },
   }
 }
@@ -105,9 +147,13 @@ fn print_opt_int(x/20: Option[int32]) -> unit {
       println("none")
     },
     Option::Some(x13) => {
-      let x13 = Option::Some._0(x/20) in
-      let v/21 = x13 in
-      println(v/21)
+      {
+        let x13 = Option::Some._0(x/20) in
+        {
+          let v/21 = x13 in
+          println(v/21)
+        }
+      }
     },
   }
 }
@@ -132,5 +178,4 @@ fn main() -> unit {
   let k2/28 = ref(Key::B(7)) in
   let _wild24 = hashmap_set(m3/26, k1/27, 123) in
   let _wild25 = print_opt_int(hashmap_get(m3/26, k2/28)) in
-  ()
 }

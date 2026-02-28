@@ -12,29 +12,31 @@ fn test(t/0: T) -> unit {
       string_print(int32_to_string(1))
     },
     T::B(x0, x1) => {
-      let x0 = T::B._0(t/0) in
-      let x1 = T::B._1(t/0) in
-      match x1 {
-        true => {
-          match x0 {
-            true => {
-              string_print(int32_to_string(4))
-            },
-            false => {
-              string_print(int32_to_string(3))
-            },
-          }
-        },
-        false => {
-          match x0 {
-            true => {
-              string_print(int32_to_string(4))
-            },
-            false => {
-              string_print(int32_to_string(2))
-            },
-          }
-        },
+      {
+        let x0 = T::B._0(t/0) in
+        let x1 = T::B._1(t/0) in
+        match x1 {
+          true => {
+            match x0 {
+              true => {
+                string_print(int32_to_string(4))
+              },
+              false => {
+                string_print(int32_to_string(3))
+              },
+            }
+          },
+          false => {
+            match x0 {
+              true => {
+                string_print(int32_to_string(4))
+              },
+              false => {
+                string_print(int32_to_string(2))
+              },
+            }
+          },
+        }
       }
     },
   }
@@ -42,8 +44,16 @@ fn test(t/0: T) -> unit {
 
 fn main() -> unit {
   let mtmp2 = test(T::B(true, true)) in
-  let mtmp3 = test(T::B(false, true)) in
-  let mtmp4 = test(T::B(false, false)) in
-  let mtmp5 = test(T::A) in
-  ()
+  {
+    let mtmp3 = test(T::B(false, true)) in
+    {
+      let mtmp4 = test(T::B(false, false)) in
+      {
+        let mtmp5 = test(T::A) in
+        {
+          ()
+        }
+      }
+    }
+  }
 }

@@ -1,9 +1,9 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn is_special8(value/0: int8) -> bool {
@@ -11,7 +11,7 @@ fn is_special8(value/0: int8) -> bool {
         5 => true,
         7 => true,
         _ : int8 => false,
-    };
+    }
 }
 
 fn is_special16(value/1: int16) -> bool {
@@ -19,7 +19,7 @@ fn is_special16(value/1: int16) -> bool {
         1024 => true,
         2048 => true,
         _ : int16 => false,
-    };
+    }
 }
 
 fn is_special32(value/2: int32) -> bool {
@@ -27,7 +27,7 @@ fn is_special32(value/2: int32) -> bool {
         4096 => true,
         8192 => true,
         _ : int32 => false,
-    };
+    }
 }
 
 fn is_special64(value/3: int64) -> bool {
@@ -35,14 +35,14 @@ fn is_special64(value/3: int64) -> bool {
         16384 => true,
         32768 => true,
         _ : int64 => false,
-    };
+    }
 }
 
 fn match_tuple(values/4: (int8, int16)) -> bool {
     match (values/4 : (int8, int16)) {
         (1, 2) => true,
         _ : (int8, int16) => false,
-    };
+    }
 }
 
 fn match_struct(pair/5: PairData) -> bool {
@@ -50,11 +50,11 @@ fn match_struct(pair/5: PairData) -> bool {
         PairData { head: 100, tail: 200 } => true,
         PairData { head: _ : int32, tail: 300 } => true,
         _ : PairData => false,
-    };
+    }
 }
 
 fn report(label/6: string, value/7: bool) -> string {
-    (label/6 : string) + (bool_to_string : (bool) -> string)((value/7 : bool));
+    (label/6 : string) + (bool_to_string : (bool) -> string)((value/7 : bool))
 }
 
 fn main() -> unit {
@@ -75,5 +75,5 @@ fn main() -> unit {
     let part9/22: string = (report : (string, bool) -> string)(",struct_second=", (pair_second/13 : bool));
     let message/23: string = (part1/14 : string) + (part2/15 : string) + (part3/16 : string) + (part4/17 : string) + (part5/18 : string) + (part6/19 : string) + (part7/20 : string) + (part8/21 : string) + (part9/22 : string);
     let _ : unit = (string_println : (string) -> unit)((message/23 : string));
-    ();
+    ()
 }

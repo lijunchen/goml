@@ -1,14 +1,14 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 fn point32_to_string(p/0: Point) -> string {
     let Point { x: x/1: int32, y: y/2: int32 } = (p/0 : Point);
-    "Point { x: " + (int32_to_string : (int32) -> string)((x/1 : int32)) + ", y: " + (int32_to_string : (int32) -> string)((y/2 : int32)) + " }";
+    "Point { x: " + (int32_to_string : (int32) -> string)((x/1 : int32)) + ", y: " + (int32_to_string : (int32) -> string)((y/2 : int32)) + " }"
 }
 
 fn color_to_string(c/3: Color) -> string {
@@ -16,33 +16,33 @@ fn color_to_string(c/3: Color) -> string {
         Color::Red => "Red",
         Color::Green => "Green",
         Color::Blue => "Blue",
-    };
+    }
 }
 
 fn line_to_string(l/4: Line) -> string {
     let Line { from: from/5: Point, to: to/6: Point, color: color/7: Color } = (l/4 : Line);
-    "Line { from: " + (point32_to_string : (Point) -> string)((from/5 : Point)) + ", to: " + (point32_to_string : (Point) -> string)((to/6 : Point)) + ", color: " + (color_to_string : (Color) -> string)((color/7 : Color)) + " }";
+    "Line { from: " + (point32_to_string : (Point) -> string)((from/5 : Point)) + ", to: " + (point32_to_string : (Point) -> string)((to/6 : Point)) + ", color: " + (color_to_string : (Color) -> string)((color/7 : Color)) + " }"
 }
 
 fn point_type(p/8: Point) -> string {
     match (p/8 : Point) {
         Point { x: 0, y: 0 } => {
-              "origin";
+              "origin"
           },
         Point { x: 0, y: 1 } => {
-              "up";
+              "up"
           },
         Point { x: 1, y: 0 } => {
-              "right";
+              "right"
           },
         Point { x: 0, y: y/9: int32 } => {
               match 0 < (y/9 : int32) {
                   true => "above",
                   false => "below",
-              };
+              }
           },
         _ : Point => "unknown",
-    };
+    }
 }
 
 fn main() -> unit {
@@ -50,5 +50,5 @@ fn main() -> unit {
     let _ : unit = (println : (string) -> unit)((point_type : (Point) -> string)((p0/10 : Point)));
     let p1/11: Point = Point { x: 10, y: 10 };
     let line/12: Line = Line { from: (p0/10 : Point), to: (p1/11 : Point), color: Color::Red };
-    (println : (string) -> unit)((line_to_string : (Line) -> string)((line/12 : Line)));
+    (println : (string) -> unit)((line_to_string : (Line) -> string)((line/12 : Line)))
 }

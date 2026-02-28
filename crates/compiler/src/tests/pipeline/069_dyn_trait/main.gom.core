@@ -12,9 +12,13 @@ fn trait_impl#Display#Point#show(self/0: Point) -> string {
 
 fn trait_impl#Display#Flag#show(self/1: Flag) -> string {
   if Flag.value(self/1) {
-      "Flag(true)"
+      {
+        "Flag(true)"
+      }
   } else {
-      "Flag(false)"
+      {
+        "Flag(false)"
+      }
   }
 }
 
@@ -24,6 +28,10 @@ fn main() -> unit {
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
   let mtmp0 = string_println(dyn_call[Display::show](dp/4)) in
-  let mtmp1 = string_println(dyn_call[Display::show](dt/5)) in
-  ()
+  {
+    let mtmp1 = string_println(dyn_call[Display::show](dt/5)) in
+    {
+      ()
+    }
+  }
 }

@@ -1,53 +1,53 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl ToString for Color{
   fn to_string(self/0: Color) -> string {
-    match (self/0 : Color) {
-        Color::Red => "Color::Red",
-        Color::Green => "Color::Green",
-        Color::Blue => "Color::Blue",
-    }
+      match (self/0 : Color) {
+          Color::Red => "Color::Red",
+          Color::Green => "Color::Green",
+          Color::Blue => "Color::Blue",
+      }
   }
 }
 
 impl ToString for Point{
   fn to_string(self/1: Point) -> string {
       let Point { x: x/2: int32, y: y/3: int32, color: color/4: Color } = (self/1 : Point);
-      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/2 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/3 : int32)) + ", " + "color: " + (ToString::to_string : (Color) -> string)((color/4 : Color)) + " }";
+      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/2 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/3 : int32)) + ", " + "color: " + (ToString::to_string : (Color) -> string)((color/4 : Color)) + " }"
   }
 }
 
 impl Point{
   fn new(x/5: int32, y/6: int32, color/7: Color) -> Point {
-      Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) };
+      Point { x: (x/5 : int32), y: (y/6 : int32), color: (color/7 : Color) }
   }
 }
 
 impl ToString for Line{
   fn to_string(self/8: Line) -> string {
       let Line { from: from/9: Point, to: to/10: Point, color: color/11: Color } = (self/8 : Line);
-      "Line { " + "from: " + (ToString::to_string : (Point) -> string)((from/9 : Point)) + ", " + "to: " + (ToString::to_string : (Point) -> string)((to/10 : Point)) + ", " + "color: " + (ToString::to_string : (Color) -> string)((color/11 : Color)) + " }";
+      "Line { " + "from: " + (ToString::to_string : (Point) -> string)((from/9 : Point)) + ", " + "to: " + (ToString::to_string : (Point) -> string)((to/10 : Point)) + ", " + "color: " + (ToString::to_string : (Color) -> string)((color/11 : Color)) + " }"
   }
 }
 
 impl Line{
   fn new(from/12: Point, to/13: Point, color/14: Color) -> Line {
-      Line { from: (from/12 : Point), to: (to/13 : Point), color: (color/14 : Color) };
+      Line { from: (from/12 : Point), to: (to/13 : Point), color: (color/14 : Color) }
   }
 }
 
 impl ToString for LineList{
   fn to_string(self/15: LineList) -> string {
-    match (self/15 : LineList) {
-        LineList::Nil => "LineList::Nil",
-        LineList::Cons(__field0/16: Line, __field1/17: LineList) => "LineList::Cons(" + (ToString::to_string : (Line) -> string)((__field0/16 : Line)) + ", " + (ToString::to_string : (LineList) -> string)((__field1/17 : LineList)) + ")",
-    }
+      match (self/15 : LineList) {
+          LineList::Nil => "LineList::Nil",
+          LineList::Cons(__field0/16: Line, __field1/17: LineList) => "LineList::Cons(" + (ToString::to_string : (Line) -> string)((__field0/16 : Line)) + ", " + (ToString::to_string : (LineList) -> string)((__field1/17 : LineList)) + ")",
+      }
   }
 }
 
@@ -57,5 +57,4 @@ fn main() -> unit {
     let line/20: Line = (Line::new : (Point, Point, Color) -> Line)((from/18 : Point), (to/19 : Point), Color::Blue);
     let lines/21: LineList = LineList::Cons((line/20 : Line), LineList::Nil);
     (string_println : (string) -> unit)((ToString::to_string : (LineList) -> string)((lines/21 : LineList)));
-    ();
 }

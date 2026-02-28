@@ -12,27 +12,26 @@ struct S {
 
 impl A for S {
   fn pick(self: S) -> int32 {
-    10;
+      10
   }
 }
 
 impl B for S {
   fn pick(self: S) -> int32 {
-    20;
+      20
   }
 }
 
 fn pick_a(x: T) -> int32 {
-  A::pick(x);
+    A::pick(x)
 }
 
 fn pick_b(x: T) -> int32 {
-  B::pick(x);
+    B::pick(x)
 }
 
 fn main() {
-  println(int32_to_string(pick_a(S {})));
-  println(int32_to_string(pick_b(S {})));
-  ();
+    println(int32_to_string(pick_a(S {})));
+    println(int32_to_string(pick_b(S {})));
 }
 

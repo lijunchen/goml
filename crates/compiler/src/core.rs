@@ -13,7 +13,20 @@ pub struct Fn {
     pub generics: Vec<String>,
     pub params: Vec<(String, Ty)>,
     pub ret_ty: Ty,
-    pub body: Expr,
+    pub body: Block,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct LetStmt {
+    pub name: String,
+    pub value: Expr,
+    pub ty: Ty,
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Block {
+    pub stmts: Vec<LetStmt>,
+    pub tail: Option<Box<Expr>>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -44,10 +57,8 @@ pub enum Expr {
         body: Box<Expr>,
         ty: Ty,
     },
-    ELet {
-        name: String,
-        value: Box<Expr>,
-        body: Box<Expr>,
+    EBlock {
+        block: Box<Block>,
         ty: Ty,
     },
     EMatch {
@@ -129,7 +140,7 @@ impl Expr {
             Expr::ETuple { ty, .. } => ty.clone(),
             Expr::EArray { ty, .. } => ty.clone(),
             Expr::EClosure { ty, .. } => ty.clone(),
-            Expr::ELet { ty, .. } => ty.clone(),
+            Expr::EBlock { ty, .. } => ty.clone(),
             Expr::EMatch { ty, .. } => ty.clone(),
             Expr::EIf { ty, .. } => ty.clone(),
             Expr::EWhile { ty, .. } => ty.clone(),

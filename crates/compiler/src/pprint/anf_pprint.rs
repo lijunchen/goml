@@ -1,7 +1,7 @@
 use pretty::RcDoc;
 
 use crate::{
-    anf::{AExpr, Arm, CExpr, File, Fn, GlobalAnfEnv, ImmExpr},
+    anf::{Arm, Block, CExpr, File, Fn, GlobalAnfEnv, ImmExpr, LetStmt},
     pprint::common_pprint::{constr_get_accessor_doc, constructor_to_doc},
 };
 
@@ -61,28 +61,29 @@ impl Fn {
     }
 }
 
-impl AExpr {
+impl LetStmt {
     pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
-        match self {
-            AExpr::ACExpr { expr } => expr.to_doc(anfenv),
-            AExpr::ALet {
-                name,
-                value,
-                body,
-                ty: _,
-            } => RcDoc::text("let")
-                .append(RcDoc::space())
-                .append(RcDoc::text(name))
-                .append(RcDoc::space())
-                .append(RcDoc::text("="))
-                .append(RcDoc::space())
-                .append(value.to_doc(anfenv))
-                .append(RcDoc::space())
-                .append(RcDoc::text("in"))
-                .append(RcDoc::hardline())
-                .append(body.to_doc(anfenv))
-                .group(),
-        }
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(RcDoc::text(self.name.clone()))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(anfenv))
+            .append(RcDoc::space())
+            .append(RcDoc::text("in"))
+    }
+}
+
+impl Block {
+    pub fn to_doc(&self, anfenv: &GlobalAnfEnv) -> RcDoc<'_, ()> {
+        let mut docs = self
+            .stmts
+            .iter()
+            .map(|stmt| stmt.to_doc(anfenv))
+            .collect::<Vec<_>>();
+        docs.push(self.tail.to_doc(anfenv));
+        RcDoc::intersperse(docs, RcDoc::hardline())
     }
 
     pub fn to_pretty(&self, anfenv: &GlobalAnfEnv, width: usize) -> String {
@@ -154,7 +155,7 @@ impl CExpr {
                         .append(RcDoc::space())
                         .append(RcDoc::text("=>"))
                         .append(RcDoc::space())
-                        .append(default_expr.to_doc(anfenv)) // Default case body is AExpr
+                        .append(default_expr.to_doc(anfenv))
                         .append(RcDoc::text(","))
                 } else {
                     RcDoc::nil()
@@ -279,7 +280,7 @@ impl CExpr {
                     .append(RcDoc::text(")"))
             }
             CExpr::EGo { closure, ty: _ } => RcDoc::text("go")
-                .append(RcDoc::text(" "))
+                .append(RcDoc::space())
                 .append(closure.to_doc()),
             CExpr::EProj {
                 tuple,
@@ -298,7 +299,6 @@ impl CExpr {
         String::from_utf8(w).unwrap()
     }
 }
-
 impl ImmExpr {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {

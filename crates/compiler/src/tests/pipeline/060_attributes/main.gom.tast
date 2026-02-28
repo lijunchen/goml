@@ -1,25 +1,25 @@
 fn print(value/0: T) -> unit {
-    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)));
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
 }
 
 fn println(value/1: T) -> unit {
-    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)));
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
 }
 
 impl ToString for Point{
   fn to_string(self/0: Point) -> string {
       let Point { x: x/1: int32, y: y/2: int32 } = (self/0 : Point);
-      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/1 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/2 : int32)) + " }";
+      "Point { " + "x: " + (int32::to_string : (int32) -> string)((x/1 : int32)) + ", " + "y: " + (int32::to_string : (int32) -> string)((y/2 : int32)) + " }"
   }
 }
 
 impl ToString for Message{
   fn to_string(self/3: Message) -> string {
-    match (self/3 : Message) {
-        Message::Quit => "Message::Quit",
-        Message::Move(__field0/4: int32, __field1/5: int32) => "Message::Move(" + (int32::to_string : (int32) -> string)((__field0/4 : int32)) + ", " + (int32::to_string : (int32) -> string)((__field1/5 : int32)) + ")",
-        Message::Write(__field0/6: string) => "Message::Write(" + (__field0/6 : string) + ")",
-    }
+      match (self/3 : Message) {
+          Message::Quit => "Message::Quit",
+          Message::Move(__field0/4: int32, __field1/5: int32) => "Message::Move(" + (int32::to_string : (int32) -> string)((__field0/4 : int32)) + ", " + (int32::to_string : (int32) -> string)((__field1/5 : int32)) + ")",
+          Message::Write(__field0/6: string) => "Message::Write(" + (__field0/6 : string) + ")",
+      }
   }
 }
 
@@ -33,5 +33,4 @@ fn main() -> unit {
     (println : (string) -> unit)((mv/9 : string));
     (println : (string) -> unit)((text/10 : string));
     (println : (string) -> unit)((exit/11 : string));
-    ();
 }

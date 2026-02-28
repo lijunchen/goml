@@ -459,20 +459,15 @@ fn collect_runtime_types(
                 self.collect_type(ty);
             }
             self.collect_type(&item.ret_ty);
-            self.collect_aexpr(&item.body);
+            self.collect_block(&item.body);
         }
 
-        fn collect_aexpr(&mut self, expr: &anf::AExpr) {
-            match expr {
-                anf::AExpr::ACExpr { expr } => self.collect_cexpr(expr),
-                anf::AExpr::ALet {
-                    value, body, ty, ..
-                } => {
-                    self.collect_cexpr(value);
-                    self.collect_aexpr(body);
-                    self.collect_type(ty);
-                }
+        fn collect_block(&mut self, block: &anf::Block) {
+            for stmt in &block.stmts {
+                self.collect_cexpr(&stmt.value);
+                self.collect_type(&stmt.ty);
             }
+            self.collect_cexpr(&block.tail);
         }
 
         fn collect_cexpr(&mut self, expr: &anf::CExpr) {
@@ -494,10 +489,10 @@ fn collect_runtime_types(
                 } => {
                     self.collect_imm(expr);
                     for arm in arms {
-                        self.collect_aexpr(&arm.body);
+                        self.collect_block(&arm.body);
                     }
                     if let Some(default) = default {
-                        self.collect_aexpr(default);
+                        self.collect_block(default);
                     }
                     self.collect_type(ty);
                 }
@@ -508,13 +503,13 @@ fn collect_runtime_types(
                     ty,
                 } => {
                     self.collect_imm(cond);
-                    self.collect_aexpr(then);
-                    self.collect_aexpr(else_);
+                    self.collect_block(then);
+                    self.collect_block(else_);
                     self.collect_type(ty);
                 }
                 anf::CExpr::EWhile { cond, body, ty } => {
-                    self.collect_aexpr(cond);
-                    self.collect_aexpr(body);
+                    self.collect_block(cond);
+                    self.collect_block(body);
                     self.collect_type(ty);
                 }
                 anf::CExpr::EConstrGet { expr, ty, .. } => {
@@ -737,10 +732,10 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
             } => {
                 collect_imm(req, expr);
                 for arm in arms {
-                    collect_aexpr(req, &arm.body);
+                    collect_block(req, &arm.body);
                 }
                 if let Some(default) = default {
-                    collect_aexpr(req, default);
+                    collect_block(req, default);
                 }
                 collect_ty(req, ty);
             }
@@ -751,13 +746,13 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
                 ty,
             } => {
                 collect_imm(req, cond);
-                collect_aexpr(req, then);
-                collect_aexpr(req, else_);
+                collect_block(req, then);
+                collect_block(req, else_);
                 collect_ty(req, ty);
             }
             anf::CExpr::EWhile { cond, body, ty } => {
-                collect_aexpr(req, cond);
-                collect_aexpr(req, body);
+                collect_block(req, cond);
+                collect_block(req, body);
                 collect_ty(req, ty);
             }
             anf::CExpr::EConstrGet { expr, ty, .. } => {
@@ -817,17 +812,12 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
         }
     }
 
-    fn collect_aexpr(req: &mut DynRequirements, expr: &anf::AExpr) {
-        match expr {
-            anf::AExpr::ACExpr { expr } => collect_cexpr(req, expr),
-            anf::AExpr::ALet {
-                value, body, ty, ..
-            } => {
-                collect_cexpr(req, value);
-                collect_aexpr(req, body);
-                collect_ty(req, ty);
-            }
+    fn collect_block(req: &mut DynRequirements, block: &anf::Block) {
+        for stmt in &block.stmts {
+            collect_cexpr(req, &stmt.value);
+            collect_ty(req, &stmt.ty);
         }
+        collect_cexpr(req, &block.tail);
     }
 
     let mut req = DynRequirements::default();
@@ -836,7 +826,7 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
             collect_ty(&mut req, ty);
         }
         collect_ty(&mut req, &f.ret_ty);
-        collect_aexpr(&mut req, &f.body);
+        collect_block(&mut req, &f.body);
     }
     req
 }
@@ -1636,7 +1626,7 @@ fn compile_int_match_branch<F, E>(
     goenv: &GlobalGoEnv,
     scrutinee: &anf::ImmExpr,
     arms: &[anf::Arm],
-    default: &Option<Box<anf::AExpr>>,
+    default: &Option<Box<anf::Block>>,
     build_branch: &mut F,
     extract: E,
 ) -> Vec<goast::Stmt>
@@ -1654,7 +1644,7 @@ where
                         ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                     },
                     goast::Block {
-                        stmts: build_branch(arm.body.clone()),
+                        stmts: build_branch(block_to_aexpr(arm.body.clone())),
                     },
                 ));
             } else {
@@ -1665,7 +1655,7 @@ where
         }
     }
     let default_block = default.as_ref().map(|d| goast::Block {
-        stmts: build_branch((**d).clone()),
+        stmts: build_branch(block_to_aexpr((**d).clone())),
     });
     vec![goast::Stmt::SwitchExpr {
         expr: compile_imm(goenv, scrutinee),
@@ -1678,7 +1668,7 @@ fn compile_float_match_branch<F, E>(
     goenv: &GlobalGoEnv,
     scrutinee: &anf::ImmExpr,
     arms: &[anf::Arm],
-    default: &Option<Box<anf::AExpr>>,
+    default: &Option<Box<anf::Block>>,
     build_branch: &mut F,
     extract: E,
 ) -> Vec<goast::Stmt>
@@ -1696,7 +1686,7 @@ where
                         ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                     },
                     goast::Block {
-                        stmts: build_branch(arm.body.clone()),
+                        stmts: build_branch(block_to_aexpr(arm.body.clone())),
                     },
                 ));
             } else {
@@ -1707,7 +1697,7 @@ where
         }
     }
     let default_block = default.as_ref().map(|d| goast::Block {
-        stmts: build_branch((**d).clone()),
+        stmts: build_branch(block_to_aexpr((**d).clone())),
     });
     vec![goast::Stmt::SwitchExpr {
         expr: compile_imm(goenv, scrutinee),
@@ -1720,7 +1710,7 @@ fn compile_match_branches<F>(
     goenv: &GlobalGoEnv,
     scrutinee: &anf::ImmExpr,
     arms: &[anf::Arm],
-    default: &Option<Box<anf::AExpr>>,
+    default: &Option<Box<anf::Block>>,
     mut build_branch: F,
 ) -> Vec<goast::Stmt>
 where
@@ -1729,10 +1719,10 @@ where
     match imm_ty(scrutinee) {
         tast::Ty::TUnit => {
             if let Some(first) = arms.first() {
-                return build_branch(first.body.clone());
+                return build_branch(block_to_aexpr(first.body.clone()));
             }
             if let Some(default_arm) = default.as_ref() {
-                return build_branch((**default_arm).clone());
+                return build_branch(block_to_aexpr((**default_arm).clone()));
             }
             Vec::new()
         }
@@ -1747,7 +1737,7 @@ where
                                 ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                             },
                             goast::Block {
-                                stmts: build_branch(arm.body.clone()),
+                                stmts: build_branch(block_to_aexpr(arm.body.clone())),
                             },
                         ));
                     } else {
@@ -1758,7 +1748,7 @@ where
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {
-                stmts: build_branch((**d).clone()),
+                stmts: build_branch(block_to_aexpr((**d).clone())),
             });
             vec![goast::Stmt::SwitchExpr {
                 expr: compile_imm(goenv, scrutinee),
@@ -1832,7 +1822,7 @@ where
                                 ty: tast_ty_to_go_type(&imm_ty(&arm.lhs)),
                             },
                             goast::Block {
-                                stmts: build_branch(arm.body.clone()),
+                                stmts: build_branch(block_to_aexpr(arm.body.clone())),
                             },
                         ));
                     } else {
@@ -1843,7 +1833,7 @@ where
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {
-                stmts: build_branch((**d).clone()),
+                stmts: build_branch(block_to_aexpr((**d).clone())),
             });
             vec![goast::Stmt::SwitchExpr {
                 expr: compile_imm(goenv, scrutinee),
@@ -1865,7 +1855,7 @@ where
                     cases.push((
                         vty,
                         goast::Block {
-                            stmts: build_branch(arm.body.clone()),
+                            stmts: build_branch(block_to_aexpr(arm.body.clone())),
                         },
                     ));
                 } else {
@@ -1873,7 +1863,7 @@ where
                 }
             }
             let default_block = default.as_ref().map(|d| goast::Block {
-                stmts: build_branch((**d).clone()),
+                stmts: build_branch(block_to_aexpr((**d).clone())),
             });
             vec![goast::Stmt::SwitchType {
                 bind: Some(scrutinee_name),
@@ -1900,7 +1890,7 @@ where
                         cases.push((
                             vty,
                             goast::Block {
-                                stmts: build_branch(arm.body.clone()),
+                                stmts: build_branch(block_to_aexpr(arm.body.clone())),
                             },
                         ));
                     } else {
@@ -1908,7 +1898,7 @@ where
                     }
                 }
                 let default_block = default.as_ref().map(|d| goast::Block {
-                    stmts: build_branch((**d).clone()),
+                    stmts: build_branch(block_to_aexpr((**d).clone())),
                 });
                 vec![goast::Stmt::SwitchType {
                     bind: Some(scrutinee_name),
@@ -1994,6 +1984,20 @@ fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<C
     })
 }
 
+fn block_to_aexpr(block: anf::Block) -> anf::AExpr {
+    let mut expr = anf::AExpr::ACExpr { expr: block.tail };
+    for stmt in block.stmts.into_iter().rev() {
+        let body_ty = expr.get_ty();
+        expr = anf::AExpr::ALet {
+            name: stmt.name,
+            value: Box::new(stmt.value),
+            body: Box::new(expr),
+            ty: body_ty,
+        };
+    }
+    expr
+}
+
 fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goast::Stmt> {
     match e {
         AExpr::ACExpr { expr } => match expr {
@@ -2002,10 +2006,10 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
             } => {
                 let cond_e = compile_imm(goenv, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr_effect(goenv, gensym, *then),
+                    stmts: compile_aexpr_effect(goenv, gensym, block_to_aexpr(*then)),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr_effect(goenv, gensym, *else_),
+                    stmts: compile_aexpr_effect(goenv, gensym, block_to_aexpr(*else_)),
                 };
                 vec![goast::Stmt::If {
                     cond: cond_e,
@@ -2085,8 +2089,8 @@ fn compile_aexpr_effect(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> 
 fn compile_while(
     goenv: &GlobalGoEnv,
     gensym: &Gensym,
-    cond: anf::AExpr,
-    body: anf::AExpr,
+    cond: anf::Block,
+    body: anf::Block,
 ) -> Vec<goast::Stmt> {
     let cond_ty = cond.get_ty();
     if cond_ty != tast::Ty::TBool {
@@ -2101,7 +2105,7 @@ fn compile_while(
         value: None,
     });
 
-    let mut loop_body = compile_aexpr_assign(goenv, gensym, &cond_var, cond);
+    let mut loop_body = compile_aexpr_assign(goenv, gensym, &cond_var, block_to_aexpr(cond));
     let not_cond = goast::Expr::UnaryOp {
         op: goast::GoUnaryOp::Not,
         expr: Box::new(goast::Expr::Var {
@@ -2117,7 +2121,7 @@ fn compile_while(
         },
         else_: None,
     });
-    loop_body.extend(compile_aexpr_effect(goenv, gensym, body));
+    loop_body.extend(compile_aexpr_effect(goenv, gensym, block_to_aexpr(body)));
 
     stmts.push(goast::Stmt::Loop {
         body: goast::Block { stmts: loop_body },
@@ -2137,8 +2141,9 @@ fn compile_aexpr_assign(
                 cond, then, else_, ..
             } => {
                 let cond_e = compile_imm(goenv, &cond);
-                let then_stmts = compile_aexpr_assign(goenv, gensym, target, *then);
-                let else_stmts = compile_aexpr_assign(goenv, gensym, target, *else_);
+                let then_stmts = compile_aexpr_assign(goenv, gensym, target, block_to_aexpr(*then));
+                let else_stmts =
+                    compile_aexpr_assign(goenv, gensym, target, block_to_aexpr(*else_));
                 vec![goast::Stmt::If {
                     cond: cond_e,
                     then: goast::Block { stmts: then_stmts },
@@ -2283,10 +2288,10 @@ fn compile_aexpr(goenv: &GlobalGoEnv, gensym: &Gensym, e: anf::AExpr) -> Vec<goa
             } => {
                 let cond_e = compile_imm(goenv, &cond);
                 let then_block = goast::Block {
-                    stmts: compile_aexpr(goenv, gensym, *then),
+                    stmts: compile_aexpr(goenv, gensym, block_to_aexpr(*then)),
                 };
                 let else_block = goast::Block {
-                    stmts: compile_aexpr(goenv, gensym, *else_),
+                    stmts: compile_aexpr(goenv, gensym, block_to_aexpr(*else_)),
                 };
                 stmts.push(goast::Stmt::If {
                     cond: cond_e,
@@ -2399,7 +2404,7 @@ fn compile_fn(goenv: &GlobalGoEnv, gensym: &Gensym, f: anf::Fn) -> goast::Fn {
         go_ident(&f.name)
     };
 
-    let body = f.body;
+    let body = block_to_aexpr(f.body);
 
     let (ret_ty, body_stmts) = match go_ret_ty {
         goty::GoType::TVoid => (None, compile_aexpr(goenv, gensym, body)),

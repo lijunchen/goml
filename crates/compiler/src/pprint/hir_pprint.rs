@@ -142,6 +142,64 @@ impl TypeExpr {
     }
 }
 
+impl hir::LetStmt {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        let base_pat_doc = ctx.pat_to_doc(self.pat);
+        let pat_doc = if let Some(ty) = &self.annotation {
+            base_pat_doc.append(RcDoc::text(": ")).append(ty.to_doc())
+        } else {
+            base_pat_doc
+        };
+        RcDoc::text("let")
+            .append(RcDoc::space())
+            .append(pat_doc)
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(ctx.expr_to_doc(self.value))
+            .group()
+    }
+}
+
+impl hir::ExprStmt {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        ctx.expr_to_doc(self.expr)
+    }
+}
+
+impl hir::Stmt {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        match self {
+            hir::Stmt::Let(stmt) => stmt.to_doc(ctx),
+            hir::Stmt::Expr(stmt) => stmt.to_doc(ctx),
+        }
+    }
+}
+
+impl hir::Block {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        if self.stmts.is_empty() && self.tail.is_none() {
+            RcDoc::text("{}")
+        } else {
+            let stmts_doc = RcDoc::concat(self.stmts.iter().map(|stmt| {
+                RcDoc::hardline()
+                    .append(stmt.to_doc(ctx))
+                    .append(RcDoc::text(";"))
+            }));
+            let tail_doc = if let Some(tail) = self.tail {
+                RcDoc::hardline().append(ctx.expr_to_doc(tail))
+            } else {
+                RcDoc::nil()
+            };
+            RcDoc::text("{")
+                .append(stmts_doc.append(tail_doc).nest(4))
+                .append(RcDoc::hardline())
+                .append(RcDoc::text("}"))
+                .group()
+        }
+    }
+}
+
 impl Expr {
     pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
@@ -257,27 +315,6 @@ impl Expr {
                     .append(RcDoc::text("| "))
                     .append(ctx.expr_to_doc(*body))
             }
-            hir::Expr::ELet {
-                pat,
-                annotation,
-                value,
-            } => {
-                let base_pat_doc = ctx.pat_to_doc(*pat);
-                let pat_doc = if let Some(ty) = annotation {
-                    base_pat_doc.append(RcDoc::text(": ")).append(ty.to_doc())
-                } else {
-                    base_pat_doc
-                };
-
-                RcDoc::text("let")
-                    .append(RcDoc::space())
-                    .append(pat_doc)
-                    .append(RcDoc::space())
-                    .append(RcDoc::text("="))
-                    .append(RcDoc::space())
-                    .append(ctx.expr_to_doc(*value))
-                    .group()
-            }
 
             hir::Expr::EMatch { expr, arms } => {
                 let match_expr = RcDoc::text("match")
@@ -365,22 +402,7 @@ impl Expr {
                 .expr_to_doc(*expr)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.to_ident_name())),
-            hir::Expr::EBlock { exprs } => {
-                if exprs.is_empty() {
-                    RcDoc::text("{}")
-                } else {
-                    let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
-                        RcDoc::hardline()
-                            .append(ctx.expr_to_doc(*e))
-                            .append(RcDoc::text(";"))
-                    }));
-                    RcDoc::text("{")
-                        .append(exprs_doc.nest(4))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}"))
-                        .group()
-                }
-            }
+            hir::Expr::EBlock { block } => block.to_doc(ctx),
         }
     }
 
@@ -728,39 +750,13 @@ impl Fn {
         } else {
             RcDoc::nil()
         };
-        let body = ctx
-            .hir_table
-            .package(self.body.pkg)
-            .unwrap_or_else(|| panic!("missing HIR table for package {:?}", self.body.pkg))
-            .expr(self.body);
         attrs_doc(&self.attrs).append(
             header
                 .append(params_doc)
                 .append(RcDoc::text(")"))
                 .append(ret_ty_doc)
                 .append(RcDoc::space())
-                .append(match body {
-                    hir::Expr::EBlock { exprs } => {
-                        if exprs.is_empty() {
-                            RcDoc::text("{}")
-                        } else {
-                            let exprs_doc = RcDoc::concat(exprs.iter().map(|e| {
-                                RcDoc::hardline()
-                                    .append(ctx.expr_to_doc(*e))
-                                    .append(RcDoc::text(";"))
-                            }));
-                            RcDoc::text("{")
-                                .append(exprs_doc.nest(2))
-                                .append(RcDoc::hardline())
-                                .append(RcDoc::text("}"))
-                                .group()
-                        }
-                    }
-                    _ => RcDoc::text("{")
-                        .append(RcDoc::hardline().append(ctx.expr_to_doc(self.body)).nest(2))
-                        .append(RcDoc::hardline())
-                        .append(RcDoc::text("}")),
-                }),
+                .append(self.body.to_doc(ctx)),
         )
     }
 

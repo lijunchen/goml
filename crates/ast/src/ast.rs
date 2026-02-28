@@ -180,7 +180,7 @@ pub struct Fn {
     pub generic_bounds: Vec<(AstIdent, Vec<Path>)>,
     pub params: Vec<(AstIdent, TypeExpr)>,
     pub ret_ty: Option<TypeExpr>,
-    pub body: Expr,
+    pub body: Block,
 }
 
 #[derive(Debug, Clone)]
@@ -248,6 +248,33 @@ pub struct ImplBlock {
     pub trait_name: Option<Path>,
     pub for_type: TypeExpr,
     pub methods: Vec<Fn>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Block {
+    pub stmts: Vec<Stmt>,
+    pub tail: Option<Box<Expr>>,
+    pub astptr: MySyntaxNodePtr,
+}
+
+#[derive(Debug, Clone)]
+pub enum Stmt {
+    Let(LetStmt),
+    Expr(ExprStmt),
+}
+
+#[derive(Debug, Clone)]
+pub struct LetStmt {
+    pub pat: Pat,
+    pub annotation: Option<TypeExpr>,
+    pub value: Box<Expr>,
+    pub astptr: MySyntaxNodePtr,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExprStmt {
+    pub expr: Expr,
+    pub astptr: MySyntaxNodePtr,
 }
 
 #[derive(Debug, Clone)]
@@ -337,12 +364,6 @@ pub enum Expr {
         items: Vec<Expr>,
         astptr: MySyntaxNodePtr,
     },
-    ELet {
-        pat: Pat,
-        annotation: Option<TypeExpr>,
-        value: Box<Expr>,
-        astptr: MySyntaxNodePtr,
-    },
     EClosure {
         params: Vec<ClosureParam>,
         body: Box<Expr>,
@@ -395,7 +416,7 @@ pub enum Expr {
         astptr: MySyntaxNodePtr,
     },
     EBlock {
-        exprs: Vec<Expr>,
+        block: Box<Block>,
         astptr: MySyntaxNodePtr,
     },
 }

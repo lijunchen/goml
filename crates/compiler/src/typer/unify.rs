@@ -42,11 +42,18 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
             .or_else(|| args.last().and_then(expr_origin)),
         tast::Expr::EBinary { lhs, rhs, .. } => expr_origin(lhs).or_else(|| expr_origin(rhs)),
         tast::Expr::EUnary { expr, .. } => expr_origin(expr),
-        tast::Expr::ELet { pat, value, .. } => pat_origin(pat).or_else(|| expr_origin(value)),
-        tast::Expr::EBlock { exprs, .. } => exprs
-            .first()
-            .and_then(expr_origin)
-            .or_else(|| exprs.last().and_then(expr_origin)),
+        tast::Expr::EBlock { block, .. } => block
+            .tail
+            .as_ref()
+            .and_then(|tail| expr_origin(tail.as_ref()))
+            .or_else(|| {
+                block.stmts.iter().find_map(|stmt| match stmt {
+                    tast::Stmt::Let(stmt) => {
+                        pat_origin(&stmt.pat).or_else(|| expr_origin(stmt.value.as_ref()))
+                    }
+                    tast::Stmt::Expr(stmt) => expr_origin(&stmt.expr),
+                })
+            }),
         tast::Expr::EIf {
             cond,
             then_branch,
@@ -1304,6 +1311,30 @@ impl Typer {
         }
     }
 
+    pub fn subst_block(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        block: tast::Block,
+    ) -> tast::Block {
+        let stmts = block
+            .stmts
+            .into_iter()
+            .map(|stmt| match stmt {
+                tast::Stmt::Let(stmt) => tast::Stmt::Let(tast::LetStmt {
+                    pat: self.subst_pat(diagnostics, stmt.pat),
+                    value: Box::new(self.subst(diagnostics, *stmt.value)),
+                }),
+                tast::Stmt::Expr(stmt) => tast::Stmt::Expr(tast::ExprStmt {
+                    expr: self.subst(diagnostics, stmt.expr),
+                }),
+            })
+            .collect();
+        let tail = block
+            .tail
+            .map(|tail| Box::new(self.subst(diagnostics, *tail)));
+        tast::Block { stmts, tail }
+    }
+
     pub fn subst(&mut self, diagnostics: &mut Diagnostics, e: tast::Expr) -> tast::Expr {
         match e {
             tast::Expr::EVar { name, ty, astptr } => {
@@ -1396,28 +1427,17 @@ impl Typer {
                     captures,
                 }
             }
-            tast::Expr::ELet { pat, value, ty } => {
-                let origin = pat_origin(&pat).or_else(|| expr_origin(value.as_ref()));
+            tast::Expr::EBlock { block, ty } => {
+                let origin = block
+                    .tail
+                    .as_ref()
+                    .and_then(|tail| expr_origin(tail.as_ref()));
                 let ty = self.subst_ty(diagnostics, &ty, origin);
-                let pat = self.subst_pat(diagnostics, pat);
-                let value = Box::new(self.subst(diagnostics, *value));
-                tast::Expr::ELet {
-                    pat,
-                    value,
+                let block = Box::new(self.subst_block(diagnostics, *block));
+                tast::Expr::EBlock {
+                    block,
                     ty: ty.clone(),
                 }
-            }
-            tast::Expr::EBlock { exprs, ty } => {
-                let origin = exprs
-                    .first()
-                    .and_then(expr_origin)
-                    .or_else(|| exprs.last().and_then(expr_origin));
-                let ty = self.subst_ty(diagnostics, &ty, origin);
-                let exprs = exprs
-                    .into_iter()
-                    .map(|e| self.subst(diagnostics, e))
-                    .collect();
-                tast::Expr::EBlock { exprs, ty }
             }
             tast::Expr::EMatch {
                 expr,
