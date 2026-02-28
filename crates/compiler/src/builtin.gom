@@ -125,19 +125,6 @@ extern fn slice_len[T](s: Slice[T]) -> int32
 #[builtin]
 extern fn slice_sub[T](s: Slice[T], start: int32, end: int32) -> Slice[T]
 
-#[builtin]
-extern fn hashmap_new[K, V]() -> HashMap[K, V]
-#[builtin]
-extern fn hashmap_get[K, V](m: HashMap[K, V], key: K) -> Option[V]
-#[builtin]
-extern fn hashmap_set[K, V](m: HashMap[K, V], key: K, value: V) -> unit
-#[builtin]
-extern fn hashmap_remove[K, V](m: HashMap[K, V], key: K) -> unit
-#[builtin]
-extern fn hashmap_len[K, V](m: HashMap[K, V]) -> int32
-#[builtin]
-extern fn hashmap_contains[K, V](m: HashMap[K, V], key: K) -> bool
-
 trait Eq {
     fn eq(Self, Self) -> bool;
 }
@@ -145,6 +132,19 @@ trait Eq {
 trait Hash {
     fn hash(Self) -> uint64;
 }
+
+#[builtin]
+extern fn hashmap_new[K: Hash + Eq, V]() -> HashMap[K, V]
+#[builtin]
+extern fn hashmap_get[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> Option[V]
+#[builtin]
+extern fn hashmap_set[K: Hash + Eq, V](m: HashMap[K, V], key: K, value: V) -> unit
+#[builtin]
+extern fn hashmap_remove[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> unit
+#[builtin]
+extern fn hashmap_len[K: Hash + Eq, V](m: HashMap[K, V]) -> int32
+#[builtin]
+extern fn hashmap_contains[K: Hash + Eq, V](m: HashMap[K, V], key: K) -> bool
 
 trait ToString {
     fn to_string(Self) -> string;

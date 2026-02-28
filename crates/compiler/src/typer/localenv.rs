@@ -92,6 +92,10 @@ impl LocalTypeEnv {
         self.tparam_trait_bounds.get(name).map(|v| v.as_slice())
     }
 
+    pub fn tparam_trait_bounds_map(&self) -> &IndexMap<String, Vec<TastIdent>> {
+        &self.tparam_trait_bounds
+    }
+
     pub fn set_in_scope_traits(&mut self, traits: Vec<TastIdent>) {
         self.in_scope_traits = traits;
     }

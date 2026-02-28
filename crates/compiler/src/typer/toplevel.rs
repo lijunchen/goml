@@ -1221,8 +1221,14 @@ fn typecheck_fn(
     let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
     local_env.pop_scope(diagnostics);
     local_env.clear_tparams_env();
+    typer.tparam_trait_bounds = local_env
+        .tparam_trait_bounds_map()
+        .iter()
+        .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
+        .collect();
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
+    typer.tparam_trait_bounds.clear();
     typer.validate_deferred_arithmetic_checks(diagnostics);
 }
 
@@ -1292,8 +1298,14 @@ fn typecheck_impl_block(
         let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
         local_env.pop_scope(diagnostics);
         local_env.clear_tparams_env();
+        typer.tparam_trait_bounds = local_env
+            .tparam_trait_bounds_map()
+            .iter()
+            .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
+            .collect();
         local_env.clear_tparam_trait_bounds();
         typer.solve(genv, diagnostics);
+        typer.tparam_trait_bounds.clear();
         typer.validate_deferred_arithmetic_checks(diagnostics);
     }
 }

@@ -2190,7 +2190,7 @@ impl Typer {
                         diagnostics,
                         &func_scheme,
                         &func_scheme.ty,
-                        &call_site_func_ty,
+                        &inst_ty,
                         call_range,
                     ) {
                         return self.error_expr(astptr);
@@ -2282,7 +2282,7 @@ impl Typer {
                         diagnostics,
                         &func_scheme,
                         &func_scheme.ty,
-                        &call_site_func_ty,
+                        &inst_ty,
                         call_range,
                     ) {
                         return self.error_expr(astptr);
@@ -2385,7 +2385,7 @@ impl Typer {
                         diagnostics,
                         &method_scheme,
                         &method_scheme.ty,
-                        &call_site_ty,
+                        &inst_method_ty,
                         self.expr_range(call_expr_id),
                     ) {
                         return self.error_expr(None);

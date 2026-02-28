@@ -1,5 +1,5 @@
 use ena::unify::InPlaceUnificationTable;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use crate::tast;
 use crate::typer::results::TypeckResultsBuilder;
@@ -39,6 +39,7 @@ pub struct Typer {
     pub results: TypeckResultsBuilder,
     pub(crate) while_depth: u32,
     pub(crate) deferred_arithmetic_checks: Vec<DeferredArithmeticCheck>,
+    pub(crate) tparam_trait_bounds: HashMap<String, Vec<String>>,
 }
 
 impl Typer {
@@ -52,6 +53,7 @@ impl Typer {
             results,
             while_depth: 0,
             deferred_arithmetic_checks: Vec::new(),
+            tparam_trait_bounds: HashMap::new(),
         }
     }
 
