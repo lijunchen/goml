@@ -9,6 +9,41 @@ use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
 
+fn unescape_string(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    let mut chars = s.chars();
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            match chars.next() {
+                Some('"') => result.push('"'),
+                Some('\\') => result.push('\\'),
+                Some('n') => result.push('\n'),
+                Some('r') => result.push('\r'),
+                Some('t') => result.push('\t'),
+                Some('b') => result.push('\u{0008}'),
+                Some('f') => result.push('\u{000C}'),
+                Some('/') => result.push('/'),
+                Some('u') => {
+                    let hex: String = chars.by_ref().take(4).collect();
+                    if let Ok(code) = u32::from_str_radix(&hex, 16) {
+                        if let Some(ch) = char::from_u32(code) {
+                            result.push(ch);
+                        }
+                    }
+                }
+                Some(other) => {
+                    result.push('\\');
+                    result.push(other);
+                }
+                None => result.push('\\'),
+            }
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
 pub struct LowerResult {
     ast: Option<ast::File>,
     diagnostics: Diagnostics,
@@ -1243,7 +1278,7 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EString {
-                value: value.to_string(),
+                value: unescape_string(value),
                 astptr,
             })
         }
