@@ -36,7 +36,7 @@ func _goml_trait_impl_Display_Point_show(self__0 Point) string {
     return "Point"
 }
 
-func _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(self__1 Maybe__int32) string {
+func _goml_trait_impl_Display_Maybe__int32_show(self__1 Maybe__int32) string {
     var jp5 string
     switch self__1.(type) {
     case Just:
@@ -76,9 +76,9 @@ func main0() struct{} {
     var none_number__6 Maybe__int32 = make_maybe(false)
     var t12 string = _goml_trait_impl_Display_Point_show(point__4)
     string_println(t12)
-    var t13 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(some_number__5)
+    var t13 string = _goml_trait_impl_Display_Maybe__int32_show(some_number__5)
     string_println(t13)
-    var t14 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(none_number__6)
+    var t14 string = _goml_trait_impl_Display_Maybe__int32_show(none_number__6)
     string_println(t14)
     return struct{}{}
 }

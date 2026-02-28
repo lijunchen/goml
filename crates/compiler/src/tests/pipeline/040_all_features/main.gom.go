@@ -193,7 +193,7 @@ func _goml_trait_impl_Describe_Tracker_describe(self__0 Tracker) string {
     return t38
 }
 
-func _goml_trait_impl_Describe_Record_x5b_int32_x5d__describe(self__10 Record__int32) string {
+func _goml_trait_impl_Describe_Record__int32_describe(self__10 Record__int32) string {
     var jp40 string
     switch self__10.(type) {
     case Record__int32_Value:
@@ -223,7 +223,7 @@ func _goml_trait_impl_Describe_Record_x5b_int32_x5d__describe(self__10 Record__i
     return jp40
 }
 
-func _goml_trait_impl_Describe_Record_x5b_string_x5d__describe(self__15 Record__string) string {
+func _goml_trait_impl_Describe_Record__string_describe(self__15 Record__string) string {
     var jp50 string
     switch self__15.(type) {
     case Record__string_Value:
@@ -362,9 +362,9 @@ func main0() struct{} {
     var second_result__68 int32 = array_get__Array_2_int32(results__66, 1)
     var t69 bool = first_result__67 < second_result__68
     var order_check__69 bool = t69 && true
-    var first_text__70 string = _goml_trait_impl_Describe_Record_x5b_int32_x5d__describe(first_record__58)
-    var bumped_text__71 string = _goml_trait_impl_Describe_Record_x5b_int32_x5d__describe(bumped_record__59)
-    var flipped_text__72 string = _goml_trait_impl_Describe_Record_x5b_string_x5d__describe(flipped_record__60)
+    var first_text__70 string = _goml_trait_impl_Describe_Record__int32_describe(first_record__58)
+    var bumped_text__71 string = _goml_trait_impl_Describe_Record__int32_describe(bumped_record__59)
+    var flipped_text__72 string = _goml_trait_impl_Describe_Record__string_describe(flipped_record__60)
     var jp71 string
     switch stringified__64.(type) {
     case Maybe__string_Some:
