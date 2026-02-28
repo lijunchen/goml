@@ -388,7 +388,9 @@ fn lower<'a>(
                 LiftExpr::EIf { .. }
                 | LiftExpr::EMatch { .. }
                 | LiftExpr::EWhile { .. }
-                | LiftExpr::ELet { .. } => {
+                | LiftExpr::ELet { .. }
+                | LiftExpr::EBreak { .. }
+                | LiftExpr::EContinue { .. } => {
                     let value_ty = value.get_ty();
                     lower(
                         anfenv,

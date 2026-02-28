@@ -1,0 +1,21 @@
+fn main() {
+    let i = ref(0);
+    while ref_get(i) < 10 {
+        if ref_get(i) == 5 {
+            break;
+        } else { () };
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println("break at " + int32_to_string(ref_get(i)));
+
+    let j = ref(0);
+    let sum = ref(0);
+    while ref_get(j) < 10 {
+        ref_set(j, ref_get(j) + 1);
+        if ref_get(j) / 2 * 2 == ref_get(j) {
+            continue;
+        } else { () };
+        ref_set(sum, ref_get(sum) + ref_get(j));
+    };
+    string_println("odd sum " + int32_to_string(ref_get(sum)));
+}
