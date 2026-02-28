@@ -629,6 +629,14 @@ impl Typer {
                                             origin,
                                         });
                                     }
+                                    _ if crate::typer::check::contains_tvar(&self_ty) => {
+                                        still_pending.push(Constraint::Overloaded {
+                                            op,
+                                            trait_name,
+                                            call_site_type,
+                                            origin,
+                                        });
+                                    }
                                     _ => {
                                         diagnostics.push(Diagnostic::new(
                                             Stage::Typer,
