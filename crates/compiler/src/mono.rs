@@ -937,6 +937,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                         Ty::TUint64 => call_unary_builtin("uint64_to_string", expr, Ty::TString),
                         Ty::TFloat32 => call_unary_builtin("float32_to_string", expr, Ty::TString),
                         Ty::TFloat64 => call_unary_builtin("float64_to_string", expr, Ty::TString),
+                        Ty::TChar => call_unary_builtin("char_to_string", expr, Ty::TString),
                         Ty::TRef { elem } => {
                             let inner_ty = *elem;
                             let inner = call_unary_builtin("ref_get", expr, inner_ty.clone());
