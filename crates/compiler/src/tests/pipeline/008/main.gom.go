@@ -29,27 +29,31 @@ type B struct {
 func (_ B) isT() {}
 
 func main0() struct{} {
-    var ret5 struct{}
     var t__0 T = B{
         _0: true,
         _1: struct{}{},
     }
-    switch t__0 := t__0.(type) {
+    switch t__0.(type) {
     case A:
-        var t2 string = int32_to_string(1)
-        ret5 = string_print(t2)
+        var t3 string = int32_to_string(1)
+        string_print(t3)
+        return struct{}{}
     case B:
-        var x0 bool = t__0._0
+        var x0 bool = t__0.(B)._0
         switch x0 {
         case true:
-            var t3 string = int32_to_string(2)
-            ret5 = string_print(t3)
+            var t7 string = int32_to_string(2)
+            string_print(t7)
         case false:
-            var t4 string = int32_to_string(3)
-            ret5 = string_print(t4)
+            var t9 string = int32_to_string(3)
+            string_print(t9)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret5
 }
 
 func main() {

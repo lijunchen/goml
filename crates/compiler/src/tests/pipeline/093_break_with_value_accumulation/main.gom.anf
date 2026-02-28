@@ -1,0 +1,54 @@
+fn main() -> unit {
+  let sum/0 = ref(0) in
+  let i/1 = ref(0) in
+  join exit8() -> unit {
+    let _wild3 = () in
+    let mtmp4 = print__T_string("sum: ") in
+    let t9 = ref_get(sum/0) in
+    let mtmp5 = println__T_int32(t9) in
+    let mtmp6 = print__T_string("i at break: ") in
+    let t10 = ref_get(i/1) in
+    let mtmp7 = println__T_int32(t10) in
+    ()
+  } in
+  joinrec {
+    join loop11() -> unit {
+      let t12 = ref_get(i/1) in
+      let t13 = (t12 < 20) in
+      if t13 {
+        let t14 = ref_get(i/1) in
+        let t15 = (t14 + 1) in
+        let _wild0 = ref_set(i/1, t15) in
+        let t20 = ref_get(i/1) in
+        let t21 = (t20 > 5) in
+        join k16() -> unit {
+          let _wild1 = () in
+          let t17 = ref_get(sum/0) in
+          let t18 = ref_get(i/1) in
+          let t19 = (t17 + t18) in
+          let _wild2 = ref_set(sum/0, t19) in
+          jump loop11()
+        } in
+        if t21 {
+          jump exit8()
+        } else {
+          jump k16()
+        }
+      } else {
+        jump exit8()
+      }
+    } in
+  } in
+  jump loop11()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  let t22 = string_print(value/0) in
+  t22
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t23 = int32_to_string(value/1) in
+  let t24 = string_println(t23) in
+  t24
+}

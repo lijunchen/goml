@@ -1,0 +1,13 @@
+fn main() {
+    let i = ref(0i32);
+    while ref_get(i) < 10i32 {
+        if ref_get(i) == 5i32 {
+            break
+        } else {
+            ()
+        };
+        let _ = println(ref_get(i));
+        ref_set(i, ref_get(i) + 1i32);
+    };
+    let _ = println("done");
+}

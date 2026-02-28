@@ -1,21 +1,27 @@
 fn color_is_red(color/0: Color) -> bool {
+  join k1(jp2: bool) -> bool {
+    jp2
+  } in
   match color/0 {
     Tag_0 => {
-      true
+      jump k1(true)
     },
     Tag_1 => {
-      false
+      jump k1(false)
     },
   }
 }
 
 fn toggle_signal(signal/1: Signal) -> Signal {
+  join k3(jp4: Signal) -> Signal {
+    jp4
+  } in
   match signal/1 {
     Tag_0 => {
-      Tag_1
+      jump k3(Tag_1)
     },
     Tag_1 => {
-      Tag_0
+      jump k3(Tag_0)
     },
   }
 }
@@ -23,6 +29,6 @@ fn toggle_signal(signal/1: Signal) -> Signal {
 fn main() -> Signal {
   let current/2 = Tag_0 in
   let mtmp0 = color_is_red(current/2) in
-  let t1 = Tag_0 in
-  toggle_signal(t1)
+  let t5 = toggle_signal(Tag_0) in
+  t5
 }

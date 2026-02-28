@@ -1160,6 +1160,12 @@ impl NameResolution {
                 let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
                 self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EGo { expr: new_expr })
             }
+            ast::Expr::EBreak { astptr } => {
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EBreak)
+            }
+            ast::Expr::EContinue { astptr } => {
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EContinue)
+            }
             ast::Expr::ECall { func, args, astptr } => {
                 if let ast::Expr::EPath { path, .. } = func.as_ref()
                     && let Some(constructor) = self.constructor_path_for(path, ctx)

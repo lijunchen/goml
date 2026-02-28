@@ -163,7 +163,9 @@ fn collect_hints_from_expr(
         | hir::Expr::EFloat32 { .. }
         | hir::Expr::EFloat64 { .. }
         | hir::Expr::EString { .. }
-        | hir::Expr::EChar { .. } => {}
+        | hir::Expr::EChar { .. }
+        | hir::Expr::EBreak
+        | hir::Expr::EContinue => {}
     }
 }
 

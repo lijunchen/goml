@@ -1,7 +1,11 @@
 fn print_int_list(xs/0: IntList) -> unit {
+  join k25() -> unit {
+    ()
+  } in
   match xs/0 {
     Tag_0 => {
-      string_print("Nil")
+      let t26 = string_print("Nil") in
+      jump k25()
     },
     Tag_1 => {
       let x0 = IntList::Cons._0(xs/0) in
@@ -10,57 +14,65 @@ fn print_int_list(xs/0: IntList) -> unit {
       let x/1 = x0 in
       let mtmp2 = string_print("Cons") in
       let mtmp3 = string_print("(") in
-      let t25 = int32_to_string(x/1) in
-      let mtmp4 = string_print(t25) in
+      let t27 = int32_to_string(x/1) in
+      let mtmp4 = string_print(t27) in
       let mtmp5 = string_print(", ") in
       let mtmp6 = print_int_list(xs/2) in
       let mtmp7 = string_print(")") in
-      ()
+      jump k25()
     },
   }
 }
 
 fn int_list_rev_aux(xs/3: IntList, acc/4: IntList) -> IntList {
+  join k28(jp29: IntList) -> IntList {
+    jp29
+  } in
   match xs/3 {
     Tag_0 => {
-      acc/4
+      jump k28(acc/4)
     },
     Tag_1 => {
       let x8 = IntList::Cons._0(xs/3) in
       let x9 = IntList::Cons._1(xs/3) in
       let tail/6 = x9 in
       let head/5 = x8 in
-      let t26 = IntList::Cons(head/5, acc/4) in
-      int_list_rev_aux(tail/6, t26)
+      let t30 = IntList::Cons(head/5, acc/4) in
+      let t31 = int_list_rev_aux(tail/6, t30) in
+      jump k28(t31)
     },
   }
 }
 
 fn int_list_rev(xs/7: IntList) -> IntList {
-  let t27 = Tag_0 in
-  int_list_rev_aux(xs/7, t27)
+  let t32 = int_list_rev_aux(xs/7, Tag_0) in
+  t32
 }
 
 fn int_list_length(xs/8: IntList) -> int32 {
+  join k33(jp34: int32) -> int32 {
+    jp34
+  } in
   match xs/8 {
     Tag_0 => {
-      0
+      jump k33(0)
     },
     Tag_1 => {
       let x10 = IntList::Cons._0(xs/8) in
       let x11 = IntList::Cons._1(xs/8) in
       let xs/9 = x11 in
-      let t28 = int_list_length(xs/9) in
-      (1 + t28)
+      let t35 = int_list_length(xs/9) in
+      let t36 = (1 + t35) in
+      jump k33(t36)
     },
   }
 }
 
 fn print_int_list_length(xs/10: IntList) -> unit {
   let mtmp12 = string_print("Length: ") in
-  let t30 = int_list_length(xs/10) in
-  let t29 = int32_to_string(t30) in
-  let mtmp13 = string_println(t29) in
+  let t37 = int_list_length(xs/10) in
+  let t38 = int32_to_string(t37) in
+  let mtmp13 = string_println(t38) in
   ()
 }
 
@@ -69,15 +81,13 @@ fn main() -> unit {
   let mtmp14 = print_int_list(x/11) in
   let mtmp15 = string_println("") in
   let mtmp16 = print_int_list_length(x/11) in
-  let t31 = Tag_0 in
-  let x/12 = IntList::Cons(1, t31) in
+  let x/12 = IntList::Cons(1, Tag_0) in
   let mtmp17 = print_int_list(x/12) in
   let mtmp18 = string_println("") in
   let mtmp19 = print_int_list_length(x/12) in
-  let t34 = Tag_0 in
-  let t33 = IntList::Cons(3, t34) in
-  let t32 = IntList::Cons(2, t33) in
-  let x/13 = IntList::Cons(1, t32) in
+  let t39 = IntList::Cons(3, Tag_0) in
+  let t40 = IntList::Cons(2, t39) in
+  let x/13 = IntList::Cons(1, t40) in
   let mtmp20 = print_int_list(x/13) in
   let mtmp21 = string_println("") in
   let mtmp22 = print_int_list_length(x/13) in

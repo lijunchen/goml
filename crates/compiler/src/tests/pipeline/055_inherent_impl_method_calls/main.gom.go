@@ -12,48 +12,39 @@ func string_println(s string) struct{} {
 type Shape struct {}
 
 func _goml_inherent_Shape_Shape_name(self__0 Shape) string {
-    var ret5 string
-    ret5 = "Shape"
-    return ret5
+    return "Shape"
 }
 
 func _goml_inherent_Shape_Shape_rename(self__1 Shape, suffix__2 string) string {
-    var ret6 string
     var t2 string = _goml_inherent_Shape_Shape_name(self__1)
-    ret6 = t2 + suffix__2
-    return ret6
+    var t3 string = t2 + suffix__2
+    return t3
 }
 
 func _goml_inherent_Shape_Shape_join(self__3 Shape, left__4 string, right__5 string) string {
-    var ret7 string
     var t4 string = _goml_inherent_Shape_Shape_name(self__3)
-    var t3 string = left__4 + t4
-    ret7 = t3 + right__5
-    return ret7
+    var t5 string = left__4 + t4
+    var t6 string = t5 + right__5
+    return t6
 }
 
 func announce(shape__6 Shape) struct{} {
-    var ret8 struct{}
     var base__7 string = _goml_inherent_Shape_Shape_name(shape__6)
     var with_suffix__8 string = _goml_inherent_Shape_Shape_rename(shape__6, "!")
     var combined__9 string = _goml_inherent_Shape_Shape_join(shape__6, base__7, with_suffix__8)
     println__T_string(combined__9)
-    ret8 = struct{}{}
-    return ret8
+    return struct{}{}
 }
 
 func main0() struct{} {
-    var ret9 struct{}
     var shape__10 Shape = Shape{}
     announce(shape__10)
-    ret9 = struct{}{}
-    return ret9
+    return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret10 struct{}
-    ret10 = string_println(value__1)
-    return ret10
+    var t7 struct{} = string_println(value__1)
+    return t7
 }
 
 func main() {

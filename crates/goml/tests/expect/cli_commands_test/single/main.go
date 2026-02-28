@@ -10,9 +10,8 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret0 struct{}
-    ret0 = string_println("ok")
-    return ret0
+    var t0 struct{} = string_println("ok")
+    return t0
 }
 
 func main() {

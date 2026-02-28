@@ -367,6 +367,10 @@ impl Expr {
                 .append(RcDoc::space())
                 .append(ctx.expr_to_doc(*expr)),
 
+            hir::Expr::EBreak => RcDoc::text("break"),
+
+            hir::Expr::EContinue => RcDoc::text("continue"),
+
             hir::Expr::ECall { func, args } => {
                 let func_doc = ctx.expr_to_doc(*func);
                 if args.is_empty() {

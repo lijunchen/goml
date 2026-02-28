@@ -1901,6 +1901,8 @@ fn compile_expr(
             body: Box::new(compile_expr(body, genv, gensym, diagnostics)),
             ty: ty.clone(),
         },
+        EBreak { ty } => core::Expr::EBreak { ty: ty.clone() },
+        EContinue { ty } => core::Expr::EContinue { ty: ty.clone() },
         EGo { expr, ty } => core::Expr::EGo {
             expr: Box::new(compile_expr(expr, genv, gensym, diagnostics)),
             ty: ty.clone(),

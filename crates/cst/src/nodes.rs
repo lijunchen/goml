@@ -748,6 +748,8 @@ pub enum Expr {
     MatchExpr(MatchExpr),
     IfExpr(IfExpr),
     WhileExpr(WhileExpr),
+    BreakExpr(BreakExpr),
+    ContinueExpr(ContinueExpr),
     IdentExpr(IdentExpr),
     TupleExpr(TupleExpr),
     ParenExpr(ParenExpr),
@@ -789,6 +791,8 @@ impl CstNode for Expr {
                 | EXPR_PREFIX
                 | EXPR_CLOSURE
                 | EXPR_WHILE
+                | EXPR_BREAK
+                | EXPR_CONTINUE
                 | EXPR_GO
         )
     }
@@ -816,6 +820,8 @@ impl CstNode for Expr {
             EXPR_MATCH => Expr::MatchExpr(MatchExpr { syntax }),
             EXPR_IF => Expr::IfExpr(IfExpr { syntax }),
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
+            EXPR_BREAK => Expr::BreakExpr(BreakExpr { syntax }),
+            EXPR_CONTINUE => Expr::ContinueExpr(ContinueExpr { syntax }),
             EXPR_IDENT => Expr::IdentExpr(IdentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
@@ -853,6 +859,8 @@ impl CstNode for Expr {
             Self::MatchExpr(it) => &it.syntax,
             Self::IfExpr(it) => &it.syntax,
             Self::WhileExpr(it) => &it.syntax,
+            Self::BreakExpr(it) => &it.syntax,
+            Self::ContinueExpr(it) => &it.syntax,
             Self::IdentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
             Self::ParenExpr(it) => &it.syntax,
@@ -1338,6 +1346,26 @@ impl WhileExprBody {
 
 impl_cst_node_simple!(WhileExprBody, MySyntaxKind::EXPR_WHILE_BODY);
 impl_display_via_syntax!(WhileExprBody);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct BreakExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl_cst_node_simple!(BreakExpr, MySyntaxKind::EXPR_BREAK);
+impl_display_via_syntax!(BreakExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ContinueExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl_cst_node_simple!(ContinueExpr, MySyntaxKind::EXPR_CONTINUE);
+impl_display_via_syntax!(ContinueExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

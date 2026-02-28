@@ -71,183 +71,190 @@ type Shape__unit_Origin struct {}
 func (_ Shape__unit_Origin) isShape__unit() {}
 
 func bounce_int(shape__0 Shape__int32) Shape__int32 {
-    var ret57 Shape__int32
-    switch shape__0 := shape__0.(type) {
+    var jp26 Shape__int32
+    switch shape__0.(type) {
     case Shape__int32_Dot:
-        var x0 Point = shape__0._0
+        var x0 Point = shape__0.(Shape__int32_Dot)._0
         var point__1 Point = x0
-        ret57 = Shape__int32_Dot{
+        var t27 Shape__int32 = Shape__int32_Dot{
             _0: point__1,
         }
+        jp26 = t27
     case Shape__int32_Wrapped:
-        var x1 Wrapper__int32 = shape__0._0
+        var x1 Wrapper__int32 = shape__0.(Shape__int32_Wrapped)._0
         var inner__2 Wrapper__int32 = x1
-        ret57 = Shape__int32_Wrapped{
+        var t28 Shape__int32 = Shape__int32_Wrapped{
             _0: inner__2,
         }
+        jp26 = t28
     case Shape__int32_Origin:
-        ret57 = Shape__int32_Origin{}
+        jp26 = Shape__int32_Origin{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret57
+    return jp26
 }
 
 func point32_to_string(point__8 Point) string {
-    var ret60 string
     var mtmp4 Point = point__8
     var x5 int32 = mtmp4.x
     var x6 int32 = mtmp4.y
     var y__10 int32 = x6
     var x__9 int32 = x5
-    var t25 string = int32_to_string(x__9)
-    var with_x__11 string = "Point { x: " + t25
+    var t34 string = int32_to_string(x__9)
+    var with_x__11 string = "Point { x: " + t34
     var with_y_label__12 string = with_x__11 + ", y: "
-    var t26 string = int32_to_string(y__10)
-    var with_y__13 string = with_y_label__12 + t26
-    ret60 = with_y__13 + " }"
-    return ret60
+    var t35 string = int32_to_string(y__10)
+    var with_y__13 string = with_y_label__12 + t35
+    var t36 string = with_y__13 + " }"
+    return t36
 }
 
 func wrapper_int32_to_string(wrapper__14 Wrapper__int32) string {
-    var ret61 string
     var mtmp7 Wrapper__int32 = wrapper__14
     var x8 int32 = mtmp7.value
     var value__15 int32 = x8
-    var t27 string = int32_to_string(value__15)
-    var prefix__16 string = "Wrapper[int32] { value: " + t27
-    ret61 = prefix__16 + " }"
-    return ret61
+    var t37 string = int32_to_string(value__15)
+    var prefix__16 string = "Wrapper[int32] { value: " + t37
+    var t38 string = prefix__16 + " }"
+    return t38
 }
 
 func wrapper_unit_to_string(wrapper__17 Wrapper__unit) string {
-    var ret62 string
     var mtmp9 Wrapper__unit = wrapper__17
     var x10 struct{} = mtmp9.value
     var value__18 struct{} = x10
-    var t28 string = unit_to_string(value__18)
-    var prefix__19 string = "Wrapper[unit] { value: " + t28
-    ret62 = prefix__19 + " }"
-    return ret62
+    var t39 string = unit_to_string(value__18)
+    var prefix__19 string = "Wrapper[unit] { value: " + t39
+    var t40 string = prefix__19 + " }"
+    return t40
 }
 
 func shape_int32_to_string(shape__20 Shape__int32) string {
-    var ret63 string
-    switch shape__20 := shape__20.(type) {
+    var jp42 string
+    switch shape__20.(type) {
     case Shape__int32_Dot:
-        var x11 Point = shape__20._0
+        var x11 Point = shape__20.(Shape__int32_Dot)._0
         var point__21 Point = x11
-        var t29 string = point32_to_string(point__21)
-        var prefix__22 string = "Shape::Dot(" + t29
-        ret63 = prefix__22 + ")"
+        var t43 string = point32_to_string(point__21)
+        var prefix__22 string = "Shape::Dot(" + t43
+        var t44 string = prefix__22 + ")"
+        jp42 = t44
     case Shape__int32_Wrapped:
-        var x12 Wrapper__int32 = shape__20._0
+        var x12 Wrapper__int32 = shape__20.(Shape__int32_Wrapped)._0
         var wrapper__23 Wrapper__int32 = x12
-        var t30 string = wrapper_int32_to_string(wrapper__23)
-        var prefix__24 string = "Shape::Wrapped(" + t30
-        ret63 = prefix__24 + ")"
+        var t45 string = wrapper_int32_to_string(wrapper__23)
+        var prefix__24 string = "Shape::Wrapped(" + t45
+        var t46 string = prefix__24 + ")"
+        jp42 = t46
     case Shape__int32_Origin:
-        ret63 = "Shape::Origin"
+        jp42 = "Shape::Origin"
+    default:
+        panic("non-exhaustive match")
     }
-    return ret63
+    return jp42
 }
 
 func shape_unit_to_string(shape__25 Shape__unit) string {
-    var ret64 string
-    switch shape__25 := shape__25.(type) {
+    var jp48 string
+    switch shape__25.(type) {
     case Shape__unit_Dot:
-        var x13 Point = shape__25._0
+        var x13 Point = shape__25.(Shape__unit_Dot)._0
         var point__26 Point = x13
-        var t31 string = point32_to_string(point__26)
-        var prefix__27 string = "Shape::Dot(" + t31
-        ret64 = prefix__27 + ")"
+        var t49 string = point32_to_string(point__26)
+        var prefix__27 string = "Shape::Dot(" + t49
+        var t50 string = prefix__27 + ")"
+        jp48 = t50
     case Shape__unit_Wrapped:
-        var x14 Wrapper__unit = shape__25._0
+        var x14 Wrapper__unit = shape__25.(Shape__unit_Wrapped)._0
         var wrapper__28 Wrapper__unit = x14
-        var t32 string = wrapper_unit_to_string(wrapper__28)
-        var prefix__29 string = "Shape::Wrapped(" + t32
-        ret64 = prefix__29 + ")"
+        var t51 string = wrapper_unit_to_string(wrapper__28)
+        var prefix__29 string = "Shape::Wrapped(" + t51
+        var t52 string = prefix__29 + ")"
+        jp48 = t52
     case Shape__unit_Origin:
-        ret64 = "Shape::Origin"
+        jp48 = "Shape::Origin"
+    default:
+        panic("non-exhaustive match")
     }
-    return ret64
+    return jp48
 }
 
 func main0() struct{} {
-    var ret65 struct{}
-    var t34 Point = Point{
+    var t53 Point = Point{
         x: 3,
         y: 4,
     }
-    var t33 string = point32_to_string(t34)
-    string_println(t33)
-    var t36 Wrapper__int32 = Wrapper__int32{
+    var t54 string = point32_to_string(t53)
+    string_println(t54)
+    var t55 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t35 string = wrapper_int32_to_string(t36)
-    string_println(t35)
-    var t38 Wrapper__unit = Wrapper__unit{
+    var t56 string = wrapper_int32_to_string(t55)
+    string_println(t56)
+    var t57 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
-    var t37 string = wrapper_unit_to_string(t38)
-    string_println(t37)
-    var t39 Shape__int32 = Shape__int32_Origin{}
-    var bounced_origin__30 Shape__int32 = bounce_int(t39)
-    var t42 Point = Point{
+    var t58 string = wrapper_unit_to_string(t57)
+    string_println(t58)
+    var bounced_origin__30 Shape__int32 = bounce_int(Shape__int32_Origin{})
+    var t59 Point = Point{
         x: 3,
         y: 4,
     }
-    var t41 Shape__int32 = Shape__int32_Dot{
-        _0: t42,
+    var t60 Shape__int32 = Shape__int32_Dot{
+        _0: t59,
     }
-    var t40 string = shape_int32_to_string(t41)
-    string_println(t40)
-    var t45 Wrapper__int32 = Wrapper__int32{
+    var t61 string = shape_int32_to_string(t60)
+    string_println(t61)
+    var t62 Wrapper__int32 = Wrapper__int32{
         value: 7,
     }
-    var t44 Shape__int32 = Shape__int32_Wrapped{
-        _0: t45,
+    var t63 Shape__int32 = Shape__int32_Wrapped{
+        _0: t62,
     }
-    var t43 string = shape_int32_to_string(t44)
-    string_println(t43)
-    var t46 string = shape_int32_to_string(bounced_origin__30)
-    string_println(t46)
-    var t49 Point = Point{
+    var t64 string = shape_int32_to_string(t63)
+    string_println(t64)
+    var t65 string = shape_int32_to_string(bounced_origin__30)
+    string_println(t65)
+    var t66 Point = Point{
         x: 3,
         y: 4,
     }
-    var t48 Shape__unit = Shape__unit_Dot{
-        _0: t49,
+    var t67 Shape__unit = Shape__unit_Dot{
+        _0: t66,
     }
-    var t47 string = shape_unit_to_string(t48)
-    string_println(t47)
-    var t52 Wrapper__unit = Wrapper__unit{
+    var t68 string = shape_unit_to_string(t67)
+    string_println(t68)
+    var t69 Wrapper__unit = Wrapper__unit{
         value: struct{}{},
     }
-    var t51 Shape__unit = Shape__unit_Wrapped{
-        _0: t52,
+    var t70 Shape__unit = Shape__unit_Wrapped{
+        _0: t69,
     }
-    var t50 string = shape_unit_to_string(t51)
-    string_println(t50)
-    var t54 Shape__unit = Shape__unit_Origin{}
-    var t53 string = shape_unit_to_string(t54)
-    string_println(t53)
-    var t56 Shape__int32 = Shape__int32_Origin{}
-    var t55 Shape__int32 = bounce_int(t56)
-    describe__T_int32(t55)
-    ret65 = string_println("struct enums!")
-    return ret65
+    var t71 string = shape_unit_to_string(t70)
+    string_println(t71)
+    var t72 string = shape_unit_to_string(Shape__unit_Origin{})
+    string_println(t72)
+    var t73 Shape__int32 = bounce_int(Shape__int32_Origin{})
+    describe__T_int32(t73)
+    var t74 struct{} = string_println("struct enums!")
+    return t74
 }
 
 func describe__T_int32(shape__7 Shape__int32) int32 {
-    var ret66 int32
+    var jp76 int32
     switch shape__7.(type) {
     case Shape__int32_Dot:
-        ret66 = 1
+        jp76 = 1
     case Shape__int32_Wrapped:
-        ret66 = 2
+        jp76 = 2
     case Shape__int32_Origin:
-        ret66 = 0
+        jp76 = 0
+    default:
+        panic("non-exhaustive match")
     }
-    return ret66
+    return jp76
 }
 
 func main() {

@@ -1,0 +1,46 @@
+fn main() -> unit {
+  let i/0 = ref(0) in
+  join exit5() -> unit {
+    let _wild3 = () in
+    let mtmp4 = println__T_string("done") in
+    ()
+  } in
+  joinrec {
+    join loop6() -> unit {
+      let t7 = ref_get(i/0) in
+      let t8 = (t7 < 10) in
+      if t8 {
+        let t13 = ref_get(i/0) in
+        let t14 = (t13 == 5) in
+        join k9() -> unit {
+          let _wild0 = () in
+          let t10 = ref_get(i/0) in
+          let mtmp1 = println__T_int32(t10) in
+          let t11 = ref_get(i/0) in
+          let t12 = (t11 + 1) in
+          let _wild2 = ref_set(i/0, t12) in
+          jump loop6()
+        } in
+        if t14 {
+          jump exit5()
+        } else {
+          jump k9()
+        }
+      } else {
+        jump exit5()
+      }
+    } in
+  } in
+  jump loop6()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  let t15 = int32_to_string(value/1) in
+  let t16 = string_println(t15) in
+  t16
+}
+
+fn println__T_string(value/1: string) -> unit {
+  let t17 = string_println(value/1) in
+  t17
+}

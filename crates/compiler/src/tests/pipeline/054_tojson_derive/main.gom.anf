@@ -4,14 +4,15 @@ fn inherent#Point#Point#to_json(self/0: Point) -> string {
   let x2 = Point.y(mtmp0) in
   let y/2 = x2 in
   let x/1 = x1 in
-  let t18 = ("{" + "\"x\":") in
-  let t19 = int32_to_string(x/1) in
-  let t17 = (t18 + t19) in
-  let t16 = (t17 + ",") in
-  let t15 = (t16 + "\"y\":") in
-  let t20 = int32_to_string(y/2) in
-  let t14 = (t15 + t20) in
-  (t14 + "}")
+  let t14 = ("{" + "\"x\":") in
+  let t15 = int32_to_string(x/1) in
+  let t16 = (t14 + t15) in
+  let t17 = (t16 + ",") in
+  let t18 = (t17 + "\"y\":") in
+  let t19 = int32_to_string(y/2) in
+  let t20 = (t18 + t19) in
+  let t21 = (t20 + "}") in
+  t21
 }
 
 fn inherent#Person#Person#to_json(self/3: Person) -> string {
@@ -22,30 +23,34 @@ fn inherent#Person#Person#to_json(self/3: Person) -> string {
   let active/6 = x6 in
   let age/5 = x5 in
   let name/4 = x4 in
-  let t28 = ("{" + "\"name\":") in
-  let t29 = json_escape_string(name/4) in
-  let t27 = (t28 + t29) in
-  let t26 = (t27 + ",") in
-  let t25 = (t26 + "\"age\":") in
-  let t30 = int32_to_string(age/5) in
-  let t24 = (t25 + t30) in
-  let t23 = (t24 + ",") in
-  let t22 = (t23 + "\"active\":") in
+  let t22 = ("{" + "\"name\":") in
+  let t23 = json_escape_string(name/4) in
+  let t24 = (t22 + t23) in
+  let t25 = (t24 + ",") in
+  let t26 = (t25 + "\"age\":") in
+  let t27 = int32_to_string(age/5) in
+  let t28 = (t26 + t27) in
+  let t29 = (t28 + ",") in
+  let t30 = (t29 + "\"active\":") in
   let t31 = bool_to_json(active/6) in
-  let t21 = (t22 + t31) in
-  (t21 + "}")
+  let t32 = (t30 + t31) in
+  let t33 = (t32 + "}") in
+  t33
 }
 
 fn inherent#Color#Color#to_json(self/7: Color) -> string {
+  join k34(jp35: string) -> string {
+    jp35
+  } in
   match self/7 {
     Tag_0 => {
-      "{\"tag\":\"Red\"}"
+      jump k34("{\"tag\":\"Red\"}")
     },
     Tag_1 => {
-      "{\"tag\":\"Green\"}"
+      jump k34("{\"tag\":\"Green\"}")
     },
     Tag_2 => {
-      "{\"tag\":\"Blue\"}"
+      jump k34("{\"tag\":\"Blue\"}")
     },
     Tag_3 => {
       let x7 = Color::Rgb._0(self/7) in
@@ -54,15 +59,16 @@ fn inherent#Color#Color#to_json(self/7: Color) -> string {
       let __field2/10 = x9 in
       let __field1/9 = x8 in
       let __field0/8 = x7 in
-      let t37 = int32_to_string(__field0/8) in
-      let t36 = ("{\"tag\":\"Rgb\",\"fields\":[" + t37) in
-      let t35 = (t36 + ",") in
-      let t38 = int32_to_string(__field1/9) in
-      let t34 = (t35 + t38) in
-      let t33 = (t34 + ",") in
-      let t39 = int32_to_string(__field2/10) in
-      let t32 = (t33 + t39) in
-      (t32 + "]}")
+      let t36 = int32_to_string(__field0/8) in
+      let t37 = ("{\"tag\":\"Rgb\",\"fields\":[" + t36) in
+      let t38 = (t37 + ",") in
+      let t39 = int32_to_string(__field1/9) in
+      let t40 = (t38 + t39) in
+      let t41 = (t40 + ",") in
+      let t42 = int32_to_string(__field2/10) in
+      let t43 = (t41 + t42) in
+      let t44 = (t43 + "]}") in
+      jump k34(t44)
     },
   }
 }
@@ -72,13 +78,13 @@ fn main() -> unit {
   let person/12 = Person { name: "Alice", age: 30, active: true } in
   let c1/13 = Tag_0 in
   let c2/14 = Color::Rgb(255, 128, 0) in
-  let t40 = inherent#Point#Point#to_json(p/11) in
-  let _wild10 = string_println(t40) in
-  let t41 = inherent#Person#Person#to_json(person/12) in
-  let _wild11 = string_println(t41) in
-  let t42 = inherent#Color#Color#to_json(c1/13) in
-  let _wild12 = string_println(t42) in
-  let t43 = inherent#Color#Color#to_json(c2/14) in
-  let _wild13 = string_println(t43) in
+  let t45 = inherent#Point#Point#to_json(p/11) in
+  let _wild10 = string_println(t45) in
+  let t46 = inherent#Person#Person#to_json(person/12) in
+  let _wild11 = string_println(t46) in
+  let t47 = inherent#Color#Color#to_json(c1/13) in
+  let _wild12 = string_println(t47) in
+  let t48 = inherent#Color#Color#to_json(c2/14) in
+  let _wild13 = string_println(t48) in
   ()
 }

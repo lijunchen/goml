@@ -39,53 +39,66 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func main0() bool {
-    var ret6 bool
-    var t3 Color = Blue{}
-    var t4 Color = Blue{}
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
-        _0: t3,
-        _1: t4,
+        _0: Blue{},
+        _1: Blue{},
     }
     var x0 Color = a__0._0
     var x1 Color = a__0._1
+    var jp4 bool
     switch x1.(type) {
     case Red:
+        var jp6 bool
         switch x0.(type) {
         case Red:
-            ret6 = true
+            jp6 = true
         case Green:
-            ret6 = false
+            jp6 = false
         case Blue:
-            ret6 = false
+            jp6 = false
+        default:
+            panic("non-exhaustive match")
         }
+        jp4 = jp6
+        return jp4
     case Green:
+        var jp8 bool
         switch x0.(type) {
         case Red:
-            ret6 = true
+            jp8 = true
         case Green:
-            ret6 = false
+            jp8 = false
         case Blue:
-            ret6 = false
+            jp8 = false
+        default:
+            panic("non-exhaustive match")
         }
+        jp4 = jp8
+        return jp4
     case Blue:
+        var jp10 bool
         switch x0.(type) {
         case Red:
-            ret6 = false
+            jp10 = false
         case Green:
-            ret6 = false
+            jp10 = false
         case Blue:
             print__T_bool(true)
-            ret6 = false
+            jp10 = false
+        default:
+            panic("non-exhaustive match")
         }
+        jp4 = jp10
+        return jp4
+    default:
+        panic("non-exhaustive match")
     }
-    return ret6
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var ret7 struct{}
-    var t5 string = bool_to_string(value__0)
-    ret7 = string_print(t5)
-    return ret7
+    var t11 string = bool_to_string(value__0)
+    var t12 struct{} = string_print(t11)
+    return t12
 }
 
 func main() {

@@ -12,44 +12,35 @@ func string_println(s string) struct{} {
 type S struct {}
 
 func _goml_trait_impl_A_S_foo(self__0 S) string {
-    var ret4 string
-    ret4 = "A"
-    return ret4
+    return "A"
 }
 
 func _goml_trait_impl_C_S_bar(self__2 S) string {
-    var ret6 string
-    ret6 = "C"
-    return ret6
+    return "C"
 }
 
 func main0() struct{} {
-    var ret7 struct{}
     var s__5 S = S{}
     var t2 string = pick_a__T_S(s__5)
     println__T_string(t2)
     var t3 string = bar_it__T_S(s__5)
     println__T_string(t3)
-    ret7 = struct{}{}
-    return ret7
+    return struct{}{}
 }
 
 func pick_a__T_S(x__3 S) string {
-    var ret8 string
-    ret8 = _goml_trait_impl_A_S_foo(x__3)
-    return ret8
+    var t4 string = _goml_trait_impl_A_S_foo(x__3)
+    return t4
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret9 struct{}
-    ret9 = string_println(value__1)
-    return ret9
+    var t5 struct{} = string_println(value__1)
+    return t5
 }
 
 func bar_it__T_S(x__4 S) string {
-    var ret10 string
-    ret10 = _goml_trait_impl_C_S_bar(x__4)
-    return ret10
+    var t6 string = _goml_trait_impl_C_S_bar(x__4)
+    return t6
 }
 
 func main() {

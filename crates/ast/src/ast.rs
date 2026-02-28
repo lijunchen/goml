@@ -385,6 +385,12 @@ pub enum Expr {
         body: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
+    EBreak {
+        astptr: MySyntaxNodePtr,
+    },
+    EContinue {
+        astptr: MySyntaxNodePtr,
+    },
     EGo {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,

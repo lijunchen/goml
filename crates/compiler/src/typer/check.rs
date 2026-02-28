@@ -377,6 +377,8 @@ impl Typer {
             hir::Expr::EWhile { cond, body } => {
                 self.infer_while_expr(genv, local_env, diagnostics, cond, body)
             }
+            hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
+            hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, e, func, &args)
@@ -2000,7 +2002,9 @@ impl Typer {
             self.expr_range(cond),
         ));
 
+        self.while_depth += 1;
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
+        self.while_depth -= 1;
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
             tast::Ty::TUnit,
@@ -2010,6 +2014,40 @@ impl Typer {
         tast::Expr::EWhile {
             cond: Box::new(cond_tast),
             body: Box::new(body_tast),
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_break_expr(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        e: hir::ExprId,
+    ) -> tast::Expr {
+        if self.while_depth == 0 {
+            super::util::push_error_with_range(
+                diagnostics,
+                "`break` outside of a while loop",
+                self.expr_range(e),
+            );
+        }
+        tast::Expr::EBreak {
+            ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_continue_expr(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        e: hir::ExprId,
+    ) -> tast::Expr {
+        if self.while_depth == 0 {
+            super::util::push_error_with_range(
+                diagnostics,
+                "`continue` outside of a while loop",
+                self.expr_range(e),
+            );
+        }
+        tast::Expr::EContinue {
             ty: tast::Ty::TUnit,
         }
     }

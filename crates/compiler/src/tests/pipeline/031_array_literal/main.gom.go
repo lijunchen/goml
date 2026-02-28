@@ -10,23 +10,19 @@ func string_print(s string) struct{} {
 }
 
 func make_array() [3]int32 {
-    var ret3 [3]int32
-    ret3 = [3]int32{1, 2, 3}
-    return ret3
+    var t3 [3]int32 = [3]int32{1, 2, 3}
+    return t3
 }
 
 func main0() struct{} {
-    var ret4 struct{}
     make_array()
     print__T_string("array literal")
-    ret4 = struct{}{}
-    return ret4
+    return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var ret5 struct{}
-    ret5 = string_print(value__0)
-    return ret5
+    var t4 struct{} = string_print(value__0)
+    return t4
 }
 
 func main() {

@@ -27,13 +27,10 @@ type Tuple2_int32_int32 struct {
 }
 
 func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple2_int32_int32) string {
-    var ret6 string
-    ret6 = "(?, ?)"
-    return ret6
+    return "(?, ?)"
 }
 
 func main0() struct{} {
-    var ret7 struct{}
     var x__1 int32 = 123
     var t3 string = int32_to_string(x__1)
     string_println(t3)
@@ -46,8 +43,7 @@ func main0() struct{} {
     }
     var t5 string = _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(x__3)
     string_println(t5)
-    ret7 = struct{}{}
-    return ret7
+    return struct{}{}
 }
 
 func main() {

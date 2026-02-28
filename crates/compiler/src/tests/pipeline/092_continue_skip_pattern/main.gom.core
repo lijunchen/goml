@@ -1,0 +1,42 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let i/0 = ref(0) in
+  let _wild4 = while (ref_get(i/0) < 8) {
+      {
+        let _wild0 = ref_set(i/0, (ref_get(i/0) + 1)) in
+        let _wild1 = if (ref_get(i/0) == 3) {
+            {
+              continue
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild2 = if (ref_get(i/0) == 6) {
+            {
+              continue
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let mtmp3 = println(ref_get(i/0)) in
+        {
+          ()
+        }
+      }
+  } in
+  let mtmp5 = println("done") in
+  {
+    ()
+  }
+}

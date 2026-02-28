@@ -258,6 +258,10 @@ impl Expr {
                 .append(RcDoc::space())
                 .append(expr.to_doc(genv)),
 
+            Expr::EBreak { .. } => RcDoc::text("break"),
+
+            Expr::EContinue { .. } => RcDoc::text("continue"),
+
             Expr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(genv);
                 RcDoc::text("(")

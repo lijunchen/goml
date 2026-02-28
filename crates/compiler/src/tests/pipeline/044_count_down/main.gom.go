@@ -36,43 +36,39 @@ type closure_env_main_0 struct {
 type Duration = time.Duration
 
 func main0() struct{} {
-    var ret11 struct{}
     var counter__0 *ref_int32_x = ref__Ref_int32(0)
     var t5 closure_env_main_0 = closure_env_main_0{
         counter_0: counter__0,
     }
     go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t5)
-    var cond12 bool
     for {
-        var t6 int32 = ref_get__Ref_int32(counter__0)
-        cond12 = t6 < 10
-        if !cond12 {
+        var t8 int32 = ref_get__Ref_int32(counter__0)
+        var t9 bool = t8 < 10
+        if !t9 {
             break
         }
+        continue
     }
-    ret11 = struct{}{}
-    return ret11
+    return struct{}{}
 }
 
 func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
-    var ret13 struct{}
     var counter__0 *ref_int32_x = env4.counter_0
-    var cond14 bool
     for {
-        var t7 int32 = ref_get__Ref_int32(counter__0)
-        cond14 = t7 < 10
-        if !cond14 {
+        var t12 int32 = ref_get__Ref_int32(counter__0)
+        var t13 bool = t12 < 10
+        if !t13 {
             break
         }
         string_println("hello")
-        var t8 Duration = time.Duration(1000)
-        time.Sleep(t8)
-        var t10 int32 = ref_get__Ref_int32(counter__0)
-        var t9 int32 = t10 + 1
-        ref_set__Ref_int32(counter__0, t9)
+        var t14 Duration = time.Duration(1000)
+        time.Sleep(t14)
+        var t15 int32 = ref_get__Ref_int32(counter__0)
+        var t16 int32 = t15 + 1
+        ref_set__Ref_int32(counter__0, t16)
+        continue
     }
-    ret13 = struct{}{}
-    return ret13
+    return struct{}{}
 }
 
 func main() {

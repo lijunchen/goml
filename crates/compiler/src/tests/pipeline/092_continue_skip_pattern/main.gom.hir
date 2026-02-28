@@ -1,0 +1,22 @@
+package main
+file main.gom
+  fn main() {
+        let local/1/0 = ref(0i32);
+        while ref_get(i/0) < 8i32 {
+            {
+                ref_set(i/0, ref_get(i/0) + 1i32);
+                if ref_get(i/0) == 3i32 {
+                    continue
+                } else {
+                    ()
+                };
+                if ref_get(i/0) == 6i32 {
+                    continue
+                } else {
+                    ()
+                };
+                let _ = println(ref_get(i/0));
+            }
+        };
+        let _ = println("done");
+    }

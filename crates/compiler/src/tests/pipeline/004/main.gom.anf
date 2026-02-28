@@ -1,47 +1,57 @@
 fn main() -> bool {
-  let t3 = Tag_2 in
-  let t4 = Tag_2 in
-  let a/0 = (t3, t4) in
+  let a/0 = (Tag_2, Tag_2) in
   let x0 = a/0.0 in
   let x1 = a/0.1 in
+  join k3(jp4: bool) -> bool {
+    jp4
+  } in
   match x1 {
     Tag_0 => {
+      join k5(jp6: bool) -> bool {
+        jump k3(jp6)
+      } in
       match x0 {
         Tag_0 => {
-          true
+          jump k5(true)
         },
         Tag_1 => {
-          false
+          jump k5(false)
         },
         Tag_2 => {
-          false
+          jump k5(false)
         },
       }
     },
     Tag_1 => {
+      join k7(jp8: bool) -> bool {
+        jump k3(jp8)
+      } in
       match x0 {
         Tag_0 => {
-          true
+          jump k7(true)
         },
         Tag_1 => {
-          false
+          jump k7(false)
         },
         Tag_2 => {
-          false
+          jump k7(false)
         },
       }
     },
     Tag_2 => {
+      join k9(jp10: bool) -> bool {
+        jump k3(jp10)
+      } in
       match x0 {
         Tag_0 => {
-          false
+          jump k9(false)
         },
         Tag_1 => {
-          false
+          jump k9(false)
         },
         Tag_2 => {
           let mtmp2 = print__T_bool(true) in
-          false
+          jump k9(false)
         },
       }
     },
@@ -49,6 +59,7 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t5 = bool_to_string(value/0) in
-  string_print(t5)
+  let t11 = bool_to_string(value/0) in
+  let t12 = string_print(t11) in
+  t12
 }

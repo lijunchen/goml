@@ -14,15 +14,13 @@ type Buffer struct {
 }
 
 func main0() struct{} {
-    var ret1 struct{}
-    ret1 = print__T_string("array")
-    return ret1
+    var t0 struct{} = print__T_string("array")
+    return t0
 }
 
 func print__T_string(value__0 string) struct{} {
-    var ret2 struct{}
-    ret2 = string_print(value__0)
-    return ret2
+    var t1 struct{} = string_print(value__0)
+    return t1
 }
 
 func main() {

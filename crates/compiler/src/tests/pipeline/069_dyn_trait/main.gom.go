@@ -52,31 +52,29 @@ func dyn__Display__vtable__Point() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    var ret12 string
-    var t6 int32 = self__0.x
-    var t5 string = int32_to_string(t6)
-    var t4 string = "Point(" + t5
-    var t3 string = t4 + ","
-    var t8 int32 = self__0.y
-    var t7 string = int32_to_string(t8)
-    var t2 string = t3 + t7
-    ret12 = t2 + ")"
-    return ret12
+    var t2 int32 = self__0.x
+    var t3 string = int32_to_string(t2)
+    var t4 string = "Point(" + t3
+    var t5 string = t4 + ","
+    var t6 int32 = self__0.y
+    var t7 string = int32_to_string(t6)
+    var t8 string = t5 + t7
+    var t9 string = t8 + ")"
+    return t9
 }
 
 func _goml_trait_impl_Display_Flag_show(self__1 Flag) string {
-    var ret13 string
-    var t9 bool = self__1.value
-    if t9 {
-        ret13 = "Flag(true)"
+    var t12 bool = self__1.value
+    var jp11 string
+    if t12 {
+        jp11 = "Flag(true)"
     } else {
-        ret13 = "Flag(false)"
+        jp11 = "Flag(false)"
     }
-    return ret13
+    return jp11
 }
 
 func main0() struct{} {
-    var ret14 struct{}
     var p__2 Point = Point{
         x: 1,
         y: 2,
@@ -92,12 +90,11 @@ func main0() struct{} {
         data: t__3,
         vtable: dyn__Display__vtable__Flag(),
     }
-    var t10 string = dp__4.vtable.show(dp__4.data)
-    string_println(t10)
-    var t11 string = dt__5.vtable.show(dt__5.data)
-    string_println(t11)
-    ret14 = struct{}{}
-    return ret14
+    var t13 string = dp__4.vtable.show(dp__4.data)
+    string_println(t13)
+    var t14 string = dt__5.vtable.show(dt__5.data)
+    string_println(t14)
+    return struct{}{}
 }
 
 func main() {

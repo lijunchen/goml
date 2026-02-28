@@ -63,6 +63,7 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
             .or_else(|| expr_origin(then_branch))
             .or_else(|| expr_origin(else_branch)),
         tast::Expr::EWhile { cond, body, .. } => expr_origin(cond).or_else(|| expr_origin(body)),
+        tast::Expr::EBreak { .. } | tast::Expr::EContinue { .. } => None,
         tast::Expr::EGo { expr, .. } => expr_origin(expr),
         tast::Expr::EProj { tuple, .. } => expr_origin(tuple),
         tast::Expr::EConstr { args, .. } => args.first().and_then(expr_origin),
@@ -1495,6 +1496,14 @@ impl Typer {
                     body,
                     ty: ty.clone(),
                 }
+            }
+            tast::Expr::EBreak { ty } => {
+                let ty = self.subst_ty(diagnostics, &ty, None);
+                tast::Expr::EBreak { ty }
+            }
+            tast::Expr::EContinue { ty } => {
+                let ty = self.subst_ty(diagnostics, &ty, None);
+                tast::Expr::EContinue { ty }
             }
             tast::Expr::EGo { expr, ty } => {
                 let origin = expr_origin(expr.as_ref());

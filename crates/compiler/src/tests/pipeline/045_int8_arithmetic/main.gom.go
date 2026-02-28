@@ -22,43 +22,33 @@ func string_println(s string) struct{} {
 }
 
 func a_value() int8 {
-    var ret15 int8
-    ret15 = 90
-    return ret15
+    return 90
 }
 
 func b_value() int8 {
-    var ret16 int8
-    ret16 = -20
-    return ret16
+    var t11 int8 = -20
+    return t11
 }
 
 func c_value() int8 {
-    var ret17 int8
-    ret17 = 3
-    return ret17
+    return 3
 }
 
 func show_int8(label__0 string, value__1 int8) struct{} {
-    var ret18 struct{}
     var t12 string = int8_to_string(value__1)
-    var t11 string = label__0 + t12
-    string_println(t11)
-    ret18 = struct{}{}
-    return ret18
+    var t13 string = label__0 + t12
+    string_println(t13)
+    return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
-    var ret19 struct{}
     var t14 string = bool_to_string(value__3)
-    var t13 string = label__2 + t14
-    string_println(t13)
-    ret19 = struct{}{}
-    return ret19
+    var t15 string = label__2 + t14
+    string_println(t15)
+    return struct{}{}
 }
 
 func main0() struct{} {
-    var ret20 struct{}
     var a__4 int8 = a_value()
     var b__5 int8 = b_value()
     var c__6 int8 = c_value()
@@ -77,8 +67,7 @@ func main0() struct{} {
     show_int8("quot=", quot__10)
     show_int8("neg=", neg__11)
     show_bool("b<a=", less__12)
-    ret20 = struct{}{}
-    return ret20
+    return struct{}{}
 }
 
 func main() {

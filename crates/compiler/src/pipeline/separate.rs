@@ -410,6 +410,17 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
     let mut linked = crate::core::File {
         toplevels: Vec::new(),
     };
+
+    let gensym = Gensym::new();
+    let mut compile_diagnostics = Diagnostics::new();
+    let builtin_print_core = crate::compile_match::compile_file(
+        &builtins::builtin_env(),
+        &gensym,
+        &mut compile_diagnostics,
+        &builtins::builtin_print_tast(),
+    );
+    linked.toplevels.extend(builtin_print_core.toplevels);
+
     for pkg in order {
         let unit = by_name
             .get(&pkg)
@@ -417,7 +428,6 @@ pub fn link_cores(cores: Vec<CoreUnit>) -> Result<LinkOutput, CompilationError> 
         linked.toplevels.extend(unit.core_ir.toplevels.clone());
     }
 
-    let gensym = Gensym::new();
     let required_builtin_methods = builtin_inherent::collect_required_builtin_collection_methods(
         std::slice::from_ref(&linked),
     );

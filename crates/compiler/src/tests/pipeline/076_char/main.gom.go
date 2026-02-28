@@ -18,23 +18,22 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret3 struct{}
     var c__0 rune = 65
     var t2 string = char_to_string(c__0)
     string_println(t2)
     var d__1 rune = 98
-    var out__2 string
+    var jp4 string
     switch d__1 {
     case 97:
-        out__2 = "A"
+        jp4 = "A"
     case 98:
-        out__2 = "B"
+        jp4 = "B"
     default:
-        out__2 = "?"
+        jp4 = "?"
     }
+    var out__2 string = jp4
     string_println(out__2)
-    ret3 = struct{}{}
-    return ret3
+    return struct{}{}
 }
 
 func main() {

@@ -33,54 +33,54 @@ type Nothing struct {}
 func (_ Nothing) isMaybe__int32() {}
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    var ret9 string
-    ret9 = "Point"
-    return ret9
+    return "Point"
 }
 
 func _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(self__1 Maybe__int32) string {
-    var ret10 string
-    switch self__1 := self__1.(type) {
+    var jp5 string
+    switch self__1.(type) {
     case Just:
-        var x0 int32 = self__1._0
+        var x0 int32 = self__1.(Just)._0
         var value__2 int32 = x0
-        var t5 string = int32_to_string(value__2)
-        var t4 string = "Just(" + t5
-        ret10 = t4 + ")"
+        var t6 string = int32_to_string(value__2)
+        var t7 string = "Just(" + t6
+        var t8 string = t7 + ")"
+        jp5 = t8
     case Nothing:
-        ret10 = "Nothing"
+        jp5 = "Nothing"
+    default:
+        panic("non-exhaustive match")
     }
-    return ret10
+    return jp5
 }
 
 func make_maybe(flag__3 bool) Maybe__int32 {
-    var ret11 Maybe__int32
+    var jp10 Maybe__int32
     if flag__3 {
-        ret11 = Just{
+        var t11 Maybe__int32 = Just{
             _0: 42,
         }
+        jp10 = t11
     } else {
-        ret11 = Nothing{}
+        jp10 = Nothing{}
     }
-    return ret11
+    return jp10
 }
 
 func main0() struct{} {
-    var ret12 struct{}
     var point__4 Point = Point{
         x: 1,
         y: 2,
     }
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
-    var t6 string = _goml_trait_impl_Display_Point_show(point__4)
-    string_println(t6)
-    var t7 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(some_number__5)
-    string_println(t7)
-    var t8 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(none_number__6)
-    string_println(t8)
-    ret12 = struct{}{}
-    return ret12
+    var t12 string = _goml_trait_impl_Display_Point_show(point__4)
+    string_println(t12)
+    var t13 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(some_number__5)
+    string_println(t13)
+    var t14 string = _goml_trait_impl_Display_Maybe_x5b_int32_x5d__show(none_number__6)
+    string_println(t14)
+    return struct{}{}
 }
 
 func main() {

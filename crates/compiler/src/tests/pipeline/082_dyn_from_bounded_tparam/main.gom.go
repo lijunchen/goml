@@ -31,33 +31,27 @@ func dyn__Display__vtable__S() *dyn__Display_vtable {
 }
 
 func _goml_trait_impl_Display_S_show(self__0 S) string {
-    var ret3 string
-    ret3 = "ok"
-    return ret3
+    return "ok"
 }
 
 func main0() struct{} {
-    var ret4 struct{}
     var t2 S = S{}
     to_dyn__T_S(t2)
     println__T_string("ok")
-    ret4 = struct{}{}
-    return ret4
+    return struct{}{}
 }
 
 func to_dyn__T_S(x__1 S) dyn__Display {
-    var ret5 dyn__Display
-    ret5 = dyn__Display{
+    var t3 dyn__Display = dyn__Display{
         data: x__1,
         vtable: dyn__Display__vtable__S(),
     }
-    return ret5
+    return t3
 }
 
 func println__T_string(value__1 string) struct{} {
-    var ret6 struct{}
-    ret6 = string_println(value__1)
-    return ret6
+    var t4 struct{} = string_println(value__1)
+    return t4
 }
 
 func main() {

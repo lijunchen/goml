@@ -34,6 +34,8 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![if],
     T![match],
     T![while],
+    T![break],
+    T![continue],
     T![|],
     T![||],
     T![go],
@@ -270,6 +272,16 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             p.close(body_marker, MySyntaxKind::EXPR_WHILE_BODY);
 
             p.close(m, MySyntaxKind::EXPR_WHILE)
+        }
+        T![break] => {
+            let m = p.open();
+            p.expect(T![break]);
+            p.close(m, MySyntaxKind::EXPR_BREAK)
+        }
+        T![continue] => {
+            let m = p.open();
+            p.expect(T![continue]);
+            p.close(m, MySyntaxKind::EXPR_CONTINUE)
         }
         T![go] => {
             let m = p.open();

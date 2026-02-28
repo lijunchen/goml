@@ -28,151 +28,155 @@ type PairData struct {
 }
 
 func is_special8(value__0 int8) bool {
-    var ret22 bool
+    var jp6 bool
     switch value__0 {
     case 5:
-        ret22 = true
+        jp6 = true
     case 7:
-        ret22 = true
+        jp6 = true
     default:
-        ret22 = false
+        jp6 = false
     }
-    return ret22
+    return jp6
 }
 
 func is_special16(value__1 int16) bool {
-    var ret23 bool
+    var jp8 bool
     switch value__1 {
     case 1024:
-        ret23 = true
+        jp8 = true
     case 2048:
-        ret23 = true
+        jp8 = true
     default:
-        ret23 = false
+        jp8 = false
     }
-    return ret23
+    return jp8
 }
 
 func is_special32(value__2 int32) bool {
-    var ret24 bool
+    var jp10 bool
     switch value__2 {
     case 4096:
-        ret24 = true
+        jp10 = true
     case 8192:
-        ret24 = true
+        jp10 = true
     default:
-        ret24 = false
+        jp10 = false
     }
-    return ret24
+    return jp10
 }
 
 func is_special64(value__3 int64) bool {
-    var ret25 bool
+    var jp12 bool
     switch value__3 {
     case 16384:
-        ret25 = true
+        jp12 = true
     case 32768:
-        ret25 = true
+        jp12 = true
     default:
-        ret25 = false
+        jp12 = false
     }
-    return ret25
+    return jp12
 }
 
 func match_tuple(values__4 Tuple2_int8_int16) bool {
-    var ret26 bool
     var x0 int8 = values__4._0
     var x1 int16 = values__4._1
+    var jp14 bool
     switch x1 {
     case 2:
+        var jp16 bool
         switch x0 {
         case 1:
-            ret26 = true
+            jp16 = true
         default:
-            ret26 = false
+            jp16 = false
         }
+        jp14 = jp16
+        return jp14
     default:
-        ret26 = false
+        jp14 = false
+        return jp14
     }
-    return ret26
 }
 
 func match_struct(pair__5 PairData) bool {
-    var ret27 bool
     var x2 int32 = pair__5.head
     var x3 int64 = pair__5.tail
+    var jp18 bool
     switch x3 {
     case 200:
+        var jp20 bool
         switch x2 {
         case 100:
-            ret27 = true
+            jp20 = true
         default:
-            ret27 = false
+            jp20 = false
         }
+        jp18 = jp20
+        return jp18
     case 300:
-        ret27 = true
+        jp18 = true
+        return jp18
     default:
-        ret27 = false
+        jp18 = false
+        return jp18
     }
-    return ret27
 }
 
 func report(label__6 string, value__7 bool) string {
-    var ret28 string
-    var t5 string = bool_to_string(value__7)
-    ret28 = label__6 + t5
-    return ret28
+    var t21 string = bool_to_string(value__7)
+    var t22 string = label__6 + t21
+    return t22
 }
 
 func main0() struct{} {
-    var ret29 struct{}
     var tuple_first__8 int8 = 1
     var tuple_second__9 int16 = 2
-    var t6 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var t23 Tuple2_int8_int16 = Tuple2_int8_int16{
         _0: tuple_first__8,
         _1: tuple_second__9,
     }
-    var tuple_result_hit__10 bool = match_tuple(t6)
-    var t7 Tuple2_int8_int16 = Tuple2_int8_int16{
+    var tuple_result_hit__10 bool = match_tuple(t23)
+    var t24 Tuple2_int8_int16 = Tuple2_int8_int16{
         _0: 3,
         _1: 4,
     }
-    var tuple_result_miss__11 bool = match_tuple(t7)
-    var t8 PairData = PairData{
+    var tuple_result_miss__11 bool = match_tuple(t24)
+    var t25 PairData = PairData{
         head: 100,
         tail: 200,
     }
-    var pair_first__12 bool = match_struct(t8)
-    var t9 PairData = PairData{
+    var pair_first__12 bool = match_struct(t25)
+    var t26 PairData = PairData{
         head: 10,
         tail: 300,
     }
-    var pair_second__13 bool = match_struct(t9)
-    var t10 bool = is_special8(5)
-    var part1__14 string = report("int8=", t10)
-    var t11 bool = is_special16(1024)
-    var part2__15 string = report(",int16=", t11)
-    var t12 bool = is_special32(8192)
-    var part3__16 string = report(",int32=", t12)
-    var t13 bool = is_special64(16384)
-    var part4__17 string = report(",int64_a=", t13)
-    var t14 bool = is_special64(32768)
-    var part5__18 string = report(",int64_b=", t14)
+    var pair_second__13 bool = match_struct(t26)
+    var t27 bool = is_special8(5)
+    var part1__14 string = report("int8=", t27)
+    var t28 bool = is_special16(1024)
+    var part2__15 string = report(",int16=", t28)
+    var t29 bool = is_special32(8192)
+    var part3__16 string = report(",int32=", t29)
+    var t30 bool = is_special64(16384)
+    var part4__17 string = report(",int64_a=", t30)
+    var t31 bool = is_special64(32768)
+    var part5__18 string = report(",int64_b=", t31)
     var part6__19 string = report(",tuple_hit=", tuple_result_hit__10)
     var part7__20 string = report(",tuple_miss=", tuple_result_miss__11)
     var part8__21 string = report(",struct_first=", pair_first__12)
     var part9__22 string = report(",struct_second=", pair_second__13)
-    var t21 string = part1__14 + part2__15
-    var t20 string = t21 + part3__16
-    var t19 string = t20 + part4__17
-    var t18 string = t19 + part5__18
-    var t17 string = t18 + part6__19
-    var t16 string = t17 + part7__20
-    var t15 string = t16 + part8__21
-    var message__23 string = t15 + part9__22
+    var t32 string = part1__14 + part2__15
+    var t33 string = t32 + part3__16
+    var t34 string = t33 + part4__17
+    var t35 string = t34 + part5__18
+    var t36 string = t35 + part6__19
+    var t37 string = t36 + part7__20
+    var t38 string = t37 + part8__21
+    var message__23 string = t38 + part9__22
     string_println(message__23)
-    ret29 = struct{}{}
-    return ret29
+    return struct{}{}
 }
 
 func main() {

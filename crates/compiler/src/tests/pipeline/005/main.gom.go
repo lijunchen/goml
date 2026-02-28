@@ -35,12 +35,9 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func main0() struct{} {
-    var ret5 struct{}
-    var t2 Color = Blue{}
-    var t3 Color = Red{}
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
-        _0: t2,
-        _1: t3,
+        _0: Blue{},
+        _1: Red{},
     }
     var x0 Color = a__0._0
     var x1 Color = a__0._1
@@ -48,39 +45,48 @@ func main0() struct{} {
     case Red:
         switch x0.(type) {
         case Red:
-            ret5 = print__T_int32(1)
+            print__T_int32(1)
         case Green:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
         case Blue:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
     case Green:
         switch x0.(type) {
         case Red:
-            ret5 = print__T_int32(0)
+            print__T_int32(0)
         case Green:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
         case Blue:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
     case Blue:
         switch x0.(type) {
         case Red:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
         case Green:
-            ret5 = print__T_int32(3)
+            print__T_int32(3)
         case Blue:
-            ret5 = print__T_int32(2)
+            print__T_int32(2)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret5
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var ret6 struct{}
-    var t4 string = int32_to_string(value__0)
-    ret6 = string_print(t4)
-    return ret6
+    var t15 string = int32_to_string(value__0)
+    var t16 struct{} = string_print(t15)
+    return t16
 }
 
 func main() {

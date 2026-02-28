@@ -34,103 +34,102 @@ type Cons struct {
 func (_ Cons) isIntList() {}
 
 func print_int_list(xs__0 IntList) struct{} {
-    var ret35 struct{}
-    switch xs__0 := xs__0.(type) {
+    switch xs__0.(type) {
     case Nil:
-        ret35 = string_print("Nil")
+        string_print("Nil")
     case Cons:
-        var x0 int32 = xs__0._0
-        var x1 IntList = xs__0._1
+        var x0 int32 = xs__0.(Cons)._0
+        var x1 IntList = xs__0.(Cons)._1
         var xs__2 IntList = x1
         var x__1 int32 = x0
         string_print("Cons")
         string_print("(")
-        var t25 string = int32_to_string(x__1)
-        string_print(t25)
+        var t27 string = int32_to_string(x__1)
+        string_print(t27)
         string_print(", ")
         print_int_list(xs__2)
         string_print(")")
-        ret35 = struct{}{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret35
+    return struct{}{}
 }
 
 func int_list_rev_aux(xs__3 IntList, acc__4 IntList) IntList {
-    var ret36 IntList
-    switch xs__3 := xs__3.(type) {
+    var jp29 IntList
+    switch xs__3.(type) {
     case Nil:
-        ret36 = acc__4
+        jp29 = acc__4
     case Cons:
-        var x8 int32 = xs__3._0
-        var x9 IntList = xs__3._1
+        var x8 int32 = xs__3.(Cons)._0
+        var x9 IntList = xs__3.(Cons)._1
         var tail__6 IntList = x9
         var head__5 int32 = x8
-        var t26 IntList = Cons{
+        var t30 IntList = Cons{
             _0: head__5,
             _1: acc__4,
         }
-        ret36 = int_list_rev_aux(tail__6, t26)
+        var t31 IntList = int_list_rev_aux(tail__6, t30)
+        jp29 = t31
+    default:
+        panic("non-exhaustive match")
     }
-    return ret36
+    return jp29
 }
 
 func int_list_rev(xs__7 IntList) IntList {
-    var ret37 IntList
-    var t27 IntList = Nil{}
-    ret37 = int_list_rev_aux(xs__7, t27)
-    return ret37
+    var t32 IntList = int_list_rev_aux(xs__7, Nil{})
+    return t32
 }
 
 func int_list_length(xs__8 IntList) int32 {
-    var ret38 int32
-    switch xs__8 := xs__8.(type) {
+    var jp34 int32
+    switch xs__8.(type) {
     case Nil:
-        ret38 = 0
+        jp34 = 0
     case Cons:
-        var x11 IntList = xs__8._1
+        var x11 IntList = xs__8.(Cons)._1
         var xs__9 IntList = x11
-        var t28 int32 = int_list_length(xs__9)
-        ret38 = 1 + t28
+        var t35 int32 = int_list_length(xs__9)
+        var t36 int32 = 1 + t35
+        jp34 = t36
+    default:
+        panic("non-exhaustive match")
     }
-    return ret38
+    return jp34
 }
 
 func print_int_list_length(xs__10 IntList) struct{} {
-    var ret39 struct{}
     string_print("Length: ")
-    var t30 int32 = int_list_length(xs__10)
-    var t29 string = int32_to_string(t30)
-    string_println(t29)
-    ret39 = struct{}{}
-    return ret39
+    var t37 int32 = int_list_length(xs__10)
+    var t38 string = int32_to_string(t37)
+    string_println(t38)
+    return struct{}{}
 }
 
 func main0() struct{} {
-    var ret40 struct{}
     var x__11 IntList = Nil{}
     print_int_list(x__11)
     string_println("")
     print_int_list_length(x__11)
-    var t31 IntList = Nil{}
     var x__12 IntList = Cons{
         _0: 1,
-        _1: t31,
+        _1: Nil{},
     }
     print_int_list(x__12)
     string_println("")
     print_int_list_length(x__12)
-    var t34 IntList = Nil{}
-    var t33 IntList = Cons{
+    var t39 IntList = Cons{
         _0: 3,
-        _1: t34,
+        _1: Nil{},
     }
-    var t32 IntList = Cons{
+    var t40 IntList = Cons{
         _0: 2,
-        _1: t33,
+        _1: t39,
     }
     var x__13 IntList = Cons{
         _0: 1,
-        _1: t32,
+        _1: t40,
     }
     print_int_list(x__13)
     string_println("")
@@ -138,8 +137,7 @@ func main0() struct{} {
     var y__14 IntList = int_list_rev(x__13)
     print_int_list(y__14)
     string_println("")
-    ret40 = struct{}{}
-    return ret40
+    return struct{}{}
 }
 
 func main() {

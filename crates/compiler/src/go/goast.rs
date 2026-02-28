@@ -235,6 +235,12 @@ pub enum Stmt {
     Go {
         call: Expr,
     },
+    Label {
+        name: String,
+    },
+    Goto {
+        label: String,
+    },
     VarDecl {
         name: String,
         ty: goty::GoType,
@@ -269,6 +275,7 @@ pub enum Stmt {
         body: Block,
     },
     Break,
+    Continue,
     // switch <expr> { case <value>: ...; default: ... }
     SwitchExpr {
         expr: Expr,

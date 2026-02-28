@@ -1,107 +1,138 @@
 fn is_flag8(value/0: uint8) -> bool {
+  join k3(jp4: bool) -> bool {
+    jp4
+  } in
   match value/0 {
     0 => {
-      true
+      jump k3(true)
     },
     200 => {
-      true
+      jump k3(true)
     },
-    _ => false,
+    _ => {
+      jump k3(false)
+    },
   }
 }
 
 fn is_flag16(value/1: uint16) -> bool {
+  join k5(jp6: bool) -> bool {
+    jp6
+  } in
   match value/1 {
     1024 => {
-      true
+      jump k5(true)
     },
     65000 => {
-      true
+      jump k5(true)
     },
-    _ => false,
+    _ => {
+      jump k5(false)
+    },
   }
 }
 
 fn is_flag32(value/2: uint32) -> bool {
+  join k7(jp8: bool) -> bool {
+    jp8
+  } in
   match value/2 {
     4000000000 => {
-      true
+      jump k7(true)
     },
     1234567890 => {
-      true
+      jump k7(true)
     },
-    _ => false,
+    _ => {
+      jump k7(false)
+    },
   }
 }
 
 fn is_flag64(value/3: uint64) -> bool {
+  join k9(jp10: bool) -> bool {
+    jp10
+  } in
   match value/3 {
     900000000 => {
-      true
+      jump k9(true)
     },
     600000000 => {
-      true
+      jump k9(true)
     },
-    _ => false,
+    _ => {
+      jump k9(false)
+    },
   }
 }
 
 fn match_struct(counter/4: Counter) -> bool {
   let x0 = Counter.start(counter/4) in
   let x1 = Counter.end(counter/4) in
+  join k11(jp12: bool) -> bool {
+    jp12
+  } in
   match x1 {
     900000000 => {
+      join k13(jp14: bool) -> bool {
+        jump k11(jp14)
+      } in
       match x0 {
         4000000000 => {
-          true
+          jump k13(true)
         },
-        _ => false,
+        _ => {
+          jump k13(false)
+        },
       }
     },
     600000000 => {
-      true
+      jump k11(true)
     },
-    _ => false,
+    _ => {
+      jump k11(false)
+    },
   }
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  let t3 = bool_to_string(value/6) in
-  (label/5 + t3)
+  let t15 = bool_to_string(value/6) in
+  let t16 = (label/5 + t15) in
+  t16
 }
 
 fn main() -> unit {
   let counter/7 = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/8 = Counter { start: 12, end: 600000000 } in
-  let t13 = is_flag8(200) in
-  let t12 = report("u8_hit=", t13) in
-  let t15 = is_flag8(15) in
-  let t14 = report(",u8_miss=", t15) in
-  let t11 = (t12 + t14) in
-  let t17 = is_flag16(65000) in
-  let t16 = report(",u16_hit=", t17) in
-  let t10 = (t11 + t16) in
-  let t19 = is_flag16(42) in
-  let t18 = report(",u16_miss=", t19) in
-  let t9 = (t10 + t18) in
-  let t21 = is_flag32(1234567890) in
-  let t20 = report(",u32_hit=", t21) in
-  let t8 = (t9 + t20) in
-  let t23 = is_flag32(99) in
-  let t22 = report(",u32_miss=", t23) in
-  let t7 = (t8 + t22) in
-  let t25 = is_flag64(900000000) in
-  let t24 = report(",u64_hit=", t25) in
-  let t6 = (t7 + t24) in
-  let t27 = is_flag64(700000000) in
-  let t26 = report(",u64_miss=", t27) in
-  let t5 = (t6 + t26) in
-  let t29 = match_struct(counter/7) in
-  let t28 = report(",struct_first=", t29) in
-  let t4 = (t5 + t28) in
-  let t31 = match_struct(alt_counter/8) in
-  let t30 = report(",struct_second=", t31) in
-  let message/9 = (t4 + t30) in
+  let t17 = is_flag8(200) in
+  let t18 = report("u8_hit=", t17) in
+  let t19 = is_flag8(15) in
+  let t20 = report(",u8_miss=", t19) in
+  let t21 = (t18 + t20) in
+  let t22 = is_flag16(65000) in
+  let t23 = report(",u16_hit=", t22) in
+  let t24 = (t21 + t23) in
+  let t25 = is_flag16(42) in
+  let t26 = report(",u16_miss=", t25) in
+  let t27 = (t24 + t26) in
+  let t28 = is_flag32(1234567890) in
+  let t29 = report(",u32_hit=", t28) in
+  let t30 = (t27 + t29) in
+  let t31 = is_flag32(99) in
+  let t32 = report(",u32_miss=", t31) in
+  let t33 = (t30 + t32) in
+  let t34 = is_flag64(900000000) in
+  let t35 = report(",u64_hit=", t34) in
+  let t36 = (t33 + t35) in
+  let t37 = is_flag64(700000000) in
+  let t38 = report(",u64_miss=", t37) in
+  let t39 = (t36 + t38) in
+  let t40 = match_struct(counter/7) in
+  let t41 = report(",struct_first=", t40) in
+  let t42 = (t39 + t41) in
+  let t43 = match_struct(alt_counter/8) in
+  let t44 = report(",struct_second=", t43) in
+  let message/9 = (t42 + t44) in
   let mtmp2 = string_println(message/9) in
   ()
 }

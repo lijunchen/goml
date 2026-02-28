@@ -49,28 +49,31 @@ type Sample64 struct {
 func (_ Sample64) isFloatEvent() {}
 
 func summarize(event__0 FloatEvent) string {
-    var ret21 string
-    switch event__0 := event__0.(type) {
+    var jp8 string
+    switch event__0.(type) {
     case Sample32:
-        var x0 string = event__0._0
-        var x1 float32 = event__0._1
+        var x0 string = event__0.(Sample32)._0
+        var x1 float32 = event__0.(Sample32)._1
         var value__2 float32 = x1
         var label__1 string = x0
-        var t7 string = float32_to_string(value__2)
-        ret21 = label__1 + t7
+        var t9 string = float32_to_string(value__2)
+        var t10 string = label__1 + t9
+        jp8 = t10
     case Sample64:
-        var x2 string = event__0._0
-        var x3 float64 = event__0._1
+        var x2 string = event__0.(Sample64)._0
+        var x3 float64 = event__0.(Sample64)._1
         var value__4 float64 = x3
         var label__3 string = x2
-        var t8 string = float64_to_string(value__4)
-        ret21 = label__3 + t8
+        var t11 string = float64_to_string(value__4)
+        var t12 string = label__3 + t11
+        jp8 = t12
+    default:
+        panic("non-exhaustive match")
     }
-    return ret21
+    return jp8
 }
 
 func compare(values__5 Tuple2_float32_float64) string {
-    var ret22 string
     var x4 float32 = values__5._0
     var x5 float64 = values__5._1
     var right__7 float64 = x5
@@ -79,16 +82,15 @@ func compare(values__5 Tuple2_float32_float64) string {
     var limit64__9 float64 = 5
     var less_left__10 bool = left__6 < limit32__8
     var less_right__11 bool = right__7 < limit64__9
-    var t11 string = bool_to_string(less_left__10)
-    var t10 string = "left<1?=" + t11
-    var t9 string = t10 + ",right<5?="
-    var t12 string = bool_to_string(less_right__11)
-    ret22 = t9 + t12
-    return ret22
+    var t13 string = bool_to_string(less_left__10)
+    var t14 string = "left<1?=" + t13
+    var t15 string = t14 + ",right<5?="
+    var t16 string = bool_to_string(less_right__11)
+    var t17 string = t15 + t16
+    return t17
 }
 
 func main0() struct{} {
-    var ret23 struct{}
     var first_value__12 float32 = 0.5
     var second_value__13 float32 = 2.25
     var third_value__14 float64 = 9.5
@@ -112,18 +114,17 @@ func main0() struct{} {
         _0: 1.5,
         _1: 7.25,
     }
-    var t16 string = summarize(first__15)
-    var t17 string = summarize(second__16)
-    var t15 string = t16 + t17
-    var t18 string = summarize(third__17)
-    var t14 string = t15 + t18
-    var t19 string = compare(tuple__18)
-    var t13 string = t14 + t19
-    var t20 string = compare(tuple_other__19)
-    var message__20 string = t13 + t20
+    var t18 string = summarize(first__15)
+    var t19 string = summarize(second__16)
+    var t20 string = t18 + t19
+    var t21 string = summarize(third__17)
+    var t22 string = t20 + t21
+    var t23 string = compare(tuple__18)
+    var t24 string = t22 + t23
+    var t25 string = compare(tuple_other__19)
+    var message__20 string = t24 + t25
     string_println(message__20)
-    ret23 = struct{}{}
-    return ret23
+    return struct{}{}
 }
 
 func main() {

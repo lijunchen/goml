@@ -19,7 +19,6 @@ type Tuple2_bool_bool struct {
 }
 
 func main0() struct{} {
-    var ret6 struct{}
     var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: true,
@@ -30,23 +29,30 @@ func main0() struct{} {
     case true:
         switch x0 {
         case true:
-            var t2 string = int32_to_string(789)
-            ret6 = string_print(t2)
+            var t4 string = int32_to_string(789)
+            string_print(t4)
         case false:
-            var t3 string = int32_to_string(456)
-            ret6 = string_print(t3)
+            var t6 string = int32_to_string(456)
+            string_print(t6)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
     case false:
         switch x0 {
         case true:
-            var t4 string = int32_to_string(123)
-            ret6 = string_print(t4)
+            var t9 string = int32_to_string(123)
+            string_print(t9)
         case false:
-            var t5 string = int32_to_string(789)
-            ret6 = string_print(t5)
+            var t11 string = int32_to_string(789)
+            string_print(t11)
+        default:
+            panic("non-exhaustive match")
         }
+        return struct{}{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret6
 }
 
 func main() {

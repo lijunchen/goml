@@ -10,46 +10,53 @@ func string_println(s string) struct{} {
 }
 
 func classify(x__0 int32) string {
-    var ret12 string
-    var t6 bool = x__0 < 0
-    if t6 {
-        ret12 = "negative"
+    var t8 bool = x__0 < 0
+    var jp7 string
+    if t8 {
+        jp7 = "negative"
+        return jp7
     } else {
-        var t7 bool = 0 < x__0
-        if t7 {
-            ret12 = "positive"
+        var t11 bool = 0 < x__0
+        var jp10 string
+        if t11 {
+            jp10 = "positive"
         } else {
-            ret12 = "zero"
+            jp10 = "zero"
         }
+        jp7 = jp10
+        return jp7
     }
-    return ret12
 }
 
 func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
-    var ret13 string
-    var t8 bool = a__1 < b__2
-    if t8 {
-        var t9 bool = b__2 < c__3
-        if t9 {
-            ret13 = "ascending"
+    var t14 bool = a__1 < b__2
+    var jp13 string
+    if t14 {
+        var t17 bool = b__2 < c__3
+        var jp16 string
+        if t17 {
+            jp16 = "ascending"
         } else {
-            ret13 = "peak"
+            jp16 = "peak"
         }
+        jp13 = jp16
+        return jp13
     } else {
-        var t10 bool = a__1 < c__3
-        if t10 {
-            ret13 = "valley"
+        var t20 bool = a__1 < c__3
+        var jp19 string
+        if t20 {
+            jp19 = "valley"
         } else {
-            ret13 = "flat"
+            jp19 = "flat"
         }
+        jp13 = jp19
+        return jp13
     }
-    return ret13
 }
 
 func main0() struct{} {
-    var ret14 struct{}
-    var t11 int32 = -42
-    var first__4 string = classify(t11)
+    var t21 int32 = -42
+    var first__4 string = classify(t21)
     var second__5 string = classify(0)
     var third__6 string = classify(17)
     var shape1__7 string = triangle_type(1, 2, 3)
@@ -61,8 +68,7 @@ func main0() struct{} {
     string_println(shape1__7)
     string_println(shape2__8)
     string_println(shape3__9)
-    ret14 = struct{}{}
-    return ret14
+    return struct{}{}
 }
 
 func main() {

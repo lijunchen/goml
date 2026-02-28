@@ -22,7 +22,6 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret11 struct{}
     var vi__0 []int32 = nil
     var vi__1 []int32 = append(vi__0, 42)
     var val_i__2 int32 = vi__1[0]
@@ -48,8 +47,7 @@ func main0() struct{} {
     string_println(t9)
     var t10 string = int32_to_string(len_b__13)
     string_println(t10)
-    ret11 = struct{}{}
-    return ret11
+    return struct{}{}
 }
 
 func main() {

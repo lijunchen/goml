@@ -444,6 +444,14 @@ fn build_expr(
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EWhile { cond, body, ty }
         }
+        hir::Expr::EBreak => {
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::EBreak { ty }
+        }
+        hir::Expr::EContinue => {
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::EContinue { ty }
+        }
         hir::Expr::EGo { expr } => {
             let expr = Box::new(build_expr(hir_table, results, expr));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);

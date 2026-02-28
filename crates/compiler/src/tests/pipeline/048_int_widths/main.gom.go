@@ -22,7 +22,6 @@ func string_println(s string) struct{} {
 }
 
 func main0() struct{} {
-    var ret13 struct{}
     var start16__0 int16 = 300
     var delta16__1 int16 = 45
     var sum16__2 int16 = start16__0 + delta16__1
@@ -35,22 +34,21 @@ func main0() struct{} {
     var step64__9 int64 = 2000000000
     var remain64__10 int64 = big64__8 - step64__9
     var neg64__11 int64 = -step64__9
-    var t8 string = int16_to_string(sum16__2)
-    var t7 string = t8 + ", "
-    var t9 string = int16_to_string(flipped16__3)
-    var t6 string = t7 + t9
-    var t5 string = t6 + "; "
-    var t10 string = int32_to_string(diff32__7)
-    var t4 string = t5 + t10
-    var t3 string = t4 + "; "
-    var t11 string = int64_to_string(remain64__10)
-    var t2 string = t3 + t11
-    var t1 string = t2 + "; "
+    var t1 string = int16_to_string(sum16__2)
+    var t2 string = t1 + ", "
+    var t3 string = int16_to_string(flipped16__3)
+    var t4 string = t2 + t3
+    var t5 string = t4 + "; "
+    var t6 string = int32_to_string(diff32__7)
+    var t7 string = t5 + t6
+    var t8 string = t7 + "; "
+    var t9 string = int64_to_string(remain64__10)
+    var t10 string = t8 + t9
+    var t11 string = t10 + "; "
     var t12 string = int64_to_string(neg64__11)
-    var message__12 string = t1 + t12
+    var message__12 string = t11 + t12
     string_println(message__12)
-    ret13 = struct{}{}
-    return ret13
+    return struct{}{}
 }
 
 func main() {

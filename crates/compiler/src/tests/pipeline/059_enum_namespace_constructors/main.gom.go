@@ -25,34 +25,36 @@ type Yellow struct {}
 func (_ Yellow) isSignal() {}
 
 func color_is_red(color__0 Color) bool {
-    var ret2 bool
+    var jp2 bool
     switch color__0.(type) {
     case Color_Red:
-        ret2 = true
+        jp2 = true
     case Green:
-        ret2 = false
+        jp2 = false
+    default:
+        panic("non-exhaustive match")
     }
-    return ret2
+    return jp2
 }
 
 func toggle_signal(signal__1 Signal) Signal {
-    var ret3 Signal
+    var jp4 Signal
     switch signal__1.(type) {
     case Signal_Red:
-        ret3 = Yellow{}
+        jp4 = Yellow{}
     case Yellow:
-        ret3 = Signal_Red{}
+        jp4 = Signal_Red{}
+    default:
+        panic("non-exhaustive match")
     }
-    return ret3
+    return jp4
 }
 
 func main0() Signal {
-    var ret4 Signal
     var current__2 Color = Color_Red{}
     color_is_red(current__2)
-    var t1 Signal = Signal_Red{}
-    ret4 = toggle_signal(t1)
-    return ret4
+    var t5 Signal = toggle_signal(Signal_Red{})
+    return t5
 }
 
 func main() {

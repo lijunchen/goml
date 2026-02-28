@@ -26,23 +26,23 @@ type Green struct {}
 func (_ Green) is_goml_Lib_x3a__x3a_Color() {}
 
 func main0() struct{} {
-    var ret3 struct{}
-    var t2 _goml_Lib_x3a__x3a_Color = Red{}
-    var t1 int32 = _goml_Lib_x3a__x3a_color_to_int(t2)
-    var t0 string = int32_to_string(t1)
-    ret3 = string_println(t0)
-    return ret3
+    var t0 int32 = _goml_Lib_x3a__x3a_color_to_int(Red{})
+    var t1 string = int32_to_string(t0)
+    var t2 struct{} = string_println(t1)
+    return t2
 }
 
 func _goml_Lib_x3a__x3a_color_to_int(c__0 _goml_Lib_x3a__x3a_Color) int32 {
-    var ret4 int32
+    var jp4 int32
     switch c__0.(type) {
     case Red:
-        ret4 = 1
+        jp4 = 1
     case Green:
-        ret4 = 2
+        jp4 = 2
+    default:
+        panic("non-exhaustive match")
     }
-    return ret4
+    return jp4
 }
 
 func main() {

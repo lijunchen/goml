@@ -1,72 +1,120 @@
 fn match_mixed_pair(pair/0: (int32, string)) -> int32 {
   let x0 = pair/0.0 in
   let x1 = pair/0.1 in
+  join k18(jp19: int32) -> int32 {
+    jp19
+  } in
   match x1 {
     "zero" => {
+      join k20(jp21: int32) -> int32 {
+        jump k18(jp21)
+      } in
       match x0 {
         0 => {
-          1
+          jump k20(1)
         },
-        _ => 4,
+        _ => {
+          jump k20(4)
+        },
       }
     },
     "one" => {
+      join k22(jp23: int32) -> int32 {
+        jump k18(jp23)
+      } in
       match x0 {
         0 => {
-          2
+          jump k22(2)
         },
         1 => {
-          3
+          jump k22(3)
         },
-        _ => 5,
+        _ => {
+          jump k22(5)
+        },
       }
     },
-    _ => match x0 {
-      0 => {
-        2
-      },
-      _ => 5,
+    _ => {
+      join k24(jp25: int32) -> int32 {
+        jump k18(jp25)
+      } in
+      match x0 {
+        0 => {
+          jump k24(2)
+        },
+        _ => {
+          jump k24(5)
+        },
+      }
     },
   }
 }
 
 fn match_mixed_enum(value/1: Mixed) -> int32 {
+  join k26(jp27: int32) -> int32 {
+    jp27
+  } in
   match value/1 {
     Tag_0 => {
       let x2 = Mixed::OnlyInt._0(value/1) in
+      join k28(jp29: int32) -> int32 {
+        jump k26(jp29)
+      } in
       match x2 {
         0 => {
-          6
+          jump k28(6)
         },
-        _ => 7,
+        _ => {
+          jump k28(7)
+        },
       }
     },
     Tag_1 => {
       let x3 = Mixed::OnlyStr._0(value/1) in
+      join k30(jp31: int32) -> int32 {
+        jump k26(jp31)
+      } in
       match x3 {
         "zero" => {
-          8
+          jump k30(8)
         },
-        _ => 9,
+        _ => {
+          jump k30(9)
+        },
       }
     },
     Tag_2 => {
       let x4 = Mixed::Both._0(value/1) in
       let x5 = Mixed::Both._1(value/1) in
+      join k32(jp33: int32) -> int32 {
+        jump k26(jp33)
+      } in
       match x5 {
         "zero" => {
+          join k34(jp35: int32) -> int32 {
+            jump k32(jp35)
+          } in
           match x4 {
             0 => {
-              10
+              jump k34(10)
             },
-            _ => 12,
+            _ => {
+              jump k34(12)
+            },
           }
         },
-        _ => match x4 {
-          0 => {
-            11
-          },
-          _ => 13,
+        _ => {
+          join k36(jp37: int32) -> int32 {
+            jump k32(jp37)
+          } in
+          match x4 {
+            0 => {
+              jump k36(11)
+            },
+            _ => {
+              jump k36(13)
+            },
+          }
         },
       }
     },
@@ -74,56 +122,57 @@ fn match_mixed_enum(value/1: Mixed) -> int32 {
 }
 
 fn main() -> unit {
-  let t20 = (0, "zero") in
-  let t19 = match_mixed_pair(t20) in
-  let t18 = int32_to_string(t19) in
-  let mtmp6 = string_println(t18) in
-  let t23 = (0, "other") in
-  let t22 = match_mixed_pair(t23) in
-  let t21 = int32_to_string(t22) in
-  let mtmp7 = string_println(t21) in
-  let t26 = (1, "one") in
-  let t25 = match_mixed_pair(t26) in
-  let t24 = int32_to_string(t25) in
-  let mtmp8 = string_println(t24) in
-  let t29 = (2, "zero") in
-  let t28 = match_mixed_pair(t29) in
-  let t27 = int32_to_string(t28) in
-  let mtmp9 = string_println(t27) in
-  let t32 = (2, "two") in
-  let t31 = match_mixed_pair(t32) in
-  let t30 = int32_to_string(t31) in
-  let mtmp10 = string_println(t30) in
-  let t35 = Mixed::OnlyInt(0) in
-  let t34 = match_mixed_enum(t35) in
-  let t33 = int32_to_string(t34) in
-  let mtmp11 = string_println(t33) in
-  let t38 = Mixed::OnlyInt(5) in
-  let t37 = match_mixed_enum(t38) in
-  let t36 = int32_to_string(t37) in
-  let mtmp12 = string_println(t36) in
-  let t41 = Mixed::OnlyStr("zero") in
-  let t40 = match_mixed_enum(t41) in
-  let t39 = int32_to_string(t40) in
-  let mtmp13 = string_println(t39) in
-  let t44 = Mixed::OnlyStr("hello") in
-  let t43 = match_mixed_enum(t44) in
-  let t42 = int32_to_string(t43) in
-  let mtmp14 = string_println(t42) in
-  let t47 = Mixed::Both(0, "zero") in
-  let t46 = match_mixed_enum(t47) in
-  let t45 = int32_to_string(t46) in
-  let mtmp15 = string_println(t45) in
-  let t50 = Mixed::Both(0, "hello") in
-  let t49 = match_mixed_enum(t50) in
-  let t48 = int32_to_string(t49) in
-  let mtmp16 = string_println(t48) in
-  let t53 = Mixed::Both(2, "zero") in
-  let t52 = match_mixed_enum(t53) in
-  let t51 = int32_to_string(t52) in
-  let mtmp17 = string_println(t51) in
-  let t56 = Mixed::Both(3, "three") in
-  let t55 = match_mixed_enum(t56) in
-  let t54 = int32_to_string(t55) in
-  string_println(t54)
+  let t38 = (0, "zero") in
+  let t39 = match_mixed_pair(t38) in
+  let t40 = int32_to_string(t39) in
+  let mtmp6 = string_println(t40) in
+  let t41 = (0, "other") in
+  let t42 = match_mixed_pair(t41) in
+  let t43 = int32_to_string(t42) in
+  let mtmp7 = string_println(t43) in
+  let t44 = (1, "one") in
+  let t45 = match_mixed_pair(t44) in
+  let t46 = int32_to_string(t45) in
+  let mtmp8 = string_println(t46) in
+  let t47 = (2, "zero") in
+  let t48 = match_mixed_pair(t47) in
+  let t49 = int32_to_string(t48) in
+  let mtmp9 = string_println(t49) in
+  let t50 = (2, "two") in
+  let t51 = match_mixed_pair(t50) in
+  let t52 = int32_to_string(t51) in
+  let mtmp10 = string_println(t52) in
+  let t53 = Mixed::OnlyInt(0) in
+  let t54 = match_mixed_enum(t53) in
+  let t55 = int32_to_string(t54) in
+  let mtmp11 = string_println(t55) in
+  let t56 = Mixed::OnlyInt(5) in
+  let t57 = match_mixed_enum(t56) in
+  let t58 = int32_to_string(t57) in
+  let mtmp12 = string_println(t58) in
+  let t59 = Mixed::OnlyStr("zero") in
+  let t60 = match_mixed_enum(t59) in
+  let t61 = int32_to_string(t60) in
+  let mtmp13 = string_println(t61) in
+  let t62 = Mixed::OnlyStr("hello") in
+  let t63 = match_mixed_enum(t62) in
+  let t64 = int32_to_string(t63) in
+  let mtmp14 = string_println(t64) in
+  let t65 = Mixed::Both(0, "zero") in
+  let t66 = match_mixed_enum(t65) in
+  let t67 = int32_to_string(t66) in
+  let mtmp15 = string_println(t67) in
+  let t68 = Mixed::Both(0, "hello") in
+  let t69 = match_mixed_enum(t68) in
+  let t70 = int32_to_string(t69) in
+  let mtmp16 = string_println(t70) in
+  let t71 = Mixed::Both(2, "zero") in
+  let t72 = match_mixed_enum(t71) in
+  let t73 = int32_to_string(t72) in
+  let mtmp17 = string_println(t73) in
+  let t74 = Mixed::Both(3, "three") in
+  let t75 = match_mixed_enum(t74) in
+  let t76 = int32_to_string(t75) in
+  let t77 = string_println(t76) in
+  t77
 }

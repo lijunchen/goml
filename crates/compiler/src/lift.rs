@@ -151,6 +151,12 @@ pub enum LiftExpr {
         body: Box<LiftExpr>,
         ty: Ty,
     },
+    EBreak {
+        ty: Ty,
+    },
+    EContinue {
+        ty: Ty,
+    },
     EGo {
         expr: Box<LiftExpr>,
         ty: Ty,
@@ -209,6 +215,8 @@ impl LiftExpr {
             LiftExpr::EMatch { ty, .. } => ty.clone(),
             LiftExpr::EIf { ty, .. } => ty.clone(),
             LiftExpr::EWhile { ty, .. } => ty.clone(),
+            LiftExpr::EBreak { ty, .. } => ty.clone(),
+            LiftExpr::EContinue { ty, .. } => ty.clone(),
             LiftExpr::EGo { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
             LiftExpr::EUnary { ty, .. } => ty.clone(),
@@ -590,6 +598,8 @@ fn rewrite_lift_expr_with_final_types(
             body: Box::new(rewrite_lift_expr_with_final_types(state, scope, *body)),
             ty,
         },
+        LiftExpr::EBreak { ty } => LiftExpr::EBreak { ty },
+        LiftExpr::EContinue { ty } => LiftExpr::EContinue { ty },
         LiftExpr::EGo { expr, ty } => LiftExpr::EGo {
             expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
             ty,
@@ -837,6 +847,8 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
             let body = Box::new(transform_expr(state, scope, *body));
             LiftExpr::EWhile { cond, body, ty }
         }
+        MonoExpr::EBreak { ty } => LiftExpr::EBreak { ty },
+        MonoExpr::EContinue { ty } => LiftExpr::EContinue { ty },
         MonoExpr::EGo { expr, ty } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
             LiftExpr::EGo { expr, ty }
@@ -1228,6 +1240,7 @@ fn collect_captured(
             collect_captured(cond, bound, captured, scope);
             collect_captured(body, bound, captured, scope);
         }
+        LiftExpr::EBreak { .. } | LiftExpr::EContinue { .. } => {}
         LiftExpr::EGo { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }

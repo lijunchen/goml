@@ -1,0 +1,58 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let sum/0 = ref(0) in
+  let i/1 = ref(1) in
+  let _wild3 = while (ref_get(i/1) <= 100) {
+      {
+        let _wild0 = if (ref_get(i/1) == 50) {
+            {
+              break
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild1 = ref_set(sum/0, (ref_get(sum/0) + ref_get(i/1))) in
+        let _wild2 = ref_set(i/1, (ref_get(i/1) + 1)) in
+      }
+  } in
+  let mtmp4 = print("sum up to break: ") in
+  {
+    let mtmp5 = println(ref_get(sum/0)) in
+    {
+      let even_sum/2 = ref(0) in
+      let j/3 = ref(1) in
+      let _wild9 = while (ref_get(j/3) <= 10) {
+          {
+            let cur/4 = ref_get(j/3) in
+            let _wild6 = ref_set(j/3, (cur/4 + 1)) in
+            let _wild8 = if (cur/4 == ((cur/4 / 2) * 2)) {
+                {
+                  let _wild7 = ref_set(even_sum/2, (ref_get(even_sum/2) + cur/4)) in
+                  continue
+                }
+            } else {
+                {
+                  ()
+                }
+            } in
+          }
+      } in
+      let mtmp10 = print("even sum: ") in
+      {
+        let mtmp11 = println(ref_get(even_sum/2)) in
+        {
+          ()
+        }
+      }
+    }
+  }
+}

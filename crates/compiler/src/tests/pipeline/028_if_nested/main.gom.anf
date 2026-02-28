@@ -1,39 +1,54 @@
 fn classify(x/0: int32) -> string {
-  let t6 = (x/0 < 0) in
-  if t6 {
-    "negative"
+  let t8 = (x/0 < 0) in
+  join k6(jp7: string) -> string {
+    jp7
+  } in
+  if t8 {
+    jump k6("negative")
   } else {
-    let t7 = (0 < x/0) in
-    if t7 {
-      "positive"
+    let t11 = (0 < x/0) in
+    join k9(jp10: string) -> string {
+      jump k6(jp10)
+    } in
+    if t11 {
+      jump k9("positive")
     } else {
-      "zero"
+      jump k9("zero")
     }
   }
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
-  let t8 = (a/1 < b/2) in
-  if t8 {
-    let t9 = (b/2 < c/3) in
-    if t9 {
-      "ascending"
+  let t14 = (a/1 < b/2) in
+  join k12(jp13: string) -> string {
+    jp13
+  } in
+  if t14 {
+    let t17 = (b/2 < c/3) in
+    join k15(jp16: string) -> string {
+      jump k12(jp16)
+    } in
+    if t17 {
+      jump k15("ascending")
     } else {
-      "peak"
+      jump k15("peak")
     }
   } else {
-    let t10 = (a/1 < c/3) in
-    if t10 {
-      "valley"
+    let t20 = (a/1 < c/3) in
+    join k18(jp19: string) -> string {
+      jump k12(jp19)
+    } in
+    if t20 {
+      jump k18("valley")
     } else {
-      "flat"
+      jump k18("flat")
     }
   }
 }
 
 fn main() -> unit {
-  let t11 = (-42) in
-  let first/4 = classify(t11) in
+  let t21 = (-42) in
+  let first/4 = classify(t21) in
   let second/5 = classify(0) in
   let third/6 = classify(17) in
   let shape1/7 = triangle_type(1, 2, 3) in

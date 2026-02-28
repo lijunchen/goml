@@ -1409,6 +1409,8 @@ pub enum Expr {
         cond: ExprId,
         body: ExprId,
     },
+    EBreak,
+    EContinue,
     EGo {
         expr: ExprId,
     },

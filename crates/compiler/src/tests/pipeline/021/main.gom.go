@@ -14,75 +14,72 @@ func string_println(s string) struct{} {
 }
 
 func match_int(n__0 int32) int32 {
-    var ret23 int32
+    var jp8 int32
     switch n__0 {
     case 0:
-        ret23 = 10
+        jp8 = 10
     case 1:
-        ret23 = 20
+        jp8 = 20
     default:
-        ret23 = 30
+        jp8 = 30
     }
-    return ret23
+    return jp8
 }
 
 func wildcard_first(n__1 int32) int32 {
-    var ret24 int32
-    ret24 = 40
-    return ret24
+    return 40
 }
 
 func wildcard_middle(n__2 int32) int32 {
-    var ret25 int32
+    var jp10 int32
     switch n__2 {
     case 2:
-        ret25 = 90
+        jp10 = 90
     case 3:
-        ret25 = 100
+        jp10 = 100
     default:
-        ret25 = 100
+        jp10 = 100
     }
-    return ret25
+    return jp10
 }
 
 func repeated(n__3 int32) int32 {
-    var ret26 int32
+    var jp12 int32
     switch n__3 {
     case 1:
-        ret26 = 60
+        jp12 = 60
     default:
-        ret26 = 80
+        jp12 = 80
     }
-    return ret26
+    return jp12
 }
 
 func main0() struct{} {
-    var ret27 struct{}
-    var t8 int32 = match_int(0)
-    var t7 string = int32_to_string(t8)
-    string_println(t7)
-    var t10 int32 = match_int(5)
-    var t9 string = int32_to_string(t10)
-    string_println(t9)
-    var t12 int32 = wildcard_first(0)
-    var t11 string = int32_to_string(t12)
-    string_println(t11)
-    var t14 int32 = wildcard_first(2)
-    var t13 string = int32_to_string(t14)
-    string_println(t13)
-    var t16 int32 = wildcard_middle(2)
-    var t15 string = int32_to_string(t16)
-    string_println(t15)
-    var t18 int32 = wildcard_middle(3)
-    var t17 string = int32_to_string(t18)
-    string_println(t17)
-    var t20 int32 = repeated(1)
-    var t19 string = int32_to_string(t20)
-    string_println(t19)
-    var t22 int32 = repeated(3)
-    var t21 string = int32_to_string(t22)
-    ret27 = string_println(t21)
-    return ret27
+    var t13 int32 = match_int(0)
+    var t14 string = int32_to_string(t13)
+    string_println(t14)
+    var t15 int32 = match_int(5)
+    var t16 string = int32_to_string(t15)
+    string_println(t16)
+    var t17 int32 = wildcard_first(0)
+    var t18 string = int32_to_string(t17)
+    string_println(t18)
+    var t19 int32 = wildcard_first(2)
+    var t20 string = int32_to_string(t19)
+    string_println(t20)
+    var t21 int32 = wildcard_middle(2)
+    var t22 string = int32_to_string(t21)
+    string_println(t22)
+    var t23 int32 = wildcard_middle(3)
+    var t24 string = int32_to_string(t23)
+    string_println(t24)
+    var t25 int32 = repeated(1)
+    var t26 string = int32_to_string(t25)
+    string_println(t26)
+    var t27 int32 = repeated(3)
+    var t28 string = int32_to_string(t27)
+    var t29 struct{} = string_println(t28)
+    return t29
 }
 
 func main() {

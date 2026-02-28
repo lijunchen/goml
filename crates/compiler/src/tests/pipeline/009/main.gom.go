@@ -29,59 +29,65 @@ type B struct {
 func (_ B) isT() {}
 
 func test(t__0 T) struct{} {
-    var ret15 struct{}
-    switch t__0 := t__0.(type) {
+    switch t__0.(type) {
     case A:
-        var t6 string = int32_to_string(1)
-        ret15 = string_print(t6)
+        var t7 string = int32_to_string(1)
+        string_print(t7)
+        return struct{}{}
     case B:
-        var x0 bool = t__0._0
-        var x1 bool = t__0._1
+        var x0 bool = t__0.(B)._0
+        var x1 bool = t__0.(B)._1
         switch x1 {
         case true:
             switch x0 {
             case true:
-                var t7 string = int32_to_string(4)
-                ret15 = string_print(t7)
+                var t11 string = int32_to_string(4)
+                string_print(t11)
             case false:
-                var t8 string = int32_to_string(3)
-                ret15 = string_print(t8)
+                var t13 string = int32_to_string(3)
+                string_print(t13)
+            default:
+                panic("non-exhaustive match")
             }
+            return struct{}{}
         case false:
             switch x0 {
             case true:
-                var t9 string = int32_to_string(4)
-                ret15 = string_print(t9)
+                var t16 string = int32_to_string(4)
+                string_print(t16)
             case false:
-                var t10 string = int32_to_string(2)
-                ret15 = string_print(t10)
+                var t18 string = int32_to_string(2)
+                string_print(t18)
+            default:
+                panic("non-exhaustive match")
             }
+            return struct{}{}
+        default:
+            panic("non-exhaustive match")
         }
+    default:
+        panic("non-exhaustive match")
     }
-    return ret15
 }
 
 func main0() struct{} {
-    var ret16 struct{}
-    var t11 T = B{
+    var t20 T = B{
         _0: true,
         _1: true,
     }
-    test(t11)
-    var t12 T = B{
+    test(t20)
+    var t21 T = B{
         _0: false,
         _1: true,
     }
-    test(t12)
-    var t13 T = B{
+    test(t21)
+    var t22 T = B{
         _0: false,
         _1: false,
     }
-    test(t13)
-    var t14 T = A{}
-    test(t14)
-    ret16 = struct{}{}
-    return ret16
+    test(t22)
+    test(A{})
+    return struct{}{}
 }
 
 func main() {

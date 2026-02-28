@@ -23,75 +23,143 @@ type Tuple2_bool_bool struct {
 }
 
 func main0() struct{} {
-    var ret12 struct{}
     var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,
         _1: false,
     }
     var x0 bool = a__0._0
     var x1 bool = a__0._1
-    var b__1 Tuple2_bool_bool
+    var jp8 Tuple2_bool_bool
     switch x1 {
     case true:
+        var jp23 Tuple2_bool_bool
         switch x0 {
         case true:
-            b__1 = Tuple2_bool_bool{
+            var t24 Tuple2_bool_bool = Tuple2_bool_bool{
                 _0: false,
                 _1: false,
             }
+            jp23 = t24
         case false:
-            b__1 = Tuple2_bool_bool{
+            var t25 Tuple2_bool_bool = Tuple2_bool_bool{
                 _0: true,
                 _1: false,
             }
+            jp23 = t25
+        default:
+            panic("non-exhaustive match")
+        }
+        jp8 = jp23
+        var b__1 Tuple2_bool_bool = jp8
+        var x3 bool = b__1._1
+        var w__2 bool = x3
+        var b_1__3 bool = w__2
+        var mtmp4 Tuple2_bool_bool = Tuple2_bool_bool{
+            _0: true,
+            _1: b_1__3,
+        }
+        var x5 bool = mtmp4._0
+        var x6 bool = mtmp4._1
+        switch x6 {
+        case true:
+            switch x5 {
+            case true:
+                var t13 string = int32_to_string(3)
+                string_print(t13)
+            case false:
+                var t15 string = int32_to_string(1)
+                string_print(t15)
+            default:
+                panic("non-exhaustive match")
+            }
+            var c__4 struct{} = struct{}{}
+            var t10 string = unit_to_string(c__4)
+            var t11 struct{} = string_print(t10)
+            return t11
+        case false:
+            switch x5 {
+            case true:
+                var t18 string = int32_to_string(2)
+                string_print(t18)
+            case false:
+                var t20 string = int32_to_string(0)
+                string_print(t20)
+            default:
+                panic("non-exhaustive match")
+            }
+            var c__4 struct{} = struct{}{}
+            var t10 string = unit_to_string(c__4)
+            var t11 struct{} = string_print(t10)
+            return t11
+        default:
+            panic("non-exhaustive match")
         }
     case false:
+        var jp27 Tuple2_bool_bool
         switch x0 {
         case true:
-            b__1 = Tuple2_bool_bool{
+            var t28 Tuple2_bool_bool = Tuple2_bool_bool{
                 _0: false,
                 _1: true,
             }
+            jp27 = t28
         case false:
-            b__1 = Tuple2_bool_bool{
+            var t29 Tuple2_bool_bool = Tuple2_bool_bool{
                 _0: true,
                 _1: true,
             }
+            jp27 = t29
+        default:
+            panic("non-exhaustive match")
         }
-    }
-    var x3 bool = b__1._1
-    var w__2 bool = x3
-    var b_1__3 bool = w__2
-    var mtmp4 Tuple2_bool_bool = Tuple2_bool_bool{
-        _0: true,
-        _1: b_1__3,
-    }
-    var x5 bool = mtmp4._0
-    var x6 bool = mtmp4._1
-    var c__4 struct{}
-    switch x6 {
-    case true:
-        switch x5 {
+        jp8 = jp27
+        var b__1 Tuple2_bool_bool = jp8
+        var x3 bool = b__1._1
+        var w__2 bool = x3
+        var b_1__3 bool = w__2
+        var mtmp4 Tuple2_bool_bool = Tuple2_bool_bool{
+            _0: true,
+            _1: b_1__3,
+        }
+        var x5 bool = mtmp4._0
+        var x6 bool = mtmp4._1
+        switch x6 {
         case true:
-            var t7 string = int32_to_string(3)
-            c__4 = string_print(t7)
+            switch x5 {
+            case true:
+                var t13 string = int32_to_string(3)
+                string_print(t13)
+            case false:
+                var t15 string = int32_to_string(1)
+                string_print(t15)
+            default:
+                panic("non-exhaustive match")
+            }
+            var c__4 struct{} = struct{}{}
+            var t10 string = unit_to_string(c__4)
+            var t11 struct{} = string_print(t10)
+            return t11
         case false:
-            var t8 string = int32_to_string(1)
-            c__4 = string_print(t8)
+            switch x5 {
+            case true:
+                var t18 string = int32_to_string(2)
+                string_print(t18)
+            case false:
+                var t20 string = int32_to_string(0)
+                string_print(t20)
+            default:
+                panic("non-exhaustive match")
+            }
+            var c__4 struct{} = struct{}{}
+            var t10 string = unit_to_string(c__4)
+            var t11 struct{} = string_print(t10)
+            return t11
+        default:
+            panic("non-exhaustive match")
         }
-    case false:
-        switch x5 {
-        case true:
-            var t9 string = int32_to_string(2)
-            c__4 = string_print(t9)
-        case false:
-            var t10 string = int32_to_string(0)
-            c__4 = string_print(t10)
-        }
+    default:
+        panic("non-exhaustive match")
     }
-    var t11 string = unit_to_string(c__4)
-    ret12 = string_print(t11)
-    return ret12
 }
 
 func main() {

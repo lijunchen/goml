@@ -22,6 +22,7 @@ pub struct Typer {
     pub(crate) reported_unresolved_type_vars: HashSet<TypeVar>,
     pub hir_table: name_resolution::HirTable,
     pub results: TypeckResultsBuilder,
+    pub(crate) while_depth: u32,
 }
 
 impl Typer {
@@ -33,6 +34,7 @@ impl Typer {
             reported_unresolved_type_vars: HashSet::new(),
             hir_table,
             results,
+            while_depth: 0,
         }
     }
 

@@ -1,63 +1,96 @@
 fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
   let x0 = x/0.0 in
   let x1 = x/0.1 in
+  join k12() -> unit {
+    ()
+  } in
   match x1 {
     true => {
       let x2 = y/1.0 in
       let x3 = y/1.1 in
+      join k13() -> unit {
+        jump k12()
+      } in
       match x3 {
         true => {
+          join k14() -> unit {
+            jump k13()
+          } in
           match x2 {
             true => {
-              string_println("case4")
+              let t15 = string_println("case4") in
+              jump k14()
             },
             false => {
-              string_println("case3")
+              let t16 = string_println("case3") in
+              jump k14()
             },
           }
         },
         false => {
-          string_println("case4")
+          let t17 = string_println("case4") in
+          jump k13()
         },
       }
     },
     false => {
+      join k18() -> unit {
+        jump k12()
+      } in
       match x0 {
         true => {
           let x4 = y/1.0 in
           let x5 = y/1.1 in
+          join k19() -> unit {
+            jump k18()
+          } in
           match x5 {
             true => {
+              join k20() -> unit {
+                jump k19()
+              } in
               match x4 {
                 true => {
-                  string_println("case2")
+                  let t21 = string_println("case2") in
+                  jump k20()
                 },
                 false => {
-                  string_println("case1")
+                  let t22 = string_println("case1") in
+                  jump k20()
                 },
               }
             },
             false => {
-              string_println("case2")
+              let t23 = string_println("case2") in
+              jump k19()
             },
           }
         },
         false => {
           let x6 = y/1.0 in
           let x7 = y/1.1 in
+          join k24() -> unit {
+            jump k18()
+          } in
           match x7 {
             true => {
+              join k25() -> unit {
+                jump k24()
+              } in
               match x6 {
                 true => {
-                  string_println("case4")
+                  let t26 = string_println("case4") in
+                  jump k25()
                 },
                 false => {
-                  string_println("case3")
+                  let t27 = string_println("case3") in
+                  jump k25()
                 },
               }
             },
             false => {
-              string_println("case4")
+              let t28 = string_println("case4") in
+              jump k24()
             },
           }
         },
@@ -67,17 +100,17 @@ fn test_nested_match(x/0: (bool, bool), y/1: (bool, bool)) -> unit {
 }
 
 fn main() -> unit {
-  let t12 = (true, false) in
-  let t13 = (false, true) in
-  let mtmp8 = test_nested_match(t12, t13) in
-  let t14 = (true, false) in
-  let t15 = (true, false) in
-  let mtmp9 = test_nested_match(t14, t15) in
-  let t16 = (false, true) in
-  let t17 = (false, true) in
-  let mtmp10 = test_nested_match(t16, t17) in
-  let t18 = (false, true) in
-  let t19 = (true, false) in
-  let mtmp11 = test_nested_match(t18, t19) in
+  let t29 = (true, false) in
+  let t30 = (false, true) in
+  let mtmp8 = test_nested_match(t29, t30) in
+  let t31 = (true, false) in
+  let t32 = (true, false) in
+  let mtmp9 = test_nested_match(t31, t32) in
+  let t33 = (false, true) in
+  let t34 = (false, true) in
+  let mtmp10 = test_nested_match(t33, t34) in
+  let t35 = (false, true) in
+  let t36 = (true, false) in
+  let mtmp11 = test_nested_match(t35, t36) in
   ()
 }

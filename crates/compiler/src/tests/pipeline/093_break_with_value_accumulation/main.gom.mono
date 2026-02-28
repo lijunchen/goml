@@ -1,0 +1,40 @@
+fn main() -> unit {
+  let sum/0 = ref(0) in
+  let i/1 = ref(0) in
+  let _wild3 = while (ref_get(i/1) < 20) {
+      {
+        let _wild0 = ref_set(i/1, (ref_get(i/1) + 1)) in
+        let _wild1 = if (ref_get(i/1) > 5) {
+            {
+              break
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let _wild2 = ref_set(sum/0, (ref_get(sum/0) + ref_get(i/1))) in
+      }
+  } in
+  let mtmp4 = print__T_string("sum: ") in
+  {
+    let mtmp5 = println__T_int32(ref_get(sum/0)) in
+    {
+      let mtmp6 = print__T_string("i at break: ") in
+      {
+        let mtmp7 = println__T_int32(ref_get(i/1)) in
+        {
+          ()
+        }
+      }
+    }
+  }
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  string_println(int32_to_string(value/1))
+}
