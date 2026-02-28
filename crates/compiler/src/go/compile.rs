@@ -1145,7 +1145,21 @@ mod legacy_anf_codegen {
                 }
             }
             anf::CExpr::EArray { items, ty } => {
-                let elems = items.iter().map(|item| compile_imm(goenv, item)).collect();
+                let elem_ty = match ty {
+                    tast::Ty::TArray { elem, .. } => elem.as_ref(),
+                    _ => ty,
+                };
+                let elems = items
+                    .iter()
+                    .map(|item| {
+                        let arg_ty = imm_ty(item);
+                        if needs_closure_to_func_wrap(&arg_ty, elem_ty) {
+                            closure_to_func_lit(goenv, item, elem_ty)
+                        } else {
+                            compile_imm(goenv, item)
+                        }
+                    })
+                    .collect();
                 goast::Expr::ArrayLiteral {
                     elems,
                     ty: tast_ty_to_go_type(ty),
@@ -2911,7 +2925,21 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
             }
         }
         anf::ValueExpr::Array { items, ty } => {
-            let elems = items.iter().map(|item| compile_imm(goenv, item)).collect();
+            let elem_ty = match ty {
+                tast::Ty::TArray { elem, .. } => elem.as_ref(),
+                _ => ty,
+            };
+            let elems = items
+                .iter()
+                .map(|item| {
+                    let arg_ty = imm_ty(item);
+                    if needs_closure_to_func_wrap(&arg_ty, elem_ty) {
+                        closure_to_func_lit(goenv, item, elem_ty)
+                    } else {
+                        compile_imm(goenv, item)
+                    }
+                })
+                .collect();
             CompiledValue {
                 stmts: Vec::new(),
                 expr: goast::Expr::ArrayLiteral {

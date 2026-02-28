@@ -1,0 +1,13 @@
+package main;
+
+fn main() {
+    let fns: [(int32) -> int32; 3] = [|x| x + 1, |x| x * 2, |x| x - 3];
+    let result = ref(10);
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        let f = array_get(fns, ref_get(i));
+        ref_set(result, f(ref_get(result)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println(ref_get(result).to_string());
+}
