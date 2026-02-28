@@ -1253,6 +1253,9 @@ impl<'a> TypeMono<'a> {
             Ty::TRef { elem } => Ty::TRef {
                 elem: Box::new(self.collapse_type_apps(elem)),
             },
+            Ty::TVec { elem } => Ty::TVec {
+                elem: Box::new(self.collapse_type_apps(elem)),
+            },
             _ => ty.clone(),
         }
     }
