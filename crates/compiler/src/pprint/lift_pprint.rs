@@ -300,6 +300,16 @@ impl LiftExpr {
                     .append(rhs_doc)
                     .append(RcDoc::text(")"))
             }
+            LiftExpr::EAssign {
+                name,
+                value,
+                target_ty: _,
+                ty: _,
+            } => RcDoc::text(name.clone())
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc(liftenv)),
             LiftExpr::ECall { func, args, ty: _ } => {
                 let args_doc = RcDoc::intersperse(
                     args.iter().map(|arg| arg.to_doc(liftenv)),

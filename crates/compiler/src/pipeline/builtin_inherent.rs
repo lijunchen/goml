@@ -117,6 +117,9 @@ fn collect_required_builtin_collection_methods_from_expr(
             collect_required_builtin_collection_methods_from_expr(lhs, builtin_keys, required);
             collect_required_builtin_collection_methods_from_expr(rhs, builtin_keys, required);
         }
+        crate::core::Expr::EAssign { value, .. } => {
+            collect_required_builtin_collection_methods_from_expr(value, builtin_keys, required);
+        }
         crate::core::Expr::ECall { func, args, .. } => {
             if let crate::core::Expr::EVar { name, .. } = func.as_ref()
                 && let Some((base, method)) = parse_inherent_method_fn_name(name)

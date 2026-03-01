@@ -485,12 +485,20 @@ pub struct Block {
 #[derive(Debug, Clone)]
 pub enum Stmt {
     Let(LetStmt),
+    Assign(AssignStmt),
     Expr(ExprStmt),
 }
 
 #[derive(Debug, Clone)]
 pub struct LetStmt {
+    pub is_mut: bool,
     pub pat: Pat,
+    pub value: Box<Expr>,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignStmt {
+    pub name: String,
     pub value: Box<Expr>,
 }
 

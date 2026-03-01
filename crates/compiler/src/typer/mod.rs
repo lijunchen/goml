@@ -1,9 +1,9 @@
 use ena::unify::InPlaceUnificationTable;
 use std::collections::{HashMap, HashSet};
 
-use crate::{hir, tast};
 use crate::typer::results::TypeckResultsBuilder;
 use crate::{env::Constraint, tast::TypeVar};
+use crate::{hir, tast};
 
 mod check;
 mod localenv;

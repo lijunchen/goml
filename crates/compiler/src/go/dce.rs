@@ -268,7 +268,10 @@ fn dce_block_with_live(
                 let (body_block, body_live_in) = dce_block_with_live(body, &loop_live_out);
                 live.extend(body_live_in);
                 needs_decl.extend(assigned_vars_in_block(&body_block));
-                out.push(ast::Stmt::Loop { body: body_block, label: label.clone() });
+                out.push(ast::Stmt::Loop {
+                    body: body_block,
+                    label: label.clone(),
+                });
             }
             ast::Stmt::Break => {
                 out.push(ast::Stmt::Break);
@@ -440,11 +443,7 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             args: args.into_iter().map(dce_expr).collect(),
             ty,
         },
-        ast::Expr::FuncLit { params, body, ty } => ast::Expr::FuncLit {
-            params,
-            body,
-            ty,
-        },
+        ast::Expr::FuncLit { params, body, ty } => ast::Expr::FuncLit { params, body, ty },
         // Leaves
         e @ ast::Expr::Nil { .. }
         | e @ ast::Expr::Make { .. }

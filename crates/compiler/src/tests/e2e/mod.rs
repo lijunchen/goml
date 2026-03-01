@@ -42,7 +42,10 @@ pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn collect_main_gom_files(dir: &Path, case_paths: &mut Vec<std::path::PathBuf>) -> anyhow::Result<()> {
+fn collect_main_gom_files(
+    dir: &Path,
+    case_paths: &mut Vec<std::path::PathBuf>,
+) -> anyhow::Result<()> {
     for entry in std::fs::read_dir(dir)? {
         let entry = entry?;
         let path = entry.path();
@@ -91,18 +94,10 @@ fn run_single_e2e_case(p: &Path) -> anyhow::Result<()> {
 
 fn format_compilation_error(err: &CompilationError, input: &str) -> String {
     let lines = match err {
-        CompilationError::Parser { diagnostics } => {
-            format_parser_diagnostics(diagnostics, input)
-        }
-        CompilationError::Lower { diagnostics } => {
-            format_lower_diagnostics(diagnostics)
-        }
-        CompilationError::Typer { diagnostics } => {
-            format_typer_diagnostics(diagnostics, input)
-        }
-        CompilationError::Compile { diagnostics } => {
-            format_compile_diagnostics(diagnostics, input)
-        }
+        CompilationError::Parser { diagnostics } => format_parser_diagnostics(diagnostics, input),
+        CompilationError::Lower { diagnostics } => format_lower_diagnostics(diagnostics),
+        CompilationError::Typer { diagnostics } => format_typer_diagnostics(diagnostics, input),
+        CompilationError::Compile { diagnostics } => format_compile_diagnostics(diagnostics, input),
     };
     let mut result = lines.join("\n");
     if !result.is_empty() {

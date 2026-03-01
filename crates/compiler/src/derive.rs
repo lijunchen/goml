@@ -150,6 +150,7 @@ fn let_stmt(
     attr_ptr: &MySyntaxNodePtr,
 ) -> Stmt {
     Stmt::Let(LetStmt {
+        is_mut: false,
         pat,
         annotation,
         value: Box::new(value),

@@ -1,0 +1,14 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let x/0 = ref(0) in
+  let get/1 = || => ref_get(x/0) in
+  let _wild0 = ref_set(x/0, 41) in
+  let _wild1 = string_println(int32_to_string(get/1())) in
+}

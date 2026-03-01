@@ -57,6 +57,9 @@ fn collect_hints_from_block(
                 }
                 collect_hints_from_expr(hir_table, results, stmt.value, hints);
             }
+            hir::Stmt::Assign(stmt) => {
+                collect_hints_from_expr(hir_table, results, stmt.value, hints);
+            }
             hir::Stmt::Expr(stmt) => {
                 collect_hints_from_expr(hir_table, results, stmt.expr, hints);
             }

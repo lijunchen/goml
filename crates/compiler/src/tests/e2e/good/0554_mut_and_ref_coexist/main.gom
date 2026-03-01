@@ -1,0 +1,17 @@
+package main;
+
+fn main() {
+    let mut local = 1;
+    let cell = ref(10);
+
+    let step = || {
+        local = local + 2;
+        ref_set(cell, ref_get(cell) + 3);
+        local + ref_get(cell)
+    };
+
+    string_println(int32_to_string(step()));
+    string_println(int32_to_string(step()));
+    string_println(int32_to_string(local));
+    string_println(int32_to_string(ref_get(cell)));
+}

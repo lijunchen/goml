@@ -105,6 +105,12 @@ pub enum MonoExpr {
         rhs: Box<MonoExpr>,
         ty: Ty,
     },
+    EAssign {
+        name: String,
+        value: Box<MonoExpr>,
+        target_ty: Ty,
+        ty: Ty,
+    },
     ECall {
         func: Box<MonoExpr>,
         args: Vec<MonoExpr>,
@@ -154,6 +160,7 @@ impl MonoExpr {
             MonoExpr::EConstrGet { ty, .. } => ty.clone(),
             MonoExpr::EUnary { ty, .. } => ty.clone(),
             MonoExpr::EBinary { ty, .. } => ty.clone(),
+            MonoExpr::EAssign { ty, .. } => ty.clone(),
             MonoExpr::ECall { ty, .. } => ty.clone(),
             MonoExpr::EToDyn { ty, .. } => ty.clone(),
             MonoExpr::EDynCall { ty, .. } => ty.clone(),
@@ -700,8 +707,7 @@ fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
         .collect();
 
     for (tn, method_name) in method_keys {
-        let impl_fn_name =
-            trait_impl_fn_name(&TastIdent(tn.clone()), for_ty, &method_name);
+        let impl_fn_name = trait_impl_fn_name(&TastIdent(tn.clone()), for_ty, &method_name);
         if ctx.orig_fns.contains_key(&impl_fn_name) {
             continue;
         }
@@ -863,6 +869,17 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             op,
             lhs: Box::new(mono_expr(ctx, &lhs, s)),
             rhs: Box::new(mono_expr(ctx, &rhs, s)),
+            ty: subst_ty(&ty, s),
+        },
+        core::Expr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => MonoExpr::EAssign {
+            name: name.clone(),
+            value: Box::new(mono_expr(ctx, &value, s)),
+            target_ty: subst_ty(&target_ty, s),
             ty: subst_ty(&ty, s),
         },
         core::Expr::ECall { func, args, ty } => {
@@ -1467,6 +1484,17 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
             rhs: Box::new(rewrite_expr_types(*rhs, m)),
             ty: m.collapse_type_apps(&ty),
         },
+        MonoExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => MonoExpr::EAssign {
+            name,
+            value: Box::new(rewrite_expr_types(*value, m)),
+            target_ty: m.collapse_type_apps(&target_ty),
+            ty: m.collapse_type_apps(&ty),
+        },
         MonoExpr::ECall { func, args, ty } => MonoExpr::ECall {
             func: Box::new(rewrite_expr_types(*func, m)),
             args: args.into_iter().map(|a| rewrite_expr_types(a, m)).collect(),
@@ -1625,6 +1653,20 @@ fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr
             rhs: Box::new(rename_expr_refs(*rhs, renames)),
             ty,
         },
+        MonoExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => {
+            let new_name = renames.get(&name).cloned().unwrap_or(name);
+            MonoExpr::EAssign {
+                name: new_name,
+                value: Box::new(rename_expr_refs(*value, renames)),
+                target_ty,
+                ty,
+            }
+        }
         MonoExpr::EToDyn {
             trait_name,
             for_ty,
@@ -1727,8 +1769,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_block_types(f.body, &mut m);
 
-        let new_name = if let Some((trait_name, _, method_name)) =
-            parse_trait_impl_fn_name(&f.name)
+        let new_name = if let Some((trait_name, _, method_name)) = parse_trait_impl_fn_name(&f.name)
         {
             if let Some(self_param_ty) = params.first().map(|(_, t)| t.clone()) {
                 let candidate = trait_impl_fn_name(
@@ -1737,8 +1778,7 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
                     method_name,
                 );
                 if candidate != f.name {
-                    m.fn_renames
-                        .insert(f.name.clone(), candidate.clone());
+                    m.fn_renames.insert(f.name.clone(), candidate.clone());
                 }
                 candidate
             } else {

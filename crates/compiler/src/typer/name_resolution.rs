@@ -733,10 +733,40 @@ impl NameResolution {
     ) -> hir::LetStmt {
         let new_value = self.resolve_expr(&stmt.value, env, ctx, hir_table);
         let new_pat = self.resolve_pat(&stmt.pat, env, ctx, hir_table);
+        if stmt.is_mut {
+            if let hir::Pat::PVar { name, .. } = hir_table.pat(new_pat) {
+                hir_table.set_local_mutable(*name, true);
+            } else {
+                self.error("`mut` is only supported on simple variable bindings");
+            }
+        }
         hir::LetStmt {
+            is_mut: stmt.is_mut,
             pat: new_pat,
             annotation: stmt.annotation.as_ref().map(|t| t.into()),
             value: new_value,
+        }
+    }
+
+    fn resolve_assign_stmt(
+        &mut self,
+        stmt: &ast::AssignStmt,
+        env: &mut ResolveLocalEnv,
+        ctx: &ResolutionContext,
+        hir_table: &mut HirTable,
+    ) -> hir::AssignStmt {
+        let target = env.rfind(&stmt.name);
+        if target.is_none() {
+            self.error(format!(
+                "assignment target `{}` is not a local variable in scope",
+                stmt.name.0
+            ));
+        }
+        let value = self.resolve_expr(&stmt.value, env, ctx, hir_table);
+        hir::AssignStmt {
+            target,
+            target_name: stmt.name.0.clone(),
+            value,
         }
     }
 
@@ -753,6 +783,11 @@ impl NameResolution {
                 ast::Stmt::Let(stmt) => {
                     stmts.push(hir::Stmt::Let(
                         self.resolve_let_stmt(stmt, env, ctx, hir_table),
+                    ));
+                }
+                ast::Stmt::Assign(stmt) => {
+                    stmts.push(hir::Stmt::Assign(
+                        self.resolve_assign_stmt(stmt, env, ctx, hir_table),
                     ));
                 }
                 ast::Stmt::Expr(stmt) => {

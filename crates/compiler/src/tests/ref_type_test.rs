@@ -70,12 +70,17 @@ fn describe_stmt(stmt: &ast::ast::Stmt) -> String {
                 .as_ref()
                 .map(|ty| format!(": {ty:?}"))
                 .unwrap_or_default();
+            let mut_prefix = if stmt.is_mut { "mut " } else { "" };
             format!(
-                "let {}{} = {}",
+                "let {}{}{} = {}",
+                mut_prefix,
                 describe_pat(&stmt.pat),
                 annotation,
                 describe_expr(&stmt.value)
             )
+        }
+        ast::ast::Stmt::Assign(stmt) => {
+            format!("{} = {}", stmt.name.0, describe_expr(&stmt.value))
         }
         ast::ast::Stmt::Expr(stmt) => describe_expr(&stmt.expr),
     }

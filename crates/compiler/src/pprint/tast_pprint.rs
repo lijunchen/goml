@@ -2,6 +2,7 @@ use pretty::RcDoc;
 
 use crate::env::GlobalTypeEnv;
 use crate::pprint::common_pprint::constructor_to_doc;
+use crate::tast::AssignStmt;
 use crate::tast::ClosureParam;
 use crate::tast::Expr;
 use crate::tast::File;
@@ -120,9 +121,22 @@ impl Fn {
 
 impl LetStmt {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        RcDoc::text("let")
+        let mut doc = RcDoc::text("let").append(RcDoc::space());
+        if self.is_mut {
+            doc = doc.append(RcDoc::text("mut")).append(RcDoc::space());
+        }
+        doc.append(self.pat.to_doc(genv))
             .append(RcDoc::space())
-            .append(self.pat.to_doc(genv))
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(genv))
+            .group()
+    }
+}
+
+impl AssignStmt {
+    pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
+        RcDoc::text(self.name.clone())
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -141,6 +155,7 @@ impl Stmt {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
         match self {
             Self::Let(stmt) => stmt.to_doc(genv),
+            Self::Assign(stmt) => stmt.to_doc(genv),
             Self::Expr(stmt) => stmt.to_doc(genv),
         }
     }

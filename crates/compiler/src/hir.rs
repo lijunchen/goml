@@ -421,6 +421,7 @@ pub struct HirTable {
 pub struct LocalInfo {
     pub hint: String,
     pub origin: LocalKey,
+    pub mutable: bool,
 }
 
 impl HirTable {
@@ -505,6 +506,7 @@ impl HirTable {
         self.local_info.push(LocalInfo {
             hint: hint.to_string(),
             origin: key,
+            mutable: false,
         });
         id
     }
@@ -523,6 +525,7 @@ impl HirTable {
         self.local_info.push(LocalInfo {
             hint: hint.to_string(),
             origin: key,
+            mutable: false,
         });
         id
     }
@@ -554,6 +557,21 @@ impl HirTable {
             LocalKey::AstBinder { ptr, .. } => Some(*ptr),
             LocalKey::Synthetic { .. } => None,
         }
+    }
+
+    pub fn set_local_mutable(&mut self, id: LocalId, mutable: bool) {
+        assert_eq!(id.pkg, self.package);
+        if let Some(info) = self.local_info.get_mut(id.idx as usize) {
+            info.mutable = mutable;
+        }
+    }
+
+    pub fn local_is_mutable(&self, id: LocalId) -> bool {
+        assert_eq!(id.pkg, self.package);
+        self.local_info
+            .get(id.idx as usize)
+            .map(|info| info.mutable)
+            .unwrap_or(false)
     }
 
     pub fn alloc_def(&mut self, name: String, kind: DefKind, def: Def) -> DefId {
@@ -1306,13 +1324,22 @@ pub struct Block {
 #[derive(Debug, Clone)]
 pub enum Stmt {
     Let(LetStmt),
+    Assign(AssignStmt),
     Expr(ExprStmt),
 }
 
 #[derive(Debug, Clone)]
 pub struct LetStmt {
+    pub is_mut: bool,
     pub pat: PatId,
     pub annotation: Option<TypeExpr>,
+    pub value: ExprId,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignStmt {
+    pub target: Option<LocalId>,
+    pub target_name: String,
     pub value: ExprId,
 }
 

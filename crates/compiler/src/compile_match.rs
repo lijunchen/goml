@@ -12,7 +12,7 @@ use diagnostics::{Diagnostic, Diagnostics, Severity, Stage};
 use text_size::TextRange;
 
 use indexmap::IndexMap;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 #[derive(Debug, Clone)]
@@ -74,6 +74,7 @@ fn move_variable_patterns(row: &mut Row) {
             row.body = EBlock {
                 block: Box::new(tast::Block {
                     stmts: vec![tast::Stmt::Let(tast::LetStmt {
+                        is_mut: false,
                         pat: Pat::PVar {
                             name: name.clone(),
                             ty: ty.clone(),
@@ -1207,7 +1208,9 @@ fn compile_float_case(
         if let Some(col) = row.remove_column(&bvar.name) {
             let col_range = pat_range(&col.pat).or(match_range);
             match col.pat {
-                Pat::PPrim { ref value, ty: _, .. } => {
+                Pat::PPrim {
+                    ref value, ty: _, ..
+                } => {
                     let bits = match &literal_ty {
                         Ty::TFloat32 => value.as_float32().map(|v| v.to_bits() as u64),
                         Ty::TFloat64 => value.as_float64().map(|v| v.to_bits()),
@@ -1706,6 +1709,465 @@ fn prepend_lets_to_expr(let_stmts: Vec<core::LetStmt>, body: core::Expr, ty: &Ty
     }
 }
 
+type HiddenMutCells = HashMap<String, Ty>;
+
+fn collect_hidden_mut_cells(block: &tast::Block) -> HiddenMutCells {
+    let mut mutable_bindings = HashMap::new();
+    collect_mutable_bindings_block(block, &mut mutable_bindings);
+
+    let mut captured = HashSet::new();
+    collect_captured_names_block(block, &mut captured);
+
+    mutable_bindings.retain(|name, _| captured.contains(name));
+    mutable_bindings
+}
+
+fn collect_mutable_bindings_block(block: &tast::Block, mutable_bindings: &mut HiddenMutCells) {
+    for stmt in &block.stmts {
+        match stmt {
+            tast::Stmt::Let(tast::LetStmt { is_mut, pat, value }) => {
+                if *is_mut && let Pat::PVar { name, ty, .. } = pat {
+                    mutable_bindings.insert(name.clone(), ty.clone());
+                }
+                collect_mutable_bindings_expr(value, mutable_bindings);
+            }
+            tast::Stmt::Assign(tast::AssignStmt { value, .. }) => {
+                collect_mutable_bindings_expr(value, mutable_bindings);
+            }
+            tast::Stmt::Expr(tast::ExprStmt { expr }) => {
+                collect_mutable_bindings_expr(expr, mutable_bindings);
+            }
+        }
+    }
+    if let Some(tail) = &block.tail {
+        collect_mutable_bindings_expr(tail, mutable_bindings);
+    }
+}
+
+fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCells) {
+    match expr {
+        EVar { .. }
+        | EPrim { .. }
+        | EBreak { .. }
+        | EContinue { .. }
+        | ETraitMethod { .. }
+        | EDynTraitMethod { .. }
+        | EInherentMethod { .. } => {}
+        EConstr { args, .. } => {
+            for arg in args {
+                collect_mutable_bindings_expr(arg, mutable_bindings);
+            }
+        }
+        ETuple { items, .. } | EArray { items, .. } => {
+            for item in items {
+                collect_mutable_bindings_expr(item, mutable_bindings);
+            }
+        }
+        EClosure { body, .. } => {
+            collect_mutable_bindings_expr(body, mutable_bindings);
+        }
+        EBlock { block, .. } => {
+            collect_mutable_bindings_block(block, mutable_bindings);
+        }
+        EMatch { expr, arms, .. } => {
+            collect_mutable_bindings_expr(expr, mutable_bindings);
+            for arm in arms {
+                collect_mutable_bindings_expr(&arm.body, mutable_bindings);
+            }
+        }
+        EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            collect_mutable_bindings_expr(cond, mutable_bindings);
+            collect_mutable_bindings_expr(then_branch, mutable_bindings);
+            collect_mutable_bindings_expr(else_branch, mutable_bindings);
+        }
+        EWhile { cond, body, .. } => {
+            collect_mutable_bindings_expr(cond, mutable_bindings);
+            collect_mutable_bindings_expr(body, mutable_bindings);
+        }
+        EGo { expr, .. } => {
+            collect_mutable_bindings_expr(expr, mutable_bindings);
+        }
+        ECall { func, args, .. } => {
+            collect_mutable_bindings_expr(func, mutable_bindings);
+            for arg in args {
+                collect_mutable_bindings_expr(arg, mutable_bindings);
+            }
+        }
+        EUnary { expr, .. }
+        | EProj { tuple: expr, .. }
+        | EField { expr, .. }
+        | EToDyn { expr, .. } => {
+            collect_mutable_bindings_expr(expr, mutable_bindings);
+        }
+        EBinary { lhs, rhs, .. } => {
+            collect_mutable_bindings_expr(lhs, mutable_bindings);
+            collect_mutable_bindings_expr(rhs, mutable_bindings);
+        }
+    }
+}
+
+fn collect_captured_names_block(block: &tast::Block, captured: &mut HashSet<String>) {
+    for stmt in &block.stmts {
+        match stmt {
+            tast::Stmt::Let(tast::LetStmt { value, .. }) => {
+                collect_captured_names_expr(value, captured)
+            }
+            tast::Stmt::Assign(tast::AssignStmt { value, .. }) => {
+                collect_captured_names_expr(value, captured);
+            }
+            tast::Stmt::Expr(tast::ExprStmt { expr }) => {
+                collect_captured_names_expr(expr, captured)
+            }
+        }
+    }
+    if let Some(tail) = &block.tail {
+        collect_captured_names_expr(tail, captured);
+    }
+}
+
+fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
+    match expr {
+        EVar { .. }
+        | EPrim { .. }
+        | EBreak { .. }
+        | EContinue { .. }
+        | ETraitMethod { .. }
+        | EDynTraitMethod { .. }
+        | EInherentMethod { .. } => {}
+        EConstr { args, .. } => {
+            for arg in args {
+                collect_captured_names_expr(arg, captured);
+            }
+        }
+        ETuple { items, .. } | EArray { items, .. } => {
+            for item in items {
+                collect_captured_names_expr(item, captured);
+            }
+        }
+        EClosure { body, captures, .. } => {
+            for (name, _) in captures {
+                captured.insert(name.clone());
+            }
+            collect_captured_names_expr(body, captured);
+        }
+        EBlock { block, .. } => {
+            collect_captured_names_block(block, captured);
+        }
+        EMatch { expr, arms, .. } => {
+            collect_captured_names_expr(expr, captured);
+            for arm in arms {
+                collect_captured_names_expr(&arm.body, captured);
+            }
+        }
+        EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ..
+        } => {
+            collect_captured_names_expr(cond, captured);
+            collect_captured_names_expr(then_branch, captured);
+            collect_captured_names_expr(else_branch, captured);
+        }
+        EWhile { cond, body, .. } => {
+            collect_captured_names_expr(cond, captured);
+            collect_captured_names_expr(body, captured);
+        }
+        EGo { expr, .. } => {
+            collect_captured_names_expr(expr, captured);
+        }
+        ECall { func, args, .. } => {
+            collect_captured_names_expr(func, captured);
+            for arg in args {
+                collect_captured_names_expr(arg, captured);
+            }
+        }
+        EUnary { expr, .. }
+        | EProj { tuple: expr, .. }
+        | EField { expr, .. }
+        | EToDyn { expr, .. } => {
+            collect_captured_names_expr(expr, captured);
+        }
+        EBinary { lhs, rhs, .. } => {
+            collect_captured_names_expr(lhs, captured);
+            collect_captured_names_expr(rhs, captured);
+        }
+    }
+}
+
+fn hidden_cell_ty(inner_ty: &Ty) -> Ty {
+    Ty::TRef {
+        elem: Box::new(inner_ty.clone()),
+    }
+}
+
+fn hidden_cell_var(name: &str, inner_ty: &Ty) -> core::Expr {
+    core::Expr::EVar {
+        name: name.to_string(),
+        ty: hidden_cell_ty(inner_ty),
+    }
+}
+
+fn hidden_ref_alloc(value: core::Expr, inner_ty: &Ty) -> core::Expr {
+    let ref_ty = hidden_cell_ty(inner_ty);
+    core::Expr::ECall {
+        func: Box::new(core::Expr::EVar {
+            name: "ref".to_string(),
+            ty: Ty::TFunc {
+                params: vec![inner_ty.clone()],
+                ret_ty: Box::new(ref_ty.clone()),
+            },
+        }),
+        args: vec![value],
+        ty: ref_ty,
+    }
+}
+
+fn hidden_ref_get(name: &str, inner_ty: &Ty) -> core::Expr {
+    let ref_ty = hidden_cell_ty(inner_ty);
+    core::Expr::ECall {
+        func: Box::new(core::Expr::EVar {
+            name: "ref_get".to_string(),
+            ty: Ty::TFunc {
+                params: vec![ref_ty.clone()],
+                ret_ty: Box::new(inner_ty.clone()),
+            },
+        }),
+        args: vec![hidden_cell_var(name, inner_ty)],
+        ty: inner_ty.clone(),
+    }
+}
+
+fn hidden_ref_set(name: &str, inner_ty: &Ty, value: core::Expr) -> core::Expr {
+    let ref_ty = hidden_cell_ty(inner_ty);
+    core::Expr::ECall {
+        func: Box::new(core::Expr::EVar {
+            name: "ref_set".to_string(),
+            ty: Ty::TFunc {
+                params: vec![ref_ty.clone(), inner_ty.clone()],
+                ret_ty: Box::new(Ty::TUnit),
+            },
+        }),
+        args: vec![hidden_cell_var(name, inner_ty), value],
+        ty: Ty::TUnit,
+    }
+}
+
+fn lower_hidden_mut_block(block: core::Block, hidden_mut_cells: &HiddenMutCells) -> core::Block {
+    let stmts = block
+        .stmts
+        .into_iter()
+        .map(|stmt| lower_hidden_mut_let(stmt, hidden_mut_cells))
+        .collect();
+    let tail = block
+        .tail
+        .map(|tail| Box::new(lower_hidden_mut_expr(*tail, hidden_mut_cells)));
+    core::Block { stmts, tail }
+}
+
+fn lower_hidden_mut_let(stmt: core::LetStmt, hidden_mut_cells: &HiddenMutCells) -> core::LetStmt {
+    let core::LetStmt { name, value, ty } = stmt;
+    let value = lower_hidden_mut_expr(value, hidden_mut_cells);
+    if let Some(inner_ty) = hidden_mut_cells.get(&name) {
+        core::LetStmt {
+            name,
+            value: hidden_ref_alloc(value, inner_ty),
+            ty: hidden_cell_ty(inner_ty),
+        }
+    } else {
+        core::LetStmt { name, value, ty }
+    }
+}
+
+fn lower_hidden_mut_expr(expr: core::Expr, hidden_mut_cells: &HiddenMutCells) -> core::Expr {
+    match expr {
+        core::Expr::EVar { name, ty } => {
+            if let Some(inner_ty) = hidden_mut_cells.get(&name) {
+                hidden_ref_get(&name, inner_ty)
+            } else {
+                core::Expr::EVar { name, ty }
+            }
+        }
+        core::Expr::EPrim { value, ty } => core::Expr::EPrim { value, ty },
+        core::Expr::EConstr {
+            constructor,
+            args,
+            ty,
+        } => core::Expr::EConstr {
+            constructor,
+            args: args
+                .into_iter()
+                .map(|arg| lower_hidden_mut_expr(arg, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::ETuple { items, ty } => core::Expr::ETuple {
+            items: items
+                .into_iter()
+                .map(|item| lower_hidden_mut_expr(item, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::EArray { items, ty } => core::Expr::EArray {
+            items: items
+                .into_iter()
+                .map(|item| lower_hidden_mut_expr(item, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::EClosure { params, body, ty } => core::Expr::EClosure {
+            params,
+            body: Box::new(lower_hidden_mut_expr(*body, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EBlock { block, ty } => core::Expr::EBlock {
+            block: Box::new(lower_hidden_mut_block(*block, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EMatch {
+            expr,
+            arms,
+            default,
+            ty,
+        } => core::Expr::EMatch {
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            arms: arms
+                .into_iter()
+                .map(|arm| core::Arm {
+                    lhs: lower_hidden_mut_expr(arm.lhs, hidden_mut_cells),
+                    body: lower_hidden_mut_expr(arm.body, hidden_mut_cells),
+                })
+                .collect(),
+            default: default
+                .map(|default| Box::new(lower_hidden_mut_expr(*default, hidden_mut_cells))),
+            ty,
+        },
+        core::Expr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ty,
+        } => core::Expr::EIf {
+            cond: Box::new(lower_hidden_mut_expr(*cond, hidden_mut_cells)),
+            then_branch: Box::new(lower_hidden_mut_expr(*then_branch, hidden_mut_cells)),
+            else_branch: Box::new(lower_hidden_mut_expr(*else_branch, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EWhile { cond, body, ty } => core::Expr::EWhile {
+            cond: Box::new(lower_hidden_mut_expr(*cond, hidden_mut_cells)),
+            body: Box::new(lower_hidden_mut_expr(*body, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EBreak { ty } => core::Expr::EBreak { ty },
+        core::Expr::EContinue { ty } => core::Expr::EContinue { ty },
+        core::Expr::EGo { expr, ty } => core::Expr::EGo {
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EConstrGet {
+            expr,
+            constructor,
+            field_index,
+            ty,
+        } => core::Expr::EConstrGet {
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            constructor,
+            field_index,
+            ty,
+        },
+        core::Expr::EUnary { op, expr, ty } => core::Expr::EUnary {
+            op,
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EBinary { op, lhs, rhs, ty } => core::Expr::EBinary {
+            op,
+            lhs: Box::new(lower_hidden_mut_expr(*lhs, hidden_mut_cells)),
+            rhs: Box::new(lower_hidden_mut_expr(*rhs, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => {
+            let value = lower_hidden_mut_expr(*value, hidden_mut_cells);
+            if let Some(inner_ty) = hidden_mut_cells.get(&name) {
+                hidden_ref_set(&name, inner_ty, value)
+            } else {
+                core::Expr::EAssign {
+                    name,
+                    value: Box::new(value),
+                    target_ty,
+                    ty,
+                }
+            }
+        }
+        core::Expr::ECall { func, args, ty } => core::Expr::ECall {
+            func: Box::new(lower_hidden_mut_expr(*func, hidden_mut_cells)),
+            args: args
+                .into_iter()
+                .map(|arg| lower_hidden_mut_expr(arg, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => core::Expr::EToDyn {
+            trait_name,
+            for_ty,
+            expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
+            ty,
+        },
+        core::Expr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => core::Expr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(lower_hidden_mut_expr(*receiver, hidden_mut_cells)),
+            args: args
+                .into_iter()
+                .map(|arg| lower_hidden_mut_expr(arg, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::ETraitCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => core::Expr::ETraitCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(lower_hidden_mut_expr(*receiver, hidden_mut_cells)),
+            args: args
+                .into_iter()
+                .map(|arg| lower_hidden_mut_expr(arg, hidden_mut_cells))
+                .collect(),
+            ty,
+        },
+        core::Expr::EProj { tuple, index, ty } => core::Expr::EProj {
+            tuple: Box::new(lower_hidden_mut_expr(*tuple, hidden_mut_cells)),
+            index,
+            ty,
+        },
+    }
+}
+
 pub fn compile_file(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -1734,7 +2196,15 @@ pub fn compile_file(
                             .map(|(name, ty)| (name.clone(), ty.clone()))
                             .collect(),
                         ret_ty: m.ret_ty.clone(),
-                        body: compile_block(&m.body, &m.ret_ty, genv, gensym, diagnostics),
+                        body: {
+                            let hidden_mut_cells = collect_hidden_mut_cells(&m.body);
+                            let body = compile_block(&m.body, &m.ret_ty, genv, gensym, diagnostics);
+                            if hidden_mut_cells.is_empty() {
+                                body
+                            } else {
+                                lower_hidden_mut_block(body, &hidden_mut_cells)
+                            }
+                        },
                     };
 
                     toplevels.push(f);
@@ -1750,7 +2220,15 @@ pub fn compile_file(
                         .map(|(name, ty)| (name.clone(), ty.clone()))
                         .collect(),
                     ret_ty: f.ret_ty.clone(),
-                    body: compile_block(&f.body, &f.ret_ty, genv, gensym, diagnostics),
+                    body: {
+                        let hidden_mut_cells = collect_hidden_mut_cells(&f.body);
+                        let body = compile_block(&f.body, &f.ret_ty, genv, gensym, diagnostics);
+                        if hidden_mut_cells.is_empty() {
+                            body
+                        } else {
+                            lower_hidden_mut_block(body, &hidden_mut_cells)
+                        }
+                    },
                 });
             }
             tast::Item::ExternGo(_) => {}
@@ -1814,6 +2292,7 @@ fn compile_block_parts(
                     astptr: _,
                 },
             value,
+            ..
         }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let mut rest_block = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
@@ -1829,7 +2308,7 @@ fn compile_block_parts(
                 tail: rest_block.tail,
             }
         }
-        tast::Stmt::Let(tast::LetStmt { pat, value }) => {
+        tast::Stmt::Let(tast::LetStmt { pat, value, .. }) => {
             let core_value = compile_expr(value, genv, gensym, diagnostics);
             let x = gensym.gensym("mtmp");
             let body_expr = block_expr_from_parts(rest, tail, ty);
@@ -1880,6 +2359,28 @@ fn compile_block_parts(
                     ty,
                     None,
                 ))),
+            }
+        }
+        tast::Stmt::Assign(tast::AssignStmt { name, value }) => {
+            let rhs = compile_expr(value, genv, gensym, diagnostics);
+            let assign = core::Expr::EAssign {
+                name: name.clone(),
+                value: Box::new(rhs),
+                target_ty: value.get_ty(),
+                ty: Ty::TUnit,
+            };
+            let x = gensym.gensym("_wild");
+            let mut rest_block = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
+            let mut new_stmts = Vec::with_capacity(rest_block.stmts.len() + 1);
+            new_stmts.push(core::LetStmt {
+                name: x,
+                value: assign,
+                ty: Ty::TUnit,
+            });
+            new_stmts.append(&mut rest_block.stmts);
+            core::Block {
+                stmts: new_stmts,
+                tail: rest_block.tail,
             }
         }
         tast::Stmt::Expr(tast::ExprStmt { expr }) => {
@@ -2195,14 +2696,20 @@ fn compile_expr(
                     }
                 } else if let Some((type_name, type_args)) = decompose_struct_type(receiver_ty)
                     && let Some(struct_def) = genv.structs().get(&type_name)
-                    && let Some(inst_fields) = instantiate_struct_fields(diagnostics, struct_def, &type_args, None)
-                    && let Some((field_index, (_, field_ty))) = inst_fields.iter().enumerate().find(|(_, (fname, _))| fname == &method_name.0)
+                    && let Some(inst_fields) =
+                        instantiate_struct_fields(diagnostics, struct_def, &type_args, None)
+                    && let Some((field_index, (_, field_ty))) = inst_fields
+                        .iter()
+                        .enumerate()
+                        .find(|(_, (fname, _))| fname == &method_name.0)
                     && matches!(field_ty, tast::Ty::TFunc { .. })
                 {
                     let receiver_core = args[0].clone();
                     let field_core = core::Expr::EConstrGet {
                         expr: Box::new(receiver_core),
-                        constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
+                        constructor: common::Constructor::Struct(common::StructConstructor {
+                            type_name,
+                        }),
                         field_index,
                         ty: field_ty.clone(),
                     };
