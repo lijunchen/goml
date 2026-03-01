@@ -1,0 +1,17 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let mut x/0: int32 = 0;
+    let inc/1: () -> int32 = || => {
+        x/0 = (x/0 : int32) + 1;
+        (x/0 : int32)
+    };
+    let _ : int32 = (inc/1 : () -> int32)();
+    (string_println : (string) -> unit)((int32_to_string : (int32) -> string)((x/0 : int32)));
+}
