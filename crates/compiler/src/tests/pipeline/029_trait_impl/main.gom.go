@@ -33,38 +33,44 @@ type Nothing struct {}
 func (_ Nothing) isMaybe__int32() {}
 
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
-    return "Point"
+    var retv5 string
+    retv5 = "Point"
+    return retv5
 }
 
 func _goml_trait_impl_Display_Maybe__int32_show(self__1 Maybe__int32) string {
-    var jp5 string
+    var retv7 string
+    var jp9 string
     switch self__1.(type) {
     case Just:
         var x0 int32 = self__1.(Just)._0
         var value__2 int32 = x0
-        var t6 string = int32_to_string(value__2)
-        var t7 string = "Just(" + t6
-        var t8 string = t7 + ")"
-        jp5 = t8
+        var t10 string = int32_to_string(value__2)
+        var t11 string = "Just(" + t10
+        var t12 string = t11 + ")"
+        jp9 = t12
     case Nothing:
-        jp5 = "Nothing"
+        jp9 = "Nothing"
     default:
         panic("non-exhaustive match")
     }
-    return jp5
+    retv7 = jp9
+    return retv7
 }
 
 func make_maybe(flag__3 bool) Maybe__int32 {
-    var jp10 Maybe__int32
+    var retv14 Maybe__int32
+    var jp16 Maybe__int32
     if flag__3 {
-        var t11 Maybe__int32 = Just{
+        var t17 Maybe__int32 = Just{
             _0: 42,
         }
-        jp10 = t11
+        jp16 = t17
     } else {
-        jp10 = Nothing{}
+        jp16 = Nothing{}
     }
-    return jp10
+    retv14 = jp16
+    return retv14
 }
 
 func main0() struct{} {
@@ -74,12 +80,12 @@ func main0() struct{} {
     }
     var some_number__5 Maybe__int32 = make_maybe(true)
     var none_number__6 Maybe__int32 = make_maybe(false)
-    var t12 string = _goml_trait_impl_Display_Point_show(point__4)
-    string_println(t12)
-    var t13 string = _goml_trait_impl_Display_Maybe__int32_show(some_number__5)
-    string_println(t13)
-    var t14 string = _goml_trait_impl_Display_Maybe__int32_show(none_number__6)
-    string_println(t14)
+    var t19 string = _goml_trait_impl_Display_Point_show(point__4)
+    string_println(t19)
+    var t20 string = _goml_trait_impl_Display_Maybe__int32_show(some_number__5)
+    string_println(t20)
+    var t21 string = _goml_trait_impl_Display_Maybe__int32_show(none_number__6)
+    string_println(t21)
     return struct{}{}
 }
 

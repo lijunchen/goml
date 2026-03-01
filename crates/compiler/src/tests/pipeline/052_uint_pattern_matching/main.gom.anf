@@ -1,29 +1,15 @@
 fn is_flag8(value/0: uint8) -> bool {
-  join k3(jp4: bool) -> bool {
-    jp4
+  join ret3(retv4: bool) -> bool {
+    retv4
+  } in
+  join k5(jp6: bool) -> bool {
+    jump ret3(jp6)
   } in
   match value/0 {
     0 => {
-      jump k3(true)
-    },
-    200 => {
-      jump k3(true)
-    },
-    _ => {
-      jump k3(false)
-    },
-  }
-}
-
-fn is_flag16(value/1: uint16) -> bool {
-  join k5(jp6: bool) -> bool {
-    jp6
-  } in
-  match value/1 {
-    1024 => {
       jump k5(true)
     },
-    65000 => {
+    200 => {
       jump k5(true)
     },
     _ => {
@@ -32,32 +18,18 @@ fn is_flag16(value/1: uint16) -> bool {
   }
 }
 
-fn is_flag32(value/2: uint32) -> bool {
-  join k7(jp8: bool) -> bool {
-    jp8
+fn is_flag16(value/1: uint16) -> bool {
+  join ret7(retv8: bool) -> bool {
+    retv8
   } in
-  match value/2 {
-    4000000000 => {
-      jump k7(true)
-    },
-    1234567890 => {
-      jump k7(true)
-    },
-    _ => {
-      jump k7(false)
-    },
-  }
-}
-
-fn is_flag64(value/3: uint64) -> bool {
   join k9(jp10: bool) -> bool {
-    jp10
+    jump ret7(jp10)
   } in
-  match value/3 {
-    900000000 => {
+  match value/1 {
+    1024 => {
       jump k9(true)
     },
-    600000000 => {
+    65000 => {
       jump k9(true)
     },
     _ => {
@@ -66,73 +38,122 @@ fn is_flag64(value/3: uint64) -> bool {
   }
 }
 
+fn is_flag32(value/2: uint32) -> bool {
+  join ret11(retv12: bool) -> bool {
+    retv12
+  } in
+  join k13(jp14: bool) -> bool {
+    jump ret11(jp14)
+  } in
+  match value/2 {
+    4000000000 => {
+      jump k13(true)
+    },
+    1234567890 => {
+      jump k13(true)
+    },
+    _ => {
+      jump k13(false)
+    },
+  }
+}
+
+fn is_flag64(value/3: uint64) -> bool {
+  join ret15(retv16: bool) -> bool {
+    retv16
+  } in
+  join k17(jp18: bool) -> bool {
+    jump ret15(jp18)
+  } in
+  match value/3 {
+    900000000 => {
+      jump k17(true)
+    },
+    600000000 => {
+      jump k17(true)
+    },
+    _ => {
+      jump k17(false)
+    },
+  }
+}
+
 fn match_struct(counter/4: Counter) -> bool {
+  join ret19(retv20: bool) -> bool {
+    retv20
+  } in
   let x0 = Counter.start(counter/4) in
   let x1 = Counter.end(counter/4) in
-  join k11(jp12: bool) -> bool {
-    jp12
+  join k21(jp22: bool) -> bool {
+    jump ret19(jp22)
   } in
   match x1 {
     900000000 => {
-      join k13(jp14: bool) -> bool {
-        jump k11(jp14)
+      join k23(jp24: bool) -> bool {
+        jump k21(jp24)
       } in
       match x0 {
         4000000000 => {
-          jump k13(true)
+          jump k23(true)
         },
         _ => {
-          jump k13(false)
+          jump k23(false)
         },
       }
     },
     600000000 => {
-      jump k11(true)
+      jump k21(true)
     },
     _ => {
-      jump k11(false)
+      jump k21(false)
     },
   }
 }
 
 fn report(label/5: string, value/6: bool) -> string {
-  let t15 = bool_to_string(value/6) in
-  let t16 = (label/5 + t15) in
-  t16
+  join ret25(retv26: string) -> string {
+    retv26
+  } in
+  let t27 = bool_to_string(value/6) in
+  let t28 = (label/5 + t27) in
+  jump ret25(t28)
 }
 
 fn main() -> unit {
+  join ret29() -> unit {
+    ()
+  } in
   let counter/7 = Counter { start: 4000000000, end: 900000000 } in
   let alt_counter/8 = Counter { start: 12, end: 600000000 } in
-  let t17 = is_flag8(200) in
-  let t18 = report("u8_hit=", t17) in
-  let t19 = is_flag8(15) in
-  let t20 = report(",u8_miss=", t19) in
-  let t21 = (t18 + t20) in
-  let t22 = is_flag16(65000) in
-  let t23 = report(",u16_hit=", t22) in
-  let t24 = (t21 + t23) in
-  let t25 = is_flag16(42) in
-  let t26 = report(",u16_miss=", t25) in
-  let t27 = (t24 + t26) in
-  let t28 = is_flag32(1234567890) in
-  let t29 = report(",u32_hit=", t28) in
-  let t30 = (t27 + t29) in
-  let t31 = is_flag32(99) in
-  let t32 = report(",u32_miss=", t31) in
-  let t33 = (t30 + t32) in
-  let t34 = is_flag64(900000000) in
-  let t35 = report(",u64_hit=", t34) in
-  let t36 = (t33 + t35) in
-  let t37 = is_flag64(700000000) in
-  let t38 = report(",u64_miss=", t37) in
-  let t39 = (t36 + t38) in
-  let t40 = match_struct(counter/7) in
-  let t41 = report(",struct_first=", t40) in
-  let t42 = (t39 + t41) in
-  let t43 = match_struct(alt_counter/8) in
-  let t44 = report(",struct_second=", t43) in
-  let message/9 = (t42 + t44) in
+  let t30 = is_flag8(200) in
+  let t31 = report("u8_hit=", t30) in
+  let t32 = is_flag8(15) in
+  let t33 = report(",u8_miss=", t32) in
+  let t34 = (t31 + t33) in
+  let t35 = is_flag16(65000) in
+  let t36 = report(",u16_hit=", t35) in
+  let t37 = (t34 + t36) in
+  let t38 = is_flag16(42) in
+  let t39 = report(",u16_miss=", t38) in
+  let t40 = (t37 + t39) in
+  let t41 = is_flag32(1234567890) in
+  let t42 = report(",u32_hit=", t41) in
+  let t43 = (t40 + t42) in
+  let t44 = is_flag32(99) in
+  let t45 = report(",u32_miss=", t44) in
+  let t46 = (t43 + t45) in
+  let t47 = is_flag64(900000000) in
+  let t48 = report(",u64_hit=", t47) in
+  let t49 = (t46 + t48) in
+  let t50 = is_flag64(700000000) in
+  let t51 = report(",u64_miss=", t50) in
+  let t52 = (t49 + t51) in
+  let t53 = match_struct(counter/7) in
+  let t54 = report(",struct_first=", t53) in
+  let t55 = (t52 + t54) in
+  let t56 = match_struct(alt_counter/8) in
+  let t57 = report(",struct_second=", t56) in
+  let message/9 = (t55 + t57) in
   let mtmp2 = string_println(message/9) in
-  ()
+  jump ret29()
 }

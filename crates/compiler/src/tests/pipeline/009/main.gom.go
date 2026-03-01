@@ -31,8 +31,8 @@ func (_ B) isT() {}
 func test(t__0 T) struct{} {
     switch t__0.(type) {
     case A:
-        var t7 string = int32_to_string(1)
-        string_print(t7)
+        var t8 string = int32_to_string(1)
+        string_print(t8)
         return struct{}{}
     case B:
         var x0 bool = t__0.(B)._0
@@ -41,11 +41,11 @@ func test(t__0 T) struct{} {
         case true:
             switch x0 {
             case true:
-                var t11 string = int32_to_string(4)
-                string_print(t11)
+                var t12 string = int32_to_string(4)
+                string_print(t12)
             case false:
-                var t13 string = int32_to_string(3)
-                string_print(t13)
+                var t14 string = int32_to_string(3)
+                string_print(t14)
             default:
                 panic("non-exhaustive match")
             }
@@ -53,11 +53,11 @@ func test(t__0 T) struct{} {
         case false:
             switch x0 {
             case true:
-                var t16 string = int32_to_string(4)
-                string_print(t16)
+                var t17 string = int32_to_string(4)
+                string_print(t17)
             case false:
-                var t18 string = int32_to_string(2)
-                string_print(t18)
+                var t19 string = int32_to_string(2)
+                string_print(t19)
             default:
                 panic("non-exhaustive match")
             }
@@ -71,21 +71,21 @@ func test(t__0 T) struct{} {
 }
 
 func main0() struct{} {
-    var t20 T = B{
+    var t22 T = B{
         _0: true,
         _1: true,
     }
-    test(t20)
-    var t21 T = B{
+    test(t22)
+    var t23 T = B{
         _0: false,
         _1: true,
     }
-    test(t21)
-    var t22 T = B{
+    test(t23)
+    var t24 T = B{
         _0: false,
         _1: false,
     }
-    test(t22)
+    test(t24)
     test(A{})
     return struct{}{}
 }

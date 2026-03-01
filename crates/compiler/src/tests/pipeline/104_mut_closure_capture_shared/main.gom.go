@@ -42,19 +42,21 @@ func main0() struct{} {
         x_0: x__0,
     }
     _goml_inherent_closure_env_inc_0_closure_env_inc_0_apply(inc__1)
-    var t4 int32 = ref_get__Ref_int32(x__0)
-    var t5 string = int32_to_string(t4)
-    string_println(t5)
+    var t5 int32 = ref_get__Ref_int32(x__0)
+    var t6 string = int32_to_string(t5)
+    string_println(t6)
     return struct{}{}
 }
 
 func _goml_inherent_closure_env_inc_0_closure_env_inc_0_apply(env3 closure_env_inc_0) int32 {
+    var retv8 int32
     var x__0 *ref_int32_x = env3.x_0
-    var t6 int32 = ref_get__Ref_int32(x__0)
-    var t7 int32 = t6 + 1
-    ref_set__Ref_int32(x__0, t7)
-    var t8 int32 = ref_get__Ref_int32(x__0)
-    return t8
+    var t9 int32 = ref_get__Ref_int32(x__0)
+    var t10 int32 = t9 + 1
+    ref_set__Ref_int32(x__0, t10)
+    var t11 int32 = ref_get__Ref_int32(x__0)
+    retv8 = t11
+    return retv8
 }
 
 func main() {

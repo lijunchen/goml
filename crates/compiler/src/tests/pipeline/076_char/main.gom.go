@@ -19,19 +19,19 @@ func string_println(s string) struct{} {
 
 func main0() struct{} {
     var c__0 rune = 65
-    var t2 string = char_to_string(c__0)
-    string_println(t2)
+    var t3 string = char_to_string(c__0)
+    string_println(t3)
     var d__1 rune = 98
-    var jp4 string
+    var jp5 string
     switch d__1 {
     case 97:
-        jp4 = "A"
+        jp5 = "A"
     case 98:
-        jp4 = "B"
+        jp5 = "B"
     default:
-        jp4 = "?"
+        jp5 = "?"
     }
-    var out__2 string = jp4
+    var out__2 string = jp5
     string_println(out__2)
     return struct{}{}
 }

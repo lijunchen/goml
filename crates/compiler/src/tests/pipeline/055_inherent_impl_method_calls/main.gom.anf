@@ -1,35 +1,53 @@
 fn inherent#Shape#Shape#name(self/0: Shape) -> string {
-  "Shape"
+  join ret2(retv3: string) -> string {
+    retv3
+  } in
+  jump ret2("Shape")
 }
 
 fn inherent#Shape#Shape#rename(self/1: Shape, suffix/2: string) -> string {
-  let t2 = inherent#Shape#Shape#name(self/1) in
-  let t3 = (t2 + suffix/2) in
-  t3
+  join ret4(retv5: string) -> string {
+    retv5
+  } in
+  let t6 = inherent#Shape#Shape#name(self/1) in
+  let t7 = (t6 + suffix/2) in
+  jump ret4(t7)
 }
 
 fn inherent#Shape#Shape#join(self/3: Shape, left/4: string, right/5: string) -> string {
-  let t4 = inherent#Shape#Shape#name(self/3) in
-  let t5 = (left/4 + t4) in
-  let t6 = (t5 + right/5) in
-  t6
+  join ret8(retv9: string) -> string {
+    retv9
+  } in
+  let t10 = inherent#Shape#Shape#name(self/3) in
+  let t11 = (left/4 + t10) in
+  let t12 = (t11 + right/5) in
+  jump ret8(t12)
 }
 
 fn announce(shape/6: Shape) -> unit {
+  join ret13() -> unit {
+    ()
+  } in
   let base/7 = inherent#Shape#Shape#name(shape/6) in
   let with_suffix/8 = inherent#Shape#Shape#rename(shape/6, "!") in
   let combined/9 = inherent#Shape#Shape#join(shape/6, base/7, with_suffix/8) in
   let mtmp0 = println__T_string(combined/9) in
-  ()
+  jump ret13()
 }
 
 fn main() -> unit {
+  join ret14() -> unit {
+    ()
+  } in
   let shape/10 = Shape {} in
   let _wild1 = announce(shape/10) in
-  ()
+  jump ret14()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t7 = string_println(value/1) in
-  t7
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = string_println(value/1) in
+  jump ret15()
 }

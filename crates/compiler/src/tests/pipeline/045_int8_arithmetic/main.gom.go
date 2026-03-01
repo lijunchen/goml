@@ -22,29 +22,35 @@ func string_println(s string) struct{} {
 }
 
 func a_value() int8 {
-    return 90
+    var retv12 int8
+    retv12 = 90
+    return retv12
 }
 
 func b_value() int8 {
-    var t11 int8 = -20
-    return t11
+    var retv14 int8
+    var t15 int8 = -20
+    retv14 = t15
+    return retv14
 }
 
 func c_value() int8 {
-    return 3
+    var retv17 int8
+    retv17 = 3
+    return retv17
 }
 
 func show_int8(label__0 string, value__1 int8) struct{} {
-    var t12 string = int8_to_string(value__1)
-    var t13 string = label__0 + t12
-    string_println(t13)
+    var t19 string = int8_to_string(value__1)
+    var t20 string = label__0 + t19
+    string_println(t20)
     return struct{}{}
 }
 
 func show_bool(label__2 string, value__3 bool) struct{} {
-    var t14 string = bool_to_string(value__3)
-    var t15 string = label__2 + t14
-    string_println(t15)
+    var t22 string = bool_to_string(value__3)
+    var t23 string = label__2 + t22
+    string_println(t23)
     return struct{}{}
 }
 

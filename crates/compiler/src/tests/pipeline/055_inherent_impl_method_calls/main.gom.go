@@ -12,20 +12,26 @@ func string_println(s string) struct{} {
 type Shape struct {}
 
 func _goml_inherent_Shape_Shape_name(self__0 Shape) string {
-    return "Shape"
+    var retv3 string
+    retv3 = "Shape"
+    return retv3
 }
 
 func _goml_inherent_Shape_Shape_rename(self__1 Shape, suffix__2 string) string {
-    var t2 string = _goml_inherent_Shape_Shape_name(self__1)
-    var t3 string = t2 + suffix__2
-    return t3
+    var retv5 string
+    var t6 string = _goml_inherent_Shape_Shape_name(self__1)
+    var t7 string = t6 + suffix__2
+    retv5 = t7
+    return retv5
 }
 
 func _goml_inherent_Shape_Shape_join(self__3 Shape, left__4 string, right__5 string) string {
-    var t4 string = _goml_inherent_Shape_Shape_name(self__3)
-    var t5 string = left__4 + t4
-    var t6 string = t5 + right__5
-    return t6
+    var retv9 string
+    var t10 string = _goml_inherent_Shape_Shape_name(self__3)
+    var t11 string = left__4 + t10
+    var t12 string = t11 + right__5
+    retv9 = t12
+    return retv9
 }
 
 func announce(shape__6 Shape) struct{} {
@@ -43,8 +49,8 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t7 struct{} = string_println(value__1)
-    return t7
+    string_println(value__1)
+    return struct{}{}
 }
 
 func main() {

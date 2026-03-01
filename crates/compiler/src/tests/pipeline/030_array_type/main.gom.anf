@@ -1,13 +1,22 @@
 fn id_array(x/0: [int32; 3]) -> [int32; 3] {
-  x/0
+  join ret0(retv1: [int32; 3]) -> [int32; 3] {
+    retv1
+  } in
+  jump ret0(x/0)
 }
 
 fn main() -> unit {
-  let t0 = print__T_string("array") in
-  t0
+  join ret2() -> unit {
+    ()
+  } in
+  let t3 = print__T_string("array") in
+  jump ret2()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t1 = string_print(value/0) in
-  t1
+  join ret4() -> unit {
+    ()
+  } in
+  let t5 = string_print(value/0) in
+  jump ret4()
 }

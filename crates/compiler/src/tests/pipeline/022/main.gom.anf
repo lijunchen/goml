@@ -1,56 +1,68 @@
 fn match_string(s/0: string) -> int32 {
-  join k5(jp6: int32) -> int32 {
-    jp6
+  join ret5(retv6: int32) -> int32 {
+    retv6
+  } in
+  join k7(jp8: int32) -> int32 {
+    jump ret5(jp8)
   } in
   match s/0 {
     "hello" => {
-      jump k5(1)
+      jump k7(1)
     },
     "world" => {
-      jump k5(2)
+      jump k7(2)
     },
     _ => {
-      jump k5(3)
+      jump k7(3)
     },
   }
 }
 
 fn wildcard_position(s/1: string) -> int32 {
-  4
+  join ret9(retv10: int32) -> int32 {
+    retv10
+  } in
+  jump ret9(4)
 }
 
 fn repeated_string(s/2: string) -> int32 {
-  join k7(jp8: int32) -> int32 {
-    jp8
+  join ret11(retv12: int32) -> int32 {
+    retv12
+  } in
+  join k13(jp14: int32) -> int32 {
+    jump ret11(jp14)
   } in
   match s/2 {
     "hello" => {
-      jump k7(6)
+      jump k13(6)
     },
     _ => {
-      jump k7(8)
+      jump k13(8)
     },
   }
 }
 
 fn main() -> unit {
-  let t9 = match_string("hello") in
-  let t10 = int32_to_string(t9) in
-  let mtmp0 = string_println(t10) in
-  let t11 = match_string("planet") in
-  let t12 = int32_to_string(t11) in
-  let mtmp1 = string_println(t12) in
-  let t13 = wildcard_position("world") in
-  let t14 = int32_to_string(t13) in
-  let mtmp2 = string_println(t14) in
-  let t15 = wildcard_position("sun") in
-  let t16 = int32_to_string(t15) in
-  let mtmp3 = string_println(t16) in
-  let t17 = repeated_string("hello") in
-  let t18 = int32_to_string(t17) in
-  let mtmp4 = string_println(t18) in
-  let t19 = repeated_string("mars") in
-  let t20 = int32_to_string(t19) in
-  let t21 = string_println(t20) in
-  t21
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = match_string("hello") in
+  let t17 = int32_to_string(t16) in
+  let mtmp0 = string_println(t17) in
+  let t18 = match_string("planet") in
+  let t19 = int32_to_string(t18) in
+  let mtmp1 = string_println(t19) in
+  let t20 = wildcard_position("world") in
+  let t21 = int32_to_string(t20) in
+  let mtmp2 = string_println(t21) in
+  let t22 = wildcard_position("sun") in
+  let t23 = int32_to_string(t22) in
+  let mtmp3 = string_println(t23) in
+  let t24 = repeated_string("hello") in
+  let t25 = int32_to_string(t24) in
+  let mtmp4 = string_println(t25) in
+  let t26 = repeated_string("mars") in
+  let t27 = int32_to_string(t26) in
+  let t28 = string_println(t27) in
+  jump ret15()
 }

@@ -22,14 +22,14 @@ func main0() struct{} {
     var second__5 int32 = v__3[1]
     var third__6 int32 = v__3[2]
     var len__7 int32 = int32(len(v__3))
-    var t4 string = int32_to_string(first__4)
-    string_println(t4)
-    var t5 string = int32_to_string(second__5)
+    var t5 string = int32_to_string(first__4)
     string_println(t5)
-    var t6 string = int32_to_string(third__6)
+    var t6 string = int32_to_string(second__5)
     string_println(t6)
-    var t7 string = int32_to_string(len__7)
+    var t7 string = int32_to_string(third__6)
     string_println(t7)
+    var t8 string = int32_to_string(len__7)
+    string_println(t8)
     return struct{}{}
 }
 

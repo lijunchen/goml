@@ -1,42 +1,51 @@
 fn classify(x/0: float64) -> string {
-  join k5(jp6: string) -> string {
-    jp6
+  join ret5(retv6: string) -> string {
+    retv6
+  } in
+  join k7(jp8: string) -> string {
+    jump ret5(jp8)
   } in
   match x/0 {
     0 => {
-      jump k5("zero")
+      jump k7("zero")
     },
     1 => {
-      jump k5("one")
+      jump k7("one")
     },
     -1 => {
-      jump k5("minus one")
+      jump k7("minus one")
     },
     3.14 => {
-      jump k5("pi")
+      jump k7("pi")
     },
     _ => {
-      jump k5("other")
+      jump k7("other")
     },
   }
 }
 
 fn main() -> unit {
-  let t7 = classify(0) in
-  let _wild0 = println__T_string(t7) in
-  let t8 = classify(1) in
-  let _wild1 = println__T_string(t8) in
-  let t9 = (-1) in
-  let t10 = classify(t9) in
-  let _wild2 = println__T_string(t10) in
-  let t11 = classify(3.14) in
-  let _wild3 = println__T_string(t11) in
-  let t12 = classify(42) in
-  let _wild4 = println__T_string(t12) in
-  ()
+  join ret9() -> unit {
+    ()
+  } in
+  let t10 = classify(0) in
+  let _wild0 = println__T_string(t10) in
+  let t11 = classify(1) in
+  let _wild1 = println__T_string(t11) in
+  let t12 = (-1) in
+  let t13 = classify(t12) in
+  let _wild2 = println__T_string(t13) in
+  let t14 = classify(3.14) in
+  let _wild3 = println__T_string(t14) in
+  let t15 = classify(42) in
+  let _wild4 = println__T_string(t15) in
+  jump ret9()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t13 = string_println(value/1) in
-  t13
+  join ret16() -> unit {
+    ()
+  } in
+  let t17 = string_println(value/1) in
+  jump ret16()
 }

@@ -1,33 +1,48 @@
 fn main() -> unit {
+  join ret1() -> unit {
+    ()
+  } in
   let p1/4 = inherent#Point#Point[U,V]#new__U_int32__V_string(10, "hello") in
   let p2/5 = inherent#Point#Point[U,V]#new__U_string__V_string("goml", "lang") in
   let p3/6 = inherent#Point#Point[U,V]#swap__U_int32__V_string(p1/4) in
   let x/7 = Point__string__int32.y(p3/6) in
-  let t1 = int32_to_string(x/7) in
-  let _wild0 = string_println(t1) in
+  let t2 = int32_to_string(x/7) in
+  let _wild0 = string_println(t2) in
   let x2/8 = inherent#Point#Point[U,V]#get_x__U_string__V_string(p2/5) in
-  let t2 = string_println(x2/8) in
-  t2
+  let t3 = string_println(x2/8) in
+  jump ret1()
 }
 
 fn inherent#Point#Point[U,V]#new__U_int32__V_string(x/0: int32, y/1: string) -> Point__int32__string {
-  let t3 = Point__int32__string { x: x/0, y: y/1 } in
-  t3
+  join ret4(retv5: Point__int32__string) -> Point__int32__string {
+    retv5
+  } in
+  let t6 = Point__int32__string { x: x/0, y: y/1 } in
+  jump ret4(t6)
 }
 
 fn inherent#Point#Point[U,V]#new__U_string__V_string(x/0: string, y/1: string) -> Point__string__string {
-  let t4 = Point__string__string { x: x/0, y: y/1 } in
-  t4
+  join ret7(retv8: Point__string__string) -> Point__string__string {
+    retv8
+  } in
+  let t9 = Point__string__string { x: x/0, y: y/1 } in
+  jump ret7(t9)
 }
 
 fn inherent#Point#Point[U,V]#swap__U_int32__V_string(self/2: Point__int32__string) -> Point__string__int32 {
-  let t5 = Point__int32__string.y(self/2) in
-  let t6 = Point__int32__string.x(self/2) in
-  let t7 = Point__string__int32 { x: t5, y: t6 } in
-  t7
+  join ret10(retv11: Point__string__int32) -> Point__string__int32 {
+    retv11
+  } in
+  let t12 = Point__int32__string.y(self/2) in
+  let t13 = Point__int32__string.x(self/2) in
+  let t14 = Point__string__int32 { x: t12, y: t13 } in
+  jump ret10(t14)
 }
 
 fn inherent#Point#Point[U,V]#get_x__U_string__V_string(self/3: Point__string__string) -> string {
-  let t8 = Point__string__string.x(self/3) in
-  t8
+  join ret15(retv16: string) -> string {
+    retv16
+  } in
+  let t17 = Point__string__string.x(self/3) in
+  jump ret15(t17)
 }

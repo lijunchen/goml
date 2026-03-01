@@ -55,9 +55,9 @@ func main0() struct{} {
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t9 string = bool_to_string(value__0)
-    var t10 struct{} = string_print(t9)
-    return t10
+    var t11 string = bool_to_string(value__0)
+    string_print(t11)
+    return struct{}{}
 }
 
 func main() {

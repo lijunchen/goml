@@ -1,0 +1,117 @@
+fn early(x/0: int32) -> int32 {
+  join ret18(retv19: int32) -> int32 {
+    retv19
+  } in
+  let t24 = (x/0 < 0) in
+  join k20() -> int32 {
+    let _wild0 = () in
+    let t23 = (x/0 == 0) in
+    join k21() -> int32 {
+      let _wild1 = () in
+      let t22 = (x/0 + 2) in
+      jump ret18(t22)
+    } in
+    if t23 {
+      jump ret18(1)
+    } else {
+      jump k21()
+    }
+  } in
+  if t24 {
+    jump ret18(0)
+  } else {
+    jump k20()
+  }
+}
+
+fn closure_early(x/1: int32) -> int32 {
+  join ret25(retv26: int32) -> int32 {
+    retv26
+  } in
+  let f/3 = closure_env_f_0 {} in
+  let t27 = inherent#closure_env_f_0#closure_env_f_0#apply(f/3, x/1) in
+  jump ret25(t27)
+}
+
+fn unit_ret(flag/4: bool) -> unit {
+  join ret28() -> unit {
+    ()
+  } in
+  join k29() -> unit {
+    let _wild3 = () in
+    let mtmp4 = println__T_string("after") in
+    jump ret28()
+  } in
+  if flag/4 {
+    jump ret28()
+  } else {
+    jump k29()
+  }
+}
+
+fn main() -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let mtmp5 = print__T_string("e-1: ") in
+  let t31 = (-1) in
+  let t32 = early(t31) in
+  let mtmp6 = println__T_int32(t32) in
+  let mtmp7 = print__T_string("e0: ") in
+  let t33 = early(0) in
+  let mtmp8 = println__T_int32(t33) in
+  let mtmp9 = print__T_string("e3: ") in
+  let t34 = early(3) in
+  let mtmp10 = println__T_int32(t34) in
+  let mtmp11 = print__T_string("c7: ") in
+  let t35 = closure_early(7) in
+  let mtmp12 = println__T_int32(t35) in
+  let mtmp13 = print__T_string("c2: ") in
+  let t36 = closure_early(2) in
+  let mtmp14 = println__T_int32(t36) in
+  let _wild15 = unit_ret(true) in
+  let _wild16 = unit_ret(false) in
+  jump ret30()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret37() -> unit {
+    ()
+  } in
+  let t38 = string_println(value/1) in
+  jump ret37()
+}
+
+fn print__T_string(value/0: string) -> unit {
+  join ret39() -> unit {
+    ()
+  } in
+  let t40 = string_print(value/0) in
+  jump ret39()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret41() -> unit {
+    ()
+  } in
+  let t42 = int32_to_string(value/1) in
+  let t43 = string_println(t42) in
+  jump ret41()
+}
+
+fn inherent#closure_env_f_0#closure_env_f_0#apply(env17: closure_env_f_0, y/2: int32) -> int32 {
+  join ret44(retv45: int32) -> int32 {
+    retv45
+  } in
+  let t48 = (y/2 > 5) in
+  join k46() -> int32 {
+    let _wild2 = () in
+    let t47 = (y/2 + 10) in
+    jump ret44(t47)
+  } in
+  if t48 {
+    jump ret44(y/2)
+  } else {
+    jump k46()
+  }
+}

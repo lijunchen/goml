@@ -1,52 +1,61 @@
 fn classify(x/0: int32) -> string {
-  let t8 = (x/0 < 0) in
-  join k6(jp7: string) -> string {
-    jp7
+  join ret6(retv7: string) -> string {
+    retv7
   } in
-  if t8 {
-    jump k6("negative")
+  let t10 = (x/0 < 0) in
+  join k8(jp9: string) -> string {
+    jump ret6(jp9)
+  } in
+  if t10 {
+    jump k8("negative")
   } else {
-    let t11 = (0 < x/0) in
-    join k9(jp10: string) -> string {
-      jump k6(jp10)
+    let t13 = (0 < x/0) in
+    join k11(jp12: string) -> string {
+      jump k8(jp12)
     } in
-    if t11 {
-      jump k9("positive")
+    if t13 {
+      jump k11("positive")
     } else {
-      jump k9("zero")
+      jump k11("zero")
     }
   }
 }
 
 fn triangle_type(a/1: int32, b/2: int32, c/3: int32) -> string {
-  let t14 = (a/1 < b/2) in
-  join k12(jp13: string) -> string {
-    jp13
+  join ret14(retv15: string) -> string {
+    retv15
   } in
-  if t14 {
-    let t17 = (b/2 < c/3) in
-    join k15(jp16: string) -> string {
-      jump k12(jp16)
+  let t18 = (a/1 < b/2) in
+  join k16(jp17: string) -> string {
+    jump ret14(jp17)
+  } in
+  if t18 {
+    let t21 = (b/2 < c/3) in
+    join k19(jp20: string) -> string {
+      jump k16(jp20)
     } in
-    if t17 {
-      jump k15("ascending")
+    if t21 {
+      jump k19("ascending")
     } else {
-      jump k15("peak")
+      jump k19("peak")
     }
   } else {
-    let t20 = (a/1 < c/3) in
-    join k18(jp19: string) -> string {
-      jump k12(jp19)
+    let t24 = (a/1 < c/3) in
+    join k22(jp23: string) -> string {
+      jump k16(jp23)
     } in
-    if t20 {
-      jump k18("valley")
+    if t24 {
+      jump k22("valley")
     } else {
-      jump k18("flat")
+      jump k22("flat")
     }
   }
 }
 
 fn main() -> unit {
+  join ret25() -> unit {
+    ()
+  } in
   let first/4 = classify(-42) in
   let second/5 = classify(0) in
   let third/6 = classify(17) in
@@ -59,5 +68,5 @@ fn main() -> unit {
   let mtmp3 = string_println(shape1/7) in
   let mtmp4 = string_println(shape2/8) in
   let mtmp5 = string_println(shape3/9) in
-  ()
+  jump ret25()
 }

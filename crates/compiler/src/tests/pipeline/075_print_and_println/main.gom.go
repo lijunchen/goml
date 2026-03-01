@@ -68,11 +68,13 @@ func dyn__ToString__vtable__S() *dyn__ToString_vtable {
 }
 
 func _goml_trait_impl_ToString_S_to_string(self__0 S) string {
-    var t11 int32 = self__0.value
-    var t12 string = int32_to_string(t11)
-    var t13 string = "S(" + t12
-    var t14 string = t13 + ")"
-    return t14
+    var retv12 string
+    var t13 int32 = self__0.value
+    var t14 string = int32_to_string(t13)
+    var t15 string = "S(" + t14
+    var t16 string = t15 + ")"
+    retv12 = t16
+    return retv12
 }
 
 func main0() struct{} {
@@ -80,10 +82,10 @@ func main0() struct{} {
     println__T_bool(true)
     println__T_string("hi")
     println__T_unit(struct{}{})
-    var t15 string = int32_to_string(2)
-    println__T_string(t15)
-    var t16 string = int32_to_string(2)
-    println__T_string(t16)
+    var t18 string = int32_to_string(2)
+    println__T_string(t18)
+    var t19 string = int32_to_string(2)
+    println__T_string(t19)
     var s__1 S = S{
         value: 9,
     }
@@ -101,52 +103,52 @@ func main0() struct{} {
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t17 string = int32_to_string(value__1)
-    var t18 struct{} = string_println(t17)
-    return t18
+    var t21 string = int32_to_string(value__1)
+    string_println(t21)
+    return struct{}{}
 }
 
 func println__T_bool(value__1 bool) struct{} {
-    var t19 string = bool_to_string(value__1)
-    var t20 struct{} = string_println(t19)
-    return t20
+    var t24 string = bool_to_string(value__1)
+    string_println(t24)
+    return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t21 struct{} = string_println(value__1)
-    return t21
+    string_println(value__1)
+    return struct{}{}
 }
 
 func println__T_unit(value__1 struct{}) struct{} {
-    var t22 string = unit_to_string(value__1)
-    var t23 struct{} = string_println(t22)
-    return t23
+    var t29 string = unit_to_string(value__1)
+    string_println(t29)
+    return struct{}{}
 }
 
 func println__T_S(value__1 S) struct{} {
-    var t24 string = _goml_trait_impl_ToString_S_to_string(value__1)
-    var t25 struct{} = string_println(t24)
-    return t25
+    var t32 string = _goml_trait_impl_ToString_S_to_string(value__1)
+    string_println(t32)
+    return struct{}{}
 }
 
 func println__T_dynToString(value__1 dyn__ToString) struct{} {
-    var t26 string = value__1.vtable.to_string(value__1.data)
-    var t27 struct{} = string_println(t26)
-    return t27
+    var t35 string = value__1.vtable.to_string(value__1.data)
+    string_println(t35)
+    return struct{}{}
 }
 
 func _goml_println__T_Ref_x5b_int32_x5d_(value__1 *ref_int32_x) struct{} {
-    var t28 int32 = ref_get__Ref_int32(value__1)
-    var t29 string = int32_to_string(t28)
-    var t30 string = "ref(" + t29
-    var t31 string = t30 + ")"
-    var t32 struct{} = string_println(t31)
-    return t32
+    var t38 int32 = ref_get__Ref_int32(value__1)
+    var t39 string = int32_to_string(t38)
+    var t40 string = "ref(" + t39
+    var t41 string = t40 + ")"
+    string_println(t41)
+    return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t33 struct{} = string_print(value__0)
-    return t33
+    string_print(value__0)
+    return struct{}{}
 }
 
 func main() {

@@ -33,20 +33,20 @@ func main0() struct{} {
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t4 struct{} = string_print(value__0)
-    return t4
+    string_print(value__0)
+    return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t5 string = int32_to_string(value__1)
-    var t6 struct{} = string_println(t5)
-    return t6
+    var t8 string = int32_to_string(value__1)
+    string_println(t8)
+    return struct{}{}
 }
 
 func println__T_int8(value__1 int8) struct{} {
-    var t7 string = int8_to_string(value__1)
-    var t8 struct{} = string_println(t7)
-    return t8
+    var t11 string = int8_to_string(value__1)
+    string_println(t11)
+    return struct{}{}
 }
 
 func main() {

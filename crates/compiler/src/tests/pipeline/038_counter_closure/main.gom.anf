@@ -1,12 +1,18 @@
 fn make_counter() -> (() -> int32, () -> unit) {
+  join ret15(retv16: (() -> int32, () -> unit)) -> (() -> int32, () -> unit) {
+    retv16
+  } in
   let cell/0 = ref(0) in
   let next/2 = closure_env_next_0 { cell_0: cell/0 } in
   let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
-  let t15 = (next/2, reset/3) in
-  t15
+  let t17 = (next/2, reset/3) in
+  jump ret15(t17)
 }
 
 fn main() -> unit {
+  join ret18() -> unit {
+    ()
+  } in
   let counter/4 = make_counter() in
   let mtmp2 = counter/4 in
   let x3 = mtmp2.0 in
@@ -23,27 +29,33 @@ fn main() -> unit {
   let x8 = mtmp6.1 in
   let new_next/11 = x7 in
   let fourth/12 = new_next/11() in
-  let t16 = int32_to_string(first/7) in
-  let mtmp9 = string_println(t16) in
-  let t17 = int32_to_string(second/8) in
-  let mtmp10 = string_println(t17) in
-  let t18 = int32_to_string(third/9) in
-  let mtmp11 = string_println(t18) in
-  let t19 = int32_to_string(fourth/12) in
-  let mtmp12 = string_println(t19) in
-  ()
+  let t19 = int32_to_string(first/7) in
+  let mtmp9 = string_println(t19) in
+  let t20 = int32_to_string(second/8) in
+  let mtmp10 = string_println(t20) in
+  let t21 = int32_to_string(third/9) in
+  let mtmp11 = string_println(t21) in
+  let t22 = int32_to_string(fourth/12) in
+  let mtmp12 = string_println(t22) in
+  jump ret18()
 }
 
 fn inherent#closure_env_next_0#closure_env_next_0#apply(env13: closure_env_next_0) -> int32 {
+  join ret23(retv24: int32) -> int32 {
+    retv24
+  } in
   let cell/0 = closure_env_next_0.cell_0(env13) in
-  let t20 = ref_get(cell/0) in
-  let next/1 = (t20 + 1) in
+  let t25 = ref_get(cell/0) in
+  let next/1 = (t25 + 1) in
   let mtmp0 = ref_set(cell/0, next/1) in
-  next/1
+  jump ret23(next/1)
 }
 
 fn inherent#closure_env_reset_1#closure_env_reset_1#apply(env14: closure_env_reset_1) -> unit {
+  join ret26() -> unit {
+    ()
+  } in
   let cell/0 = closure_env_reset_1.cell_0(env14) in
   let mtmp1 = ref_set(cell/0, 0) in
-  ()
+  jump ret26()
 }

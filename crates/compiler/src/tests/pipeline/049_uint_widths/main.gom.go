@@ -40,19 +40,19 @@ func main0() struct{} {
     var add64__13 uint64 = 4000000000
     var sum64__14 uint64 = start64__12 + add64__13
     var diff64__15 uint64 = sum64__14 - add64__13
-    var t1 string = uint8_to_string(sum8__2)
-    var t2 string = t1 + ", "
-    var t3 string = uint8_to_string(neg8__3)
-    var t4 string = t2 + t3
-    var t5 string = t4 + "; "
-    var t6 string = uint16_to_string(diff16__7)
-    var t7 string = t5 + t6
-    var t8 string = t7 + "; "
-    var t9 string = uint32_to_string(neg32__11)
-    var t10 string = t8 + t9
-    var t11 string = t10 + "; "
-    var t12 string = uint64_to_string(diff64__15)
-    var message__16 string = t11 + t12
+    var t2 string = uint8_to_string(sum8__2)
+    var t3 string = t2 + ", "
+    var t4 string = uint8_to_string(neg8__3)
+    var t5 string = t3 + t4
+    var t6 string = t5 + "; "
+    var t7 string = uint16_to_string(diff16__7)
+    var t8 string = t6 + t7
+    var t9 string = t8 + "; "
+    var t10 string = uint32_to_string(neg32__11)
+    var t11 string = t9 + t10
+    var t12 string = t11 + "; "
+    var t13 string = uint64_to_string(diff64__15)
+    var message__16 string = t12 + t13
     string_println(message__16)
     return struct{}{}
 }

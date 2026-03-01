@@ -84,9 +84,9 @@ func main0() struct{} {
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t15 string = int32_to_string(value__0)
-    var t16 struct{} = string_print(t15)
-    return t16
+    var t17 string = int32_to_string(value__0)
+    string_print(t17)
+    return struct{}{}
 }
 
 func main() {

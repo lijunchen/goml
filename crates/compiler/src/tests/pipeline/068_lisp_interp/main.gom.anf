@@ -1,1452 +1,1524 @@
 fn is_digit(ch/0: char) -> bool {
-  let t148 = (ch/0 >= '0') in
-  let t149 = (ch/0 <= '9') in
-  let t150 = (t148 && t149) in
-  t150
+  join ret148(retv149: bool) -> bool {
+    retv149
+  } in
+  let t150 = (ch/0 >= '0') in
+  let t151 = (ch/0 <= '9') in
+  let t152 = (t150 && t151) in
+  jump ret148(t152)
 }
 
 fn digit_value(ch/1: char) -> int32 {
-  join k151(jp152: int32) -> int32 {
-    jp152
+  join ret153(retv154: int32) -> int32 {
+    retv154
+  } in
+  join k155(jp156: int32) -> int32 {
+    jump ret153(jp156)
   } in
   match ch/1 {
     '0' => {
-      jump k151(0)
+      jump k155(0)
     },
     '1' => {
-      jump k151(1)
+      jump k155(1)
     },
     '2' => {
-      jump k151(2)
+      jump k155(2)
     },
     '3' => {
-      jump k151(3)
+      jump k155(3)
     },
     '4' => {
-      jump k151(4)
+      jump k155(4)
     },
     '5' => {
-      jump k151(5)
+      jump k155(5)
     },
     '6' => {
-      jump k151(6)
+      jump k155(6)
     },
     '7' => {
-      jump k151(7)
+      jump k155(7)
     },
     '8' => {
-      jump k151(8)
+      jump k155(8)
     },
     '9' => {
-      jump k151(9)
+      jump k155(9)
     },
     _ => {
-      jump k151(0)
+      jump k155(0)
     },
   }
 }
 
 fn is_int_text(text/2: string) -> bool {
-  let len/3 = string_len(text/2) in
-  let t155 = (len/3 == 0) in
-  join k153(jp154: bool) -> bool {
-    jp154
+  join ret157(retv158: bool) -> bool {
+    retv158
   } in
-  if t155 {
-    jump k153(false)
+  let len/3 = string_len(text/2) in
+  let t161 = (len/3 == 0) in
+  join k159(jp160: bool) -> bool {
+    jump ret157(jp160)
+  } in
+  if t161 {
+    jump k159(false)
   } else {
     let i/4 = ref(0) in
     let saw_digit/5 = ref(false) in
     let ok/6 = ref(true) in
     let started/7 = ref(false) in
-    join exit156() -> bool {
+    join exit162() -> bool {
       let mtmp3 = () in
-      let t157 = ref_get(ok/6) in
-      let t158 = ref_get(saw_digit/5) in
-      let t159 = (t157 && t158) in
-      jump k153(t159)
+      let t163 = ref_get(ok/6) in
+      let t164 = ref_get(saw_digit/5) in
+      let t165 = (t163 && t164) in
+      jump k159(t165)
     } in
     joinrec {
-      join loop160() -> bool {
-        let t161 = ref_get(ok/6) in
-        let t162 = ref_get(i/4) in
-        let t163 = (t162 < len/3) in
-        let t164 = (t161 && t163) in
-        if t164 {
-          let t165 = ref_get(i/4) in
-          let ch/8 = string_get(text/2, t165) in
-          let t167 = ref_get(started/7) in
-          let t168 = (!t167) in
-          let t169 = (ch/8 == '-') in
-          let t170 = (t168 && t169) in
-          join k166() -> bool {
-            jump loop160()
+      join loop166() -> bool {
+        let t167 = ref_get(ok/6) in
+        let t168 = ref_get(i/4) in
+        let t169 = (t168 < len/3) in
+        let t170 = (t167 && t169) in
+        if t170 {
+          let t171 = ref_get(i/4) in
+          let ch/8 = string_get(text/2, t171) in
+          let t173 = ref_get(started/7) in
+          let t174 = (!t173) in
+          let t175 = (ch/8 == '-') in
+          let t176 = (t174 && t175) in
+          join k172() -> bool {
+            jump loop166()
           } in
-          if t170 {
+          if t176 {
             let mtmp0 = ref_set(started/7, true) in
-            let t171 = ref_get(i/4) in
-            let t172 = (t171 + 1) in
-            let t173 = ref_set(i/4, t172) in
-            jump k166()
+            let t177 = ref_get(i/4) in
+            let t178 = (t177 + 1) in
+            let t179 = ref_set(i/4, t178) in
+            jump k172()
           } else {
-            let t175 = is_digit(ch/8) in
-            join k174() -> bool {
-              jump k166()
+            let t181 = is_digit(ch/8) in
+            join k180() -> bool {
+              jump k172()
             } in
-            if t175 {
+            if t181 {
               let mtmp1 = ref_set(started/7, true) in
               let mtmp2 = ref_set(saw_digit/5, true) in
-              let t176 = ref_get(i/4) in
-              let t177 = (t176 + 1) in
-              let t178 = ref_set(i/4, t177) in
-              jump k174()
+              let t182 = ref_get(i/4) in
+              let t183 = (t182 + 1) in
+              let t184 = ref_set(i/4, t183) in
+              jump k180()
             } else {
-              let t179 = ref_set(ok/6, false) in
-              jump k174()
+              let t185 = ref_set(ok/6, false) in
+              jump k180()
             }
           }
         } else {
-          jump exit156()
+          jump exit162()
         }
       } in
     } in
-    jump loop160()
+    jump loop166()
   }
 }
 
 fn parse_int32(text/9: string) -> int32 {
+  join ret186(retv187: int32) -> int32 {
+    retv187
+  } in
   let len/10 = string_len(text/9) in
   let i/11 = ref(0) in
   let negative/12 = ref(false) in
   let started/13 = ref(false) in
   let acc/14 = ref(0) in
-  join exit180() -> int32 {
+  join exit188() -> int32 {
     let mtmp8 = () in
-    let t183 = ref_get(negative/12) in
-    join k181(jp182: int32) -> int32 {
-      jp182
+    let t191 = ref_get(negative/12) in
+    join k189(jp190: int32) -> int32 {
+      jump ret186(jp190)
     } in
-    if t183 {
-      let t184 = ref_get(acc/14) in
-      let t185 = (0 - t184) in
-      jump k181(t185)
+    if t191 {
+      let t192 = ref_get(acc/14) in
+      let t193 = (0 - t192) in
+      jump k189(t193)
     } else {
-      let t186 = ref_get(acc/14) in
-      jump k181(t186)
+      let t194 = ref_get(acc/14) in
+      jump k189(t194)
     }
   } in
   joinrec {
-    join loop187() -> int32 {
-      let t188 = ref_get(i/11) in
-      let t189 = (t188 < len/10) in
-      if t189 {
-        let t190 = ref_get(i/11) in
-        let ch/15 = string_get(text/9, t190) in
-        let t192 = ref_get(started/13) in
-        let t193 = (!t192) in
-        let t194 = (ch/15 == '-') in
-        let t195 = (t193 && t194) in
-        join k191() -> int32 {
-          jump loop187()
+    join loop195() -> int32 {
+      let t196 = ref_get(i/11) in
+      let t197 = (t196 < len/10) in
+      if t197 {
+        let t198 = ref_get(i/11) in
+        let ch/15 = string_get(text/9, t198) in
+        let t200 = ref_get(started/13) in
+        let t201 = (!t200) in
+        let t202 = (ch/15 == '-') in
+        let t203 = (t201 && t202) in
+        join k199() -> int32 {
+          jump loop195()
         } in
-        if t195 {
+        if t203 {
           let mtmp4 = ref_set(started/13, true) in
           let mtmp5 = ref_set(negative/12, true) in
-          let t196 = ref_get(i/11) in
-          let t197 = (t196 + 1) in
-          let t198 = ref_set(i/11, t197) in
-          jump k191()
+          let t204 = ref_get(i/11) in
+          let t205 = (t204 + 1) in
+          let t206 = ref_set(i/11, t205) in
+          jump k199()
         } else {
           let mtmp6 = ref_set(started/13, true) in
           let d/16 = digit_value(ch/15) in
-          let t199 = ref_get(acc/14) in
-          let t200 = (t199 * 10) in
-          let t201 = (t200 + d/16) in
-          let mtmp7 = ref_set(acc/14, t201) in
-          let t202 = ref_get(i/11) in
-          let t203 = (t202 + 1) in
-          let t204 = ref_set(i/11, t203) in
-          jump k191()
+          let t207 = ref_get(acc/14) in
+          let t208 = (t207 * 10) in
+          let t209 = (t208 + d/16) in
+          let mtmp7 = ref_set(acc/14, t209) in
+          let t210 = ref_get(i/11) in
+          let t211 = (t210 + 1) in
+          let t212 = ref_set(i/11, t211) in
+          jump k199()
         }
       } else {
-        jump exit180()
+        jump exit188()
       }
     } in
   } in
-  jump loop187()
+  jump loop195()
 }
 
 fn is_delim(ch/17: char) -> bool {
-  let t205 = (ch/17 == '(') in
-  let t206 = (ch/17 == ')') in
-  let t207 = (t205 || t206) in
-  let t208 = (ch/17 == ' ') in
-  let t209 = (t207 || t208) in
-  t209
+  join ret213(retv214: bool) -> bool {
+    retv214
+  } in
+  let t215 = (ch/17 == '(') in
+  let t216 = (ch/17 == ')') in
+  let t217 = (t215 || t216) in
+  let t218 = (ch/17 == ' ') in
+  let t219 = (t217 || t218) in
+  jump ret213(t219)
 }
 
 fn lex_atom(source/18: string, start/19: int32) -> (Token, int32) {
+  join ret220(retv221: (Token, int32)) -> (Token, int32) {
+    retv221
+  } in
   let len/20 = string_len(source/18) in
   let text/21 = ref("") in
   let i/22 = ref(start/19) in
   let done/23 = ref(false) in
-  join exit210() -> (Token, int32) {
+  join exit222() -> (Token, int32) {
     let mtmp10 = () in
     let atom/25 = ref_get(text/21) in
-    join k211(jp212: Token) -> (Token, int32) {
-      let token/26 = jp212 in
-      let t213 = ref_get(i/22) in
-      let t214 = (token/26, t213) in
-      t214
+    join k223(jp224: Token) -> (Token, int32) {
+      let token/26 = jp224 in
+      let t225 = ref_get(i/22) in
+      let t226 = (token/26, t225) in
+      jump ret220(t226)
     } in
     match atom/25 {
       "true" => {
-        let t215 = Token::Bool(true) in
-        jump k211(t215)
+        let t227 = Token::Bool(true) in
+        jump k223(t227)
       },
       "false" => {
-        let t216 = Token::Bool(false) in
-        jump k211(t216)
+        let t228 = Token::Bool(false) in
+        jump k223(t228)
       },
       _ => {
-        let t219 = is_int_text(atom/25) in
-        join k217(jp218: Token) -> (Token, int32) {
-          jump k211(jp218)
+        let t231 = is_int_text(atom/25) in
+        join k229(jp230: Token) -> (Token, int32) {
+          jump k223(jp230)
         } in
-        if t219 {
-          let t220 = parse_int32(atom/25) in
-          let t221 = Token::Int(t220) in
-          jump k217(t221)
+        if t231 {
+          let t232 = parse_int32(atom/25) in
+          let t233 = Token::Int(t232) in
+          jump k229(t233)
         } else {
-          let t222 = Token::Sym(atom/25) in
-          jump k217(t222)
+          let t234 = Token::Sym(atom/25) in
+          jump k229(t234)
         }
       },
     }
   } in
   joinrec {
-    join loop223() -> (Token, int32) {
-      let t224 = ref_get(done/23) in
-      let t225 = (!t224) in
-      let t226 = ref_get(i/22) in
-      let t227 = (t226 < len/20) in
-      let t228 = (t225 && t227) in
-      if t228 {
-        let t229 = ref_get(i/22) in
-        let ch/24 = string_get(source/18, t229) in
-        let t231 = is_delim(ch/24) in
-        join k230() -> (Token, int32) {
-          jump loop223()
+    join loop235() -> (Token, int32) {
+      let t236 = ref_get(done/23) in
+      let t237 = (!t236) in
+      let t238 = ref_get(i/22) in
+      let t239 = (t238 < len/20) in
+      let t240 = (t237 && t239) in
+      if t240 {
+        let t241 = ref_get(i/22) in
+        let ch/24 = string_get(source/18, t241) in
+        let t243 = is_delim(ch/24) in
+        join k242() -> (Token, int32) {
+          jump loop235()
         } in
-        if t231 {
-          let t232 = ref_set(done/23, true) in
-          jump k230()
+        if t243 {
+          let t244 = ref_set(done/23, true) in
+          jump k242()
         } else {
-          let t233 = ref_get(text/21) in
-          let t234 = char_to_string(ch/24) in
-          let t235 = (t233 + t234) in
-          let mtmp9 = ref_set(text/21, t235) in
-          let t236 = ref_get(i/22) in
-          let t237 = (t236 + 1) in
-          let t238 = ref_set(i/22, t237) in
-          jump k230()
+          let t245 = ref_get(text/21) in
+          let t246 = char_to_string(ch/24) in
+          let t247 = (t245 + t246) in
+          let mtmp9 = ref_set(text/21, t247) in
+          let t248 = ref_get(i/22) in
+          let t249 = (t248 + 1) in
+          let t250 = ref_set(i/22, t249) in
+          jump k242()
         }
       } else {
-        jump exit210()
+        jump exit222()
       }
     } in
   } in
-  jump loop223()
+  jump loop235()
 }
 
 fn lex(source/27: string) -> Vec[Token] {
+  join ret251(retv252: Vec[Token]) -> Vec[Token] {
+    retv252
+  } in
   let len/28 = string_len(source/27) in
   let toks0/29 = vec_new() in
   let toks/30 = ref(toks0/29) in
   let i/31 = ref(0) in
-  join exit239() -> Vec[Token] {
+  join exit253() -> Vec[Token] {
     let mtmp17 = () in
-    let t240 = ref_get(toks/30) in
-    t240
+    let t254 = ref_get(toks/30) in
+    jump ret251(t254)
   } in
   joinrec {
-    join loop241() -> Vec[Token] {
-      let t242 = ref_get(i/31) in
-      let t243 = (t242 < len/28) in
-      if t243 {
-        let t244 = ref_get(i/31) in
-        let ch/32 = string_get(source/27, t244) in
-        let t246 = (ch/32 == '(') in
-        join k245() -> Vec[Token] {
-          jump loop241()
+    join loop255() -> Vec[Token] {
+      let t256 = ref_get(i/31) in
+      let t257 = (t256 < len/28) in
+      if t257 {
+        let t258 = ref_get(i/31) in
+        let ch/32 = string_get(source/27, t258) in
+        let t260 = (ch/32 == '(') in
+        join k259() -> Vec[Token] {
+          jump loop255()
         } in
-        if t246 {
-          let t247 = ref_get(toks/30) in
-          let t248 = vec_push(t247, Tag_0) in
-          let mtmp11 = ref_set(toks/30, t248) in
-          let t249 = ref_get(i/31) in
-          let t250 = (t249 + 1) in
-          let t251 = ref_set(i/31, t250) in
-          jump k245()
+        if t260 {
+          let t261 = ref_get(toks/30) in
+          let t262 = vec_push(t261, Tag_0) in
+          let mtmp11 = ref_set(toks/30, t262) in
+          let t263 = ref_get(i/31) in
+          let t264 = (t263 + 1) in
+          let t265 = ref_set(i/31, t264) in
+          jump k259()
         } else {
-          let t253 = (ch/32 == ')') in
-          join k252() -> Vec[Token] {
-            jump k245()
+          let t267 = (ch/32 == ')') in
+          join k266() -> Vec[Token] {
+            jump k259()
           } in
-          if t253 {
-            let t254 = ref_get(toks/30) in
-            let t255 = vec_push(t254, Tag_1) in
-            let mtmp12 = ref_set(toks/30, t255) in
-            let t256 = ref_get(i/31) in
-            let t257 = (t256 + 1) in
-            let t258 = ref_set(i/31, t257) in
-            jump k252()
+          if t267 {
+            let t268 = ref_get(toks/30) in
+            let t269 = vec_push(t268, Tag_1) in
+            let mtmp12 = ref_set(toks/30, t269) in
+            let t270 = ref_get(i/31) in
+            let t271 = (t270 + 1) in
+            let t272 = ref_set(i/31, t271) in
+            jump k266()
           } else {
-            let t260 = (ch/32 == ' ') in
-            join k259() -> Vec[Token] {
-              jump k252()
+            let t274 = (ch/32 == ' ') in
+            join k273() -> Vec[Token] {
+              jump k266()
             } in
-            if t260 {
-              let t261 = ref_get(i/31) in
-              let t262 = (t261 + 1) in
-              let t263 = ref_set(i/31, t262) in
-              jump k259()
+            if t274 {
+              let t275 = ref_get(i/31) in
+              let t276 = (t275 + 1) in
+              let t277 = ref_set(i/31, t276) in
+              jump k273()
             } else {
-              let t264 = ref_get(i/31) in
-              let mtmp13 = lex_atom(source/27, t264) in
+              let t278 = ref_get(i/31) in
+              let mtmp13 = lex_atom(source/27, t278) in
               let x14 = mtmp13.0 in
               let x15 = mtmp13.1 in
               let next/34 = x15 in
               let tok/33 = x14 in
-              let t265 = ref_get(toks/30) in
-              let t266 = vec_push(t265, tok/33) in
-              let mtmp16 = ref_set(toks/30, t266) in
-              let t267 = ref_set(i/31, next/34) in
-              jump k259()
+              let t279 = ref_get(toks/30) in
+              let t280 = vec_push(t279, tok/33) in
+              let mtmp16 = ref_set(toks/30, t280) in
+              let t281 = ref_set(i/31, next/34) in
+              jump k273()
             }
           }
         }
       } else {
-        jump exit239()
+        jump exit253()
       }
     } in
   } in
-  jump loop241()
+  jump loop255()
 }
 
 fn env_lookup(env/35: Vec[Binding], name/36: string) -> Value {
-  let t268 = vec_len(env/35) in
-  let t269 = (t268 - 1) in
-  let i/37 = ref(t269) in
+  join ret282(retv283: Value) -> Value {
+    retv283
+  } in
+  let t284 = vec_len(env/35) in
+  let t285 = (t284 - 1) in
+  let i/37 = ref(t285) in
   let result/38 = ref(Tag_3) in
   let done/39 = ref(false) in
-  join exit270() -> Value {
+  join exit286() -> Value {
     let mtmp19 = () in
-    let t271 = ref_get(result/38) in
-    t271
+    let t287 = ref_get(result/38) in
+    jump ret282(t287)
   } in
   joinrec {
-    join loop272() -> Value {
-      let t273 = ref_get(done/39) in
-      let t274 = (!t273) in
-      let t275 = ref_get(i/37) in
-      let t276 = (t275 >= 0) in
-      let t277 = (t274 && t276) in
-      if t277 {
-        let t278 = ref_get(i/37) in
-        let binding/40 = vec_get(env/35, t278) in
-        let t280 = Binding.name(binding/40) in
-        let t281 = (t280 == name/36) in
-        join k279() -> Value {
-          jump loop272()
+    join loop288() -> Value {
+      let t289 = ref_get(done/39) in
+      let t290 = (!t289) in
+      let t291 = ref_get(i/37) in
+      let t292 = (t291 >= 0) in
+      let t293 = (t290 && t292) in
+      if t293 {
+        let t294 = ref_get(i/37) in
+        let binding/40 = vec_get(env/35, t294) in
+        let t296 = Binding.name(binding/40) in
+        let t297 = (t296 == name/36) in
+        join k295() -> Value {
+          jump loop288()
         } in
-        if t281 {
-          let t282 = Binding.value(binding/40) in
-          let mtmp18 = ref_set(result/38, t282) in
-          let t283 = ref_set(done/39, true) in
-          jump k279()
+        if t297 {
+          let t298 = Binding.value(binding/40) in
+          let mtmp18 = ref_set(result/38, t298) in
+          let t299 = ref_set(done/39, true) in
+          jump k295()
         } else {
-          let t284 = ref_get(i/37) in
-          let t285 = (t284 - 1) in
-          let t286 = ref_set(i/37, t285) in
-          jump k279()
+          let t300 = ref_get(i/37) in
+          let t301 = (t300 - 1) in
+          let t302 = ref_set(i/37, t301) in
+          jump k295()
         }
       } else {
-        jump exit270()
+        jump exit286()
       }
     } in
   } in
-  jump loop272()
+  jump loop288()
 }
 
 fn lookup(local/41: Vec[Binding], global/42: Vec[Binding], name/43: string) -> Value {
+  join ret303(retv304: Value) -> Value {
+    retv304
+  } in
   let mtmp20 = env_lookup(local/41, name/43) in
-  join k287(jp288: Value) -> Value {
-    jp288
+  join k305(jp306: Value) -> Value {
+    jump ret303(jp306)
   } in
   match mtmp20 {
     Tag_0 => {
       let x21 = Value::Int._0(mtmp20) in
       let other/44 = mtmp20 in
-      jump k287(other/44)
+      jump k305(other/44)
     },
     Tag_1 => {
       let x22 = Value::Bool._0(mtmp20) in
       let other/44 = mtmp20 in
-      jump k287(other/44)
+      jump k305(other/44)
     },
     Tag_2 => {
       let x23 = Value::Func._0(mtmp20) in
       let other/44 = mtmp20 in
-      jump k287(other/44)
+      jump k305(other/44)
     },
     Tag_3 => {
-      let t289 = env_lookup(global/42, name/43) in
-      jump k287(t289)
+      let t307 = env_lookup(global/42, name/43) in
+      jump k305(t307)
     },
   }
 }
 
 fn parse_list(tokens/45: Vec[Token], start/46: int32) -> (Vec[SExpr], int32) {
+  join ret308(retv309: (Vec[SExpr], int32)) -> (Vec[SExpr], int32) {
+    retv309
+  } in
   let acc/47 = vec_new() in
   let exprs/48 = ref(acc/47) in
   let i/49 = ref(start/46) in
   let done/50 = ref(false) in
-  join exit290() -> (Vec[SExpr], int32) {
+  join exit310() -> (Vec[SExpr], int32) {
     let mtmp45 = () in
-    let t291 = ref_get(exprs/48) in
-    let t292 = ref_get(i/49) in
-    let t293 = (t291, t292) in
-    t293
+    let t311 = ref_get(exprs/48) in
+    let t312 = ref_get(i/49) in
+    let t313 = (t311, t312) in
+    jump ret308(t313)
   } in
   joinrec {
-    join loop294() -> (Vec[SExpr], int32) {
-      let t295 = ref_get(done/50) in
-      let t296 = (!t295) in
-      let t297 = ref_get(i/49) in
-      let t298 = vec_len(tokens/45) in
-      let t299 = (t297 < t298) in
-      let t300 = (t296 && t299) in
-      if t300 {
-        let t301 = ref_get(i/49) in
-        let mtmp24 = vec_get(tokens/45, t301) in
-        join k302() -> (Vec[SExpr], int32) {
-          jump loop294()
+    join loop314() -> (Vec[SExpr], int32) {
+      let t315 = ref_get(done/50) in
+      let t316 = (!t315) in
+      let t317 = ref_get(i/49) in
+      let t318 = vec_len(tokens/45) in
+      let t319 = (t317 < t318) in
+      let t320 = (t316 && t319) in
+      if t320 {
+        let t321 = ref_get(i/49) in
+        let mtmp24 = vec_get(tokens/45, t321) in
+        join k322() -> (Vec[SExpr], int32) {
+          jump loop314()
         } in
         match mtmp24 {
           Tag_0 => {
-            let t303 = ref_get(i/49) in
-            let mtmp28 = parse_expr(tokens/45, t303) in
+            let t323 = ref_get(i/49) in
+            let mtmp28 = parse_expr(tokens/45, t323) in
             let x29 = mtmp28.0 in
             let x30 = mtmp28.1 in
             let next/52 = x30 in
             let expr/51 = x29 in
-            let t304 = ref_get(exprs/48) in
-            let t305 = vec_push(t304, expr/51) in
-            let mtmp31 = ref_set(exprs/48, t305) in
-            let t306 = ref_set(i/49, next/52) in
-            jump k302()
+            let t324 = ref_get(exprs/48) in
+            let t325 = vec_push(t324, expr/51) in
+            let mtmp31 = ref_set(exprs/48, t325) in
+            let t326 = ref_set(i/49, next/52) in
+            jump k322()
           },
           Tag_1 => {
             let mtmp32 = ref_set(done/50, true) in
-            let t307 = ref_get(i/49) in
-            let t308 = (t307 + 1) in
-            let t309 = ref_set(i/49, t308) in
-            jump k302()
+            let t327 = ref_get(i/49) in
+            let t328 = (t327 + 1) in
+            let t329 = ref_set(i/49, t328) in
+            jump k322()
           },
           Tag_2 => {
             let x25 = Token::Sym._0(mtmp24) in
-            let t310 = ref_get(i/49) in
-            let mtmp33 = parse_expr(tokens/45, t310) in
+            let t330 = ref_get(i/49) in
+            let mtmp33 = parse_expr(tokens/45, t330) in
             let x34 = mtmp33.0 in
             let x35 = mtmp33.1 in
             let next/52 = x35 in
             let expr/51 = x34 in
-            let t311 = ref_get(exprs/48) in
-            let t312 = vec_push(t311, expr/51) in
-            let mtmp36 = ref_set(exprs/48, t312) in
-            let t313 = ref_set(i/49, next/52) in
-            jump k302()
+            let t331 = ref_get(exprs/48) in
+            let t332 = vec_push(t331, expr/51) in
+            let mtmp36 = ref_set(exprs/48, t332) in
+            let t333 = ref_set(i/49, next/52) in
+            jump k322()
           },
           Tag_3 => {
             let x26 = Token::Int._0(mtmp24) in
-            let t314 = ref_get(i/49) in
-            let mtmp37 = parse_expr(tokens/45, t314) in
+            let t334 = ref_get(i/49) in
+            let mtmp37 = parse_expr(tokens/45, t334) in
             let x38 = mtmp37.0 in
             let x39 = mtmp37.1 in
             let next/52 = x39 in
             let expr/51 = x38 in
-            let t315 = ref_get(exprs/48) in
-            let t316 = vec_push(t315, expr/51) in
-            let mtmp40 = ref_set(exprs/48, t316) in
-            let t317 = ref_set(i/49, next/52) in
-            jump k302()
+            let t335 = ref_get(exprs/48) in
+            let t336 = vec_push(t335, expr/51) in
+            let mtmp40 = ref_set(exprs/48, t336) in
+            let t337 = ref_set(i/49, next/52) in
+            jump k322()
           },
           Tag_4 => {
             let x27 = Token::Bool._0(mtmp24) in
-            let t318 = ref_get(i/49) in
-            let mtmp41 = parse_expr(tokens/45, t318) in
+            let t338 = ref_get(i/49) in
+            let mtmp41 = parse_expr(tokens/45, t338) in
             let x42 = mtmp41.0 in
             let x43 = mtmp41.1 in
             let next/52 = x43 in
             let expr/51 = x42 in
-            let t319 = ref_get(exprs/48) in
-            let t320 = vec_push(t319, expr/51) in
-            let mtmp44 = ref_set(exprs/48, t320) in
-            let t321 = ref_set(i/49, next/52) in
-            jump k302()
+            let t339 = ref_get(exprs/48) in
+            let t340 = vec_push(t339, expr/51) in
+            let mtmp44 = ref_set(exprs/48, t340) in
+            let t341 = ref_set(i/49, next/52) in
+            jump k322()
           },
         }
       } else {
-        jump exit290()
+        jump exit310()
       }
     } in
   } in
-  jump loop294()
+  jump loop314()
 }
 
 fn parse_expr(tokens/53: Vec[Token], start/54: int32) -> (SExpr, int32) {
+  join ret342(retv343: (SExpr, int32)) -> (SExpr, int32) {
+    retv343
+  } in
   let mtmp46 = vec_get(tokens/53, start/54) in
-  join k322(jp323: (SExpr, int32)) -> (SExpr, int32) {
-    jp323
+  join k344(jp345: (SExpr, int32)) -> (SExpr, int32) {
+    jump ret342(jp345)
   } in
   match mtmp46 {
     Tag_0 => {
-      let t324 = (start/54 + 1) in
-      let mtmp50 = parse_list(tokens/53, t324) in
+      let t346 = (start/54 + 1) in
+      let mtmp50 = parse_list(tokens/53, t346) in
       let x51 = mtmp50.0 in
       let x52 = mtmp50.1 in
       let next/56 = x52 in
       let items/55 = x51 in
-      let t325 = SExpr::List(items/55) in
-      let t326 = (t325, next/56) in
-      jump k322(t326)
+      let t347 = SExpr::List(items/55) in
+      let t348 = (t347, next/56) in
+      jump k344(t348)
     },
     Tag_1 => {
-      let t327 = SExpr::Sym(")") in
-      let t328 = (start/54 + 1) in
-      let t329 = (t327, t328) in
-      jump k322(t329)
+      let t349 = SExpr::Sym(")") in
+      let t350 = (start/54 + 1) in
+      let t351 = (t349, t350) in
+      jump k344(t351)
     },
     Tag_2 => {
       let x47 = Token::Sym._0(mtmp46) in
       let name/59 = x47 in
-      let t330 = SExpr::Sym(name/59) in
-      let t331 = (start/54 + 1) in
-      let t332 = (t330, t331) in
-      jump k322(t332)
+      let t352 = SExpr::Sym(name/59) in
+      let t353 = (start/54 + 1) in
+      let t354 = (t352, t353) in
+      jump k344(t354)
     },
     Tag_3 => {
       let x48 = Token::Int._0(mtmp46) in
       let n/58 = x48 in
-      let t333 = SExpr::Int(n/58) in
-      let t334 = (start/54 + 1) in
-      let t335 = (t333, t334) in
-      jump k322(t335)
+      let t355 = SExpr::Int(n/58) in
+      let t356 = (start/54 + 1) in
+      let t357 = (t355, t356) in
+      jump k344(t357)
     },
     Tag_4 => {
       let x49 = Token::Bool._0(mtmp46) in
       let b/57 = x49 in
-      let t336 = SExpr::Bool(b/57) in
-      let t337 = (start/54 + 1) in
-      let t338 = (t336, t337) in
-      jump k322(t338)
+      let t358 = SExpr::Bool(b/57) in
+      let t359 = (start/54 + 1) in
+      let t360 = (t358, t359) in
+      jump k344(t360)
     },
   }
 }
 
 fn parse_program(tokens/60: Vec[Token]) -> Vec[SExpr] {
+  join ret361(retv362: Vec[SExpr]) -> Vec[SExpr] {
+    retv362
+  } in
   let i/61 = ref(0) in
   let acc/62 = vec_new() in
   let exprs/63 = ref(acc/62) in
-  join exit339() -> Vec[SExpr] {
+  join exit363() -> Vec[SExpr] {
     let mtmp57 = () in
-    let t340 = ref_get(exprs/63) in
-    t340
+    let t364 = ref_get(exprs/63) in
+    jump ret361(t364)
   } in
   joinrec {
-    join loop341() -> Vec[SExpr] {
-      let t342 = ref_get(i/61) in
-      let t343 = vec_len(tokens/60) in
-      let t344 = (t342 < t343) in
-      if t344 {
-        let t345 = ref_get(i/61) in
-        let mtmp53 = parse_expr(tokens/60, t345) in
+    join loop365() -> Vec[SExpr] {
+      let t366 = ref_get(i/61) in
+      let t367 = vec_len(tokens/60) in
+      let t368 = (t366 < t367) in
+      if t368 {
+        let t369 = ref_get(i/61) in
+        let mtmp53 = parse_expr(tokens/60, t369) in
         let x54 = mtmp53.0 in
         let x55 = mtmp53.1 in
         let next/65 = x55 in
         let expr/64 = x54 in
-        let t346 = ref_get(exprs/63) in
-        let t347 = vec_push(t346, expr/64) in
-        let mtmp56 = ref_set(exprs/63, t347) in
-        let t348 = ref_set(i/61, next/65) in
-        jump loop341()
+        let t370 = ref_get(exprs/63) in
+        let t371 = vec_push(t370, expr/64) in
+        let mtmp56 = ref_set(exprs/63, t371) in
+        let t372 = ref_set(i/61, next/65) in
+        jump loop365()
       } else {
-        jump exit339()
+        jump exit363()
       }
     } in
   } in
-  jump loop341()
+  jump loop365()
 }
 
 fn value_to_string(value/66: Value) -> string {
-  join k349(jp350: string) -> string {
-    jp350
+  join ret373(retv374: string) -> string {
+    retv374
+  } in
+  join k375(jp376: string) -> string {
+    jump ret373(jp376)
   } in
   match value/66 {
     Tag_0 => {
       let x58 = Value::Int._0(value/66) in
       let n/67 = x58 in
-      let t351 = int32_to_string(n/67) in
-      jump k349(t351)
+      let t377 = int32_to_string(n/67) in
+      jump k375(t377)
     },
     Tag_1 => {
       let x59 = Value::Bool._0(value/66) in
       let b/68 = x59 in
-      let t352 = bool_to_string(b/68) in
-      jump k349(t352)
+      let t378 = bool_to_string(b/68) in
+      jump k375(t378)
     },
     Tag_2 => {
       let x60 = Value::Func._0(value/66) in
-      jump k349("<lambda>")
+      jump k375("<lambda>")
     },
     Tag_3 => {
-      jump k349("nil")
+      jump k375("nil")
     },
   }
 }
 
 fn truthy(value/69: Value) -> bool {
-  join k353(jp354: bool) -> bool {
-    jp354
+  join ret379(retv380: bool) -> bool {
+    retv380
+  } in
+  join k381(jp382: bool) -> bool {
+    jump ret379(jp382)
   } in
   match value/69 {
     Tag_0 => {
       let x61 = Value::Int._0(value/69) in
       let n/71 = x61 in
-      let t355 = (n/71 != 0) in
-      jump k353(t355)
+      let t383 = (n/71 != 0) in
+      jump k381(t383)
     },
     Tag_1 => {
       let x62 = Value::Bool._0(value/69) in
       let b/70 = x62 in
-      jump k353(b/70)
+      jump k381(b/70)
     },
     Tag_2 => {
       let x63 = Value::Func._0(value/69) in
-      jump k353(true)
+      jump k381(true)
     },
     Tag_3 => {
-      jump k353(false)
+      jump k381(false)
     },
   }
 }
 
 fn eval(expr/72: SExpr, local/73: Vec[Binding], global/74: Ref[Vec[Binding]]) -> Value {
-  join k356(jp357: Value) -> Value {
-    jp357
+  join ret384(retv385: Value) -> Value {
+    retv385
+  } in
+  join k386(jp387: Value) -> Value {
+    jump ret384(jp387)
   } in
   match expr/72 {
     Tag_0 => {
       let x64 = SExpr::Int._0(expr/72) in
       let n/75 = x64 in
-      let t358 = Value::Int(n/75) in
-      jump k356(t358)
+      let t388 = Value::Int(n/75) in
+      jump k386(t388)
     },
     Tag_1 => {
       let x65 = SExpr::Bool._0(expr/72) in
       let b/76 = x65 in
-      let t359 = Value::Bool(b/76) in
-      jump k356(t359)
+      let t389 = Value::Bool(b/76) in
+      jump k386(t389)
     },
     Tag_2 => {
       let x66 = SExpr::Sym._0(expr/72) in
       let name/77 = x66 in
-      let t360 = ref_get(global/74) in
-      let t361 = lookup(local/73, t360, name/77) in
-      jump k356(t361)
+      let t390 = ref_get(global/74) in
+      let t391 = lookup(local/73, t390, name/77) in
+      jump k386(t391)
     },
     Tag_3 => {
       let x67 = SExpr::List._0(expr/72) in
       let items/78 = x67 in
-      let t362 = eval_list(items/78, local/73, global/74) in
-      jump k356(t362)
+      let t392 = eval_list(items/78, local/73, global/74) in
+      jump k386(t392)
     },
   }
 }
 
 fn eval_list(items/79: Vec[SExpr], local/80: Vec[Binding], global/81: Ref[Vec[Binding]]) -> Value {
-  let t365 = vec_len(items/79) in
-  let t366 = (t365 == 0) in
-  join k363(jp364: Value) -> Value {
-    jp364
+  join ret393(retv394: Value) -> Value {
+    retv394
   } in
-  if t366 {
-    jump k363(Tag_3)
+  let t397 = vec_len(items/79) in
+  let t398 = (t397 == 0) in
+  join k395(jp396: Value) -> Value {
+    jump ret393(jp396)
+  } in
+  if t398 {
+    jump k395(Tag_3)
   } else {
     let head/82 = vec_get(items/79, 0) in
-    join k367(jp368: Value) -> Value {
-      jump k363(jp368)
+    join k399(jp400: Value) -> Value {
+      jump k395(jp400)
     } in
     match head/82 {
       Tag_0 => {
         let x68 = SExpr::Int._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
-        let t369 = apply(f/84, args/85, global/81) in
-        jump k367(t369)
+        let t401 = apply(f/84, args/85, global/81) in
+        jump k399(t401)
       },
       Tag_1 => {
         let x69 = SExpr::Bool._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
-        let t370 = apply(f/84, args/85, global/81) in
-        jump k367(t370)
+        let t402 = apply(f/84, args/85, global/81) in
+        jump k399(t402)
       },
       Tag_2 => {
         let x70 = SExpr::Sym._0(head/82) in
         let name/83 = x70 in
-        let t371 = eval_list_sym(name/83, items/79, local/80, global/81) in
-        jump k367(t371)
+        let t403 = eval_list_sym(name/83, items/79, local/80, global/81) in
+        jump k399(t403)
       },
       Tag_3 => {
         let x71 = SExpr::List._0(head/82) in
         let f/84 = eval(head/82, local/80, global/81) in
         let args/85 = eval_args(items/79, 1, local/80, global/81) in
-        let t372 = apply(f/84, args/85, global/81) in
-        jump k367(t372)
+        let t404 = apply(f/84, args/85, global/81) in
+        jump k399(t404)
       },
     }
   }
 }
 
 fn eval_list_sym(name/86: string, items/87: Vec[SExpr], local/88: Vec[Binding], global/89: Ref[Vec[Binding]]) -> Value {
-  join k373(jp374: Value) -> Value {
-    jp374
+  join ret405(retv406: Value) -> Value {
+    retv406
+  } in
+  join k407(jp408: Value) -> Value {
+    jump ret405(jp408)
   } in
   match name/86 {
     "begin" => {
-      let t375 = eval_begin(items/87, 1, local/88, global/89) in
-      jump k373(t375)
+      let t409 = eval_begin(items/87, 1, local/88, global/89) in
+      jump k407(t409)
     },
     "define" => {
-      let t378 = vec_len(items/87) in
-      let t379 = (t378 == 3) in
-      join k376(jp377: Value) -> Value {
-        jump k373(jp377)
+      let t412 = vec_len(items/87) in
+      let t413 = (t412 == 3) in
+      join k410(jp411: Value) -> Value {
+        jump k407(jp411)
       } in
-      if t379 {
+      if t413 {
         let mtmp72 = vec_get(items/87, 1) in
-        join k380(jp381: Value) -> Value {
-          jump k376(jp381)
+        join k414(jp415: Value) -> Value {
+          jump k410(jp415)
         } in
         match mtmp72 {
           Tag_0 => {
             let x73 = SExpr::Int._0(mtmp72) in
-            jump k380(Tag_3)
+            jump k414(Tag_3)
           },
           Tag_1 => {
             let x74 = SExpr::Bool._0(mtmp72) in
-            jump k380(Tag_3)
+            jump k414(Tag_3)
           },
           Tag_2 => {
             let x75 = SExpr::Sym._0(mtmp72) in
             let var/90 = x75 in
-            let t382 = vec_get(items/87, 2) in
-            let value/91 = eval(t382, local/88, global/89) in
+            let t416 = vec_get(items/87, 2) in
+            let value/91 = eval(t416, local/88, global/89) in
             let env/92 = ref_get(global/89) in
-            let t383 = Binding { name: var/90, value: value/91 } in
-            let updated/93 = vec_push(env/92, t383) in
+            let t417 = Binding { name: var/90, value: value/91 } in
+            let updated/93 = vec_push(env/92, t417) in
             let mtmp77 = ref_set(global/89, updated/93) in
-            jump k380(value/91)
+            jump k414(value/91)
           },
           Tag_3 => {
             let x76 = SExpr::List._0(mtmp72) in
-            jump k380(Tag_3)
+            jump k414(Tag_3)
           },
         }
       } else {
-        jump k376(Tag_3)
+        jump k410(Tag_3)
       }
     },
     "if" => {
-      let t386 = vec_len(items/87) in
-      let t387 = (t386 == 4) in
-      join k384(jp385: Value) -> Value {
-        jump k373(jp385)
+      let t420 = vec_len(items/87) in
+      let t421 = (t420 == 4) in
+      join k418(jp419: Value) -> Value {
+        jump k407(jp419)
       } in
-      if t387 {
-        let t388 = vec_get(items/87, 1) in
-        let cond/94 = eval(t388, local/88, global/89) in
-        let t391 = truthy(cond/94) in
-        join k389(jp390: Value) -> Value {
-          jump k384(jp390)
+      if t421 {
+        let t422 = vec_get(items/87, 1) in
+        let cond/94 = eval(t422, local/88, global/89) in
+        let t425 = truthy(cond/94) in
+        join k423(jp424: Value) -> Value {
+          jump k418(jp424)
         } in
-        if t391 {
-          let t392 = vec_get(items/87, 2) in
-          let t393 = eval(t392, local/88, global/89) in
-          jump k389(t393)
+        if t425 {
+          let t426 = vec_get(items/87, 2) in
+          let t427 = eval(t426, local/88, global/89) in
+          jump k423(t427)
         } else {
-          let t394 = vec_get(items/87, 3) in
-          let t395 = eval(t394, local/88, global/89) in
-          jump k389(t395)
+          let t428 = vec_get(items/87, 3) in
+          let t429 = eval(t428, local/88, global/89) in
+          jump k423(t429)
         }
       } else {
-        jump k384(Tag_3)
+        jump k418(Tag_3)
       }
     },
     "lambda" => {
-      let t398 = vec_len(items/87) in
-      let t399 = (t398 == 3) in
-      join k396(jp397: Value) -> Value {
-        jump k373(jp397)
+      let t432 = vec_len(items/87) in
+      let t433 = (t432 == 3) in
+      join k430(jp431: Value) -> Value {
+        jump k407(jp431)
       } in
-      if t399 {
+      if t433 {
         let mtmp78 = vec_get(items/87, 1) in
-        join k400(jp401: Value) -> Value {
-          jump k396(jp401)
+        join k434(jp435: Value) -> Value {
+          jump k430(jp435)
         } in
         match mtmp78 {
           Tag_0 => {
             let x79 = SExpr::Int._0(mtmp78) in
-            jump k400(Tag_3)
+            jump k434(Tag_3)
           },
           Tag_1 => {
             let x80 = SExpr::Bool._0(mtmp78) in
-            jump k400(Tag_3)
+            jump k434(Tag_3)
           },
           Tag_2 => {
             let x81 = SExpr::Sym._0(mtmp78) in
-            jump k400(Tag_3)
+            jump k434(Tag_3)
           },
           Tag_3 => {
             let x82 = SExpr::List._0(mtmp78) in
             let params_exprs/95 = x82 in
             let params/96 = params_from_sexprs(params_exprs/95) in
             let body/97 = vec_get(items/87, 2) in
-            let t402 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
-            let t403 = Value::Func(t402) in
-            jump k400(t403)
+            let t436 = Lambda { params: params/96, body: body/97, env: local/88, global: global/89 } in
+            let t437 = Value::Func(t436) in
+            jump k434(t437)
           },
         }
       } else {
-        jump k396(Tag_3)
+        jump k430(Tag_3)
       }
     },
     "+" => {
-      let t404 = eval_args(items/87, 1, local/88, global/89) in
-      let t405 = apply_builtin("+", t404) in
-      jump k373(t405)
+      let t438 = eval_args(items/87, 1, local/88, global/89) in
+      let t439 = apply_builtin("+", t438) in
+      jump k407(t439)
     },
     "-" => {
-      let t406 = eval_args(items/87, 1, local/88, global/89) in
-      let t407 = apply_builtin("-", t406) in
-      jump k373(t407)
+      let t440 = eval_args(items/87, 1, local/88, global/89) in
+      let t441 = apply_builtin("-", t440) in
+      jump k407(t441)
     },
     "*" => {
-      let t408 = eval_args(items/87, 1, local/88, global/89) in
-      let t409 = apply_builtin("*", t408) in
-      jump k373(t409)
+      let t442 = eval_args(items/87, 1, local/88, global/89) in
+      let t443 = apply_builtin("*", t442) in
+      jump k407(t443)
     },
     "/" => {
-      let t410 = eval_args(items/87, 1, local/88, global/89) in
-      let t411 = apply_builtin("/", t410) in
-      jump k373(t411)
+      let t444 = eval_args(items/87, 1, local/88, global/89) in
+      let t445 = apply_builtin("/", t444) in
+      jump k407(t445)
     },
     "=" => {
-      let t412 = eval_args(items/87, 1, local/88, global/89) in
-      let t413 = apply_builtin("=", t412) in
-      jump k373(t413)
+      let t446 = eval_args(items/87, 1, local/88, global/89) in
+      let t447 = apply_builtin("=", t446) in
+      jump k407(t447)
     },
     _ => {
-      let t414 = SExpr::Sym(name/86) in
-      let f/98 = eval(t414, local/88, global/89) in
+      let t448 = SExpr::Sym(name/86) in
+      let f/98 = eval(t448, local/88, global/89) in
       let args/99 = eval_args(items/87, 1, local/88, global/89) in
-      let t415 = apply(f/98, args/99, global/89) in
-      jump k373(t415)
+      let t449 = apply(f/98, args/99, global/89) in
+      jump k407(t449)
     },
   }
 }
 
 fn eval_begin(items/100: Vec[SExpr], start/101: int32, local/102: Vec[Binding], global/103: Ref[Vec[Binding]]) -> Value {
+  join ret450(retv451: Value) -> Value {
+    retv451
+  } in
   let i/104 = ref(start/101) in
   let last/105 = ref(Tag_3) in
-  join exit416() -> Value {
+  join exit452() -> Value {
     let mtmp84 = () in
-    let t417 = ref_get(last/105) in
-    t417
+    let t453 = ref_get(last/105) in
+    jump ret450(t453)
   } in
   joinrec {
-    join loop418() -> Value {
-      let t419 = ref_get(i/104) in
-      let t420 = vec_len(items/100) in
-      let t421 = (t419 < t420) in
-      if t421 {
-        let t422 = ref_get(i/104) in
-        let t423 = vec_get(items/100, t422) in
-        let v/106 = eval(t423, local/102, global/103) in
+    join loop454() -> Value {
+      let t455 = ref_get(i/104) in
+      let t456 = vec_len(items/100) in
+      let t457 = (t455 < t456) in
+      if t457 {
+        let t458 = ref_get(i/104) in
+        let t459 = vec_get(items/100, t458) in
+        let v/106 = eval(t459, local/102, global/103) in
         let mtmp83 = ref_set(last/105, v/106) in
-        let t424 = ref_get(i/104) in
-        let t425 = (t424 + 1) in
-        let t426 = ref_set(i/104, t425) in
-        jump loop418()
+        let t460 = ref_get(i/104) in
+        let t461 = (t460 + 1) in
+        let t462 = ref_set(i/104, t461) in
+        jump loop454()
       } else {
-        jump exit416()
+        jump exit452()
       }
     } in
   } in
-  jump loop418()
+  jump loop454()
 }
 
 fn params_from_sexprs(items/107: Vec[SExpr]) -> Vec[string] {
+  join ret463(retv464: Vec[string]) -> Vec[string] {
+    retv464
+  } in
   let i/108 = ref(0) in
   let acc/109 = vec_new() in
   let params/110 = ref(acc/109) in
-  join exit427() -> Vec[string] {
+  join exit465() -> Vec[string] {
     let mtmp91 = () in
-    let t428 = ref_get(params/110) in
-    t428
+    let t466 = ref_get(params/110) in
+    jump ret463(t466)
   } in
   joinrec {
-    join loop429() -> Vec[string] {
-      let t430 = ref_get(i/108) in
-      let t431 = vec_len(items/107) in
-      let t432 = (t430 < t431) in
-      if t432 {
-        let t433 = ref_get(i/108) in
-        let mtmp85 = vec_get(items/107, t433) in
-        join k434() -> Vec[string] {
-          jump loop429()
+    join loop467() -> Vec[string] {
+      let t468 = ref_get(i/108) in
+      let t469 = vec_len(items/107) in
+      let t470 = (t468 < t469) in
+      if t470 {
+        let t471 = ref_get(i/108) in
+        let mtmp85 = vec_get(items/107, t471) in
+        join k472() -> Vec[string] {
+          jump loop467()
         } in
         match mtmp85 {
           Tag_0 => {
             let x86 = SExpr::Int._0(mtmp85) in
-            let t435 = ref_get(i/108) in
-            let t436 = (t435 + 1) in
-            let t437 = ref_set(i/108, t436) in
-            jump k434()
+            let t473 = ref_get(i/108) in
+            let t474 = (t473 + 1) in
+            let t475 = ref_set(i/108, t474) in
+            jump k472()
           },
           Tag_1 => {
             let x87 = SExpr::Bool._0(mtmp85) in
-            let t438 = ref_get(i/108) in
-            let t439 = (t438 + 1) in
-            let t440 = ref_set(i/108, t439) in
-            jump k434()
+            let t476 = ref_get(i/108) in
+            let t477 = (t476 + 1) in
+            let t478 = ref_set(i/108, t477) in
+            jump k472()
           },
           Tag_2 => {
             let x88 = SExpr::Sym._0(mtmp85) in
             let name/111 = x88 in
-            let t441 = ref_get(params/110) in
-            let t442 = vec_push(t441, name/111) in
-            let mtmp90 = ref_set(params/110, t442) in
-            let t443 = ref_get(i/108) in
-            let t444 = (t443 + 1) in
-            let t445 = ref_set(i/108, t444) in
-            jump k434()
+            let t479 = ref_get(params/110) in
+            let t480 = vec_push(t479, name/111) in
+            let mtmp90 = ref_set(params/110, t480) in
+            let t481 = ref_get(i/108) in
+            let t482 = (t481 + 1) in
+            let t483 = ref_set(i/108, t482) in
+            jump k472()
           },
           Tag_3 => {
             let x89 = SExpr::List._0(mtmp85) in
-            let t446 = ref_get(i/108) in
-            let t447 = (t446 + 1) in
-            let t448 = ref_set(i/108, t447) in
-            jump k434()
+            let t484 = ref_get(i/108) in
+            let t485 = (t484 + 1) in
+            let t486 = ref_set(i/108, t485) in
+            jump k472()
           },
         }
       } else {
-        jump exit427()
+        jump exit465()
       }
     } in
   } in
-  jump loop429()
+  jump loop467()
 }
 
 fn eval_args(items/112: Vec[SExpr], start/113: int32, local/114: Vec[Binding], global/115: Ref[Vec[Binding]]) -> Vec[Value] {
+  join ret487(retv488: Vec[Value]) -> Vec[Value] {
+    retv488
+  } in
   let i/116 = ref(start/113) in
   let acc/117 = vec_new() in
   let args/118 = ref(acc/117) in
-  join exit449() -> Vec[Value] {
+  join exit489() -> Vec[Value] {
     let mtmp93 = () in
-    let t450 = ref_get(args/118) in
-    t450
+    let t490 = ref_get(args/118) in
+    jump ret487(t490)
   } in
   joinrec {
-    join loop451() -> Vec[Value] {
-      let t452 = ref_get(i/116) in
-      let t453 = vec_len(items/112) in
-      let t454 = (t452 < t453) in
-      if t454 {
-        let t455 = ref_get(i/116) in
-        let t456 = vec_get(items/112, t455) in
-        let v/119 = eval(t456, local/114, global/115) in
-        let t457 = ref_get(args/118) in
-        let t458 = vec_push(t457, v/119) in
-        let mtmp92 = ref_set(args/118, t458) in
-        let t459 = ref_get(i/116) in
-        let t460 = (t459 + 1) in
-        let t461 = ref_set(i/116, t460) in
-        jump loop451()
+    join loop491() -> Vec[Value] {
+      let t492 = ref_get(i/116) in
+      let t493 = vec_len(items/112) in
+      let t494 = (t492 < t493) in
+      if t494 {
+        let t495 = ref_get(i/116) in
+        let t496 = vec_get(items/112, t495) in
+        let v/119 = eval(t496, local/114, global/115) in
+        let t497 = ref_get(args/118) in
+        let t498 = vec_push(t497, v/119) in
+        let mtmp92 = ref_set(args/118, t498) in
+        let t499 = ref_get(i/116) in
+        let t500 = (t499 + 1) in
+        let t501 = ref_set(i/116, t500) in
+        jump loop491()
       } else {
-        jump exit449()
+        jump exit489()
       }
     } in
   } in
-  jump loop451()
+  jump loop491()
 }
 
 fn apply_builtin(name/120: string, args/121: Vec[Value]) -> Value {
-  join k462(jp463: Value) -> Value {
-    jp463
+  join ret502(retv503: Value) -> Value {
+    retv503
+  } in
+  join k504(jp505: Value) -> Value {
+    jump ret502(jp505)
   } in
   match name/120 {
     "=" => {
-      let t466 = vec_len(args/121) in
-      let t467 = (t466 == 2) in
-      join k464(jp465: Value) -> Value {
-        jump k462(jp465)
+      let t508 = vec_len(args/121) in
+      let t509 = (t508 == 2) in
+      join k506(jp507: Value) -> Value {
+        jump k504(jp507)
       } in
-      if t467 {
-        let t468 = vec_get(args/121, 0) in
-        let t469 = vec_get(args/121, 1) in
-        let mtmp94 = (t468, t469) in
+      if t509 {
+        let t510 = vec_get(args/121, 0) in
+        let t511 = vec_get(args/121, 1) in
+        let mtmp94 = (t510, t511) in
         let x95 = mtmp94.0 in
         let x96 = mtmp94.1 in
-        join k470(jp471: Value) -> Value {
-          jump k464(jp471)
+        join k512(jp513: Value) -> Value {
+          jump k506(jp513)
         } in
         match x96 {
           Tag_0 => {
             let x97 = Value::Int._0(x96) in
-            join k472(jp473: Value) -> Value {
-              jump k470(jp473)
+            join k514(jp515: Value) -> Value {
+              jump k512(jp515)
             } in
             match x95 {
               Tag_0 => {
                 let x100 = Value::Int._0(x95) in
                 let a/122 = x100 in
                 let b/123 = x97 in
-                let t474 = (a/122 == b/123) in
-                let t475 = Value::Bool(t474) in
-                jump k472(t475)
+                let t516 = (a/122 == b/123) in
+                let t517 = Value::Bool(t516) in
+                jump k514(t517)
               },
               Tag_1 => {
                 let x101 = Value::Bool._0(x95) in
-                let t476 = Value::Bool(false) in
-                jump k472(t476)
+                let t518 = Value::Bool(false) in
+                jump k514(t518)
               },
               Tag_2 => {
                 let x102 = Value::Func._0(x95) in
-                let t477 = Value::Bool(false) in
-                jump k472(t477)
+                let t519 = Value::Bool(false) in
+                jump k514(t519)
               },
               Tag_3 => {
-                let t478 = Value::Bool(false) in
-                jump k472(t478)
+                let t520 = Value::Bool(false) in
+                jump k514(t520)
               },
             }
           },
           Tag_1 => {
             let x98 = Value::Bool._0(x96) in
-            join k479(jp480: Value) -> Value {
-              jump k470(jp480)
+            join k521(jp522: Value) -> Value {
+              jump k512(jp522)
             } in
             match x95 {
               Tag_0 => {
                 let x103 = Value::Int._0(x95) in
-                let t481 = Value::Bool(false) in
-                jump k479(t481)
+                let t523 = Value::Bool(false) in
+                jump k521(t523)
               },
               Tag_1 => {
                 let x104 = Value::Bool._0(x95) in
                 let a/124 = x104 in
                 let b/125 = x98 in
-                let t482 = (a/124 == b/125) in
-                let t483 = Value::Bool(t482) in
-                jump k479(t483)
+                let t524 = (a/124 == b/125) in
+                let t525 = Value::Bool(t524) in
+                jump k521(t525)
               },
               Tag_2 => {
                 let x105 = Value::Func._0(x95) in
-                let t484 = Value::Bool(false) in
-                jump k479(t484)
+                let t526 = Value::Bool(false) in
+                jump k521(t526)
               },
               Tag_3 => {
-                let t485 = Value::Bool(false) in
-                jump k479(t485)
+                let t527 = Value::Bool(false) in
+                jump k521(t527)
               },
             }
           },
           Tag_2 => {
             let x99 = Value::Func._0(x96) in
-            let t486 = Value::Bool(false) in
-            jump k470(t486)
+            let t528 = Value::Bool(false) in
+            jump k512(t528)
           },
           Tag_3 => {
-            let t487 = Value::Bool(false) in
-            jump k470(t487)
+            let t529 = Value::Bool(false) in
+            jump k512(t529)
           },
         }
       } else {
-        let t488 = Value::Bool(false) in
-        jump k464(t488)
+        let t530 = Value::Bool(false) in
+        jump k506(t530)
       }
     },
     "+" => {
       let i/126 = ref(0) in
       let acc/127 = ref(0) in
-      join exit489() -> Value {
+      join exit531() -> Value {
         let mtmp111 = () in
-        let t490 = ref_get(acc/127) in
-        let t491 = Value::Int(t490) in
-        jump k462(t491)
+        let t532 = ref_get(acc/127) in
+        let t533 = Value::Int(t532) in
+        jump k504(t533)
       } in
       joinrec {
-        join loop492() -> Value {
-          let t493 = ref_get(i/126) in
-          let t494 = vec_len(args/121) in
-          let t495 = (t493 < t494) in
-          if t495 {
-            let t496 = ref_get(i/126) in
-            let mtmp106 = vec_get(args/121, t496) in
-            join k497() -> Value {
-              jump loop492()
+        join loop534() -> Value {
+          let t535 = ref_get(i/126) in
+          let t536 = vec_len(args/121) in
+          let t537 = (t535 < t536) in
+          if t537 {
+            let t538 = ref_get(i/126) in
+            let mtmp106 = vec_get(args/121, t538) in
+            join k539() -> Value {
+              jump loop534()
             } in
             match mtmp106 {
               Tag_0 => {
                 let x107 = Value::Int._0(mtmp106) in
                 let n/128 = x107 in
-                let t498 = ref_get(acc/127) in
-                let t499 = (t498 + n/128) in
-                let mtmp110 = ref_set(acc/127, t499) in
-                let t500 = ref_get(i/126) in
-                let t501 = (t500 + 1) in
-                let t502 = ref_set(i/126, t501) in
-                jump k497()
+                let t540 = ref_get(acc/127) in
+                let t541 = (t540 + n/128) in
+                let mtmp110 = ref_set(acc/127, t541) in
+                let t542 = ref_get(i/126) in
+                let t543 = (t542 + 1) in
+                let t544 = ref_set(i/126, t543) in
+                jump k539()
               },
               Tag_1 => {
                 let x108 = Value::Bool._0(mtmp106) in
-                let t503 = ref_get(i/126) in
-                let t504 = (t503 + 1) in
-                let t505 = ref_set(i/126, t504) in
-                jump k497()
+                let t545 = ref_get(i/126) in
+                let t546 = (t545 + 1) in
+                let t547 = ref_set(i/126, t546) in
+                jump k539()
               },
               Tag_2 => {
                 let x109 = Value::Func._0(mtmp106) in
-                let t506 = ref_get(i/126) in
-                let t507 = (t506 + 1) in
-                let t508 = ref_set(i/126, t507) in
-                jump k497()
+                let t548 = ref_get(i/126) in
+                let t549 = (t548 + 1) in
+                let t550 = ref_set(i/126, t549) in
+                jump k539()
               },
               Tag_3 => {
-                let t509 = ref_get(i/126) in
-                let t510 = (t509 + 1) in
-                let t511 = ref_set(i/126, t510) in
-                jump k497()
+                let t551 = ref_get(i/126) in
+                let t552 = (t551 + 1) in
+                let t553 = ref_set(i/126, t552) in
+                jump k539()
               },
             }
           } else {
-            jump exit489()
+            jump exit531()
           }
         } in
       } in
-      jump loop492()
+      jump loop534()
     },
     "*" => {
       let i/129 = ref(0) in
       let acc/130 = ref(1) in
-      join exit512() -> Value {
+      join exit554() -> Value {
         let mtmp117 = () in
-        let t513 = ref_get(acc/130) in
-        let t514 = Value::Int(t513) in
-        jump k462(t514)
+        let t555 = ref_get(acc/130) in
+        let t556 = Value::Int(t555) in
+        jump k504(t556)
       } in
       joinrec {
-        join loop515() -> Value {
-          let t516 = ref_get(i/129) in
-          let t517 = vec_len(args/121) in
-          let t518 = (t516 < t517) in
-          if t518 {
-            let t519 = ref_get(i/129) in
-            let mtmp112 = vec_get(args/121, t519) in
-            join k520() -> Value {
-              jump loop515()
+        join loop557() -> Value {
+          let t558 = ref_get(i/129) in
+          let t559 = vec_len(args/121) in
+          let t560 = (t558 < t559) in
+          if t560 {
+            let t561 = ref_get(i/129) in
+            let mtmp112 = vec_get(args/121, t561) in
+            join k562() -> Value {
+              jump loop557()
             } in
             match mtmp112 {
               Tag_0 => {
                 let x113 = Value::Int._0(mtmp112) in
                 let n/131 = x113 in
-                let t521 = ref_get(acc/130) in
-                let t522 = (t521 * n/131) in
-                let mtmp116 = ref_set(acc/130, t522) in
-                let t523 = ref_get(i/129) in
-                let t524 = (t523 + 1) in
-                let t525 = ref_set(i/129, t524) in
-                jump k520()
+                let t563 = ref_get(acc/130) in
+                let t564 = (t563 * n/131) in
+                let mtmp116 = ref_set(acc/130, t564) in
+                let t565 = ref_get(i/129) in
+                let t566 = (t565 + 1) in
+                let t567 = ref_set(i/129, t566) in
+                jump k562()
               },
               Tag_1 => {
                 let x114 = Value::Bool._0(mtmp112) in
-                let t526 = ref_get(i/129) in
-                let t527 = (t526 + 1) in
-                let t528 = ref_set(i/129, t527) in
-                jump k520()
+                let t568 = ref_get(i/129) in
+                let t569 = (t568 + 1) in
+                let t570 = ref_set(i/129, t569) in
+                jump k562()
               },
               Tag_2 => {
                 let x115 = Value::Func._0(mtmp112) in
-                let t529 = ref_get(i/129) in
-                let t530 = (t529 + 1) in
-                let t531 = ref_set(i/129, t530) in
-                jump k520()
+                let t571 = ref_get(i/129) in
+                let t572 = (t571 + 1) in
+                let t573 = ref_set(i/129, t572) in
+                jump k562()
               },
               Tag_3 => {
-                let t532 = ref_get(i/129) in
-                let t533 = (t532 + 1) in
-                let t534 = ref_set(i/129, t533) in
-                jump k520()
+                let t574 = ref_get(i/129) in
+                let t575 = (t574 + 1) in
+                let t576 = ref_set(i/129, t575) in
+                jump k562()
               },
             }
           } else {
-            jump exit512()
+            jump exit554()
           }
         } in
       } in
-      jump loop515()
+      jump loop557()
     },
     "-" => {
       let mtmp118 = vec_len(args/121) in
-      join k535(jp536: Value) -> Value {
-        jump k462(jp536)
+      join k577(jp578: Value) -> Value {
+        jump k504(jp578)
       } in
       match mtmp118 {
         1 => {
           let mtmp119 = vec_get(args/121, 0) in
-          join k537(jp538: Value) -> Value {
-            jump k535(jp538)
+          join k579(jp580: Value) -> Value {
+            jump k577(jp580)
           } in
           match mtmp119 {
             Tag_0 => {
               let x120 = Value::Int._0(mtmp119) in
               let n/132 = x120 in
-              let t539 = (0 - n/132) in
-              let t540 = Value::Int(t539) in
-              jump k537(t540)
+              let t581 = (0 - n/132) in
+              let t582 = Value::Int(t581) in
+              jump k579(t582)
             },
             Tag_1 => {
               let x121 = Value::Bool._0(mtmp119) in
-              jump k537(Tag_3)
+              jump k579(Tag_3)
             },
             Tag_2 => {
               let x122 = Value::Func._0(mtmp119) in
-              jump k537(Tag_3)
+              jump k579(Tag_3)
             },
             Tag_3 => {
-              jump k537(Tag_3)
+              jump k579(Tag_3)
             },
           }
         },
         2 => {
-          let t541 = vec_get(args/121, 0) in
-          let t542 = vec_get(args/121, 1) in
-          let mtmp123 = (t541, t542) in
+          let t583 = vec_get(args/121, 0) in
+          let t584 = vec_get(args/121, 1) in
+          let mtmp123 = (t583, t584) in
           let x124 = mtmp123.0 in
           let x125 = mtmp123.1 in
-          join k543(jp544: Value) -> Value {
-            jump k535(jp544)
+          join k585(jp586: Value) -> Value {
+            jump k577(jp586)
           } in
           match x125 {
             Tag_0 => {
               let x126 = Value::Int._0(x125) in
-              join k545(jp546: Value) -> Value {
-                jump k543(jp546)
+              join k587(jp588: Value) -> Value {
+                jump k585(jp588)
               } in
               match x124 {
                 Tag_0 => {
                   let x129 = Value::Int._0(x124) in
                   let a/133 = x129 in
                   let b/134 = x126 in
-                  let t547 = (a/133 - b/134) in
-                  let t548 = Value::Int(t547) in
-                  jump k545(t548)
+                  let t589 = (a/133 - b/134) in
+                  let t590 = Value::Int(t589) in
+                  jump k587(t590)
                 },
                 Tag_1 => {
                   let x130 = Value::Bool._0(x124) in
-                  jump k545(Tag_3)
+                  jump k587(Tag_3)
                 },
                 Tag_2 => {
                   let x131 = Value::Func._0(x124) in
-                  jump k545(Tag_3)
+                  jump k587(Tag_3)
                 },
                 Tag_3 => {
-                  jump k545(Tag_3)
+                  jump k587(Tag_3)
                 },
               }
             },
             Tag_1 => {
               let x127 = Value::Bool._0(x125) in
-              jump k543(Tag_3)
+              jump k585(Tag_3)
             },
             Tag_2 => {
               let x128 = Value::Func._0(x125) in
-              jump k543(Tag_3)
+              jump k585(Tag_3)
             },
             Tag_3 => {
-              jump k543(Tag_3)
+              jump k585(Tag_3)
             },
           }
         },
         _ => {
-          jump k535(Tag_3)
+          jump k577(Tag_3)
         },
       }
     },
     "/" => {
-      let t551 = vec_len(args/121) in
-      let t552 = (t551 == 2) in
-      join k549(jp550: Value) -> Value {
-        jump k462(jp550)
+      let t593 = vec_len(args/121) in
+      let t594 = (t593 == 2) in
+      join k591(jp592: Value) -> Value {
+        jump k504(jp592)
       } in
-      if t552 {
-        let t553 = vec_get(args/121, 0) in
-        let t554 = vec_get(args/121, 1) in
-        let mtmp132 = (t553, t554) in
+      if t594 {
+        let t595 = vec_get(args/121, 0) in
+        let t596 = vec_get(args/121, 1) in
+        let mtmp132 = (t595, t596) in
         let x133 = mtmp132.0 in
         let x134 = mtmp132.1 in
-        join k555(jp556: Value) -> Value {
-          jump k549(jp556)
+        join k597(jp598: Value) -> Value {
+          jump k591(jp598)
         } in
         match x134 {
           Tag_0 => {
             let x135 = Value::Int._0(x134) in
-            join k557(jp558: Value) -> Value {
-              jump k555(jp558)
+            join k599(jp600: Value) -> Value {
+              jump k597(jp600)
             } in
             match x133 {
               Tag_0 => {
                 let x138 = Value::Int._0(x133) in
                 let a/135 = x138 in
                 let b/136 = x135 in
-                let t559 = (a/135 / b/136) in
-                let t560 = Value::Int(t559) in
-                jump k557(t560)
+                let t601 = (a/135 / b/136) in
+                let t602 = Value::Int(t601) in
+                jump k599(t602)
               },
               Tag_1 => {
                 let x139 = Value::Bool._0(x133) in
-                jump k557(Tag_3)
+                jump k599(Tag_3)
               },
               Tag_2 => {
                 let x140 = Value::Func._0(x133) in
-                jump k557(Tag_3)
+                jump k599(Tag_3)
               },
               Tag_3 => {
-                jump k557(Tag_3)
+                jump k599(Tag_3)
               },
             }
           },
           Tag_1 => {
             let x136 = Value::Bool._0(x134) in
-            jump k555(Tag_3)
+            jump k597(Tag_3)
           },
           Tag_2 => {
             let x137 = Value::Func._0(x134) in
-            jump k555(Tag_3)
+            jump k597(Tag_3)
           },
           Tag_3 => {
-            jump k555(Tag_3)
+            jump k597(Tag_3)
           },
         }
       } else {
-        jump k549(Tag_3)
+        jump k591(Tag_3)
       }
     },
     _ => {
-      jump k462(Tag_3)
+      jump k504(Tag_3)
     },
   }
 }
 
 fn apply(func/137: Value, args/138: Vec[Value], global/139: Ref[Vec[Binding]]) -> Value {
-  join k561(jp562: Value) -> Value {
-    jp562
+  join ret603(retv604: Value) -> Value {
+    retv604
+  } in
+  join k605(jp606: Value) -> Value {
+    jump ret603(jp606)
   } in
   match func/137 {
     Tag_0 => {
       let x141 = Value::Int._0(func/137) in
-      jump k561(Tag_3)
+      jump k605(Tag_3)
     },
     Tag_1 => {
       let x142 = Value::Bool._0(func/137) in
-      jump k561(Tag_3)
+      jump k605(Tag_3)
     },
     Tag_2 => {
       let x143 = Value::Func._0(func/137) in
       let fun/140 = x143 in
-      let t563 = apply_lambda(fun/140, args/138) in
-      jump k561(t563)
+      let t607 = apply_lambda(fun/140, args/138) in
+      jump k605(t607)
     },
     Tag_3 => {
-      jump k561(Tag_3)
+      jump k605(Tag_3)
     },
   }
 }
 
 fn apply_lambda(lambda/141: Lambda, args/142: Vec[Value]) -> Value {
-  let t564 = Lambda.env(lambda/141) in
-  let env/143 = ref(t564) in
+  join ret608(retv609: Value) -> Value {
+    retv609
+  } in
+  let t610 = Lambda.env(lambda/141) in
+  let env/143 = ref(t610) in
   let i/144 = ref(0) in
-  join exit565() -> Value {
+  join exit611() -> Value {
     let mtmp145 = () in
-    let t566 = Lambda.body(lambda/141) in
-    let t567 = ref_get(env/143) in
-    let t568 = Lambda.global(lambda/141) in
-    let t569 = eval(t566, t567, t568) in
-    t569
+    let t612 = Lambda.body(lambda/141) in
+    let t613 = ref_get(env/143) in
+    let t614 = Lambda.global(lambda/141) in
+    let t615 = eval(t612, t613, t614) in
+    jump ret608(t615)
   } in
   joinrec {
-    join loop570() -> Value {
-      let t571 = ref_get(i/144) in
-      let t572 = Lambda.params(lambda/141) in
-      let t573 = vec_len(t572) in
-      let t574 = (t571 < t573) in
-      let t575 = ref_get(i/144) in
-      let t576 = vec_len(args/142) in
-      let t577 = (t575 < t576) in
-      let t578 = (t574 && t577) in
-      if t578 {
-        let t579 = Lambda.params(lambda/141) in
-        let t580 = ref_get(i/144) in
-        let name/145 = vec_get(t579, t580) in
-        let t581 = ref_get(i/144) in
-        let value/146 = vec_get(args/142, t581) in
-        let t582 = ref_get(env/143) in
-        let t583 = Binding { name: name/145, value: value/146 } in
-        let updated/147 = vec_push(t582, t583) in
+    join loop616() -> Value {
+      let t617 = ref_get(i/144) in
+      let t618 = Lambda.params(lambda/141) in
+      let t619 = vec_len(t618) in
+      let t620 = (t617 < t619) in
+      let t621 = ref_get(i/144) in
+      let t622 = vec_len(args/142) in
+      let t623 = (t621 < t622) in
+      let t624 = (t620 && t623) in
+      if t624 {
+        let t625 = Lambda.params(lambda/141) in
+        let t626 = ref_get(i/144) in
+        let name/145 = vec_get(t625, t626) in
+        let t627 = ref_get(i/144) in
+        let value/146 = vec_get(args/142, t627) in
+        let t628 = ref_get(env/143) in
+        let t629 = Binding { name: name/145, value: value/146 } in
+        let updated/147 = vec_push(t628, t629) in
         let mtmp144 = ref_set(env/143, updated/147) in
-        let t584 = ref_get(i/144) in
-        let t585 = (t584 + 1) in
-        let t586 = ref_set(i/144, t585) in
-        jump loop570()
+        let t630 = ref_get(i/144) in
+        let t631 = (t630 + 1) in
+        let t632 = ref_set(i/144, t631) in
+        jump loop616()
       } else {
-        jump exit565()
+        jump exit611()
       }
     } in
   } in
-  jump loop570()
+  jump loop616()
 }
 
 fn main() -> unit {
-  let t587 = vec_new() in
-  let global/148 = ref(t587) in
+  join ret633() -> unit {
+    ()
+  } in
+  let t634 = vec_new() in
+  let global/148 = ref(t634) in
   let program/149 = "(begin (define fact (lambda (n) (if (= n 0) 1 (* n (fact (- n 1)))))) (define add3 (lambda (a b c) (+ a (+ b c)))) (fact 6))" in
-  let t588 = lex(program/149) in
-  let exprs/150 = parse_program(t588) in
-  let t589 = vec_get(exprs/150, 0) in
-  let t590 = vec_new() in
-  let result/151 = eval(t589, t590, global/148) in
-  let t591 = value_to_string(result/151) in
-  let mtmp146 = string_println(t591) in
-  let t592 = lex("(add3 10 20 30)") in
-  let exprs2/152 = parse_program(t592) in
-  let t593 = vec_get(exprs2/152, 0) in
-  let t594 = vec_new() in
-  let result2/153 = eval(t593, t594, global/148) in
-  let t595 = value_to_string(result2/153) in
-  let mtmp147 = string_println(t595) in
-  ()
+  let t635 = lex(program/149) in
+  let exprs/150 = parse_program(t635) in
+  let t636 = vec_get(exprs/150, 0) in
+  let t637 = vec_new() in
+  let result/151 = eval(t636, t637, global/148) in
+  let t638 = value_to_string(result/151) in
+  let mtmp146 = string_println(t638) in
+  let t639 = lex("(add3 10 20 30)") in
+  let exprs2/152 = parse_program(t639) in
+  let t640 = vec_get(exprs2/152, 0) in
+  let t641 = vec_new() in
+  let result2/153 = eval(t640, t641, global/148) in
+  let t642 = value_to_string(result2/153) in
+  let mtmp147 = string_println(t642) in
+  jump ret633()
 }

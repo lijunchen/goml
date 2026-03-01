@@ -1,188 +1,218 @@
 fn bounce_int(shape/0: Shape__int32) -> Shape__int32 {
-  join k25(jp26: Shape__int32) -> Shape__int32 {
-    jp26
+  join ret25(retv26: Shape__int32) -> Shape__int32 {
+    retv26
+  } in
+  join k27(jp28: Shape__int32) -> Shape__int32 {
+    jump ret25(jp28)
   } in
   match shape/0 {
     Tag_0 => {
       let x0 = Shape__int32::Dot._0(shape/0) in
       let point/1 = x0 in
-      let t27 = Shape__int32::Dot(point/1) in
-      jump k25(t27)
+      let t29 = Shape__int32::Dot(point/1) in
+      jump k27(t29)
     },
     Tag_1 => {
       let x1 = Shape__int32::Wrapped._0(shape/0) in
       let inner/2 = x1 in
-      let t28 = Shape__int32::Wrapped(inner/2) in
-      jump k25(t28)
+      let t30 = Shape__int32::Wrapped(inner/2) in
+      jump k27(t30)
     },
     Tag_2 => {
-      jump k25(Tag_2)
+      jump k27(Tag_2)
     },
   }
 }
 
 fn wrap_unit(value/3: Wrapper__unit) -> Shape__unit {
-  let t29 = Shape__unit::Wrapped(value/3) in
-  t29
+  join ret31(retv32: Shape__unit) -> Shape__unit {
+    retv32
+  } in
+  let t33 = Shape__unit::Wrapped(value/3) in
+  jump ret31(t33)
 }
 
 fn pick(flag/4: bool, point/5: Point, wrapper/6: Wrapper__int32) -> Shape__int32 {
-  join k30(jp31: Shape__int32) -> Shape__int32 {
-    jp31
+  join ret34(retv35: Shape__int32) -> Shape__int32 {
+    retv35
+  } in
+  join k36(jp37: Shape__int32) -> Shape__int32 {
+    jump ret34(jp37)
   } in
   match flag/4 {
     true => {
-      let t32 = Shape__int32::Dot(point/5) in
-      jump k30(t32)
+      let t38 = Shape__int32::Dot(point/5) in
+      jump k36(t38)
     },
     false => {
-      let t33 = Shape__int32::Wrapped(wrapper/6) in
-      jump k30(t33)
+      let t39 = Shape__int32::Wrapped(wrapper/6) in
+      jump k36(t39)
     },
   }
 }
 
 fn point32_to_string(point/8: Point) -> string {
+  join ret40(retv41: string) -> string {
+    retv41
+  } in
   let mtmp4 = point/8 in
   let x5 = Point.x(mtmp4) in
   let x6 = Point.y(mtmp4) in
   let y/10 = x6 in
   let x/9 = x5 in
-  let t34 = int32_to_string(x/9) in
-  let with_x/11 = ("Point { x: " + t34) in
+  let t42 = int32_to_string(x/9) in
+  let with_x/11 = ("Point { x: " + t42) in
   let with_y_label/12 = (with_x/11 + ", y: ") in
-  let t35 = int32_to_string(y/10) in
-  let with_y/13 = (with_y_label/12 + t35) in
-  let t36 = (with_y/13 + " }") in
-  t36
+  let t43 = int32_to_string(y/10) in
+  let with_y/13 = (with_y_label/12 + t43) in
+  let t44 = (with_y/13 + " }") in
+  jump ret40(t44)
 }
 
 fn wrapper_int32_to_string(wrapper/14: Wrapper__int32) -> string {
+  join ret45(retv46: string) -> string {
+    retv46
+  } in
   let mtmp7 = wrapper/14 in
   let x8 = Wrapper__int32.value(mtmp7) in
   let value/15 = x8 in
-  let t37 = int32_to_string(value/15) in
-  let prefix/16 = ("Wrapper[int32] { value: " + t37) in
-  let t38 = (prefix/16 + " }") in
-  t38
+  let t47 = int32_to_string(value/15) in
+  let prefix/16 = ("Wrapper[int32] { value: " + t47) in
+  let t48 = (prefix/16 + " }") in
+  jump ret45(t48)
 }
 
 fn wrapper_unit_to_string(wrapper/17: Wrapper__unit) -> string {
+  join ret49(retv50: string) -> string {
+    retv50
+  } in
   let mtmp9 = wrapper/17 in
   let x10 = Wrapper__unit.value(mtmp9) in
   let value/18 = x10 in
-  let t39 = unit_to_string(value/18) in
-  let prefix/19 = ("Wrapper[unit] { value: " + t39) in
-  let t40 = (prefix/19 + " }") in
-  t40
+  let t51 = unit_to_string(value/18) in
+  let prefix/19 = ("Wrapper[unit] { value: " + t51) in
+  let t52 = (prefix/19 + " }") in
+  jump ret49(t52)
 }
 
 fn shape_int32_to_string(shape/20: Shape__int32) -> string {
-  join k41(jp42: string) -> string {
-    jp42
+  join ret53(retv54: string) -> string {
+    retv54
+  } in
+  join k55(jp56: string) -> string {
+    jump ret53(jp56)
   } in
   match shape/20 {
     Tag_0 => {
       let x11 = Shape__int32::Dot._0(shape/20) in
       let point/21 = x11 in
-      let t43 = point32_to_string(point/21) in
-      let prefix/22 = ("Shape::Dot(" + t43) in
-      let t44 = (prefix/22 + ")") in
-      jump k41(t44)
+      let t57 = point32_to_string(point/21) in
+      let prefix/22 = ("Shape::Dot(" + t57) in
+      let t58 = (prefix/22 + ")") in
+      jump k55(t58)
     },
     Tag_1 => {
       let x12 = Shape__int32::Wrapped._0(shape/20) in
       let wrapper/23 = x12 in
-      let t45 = wrapper_int32_to_string(wrapper/23) in
-      let prefix/24 = ("Shape::Wrapped(" + t45) in
-      let t46 = (prefix/24 + ")") in
-      jump k41(t46)
+      let t59 = wrapper_int32_to_string(wrapper/23) in
+      let prefix/24 = ("Shape::Wrapped(" + t59) in
+      let t60 = (prefix/24 + ")") in
+      jump k55(t60)
     },
     Tag_2 => {
-      jump k41("Shape::Origin")
+      jump k55("Shape::Origin")
     },
   }
 }
 
 fn shape_unit_to_string(shape/25: Shape__unit) -> string {
-  join k47(jp48: string) -> string {
-    jp48
+  join ret61(retv62: string) -> string {
+    retv62
+  } in
+  join k63(jp64: string) -> string {
+    jump ret61(jp64)
   } in
   match shape/25 {
     Tag_0 => {
       let x13 = Shape__unit::Dot._0(shape/25) in
       let point/26 = x13 in
-      let t49 = point32_to_string(point/26) in
-      let prefix/27 = ("Shape::Dot(" + t49) in
-      let t50 = (prefix/27 + ")") in
-      jump k47(t50)
+      let t65 = point32_to_string(point/26) in
+      let prefix/27 = ("Shape::Dot(" + t65) in
+      let t66 = (prefix/27 + ")") in
+      jump k63(t66)
     },
     Tag_1 => {
       let x14 = Shape__unit::Wrapped._0(shape/25) in
       let wrapper/28 = x14 in
-      let t51 = wrapper_unit_to_string(wrapper/28) in
-      let prefix/29 = ("Shape::Wrapped(" + t51) in
-      let t52 = (prefix/29 + ")") in
-      jump k47(t52)
+      let t67 = wrapper_unit_to_string(wrapper/28) in
+      let prefix/29 = ("Shape::Wrapped(" + t67) in
+      let t68 = (prefix/29 + ")") in
+      jump k63(t68)
     },
     Tag_2 => {
-      jump k47("Shape::Origin")
+      jump k63("Shape::Origin")
     },
   }
 }
 
 fn main() -> unit {
-  let t53 = Point { x: 3, y: 4 } in
-  let t54 = point32_to_string(t53) in
-  let mtmp15 = string_println(t54) in
-  let t55 = Wrapper__int32 { value: 7 } in
-  let t56 = wrapper_int32_to_string(t55) in
-  let mtmp16 = string_println(t56) in
-  let t57 = Wrapper__unit { value: () } in
-  let t58 = wrapper_unit_to_string(t57) in
-  let mtmp17 = string_println(t58) in
+  join ret69() -> unit {
+    ()
+  } in
+  let t70 = Point { x: 3, y: 4 } in
+  let t71 = point32_to_string(t70) in
+  let mtmp15 = string_println(t71) in
+  let t72 = Wrapper__int32 { value: 7 } in
+  let t73 = wrapper_int32_to_string(t72) in
+  let mtmp16 = string_println(t73) in
+  let t74 = Wrapper__unit { value: () } in
+  let t75 = wrapper_unit_to_string(t74) in
+  let mtmp17 = string_println(t75) in
   let bounced_origin/30 = bounce_int(Tag_2) in
-  let t59 = Point { x: 3, y: 4 } in
-  let t60 = Shape__int32::Dot(t59) in
-  let t61 = shape_int32_to_string(t60) in
-  let mtmp18 = string_println(t61) in
-  let t62 = Wrapper__int32 { value: 7 } in
-  let t63 = Shape__int32::Wrapped(t62) in
-  let t64 = shape_int32_to_string(t63) in
-  let mtmp19 = string_println(t64) in
-  let t65 = shape_int32_to_string(bounced_origin/30) in
-  let mtmp20 = string_println(t65) in
-  let t66 = Point { x: 3, y: 4 } in
-  let t67 = Shape__unit::Dot(t66) in
-  let t68 = shape_unit_to_string(t67) in
-  let mtmp21 = string_println(t68) in
-  let t69 = Wrapper__unit { value: () } in
-  let t70 = Shape__unit::Wrapped(t69) in
-  let t71 = shape_unit_to_string(t70) in
-  let mtmp22 = string_println(t71) in
-  let t72 = shape_unit_to_string(Tag_2) in
-  let mtmp23 = string_println(t72) in
-  let t73 = bounce_int(Tag_2) in
-  let mtmp24 = describe__T_int32(t73) in
-  let t74 = string_println("struct enums!") in
-  t74
+  let t76 = Point { x: 3, y: 4 } in
+  let t77 = Shape__int32::Dot(t76) in
+  let t78 = shape_int32_to_string(t77) in
+  let mtmp18 = string_println(t78) in
+  let t79 = Wrapper__int32 { value: 7 } in
+  let t80 = Shape__int32::Wrapped(t79) in
+  let t81 = shape_int32_to_string(t80) in
+  let mtmp19 = string_println(t81) in
+  let t82 = shape_int32_to_string(bounced_origin/30) in
+  let mtmp20 = string_println(t82) in
+  let t83 = Point { x: 3, y: 4 } in
+  let t84 = Shape__unit::Dot(t83) in
+  let t85 = shape_unit_to_string(t84) in
+  let mtmp21 = string_println(t85) in
+  let t86 = Wrapper__unit { value: () } in
+  let t87 = Shape__unit::Wrapped(t86) in
+  let t88 = shape_unit_to_string(t87) in
+  let mtmp22 = string_println(t88) in
+  let t89 = shape_unit_to_string(Tag_2) in
+  let mtmp23 = string_println(t89) in
+  let t90 = bounce_int(Tag_2) in
+  let mtmp24 = describe__T_int32(t90) in
+  let t91 = string_println("struct enums!") in
+  jump ret69()
 }
 
 fn describe__T_int32(shape/7: Shape__int32) -> int32 {
-  join k75(jp76: int32) -> int32 {
-    jp76
+  join ret92(retv93: int32) -> int32 {
+    retv93
+  } in
+  join k94(jp95: int32) -> int32 {
+    jump ret92(jp95)
   } in
   match shape/7 {
     Tag_0 => {
       let x2 = Shape__int32::Dot._0(shape/7) in
-      jump k75(1)
+      jump k94(1)
     },
     Tag_1 => {
       let x3 = Shape__int32::Wrapped._0(shape/7) in
-      jump k75(2)
+      jump k94(2)
     },
     Tag_2 => {
-      jump k75(0)
+      jump k94(0)
     },
   }
 }

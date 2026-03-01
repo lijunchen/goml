@@ -10,40 +10,42 @@ func string_println(s string) struct{} {
 }
 
 func classify(x__0 float64) string {
-    var jp6 string
+    var retv6 string
+    var jp8 string
     switch x__0 {
     case 0:
-        jp6 = "zero"
+        jp8 = "zero"
     case 1:
-        jp6 = "one"
+        jp8 = "one"
     case -1:
-        jp6 = "minus one"
+        jp8 = "minus one"
     case 3.14:
-        jp6 = "pi"
+        jp8 = "pi"
     default:
-        jp6 = "other"
+        jp8 = "other"
     }
-    return jp6
+    retv6 = jp8
+    return retv6
 }
 
 func main0() struct{} {
-    var t7 string = classify(0)
-    println__T_string(t7)
-    var t8 string = classify(1)
-    println__T_string(t8)
-    var t9 float64 = -1
-    var t10 string = classify(t9)
+    var t10 string = classify(0)
     println__T_string(t10)
-    var t11 string = classify(3.14)
+    var t11 string = classify(1)
     println__T_string(t11)
-    var t12 string = classify(42)
-    println__T_string(t12)
+    var t12 float64 = -1
+    var t13 string = classify(t12)
+    println__T_string(t13)
+    var t14 string = classify(3.14)
+    println__T_string(t14)
+    var t15 string = classify(42)
+    println__T_string(t15)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t13 struct{} = string_println(value__1)
-    return t13
+    string_println(value__1)
+    return struct{}{}
 }
 
 func main() {

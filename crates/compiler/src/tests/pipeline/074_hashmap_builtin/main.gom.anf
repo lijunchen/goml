@@ -1,97 +1,106 @@
 fn trait_impl#Eq#Point#eq(self/0: Point, other/1: Point) -> bool {
-  let t26 = Point.x(self/0) in
-  let t27 = Point.x(other/1) in
-  let t28 = trait_impl#Eq#int32#eq(t26, t27) in
-  let t29 = (true && t28) in
-  let t30 = Point.y(self/0) in
-  let t31 = Point.y(other/1) in
-  let t32 = trait_impl#Eq#int32#eq(t30, t31) in
-  let t33 = (t29 && t32) in
-  t33
+  join ret26(retv27: bool) -> bool {
+    retv27
+  } in
+  let t28 = Point.x(self/0) in
+  let t29 = Point.x(other/1) in
+  let t30 = trait_impl#Eq#int32#eq(t28, t29) in
+  let t31 = (true && t30) in
+  let t32 = Point.y(self/0) in
+  let t33 = Point.y(other/1) in
+  let t34 = trait_impl#Eq#int32#eq(t32, t33) in
+  let t35 = (t31 && t34) in
+  jump ret26(t35)
 }
 
 fn trait_impl#Hash#Point#hash(self/2: Point) -> uint64 {
+  join ret36(retv37: uint64) -> uint64 {
+    retv37
+  } in
   let h/3 = 14695981039346656037 in
-  let t34 = (h/3 * 1099511628211) in
-  let t35 = Point.x(self/2) in
-  let t36 = trait_impl#Hash#int32#hash(t35) in
-  let h/4 = (t34 + t36) in
-  let t37 = (h/4 * 1099511628211) in
-  let t38 = Point.y(self/2) in
-  let t39 = trait_impl#Hash#int32#hash(t38) in
-  let h/5 = (t37 + t39) in
-  h/5
+  let t38 = (h/3 * 1099511628211) in
+  let t39 = Point.x(self/2) in
+  let t40 = trait_impl#Hash#int32#hash(t39) in
+  let h/4 = (t38 + t40) in
+  let t41 = (h/4 * 1099511628211) in
+  let t42 = Point.y(self/2) in
+  let t43 = trait_impl#Hash#int32#hash(t42) in
+  let h/5 = (t41 + t43) in
+  jump ret36(h/5)
 }
 
 fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
+  join ret44(retv45: bool) -> bool {
+    retv45
+  } in
   let mtmp0 = (self/6, other/7) in
   let x1 = mtmp0.0 in
   let x2 = mtmp0.1 in
-  join k40(jp41: bool) -> bool {
-    jp41
+  join k46(jp47: bool) -> bool {
+    jump ret44(jp47)
   } in
   match x2 {
     Tag_0 => {
-      join k42(jp43: bool) -> bool {
-        jump k40(jp43)
+      join k48(jp49: bool) -> bool {
+        jump k46(jp49)
       } in
       match x1 {
         Tag_0 => {
-          jump k42(true)
+          jump k48(true)
         },
         Tag_1 => {
           let x5 = Key::B._0(x1) in
-          jump k42(false)
+          jump k48(false)
         },
         Tag_2 => {
           let x6 = Key::P._0(x1) in
-          jump k42(false)
+          jump k48(false)
         },
       }
     },
     Tag_1 => {
       let x3 = Key::B._0(x2) in
-      join k44(jp45: bool) -> bool {
-        jump k40(jp45)
+      join k50(jp51: bool) -> bool {
+        jump k46(jp51)
       } in
       match x1 {
         Tag_0 => {
-          jump k44(false)
+          jump k50(false)
         },
         Tag_1 => {
           let x7 = Key::B._0(x1) in
           let __l1_0/8 = x7 in
           let __r1_0/9 = x3 in
-          let t46 = trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9) in
-          let t47 = (true && t46) in
-          jump k44(t47)
+          let t52 = trait_impl#Eq#int32#eq(__l1_0/8, __r1_0/9) in
+          let t53 = (true && t52) in
+          jump k50(t53)
         },
         Tag_2 => {
           let x8 = Key::P._0(x1) in
-          jump k44(false)
+          jump k50(false)
         },
       }
     },
     Tag_2 => {
       let x4 = Key::P._0(x2) in
-      join k48(jp49: bool) -> bool {
-        jump k40(jp49)
+      join k54(jp55: bool) -> bool {
+        jump k46(jp55)
       } in
       match x1 {
         Tag_0 => {
-          jump k48(false)
+          jump k54(false)
         },
         Tag_1 => {
           let x9 = Key::B._0(x1) in
-          jump k48(false)
+          jump k54(false)
         },
         Tag_2 => {
           let x10 = Key::P._0(x1) in
           let __l2_0/10 = x10 in
           let __r2_0/11 = x4 in
-          let t50 = trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11) in
-          let t51 = (true && t50) in
-          jump k48(t51)
+          let t56 = trait_impl#Eq#Point#eq(__l2_0/10, __r2_0/11) in
+          let t57 = (true && t56) in
+          jump k54(t57)
         },
       }
     },
@@ -99,104 +108,122 @@ fn trait_impl#Eq#Key#eq(self/6: Key, other/7: Key) -> bool {
 }
 
 fn trait_impl#Hash#Key#hash(self/12: Key) -> uint64 {
-  join k52(jp53: uint64) -> uint64 {
-    jp53
+  join ret58(retv59: uint64) -> uint64 {
+    retv59
+  } in
+  join k60(jp61: uint64) -> uint64 {
+    jump ret58(jp61)
   } in
   match self/12 {
     Tag_0 => {
       let h/13 = (14695981039346656037 + 1) in
-      jump k52(h/13)
+      jump k60(h/13)
     },
     Tag_1 => {
       let x11 = Key::B._0(self/12) in
       let __field1_0/14 = x11 in
       let h/15 = (14695981039346656037 + 2) in
-      let t54 = (h/15 * 1099511628211) in
-      let t55 = trait_impl#Hash#int32#hash(__field1_0/14) in
-      let h/16 = (t54 + t55) in
-      jump k52(h/16)
+      let t62 = (h/15 * 1099511628211) in
+      let t63 = trait_impl#Hash#int32#hash(__field1_0/14) in
+      let h/16 = (t62 + t63) in
+      jump k60(h/16)
     },
     Tag_2 => {
       let x12 = Key::P._0(self/12) in
       let __field2_0/17 = x12 in
       let h/18 = (14695981039346656037 + 3) in
-      let t56 = (h/18 * 1099511628211) in
-      let t57 = trait_impl#Hash#Point#hash(__field2_0/17) in
-      let h/19 = (t56 + t57) in
-      jump k52(h/19)
+      let t64 = (h/18 * 1099511628211) in
+      let t65 = trait_impl#Hash#Point#hash(__field2_0/17) in
+      let h/19 = (t64 + t65) in
+      jump k60(h/19)
     },
   }
 }
 
 fn print_opt_int(x/20: Option__int32) -> unit {
-  join k58() -> unit {
+  join ret66() -> unit {
     ()
+  } in
+  join k67() -> unit {
+    jump ret66()
   } in
   match x/20 {
     Tag_0 => {
-      let t59 = println__T_string("none") in
-      jump k58()
+      let t68 = println__T_string("none") in
+      jump k67()
     },
     Tag_1 => {
       let x13 = Option__int32::Some._0(x/20) in
       let v/21 = x13 in
-      let t60 = println__T_int32(v/21) in
-      jump k58()
+      let t69 = println__T_int32(v/21) in
+      jump k67()
     },
   }
 }
 
 fn main() -> unit {
+  join ret70() -> unit {
+    ()
+  } in
   let m1/22 = hashmap_new() in
   let _wild14 = hashmap_set(m1/22, Tag_0, 10) in
-  let t61 = Key::B(1) in
-  let _wild15 = hashmap_set(m1/22, t61, 20) in
-  let t62 = hashmap_len(m1/22) in
-  let _wild16 = println__T_int32(t62) in
-  let t63 = hashmap_get(m1/22, Tag_0) in
-  let _wild17 = print_opt_int(t63) in
-  let t64 = Key::B(1) in
-  let t65 = hashmap_contains(m1/22, t64) in
-  let _wild18 = println__T_bool(t65) in
-  let t66 = Key::B(1) in
-  let _wild19 = hashmap_remove(m1/22, t66) in
-  let t67 = Key::B(1) in
-  let t68 = hashmap_contains(m1/22, t67) in
-  let _wild20 = println__T_bool(t68) in
-  let t69 = hashmap_len(m1/22) in
-  let _wild21 = println__T_int32(t69) in
+  let t71 = Key::B(1) in
+  let _wild15 = hashmap_set(m1/22, t71, 20) in
+  let t72 = hashmap_len(m1/22) in
+  let _wild16 = println__T_int32(t72) in
+  let t73 = hashmap_get(m1/22, Tag_0) in
+  let _wild17 = print_opt_int(t73) in
+  let t74 = Key::B(1) in
+  let t75 = hashmap_contains(m1/22, t74) in
+  let _wild18 = println__T_bool(t75) in
+  let t76 = Key::B(1) in
+  let _wild19 = hashmap_remove(m1/22, t76) in
+  let t77 = Key::B(1) in
+  let t78 = hashmap_contains(m1/22, t77) in
+  let _wild20 = println__T_bool(t78) in
+  let t79 = hashmap_len(m1/22) in
+  let _wild21 = println__T_int32(t79) in
   let m2/23 = hashmap_new() in
-  let t70 = Point { x: 1, y: 2 } in
-  let p1/24 = ref(t70) in
-  let t71 = Point { x: 1, y: 2 } in
-  let p2/25 = ref(t71) in
+  let t80 = Point { x: 1, y: 2 } in
+  let p1/24 = ref(t80) in
+  let t81 = Point { x: 1, y: 2 } in
+  let p2/25 = ref(t81) in
   let _wild22 = hashmap_set(m2/23, p1/24, 99) in
-  let t72 = hashmap_get(m2/23, p2/25) in
-  let _wild23 = print_opt_int(t72) in
+  let t82 = hashmap_get(m2/23, p2/25) in
+  let _wild23 = print_opt_int(t82) in
   let m3/26 = hashmap_new() in
-  let t73 = Key::B(7) in
-  let k1/27 = ref(t73) in
-  let t74 = Key::B(7) in
-  let k2/28 = ref(t74) in
+  let t83 = Key::B(7) in
+  let k1/27 = ref(t83) in
+  let t84 = Key::B(7) in
+  let k2/28 = ref(t84) in
   let _wild24 = hashmap_set(m3/26, k1/27, 123) in
-  let t75 = hashmap_get(m3/26, k2/28) in
-  let _wild25 = print_opt_int(t75) in
-  ()
+  let t85 = hashmap_get(m3/26, k2/28) in
+  let _wild25 = print_opt_int(t85) in
+  jump ret70()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t76 = string_println(value/1) in
-  t76
+  join ret86() -> unit {
+    ()
+  } in
+  let t87 = string_println(value/1) in
+  jump ret86()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t77 = int32_to_string(value/1) in
-  let t78 = string_println(t77) in
-  t78
+  join ret88() -> unit {
+    ()
+  } in
+  let t89 = int32_to_string(value/1) in
+  let t90 = string_println(t89) in
+  jump ret88()
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t79 = bool_to_string(value/1) in
-  let t80 = string_println(t79) in
-  t80
+  join ret91() -> unit {
+    ()
+  } in
+  let t92 = bool_to_string(value/1) in
+  let t93 = string_println(t92) in
+  jump ret91()
 }

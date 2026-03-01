@@ -1,18 +1,27 @@
 fn update_array(arr/0: [int32; 3]) -> [int32; 3] {
-  let t1 = array_set(arr/0, 1, 42) in
-  t1
+  join ret1(retv2: [int32; 3]) -> [int32; 3] {
+    retv2
+  } in
+  let t3 = array_set(arr/0, 1, 42) in
+  jump ret1(t3)
 }
 
 fn read_array(arr/1: [int32; 3]) -> int32 {
-  let t2 = array_get(arr/1, 1) in
-  t2
+  join ret4(retv5: int32) -> int32 {
+    retv5
+  } in
+  let t6 = array_get(arr/1, 1) in
+  jump ret4(t6)
 }
 
 fn main() -> unit {
+  join ret7() -> unit {
+    ()
+  } in
   let arr/2 = [1, 2, 3] in
   let updated/3 = update_array(arr/2) in
   let value/4 = read_array(updated/3) in
-  let t3 = int32_to_string(value/4) in
-  let mtmp0 = string_println(t3) in
-  ()
+  let t8 = int32_to_string(value/4) in
+  let mtmp0 = string_println(t8) in
+  jump ret7()
 }

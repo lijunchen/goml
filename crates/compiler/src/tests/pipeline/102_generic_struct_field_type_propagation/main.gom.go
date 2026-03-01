@@ -27,12 +27,12 @@ func main0() struct{} {
         first: 10,
         second: 3.140000104904175,
     }
-    var t2 uint8 = p__0.first
-    var t3 string = uint8_to_string(t2)
-    string_println(t3)
-    var t4 float32 = p__0.second
-    var t5 string = float32_to_string(t4)
-    string_println(t5)
+    var t3 uint8 = p__0.first
+    var t4 string = uint8_to_string(t3)
+    string_println(t4)
+    var t5 float32 = p__0.second
+    var t6 string = float32_to_string(t5)
+    string_println(t6)
     return struct{}{}
 }
 

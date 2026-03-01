@@ -35,21 +35,21 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
 func main0() struct{} {
     var i__0 *ref_int32_x = ref__Ref_int32(0)
     for {
-        var t7 int32 = ref_get__Ref_int32(i__0)
-        var t8 bool = t7 < 10
-        if !t8 {
+        var t8 int32 = ref_get__Ref_int32(i__0)
+        var t9 bool = t8 < 10
+        if !t9 {
             break
         }
-        var t9 int32 = ref_get__Ref_int32(i__0)
-        var t10 int32 = t9 + 1
-        ref_set__Ref_int32(i__0, t10)
-        var t13 int32 = ref_get__Ref_int32(i__0)
-        var t14 bool = t13 == 5
-        if t14 {
+        var t10 int32 = ref_get__Ref_int32(i__0)
+        var t11 int32 = t10 + 1
+        ref_set__Ref_int32(i__0, t11)
+        var t14 int32 = ref_get__Ref_int32(i__0)
+        var t15 bool = t14 == 5
+        if t15 {
             continue
         } else {
-            var t12 int32 = ref_get__Ref_int32(i__0)
-            println__T_int32(t12)
+            var t13 int32 = ref_get__Ref_int32(i__0)
+            println__T_int32(t13)
             continue
         }
     }
@@ -58,14 +58,14 @@ func main0() struct{} {
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t15 string = int32_to_string(value__1)
-    var t16 struct{} = string_println(t15)
-    return t16
+    var t17 string = int32_to_string(value__1)
+    string_println(t17)
+    return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t17 struct{} = string_println(value__1)
-    return t17
+    string_println(value__1)
+    return struct{}{}
 }
 
 func main() {

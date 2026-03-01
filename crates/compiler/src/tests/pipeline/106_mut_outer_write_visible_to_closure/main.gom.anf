@@ -1,15 +1,21 @@
 fn main() -> unit {
+  join ret3() -> unit {
+    ()
+  } in
   let x/0 = ref(0) in
   let get/1 = closure_env_get_0 { x_0: x/0 } in
   let _wild0 = ref_set(x/0, 41) in
-  let t3 = inherent#closure_env_get_0#closure_env_get_0#apply(get/1) in
-  let t4 = int32_to_string(t3) in
-  let _wild1 = string_println(t4) in
-  ()
+  let t4 = inherent#closure_env_get_0#closure_env_get_0#apply(get/1) in
+  let t5 = int32_to_string(t4) in
+  let _wild1 = string_println(t5) in
+  jump ret3()
 }
 
 fn inherent#closure_env_get_0#closure_env_get_0#apply(env2: closure_env_get_0) -> int32 {
+  join ret6(retv7: int32) -> int32 {
+    retv7
+  } in
   let x/0 = closure_env_get_0.x_0(env2) in
-  let t5 = ref_get(x/0) in
-  t5
+  let t8 = ref_get(x/0) in
+  jump ret6(t8)
 }

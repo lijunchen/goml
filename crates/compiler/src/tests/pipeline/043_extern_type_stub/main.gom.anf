@@ -1,27 +1,39 @@
 fn describe_epoch() -> string {
+  join ret3(retv4: string) -> string {
+    retv4
+  } in
   let epoch/0 = unix(946684800, 500000000) in
-  let t3 = format_time("epoch snapshot => %v", epoch/0) in
-  t3
+  let t5 = format_time("epoch snapshot => %v", epoch/0) in
+  jump ret3(t5)
 }
 
 fn describe_planned_launch() -> string {
+  join ret6(retv7: string) -> string {
+    retv7
+  } in
   let launch/1 = unix(1709294730, 250000000) in
-  let t4 = format_time("planned launch => %v", launch/1) in
-  t4
+  let t8 = format_time("planned launch => %v", launch/1) in
+  jump ret6(t8)
 }
 
 fn describe_duration() -> string {
+  join ret9(retv10: string) -> string {
+    retv10
+  } in
   let parsed/2 = duration(1500000000) in
-  let t5 = format_duration("parsed duration => %v", parsed/2) in
-  t5
+  let t11 = format_duration("parsed duration => %v", parsed/2) in
+  jump ret9(t11)
 }
 
 fn main() -> unit {
-  let t6 = describe_epoch() in
-  let _wild0 = string_println(t6) in
-  let t7 = describe_planned_launch() in
-  let _wild1 = string_println(t7) in
-  let t8 = describe_duration() in
-  let _wild2 = string_println(t8) in
-  ()
+  join ret12() -> unit {
+    ()
+  } in
+  let t13 = describe_epoch() in
+  let _wild0 = string_println(t13) in
+  let t14 = describe_planned_launch() in
+  let _wild1 = string_println(t14) in
+  let t15 = describe_duration() in
+  let _wild2 = string_println(t15) in
+  jump ret12()
 }

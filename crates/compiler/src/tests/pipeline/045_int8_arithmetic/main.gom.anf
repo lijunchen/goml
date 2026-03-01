@@ -1,31 +1,49 @@
 fn a_value() -> int8 {
-  90
+  join ret11(retv12: int8) -> int8 {
+    retv12
+  } in
+  jump ret11(90)
 }
 
 fn b_value() -> int8 {
-  let t11 = (-20) in
-  t11
+  join ret13(retv14: int8) -> int8 {
+    retv14
+  } in
+  let t15 = (-20) in
+  jump ret13(t15)
 }
 
 fn c_value() -> int8 {
-  3
+  join ret16(retv17: int8) -> int8 {
+    retv17
+  } in
+  jump ret16(3)
 }
 
 fn show_int8(label/0: string, value/1: int8) -> unit {
-  let t12 = int8_to_string(value/1) in
-  let t13 = (label/0 + t12) in
-  let mtmp0 = string_println(t13) in
-  ()
+  join ret18() -> unit {
+    ()
+  } in
+  let t19 = int8_to_string(value/1) in
+  let t20 = (label/0 + t19) in
+  let mtmp0 = string_println(t20) in
+  jump ret18()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let t14 = bool_to_string(value/3) in
-  let t15 = (label/2 + t14) in
-  let mtmp1 = string_println(t15) in
-  ()
+  join ret21() -> unit {
+    ()
+  } in
+  let t22 = bool_to_string(value/3) in
+  let t23 = (label/2 + t22) in
+  let mtmp1 = string_println(t23) in
+  jump ret21()
 }
 
 fn main() -> unit {
+  join ret24() -> unit {
+    ()
+  } in
   let a/4 = a_value() in
   let b/5 = b_value() in
   let c/6 = c_value() in
@@ -44,5 +62,5 @@ fn main() -> unit {
   let mtmp8 = show_int8("quot=", quot/10) in
   let mtmp9 = show_int8("neg=", neg/11) in
   let mtmp10 = show_bool("b<a=", less/12) in
-  ()
+  jump ret24()
 }

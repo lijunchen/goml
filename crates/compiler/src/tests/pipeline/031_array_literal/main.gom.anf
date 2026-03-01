@@ -1,18 +1,27 @@
 fn make_array() -> [int32; 3] {
-  let t3 = [1, 2, 3] in
-  t3
+  join ret3(retv4: [int32; 3]) -> [int32; 3] {
+    retv4
+  } in
+  let t5 = [1, 2, 3] in
+  jump ret3(t5)
 }
 
 fn main() -> unit {
+  join ret6() -> unit {
+    ()
+  } in
   let arr/0 = make_array() in
   let inline/1 = [4, 5, 6] in
   let mtmp0 = print__T_string("array literal") in
   let mtmp1 = arr/0 in
   let mtmp2 = inline/1 in
-  ()
+  jump ret6()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t4 = string_print(value/0) in
-  t4
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = string_print(value/0) in
+  jump ret7()
 }

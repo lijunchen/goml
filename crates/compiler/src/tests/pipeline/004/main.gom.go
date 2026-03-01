@@ -39,29 +39,16 @@ type Blue struct {}
 func (_ Blue) isColor() {}
 
 func main0() bool {
+    var retv4 bool
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
         _0: Blue{},
         _1: Blue{},
     }
     var x0 Color = a__0._0
     var x1 Color = a__0._1
-    var jp4 bool
+    var jp6 bool
     switch x1.(type) {
     case Red:
-        var jp6 bool
-        switch x0.(type) {
-        case Red:
-            jp6 = true
-        case Green:
-            jp6 = false
-        case Blue:
-            jp6 = false
-        default:
-            panic("non-exhaustive match")
-        }
-        jp4 = jp6
-        return jp4
-    case Green:
         var jp8 bool
         switch x0.(type) {
         case Red:
@@ -73,32 +60,49 @@ func main0() bool {
         default:
             panic("non-exhaustive match")
         }
-        jp4 = jp8
-        return jp4
-    case Blue:
+        jp6 = jp8
+        retv4 = jp6
+        return retv4
+    case Green:
         var jp10 bool
         switch x0.(type) {
         case Red:
-            jp10 = false
+            jp10 = true
         case Green:
             jp10 = false
         case Blue:
-            print__T_bool(true)
             jp10 = false
         default:
             panic("non-exhaustive match")
         }
-        jp4 = jp10
-        return jp4
+        jp6 = jp10
+        retv4 = jp6
+        return retv4
+    case Blue:
+        var jp12 bool
+        switch x0.(type) {
+        case Red:
+            jp12 = false
+        case Green:
+            jp12 = false
+        case Blue:
+            print__T_bool(true)
+            jp12 = false
+        default:
+            panic("non-exhaustive match")
+        }
+        jp6 = jp12
+        retv4 = jp6
+        return retv4
     default:
         panic("non-exhaustive match")
     }
 }
 
 func print__T_bool(value__0 bool) struct{} {
-    var t11 string = bool_to_string(value__0)
-    var t12 struct{} = string_print(t11)
-    return t12
+    var t14 string = bool_to_string(value__0)
+    string_print(t14)
+    return struct{}{}
 }
 
 func main() {

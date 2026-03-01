@@ -1,26 +1,38 @@
 fn main() -> unit {
+  join ret4() -> unit {
+    ()
+  } in
   let x/0 = 1 in
   let y/1 = 1 in
   let mtmp0 = print__T_string("int32: ") in
   let mtmp1 = println__T_int32(x/0) in
   let mtmp2 = print__T_string("int8: ") in
   let mtmp3 = println__T_int8(y/1) in
-  ()
+  jump ret4()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t4 = string_print(value/0) in
-  t4
+  join ret5() -> unit {
+    ()
+  } in
+  let t6 = string_print(value/0) in
+  jump ret5()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t5 = int32_to_string(value/1) in
-  let t6 = string_println(t5) in
-  t6
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = int32_to_string(value/1) in
+  let t9 = string_println(t8) in
+  jump ret7()
 }
 
 fn println__T_int8(value/1: int8) -> unit {
-  let t7 = int8_to_string(value/1) in
-  let t8 = string_println(t7) in
-  t8
+  join ret10() -> unit {
+    ()
+  } in
+  let t11 = int8_to_string(value/1) in
+  let t12 = string_println(t11) in
+  jump ret10()
 }

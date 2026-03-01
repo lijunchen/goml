@@ -1,35 +1,47 @@
 fn my_int_equal(x/0: int32, y/1: int32) -> bool {
-  let t0 = (x/0 < y/1) in
-  let t1 = (!t0) in
-  let t2 = (y/1 < x/0) in
+  join ret0(retv1: bool) -> bool {
+    retv1
+  } in
+  let t2 = (x/0 < y/1) in
   let t3 = (!t2) in
-  let t4 = (t1 && t3) in
-  t4
+  let t4 = (y/1 < x/0) in
+  let t5 = (!t4) in
+  let t6 = (t3 && t5) in
+  jump ret0(t6)
 }
 
 fn sum(n/2: int32) -> int32 {
-  let t7 = my_int_equal(n/2, 1) in
-  join k5(jp6: int32) -> int32 {
-    jp6
+  join ret7(retv8: int32) -> int32 {
+    retv8
   } in
-  if t7 {
-    jump k5(1)
+  let t11 = my_int_equal(n/2, 1) in
+  join k9(jp10: int32) -> int32 {
+    jump ret7(jp10)
+  } in
+  if t11 {
+    jump k9(1)
   } else {
-    let t8 = (n/2 - 1) in
-    let t9 = sum(t8) in
-    let t10 = (n/2 + t9) in
-    jump k5(t10)
+    let t12 = (n/2 - 1) in
+    let t13 = sum(t12) in
+    let t14 = (n/2 + t13) in
+    jump k9(t14)
   }
 }
 
 fn main() -> unit {
-  let t11 = sum(100) in
-  let t12 = println__T_int32(t11) in
-  t12
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = sum(100) in
+  let t17 = println__T_int32(t16) in
+  jump ret15()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t13 = int32_to_string(value/1) in
-  let t14 = string_println(t13) in
-  t14
+  join ret18() -> unit {
+    ()
+  } in
+  let t19 = int32_to_string(value/1) in
+  let t20 = string_println(t19) in
+  jump ret18()
 }

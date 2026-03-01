@@ -35,8 +35,8 @@ func main0() struct{} {
     case Some:
         var x0 uint8 = x__0.(Some)._0
         var v__1 uint8 = x0
-        var t3 string = uint8_to_string(v__1)
-        string_println(t3)
+        var t4 string = uint8_to_string(v__1)
+        string_println(t4)
     case None:
         string_println("none")
     default:

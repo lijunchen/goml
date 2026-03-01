@@ -34,19 +34,19 @@ func main0() struct{} {
     var step64__9 int64 = 2000000000
     var remain64__10 int64 = big64__8 - step64__9
     var neg64__11 int64 = -step64__9
-    var t1 string = int16_to_string(sum16__2)
-    var t2 string = t1 + ", "
-    var t3 string = int16_to_string(flipped16__3)
-    var t4 string = t2 + t3
-    var t5 string = t4 + "; "
-    var t6 string = int32_to_string(diff32__7)
-    var t7 string = t5 + t6
-    var t8 string = t7 + "; "
-    var t9 string = int64_to_string(remain64__10)
-    var t10 string = t8 + t9
-    var t11 string = t10 + "; "
-    var t12 string = int64_to_string(neg64__11)
-    var message__12 string = t11 + t12
+    var t2 string = int16_to_string(sum16__2)
+    var t3 string = t2 + ", "
+    var t4 string = int16_to_string(flipped16__3)
+    var t5 string = t3 + t4
+    var t6 string = t5 + "; "
+    var t7 string = int32_to_string(diff32__7)
+    var t8 string = t6 + t7
+    var t9 string = t8 + "; "
+    var t10 string = int64_to_string(remain64__10)
+    var t11 string = t9 + t10
+    var t12 string = t11 + "; "
+    var t13 string = int64_to_string(neg64__11)
+    var message__12 string = t12 + t13
     string_println(message__12)
     return struct{}{}
 }

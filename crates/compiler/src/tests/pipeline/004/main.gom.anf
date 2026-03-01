@@ -1,30 +1,17 @@
 fn main() -> bool {
+  join ret3(retv4: bool) -> bool {
+    retv4
+  } in
   let a/0 = (Tag_2, Tag_2) in
   let x0 = a/0.0 in
   let x1 = a/0.1 in
-  join k3(jp4: bool) -> bool {
-    jp4
+  join k5(jp6: bool) -> bool {
+    jump ret3(jp6)
   } in
   match x1 {
     Tag_0 => {
-      join k5(jp6: bool) -> bool {
-        jump k3(jp6)
-      } in
-      match x0 {
-        Tag_0 => {
-          jump k5(true)
-        },
-        Tag_1 => {
-          jump k5(false)
-        },
-        Tag_2 => {
-          jump k5(false)
-        },
-      }
-    },
-    Tag_1 => {
       join k7(jp8: bool) -> bool {
-        jump k3(jp8)
+        jump k5(jp8)
       } in
       match x0 {
         Tag_0 => {
@@ -38,20 +25,36 @@ fn main() -> bool {
         },
       }
     },
-    Tag_2 => {
+    Tag_1 => {
       join k9(jp10: bool) -> bool {
-        jump k3(jp10)
+        jump k5(jp10)
       } in
       match x0 {
         Tag_0 => {
-          jump k9(false)
+          jump k9(true)
         },
         Tag_1 => {
           jump k9(false)
         },
         Tag_2 => {
-          let mtmp2 = print__T_bool(true) in
           jump k9(false)
+        },
+      }
+    },
+    Tag_2 => {
+      join k11(jp12: bool) -> bool {
+        jump k5(jp12)
+      } in
+      match x0 {
+        Tag_0 => {
+          jump k11(false)
+        },
+        Tag_1 => {
+          jump k11(false)
+        },
+        Tag_2 => {
+          let mtmp2 = print__T_bool(true) in
+          jump k11(false)
         },
       }
     },
@@ -59,7 +62,10 @@ fn main() -> bool {
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t11 = bool_to_string(value/0) in
-  let t12 = string_print(t11) in
-  t12
+  join ret13() -> unit {
+    ()
+  } in
+  let t14 = bool_to_string(value/0) in
+  let t15 = string_print(t14) in
+  jump ret13()
 }

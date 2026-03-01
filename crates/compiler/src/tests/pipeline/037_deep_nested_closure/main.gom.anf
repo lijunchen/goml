@@ -1,18 +1,27 @@
 fn main() -> unit {
+  join ret4() -> unit {
+    ()
+  } in
   let a/0 = 10 in
   let f1/11 = closure_env_f1_3 { a_0: a/0 } in
   let result/12 = inherent#closure_env_f1_3#closure_env_f1_3#apply(f1/11, 1) in
-  let t4 = println__T_int32(result/12) in
-  t4
+  let t5 = println__T_int32(result/12) in
+  jump ret4()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t5 = int32_to_string(value/1) in
-  let t6 = string_println(t5) in
-  t6
+  join ret6() -> unit {
+    ()
+  } in
+  let t7 = int32_to_string(value/1) in
+  let t8 = string_println(t7) in
+  jump ret6()
 }
 
 fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env0: closure_env_f4_0, w/7: int32) -> int32 {
+  join ret9(retv10: int32) -> int32 {
+    retv10
+  } in
   let a/0 = closure_env_f4_0.a_0(env0) in
   let b/2 = closure_env_f4_0.b_1(env0) in
   let c/4 = closure_env_f4_0.c_2(env0) in
@@ -20,17 +29,20 @@ fn inherent#closure_env_f4_0#closure_env_f4_0#apply(env0: closure_env_f4_0, w/7:
   let x/1 = closure_env_f4_0.x_4(env0) in
   let y/3 = closure_env_f4_0.y_5(env0) in
   let z/5 = closure_env_f4_0.z_6(env0) in
-  let t7 = (a/0 + b/2) in
-  let t8 = (t7 + c/4) in
-  let t9 = (t8 + d/6) in
-  let t10 = (t9 + x/1) in
-  let t11 = (t10 + y/3) in
-  let t12 = (t11 + z/5) in
-  let t13 = (t12 + w/7) in
-  t13
+  let t11 = (a/0 + b/2) in
+  let t12 = (t11 + c/4) in
+  let t13 = (t12 + d/6) in
+  let t14 = (t13 + x/1) in
+  let t15 = (t14 + y/3) in
+  let t16 = (t15 + z/5) in
+  let t17 = (t16 + w/7) in
+  jump ret9(t17)
 }
 
 fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env1: closure_env_f3_1, z/5: int32) -> int32 {
+  join ret18(retv19: int32) -> int32 {
+    retv19
+  } in
   let a/0 = closure_env_f3_1.a_0(env1) in
   let b/2 = closure_env_f3_1.b_1(env1) in
   let c/4 = closure_env_f3_1.c_2(env1) in
@@ -38,24 +50,30 @@ fn inherent#closure_env_f3_1#closure_env_f3_1#apply(env1: closure_env_f3_1, z/5:
   let y/3 = closure_env_f3_1.y_4(env1) in
   let d/6 = 40 in
   let f4/8 = closure_env_f4_0 { a_0: a/0, b_1: b/2, c_2: c/4, d_3: d/6, x_4: x/1, y_5: y/3, z_6: z/5 } in
-  let t14 = inherent#closure_env_f4_0#closure_env_f4_0#apply(f4/8, 4) in
-  t14
+  let t20 = inherent#closure_env_f4_0#closure_env_f4_0#apply(f4/8, 4) in
+  jump ret18(t20)
 }
 
 fn inherent#closure_env_f2_2#closure_env_f2_2#apply(env2: closure_env_f2_2, y/3: int32) -> int32 {
+  join ret21(retv22: int32) -> int32 {
+    retv22
+  } in
   let a/0 = closure_env_f2_2.a_0(env2) in
   let b/2 = closure_env_f2_2.b_1(env2) in
   let x/1 = closure_env_f2_2.x_2(env2) in
   let c/4 = 30 in
   let f3/9 = closure_env_f3_1 { a_0: a/0, b_1: b/2, c_2: c/4, x_3: x/1, y_4: y/3 } in
-  let t15 = inherent#closure_env_f3_1#closure_env_f3_1#apply(f3/9, 3) in
-  t15
+  let t23 = inherent#closure_env_f3_1#closure_env_f3_1#apply(f3/9, 3) in
+  jump ret21(t23)
 }
 
 fn inherent#closure_env_f1_3#closure_env_f1_3#apply(env3: closure_env_f1_3, x/1: int32) -> int32 {
+  join ret24(retv25: int32) -> int32 {
+    retv25
+  } in
   let a/0 = closure_env_f1_3.a_0(env3) in
   let b/2 = 20 in
   let f2/10 = closure_env_f2_2 { a_0: a/0, b_1: b/2, x_2: x/1 } in
-  let t16 = inherent#closure_env_f2_2#closure_env_f2_2#apply(f2/10, 2) in
-  t16
+  let t26 = inherent#closure_env_f2_2#closure_env_f2_2#apply(f2/10, 2) in
+  jump ret24(t26)
 }

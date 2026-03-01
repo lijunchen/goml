@@ -46,6 +46,7 @@ type closure_env_reset_1 struct {
 }
 
 func make_counter() Tuple2_TFunc_unit_int32_TFunc_unit_unit {
+    var retv16 Tuple2_TFunc_unit_int32_TFunc_unit_unit
     var cell__0 *ref_int32_x = ref__Ref_int32(0)
     var next__2 closure_env_next_0 = closure_env_next_0{
         cell_0: cell__0,
@@ -53,7 +54,7 @@ func make_counter() Tuple2_TFunc_unit_int32_TFunc_unit_unit {
     var reset__3 closure_env_reset_1 = closure_env_reset_1{
         cell_0: cell__0,
     }
-    var t15 Tuple2_TFunc_unit_int32_TFunc_unit_unit = Tuple2_TFunc_unit_int32_TFunc_unit_unit{
+    var t17 Tuple2_TFunc_unit_int32_TFunc_unit_unit = Tuple2_TFunc_unit_int32_TFunc_unit_unit{
         _0: func() int32 {
             return _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__2)
         },
@@ -61,7 +62,8 @@ func make_counter() Tuple2_TFunc_unit_int32_TFunc_unit_unit {
             return _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__3)
         },
     }
-    return t15
+    retv16 = t17
+    return retv16
 }
 
 func main0() struct{} {
@@ -80,23 +82,25 @@ func main0() struct{} {
     var x7 func() int32 = mtmp6._0
     var new_next__11 func() int32 = x7
     var fourth__12 int32 = new_next__11()
-    var t16 string = int32_to_string(first__7)
-    string_println(t16)
-    var t17 string = int32_to_string(second__8)
-    string_println(t17)
-    var t18 string = int32_to_string(third__9)
-    string_println(t18)
-    var t19 string = int32_to_string(fourth__12)
+    var t19 string = int32_to_string(first__7)
     string_println(t19)
+    var t20 string = int32_to_string(second__8)
+    string_println(t20)
+    var t21 string = int32_to_string(third__9)
+    string_println(t21)
+    var t22 string = int32_to_string(fourth__12)
+    string_println(t22)
     return struct{}{}
 }
 
 func _goml_inherent_closure_env_next_0_closure_env_next_0_apply(env13 closure_env_next_0) int32 {
+    var retv24 int32
     var cell__0 *ref_int32_x = env13.cell_0
-    var t20 int32 = ref_get__Ref_int32(cell__0)
-    var next__1 int32 = t20 + 1
+    var t25 int32 = ref_get__Ref_int32(cell__0)
+    var next__1 int32 = t25 + 1
     ref_set__Ref_int32(cell__0, next__1)
-    return next__1
+    retv24 = next__1
+    return retv24
 }
 
 func _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(env14 closure_env_reset_1) struct{} {

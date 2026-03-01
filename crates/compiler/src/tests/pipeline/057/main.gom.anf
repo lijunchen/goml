@@ -1,13 +1,22 @@
 fn inherent#S#S#method1(self/0: S) -> unit {
-  ()
+  join ret0() -> unit {
+    ()
+  } in
+  jump ret0()
 }
 
 fn inherent#S#S#method2(self/1: S) -> string {
-  "S"
+  join ret1(retv2: string) -> string {
+    retv2
+  } in
+  jump ret1("S")
 }
 
 fn main() -> unit {
+  join ret3() -> unit {
+    ()
+  } in
   let s/2 = S {} in
-  let t0 = inherent#S#S#method1(s/2) in
-  t0
+  let t4 = inherent#S#S#method1(s/2) in
+  jump ret3()
 }
