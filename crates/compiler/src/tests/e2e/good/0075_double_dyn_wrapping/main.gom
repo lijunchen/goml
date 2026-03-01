@@ -1,0 +1,17 @@
+trait Showable {
+    fn display(Self) -> string;
+}
+
+struct Wrapped { label: string }
+
+impl Showable for Wrapped {
+    fn display(self: Wrapped) -> string { self.label }
+}
+
+fn wrap(x: int32) -> Wrapped {
+    Wrapped { label: int32_to_string(x) }
+}
+
+fn main() {
+    string_println(Showable::display(wrap(42)));
+}

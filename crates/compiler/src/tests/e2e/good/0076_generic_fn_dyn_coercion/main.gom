@@ -1,0 +1,28 @@
+trait Printable {
+    fn print(Self) -> string;
+}
+
+struct Wrapped[T] { inner: T }
+
+impl Printable for Wrapped[int32] {
+    fn print(self: Wrapped[int32]) -> string { "int:" + int32_to_string(self.inner) }
+}
+
+impl Printable for Wrapped[string] {
+    fn print(self: Wrapped[string]) -> string { "str:" + self.inner }
+}
+
+fn wrap[T](x: T) -> Wrapped[T] {
+    Wrapped { inner: x }
+}
+
+fn main() {
+    let items: Vec[dyn Printable] = vec_new();
+    let items = vec_push(items, wrap(42));
+    let items = vec_push(items, wrap("hello"));
+    let i = ref(0);
+    while ref_get(i) < vec_len(items) {
+        string_println(Printable::print(vec_get(items, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}
