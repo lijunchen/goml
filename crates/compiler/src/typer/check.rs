@@ -2565,16 +2565,55 @@ impl Typer {
                             }
                         }
                         [] => {
-                            report_method_not_found(
-                                diagnostics,
-                                &method_name,
-                                &lookup.receiver,
-                                self.expr_range(call_expr_id),
-                            );
-                            tast::Expr::EVar {
-                                name: "<error>".to_string(),
-                                ty: self.fresh_ty_var(),
-                                astptr: None,
+                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
+                            if let Some(field_ty) = field_ty {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
+                                    astptr: None,
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
+                            } else {
+                                report_method_not_found(
+                                    diagnostics,
+                                    &method_name,
+                                    &lookup.receiver,
+                                    self.expr_range(call_expr_id),
+                                );
+                                tast::Expr::EVar {
+                                    name: "<error>".to_string(),
+                                    ty: self.fresh_ty_var(),
+                                    astptr: None,
+                                }
                             }
                         }
                         _ => {
