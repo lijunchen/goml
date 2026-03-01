@@ -1,0 +1,70 @@
+const n = `enum IntList {
+    Nil,
+    Cons(int32, IntList),
+}
+
+fn print_int_list(xs: IntList) {
+    match xs {
+        Nil => string_print("Nil"),
+        Cons(x, xs) => {
+            let _ = string_print("Cons");
+            let _ = string_print("(");
+            let _ = string_print(int32_to_string(x));
+            let _ = string_print(", ");
+            let _ = print_int_list(xs);
+            let _ = string_print(")");
+            ()
+        }
+    }
+}
+
+fn int_list_rev_aux(xs: IntList, acc: IntList) -> IntList {
+    match xs {
+        Nil => acc,
+        Cons(head, tail) => int_list_rev_aux(tail, Cons(head, acc)),
+    }
+}
+
+fn int_list_rev(xs: IntList) -> IntList {
+    int_list_rev_aux(xs, Nil)
+}
+
+
+fn int_list_length(xs: IntList) -> int32 {
+    match xs {
+        Nil => 0,
+        Cons(_, xs) => 1 + int_list_length(xs),
+    }
+}
+
+fn print_int_list_length(xs: IntList) {
+    let _ = string_print("Length: ");
+    let _ = string_println(int32_to_string(int_list_length(xs)));
+    ()
+}
+
+fn main() {
+    let x = Nil;
+    let _ = print_int_list(x);
+    let _ = string_println("");
+    let _ = print_int_list_length(x);
+
+    let x = Cons(1, Nil);
+    let _ = print_int_list(x);
+    let _ = string_println("");
+    let _ = print_int_list_length(x);
+
+    let x = Cons(1, Cons(2, Cons(3, Nil)));
+    let _ = print_int_list(x);
+    let _ = string_println("");
+    let _ = print_int_list_length(x);
+
+    let y = int_list_rev(x);
+    let _ = print_int_list(y);
+    let _ = string_println("");
+
+    ()
+}`;
+export {
+  n as default
+};

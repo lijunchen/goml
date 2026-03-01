@@ -1,0 +1,35 @@
+const n = `struct S {
+    value: int32,
+}
+
+impl ToString for S {
+    fn to_string(self: S) -> string {
+        "S(" + int32_to_string(self.value) + ")"
+    }
+}
+
+fn main() -> unit {
+    println(1i32);
+    println(true);
+    println("hi");
+    println(());
+
+    println(ToString::to_string(2i32));
+    println((2i32).to_string());
+
+    let s = S { value: 9i32 };
+    println(s);
+
+    let d: dyn ToString = s;
+    println(d);
+
+    let r = ref(5i32);
+    println(r);
+
+    print("no-newline");
+    println("!");
+}
+`;
+export {
+  n as default
+};

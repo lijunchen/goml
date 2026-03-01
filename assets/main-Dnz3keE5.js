@@ -1,0 +1,35 @@
+const n = `fn match_string(s: string) -> int32 {
+  match s {
+    "hello" => 1,
+    "world" => 2,
+    _ => 3,
+  }
+}
+
+fn wildcard_position(s: string) -> int32 {
+  match s {
+    _ => 4,
+    "world" => 5,
+  }
+}
+
+fn repeated_string(s: string) -> int32 {
+  match s {
+    "hello" => 6,
+    "hello" => 7,
+    _ => 8,
+  }
+}
+
+fn main() {
+    let _ = string_println(int32_to_string(match_string("hello")));
+    let _ = string_println(int32_to_string(match_string("planet")));
+    let _ = string_println(int32_to_string(wildcard_position("world")));
+    let _ = string_println(int32_to_string(wildcard_position("sun")));
+    let _ = string_println(int32_to_string(repeated_string("hello")));
+    string_println(int32_to_string(repeated_string("mars")))
+}
+`;
+export {
+  n as default
+};

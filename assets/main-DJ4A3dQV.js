@@ -1,0 +1,24 @@
+const n = `trait Size {
+    fn size(Self) -> int32;
+}
+
+struct Wrap[T] {
+    value: T,
+}
+
+impl[T] Size for Wrap[T] {
+    fn size(self: Wrap[T]) -> int32 {
+        1
+    }
+}
+
+fn main() {
+    let a = Wrap { value: 1 };
+    let b = Wrap { value: "x" };
+    println(int32_to_string(Size::size(a)));
+    println(int32_to_string(Size::size(b)));
+}
+`;
+export {
+  n as default
+};

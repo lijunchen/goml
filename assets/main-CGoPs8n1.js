@@ -1,0 +1,22 @@
+const n = `fn main() -> unit {
+    let v = Vec::new();
+    let v = v.push(10);
+    let v = v.push(20);
+    let v = v.push(30);
+    let v = v.push(40);
+
+    let s: Slice[int32] = slice(v, 1, 4);
+    println(s.len());
+    println(s.get(0));
+    println(s.get(1));
+    println(s.get(2));
+
+    let t = s.sub(1, 3);
+    println(t.len());
+    println(t.get(0));
+    println(t.get(1));
+}
+`;
+export {
+  n as default
+};

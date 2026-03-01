@@ -1,0 +1,587 @@
+const n = `package main;
+
+enum Exp {
+    Var(string),
+    App(Exp, Exp),
+    Lam(string, Exp),
+    Let(string, Exp, Exp),
+}
+
+enum Typ {
+    TVar(Ref[Tv]),
+    QVar(string),
+    TArrow(Typ, Typ),
+}
+
+enum Tv {
+    Unbound(string, int32),
+    Link(Typ),
+}
+
+struct CheckerState {
+    gensym_counter: Ref[int32],
+    current_level: Ref[int32],
+}
+
+struct EnvEntry {
+    name: string,
+    ty: Typ,
+}
+
+struct SubstEntry {
+    name: string,
+    ty: Typ,
+}
+
+fn state_new() -> CheckerState {
+    CheckerState { gensym_counter: ref(0), current_level: ref(1) }
+}
+
+fn reset_gensym(st: CheckerState) -> unit {
+    let _ = ref_set(st.gensym_counter, 0);
+    ()
+}
+
+fn reset_level(st: CheckerState) -> unit {
+    let _ = ref_set(st.current_level, 1);
+    ()
+}
+
+fn reset_type_variables(st: CheckerState) -> unit {
+    reset_gensym(st);
+    reset_level(st)
+}
+
+fn enter_level(st: CheckerState) -> unit {
+    let l = ref_get(st.current_level);
+    let _ = ref_set(st.current_level, l + 1);
+    ()
+}
+
+fn leave_level(st: CheckerState) -> unit {
+    let l = ref_get(st.current_level);
+    let _ = ref_set(st.current_level, l - 1);
+    ()
+}
+
+fn min_i32(a: int32, b: int32) -> int32 {
+    if a < b { a } else { b }
+}
+
+fn nth_letter(n: int32) -> char {
+    match n {
+        0 => 'a',
+        1 => 'b',
+        2 => 'c',
+        3 => 'd',
+        4 => 'e',
+        5 => 'f',
+        6 => 'g',
+        7 => 'h',
+        8 => 'i',
+        9 => 'j',
+        10 => 'k',
+        11 => 'l',
+        12 => 'm',
+        13 => 'n',
+        14 => 'o',
+        15 => 'p',
+        16 => 'q',
+        17 => 'r',
+        18 => 's',
+        19 => 't',
+        20 => 'u',
+        21 => 'v',
+        22 => 'w',
+        23 => 'x',
+        24 => 'y',
+        25 => 'z',
+        _ => 'a',
+    }
+}
+
+fn gensym(st: CheckerState) -> string {
+    let n = ref_get(st.gensym_counter);
+    let _ = ref_set(st.gensym_counter, n + 1);
+    if n < 26 {
+        char_to_string(nth_letter(n))
+    } else {
+        "t" + int32_to_string(n)
+    }
+}
+
+fn newvar(st: CheckerState) -> Typ {
+    let name = gensym(st);
+    let level = ref_get(st.current_level);
+    Typ::TVar(ref(Tv::Unbound(name, level)))
+}
+
+fn typ_is_arrow(ty: Typ) -> bool {
+    match ty {
+        Typ::TArrow(_, _) => true,
+        Typ::TVar(tvref) => match ref_get(tvref) {
+            Tv::Link(inner) => typ_is_arrow(inner),
+            _ => false,
+        },
+        _ => false,
+    }
+}
+
+fn typ_to_string(ty: Typ) -> string {
+    match ty {
+        Typ::QVar(name) => "'" + name,
+        Typ::TVar(tvref) => match ref_get(tvref) {
+            Tv::Unbound(name, _) => "'" + name,
+            Tv::Link(inner) => typ_to_string(inner),
+        },
+        Typ::TArrow(t1, t2) => {
+            let s1 = if typ_is_arrow(t1) { "(" + typ_to_string(t1) + ")" } else { typ_to_string(t1) };
+            let s2 = typ_to_string(t2);
+            s1 + " -> " + s2
+        }
+    }
+}
+
+fn env_empty() -> Vec[EnvEntry] {
+    let env: Vec[EnvEntry] = vec_new();
+    env
+}
+
+fn env_lookup(env: Vec[EnvEntry], name: string) -> Option[Typ] {
+    let i = ref(vec_len(env) - 1);
+    let found = ref(Option::None);
+    let done = ref(false);
+    let _ = (while !ref_get(done) && ref_get(i) >= 0 {
+        let entry = vec_get(env, ref_get(i));
+        if entry.name == name {
+            let _ = ref_set(found, Option::Some(entry.ty));
+            ref_set(done, true)
+        } else {
+            ref_set(i, ref_get(i) - 1)
+        }
+    });
+    ref_get(found)
+}
+
+fn subst_lookup(subst: Vec[SubstEntry], name: string) -> Option[Typ] {
+    let i = ref(vec_len(subst) - 1);
+    let found = ref(Option::None);
+    let done = ref(false);
+    let _ = (while !ref_get(done) && ref_get(i) >= 0 {
+        let entry = vec_get(subst, ref_get(i));
+        if entry.name == name {
+            let _ = ref_set(found, Option::Some(entry.ty));
+            ref_set(done, true)
+        } else {
+            ref_set(i, ref_get(i) - 1)
+        }
+    });
+    ref_get(found)
+}
+
+fn occurs(st: CheckerState, tvr: Ref[Tv], ty: Typ) -> Result[unit, string] {
+    match ty {
+        Typ::TVar(tvr2) => {
+            if ptr_eq(tvr, tvr2) {
+                Result::Err("occurs check")
+            } else {
+                match ref_get(tvr2) {
+                    Tv::Unbound(name, l2) => {
+                        let min_level = match ref_get(tvr) {
+                            Tv::Unbound(_, l) => min_i32(l, l2),
+                            _ => l2,
+                        };
+                        let _ = ref_set(tvr2, Tv::Unbound(name, min_level));
+                        Result::Ok(())
+                    }
+                    Tv::Link(inner) => occurs(st, tvr, inner),
+                }
+            }
+        }
+        Typ::TArrow(t1, t2) => {
+            match occurs(st, tvr, t1) {
+                Result::Ok(_) => occurs(st, tvr, t2),
+                Result::Err(e) => Result::Err(e),
+            }
+        }
+        _ => Result::Ok(()),
+    }
+}
+
+fn unify(st: CheckerState, t1: Typ, t2: Typ) -> Result[unit, string] {
+    match (t1, t2) {
+        (Typ::TVar(r1), Typ::TVar(r2)) => {
+            if ptr_eq(r1, r2) {
+                Result::Ok(())
+            } else {
+                match ref_get(r1) {
+                    Tv::Link(inner) => unify(st, inner, Typ::TVar(r2)),
+                    Tv::Unbound(_, _) => match ref_get(r2) {
+                        Tv::Link(inner) => unify(st, Typ::TVar(r1), inner),
+                        Tv::Unbound(_, _) => match occurs(st, r1, Typ::TVar(r2)) {
+                            Result::Ok(_) => {
+                                let _ = ref_set(r1, Tv::Link(Typ::TVar(r2)));
+                                Result::Ok(())
+                            }
+                            Result::Err(e) => Result::Err(e),
+                        },
+                    },
+                }
+            }
+        }
+        (Typ::TVar(r1), other) => match ref_get(r1) {
+            Tv::Link(inner) => unify(st, inner, other),
+            Tv::Unbound(_, _) => match occurs(st, r1, other) {
+                Result::Ok(_) => {
+                    let _ = ref_set(r1, Tv::Link(other));
+                    Result::Ok(())
+                }
+                Result::Err(e) => Result::Err(e),
+            },
+        },
+        (other, Typ::TVar(r2)) => match ref_get(r2) {
+            Tv::Link(inner) => unify(st, other, inner),
+            Tv::Unbound(_, _) => match occurs(st, r2, other) {
+                Result::Ok(_) => {
+                    let _ = ref_set(r2, Tv::Link(other));
+                    Result::Ok(())
+                }
+                Result::Err(e) => Result::Err(e),
+            },
+        },
+        (Typ::TArrow(a1, a2), Typ::TArrow(b1, b2)) => match unify(st, a1, b1) {
+            Result::Ok(_) => unify(st, a2, b2),
+            Result::Err(e) => Result::Err(e),
+        },
+        _ => Result::Err("unify error"),
+    }
+}
+
+fn gen(st: CheckerState, ty: Typ) -> Typ {
+    match ty {
+        Typ::TVar(tvref) => match ref_get(tvref) {
+            Tv::Unbound(name, l) => {
+                let cur = ref_get(st.current_level);
+                if l > cur {
+                    Typ::QVar(name)
+                } else {
+                    Typ::TVar(tvref)
+                }
+            }
+            Tv::Link(inner) => gen(st, inner),
+        },
+        Typ::TArrow(t1, t2) => Typ::TArrow(gen(st, t1), gen(st, t2)),
+        other => other,
+    }
+}
+
+fn inst_loop(st: CheckerState, subst: Vec[SubstEntry], ty: Typ) -> (Typ, Vec[SubstEntry]) {
+    match ty {
+        Typ::QVar(name) => match subst_lookup(subst, name) {
+            Option::Some(t) => (t, subst),
+            Option::None => {
+                let tv = newvar(st);
+                let new_subst = vec_push(subst, SubstEntry { name, ty: tv });
+                (tv, new_subst)
+            }
+        },
+        Typ::TVar(tvref) => match ref_get(tvref) {
+            Tv::Link(inner) => inst_loop(st, subst, inner),
+            _ => (Typ::TVar(tvref), subst),
+        },
+        Typ::TArrow(t1, t2) => {
+            let (ty1, subst1) = inst_loop(st, subst, t1);
+            let (ty2, subst2) = inst_loop(st, subst1, t2);
+            (Typ::TArrow(ty1, ty2), subst2)
+        }
+    }
+}
+
+fn inst(st: CheckerState, ty: Typ) -> Typ {
+    let subst0: Vec[SubstEntry] = vec_new();
+    let (t, _) = inst_loop(st, subst0, ty);
+    t
+}
+
+fn typeof(st: CheckerState, env: Vec[EnvEntry], e: Exp) -> Result[Typ, string] {
+    match e {
+        Exp::Var(x) => match env_lookup(env, x) {
+            Option::Some(ty) => Result::Ok(inst(st, ty)),
+            Option::None => Result::Err("unbound var"),
+        },
+        Exp::Lam(x, body) => {
+            let ty_x = newvar(st);
+            let env2 = vec_push(env, EnvEntry { name: x, ty: ty_x });
+            match typeof(st, env2, body) {
+                Result::Ok(ty_e) => Result::Ok(Typ::TArrow(ty_x, ty_e)),
+                Result::Err(e) => Result::Err(e),
+            }
+        }
+        Exp::App(e1, e2) => {
+            match typeof(st, env, e1) {
+                Result::Err(e) => Result::Err(e),
+                Result::Ok(ty_fun) => {
+                    match typeof(st, env, e2) {
+                        Result::Err(e) => Result::Err(e),
+                        Result::Ok(ty_arg) => {
+                            let ty_res = newvar(st);
+                            let arrow = Typ::TArrow(ty_arg, ty_res);
+                            match unify(st, ty_fun, arrow) {
+                                Result::Ok(_) => Result::Ok(ty_res),
+                                Result::Err(e) => Result::Err(e),
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        Exp::Let(x, e1, e2) => {
+            enter_level(st);
+            let ty_e = typeof(st, env, e1);
+            leave_level(st);
+            match ty_e {
+                Result::Err(e) => Result::Err(e),
+                Result::Ok(ty1) => {
+                    let env2 = vec_push(env, EnvEntry { name: x, ty: gen(st, ty1) });
+                    typeof(st, env2, e2)
+                }
+            }
+        }
+    }
+}
+
+fn exp_var(name: string) -> Exp {
+    Exp::Var(name)
+}
+
+fn exp_lam(name: string, body: Exp) -> Exp {
+    Exp::Lam(name, body)
+}
+
+fn exp_app(a: Exp, b: Exp) -> Exp {
+    Exp::App(a, b)
+}
+
+fn exp_let(name: string, a: Exp, b: Exp) -> Exp {
+    Exp::Let(name, a, b)
+}
+
+fn show_result(label: string, res: Result[Typ, string]) -> unit {
+    match res {
+        Result::Ok(ty) => string_println(label + ": " + typ_to_string(ty)),
+        Result::Err(e) => string_println(label + ": " + e),
+    }
+}
+
+fn main() -> unit {
+    let st = state_new();
+
+    let id = exp_lam("x", exp_var("x"));
+    let c1 = exp_lam("x", exp_lam("y", exp_app(exp_var("x"), exp_var("y"))));
+
+    reset_type_variables(st);
+    show_result("id", typeof(st, env_empty(), id));
+
+    reset_type_variables(st);
+    show_result("c1", typeof(st, env_empty(), c1));
+
+    reset_type_variables(st);
+    show_result("let_x_c1_x", typeof(st, env_empty(), exp_let("x", c1, exp_var("x"))));
+
+    reset_type_variables(st);
+    show_result(
+        "let_y_id_y",
+        typeof(st, env_empty(), exp_let("y", exp_lam("z", exp_var("z")), exp_var("y"))),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "lam_x_let_y_id_y",
+        typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_lam("z", exp_var("z")), exp_var("y")))),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "lam_x_let_y_id_yx",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_let(
+                    "y",
+                    exp_lam("z", exp_var("z")),
+                    exp_app(exp_var("y"), exp_var("x")),
+                ),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "self_apply",
+        typeof(st, env_empty(), exp_lam("x", exp_app(exp_var("x"), exp_var("x")))),
+    );
+
+    reset_type_variables(st);
+    show_result("unbound_var", typeof(st, env_empty(), exp_let("x", exp_var("x"), exp_var("x"))));
+
+    reset_type_variables(st);
+    show_result(
+        "max_heiber",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "y",
+                exp_app(exp_var("y"), exp_lam("z", exp_app(exp_var("y"), exp_var("z")))),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "kirang",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_lam(
+                    "y",
+                    exp_lam(
+                        "k",
+                        exp_app(
+                            exp_app(exp_var("k"), exp_app(exp_app(exp_var("k"), exp_var("x")), exp_var("y"))),
+                            exp_app(exp_app(exp_var("k"), exp_var("y")), exp_var("x")),
+                        ),
+                    ),
+                ),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "let_id_idid",
+        typeof(st, env_empty(), exp_let("id", id, exp_app(exp_var("id"), exp_var("id")))),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "nested_lets",
+        typeof(
+            st,
+            env_empty(),
+            exp_let(
+                "x",
+                c1,
+                exp_let(
+                    "y",
+                    exp_let("z", exp_app(exp_var("x"), id), exp_var("z")),
+                    exp_var("y"),
+                ),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "fun_x_fun_y_let_x_xy_fun_x_yx",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_lam(
+                    "y",
+                    exp_let(
+                        "x",
+                        exp_app(exp_var("x"), exp_var("y")),
+                        exp_lam("x", exp_app(exp_var("y"), exp_var("x"))),
+                    ),
+                ),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "sound_gen_1",
+        typeof(st, env_empty(), exp_lam("x", exp_let("y", exp_var("x"), exp_var("y")))),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "sound_gen_2",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam("x", exp_let("y", exp_lam("z", exp_var("x")), exp_var("y"))),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "sound_gen_3",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_let("y", exp_lam("z", exp_app(exp_var("x"), exp_var("z"))), exp_var("y")),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "double_apply",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_lam(
+                    "y",
+                    exp_let(
+                        "x",
+                        exp_app(exp_var("x"), exp_var("y")),
+                        exp_app(exp_var("x"), exp_var("y")),
+                    ),
+                ),
+            ),
+        ),
+    );
+
+    reset_type_variables(st);
+    show_result(
+        "sound_gen_occurs",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam("x", exp_let("y", exp_var("x"), exp_app(exp_var("y"), exp_var("y")))),
+        ),
+    );
+
+    reset_gensym(st);
+    show_result(
+        "fun_x_let_y_let_z_x_id_z_y",
+        typeof(
+            st,
+            env_empty(),
+            exp_lam(
+                "x",
+                exp_let("y", exp_let("z", exp_app(exp_var("x"), id), exp_var("z")), exp_var("y")),
+            ),
+        ),
+    );
+
+    string_println("");
+    string_println("All Done");
+    string_println("");
+}
+`;
+export {
+  n as default
+};

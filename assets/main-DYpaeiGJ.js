@@ -1,0 +1,19 @@
+const n = `enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+fn main() {
+    let a = (Blue, Red);
+    match a {
+        (Red, Green) => print(0i32),
+        (Red, Red) => print(1i32),
+        (Blue, Blue) => print(2i32),
+        _ => print(3i32),
+    }
+}
+`;
+export {
+  n as default
+};

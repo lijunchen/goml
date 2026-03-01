@@ -1,0 +1,11 @@
+const n = `package main;
+
+fn main() -> unit {
+    let mut x = 1;
+    x = x + 1;
+    string_println(int32_to_string(x));
+}
+`;
+export {
+  n as default
+};

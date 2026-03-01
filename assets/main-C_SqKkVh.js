@@ -1,0 +1,49 @@
+const t = `enum FloatEvent {
+    Sample32(string, float32),
+    Sample64(string, float64),
+}
+
+fn summarize(event: FloatEvent) -> string {
+    match event {
+        Sample32(label, value) => label + float32_to_string(value),
+        Sample64(label, value) => label + float64_to_string(value),
+    }
+}
+
+fn compare(values: (float32, float64)) -> string {
+    match values {
+        (left, right) => {
+            let limit32: float32 = 1.0f32;
+            let limit64: float64 = 5.0f64;
+            let less_left = left < limit32;
+            let less_right = right < limit64;
+            "left<1?=" + bool_to_string(less_left) + ",right<5?=" + bool_to_string(less_right)
+        }
+    }
+}
+
+fn main() {
+    let first_value: float32 = 0.5f32;
+    let second_value: float32 = 2.25f32;
+    let third_value: float64 = 9.5f64;
+
+    let first = Sample32("f32=", first_value);
+    let second = Sample32("f32_b=", second_value);
+    let third = Sample64("f64=", third_value);
+
+    let tuple: (float32, float64) = (0.75f32, 4.0f64);
+    let tuple_other: (float32, float64) = (1.5f32, 7.25f64);
+
+    let message = summarize(first)
+        + summarize(second)
+        + summarize(third)
+        + compare(tuple)
+        + compare(tuple_other);
+
+    let _ = string_println(message);
+    ()
+}
+`;
+export {
+  t as default
+};
