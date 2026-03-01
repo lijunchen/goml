@@ -1,0 +1,36 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn take_u8(x/0: uint8) -> uint8 {
+    (x/0 : uint8)
+}
+
+fn take_f32(x/1: float32) -> float32 {
+    (x/1 : float32)
+}
+
+fn main() -> unit {
+    let a/2: uint8 = 1;
+    let b/3: int8 = 2;
+    let c/4: int16 = 3;
+    let d/5: uint16 = 4;
+    let e/6: uint32 = 5;
+    let f/7: int64 = 6;
+    let g/8: uint64 = 7;
+    let h/9: float32 = 1;
+    (string_println : (string) -> unit)((uint8_to_string : (uint8) -> string)((a/2 : uint8)));
+    (string_println : (string) -> unit)((int8_to_string : (int8) -> string)((b/3 : int8)));
+    (string_println : (string) -> unit)((int16_to_string : (int16) -> string)((c/4 : int16)));
+    (string_println : (string) -> unit)((uint16_to_string : (uint16) -> string)((d/5 : uint16)));
+    (string_println : (string) -> unit)((uint32_to_string : (uint32) -> string)((e/6 : uint32)));
+    (string_println : (string) -> unit)((int64_to_string : (int64) -> string)((f/7 : int64)));
+    (string_println : (string) -> unit)((uint64_to_string : (uint64) -> string)((g/8 : uint64)));
+    (string_println : (string) -> unit)((float32_to_string : (float32) -> string)((h/9 : float32)));
+    (string_println : (string) -> unit)((uint8_to_string : (uint8) -> string)((take_u8 : (uint8) -> uint8)(10)));
+    (string_println : (string) -> unit)((float32_to_string : (float32) -> string)((take_f32 : (float32) -> float32)(2.5)));
+}
