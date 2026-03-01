@@ -480,6 +480,27 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
+            hir::Expr::EArray { items } if matches!(expected, tast::Ty::TArray { elem, .. } if matches!(**elem, tast::Ty::TDyn { .. })) =>
+            {
+                let expected_elem_ty = match expected {
+                    tast::Ty::TArray { elem, .. } => (**elem).clone(),
+                    _ => self.fresh_ty_var(),
+                };
+                let len = items.len();
+                let mut checked_items = Vec::with_capacity(len);
+                for item_expr in items.iter() {
+                    let item_tast =
+                        self.check_expr(genv, local_env, diagnostics, *item_expr, &expected_elem_ty);
+                    checked_items.push(item_tast);
+                }
+                tast::Expr::EArray {
+                    items: checked_items,
+                    ty: tast::Ty::TArray {
+                        len,
+                        elem: Box::new(expected_elem_ty),
+                    },
+                }
+            }
             hir::Expr::EIf {
                 cond,
                 then_branch,
