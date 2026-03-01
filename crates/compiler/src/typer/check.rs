@@ -2139,16 +2139,29 @@ impl Typer {
                 astptr: func_astptr,
                 ..
             } => {
-                let mut args_tast = Vec::new();
-                let mut arg_types = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                    arg_types.push(arg_tast.get_ty());
-                    args_tast.push(arg_tast);
-                }
-
                 let name_str = self.hir_table.local_ident_name(name);
                 if let Some(var_ty) = local_env.lookup_var(name) {
+                    let norm_var_ty = self.norm(&var_ty);
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    if let tast::Ty::TFunc { params, .. } = &norm_var_ty
+                        && params.len() == args.len()
+                        && !params.is_empty()
+                    {
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast =
+                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                            arg_types.push(expected_ty.clone());
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+                    }
+
                     self.results.record_expr_ty(func, var_ty.clone());
                     self.results.record_name_ref_elab(
                         func,
@@ -2186,6 +2199,11 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
+                    let mut args_tast = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                        args_tast.push(arg_tast);
+                    }
                     super::util::push_ice(
                         diagnostics,
                         format!("Variable {} not found in environment", name_str),
