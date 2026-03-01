@@ -77,11 +77,11 @@ type Tuple2_string_string struct {
     _1 string
 }
 
-type Tuple4_Tracker_closure_env_snapshot_0_closure_env_bump_1_closure_env_flip_2 struct {
+type Tuple4_Tracker_TFunc_unit_Record__int32_TFunc_int32_Record__int32_TFunc_unit_Record__string struct {
     _0 Tracker
-    _1 closure_env_snapshot_0
-    _2 closure_env_bump_1
-    _3 closure_env_flip_2
+    _1 func() Record__int32
+    _2 func(int32) Record__int32
+    _3 func() Record__string
 }
 
 type Tracker struct {
@@ -312,7 +312,7 @@ func gather(record__38 Record__int32) Maybe__int32 {
     return jp65
 }
 
-func build_counter(label__41 string, start__42 int32) Tuple4_Tracker_closure_env_snapshot_0_closure_env_bump_1_closure_env_flip_2 {
+func build_counter(label__41 string, start__42 int32) Tuple4_Tracker_TFunc_unit_Record__int32_TFunc_int32_Record__int32_TFunc_unit_Record__string {
     var count__43 *ref_int32_x = ref__Ref_int32(start__42)
     var toggled__44 *ref_bool_x = ref__Ref_bool(false)
     var tracker__45 Tracker = Tracker{
@@ -329,29 +329,35 @@ func build_counter(label__41 string, start__42 int32) Tuple4_Tracker_closure_env
     var flip__52 closure_env_flip_2 = closure_env_flip_2{
         toggled_0: toggled__44,
     }
-    var t68 Tuple4_Tracker_closure_env_snapshot_0_closure_env_bump_1_closure_env_flip_2 = Tuple4_Tracker_closure_env_snapshot_0_closure_env_bump_1_closure_env_flip_2{
+    var t68 Tuple4_Tracker_TFunc_unit_Record__int32_TFunc_int32_Record__int32_TFunc_unit_Record__string = Tuple4_Tracker_TFunc_unit_Record__int32_TFunc_int32_Record__int32_TFunc_unit_Record__string{
         _0: tracker__45,
-        _1: snapshot__46,
-        _2: bump__49,
-        _3: flip__52,
+        _1: func() Record__int32 {
+            return _goml_inherent_closure_env_snapshot_0_closure_env_snapshot_0_apply(snapshot__46)
+        },
+        _2: func(p0 int32) Record__int32 {
+            return _goml_inherent_closure_env_bump_1_closure_env_bump_1_apply(bump__49, p0)
+        },
+        _3: func() Record__string {
+            return _goml_inherent_closure_env_flip_2_closure_env_flip_2_apply(flip__52)
+        },
     }
     return t68
 }
 
 func main0() struct{} {
-    var mtmp19 Tuple4_Tracker_closure_env_snapshot_0_closure_env_bump_1_closure_env_flip_2 = build_counter("goml", 2)
+    var mtmp19 Tuple4_Tracker_TFunc_unit_Record__int32_TFunc_int32_Record__int32_TFunc_unit_Record__string = build_counter("goml", 2)
     var x20 Tracker = mtmp19._0
-    var x21 closure_env_snapshot_0 = mtmp19._1
-    var x22 closure_env_bump_1 = mtmp19._2
-    var x23 closure_env_flip_2 = mtmp19._3
-    var flip__56 closure_env_flip_2 = x23
-    var bump__55 closure_env_bump_1 = x22
-    var snapshot__54 closure_env_snapshot_0 = x21
+    var x21 func() Record__int32 = mtmp19._1
+    var x22 func(int32) Record__int32 = mtmp19._2
+    var x23 func() Record__string = mtmp19._3
+    var flip__56 func() Record__string = x23
+    var bump__55 func(int32) Record__int32 = x22
+    var snapshot__54 func() Record__int32 = x21
     var tracker__53 Tracker = x20
     var tracker_info__57 string = _goml_trait_impl_Describe_Tracker_describe(tracker__53)
-    var first_record__58 Record__int32 = _goml_inherent_closure_env_snapshot_0_closure_env_snapshot_0_apply(snapshot__54)
-    var bumped_record__59 Record__int32 = _goml_inherent_closure_env_bump_1_closure_env_bump_1_apply(bump__55, 5)
-    var flipped_record__60 Record__string = _goml_inherent_closure_env_flip_2_closure_env_flip_2_apply(flip__56)
+    var first_record__58 Record__int32 = snapshot__54()
+    var bumped_record__59 Record__int32 = bump__55(5)
+    var flipped_record__60 Record__string = flip__56()
     var maybe_first__61 Maybe__int32 = gather(first_record__58)
     var maybe_second__62 Maybe__int32 = gather(bumped_record__59)
     var chosen__63 Maybe__int32 = _goml_choose__T_Maybe_x5b_int32_x5d_(true, maybe_second__62, maybe_first__61)

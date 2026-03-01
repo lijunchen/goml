@@ -515,15 +515,14 @@ fn rewrite_lift_expr_with_final_types(
                 .collect(),
             ty,
         },
-        LiftExpr::ETuple { items, ty: _ } => {
+        LiftExpr::ETuple { items, ty } => {
             let items = items
                 .into_iter()
                 .map(|item| rewrite_lift_expr_with_final_types(state, scope, item))
                 .collect::<Vec<_>>();
-            let typs = items.iter().map(|item| item.get_ty()).collect();
             LiftExpr::ETuple {
                 items,
-                ty: Ty::TTuple { typs },
+                ty,
             }
         }
         LiftExpr::EArray { items, ty } => LiftExpr::EArray {
@@ -774,15 +773,14 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 ty,
             }
         }
-        MonoExpr::ETuple { items, ty: _ } => {
+        MonoExpr::ETuple { items, ty } => {
             let items = items
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
                 .collect::<Vec<_>>();
-            let typs = items.iter().map(|item| item.get_ty()).collect();
             LiftExpr::ETuple {
                 items,
-                ty: Ty::TTuple { typs },
+                ty,
             }
         }
         MonoExpr::EArray { items, ty } => {

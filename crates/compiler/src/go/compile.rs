@@ -3084,10 +3084,26 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
             }
         },
         anf::ValueExpr::Tuple { items, ty } => {
+            let orig_typs = match ty {
+                tast::Ty::TTuple { typs } => Some(typs.as_slice()),
+                _ => None,
+            };
             let fields = items
                 .iter()
                 .enumerate()
-                .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                .map(|(i, a)| {
+                    let val = if let Some(field_ty) = orig_typs.and_then(|ts| ts.get(i)) {
+                        let arg_ty = imm_ty(a);
+                        if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                            closure_to_func_lit(goenv, a, field_ty)
+                        } else {
+                            compile_imm(goenv, a)
+                        }
+                    } else {
+                        compile_imm(goenv, a)
+                    };
+                    (format!("_{}", i), val)
+                })
                 .collect();
             CompiledValue {
                 stmts: Vec::new(),

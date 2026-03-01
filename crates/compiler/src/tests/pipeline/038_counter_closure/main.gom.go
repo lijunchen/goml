@@ -32,9 +32,9 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
     return struct{}{}
 }
 
-type Tuple2_closure_env_next_0_closure_env_reset_1 struct {
-    _0 closure_env_next_0
-    _1 closure_env_reset_1
+type Tuple2_TFunc_unit_int32_TFunc_unit_unit struct {
+    _0 func() int32
+    _1 func() struct{}
 }
 
 type closure_env_next_0 struct {
@@ -45,7 +45,7 @@ type closure_env_reset_1 struct {
     cell_0 *ref_int32_x
 }
 
-func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
+func make_counter() Tuple2_TFunc_unit_int32_TFunc_unit_unit {
     var cell__0 *ref_int32_x = ref__Ref_int32(0)
     var next__2 closure_env_next_0 = closure_env_next_0{
         cell_0: cell__0,
@@ -53,29 +53,33 @@ func make_counter() Tuple2_closure_env_next_0_closure_env_reset_1 {
     var reset__3 closure_env_reset_1 = closure_env_reset_1{
         cell_0: cell__0,
     }
-    var t15 Tuple2_closure_env_next_0_closure_env_reset_1 = Tuple2_closure_env_next_0_closure_env_reset_1{
-        _0: next__2,
-        _1: reset__3,
+    var t15 Tuple2_TFunc_unit_int32_TFunc_unit_unit = Tuple2_TFunc_unit_int32_TFunc_unit_unit{
+        _0: func() int32 {
+            return _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__2)
+        },
+        _1: func() struct{} {
+            return _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__3)
+        },
     }
     return t15
 }
 
 func main0() struct{} {
-    var counter__4 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
-    var mtmp2 Tuple2_closure_env_next_0_closure_env_reset_1 = counter__4
-    var x3 closure_env_next_0 = mtmp2._0
-    var x4 closure_env_reset_1 = mtmp2._1
-    var reset__6 closure_env_reset_1 = x4
-    var next__5 closure_env_next_0 = x3
-    var first__7 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-    var second__8 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-    _goml_inherent_closure_env_reset_1_closure_env_reset_1_apply(reset__6)
-    var third__9 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(next__5)
-    var new_counter__10 Tuple2_closure_env_next_0_closure_env_reset_1 = make_counter()
-    var mtmp6 Tuple2_closure_env_next_0_closure_env_reset_1 = new_counter__10
-    var x7 closure_env_next_0 = mtmp6._0
-    var new_next__11 closure_env_next_0 = x7
-    var fourth__12 int32 = _goml_inherent_closure_env_next_0_closure_env_next_0_apply(new_next__11)
+    var counter__4 Tuple2_TFunc_unit_int32_TFunc_unit_unit = make_counter()
+    var mtmp2 Tuple2_TFunc_unit_int32_TFunc_unit_unit = counter__4
+    var x3 func() int32 = mtmp2._0
+    var x4 func() struct{} = mtmp2._1
+    var reset__6 func() struct{} = x4
+    var next__5 func() int32 = x3
+    var first__7 int32 = next__5()
+    var second__8 int32 = next__5()
+    reset__6()
+    var third__9 int32 = next__5()
+    var new_counter__10 Tuple2_TFunc_unit_int32_TFunc_unit_unit = make_counter()
+    var mtmp6 Tuple2_TFunc_unit_int32_TFunc_unit_unit = new_counter__10
+    var x7 func() int32 = mtmp6._0
+    var new_next__11 func() int32 = x7
+    var fourth__12 int32 = new_next__11()
     var t16 string = int32_to_string(first__7)
     string_println(t16)
     var t17 string = int32_to_string(second__8)
