@@ -4245,7 +4245,7 @@ fn collect_type_param_substitution(
     }
 }
 
-fn resolve_field_ty_eager(
+pub(crate) fn resolve_field_ty_eager(
     genv: &PackageTypeEnv,
     base_ty: &tast::Ty,
     field: &tast::TastIdent,

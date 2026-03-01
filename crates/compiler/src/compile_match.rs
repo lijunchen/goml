@@ -2059,9 +2059,38 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                core::Expr::EVar {
-                    name: inherent_method_fn_name(receiver_ty, &method_name.0),
-                    ty: method_ty.clone(),
+                let has_inherent = genv
+                    .lookup_inherent_method_scheme(receiver_ty, method_name)
+                    .is_some();
+                if has_inherent {
+                    core::Expr::EVar {
+                        name: inherent_method_fn_name(receiver_ty, &method_name.0),
+                        ty: method_ty.clone(),
+                    }
+                } else if let Some((type_name, type_args)) = decompose_struct_type(receiver_ty)
+                    && let Some(struct_def) = genv.structs().get(&type_name)
+                    && let Some(inst_fields) = instantiate_struct_fields(diagnostics, struct_def, &type_args, None)
+                    && let Some((field_index, (_, field_ty))) = inst_fields.iter().enumerate().find(|(_, (fname, _))| fname == &method_name.0)
+                    && matches!(field_ty, tast::Ty::TFunc { .. })
+                {
+                    let receiver_core = args[0].clone();
+                    let field_core = core::Expr::EConstrGet {
+                        expr: Box::new(receiver_core),
+                        constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
+                        field_index,
+                        ty: field_ty.clone(),
+                    };
+                    let other_args = args[1..].to_vec();
+                    return core::Expr::ECall {
+                        func: Box::new(field_core),
+                        args: other_args,
+                        ty: ty.clone(),
+                    };
+                } else {
+                    core::Expr::EVar {
+                        name: inherent_method_fn_name(receiver_ty, &method_name.0),
+                        ty: method_ty.clone(),
+                    }
                 }
             } else {
                 compile_expr(func, genv, gensym, diagnostics)

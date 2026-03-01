@@ -790,16 +790,41 @@ impl Typer {
                             if unified {
                                 changed = true;
                             }
+                        } else if let Some(field_ty) =
+                            super::check::resolve_field_ty_eager(
+                                genv,
+                                &norm_receiver_ty,
+                                &method,
+                            )
+                        {
+                            if let tast::Ty::TFunc { params, ret_ty } = &field_ty {
+                                let mut method_params = vec![norm_receiver_ty.clone()];
+                                method_params.extend(params.iter().cloned());
+                                let method_ty = tast::Ty::TFunc {
+                                    params: method_params,
+                                    ret_ty: ret_ty.clone(),
+                                };
+                                let unified = self.unify(
+                                    diagnostics,
+                                    &call_site_type,
+                                    &method_ty,
+                                    origin,
+                                );
+                                if unified {
+                                    changed = true;
+                                }
+                            } else {
+                                super::util::push_error_with_range(
+                                    diagnostics,
+                                    format!(
+                                        "Field {} on type {} is not callable",
+                                        method.0,
+                                        super::util::format_ty_for_diag(&norm_receiver_ty)
+                                    ),
+                                    origin,
+                                );
+                            }
                         } else {
-                            super::util::push_error_with_range(
-                                diagnostics,
-                                format!(
-                                    "Method {} not found for type {}",
-                                    method.0,
-                                    super::util::format_ty_for_diag(&norm_receiver_ty)
-                                ),
-                                origin,
-                            );
                         }
                     }
                 }
