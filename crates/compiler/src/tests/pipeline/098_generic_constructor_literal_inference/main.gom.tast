@@ -1,0 +1,15 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let x/0: Option[uint8] = Option::Some(42);
+    match (x/0 : Option[uint8]) {
+        Option::Some(v/1: uint8) => (string_println : (string) -> unit)((uint8_to_string : (uint8) -> string)((v/1 : uint8))),
+        Option::None => (string_println : (string) -> unit)("none"),
+    };
+}
