@@ -421,12 +421,31 @@ impl Typer {
                 op: common_defs::UnaryOp::Neg,
                 expr: inner,
             } if is_signed_numeric_ty(expected) => {
-                let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
-                tast::Expr::EUnary {
-                    op: common_defs::UnaryOp::Neg,
-                    expr: Box::new(operand),
-                    ty: expected.clone(),
-                    resolution: tast::UnaryResolution::Builtin,
+                let inner_expr = self.hir_table.expr(inner).clone();
+                if let hir::Expr::EInt { ref value } = inner_expr
+                    && is_integer_ty(expected)
+                {
+                    let negated = format!("-{}", value);
+                    let range = self.expr_range(e);
+                    let prim = self
+                        .parse_integer_literal_with_ty(diagnostics, &negated, expected, range)
+                        .unwrap_or_else(|| Prim::zero_for_int_ty(expected));
+                    self.record_expr_result(inner, &tast::Expr::EPrim {
+                        value: prim.clone(),
+                        ty: expected.clone(),
+                    });
+                    tast::Expr::EPrim {
+                        value: prim,
+                        ty: expected.clone(),
+                    }
+                } else {
+                    let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
+                    tast::Expr::EUnary {
+                        op: common_defs::UnaryOp::Neg,
+                        expr: Box::new(operand),
+                        ty: expected.clone(),
+                        resolution: tast::UnaryResolution::Builtin,
+                    }
                 }
             }
             hir::Expr::EInt { ref value } if is_integer_ty(expected) => {

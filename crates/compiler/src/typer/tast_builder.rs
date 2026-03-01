@@ -516,17 +516,32 @@ fn build_expr(
             tast::Expr::ECall { func, args, ty }
         }
         hir::Expr::EUnary { op, expr } => {
-            let expr = Box::new(build_expr(hir_table, results, expr));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
-            let resolution = results
-                .unary_resolution(expr_id)
-                .cloned()
-                .unwrap_or(tast::UnaryResolution::Builtin);
-            tast::Expr::EUnary {
-                op,
-                expr,
-                ty,
-                resolution,
+            if op == common_defs::UnaryOp::Neg
+                && let hir::Expr::EInt { value } = hir_table.expr(expr)
+                && matches!(ty, tast::Ty::TInt8 | tast::Ty::TInt16 | tast::Ty::TInt32 | tast::Ty::TInt64)
+            {
+                let negated = format!("-{}", value);
+                let prim = match &ty {
+                    tast::Ty::TInt8 => Prim::Int8 { value: negated.parse::<i8>().unwrap_or(0) },
+                    tast::Ty::TInt16 => Prim::Int16 { value: negated.parse::<i16>().unwrap_or(0) },
+                    tast::Ty::TInt32 => Prim::Int32 { value: negated.parse::<i32>().unwrap_or(0) },
+                    tast::Ty::TInt64 => Prim::Int64 { value: negated.parse::<i64>().unwrap_or(0) },
+                    _ => unreachable!(),
+                };
+                tast::Expr::EPrim { value: prim, ty }
+            } else {
+                let expr = Box::new(build_expr(hir_table, results, expr));
+                let resolution = results
+                    .unary_resolution(expr_id)
+                    .cloned()
+                    .unwrap_or(tast::UnaryResolution::Builtin);
+                tast::Expr::EUnary {
+                    op,
+                    expr,
+                    ty,
+                    resolution,
+                }
             }
         }
         hir::Expr::EBinary { op, lhs, rhs } => {
