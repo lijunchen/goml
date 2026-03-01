@@ -9,7 +9,9 @@ use clap::{Args, Parser, Subcommand};
 use compiler::config::GomlConfig;
 use compiler::env::{format_compile_diagnostics, format_typer_diagnostics};
 use compiler::package_names::{ENTRY_FUNCTION, ROOT_PACKAGE};
-use compiler::pipeline::{pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file};
+use compiler::pipeline::{
+    pipeline::Compilation, pipeline::CompilationError, pipeline::compile_single_file,
+};
 use parser::format_parser_diagnostics;
 use tempfile::tempdir;
 

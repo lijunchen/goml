@@ -345,7 +345,7 @@ pub enum TokenKind {
     #[token("array")]
     ArrayKeyword,
 
-    #[regex("[A-Za-z][A-Za-z_0-9]*")]
+    #[regex("[A-Za-z][A-Za-z_0-9]*|_[A-Za-z_0-9]+")]
     Ident,
 
     // Suffixed float literals (higher priority than generic Float)

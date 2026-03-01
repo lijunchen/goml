@@ -503,7 +503,9 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
                 .types()
                 .flat_map(|ty| lower_ty(ctx, ty))
                 .collect();
-            if typs.len() == 1 {
+            if typs.is_empty() {
+                Some(ast::TypeExpr::TUnit)
+            } else if typs.len() == 1 {
                 Some(typs.into_iter().next().unwrap())
             } else {
                 Some(ast::TypeExpr::TTuple { typs })
@@ -585,12 +587,19 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
                 return None;
             };
 
-            let param_ty = lower_ty(ctx, param_node)?;
             let ret_ty = lower_ty(ctx, ret_node)?;
 
-            let params = match param_ty {
-                ast::TypeExpr::TTuple { typs } => typs,
-                other => vec![other],
+            let params = match param_node {
+                cst::Type::TupleTy(tuple_ty) => tuple_ty
+                    .type_list()
+                    .map(|type_list| {
+                        type_list
+                            .types()
+                            .flat_map(|ty| lower_ty(ctx, ty))
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default(),
+                other => vec![lower_ty(ctx, other)?],
             };
 
             Some(ast::TypeExpr::TFunc {

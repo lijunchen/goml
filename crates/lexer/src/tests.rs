@@ -243,3 +243,26 @@ fn lexes_char_literal() {
         "#]],
     )
 }
+
+#[test]
+fn lexes_underscore_prefixed_identifiers() {
+    check(
+        "let _x = _y + _;",
+        expect![[r#"
+            [
+                {kind: LetKeyword, text: "let"},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "_x"},
+                {kind: Whitespace, text: " "},
+                {kind: Eq, text: "="},
+                {kind: Whitespace, text: " "},
+                {kind: Ident, text: "_y"},
+                {kind: Whitespace, text: " "},
+                {kind: Plus, text: "+"},
+                {kind: Whitespace, text: " "},
+                {kind: WildcardKeyword, text: "_"},
+                {kind: Semi, text: ";"},
+            ]
+        "#]],
+    )
+}

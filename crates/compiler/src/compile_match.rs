@@ -2736,34 +2736,25 @@ fn compile_expr(
             }
         }
         ETraitMethod { ty, astptr, .. } => {
-            push_compile_ice(
+            push_compile_error(
                 diagnostics,
-                format!(
-                    "trait method value appeared outside call context with type {:?}",
-                    ty
-                ),
+                "Trait method values are not supported; call the method directly",
                 astptr.as_ref().map(|ptr| ptr.text_range()),
             );
             emissing(ty)
         }
         EDynTraitMethod { ty, astptr, .. } => {
-            push_compile_ice(
+            push_compile_error(
                 diagnostics,
-                format!(
-                    "dyn trait method value appeared outside call context with type {:?}",
-                    ty
-                ),
+                "Dynamic trait method values are not supported; call the method directly",
                 astptr.as_ref().map(|ptr| ptr.text_range()),
             );
             emissing(ty)
         }
         EInherentMethod { ty, astptr, .. } => {
-            push_compile_ice(
+            push_compile_error(
                 diagnostics,
-                format!(
-                    "inherent method value appeared outside call context with type {:?}",
-                    ty
-                ),
+                "Inherent method values are not supported; call the method directly",
                 astptr.as_ref().map(|ptr| ptr.text_range()),
             );
             emissing(ty)

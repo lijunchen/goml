@@ -34,6 +34,37 @@ pub fn pattern(p: &mut Parser) -> Option<MarkerClosed> {
     simple_pattern(p)
 }
 
+fn parse_pattern_list(p: &mut Parser) {
+    if !p.at_any(PATTERN_FIRST) {
+        return;
+    }
+
+    let _ = pattern(p);
+    loop {
+        if p.at(T![,]) {
+            p.expect(T![,]);
+            if p.at(T![')']) {
+                break;
+            }
+            if p.at_any(PATTERN_FIRST) {
+                let _ = pattern(p);
+                continue;
+            }
+            p.advance_with_error("expected a pattern");
+            continue;
+        }
+        if p.at(T![')']) || p.eof() {
+            break;
+        }
+        if p.at_any(PATTERN_FIRST) {
+            p.advance_with_error("expected `,` between patterns");
+            let _ = pattern(p);
+            continue;
+        }
+        p.advance_with_error("expected `,` or `)` in pattern");
+    }
+}
+
 fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
     if !p.at_any(PATTERN_FIRST) {
         let m = p.open();
@@ -171,11 +202,7 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 p.expect(T![')']);
                 p.close(m, MySyntaxKind::PATTERN_UNIT)
             } else {
-                while p.at_any(PATTERN_FIRST) {
-                    let _ = pattern(p);
-                    p.eat(T![,]);
-                }
-
+                parse_pattern_list(p);
                 p.expect(T![')']);
                 p.close(m, MySyntaxKind::PATTERN_TUPLE)
             }
@@ -195,10 +222,7 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 parse_path_always(p);
                 if p.at(T!['(']) {
                     p.expect(T!['(']);
-                    while p.at_any(PATTERN_FIRST) {
-                        let _ = pattern(p);
-                        p.eat(T![,]);
-                    }
+                    parse_pattern_list(p);
                     p.expect(T![')']);
                     p.close(m, MySyntaxKind::PATTERN_CONSTR)
                 } else if p.at(T!['{']) {

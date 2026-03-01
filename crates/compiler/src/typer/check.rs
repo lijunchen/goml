@@ -775,9 +775,10 @@ impl Typer {
                         astptr,
                     }
                 } else {
-                    super::util::push_ice(
+                    super::util::push_error_with_range(
                         diagnostics,
-                        format!("Variable {} not found in environment", name_str),
+                        format!("Unknown variable {}", name_str),
+                        astptr.map(|ptr| ptr.text_range()),
                     );
                     self.error_expr(astptr)
                 }
@@ -2378,9 +2379,10 @@ impl Typer {
                         let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
                         args_tast.push(arg_tast);
                     }
-                    super::util::push_ice(
+                    super::util::push_error_with_range(
                         diagnostics,
-                        format!("Variable {} not found in environment", name_str),
+                        format!("Unknown variable {}", name_str),
+                        func_astptr.map(|ptr| ptr.text_range()),
                     );
                     self.error_expr(func_astptr)
                 }
