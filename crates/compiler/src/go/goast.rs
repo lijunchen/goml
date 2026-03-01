@@ -1,6 +1,7 @@
 use crate::{
     go::goty,
     go::mangle::{encode_ty, go_ident},
+    names::ty_compact,
     tast,
 };
 
@@ -177,6 +178,11 @@ pub enum Expr {
         expr: Option<Box<Expr>>,
         ty: goty::GoType,
     },
+    FuncLit {
+        params: Vec<(String, goty::GoType)>,
+        body: Vec<Stmt>,
+        ty: goty::GoType,
+    },
 }
 
 impl Expr {
@@ -200,7 +206,8 @@ impl Expr {
             | Expr::Cast { ty, .. }
             | Expr::StructLiteral { ty, .. }
             | Expr::ArrayLiteral { ty, .. }
-            | Expr::Block { ty, .. } => ty,
+            | Expr::Block { ty, .. }
+            | Expr::FuncLit { ty, .. } => ty,
         }
     }
 }
@@ -273,8 +280,10 @@ pub enum Stmt {
     },
     Loop {
         body: Block,
+        label: Option<String>,
     },
     Break,
+    BreakLabel(String),
     Continue,
     // switch <expr> { case <value>: ...; default: ... }
     SwitchExpr {
@@ -332,13 +341,15 @@ pub fn tast_ty_to_go_type(ty: &tast::Ty) -> goty::GoType {
             name: dyn_struct_name(trait_name),
         },
         tast::Ty::TApp { ty, args } => {
-            if !args.is_empty() {
-                unreachable!(
-                    "generic types not supported in Go backend: ty={:?}, args={:?}",
-                    ty, args
-                );
+            if args.is_empty() {
+                return tast_ty_to_go_type(ty.as_ref());
             }
-            tast_ty_to_go_type(ty.as_ref())
+            let base_name = ty.get_constr_name_unsafe();
+            let suffix = args.iter().map(ty_compact).collect::<Vec<_>>().join("__");
+            let collapsed_name = format!("{}__{}", base_name, suffix);
+            goty::GoType::TName {
+                name: go_ident(&collapsed_name),
+            }
         }
         tast::Ty::TArray { len, elem } => goty::GoType::TArray {
             len: *len,

@@ -48,14 +48,14 @@ func _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(self__66 []int32, elem__67 
     return t15
 }
 
-func _goml_inherent_Slice_Slice_x5b_T_x5d__len__T_int32(self__73 []int32) int32 {
-    var t16 int32 = int32(len(self__73))
-    return t16
+func println__T_int32(value__1 int32) struct{} {
+    var t16 string = int32_to_string(value__1)
+    var t17 struct{} = string_println(t16)
+    return t17
 }
 
-func println__T_int32(value__1 int32) struct{} {
-    var t17 string = int32_to_string(value__1)
-    var t18 struct{} = string_println(t17)
+func _goml_inherent_Slice_Slice_x5b_T_x5d__len__T_int32(self__73 []int32) int32 {
+    var t18 int32 = int32(len(self__73))
     return t18
 }
 

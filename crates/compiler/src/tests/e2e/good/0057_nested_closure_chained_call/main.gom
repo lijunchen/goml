@@ -1,0 +1,11 @@
+fn main() {
+    let f = |x: int32| {
+        let g = |y: int32| {
+            let h = |z: int32| x + y + z;
+            h
+        };
+        g
+    };
+    let result = f(1)(2)(3);
+    string_println(int32_to_string(result));
+}

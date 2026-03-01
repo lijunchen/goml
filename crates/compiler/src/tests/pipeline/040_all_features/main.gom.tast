@@ -82,11 +82,11 @@ fn pair_join(parts/29: (string, string)) -> string {
 }
 
 fn run_transforms(value/32: int32, transforms/33: [(int32) -> int32; 2]) -> [int32; 2] {
-    let first/34: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 0);
-    let second/35: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 1);
+    let first/34: (int32) -> int32 = (array_get : ([(int32) -> int32; 2], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 0);
+    let second/35: (int32) -> int32 = (array_get : ([(int32) -> int32; 2], int32) -> (int32) -> int32)((transforms/33 : [(int32) -> int32; 2]), 1);
     let first_result/36: int32 = (first/34 : (int32) -> int32)((value/32 : int32));
     let second_result/37: int32 = (second/35 : (int32) -> int32)((first_result/36 : int32));
-    (array_set : ([int32; 18446744073709551615], int32, int32) -> [int32; 18446744073709551615])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32))
+    (array_set : ([int32; 2], int32, int32) -> [int32; 2])([(first_result/36 : int32), (value/32 : int32)], 1, (second_result/37 : int32))
 }
 
 fn gather(record/38: Record[int32]) -> Maybe[int32] {
@@ -130,8 +130,8 @@ fn main() -> unit {
     let stringified/64: Maybe[string] = (map_maybe : (Maybe[int32], (int32) -> string) -> Maybe[string])((chosen/63 : Maybe[int32]), (format_total : (int32) -> string));
     let transforms/65: [(int32) -> int32; 2] = [(increment : (int32) -> int32), (triple : (int32) -> int32)];
     let results/66: [int32; 2] = (run_transforms : (int32, [(int32) -> int32; 2]) -> [int32; 2])(4, (transforms/65 : [(int32) -> int32; 2]));
-    let first_result/67: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 0);
-    let second_result/68: int32 = (array_get : ([int32; 18446744073709551615], int32) -> int32)((results/66 : [int32; 2]), 1);
+    let first_result/67: int32 = (array_get : ([int32; 2], int32) -> int32)((results/66 : [int32; 2]), 0);
+    let second_result/68: int32 = (array_get : ([int32; 2], int32) -> int32)((results/66 : [int32; 2]), 1);
     let order_check/69: bool = (first_result/67 : int32) < (second_result/68 : int32) && true;
     let first_text/70: string = (Describe::describe : (Record[int32]) -> string)((first_record/58 : Record[int32]));
     let bumped_text/71: string = (Describe::describe : (Record[int32]) -> string)((bumped_record/59 : Record[int32]));

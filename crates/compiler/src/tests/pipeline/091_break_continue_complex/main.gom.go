@@ -40,6 +40,7 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
 func main0() struct{} {
     var sum__0 *ref_int32_x = ref__Ref_int32(0)
     var i__1 *ref_int32_x = ref__Ref_int32(1)
+    Loop_loop26:
     for {
         var t27 int32 = ref_get__Ref_int32(i__1)
         var t28 bool = t27 <= 100
@@ -49,7 +50,7 @@ func main0() struct{} {
         var t35 int32 = ref_get__Ref_int32(i__1)
         var t36 bool = t35 == 50
         if t36 {
-            break
+            break Loop_loop26
         } else {
             var t30 int32 = ref_get__Ref_int32(sum__0)
             var t31 int32 = ref_get__Ref_int32(i__1)

@@ -1,6 +1,6 @@
 use crate::{
-    env::GlobalTypeEnv,
     go::{
+        compile::GlobalGoEnv,
         goast::{self, GoBinaryOp, ImportDecl, ImportSpec, Item, Package},
         goty,
         mangle::{encode_ty, go_ident},
@@ -664,12 +664,9 @@ pub fn make_ref_runtime(ref_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
     items
 }
 
-fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str) -> String {
+fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
     let mut count = 0;
-    for (_, def) in genv.enums() {
-        if !def.generics.is_empty() {
-            continue;
-        }
+    for (_, def) in goenv.enums() {
         if def
             .variants
             .iter()
@@ -689,7 +686,7 @@ fn variant_struct_name(genv: &GlobalTypeEnv, enum_name: &str, variant_name: &str
 }
 
 pub fn make_hashmap_runtime(
-    genv: &GlobalTypeEnv,
+    goenv: &GlobalGoEnv,
     hashmap_types: &IndexSet<tast::Ty>,
 ) -> Vec<goast::Item> {
     let mut items = Vec::new();
@@ -1060,7 +1057,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::Bool {
@@ -1079,8 +1076,8 @@ pub fn make_hashmap_runtime(
             name: option_name.clone(),
         };
         let option_go_ty = goast::tast_ty_to_go_type(&option_tast_ty);
-        let option_some_go_name = variant_struct_name(genv, &option_name, "Some");
-        let option_none_go_name = variant_struct_name(genv, &option_name, "None");
+        let option_some_go_name = variant_struct_name(goenv, &option_name, "Some");
+        let option_none_go_name = variant_struct_name(goenv, &option_name, "None");
         let option_some_go_ty = goty::GoType::TName {
             name: option_some_go_name.clone(),
         };
@@ -1303,7 +1300,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::StructLiteral {
@@ -1545,7 +1542,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     let entry_lit = goast::Expr::StructLiteral {
                         fields: vec![
@@ -1908,7 +1905,7 @@ pub fn make_hashmap_runtime(
                             },
                         ],
                     };
-                    stmts.push(goast::Stmt::Loop { body });
+                    stmts.push(goast::Stmt::Loop { body, label: None });
 
                     stmts.push(goast::Stmt::Return {
                         expr: Some(goast::Expr::Unit {
@@ -2047,6 +2044,10 @@ fn json_escape_string() -> goast::Fn {
 }
 
 fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
+    let fmt_spec = match &ty {
+        goty::GoType::TFloat32 | goty::GoType::TFloat64 => "%g",
+        _ => "%d",
+    };
     let fmt_ty = goty::GoType::TFunc {
         params: vec![goty::GoType::TString, ty.clone()],
         ret_ty: Box::new(goty::GoType::TString),
@@ -2064,7 +2065,7 @@ fn to_string_fn(name: &str, ty: goty::GoType) -> goast::Fn {
                     }),
                     args: vec![
                         goast::Expr::String {
-                            value: "%d".to_string(),
+                            value: fmt_spec.to_string(),
                             ty: goty::GoType::TString,
                         },
                         goast::Expr::Var {
@@ -2581,6 +2582,7 @@ fn string_hash() -> goast::Fn {
                             },
                         ],
                     },
+                    label: None,
                 },
                 goast::Stmt::Return {
                     expr: Some(goast::Expr::Var {

@@ -1,0 +1,19 @@
+trait Speak {
+  fn speak(Self) -> string;
+}
+
+struct Dog {}
+
+impl Speak for Dog {
+  fn speak(self: Dog) -> string { "woof" }
+}
+
+fn make_dog() -> dyn Speak {
+  let d = Dog {};
+  d
+}
+
+fn main() -> unit {
+  let a = make_dog();
+  println(Speak::speak(a))
+}

@@ -1,0 +1,20 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn identity(x/0: T) -> T {
+    (x/0 : T)
+}
+
+fn main() -> unit {
+    let a/1: uint8 = (identity : (uint8) -> uint8)(42);
+    (string_println : (string) -> unit)((uint8_to_string : (uint8) -> string)((a/1 : uint8)));
+    let b/2: float32 = (identity : (float32) -> float32)(3.14);
+    (string_println : (string) -> unit)((float32_to_string : (float32) -> string)((b/2 : float32)));
+    let c/3: int64 = (identity : (int64) -> int64)(100);
+    (string_println : (string) -> unit)((int64_to_string : (int64) -> string)((c/3 : int64)));
+}

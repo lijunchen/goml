@@ -1,4 +1,4 @@
-fn make_counter() -> (closure_env_next_0, closure_env_reset_1) {
+fn make_counter() -> (() -> int32, () -> unit) {
   let cell/0 = ref(0) in
   let next/2 = closure_env_next_0 { cell_0: cell/0 } in
   let reset/3 = closure_env_reset_1 { cell_0: cell/0 } in
@@ -13,16 +13,16 @@ fn main() -> unit {
   let x4 = mtmp2.1 in
   let reset/6 = x4 in
   let next/5 = x3 in
-  let first/7 = inherent#closure_env_next_0#closure_env_next_0#apply(next/5) in
-  let second/8 = inherent#closure_env_next_0#closure_env_next_0#apply(next/5) in
-  let mtmp5 = inherent#closure_env_reset_1#closure_env_reset_1#apply(reset/6) in
-  let third/9 = inherent#closure_env_next_0#closure_env_next_0#apply(next/5) in
+  let first/7 = next/5() in
+  let second/8 = next/5() in
+  let mtmp5 = reset/6() in
+  let third/9 = next/5() in
   let new_counter/10 = make_counter() in
   let mtmp6 = new_counter/10 in
   let x7 = mtmp6.0 in
   let x8 = mtmp6.1 in
   let new_next/11 = x7 in
-  let fourth/12 = inherent#closure_env_next_0#closure_env_next_0#apply(new_next/11) in
+  let fourth/12 = new_next/11() in
   let t16 = int32_to_string(first/7) in
   let mtmp9 = string_println(t16) in
   let t17 = int32_to_string(second/8) in

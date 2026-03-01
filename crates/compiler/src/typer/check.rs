@@ -344,10 +344,10 @@ impl Typer {
                 }
             }
             hir::Expr::EConstr { constructor, args } => {
-                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args)
+                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, None)
             }
             hir::Expr::EStructLiteral { name, fields } => {
-                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields)
+                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields, None)
             }
             hir::Expr::ETuple { items } => {
                 self.infer_tuple_expr(genv, local_env, diagnostics, &items)
@@ -381,7 +381,7 @@ impl Typer {
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
-                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args)
+                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, None)
             }
             hir::Expr::EUnary { op, expr } => {
                 self.infer_unary_expr(genv, local_env, diagnostics, op, expr)
@@ -420,13 +420,50 @@ impl Typer {
             hir::Expr::EUnary {
                 op: common_defs::UnaryOp::Neg,
                 expr: inner,
-            } if is_numeric_ty(expected) => {
-                let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
-                tast::Expr::EUnary {
-                    op: common_defs::UnaryOp::Neg,
-                    expr: Box::new(operand),
+            } if is_signed_numeric_ty(expected) => {
+                let inner_expr = self.hir_table.expr(inner).clone();
+                if let hir::Expr::EInt { ref value } = inner_expr
+                    && is_integer_ty(expected)
+                {
+                    let negated = format!("-{}", value);
+                    let range = self.expr_range(e);
+                    let prim = self
+                        .parse_integer_literal_with_ty(diagnostics, &negated, expected, range)
+                        .unwrap_or_else(|| Prim::zero_for_int_ty(expected));
+                    self.record_expr_result(inner, &tast::Expr::EPrim {
+                        value: prim.clone(),
+                        ty: expected.clone(),
+                    });
+                    tast::Expr::EPrim {
+                        value: prim,
+                        ty: expected.clone(),
+                    }
+                } else {
+                    let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
+                    tast::Expr::EUnary {
+                        op: common_defs::UnaryOp::Neg,
+                        expr: Box::new(operand),
+                        ty: expected.clone(),
+                        resolution: tast::UnaryResolution::Builtin,
+                    }
+                }
+            }
+            hir::Expr::EInt { ref value } if is_integer_ty(expected) => {
+                let range = self.expr_range(e);
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, expected, range)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(expected));
+                tast::Expr::EPrim {
+                    value: prim,
                     ty: expected.clone(),
-                    resolution: tast::UnaryResolution::Builtin,
+                }
+            }
+            hir::Expr::EFloat { value } if is_float_ty(expected) => {
+                let range = self.expr_range(e);
+                self.ensure_float_literal_fits(diagnostics, value, expected, range);
+                tast::Expr::EPrim {
+                    value: Prim::from_float_literal(value, expected),
+                    ty: expected.clone(),
                 }
             }
             hir::Expr::EBinary { op, lhs, rhs }
@@ -480,6 +517,27 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
+            hir::Expr::EArray { items } if matches!(expected, tast::Ty::TArray { .. }) =>
+            {
+                let expected_elem_ty = match expected {
+                    tast::Ty::TArray { elem, .. } => (**elem).clone(),
+                    _ => self.fresh_ty_var(),
+                };
+                let len = items.len();
+                let mut checked_items = Vec::with_capacity(len);
+                for item_expr in items.iter() {
+                    let item_tast =
+                        self.check_expr(genv, local_env, diagnostics, *item_expr, &expected_elem_ty);
+                    checked_items.push(item_tast);
+                }
+                tast::Expr::EArray {
+                    items: checked_items,
+                    ty: tast::Ty::TArray {
+                        len,
+                        elem: Box::new(expected_elem_ty),
+                    },
+                }
+            }
             hir::Expr::EIf {
                 cond,
                 then_branch,
@@ -522,17 +580,28 @@ impl Typer {
                     astptr: self.hir_table.expr_ptr(e),
                 }
             }
+            hir::Expr::EConstr { constructor, args } => {
+                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, Some(expected))
+            }
+            hir::Expr::ECall { func, args } => {
+                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, Some(expected))
+            }
+            hir::Expr::EStructLiteral { name, fields } if !matches!(expected, tast::Ty::TDyn { .. }) => {
+                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields, Some(expected))
+            }
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
 
-        let expr_tast =
-            self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
-        self.push_constraint(Constraint::TypeEqual(
-            expr_tast.get_ty(),
-            expected.clone(),
-            self.expr_range(e),
-        ));
         self.record_expr_result(e, &expr_tast);
+        let (expr_tast, deferred_dyn) =
+            self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
+        if !deferred_dyn {
+            self.push_constraint(Constraint::TypeEqual(
+                expr_tast.get_ty(),
+                expected.clone(),
+                self.expr_range(e),
+            ));
+        }
         expr_tast
     }
 
@@ -544,20 +613,40 @@ impl Typer {
         expr_id: hir::ExprId,
         expr: tast::Expr,
         expected: &tast::Ty,
-    ) -> tast::Expr {
-        let tast::Ty::TDyn { trait_name } = expected else {
-            return expr;
+    ) -> (tast::Expr, bool) {
+        let expected_norm = self.norm(expected);
+        match &expected_norm {
+            tast::Ty::TVar(_) => {
+                let for_ty = expr.get_ty();
+                if !matches!(for_ty, tast::Ty::TDyn { .. }) {
+                    self.deferred_dyn_coercions.push(
+                        super::DeferredDynCoercion {
+                            expr_id,
+                            concrete_ty: for_ty.clone(),
+                            expected_ty: expected_norm,
+                        },
+                    );
+                    return (expr, true);
+                }
+                return (expr, false);
+            }
+            tast::Ty::TDyn { .. } => {}
+            _ => return (expr, false),
+        }
+
+        let tast::Ty::TDyn { trait_name } = &expected_norm else {
+            unreachable!()
         };
 
         if matches!(expr.get_ty(), tast::Ty::TDyn { .. }) {
-            return expr;
+            return (expr, false);
         }
 
         let range = self.expr_range(expr_id);
         let Some(resolved_trait) =
             resolve_trait_name_or_report(genv, diagnostics, trait_name, range)
         else {
-            return expr;
+            return (expr, false);
         };
 
         let for_ty = expr.get_ty();
@@ -575,7 +664,7 @@ impl Typer {
                         )
                         .with_range(range),
                     );
-                    return expr;
+                    return (expr, false);
                 }
             }
             tast::Ty::TVar(_) => {
@@ -585,23 +674,16 @@ impl Typer {
                     origin: range,
                 });
             }
+            _ if contains_tvar(&for_ty) => {
+                self.push_constraint(Constraint::Implements {
+                    trait_name: tast::TastIdent(resolved_trait.clone()),
+                    for_ty: for_ty.clone(),
+                    origin: range,
+                });
+            }
+            _ if !is_concrete_dyn_target(&for_ty) => {
+            }
             _ => {
-                if !is_concrete_dyn_target(&for_ty) {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Cannot convert non-concrete type {} to dyn {}",
-                                super::util::format_ty_for_diag(&for_ty),
-                                resolved_trait
-                            ),
-                        )
-                        .with_range(range),
-                    );
-                    return expr;
-                }
-
                 if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
                     diagnostics.push(
                         Diagnostic::new(
@@ -615,7 +697,7 @@ impl Typer {
                         )
                         .with_range(range),
                     );
-                    return expr;
+                    return (expr, false);
                 }
             }
         }
@@ -625,17 +707,17 @@ impl Typer {
             Coercion::ToDyn {
                 trait_name: tast::TastIdent(resolved_trait.clone()),
                 for_ty: for_ty.clone(),
-                ty: expected.clone(),
+                ty: expected_norm.clone(),
                 astptr: None,
             },
         );
-        tast::Expr::EToDyn {
+        (tast::Expr::EToDyn {
             trait_name: tast::TastIdent(resolved_trait.clone()),
             for_ty,
             expr: Box::new(expr),
-            ty: expected.clone(),
+            ty: expected_norm.clone(),
             astptr: None,
-        }
+        }, false)
     }
 
     fn infer_res_expr(
@@ -1233,6 +1315,7 @@ impl Typer {
         expr_id: hir::ExprId,
         constructor_ref: &hir::ConstructorRef,
         args: &[hir::ExprId],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let constructor_path = match constructor_ref {
             hir::ConstructorRef::Resolved(ctor_id) => {
@@ -1348,20 +1431,34 @@ impl Typer {
             _ => inst_constr_ty.clone(),
         };
 
+        if let Some(hint) = hint_ret_ty {
+            self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
+        }
+
         let mut args_tast = Vec::new();
         if param_tys.is_empty() {
             for arg in args.iter() {
                 args_tast.push(self.infer_expr(genv, local_env, diagnostics, *arg));
             }
         } else {
-            for (arg, expected_ty) in args.iter().zip(param_tys.iter()) {
-                args_tast.push(self.check_expr(genv, local_env, diagnostics, *arg, expected_ty));
+            for (arg, param_ty) in args.iter().zip(param_tys.iter()) {
+                let expected_ty = self.norm(param_ty);
+                let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                if contains_tvar(&expected_ty) {
+                    self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                }
+                args_tast.push(arg_tast);
             }
         }
 
         if !args_tast.is_empty() {
+            let actual_params: Vec<tast::Ty> = if param_tys.is_empty() {
+                args_tast.iter().map(|arg| arg.get_ty()).collect()
+            } else {
+                param_tys
+            };
             let actual_ty = tast::Ty::TFunc {
-                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::TypeEqual(
@@ -1395,6 +1492,7 @@ impl Typer {
         expr_id: hir::ExprId,
         name: &hir::QualifiedPath,
         fields: &[(hir::HirIdent, hir::ExprId)],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let name_display = name.display();
         let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
@@ -1438,8 +1536,15 @@ impl Typer {
         };
 
         let inst_constr_ty = self.inst_ty(&constr_ty);
-        let param_tys = match &inst_constr_ty {
-            tast::Ty::TFunc { params, .. } => params.clone(),
+        if let Some(hint) = hint_ret_ty {
+            let ret_ty = match &inst_constr_ty {
+                tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+                _ => inst_constr_ty.clone(),
+            };
+            self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
+        }
+        let param_tys: Vec<tast::Ty> = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.iter().map(|p| self.norm(p)).collect(),
             _ => Vec::new(),
         };
 
@@ -1565,8 +1670,13 @@ impl Typer {
         };
 
         if !args_tast.is_empty() {
+            let actual_params: Vec<_> = args_tast
+                .iter()
+                .enumerate()
+                .map(|(i, arg)| param_tys.get(i).cloned().unwrap_or_else(|| arg.get_ty()))
+                .collect();
             let actual_ty = tast::Ty::TFunc {
-                params: args_tast.iter().map(|arg| arg.get_ty()).collect(),
+                params: actual_params,
                 ret_ty: Box::new(ret_ty.clone()),
             };
             self.push_constraint(Constraint::TypeEqual(
@@ -2085,6 +2195,7 @@ impl Typer {
         call_expr_id: hir::ExprId,
         func: hir::ExprId,
         args: &[hir::ExprId],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let func_expr = self.hir_table.expr(func).clone();
         match func_expr {
@@ -2093,16 +2204,29 @@ impl Typer {
                 astptr: func_astptr,
                 ..
             } => {
-                let mut args_tast = Vec::new();
-                let mut arg_types = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                    arg_types.push(arg_tast.get_ty());
-                    args_tast.push(arg_tast);
-                }
-
                 let name_str = self.hir_table.local_ident_name(name);
                 if let Some(var_ty) = local_env.lookup_var(name) {
+                    let norm_var_ty = self.norm(&var_ty);
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
+                    if let tast::Ty::TFunc { params, .. } = &norm_var_ty
+                        && params.len() == args.len()
+                        && !params.is_empty()
+                    {
+                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                            let arg_tast =
+                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                            arg_types.push(expected_ty.clone());
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+                    }
+
                     self.results.record_expr_ty(func, var_ty.clone());
                     self.results.record_name_ref_elab(
                         func,
@@ -2140,6 +2264,11 @@ impl Typer {
                         ty: ret_ty,
                     }
                 } else {
+                    let mut args_tast = Vec::new();
+                    for arg in args.iter() {
+                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                        args_tast.push(arg_tast);
+                    }
                     super::util::push_ice(
                         diagnostics,
                         format!("Variable {} not found in environment", name_str),
@@ -2154,24 +2283,30 @@ impl Typer {
                 ..
             } => {
                 let name = &hint;
-                let mut args_tast = Vec::new();
-                let mut arg_types = Vec::new();
-                for arg in args.iter() {
-                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                    arg_types.push(arg_tast.get_ty());
-                    args_tast.push(arg_tast);
-                }
                 if let Some(func_scheme) = lookup_function_scheme_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) = (hint_ret_ty, &inst_ty) {
+                        self.unify(diagnostics, fn_ret, hint, self.expr_range(call_expr_id));
+                    }
+                    let mut args_tast = Vec::new();
+                    let mut arg_types = Vec::new();
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        args_tast.clear();
-                        arg_types.clear();
-                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                        for (arg, param_ty) in args.iter().zip(params.iter()) {
+                            let expected_ty = self.norm(param_ty);
                             let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                            if contains_tvar(&expected_ty) {
+                                self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                            }
+                            arg_types.push(expected_ty);
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
                             arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }
@@ -2246,24 +2381,29 @@ impl Typer {
                     && let Some(name) = path.last_ident()
                     && let Some(func_scheme) = genv.get_function_scheme_unqualified(name.as_str())
                 {
+                    let inst_ty = self.inst_ty(&func_scheme.ty);
+                    if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) = (hint_ret_ty, &inst_ty) {
+                        self.unify(diagnostics, fn_ret, hint, self.expr_range(call_expr_id));
+                    }
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
-                    for arg in args.iter() {
-                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                        arg_types.push(arg_tast.get_ty());
-                        args_tast.push(arg_tast);
-                    }
-
-                    let inst_ty = self.inst_ty(&func_scheme.ty);
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        args_tast.clear();
-                        arg_types.clear();
-                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                        for (arg, param_ty) in args.iter().zip(params.iter()) {
+                            let expected_ty = self.norm(param_ty);
                             let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                            if contains_tvar(&expected_ty) {
+                                self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                            }
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
                             arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }
@@ -2346,22 +2486,33 @@ impl Typer {
                 let receiver_tast = self.infer_expr(genv, local_env, diagnostics, receiver_expr);
                 let receiver_ty = receiver_tast.get_ty();
                 let method_name_str = field.to_ident_name();
-                if let Some(method_scheme) = lookup_inherent_method_for_ty(
+                let inherent_lookup = lookup_inherent_method_for_ty(
                     genv,
                     &receiver_ty,
                     &tast::TastIdent(method_name_str.clone()),
-                ) {
+                );
+                let inherent_lookup = inherent_lookup;
+                if let Some(method_scheme) = inherent_lookup {
+                    let inst_method_ty = self.inst_ty(&method_scheme.ty);
+                    let method_params = match &inst_method_ty {
+                        tast::Ty::TFunc { params, .. } => params.clone(),
+                        _ => Vec::new(),
+                    };
                     let mut args_tast = Vec::with_capacity(args.len() + 1);
                     let mut arg_types = Vec::with_capacity(args.len() + 1);
                     arg_types.push(receiver_ty.clone());
                     args_tast.push(receiver_tast);
-                    for arg in args.iter() {
-                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                        arg_types.push(arg_tast.get_ty());
+                    for (i, arg) in args.iter().enumerate() {
+                        let expected_param_ty = method_params.get(i + 1);
+                        let arg_tast = if let Some(expected_param_ty) = expected_param_ty {
+                            self.check_expr(genv, local_env, diagnostics, *arg, expected_param_ty)
+                        } else {
+                            self.infer_expr(genv, local_env, diagnostics, *arg)
+                        };
+                        let ty_for_call_site = expected_param_ty.cloned().unwrap_or_else(|| arg_tast.get_ty());
+                        arg_types.push(ty_for_call_site);
                         args_tast.push(arg_tast);
                     }
-
-                    let inst_method_ty = self.inst_ty(&method_scheme.ty);
                     let ret_ty = match &inst_method_ty {
                         tast::Ty::TFunc { ret_ty, .. } => (**ret_ty).clone(),
                         _ => {
@@ -2434,32 +2585,192 @@ impl Typer {
                     let method_name = tast::TastIdent(field.to_ident_name());
                     let lookup =
                         lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
+                    let is_deferred = matches!(lookup.receiver, MethodLookupReceiver::Deferred(_));
                     match lookup.candidates.as_slice() {
-                        [(trait_name, method_ty)] => self.build_trait_method_call_expr(
-                            genv,
-                            local_env,
-                            diagnostics,
-                            call_expr_id,
-                            func,
-                            receiver_expr,
-                            receiver_tast,
-                            &receiver_ty,
-                            trait_name,
-                            &method_name,
-                            method_ty,
-                            args,
-                        ),
-                        [] => {
-                            report_method_not_found(
+                        [(trait_name, method_ty)] => {
+                            let result = self.build_trait_method_call_expr(
+                                genv,
+                                local_env,
                                 diagnostics,
+                                call_expr_id,
+                                func,
+                                receiver_expr,
+                                receiver_tast,
+                                &receiver_ty,
+                                trait_name,
                                 &method_name,
-                                &lookup.receiver,
-                                self.expr_range(call_expr_id),
+                                method_ty,
+                                args,
                             );
-                            tast::Expr::EVar {
-                                name: "<error>".to_string(),
-                                ty: self.fresh_ty_var(),
-                                astptr: None,
+                            if is_deferred {
+                                let call_site_type = if let tast::Expr::ECall { func: _, ref args, ref ty } = result {
+                                    let mut params = Vec::with_capacity(args.len());
+                                    for arg in args.iter() {
+                                        params.push(arg.get_ty());
+                                    }
+                                    tast::Ty::TFunc {
+                                        params,
+                                        ret_ty: Box::new(ty.clone()),
+                                    }
+                                } else {
+                                    self.fresh_ty_var()
+                                };
+                                self.push_constraint(Constraint::Overloaded {
+                                    op: method_name.clone(),
+                                    trait_name: trait_name.clone(),
+                                    call_site_type,
+                                    origin: self.expr_range(call_expr_id),
+                                });
+                            }
+                            result
+                        }
+                        [] if contains_tvar(&receiver_ty) => {
+                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
+                            if let Some(field_ty) = field_ty {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
+                                    astptr: None,
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
+                            } else {
+                                let mut args_tast = Vec::with_capacity(args.len() + 1);
+                                let mut arg_types = Vec::with_capacity(args.len() + 1);
+                                arg_types.push(receiver_ty.clone());
+                                args_tast.push(receiver_tast);
+                                for arg in args.iter() {
+                                    let arg_tast =
+                                        self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::InherentMethodCall {
+                                    receiver_ty: receiver_ty.clone(),
+                                    method: method_name.clone(),
+                                    call_site_type: call_site_ty.clone(),
+                                    origin: self.expr_range(call_expr_id),
+                                });
+
+                                self.results.record_expr_ty(func, call_site_ty.clone());
+                                self.results.record_name_ref_elab(
+                                    func,
+                                    NameRefElab::InherentMethod {
+                                        receiver_ty: receiver_ty.clone(),
+                                        method_name: method_name.clone(),
+                                        ty: call_site_ty.clone(),
+                                        astptr: None,
+                                    },
+                                );
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::InherentMethod {
+                                            receiver_ty: receiver_ty.clone(),
+                                            method_name: method_name.clone(),
+                                            ty: call_site_ty.clone(),
+                                            astptr: None,
+                                        },
+                                        args: std::iter::once(receiver_expr)
+                                            .chain(args.iter().copied())
+                                            .collect(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(tast::Expr::EInherentMethod {
+                                        receiver_ty: receiver_ty.clone(),
+                                        method_name: method_name.clone(),
+                                        ty: call_site_ty,
+                                        astptr: None,
+                                    }),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
+                            }
+                        }
+                        [] => {
+                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
+                            if let Some(field_ty) = field_ty {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
+                                    astptr: None,
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
+                            } else {
+                                report_method_not_found(
+                                    diagnostics,
+                                    &method_name,
+                                    &lookup.receiver,
+                                    self.expr_range(call_expr_id),
+                                );
+                                tast::Expr::EVar {
+                                    name: "<error>".to_string(),
+                                    ty: self.fresh_ty_var(),
+                                    astptr: None,
+                                }
                             }
                         }
                         _ => {
@@ -2941,6 +3252,15 @@ impl Typer {
             hir::Pat::PUInt64 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range, astptr)
             }
+            hir::Pat::PFloat { value } => {
+                self.check_pat_float(diagnostics, &value, ty, range, astptr)
+            }
+            hir::Pat::PFloat32 { value } => {
+                self.check_pat_typed_float(diagnostics, &value, &tast::Ty::TFloat32, ty, range, astptr)
+            }
+            hir::Pat::PFloat64 { value } => {
+                self.check_pat_typed_float(diagnostics, &value, &tast::Ty::TFloat64, ty, range, astptr)
+            }
             hir::Pat::PString { value } => self.check_pat_string(&value, ty, range, astptr),
             hir::Pat::PChar { value } => {
                 self.check_pat_char(diagnostics, value.as_str(), ty, range, astptr)
@@ -3026,6 +3346,54 @@ impl Typer {
         let prim = self
             .parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
+        self.push_constraint(Constraint::TypeEqual(
+            literal_ty.clone(),
+            expected_ty.clone(),
+            range,
+        ));
+        tast::Pat::PPrim {
+            value: prim,
+            ty: literal_ty.clone(),
+            astptr,
+        }
+    }
+
+    fn check_pat_float(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        let target_ty = if is_float_ty(ty) {
+            ty.clone()
+        } else {
+            tast::Ty::TFloat64
+        };
+        let prim = self
+            .parse_float_literal_with_ty(diagnostics, value, &target_ty, range)
+            .unwrap_or(Prim::Float64 { value: 0.0 });
+        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone(), range));
+        tast::Pat::PPrim {
+            value: prim,
+            ty: ty.clone(),
+            astptr,
+        }
+    }
+
+    fn check_pat_typed_float(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        literal_ty: &tast::Ty,
+        expected_ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        let prim = self
+            .parse_float_literal_with_ty(diagnostics, value, literal_ty, range)
+            .unwrap_or(Prim::Float64 { value: 0.0 });
         self.push_constraint(Constraint::TypeEqual(
             literal_ty.clone(),
             expected_ty.clone(),
@@ -3389,6 +3757,9 @@ impl Typer {
             | hir::Pat::PUInt16 { .. }
             | hir::Pat::PUInt32 { .. }
             | hir::Pat::PUInt64 { .. }
+            | hir::Pat::PFloat { .. }
+            | hir::Pat::PFloat32 { .. }
+            | hir::Pat::PFloat64 { .. }
             | hir::Pat::PString { .. }
             | hir::Pat::PChar { .. }
             | hir::Pat::PConstr { .. } => false,
@@ -3550,6 +3921,18 @@ fn is_float_ty(ty: &tast::Ty) -> bool {
 
 fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
+}
+
+fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
+    matches!(
+        ty,
+        tast::Ty::TInt8
+            | tast::Ty::TInt16
+            | tast::Ty::TInt32
+            | tast::Ty::TInt64
+            | tast::Ty::TFloat32
+            | tast::Ty::TFloat64
+    )
 }
 
 impl Typer {
@@ -4031,7 +4414,7 @@ fn collect_type_param_substitution(
     }
 }
 
-fn resolve_field_ty_eager(
+pub(crate) fn resolve_field_ty_eager(
     genv: &PackageTypeEnv,
     base_ty: &tast::Ty,
     field: &tast::TastIdent,
@@ -4145,7 +4528,7 @@ fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> 
     }
 }
 
-fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
+pub(crate) fn instantiate_self_ty(ty: &tast::Ty, self_ty: &tast::Ty) -> tast::Ty {
     match ty {
         tast::Ty::TVar(var) => tast::Ty::TVar(*var),
         tast::Ty::TUnit => tast::Ty::TUnit,
@@ -4277,6 +4660,31 @@ struct TraitMethodLookup {
 enum MethodLookupReceiver {
     TypeParam(String),
     Concrete(tast::Ty),
+    Deferred(tast::Ty),
+}
+
+pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TVar(_) => true,
+        tast::Ty::TTuple { typs } => typs.iter().any(contains_tvar),
+        tast::Ty::TApp { ty, args } => contains_tvar(ty) || args.iter().any(contains_tvar),
+        tast::Ty::TArray { elem, .. } | tast::Ty::TSlice { elem } | tast::Ty::TVec { elem } | tast::Ty::TRef { elem } => contains_tvar(elem),
+        tast::Ty::THashMap { key, value } => contains_tvar(key) || contains_tvar(value),
+        tast::Ty::TFunc { params, ret_ty } => params.iter().any(contains_tvar) || contains_tvar(ret_ty),
+        _ => false,
+    }
+}
+
+pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TTuple { typs } => typs.iter().any(contains_tparam),
+        tast::Ty::TApp { ty, args } => contains_tparam(ty) || args.iter().any(contains_tparam),
+        tast::Ty::TArray { elem, .. } | tast::Ty::TSlice { elem } | tast::Ty::TVec { elem } | tast::Ty::TRef { elem } => contains_tparam(elem),
+        tast::Ty::THashMap { key, value } => contains_tparam(key) || contains_tparam(value),
+        tast::Ty::TFunc { params, ret_ty } => params.iter().any(contains_tparam) || contains_tparam(ret_ty),
+        _ => false,
+    }
 }
 
 fn lookup_trait_method_candidates(
@@ -4290,6 +4698,12 @@ fn lookup_trait_method_candidates(
         return TraitMethodLookup {
             receiver: MethodLookupReceiver::TypeParam(name.clone()),
             candidates: lookup_bound_trait_methods(genv, bounds, method),
+        };
+    }
+    if contains_tvar(receiver_ty) {
+        return TraitMethodLookup {
+            receiver: MethodLookupReceiver::Deferred(receiver_ty.clone()),
+            candidates: lookup_trait_methods(genv, local_env.in_scope_traits(), method, None),
         };
     }
     TraitMethodLookup {
@@ -4321,15 +4735,17 @@ fn report_method_not_found(
             )
             .with_range(range),
         ),
-        MethodLookupReceiver::Concrete(ty) => super::util::push_error_with_range(
-            diagnostics,
-            format!(
-                "Method {} not found for type {}",
-                method_name.0,
-                super::util::format_ty_for_diag(ty)
-            ),
-            range,
-        ),
+        MethodLookupReceiver::Concrete(ty) | MethodLookupReceiver::Deferred(ty) => {
+            super::util::push_error_with_range(
+                diagnostics,
+                format!(
+                    "Method {} not found for type {}",
+                    method_name.0,
+                    super::util::format_ty_for_diag(ty)
+                ),
+                range,
+            )
+        }
     }
 }
 
@@ -4347,7 +4763,7 @@ fn report_ambiguous_method(
         .join(", ");
     let receiver_label = match receiver {
         MethodLookupReceiver::TypeParam(name) => format!("type parameter {}", name),
-        MethodLookupReceiver::Concrete(ty) => {
+        MethodLookupReceiver::Concrete(ty) | MethodLookupReceiver::Deferred(ty) => {
             format!("type {}", super::util::format_ty_for_diag(ty))
         }
     };

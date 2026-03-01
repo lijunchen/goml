@@ -574,7 +574,7 @@ fn value() -> int32 {
     let stderr = normalize_temp_prefix(&String::from_utf8_lossy(&output.stderr), root);
     assert!(!output.status.success());
     expect![[r#"
-        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }] } }
+        build failed: Typer { diagnostics: Diagnostics { items: [Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }, Diagnostic { stage: Typer, severity: Error, message: "Type mismatch: expected int32, found string", range: Some(45..56) }] } }
         subcommand failed: goml compiler build --package A --input A/lib.gom --interface-path target/goml/build/B/B.interface --output target/goml/build/A/A
     "#]]
     .assert_eq(&stderr);

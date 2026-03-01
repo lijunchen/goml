@@ -1,0 +1,40 @@
+package main;
+
+trait TryConvert {
+    fn try_to_int(Self) -> Option[int32];
+}
+
+struct IntValue { n: int32 }
+impl TryConvert for IntValue {
+    fn try_to_int(self: IntValue) -> Option[int32] { Option::Some(self.n) }
+}
+
+struct StringValue { s: string }
+impl TryConvert for StringValue {
+    fn try_to_int(self: StringValue) -> Option[int32] {
+        let _ = self;
+        Option::None
+    }
+}
+
+fn sum_convertible(items: Vec[dyn TryConvert]) -> int32 {
+    let sum = ref(0);
+    let i = ref(0);
+    while ref_get(i) < vec_len(items) {
+        match TryConvert::try_to_int(vec_get(items, ref_get(i))) {
+            Option::Some(n) => ref_set(sum, ref_get(sum) + n),
+            Option::None => (),
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(sum)
+}
+
+fn main() {
+    let items: Vec[dyn TryConvert] = vec_new();
+    let items = vec_push(items, IntValue { n: 10 });
+    let items = vec_push(items, StringValue { s: "hello" });
+    let items = vec_push(items, IntValue { n: 20 });
+
+    string_println(sum_convertible(items).to_string());
+}

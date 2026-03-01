@@ -438,6 +438,9 @@ impl Pat {
             hir::Pat::PUInt16 { value } => RcDoc::text(format!("{}u16", value)),
             hir::Pat::PUInt32 { value } => RcDoc::text(format!("{}u32", value)),
             hir::Pat::PUInt64 { value } => RcDoc::text(format!("{}u64", value)),
+            hir::Pat::PFloat { value } => RcDoc::text(value.clone()),
+            hir::Pat::PFloat32 { value } => RcDoc::text(format!("{}f32", value)),
+            hir::Pat::PFloat64 { value } => RcDoc::text(format!("{}f64", value)),
             hir::Pat::PString { value } => RcDoc::text(format!("{:?}", value)),
             hir::Pat::PChar { value } => RcDoc::text(format!("'{}'", value)),
             hir::Pat::PConstr { constructor, args } => {

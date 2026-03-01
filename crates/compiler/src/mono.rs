@@ -201,6 +201,14 @@ impl GlobalMonoEnv {
             .filter(|def| def.generics.is_empty())
     }
 
+    pub fn get_enum_mut(&mut self, name: &TastIdent) -> Option<&mut EnumDef> {
+        if self.mono_enums.contains_key(name) {
+            self.mono_enums.get_mut(name)
+        } else {
+            self.genv.enum_def_mut(name)
+        }
+    }
+
     pub fn enums_cloned(&self) -> IndexMap<TastIdent, EnumDef> {
         let mut result = self.genv.enums().clone();
         result.extend(self.mono_enums.clone());
@@ -268,6 +276,12 @@ impl GlobalMonoEnv {
 
     pub fn insert_func(&mut self, name: String, ty: Ty) {
         self.mono_funcs.insert(name, ty);
+    }
+
+    pub fn rename_func(&mut self, old_name: &str, new_name: &str) {
+        if let Some(ty) = self.mono_funcs.swap_remove(old_name) {
+            self.mono_funcs.insert(new_name.to_string(), ty);
+        }
     }
 }
 
@@ -677,13 +691,70 @@ fn mono_block(ctx: &mut Ctx, block: &core::Block, s: &Subst) -> MonoBlock {
     }
 }
 
+fn ensure_trait_impls_for_dyn(ctx: &mut Ctx, trait_name: &str, for_ty: &Ty) {
+    let method_keys: Vec<(String, String)> = ctx
+        .trait_impl_method_index
+        .keys()
+        .filter(|(tn, _)| tn == trait_name)
+        .cloned()
+        .collect();
+
+    for (tn, method_name) in method_keys {
+        let impl_fn_name =
+            trait_impl_fn_name(&TastIdent(tn.clone()), for_ty, &method_name);
+        if ctx.orig_fns.contains_key(&impl_fn_name) {
+            continue;
+        }
+        let candidates = match ctx.trait_impl_method_index.get(&(tn, method_name)) {
+            Some(c) => c.clone(),
+            None => continue,
+        };
+        for candidate_name in candidates {
+            let callee = match ctx.orig_fns.get(&candidate_name) {
+                Some(c) => c.clone(),
+                None => continue,
+            };
+            if callee.params.is_empty() {
+                continue;
+            }
+            let mut trial_subst = Subst::new();
+            if unify(&callee.params[0].1, for_ty, &mut trial_subst).is_ok() {
+                ctx.ensure_instance(&candidate_name, trial_subst);
+                break;
+            }
+        }
+    }
+}
+
 // Transform an expression under a given substitution; queue any needed instances
 fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
     match e.clone() {
-        core::Expr::EVar { name, ty } => MonoExpr::EVar {
-            name,
-            ty: subst_ty(&ty, s),
-        },
+        core::Expr::EVar { name, ty } => {
+            let concrete_ty = subst_ty(&ty, s);
+            if let Some(callee) = ctx.orig_fns.get(&name).cloned()
+                && fn_is_generic(&callee)
+                && !has_tparam(&concrete_ty)
+            {
+                let generic_ty = Ty::TFunc {
+                    params: callee.params.iter().map(|(_, t)| t.clone()).collect(),
+                    ret_ty: Box::new(callee.ret_ty.clone()),
+                };
+                let mut call_subst = Subst::new();
+                if unify(&generic_ty, &concrete_ty, &mut call_subst).is_ok()
+                    && !call_subst.values().any(has_tparam)
+                {
+                    let spec = ctx.ensure_instance(&name, call_subst);
+                    return MonoExpr::EVar {
+                        name: spec,
+                        ty: concrete_ty,
+                    };
+                }
+            }
+            MonoExpr::EVar {
+                name,
+                ty: concrete_ty,
+            }
+        }
         core::Expr::EPrim { value, ty } => {
             let ty = subst_ty(&ty, s);
             MonoExpr::EPrim { value, ty }
@@ -880,12 +951,16 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             for_ty,
             expr,
             ty,
-        } => MonoExpr::EToDyn {
-            trait_name,
-            for_ty: subst_ty(&for_ty, s),
-            expr: Box::new(mono_expr(ctx, &expr, s)),
-            ty: subst_ty(&ty, s),
-        },
+        } => {
+            let concrete_for_ty = subst_ty(&for_ty, s);
+            ensure_trait_impls_for_dyn(ctx, &trait_name.0, &concrete_for_ty);
+            MonoExpr::EToDyn {
+                trait_name,
+                for_ty: concrete_for_ty,
+                expr: Box::new(mono_expr(ctx, &expr, s)),
+                ty: subst_ty(&ty, s),
+            }
+        }
         core::Expr::EDynCall {
             trait_name,
             method_name,
@@ -937,6 +1012,7 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
                         Ty::TUint64 => call_unary_builtin("uint64_to_string", expr, Ty::TString),
                         Ty::TFloat32 => call_unary_builtin("float32_to_string", expr, Ty::TString),
                         Ty::TFloat64 => call_unary_builtin("float64_to_string", expr, Ty::TString),
+                        Ty::TChar => call_unary_builtin("char_to_string", expr, Ty::TString),
                         Ty::TRef { elem } => {
                             let inner_ty = *elem;
                             let inner = call_unary_builtin("ref_get", expr, inner_ty.clone());
@@ -1023,13 +1099,38 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
             let func_name = trait_impl_fn_name(&trait_name, &receiver_ty, &method_name.0);
             let param_tys = all_args.iter().map(|a| a.get_ty()).collect::<Vec<_>>();
             let func_ty = Ty::TFunc {
-                params: param_tys,
+                params: param_tys.clone(),
                 ret_ty: Box::new(new_ty.clone()),
+            };
+
+            let resolved_name = if ctx.orig_fns.contains_key(&func_name) {
+                func_name.clone()
+            } else if let Some(generic_name) =
+                ctx.resolve_generic_callee_name(&func_name, &param_tys, &new_ty)
+            {
+                if let Some(callee) = ctx.orig_fns.get(&generic_name).cloned()
+                    && fn_is_generic(&callee)
+                {
+                    let mut call_subst: Subst = IndexMap::new();
+                    for ((_, pt), at) in callee.params.iter().zip(param_tys.iter()) {
+                        let _ = unify(pt, at, &mut call_subst);
+                    }
+                    let _ = unify(&callee.ret_ty, &new_ty, &mut call_subst);
+                    if !call_subst.values().any(has_tparam) {
+                        ctx.ensure_instance(&generic_name, call_subst)
+                    } else {
+                        func_name.clone()
+                    }
+                } else {
+                    generic_name
+                }
+            } else {
+                func_name.clone()
             };
 
             MonoExpr::ECall {
                 func: Box::new(MonoExpr::EVar {
-                    name: func_name,
+                    name: resolved_name,
                     ty: func_ty,
                 }),
                 args: all_args,
@@ -1047,11 +1148,10 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
 // Phase 2: monomorphize enum type applications in types and update env
 struct TypeMono<'a> {
     monoenv: &'a mut GlobalMonoEnv,
-    // map generic (name, args) to new concrete Ident
     map: IndexMap<(String, Vec<Ty>), TastIdent>,
-    // snapshot of original generic enum defs
     enum_base: IndexMap<TastIdent, EnumDef>,
     struct_base: IndexMap<TastIdent, StructDef>,
+    fn_renames: IndexMap<String, String>,
 }
 
 impl<'a> TypeMono<'a> {
@@ -1063,21 +1163,26 @@ impl<'a> TypeMono<'a> {
             map: IndexMap::new(),
             enum_base,
             struct_base,
+            fn_renames: IndexMap::new(),
         }
     }
 
     fn ensure_instance(&mut self, name: &str, args: &[Ty]) -> TastIdent {
-        let key = (name.to_string(), args.to_vec());
+        let collapsed_args: Vec<Ty> = args.iter().map(|a| self.collapse_type_apps(a)).collect();
+        let key = (name.to_string(), collapsed_args.clone());
         if let Some(u) = self.map.get(&key) {
             return u.clone();
         }
-        // Create a fresh concrete type name
-        let suffix = if args.is_empty() {
+        let suffix = if collapsed_args.is_empty() {
             "".to_string()
         } else {
             format!(
                 "__{}",
-                args.iter().map(ty_compact).collect::<Vec<_>>().join("__")
+                collapsed_args
+                    .iter()
+                    .map(ty_compact)
+                    .collect::<Vec<_>>()
+                    .join("__")
             )
         };
         let new_name = TastIdent::new(&format!("{}{}", name, suffix));
@@ -1086,17 +1191,16 @@ impl<'a> TypeMono<'a> {
         let ident = TastIdent::new(name);
 
         if let Some(generic_def) = self.enum_base.get(&ident) {
-            // Build substitution from generics to args
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
-            if generic_def.generics.len() != args.len() {
+            if generic_def.generics.len() != collapsed_args.len() {
                 panic!(
                     "enum generic argument length mismatch for {}: expected {}, got {}",
                     name,
                     generic_def.generics.len(),
-                    args.len()
+                    collapsed_args.len()
                 );
             }
-            for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+            for (g, a) in generic_def.generics.iter().zip(collapsed_args.iter()) {
                 subst.insert(g.0.clone(), a.clone());
             }
 
@@ -1122,15 +1226,15 @@ impl<'a> TypeMono<'a> {
             self.monoenv.insert_enum(new_def);
         } else if let Some(generic_def) = self.struct_base.get(&ident).cloned() {
             let mut subst: IndexMap<String, Ty> = IndexMap::new();
-            if generic_def.generics.len() != args.len() {
+            if generic_def.generics.len() != collapsed_args.len() {
                 panic!(
                     "struct generic argument length mismatch for {}: expected {}, got {}",
                     name,
                     generic_def.generics.len(),
-                    args.len()
+                    collapsed_args.len()
                 );
             }
-            for (g, a) in generic_def.generics.iter().zip(args.iter()) {
+            for (g, a) in generic_def.generics.iter().zip(collapsed_args.iter()) {
                 subst.insert(g.0.clone(), a.clone());
             }
 
@@ -1198,6 +1302,13 @@ impl<'a> TypeMono<'a> {
             },
             Ty::TRef { elem } => Ty::TRef {
                 elem: Box::new(self.collapse_type_apps(elem)),
+            },
+            Ty::TVec { elem } => Ty::TVec {
+                elem: Box::new(self.collapse_type_apps(elem)),
+            },
+            Ty::THashMap { key, value } => Ty::THashMap {
+                key: Box::new(self.collapse_type_apps(key)),
+                value: Box::new(self.collapse_type_apps(value)),
             },
             _ => ty.clone(),
         }
@@ -1393,6 +1504,167 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
     }
 }
 
+fn rename_block_refs(block: MonoBlock, renames: &IndexMap<String, String>) -> MonoBlock {
+    MonoBlock {
+        stmts: block
+            .stmts
+            .into_iter()
+            .map(|stmt| MonoLetStmt {
+                name: stmt.name,
+                value: rename_expr_refs(stmt.value, renames),
+                ty: stmt.ty,
+            })
+            .collect(),
+        tail: block
+            .tail
+            .map(|tail| Box::new(rename_expr_refs(*tail, renames))),
+    }
+}
+
+fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr {
+    match e {
+        MonoExpr::EVar { name, ty } => {
+            let new_name = renames.get(&name).cloned().unwrap_or(name);
+            MonoExpr::EVar { name: new_name, ty }
+        }
+        MonoExpr::ECall { func, args, ty } => MonoExpr::ECall {
+            func: Box::new(rename_expr_refs(*func, renames)),
+            args: args
+                .into_iter()
+                .map(|a| rename_expr_refs(a, renames))
+                .collect(),
+            ty,
+        },
+        MonoExpr::EBlock { block, ty } => MonoExpr::EBlock {
+            block: Box::new(rename_block_refs(*block, renames)),
+            ty,
+        },
+        MonoExpr::EMatch {
+            expr,
+            arms,
+            default,
+            ty,
+        } => MonoExpr::EMatch {
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            arms: arms
+                .into_iter()
+                .map(|arm| MonoArm {
+                    lhs: rename_expr_refs(arm.lhs, renames),
+                    body: rename_expr_refs(arm.body, renames),
+                })
+                .collect(),
+            default: default.map(|d| Box::new(rename_expr_refs(*d, renames))),
+            ty,
+        },
+        MonoExpr::EIf {
+            cond,
+            then_branch,
+            else_branch,
+            ty,
+        } => MonoExpr::EIf {
+            cond: Box::new(rename_expr_refs(*cond, renames)),
+            then_branch: Box::new(rename_expr_refs(*then_branch, renames)),
+            else_branch: Box::new(rename_expr_refs(*else_branch, renames)),
+            ty,
+        },
+        MonoExpr::EConstr {
+            constructor,
+            args,
+            ty,
+        } => MonoExpr::EConstr {
+            constructor,
+            args: args
+                .into_iter()
+                .map(|a| rename_expr_refs(a, renames))
+                .collect(),
+            ty,
+        },
+        MonoExpr::ETuple { items, ty } => MonoExpr::ETuple {
+            items: items
+                .into_iter()
+                .map(|a| rename_expr_refs(a, renames))
+                .collect(),
+            ty,
+        },
+        MonoExpr::EArray { items, ty } => MonoExpr::EArray {
+            items: items
+                .into_iter()
+                .map(|a| rename_expr_refs(a, renames))
+                .collect(),
+            ty,
+        },
+        MonoExpr::EClosure { params, body, ty } => MonoExpr::EClosure {
+            params,
+            body: Box::new(rename_expr_refs(*body, renames)),
+            ty,
+        },
+        MonoExpr::EWhile { cond, body, ty } => MonoExpr::EWhile {
+            cond: Box::new(rename_expr_refs(*cond, renames)),
+            body: Box::new(rename_expr_refs(*body, renames)),
+            ty,
+        },
+        MonoExpr::EConstrGet {
+            expr,
+            constructor,
+            field_index,
+            ty,
+        } => MonoExpr::EConstrGet {
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            constructor,
+            field_index,
+            ty,
+        },
+        MonoExpr::EUnary { op, expr, ty } => MonoExpr::EUnary {
+            op,
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            ty,
+        },
+        MonoExpr::EBinary { op, lhs, rhs, ty } => MonoExpr::EBinary {
+            op,
+            lhs: Box::new(rename_expr_refs(*lhs, renames)),
+            rhs: Box::new(rename_expr_refs(*rhs, renames)),
+            ty,
+        },
+        MonoExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr,
+            ty,
+        } => MonoExpr::EToDyn {
+            trait_name,
+            for_ty,
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            ty,
+        },
+        MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver,
+            args,
+            ty,
+        } => MonoExpr::EDynCall {
+            trait_name,
+            method_name,
+            receiver: Box::new(rename_expr_refs(*receiver, renames)),
+            args: args
+                .into_iter()
+                .map(|a| rename_expr_refs(a, renames))
+                .collect(),
+            ty,
+        },
+        MonoExpr::EProj { tuple, index, ty } => MonoExpr::EProj {
+            tuple: Box::new(rename_expr_refs(*tuple, renames)),
+            index,
+            ty,
+        },
+        MonoExpr::EGo { expr, ty } => MonoExpr::EGo {
+            expr: Box::new(rename_expr_refs(*expr, renames)),
+            ty,
+        },
+        MonoExpr::EBreak { .. } | MonoExpr::EContinue { .. } | MonoExpr::EPrim { .. } => e,
+    }
+}
+
 // Monomorphize Core IR by specializing generic functions per concrete call site.
 // Produces a file containing only monomorphic functions reachable from monomorphic roots.
 pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) {
@@ -1455,15 +1727,35 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
         let ret_ty = m.collapse_type_apps(&f.ret_ty);
         let body = rewrite_block_types(f.body, &mut m);
 
-        // Store the function type in monoenv for use by later phases
+        let new_name = if let Some((trait_name, _, method_name)) =
+            parse_trait_impl_fn_name(&f.name)
+        {
+            if let Some(self_param_ty) = params.first().map(|(_, t)| t.clone()) {
+                let candidate = trait_impl_fn_name(
+                    &TastIdent(trait_name.to_string()),
+                    &self_param_ty,
+                    method_name,
+                );
+                if candidate != f.name {
+                    m.fn_renames
+                        .insert(f.name.clone(), candidate.clone());
+                }
+                candidate
+            } else {
+                f.name.clone()
+            }
+        } else {
+            f.name.clone()
+        };
+
         let fn_ty = Ty::TFunc {
             params: params.iter().map(|(_, t)| t.clone()).collect(),
             ret_ty: Box::new(ret_ty.clone()),
         };
-        m.monoenv.insert_func(f.name.clone(), fn_ty);
+        m.monoenv.insert_func(new_name.clone(), fn_ty);
 
         new_fns.push(MonoFn {
-            name: f.name,
+            name: new_name,
             params,
             ret_ty,
             body,
@@ -1473,6 +1765,44 @@ pub fn mono(genv: GlobalTypeEnv, file: core::File) -> (MonoFile, GlobalMonoEnv) 
     // Drop all generic enum defs to avoid Go backend panics
     m.monoenv.retain_enums(|_n, def| def.generics.is_empty());
     m.monoenv.retain_structs(|_n, def| def.generics.is_empty());
+
+    // Collapse field types of non-generic structs/enums that reference generic types
+    let struct_names: Vec<TastIdent> = m.monoenv.structs().map(|(n, _)| n.clone()).collect();
+    for name in struct_names {
+        let fields = m.monoenv.struct_def_mut(&name).map(|d| d.fields.clone());
+        if let Some(fields) = fields {
+            let new_fields: Vec<(TastIdent, Ty)> = fields
+                .iter()
+                .map(|(fname, fty)| (fname.clone(), m.collapse_type_apps(fty)))
+                .collect();
+            if let Some(def) = m.monoenv.struct_def_mut(&name) {
+                def.fields = new_fields;
+            }
+        }
+    }
+    let enum_names: Vec<TastIdent> = m.monoenv.enums().map(|(n, _)| n.clone()).collect();
+    for name in enum_names {
+        let variants = m.monoenv.get_enum_mut(&name).map(|d| d.variants.clone());
+        if let Some(variants) = variants {
+            let new_variants: Vec<(TastIdent, Vec<Ty>)> = variants
+                .iter()
+                .map(|(vname, vtys)| {
+                    let new_tys: Vec<Ty> = vtys.iter().map(|t| m.collapse_type_apps(t)).collect();
+                    (vname.clone(), new_tys)
+                })
+                .collect();
+            if let Some(def) = m.monoenv.get_enum_mut(&name) {
+                def.variants = new_variants;
+            }
+        }
+    }
+
+    let fn_renames = m.fn_renames.clone();
+    if !fn_renames.is_empty() {
+        for f in new_fns.iter_mut() {
+            f.body = rename_block_refs(f.body.clone(), &fn_renames);
+        }
+    }
 
     let result = MonoFile { toplevels: new_fns };
     (result, monoenv)

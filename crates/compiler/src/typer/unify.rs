@@ -297,6 +297,7 @@ impl Typer {
             Constraint::Overloaded { origin, .. } => *origin,
             Constraint::Implements { origin, .. } => *origin,
             Constraint::StructFieldAccess { origin, .. } => *origin,
+            Constraint::InherentMethodCall { origin, .. } => *origin,
         }
     }
 
@@ -385,6 +386,20 @@ impl Typer {
                         None
                     }
                 }
+                Constraint::InherentMethodCall {
+                    receiver_ty,
+                    call_site_type,
+                    origin,
+                    ..
+                } => {
+                    if Self::ty_mentions_var(receiver_ty, var)
+                        || Self::ty_mentions_var(call_site_type, var)
+                    {
+                        *origin
+                    } else {
+                        None
+                    }
+                }
             })
     }
 
@@ -433,7 +448,18 @@ impl Typer {
             for constraint in constraints.drain(..) {
                 match constraint {
                     Constraint::TypeEqual(l, r, origin) => {
-                        if self.unify(diagnostics, &l, &r, origin) {
+                        let l_norm = self.norm(&l);
+                        let r_norm = self.norm(&r);
+                        let dyn_coercion_ok = match (&l_norm, &r_norm) {
+                            (tast::Ty::TDyn { trait_name }, concrete)
+                            | (concrete, tast::Ty::TDyn { trait_name })
+                                if !matches!(concrete, tast::Ty::TVar(_) | tast::Ty::TDyn { .. }) =>
+                            {
+                                genv.has_trait_impl_visible(trait_name, concrete)
+                            }
+                            _ => false,
+                        };
+                        if dyn_coercion_ok || self.unify(diagnostics, &l, &r, origin) {
                             changed = true;
                         }
                     }
@@ -451,6 +477,97 @@ impl Typer {
                         {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
+                                    tast::Ty::TParam { name }
+                                        if self
+                                            .tparam_trait_bounds
+                                            .get(name)
+                                            .is_some_and(|bounds| {
+                                                let (resolved, _) =
+                                                    super::util::normalize_trait_name(
+                                                        genv,
+                                                        &trait_name.0,
+                                                    );
+                                                bounds.contains(&resolved)
+                                            }) =>
+                                    {
+                                        let (resolved, env) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        if let Some(method_scheme) =
+                                            env.lookup_trait_method_scheme(&trait_ident, &op)
+                                        {
+                                            let method_ty = self.inst_ty(&method_scheme.ty);
+                                            let method_ty = super::check::instantiate_self_ty(
+                                                &method_ty,
+                                                self_ty,
+                                            );
+                                            let call_fun_ty = tast::Ty::TFunc {
+                                                params: norm_arg_types.clone(),
+                                                ret_ty: norm_ret_ty.clone(),
+                                            };
+                                            still_pending.push(Constraint::TypeEqual(
+                                                call_fun_ty,
+                                                method_ty,
+                                                origin,
+                                            ));
+                                            changed = true;
+                                        } else {
+                                            diagnostics.push(
+                                                Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "Method {} not found in trait {}",
+                                                        op.0, trait_name.0
+                                                    ),
+                                                )
+                                                .with_range(origin),
+                                            );
+                                        }
+                                    }
+                                    tast::Ty::TDyn {
+                                        trait_name: dyn_trait,
+                                    } if {
+                                        let (resolved, _) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        *dyn_trait == resolved
+                                    } =>
+                                    {
+                                        let (resolved, env) =
+                                            super::util::normalize_trait_name(genv, &trait_name.0);
+                                        let trait_ident = TastIdent(resolved);
+                                        if let Some(method_scheme) =
+                                            env.lookup_trait_method_scheme(&trait_ident, &op)
+                                        {
+                                            let method_ty = self.inst_ty(&method_scheme.ty);
+                                            let method_ty = super::check::instantiate_self_ty(
+                                                &method_ty,
+                                                self_ty,
+                                            );
+                                            let call_fun_ty = tast::Ty::TFunc {
+                                                params: norm_arg_types.clone(),
+                                                ret_ty: norm_ret_ty.clone(),
+                                            };
+                                            still_pending.push(Constraint::TypeEqual(
+                                                call_fun_ty,
+                                                method_ty,
+                                                origin,
+                                            ));
+                                            changed = true;
+                                        } else {
+                                            diagnostics.push(
+                                                Diagnostic::new(
+                                                    Stage::Typer,
+                                                    Severity::Error,
+                                                    format!(
+                                                        "Method {} not found in trait {}",
+                                                        op.0, trait_name.0
+                                                    ),
+                                                )
+                                                .with_range(origin),
+                                            );
+                                        }
+                                    }
                                     ty if is_concrete(ty) => {
                                         let (resolved, _env) =
                                             super::util::normalize_trait_name(genv, &trait_name.0);
@@ -512,6 +629,14 @@ impl Typer {
                                             origin,
                                         });
                                     }
+                                    _ if crate::typer::check::contains_tvar(&self_ty) => {
+                                        still_pending.push(Constraint::Overloaded {
+                                            op,
+                                            trait_name,
+                                            call_site_type,
+                                            origin,
+                                        });
+                                    }
                                     _ => {
                                         diagnostics.push(Diagnostic::new(
                                             Stage::Typer,
@@ -567,7 +692,8 @@ impl Typer {
                                 .get(name)
                                 .is_some_and(|bounds| bounds.contains(&trait_name.0))
                         );
-                        if dyn_satisfied || impl_found || tparam_satisfied {
+                        let tparam_in_type = super::check::contains_tparam(&norm_for_ty);
+                        if dyn_satisfied || impl_found || tparam_satisfied || tparam_in_type {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
@@ -632,9 +758,154 @@ impl Typer {
                             });
                         }
                     }
+                    Constraint::InherentMethodCall {
+                        receiver_ty,
+                        method,
+                        call_site_type,
+                        origin,
+                    } => {
+                        let norm_receiver_ty = self.norm(&receiver_ty);
+                        if super::check::contains_tvar(&norm_receiver_ty) {
+                            still_pending.push(Constraint::InherentMethodCall {
+                                receiver_ty: norm_receiver_ty,
+                                method,
+                                call_site_type,
+                                origin,
+                            });
+                        } else if let Some(scheme) = genv
+                            .builtins()
+                            .lookup_inherent_method_scheme(&norm_receiver_ty, &method)
+                            .or_else(|| {
+                                genv.current()
+                                    .lookup_inherent_method_scheme(&norm_receiver_ty, &method)
+                            })
+                        {
+                            let inst_method_ty = self.inst_ty(&scheme.ty);
+                            let unified = self.unify(
+                                diagnostics,
+                                &call_site_type,
+                                &inst_method_ty,
+                                origin,
+                            );
+                            if unified {
+                                changed = true;
+                            }
+                        } else if let Some(field_ty) =
+                            super::check::resolve_field_ty_eager(
+                                genv,
+                                &norm_receiver_ty,
+                                &method,
+                            )
+                        {
+                            if let tast::Ty::TFunc { params, ret_ty } = &field_ty {
+                                let mut method_params = vec![norm_receiver_ty.clone()];
+                                method_params.extend(params.iter().cloned());
+                                let method_ty = tast::Ty::TFunc {
+                                    params: method_params,
+                                    ret_ty: ret_ty.clone(),
+                                };
+                                let unified = self.unify(
+                                    diagnostics,
+                                    &call_site_type,
+                                    &method_ty,
+                                    origin,
+                                );
+                                if unified {
+                                    changed = true;
+                                }
+                            } else {
+                                super::util::push_error_with_range(
+                                    diagnostics,
+                                    format!(
+                                        "Field {} on type {} is not callable",
+                                        method.0,
+                                        super::util::format_ty_for_diag(&norm_receiver_ty)
+                                    ),
+                                    origin,
+                                );
+                            }
+                        } else {
+                        }
+                    }
                 }
             }
             constraints.extend(still_pending);
+
+            let deferred = std::mem::take(&mut self.deferred_dyn_coercions);
+            let mut still_deferred = Vec::new();
+            for coercion in deferred {
+                let expected_norm = self.norm(&coercion.expected_ty);
+                match &expected_norm {
+                    tast::Ty::TVar(_) => {
+                        still_deferred.push(coercion);
+                    }
+                    tast::Ty::TDyn { trait_name } => {
+                        let concrete_norm = self.norm(&coercion.concrete_ty);
+                        if super::check::contains_tvar(&concrete_norm) {
+                            still_deferred.push(coercion);
+                        } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
+                            changed = true;
+                        } else if genv.has_trait_impl_visible(trait_name, &concrete_norm) {
+                            self.results.push_coercion(
+                                coercion.expr_id,
+                                crate::typer::results::Coercion::ToDyn {
+                                    trait_name: tast::TastIdent(trait_name.clone()),
+                                    for_ty: concrete_norm,
+                                    ty: expected_norm,
+                                    astptr: None,
+                                },
+                            );
+                            changed = true;
+                        } else {
+                            constraints.push(Constraint::TypeEqual(
+                                coercion.concrete_ty,
+                                coercion.expected_ty,
+                                None,
+                            ));
+                        }
+                    }
+                    _ => {
+                        constraints.push(Constraint::TypeEqual(
+                            coercion.concrete_ty,
+                            coercion.expected_ty,
+                            None,
+                        ));
+                        changed = true;
+                    }
+                }
+            }
+            self.deferred_dyn_coercions = still_deferred;
+
+            if !changed && !self.deferred_dyn_coercions.is_empty() {
+                let remaining = std::mem::take(&mut self.deferred_dyn_coercions);
+                let mut kept = Vec::new();
+                for coercion in &remaining {
+                    let expected_norm = self.norm(&coercion.expected_ty);
+                    if matches!(expected_norm, tast::Ty::TVar(_)) {
+                        constraints.push(Constraint::TypeEqual(
+                            coercion.concrete_ty.clone(),
+                            coercion.expected_ty.clone(),
+                            None,
+                        ));
+                        changed = true;
+                    } else {
+                        kept.push(coercion.clone());
+                    }
+                }
+                if changed {
+                    self.deferred_dyn_coercions = kept;
+                    continue;
+                }
+                for coercion in remaining {
+                    constraints.push(Constraint::TypeEqual(
+                        coercion.concrete_ty,
+                        coercion.expected_ty,
+                        None,
+                    ));
+                }
+                changed = true;
+                continue;
+            }
 
             if !changed && !constraints.is_empty() {
                 diagnostics.push(
@@ -698,7 +969,7 @@ impl Typer {
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.norm(elem)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
@@ -723,7 +994,7 @@ impl Typer {
         }
     }
 
-    fn unify(
+    pub(crate) fn unify(
         &mut self,
         diagnostics: &mut Diagnostics,
         l: &tast::Ty,
@@ -813,21 +1084,36 @@ impl Typer {
                     elem: elem2,
                 },
             ) => {
-                let wildcard = tast::ARRAY_WILDCARD_LEN;
-                if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Array length mismatch: expected {}, found {}",
-                                super::util::format_ty_for_diag(&l_norm),
-                                super::util::format_ty_for_diag(&r_norm)
-                            ),
-                        )
-                        .with_range(origin),
-                    );
-                    return false;
+                let r1 = self.resolve_array_len(*len1);
+                let r2 = self.resolve_array_len(*len2);
+                let w1 = self.is_array_wildcard(r1);
+                let w2 = self.is_array_wildcard(r2);
+                match (w1, w2) {
+                    (false, false) if r1 != r2 => {
+                        diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Array length mismatch: expected {}, found {}",
+                                    super::util::format_ty_for_diag(&l_norm),
+                                    super::util::format_ty_for_diag(&r_norm)
+                                ),
+                            )
+                            .with_range(origin),
+                        );
+                        return false;
+                    }
+                    (true, false) => {
+                        self.array_wildcard_resolutions.insert(r1, r2);
+                    }
+                    (false, true) => {
+                        self.array_wildcard_resolutions.insert(r2, r1);
+                    }
+                    (true, true) if r1 != r2 => {
+                        self.array_wildcard_resolutions.insert(r1, r2);
+                    }
+                    _ => {}
                 }
                 if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
@@ -1019,10 +1305,16 @@ impl Typer {
 
     pub(crate) fn inst_ty(&mut self, ty: &tast::Ty) -> tast::Ty {
         let mut subst: HashMap<String, tast::Ty> = HashMap::new();
-        self._go_inst_ty(ty, &mut subst)
+        let wildcard_len = self.fresh_array_wildcard();
+        self._go_inst_ty(ty, &mut subst, wildcard_len)
     }
 
-    fn _go_inst_ty(&mut self, ty: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> tast::Ty {
+    fn _go_inst_ty(
+        &mut self,
+        ty: &tast::Ty,
+        subst: &mut HashMap<String, tast::Ty>,
+        wildcard_len: usize,
+    ) -> tast::Ty {
         match ty {
             tast::Ty::TVar(_) => ty.clone(),
             tast::Ty::TUnit => ty.clone(),
@@ -1042,7 +1334,7 @@ impl Typer {
             tast::Ty::TTuple { typs } => {
                 let typs = typs
                     .iter()
-                    .map(|ty| self._go_inst_ty(ty, subst))
+                    .map(|ty| self._go_inst_ty(ty, subst, wildcard_len))
                     .collect::<Vec<_>>();
                 tast::Ty::TTuple { typs }
             }
@@ -1052,10 +1344,10 @@ impl Typer {
                 trait_name: trait_name.clone(),
             },
             tast::Ty::TApp { ty, args } => {
-                let ty = self._go_inst_ty(ty, subst);
+                let ty = self._go_inst_ty(ty, subst, wildcard_len);
                 let args = args
                     .iter()
-                    .map(|arg| self._go_inst_ty(arg, subst))
+                    .map(|arg| self._go_inst_ty(arg, subst, wildcard_len))
                     .collect::<Vec<_>>();
                 tast::Ty::TApp {
                     ty: Box::new(ty),
@@ -1063,21 +1355,25 @@ impl Typer {
                 }
             }
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                len: if *len == tast::ARRAY_WILDCARD_LEN {
+                    wildcard_len
+                } else {
+                    *len
+                },
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-                key: Box::new(self._go_inst_ty(key, subst)),
-                value: Box::new(self._go_inst_ty(value, subst)),
+                key: Box::new(self._go_inst_ty(key, subst, wildcard_len)),
+                value: Box::new(self._go_inst_ty(value, subst, wildcard_len)),
             },
             tast::Ty::TParam { name } => {
                 if let Some(ty) = subst.get(name) {
@@ -1091,9 +1387,9 @@ impl Typer {
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params
                     .iter()
-                    .map(|ty| self._go_inst_ty(ty, subst))
+                    .map(|ty| self._go_inst_ty(ty, subst, wildcard_len))
                     .collect::<Vec<_>>();
-                let ret_ty = Box::new(self._go_inst_ty(ret_ty, subst));
+                let ret_ty = Box::new(self._go_inst_ty(ret_ty, subst, wildcard_len));
                 tast::Ty::TFunc { params, ret_ty }
             }
         }
@@ -1163,7 +1459,7 @@ impl Typer {
                     .collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
@@ -1226,7 +1522,7 @@ impl Typer {
                 args: args.iter().map(|arg| self.subst_ty_silent(arg)).collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.subst_ty_silent(elem)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {

@@ -1,0 +1,16 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { val: int32 }
+
+impl Show for Num {
+    fn show(self: Num) -> string {
+        int32_to_string(self.val)
+    }
+}
+
+fn main() {
+    let r: Ref[dyn Show] = ref(Num { val: 42 });
+    println(Show::show(ref_get(r)));
+}

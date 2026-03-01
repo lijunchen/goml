@@ -482,6 +482,18 @@ pub enum Pat {
         value: String,
         astptr: MySyntaxNodePtr,
     },
+    PFloat {
+        value: String,
+        astptr: MySyntaxNodePtr,
+    },
+    PFloat32 {
+        value: String,
+        astptr: MySyntaxNodePtr,
+    },
+    PFloat64 {
+        value: String,
+        astptr: MySyntaxNodePtr,
+    },
     PString {
         value: String,
         astptr: MySyntaxNodePtr,

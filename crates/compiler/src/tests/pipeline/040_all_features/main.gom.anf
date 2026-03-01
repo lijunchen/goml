@@ -19,7 +19,7 @@ fn trait_impl#Describe#Tracker#describe(self/0: Tracker) -> string {
   t38
 }
 
-fn trait_impl#Describe#Record[int32]#describe(self/10: Record__int32) -> string {
+fn trait_impl#Describe#Record__int32#describe(self/10: Record__int32) -> string {
   join k39(jp40: string) -> string {
     jp40
   } in
@@ -51,7 +51,7 @@ fn trait_impl#Describe#Record[int32]#describe(self/10: Record__int32) -> string 
   }
 }
 
-fn trait_impl#Describe#Record[string]#describe(self/15: Record__string) -> string {
+fn trait_impl#Describe#Record__string#describe(self/15: Record__string) -> string {
   join k49(jp50: string) -> string {
     jp50
   } in
@@ -141,7 +141,7 @@ fn gather(record/38: Record__int32) -> Maybe__int32 {
   }
 }
 
-fn build_counter(label/41: string, start/42: int32) -> (Tracker, closure_env_snapshot_0, closure_env_bump_1, closure_env_flip_2) {
+fn build_counter(label/41: string, start/42: int32) -> (Tracker, () -> Record__int32, (int32) -> Record__int32, () -> Record__string) {
   let count/43 = ref(start/42) in
   let toggled/44 = ref(false) in
   let tracker/45 = Tracker { label: label/41, count: count/43, toggled: toggled/44 } in
@@ -163,9 +163,9 @@ fn main() -> unit {
   let snapshot/54 = x21 in
   let tracker/53 = x20 in
   let tracker_info/57 = trait_impl#Describe#Tracker#describe(tracker/53) in
-  let first_record/58 = inherent#closure_env_snapshot_0#closure_env_snapshot_0#apply(snapshot/54) in
-  let bumped_record/59 = inherent#closure_env_bump_1#closure_env_bump_1#apply(bump/55, 5) in
-  let flipped_record/60 = inherent#closure_env_flip_2#closure_env_flip_2#apply(flip/56) in
+  let first_record/58 = snapshot/54() in
+  let bumped_record/59 = bump/55(5) in
+  let flipped_record/60 = flip/56() in
   let maybe_first/61 = gather(first_record/58) in
   let maybe_second/62 = gather(bumped_record/59) in
   let chosen/63 = choose__T_Maybe[int32](true, maybe_second/62, maybe_first/61) in
@@ -176,9 +176,9 @@ fn main() -> unit {
   let second_result/68 = array_get(results/66, 1) in
   let t69 = (first_result/67 < second_result/68) in
   let order_check/69 = (t69 && true) in
-  let first_text/70 = trait_impl#Describe#Record[int32]#describe(first_record/58) in
-  let bumped_text/71 = trait_impl#Describe#Record[int32]#describe(bumped_record/59) in
-  let flipped_text/72 = trait_impl#Describe#Record[string]#describe(flipped_record/60) in
+  let first_text/70 = trait_impl#Describe#Record__int32#describe(first_record/58) in
+  let bumped_text/71 = trait_impl#Describe#Record__int32#describe(bumped_record/59) in
+  let flipped_text/72 = trait_impl#Describe#Record__string#describe(flipped_record/60) in
   join k70(jp71: string) -> unit {
     let summary/74 = jp71 in
     let t72 = int32_to_string(first_result/67) in

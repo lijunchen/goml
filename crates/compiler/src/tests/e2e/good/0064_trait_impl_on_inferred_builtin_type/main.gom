@@ -1,0 +1,18 @@
+trait Container {
+    fn size(Self) -> int32;
+    fn is_empty(Self) -> bool;
+}
+
+impl Container for Vec[int32] {
+    fn size(self: Vec[int32]) -> int32 { vec_len(self) }
+    fn is_empty(self: Vec[int32]) -> bool { vec_len(self) == 0 }
+}
+
+fn main() {
+    let v = vec_new();
+    let v = vec_push(v, 1);
+    let v = vec_push(v, 2);
+    let _ = println(v.is_empty());
+    let _ = println(v.size());
+    let _ = println(Container::size(v));
+}

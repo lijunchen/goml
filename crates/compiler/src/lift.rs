@@ -515,15 +515,14 @@ fn rewrite_lift_expr_with_final_types(
                 .collect(),
             ty,
         },
-        LiftExpr::ETuple { items, ty: _ } => {
+        LiftExpr::ETuple { items, ty } => {
             let items = items
                 .into_iter()
                 .map(|item| rewrite_lift_expr_with_final_types(state, scope, item))
                 .collect::<Vec<_>>();
-            let typs = items.iter().map(|item| item.get_ty()).collect();
             LiftExpr::ETuple {
                 items,
-                ty: Ty::TTuple { typs },
+                ty,
             }
         }
         LiftExpr::EArray { items, ty } => LiftExpr::EArray {
@@ -671,8 +670,18 @@ fn rewrite_lift_expr_with_final_types(
             }
 
             let func_ty = func_expr.get_ty();
-            let call_ty = match func_ty {
-                Ty::TFunc { ret_ty, .. } => *ret_ty,
+            let call_ty = match &func_ty {
+                Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+                Ty::TStruct { name } if is_closure_env_struct(name) => {
+                    if let Some(apply_fn) = state.apply_fn_for_struct(name)
+                        && let Some(apply_fn_ty) = state.liftenv.get_func(apply_fn)
+                        && let Ty::TFunc { ret_ty, .. } = &apply_fn_ty
+                    {
+                        *ret_ty.clone()
+                    } else {
+                        ty
+                    }
+                }
                 _ => ty,
             };
             LiftExpr::ECall {
@@ -758,39 +767,20 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 .map(|arg| transform_expr(state, scope, arg))
                 .collect::<Vec<_>>();
 
-            if let Constructor::Struct(struct_constructor) = &constructor {
-                let closure_field_types: Vec<_> = args
-                    .iter()
-                    .map(|arg| state.closure_struct_for_ty(&arg.get_ty()))
-                    .collect();
-
-                if let Some(struct_def) =
-                    state.liftenv.struct_def_mut(&struct_constructor.type_name)
-                {
-                    for (index, closure_struct_name) in closure_field_types.into_iter().enumerate()
-                    {
-                        if let Some(struct_name) = closure_struct_name {
-                            struct_def.fields[index].1 = Ty::TStruct { name: struct_name };
-                        }
-                    }
-                }
-            }
-
             LiftExpr::EConstr {
                 constructor,
                 args,
                 ty,
             }
         }
-        MonoExpr::ETuple { items, ty: _ } => {
+        MonoExpr::ETuple { items, ty } => {
             let items = items
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
                 .collect::<Vec<_>>();
-            let typs = items.iter().map(|item| item.get_ty()).collect();
             LiftExpr::ETuple {
                 items,
-                ty: Ty::TTuple { typs },
+                ty,
             }
         }
         MonoExpr::EArray { items, ty } => {

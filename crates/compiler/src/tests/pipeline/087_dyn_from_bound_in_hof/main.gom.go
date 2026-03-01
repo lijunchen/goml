@@ -50,7 +50,7 @@ func main0() struct{} {
 
 func mk_renderer__T_int32(x__1 int32) closure_env_mk_renderer_T_int32_0 {
     var d__2 dyn__Display = dyn__Display{
-        data: x__1,
+        data: int32(x__1),
         vtable: dyn__Display__vtable__int32(),
     }
     var t4 closure_env_mk_renderer_T_int32_0 = closure_env_mk_renderer_T_int32_0{

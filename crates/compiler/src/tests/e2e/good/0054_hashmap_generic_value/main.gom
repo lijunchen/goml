@@ -1,0 +1,13 @@
+fn main() {
+    let m = hashmap_new();
+    hashmap_set(m, "x", Option::Some(42));
+    hashmap_set(m, "y", Option::None);
+
+    match hashmap_get(m, "x") {
+        Option::Some(opt) => match opt {
+            Option::Some(n) => string_println(int32_to_string(n)),
+            Option::None => string_println("inner none"),
+        },
+        Option::None => string_println("not found"),
+    };
+}

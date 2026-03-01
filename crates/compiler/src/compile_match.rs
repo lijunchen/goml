@@ -1186,6 +1186,130 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
+fn compile_float_case(
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+    rows: Vec<Row>,
+    bvar: &Variable,
+    ty: &Ty,
+    literal_ty: Ty,
+    match_range: Option<TextRange>,
+) -> core::Expr {
+    let body_ty = rows.first().map(|r| r.get_ty()).unwrap_or(Ty::TUnit);
+
+    let mut value_rows: IndexMap<u64, (Prim, Vec<Row>)> = IndexMap::new();
+    let mut fallback_rows: Vec<Row> = Vec::new();
+    let mut default_rows: Vec<Row> = Vec::new();
+
+    for mut row in rows {
+        if let Some(col) = row.remove_column(&bvar.name) {
+            let col_range = pat_range(&col.pat).or(match_range);
+            match col.pat {
+                Pat::PPrim { ref value, ty: _, .. } => {
+                    let bits = match &literal_ty {
+                        Ty::TFloat32 => value.as_float32().map(|v| v.to_bits() as u64),
+                        Ty::TFloat64 => value.as_float64().map(|v| v.to_bits()),
+                        _ => None,
+                    };
+                    if let Some(key) = bits {
+                        let entry = value_rows
+                            .entry(key)
+                            .or_insert_with(|| (value.clone(), fallback_rows.clone()));
+                        entry.1.push(row);
+                    } else {
+                        push_compile_ice(
+                            diagnostics,
+                            "expected float literal pattern while compiling float match",
+                            col_range,
+                        );
+                        let row_clone = row.clone();
+                        for (_, rows) in value_rows.values_mut() {
+                            rows.push(row_clone.clone());
+                        }
+                        fallback_rows.push(row_clone.clone());
+                        default_rows.push(row);
+                    }
+                }
+                Pat::PWild { .. } => {
+                    let row_clone = row.clone();
+                    for (_, rows) in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
+                _ => {
+                    push_compile_ice(
+                        diagnostics,
+                        "expected float pattern while compiling float match",
+                        col_range,
+                    );
+                    let row_clone = row.clone();
+                    for (_, rows) in value_rows.values_mut() {
+                        rows.push(row_clone.clone());
+                    }
+                    fallback_rows.push(row_clone.clone());
+                    default_rows.push(row);
+                }
+            }
+        } else {
+            let row_clone = row.clone();
+            for (_, rows) in value_rows.values_mut() {
+                rows.push(row_clone.clone());
+            }
+            fallback_rows.push(row_clone.clone());
+            default_rows.push(row);
+        }
+    }
+
+    if default_rows.is_empty() {
+        let type_name = match &literal_ty {
+            Ty::TFloat32 => "float32",
+            Ty::TFloat64 => "float64",
+            _ => "float",
+        };
+        let message = format!(
+            "non-exhaustive match on {} literal; add a wildcard arm `_`",
+            type_name
+        );
+        push_compile_error(diagnostics, message, match_range);
+        return emissing(ty);
+    }
+
+    let arms = value_rows
+        .into_iter()
+        .map(|(_, (prim, rows))| core::Arm {
+            lhs: core::Expr::EPrim {
+                value: prim,
+                ty: literal_ty.clone(),
+            },
+            body: compile_rows(genv, gensym, diagnostics, rows, ty, match_range),
+        })
+        .collect();
+
+    let default = if default_rows.is_empty() {
+        None
+    } else {
+        Some(Box::new(compile_rows(
+            genv,
+            gensym,
+            diagnostics,
+            default_rows,
+            ty,
+            match_range,
+        )))
+    };
+
+    core::Expr::EMatch {
+        expr: Box::new(bvar.to_core()),
+        arms,
+        default,
+        ty: body_ty,
+    }
+}
+
 fn compile_string_case(
     genv: &GlobalTypeEnv,
     gensym: &Gensym,
@@ -1403,14 +1527,16 @@ fn compile_rows(
             Ty::TUint64,
             match_range,
         ),
-        Ty::TFloat32 | Ty::TFloat64 => {
-            push_compile_error(
-                diagnostics,
-                "matching on floating point types is not supported",
-                match_range,
-            );
-            emissing(ty)
-        }
+        Ty::TFloat32 | Ty::TFloat64 => compile_float_case(
+            genv,
+            gensym,
+            diagnostics,
+            rows,
+            &bvar,
+            ty,
+            bvar.ty.clone(),
+            match_range,
+        ),
         Ty::TString => compile_string_case(genv, gensym, diagnostics, rows, &bvar, ty, match_range),
         Ty::TChar => compile_int_case(
             genv,
@@ -2059,9 +2185,38 @@ fn compile_expr(
                 ..
             } = func.as_ref()
             {
-                core::Expr::EVar {
-                    name: inherent_method_fn_name(receiver_ty, &method_name.0),
-                    ty: method_ty.clone(),
+                let has_inherent = genv
+                    .lookup_inherent_method_scheme(receiver_ty, method_name)
+                    .is_some();
+                if has_inherent {
+                    core::Expr::EVar {
+                        name: inherent_method_fn_name(receiver_ty, &method_name.0),
+                        ty: method_ty.clone(),
+                    }
+                } else if let Some((type_name, type_args)) = decompose_struct_type(receiver_ty)
+                    && let Some(struct_def) = genv.structs().get(&type_name)
+                    && let Some(inst_fields) = instantiate_struct_fields(diagnostics, struct_def, &type_args, None)
+                    && let Some((field_index, (_, field_ty))) = inst_fields.iter().enumerate().find(|(_, (fname, _))| fname == &method_name.0)
+                    && matches!(field_ty, tast::Ty::TFunc { .. })
+                {
+                    let receiver_core = args[0].clone();
+                    let field_core = core::Expr::EConstrGet {
+                        expr: Box::new(receiver_core),
+                        constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
+                        field_index,
+                        ty: field_ty.clone(),
+                    };
+                    let other_args = args[1..].to_vec();
+                    return core::Expr::ECall {
+                        func: Box::new(field_core),
+                        args: other_args,
+                        ty: ty.clone(),
+                    };
+                } else {
+                    core::Expr::EVar {
+                        name: inherent_method_fn_name(receiver_ty, &method_name.0),
+                        ty: method_ty.clone(),
+                    }
                 }
             } else {
                 compile_expr(func, genv, gensym, diagnostics)

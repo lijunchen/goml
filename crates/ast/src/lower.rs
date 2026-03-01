@@ -9,6 +9,40 @@ use text_size::TextRange;
 
 const DEFAULT_PACKAGE_NAME: &str = "main";
 
+fn unescape_string(s: &str) -> String {
+    let mut result = String::with_capacity(s.len());
+    let mut chars = s.chars();
+    while let Some(c) = chars.next() {
+        if c == '\\' {
+            match chars.next() {
+                Some('"') => result.push('"'),
+                Some('\\') => result.push('\\'),
+                Some('n') => result.push('\n'),
+                Some('r') => result.push('\r'),
+                Some('t') => result.push('\t'),
+                Some('b') => result.push('\u{0008}'),
+                Some('f') => result.push('\u{000C}'),
+                Some('/') => result.push('/'),
+                Some('u') => {
+                    let hex: String = chars.by_ref().take(4).collect();
+                    if let Ok(code) = u32::from_str_radix(&hex, 16)
+                        && let Some(ch) = char::from_u32(code) {
+                            result.push(ch);
+                        }
+                }
+                Some(other) => {
+                    result.push('\\');
+                    result.push(other);
+                }
+                None => result.push('\\'),
+            }
+        } else {
+            result.push(c);
+        }
+    }
+    result
+}
+
 pub struct LowerResult {
     ast: Option<ast::File>,
     diagnostics: Diagnostics,
@@ -463,12 +497,16 @@ fn lower_ty(ctx: &mut LowerCtx, node: cst::Type) -> Option<ast::TypeExpr> {
         cst::Type::StringTy(_) => Some(ast::TypeExpr::TString),
         cst::Type::CharTy(_) => Some(ast::TypeExpr::TChar),
         cst::Type::TupleTy(it) => {
-            let typs = it
+            let typs: Vec<ast::TypeExpr> = it
                 .type_list()?
                 .types()
                 .flat_map(|ty| lower_ty(ctx, ty))
                 .collect();
-            Some(ast::TypeExpr::TTuple { typs })
+            if typs.len() == 1 {
+                Some(typs.into_iter().next().unwrap())
+            } else {
+                Some(ast::TypeExpr::TTuple { typs })
+            }
         }
         cst::Type::TAppTy(it) => {
             let path = it.path().and_then(|path| lower_path(ctx, &path))?;
@@ -1243,7 +1281,7 @@ fn lower_expr_with_args(
                 return None;
             }
             Some(ast::Expr::EString {
-                value: value.to_string(),
+                value: unescape_string(value),
                 astptr,
             })
         }
@@ -1327,7 +1365,7 @@ fn lower_expr_with_args(
                         }
                     }
                     other => {
-                        if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_)) {
+                        if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_) | cst::Expr::ParenExpr(_)) {
                             let func_expr = lower_expr(ctx, other)?;
                             let call = ast::Expr::ECall {
                                 func: Box::new(func_expr),
@@ -2167,33 +2205,40 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                 }
             }
         }
-        cst::Pattern::IntPat(it) => Some(ast::Pat::PInt {
-            value: it.value()?.to_string(),
-            astptr: MySyntaxNodePtr::new(it.syntax()),
-        }),
+        cst::Pattern::IntPat(it) => {
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt {
+                value: format!("{}{}", neg, it.value()?),
+                astptr: MySyntaxNodePtr::new(it.syntax()),
+            })
+        }
         cst::Pattern::Int8Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt8 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt8 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int16Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt16 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt16 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int32Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt32 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt32 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int64Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt64 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt64 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::UInt8Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
@@ -2218,6 +2263,26 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
             Some(ast::Pat::PUInt64 { value, astptr })
+        }
+        cst::Pattern::FloatPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat { value: format!("{}{}", neg, text), astptr })
+        }
+        cst::Pattern::Float32Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("f32").unwrap_or(&text).to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat32 { value: format!("{}{}", neg, value), astptr })
+        }
+        cst::Pattern::Float64Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("f64").unwrap_or(&text).to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat64 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::CharPat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());

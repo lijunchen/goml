@@ -1,0 +1,30 @@
+trait Codec {
+    fn encode(Self) -> string;
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+impl Codec for Wrapper[int32] {
+    fn encode(self: Wrapper[int32]) -> string {
+        int32_to_string(self.value)
+    }
+}
+
+impl Codec for Wrapper[string] {
+    fn encode(self: Wrapper[string]) -> string {
+        self.value
+    }
+}
+
+fn wrap[T](value: T) -> dyn Codec {
+    Wrapper { value: value }
+}
+
+fn main() {
+    let a = wrap(42);
+    string_println(Codec::encode(a));
+    let b = wrap("hello");
+    string_println(Codec::encode(b));
+}

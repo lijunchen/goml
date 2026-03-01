@@ -1,0 +1,27 @@
+trait Handler {
+    fn handle(Self, string) -> string;
+}
+
+struct EchoHandler {}
+struct UpperHandler {}
+
+impl Handler for EchoHandler {
+    fn handle(self: EchoHandler, msg: string) -> string { let _ = self; msg }
+}
+impl Handler for UpperHandler {
+    fn handle(self: UpperHandler, msg: string) -> string {
+        let _ = self;
+        msg + " (upper)"
+    }
+}
+
+fn main() {
+    let routes: HashMap[string, dyn Handler] = HashMap::new();
+    routes.set("/echo", EchoHandler {});
+    routes.set("/upper", UpperHandler {});
+
+    match routes.get("/echo") {
+        Option::Some(h) => string_println(Handler::handle(h, "hello")),
+        Option::None => string_println("not found"),
+    };
+}

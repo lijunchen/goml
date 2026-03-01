@@ -1,0 +1,30 @@
+package main;
+
+struct Box[T] {
+    value: T,
+}
+
+trait Printable {
+    fn print_me(Self) -> string;
+}
+
+impl Printable for int32 {
+    fn print_me(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl[T: Printable] Printable for Box[T] {
+    fn print_me(self: Box[T]) -> string {
+        "Box(" + Printable::print_me(self.value) + ")"
+    }
+}
+
+fn show(x: dyn Printable) -> string {
+    Printable::print_me(x)
+}
+
+fn main() {
+    let b: Box[int32] = Box { value: 42 };
+    string_println(show(b));
+}

@@ -1,0 +1,25 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let x/0 = Option::Some(42) in
+  let _wild1 = match x/0 {
+    Option::Some(x0) => {
+      {
+        let x0 = Option::Some._0(x/0) in
+        {
+          let v/1 = x0 in
+          string_println(uint8_to_string(v/1))
+        }
+      }
+    },
+    Option::None => {
+      string_println("none")
+    },
+  } in
+}

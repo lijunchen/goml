@@ -47,7 +47,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
             cases.iter().any(|(_t, b)| block_has_label_or_goto(b))
                 || default.as_ref().is_some_and(block_has_label_or_goto)
         }
-        ast::Stmt::Loop { body } => block_has_label_or_goto(body),
+        ast::Stmt::Loop { body, .. } => block_has_label_or_goto(body),
         ast::Stmt::Expr(e) => expr_has_label_or_goto(e),
         ast::Stmt::Go { call } => expr_has_label_or_goto(call),
         ast::Stmt::VarDecl { value, .. } => value.as_ref().is_some_and(expr_has_label_or_goto),
@@ -68,7 +68,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
             expr_has_label_or_goto(target) || expr_has_label_or_goto(value)
         }
         ast::Stmt::Return { expr } => expr.as_ref().is_some_and(expr_has_label_or_goto),
-        ast::Stmt::Break | ast::Stmt::Continue => false,
+        ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => false,
     }
 }
 
@@ -113,6 +113,7 @@ fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => false,
+        ast::Expr::FuncLit { body, .. } => body.iter().any(stmt_has_label_or_goto),
     }
 }
 
@@ -261,16 +262,19 @@ fn dce_block_with_live(
                 }
                 out.push(ast::Stmt::Return { expr });
             }
-            ast::Stmt::Loop { body } => {
+            ast::Stmt::Loop { body, label } => {
                 let mut loop_live_out = live.clone();
                 loop_live_out.extend(free_vars_in_block(&body));
                 let (body_block, body_live_in) = dce_block_with_live(body, &loop_live_out);
                 live.extend(body_live_in);
                 needs_decl.extend(assigned_vars_in_block(&body_block));
-                out.push(ast::Stmt::Loop { body: body_block });
+                out.push(ast::Stmt::Loop { body: body_block, label: label.clone() });
             }
             ast::Stmt::Break => {
                 out.push(ast::Stmt::Break);
+            }
+            ast::Stmt::BreakLabel(lbl) => {
+                out.push(ast::Stmt::BreakLabel(lbl.clone()));
             }
             ast::Stmt::Continue => {
                 out.push(ast::Stmt::Continue);
@@ -436,6 +440,11 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             args: args.into_iter().map(dce_expr).collect(),
             ty,
         },
+        ast::Expr::FuncLit { params, body, ty } => ast::Expr::FuncLit {
+            params,
+            body,
+            ty,
+        },
         // Leaves
         e @ ast::Expr::Nil { .. }
         | e @ ast::Expr::Make { .. }
@@ -486,10 +495,10 @@ fn assigned_vars_in_block(b: &ast::Block) -> HashSet<String> {
                     s.extend(assigned_vars_in_block(b));
                 }
             }
-            ast::Stmt::Loop { body } => {
+            ast::Stmt::Loop { body, .. } => {
                 s.extend(assigned_vars_in_block(body));
             }
-            ast::Stmt::Break | ast::Stmt::Continue => {}
+            ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
             _ => {}
         }
     }
@@ -616,11 +625,11 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                             used.extend(free_vars_in_block(b));
                         }
                     }
-                    ast::Stmt::Loop { body } => {
+                    ast::Stmt::Loop { body, .. } => {
                         used.extend(free_vars_in_block(body));
                     }
                     ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
-                    ast::Stmt::Break | ast::Stmt::Continue => {}
+                    ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
                 }
             }
             s.extend(&used - &declared);
@@ -636,6 +645,19 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for st in body {
+                match st {
+                    ast::Stmt::Return { expr: Some(e) } => {
+                        s.extend(vars_used_in_expr(e));
+                    }
+                    ast::Stmt::Expr(e) => {
+                        s.extend(vars_used_in_expr(e));
+                    }
+                    _ => {}
+                }
+            }
+        }
     }
     s
 }
@@ -713,11 +735,11 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
                     used.extend(free_vars_in_block(b));
                 }
             }
-            ast::Stmt::Loop { body } => {
+            ast::Stmt::Loop { body, .. } => {
                 used.extend(free_vars_in_block(body));
             }
             ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
-            ast::Stmt::Break | ast::Stmt::Continue => {}
+            ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
         }
     }
     &used - &declared
@@ -766,6 +788,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
         }
         ast::Expr::ArrayLiteral { elems, .. } => elems.iter().any(expr_has_side_effects),
         ast::Expr::Make { .. } => false,
+        ast::Expr::FuncLit { .. } => false,
         ast::Expr::Var { .. }
         | ast::Expr::Nil { .. }
         | ast::Expr::Void { .. }
@@ -791,8 +814,8 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::PointerAssign { .. } => true,
         ast::Stmt::FieldAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
-        ast::Stmt::Loop { body } => body.stmts.iter().any(stmt_has_side_effects),
-        ast::Stmt::Break | ast::Stmt::Continue => false,
+        ast::Stmt::Loop { body, .. } => body.stmts.iter().any(stmt_has_side_effects),
+        ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => false,
         ast::Stmt::If { cond, then, else_ } => {
             expr_has_side_effects(cond)
                 || then.stmts.iter().any(stmt_has_side_effects)
@@ -969,10 +992,10 @@ fn collect_called_in_stmt(
                 collect_called_in_block(b, calls, fn_names);
             }
         }
-        ast::Stmt::Loop { body } => {
+        ast::Stmt::Loop { body, .. } => {
             collect_called_in_block(body, calls, fn_names);
         }
-        ast::Stmt::Break | ast::Stmt::Continue => {}
+        ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
     }
 }
 
@@ -1037,6 +1060,11 @@ fn collect_called_in_expr(
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for st in body {
+                collect_called_in_stmt(st, calls, fn_names);
+            }
+        }
     }
 }
 
@@ -1186,10 +1214,10 @@ fn collect_packages_in_stmt(
                 collect_packages_in_block(b, imports, used);
             }
         }
-        ast::Stmt::Loop { body } => {
+        ast::Stmt::Loop { body, .. } => {
             collect_packages_in_block(body, imports, used);
         }
-        ast::Stmt::Break | ast::Stmt::Continue => {}
+        ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => {}
     }
 }
 
@@ -1258,6 +1286,11 @@ fn collect_packages_in_expr(
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
         | ast::Expr::String { .. } => {}
+        ast::Expr::FuncLit { body, .. } => {
+            for stmt in body {
+                collect_packages_in_stmt(stmt, imports, used);
+            }
+        }
     }
 }
 

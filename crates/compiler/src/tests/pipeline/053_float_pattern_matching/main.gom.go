@@ -13,11 +13,11 @@ func bool_to_string(x bool) string {
 }
 
 func float32_to_string(x float32) string {
-    return fmt.Sprintf("%d", x)
+    return fmt.Sprintf("%g", x)
 }
 
 func float64_to_string(x float64) string {
-    return fmt.Sprintf("%d", x)
+    return fmt.Sprintf("%g", x)
 }
 
 func string_println(s string) struct{} {

@@ -5,7 +5,7 @@ use crate::{
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     go::mangle::{encode_ty, go_ident},
     lift::{GlobalLiftEnv, is_closure_env_struct},
-    names::{inherent_method_fn_name, trait_impl_fn_name},
+    names::{inherent_method_fn_name, parse_trait_impl_fn_name, trait_impl_fn_name, ty_compact},
     package_names::{ENTRY_FUNCTION, ENTRY_WRAPPER_FUNCTION},
     tast::{self, TastIdent},
 };
@@ -921,7 +921,34 @@ fn gen_dyn_type_definitions(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<g
     items
 }
 
-fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::Item> {
+fn build_trait_impl_name_map(
+    toplevels: &[anf::Fn],
+) -> std::collections::HashMap<(String, String, String), String> {
+    let mut map = std::collections::HashMap::new();
+    for tl in toplevels {
+        if let Some((trait_name, for_ty_str, method_name)) =
+            parse_trait_impl_fn_name(&tl.name)
+        {
+            let base_method = method_name.split("__").next().unwrap_or(method_name);
+            let go_name = go_ident(&tl.name);
+            map.insert(
+                (
+                    trait_name.to_string(),
+                    for_ty_str.to_string(),
+                    base_method.to_string(),
+                ),
+                go_name,
+            );
+        }
+    }
+    map
+}
+
+fn gen_dyn_helper_fns(
+    goenv: &GlobalGoEnv,
+    req: &DynRequirements,
+    impl_name_map: &std::collections::HashMap<(String, String, String), String>,
+) -> Vec<goast::Item> {
     let mut vtables: Vec<(String, tast::Ty)> = req.vtables.iter().cloned().collect();
     vtables.sort_by(|(t1, ty1), (t2, ty2)| {
         let k1 = (t1.clone(), encode_ty(ty1));
@@ -935,11 +962,13 @@ fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::
 
         for (method_name, params, ret_ty) in &methods {
             items.push(goast::Item::Fn(gen_dyn_wrap_fn(
+                goenv,
                 &trait_name,
                 &for_ty,
                 method_name,
                 params,
                 ret_ty,
+                impl_name_map,
             )));
         }
 
@@ -953,11 +982,13 @@ fn gen_dyn_helper_fns(goenv: &GlobalGoEnv, req: &DynRequirements) -> Vec<goast::
 }
 
 fn gen_dyn_wrap_fn(
+    goenv: &GlobalGoEnv,
     trait_name: &str,
     for_ty: &tast::Ty,
     method_name: &str,
     params: &[tast::Ty],
     ret_ty: &tast::Ty,
+    impl_name_map: &std::collections::HashMap<(String, String, String), String>,
 ) -> goast::Fn {
     let fn_name = dyn_wrap_go_name(trait_name, for_ty, method_name);
 
@@ -968,8 +999,18 @@ fn gen_dyn_wrap_fn(
     }
 
     let trait_ident = TastIdent(trait_name.to_string());
-    let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
-    let impl_go_name = go_ident(&impl_name);
+    let for_ty_compact = ty_compact(for_ty);
+    let impl_go_name = impl_name_map
+        .get(&(
+            trait_name.to_string(),
+            for_ty_compact,
+            method_name.to_string(),
+        ))
+        .cloned()
+        .unwrap_or_else(|| {
+            let impl_name = trait_impl_fn_name(&trait_ident, for_ty, method_name);
+            go_ident(&impl_name)
+        });
 
     let receiver_go_ty = tast_ty_to_go_type(for_ty);
     let ret_go_ty = tast_ty_to_go_type(ret_ty);
@@ -977,42 +1018,109 @@ fn gen_dyn_wrap_fn(
     impl_param_tys.push(receiver_go_ty.clone());
     impl_param_tys.extend(params.iter().map(tast_ty_to_go_type));
 
-    let asserted_self = goast::Expr::Cast {
-        expr: Box::new(goast::Expr::Var {
-            name: "self".to_string(),
-            ty: any_go_type(),
-        }),
-        ty: receiver_go_ty.clone(),
+    let enum_name = match for_ty {
+        tast::Ty::TEnum { name } => Some(name.clone()),
+        _ => None,
     };
+    let is_enum = enum_name
+        .as_ref()
+        .and_then(|n| goenv.get_enum(&TastIdent::new(n)))
+        .is_some();
 
-    let mut args = Vec::with_capacity(params.len() + 1);
-    args.push(asserted_self);
-    for (i, pty) in params.iter().enumerate() {
+    if is_enum {
+        let mut args = Vec::with_capacity(params.len() + 1);
         args.push(goast::Expr::Var {
-            name: format!("p{}", i),
-            ty: tast_ty_to_go_type(pty),
+            name: "v".to_string(),
+            ty: receiver_go_ty.clone(),
         });
-    }
-
-    let call = goast::Expr::Call {
-        func: Box::new(goast::Expr::Var {
-            name: impl_go_name,
-            ty: goty::GoType::TFunc {
-                params: impl_param_tys,
-                ret_ty: Box::new(ret_go_ty.clone()),
+        for (i, pty) in params.iter().enumerate() {
+            args.push(goast::Expr::Var {
+                name: format!("p{}", i),
+                ty: tast_ty_to_go_type(pty),
+            });
+        }
+        let call = goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: impl_go_name,
+                ty: goty::GoType::TFunc {
+                    params: impl_param_tys,
+                    ret_ty: Box::new(ret_go_ty.clone()),
+                },
+            }),
+            args,
+            ty: ret_go_ty.clone(),
+        };
+        let switch_stmt = goast::Stmt::SwitchType {
+            bind: Some("v".to_string()),
+            expr: goast::Expr::Var {
+                name: "self".to_string(),
+                ty: any_go_type(),
             },
-        }),
-        args,
-        ty: ret_go_ty.clone(),
-    };
+            cases: vec![(
+                receiver_go_ty,
+                goast::Block {
+                    stmts: vec![goast::Stmt::Return {
+                        expr: Some(call),
+                    }],
+                },
+            )],
+            default: Some(goast::Block {
+                stmts: vec![goast::Stmt::Expr(goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: "panic".to_string(),
+                        ty: goty::GoType::TUnit,
+                    }),
+                    args: vec![goast::Expr::String { value: "unexpected type".to_string(), ty: goty::GoType::TString }],
+                    ty: goty::GoType::TUnit,
+                })],
+            }),
+        };
+        goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![switch_stmt],
+            },
+        }
+    } else {
+        let asserted_self = goast::Expr::Cast {
+            expr: Box::new(goast::Expr::Var {
+                name: "self".to_string(),
+                ty: any_go_type(),
+            }),
+            ty: receiver_go_ty.clone(),
+        };
 
-    goast::Fn {
-        name: fn_name,
-        params: go_params,
-        ret_ty: Some(ret_go_ty),
-        body: goast::Block {
-            stmts: vec![goast::Stmt::Return { expr: Some(call) }],
-        },
+        let mut args = Vec::with_capacity(params.len() + 1);
+        args.push(asserted_self);
+        for (i, pty) in params.iter().enumerate() {
+            args.push(goast::Expr::Var {
+                name: format!("p{}", i),
+                ty: tast_ty_to_go_type(pty),
+            });
+        }
+
+        let call = goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: impl_go_name,
+                ty: goty::GoType::TFunc {
+                    params: impl_param_tys,
+                    ret_ty: Box::new(ret_go_ty.clone()),
+                },
+            }),
+            args,
+            ty: ret_go_ty.clone(),
+        };
+
+        goast::Fn {
+            name: fn_name,
+            params: go_params,
+            ret_ty: Some(ret_go_ty),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return { expr: Some(call) }],
+            },
+        }
     }
 }
 
@@ -1099,10 +1207,25 @@ mod legacy_anf_codegen {
             } => match constructor {
                 Constructor::Enum(enum_constructor) => {
                     let variant_ty = variant_ty_by_index(goenv, ty, enum_constructor.index);
+                    let variant_field_types = goenv
+                        .get_enum(&enum_constructor.type_name)
+                        .and_then(|def| def.variants.get(enum_constructor.index))
+                        .map(|(_, fields)| fields.as_slice());
                     let fields = args
                         .iter()
                         .enumerate()
-                        .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                        .map(|(i, a)| {
+                            let field_ty = variant_field_types.and_then(|f| f.get(i));
+                            let arg_ty = imm_ty(a);
+                            let val = if let Some(ft) = field_ty
+                                && needs_closure_to_func_wrap(&arg_ty, ft)
+                            {
+                                closure_to_func_lit(goenv, a, ft)
+                            } else {
+                                compile_imm(goenv, a)
+                            };
+                            (format!("_{}", i), val)
+                        })
                         .collect();
                     goast::Expr::StructLiteral {
                         ty: variant_ty,
@@ -1128,7 +1251,15 @@ mod legacy_anf_codegen {
                         .fields
                         .iter()
                         .zip(args.iter())
-                        .map(|((fname, _), arg)| (go_ident(&fname.0), compile_imm(goenv, arg)))
+                        .map(|((fname, field_ty), arg)| {
+                            let arg_ty = imm_ty(arg);
+                            let val = if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                                closure_to_func_lit(goenv, arg, field_ty)
+                            } else {
+                                compile_imm(goenv, arg)
+                            };
+                            (go_ident(&fname.0), val)
+                        })
                         .collect();
                     goast::Expr::StructLiteral { ty: go_ty, fields }
                 }
@@ -1145,7 +1276,21 @@ mod legacy_anf_codegen {
                 }
             }
             anf::CExpr::EArray { items, ty } => {
-                let elems = items.iter().map(|item| compile_imm(goenv, item)).collect();
+                let elem_ty = match ty {
+                    tast::Ty::TArray { elem, .. } => elem.as_ref(),
+                    _ => ty,
+                };
+                let elems = items
+                    .iter()
+                    .map(|item| {
+                        let arg_ty = imm_ty(item);
+                        if needs_closure_to_func_wrap(&arg_ty, elem_ty) {
+                            closure_to_func_lit(goenv, item, elem_ty)
+                        } else {
+                            compile_imm(goenv, item)
+                        }
+                    })
+                    .collect();
                 goast::Expr::ArrayLiteral {
                     elems,
                     ty: tast_ty_to_go_type(ty),
@@ -2165,6 +2310,7 @@ mod legacy_anf_codegen {
 
         stmts.push(goast::Stmt::Loop {
             body: goast::Block { stmts: loop_body },
+            label: None,
         });
         stmts
     }
@@ -2537,11 +2683,25 @@ fn compile_call(
     args: &[anf::ImmExpr],
     ty: &tast::Ty,
 ) -> goast::Expr {
+    let func_tast_ty = imm_ty(func);
+    let param_types: Vec<tast::Ty> = match &func_tast_ty {
+        tast::Ty::TFunc { params, .. } => params.clone(),
+        _ => Vec::new(),
+    };
     let compiled_args = args
         .iter()
-        .map(|arg| compile_imm(goenv, arg))
+        .enumerate()
+        .map(|(i, arg)| {
+            let arg_ty = imm_ty(arg);
+            if let Some(param_ty) = param_types.get(i)
+                && needs_closure_to_func_wrap(&arg_ty, param_ty)
+            {
+                return closure_to_func_lit(goenv, arg, param_ty);
+            }
+            compile_imm(goenv, arg)
+        })
         .collect::<Vec<_>>();
-    let func_ty = tast_ty_to_go_type(&imm_ty(func));
+    let func_ty = tast_ty_to_go_type(&func_tast_ty);
 
     if let anf::ImmExpr::Var { id, .. } = func
         && id.0 == "missing"
@@ -2824,6 +2984,24 @@ fn compile_call(
         };
     }
 
+    if let tast::Ty::TStruct { name } = &func_tast_ty
+        && is_closure_env_struct(name)
+    {
+        if let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty) {
+            let apply_expr = goast::Expr::Var {
+                name: go_ident(&apply.name),
+                ty: tast_ty_to_go_type(&apply.ty),
+            };
+            let mut call_args = vec![compile_imm(goenv, func)];
+            call_args.extend(compiled_args);
+            return goast::Expr::Call {
+                func: Box::new(apply_expr),
+                args: call_args,
+                ty: tast_ty_to_go_type(&apply.ret_ty),
+            };
+        }
+    }
+
     goast::Expr::Call {
         func: Box::new(compile_imm(goenv, func)),
         args: compiled_args,
@@ -2844,10 +3022,25 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
         } => match constructor {
             Constructor::Enum(enum_constructor) => {
                 let variant_ty = variant_ty_by_index(goenv, ty, enum_constructor.index);
+                let variant_field_types = goenv
+                    .get_enum(&enum_constructor.type_name)
+                    .and_then(|def| def.variants.get(enum_constructor.index))
+                    .map(|(_, fields)| fields.as_slice());
                 let fields = args
                     .iter()
                     .enumerate()
-                    .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                    .map(|(i, a)| {
+                        let field_ty = variant_field_types.and_then(|f| f.get(i));
+                        let arg_ty = imm_ty(a);
+                        let val = if let Some(ft) = field_ty
+                            && needs_closure_to_func_wrap(&arg_ty, ft)
+                        {
+                            closure_to_func_lit(goenv, a, ft)
+                        } else {
+                            compile_imm(goenv, a)
+                        };
+                        (format!("_{}", i), val)
+                    })
                     .collect();
                 CompiledValue {
                     stmts: Vec::new(),
@@ -2874,7 +3067,15 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                     .fields
                     .iter()
                     .zip(args.iter())
-                    .map(|((fname, _), arg)| (go_ident(&fname.0), compile_imm(goenv, arg)))
+                    .map(|((fname, field_ty), arg)| {
+                        let arg_ty = imm_ty(arg);
+                        let val = if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                            closure_to_func_lit(goenv, arg, field_ty)
+                        } else {
+                            compile_imm(goenv, arg)
+                        };
+                        (go_ident(&fname.0), val)
+                    })
                     .collect();
                 CompiledValue {
                     stmts: Vec::new(),
@@ -2883,10 +3084,26 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
             }
         },
         anf::ValueExpr::Tuple { items, ty } => {
+            let orig_typs = match ty {
+                tast::Ty::TTuple { typs } => Some(typs.as_slice()),
+                _ => None,
+            };
             let fields = items
                 .iter()
                 .enumerate()
-                .map(|(i, a)| (format!("_{}", i), compile_imm(goenv, a)))
+                .map(|(i, a)| {
+                    let val = if let Some(field_ty) = orig_typs.and_then(|ts| ts.get(i)) {
+                        let arg_ty = imm_ty(a);
+                        if needs_closure_to_func_wrap(&arg_ty, field_ty) {
+                            closure_to_func_lit(goenv, a, field_ty)
+                        } else {
+                            compile_imm(goenv, a)
+                        }
+                    } else {
+                        compile_imm(goenv, a)
+                    };
+                    (format!("_{}", i), val)
+                })
                 .collect();
             CompiledValue {
                 stmts: Vec::new(),
@@ -2897,7 +3114,21 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
             }
         }
         anf::ValueExpr::Array { items, ty } => {
-            let elems = items.iter().map(|item| compile_imm(goenv, item)).collect();
+            let elem_ty = match ty {
+                tast::Ty::TArray { elem, .. } => elem.as_ref(),
+                _ => ty,
+            };
+            let elems = items
+                .iter()
+                .map(|item| {
+                    let arg_ty = imm_ty(item);
+                    if needs_closure_to_func_wrap(&arg_ty, elem_ty) {
+                        closure_to_func_lit(goenv, item, elem_ty)
+                    } else {
+                        compile_imm(goenv, item)
+                    }
+                })
+                .collect();
             CompiledValue {
                 stmts: Vec::new(),
                 expr: goast::Expr::ArrayLiteral {
@@ -3060,7 +3291,19 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 stmts: Vec::new(),
                 expr: goast::Expr::StructLiteral {
                     fields: vec![
-                        ("data".to_string(), compile_imm(goenv, expr)),
+                        ("data".to_string(), {
+                            let data_expr_ty = imm_ty(expr);
+                            let needs_closure_wrap = matches!(
+                                &data_expr_ty,
+                                tast::Ty::TStruct { name } if is_closure_env_struct(name)
+                            ) && matches!(for_ty, tast::Ty::TFunc { .. });
+                            if needs_closure_wrap {
+                                closure_to_func_lit(goenv, expr, for_ty)
+                            } else {
+                                let compiled = compile_imm(goenv, expr);
+                                ensure_typed_for_any(compiled, for_ty)
+                            }
+                        }),
                         ("vtable".to_string(), vtable_expr),
                     ],
                     ty: dyn_struct_ty,
@@ -3211,27 +3454,37 @@ struct WhileLoop {
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
-    any_path_reaches_with_joins(block, target, &HashMap::new())
+    any_path_reaches_with_joins(block, target, &HashMap::new(), &mut HashSet::new())
 }
 
 fn any_path_reaches_with_joins(
     block: &anf::Block,
     target: &anf::JoinId,
     parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
 ) -> bool {
     let mut local_joins = parent_joins.clone();
     for bind in &block.binds {
-        if let anf::Bind::Join(jb) = bind {
-            local_joins.insert(&jb.id, jb);
+        match bind {
+            anf::Bind::Join(jb) => {
+                local_joins.insert(&jb.id, jb);
+            }
+            anf::Bind::JoinRec(group) => {
+                for jb in group {
+                    local_joins.insert(&jb.id, jb);
+                }
+            }
+            anf::Bind::Let(_) => {}
         }
     }
-    any_path_reaches_term(&block.term, target, &local_joins)
+    any_path_reaches_term(&block.term, target, &local_joins, visited)
 }
 
 fn any_path_reaches_term(
     term: &anf::Term,
     target: &anf::JoinId,
     joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
 ) -> bool {
     match term {
         anf::Term::Jump {
@@ -3240,22 +3493,26 @@ fn any_path_reaches_term(
             if t == target && args.is_empty() {
                 return true;
             }
+            if visited.contains(t) {
+                return false;
+            }
             if let Some(jb) = joins.get(t) {
-                any_path_reaches_with_joins(&jb.body, target, joins)
+                visited.insert(t.clone());
+                any_path_reaches_with_joins(&jb.body, target, joins, visited)
             } else {
                 false
             }
         }
         anf::Term::If { then_, else_, .. } => {
-            any_path_reaches_with_joins(then_, target, joins)
-                || any_path_reaches_with_joins(else_, target, joins)
+            any_path_reaches_with_joins(then_, target, joins, visited)
+                || any_path_reaches_with_joins(else_, target, joins, visited)
         }
         anf::Term::Match { arms, default, .. } => {
             arms.iter()
-                .any(|arm| any_path_reaches_with_joins(&arm.body, target, joins))
+                .any(|arm| any_path_reaches_with_joins(&arm.body, target, joins, visited))
                 || default
                     .as_deref()
-                    .is_some_and(|d| any_path_reaches_with_joins(d, target, joins))
+                    .is_some_and(|d| any_path_reaches_with_joins(d, target, joins, visited))
         }
         _ => false,
     }
@@ -3269,13 +3526,120 @@ fn compile_let_bind(goenv: &GlobalGoEnv, bind: &anf::LetBind) -> Vec<goast::Stmt
             stmts.push(goast::Stmt::Expr(compiled.expr));
         }
     } else {
+        let expr_go_ty = compiled.expr.get_ty();
+        let var_ty = if let goty::GoType::TName { name } = expr_go_ty
+            && is_closure_env_struct(name)
+        {
+            expr_go_ty.clone()
+        } else {
+            tast_ty_to_go_type(&bind.ty)
+        };
         stmts.push(goast::Stmt::VarDecl {
             name: go_ident(&bind.id.0),
-            ty: tast_ty_to_go_type(&bind.ty),
+            ty: var_ty,
             value: Some(compiled.expr),
         });
     }
     stmts
+}
+
+fn needs_closure_to_func_wrap(arg_ty: &tast::Ty, param_ty: &tast::Ty) -> bool {
+    if let tast::Ty::TStruct { name } = arg_ty
+        && is_closure_env_struct(name)
+        && matches!(param_ty, tast::Ty::TFunc { .. })
+    {
+        return true;
+    }
+    false
+}
+
+fn ensure_typed_for_any(expr: goast::Expr, for_ty: &tast::Ty) -> goast::Expr {
+    let type_name = match for_ty {
+        tast::Ty::TInt8 => Some("int8"),
+        tast::Ty::TInt16 => Some("int16"),
+        tast::Ty::TInt32 => Some("int32"),
+        tast::Ty::TInt64 => Some("int64"),
+        tast::Ty::TUint8 => Some("uint8"),
+        tast::Ty::TUint16 => Some("uint16"),
+        tast::Ty::TUint32 => Some("uint32"),
+        tast::Ty::TUint64 => Some("uint64"),
+        tast::Ty::TFloat32 => Some("float32"),
+        tast::Ty::TFloat64 => Some("float64"),
+        tast::Ty::TChar => Some("rune"),
+        tast::Ty::TBool => Some("bool"),
+        _ => None,
+    };
+    if let Some(name) = type_name {
+        let go_ty = tast_ty_to_go_type(for_ty);
+        goast::Expr::Call {
+            func: Box::new(goast::Expr::Var {
+                name: name.to_string(),
+                ty: go_ty.clone(),
+            }),
+            args: vec![expr],
+            ty: go_ty,
+        }
+    } else {
+        expr
+    }
+}
+
+fn closure_to_func_lit(
+    goenv: &GlobalGoEnv,
+    closure_imm: &anf::ImmExpr,
+    func_ty: &tast::Ty,
+) -> goast::Expr {
+    let closure_ty = imm_ty(closure_imm);
+    let apply = find_closure_apply_fn(goenv, &closure_ty)
+        .expect("closure struct must have an apply method");
+
+    let tast::Ty::TFunc { params: func_params, ret_ty: func_ret } = func_ty else {
+        unreachable!("closure_to_func_lit called with non-function target type");
+    };
+
+    let param_names: Vec<String> = func_params
+        .iter()
+        .enumerate()
+        .map(|(i, _)| format!("p{}", i))
+        .collect();
+
+    let go_params: Vec<(String, goty::GoType)> = param_names
+        .iter()
+        .zip(func_params.iter())
+        .map(|(name, ty)| (name.clone(), tast_ty_to_go_type(ty)))
+        .collect();
+
+    let mut call_args: Vec<goast::Expr> = vec![compile_imm(goenv, closure_imm)];
+    for (name, ty) in &go_params {
+        call_args.push(goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        });
+    }
+
+    let apply_expr = goast::Expr::Var {
+        name: go_ident(&apply.name),
+        ty: tast_ty_to_go_type(&apply.ty),
+    };
+
+    let go_ret_ty = tast_ty_to_go_type(func_ret);
+    let call_expr = goast::Expr::Call {
+        func: Box::new(apply_expr),
+        args: call_args,
+        ty: go_ret_ty.clone(),
+    };
+
+    let body = vec![goast::Stmt::Return {
+        expr: Some(call_expr),
+    }];
+
+    let func_go_ty = tast_ty_to_go_type(func_ty);
+
+    goast::Expr::FuncLit {
+        params: go_params,
+        body,
+        ty: func_go_ty,
+    }
 }
 
 fn compile_jump_args(
@@ -3284,13 +3648,19 @@ fn compile_jump_args(
     args: &[anf::ImmExpr],
 ) -> Vec<goast::Stmt> {
     let mut stmts = Vec::new();
-    for ((param_id, _), arg) in params.iter().zip(args.iter()) {
+    for ((param_id, param_ty), arg) in params.iter().zip(args.iter()) {
         if param_id.0 == "_" {
             continue;
         }
+        let arg_ty = imm_ty(arg);
+        let value = if needs_closure_to_func_wrap(&arg_ty, param_ty) {
+            closure_to_func_lit(goenv, arg, param_ty)
+        } else {
+            compile_imm(goenv, arg)
+        };
         stmts.push(goast::Stmt::Assignment {
             name: go_ident(&param_id.0),
-            value: compile_imm(goenv, arg),
+            value,
         });
     }
     stmts
@@ -3659,6 +4029,9 @@ fn compile_term_leaf(
                 return vec![goast::Stmt::Continue];
             }
             if join_env.break_targets.contains(target) {
+                if let Some(label) = join_env.break_labels.get(target) {
+                    return vec![goast::Stmt::BreakLabel(label.clone())];
+                }
                 return vec![goast::Stmt::Break];
             }
             if let Some(join_bind) = join_env.get(target) {
@@ -3872,21 +4245,66 @@ fn compile_while_loop(
         else_: None,
     });
 
+    let loop_label = format!("Loop_{}", go_ident(&wl.loop_id.0));
+
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
     if let Some(exit_id) = &wl.exit_id {
         inner_env.break_targets.insert(exit_id.clone());
+        inner_env
+            .break_labels
+            .insert(exit_id.clone(), loop_label.clone());
     }
     loop_body_stmts.extend(compile_block_structured(goenv, &wl.loop_body, &inner_env));
 
+    let has_break_label = stmts_contain_break_label(&loop_body_stmts, &loop_label);
     let mut stmts = vec![goast::Stmt::Loop {
         body: goast::Block {
             stmts: loop_body_stmts,
         },
+        label: if has_break_label { Some(loop_label) } else { None },
     }];
 
     stmts.extend(compile_block_structured(goenv, &wl.after, join_env));
     stmts
+}
+
+fn stmts_contain_break_label(stmts: &[goast::Stmt], label: &str) -> bool {
+    stmts.iter().any(|s| stmt_contains_break_label(s, label))
+}
+
+fn stmt_contains_break_label(stmt: &goast::Stmt, label: &str) -> bool {
+    match stmt {
+        goast::Stmt::BreakLabel(lbl) => lbl == label,
+        goast::Stmt::If { then, else_, .. } => {
+            stmts_contain_break_label(&then.stmts, label)
+                || else_
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::SwitchExpr {
+            cases, default, ..
+        } => {
+            cases
+                .iter()
+                .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))
+                || default
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::SwitchType {
+            cases, default, ..
+        } => {
+            cases
+                .iter()
+                .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))
+                || default
+                    .as_ref()
+                    .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
+        }
+        goast::Stmt::Loop { body, .. } => stmts_contain_break_label(&body.stmts, label),
+        _ => false,
+    }
 }
 
 fn build_join_env(block: &anf::Block) -> JoinEnv {
@@ -3900,6 +4318,7 @@ struct JoinEnv {
     joins: HashMap<anf::JoinId, anf::JoinBind>,
     continue_targets: HashSet<anf::JoinId>,
     break_targets: HashSet<anf::JoinId>,
+    break_labels: HashMap<anf::JoinId, String>,
 }
 
 impl JoinEnv {
@@ -3988,7 +4407,7 @@ pub fn go_file(
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
-    all.extend(runtime::make_hashmap_runtime(&goenv.genv, &hashmap_types));
+    all.extend(runtime::make_hashmap_runtime(&goenv, &hashmap_types));
     all.extend(runtime::make_missing_runtime(&missing_types));
 
     if !goenv.genv.value_env.extern_funcs.is_empty() || !goenv.genv.type_env.extern_types.is_empty()
@@ -4070,7 +4489,8 @@ pub fn go_file(
 
     let mut toplevels = gen_type_definition(&goenv);
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
-    toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req));
+    let impl_name_map = build_trait_impl_name_map(&file.toplevels);
+    toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
     for item in file.toplevels {
         let gof = compile_fn(&goenv, gensym, item);
         toplevels.push(goast::Item::Fn(gof));

@@ -1,0 +1,20 @@
+package main;
+
+struct Wrapper[T] {
+    inner: T,
+}
+
+impl Wrapper[int32] {
+    fn double(self: Self) -> int32 {
+        self.inner * 2
+    }
+}
+
+fn make_wrapper[T](val: T) -> Wrapper[T] {
+    Wrapper { inner: val }
+}
+
+fn main() {
+    let w = make_wrapper(21);
+    string_println(w.double().to_string());
+}

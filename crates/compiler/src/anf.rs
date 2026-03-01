@@ -13,6 +13,7 @@ use common_defs::{BinaryOp, UnaryOp};
 struct LoopCtx {
     loop_id: JoinId,
     exit_id: JoinId,
+    exit_ret_ty: Ty,
 }
 
 #[derive(Debug, Clone)]
@@ -388,7 +389,9 @@ fn lower<'a>(
                 LiftExpr::EIf { .. }
                 | LiftExpr::EMatch { .. }
                 | LiftExpr::EWhile { .. }
-                | LiftExpr::ELet { .. } => {
+                | LiftExpr::ELet { .. }
+                | LiftExpr::EBreak { .. }
+                | LiftExpr::EContinue { .. } => {
                     let value_ty = value.get_ty();
                     lower(
                         anfenv,
@@ -590,6 +593,7 @@ fn lower<'a>(
             *anfenv.loop_ctx.borrow_mut() = Some(LoopCtx {
                 loop_id: loop_id.clone(),
                 exit_id: exit_id.clone(),
+                exit_ret_ty: exit_ret_ty.clone(),
             });
 
             let loop_body = lower(
@@ -666,7 +670,7 @@ fn lower<'a>(
                 term: Term::Jump {
                     target: ctx.exit_id,
                     args: Vec::new(),
-                    ret_ty: Ty::TUnit,
+                    ret_ty: ctx.exit_ret_ty,
                 },
             }
         }
@@ -681,7 +685,7 @@ fn lower<'a>(
                 term: Term::Jump {
                     target: ctx.loop_id,
                     args: Vec::new(),
-                    ret_ty: Ty::TUnit,
+                    ret_ty: ctx.exit_ret_ty,
                 },
             }
         }
@@ -1196,7 +1200,12 @@ pub mod anf_renamer {
 
 pub mod anf_verify {
     use crate::anf;
+    use crate::lift::is_closure_env_struct;
     use std::collections::{HashMap, HashSet};
+
+    fn is_closure_struct(ty: &anf::Ty) -> bool {
+        matches!(ty, anf::Ty::TStruct { name } if is_closure_env_struct(name))
+    }
 
     #[derive(Debug, Clone)]
     struct JoinSig {
@@ -1397,7 +1406,14 @@ pub mod anf_verify {
                     && pa.iter().zip(pb.iter()).all(|(a, b)| tys_compatible(a, b))
                     && tys_compatible(ra, rb)
             }
-            _ => a == b,
+            _ => {
+                if is_closure_struct(a) && matches!(b, anf::Ty::TFunc { .. })
+                    || is_closure_struct(b) && matches!(a, anf::Ty::TFunc { .. })
+                {
+                    return true;
+                }
+                a == b
+            }
         }
     }
 

@@ -1,0 +1,21 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let x/0 = 5 in
+  let y/1 = match x/0 {
+    0 => {
+      "zero"
+    },
+    1 => {
+      "one"
+    },
+    _ => "other",
+  } in
+  let _wild0 = string_println(y/1) in
+}

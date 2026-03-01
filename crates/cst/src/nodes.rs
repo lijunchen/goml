@@ -1722,6 +1722,9 @@ pub enum Pattern {
     UInt16Pat(UInt16Pat),
     UInt32Pat(UInt32Pat),
     UInt64Pat(UInt64Pat),
+    FloatPat(FloatPat),
+    Float32Pat(Float32Pat),
+    Float64Pat(Float64Pat),
     ConstrPat(ConstrPat),
     TuplePat(TuplePat),
     WildPat(WildPat),
@@ -1745,6 +1748,9 @@ impl CstNode for Pattern {
                 | PATTERN_UINT16
                 | PATTERN_UINT32
                 | PATTERN_UINT64
+                | PATTERN_FLOAT
+                | PATTERN_FLOAT32
+                | PATTERN_FLOAT64
                 | PATTERN_CONSTR
                 | PATTERN_TUPLE
                 | PATTERN_WILDCARD
@@ -1766,6 +1772,9 @@ impl CstNode for Pattern {
             PATTERN_UINT16 => Pattern::UInt16Pat(UInt16Pat { syntax }),
             PATTERN_UINT32 => Pattern::UInt32Pat(UInt32Pat { syntax }),
             PATTERN_UINT64 => Pattern::UInt64Pat(UInt64Pat { syntax }),
+            PATTERN_FLOAT => Pattern::FloatPat(FloatPat { syntax }),
+            PATTERN_FLOAT32 => Pattern::Float32Pat(Float32Pat { syntax }),
+            PATTERN_FLOAT64 => Pattern::Float64Pat(Float64Pat { syntax }),
             PATTERN_CONSTR => Pattern::ConstrPat(ConstrPat { syntax }),
             PATTERN_TUPLE => Pattern::TuplePat(TuplePat { syntax }),
             PATTERN_WILDCARD => Pattern::WildPat(WildPat { syntax }),
@@ -1789,6 +1798,9 @@ impl CstNode for Pattern {
             Self::UInt16Pat(it) => &it.syntax,
             Self::UInt32Pat(it) => &it.syntax,
             Self::UInt64Pat(it) => &it.syntax,
+            Self::FloatPat(it) => &it.syntax,
+            Self::Float32Pat(it) => &it.syntax,
+            Self::Float64Pat(it) => &it.syntax,
             Self::ConstrPat(it) => &it.syntax,
             Self::TuplePat(it) => &it.syntax,
             Self::WildPat(it) => &it.syntax,
@@ -1881,6 +1893,9 @@ impl IntPat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(IntPat, MySyntaxKind::PATTERN_INT);
@@ -1896,6 +1911,9 @@ pub struct Int8Pat {
 impl Int8Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int8Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
     }
 }
 
@@ -1913,6 +1931,9 @@ impl Int16Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int16Lit)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(Int16Pat, MySyntaxKind::PATTERN_INT16);
@@ -1929,6 +1950,9 @@ impl Int32Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int32Lit)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(Int32Pat, MySyntaxKind::PATTERN_INT32);
@@ -1944,6 +1968,9 @@ pub struct Int64Pat {
 impl Int64Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int64Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
     }
 }
 
@@ -2013,6 +2040,63 @@ impl UInt64Pat {
 
 impl_cst_node_simple!(UInt64Pat, MySyntaxKind::PATTERN_UINT64);
 impl_display_via_syntax!(UInt64Pat);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FloatPat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl FloatPat {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Float)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
+}
+
+impl_cst_node_simple!(FloatPat, MySyntaxKind::PATTERN_FLOAT);
+impl_display_via_syntax!(FloatPat);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Float32Pat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Float32Pat {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Float32Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
+}
+
+impl_cst_node_simple!(Float32Pat, MySyntaxKind::PATTERN_FLOAT32);
+impl_display_via_syntax!(Float32Pat);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct Float64Pat {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl Float64Pat {
+    pub fn value(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Float64Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
+}
+
+impl_cst_node_simple!(Float64Pat, MySyntaxKind::PATTERN_FLOAT64);
+impl_display_via_syntax!(Float64Pat);
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -508,7 +508,7 @@ impl Stmt {
                     return_stmt
                 }
             }
-            Stmt::Loop { body } => {
+            Stmt::Loop { body, label } => {
                 let body_doc = if body.stmts.is_empty() {
                     RcDoc::nil()
                 } else {
@@ -521,13 +521,22 @@ impl Stmt {
                         .append(RcDoc::hardline())
                 };
 
-                RcDoc::text("for")
+                let loop_doc = RcDoc::text("for")
                     .append(RcDoc::space())
                     .append(RcDoc::text("{"))
                     .append(body_doc)
-                    .append(RcDoc::text("}"))
+                    .append(RcDoc::text("}"));
+
+                if let Some(lbl) = label {
+                    RcDoc::text(format!("{}:", lbl))
+                        .append(RcDoc::hardline())
+                        .append(loop_doc)
+                } else {
+                    loop_doc
+                }
             }
             Stmt::Break => RcDoc::text("break"),
+            Stmt::BreakLabel(lbl) => RcDoc::text(format!("break {}", lbl)),
             Stmt::Continue => RcDoc::text("continue"),
             Stmt::If { cond, then, else_ } => {
                 let if_part = RcDoc::text("if")
@@ -826,6 +835,43 @@ impl Expr {
                 };
 
                 RcDoc::text("{").append(content).append(RcDoc::text("}"))
+            }
+            Expr::FuncLit { params, body, ty } => {
+                let ret_ty = match ty {
+                    GoType::TFunc { ret_ty, .. } => Some(ret_ty.as_ref()),
+                    _ => None,
+                };
+                let params_doc = RcDoc::intersperse(
+                    params.iter().map(|(name, param_ty)| {
+                        RcDoc::text(name)
+                            .append(RcDoc::space())
+                            .append(go_type_doc(param_ty))
+                    }),
+                    RcDoc::text(", "),
+                );
+                let ret_doc = match ret_ty {
+                    Some(rt) => RcDoc::space().append(go_type_doc(rt)),
+                    _ => RcDoc::nil(),
+                };
+                let body_doc = if body.is_empty() {
+                    RcDoc::text("{}")
+                } else {
+                    let stmts = RcDoc::intersperse(
+                        body.iter().map(|stmt| stmt.to_doc(goenv)),
+                        RcDoc::hardline(),
+                    );
+                    RcDoc::text("{")
+                        .append(RcDoc::hardline().append(stmts).nest(4))
+                        .append(RcDoc::hardline())
+                        .append(RcDoc::text("}"))
+                };
+                RcDoc::text("func")
+                    .append(RcDoc::text("("))
+                    .append(params_doc)
+                    .append(RcDoc::text(")"))
+                    .append(ret_doc)
+                    .append(RcDoc::space())
+                    .append(body_doc)
             }
         }
     }
