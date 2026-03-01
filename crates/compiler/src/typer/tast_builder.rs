@@ -766,12 +766,50 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
             ty: tast::Ty::TBool,
             astptr,
         },
-        hir::Pat::PInt { value } => tast::Pat::PPrim {
-            value: Prim::Int32 {
-                value: parse_signed(&value).unwrap_or(0),
-            },
-            ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt32),
-            astptr,
+        hir::Pat::PInt { value } => {
+            let resolved_ty = results.pat_ty(pat_id).cloned();
+            match resolved_ty {
+                Some(tast::Ty::TInt8) => tast::Pat::PPrim {
+                    value: Prim::Int8 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt8,
+                    astptr,
+                },
+                Some(tast::Ty::TInt16) => tast::Pat::PPrim {
+                    value: Prim::Int16 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt16,
+                    astptr,
+                },
+                Some(tast::Ty::TInt64) => tast::Pat::PPrim {
+                    value: Prim::Int64 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt64,
+                    astptr,
+                },
+                Some(tast::Ty::TUint8) => tast::Pat::PPrim {
+                    value: Prim::UInt8 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint8,
+                    astptr,
+                },
+                Some(tast::Ty::TUint16) => tast::Pat::PPrim {
+                    value: Prim::UInt16 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint16,
+                    astptr,
+                },
+                Some(tast::Ty::TUint32) => tast::Pat::PPrim {
+                    value: Prim::UInt32 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint32,
+                    astptr,
+                },
+                Some(tast::Ty::TUint64) => tast::Pat::PPrim {
+                    value: Prim::UInt64 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint64,
+                    astptr,
+                },
+                _ => tast::Pat::PPrim {
+                    value: Prim::Int32 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TInt32),
+                    astptr,
+                },
+            }
         },
         hir::Pat::PInt8 { value } => tast::Pat::PPrim {
             value: Prim::Int8 {
@@ -829,12 +867,20 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint64),
             astptr,
         },
-        hir::Pat::PFloat { value } => tast::Pat::PPrim {
-            value: Prim::Float64 {
-                value: value.parse::<f64>().unwrap_or(0.0),
-            },
-            ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TFloat64),
-            astptr,
+        hir::Pat::PFloat { value } => {
+            let resolved_ty = results.pat_ty(pat_id).cloned();
+            match resolved_ty {
+                Some(tast::Ty::TFloat32) => tast::Pat::PPrim {
+                    value: Prim::Float32 { value: value.parse::<f64>().unwrap_or(0.0) as f32 },
+                    ty: tast::Ty::TFloat32,
+                    astptr,
+                },
+                _ => tast::Pat::PPrim {
+                    value: Prim::Float64 { value: value.parse::<f64>().unwrap_or(0.0) },
+                    ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TFloat64),
+                    astptr,
+                },
+            }
         },
         hir::Pat::PFloat32 { value } => tast::Pat::PPrim {
             value: Prim::Float32 {
