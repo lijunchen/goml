@@ -614,23 +614,9 @@ impl Typer {
                     origin: range,
                 });
             }
+            _ if !is_concrete_dyn_target(&for_ty) => {
+            }
             _ => {
-                if !is_concrete_dyn_target(&for_ty) {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Cannot convert non-concrete type {} to dyn {}",
-                                super::util::format_ty_for_diag(&for_ty),
-                                resolved_trait
-                            ),
-                        )
-                        .with_range(range),
-                    );
-                    return (expr, false);
-                }
-
                 if !genv.has_trait_impl_visible(&resolved_trait, &for_ty) {
                     diagnostics.push(
                         Diagnostic::new(
@@ -4417,6 +4403,18 @@ pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
         tast::Ty::TArray { elem, .. } | tast::Ty::TSlice { elem } | tast::Ty::TVec { elem } | tast::Ty::TRef { elem } => contains_tvar(elem),
         tast::Ty::THashMap { key, value } => contains_tvar(key) || contains_tvar(value),
         tast::Ty::TFunc { params, ret_ty } => params.iter().any(contains_tvar) || contains_tvar(ret_ty),
+        _ => false,
+    }
+}
+
+pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {
+    match ty {
+        tast::Ty::TParam { .. } => true,
+        tast::Ty::TTuple { typs } => typs.iter().any(contains_tparam),
+        tast::Ty::TApp { ty, args } => contains_tparam(ty) || args.iter().any(contains_tparam),
+        tast::Ty::TArray { elem, .. } | tast::Ty::TSlice { elem } | tast::Ty::TVec { elem } | tast::Ty::TRef { elem } => contains_tparam(elem),
+        tast::Ty::THashMap { key, value } => contains_tparam(key) || contains_tparam(value),
+        tast::Ty::TFunc { params, ret_ty } => params.iter().any(contains_tparam) || contains_tparam(ret_ty),
         _ => false,
     }
 }

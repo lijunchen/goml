@@ -692,7 +692,8 @@ impl Typer {
                                 .get(name)
                                 .is_some_and(|bounds| bounds.contains(&trait_name.0))
                         );
-                        if dyn_satisfied || impl_found || tparam_satisfied {
+                        let tparam_in_type = super::check::contains_tparam(&norm_for_ty);
+                        if dyn_satisfied || impl_found || tparam_satisfied || tparam_in_type {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
