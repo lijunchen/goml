@@ -478,7 +478,6 @@ fn main() {
 "#,
             expect![[r#"
                 [4:12] error: Unresolved name undefined_var
-                [4:12] error: Unresolved name undefined_var
                 [4:12] error: Could not solve all type constraints
                 [4:12] error: Type inference failed due to unresolved constraints
                 [4:12] error: Could not infer type"#]],
