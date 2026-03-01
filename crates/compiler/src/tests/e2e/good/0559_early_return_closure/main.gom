@@ -1,0 +1,18 @@
+fn apply_twice(f: (int32) -> int32, x: int32) -> int32 {
+    f(f(x))
+}
+
+fn main() {
+    let f = |n: int32| {
+        if n > 3i32 {
+            return n
+        } else {
+            ()
+        };
+        n + 10i32
+    };
+
+    string_println(int32_to_string(f(2i32)));
+    string_println(int32_to_string(f(5i32)));
+    string_println(int32_to_string(apply_twice(f, 2i32)));
+}

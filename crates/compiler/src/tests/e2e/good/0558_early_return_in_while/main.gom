@@ -1,0 +1,17 @@
+fn first_gt_two(limit: int32) -> int32 {
+    let i = ref(0i32);
+    while ref_get(i) < limit {
+        if ref_get(i) > 2i32 {
+            return ref_get(i)
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1i32);
+    };
+    -1i32
+}
+
+fn main() {
+    string_println(int32_to_string(first_gt_two(10i32)));
+    string_println(int32_to_string(first_gt_two(2i32)));
+}
