@@ -1,0 +1,18 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { n: int32 }
+impl Show for Num { fn show(self: Num) -> string { self.n.to_string() } }
+
+fn apply_printer(f: (dyn Show) -> unit, x: dyn Show) {
+    f(x);
+}
+
+fn main() {
+    let printer = |x: dyn Show| println(Show::show(x));
+    let n = Num { n: 42 };
+    printer(n);
+
+    apply_printer(|x: dyn Show| println(Show::show(x)), Num { n: 99 });
+}
