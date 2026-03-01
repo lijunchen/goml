@@ -943,7 +943,7 @@ impl Typer {
                 args: args.iter().map(|ty| self.norm(ty)).collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.norm(elem)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
@@ -1058,21 +1058,36 @@ impl Typer {
                     elem: elem2,
                 },
             ) => {
-                let wildcard = tast::ARRAY_WILDCARD_LEN;
-                if len1 != len2 && *len1 != wildcard && *len2 != wildcard {
-                    diagnostics.push(
-                        Diagnostic::new(
-                            Stage::Typer,
-                            Severity::Error,
-                            format!(
-                                "Array length mismatch: expected {}, found {}",
-                                super::util::format_ty_for_diag(&l_norm),
-                                super::util::format_ty_for_diag(&r_norm)
-                            ),
-                        )
-                        .with_range(origin),
-                    );
-                    return false;
+                let r1 = self.resolve_array_len(*len1);
+                let r2 = self.resolve_array_len(*len2);
+                let w1 = self.is_array_wildcard(r1);
+                let w2 = self.is_array_wildcard(r2);
+                match (w1, w2) {
+                    (false, false) if r1 != r2 => {
+                        diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!(
+                                    "Array length mismatch: expected {}, found {}",
+                                    super::util::format_ty_for_diag(&l_norm),
+                                    super::util::format_ty_for_diag(&r_norm)
+                                ),
+                            )
+                            .with_range(origin),
+                        );
+                        return false;
+                    }
+                    (true, false) => {
+                        self.array_wildcard_resolutions.insert(r1, r2);
+                    }
+                    (false, true) => {
+                        self.array_wildcard_resolutions.insert(r2, r1);
+                    }
+                    (true, true) if r1 != r2 => {
+                        self.array_wildcard_resolutions.insert(r1, r2);
+                    }
+                    _ => {}
                 }
                 if !self.unify(diagnostics, elem1, elem2, origin) {
                     return false;
@@ -1264,10 +1279,16 @@ impl Typer {
 
     pub(crate) fn inst_ty(&mut self, ty: &tast::Ty) -> tast::Ty {
         let mut subst: HashMap<String, tast::Ty> = HashMap::new();
-        self._go_inst_ty(ty, &mut subst)
+        let wildcard_len = self.fresh_array_wildcard();
+        self._go_inst_ty(ty, &mut subst, wildcard_len)
     }
 
-    fn _go_inst_ty(&mut self, ty: &tast::Ty, subst: &mut HashMap<String, tast::Ty>) -> tast::Ty {
+    fn _go_inst_ty(
+        &mut self,
+        ty: &tast::Ty,
+        subst: &mut HashMap<String, tast::Ty>,
+        wildcard_len: usize,
+    ) -> tast::Ty {
         match ty {
             tast::Ty::TVar(_) => ty.clone(),
             tast::Ty::TUnit => ty.clone(),
@@ -1287,7 +1308,7 @@ impl Typer {
             tast::Ty::TTuple { typs } => {
                 let typs = typs
                     .iter()
-                    .map(|ty| self._go_inst_ty(ty, subst))
+                    .map(|ty| self._go_inst_ty(ty, subst, wildcard_len))
                     .collect::<Vec<_>>();
                 tast::Ty::TTuple { typs }
             }
@@ -1297,10 +1318,10 @@ impl Typer {
                 trait_name: trait_name.clone(),
             },
             tast::Ty::TApp { ty, args } => {
-                let ty = self._go_inst_ty(ty, subst);
+                let ty = self._go_inst_ty(ty, subst, wildcard_len);
                 let args = args
                     .iter()
-                    .map(|arg| self._go_inst_ty(arg, subst))
+                    .map(|arg| self._go_inst_ty(arg, subst, wildcard_len))
                     .collect::<Vec<_>>();
                 tast::Ty::TApp {
                     ty: Box::new(ty),
@@ -1308,21 +1329,25 @@ impl Typer {
                 }
             }
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                len: if *len == tast::ARRAY_WILDCARD_LEN {
+                    wildcard_len
+                } else {
+                    *len
+                },
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TVec { elem } => tast::Ty::TVec {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::TRef { elem } => tast::Ty::TRef {
-                elem: Box::new(self._go_inst_ty(elem, subst)),
+                elem: Box::new(self._go_inst_ty(elem, subst, wildcard_len)),
             },
             tast::Ty::THashMap { key, value } => tast::Ty::THashMap {
-                key: Box::new(self._go_inst_ty(key, subst)),
-                value: Box::new(self._go_inst_ty(value, subst)),
+                key: Box::new(self._go_inst_ty(key, subst, wildcard_len)),
+                value: Box::new(self._go_inst_ty(value, subst, wildcard_len)),
             },
             tast::Ty::TParam { name } => {
                 if let Some(ty) = subst.get(name) {
@@ -1336,9 +1361,9 @@ impl Typer {
             tast::Ty::TFunc { params, ret_ty } => {
                 let params = params
                     .iter()
-                    .map(|ty| self._go_inst_ty(ty, subst))
+                    .map(|ty| self._go_inst_ty(ty, subst, wildcard_len))
                     .collect::<Vec<_>>();
-                let ret_ty = Box::new(self._go_inst_ty(ret_ty, subst));
+                let ret_ty = Box::new(self._go_inst_ty(ret_ty, subst, wildcard_len));
                 tast::Ty::TFunc { params, ret_ty }
             }
         }
@@ -1408,7 +1433,7 @@ impl Typer {
                     .collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.subst_ty(diagnostics, elem, origin)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
@@ -1471,7 +1496,7 @@ impl Typer {
                 args: args.iter().map(|arg| self.subst_ty_silent(arg)).collect(),
             },
             tast::Ty::TArray { len, elem } => tast::Ty::TArray {
-                len: *len,
+                len: self.resolve_array_len(*len),
                 elem: Box::new(self.subst_ty_silent(elem)),
             },
             tast::Ty::TSlice { elem } => tast::Ty::TSlice {
