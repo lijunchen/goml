@@ -1,20 +1,26 @@
 fn trait_impl#ToString#S#to_string(self/0: S) -> string {
-  let t11 = S.value(self/0) in
-  let t12 = int32_to_string(t11) in
-  let t13 = ("S(" + t12) in
-  let t14 = (t13 + ")") in
-  t14
+  join ret11(retv12: string) -> string {
+    retv12
+  } in
+  let t13 = S.value(self/0) in
+  let t14 = int32_to_string(t13) in
+  let t15 = ("S(" + t14) in
+  let t16 = (t15 + ")") in
+  jump ret11(t16)
 }
 
 fn main() -> unit {
+  join ret17() -> unit {
+    ()
+  } in
   let _wild0 = println__T_int32(1) in
   let _wild1 = println__T_bool(true) in
   let _wild2 = println__T_string("hi") in
   let _wild3 = println__T_unit(()) in
-  let t15 = int32_to_string(2) in
-  let _wild4 = println__T_string(t15) in
-  let t16 = int32_to_string(2) in
-  let _wild5 = println__T_string(t16) in
+  let t18 = int32_to_string(2) in
+  let _wild4 = println__T_string(t18) in
+  let t19 = int32_to_string(2) in
+  let _wild5 = println__T_string(t19) in
   let s/1 = S { value: 9 } in
   let _wild6 = println__T_S(s/1) in
   let d/2 = to_dyn[ToString]{S}(s/1) in
@@ -23,54 +29,78 @@ fn main() -> unit {
   let _wild8 = println__T_Ref[int32](r/3) in
   let _wild9 = print__T_string("no-newline") in
   let _wild10 = println__T_string("!") in
-  ()
+  jump ret17()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t17 = int32_to_string(value/1) in
-  let t18 = string_println(t17) in
-  t18
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = int32_to_string(value/1) in
+  let t22 = string_println(t21) in
+  jump ret20()
 }
 
 fn println__T_bool(value/1: bool) -> unit {
-  let t19 = bool_to_string(value/1) in
-  let t20 = string_println(t19) in
-  t20
+  join ret23() -> unit {
+    ()
+  } in
+  let t24 = bool_to_string(value/1) in
+  let t25 = string_println(t24) in
+  jump ret23()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t21 = string_println(value/1) in
-  t21
+  join ret26() -> unit {
+    ()
+  } in
+  let t27 = string_println(value/1) in
+  jump ret26()
 }
 
 fn println__T_unit(value/1: unit) -> unit {
-  let t22 = unit_to_string(value/1) in
-  let t23 = string_println(t22) in
-  t23
+  join ret28() -> unit {
+    ()
+  } in
+  let t29 = unit_to_string(value/1) in
+  let t30 = string_println(t29) in
+  jump ret28()
 }
 
 fn println__T_S(value/1: S) -> unit {
-  let t24 = trait_impl#ToString#S#to_string(value/1) in
-  let t25 = string_println(t24) in
-  t25
+  join ret31() -> unit {
+    ()
+  } in
+  let t32 = trait_impl#ToString#S#to_string(value/1) in
+  let t33 = string_println(t32) in
+  jump ret31()
 }
 
 fn println__T_dynToString(value/1: dyn ToString) -> unit {
-  let t26 = dyn_call[ToString::to_string](value/1) in
-  let t27 = string_println(t26) in
-  t27
+  join ret34() -> unit {
+    ()
+  } in
+  let t35 = dyn_call[ToString::to_string](value/1) in
+  let t36 = string_println(t35) in
+  jump ret34()
 }
 
 fn println__T_Ref[int32](value/1: Ref[int32]) -> unit {
-  let t28 = ref_get(value/1) in
-  let t29 = int32_to_string(t28) in
-  let t30 = ("ref(" + t29) in
-  let t31 = (t30 + ")") in
-  let t32 = string_println(t31) in
-  t32
+  join ret37() -> unit {
+    ()
+  } in
+  let t38 = ref_get(value/1) in
+  let t39 = int32_to_string(t38) in
+  let t40 = ("ref(" + t39) in
+  let t41 = (t40 + ")") in
+  let t42 = string_println(t41) in
+  jump ret37()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t33 = string_print(value/0) in
-  t33
+  join ret43() -> unit {
+    ()
+  } in
+  let t44 = string_print(value/0) in
+  jump ret43()
 }

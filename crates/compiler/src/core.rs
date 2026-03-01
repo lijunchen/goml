@@ -84,6 +84,10 @@ pub enum Expr {
     EContinue {
         ty: Ty,
     },
+    EReturn {
+        expr: Option<Box<Expr>>,
+        ty: Ty,
+    },
     EGo {
         expr: Box<Expr>,
         ty: Ty,
@@ -158,6 +162,7 @@ impl Expr {
             Expr::EWhile { ty, .. } => ty.clone(),
             Expr::EBreak { ty, .. } => ty.clone(),
             Expr::EContinue { ty, .. } => ty.clone(),
+            Expr::EReturn { ty, .. } => ty.clone(),
             Expr::EGo { ty, .. } => ty.clone(),
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::EUnary { ty, .. } => ty.clone(),

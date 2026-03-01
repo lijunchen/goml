@@ -1,28 +1,43 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  let t1 = Point.value(self/0) in
-  let t2 = int32_to_string(t1) in
-  t2
+  join ret1(retv2: string) -> string {
+    retv2
+  } in
+  let t3 = Point.value(self/0) in
+  let t4 = int32_to_string(t3) in
+  jump ret1(t4)
 }
 
 fn render(x/2: dyn Display) -> string {
-  let t3 = dyn_call[Display::show](x/2) in
-  t3
+  join ret5(retv6: string) -> string {
+    retv6
+  } in
+  let t7 = dyn_call[Display::show](x/2) in
+  jump ret5(t7)
 }
 
 fn main() -> unit {
-  let t4 = Point { value: 7 } in
-  let d/3 = to_dyn__T_Point(t4) in
-  let t5 = render(d/3) in
-  let _wild0 = println__T_string(t5) in
-  ()
+  join ret8() -> unit {
+    ()
+  } in
+  let t9 = Point { value: 7 } in
+  let d/3 = to_dyn__T_Point(t9) in
+  let t10 = render(d/3) in
+  let _wild0 = println__T_string(t10) in
+  jump ret8()
 }
 
 fn to_dyn__T_Point(x/1: Point) -> dyn Display {
-  let t6 = to_dyn[Display]{Point}(x/1) in
-  t6
+  join ret11(retv12: dyn Display) -> dyn Display {
+    retv12
+  } in
+  let t13 = to_dyn[Display]{Point}(x/1) in
+  jump ret11(t13)
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t7 = string_println(value/1) in
-  t7
+  join ret14() -> unit {
+    ()
+  } in
+  let t15 = string_println(value/1) in
+  jump ret14()
 }

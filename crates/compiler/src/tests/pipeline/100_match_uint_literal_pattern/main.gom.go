@@ -11,16 +11,16 @@ func string_println(s string) struct{} {
 
 func main0() struct{} {
     var x__0 uint8 = 5
-    var jp2 string
+    var jp3 string
     switch x__0 {
     case 0:
-        jp2 = "zero"
+        jp3 = "zero"
     case 1:
-        jp2 = "one"
+        jp3 = "one"
     default:
-        jp2 = "other"
+        jp3 = "other"
     }
-    var y__1 string = jp2
+    var y__1 string = jp3
     string_println(y__1)
     return struct{}{}
 }

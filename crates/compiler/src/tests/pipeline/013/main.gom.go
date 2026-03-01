@@ -22,13 +22,13 @@ func main0() struct{} {
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t2 struct{} = string_println(value__1)
-    return t2
+    string_println(value__1)
+    return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t3 struct{} = string_print(value__0)
-    return t3
+    string_print(value__0)
+    return struct{}{}
 }
 
 func main() {

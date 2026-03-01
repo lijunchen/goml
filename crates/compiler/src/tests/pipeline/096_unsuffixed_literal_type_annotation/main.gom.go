@@ -42,11 +42,15 @@ func string_println(s string) struct{} {
 }
 
 func take_u8(x__0 uint8) uint8 {
-    return x__0
+    var retv11 uint8
+    retv11 = x__0
+    return retv11
 }
 
 func take_f32(x__1 float32) float32 {
-    return x__1
+    var retv13 float32
+    retv13 = x__1
+    return retv13
 }
 
 func main0() struct{} {
@@ -58,28 +62,28 @@ func main0() struct{} {
     var f__7 int64 = 6
     var g__8 uint64 = 7
     var h__9 float32 = 1
-    var t10 string = uint8_to_string(a__2)
-    string_println(t10)
-    var t11 string = int8_to_string(b__3)
-    string_println(t11)
-    var t12 string = int16_to_string(c__4)
-    string_println(t12)
-    var t13 string = uint16_to_string(d__5)
-    string_println(t13)
-    var t14 string = uint32_to_string(e__6)
-    string_println(t14)
-    var t15 string = int64_to_string(f__7)
+    var t15 string = uint8_to_string(a__2)
     string_println(t15)
-    var t16 string = uint64_to_string(g__8)
+    var t16 string = int8_to_string(b__3)
     string_println(t16)
-    var t17 string = float32_to_string(h__9)
+    var t17 string = int16_to_string(c__4)
     string_println(t17)
-    var t18 uint8 = take_u8(10)
-    var t19 string = uint8_to_string(t18)
+    var t18 string = uint16_to_string(d__5)
+    string_println(t18)
+    var t19 string = uint32_to_string(e__6)
     string_println(t19)
-    var t20 float32 = take_f32(2.5)
-    var t21 string = float32_to_string(t20)
+    var t20 string = int64_to_string(f__7)
+    string_println(t20)
+    var t21 string = uint64_to_string(g__8)
     string_println(t21)
+    var t22 string = float32_to_string(h__9)
+    string_println(t22)
+    var t23 uint8 = take_u8(10)
+    var t24 string = uint8_to_string(t23)
+    string_println(t24)
+    var t25 float32 = take_f32(2.5)
+    var t26 string = float32_to_string(t25)
+    string_println(t26)
     return struct{}{}
 }
 

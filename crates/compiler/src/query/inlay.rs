@@ -124,6 +124,11 @@ fn collect_hints_from_expr(
         hir::Expr::EGo { expr } | hir::Expr::EUnary { expr, .. } => {
             collect_hints_from_expr(hir_table, results, *expr, hints);
         }
+        hir::Expr::EReturn { expr } => {
+            if let Some(expr) = expr {
+                collect_hints_from_expr(hir_table, results, *expr, hints);
+            }
+        }
         hir::Expr::ECall { func, args } => {
             collect_hints_from_expr(hir_table, results, *func, hints);
             for arg in args {

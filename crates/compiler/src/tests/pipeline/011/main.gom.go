@@ -18,9 +18,9 @@ func main0() struct{} {
     var a__1 int32 = a__0 + 2
     var a__2 int32 = a__1 + 3
     var a__3 int32 = a__2 + 4
-    var t0 string = int32_to_string(a__3)
-    var t1 struct{} = string_print(t0)
-    return t1
+    var t1 string = int32_to_string(a__3)
+    string_print(t1)
+    return struct{}{}
 }
 
 func main() {

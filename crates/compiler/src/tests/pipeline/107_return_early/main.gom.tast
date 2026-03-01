@@ -1,0 +1,73 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn early(x/0: int32) -> int32 {
+    if (x/0 : int32) < 0 {
+        {
+            return 0
+        }
+    } else {
+        {
+            ()
+        }
+    };
+    if (x/0 : int32) == 0 {
+        {
+            return 1
+        }
+    } else {
+        {
+            ()
+        }
+    };
+    (x/0 : int32) + 2
+}
+
+fn closure_early(x/1: int32) -> int32 {
+    let f/3: (int32) -> int32 = |y/2: int32| => {
+        if (y/2 : int32) > 5 {
+            {
+                return (y/2 : int32)
+            }
+        } else {
+            {
+                ()
+            }
+        };
+        (y/2 : int32) + 10
+    };
+    (f/3 : (int32) -> int32)((x/1 : int32))
+}
+
+fn unit_ret(flag/4: bool) -> unit {
+    if (flag/4 : bool) {
+        {
+            return
+        }
+    } else {
+        {
+            ()
+        }
+    };
+    let _ : unit = (println : (string) -> unit)("after");
+}
+
+fn main() -> unit {
+    let _ : unit = (print : (string) -> unit)("e-1: ");
+    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(-1));
+    let _ : unit = (print : (string) -> unit)("e0: ");
+    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(0));
+    let _ : unit = (print : (string) -> unit)("e3: ");
+    let _ : unit = (println : (int32) -> unit)((early : (int32) -> int32)(3));
+    let _ : unit = (print : (string) -> unit)("c7: ");
+    let _ : unit = (println : (int32) -> unit)((closure_early : (int32) -> int32)(7));
+    let _ : unit = (print : (string) -> unit)("c2: ");
+    let _ : unit = (println : (int32) -> unit)((closure_early : (int32) -> int32)(2));
+    (unit_ret : (bool) -> unit)(true);
+    (unit_ret : (bool) -> unit)(false);
+}

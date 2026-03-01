@@ -1,16 +1,25 @@
 fn main() -> unit {
+  join ret2() -> unit {
+    ()
+  } in
   let s/0 = "abcde" in
   let _wild0 = println__T_string(s/0) in
   let _wild1 = print__T_string(s/0) in
-  ()
+  jump ret2()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t2 = string_println(value/1) in
-  t2
+  join ret3() -> unit {
+    ()
+  } in
+  let t4 = string_println(value/1) in
+  jump ret3()
 }
 
 fn print__T_string(value/0: string) -> unit {
-  let t3 = string_print(value/0) in
-  t3
+  join ret5() -> unit {
+    ()
+  } in
+  let t6 = string_print(value/0) in
+  jump ret5()
 }

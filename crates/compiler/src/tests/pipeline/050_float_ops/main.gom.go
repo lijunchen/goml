@@ -26,32 +26,36 @@ func string_println(s string) struct{} {
 }
 
 func show32(label__0 string, value__1 float32) struct{} {
-    var t10 string = float32_to_string(value__1)
-    var message__2 string = label__0 + t10
+    var t11 string = float32_to_string(value__1)
+    var message__2 string = label__0 + t11
     string_println(message__2)
     return struct{}{}
 }
 
 func show64(label__3 string, value__4 float64) struct{} {
-    var t11 string = float64_to_string(value__4)
-    var message__5 string = label__3 + t11
+    var t13 string = float64_to_string(value__4)
+    var message__5 string = label__3 + t13
     string_println(message__5)
     return struct{}{}
 }
 
 func lerp32(a__6 float32, b__7 float32, weight__8 float32) float32 {
+    var retv15 float32
     var delta__9 float32 = b__7 - a__6
-    var t12 float32 = delta__9 * weight__8
-    var t13 float32 = a__6 + t12
-    return t13
+    var t16 float32 = delta__9 * weight__8
+    var t17 float32 = a__6 + t16
+    retv15 = t17
+    return retv15
 }
 
 func midpoint_energy(x__10 float64, y__11 float64) float64 {
-    var t14 float64 = x__10 * x__10
-    var t15 float64 = y__11 * y__11
-    var sum__12 float64 = t14 + t15
-    var t16 float64 = sum__12 / 2
-    return t16
+    var retv19 float64
+    var t20 float64 = x__10 * x__10
+    var t21 float64 = y__11 * y__11
+    var sum__12 float64 = t20 + t21
+    var t22 float64 = sum__12 / 2
+    retv19 = t22
+    return retv19
 }
 
 func main0() struct{} {
@@ -68,23 +72,23 @@ func main0() struct{} {
     var quarter__23 float64 = 0.25
     var energy__24 float64 = midpoint_energy(dx__21, dy__22)
     var neg_dx__25 float64 = -dx__21
-    var t17 float64 = energy__24 + dy__22
-    var t18 float64 = dx__21 * quarter__23
-    var adjusted__26 float64 = t17 - t18
+    var t24 float64 = energy__24 + dy__22
+    var t25 float64 = dx__21 * quarter__23
+    var adjusted__26 float64 = t24 - t25
     var threshold__27 float64 = 4
     var less64__28 bool = adjusted__26 < threshold__27
     show32("mid32=", mid32__17)
     show32("neg_end32=", neg_end32__18)
     show32("ratio32=", ratio32__19)
-    var t19 string = bool_to_string(less32__20)
-    var t20 string = "less32=" + t19
-    string_println(t20)
+    var t26 string = bool_to_string(less32__20)
+    var t27 string = "less32=" + t26
+    string_println(t27)
     show64("energy=", energy__24)
     show64("neg_dx=", neg_dx__25)
     show64("adjusted=", adjusted__26)
-    var t21 string = bool_to_string(less64__28)
-    var t22 string = "less64=" + t21
-    string_println(t22)
+    var t28 string = bool_to_string(less64__28)
+    var t29 string = "less64=" + t28
+    string_println(t29)
     return struct{}{}
 }
 

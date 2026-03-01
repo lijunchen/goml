@@ -17,9 +17,17 @@ struct LoopCtx {
 }
 
 #[derive(Debug, Clone)]
+struct ReturnCtx {
+    join_id: JoinId,
+    ret_ty: Ty,
+    takes_arg: bool,
+}
+
+#[derive(Debug, Clone)]
 pub struct GlobalAnfEnv {
     pub liftenv: GlobalLiftEnv,
     loop_ctx: RefCell<Option<LoopCtx>>,
+    return_ctx: RefCell<Option<ReturnCtx>>,
 }
 
 impl GlobalAnfEnv {
@@ -27,6 +35,7 @@ impl GlobalAnfEnv {
         GlobalAnfEnv {
             liftenv,
             loop_ctx: RefCell::new(None),
+            return_ctx: RefCell::new(None),
         }
     }
 
@@ -398,7 +407,8 @@ fn lower<'a>(
                 | LiftExpr::EWhile { .. }
                 | LiftExpr::ELet { .. }
                 | LiftExpr::EBreak { .. }
-                | LiftExpr::EContinue { .. } => {
+                | LiftExpr::EContinue { .. }
+                | LiftExpr::EReturn { .. } => {
                     let value_ty = value.get_ty();
                     lower(
                         anfenv,
@@ -694,6 +704,37 @@ fn lower<'a>(
                     args: Vec::new(),
                     ret_ty: ctx.exit_ret_ty,
                 },
+            }
+        }
+        LiftExpr::EReturn { expr, ty: _ } => {
+            let ctx = anfenv
+                .return_ctx
+                .borrow()
+                .clone()
+                .expect("return outside function");
+            if let Some(expr) = expr {
+                lower(
+                    anfenv,
+                    gensym,
+                    *expr,
+                    Box::new(move |imm| Block {
+                        binds: Vec::new(),
+                        term: Term::Jump {
+                            target: ctx.join_id,
+                            args: if ctx.takes_arg { vec![imm] } else { Vec::new() },
+                            ret_ty: ctx.ret_ty,
+                        },
+                    }),
+                )
+            } else {
+                Block {
+                    binds: Vec::new(),
+                    term: Term::Jump {
+                        target: ctx.join_id,
+                        args: Vec::new(),
+                        ret_ty: ctx.ret_ty,
+                    },
+                }
             }
         }
         other => lower_imm(anfenv, gensym, other, k),
@@ -999,15 +1040,67 @@ pub fn anf_file(liftenv: GlobalLiftEnv, gensym: &Gensym, file: LiftFile) -> (Fil
             .map(|(p, ty)| (local(p), ty))
             .collect();
         let ret_ty = lift_fn.ret_ty;
-        let body = lower(
+        let ret_join_id = join(gensym.gensym("ret"));
+        let takes_arg = ret_ty != Ty::TUnit;
+        let ret_join = if takes_arg {
+            let ret_param = local(gensym.gensym("retv"));
+            JoinBind {
+                id: ret_join_id.clone(),
+                params: vec![(ret_param.clone(), ret_ty.clone())],
+                ret_ty: ret_ty.clone(),
+                body: Block {
+                    binds: Vec::new(),
+                    term: Term::Return(ImmExpr::Var {
+                        id: ret_param,
+                        ty: ret_ty.clone(),
+                    }),
+                },
+            }
+        } else {
+            JoinBind {
+                id: ret_join_id.clone(),
+                params: Vec::new(),
+                ret_ty: ret_ty.clone(),
+                body: Block {
+                    binds: Vec::new(),
+                    term: Term::Return(unit_imm()),
+                },
+            }
+        };
+
+        let prev_return_ctx = anfenv.return_ctx.borrow().clone();
+        *anfenv.return_ctx.borrow_mut() = Some(ReturnCtx {
+            join_id: ret_join_id.clone(),
+            ret_ty: ret_ty.clone(),
+            takes_arg,
+        });
+
+        let lowered_body = lower(
             &anfenv,
             gensym,
             lift_fn.body,
-            Box::new(|imm| Block {
-                binds: Vec::new(),
-                term: Term::Return(imm),
+            Box::new({
+                let ret_join_id = ret_join_id.clone();
+                let ret_ty = ret_ty.clone();
+                move |imm| Block {
+                    binds: Vec::new(),
+                    term: Term::Jump {
+                        target: ret_join_id,
+                        args: if takes_arg { vec![imm] } else { Vec::new() },
+                        ret_ty,
+                    },
+                }
             }),
         );
+
+        *anfenv.return_ctx.borrow_mut() = prev_return_ctx;
+
+        let mut binds = vec![Bind::Join(ret_join)];
+        binds.extend(lowered_body.binds);
+        let body = Block {
+            binds,
+            term: lowered_body.term,
+        };
         toplevels.push(Fn {
             name,
             params,

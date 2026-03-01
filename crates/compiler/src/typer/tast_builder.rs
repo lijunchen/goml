@@ -510,6 +510,11 @@ fn build_expr(
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
             tast::Expr::EContinue { ty }
         }
+        hir::Expr::EReturn { expr } => {
+            let expr = expr.map(|expr| Box::new(build_expr(hir_table, results, expr)));
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::EReturn { expr, ty }
+        }
         hir::Expr::EGo { expr } => {
             let expr = Box::new(build_expr(hir_table, results, expr));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);

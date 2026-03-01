@@ -56,34 +56,34 @@ func main0() struct{} {
     var arr__0 [3]uint8 = [3]uint8{10, 20, 30}
     var i__1 *ref_int32_x = ref__Ref_int32(0)
     for {
-        var t17 int32 = ref_get__Ref_int32(i__1)
-        var t18 bool = t17 < 3
-        if !t18 {
+        var t18 int32 = ref_get__Ref_int32(i__1)
+        var t19 bool = t18 < 3
+        if !t19 {
             break
         }
-        var t19 int32 = ref_get__Ref_int32(i__1)
-        var t20 uint8 = array_get__Array_3_uint8(arr__0, t19)
-        var t21 string = uint8_to_string(t20)
-        string_println(t21)
-        var t22 int32 = ref_get__Ref_int32(i__1)
-        var t23 int32 = t22 + 1
-        ref_set__Ref_int32(i__1, t23)
+        var t20 int32 = ref_get__Ref_int32(i__1)
+        var t21 uint8 = array_get__Array_3_uint8(arr__0, t20)
+        var t22 string = uint8_to_string(t21)
+        string_println(t22)
+        var t23 int32 = ref_get__Ref_int32(i__1)
+        var t24 int32 = t23 + 1
+        ref_set__Ref_int32(i__1, t24)
         continue
     }
     var floats__2 [2]float32 = [2]float32{1.5, 2.5}
-    var t8 float32 = array_get__Array_2_float32(floats__2, 0)
-    var t9 string = float32_to_string(t8)
-    string_println(t9)
-    var t10 float32 = array_get__Array_2_float32(floats__2, 1)
-    var t11 string = float32_to_string(t10)
-    string_println(t11)
+    var t9 float32 = array_get__Array_2_float32(floats__2, 0)
+    var t10 string = float32_to_string(t9)
+    string_println(t10)
+    var t11 float32 = array_get__Array_2_float32(floats__2, 1)
+    var t12 string = float32_to_string(t11)
+    string_println(t12)
     var longs__3 [2]int64 = [2]int64{100, 200}
-    var t12 int64 = array_get__Array_2_int64(longs__3, 0)
-    var t13 string = int64_to_string(t12)
-    string_println(t13)
-    var t14 int64 = array_get__Array_2_int64(longs__3, 1)
-    var t15 string = int64_to_string(t14)
-    string_println(t15)
+    var t13 int64 = array_get__Array_2_int64(longs__3, 0)
+    var t14 string = int64_to_string(t13)
+    string_println(t14)
+    var t15 int64 = array_get__Array_2_int64(longs__3, 1)
+    var t16 string = int64_to_string(t15)
+    string_println(t16)
     return struct{}{}
 }
 

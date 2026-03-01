@@ -1,25 +1,37 @@
 fn main() -> unit {
+  join ret4() -> unit {
+    ()
+  } in
   let mtmp0 = print__T_unit(()) in
   let mtmp1 = print__T_bool(true) in
   let mtmp2 = print__T_bool(false) in
   let mtmp3 = print__T_int32(123) in
-  ()
+  jump ret4()
 }
 
 fn print__T_unit(value/0: unit) -> unit {
-  let t4 = unit_to_string(value/0) in
-  let t5 = string_print(t4) in
-  t5
+  join ret5() -> unit {
+    ()
+  } in
+  let t6 = unit_to_string(value/0) in
+  let t7 = string_print(t6) in
+  jump ret5()
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t6 = bool_to_string(value/0) in
-  let t7 = string_print(t6) in
-  t7
+  join ret8() -> unit {
+    ()
+  } in
+  let t9 = bool_to_string(value/0) in
+  let t10 = string_print(t9) in
+  jump ret8()
 }
 
 fn print__T_int32(value/0: int32) -> unit {
-  let t8 = int32_to_string(value/0) in
-  let t9 = string_print(t8) in
-  t9
+  join ret11() -> unit {
+    ()
+  } in
+  let t12 = int32_to_string(value/0) in
+  let t13 = string_print(t12) in
+  jump ret11()
 }

@@ -10,47 +10,53 @@ func string_println(s string) struct{} {
 }
 
 func classify(x__0 int32) string {
-    var t8 bool = x__0 < 0
-    var jp7 string
-    if t8 {
-        jp7 = "negative"
-        return jp7
+    var retv7 string
+    var t10 bool = x__0 < 0
+    var jp9 string
+    if t10 {
+        jp9 = "negative"
+        retv7 = jp9
+        return retv7
     } else {
-        var t11 bool = 0 < x__0
-        var jp10 string
-        if t11 {
-            jp10 = "positive"
+        var t13 bool = 0 < x__0
+        var jp12 string
+        if t13 {
+            jp12 = "positive"
         } else {
-            jp10 = "zero"
+            jp12 = "zero"
         }
-        jp7 = jp10
-        return jp7
+        jp9 = jp12
+        retv7 = jp9
+        return retv7
     }
 }
 
 func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
-    var t14 bool = a__1 < b__2
-    var jp13 string
-    if t14 {
-        var t17 bool = b__2 < c__3
-        var jp16 string
-        if t17 {
-            jp16 = "ascending"
+    var retv15 string
+    var t18 bool = a__1 < b__2
+    var jp17 string
+    if t18 {
+        var t21 bool = b__2 < c__3
+        var jp20 string
+        if t21 {
+            jp20 = "ascending"
         } else {
-            jp16 = "peak"
+            jp20 = "peak"
         }
-        jp13 = jp16
-        return jp13
+        jp17 = jp20
+        retv15 = jp17
+        return retv15
     } else {
-        var t20 bool = a__1 < c__3
-        var jp19 string
-        if t20 {
-            jp19 = "valley"
+        var t24 bool = a__1 < c__3
+        var jp23 string
+        if t24 {
+            jp23 = "valley"
         } else {
-            jp19 = "flat"
+            jp23 = "flat"
         }
-        jp13 = jp19
-        return jp13
+        jp17 = jp23
+        retv15 = jp17
+        return retv15
     }
 }
 

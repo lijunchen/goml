@@ -1,67 +1,79 @@
 fn trait_impl#ToString#Point#to_string(self/0: Point) -> string {
+  join ret10(retv11: string) -> string {
+    retv11
+  } in
   let mtmp0 = self/0 in
   let x1 = Point.x(mtmp0) in
   let x2 = Point.y(mtmp0) in
   let y/2 = x2 in
   let x/1 = x1 in
-  let t10 = ("Point { " + "x: ") in
-  let t11 = int32_to_string(x/1) in
-  let t12 = (t10 + t11) in
-  let t13 = (t12 + ", ") in
-  let t14 = (t13 + "y: ") in
-  let t15 = int32_to_string(y/2) in
-  let t16 = (t14 + t15) in
-  let t17 = (t16 + " }") in
-  t17
+  let t12 = ("Point { " + "x: ") in
+  let t13 = int32_to_string(x/1) in
+  let t14 = (t12 + t13) in
+  let t15 = (t14 + ", ") in
+  let t16 = (t15 + "y: ") in
+  let t17 = int32_to_string(y/2) in
+  let t18 = (t16 + t17) in
+  let t19 = (t18 + " }") in
+  jump ret10(t19)
 }
 
 fn trait_impl#ToString#Message#to_string(self/3: Message) -> string {
-  join k18(jp19: string) -> string {
-    jp19
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  join k22(jp23: string) -> string {
+    jump ret20(jp23)
   } in
   match self/3 {
     Tag_0 => {
-      jump k18("Message::Quit")
+      jump k22("Message::Quit")
     },
     Tag_1 => {
       let x3 = Message::Move._0(self/3) in
       let x4 = Message::Move._1(self/3) in
       let __field1/5 = x4 in
       let __field0/4 = x3 in
-      let t20 = int32_to_string(__field0/4) in
-      let t21 = ("Message::Move(" + t20) in
-      let t22 = (t21 + ", ") in
-      let t23 = int32_to_string(__field1/5) in
-      let t24 = (t22 + t23) in
-      let t25 = (t24 + ")") in
-      jump k18(t25)
+      let t24 = int32_to_string(__field0/4) in
+      let t25 = ("Message::Move(" + t24) in
+      let t26 = (t25 + ", ") in
+      let t27 = int32_to_string(__field1/5) in
+      let t28 = (t26 + t27) in
+      let t29 = (t28 + ")") in
+      jump k22(t29)
     },
     Tag_2 => {
       let x5 = Message::Write._0(self/3) in
       let __field0/6 = x5 in
-      let t26 = ("Message::Write(" + __field0/6) in
-      let t27 = (t26 + ")") in
-      jump k18(t27)
+      let t30 = ("Message::Write(" + __field0/6) in
+      let t31 = (t30 + ")") in
+      jump k22(t31)
     },
   }
 }
 
 fn main() -> unit {
+  join ret32() -> unit {
+    ()
+  } in
   let point/7 = Point { x: 4, y: 7 } in
   let summary/8 = trait_impl#ToString#Point#to_string(point/7) in
-  let t28 = Message::Move(1, 2) in
-  let mv/9 = trait_impl#ToString#Message#to_string(t28) in
-  let t29 = Message::Write("done") in
-  let text/10 = trait_impl#ToString#Message#to_string(t29) in
+  let t33 = Message::Move(1, 2) in
+  let mv/9 = trait_impl#ToString#Message#to_string(t33) in
+  let t34 = Message::Write("done") in
+  let text/10 = trait_impl#ToString#Message#to_string(t34) in
   let exit/11 = trait_impl#ToString#Message#to_string(Tag_0) in
   let _wild6 = println__T_string(summary/8) in
   let _wild7 = println__T_string(mv/9) in
   let _wild8 = println__T_string(text/10) in
   let _wild9 = println__T_string(exit/11) in
-  ()
+  jump ret32()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t30 = string_println(value/1) in
-  t30
+  join ret35() -> unit {
+    ()
+  } in
+  let t36 = string_println(value/1) in
+  jump ret35()
 }

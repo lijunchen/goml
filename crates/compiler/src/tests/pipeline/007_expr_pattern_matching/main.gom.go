@@ -42,12 +42,12 @@ type Mul struct {
 func (_ Mul) isExpr() {}
 
 func main0() struct{} {
-    var t50 Expr = Add{
+    var t51 Expr = Add{
         _0: Zero{},
         _1: Zero{},
     }
     var a__0 Expr = Mul{
-        _0: t50,
+        _0: t51,
         _1: Zero{},
     }
     switch a__0.(type) {
@@ -178,9 +178,9 @@ func main0() struct{} {
 }
 
 func print__T_int32(value__0 int32) struct{} {
-    var t92 string = int32_to_string(value__0)
-    var t93 struct{} = string_print(t92)
-    return t93
+    var t94 string = int32_to_string(value__0)
+    string_print(t94)
+    return struct{}{}
 }
 
 func main() {

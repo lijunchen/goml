@@ -1533,6 +1533,21 @@ fn lower_expr_with_args(
             }
             Some(ast::Expr::EContinue { astptr })
         }
+        cst::Expr::ReturnExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            if !trailing_args.is_empty() {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Cannot apply arguments to return expression",
+                );
+                return None;
+            }
+            let expr = it
+                .expr()
+                .and_then(|expr| lower_expr(ctx, expr))
+                .map(Box::new);
+            Some(ast::Expr::EReturn { expr, astptr })
+        }
         cst::Expr::IfExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             if !trailing_args.is_empty() {

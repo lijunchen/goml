@@ -1278,7 +1278,9 @@ fn typecheck_fn(
         local_env.insert_var(*id, ty.clone());
         typer.results.record_local_ty(*id, ty.clone());
     }
+    typer.return_ty_stack.push(ret_ty.clone());
     let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
+    let _ = typer.return_ty_stack.pop();
     local_env.pop_scope(diagnostics);
     local_env.clear_tparams_env();
     typer.tparam_trait_bounds = local_env
@@ -1355,7 +1357,9 @@ fn typecheck_impl_block(
             local_env.insert_var(*id, ty.clone());
             typer.results.record_local_ty(*id, ty.clone());
         }
+        typer.return_ty_stack.push(ret_ty.clone());
         let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
+        let _ = typer.return_ty_stack.pop();
         local_env.pop_scope(diagnostics);
         local_env.clear_tparams_env();
         typer.tparam_trait_bounds = local_env

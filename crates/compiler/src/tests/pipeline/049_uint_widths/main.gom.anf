@@ -1,4 +1,7 @@
 fn main() -> unit {
+  join ret1() -> unit {
+    ()
+  } in
   let start8/0 = 200 in
   let add8/1 = 55 in
   let sum8/2 = (start8/0 + add8/1) in
@@ -15,19 +18,19 @@ fn main() -> unit {
   let add64/13 = 4000000000 in
   let sum64/14 = (start64/12 + add64/13) in
   let diff64/15 = (sum64/14 - add64/13) in
-  let t1 = uint8_to_string(sum8/2) in
-  let t2 = (t1 + ", ") in
-  let t3 = uint8_to_string(neg8/3) in
-  let t4 = (t2 + t3) in
-  let t5 = (t4 + "; ") in
-  let t6 = uint16_to_string(diff16/7) in
-  let t7 = (t5 + t6) in
-  let t8 = (t7 + "; ") in
-  let t9 = uint32_to_string(neg32/11) in
-  let t10 = (t8 + t9) in
-  let t11 = (t10 + "; ") in
-  let t12 = uint64_to_string(diff64/15) in
-  let message/16 = (t11 + t12) in
+  let t2 = uint8_to_string(sum8/2) in
+  let t3 = (t2 + ", ") in
+  let t4 = uint8_to_string(neg8/3) in
+  let t5 = (t3 + t4) in
+  let t6 = (t5 + "; ") in
+  let t7 = uint16_to_string(diff16/7) in
+  let t8 = (t6 + t7) in
+  let t9 = (t8 + "; ") in
+  let t10 = uint32_to_string(neg32/11) in
+  let t11 = (t9 + t10) in
+  let t12 = (t11 + "; ") in
+  let t13 = uint64_to_string(diff64/15) in
+  let message/16 = (t12 + t13) in
   let _wild0 = string_println(message/16) in
-  ()
+  jump ret1()
 }

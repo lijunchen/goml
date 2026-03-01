@@ -35,18 +35,18 @@ func main0() struct{} {
     }
     switch t__0.(type) {
     case A:
-        var t3 string = int32_to_string(1)
-        string_print(t3)
+        var t4 string = int32_to_string(1)
+        string_print(t4)
         return struct{}{}
     case B:
         var x0 bool = t__0.(B)._0
         switch x0 {
         case true:
-            var t7 string = int32_to_string(2)
-            string_print(t7)
+            var t8 string = int32_to_string(2)
+            string_print(t8)
         case false:
-            var t9 string = int32_to_string(3)
-            string_print(t9)
+            var t10 string = int32_to_string(3)
+            string_print(t10)
         default:
             panic("non-exhaustive match")
         }

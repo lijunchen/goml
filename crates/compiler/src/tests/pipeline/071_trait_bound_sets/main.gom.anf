@@ -1,35 +1,56 @@
 fn trait_impl#A#S#foo(self/0: S) -> string {
-  "A"
+  join ret2(retv3: string) -> string {
+    retv3
+  } in
+  jump ret2("A")
 }
 
 fn trait_impl#B#S#foo(self/1: S) -> string {
-  "B"
+  join ret4(retv5: string) -> string {
+    retv5
+  } in
+  jump ret4("B")
 }
 
 fn trait_impl#C#S#bar(self/2: S) -> string {
-  "C"
+  join ret6(retv7: string) -> string {
+    retv7
+  } in
+  jump ret6("C")
 }
 
 fn main() -> unit {
+  join ret8() -> unit {
+    ()
+  } in
   let s/5 = S {} in
-  let t2 = pick_a__T_S(s/5) in
-  let mtmp0 = println__T_string(t2) in
-  let t3 = bar_it__T_S(s/5) in
-  let mtmp1 = println__T_string(t3) in
-  ()
+  let t9 = pick_a__T_S(s/5) in
+  let mtmp0 = println__T_string(t9) in
+  let t10 = bar_it__T_S(s/5) in
+  let mtmp1 = println__T_string(t10) in
+  jump ret8()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t4 = string_println(value/1) in
-  t4
+  join ret11() -> unit {
+    ()
+  } in
+  let t12 = string_println(value/1) in
+  jump ret11()
 }
 
 fn pick_a__T_S(x/3: S) -> string {
-  let t5 = trait_impl#A#S#foo(x/3) in
-  t5
+  join ret13(retv14: string) -> string {
+    retv14
+  } in
+  let t15 = trait_impl#A#S#foo(x/3) in
+  jump ret13(t15)
 }
 
 fn bar_it__T_S(x/4: S) -> string {
-  let t6 = trait_impl#C#S#bar(x/4) in
-  t6
+  join ret16(retv17: string) -> string {
+    retv17
+  } in
+  let t18 = trait_impl#C#S#bar(x/4) in
+  jump ret16(t18)
 }

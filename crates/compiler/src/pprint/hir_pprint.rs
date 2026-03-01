@@ -386,6 +386,15 @@ impl Expr {
 
             hir::Expr::EContinue => RcDoc::text("continue"),
 
+            hir::Expr::EReturn { expr } => {
+                let doc = RcDoc::text("return");
+                if let Some(expr) = expr {
+                    doc.append(RcDoc::space()).append(ctx.expr_to_doc(*expr))
+                } else {
+                    doc
+                }
+            }
+
             hir::Expr::ECall { func, args } => {
                 let func_doc = ctx.expr_to_doc(*func);
                 if args.is_empty() {

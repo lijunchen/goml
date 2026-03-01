@@ -146,6 +146,7 @@ pub enum MySyntaxKind {
     EXPR_CONTINUE,
     EXPR_MATCH,
     EXPR_GO,
+    EXPR_RETURN,
     EXPR_UNIT,
     EXPR_BOOL,
     EXPR_INT,

@@ -1,7 +1,10 @@
 fn main() -> unit {
+  join ret7() -> unit {
+    ()
+  } in
   let mtmp0 = () in
-  let t7 = (true, false) in
-  let a/0 = (true, false, t7) in
+  let t8 = (true, false) in
+  let a/0 = (true, false, t8) in
   let x1 = a/0.0 in
   let x2 = a/0.1 in
   let x3 = a/0.2 in
@@ -13,11 +16,14 @@ fn main() -> unit {
   let x/1 = x1 in
   let b/5 = w/4 in
   let mtmp6 = print__T_bool(b/5) in
-  ()
+  jump ret7()
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t8 = bool_to_string(value/0) in
-  let t9 = string_print(t8) in
-  t9
+  join ret9() -> unit {
+    ()
+  } in
+  let t10 = bool_to_string(value/0) in
+  let t11 = string_print(t10) in
+  jump ret9()
 }

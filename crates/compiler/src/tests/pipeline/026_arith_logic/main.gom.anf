@@ -1,18 +1,27 @@
 fn show_int(label/0: string, value/1: int32) -> unit {
-  let t12 = int32_to_string(value/1) in
-  let t13 = (label/0 + t12) in
-  let mtmp0 = string_println(t13) in
-  ()
+  join ret12() -> unit {
+    ()
+  } in
+  let t13 = int32_to_string(value/1) in
+  let t14 = (label/0 + t13) in
+  let mtmp0 = string_println(t14) in
+  jump ret12()
 }
 
 fn show_bool(label/2: string, value/3: bool) -> unit {
-  let t14 = bool_to_string(value/3) in
-  let t15 = (label/2 + t14) in
-  let mtmp1 = string_println(t15) in
-  ()
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = bool_to_string(value/3) in
+  let t17 = (label/2 + t16) in
+  let mtmp1 = string_println(t17) in
+  jump ret15()
 }
 
 fn main() -> unit {
+  join ret18() -> unit {
+    ()
+  } in
   let base/4 = 10 in
   let sum/5 = (base/4 + 5) in
   let diff/6 = (sum/5 - 3) in
@@ -25,41 +34,41 @@ fn main() -> unit {
   let and_result/9 = (true && false) in
   let or_result/10 = (true || false) in
   let not_result/11 = (!false) in
-  let t16 = (!and_result/9) in
-  let t17 = (prod/7 * base/4) in
-  let t18 = (sum/5 + t17) in
-  let t19 = (prod/7 / 2) in
-  let mtmp6 = (t18 - t19) in
-  join k20(jp21: bool) -> unit {
-    let t22 = (t16 && jp21) in
-    let t23 = (diff/6 - quot/8) in
-    let t24 = (t23 + base/4) in
-    let t25 = (sum/5 / 2) in
-    let mtmp7 = (t24 - t25) in
-    join k26(jp27: bool) -> unit {
-      let t28 = (!jp27) in
-      let mixed/12 = (t22 || t28) in
+  let t19 = (!and_result/9) in
+  let t20 = (prod/7 * base/4) in
+  let t21 = (sum/5 + t20) in
+  let t22 = (prod/7 / 2) in
+  let mtmp6 = (t21 - t22) in
+  join k23(jp24: bool) -> unit {
+    let t25 = (t19 && jp24) in
+    let t26 = (diff/6 - quot/8) in
+    let t27 = (t26 + base/4) in
+    let t28 = (sum/5 / 2) in
+    let mtmp7 = (t27 - t28) in
+    join k29(jp30: bool) -> unit {
+      let t31 = (!jp30) in
+      let mixed/12 = (t25 || t31) in
       let mtmp8 = show_bool("and=", and_result/9) in
       let mtmp9 = show_bool("or=", or_result/10) in
       let mtmp10 = show_bool("not=", not_result/11) in
       let mtmp11 = show_bool("mixed=", mixed/12) in
-      ()
+      jump ret18()
     } in
     match mtmp7 {
       0 => {
-        jump k26(false)
+        jump k29(false)
       },
       _ => {
-        jump k26(true)
+        jump k29(true)
       },
     }
   } in
   match mtmp6 {
     0 => {
-      jump k20(false)
+      jump k23(false)
     },
     _ => {
-      jump k20(true)
+      jump k23(true)
     },
   }
 }

@@ -23,85 +23,99 @@ type Counter struct {
 }
 
 func is_flag8(value__0 uint8) bool {
-    var jp4 bool
+    var retv4 bool
+    var jp6 bool
     switch value__0 {
     case 0:
-        jp4 = true
-    case 200:
-        jp4 = true
-    default:
-        jp4 = false
-    }
-    return jp4
-}
-
-func is_flag16(value__1 uint16) bool {
-    var jp6 bool
-    switch value__1 {
-    case 1024:
         jp6 = true
-    case 65000:
+    case 200:
         jp6 = true
     default:
         jp6 = false
     }
-    return jp6
+    retv4 = jp6
+    return retv4
 }
 
-func is_flag32(value__2 uint32) bool {
-    var jp8 bool
-    switch value__2 {
-    case 4000000000:
-        jp8 = true
-    case 1234567890:
-        jp8 = true
-    default:
-        jp8 = false
-    }
-    return jp8
-}
-
-func is_flag64(value__3 uint64) bool {
+func is_flag16(value__1 uint16) bool {
+    var retv8 bool
     var jp10 bool
-    switch value__3 {
-    case 900000000:
+    switch value__1 {
+    case 1024:
         jp10 = true
-    case 600000000:
+    case 65000:
         jp10 = true
     default:
         jp10 = false
     }
-    return jp10
+    retv8 = jp10
+    return retv8
+}
+
+func is_flag32(value__2 uint32) bool {
+    var retv12 bool
+    var jp14 bool
+    switch value__2 {
+    case 4000000000:
+        jp14 = true
+    case 1234567890:
+        jp14 = true
+    default:
+        jp14 = false
+    }
+    retv12 = jp14
+    return retv12
+}
+
+func is_flag64(value__3 uint64) bool {
+    var retv16 bool
+    var jp18 bool
+    switch value__3 {
+    case 900000000:
+        jp18 = true
+    case 600000000:
+        jp18 = true
+    default:
+        jp18 = false
+    }
+    retv16 = jp18
+    return retv16
 }
 
 func match_struct(counter__4 Counter) bool {
+    var retv20 bool
     var x0 uint32 = counter__4.start
     var x1 uint64 = counter__4.end
-    var jp12 bool
+    var jp22 bool
     switch x1 {
     case 900000000:
-        var jp14 bool
+        var jp24 bool
         switch x0 {
         case 4000000000:
-            jp14 = true
+            jp24 = true
         default:
-            jp14 = false
+            jp24 = false
         }
-        jp12 = jp14
-        return jp12
+        jp22 = jp24
+        retv20 = jp22
+        return retv20
     case 600000000:
-        jp12 = true
-        return jp12
+        jp22 = true
+        retv20 = jp22
+        return retv20
     default:
-        jp12 = false
-        return jp12
+        jp22 = false
+        retv20 = jp22
+        return retv20
     }
 }
 
 func report(label__5 string, value__6 bool) string {
-    var t15 string = bool_to_string(value__6)
-    var t16 string = label__5 + t15
-    return t16
+    var retv26 string
+    var t27 string = bool_to_string(value__6)
+    var t28 string = label__5 + t27
+    retv26 = t28
+    return retv26
 }
 
 func main0() struct{} {
@@ -113,35 +127,35 @@ func main0() struct{} {
         start: 12,
         end: 600000000,
     }
-    var t17 bool = is_flag8(200)
-    var t18 string = report("u8_hit=", t17)
-    var t19 bool = is_flag8(15)
-    var t20 string = report(",u8_miss=", t19)
-    var t21 string = t18 + t20
-    var t22 bool = is_flag16(65000)
-    var t23 string = report(",u16_hit=", t22)
-    var t24 string = t21 + t23
-    var t25 bool = is_flag16(42)
-    var t26 string = report(",u16_miss=", t25)
-    var t27 string = t24 + t26
-    var t28 bool = is_flag32(1234567890)
-    var t29 string = report(",u32_hit=", t28)
-    var t30 string = t27 + t29
-    var t31 bool = is_flag32(99)
-    var t32 string = report(",u32_miss=", t31)
-    var t33 string = t30 + t32
-    var t34 bool = is_flag64(900000000)
-    var t35 string = report(",u64_hit=", t34)
-    var t36 string = t33 + t35
-    var t37 bool = is_flag64(700000000)
-    var t38 string = report(",u64_miss=", t37)
-    var t39 string = t36 + t38
-    var t40 bool = match_struct(counter__7)
-    var t41 string = report(",struct_first=", t40)
-    var t42 string = t39 + t41
-    var t43 bool = match_struct(alt_counter__8)
-    var t44 string = report(",struct_second=", t43)
-    var message__9 string = t42 + t44
+    var t30 bool = is_flag8(200)
+    var t31 string = report("u8_hit=", t30)
+    var t32 bool = is_flag8(15)
+    var t33 string = report(",u8_miss=", t32)
+    var t34 string = t31 + t33
+    var t35 bool = is_flag16(65000)
+    var t36 string = report(",u16_hit=", t35)
+    var t37 string = t34 + t36
+    var t38 bool = is_flag16(42)
+    var t39 string = report(",u16_miss=", t38)
+    var t40 string = t37 + t39
+    var t41 bool = is_flag32(1234567890)
+    var t42 string = report(",u32_hit=", t41)
+    var t43 string = t40 + t42
+    var t44 bool = is_flag32(99)
+    var t45 string = report(",u32_miss=", t44)
+    var t46 string = t43 + t45
+    var t47 bool = is_flag64(900000000)
+    var t48 string = report(",u64_hit=", t47)
+    var t49 string = t46 + t48
+    var t50 bool = is_flag64(700000000)
+    var t51 string = report(",u64_miss=", t50)
+    var t52 string = t49 + t51
+    var t53 bool = match_struct(counter__7)
+    var t54 string = report(",struct_first=", t53)
+    var t55 string = t52 + t54
+    var t56 bool = match_struct(alt_counter__8)
+    var t57 string = report(",struct_second=", t56)
+    var message__9 string = t55 + t57
     string_println(message__9)
     return struct{}{}
 }

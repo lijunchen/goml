@@ -1,53 +1,65 @@
 fn make_some(value/0: int32) -> option__int32 {
-  let t7 = option__int32::some(value/0) in
-  t7
+  join ret7(retv8: option__int32) -> option__int32 {
+    retv8
+  } in
+  let t9 = option__int32::some(value/0) in
+  jump ret7(t9)
 }
 
 fn build_point(x/1: int32, y/2: int32) -> point {
-  let t8 = point { x: x/1, y: y/2 } in
-  t8
+  join ret10(retv11: point) -> point {
+    retv11
+  } in
+  let t12 = point { x: x/1, y: y/2 } in
+  jump ret10(t12)
 }
 
 fn magnitude(p/3: point) -> int32 {
+  join ret13(retv14: int32) -> int32 {
+    retv14
+  } in
   let mtmp0 = p/3 in
   let x1 = point.x(mtmp0) in
   let x2 = point.y(mtmp0) in
   let y/5 = x2 in
   let x/4 = x1 in
-  let t9 = (x/4 + y/5) in
-  t9
+  let t15 = (x/4 + y/5) in
+  jump ret13(t15)
 }
 
 fn main() -> int32 {
+  join ret16(retv17: int32) -> int32 {
+    retv17
+  } in
   let mtmp3 = make_some(5) in
-  join k10(jp11: int32) -> int32 {
-    jp11
+  join k18(jp19: int32) -> int32 {
+    jump ret16(jp19)
   } in
   match mtmp3 {
     Tag_0 => {
       let x4 = option__int32::some._0(mtmp3) in
       let result/6 = x4 in
       let pt/7 = build_point(result/6, 7) in
-      let t12 = point.x(pt/7) in
-      let mtmp5 = option__int32::some(t12) in
-      join k13(jp14: int32) -> int32 {
-        jump k10(jp14)
+      let t20 = point.x(pt/7) in
+      let mtmp5 = option__int32::some(t20) in
+      join k21(jp22: int32) -> int32 {
+        jump k18(jp22)
       } in
       match mtmp5 {
         Tag_0 => {
           let x6 = option__int32::some._0(mtmp5) in
           let value/8 = x6 in
-          let t15 = magnitude(pt/7) in
-          let t16 = (value/8 + t15) in
-          jump k13(t16)
+          let t23 = magnitude(pt/7) in
+          let t24 = (value/8 + t23) in
+          jump k21(t24)
         },
         Tag_1 => {
-          jump k13(0)
+          jump k21(0)
         },
       }
     },
     Tag_1 => {
-      jump k10(0)
+      jump k18(0)
     },
   }
 }

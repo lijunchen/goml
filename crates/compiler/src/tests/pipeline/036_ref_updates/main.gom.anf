@@ -1,90 +1,111 @@
 fn bump(cell/0: Ref[int32]) -> int32 {
-  let t11 = ref_get(cell/0) in
-  let t12 = (t11 + 1) in
-  let mtmp0 = ref_set(cell/0, t12) in
+  join ret11(retv12: int32) -> int32 {
+    retv12
+  } in
   let t13 = ref_get(cell/0) in
-  t13
+  let t14 = (t13 + 1) in
+  let mtmp0 = ref_set(cell/0, t14) in
+  let t15 = ref_get(cell/0) in
+  jump ret11(t15)
 }
 
 fn flip(flag/1: Ref[bool]) -> bool {
+  join ret16(retv17: bool) -> bool {
+    retv17
+  } in
   let current/2 = ref_get(flag/1) in
-  let t14 = (!current/2) in
-  let mtmp1 = ref_set(flag/1, t14) in
-  let t15 = ref_get(flag/1) in
-  t15
+  let t18 = (!current/2) in
+  let mtmp1 = ref_set(flag/1, t18) in
+  let t19 = ref_get(flag/1) in
+  jump ret16(t19)
 }
 
 fn nested_total(cell/3: Ref[Ref[int32]]) -> int32 {
+  join ret20(retv21: int32) -> int32 {
+    retv21
+  } in
   let inner/4 = ref_get(cell/3) in
   let before/5 = ref_get(inner/4) in
-  let t16 = (before/5 + 2) in
-  let mtmp2 = ref_set(inner/4, t16) in
-  let t17 = ref_get(inner/4) in
-  let t18 = (before/5 + t17) in
-  t18
+  let t22 = (before/5 + 2) in
+  let mtmp2 = ref_set(inner/4, t22) in
+  let t23 = ref_get(inner/4) in
+  let t24 = (before/5 + t23) in
+  jump ret20(t24)
 }
 
 fn alias_bump(cell/6: Ref[int32]) -> int32 {
+  join ret25(retv26: int32) -> int32 {
+    retv26
+  } in
   let alias/7 = cell/6 in
-  let t19 = ref_get(alias/7) in
-  let t20 = (t19 + 5) in
-  let mtmp3 = ref_set(alias/7, t20) in
-  let t21 = ref_get(alias/7) in
-  t21
+  let t27 = ref_get(alias/7) in
+  let t28 = (t27 + 5) in
+  let mtmp3 = ref_set(alias/7, t28) in
+  let t29 = ref_get(alias/7) in
+  jump ret25(t29)
 }
 
 fn pair_sum() -> int32 {
+  join ret30(retv31: int32) -> int32 {
+    retv31
+  } in
   let first/8 = ref(4) in
   let second/9 = ref(6) in
-  let t22 = ref_get(first/8) in
-  let t23 = ref_get(second/9) in
-  let t24 = (t22 + t23) in
-  let mtmp4 = ref_set(first/8, t24) in
-  let t25 = ref_get(first/8) in
-  let t26 = ref_get(second/9) in
-  let t27 = (t25 + t26) in
-  t27
+  let t32 = ref_get(first/8) in
+  let t33 = ref_get(second/9) in
+  let t34 = (t32 + t33) in
+  let mtmp4 = ref_set(first/8, t34) in
+  let t35 = ref_get(first/8) in
+  let t36 = ref_get(second/9) in
+  let t37 = (t35 + t36) in
+  jump ret30(t37)
 }
 
 fn reassign_nested(nested/10: Ref[Ref[int32]]) -> int32 {
+  join ret38(retv39: int32) -> int32 {
+    retv39
+  } in
   let inner/11 = ref_get(nested/10) in
-  let t28 = ref_get(inner/11) in
-  let t29 = (t28 + 7) in
-  let mtmp5 = ref_set(inner/11, t29) in
-  let t30 = ref_get(inner/11) in
-  t30
+  let t40 = ref_get(inner/11) in
+  let t41 = (t40 + 7) in
+  let mtmp5 = ref_set(inner/11, t41) in
+  let t42 = ref_get(inner/11) in
+  jump ret38(t42)
 }
 
 fn main() -> unit {
+  join ret43() -> unit {
+    ()
+  } in
   let counter/12 = ref(39) in
   let toggler/13 = ref(false) in
-  let t31 = ref(3) in
-  let nested/14 = ref(t31) in
+  let t44 = ref(3) in
+  let nested/14 = ref(t44) in
   let bumped/15 = bump(counter/12) in
   let flipped/16 = flip(toggler/13) in
   let flipped_again/17 = flip(toggler/13) in
   let inner/18 = ref_get(nested/14) in
-  let t32 = ref_get(inner/18) in
-  let t33 = (t32 + bumped/15) in
-  let mtmp6 = ref_set(inner/18, t33) in
+  let t45 = ref_get(inner/18) in
+  let t46 = (t45 + bumped/15) in
+  let mtmp6 = ref_set(inner/18, t46) in
   let nested_total_val/19 = nested_total(nested/14) in
   let alias_total/20 = alias_bump(counter/12) in
   let pair_total/21 = pair_sum() in
   let reassigned/22 = reassign_nested(nested/14) in
   let bool_check/23 = (!false) in
-  let t34 = ref_get(counter/12) in
-  let t35 = (bumped/15 + t34) in
-  let t36 = int32_to_string(t35) in
-  let mtmp7 = string_println(t36) in
-  let t37 = (nested_total_val/19 + alias_total/20) in
-  let t38 = (t37 + reassigned/22) in
-  let t39 = int32_to_string(t38) in
-  let mtmp8 = string_println(t39) in
-  let t40 = int32_to_string(pair_total/21) in
-  let mtmp9 = string_println(t40) in
-  let t41 = (flipped/16 && flipped_again/17) in
-  let t42 = (t41 && bool_check/23) in
-  let t43 = bool_to_string(t42) in
-  let mtmp10 = string_println(t43) in
-  ()
+  let t47 = ref_get(counter/12) in
+  let t48 = (bumped/15 + t47) in
+  let t49 = int32_to_string(t48) in
+  let mtmp7 = string_println(t49) in
+  let t50 = (nested_total_val/19 + alias_total/20) in
+  let t51 = (t50 + reassigned/22) in
+  let t52 = int32_to_string(t51) in
+  let mtmp8 = string_println(t52) in
+  let t53 = int32_to_string(pair_total/21) in
+  let mtmp9 = string_println(t53) in
+  let t54 = (flipped/16 && flipped_again/17) in
+  let t55 = (t54 && bool_check/23) in
+  let t56 = bool_to_string(t55) in
+  let mtmp10 = string_println(t56) in
+  jump ret43()
 }

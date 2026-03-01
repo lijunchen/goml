@@ -1,0 +1,100 @@
+fn early(x/0: int32) -> int32 {
+  let _wild0 = if (x/0 < 0) {
+      {
+        return 0
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let _wild1 = if (x/0 == 0) {
+      {
+        return 1
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  (x/0 + 2)
+}
+
+fn closure_early(x/1: int32) -> int32 {
+  let f/3 = |y/2| {
+    let _wild2 = if (y/2 > 5) {
+        {
+          return y/2
+        }
+    } else {
+        {
+          ()
+        }
+    } in
+    (y/2 + 10)
+  } in
+  f/3(x/1)
+}
+
+fn unit_ret(flag/4: bool) -> unit {
+  let _wild3 = if flag/4 {
+      {
+        return
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let mtmp4 = println__T_string("after") in
+  {
+    ()
+  }
+}
+
+fn main() -> unit {
+  let mtmp5 = print__T_string("e-1: ") in
+  {
+    let mtmp6 = println__T_int32(early((-1))) in
+    {
+      let mtmp7 = print__T_string("e0: ") in
+      {
+        let mtmp8 = println__T_int32(early(0)) in
+        {
+          let mtmp9 = print__T_string("e3: ") in
+          {
+            let mtmp10 = println__T_int32(early(3)) in
+            {
+              let mtmp11 = print__T_string("c7: ") in
+              {
+                let mtmp12 = println__T_int32(closure_early(7)) in
+                {
+                  let mtmp13 = print__T_string("c2: ") in
+                  {
+                    let mtmp14 = println__T_int32(closure_early(2)) in
+                    {
+                      let _wild15 = unit_ret(true) in
+                      let _wild16 = unit_ret(false) in
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
+
+fn print__T_string(value/0: string) -> unit {
+  string_print(value/0)
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  string_println(int32_to_string(value/1))
+}

@@ -400,6 +400,10 @@ pub enum Expr {
     EContinue {
         astptr: MySyntaxNodePtr,
     },
+    EReturn {
+        expr: Option<Box<Expr>>,
+        astptr: MySyntaxNodePtr,
+    },
     EGo {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,

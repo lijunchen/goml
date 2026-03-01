@@ -40,46 +40,46 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
 func main0() struct{} {
     var sum__0 *ref_int32_x = ref__Ref_int32(0)
     var i__1 *ref_int32_x = ref__Ref_int32(0)
-    Loop_loop11:
+    Loop_loop12:
     for {
-        var t12 int32 = ref_get__Ref_int32(i__1)
-        var t13 bool = t12 < 20
-        if !t13 {
+        var t13 int32 = ref_get__Ref_int32(i__1)
+        var t14 bool = t13 < 20
+        if !t14 {
             break
         }
-        var t14 int32 = ref_get__Ref_int32(i__1)
-        var t15 int32 = t14 + 1
-        ref_set__Ref_int32(i__1, t15)
-        var t20 int32 = ref_get__Ref_int32(i__1)
-        var t21 bool = t20 > 5
-        if t21 {
-            break Loop_loop11
+        var t15 int32 = ref_get__Ref_int32(i__1)
+        var t16 int32 = t15 + 1
+        ref_set__Ref_int32(i__1, t16)
+        var t21 int32 = ref_get__Ref_int32(i__1)
+        var t22 bool = t21 > 5
+        if t22 {
+            break Loop_loop12
         } else {
-            var t17 int32 = ref_get__Ref_int32(sum__0)
-            var t18 int32 = ref_get__Ref_int32(i__1)
-            var t19 int32 = t17 + t18
-            ref_set__Ref_int32(sum__0, t19)
+            var t18 int32 = ref_get__Ref_int32(sum__0)
+            var t19 int32 = ref_get__Ref_int32(i__1)
+            var t20 int32 = t18 + t19
+            ref_set__Ref_int32(sum__0, t20)
             continue
         }
     }
     print__T_string("sum: ")
-    var t9 int32 = ref_get__Ref_int32(sum__0)
-    println__T_int32(t9)
-    print__T_string("i at break: ")
-    var t10 int32 = ref_get__Ref_int32(i__1)
+    var t10 int32 = ref_get__Ref_int32(sum__0)
     println__T_int32(t10)
+    print__T_string("i at break: ")
+    var t11 int32 = ref_get__Ref_int32(i__1)
+    println__T_int32(t11)
     return struct{}{}
 }
 
 func print__T_string(value__0 string) struct{} {
-    var t22 struct{} = string_print(value__0)
-    return t22
+    string_print(value__0)
+    return struct{}{}
 }
 
 func println__T_int32(value__1 int32) struct{} {
-    var t23 string = int32_to_string(value__1)
-    var t24 struct{} = string_println(t23)
-    return t24
+    var t26 string = int32_to_string(value__1)
+    string_println(t26)
+    return struct{}{}
 }
 
 func main() {

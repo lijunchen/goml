@@ -16,38 +16,46 @@ func string_println(s string) struct{} {
 type S struct {}
 
 func _goml_trait_impl_A_S_pick(self__0 S) int32 {
-    return 10
+    var retv3 int32
+    retv3 = 10
+    return retv3
 }
 
 func _goml_trait_impl_B_S_pick(self__1 S) int32 {
-    return 20
+    var retv5 int32
+    retv5 = 20
+    return retv5
 }
 
 func main0() struct{} {
-    var t2 S = S{}
-    var t3 int32 = pick_a__T_S(t2)
-    var t4 string = int32_to_string(t3)
-    println__T_string(t4)
-    var t5 S = S{}
-    var t6 int32 = pick_b__T_S(t5)
-    var t7 string = int32_to_string(t6)
-    println__T_string(t7)
+    var t7 S = S{}
+    var t8 int32 = pick_a__T_S(t7)
+    var t9 string = int32_to_string(t8)
+    println__T_string(t9)
+    var t10 S = S{}
+    var t11 int32 = pick_b__T_S(t10)
+    var t12 string = int32_to_string(t11)
+    println__T_string(t12)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t8 struct{} = string_println(value__1)
-    return t8
+    string_println(value__1)
+    return struct{}{}
 }
 
 func pick_a__T_S(x__2 S) int32 {
-    var t9 int32 = _goml_trait_impl_A_S_pick(x__2)
-    return t9
+    var retv16 int32
+    var t17 int32 = _goml_trait_impl_A_S_pick(x__2)
+    retv16 = t17
+    return retv16
 }
 
 func pick_b__T_S(x__3 S) int32 {
-    var t10 int32 = _goml_trait_impl_B_S_pick(x__3)
-    return t10
+    var retv19 int32
+    var t20 int32 = _goml_trait_impl_B_S_pick(x__3)
+    retv19 = t20
+    return retv19
 }
 
 func main() {

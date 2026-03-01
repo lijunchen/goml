@@ -29,11 +29,11 @@ func main0() struct{} {
     case true:
         switch x0 {
         case true:
-            var t4 string = int32_to_string(789)
-            string_print(t4)
+            var t5 string = int32_to_string(789)
+            string_print(t5)
         case false:
-            var t6 string = int32_to_string(456)
-            string_print(t6)
+            var t7 string = int32_to_string(456)
+            string_print(t7)
         default:
             panic("non-exhaustive match")
         }
@@ -41,11 +41,11 @@ func main0() struct{} {
     case false:
         switch x0 {
         case true:
-            var t9 string = int32_to_string(123)
-            string_print(t9)
+            var t10 string = int32_to_string(123)
+            string_print(t10)
         case false:
-            var t11 string = int32_to_string(789)
-            string_print(t11)
+            var t12 string = int32_to_string(789)
+            string_print(t12)
         default:
             panic("non-exhaustive match")
         }

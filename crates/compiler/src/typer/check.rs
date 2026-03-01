@@ -391,6 +391,9 @@ impl Typer {
             }
             hir::Expr::EBreak => self.infer_break_expr(diagnostics, e),
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
+            hir::Expr::EReturn { expr } => {
+                self.infer_return_expr(genv, local_env, diagnostics, e, expr)
+            }
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, None)
@@ -1860,8 +1863,15 @@ impl Typer {
             });
         }
 
+        let body_ty = self.fresh_ty_var();
+        self.return_ty_stack.push(body_ty.clone());
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
-        let body_ty = body_tast.get_ty();
+        let _ = self.return_ty_stack.pop();
+        self.push_constraint(Constraint::TypeEqual(
+            body_tast.get_ty(),
+            body_ty.clone(),
+            self.expr_range(body),
+        ));
         let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
         let closure_ty = tast::Ty::TFunc {
@@ -1925,8 +1935,10 @@ impl Typer {
                     });
                 }
 
+                self.return_ty_stack.push(expected_ret.as_ref().clone());
                 let body_tast =
                     self.check_expr(genv, local_env, diagnostics, body, expected_ret.as_ref());
+                let _ = self.return_ty_stack.pop();
                 let body_ty = body_tast.get_ty();
                 let captures = local_env.end_closure(diagnostics, &self.hir_table);
 
@@ -2118,11 +2130,13 @@ impl Typer {
                 expected,
             )))
         } else {
-            self.push_constraint(Constraint::TypeEqual(
-                tast::Ty::TUnit,
-                expected.clone(),
-                None,
-            ));
+            if !self.block_always_returns(block) {
+                self.push_constraint(Constraint::TypeEqual(
+                    tast::Ty::TUnit,
+                    expected.clone(),
+                    None,
+                ));
+            }
             None
         };
         tast::Block { stmts, tail }
@@ -2168,6 +2182,47 @@ impl Typer {
         tast::Expr::EBlock {
             block: Box::new(block),
             ty,
+        }
+    }
+
+    fn block_always_returns(&self, block: &hir::Block) -> bool {
+        for stmt in &block.stmts {
+            if self.stmt_always_returns(stmt) {
+                return true;
+            }
+        }
+        if let Some(tail) = block.tail {
+            return self.expr_always_returns(tail);
+        }
+        false
+    }
+
+    fn stmt_always_returns(&self, stmt: &hir::Stmt) -> bool {
+        match stmt {
+            hir::Stmt::Expr(stmt) => self.expr_always_returns(stmt.expr),
+            hir::Stmt::Let(_) | hir::Stmt::Assign(_) => false,
+        }
+    }
+
+    fn expr_always_returns(&self, expr_id: hir::ExprId) -> bool {
+        match self.hir_table.expr(expr_id) {
+            hir::Expr::EReturn { .. } => true,
+            hir::Expr::EBlock { block } => self.block_always_returns(block),
+            hir::Expr::EIf {
+                then_branch,
+                else_branch,
+                ..
+            } => self.expr_always_returns(*then_branch) && self.expr_always_returns(*else_branch),
+            hir::Expr::EMatch { arms, .. } => {
+                let has_catch_all = arms.iter().any(|arm| {
+                    matches!(
+                        self.hir_table.pat(arm.pat),
+                        hir::Pat::PWild | hir::Pat::PVar { .. }
+                    )
+                });
+                has_catch_all && arms.iter().all(|arm| self.expr_always_returns(arm.body))
+            }
+            _ => false,
         }
     }
 
@@ -2302,6 +2357,51 @@ impl Typer {
         }
         tast::Expr::EContinue {
             ty: tast::Ty::TUnit,
+        }
+    }
+
+    fn infer_return_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        e: hir::ExprId,
+        expr: Option<hir::ExprId>,
+    ) -> tast::Expr {
+        let Some(expected_ret_ty) = self.return_ty_stack.last().cloned() else {
+            super::util::push_error_with_range(
+                diagnostics,
+                "`return` outside of a function or closure",
+                self.expr_range(e),
+            );
+            let expr = expr
+                .map(|expr_id| Box::new(self.infer_expr(genv, local_env, diagnostics, expr_id)));
+            return tast::Expr::EReturn {
+                expr,
+                ty: self.fresh_ty_var(),
+            };
+        };
+
+        let expr = if let Some(expr_id) = expr {
+            Some(Box::new(self.check_expr(
+                genv,
+                local_env,
+                diagnostics,
+                expr_id,
+                &expected_ret_ty,
+            )))
+        } else {
+            self.push_constraint(Constraint::TypeEqual(
+                tast::Ty::TUnit,
+                expected_ret_ty,
+                self.expr_range(e),
+            ));
+            None
+        };
+
+        tast::Expr::EReturn {
+            expr,
+            ty: self.fresh_ty_var(),
         }
     }
 

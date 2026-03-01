@@ -1,22 +1,28 @@
 fn choose(flag/0: bool, x/1: int32, y/2: int32) -> int32 {
-  join k2(jp3: int32) -> int32 {
-    jp3
+  join ret2(retv3: int32) -> int32 {
+    retv3
+  } in
+  join k4(jp5: int32) -> int32 {
+    jump ret2(jp5)
   } in
   if flag/0 {
-    jump k2(x/1)
+    jump k4(x/1)
   } else {
-    jump k2(y/2)
+    jump k4(y/2)
   }
 }
 
 fn main() -> unit {
+  join ret6() -> unit {
+    ()
+  } in
   let yes/3 = choose(true, 10, 99) in
   let no/4 = choose(false, 10, 99) in
-  let t4 = int32_to_string(yes/3) in
-  let t5 = ("yes=" + t4) in
-  let mtmp0 = string_println(t5) in
-  let t6 = int32_to_string(no/4) in
-  let t7 = ("no=" + t6) in
-  let mtmp1 = string_println(t7) in
-  ()
+  let t7 = int32_to_string(yes/3) in
+  let t8 = ("yes=" + t7) in
+  let mtmp0 = string_println(t8) in
+  let t9 = int32_to_string(no/4) in
+  let t10 = ("no=" + t9) in
+  let mtmp1 = string_println(t10) in
+  jump ret6()
 }

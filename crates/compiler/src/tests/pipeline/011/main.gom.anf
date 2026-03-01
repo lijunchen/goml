@@ -1,9 +1,12 @@
 fn main() -> unit {
+  join ret0() -> unit {
+    ()
+  } in
   let a/0 = 1 in
   let a/1 = (a/0 + 2) in
   let a/2 = (a/1 + 3) in
   let a/3 = (a/2 + 4) in
-  let t0 = int32_to_string(a/3) in
-  let t1 = string_print(t0) in
-  t1
+  let t1 = int32_to_string(a/3) in
+  let t2 = string_print(t1) in
+  jump ret0()
 }

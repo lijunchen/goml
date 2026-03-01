@@ -1,35 +1,44 @@
 fn trait_impl#Display#Point#show(self/0: Point) -> string {
-  let t2 = Point.x(self/0) in
-  let t3 = int32_to_string(t2) in
-  let t4 = ("Point(" + t3) in
-  let t5 = (t4 + ",") in
-  let t6 = Point.y(self/0) in
-  let t7 = int32_to_string(t6) in
-  let t8 = (t5 + t7) in
-  let t9 = (t8 + ")") in
-  t9
+  join ret2(retv3: string) -> string {
+    retv3
+  } in
+  let t4 = Point.x(self/0) in
+  let t5 = int32_to_string(t4) in
+  let t6 = ("Point(" + t5) in
+  let t7 = (t6 + ",") in
+  let t8 = Point.y(self/0) in
+  let t9 = int32_to_string(t8) in
+  let t10 = (t7 + t9) in
+  let t11 = (t10 + ")") in
+  jump ret2(t11)
 }
 
 fn trait_impl#Display#Flag#show(self/1: Flag) -> string {
-  let t12 = Flag.value(self/1) in
-  join k10(jp11: string) -> string {
-    jp11
+  join ret12(retv13: string) -> string {
+    retv13
   } in
-  if t12 {
-    jump k10("Flag(true)")
+  let t16 = Flag.value(self/1) in
+  join k14(jp15: string) -> string {
+    jump ret12(jp15)
+  } in
+  if t16 {
+    jump k14("Flag(true)")
   } else {
-    jump k10("Flag(false)")
+    jump k14("Flag(false)")
   }
 }
 
 fn main() -> unit {
+  join ret17() -> unit {
+    ()
+  } in
   let p/2 = Point { x: 1, y: 2 } in
   let t/3 = Flag { value: true } in
   let dp/4 = to_dyn[Display]{Point}(p/2) in
   let dt/5 = to_dyn[Display]{Flag}(t/3) in
-  let t13 = dyn_call[Display::show](dp/4) in
-  let mtmp0 = string_println(t13) in
-  let t14 = dyn_call[Display::show](dt/5) in
-  let mtmp1 = string_println(t14) in
-  ()
+  let t18 = dyn_call[Display::show](dp/4) in
+  let mtmp0 = string_println(t18) in
+  let t19 = dyn_call[Display::show](dt/5) in
+  let mtmp1 = string_println(t19) in
+  jump ret17()
 }

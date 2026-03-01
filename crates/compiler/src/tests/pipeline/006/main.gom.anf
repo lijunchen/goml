@@ -1,40 +1,46 @@
 fn main() -> unit {
+  join ret5() -> unit {
+    ()
+  } in
   let a/0 = (true, false) in
   let x0 = a/0.0 in
   let x1 = a/0.1 in
-  join k5() -> unit {
+  join k6() -> unit {
     let mtmp2 = () in
     let c/2 = (true, true) in
     let x3 = c/2.0 in
     let x4 = c/2.1 in
-    join k6() -> unit {
-      ()
+    join k7() -> unit {
+      jump ret5()
     } in
     match x3 {
       true => {
         let d/3 = x4 in
-        let t7 = print__T_bool(d/3) in
-        jump k6()
+        let t8 = print__T_bool(d/3) in
+        jump k7()
       },
       false => {
-        jump k6()
+        jump k7()
       },
     }
   } in
   match x0 {
     true => {
       let b/1 = x1 in
-      let t8 = print__T_bool(b/1) in
-      jump k5()
+      let t9 = print__T_bool(b/1) in
+      jump k6()
     },
     false => {
-      jump k5()
+      jump k6()
     },
   }
 }
 
 fn print__T_bool(value/0: bool) -> unit {
-  let t9 = bool_to_string(value/0) in
-  let t10 = string_print(t9) in
-  t10
+  join ret10() -> unit {
+    ()
+  } in
+  let t11 = bool_to_string(value/0) in
+  let t12 = string_print(t11) in
+  jump ret10()
 }

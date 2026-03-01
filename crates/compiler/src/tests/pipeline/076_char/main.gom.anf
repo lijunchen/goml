@@ -1,22 +1,25 @@
 fn main() -> unit {
-  let c/0 = 'A' in
-  let t2 = char_to_string(c/0) in
-  let _wild0 = string_println(t2) in
-  let d/1 = 'b' in
-  join k3(jp4: string) -> unit {
-    let out/2 = jp4 in
-    let _wild1 = string_println(out/2) in
+  join ret2() -> unit {
     ()
+  } in
+  let c/0 = 'A' in
+  let t3 = char_to_string(c/0) in
+  let _wild0 = string_println(t3) in
+  let d/1 = 'b' in
+  join k4(jp5: string) -> unit {
+    let out/2 = jp5 in
+    let _wild1 = string_println(out/2) in
+    jump ret2()
   } in
   match d/1 {
     'a' => {
-      jump k3("A")
+      jump k4("A")
     },
     'b' => {
-      jump k3("B")
+      jump k4("B")
     },
     _ => {
-      jump k3("?")
+      jump k4("?")
     },
   }
 }

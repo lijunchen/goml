@@ -107,12 +107,16 @@ fn collect_required_builtin_collection_methods_from_expr(
             collect_required_builtin_collection_methods_from_expr(body, builtin_keys, required);
         }
         crate::core::Expr::EGo { expr, .. }
+        | crate::core::Expr::EReturn {
+            expr: Some(expr), ..
+        }
         | crate::core::Expr::EConstrGet { expr, .. }
         | crate::core::Expr::EUnary { expr, .. }
         | crate::core::Expr::EToDyn { expr, .. }
         | crate::core::Expr::EProj { tuple: expr, .. } => {
             collect_required_builtin_collection_methods_from_expr(expr, builtin_keys, required);
         }
+        crate::core::Expr::EReturn { expr: None, .. } => {}
         crate::core::Expr::EBinary { lhs, rhs, .. } => {
             collect_required_builtin_collection_methods_from_expr(lhs, builtin_keys, required);
             collect_required_builtin_collection_methods_from_expr(rhs, builtin_keys, required);

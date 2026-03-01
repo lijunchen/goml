@@ -1,26 +1,41 @@
 fn trait_impl#Arith#int32#add(self/0: int32, other/1: int32) -> int32 {
-  let t4 = (self/0 + other/1) in
-  t4
+  join ret4(retv5: int32) -> int32 {
+    retv5
+  } in
+  let t6 = (self/0 + other/1) in
+  jump ret4(t6)
 }
 
 fn trait_impl#Arith#int32#less(self/2: int32, other/3: int32) -> bool {
-  let t5 = (self/2 < other/3) in
-  t5
+  join ret7(retv8: bool) -> bool {
+    retv8
+  } in
+  let t9 = (self/2 < other/3) in
+  jump ret7(t9)
 }
 
 fn trait_impl#Output#int32#output(self/4: int32) -> unit {
-  let t6 = int32_to_string(self/4) in
-  let t7 = string_println(t6) in
-  t7
+  join ret10() -> unit {
+    ()
+  } in
+  let t11 = int32_to_string(self/4) in
+  let t12 = string_println(t11) in
+  jump ret10()
 }
 
 fn trait_impl#Output#bool#output(self/5: bool) -> unit {
-  let t8 = bool_to_string(self/5) in
-  let t9 = string_println(t8) in
-  t9
+  join ret13() -> unit {
+    ()
+  } in
+  let t14 = bool_to_string(self/5) in
+  let t15 = string_println(t14) in
+  jump ret13()
 }
 
 fn main() -> unit {
+  join ret16() -> unit {
+    ()
+  } in
   let a/7 = id__T_int32(1) in
   let b/8 = id__T_int32(2) in
   let c/9 = trait_impl#Arith#int32#add(a/7, b/8) in
@@ -31,17 +46,26 @@ fn main() -> unit {
   let mtmp1 = trait_impl#Output#bool#output(c/12) in
   let mtmp2 = id__T_string("abc") in
   let mtmp3 = id__T_bool(true) in
-  ()
+  jump ret16()
 }
 
 fn id__T_int32(x/6: int32) -> int32 {
-  x/6
+  join ret17(retv18: int32) -> int32 {
+    retv18
+  } in
+  jump ret17(x/6)
 }
 
 fn id__T_string(x/6: string) -> string {
-  x/6
+  join ret19(retv20: string) -> string {
+    retv20
+  } in
+  jump ret19(x/6)
 }
 
 fn id__T_bool(x/6: bool) -> bool {
-  x/6
+  join ret21(retv22: bool) -> bool {
+    retv22
+  } in
+  jump ret21(x/6)
 }

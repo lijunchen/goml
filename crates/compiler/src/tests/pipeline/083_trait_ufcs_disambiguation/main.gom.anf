@@ -1,34 +1,52 @@
 fn trait_impl#A#S#pick(self/0: S) -> int32 {
-  10
+  join ret2(retv3: int32) -> int32 {
+    retv3
+  } in
+  jump ret2(10)
 }
 
 fn trait_impl#B#S#pick(self/1: S) -> int32 {
-  20
+  join ret4(retv5: int32) -> int32 {
+    retv5
+  } in
+  jump ret4(20)
 }
 
 fn main() -> unit {
-  let t2 = S {} in
-  let t3 = pick_a__T_S(t2) in
-  let t4 = int32_to_string(t3) in
-  let _wild0 = println__T_string(t4) in
-  let t5 = S {} in
-  let t6 = pick_b__T_S(t5) in
-  let t7 = int32_to_string(t6) in
-  let _wild1 = println__T_string(t7) in
-  ()
+  join ret6() -> unit {
+    ()
+  } in
+  let t7 = S {} in
+  let t8 = pick_a__T_S(t7) in
+  let t9 = int32_to_string(t8) in
+  let _wild0 = println__T_string(t9) in
+  let t10 = S {} in
+  let t11 = pick_b__T_S(t10) in
+  let t12 = int32_to_string(t11) in
+  let _wild1 = println__T_string(t12) in
+  jump ret6()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t8 = string_println(value/1) in
-  t8
+  join ret13() -> unit {
+    ()
+  } in
+  let t14 = string_println(value/1) in
+  jump ret13()
 }
 
 fn pick_a__T_S(x/2: S) -> int32 {
-  let t9 = trait_impl#A#S#pick(x/2) in
-  t9
+  join ret15(retv16: int32) -> int32 {
+    retv16
+  } in
+  let t17 = trait_impl#A#S#pick(x/2) in
+  jump ret15(t17)
 }
 
 fn pick_b__T_S(x/3: S) -> int32 {
-  let t10 = trait_impl#B#S#pick(x/3) in
-  t10
+  join ret18(retv19: int32) -> int32 {
+    retv19
+  } in
+  let t20 = trait_impl#B#S#pick(x/3) in
+  jump ret18(t20)
 }

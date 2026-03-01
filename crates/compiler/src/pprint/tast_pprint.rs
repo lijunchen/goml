@@ -491,6 +491,14 @@ impl Expr {
                 .append(expr.to_doc(genv)),
             Self::EBreak { .. } => RcDoc::text("break"),
             Self::EContinue { .. } => RcDoc::text("continue"),
+            Self::EReturn { expr, .. } => {
+                let doc = RcDoc::text("return");
+                if let Some(expr) = expr {
+                    doc.append(RcDoc::space()).append(expr.to_doc(genv))
+                } else {
+                    doc
+                }
+            }
             Self::EBinary {
                 op,
                 lhs,

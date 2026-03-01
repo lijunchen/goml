@@ -1,19 +1,22 @@
 fn main() -> unit {
-  let x/0 = 5 in
-  join k1(jp2: string) -> unit {
-    let y/1 = jp2 in
-    let _wild0 = string_println(y/1) in
+  join ret1() -> unit {
     ()
+  } in
+  let x/0 = 5 in
+  join k2(jp3: string) -> unit {
+    let y/1 = jp3 in
+    let _wild0 = string_println(y/1) in
+    jump ret1()
   } in
   match x/0 {
     0 => {
-      jump k1("zero")
+      jump k2("zero")
     },
     1 => {
-      jump k1("one")
+      jump k2("one")
     },
     _ => {
-      jump k1("other")
+      jump k2("other")
     },
   }
 }

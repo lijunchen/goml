@@ -1,0 +1,14 @@
+fn from_option(value: Option[int32]) -> int32 {
+    match value {
+        Option::Some(x) => return x,
+        Option::None => (),
+    };
+    99i32
+}
+
+fn main() {
+    let a = from_option(Option::Some(7i32));
+    let b = from_option(Option::None);
+    string_println(int32_to_string(a));
+    string_println(int32_to_string(b));
+}

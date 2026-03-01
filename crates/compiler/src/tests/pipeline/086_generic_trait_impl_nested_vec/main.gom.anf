@@ -1,24 +1,36 @@
 fn main() -> unit {
+  join ret2() -> unit {
+    ()
+  } in
   let a/1 = Wrap__int32 { value: 1 } in
   let b/2 = Wrap__string { value: "x" } in
-  let t2 = trait_impl#Size#Wrap__int32#size__T_int32(a/1) in
-  let t3 = int32_to_string(t2) in
-  let _wild0 = println__T_string(t3) in
-  let t4 = trait_impl#Size#Wrap__string#size__T_string(b/2) in
-  let t5 = int32_to_string(t4) in
-  let _wild1 = println__T_string(t5) in
-  ()
+  let t3 = trait_impl#Size#Wrap__int32#size__T_int32(a/1) in
+  let t4 = int32_to_string(t3) in
+  let _wild0 = println__T_string(t4) in
+  let t5 = trait_impl#Size#Wrap__string#size__T_string(b/2) in
+  let t6 = int32_to_string(t5) in
+  let _wild1 = println__T_string(t6) in
+  jump ret2()
 }
 
 fn println__T_string(value/1: string) -> unit {
-  let t6 = string_println(value/1) in
-  t6
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = string_println(value/1) in
+  jump ret7()
 }
 
 fn trait_impl#Size#Wrap__int32#size__T_int32(self/0: Wrap__int32) -> int32 {
-  1
+  join ret9(retv10: int32) -> int32 {
+    retv10
+  } in
+  jump ret9(1)
 }
 
 fn trait_impl#Size#Wrap__string#size__T_string(self/0: Wrap__string) -> int32 {
-  1
+  join ret11(retv12: int32) -> int32 {
+    retv12
+  } in
+  jump ret11(1)
 }

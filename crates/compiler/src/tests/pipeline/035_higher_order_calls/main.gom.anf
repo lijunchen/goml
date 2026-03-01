@@ -1,45 +1,60 @@
 fn double(x/0: int32) -> int32 {
-  let t3 = (x/0 * 2) in
-  t3
+  join ret3(retv4: int32) -> int32 {
+    retv4
+  } in
+  let t5 = (x/0 * 2) in
+  jump ret3(t5)
 }
 
 fn increment(x/1: int32) -> int32 {
-  let t4 = (x/1 + 1) in
-  t4
+  join ret6(retv7: int32) -> int32 {
+    retv7
+  } in
+  let t8 = (x/1 + 1) in
+  jump ret6(t8)
 }
 
 fn chooser(flag/2: bool) -> (int32) -> int32 {
-  join k5(jp6: (int32) -> int32) -> (int32) -> int32 {
-    jp6
+  join ret9(retv10: (int32) -> int32) -> (int32) -> int32 {
+    retv10
+  } in
+  join k11(jp12: (int32) -> int32) -> (int32) -> int32 {
+    jump ret9(jp12)
   } in
   if flag/2 {
-    jump k5(double)
+    jump k11(double)
   } else {
-    jump k5(increment)
+    jump k11(increment)
   }
 }
 
 fn main() -> unit {
+  join ret13() -> unit {
+    ()
+  } in
   let xs/3 = [double, increment] in
   let f/4 = array_get(xs/3, 0) in
   let g/5 = array_get(xs/3, 1) in
-  let t7 = f/4(10) in
-  let t8 = g/5(t7) in
-  let mtmp0 = println__T_int32(t8) in
+  let t14 = f/4(10) in
+  let t15 = g/5(t14) in
+  let mtmp0 = println__T_int32(t15) in
   let chosen/6 = chooser(true) in
   let applied/7 = chosen/6(5) in
-  let t9 = chooser(false) in
-  let direct/8 = t9(5) in
+  let t16 = chooser(false) in
+  let direct/8 = t16(5) in
   let printer/9 = string_println in
-  let t10 = int32_to_string(applied/7) in
-  let mtmp1 = printer/9(t10) in
-  let t11 = int32_to_string(direct/8) in
-  let mtmp2 = printer/9(t11) in
-  ()
+  let t17 = int32_to_string(applied/7) in
+  let mtmp1 = printer/9(t17) in
+  let t18 = int32_to_string(direct/8) in
+  let mtmp2 = printer/9(t18) in
+  jump ret13()
 }
 
 fn println__T_int32(value/1: int32) -> unit {
-  let t12 = int32_to_string(value/1) in
-  let t13 = string_println(t12) in
-  t13
+  join ret19() -> unit {
+    ()
+  } in
+  let t20 = int32_to_string(value/1) in
+  let t21 = string_println(t20) in
+  jump ret19()
 }

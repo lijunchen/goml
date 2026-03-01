@@ -10,13 +10,15 @@ func string_println(s string) struct{} {
 }
 
 func _goml_Lib_x3a__x3a_msg() string {
-    return "hi"
+    var retv1 string
+    retv1 = "hi"
+    return retv1
 }
 
 func main0() struct{} {
-    var t0 string = _goml_Lib_x3a__x3a_msg()
-    var t1 struct{} = string_println(t0)
-    return t1
+    var t3 string = _goml_Lib_x3a__x3a_msg()
+    string_println(t3)
+    return struct{}{}
 }
 
 func main() {
