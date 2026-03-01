@@ -1366,7 +1366,7 @@ fn lower_expr_with_args(
                         }
                     }
                     other => {
-                        if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_)) {
+                        if matches!(&other, cst::Expr::CallExpr(_) | cst::Expr::ClosureExpr(_) | cst::Expr::ParenExpr(_)) {
                             let func_expr = lower_expr(ctx, other)?;
                             let call = ast::Expr::ECall {
                                 func: Box::new(func_expr),
