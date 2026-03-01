@@ -23,6 +23,9 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![uint16_lit],
     T![uint32_lit],
     T![uint64_lit],
+    T![float],
+    T![float32_lit],
+    T![float64_lit],
     T![str],
     T![char_lit],
 ];
@@ -67,6 +70,18 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
                 T![int64_lit] => {
                     p.advance();
                     p.close(m, MySyntaxKind::PATTERN_INT64)
+                }
+                T![float] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_FLOAT)
+                }
+                T![float32_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_FLOAT32)
+                }
+                T![float64_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_FLOAT64)
                 }
                 _ => {
                     p.error("expected a numeric literal after '-' in pattern");
@@ -118,6 +133,21 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_UINT64)
+        }
+        T![float] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::PATTERN_FLOAT)
+        }
+        T![float32_lit] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::PATTERN_FLOAT32)
+        }
+        T![float64_lit] => {
+            let m = p.open();
+            p.advance();
+            p.close(m, MySyntaxKind::PATTERN_FLOAT64)
         }
         T![str] => {
             let m = p.open();

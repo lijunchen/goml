@@ -1355,6 +1355,27 @@ impl NameResolution {
                     value: value.clone(),
                 },
             ),
+            ast::Pat::PFloat { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PFloat {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PFloat32 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PFloat32 {
+                    value: value.clone(),
+                },
+            ),
+            ast::Pat::PFloat64 { value, astptr } => self.alloc_pat_with_ptr(
+                hir_table,
+                *astptr,
+                hir::Pat::PFloat64 {
+                    value: value.clone(),
+                },
+            ),
             ast::Pat::PString { value, astptr } => self.alloc_pat_with_ptr(
                 hir_table,
                 *astptr,

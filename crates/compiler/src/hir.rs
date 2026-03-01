@@ -1483,6 +1483,15 @@ pub enum Pat {
     PUInt64 {
         value: String,
     },
+    PFloat {
+        value: String,
+    },
+    PFloat32 {
+        value: String,
+    },
+    PFloat64 {
+        value: String,
+    },
     PString {
         value: String,
     },

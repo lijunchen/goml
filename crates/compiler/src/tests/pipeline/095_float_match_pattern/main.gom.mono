@@ -1,0 +1,29 @@
+fn classify(x/0: float64) -> string {
+  match x/0 {
+    0 => {
+      "zero"
+    },
+    1 => {
+      "one"
+    },
+    -1 => {
+      "minus one"
+    },
+    3.14 => {
+      "pi"
+    },
+    _ => "other",
+  }
+}
+
+fn main() -> unit {
+  let _wild0 = println__T_string(classify(0)) in
+  let _wild1 = println__T_string(classify(1)) in
+  let _wild2 = println__T_string(classify((-1))) in
+  let _wild3 = println__T_string(classify(3.14)) in
+  let _wild4 = println__T_string(classify(42)) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

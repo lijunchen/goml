@@ -789,6 +789,27 @@ fn build_pat(hir_table: &hir::HirTable, results: &TypeckResults, pat_id: hir::Pa
             ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TUint64),
             astptr,
         },
+        hir::Pat::PFloat { value } => tast::Pat::PPrim {
+            value: Prim::Float64 {
+                value: value.parse::<f64>().unwrap_or(0.0),
+            },
+            ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TFloat64),
+            astptr,
+        },
+        hir::Pat::PFloat32 { value } => tast::Pat::PPrim {
+            value: Prim::Float32 {
+                value: value.parse::<f64>().unwrap_or(0.0) as f32,
+            },
+            ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TFloat32),
+            astptr,
+        },
+        hir::Pat::PFloat64 { value } => tast::Pat::PPrim {
+            value: Prim::Float64 {
+                value: value.parse::<f64>().unwrap_or(0.0),
+            },
+            ty: results.pat_ty(pat_id).cloned().unwrap_or(tast::Ty::TFloat64),
+            astptr,
+        },
         hir::Pat::PString { value } => tast::Pat::PPrim {
             value: Prim::string(value),
             ty: tast::Ty::TString,

@@ -436,6 +436,9 @@ impl Pat {
             Pat::PUInt16 { value, astptr: _ } => RcDoc::text(format!("{}u16", value)),
             Pat::PUInt32 { value, astptr: _ } => RcDoc::text(format!("{}u32", value)),
             Pat::PUInt64 { value, astptr: _ } => RcDoc::text(format!("{}u64", value)),
+            Pat::PFloat { value, astptr: _ } => RcDoc::text(value.clone()),
+            Pat::PFloat32 { value, astptr: _ } => RcDoc::text(format!("{}f32", value)),
+            Pat::PFloat64 { value, astptr: _ } => RcDoc::text(format!("{}f64", value)),
             Pat::PString { value, astptr: _ } => RcDoc::text(format!("{:?}", value)),
             Pat::PChar { value, astptr: _ } => RcDoc::text(format!("'{}'", value)),
             Pat::PConstr {

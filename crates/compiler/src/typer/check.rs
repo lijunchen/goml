@@ -3173,6 +3173,15 @@ impl Typer {
             hir::Pat::PUInt64 { value } => {
                 self.check_pat_typed_int(diagnostics, &value, &tast::Ty::TUint64, ty, range, astptr)
             }
+            hir::Pat::PFloat { value } => {
+                self.check_pat_float(diagnostics, &value, ty, range, astptr)
+            }
+            hir::Pat::PFloat32 { value } => {
+                self.check_pat_typed_float(diagnostics, &value, &tast::Ty::TFloat32, ty, range, astptr)
+            }
+            hir::Pat::PFloat64 { value } => {
+                self.check_pat_typed_float(diagnostics, &value, &tast::Ty::TFloat64, ty, range, astptr)
+            }
             hir::Pat::PString { value } => self.check_pat_string(&value, ty, range, astptr),
             hir::Pat::PChar { value } => {
                 self.check_pat_char(diagnostics, value.as_str(), ty, range, astptr)
@@ -3258,6 +3267,54 @@ impl Typer {
         let prim = self
             .parse_integer_literal_with_ty(diagnostics, value, literal_ty, range)
             .unwrap_or_else(|| Prim::zero_for_int_ty(literal_ty));
+        self.push_constraint(Constraint::TypeEqual(
+            literal_ty.clone(),
+            expected_ty.clone(),
+            range,
+        ));
+        tast::Pat::PPrim {
+            value: prim,
+            ty: literal_ty.clone(),
+            astptr,
+        }
+    }
+
+    fn check_pat_float(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        let target_ty = if is_float_ty(ty) {
+            ty.clone()
+        } else {
+            tast::Ty::TFloat64
+        };
+        let prim = self
+            .parse_float_literal_with_ty(diagnostics, value, &target_ty, range)
+            .unwrap_or(Prim::Float64 { value: 0.0 });
+        self.push_constraint(Constraint::TypeEqual(target_ty.clone(), ty.clone(), range));
+        tast::Pat::PPrim {
+            value: prim,
+            ty: ty.clone(),
+            astptr,
+        }
+    }
+
+    fn check_pat_typed_float(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        value: &str,
+        literal_ty: &tast::Ty,
+        expected_ty: &tast::Ty,
+        range: Option<TextRange>,
+        astptr: Option<MySyntaxNodePtr>,
+    ) -> tast::Pat {
+        let prim = self
+            .parse_float_literal_with_ty(diagnostics, value, literal_ty, range)
+            .unwrap_or(Prim::Float64 { value: 0.0 });
         self.push_constraint(Constraint::TypeEqual(
             literal_ty.clone(),
             expected_ty.clone(),
@@ -3621,6 +3678,9 @@ impl Typer {
             | hir::Pat::PUInt16 { .. }
             | hir::Pat::PUInt32 { .. }
             | hir::Pat::PUInt64 { .. }
+            | hir::Pat::PFloat { .. }
+            | hir::Pat::PFloat32 { .. }
+            | hir::Pat::PFloat64 { .. }
             | hir::Pat::PString { .. }
             | hir::Pat::PChar { .. }
             | hir::Pat::PConstr { .. } => false,

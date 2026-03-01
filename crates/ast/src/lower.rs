@@ -25,11 +25,10 @@ fn unescape_string(s: &str) -> String {
                 Some('/') => result.push('/'),
                 Some('u') => {
                     let hex: String = chars.by_ref().take(4).collect();
-                    if let Ok(code) = u32::from_str_radix(&hex, 16) {
-                        if let Some(ch) = char::from_u32(code) {
+                    if let Ok(code) = u32::from_str_radix(&hex, 16)
+                        && let Some(ch) = char::from_u32(code) {
                             result.push(ch);
                         }
-                    }
                 }
                 Some(other) => {
                     result.push('\\');
@@ -2209,7 +2208,7 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
         cst::Pattern::IntPat(it) => {
             let neg = if it.is_negative() { "-" } else { "" };
             Some(ast::Pat::PInt {
-                value: format!("{}{}", neg, it.value()?.to_string()),
+                value: format!("{}{}", neg, it.value()?),
                 astptr: MySyntaxNodePtr::new(it.syntax()),
             })
         }
@@ -2264,6 +2263,26 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
             let text = it.value()?.to_string();
             let value = text.strip_suffix("u64").unwrap_or(&text).to_string();
             Some(ast::Pat::PUInt64 { value, astptr })
+        }
+        cst::Pattern::FloatPat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat { value: format!("{}{}", neg, text), astptr })
+        }
+        cst::Pattern::Float32Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("f32").unwrap_or(&text).to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat32 { value: format!("{}{}", neg, value), astptr })
+        }
+        cst::Pattern::Float64Pat(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let text = it.value()?.to_string();
+            let value = text.strip_suffix("f64").unwrap_or(&text).to_string();
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PFloat64 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::CharPat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());

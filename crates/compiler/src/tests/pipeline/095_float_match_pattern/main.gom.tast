@@ -1,0 +1,25 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn classify(x/0: float64) -> string {
+    match (x/0 : float64) {
+        0 => "zero",
+        1 => "one",
+        -1 => "minus one",
+        3.14 => "pi",
+        _ : float64 => "other",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((classify : (float64) -> string)(0));
+    (println : (string) -> unit)((classify : (float64) -> string)(1));
+    (println : (string) -> unit)((classify : (float64) -> string)(-1));
+    (println : (string) -> unit)((classify : (float64) -> string)(3.14));
+    (println : (string) -> unit)((classify : (float64) -> string)(42));
+}

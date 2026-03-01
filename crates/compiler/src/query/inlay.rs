@@ -228,6 +228,9 @@ fn collect_pattern_locals(
         | hir::Pat::PUInt16 { .. }
         | hir::Pat::PUInt32 { .. }
         | hir::Pat::PUInt64 { .. }
+        | hir::Pat::PFloat { .. }
+        | hir::Pat::PFloat32 { .. }
+        | hir::Pat::PFloat64 { .. }
         | hir::Pat::PString { .. }
         | hir::Pat::PChar { .. }
         | hir::Pat::PWild => {}
