@@ -347,7 +347,7 @@ impl Typer {
                 self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, None)
             }
             hir::Expr::EStructLiteral { name, fields } => {
-                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields)
+                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields, None)
             }
             hir::Expr::ETuple { items } => {
                 self.infer_tuple_expr(genv, local_env, diagnostics, &items)
@@ -585,6 +585,9 @@ impl Typer {
             }
             hir::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, Some(expected))
+            }
+            hir::Expr::EStructLiteral { name, fields } if !matches!(expected, tast::Ty::TDyn { .. }) => {
+                self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields, Some(expected))
             }
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
@@ -1489,6 +1492,7 @@ impl Typer {
         expr_id: hir::ExprId,
         name: &hir::QualifiedPath,
         fields: &[(hir::HirIdent, hir::ExprId)],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let name_display = name.display();
         let (resolved_name, type_env) = super::util::resolve_type_name(genv, &name_display);
@@ -1532,8 +1536,15 @@ impl Typer {
         };
 
         let inst_constr_ty = self.inst_ty(&constr_ty);
-        let param_tys = match &inst_constr_ty {
-            tast::Ty::TFunc { params, .. } => params.clone(),
+        if let Some(hint) = hint_ret_ty {
+            let ret_ty = match &inst_constr_ty {
+                tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
+                _ => inst_constr_ty.clone(),
+            };
+            self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
+        }
+        let param_tys: Vec<tast::Ty> = match &inst_constr_ty {
+            tast::Ty::TFunc { params, .. } => params.iter().map(|p| self.norm(p)).collect(),
             _ => Vec::new(),
         };
 
