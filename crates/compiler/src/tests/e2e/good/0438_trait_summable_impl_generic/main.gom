@@ -1,0 +1,27 @@
+trait Summable {
+    fn sum(Self, Self) -> Self;
+}
+
+impl Summable for int32 {
+    fn sum(self: int32, other: int32) -> int32 { self + other }
+}
+
+struct Wrapper[T] { value: T }
+
+impl[T: Summable] Summable for Wrapper[T] {
+    fn sum(self: Wrapper[T], other: Wrapper[T]) -> Wrapper[T] {
+        Wrapper { value: Summable::sum(self.value, other.value) }
+    }
+}
+
+fn main() {
+    let a = Wrapper { value: 10 };
+    let b = Wrapper { value: 20 };
+    let c = Summable::sum(a, b);
+    println(c.value.to_string());
+    
+    let d = Wrapper { value: Wrapper { value: 1 } };
+    let e = Wrapper { value: Wrapper { value: 2 } };
+    let f = Summable::sum(d, e);
+    println(f.value.value.to_string());
+}

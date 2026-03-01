@@ -1,0 +1,12 @@
+struct Strategy {
+    execute: (int32, int32) -> int32,
+}
+
+fn main() {
+    let s = if true {
+        Strategy { execute: |a, b| a + b }
+    } else {
+        Strategy { execute: |a, b| a * b }
+    };
+    println(s.execute(3, 4).to_string());
+}

@@ -1,0 +1,24 @@
+trait Runnable {
+    fn run(Self) -> unit;
+}
+
+struct Task {
+    name: string,
+}
+
+impl Runnable for Task {
+    fn run(self: Task) -> unit {
+        println("Running: " + self.name);
+    }
+}
+
+fn execute(r: dyn Runnable) {
+    Runnable::run(r);
+}
+
+fn main() {
+    let t1 = Task { name: "first" };
+    let t2 = Task { name: "second" };
+    execute(t1);
+    execute(t2);
+}

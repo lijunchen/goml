@@ -1,0 +1,22 @@
+package main;
+
+fn main() {
+    let m: HashMap[string, int32] = hashmap_new();
+    hashmap_set(m, "a", 1);
+    hashmap_set(m, "b", 2);
+    hashmap_set(m, "c", 3);
+    
+    string_println(int32_to_string(hashmap_len(m)));
+    
+    if hashmap_contains(m, "a") {
+        string_println("has a");
+    } else {
+        string_println("no a");
+    };
+    
+    if hashmap_contains(m, "d") {
+        string_println("has d");
+    } else {
+        string_println("no d");
+    };
+}

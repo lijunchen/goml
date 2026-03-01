@@ -1,0 +1,37 @@
+package main;
+
+trait Collection {
+    fn is_empty(Self) -> bool;
+    fn count(Self) -> int32;
+    fn describe(Self) -> string;
+}
+
+struct Bag {
+    items: int32,
+}
+
+impl Collection for Bag {
+    fn is_empty(self: Bag) -> bool {
+        self.items == 0
+    }
+    fn count(self: Bag) -> int32 {
+        self.items
+    }
+    fn describe(self: Bag) -> string {
+        "bag(" + int32_to_string(self.items) + ")"
+    }
+}
+
+fn print_collection(c: dyn Collection) {
+    string_println(Collection::describe(c));
+    if Collection::is_empty(c) {
+        string_println("  empty");
+    } else {
+        string_println("  count: " + int32_to_string(Collection::count(c)));
+    };
+}
+
+fn main() {
+    print_collection(Bag { items: 0 });
+    print_collection(Bag { items: 5 });
+}

@@ -1,0 +1,30 @@
+trait Printable {
+    fn to_display(Self) -> string;
+}
+
+struct Wrapper[T] {
+    value: T,
+}
+
+impl Printable for Wrapper[int32] {
+    fn to_display(self: Wrapper[int32]) -> string {
+        "Wrapper(" + self.value.to_string() + ")"
+    }
+}
+
+impl Printable for Wrapper[string] {
+    fn to_display(self: Wrapper[string]) -> string {
+        "Wrapper(\"" + self.value + "\")"
+    }
+}
+
+fn show_wrapper[T: Printable](w: T) -> string {
+    Printable::to_display(w)
+}
+
+fn main() {
+    let w1 = Wrapper { value: 42 };
+    let w2 = Wrapper { value: "hello" };
+    println(show_wrapper(w1));
+    println(show_wrapper(w2));
+}

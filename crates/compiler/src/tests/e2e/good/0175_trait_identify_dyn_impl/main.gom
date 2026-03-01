@@ -1,0 +1,16 @@
+package main;
+
+trait Identify {
+    fn identify(Self) -> string;
+}
+
+struct Robot { id: int32 }
+
+impl Identify for Robot {
+    fn identify(self: Robot) -> string { "Robot-" + int32_to_string(self.id) }
+}
+
+fn main() {
+    let a: dyn Identify = Robot { id: 42 };
+    string_println(Identify::identify(a));
+}

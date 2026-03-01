@@ -1,0 +1,22 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+fn main() {
+    let x: Option[Pair[uint8, uint8]] = Option::Some(Pair { first: 1, second: 2 });
+    match x {
+        Option::Some(p) => {
+            string_println(uint8_to_string(p.first));
+            string_println(uint8_to_string(p.second));
+        },
+        Option::None => string_println("none"),
+    };
+}

@@ -1,0 +1,36 @@
+package main;
+
+trait Animal {
+    fn name(Self) -> string;
+    fn sound(Self) -> string;
+}
+
+struct Dog { breed: string }
+struct Cat { color: string }
+
+impl Animal for Dog {
+    fn name(self: Dog) -> string { "Dog" }
+    fn sound(self: Dog) -> string { "Woof" }
+}
+
+impl Animal for Cat {
+    fn name(self: Cat) -> string { "Cat" }
+    fn sound(self: Cat) -> string { "Meow" }
+}
+
+fn describe(a: dyn Animal) -> string {
+    Animal::name(a) + " says " + Animal::sound(a)
+}
+
+fn main() {
+    let animals: [dyn Animal; 3] = [
+        Dog { breed: "Lab" },
+        Cat { color: "black" },
+        Dog { breed: "Poodle" },
+    ];
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        string_println(describe(array_get(animals, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

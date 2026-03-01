@@ -1,0 +1,35 @@
+trait Combine {
+    fn combine(Self, Self) -> Self;
+}
+
+impl Combine for int32 {
+    fn combine(a: int32, b: int32) -> int32 {
+        a + b
+    }
+}
+
+impl Combine for string {
+    fn combine(a: string, b: string) -> string {
+        a + b
+    }
+}
+
+fn fold[T: Combine](items: [T; 3], init: T) -> T {
+    let acc = ref(init);
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        ref_set(acc, Combine::combine(ref_get(acc), array_get(items, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(acc)
+}
+
+fn main() {
+    let nums = [1, 2, 3];
+    let result = fold(nums, 0);
+    println(result.to_string());
+    
+    let strs = ["hello", " ", "world"];
+    let joined = fold(strs, "");
+    println(joined);
+}

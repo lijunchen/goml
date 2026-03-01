@@ -1,0 +1,17 @@
+package main;
+
+struct Pair[A, B] { fst: A, snd: B }
+
+fn make_pair[A, B](a: A, b: B) -> Pair[A, B] {
+    Pair { fst: a, snd: b }
+}
+
+fn main() {
+    let p1: Pair[int32, string] = make_pair(1, "one");
+    let p2: Pair[string, Pair[int32, int32]] = make_pair("coords", make_pair(3, 4));
+    string_println(int32_to_string(p1.fst));
+    string_println(p1.snd);
+    string_println(p2.fst);
+    string_println(int32_to_string(p2.snd.fst));
+    string_println(int32_to_string(p2.snd.snd));
+}

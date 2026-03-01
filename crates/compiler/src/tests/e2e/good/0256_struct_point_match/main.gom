@@ -1,0 +1,19 @@
+package main;
+
+struct Point { x: int32, y: int32 }
+
+fn classify(p: Point) -> string {
+    match p {
+        Point { x: 0, y: 0 } => "origin",
+        Point { x: 0, y } => "y-axis at " + int32_to_string(y),
+        Point { x, y: 0 } => "x-axis at " + int32_to_string(x),
+        Point { x, y } => int32_to_string(x) + "," + int32_to_string(y),
+    }
+}
+
+fn main() {
+    string_println(classify(Point { x: 0, y: 0 }));
+    string_println(classify(Point { x: 0, y: 5 }));
+    string_println(classify(Point { x: 3, y: 0 }));
+    string_println(classify(Point { x: 3, y: 4 }));
+}

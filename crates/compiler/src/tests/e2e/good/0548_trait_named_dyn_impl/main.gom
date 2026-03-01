@@ -1,0 +1,20 @@
+package main;
+
+trait Named {
+    fn name(Self) -> string;
+}
+
+struct Cat {
+    n: string,
+}
+
+impl Named for Cat {
+    fn name(self: Cat) -> string {
+        self.n
+    }
+}
+
+fn main() {
+    let a: dyn Named = Cat { n: "Whiskers" };
+    string_println(Named::name(a));
+}

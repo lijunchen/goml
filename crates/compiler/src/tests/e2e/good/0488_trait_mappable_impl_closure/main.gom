@@ -1,0 +1,24 @@
+trait Mappable {
+    fn map_val(Self, (int32) -> int32) -> Self;
+}
+
+struct Box {
+    value: int32,
+}
+
+impl Mappable for Box {
+    fn map_val(self: Box, f: (int32) -> int32) -> Box {
+        Box { value: f(self.value) }
+    }
+}
+
+fn apply_twice[T: Mappable](x: T, f: (int32) -> int32) -> T {
+    let once = Mappable::map_val(x, f);
+    Mappable::map_val(once, f)
+}
+
+fn main() {
+    let b = Box { value: 5 };
+    let result = apply_twice(b, |x| x + 10);
+    println(result.value.to_string());
+}

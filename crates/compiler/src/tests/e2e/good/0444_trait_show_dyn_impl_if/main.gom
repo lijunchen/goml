@@ -1,0 +1,16 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct A {}
+struct B {}
+impl Show for A { fn show(self: A) -> string { "A" } }
+impl Show for B { fn show(self: B) -> string { "B" } }
+
+fn main() {
+    let make: (bool) -> dyn Show = |flag| {
+        if flag { A {} } else { B {} }
+    };
+    println(Show::show(make(true)));
+    println(Show::show(make(false)));
+}

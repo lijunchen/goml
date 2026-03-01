@@ -1,0 +1,22 @@
+package main;
+
+enum Either[A, B] {
+    Left(A),
+    Right(B),
+}
+
+fn map_right[A, B, C](e: Either[A, B], f: (B) -> C) -> Either[A, C] {
+    match e {
+        Either::Left(a) => Either::Left(a),
+        Either::Right(b) => Either::Right(f(b)),
+    }
+}
+
+fn main() {
+    let e1: Either[string, int32] = Either::Right(42);
+    let e2 = map_right(e1, |x: int32| int32_to_string(x));
+    match e2 {
+        Either::Left(s) => string_println("left: " + s),
+        Either::Right(s) => string_println("right: " + s),
+    };
+}

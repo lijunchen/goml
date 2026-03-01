@@ -1,0 +1,29 @@
+trait Formatter {
+    fn format(Self, int32) -> string;
+}
+
+struct DecFormatter {}
+struct HexFormatter {}
+
+impl Formatter for DecFormatter {
+    fn format(self: DecFormatter, n: int32) -> string { n.to_string() }
+}
+
+impl Formatter for HexFormatter {
+    fn format(self: HexFormatter, n: int32) -> string { "0x" + n.to_string() }
+}
+
+struct Printer {
+    fmt: dyn Formatter,
+}
+
+fn print_num(p: Printer, n: int32) -> unit {
+    println(Formatter::format(p.fmt, n));
+}
+
+fn main() {
+    let p1 = Printer { fmt: DecFormatter {} };
+    let p2 = Printer { fmt: HexFormatter {} };
+    print_num(p1, 42);
+    print_num(p2, 42);
+}

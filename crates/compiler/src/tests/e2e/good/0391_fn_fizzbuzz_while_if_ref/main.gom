@@ -1,0 +1,22 @@
+fn fizzbuzz(n: int32) -> string {
+    let i = ref(1i32);
+    let result = ref("");
+    while ref_get(i) <= n {
+        let x = ref_get(i);
+        let s = if x == 15 { "FizzBuzz" }
+                else if x == 3 { "Fizz" }
+                else if x == 5 { "Buzz" }
+                else if x == 6 { "Fizz" }
+                else if x == 9 { "Fizz" }
+                else if x == 10 { "Buzz" }
+                else if x == 12 { "Fizz" }
+                else { x.to_string() };
+        ref_set(result, ref_get(result) + s + " ");
+        ref_set(i, x + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    println(fizzbuzz(15));
+}

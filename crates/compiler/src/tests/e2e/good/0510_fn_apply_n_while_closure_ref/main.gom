@@ -1,0 +1,18 @@
+fn apply_n(f: (int32) -> int32, n: int32, x: int32) -> int32 {
+    let result = ref(x);
+    let i = ref(0);
+    while ref_get(i) < n {
+        ref_set(result, f(ref_get(result)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let double = |x: int32| x * 2;
+    println(apply_n(double, 5, 1).to_string());
+    
+    let captured = 3;
+    let add_captured = |x: int32| x + captured;
+    println(apply_n(add_captured, 4, 0).to_string());
+}

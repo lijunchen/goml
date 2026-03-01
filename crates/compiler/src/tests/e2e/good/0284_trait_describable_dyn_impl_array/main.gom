@@ -1,0 +1,29 @@
+package main;
+
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Dog { name: string }
+struct Car { brand: string }
+
+impl Describable for Dog {
+    fn describe(self: Dog) -> string { "Dog: " + self.name }
+}
+
+impl Describable for Car {
+    fn describe(self: Car) -> string { "Car: " + self.brand }
+}
+
+fn print_desc(d: dyn Describable) {
+    string_println(Describable::describe(d));
+}
+
+fn main() {
+    let items: [dyn Describable; 2] = [
+        Dog { name: "Rex" },
+        Car { brand: "Toyota" },
+    ];
+    print_desc(array_get(items, 0));
+    print_desc(array_get(items, 1));
+}

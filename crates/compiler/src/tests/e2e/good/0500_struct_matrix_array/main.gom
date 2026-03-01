@@ -1,0 +1,15 @@
+struct Matrix {
+    data: [[int32; 2]; 2],
+}
+
+fn get(m: Matrix, row: int32, col: int32) -> int32 {
+    array_get(array_get(m.data, row), col)
+}
+
+fn main() {
+    let m = Matrix { data: [[1, 2], [3, 4]] };
+    println(get(m, 0, 0).to_string());
+    println(get(m, 0, 1).to_string());
+    println(get(m, 1, 0).to_string());
+    println(get(m, 1, 1).to_string());
+}

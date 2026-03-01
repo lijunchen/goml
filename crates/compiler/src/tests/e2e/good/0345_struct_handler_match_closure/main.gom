@@ -1,0 +1,16 @@
+struct Handler {
+    handle: (int32) -> string,
+}
+
+fn get_handler(mode: int32) -> Handler {
+    match mode {
+        0 => Handler { handle: |x| x.to_string() },
+        1 => Handler { handle: |x| (x * 2).to_string() },
+        _ => Handler { handle: |x| "unknown" },
+    }
+}
+
+fn main() {
+    let h = get_handler(1);
+    println(h.handle(21));
+}

@@ -1,0 +1,29 @@
+trait Encode {
+    fn encode(Self) -> string;
+}
+
+trait Decode {
+    fn decode(string) -> Self;
+}
+
+struct MyInt { val: int32 }
+
+impl Encode for MyInt {
+    fn encode(self: MyInt) -> string { "i:" + self.val.to_string() }
+}
+
+impl Decode for MyInt {
+    fn decode(s: string) -> MyInt { MyInt { val: 42 } }
+}
+
+fn round_trip[T: Encode + Decode](x: T) -> T {
+    let encoded = Encode::encode(x);
+    println("encoded: " + encoded);
+    Decode::decode(encoded)
+}
+
+fn main() {
+    let orig = MyInt { val: 99 };
+    let back = round_trip(orig);
+    println("decoded val: " + back.val.to_string());
+}

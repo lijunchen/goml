@@ -1,0 +1,26 @@
+package main;
+
+trait Eval {
+    fn eval(Self) -> int32;
+}
+
+struct Lit { val: int32 }
+struct Neg { val: int32 }
+
+impl Eval for Lit {
+    fn eval(self: Lit) -> int32 { self.val }
+}
+impl Eval for Neg {
+    fn eval(self: Neg) -> int32 { 0 - self.val }
+}
+
+fn make_expr(positive: bool, n: int32) -> dyn Eval {
+    if positive { Lit { val: n } } else { Neg { val: n } }
+}
+
+fn main() {
+    let e1 = make_expr(true, 42);
+    let e2 = make_expr(false, 10);
+    string_println(int32_to_string(Eval::eval(e1)));
+    string_println(int32_to_string(Eval::eval(e2)));
+}

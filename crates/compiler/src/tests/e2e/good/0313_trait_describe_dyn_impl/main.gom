@@ -1,0 +1,25 @@
+package main;
+
+trait Describe {
+    fn describe(Self) -> string;
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+impl Describe for Point {
+    fn describe(self: Point) -> string {
+        "(" + int32_to_string(self.x) + ", " + int32_to_string(self.y) + ")"
+    }
+}
+
+fn print_desc(s: dyn Describe) {
+    string_println(Describe::describe(s));
+}
+
+fn main() {
+    let p = Point { x: 1, y: 2 };
+    print_desc(p);
+}

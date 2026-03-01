@@ -1,0 +1,27 @@
+package main;
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn div(a: int32, b: int32) -> Result[int32, string] {
+    if b == 0 {
+        Result::Err("division by zero")
+    } else {
+        Result::Ok(a / b)
+    }
+}
+
+fn show_result(r: Result[int32, string]) -> string {
+    match r {
+        Result::Ok(v) => "Ok(" + int32_to_string(v) + ")",
+        Result::Err(e) => "Err(" + e + ")",
+    }
+}
+
+fn main() {
+    string_println(show_result(div(10, 3)));
+    string_println(show_result(div(10, 0)));
+    string_println(show_result(div(100, 5)));
+}

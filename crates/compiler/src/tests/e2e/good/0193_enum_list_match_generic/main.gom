@@ -1,0 +1,18 @@
+package main;
+
+enum List[T] {
+    Cons(T, List[T]),
+    Nil,
+}
+
+fn length[T](list: List[T]) -> int32 {
+    match list {
+        List::Cons(_, tail) => 1 + length(tail),
+        List::Nil => 0,
+    }
+}
+
+fn main() {
+    let l = List::Cons(1, List::Cons(2, List::Cons(3, List::Nil)));
+    string_println(int32_to_string(length(l)));
+}

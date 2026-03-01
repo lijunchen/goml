@@ -1,0 +1,12 @@
+package main;
+
+fn main() {
+    let f = |x: int32, y: int32| x + y;
+    let g = |x: int32, y: int32, z: int32| x * y + z;
+    
+    string_println(int32_to_string(f(3, 4)));
+    string_println(int32_to_string(g(2, 3, 4)));
+    
+    let h: (int32, int32) -> int32 = f;
+    string_println(int32_to_string(h(10, 20)));
+}

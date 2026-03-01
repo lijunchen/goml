@@ -1,0 +1,13 @@
+fn apply(f: (int32) -> int32, x: int32) -> int32 {
+    f(x)
+}
+
+fn main() {
+    let op = 1;
+    let f = match op {
+        1 => |x: int32| -> int32 { x + 1 },
+        2 => |x: int32| -> int32 { x * 2 },
+        _ => |x: int32| -> int32 { x },
+    };
+    println(apply(f, 10).to_string());
+}

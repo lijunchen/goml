@@ -1,0 +1,26 @@
+package main;
+
+trait Printable {
+    fn print_val(Self) -> string;
+}
+
+struct Num { v: int32 }
+struct Str { v: string }
+
+impl Printable for Num {
+    fn print_val(self: Num) -> string { int32_to_string(self.v) }
+}
+impl Printable for Str {
+    fn print_val(self: Str) -> string { self.v }
+}
+
+fn wrap[T: Printable](x: T) -> dyn Printable {
+    x
+}
+
+fn main() {
+    let a = wrap(Num { v: 42 });
+    let b = wrap(Str { v: "hello" });
+    string_println(Printable::print_val(a));
+    string_println(Printable::print_val(b));
+}

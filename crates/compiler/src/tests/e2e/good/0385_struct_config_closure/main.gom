@@ -1,0 +1,21 @@
+struct Config {
+    process: (int32, int32) -> int32,
+    label: string,
+}
+
+fn make_config() -> Config {
+    Config { 
+        process: |a, b| a + b,
+        label: "adder",
+    }
+}
+
+fn run_config(c: Config, x: int32, y: int32) -> int32 {
+    c.process(x, y)
+}
+
+fn main() {
+    let c = make_config();
+    let result = run_config(c, 10, 20);
+    println(result.to_string());
+}

@@ -1,0 +1,12 @@
+package main;
+
+fn main() {
+    let m: HashMap[uint8, string] = hashmap_new();
+    hashmap_set(m, 1, "one");
+    hashmap_set(m, 2, "two");
+    hashmap_set(m, 3, "three");
+    match hashmap_get(m, 2) {
+        Option::Some(v) => string_println(v),
+        Option::None => string_println("not found"),
+    };
+}

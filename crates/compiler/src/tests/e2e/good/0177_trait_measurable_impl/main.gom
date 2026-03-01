@@ -1,0 +1,32 @@
+package main;
+
+trait Measurable {
+    fn measure(Self) -> int32;
+}
+
+struct Rect {
+    w: int32,
+    h: int32,
+}
+
+impl Rect {
+    fn area(self: Rect) -> int32 {
+        self.w * self.h
+    }
+    fn perimeter(self: Rect) -> int32 {
+        2 * (self.w + self.h)
+    }
+}
+
+impl Measurable for Rect {
+    fn measure(self: Rect) -> int32 {
+        Rect::area(self)
+    }
+}
+
+fn main() {
+    let r = Rect { w: 3, h: 4 };
+    string_println(int32_to_string(Rect::area(r)));
+    string_println(int32_to_string(Rect::perimeter(r)));
+    string_println(int32_to_string(Measurable::measure(r)));
+}

@@ -1,0 +1,14 @@
+struct Point { x: int32, y: int32 }
+
+fn main() {
+    let p = Point { x: 3, y: 4 };
+    let Point { x, y } = p;
+    let dist_sq = x * x + y * y;
+    println(dist_sq.to_string());
+    
+    let (a, b, c) = (1, "hello", true);
+    println(a.to_string() + " " + b + " " + c.to_string());
+    
+    let ((d, e), f) = ((10, 20), 30);
+    println(d.to_string() + " " + e.to_string() + " " + f.to_string());
+}

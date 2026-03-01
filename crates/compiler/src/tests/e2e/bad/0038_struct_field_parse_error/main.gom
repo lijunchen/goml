@@ -1,0 +1,15 @@
+package main;
+
+struct Config {
+    width: int32,
+    height: int32,
+    title: string,
+}
+
+fn main() {
+    let default = Config { width: 800, height: 600, title: "default" };
+    let custom = Config { width: 1920, ..default };
+    string_println(int32_to_string(custom.width));
+    string_println(int32_to_string(custom.height));
+    string_println(custom.title);
+}

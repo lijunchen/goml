@@ -1,0 +1,36 @@
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn find_first(items: [int32; 5], pred: (int32) -> bool) -> Option[int32] {
+    let i = ref(0);
+    let result: Ref[Option[int32]] = ref(Option::None);
+    while ref_get(i) < 5 {
+        let item = array_get(items, ref_get(i));
+        match ref_get(result) {
+            Option::None => {
+                if pred(item) {
+                    ref_set(result, Option::Some(item));
+                } else {
+                    ()
+                };
+            },
+            Option::Some(_) => (),
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let items = [1, 3, 5, 4, 2];
+    match find_first(items, |x| x > 3) {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("not found"),
+    };
+    match find_first(items, |x| x > 10) {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("not found"),
+    };
+}

@@ -1,0 +1,17 @@
+package main;
+
+fn classify(p: (int32, int32)) -> string {
+    match p {
+        (0, 0) => "origin",
+        (0, _) => "y-axis",
+        (_, 0) => "x-axis",
+        (x, y) => "(" + int32_to_string(x) + "," + int32_to_string(y) + ")",
+    }
+}
+
+fn main() {
+    string_println(classify((0, 0)));
+    string_println(classify((0, 5)));
+    string_println(classify((3, 0)));
+    string_println(classify((1, 2)));
+}

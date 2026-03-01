@@ -1,0 +1,19 @@
+package main;
+
+trait Cloneable {
+    fn clone(Self) -> Self;
+}
+
+struct Num { value: int32 }
+
+impl Cloneable for Num {
+    fn clone(self: Num) -> Num {
+        Num { value: self.value }
+    }
+}
+
+fn main() {
+    let n = Num { value: 42 };
+    let n2 = Cloneable::clone(n);
+    string_println(int32_to_string(n2.value));
+}

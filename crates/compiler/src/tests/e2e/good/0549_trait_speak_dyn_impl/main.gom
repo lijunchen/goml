@@ -1,0 +1,20 @@
+package main;
+
+struct Robot {
+    name: string,
+}
+
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+impl Speak for Robot {
+    fn speak(self: Robot) -> string {
+        self.name
+    }
+}
+
+fn main() {
+    let r: dyn Speak = Robot { name: "R2D2" };
+    string_println(Speak::speak(r));
+}

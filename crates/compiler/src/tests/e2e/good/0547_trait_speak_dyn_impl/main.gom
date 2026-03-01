@@ -1,0 +1,18 @@
+package main;
+
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+struct Robot {}
+
+impl Speak for Robot {
+    fn speak(self: Robot) -> string {
+        "beep boop"
+    }
+}
+
+fn main() {
+    let r: dyn Speak = Robot {};
+    string_println(Speak::speak(r));
+}

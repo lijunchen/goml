@@ -1,0 +1,29 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn flatten[T](opt: Option[Option[T]]) -> Option[T] {
+    match opt {
+        Option::Some(inner) => inner,
+        Option::None => Option::None,
+    }
+}
+
+fn main() {
+    let x: Option[Option[int32]] = Option::Some(Option::Some(42));
+    let y = flatten(x);
+    match y {
+        Option::Some(v) => string_println(int32_to_string(v)),
+        Option::None => string_println("none"),
+    };
+    
+    let z: Option[Option[int32]] = Option::Some(Option::None);
+    let w = flatten(z);
+    match w {
+        Option::Some(v) => string_println(int32_to_string(v)),
+        Option::None => string_println("none"),
+    };
+}

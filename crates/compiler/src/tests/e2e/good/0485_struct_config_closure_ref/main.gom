@@ -1,0 +1,20 @@
+struct Config {
+    getter: () -> int32,
+    setter: (int32) -> unit,
+}
+
+fn make_config() -> Config {
+    let state = ref(0);
+    Config {
+        getter: || ref_get(state),
+        setter: |v| ref_set(state, v),
+    }
+}
+
+fn main() {
+    let c = make_config();
+    c.setter(42);
+    println(c.getter().to_string());
+    c.setter(100);
+    println(c.getter().to_string());
+}

@@ -1,0 +1,16 @@
+fn select_op(kind: int32, base: int32) -> (int32) -> int32 {
+    match kind {
+        1 => |x| x + base,
+        2 => |x| x * base,
+        _ => |x| x - base,
+    }
+}
+
+fn main() {
+    let f1 = select_op(1, 10);
+    let f2 = select_op(2, 3);
+    let f3 = select_op(99, 5);
+    println(f1(5).to_string());
+    println(f2(5).to_string());
+    println(f3(5).to_string());
+}

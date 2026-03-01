@@ -1,0 +1,16 @@
+package main;
+
+fn factorial(n: int64) -> int64 {
+    let result = ref(1i64);
+    let i = ref(1i64);
+    while ref_get(i) <= n {
+        ref_set(result, ref_get(result) * ref_get(i));
+        ref_set(i, ref_get(i) + 1i64);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    string_println(int64_to_string(factorial(10i64)));
+    string_println(int64_to_string(factorial(20i64)));
+}

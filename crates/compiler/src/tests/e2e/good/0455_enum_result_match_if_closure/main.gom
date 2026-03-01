@@ -1,0 +1,50 @@
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn map_result[T, E, U](r: Result[T, E], f: (T) -> U) -> Result[U, E] {
+    match r {
+        Result::Ok(v) => Result::Ok(f(v)),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+fn and_then[T, E, U](r: Result[T, E], f: (T) -> Result[U, E]) -> Result[U, E] {
+    match r {
+        Result::Ok(v) => f(v),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+fn parse_positive(s: string) -> Result[int32, string] {
+    if s == "1" { Result::Ok(1) }
+    else if s == "2" { Result::Ok(2) }
+    else if s == "3" { Result::Ok(3) }
+    else { Result::Err("not a positive int: " + s) }
+}
+
+fn double_if_small(n: int32) -> Result[int32, string] {
+    if n < 3 { Result::Ok(n * 2) } else { Result::Err("too large") }
+}
+
+fn show_result(r: Result[int32, string]) -> string {
+    match r {
+        Result::Ok(v) => "Ok(" + v.to_string() + ")",
+        Result::Err(e) => "Err(" + e + ")",
+    }
+}
+
+fn main() {
+    let r1 = parse_positive("2");
+    let r2 = and_then(r1, double_if_small);
+    println(show_result(r2));
+    
+    let r3 = parse_positive("3");
+    let r4 = and_then(r3, double_if_small);
+    println(show_result(r4));
+    
+    let r5 = parse_positive("bad");
+    let r6 = map_result(r5, |x| x + 100);
+    println(show_result(r6));
+}

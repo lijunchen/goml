@@ -1,0 +1,16 @@
+package main;
+
+struct Wrapper[T] {
+    value: T,
+}
+
+impl Wrapper[int32] {
+    fn get(self: Wrapper[int32]) -> int32 {
+        self.value
+    }
+}
+
+fn main() {
+    let w = Wrapper { value: 42 };
+    string_println(int32_to_string(w.get()));
+}

@@ -1,0 +1,22 @@
+package main;
+
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+struct Dog {}
+struct Cat {}
+
+impl Speak for Dog {
+    fn speak(self: Dog) -> string { "woof" }
+}
+impl Speak for Cat {
+    fn speak(self: Cat) -> string { "meow" }
+}
+
+fn main() {
+    let d: dyn Speak = Dog {};
+    let c: dyn Speak = Cat {};
+    string_println(Speak::speak(d));
+    string_println(Speak::speak(c));
+}

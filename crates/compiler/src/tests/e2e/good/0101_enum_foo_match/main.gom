@@ -1,0 +1,12 @@
+package main;
+
+enum Foo {
+    Bar(int32, int32, int32),
+}
+
+fn main() {
+    let x = Foo::Bar(1, 2, 3);
+    match x {
+        Foo::Bar(a, b, _) => string_println(int32_to_string(a + b)),
+    };
+}

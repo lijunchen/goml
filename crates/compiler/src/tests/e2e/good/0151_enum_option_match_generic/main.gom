@@ -1,0 +1,37 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn main() {
+    let x: Option[uint8] = Option::Some(42);
+    match x {
+        Option::Some(v) => string_println(uint8_to_string(v)),
+        Option::None => string_println("none"),
+    };
+    
+    let y: Option[float32] = Option::Some(3.14);
+    match y {
+        Option::Some(v) => string_println(float32_to_string(v)),
+        Option::None => string_println("none"),
+    };
+    
+    let z: Result[int64, string] = Result::Ok(12345);
+    match z {
+        Result::Ok(v) => string_println(int64_to_string(v)),
+        Result::Err(e) => string_println(e),
+    };
+    
+    let w: Option[int64] = Option::None;
+    match w {
+        Option::Some(v) => string_println(int64_to_string(v)),
+        Option::None => string_println("none"),
+    };
+}

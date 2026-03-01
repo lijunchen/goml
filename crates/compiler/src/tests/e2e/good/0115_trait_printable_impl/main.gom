@@ -1,0 +1,27 @@
+package main;
+
+trait Printable {
+    fn print(Self);
+}
+
+impl Printable for int32 {
+    fn print(self: int32) {
+        string_println(int32_to_string(self));
+    }
+}
+
+impl Printable for string {
+    fn print(self: string) {
+        string_println(self);
+    }
+}
+
+fn print_twice[T: Printable](x: T) {
+    Printable::print(x);
+    Printable::print(x);
+}
+
+fn main() {
+    print_twice(42);
+    print_twice("hello");
+}

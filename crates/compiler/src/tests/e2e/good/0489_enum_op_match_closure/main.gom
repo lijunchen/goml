@@ -1,0 +1,24 @@
+enum Op {
+    Add,
+    Mul,
+    Sub,
+}
+
+fn get_op(op: Op) -> (int32, int32) -> int32 {
+    match op {
+        Op::Add => |a, b| a + b,
+        Op::Mul => |a, b| a * b,
+        Op::Sub => |a, b| a - b,
+    }
+}
+
+fn main() {
+    let f = get_op(Op::Add);
+    println(f(3, 4).to_string());
+    
+    let g = get_op(Op::Mul);
+    println(g(3, 4).to_string());
+    
+    let h = get_op(Op::Sub);
+    println(h(10, 3).to_string());
+}

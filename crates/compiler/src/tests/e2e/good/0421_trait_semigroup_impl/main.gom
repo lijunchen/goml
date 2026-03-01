@@ -1,0 +1,30 @@
+trait Semigroup {
+    fn combine(Self, Self) -> Self;
+}
+
+impl Semigroup for int32 {
+    fn combine(self: int32, other: int32) -> int32 { self + other }
+}
+
+impl Semigroup for string {
+    fn combine(self: string, other: string) -> string { self + other }
+}
+
+struct Pair[A, B] { fst: A, snd: B }
+
+impl[A: Semigroup, B: Semigroup] Semigroup for Pair[A, B] {
+    fn combine(self: Pair[A, B], other: Pair[A, B]) -> Pair[A, B] {
+        Pair {
+            fst: Semigroup::combine(self.fst, other.fst),
+            snd: Semigroup::combine(self.snd, other.snd),
+        }
+    }
+}
+
+fn main() {
+    let p1 = Pair { fst: 10, snd: "hello" };
+    let p2 = Pair { fst: 20, snd: " world" };
+    let p3 = Semigroup::combine(p1, p2);
+    println(p3.fst.to_string());
+    println(p3.snd);
+}

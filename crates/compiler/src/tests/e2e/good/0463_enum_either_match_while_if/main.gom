@@ -1,0 +1,28 @@
+enum Either[L, R] {
+    Left(L),
+    Right(R),
+}
+
+fn partition[T](arr: [T; 4], pred: (T) -> bool) -> ([Either[T, T]; 4]) {
+    let result: [Either[T, T]; 4] = [
+        if pred(array_get(arr, 0)) { Either::Left(array_get(arr, 0)) } else { Either::Right(array_get(arr, 0)) },
+        if pred(array_get(arr, 1)) { Either::Left(array_get(arr, 1)) } else { Either::Right(array_get(arr, 1)) },
+        if pred(array_get(arr, 2)) { Either::Left(array_get(arr, 2)) } else { Either::Right(array_get(arr, 2)) },
+        if pred(array_get(arr, 3)) { Either::Left(array_get(arr, 3)) } else { Either::Right(array_get(arr, 3)) },
+    ];
+    result
+}
+
+fn main() {
+    let arr = [1, 2, 3, 4];
+    let parts = partition(arr, |x| x > 2);
+    let i = ref(0i32);
+    while ref_get(i) < 4 {
+        let item = array_get(parts, ref_get(i));
+        match item {
+            Either::Left(v) => println("left: " + v.to_string()),
+            Either::Right(v) => println("right: " + v.to_string()),
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+}

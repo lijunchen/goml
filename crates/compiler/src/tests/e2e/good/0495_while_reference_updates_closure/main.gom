@@ -1,0 +1,16 @@
+fn zip_with[A, B, C](a: A, b: B, f: (A, B) -> C) -> C {
+    f(a, b)
+}
+
+fn main() {
+    let result = zip_with(3, "hello", |n, s| {
+        let repeated = ref(s);
+        let i = ref(1);
+        while ref_get(i) < n {
+            ref_set(repeated, ref_get(repeated) + " " + s);
+            ref_set(i, ref_get(i) + 1);
+        };
+        ref_get(repeated)
+    });
+    println(result);
+}

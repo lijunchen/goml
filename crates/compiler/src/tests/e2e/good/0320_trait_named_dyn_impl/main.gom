@@ -1,0 +1,22 @@
+trait Named {
+    fn name(Self) -> string;
+}
+
+struct Person { n: string }
+
+impl Named for Person {
+    fn name(self: Person) -> string { self.n }
+}
+
+fn greet(a: dyn Named) -> string {
+    "Hello, " + Named::name(a)
+}
+
+fn main() {
+    let p = Person { n: "Alice" };
+    let a: dyn Named = p;
+    println(greet(a));
+    
+    let b: dyn Named = Person { n: "Bob" };
+    println(Named::name(b));
+}

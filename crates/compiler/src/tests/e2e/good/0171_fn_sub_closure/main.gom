@@ -1,0 +1,15 @@
+package main;
+
+fn flip[A, B, C](f: (A, B) -> C) -> (B, A) -> C {
+    |b: B, a: A| f(a, b)
+}
+
+fn sub(a: int32, b: int32) -> int32 {
+    a - b
+}
+
+fn main() {
+    let rsub = flip(sub);
+    string_println(int32_to_string(sub(10, 3)));
+    string_println(int32_to_string(rsub(10, 3)));
+}

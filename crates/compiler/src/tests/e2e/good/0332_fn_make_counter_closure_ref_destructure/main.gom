@@ -1,0 +1,15 @@
+fn make_counter() -> (() -> int32, () -> unit) {
+    let count = ref(0i32);
+    let get = || ref_get(count);
+    let inc = || ref_set(count, ref_get(count) + 1);
+    (get, inc)
+}
+
+fn main() {
+    let (get, inc) = make_counter();
+    println(get().to_string());
+    inc();
+    inc();
+    inc();
+    println(get().to_string());
+}

@@ -1,0 +1,21 @@
+package main;
+
+fn fold[T, A](arr: [T; 5], init: A, f: (A, T) -> A) -> A {
+    let acc = ref(init);
+    let i = ref(0);
+    while ref_get(i) < 5 {
+        ref_set(acc, f(ref_get(acc), array_get(arr, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(acc)
+}
+
+fn main() {
+    let nums = [1, 2, 3, 4, 5];
+    let sum = fold(nums, 0, |acc, x| acc + x);
+    string_println(int32_to_string(sum));
+    
+    let strs = ["a", "b", "c", "d", "e"];
+    let concat = fold(strs, "", |acc, s| acc + s);
+    string_println(concat);
+}

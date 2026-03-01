@@ -1,0 +1,28 @@
+package main;
+
+enum Opt[T] {
+    Some(T),
+    None,
+}
+
+fn flat_map[A, B](opt: Opt[A], f: (A) -> Opt[B]) -> Opt[B] {
+    match opt {
+        Opt::Some(x) => f(x),
+        Opt::None => Opt::None,
+    }
+}
+
+fn main() {
+    let a: Opt[int32] = Opt::Some(10);
+    let b = flat_map(a, |x: int32| {
+        if x > 5 {
+            Opt::Some(int32_to_string(x))
+        } else {
+            Opt::None
+        }
+    });
+    match b {
+        Opt::Some(s) => string_println(s),
+        Opt::None => string_println("none"),
+    };
+}

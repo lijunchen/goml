@@ -1,0 +1,17 @@
+trait Callable {
+    fn call(Self, int32) -> int32;
+}
+
+struct MyStruct {
+    call: (int32) -> int32,
+}
+
+impl Callable for MyStruct {
+    fn call(self: MyStruct, x: int32) -> int32 { self.call(x) + 1 }
+}
+
+fn main() {
+    let s = MyStruct { call: |x| x * 2 };
+    println(s.call(5).to_string());
+    println(Callable::call(s, 5).to_string());
+}

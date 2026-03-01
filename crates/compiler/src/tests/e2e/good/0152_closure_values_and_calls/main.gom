@@ -1,0 +1,17 @@
+package main;
+
+fn compose[A, B, C](f: (A) -> B, g: (B) -> C) -> (A) -> C {
+    |a| g(f(a))
+}
+
+fn main() {
+    let double = |x: int32| x * 2;
+    let add_one = |x: int32| x + 1;
+    let double_then_add = compose(double, add_one);
+    string_println(int32_to_string(double_then_add(5)));
+    
+    let to_str = |x: int32| int32_to_string(x);
+    let with_prefix = |s: string| "Result: " + s;
+    let format_num = compose(to_str, with_prefix);
+    string_println(format_num(42));
+}

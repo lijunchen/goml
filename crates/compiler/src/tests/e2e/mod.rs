@@ -24,15 +24,7 @@ pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
         if !subdir.exists() {
             continue;
         }
-        for entry in std::fs::read_dir(&subdir)? {
-            let entry = entry?;
-            if entry.file_type()?.is_dir() {
-                let main_gom = entry.path().join("main.gom");
-                if main_gom.exists() {
-                    case_paths.push(main_gom);
-                }
-            }
-        }
+        collect_main_gom_files(&subdir, &mut case_paths)?;
     }
 
     case_paths.sort();
@@ -50,6 +42,21 @@ pub fn run_e2e_cases(dir: &Path) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn collect_main_gom_files(dir: &Path, case_paths: &mut Vec<std::path::PathBuf>) -> anyhow::Result<()> {
+    for entry in std::fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if entry.file_type()?.is_dir() {
+            collect_main_gom_files(&path, case_paths)?;
+            continue;
+        }
+        if path.file_name().and_then(|name| name.to_str()) == Some("main.gom") {
+            case_paths.push(path);
+        }
+    }
+    Ok(())
+}
+
 fn run_single_e2e_case(p: &Path) -> anyhow::Result<()> {
     println!("Testing e2e: {}", p.display());
     let filename = p.file_name().unwrap().to_str().unwrap();
@@ -62,14 +69,13 @@ fn run_single_e2e_case(p: &Path) -> anyhow::Result<()> {
 
     let input = std::fs::read_to_string(p)?;
 
-    let tmpdir = tempfile::tempdir()?;
-    let tmpfile = tmpdir.path().join("main.gom");
-    std::fs::write(&tmpfile, &input)?;
-
-    let output = match pipeline::pipeline::compile(&tmpfile, &input) {
+    let output = match pipeline::pipeline::compile(p, &input) {
         Ok(compilation) => {
             let go_source = compilation.go.to_pretty(&compilation.goenv, 120);
-            execute_go_source(&go_source, &p.to_string_lossy())?
+            match execute_go_source(&go_source, &p.to_string_lossy()) {
+                Ok(output) => output,
+                Err(err) => format!("{err:#}\n"),
+            }
         }
         Err(err) => format_compilation_error(&err, &input),
     };

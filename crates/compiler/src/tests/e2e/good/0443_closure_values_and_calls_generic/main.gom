@@ -1,0 +1,8 @@
+fn id[T](x: T) -> T { x }
+fn apply[T, U](f: (T) -> U, x: T) -> U { f(x) }
+fn const_[T, U](x: T, y: U) -> T { x }
+
+fn main() {
+    let r = apply(|x| apply(|y| const_(x, y), "ignored"), 42);
+    println(r.to_string());
+}

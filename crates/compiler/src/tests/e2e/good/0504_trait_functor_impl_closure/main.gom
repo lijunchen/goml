@@ -1,0 +1,39 @@
+trait Functor {
+    fn fmap(Self, (int32) -> int32) -> Self;
+}
+
+struct Box {
+    val: int32,
+}
+
+struct Pair {
+    a: int32,
+    b: int32,
+}
+
+impl Functor for Box {
+    fn fmap(self: Box, f: (int32) -> int32) -> Box {
+        Box { val: f(self.val) }
+    }
+}
+
+impl Functor for Pair {
+    fn fmap(self: Pair, f: (int32) -> int32) -> Pair {
+        Pair { a: f(self.a), b: f(self.b) }
+    }
+}
+
+fn double_all[T: Functor](x: T) -> T {
+    Functor::fmap(x, |n| n * 2)
+}
+
+fn main() {
+    let b = Box { val: 21 };
+    let b2 = double_all(b);
+    println(b2.val.to_string());
+    
+    let p = Pair { a: 3, b: 7 };
+    let p2 = double_all(p);
+    println(p2.a.to_string());
+    println(p2.b.to_string());
+}

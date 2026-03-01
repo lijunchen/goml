@@ -1,0 +1,21 @@
+package main;
+
+trait Eq {
+    fn eq(Self, Self) -> bool;
+}
+
+struct Point { x: int32, y: int32 }
+
+impl Eq for Point {
+    fn eq(self: Point, other: Point) -> bool {
+        self.x == other.x && self.y == other.y
+    }
+}
+
+fn main() {
+    let a = Point { x: 1, y: 2 };
+    let b = Point { x: 1, y: 2 };
+    let c = Point { x: 3, y: 4 };
+    string_println(bool_to_string(Eq::eq(a, b)));
+    string_println(bool_to_string(Eq::eq(a, c)));
+}

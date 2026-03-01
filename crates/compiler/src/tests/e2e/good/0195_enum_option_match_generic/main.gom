@@ -1,0 +1,22 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn main() {
+    let x: Result[Option[int32], string] = Result::Ok(Option::Some(42));
+    match x {
+        Result::Ok(inner) => match inner {
+            Option::Some(v) => string_println(int32_to_string(v)),
+            Option::None => string_println("none"),
+        },
+        Result::Err(e) => string_println(e),
+    };
+}

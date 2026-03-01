@@ -1,0 +1,31 @@
+struct Rule {
+    condition: (int32) -> bool,
+    action: (int32) -> string,
+}
+
+fn check_rules(rules: [Rule; 3], value: int32) -> string {
+    let i = ref(0);
+    let result = ref("no match");
+    while ref_get(i) < 3 {
+        let r = array_get(rules, ref_get(i));
+        if r.condition(value) {
+            ref_set(result, r.action(value));
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let rules = [
+        Rule { condition: |x| x > 100, action: |x| "big: " + x.to_string() },
+        Rule { condition: |x| x > 50, action: |x| "medium: " + x.to_string() },
+        Rule { condition: |x| x > 0, action: |x| "small: " + x.to_string() },
+    ];
+    println(check_rules(rules, 200));
+    println(check_rules(rules, 75));
+    println(check_rules(rules, 10));
+    println(check_rules(rules, -5));
+}

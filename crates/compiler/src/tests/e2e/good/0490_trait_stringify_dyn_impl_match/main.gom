@@ -1,0 +1,35 @@
+trait Stringify {
+    fn stringify(Self) -> string;
+}
+
+struct Num { val: int32 }
+struct Txt { val: string }
+
+impl Stringify for Num {
+    fn stringify(self: Num) -> string { self.val.to_string() }
+}
+
+impl Stringify for Txt {
+    fn stringify(self: Txt) -> string { self.val }
+}
+
+enum Maybe[T] {
+    Just(T),
+    Nothing,
+}
+
+fn show_maybe(m: Maybe[dyn Stringify]) -> string {
+    match m {
+        Maybe::Just(v) => Stringify::stringify(v),
+        Maybe::Nothing => "nothing",
+    }
+}
+
+fn main() {
+    let a: Maybe[dyn Stringify] = Maybe::Just(Num { val: 42 });
+    let b: Maybe[dyn Stringify] = Maybe::Just(Txt { val: "hello" });
+    let c: Maybe[dyn Stringify] = Maybe::Nothing;
+    println(show_maybe(a));
+    println(show_maybe(b));
+    println(show_maybe(c));
+}

@@ -1,0 +1,12 @@
+fn main() {
+    let x = ref(0);
+    
+    let increment = || {
+        ref_set(x, ref_get(x) + 1);
+    };
+    
+    increment();
+    increment();
+    increment();
+    println(ref_get(x).to_string());
+}

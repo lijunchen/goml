@@ -1,0 +1,19 @@
+trait Container {
+    fn size(Self) -> int32;
+}
+
+struct Bag { items: int32 }
+impl Container for Bag { fn size(self: Bag) -> int32 { self.items } }
+
+struct Box_ { items: int32 }
+impl Container for Box_ { fn size(self: Box_) -> int32 { self.items * 2 } }
+
+fn total_size(a: dyn Container, b: dyn Container) -> int32 {
+    Container::size(a) + Container::size(b)
+}
+
+fn main() {
+    let bag = Bag { items: 5 };
+    let box_ = Box_ { items: 3 };
+    println(total_size(bag, box_).to_string());
+}

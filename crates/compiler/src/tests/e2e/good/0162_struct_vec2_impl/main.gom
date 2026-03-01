@@ -1,0 +1,24 @@
+package main;
+
+struct Vec2 {
+    x: float64,
+    y: float64,
+}
+
+impl Vec2 {
+    fn length_sq(self: Vec2) -> float64 {
+        self.x * self.x + self.y * self.y
+    }
+    fn add(self: Vec2, other: Vec2) -> Vec2 {
+        Vec2 { x: self.x + other.x, y: self.y + other.y }
+    }
+}
+
+fn main() {
+    let a = Vec2 { x: 3.0, y: 4.0 };
+    let b = Vec2 { x: 1.0, y: 2.0 };
+    let c = Vec2::add(a, b);
+    string_println(float64_to_string(c.x));
+    string_println(float64_to_string(c.y));
+    string_println(float64_to_string(Vec2::length_sq(c)));
+}

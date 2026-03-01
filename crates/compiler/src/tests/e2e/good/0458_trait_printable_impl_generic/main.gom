@@ -1,0 +1,25 @@
+trait Printable {
+    fn print_val(Self) -> string;
+}
+
+struct Wrapper[T] { inner: T }
+
+impl Printable for int32 { fn print_val(self: int32) -> string { self.to_string() } }
+impl Printable for string { fn print_val(self: string) -> string { self } }
+
+impl[T: Printable] Printable for Wrapper[T] {
+    fn print_val(self: Wrapper[T]) -> string {
+        "Wrapper(" + Printable::print_val(self.inner) + ")"
+    }
+}
+
+fn main() {
+    let w1 = Wrapper { inner: 42 };
+    println(Printable::print_val(w1));
+    
+    let w2 = Wrapper { inner: "hello" };
+    println(Printable::print_val(w2));
+    
+    let w3 = Wrapper { inner: Wrapper { inner: 99 } };
+    println(Printable::print_val(w3));
+}

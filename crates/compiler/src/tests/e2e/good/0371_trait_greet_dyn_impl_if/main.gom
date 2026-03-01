@@ -1,0 +1,22 @@
+trait Greet {
+    fn greet(Self) -> string;
+}
+
+struct English {}
+struct French {}
+
+impl Greet for English { fn greet(self: English) -> string { "hello" } }
+impl Greet for French { fn greet(self: French) -> string { "bonjour" } }
+
+fn make_greeter(lang: string) -> dyn Greet {
+    if lang == "en" { English {} }
+    else { French {} }
+}
+
+fn main() {
+    let factory: (string) -> dyn Greet = |lang| make_greeter(lang);
+    let g1 = factory("en");
+    let g2 = factory("fr");
+    println(Greet::greet(g1));
+    println(Greet::greet(g2));
+}

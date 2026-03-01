@@ -1,0 +1,36 @@
+package main;
+
+trait Describe {
+    fn describe(Self) -> string;
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+impl Describe for Point {
+    fn describe(self: Point) -> string {
+        "(" + int32_to_string(self.x) + ", " + int32_to_string(self.y) + ")"
+    }
+}
+
+fn print_desc(s: dyn Describe) {
+    string_println(Describe::describe(s));
+}
+
+fn make_points() -> Vec[dyn Describe] {
+    let v: Vec[dyn Describe] = vec_new();
+    vec_push(v, Point { x: 1, y: 2 });
+    vec_push(v, Point { x: 3, y: 4 });
+    v
+}
+
+fn main() {
+    let points = make_points();
+    let i = ref(0);
+    while ref_get(i) < vec_len(points) {
+        print_desc(vec_get(points, ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

@@ -1,0 +1,15 @@
+fn compose[A, B, C](f: (A) -> B, g: (B) -> C) -> (A) -> C {
+    |a| g(f(a))
+}
+
+fn main() {
+    let double = |x: int32| x * 2;
+    let add_one = |x: int32| x + 1;
+    let to_str = |x: int32| x.to_string();
+    
+    let double_then_add = compose(double, add_one);
+    let full = compose(double_then_add, to_str);
+    
+    println(full(5));
+    println(full(10));
+}

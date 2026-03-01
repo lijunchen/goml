@@ -1,0 +1,12 @@
+package main;
+
+fn main() {
+    let arr: [int32; 3] = [1, 2, 3];
+    let sum = ref(0);
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        ref_set(sum, ref_get(sum) + array_get(arr, ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println(int32_to_string(ref_get(sum)));
+}

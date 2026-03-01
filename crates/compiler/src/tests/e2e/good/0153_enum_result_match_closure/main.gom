@@ -1,0 +1,29 @@
+package main;
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn map_result[T, E, U](r: Result[T, E], f: (T) -> U) -> Result[U, E] {
+    match r {
+        Result::Ok(v) => Result::Ok(f(v)),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+fn main() {
+    let r: Result[int32, string] = Result::Ok(42);
+    let mapped = map_result(r, |x| x * 2);
+    match mapped {
+        Result::Ok(v) => string_println(int32_to_string(v)),
+        Result::Err(e) => string_println(e),
+    };
+    
+    let err: Result[int32, string] = Result::Err("oops");
+    let mapped2 = map_result(err, |x| x + 1);
+    match mapped2 {
+        Result::Ok(v) => string_println(int32_to_string(v)),
+        Result::Err(e) => string_println(e),
+    };
+}

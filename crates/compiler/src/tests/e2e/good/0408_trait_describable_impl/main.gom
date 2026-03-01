@@ -1,0 +1,14 @@
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Item { name: string }
+
+impl Describable for Item {
+    fn describe(self: Item) -> string { "Item: " + self.name }
+}
+
+fn main() {
+    let item = Item { name: "sword" };
+    println(Describable::describe(item));
+}

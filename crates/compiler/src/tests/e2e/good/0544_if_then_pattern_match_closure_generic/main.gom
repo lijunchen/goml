@@ -1,0 +1,34 @@
+fn map_option[T, U](opt: Option[T], f: (T) -> U) -> Option[U] {
+    match opt {
+        Option::Some(x) => Option::Some(f(x)),
+        Option::None => Option::None,
+    }
+}
+
+fn flat_map[T, U](opt: Option[T], f: (T) -> Option[U]) -> Option[U] {
+    match opt {
+        Option::Some(x) => f(x),
+        Option::None => Option::None,
+    }
+}
+
+fn main() {
+    let x: Option[int32] = Option::Some(5);
+    let y = map_option(x, |n| n * 2);
+    match y {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+
+    let z = flat_map(x, |n| {
+        if n > 3 {
+            Option::Some(n.to_string())
+        } else {
+            Option::None
+        }
+    });
+    match z {
+        Option::Some(s) => println(s),
+        Option::None => println("none"),
+    };
+}

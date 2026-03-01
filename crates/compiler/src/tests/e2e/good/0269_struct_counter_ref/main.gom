@@ -1,0 +1,22 @@
+package main;
+
+struct Counter {
+    count: Ref[int32],
+}
+
+fn new_counter() -> Counter {
+    Counter { count: ref(0) }
+}
+
+fn increment(c: Counter) -> int32 {
+    let v = ref_get(c.count) + 1;
+    ref_set(c.count, v);
+    v
+}
+
+fn main() {
+    let c = new_counter();
+    string_println(int32_to_string(increment(c)));
+    string_println(int32_to_string(increment(c)));
+    string_println(int32_to_string(increment(c)));
+}

@@ -1,0 +1,22 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn unwrap_or[T](opt: Option[T], default: T) -> T {
+    match opt {
+        Option::Some(v) => v,
+        Option::None => default,
+    }
+}
+
+fn main() {
+    let a: Option[int32] = Option::Some(42);
+    let b: Option[int32] = Option::None;
+    let x = unwrap_or(a, 0);
+    let y = unwrap_or(b, 99);
+    string_println(int32_to_string(x));
+    string_println(int32_to_string(y));
+}

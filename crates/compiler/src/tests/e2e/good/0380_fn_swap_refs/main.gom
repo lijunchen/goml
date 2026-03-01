@@ -1,0 +1,13 @@
+fn swap_refs(a: Ref[int32], b: Ref[int32]) {
+    let tmp = ref_get(a);
+    ref_set(a, ref_get(b));
+    ref_set(b, tmp);
+}
+
+fn main() {
+    let x = ref(10);
+    let y = ref(20);
+    println(ref_get(x).to_string() + " " + ref_get(y).to_string());
+    swap_refs(x, y);
+    println(ref_get(x).to_string() + " " + ref_get(y).to_string());
+}

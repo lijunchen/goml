@@ -1,0 +1,20 @@
+package main;
+
+enum Shape {
+    Circle(float64),
+    Rectangle(float64, float64),
+}
+
+fn area(s: Shape) -> float64 {
+    match s {
+        Shape::Circle(r) => 3.14159 * r * r,
+        Shape::Rectangle(w, h) => w * h,
+    }
+}
+
+fn main() {
+    let c = Shape::Circle(5.0);
+    let r = Shape::Rectangle(3.0, 4.0);
+    string_println(float64_to_string(area(c)));
+    string_println(float64_to_string(area(r)));
+}

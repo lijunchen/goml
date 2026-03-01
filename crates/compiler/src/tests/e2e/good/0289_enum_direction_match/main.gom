@@ -1,0 +1,33 @@
+package main;
+
+enum Direction {
+    North,
+    South,
+    East,
+    West,
+}
+
+fn opposite(d: Direction) -> Direction {
+    match d {
+        Direction::North => Direction::South,
+        Direction::South => Direction::North,
+        Direction::East => Direction::West,
+        Direction::West => Direction::East,
+    }
+}
+
+fn dir_name(d: Direction) -> string {
+    match d {
+        Direction::North => "N",
+        Direction::South => "S",
+        Direction::East => "E",
+        Direction::West => "W",
+    }
+}
+
+fn main() {
+    let d = Direction::North;
+    string_println(dir_name(opposite(d)));
+    let d2 = Direction::East;
+    string_println(dir_name(opposite(d2)));
+}

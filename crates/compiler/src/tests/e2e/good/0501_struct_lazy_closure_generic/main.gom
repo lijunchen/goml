@@ -1,0 +1,18 @@
+struct Lazy[T] {
+    thunk: () -> T,
+}
+
+fn force[T](lazy: Lazy[T]) -> T {
+    lazy.thunk()
+}
+
+fn lazy_val[T](x: T) -> Lazy[T] {
+    Lazy { thunk: || x }
+}
+
+fn main() {
+    let a = lazy_val(42);
+    let b = lazy_val("hello");
+    println(force(a).to_string());
+    println(force(b));
+}

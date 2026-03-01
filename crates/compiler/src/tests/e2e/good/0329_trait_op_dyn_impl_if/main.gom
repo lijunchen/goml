@@ -1,0 +1,29 @@
+struct Adder { n: int32 }
+struct Multiplier { n: int32 }
+
+trait Op {
+    fn apply(Self, int32) -> int32;
+}
+
+impl Op for Adder {
+    fn apply(self: Adder, x: int32) -> int32 { x + self.n }
+}
+
+impl Op for Multiplier {
+    fn apply(self: Multiplier, x: int32) -> int32 { x * self.n }
+}
+
+fn make_op(kind: int32) -> dyn Op {
+    if kind == 1 {
+        Adder { n: 5 }
+    } else {
+        Multiplier { n: 3 }
+    }
+}
+
+fn main() {
+    let op = make_op(1);
+    println(Op::apply(op, 10).to_string());
+    let op2 = make_op(2);
+    println(Op::apply(op2, 10).to_string());
+}

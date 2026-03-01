@@ -1,0 +1,12 @@
+package main;
+
+enum Pair[A, B] {
+    MakePair(A, B),
+}
+
+fn main() {
+    let p = Pair::MakePair(1, "hello");
+    let Pair::MakePair(x, y) = p;
+    string_println(int32_to_string(x));
+    string_println(y);
+}

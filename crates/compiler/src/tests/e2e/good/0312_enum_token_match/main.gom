@@ -1,0 +1,24 @@
+package main;
+
+enum Token {
+    Plus,
+    Minus,
+    Num(int32),
+    Ident(string),
+}
+
+fn token_to_string(t: Token) -> string {
+    match t {
+        Token::Plus => "+",
+        Token::Minus => "-",
+        Token::Num(n) => int32_to_string(n),
+        Token::Ident(s) => s,
+    }
+}
+
+fn main() {
+    string_println(token_to_string(Token::Plus));
+    string_println(token_to_string(Token::Num(42)));
+    string_println(token_to_string(Token::Ident("foo")));
+    string_println(token_to_string(Token::Minus));
+}

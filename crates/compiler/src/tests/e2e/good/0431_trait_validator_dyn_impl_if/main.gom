@@ -1,0 +1,36 @@
+trait Validator {
+    fn validate(Self, string) -> bool;
+}
+
+struct NonEmpty {}
+impl Validator for NonEmpty {
+    fn validate(self: NonEmpty, s: string) -> bool { s != "" }
+}
+
+struct MaxLen { max: int32 }
+impl Validator for MaxLen {
+    fn validate(self: MaxLen, s: string) -> bool { true }
+}
+
+struct Form {
+    field_name: string,
+    validators: (dyn Validator, dyn Validator),
+}
+
+fn validate_field(form: Form, value: string) -> bool {
+    let (v1, v2) = form.validators;
+    if Validator::validate(v1, value) {
+        Validator::validate(v2, value)
+    } else {
+        false
+    }
+}
+
+fn main() {
+    let form = Form {
+        field_name: "name",
+        validators: (NonEmpty {}, MaxLen { max: 10 }),
+    };
+    println(validate_field(form, "Alice").to_string());
+    println(validate_field(Form { field_name: "x", validators: (NonEmpty {}, MaxLen { max: 3 }) }, "").to_string());
+}

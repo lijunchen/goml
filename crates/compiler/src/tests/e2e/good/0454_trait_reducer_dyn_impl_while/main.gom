@@ -1,0 +1,26 @@
+trait Reducer {
+    fn reduce(Self, int32) -> int32;
+}
+
+struct Summer {}
+struct Multiplier { factor: int32 }
+
+impl Reducer for Summer { fn reduce(self: Summer, acc: int32) -> int32 { acc + 1 } }
+impl Reducer for Multiplier { fn reduce(self: Multiplier, acc: int32) -> int32 { acc * self.factor } }
+
+fn apply_reducer(r: dyn Reducer, init: int32, n: int32) -> int32 {
+    let acc = ref(init);
+    let i = ref(0i32);
+    while ref_get(i) < n {
+        ref_set(acc, Reducer::reduce(r, ref_get(acc)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(acc)
+}
+
+fn main() {
+    let s: dyn Reducer = Summer {};
+    let m: dyn Reducer = Multiplier { factor: 2 };
+    println(apply_reducer(s, 0, 5).to_string());
+    println(apply_reducer(m, 1, 4).to_string());
+}

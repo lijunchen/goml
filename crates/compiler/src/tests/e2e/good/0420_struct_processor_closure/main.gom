@@ -1,0 +1,22 @@
+struct Processor {
+    transform: (int32) -> int32,
+    format: (int32) -> string,
+}
+
+fn make_processor(multiplier: int32, prefix: string) -> Processor {
+    Processor {
+        transform: |x| x * multiplier,
+        format: |x| prefix + x.to_string(),
+    }
+}
+
+fn run(p: Processor, x: int32) -> string {
+    p.format(p.transform(x))
+}
+
+fn main() {
+    let p1 = make_processor(2, "result: ");
+    let p2 = make_processor(10, "val=");
+    println(run(p1, 5));
+    println(run(p2, 3));
+}

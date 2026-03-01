@@ -1,0 +1,20 @@
+fn apply_and_show[T: Show](f: () -> T) -> string {
+    Show::show(f())
+}
+
+trait Show {
+    fn show(Self) -> string;
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string { self.to_string() }
+}
+
+impl Show for string {
+    fn show(self: string) -> string { "'" + self + "'" }
+}
+
+fn main() {
+    println(apply_and_show(|| 42));
+    println(apply_and_show(|| "hello"));
+}

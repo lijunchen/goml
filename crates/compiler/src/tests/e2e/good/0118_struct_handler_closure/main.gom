@@ -1,0 +1,16 @@
+package main;
+
+struct Handler {
+    name: string,
+    action: (string) -> string,
+}
+
+fn main() {
+    let h = Handler {
+        name: "greeter",
+        action: |s| "Hello, " + s + "!",
+    };
+    string_println(h.name);
+    let result = (h.action)("world");
+    string_println(result);
+}

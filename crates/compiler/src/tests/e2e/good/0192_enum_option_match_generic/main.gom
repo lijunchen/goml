@@ -1,0 +1,21 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+fn unwrap_or[T](opt: Option[T], default: T) -> T {
+    match opt {
+        Option::Some(v) => v,
+        Option::None => default,
+    }
+}
+
+fn main() {
+    let x: uint8 = unwrap_or(Option::Some(42), 0);
+    string_println(uint8_to_string(x));
+    
+    let y: float32 = unwrap_or(Option::None, 3.14);
+    string_println(float32_to_string(y));
+}

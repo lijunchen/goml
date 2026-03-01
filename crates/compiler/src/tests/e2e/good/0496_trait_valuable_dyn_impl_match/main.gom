@@ -1,0 +1,31 @@
+trait Valuable {
+    fn value(Self) -> int32;
+}
+
+struct A { x: int32 }
+struct B { x: int32, y: int32 }
+
+impl Valuable for A {
+    fn value(self: A) -> int32 { self.x }
+}
+
+impl Valuable for B {
+    fn value(self: B) -> int32 { self.x + self.y }
+}
+
+fn make(flag: int32) -> dyn Valuable {
+    match flag {
+        0 => A { x: 10 },
+        1 => B { x: 20, y: 30 },
+        _ => A { x: -1 },
+    }
+}
+
+fn main() {
+    let v0 = make(0);
+    let v1 = make(1);
+    let v2 = make(2);
+    println(Valuable::value(v0).to_string());
+    println(Valuable::value(v1).to_string());
+    println(Valuable::value(v2).to_string());
+}

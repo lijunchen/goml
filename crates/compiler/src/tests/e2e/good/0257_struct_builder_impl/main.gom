@@ -1,0 +1,22 @@
+package main;
+
+struct Builder {
+    parts: string,
+}
+
+impl Builder {
+    fn new() -> Builder {
+        Builder { parts: "" }
+    }
+    fn add(self: Builder, s: string) -> Builder {
+        Builder { parts: self.parts + s }
+    }
+    fn build(self: Builder) -> string {
+        self.parts
+    }
+}
+
+fn main() {
+    let result = Builder::new().add("hello").add(" ").add("world").build();
+    string_println(result);
+}

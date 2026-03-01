@@ -1,0 +1,44 @@
+struct Lens[S, A] {
+    get: (S) -> A,
+    set: (S, A) -> S,
+}
+
+struct Person {
+    name: string,
+    age: int32,
+}
+
+fn name_lens() -> Lens[Person, string] {
+    Lens {
+        get: |p: Person| p.name,
+        set: |p: Person, n: string| Person { name: n, age: p.age },
+    }
+}
+
+fn age_lens() -> Lens[Person, int32] {
+    Lens {
+        get: |p: Person| p.age,
+        set: |p: Person, a: int32| Person { name: p.name, age: a },
+    }
+}
+
+fn view[S, A](lens: Lens[S, A], s: S) -> A {
+    lens.get(s)
+}
+
+fn set_field[S, A](lens: Lens[S, A], s: S, a: A) -> S {
+    lens.set(s, a)
+}
+
+fn main() {
+    let p = Person { name: "Alice", age: 30 };
+    let nl = name_lens();
+    let al = age_lens();
+    
+    println(view(nl, p));
+    println(view(al, p).to_string());
+    
+    let p2 = set_field(nl, p, "Bob");
+    println(view(nl, p2));
+    println(view(al, p2).to_string());
+}

@@ -1,0 +1,36 @@
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn divide(a: int32, b: int32) -> Result[int32, string] {
+    if b == 0 {
+        Result::Err("division by zero")
+    } else {
+        Result::Ok(a / b)
+    }
+}
+
+fn map_result[T, E, U](r: Result[T, E], f: (T) -> U) -> Result[U, E] {
+    match r {
+        Result::Ok(v) => Result::Ok(f(v)),
+        Result::Err(e) => Result::Err(e),
+    }
+}
+
+fn main() {
+    let r1 = divide(10, 3);
+    let r2 = divide(10, 0);
+    
+    let s1 = map_result(r1, |n| n.to_string());
+    let s2 = map_result(r2, |n| n.to_string());
+    
+    match s1 {
+        Result::Ok(s) => println("ok: " + s),
+        Result::Err(e) => println("err: " + e),
+    };
+    match s2 {
+        Result::Ok(s) => println("ok: " + s),
+        Result::Err(e) => println("err: " + e),
+    };
+}

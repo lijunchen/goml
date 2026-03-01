@@ -1,0 +1,18 @@
+package main;
+
+enum List[T] {
+    Cons(T, Ref[List[T]]),
+    Nil,
+}
+
+fn sum(list: List[int32]) -> int32 {
+    match list {
+        List::Cons(head, tail) => head + sum(ref_get(tail)),
+        List::Nil => 0,
+    }
+}
+
+fn main() {
+    let list = List::Cons(1, ref(List::Cons(2, ref(List::Cons(3, ref(List::Nil))))));
+    string_println(int32_to_string(sum(list)));
+}

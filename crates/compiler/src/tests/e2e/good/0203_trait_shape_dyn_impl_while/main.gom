@@ -1,0 +1,32 @@
+package main;
+
+trait Shape {
+    fn area(Self) -> float64;
+}
+
+struct Circle { radius: float64 }
+struct Rectangle { width: float64, height: float64 }
+
+impl Shape for Circle {
+    fn area(self: Circle) -> float64 { self.radius * self.radius * 3.14159 }
+}
+
+impl Shape for Rectangle {
+    fn area(self: Rectangle) -> float64 { self.width * self.height }
+}
+
+fn print_area(s: dyn Shape) {
+    string_println(float64_to_string(Shape::area(s)));
+}
+
+fn main() {
+    print_area(Circle { radius: 5.0 });
+    print_area(Rectangle { width: 3.0, height: 4.0 });
+    
+    let shapes: [dyn Shape; 2] = [Circle { radius: 1.0 }, Rectangle { width: 2.0, height: 3.0 }];
+    let i = ref(0);
+    while ref_get(i) < 2 {
+        print_area(array_get(shapes, ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

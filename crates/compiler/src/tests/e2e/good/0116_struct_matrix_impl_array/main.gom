@@ -1,0 +1,22 @@
+package main;
+
+struct Matrix {
+    data: [[int32; 2]; 2],
+}
+
+impl Matrix {
+    fn get(self: Matrix, row: int32, col: int32) -> int32 {
+        array_get(array_get(self.data, row), col)
+    }
+    
+    fn trace(self: Matrix) -> int32 {
+        Matrix::get(self, 0, 0) + Matrix::get(self, 1, 1)
+    }
+}
+
+fn main() {
+    let m = Matrix { data: [[1, 2], [3, 4]] };
+    string_println(int32_to_string(Matrix::get(m, 0, 0)));
+    string_println(int32_to_string(Matrix::get(m, 1, 1)));
+    string_println(int32_to_string(Matrix::trace(m)));
+}

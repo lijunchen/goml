@@ -1,0 +1,33 @@
+package main;
+
+trait Show {
+    fn show(Self) -> string;
+}
+
+impl Show for int32 {
+    fn show(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Show for string {
+    fn show(self: string) -> string {
+        "\"" + self + "\""
+    }
+}
+
+impl Show for bool {
+    fn show(self: bool) -> string {
+        bool_to_string(self)
+    }
+}
+
+fn show_pair[A: Show, B: Show](a: A, b: B) -> string {
+    "(" + Show::show(a) + ", " + Show::show(b) + ")"
+}
+
+fn main() {
+    string_println(show_pair(42, "hello"));
+    string_println(show_pair(true, 99));
+    string_println(show_pair("world", false));
+}

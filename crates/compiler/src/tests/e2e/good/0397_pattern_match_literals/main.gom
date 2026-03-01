@@ -1,0 +1,15 @@
+fn main() {
+    let x: Option[Option[int32]] = Option::Some(Option::Some(42));
+    match x {
+        Option::Some(Option::Some(n)) => println("double some: " + n.to_string()),
+        Option::Some(Option::None) => println("some none"),
+        Option::None => println("none"),
+    };
+
+    let y: Option[Option[int32]] = Option::Some(Option::None);
+    match y {
+        Option::Some(Option::Some(n)) => println("double some: " + n.to_string()),
+        Option::Some(Option::None) => println("some none"),
+        Option::None => println("none"),
+    };
+}

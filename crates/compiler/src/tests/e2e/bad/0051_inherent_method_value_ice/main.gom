@@ -1,0 +1,19 @@
+struct Adder {
+    base: int32,
+}
+
+impl Adder {
+    fn add(self: Adder, x: int32) -> int32 {
+        self.base + x
+    }
+}
+
+fn main() {
+    let a = Adder { base: 10 };
+    let result = a.add(5);
+    println(result.to_string());
+    
+    let f = Adder::add;
+    let result2 = f(a, 20);
+    println(result2.to_string());
+}

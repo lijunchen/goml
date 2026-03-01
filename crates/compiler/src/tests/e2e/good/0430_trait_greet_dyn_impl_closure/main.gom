@@ -1,0 +1,15 @@
+trait Greet {
+    fn greet(Self) -> string;
+}
+
+struct Person { name: string }
+impl Greet for Person { fn greet(self: Person) -> string { "Hi, " + self.name } }
+
+fn make_greeter(who: dyn Greet) -> () -> string {
+    || Greet::greet(who)
+}
+
+fn main() {
+    let greeter = make_greeter(Person { name: "Alice" });
+    println(greeter());
+}

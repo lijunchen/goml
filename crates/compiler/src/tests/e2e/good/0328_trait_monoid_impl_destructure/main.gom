@@ -1,0 +1,27 @@
+trait Monoid {
+    fn empty(Self) -> Self;
+    fn combine(Self, Self) -> Self;
+}
+
+impl Monoid for int32 {
+    fn empty(self: int32) -> int32 { 0 }
+    fn combine(self: int32, other: int32) -> int32 { self + other }
+}
+
+impl Monoid for string {
+    fn empty(self: string) -> string { "" }
+    fn combine(self: string, other: string) -> string { self + other }
+}
+
+fn fold[T: Monoid](items: (T, T, T)) -> T {
+    let (a, b, c) = items;
+    Monoid::combine(Monoid::combine(a, b), c)
+}
+
+fn main() {
+    let nums = (1, 2, 3);
+    println(fold(nums).to_string());
+    
+    let strs = ("hello", " ", "world");
+    println(fold(strs));
+}

@@ -1,0 +1,23 @@
+package main;
+
+fn main() {
+    let x = 10;
+    let result = if x > 5 {
+        let a = x * 2;
+        let b = a + 1;
+        b
+    } else {
+        let c = x - 1;
+        c
+    };
+    string_println(int32_to_string(result));
+    
+    let msg = match result {
+        21 => {
+            let prefix = "found: ";
+            prefix + "twenty-one"
+        },
+        _ => "other",
+    };
+    string_println(msg);
+}

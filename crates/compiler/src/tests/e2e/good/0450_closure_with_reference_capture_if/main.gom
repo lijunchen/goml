@@ -1,0 +1,7 @@
+fn main() {
+    let fact = ref(|n: int32| 0);
+    ref_set(fact, |n| {
+        if n <= 1 { 1 } else { n * ref_get(fact)(n - 1) }
+    });
+    println(ref_get(fact)(10).to_string());
+}

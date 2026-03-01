@@ -1,0 +1,25 @@
+fn flatten[T](opt: Option[Option[T]]) -> Option[T] {
+    match opt {
+        Option::None => Option::None,
+        Option::Some(inner) => inner,
+    }
+}
+
+fn main() {
+    let a: Option[Option[int32]] = Option::Some(Option::Some(42));
+    let b: Option[Option[int32]] = Option::Some(Option::None);
+    let c: Option[Option[int32]] = Option::None;
+
+    match flatten(a) {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+    match flatten(b) {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+    match flatten(c) {
+        Option::Some(v) => println(v.to_string()),
+        Option::None => println("none"),
+    };
+}

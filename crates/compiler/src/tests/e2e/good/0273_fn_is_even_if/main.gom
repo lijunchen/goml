@@ -1,0 +1,18 @@
+package main;
+
+fn is_even(n: int32) -> bool {
+    if n == 0 { true }
+    else { is_odd(n - 1) }
+}
+
+fn is_odd(n: int32) -> bool {
+    if n == 0 { false }
+    else { is_even(n - 1) }
+}
+
+fn main() {
+    string_println(bool_to_string(is_even(10)));
+    string_println(bool_to_string(is_odd(10)));
+    string_println(bool_to_string(is_even(7)));
+    string_println(bool_to_string(is_odd(7)));
+}

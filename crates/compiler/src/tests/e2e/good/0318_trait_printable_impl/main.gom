@@ -1,0 +1,19 @@
+trait Printable {
+    fn print_it(Self) -> unit;
+}
+
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+impl Printable for Pair[int32, string] {
+    fn print_it(self: Pair[int32, string]) -> unit {
+        println(self.first.to_string() + ": " + self.second);
+    }
+}
+
+fn main() {
+    let p = Pair { first: 42, second: "answer" };
+    Printable::print_it(p);
+}

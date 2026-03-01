@@ -1,0 +1,21 @@
+package main;
+
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+impl Describable for Pair[int32, string] {
+    fn describe(self: Pair[int32, string]) -> string {
+        "pair(" + int32_to_string(self.first) + ", " + self.second + ")"
+    }
+}
+
+fn main() {
+    let p = Pair { first: 42, second: "hello" };
+    string_println(Describable::describe(p));
+}
