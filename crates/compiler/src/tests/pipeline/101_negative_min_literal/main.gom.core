@@ -1,0 +1,14 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let a/0 = -128 in
+  let _wild0 = string_println(int8_to_string(a/0)) in
+  let b/1 = -32768 in
+  let _wild1 = string_println(int16_to_string(b/1)) in
+}

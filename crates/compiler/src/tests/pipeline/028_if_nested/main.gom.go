@@ -55,8 +55,7 @@ func triangle_type(a__1 int32, b__2 int32, c__3 int32) string {
 }
 
 func main0() struct{} {
-    var t21 int32 = -42
-    var first__4 string = classify(t21)
+    var first__4 string = classify(-42)
     var second__5 string = classify(0)
     var third__6 string = classify(17)
     var shape1__7 string = triangle_type(1, 2, 3)

@@ -25,21 +25,20 @@ func classify(n__0 int32) string {
 }
 
 func main0() struct{} {
-    var t6 int32 = -1
-    var t7 string = classify(t6)
+    var t6 string = classify(-1)
+    println__T_string(t6)
+    var t7 string = classify(0)
     println__T_string(t7)
-    var t8 string = classify(0)
+    var t8 string = classify(1)
     println__T_string(t8)
-    var t9 string = classify(1)
+    var t9 string = classify(42)
     println__T_string(t9)
-    var t10 string = classify(42)
-    println__T_string(t10)
     return struct{}{}
 }
 
 func println__T_string(value__1 string) struct{} {
-    var t11 struct{} = string_println(value__1)
-    return t11
+    var t10 struct{} = string_println(value__1)
+    return t10
 }
 
 func main() {
