@@ -28,8 +28,8 @@ fn chooser(flag/2: bool) -> (int32) -> int32 {
 
 fn main() -> unit {
     let xs/3: [(int32) -> int32; 2] = [(double : (int32) -> int32), (increment : (int32) -> int32)];
-    let f/4: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 0);
-    let g/5: (int32) -> int32 = (array_get : ([(int32) -> int32; 18446744073709551615], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 1);
+    let f/4: (int32) -> int32 = (array_get : ([(int32) -> int32; 2], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 0);
+    let g/5: (int32) -> int32 = (array_get : ([(int32) -> int32; 2], int32) -> (int32) -> int32)((xs/3 : [(int32) -> int32; 2]), 1);
     let _ : unit = (println : (int32) -> unit)((g/5 : (int32) -> int32)((f/4 : (int32) -> int32)(10)));
     let chosen/6: (int32) -> int32 = (chooser : (bool) -> (int32) -> int32)(true);
     let applied/7: int32 = (chosen/6 : (int32) -> int32)(5);
