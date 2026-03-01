@@ -560,7 +560,14 @@ impl Typer {
                             } if dyn_trait_name == &trait_name.0
                         );
                         let impl_found = genv.has_trait_impl_visible(&trait_name.0, &norm_for_ty);
-                        if dyn_satisfied || impl_found {
+                        let tparam_satisfied = matches!(
+                            &norm_for_ty,
+                            tast::Ty::TParam { name }
+                            if self.tparam_trait_bounds
+                                .get(name)
+                                .is_some_and(|bounds| bounds.contains(&trait_name.0))
+                        );
+                        if dyn_satisfied || impl_found || tparam_satisfied {
                             changed = true;
                         } else if matches!(norm_for_ty, tast::Ty::TVar(_))
                             || !is_concrete(&norm_for_ty)
@@ -654,7 +661,7 @@ impl Typer {
         self.constraints = constraints;
     }
 
-    fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
+    pub(crate) fn norm(&mut self, ty: &tast::Ty) -> tast::Ty {
         match ty {
             tast::Ty::TVar(v) => {
                 if let Some(value) = self.uni.probe_value(*v) {

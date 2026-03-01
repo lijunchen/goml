@@ -1,0 +1,17 @@
+trait Transformer {
+  fn transform(Self, int32, int32) -> int32;
+}
+
+struct Scaler {
+  factor: int32,
+}
+
+impl Transformer for Scaler {
+  fn transform(self: Scaler, n: int32) -> int32 {
+    n * self.factor
+  }
+}
+
+fn main() -> unit {
+  ()
+}

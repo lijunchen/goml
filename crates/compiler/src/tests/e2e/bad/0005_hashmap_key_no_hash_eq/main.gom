@@ -1,0 +1,14 @@
+struct Config {
+  timeout: int32,
+  retries: int32,
+}
+
+fn main() -> unit {
+  let m = hashmap_new();
+  hashmap_set(m, Config { timeout: 30, retries: 3 }, "production");
+  let result = hashmap_get(m, Config { timeout: 30, retries: 3 });
+  match result {
+    Option::Some(v) => println(v),
+    Option::None => println("not found"),
+  }
+}

@@ -1,0 +1,21 @@
+trait Builder {
+  fn build(Self) -> Self;
+}
+
+struct Widget {
+  id: int32,
+}
+
+impl Builder for Widget {
+  fn build(self: Widget) -> Widget {
+    Widget { id: self.id + 1 }
+  }
+}
+
+fn create(b: dyn Builder) -> dyn Builder {
+  Builder::build(b)
+}
+
+fn main() -> unit {
+  ()
+}

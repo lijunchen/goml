@@ -963,6 +963,63 @@ pub fn collect_typedefs(
             hir::Def::ExternBuiltin(ext) => define_extern_builtin(env, diagnostics, ext),
         }
     }
+    validate_no_infinite_size_structs(env, diagnostics);
+}
+
+fn validate_no_infinite_size_structs(env: &PackageTypeEnv, diagnostics: &mut Diagnostics) {
+    let structs = env.current().structs();
+    for (name, _) in structs.iter() {
+        let mut visited = HashSet::new();
+        if has_infinite_size(structs, &name.0, &mut visited) {
+            diagnostics.push(
+                Diagnostic::new(
+                    Stage::Typer,
+                    Severity::Error,
+                    format!(
+                        "Struct {} has infinite size due to recursive field; use Ref[{}] for indirection",
+                        name.0, name.0
+                    ),
+                )
+            );
+        }
+    }
+}
+
+fn has_infinite_size(
+    structs: &IndexMap<tast::TastIdent, env::StructDef>,
+    target: &str,
+    visited: &mut HashSet<String>,
+) -> bool {
+    if !visited.insert(target.to_string()) {
+        return true;
+    }
+    let Some(def) = structs.get(&tast::TastIdent(target.to_string())) else {
+        visited.remove(target);
+        return false;
+    };
+    for (_, field_ty) in &def.fields {
+        if ty_contains_inline_struct(structs, field_ty, visited) {
+            visited.remove(target);
+            return true;
+        }
+    }
+    visited.remove(target);
+    false
+}
+
+fn ty_contains_inline_struct(
+    structs: &IndexMap<tast::TastIdent, env::StructDef>,
+    ty: &tast::Ty,
+    visited: &mut HashSet<String>,
+) -> bool {
+    match ty {
+        tast::Ty::TStruct { name, .. } => has_infinite_size(structs, name, visited),
+        tast::Ty::TTuple { typs } => typs
+            .iter()
+            .any(|t| ty_contains_inline_struct(structs, t, visited)),
+        tast::Ty::TArray { elem, .. } => ty_contains_inline_struct(structs, elem, visited),
+        _ => false,
+    }
 }
 
 pub fn check_file(
@@ -1221,8 +1278,15 @@ fn typecheck_fn(
     let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
     local_env.pop_scope(diagnostics);
     local_env.clear_tparams_env();
+    typer.tparam_trait_bounds = local_env
+        .tparam_trait_bounds_map()
+        .iter()
+        .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
+        .collect();
     local_env.clear_tparam_trait_bounds();
     typer.solve(genv, diagnostics);
+    typer.tparam_trait_bounds.clear();
+    typer.validate_deferred_arithmetic_checks(diagnostics);
 }
 
 fn typecheck_impl_block(
@@ -1291,7 +1355,14 @@ fn typecheck_impl_block(
         let _typed_body = typer.check_block(genv, &mut local_env, diagnostics, &f.body, &ret_ty);
         local_env.pop_scope(diagnostics);
         local_env.clear_tparams_env();
+        typer.tparam_trait_bounds = local_env
+            .tparam_trait_bounds_map()
+            .iter()
+            .map(|(k, v)| (k.clone(), v.iter().map(|t| t.0.clone()).collect()))
+            .collect();
         local_env.clear_tparam_trait_bounds();
         typer.solve(genv, diagnostics);
+        typer.tparam_trait_bounds.clear();
+        typer.validate_deferred_arithmetic_checks(diagnostics);
     }
 }
