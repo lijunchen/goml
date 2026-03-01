@@ -36,6 +36,7 @@ pub const EXPR_FIRST: &[TokenKind] = &[
     T![while],
     T![break],
     T![continue],
+    T![return],
     T![|],
     T![||],
     T![go],
@@ -282,6 +283,20 @@ fn atom(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.expect(T![continue]);
             p.close(m, MySyntaxKind::EXPR_CONTINUE)
+        }
+        T![return] => {
+            let m = p.open();
+            p.expect(T![return]);
+            if !matches!(
+                p.peek(),
+                T![;] | T![,] | T![')'] | T![']'] | T!['}'] | T![eof]
+            ) && !expect_expr_with_message(p, "expected an expression after `return`")
+            {
+                while !p.eof() && !matches!(p.peek(), T![;] | T![,] | T![')'] | T![']'] | T!['}']) {
+                    p.advance();
+                }
+            }
+            p.close(m, MySyntaxKind::EXPR_RETURN)
         }
         T![go] => {
             let m = p.open();

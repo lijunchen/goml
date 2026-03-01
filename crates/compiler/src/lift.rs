@@ -157,6 +157,10 @@ pub enum LiftExpr {
     EContinue {
         ty: Ty,
     },
+    EReturn {
+        expr: Option<Box<LiftExpr>>,
+        ty: Ty,
+    },
     EGo {
         expr: Box<LiftExpr>,
         ty: Ty,
@@ -223,6 +227,7 @@ impl LiftExpr {
             LiftExpr::EWhile { ty, .. } => ty.clone(),
             LiftExpr::EBreak { ty, .. } => ty.clone(),
             LiftExpr::EContinue { ty, .. } => ty.clone(),
+            LiftExpr::EReturn { ty, .. } => ty.clone(),
             LiftExpr::EGo { ty, .. } => ty.clone(),
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
             LiftExpr::EUnary { ty, .. } => ty.clone(),
@@ -603,6 +608,11 @@ fn rewrite_lift_expr_with_final_types(
         },
         LiftExpr::EBreak { ty } => LiftExpr::EBreak { ty },
         LiftExpr::EContinue { ty } => LiftExpr::EContinue { ty },
+        LiftExpr::EReturn { expr, ty } => LiftExpr::EReturn {
+            expr: expr
+                .map(|expr| Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr))),
+            ty,
+        },
         LiftExpr::EGo { expr, ty } => LiftExpr::EGo {
             expr: Box::new(rewrite_lift_expr_with_final_types(state, scope, *expr)),
             ty,
@@ -851,6 +861,10 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
         }
         MonoExpr::EBreak { ty } => LiftExpr::EBreak { ty },
         MonoExpr::EContinue { ty } => LiftExpr::EContinue { ty },
+        MonoExpr::EReturn { expr, ty } => {
+            let expr = expr.map(|expr| Box::new(transform_expr(state, scope, *expr)));
+            LiftExpr::EReturn { expr, ty }
+        }
         MonoExpr::EGo { expr, ty } => {
             let expr = Box::new(transform_expr(state, scope, *expr));
             LiftExpr::EGo { expr, ty }
@@ -1257,6 +1271,11 @@ fn collect_captured(
             collect_captured(body, bound, captured, scope);
         }
         LiftExpr::EBreak { .. } | LiftExpr::EContinue { .. } => {}
+        LiftExpr::EReturn { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_captured(expr, bound, captured, scope);
+            }
+        }
         LiftExpr::EGo { expr, .. } => {
             collect_captured(expr, bound, captured, scope);
         }

@@ -1753,6 +1753,11 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
         | ETraitMethod { .. }
         | EDynTraitMethod { .. }
         | EInherentMethod { .. } => {}
+        EReturn { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_mutable_bindings_expr(expr, mutable_bindings);
+            }
+        }
         EConstr { args, .. } => {
             for arg in args {
                 collect_mutable_bindings_expr(arg, mutable_bindings);
@@ -1839,6 +1844,11 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
         | ETraitMethod { .. }
         | EDynTraitMethod { .. }
         | EInherentMethod { .. } => {}
+        EReturn { expr, .. } => {
+            if let Some(expr) = expr {
+                collect_captured_names_expr(expr, captured);
+            }
+        }
         EConstr { args, .. } => {
             for arg in args {
                 collect_captured_names_expr(arg, captured);
@@ -2065,6 +2075,10 @@ fn lower_hidden_mut_expr(expr: core::Expr, hidden_mut_cells: &HiddenMutCells) ->
         },
         core::Expr::EBreak { ty } => core::Expr::EBreak { ty },
         core::Expr::EContinue { ty } => core::Expr::EContinue { ty },
+        core::Expr::EReturn { expr, ty } => core::Expr::EReturn {
+            expr: expr.map(|expr| Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells))),
+            ty,
+        },
         core::Expr::EGo { expr, ty } => core::Expr::EGo {
             expr: Box::new(lower_hidden_mut_expr(*expr, hidden_mut_cells)),
             ty,
@@ -2530,6 +2544,12 @@ fn compile_expr(
         },
         EBreak { ty } => core::Expr::EBreak { ty: ty.clone() },
         EContinue { ty } => core::Expr::EContinue { ty: ty.clone() },
+        EReturn { expr, ty } => core::Expr::EReturn {
+            expr: expr
+                .as_ref()
+                .map(|expr| Box::new(compile_expr(expr, genv, gensym, diagnostics))),
+            ty: ty.clone(),
+        },
         EGo { expr, ty } => core::Expr::EGo {
             expr: Box::new(compile_expr(expr, genv, gensym, diagnostics)),
             ty: ty.clone(),

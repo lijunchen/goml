@@ -277,6 +277,15 @@ impl LiftExpr {
 
             LiftExpr::EContinue { .. } => RcDoc::text("continue"),
 
+            LiftExpr::EReturn { expr, .. } => {
+                let doc = RcDoc::text("return");
+                if let Some(expr) = expr {
+                    doc.append(RcDoc::space()).append(expr.to_doc(liftenv))
+                } else {
+                    doc
+                }
+            }
+
             LiftExpr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(liftenv);
                 RcDoc::text("(")

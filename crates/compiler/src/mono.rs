@@ -84,6 +84,10 @@ pub enum MonoExpr {
     EContinue {
         ty: Ty,
     },
+    EReturn {
+        expr: Option<Box<MonoExpr>>,
+        ty: Ty,
+    },
     EGo {
         expr: Box<MonoExpr>,
         ty: Ty,
@@ -156,6 +160,7 @@ impl MonoExpr {
             MonoExpr::EWhile { ty, .. } => ty.clone(),
             MonoExpr::EBreak { ty, .. } => ty.clone(),
             MonoExpr::EContinue { ty, .. } => ty.clone(),
+            MonoExpr::EReturn { ty, .. } => ty.clone(),
             MonoExpr::EGo { ty, .. } => ty.clone(),
             MonoExpr::EConstrGet { ty, .. } => ty.clone(),
             MonoExpr::EUnary { ty, .. } => ty.clone(),
@@ -840,6 +845,10 @@ fn mono_expr(ctx: &mut Ctx, e: &core::Expr, s: &Subst) -> MonoExpr {
         core::Expr::EContinue { ty } => MonoExpr::EContinue {
             ty: subst_ty(&ty, s),
         },
+        core::Expr::EReturn { expr, ty } => MonoExpr::EReturn {
+            expr: expr.map(|expr| Box::new(mono_expr(ctx, &expr, s))),
+            ty: subst_ty(&ty, s),
+        },
         core::Expr::EGo { expr, ty } => MonoExpr::EGo {
             expr: Box::new(mono_expr(ctx, &expr, s)),
             ty: subst_ty(&ty, s),
@@ -1453,6 +1462,10 @@ fn rewrite_expr_types(e: MonoExpr, m: &mut TypeMono<'_>) -> MonoExpr {
         MonoExpr::EContinue { ty } => MonoExpr::EContinue {
             ty: m.collapse_type_apps(&ty),
         },
+        MonoExpr::EReturn { expr, ty } => MonoExpr::EReturn {
+            expr: expr.map(|expr| Box::new(rewrite_expr_types(*expr, m))),
+            ty: m.collapse_type_apps(&ty),
+        },
         MonoExpr::EGo { expr, ty } => MonoExpr::EGo {
             expr: Box::new(rewrite_expr_types(*expr, m)),
             ty: m.collapse_type_apps(&ty),
@@ -1701,6 +1714,10 @@ fn rename_expr_refs(e: MonoExpr, renames: &IndexMap<String, String>) -> MonoExpr
         },
         MonoExpr::EGo { expr, ty } => MonoExpr::EGo {
             expr: Box::new(rename_expr_refs(*expr, renames)),
+            ty,
+        },
+        MonoExpr::EReturn { expr, ty } => MonoExpr::EReturn {
+            expr: expr.map(|expr| Box::new(rename_expr_refs(*expr, renames))),
             ty,
         },
         MonoExpr::EBreak { .. } | MonoExpr::EContinue { .. } | MonoExpr::EPrim { .. } => e,

@@ -1204,6 +1204,12 @@ impl NameResolution {
             ast::Expr::EContinue { astptr } => {
                 self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EContinue)
             }
+            ast::Expr::EReturn { expr, astptr } => {
+                let expr = expr
+                    .as_ref()
+                    .map(|expr| self.resolve_expr(expr, env, ctx, hir_table));
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EReturn { expr })
+            }
             ast::Expr::ECall { func, args, astptr } => {
                 if let ast::Expr::EPath { path, .. } = func.as_ref()
                     && let Some(constructor) = self.constructor_path_for(path, ctx)

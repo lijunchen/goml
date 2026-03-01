@@ -1438,6 +1438,9 @@ pub enum Expr {
     },
     EBreak,
     EContinue,
+    EReturn {
+        expr: Option<ExprId>,
+    },
     EGo {
         expr: ExprId,
     },

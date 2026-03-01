@@ -780,6 +780,7 @@ pub enum Expr {
     WhileExpr(WhileExpr),
     BreakExpr(BreakExpr),
     ContinueExpr(ContinueExpr),
+    ReturnExpr(ReturnExpr),
     IdentExpr(IdentExpr),
     TupleExpr(TupleExpr),
     ParenExpr(ParenExpr),
@@ -823,6 +824,7 @@ impl CstNode for Expr {
                 | EXPR_WHILE
                 | EXPR_BREAK
                 | EXPR_CONTINUE
+                | EXPR_RETURN
                 | EXPR_GO
         )
     }
@@ -852,6 +854,7 @@ impl CstNode for Expr {
             EXPR_WHILE => Expr::WhileExpr(WhileExpr { syntax }),
             EXPR_BREAK => Expr::BreakExpr(BreakExpr { syntax }),
             EXPR_CONTINUE => Expr::ContinueExpr(ContinueExpr { syntax }),
+            EXPR_RETURN => Expr::ReturnExpr(ReturnExpr { syntax }),
             EXPR_IDENT => Expr::IdentExpr(IdentExpr { syntax }),
             EXPR_TUPLE => Expr::TupleExpr(TupleExpr { syntax }),
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
@@ -891,6 +894,7 @@ impl CstNode for Expr {
             Self::WhileExpr(it) => &it.syntax,
             Self::BreakExpr(it) => &it.syntax,
             Self::ContinueExpr(it) => &it.syntax,
+            Self::ReturnExpr(it) => &it.syntax,
             Self::IdentExpr(it) => &it.syntax,
             Self::TupleExpr(it) => &it.syntax,
             Self::ParenExpr(it) => &it.syntax,
@@ -1396,6 +1400,22 @@ pub struct ContinueExpr {
 
 impl_cst_node_simple!(ContinueExpr, MySyntaxKind::EXPR_CONTINUE);
 impl_display_via_syntax!(ContinueExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ReturnExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl ReturnExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(ReturnExpr, MySyntaxKind::EXPR_RETURN);
+impl_display_via_syntax!(ReturnExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

@@ -262,6 +262,15 @@ impl Expr {
 
             Expr::EContinue { .. } => RcDoc::text("continue"),
 
+            Expr::EReturn { expr, .. } => {
+                let doc = RcDoc::text("return");
+                if let Some(expr) = expr {
+                    doc.append(RcDoc::space()).append(expr.to_doc(genv))
+                } else {
+                    doc
+                }
+            }
+
             Expr::EUnary { op, expr, ty: _ } => {
                 let expr_doc = expr.to_doc(genv);
                 RcDoc::text("(")
