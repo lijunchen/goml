@@ -1,0 +1,20 @@
+package main;
+
+fn main() {
+    let mut x = 10;
+    let bump_outer = || {
+        x = x + 1;
+        x
+    };
+
+    let run_shadow = || {
+        let mut x = 100;
+        x = x + 50;
+        x
+    };
+
+    string_println(int32_to_string(run_shadow()));
+    string_println(int32_to_string(bump_outer()));
+    string_println(int32_to_string(x));
+    string_println(int32_to_string(bump_outer()));
+}

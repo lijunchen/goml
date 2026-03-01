@@ -1,0 +1,21 @@
+package main;
+
+fn make_pair(seed: int32) -> (() -> int32, () -> int32) {
+    let mut n = seed;
+    let inc = || {
+        n = n + 1;
+        n
+    };
+    let get = || n;
+    (inc, get)
+}
+
+fn main() {
+    let (inc, get) = make_pair(5);
+
+    string_println(int32_to_string(get()));
+    string_println(int32_to_string(inc()));
+    string_println(int32_to_string(get()));
+    string_println(int32_to_string(inc()));
+    string_println(int32_to_string(get()));
+}
