@@ -381,7 +381,7 @@ impl Typer {
             hir::Expr::EContinue => self.infer_continue_expr(diagnostics, e),
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
-                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args)
+                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, None)
             }
             hir::Expr::EUnary { op, expr } => {
                 self.infer_unary_expr(genv, local_env, diagnostics, op, expr)
@@ -563,6 +563,9 @@ impl Typer {
             }
             hir::Expr::EConstr { constructor, args } => {
                 self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, Some(expected))
+            }
+            hir::Expr::ECall { func, args } => {
+                self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, Some(expected))
             }
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
@@ -2159,6 +2162,7 @@ impl Typer {
         call_expr_id: hir::ExprId,
         func: hir::ExprId,
         args: &[hir::ExprId],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let func_expr = self.hir_table.expr(func).clone();
         match func_expr {
@@ -2248,12 +2252,16 @@ impl Typer {
                 let name = &hint;
                 if let Some(func_scheme) = lookup_function_scheme_by_hint(genv, name.as_str()) {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) = (hint_ret_ty, &inst_ty) {
+                        self.unify(diagnostics, fn_ret, hint, self.expr_range(call_expr_id));
+                    }
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
+                        let params: Vec<tast::Ty> = params.iter().map(|t| self.norm(t)).collect();
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
                             let arg_tast =
                                 self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
@@ -2338,12 +2346,16 @@ impl Typer {
                     && let Some(func_scheme) = genv.get_function_scheme_unqualified(name.as_str())
                 {
                     let inst_ty = self.inst_ty(&func_scheme.ty);
+                    if let (Some(hint), tast::Ty::TFunc { ret_ty: fn_ret, .. }) = (hint_ret_ty, &inst_ty) {
+                        self.unify(diagnostics, fn_ret, hint, self.expr_range(call_expr_id));
+                    }
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
+                        let params: Vec<tast::Ty> = params.iter().map(|t| self.norm(t)).collect();
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
                             let arg_tast =
                                 self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
