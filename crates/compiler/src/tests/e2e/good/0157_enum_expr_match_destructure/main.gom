@@ -1,0 +1,24 @@
+package main;
+
+enum Expr {
+    Num(int32),
+    Add(int32, int32),
+    Pair((int32, int32)),
+}
+
+fn eval(e: Expr) -> int32 {
+    match e {
+        Expr::Num(n) => n,
+        Expr::Add(a, b) => a + b,
+        Expr::Pair(p) => {
+            let (x, y) = p;
+            x * y
+        },
+    }
+}
+
+fn main() {
+    string_println(int32_to_string(eval(Expr::Num(7))));
+    string_println(int32_to_string(eval(Expr::Add(3, 4))));
+    string_println(int32_to_string(eval(Expr::Pair((5, 6)))));
+}

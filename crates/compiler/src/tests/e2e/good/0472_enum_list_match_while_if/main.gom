@@ -1,0 +1,39 @@
+enum List[T] {
+    Cons(T, List[T]),
+    Nil,
+}
+
+fn length[T](list: List[T]) -> int32 {
+    match list {
+        List::Cons(_, rest) => 1 + length(rest),
+        List::Nil => 0,
+    }
+}
+
+fn reverse[T](list: List[T]) -> List[T] {
+    let acc = ref(List::Nil);
+    let current = ref(list);
+    while true {
+        match ref_get(current) {
+            List::Cons(x, rest) => {
+                ref_set(acc, List::Cons(x, ref_get(acc)));
+                ref_set(current, rest);
+            },
+            List::Nil => {
+                ref_set(current, List::Nil);
+            },
+        };
+        let done = match ref_get(current) {
+            List::Cons(_, _) => false,
+            List::Nil => true,
+        };
+        if done { ref_set(current, List::Nil) } else { () };
+        if done { ref_set(acc, ref_get(acc)) } else { () };
+    };
+    ref_get(acc)
+}
+
+fn main() {
+    let list = List::Cons(1, List::Cons(2, List::Cons(3, List::Nil)));
+    println(length(list).to_string());
+}

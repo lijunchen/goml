@@ -1,0 +1,22 @@
+package main;
+
+struct Pair[A, B] {
+    fst: A,
+    snd: B,
+}
+
+fn swap[A, B](p: Pair[A, B]) -> Pair[B, A] {
+    Pair { fst: p.snd, snd: p.fst }
+}
+
+fn main() {
+    let p = Pair { fst: 1, snd: "hello" };
+    let q = swap(p);
+    string_println(q.fst);
+    string_println(int32_to_string(q.snd));
+    
+    let r = Pair { fst: Pair { fst: 1, snd: 2 }, snd: "nested" };
+    string_println(int32_to_string(r.fst.fst));
+    string_println(int32_to_string(r.fst.snd));
+    string_println(r.snd);
+}

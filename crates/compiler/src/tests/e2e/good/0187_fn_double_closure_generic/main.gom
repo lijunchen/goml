@@ -1,0 +1,17 @@
+package main;
+
+fn apply[T](f: (T) -> T, x: T) -> T {
+    f(x)
+}
+
+fn double(x: int32) -> int32 {
+    x * 2
+}
+
+fn main() {
+    let result = apply(double, 21);
+    string_println(int32_to_string(result));
+    
+    let inc = apply(|x| x + 1, 10);
+    string_println(int32_to_string(inc));
+}

@@ -1,0 +1,14 @@
+trait Compute {
+    fn compute(Self) -> int32;
+}
+
+struct Adder { a: int32, b: int32 }
+
+impl Compute for Adder {
+    fn compute(self: Adder) -> int32 { self.a + self.b }
+}
+
+fn main() {
+    let a = Adder { a: 10, b: 32 };
+    println(a.compute().to_string());
+}

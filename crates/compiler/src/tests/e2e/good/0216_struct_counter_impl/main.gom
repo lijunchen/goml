@@ -1,0 +1,27 @@
+package main;
+
+struct Counter {
+    count: int32,
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: 0 }
+    }
+    
+    fn increment(self: Counter) -> Counter {
+        Counter { count: self.count + 1 }
+    }
+    
+    fn get_count(self: Counter) -> int32 {
+        self.count
+    }
+}
+
+fn main() {
+    let c = Counter::new();
+    let c = c.increment();
+    let c = c.increment();
+    let c = c.increment();
+    string_println(int32_to_string(c.get_count()));
+}

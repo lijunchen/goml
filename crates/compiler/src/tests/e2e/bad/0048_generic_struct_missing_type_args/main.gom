@@ -1,0 +1,15 @@
+struct Stack[T] {
+    items: Vec[T],
+    size: Ref[int32],
+}
+
+impl Stack {
+    fn new() -> Stack[int32] {
+        Stack { items: vec_new(), size: ref(0i32) }
+    }
+}
+
+fn main() {
+    let s = Stack::new();
+    println(ref_get(s.size).to_string());
+}

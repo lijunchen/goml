@@ -1,0 +1,27 @@
+package main;
+
+struct Counter {
+    count: Ref[int32],
+}
+
+impl Counter {
+    fn new() -> Counter {
+        Counter { count: ref(0) }
+    }
+    
+    fn inc(self: Counter) {
+        ref_set(self.count, ref_get(self.count) + 1);
+    }
+    
+    fn get(self: Counter) -> int32 {
+        ref_get(self.count)
+    }
+}
+
+fn main() {
+    let c = Counter::new();
+    Counter::inc(c);
+    Counter::inc(c);
+    Counter::inc(c);
+    string_println(int32_to_string(Counter::get(c)));
+}

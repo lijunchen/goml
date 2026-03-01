@@ -1,0 +1,17 @@
+trait ToStr {
+    fn to_str(Self) -> string;
+}
+
+impl ToStr for int32 { fn to_str(self: int32) -> string { self.to_string() } }
+impl ToStr for bool { fn to_str(self: bool) -> string { self.to_string() } }
+impl ToStr for string { fn to_str(self: string) -> string { self } }
+
+fn format_pair[A: ToStr, B: ToStr](a: A, b: B) -> string {
+    "(" + ToStr::to_str(a) + ", " + ToStr::to_str(b) + ")"
+}
+
+fn main() {
+    println(format_pair(42, true));
+    println(format_pair("hi", 99));
+    println(format_pair(true, "bye"));
+}

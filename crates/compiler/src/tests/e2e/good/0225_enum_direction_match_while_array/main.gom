@@ -1,0 +1,26 @@
+package main;
+
+enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+fn dir_to_string(d: Direction) -> string {
+    match d {
+        Direction::Up => "up",
+        Direction::Down => "down",
+        Direction::Left => "left",
+        Direction::Right => "right",
+    }
+}
+
+fn main() {
+    let dirs: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
+    let i = ref(0);
+    while ref_get(i) < 4 {
+        string_println(dir_to_string(array_get(dirs, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

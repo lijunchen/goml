@@ -1,0 +1,30 @@
+package main;
+
+trait Render {
+    fn render(Self) -> string;
+}
+
+struct Box[T] {
+    value: T,
+}
+
+impl Render for int32 {
+    fn render(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Render for string {
+    fn render(self: string) -> string {
+        "\"" + self + "\""
+    }
+}
+
+fn render_box[T: Render](b: Box[T]) -> string {
+    "[" + Render::render(b.value) + "]"
+}
+
+fn main() {
+    string_println(render_box(Box { value: 42 }));
+    string_println(render_box(Box { value: "hi" }));
+}

@@ -1,0 +1,14 @@
+fn main() {
+    let i = ref(0i32);
+    while ref_get(i) < 10 {
+        ref_set(i, ref_get(i) + 1);
+        if ref_get(i) == 3 {
+            continue;
+        } else { () };
+        if ref_get(i) == 7 {
+            break;
+        } else { () };
+        println(ref_get(i).to_string());
+    };
+    println("done: " + ref_get(i).to_string());
+}

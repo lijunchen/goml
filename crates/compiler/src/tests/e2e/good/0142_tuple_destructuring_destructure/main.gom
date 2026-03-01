@@ -1,0 +1,27 @@
+package main;
+
+fn make_pair[A, B](a: A, b: B) -> (A, B) {
+    (a, b)
+}
+
+fn first[A, B](p: (A, B)) -> A {
+    let (a, _) = p;
+    a
+}
+
+fn second[A, B](p: (A, B)) -> B {
+    let (_, b) = p;
+    b
+}
+
+fn main() {
+    let p = make_pair(42, "hello");
+    string_println(int32_to_string(first(p)));
+    string_println(second(p));
+    
+    let q = make_pair(make_pair(1, 2), "nested");
+    let inner = first(q);
+    string_println(int32_to_string(first(inner)));
+    string_println(int32_to_string(second(inner)));
+    string_println(second(q));
+}

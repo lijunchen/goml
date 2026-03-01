@@ -1,0 +1,29 @@
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+trait Sizable {
+    fn size(Self) -> int32;
+}
+
+struct Item {
+    name: string,
+    weight: int32,
+}
+
+impl Describable for Item {
+    fn describe(self: Item) -> string { "Item: " + self.name }
+}
+
+impl Sizable for Item {
+    fn size(self: Item) -> int32 { self.weight }
+}
+
+fn print_info[T: Describable + Sizable](item: T) -> unit {
+    println(Describable::describe(item) + " (size: " + Sizable::size(item).to_string() + ")");
+}
+
+fn main() {
+    let item = Item { name: "sword", weight: 5 };
+    print_info(item);
+}

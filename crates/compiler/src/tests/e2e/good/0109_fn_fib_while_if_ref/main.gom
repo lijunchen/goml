@@ -1,0 +1,19 @@
+package main;
+
+fn fib(n: int32) -> int32 {
+    if n <= 1 {
+        n
+    } else {
+        fib(n - 1) + fib(n - 2)
+    }
+}
+
+fn main() {
+    let i = ref(0);
+    while ref_get(i) < 10 {
+        string_print(int32_to_string(fib(ref_get(i))));
+        string_print(" ");
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println("");
+}

@@ -1,0 +1,16 @@
+fn main() {
+    let a = 1;
+    let f1 = |x: int32| {
+        let b = a + x;
+        let f2 = |y: int32| {
+            let c = b + y;
+            let f3 = |z: int32| {
+                a + b + c + z
+            };
+            f3
+        };
+        f2
+    };
+    let g = f1(10)(20)(30);
+    println(g.to_string());
+}

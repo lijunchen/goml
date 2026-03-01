@@ -1,0 +1,15 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { n: int32 }
+impl Show for Num { fn show(self: Num) -> string { self.n.to_string() } }
+
+fn apply[T](f: (T) -> string, x: T) -> string {
+    f(x)
+}
+
+fn main() {
+    let result = apply(|x: dyn Show| Show::show(x), Num { n: 42 });
+    println(result);
+}

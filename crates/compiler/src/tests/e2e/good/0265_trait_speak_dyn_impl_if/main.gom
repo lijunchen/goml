@@ -1,0 +1,31 @@
+package main;
+
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+struct Robot {}
+struct Cat {}
+
+impl Speak for Robot {
+    fn speak(self: Robot) -> string { "beep boop" }
+}
+
+impl Speak for Cat {
+    fn speak(self: Cat) -> string { "meow" }
+}
+
+fn make_speaker(kind: int32) -> dyn Speak {
+    if kind == 0 {
+        Robot {}
+    } else {
+        Cat {}
+    }
+}
+
+fn main() {
+    let s1 = make_speaker(0);
+    let s2 = make_speaker(1);
+    string_println(Speak::speak(s1));
+    string_println(Speak::speak(s2));
+}

@@ -1,0 +1,26 @@
+package main;
+
+enum Expr {
+    Num(int32),
+    Add(Ref[Expr], Ref[Expr]),
+    Mul(Ref[Expr], Ref[Expr]),
+}
+
+fn eval(e: Expr) -> int32 {
+    match e {
+        Expr::Num(n) => n,
+        Expr::Add(l, r) => eval(ref_get(l)) + eval(ref_get(r)),
+        Expr::Mul(l, r) => eval(ref_get(l)) * eval(ref_get(r)),
+    }
+}
+
+fn main() {
+    let expr = Expr::Add(
+        ref(Expr::Mul(
+            ref(Expr::Num(2)),
+            ref(Expr::Num(3))
+        )),
+        ref(Expr::Num(4))
+    );
+    string_println(int32_to_string(eval(expr)));
+}

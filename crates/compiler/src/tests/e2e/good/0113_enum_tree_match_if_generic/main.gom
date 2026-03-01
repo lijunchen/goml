@@ -1,0 +1,28 @@
+package main;
+
+enum Tree[T] {
+    Leaf(T),
+    Node(Ref[Tree[T]], Ref[Tree[T]]),
+}
+
+fn depth[T](t: Tree[T]) -> int32 {
+    match t {
+        Tree::Leaf(_) => 1,
+        Tree::Node(l, r) => {
+            let dl = depth(ref_get(l));
+            let dr = depth(ref_get(r));
+            1 + if dl > dr { dl } else { dr }
+        },
+    }
+}
+
+fn main() {
+    let t: Tree[int32] = Tree::Node(
+        ref(Tree::Node(
+            ref(Tree::Leaf(1)),
+            ref(Tree::Leaf(2))
+        )),
+        ref(Tree::Leaf(3))
+    );
+    string_println(int32_to_string(depth(t)));
+}

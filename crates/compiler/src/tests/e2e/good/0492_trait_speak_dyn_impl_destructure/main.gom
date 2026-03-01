@@ -1,0 +1,21 @@
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+struct Cat {}
+struct Dog {}
+
+impl Speak for Cat {
+    fn speak(self: Cat) -> string { "meow" }
+}
+
+impl Speak for Dog {
+    fn speak(self: Dog) -> string { "woof" }
+}
+
+fn main() {
+    let animals: (dyn Speak, dyn Speak) = (Cat {}, Dog {});
+    let (a, b) = animals;
+    println(Speak::speak(a));
+    println(Speak::speak(b));
+}

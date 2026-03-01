@@ -1,0 +1,31 @@
+package main;
+
+trait Greet {
+    fn greet(Self) -> string;
+}
+
+struct English { name: string }
+struct French { name: string }
+
+impl Greet for English {
+    fn greet(self: English) -> string { "Hello, " + self.name }
+}
+
+impl Greet for French {
+    fn greet(self: French) -> string { "Bonjour, " + self.name }
+}
+
+fn make_greeter(lang: string, name: string) -> dyn Greet {
+    if lang == "en" {
+        English { name: name }
+    } else {
+        French { name: name }
+    }
+}
+
+fn main() {
+    let g1 = make_greeter("en", "World");
+    let g2 = make_greeter("fr", "Monde");
+    string_println(Greet::greet(g1));
+    string_println(Greet::greet(g2));
+}

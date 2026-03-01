@@ -1,0 +1,21 @@
+enum List[T] {
+    Nil,
+    Cons(T, Option[List[T]]),
+}
+
+fn length[T](list: List[T]) -> int32 {
+    match list {
+        List::Nil => 0,
+        List::Cons(_, rest) => {
+            1 + match rest {
+                Option::None => 0,
+                Option::Some(inner) => length(inner),
+            }
+        },
+    }
+}
+
+fn main() {
+    let list: List[int32] = List::Cons(1, Option::Some(List::Cons(2, Option::Some(List::Cons(3, Option::None)))));
+    println(length(list).to_string());
+}

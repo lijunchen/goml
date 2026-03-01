@@ -1,0 +1,12 @@
+fn side_effect_loop(n: int32) -> unit {
+    let i = ref(0i32);
+    while ref_get(i) < n {
+        println(ref_get(i).to_string());
+        ref_set(i, ref_get(i) + 1);
+    }
+}
+
+fn main() {
+    side_effect_loop(3);
+    println("done");
+}

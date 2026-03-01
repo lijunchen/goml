@@ -1,0 +1,15 @@
+fn main() {
+    let x = ref(0i32);
+    let result = ref("");
+    while ref_get(x) < 5 {
+        let current = ref_get(x);
+        ref_set(result, ref_get(result) + match current {
+            0 => "zero",
+            1 => "one",
+            2 => "two",
+            _ => "many",
+        } + " ");
+        ref_set(x, current + 1);
+    };
+    println(ref_get(result));
+}

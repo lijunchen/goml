@@ -1,0 +1,35 @@
+package main;
+
+trait Printable {
+    fn display(Self) -> string;
+}
+
+trait Sizeable {
+    fn size(Self) -> int32;
+}
+
+struct Msg {
+    text: string,
+}
+
+impl Printable for Msg {
+    fn display(self: Msg) -> string {
+        self.text
+    }
+}
+
+impl Sizeable for Msg {
+    fn size(self: Msg) -> int32 {
+        string_len(self.text)
+    }
+}
+
+fn show_with_size[T: Printable + Sizeable](item: T) {
+    let s = Printable::display(item);
+    string_println(s);
+}
+
+fn main() {
+    let m = Msg { text: "hello" };
+    show_with_size(m);
+}

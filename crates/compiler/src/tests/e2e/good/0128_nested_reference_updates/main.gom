@@ -1,0 +1,10 @@
+package main;
+
+fn main() {
+    let x = ref(ref(42));
+    let inner = ref_get(x);
+    string_println(int32_to_string(ref_get(inner)));
+    
+    ref_set(inner, 100);
+    string_println(int32_to_string(ref_get(ref_get(x))));
+}

@@ -1,0 +1,31 @@
+enum Action {
+    SetValue(int32),
+    Transform((int32) -> int32),
+    Reset,
+}
+
+fn apply_action(action: Action, current: int32) -> int32 {
+    match action {
+        Action::SetValue(v) => v,
+        Action::Transform(f) => f(current),
+        Action::Reset => 0,
+    }
+}
+
+fn main() {
+    let val = ref(10);
+    
+    let actions = [
+        Action::Transform(|x| x * 2),
+        Action::SetValue(100),
+        Action::Transform(|x| x + 5),
+        Action::Reset,
+    ];
+    
+    let i = ref(0);
+    while ref_get(i) < 4 {
+        ref_set(val, apply_action(array_get(actions, ref_get(i)), ref_get(val)));
+        println(ref_get(val).to_string());
+        ref_set(i, ref_get(i) + 1);
+    };
+}

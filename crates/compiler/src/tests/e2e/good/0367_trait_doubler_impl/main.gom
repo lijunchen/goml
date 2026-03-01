@@ -1,0 +1,20 @@
+trait Doubler {
+    fn double(Self) -> Self;
+}
+
+impl Doubler for int32 {
+    fn double(self: int32) -> int32 { self * 2 }
+}
+
+impl Doubler for string {
+    fn double(self: string) -> string { self + self }
+}
+
+fn double_twice[T: Doubler](x: T) -> T {
+    Doubler::double(Doubler::double(x))
+}
+
+fn main() {
+    println(double_twice(3).to_string());
+    println(double_twice("ab"));
+}

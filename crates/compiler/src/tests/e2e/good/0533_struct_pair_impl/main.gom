@@ -1,0 +1,24 @@
+struct Pair[A, B] {
+    first: A,
+    second: B,
+}
+
+impl Pair[int32, int32] {
+    fn sum(self: Pair[int32, int32]) -> int32 {
+        self.first + self.second
+    }
+}
+
+impl Pair[string, string] {
+    fn concat(self: Pair[string, string]) -> string {
+        self.first + self.second
+    }
+}
+
+fn main() {
+    let p1 = Pair { first: 10, second: 20 };
+    println(p1.sum().to_string());
+    
+    let p2 = Pair { first: "hello ", second: "world" };
+    println(p2.concat());
+}

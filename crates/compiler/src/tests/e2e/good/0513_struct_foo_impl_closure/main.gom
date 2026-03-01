@@ -1,0 +1,17 @@
+struct Foo {
+    bar: () -> string,
+}
+
+impl Foo {
+    fn bar(self: Foo) -> string {
+        "method result"
+    }
+}
+
+fn main() {
+    let f = Foo { bar: || "field result" };
+    println(f.bar());
+    
+    let g = f.bar;
+    println(g());
+}

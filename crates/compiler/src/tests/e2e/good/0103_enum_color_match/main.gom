@@ -1,0 +1,23 @@
+package main;
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(uint8, uint8, uint8),
+}
+
+fn to_hex(c: Color) -> string {
+    match c {
+        Color::Red => "#FF0000",
+        Color::Green => "#00FF00",
+        Color::Blue => "#0000FF",
+        Color::Custom(r, g, b) => "#" + uint8_to_string(r) + uint8_to_string(g) + uint8_to_string(b),
+    }
+}
+
+fn main() {
+    string_println(to_hex(Color::Red));
+    string_println(to_hex(Color::Green));
+    string_println(to_hex(Color::Custom(128u8, 64u8, 32u8)));
+}

@@ -1,0 +1,13 @@
+package main;
+
+fn main() {
+    let v: Vec[uint8] = vec_new();
+    vec_push(v, 1);
+    vec_push(v, 2);
+    vec_push(v, 3);
+    let i = ref(0);
+    while ref_get(i) < vec_len(v) {
+        string_println(uint8_to_string(vec_get(v, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

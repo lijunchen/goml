@@ -1,0 +1,22 @@
+fn partition(items: [int32; 4], pred: (int32) -> bool) -> (int32, int32) {
+    let left_count = ref(0);
+    let right_count = ref(0);
+    let i = ref(0);
+    while ref_get(i) < 4 {
+        let item = array_get(items, ref_get(i));
+        if pred(item) {
+            ref_set(left_count, ref_get(left_count) + 1);
+        } else {
+            ref_set(right_count, ref_get(right_count) + 1);
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    (ref_get(left_count), ref_get(right_count))
+}
+
+fn main() {
+    let nums = [1, 2, 3, 4];
+    let (big, small) = partition(nums, |x| x > 2);
+    println(big.to_string());
+    println(small.to_string());
+}

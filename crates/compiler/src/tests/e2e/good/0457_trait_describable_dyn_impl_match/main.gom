@@ -1,0 +1,22 @@
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Dog { name: string }
+struct Cat { name: string }
+
+impl Describable for Dog { fn describe(self: Dog) -> string { "dog:" + self.name } }
+impl Describable for Cat { fn describe(self: Cat) -> string { "cat:" + self.name } }
+
+fn wrap_in_option[T](x: T) -> Option[T] {
+    Option::Some(x)
+}
+
+fn main() {
+    let d: dyn Describable = Dog { name: "Rex" };
+    let opt = wrap_in_option(d);
+    match opt {
+        Option::Some(val) => println(Describable::describe(val)),
+        Option::None => println("none"),
+    };
+}

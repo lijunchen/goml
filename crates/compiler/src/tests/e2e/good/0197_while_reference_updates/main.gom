@@ -1,0 +1,11 @@
+package main;
+
+fn main() {
+    let i = ref(0);
+    let sum = ref(0);
+    while ref_get(i) < 10 {
+        ref_set(sum, ref_get(sum) + ref_get(i));
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println(int32_to_string(ref_get(sum)));
+}

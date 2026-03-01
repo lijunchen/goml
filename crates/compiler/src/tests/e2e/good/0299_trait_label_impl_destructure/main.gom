@@ -1,0 +1,17 @@
+package main;
+
+trait Label {
+    fn label(Self) -> string;
+}
+
+impl Label for (int32, int32) {
+    fn label(self: (int32, int32)) -> string {
+        let (x, y) = self;
+        "(" + int32_to_string(x) + "," + int32_to_string(y) + ")"
+    }
+}
+
+fn main() {
+    let p = (3, 4);
+    string_println(Label::label(p));
+}

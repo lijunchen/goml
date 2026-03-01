@@ -1,0 +1,27 @@
+enum Dir { Up, Down, Left, Right }
+
+fn opposite(d: Dir) -> Dir {
+    match d {
+        Dir::Up => Dir::Down,
+        Dir::Down => Dir::Up,
+        Dir::Left => Dir::Right,
+        Dir::Right => Dir::Left,
+    }
+}
+
+fn main() {
+    let dirs: [Dir; 4] = [Dir::Up, Dir::Down, Dir::Left, Dir::Right];
+    let i = ref(0i32);
+    while ref_get(i) < 4 {
+        let d = array_get(dirs, ref_get(i));
+        let o = opposite(d);
+        let name = match o {
+            Dir::Up => "up",
+            Dir::Down => "down",
+            Dir::Left => "left",
+            Dir::Right => "right",
+        };
+        println(name);
+        ref_set(i, ref_get(i) + 1);
+    };
+}

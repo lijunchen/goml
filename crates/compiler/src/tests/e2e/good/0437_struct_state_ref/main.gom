@@ -1,0 +1,11 @@
+struct State {
+    count: int32,
+    name: string,
+}
+
+fn main() {
+    let s = ref(State { count: 0, name: "init" });
+    println(ref_get(s).count.to_string() + " " + ref_get(s).name);
+    ref_set(s, State { count: 1, name: "updated" });
+    println(ref_get(s).count.to_string() + " " + ref_get(s).name);
+}

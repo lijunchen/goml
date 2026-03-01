@@ -1,0 +1,22 @@
+struct Empty {}
+
+fn take_empty(e: Empty) -> string {
+    "got empty"
+}
+
+fn return_empty() -> Empty {
+    Empty {}
+}
+
+fn main() {
+    let e = return_empty();
+    println(take_empty(e));
+    
+    let u: () = ();
+    let _ = u;
+    println("unit works");
+    
+    let t: ((), int32, ()) = ((), 42, ());
+    let (_, n, _) = t;
+    println(n.to_string());
+}

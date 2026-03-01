@@ -1,0 +1,27 @@
+package main;
+
+trait Stringify {
+    fn to_str(Self) -> string;
+}
+
+impl Stringify for int32 {
+    fn to_str(self: int32) -> string {
+        int32_to_string(self)
+    }
+}
+
+impl Stringify for bool {
+    fn to_str(self: bool) -> string {
+        if self { "true" } else { "false" }
+    }
+}
+
+fn print_it(x: dyn Stringify) {
+    string_println(Stringify::to_str(x));
+}
+
+fn main() {
+    print_it(42);
+    print_it(true);
+    print_it(false);
+}

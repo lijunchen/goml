@@ -1,0 +1,26 @@
+fn find_first[T](arr: [T; 5], pred: (T) -> bool) -> Option[T] {
+    let i = ref(0i32);
+    let result: Ref[Option[T]] = ref(Option::None);
+    while ref_get(i) < 5 {
+        let item = array_get(arr, ref_get(i));
+        if pred(item) {
+            match ref_get(result) {
+                Option::None => ref_set(result, Option::Some(item)),
+                Option::Some(_) => (),
+            };
+        } else {
+            ()
+        };
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let arr = [3, 7, 2, 9, 4];
+    let result = find_first(arr, |x| x > 5);
+    match result {
+        Option::Some(v) => println("found: " + v.to_string()),
+        Option::None => println("not found"),
+    };
+}

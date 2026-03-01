@@ -1,0 +1,25 @@
+fn option_map[T, U](opt: Option[T], f: (T) -> U) -> Option[U] {
+    match opt {
+        Option::Some(x) => Option::Some(f(x)),
+        Option::None => Option::None,
+    }
+}
+
+fn main() {
+    let x: Option[int32] = Option::Some(5);
+    
+    let doubled = option_map(x, |n| n * 2);
+    let stringed = option_map(doubled, |n| "val=" + n.to_string());
+    
+    match stringed {
+        Option::Some(s) => println(s),
+        Option::None => println("none"),
+    };
+    
+    let empty: Option[int32] = Option::None;
+    let result = option_map(option_map(empty, |n| n + 1), |n| n.to_string());
+    match result {
+        Option::Some(s) => println(s),
+        Option::None => println("none"),
+    };
+}

@@ -1,0 +1,21 @@
+package main;
+
+fn main() {
+    let m = hashmap_new();
+    hashmap_set(m, 1, "one");
+    hashmap_set(m, 2, "two");
+    hashmap_set(m, 3, "three");
+    
+    match hashmap_get(m, 2) {
+        Option::Some(v) => string_println(v),
+        Option::None => string_println("not found"),
+    };
+    
+    string_println(int32_to_string(hashmap_len(m)));
+    
+    if hashmap_contains(m, 1) {
+        string_println("contains 1")
+    } else {
+        string_println("missing 1")
+    };
+}

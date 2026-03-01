@@ -1,0 +1,12 @@
+package main;
+
+fn main() {
+    let ops: [(int32, int32) -> int32; 3] = [
+        |a: int32, b: int32| a + b,
+        |a: int32, b: int32| a - b,
+        |a: int32, b: int32| a * b,
+    ];
+    string_println(int32_to_string((array_get(ops, 0))(10, 3)));
+    string_println(int32_to_string((array_get(ops, 1))(10, 3)));
+    string_println(int32_to_string((array_get(ops, 2))(10, 3)));
+}

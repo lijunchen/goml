@@ -1,0 +1,32 @@
+enum Shape {
+    Circle(float64),
+    Rectangle(float64, float64),
+    Triangle(float64, float64, float64),
+}
+
+trait HasArea {
+    fn area(Self) -> float64;
+}
+
+impl HasArea for Shape {
+    fn area(self: Shape) -> float64 {
+        match self {
+            Shape::Circle(r) => 3.14159 * r * r,
+            Shape::Rectangle(w, h) => w * h,
+            Shape::Triangle(a, b, c) => {
+                let s = (a + b + c) / 2.0;
+                s
+            },
+        }
+    }
+}
+
+fn main() {
+    let shapes = [Shape::Circle(5.0), Shape::Rectangle(3.0, 4.0), Shape::Triangle(3.0, 4.0, 5.0)];
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        let s = array_get(shapes, ref_get(i));
+        println(HasArea::area(s).to_string());
+        ref_set(i, ref_get(i) + 1);
+    };
+}

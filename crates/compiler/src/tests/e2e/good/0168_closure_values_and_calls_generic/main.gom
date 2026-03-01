@@ -1,0 +1,14 @@
+package main;
+
+fn apply_twice[T](f: (T) -> T, x: T) -> T {
+    f(f(x))
+}
+
+fn main() {
+    let inc = |x: int32| x + 1;
+    let result = apply_twice(inc, 0);
+    string_println(int32_to_string(result));
+    
+    let double = |s: string| s + s;
+    string_println(apply_twice(double, "ab"));
+}

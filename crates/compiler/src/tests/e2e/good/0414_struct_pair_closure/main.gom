@@ -1,0 +1,11 @@
+struct Pair { a: int32, b: string }
+
+fn make_pair_fn(n: int32) -> () -> Pair {
+    || Pair { a: n, b: n.to_string() }
+}
+
+fn main() {
+    let f = make_pair_fn(42);
+    let p = f();
+    println(p.a.to_string() + " " + p.b);
+}

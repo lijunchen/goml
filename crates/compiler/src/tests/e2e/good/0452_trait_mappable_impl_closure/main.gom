@@ -1,0 +1,22 @@
+trait Mappable {
+    fn map_val(Self, (int32) -> int32) -> Self;
+}
+
+struct Pair { a: int32, b: int32 }
+
+impl Mappable for Pair {
+    fn map_val(self: Pair, f: (int32) -> int32) -> Pair {
+        Pair { a: f(self.a), b: f(self.b) }
+    }
+}
+
+fn double(x: int32) -> int32 { x * 2 }
+
+fn main() {
+    let p = Pair { a: 3, b: 7 };
+    let p2 = Mappable::map_val(p, double);
+    println(p2.a.to_string() + " " + p2.b.to_string());
+    
+    let p3 = Mappable::map_val(p, |x| x + 10);
+    println(p3.a.to_string() + " " + p3.b.to_string());
+}

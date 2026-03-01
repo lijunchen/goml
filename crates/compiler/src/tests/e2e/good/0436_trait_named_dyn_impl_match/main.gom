@@ -1,0 +1,25 @@
+trait Named {
+    fn name(Self) -> string;
+}
+
+struct Cat { n: string }
+struct Dog { n: string }
+
+impl Named for Cat { fn name(self: Cat) -> string { "cat:" + self.n } }
+impl Named for Dog { fn name(self: Dog) -> string { "dog:" + self.n } }
+
+fn animal(kind: int32) -> dyn Named {
+    match kind {
+        1 => Cat { n: "kitty" },
+        2 => Dog { n: "buddy" },
+        3 => Cat { n: "whiskers" },
+        _ => Dog { n: "default" },
+    }
+}
+
+fn main() {
+    println(Named::name(animal(1)));
+    println(Named::name(animal(2)));
+    println(Named::name(animal(3)));
+    println(Named::name(animal(99)));
+}

@@ -1,0 +1,27 @@
+enum Either[L, R] {
+    Left(L),
+    Right(R),
+}
+
+fn map_right[L, R, S](e: Either[L, R], f: (R) -> S) -> Either[L, S] {
+    match e {
+        Either::Left(l) => Either::Left(l),
+        Either::Right(r) => Either::Right(f(r)),
+    }
+}
+
+fn main() {
+    let e1: Either[string, int32] = Either::Right(42);
+    let e2 = map_right(e1, |x| x.to_string());
+    match e2 {
+        Either::Left(l) => println("left: " + l),
+        Either::Right(r) => println("right: " + r),
+    };
+
+    let e3: Either[string, int32] = Either::Left("error");
+    let e4 = map_right(e3, |x| x * 2);
+    match e4 {
+        Either::Left(l) => println("left: " + l),
+        Either::Right(r) => println("right: " + r.to_string()),
+    };
+}

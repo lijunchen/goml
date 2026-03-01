@@ -1,0 +1,35 @@
+trait Transform {
+    fn apply(Self, int32) -> int32;
+}
+
+struct Doubler {}
+struct Adder { amount: int32 }
+
+impl Transform for Doubler {
+    fn apply(self: Doubler, x: int32) -> int32 { x * 2 }
+}
+
+impl Transform for Adder {
+    fn apply(self: Adder, x: int32) -> int32 { x + self.amount }
+}
+
+fn apply_chain(transforms: [dyn Transform; 3], input: int32) -> int32 {
+    let result = ref(input);
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        let t = array_get(transforms, ref_get(i));
+        ref_set(result, Transform::apply(t, ref_get(result)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let transforms: [dyn Transform; 3] = [
+        Doubler {},
+        Adder { amount: 5 },
+        Doubler {},
+    ];
+    let result = apply_chain(transforms, 3);
+    println(result.to_string());
+}

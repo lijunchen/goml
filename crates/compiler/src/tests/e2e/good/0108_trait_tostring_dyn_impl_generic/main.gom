@@ -1,0 +1,32 @@
+package main;
+
+trait ToString {
+    fn to_string(Self) -> string;
+}
+
+struct Wrapper[T] {
+    inner: T,
+}
+
+impl ToString for Wrapper[int32] {
+    fn to_string(self: Wrapper[int32]) -> string {
+        "Wrapper(" + int32_to_string(self.inner) + ")"
+    }
+}
+
+impl ToString for Wrapper[string] {
+    fn to_string(self: Wrapper[string]) -> string {
+        "Wrapper(" + self.inner + ")"
+    }
+}
+
+fn print_it(x: dyn ToString) {
+    string_println(ToString::to_string(x));
+}
+
+fn main() {
+    let a = Wrapper { inner: 42 };
+    let b = Wrapper { inner: "hello" };
+    print_it(a);
+    print_it(b);
+}

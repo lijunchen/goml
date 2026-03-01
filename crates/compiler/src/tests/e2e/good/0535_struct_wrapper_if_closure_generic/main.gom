@@ -1,0 +1,17 @@
+struct Wrapper[T] {
+    value: T,
+    transform: (T) -> string,
+}
+
+fn show_wrapper[T](w: Wrapper[T]) -> string {
+    w.transform(w.value)
+}
+
+fn main() {
+    let w = if true {
+        Wrapper { value: 42, transform: |x: int32| "int: " + x.to_string() }
+    } else {
+        Wrapper { value: 0, transform: |x: int32| "zero" }
+    };
+    println(show_wrapper(w));
+}

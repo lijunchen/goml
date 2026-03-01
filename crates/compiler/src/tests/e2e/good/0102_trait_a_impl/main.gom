@@ -1,0 +1,29 @@
+package main;
+
+trait A {
+    fn foo(Self) -> string;
+}
+
+trait B {
+    fn foo(Self) -> string;
+}
+
+struct X {}
+
+impl A for X {
+    fn foo(self: X) -> string {
+        "from A"
+    }
+}
+
+impl B for X {
+    fn foo(self: X) -> string {
+        "from B"
+    }
+}
+
+fn main() {
+    let x = X {};
+    string_println(A::foo(x));
+    string_println(B::foo(x));
+}

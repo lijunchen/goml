@@ -1,0 +1,21 @@
+package main;
+
+enum Option[T] {
+    Some(T),
+    None,
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+fn main() {
+    let opt = Option::Some(Point { x: 1, y: 2 });
+    match opt {
+        Option::Some(Point { x, y }) => {
+            string_println(int32_to_string(x + y));
+        },
+        Option::None => string_println("none"),
+    };
+}

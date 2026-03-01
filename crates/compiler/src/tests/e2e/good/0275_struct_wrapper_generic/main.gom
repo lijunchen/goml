@@ -1,0 +1,19 @@
+package main;
+
+struct Wrapper[T] {
+    inner: T,
+}
+
+fn wrap[T](x: T) -> Wrapper[T] {
+    Wrapper { inner: x }
+}
+
+fn unwrap[T](w: Wrapper[T]) -> T {
+    w.inner
+}
+
+fn main() {
+    let w: Wrapper[uint8] = wrap(42);
+    let v: uint8 = unwrap(w);
+    string_println(uint8_to_string(v));
+}

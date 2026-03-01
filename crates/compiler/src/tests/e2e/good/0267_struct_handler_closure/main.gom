@@ -1,0 +1,10 @@
+package main;
+
+struct Handler {
+    process: (int32) -> string,
+}
+
+fn main() {
+    let h = Handler { process: |x: int32| int32_to_string(x) };
+    string_println((h.process)(42));
+}

@@ -1,0 +1,27 @@
+package main;
+
+trait Speak {
+    fn speak(Self) -> string;
+}
+
+struct Dog {}
+struct Cat {}
+
+impl Speak for Dog {
+    fn speak(self: Dog) -> string { "woof" }
+}
+impl Speak for Cat {
+    fn speak(self: Cat) -> string { "meow" }
+}
+
+fn choose(is_dog: bool) -> dyn Speak {
+    match is_dog {
+        true => Dog {},
+        false => Cat {},
+    }
+}
+
+fn main() {
+    string_println(Speak::speak(choose(true)));
+    string_println(Speak::speak(choose(false)));
+}

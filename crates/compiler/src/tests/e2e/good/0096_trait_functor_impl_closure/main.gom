@@ -1,0 +1,26 @@
+package main;
+
+trait Functor {
+    fn fmap(Self, (int32) -> int32) -> Self;
+}
+
+struct Box {
+    value: int32,
+}
+
+impl Functor for Box {
+    fn fmap(self: Box, f: (int32) -> int32) -> Box {
+        Box { value: f(self.value) }
+    }
+}
+
+fn apply_twice[T: Functor](x: T, f: (int32) -> int32) -> T {
+    let y = Functor::fmap(x, f);
+    Functor::fmap(y, f)
+}
+
+fn main() {
+    let b = Box { value: 5 };
+    let result = apply_twice(b, |x| x + 3);
+    string_println(int32_to_string(result.value));
+}

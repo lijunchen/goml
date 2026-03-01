@@ -1,0 +1,24 @@
+package main;
+
+enum Outer {
+    A(int32),
+    B(string),
+}
+
+fn process(o: Outer) -> string {
+    match o {
+        Outer::A(n) => match n {
+            0 => "zero",
+            1 => "one",
+            _ => "many",
+        },
+        Outer::B(s) => s,
+    }
+}
+
+fn main() {
+    string_println(process(Outer::A(0)));
+    string_println(process(Outer::A(1)));
+    string_println(process(Outer::A(42)));
+    string_println(process(Outer::B("hello")));
+}

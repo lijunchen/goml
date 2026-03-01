@@ -1,0 +1,29 @@
+trait Animal {
+    fn sound(Self) -> string;
+}
+
+struct Cat {}
+struct Dog {}
+
+impl Animal for Cat {
+    fn sound(self: Cat) -> string { "meow" }
+}
+
+impl Animal for Dog {
+    fn sound(self: Dog) -> string { "woof" }
+}
+
+fn make_animal(is_cat: bool) -> dyn Animal {
+    if is_cat {
+        Cat {}
+    } else {
+        Dog {}
+    }
+}
+
+fn main() {
+    let a = make_animal(true);
+    let b = make_animal(false);
+    println(Animal::sound(a));
+    println(Animal::sound(b));
+}

@@ -1,0 +1,17 @@
+package main;
+
+fn classify(pair: (bool, int32)) -> string {
+    match pair {
+        (true, 0) => "true zero",
+        (true, _) => "true nonzero",
+        (false, 0) => "false zero",
+        (false, _) => "false nonzero",
+    }
+}
+
+fn main() {
+    string_println(classify((true, 0)));
+    string_println(classify((true, 5)));
+    string_println(classify((false, 0)));
+    string_println(classify((false, -1)));
+}

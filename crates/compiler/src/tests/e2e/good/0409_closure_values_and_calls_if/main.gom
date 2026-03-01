@@ -1,0 +1,11 @@
+fn zip_with[A, B, C](a: A, b: B, f: (A, B) -> C) -> C {
+    f(a, b)
+}
+
+fn main() {
+    let result = zip_with(10, "hello", |n, s| s + "=" + n.to_string());
+    println(result);
+    
+    let result2 = zip_with(true, 42, |b, n| if b { n } else { 0 });
+    println(result2.to_string());
+}

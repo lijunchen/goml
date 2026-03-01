@@ -1,0 +1,13 @@
+package main;
+
+fn main() {
+    let arr: [uint8; 5] = [1, 2, 3, 4, 5];
+    let i = ref(0);
+    let sum: uint8 = 0u8;
+    let total = ref(sum);
+    while ref_get(i) < 5 {
+        ref_set(total, ref_get(total) + array_get(arr, ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    string_println(uint8_to_string(ref_get(total)));
+}

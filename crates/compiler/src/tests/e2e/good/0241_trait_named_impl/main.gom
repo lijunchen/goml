@@ -1,0 +1,31 @@
+package main;
+
+trait Named {
+    fn name(Self) -> string;
+}
+
+trait Aged {
+    fn age(Self) -> int32;
+}
+
+struct Person {
+    person_name: string,
+    person_age: int32,
+}
+
+impl Named for Person {
+    fn name(self: Person) -> string { self.person_name }
+}
+
+impl Aged for Person {
+    fn age(self: Person) -> int32 { self.person_age }
+}
+
+fn describe[T: Named + Aged](x: T) -> string {
+    Named::name(x) + " age " + int32_to_string(Aged::age(x))
+}
+
+fn main() {
+    let p = Person { person_name: "Alice", person_age: 30 };
+    string_println(describe(p));
+}

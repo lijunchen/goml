@@ -1,0 +1,28 @@
+trait Default {
+    fn default() -> Self;
+}
+
+impl Default for int32 {
+    fn default() -> int32 { 0 }
+}
+
+impl Default for string {
+    fn default() -> string { "" }
+}
+
+impl Default for bool {
+    fn default() -> bool { false }
+}
+
+fn make_default[T: Default]() -> T {
+    Default::default()
+}
+
+fn main() {
+    let x: int32 = make_default();
+    let s: string = make_default();
+    let b: bool = make_default();
+    println(x.to_string());
+    println(s);
+    println(b.to_string());
+}

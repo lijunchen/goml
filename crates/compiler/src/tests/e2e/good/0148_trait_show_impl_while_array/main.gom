@@ -1,0 +1,29 @@
+package main;
+
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+impl Show for Point {
+    fn show(self: Point) -> string {
+        "(" + int32_to_string(self.x) + ", " + int32_to_string(self.y) + ")"
+    }
+}
+
+fn show_all[T: Show](items: [T; 3]) {
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        string_println(Show::show(array_get(items, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}
+
+fn main() {
+    let points = [Point { x: 1, y: 2 }, Point { x: 3, y: 4 }, Point { x: 5, y: 6 }];
+    show_all(points);
+}

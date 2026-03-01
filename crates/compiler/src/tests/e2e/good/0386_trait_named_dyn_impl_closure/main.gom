@@ -1,0 +1,15 @@
+trait Named {
+    fn name(Self) -> string;
+}
+
+struct Person { n: string }
+impl Named for Person { fn name(self: Person) -> string { self.n } }
+
+struct Robot { id: int32 }
+impl Named for Robot { fn name(self: Robot) -> string { "R" + self.id.to_string() } }
+
+fn main() {
+    let make_pair = |a: dyn Named, b: dyn Named| (Named::name(a) + " & " + Named::name(b));
+    let result = make_pair(Person { n: "Alice" }, Robot { id: 7 });
+    println(result);
+}

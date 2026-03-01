@@ -1,0 +1,30 @@
+trait Renderable {
+    fn render(Self) -> string;
+}
+
+struct Text { content: string }
+struct Number { value: int32 }
+
+impl Renderable for Text {
+    fn render(self: Text) -> string { self.content }
+}
+
+impl Renderable for Number {
+    fn render(self: Number) -> string { self.value.to_string() }
+}
+
+struct Widget {
+    child: dyn Renderable,
+    prefix: string,
+}
+
+fn render_widget(w: Widget) -> string {
+    w.prefix + Renderable::render(w.child)
+}
+
+fn main() {
+    let w1 = Widget { child: Text { content: "hello" }, prefix: "> " };
+    let w2 = Widget { child: Number { value: 42 }, prefix: "# " };
+    println(render_widget(w1));
+    println(render_widget(w2));
+}

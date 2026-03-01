@@ -1,0 +1,17 @@
+package main;
+
+struct Box[T] {
+    value: T,
+}
+
+impl Box {
+    fn unwrap[T](self: Box[T]) -> T {
+        self.value
+    }
+}
+
+fn main() {
+    let b: Box[uint8] = Box { value: 42 };
+    let v = Box::unwrap(b);
+    string_println(uint8_to_string(v));
+}

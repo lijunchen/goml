@@ -1,0 +1,33 @@
+package main;
+
+trait ToStr {
+    fn to_str(Self) -> string;
+}
+
+struct Point { x: int32, y: int32 }
+struct Color { r: int32, g: int32, b: int32 }
+
+impl ToStr for Point {
+    fn to_str(self: Point) -> string {
+        "P(" + int32_to_string(self.x) + "," + int32_to_string(self.y) + ")"
+    }
+}
+
+impl ToStr for Color {
+    fn to_str(self: Color) -> string {
+        "C(" + int32_to_string(self.r) + "," + int32_to_string(self.g) + "," + int32_to_string(self.b) + ")"
+    }
+}
+
+fn print_all[T: ToStr](items: [T; 3]) {
+    string_println(ToStr::to_str(array_get(items, 0)));
+    string_println(ToStr::to_str(array_get(items, 1)));
+    string_println(ToStr::to_str(array_get(items, 2)));
+}
+
+fn main() {
+    let points: [Point; 3] = [Point {x:1,y:2}, Point {x:3,y:4}, Point {x:5,y:6}];
+    print_all(points);
+    let colors: [Color; 3] = [Color {r:255,g:0,b:0}, Color {r:0,g:255,b:0}, Color {r:0,g:0,b:255}];
+    print_all(colors);
+}

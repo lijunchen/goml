@@ -1,0 +1,23 @@
+package main;
+
+trait Fmt {
+    fn fmt(Self) -> string;
+}
+
+impl Fmt for int32 {
+    fn fmt(self: int32) -> string { int32_to_string(self) }
+}
+
+impl Fmt for string {
+    fn fmt(self: string) -> string { "\"" + self + "\"" }
+}
+
+fn pair_fmt[A: Fmt, B: Fmt](a: A, b: B) -> string {
+    "(" + Fmt::fmt(a) + ", " + Fmt::fmt(b) + ")"
+}
+
+fn main() {
+    string_println(pair_fmt(1, 2));
+    string_println(pair_fmt("hello", "world"));
+    string_println(pair_fmt(42, "answer"));
+}

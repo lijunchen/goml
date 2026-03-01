@@ -1,0 +1,19 @@
+struct Config {
+    name: string,
+    on_init: Option[(string) -> unit],
+}
+
+fn run_config(c: Config) {
+    println("Running: " + c.name);
+    match c.on_init {
+        Option::Some(f) => f(c.name),
+        Option::None => println("no init handler"),
+    };
+}
+
+fn main() {
+    let c1 = Config { name: "app1", on_init: Option::Some(|name| println("Initializing " + name)) };
+    let c2 = Config { name: "app2", on_init: Option::None };
+    run_config(c1);
+    run_config(c2);
+}

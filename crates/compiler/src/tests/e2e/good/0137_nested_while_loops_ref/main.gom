@@ -1,0 +1,16 @@
+package main;
+
+fn main() {
+    let x = ref(0);
+    let y = ref(0);
+    while ref_get(x) < 5 {
+        ref_set(y, 0);
+        while ref_get(y) < 3 {
+            string_print(int32_to_string(ref_get(x) * 3 + ref_get(y)));
+            string_print(" ");
+            ref_set(y, ref_get(y) + 1);
+        };
+        string_println("");
+        ref_set(x, ref_get(x) + 1);
+    };
+}

@@ -1,0 +1,22 @@
+struct Entry {
+    key: string,
+    value: int32,
+}
+
+fn main() {
+    let m = hashmap_new();
+    hashmap_set(m, "a", Entry { key: "a", value: 1 });
+    hashmap_set(m, "b", Entry { key: "b", value: 2 });
+    
+    let result = hashmap_get(m, "a");
+    match result {
+        Option::Some(e) => println(e.value.to_string()),
+        Option::None => println("not found"),
+    };
+    
+    let result2 = hashmap_get(m, "c");
+    match result2 {
+        Option::Some(e) => println(e.value.to_string()),
+        Option::None => println("not found"),
+    };
+}

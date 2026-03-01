@@ -1,0 +1,29 @@
+package main;
+
+trait Container {
+    fn size(Self) -> int32;
+    fn is_empty(Self) -> bool;
+}
+
+struct MyList {
+    len: int32,
+}
+
+impl Container for MyList {
+    fn size(self: MyList) -> int32 { self.len }
+    fn is_empty(self: MyList) -> bool { self.len == 0 }
+}
+
+fn print_info(c: dyn Container) {
+    string_println(int32_to_string(Container::size(c)));
+    if Container::is_empty(c) {
+        string_println("empty")
+    } else {
+        string_println("not empty")
+    };
+}
+
+fn main() {
+    print_info(MyList { len: 5 });
+    print_info(MyList { len: 0 });
+}

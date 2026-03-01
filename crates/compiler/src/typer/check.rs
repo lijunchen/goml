@@ -2583,11 +2583,49 @@ impl Typer {
                     }
                 } else {
                     let method_name = tast::TastIdent(field.to_ident_name());
+                    let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
                     let lookup =
                         lookup_trait_method_candidates(genv, local_env, &receiver_ty, &method_name);
                     let is_deferred = matches!(lookup.receiver, MethodLookupReceiver::Deferred(_));
                     match lookup.candidates.as_slice() {
                         [(trait_name, method_ty)] => {
+                            if let Some(field_ty) = field_ty.clone() {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
+                                    astptr: None,
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                return tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                };
+                            }
                             let result = self.build_trait_method_call_expr(
                                 genv,
                                 local_env,
@@ -2625,8 +2663,7 @@ impl Typer {
                             result
                         }
                         [] if contains_tvar(&receiver_ty) => {
-                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
-                            if let Some(field_ty) = field_ty {
+                            if let Some(field_ty) = field_ty.clone() {
                                 let mut args_tast = Vec::new();
                                 let mut arg_types = Vec::new();
                                 for arg in args.iter() {
@@ -2722,7 +2759,6 @@ impl Typer {
                             }
                         }
                         [] => {
-                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
                             if let Some(field_ty) = field_ty {
                                 let mut args_tast = Vec::new();
                                 let mut arg_types = Vec::new();
@@ -2774,6 +2810,43 @@ impl Typer {
                             }
                         }
                         _ => {
+                            if let Some(field_ty) = field_ty {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
+                                    astptr: None,
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                return tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                };
+                            }
                             report_ambiguous_method(
                                 diagnostics,
                                 &method_name,

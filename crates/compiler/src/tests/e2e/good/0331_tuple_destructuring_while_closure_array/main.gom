@@ -1,0 +1,13 @@
+fn main() {
+    let ops: [(string, (int32) -> int32); 3] = [
+        ("add1", |x| x + 1),
+        ("mul2", |x| x * 2),
+        ("neg",  |x| 0 - x),
+    ];
+    let i = ref(0i32);
+    while ref_get(i) < 3 {
+        let (name, f) = array_get(ops, ref_get(i));
+        println(name + ": " + f(10).to_string());
+        ref_set(i, ref_get(i) + 1);
+    };
+}

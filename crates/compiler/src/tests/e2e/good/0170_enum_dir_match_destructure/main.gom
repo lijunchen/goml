@@ -1,0 +1,24 @@
+package main;
+
+enum Dir { North, South, East, West }
+
+fn move_pos(pos: (int32, int32), dir: Dir) -> (int32, int32) {
+    let (x, y) = pos;
+    match dir {
+        Dir::North => (x, y + 1),
+        Dir::South => (x, y - 1),
+        Dir::East => (x + 1, y),
+        Dir::West => (x - 1, y),
+    }
+}
+
+fn main() {
+    let pos = (0, 0);
+    let pos = move_pos(pos, Dir::North);
+    let pos = move_pos(pos, Dir::East);
+    let pos = move_pos(pos, Dir::East);
+    let pos = move_pos(pos, Dir::South);
+    let (x, y) = pos;
+    string_println(int32_to_string(x));
+    string_println(int32_to_string(y));
+}

@@ -1,0 +1,12 @@
+struct Config {
+    transform: (int32) -> int32,
+}
+
+fn run(c: Config, x: int32) -> int32 {
+    c.transform(x)
+}
+
+fn main() {
+    let result = run(Config { transform: |x| x * x }, 7);
+    println(result.to_string());
+}

@@ -1,0 +1,27 @@
+struct Callback {
+    handler: (string) -> string,
+}
+
+fn make_callbacks() -> Vec[Callback] {
+    let v = vec_new();
+    vec_push(v, Callback { handler: |s| s + " world" });
+    vec_push(v, Callback { handler: |s| s + "!" });
+    v
+}
+
+fn chain(cbs: Vec[Callback], input: string) -> string {
+    let result = ref(input);
+    let i = ref(0);
+    while ref_get(i) < vec_len(cbs) {
+        let cb = vec_get(cbs, ref_get(i));
+        ref_set(result, cb.handler(ref_get(result)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(result)
+}
+
+fn main() {
+    let cbs = make_callbacks();
+    let result = chain(cbs, "hello");
+    println(result);
+}

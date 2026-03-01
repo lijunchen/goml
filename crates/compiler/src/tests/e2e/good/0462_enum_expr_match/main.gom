@@ -1,0 +1,33 @@
+enum Expr {
+    Num(int32),
+    Add(Expr, Expr),
+    Mul(Expr, Expr),
+    Neg(Expr),
+}
+
+fn eval(e: Expr) -> int32 {
+    match e {
+        Expr::Num(n) => n,
+        Expr::Add(a, b) => eval(a) + eval(b),
+        Expr::Mul(a, b) => eval(a) * eval(b),
+        Expr::Neg(a) => 0 - eval(a),
+    }
+}
+
+fn show(e: Expr) -> string {
+    match e {
+        Expr::Num(n) => n.to_string(),
+        Expr::Add(a, b) => "(" + show(a) + "+" + show(b) + ")",
+        Expr::Mul(a, b) => "(" + show(a) + "*" + show(b) + ")",
+        Expr::Neg(a) => "-" + show(a),
+    }
+}
+
+fn main() {
+    let e = Expr::Add(
+        Expr::Mul(Expr::Num(2), Expr::Num(3)),
+        Expr::Neg(Expr::Num(4))
+    );
+    println(show(e));
+    println(eval(e).to_string());
+}

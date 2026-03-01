@@ -1,0 +1,14 @@
+package main;
+
+enum Result[T, E] {
+    Ok(T),
+    Err(E),
+}
+
+fn main() {
+    let r: Result[uint8, string] = Result::Ok(42);
+    match r {
+        Result::Ok(v) => string_println(uint8_to_string(v)),
+        Result::Err(e) => string_println(e),
+    };
+}

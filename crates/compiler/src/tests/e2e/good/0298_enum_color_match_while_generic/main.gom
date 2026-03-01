@@ -1,0 +1,30 @@
+package main;
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(int32, int32, int32),
+}
+
+fn describe(c: Color) -> string {
+    match c {
+        Color::Red => "red",
+        Color::Green => "green",
+        Color::Blue => "blue",
+        Color::Custom(r, g, b) => int32_to_string(r) + "," + int32_to_string(g) + "," + int32_to_string(b),
+    }
+}
+
+fn main() {
+    let colors: Vec[Color] = vec_new();
+    vec_push(colors, Color::Red);
+    vec_push(colors, Color::Custom(255, 128, 0));
+    vec_push(colors, Color::Blue);
+    
+    let i = ref(0);
+    while ref_get(i) < vec_len(colors) {
+        string_println(describe(vec_get(colors, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

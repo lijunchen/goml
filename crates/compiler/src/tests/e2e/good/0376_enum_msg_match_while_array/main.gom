@@ -1,0 +1,26 @@
+enum Msg {
+    Text(string),
+    Number(int32),
+    Pair(string, int32),
+}
+
+fn format_msg(msg: Msg) -> string {
+    match msg {
+        Msg::Text(s) => "text: " + s,
+        Msg::Number(n) => "number: " + n.to_string(),
+        Msg::Pair(s, n) => s + "=" + n.to_string(),
+    }
+}
+
+fn main() {
+    let msgs: [Msg; 3] = [
+        Msg::Text("hello"),
+        Msg::Number(42),
+        Msg::Pair("answer", 42),
+    ];
+    let i = ref(0i32);
+    while ref_get(i) < 3 {
+        println(format_msg(array_get(msgs, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

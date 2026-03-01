@@ -1,0 +1,16 @@
+package main;
+
+#[derive(ToString)]
+enum Color {
+    Red,
+    Green,
+    Blue,
+    Custom(int32, int32, int32),
+}
+
+fn main() {
+    let c = Color::Red;
+    string_println(c.to_string());
+    let c2 = Color::Custom(255, 128, 0);
+    string_println(c2.to_string());
+}

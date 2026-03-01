@@ -1,0 +1,12 @@
+fn compose(f: (int32) -> int32, g: (int32) -> int32) -> (int32) -> int32 {
+    |x| f(g(x))
+}
+
+fn main() {
+    let add1 = |x| x + 1;
+    let mul2 = |x| x * 2;
+    let add1_then_mul2 = compose(mul2, add1);
+    let mul2_then_add1 = compose(add1, mul2);
+    println(add1_then_mul2(5).to_string());
+    println(mul2_then_add1(5).to_string());
+}

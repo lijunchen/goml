@@ -1,0 +1,17 @@
+package main;
+
+fn make_counter() -> () -> int32 {
+    let count = ref(0);
+    || {
+        let c = ref_get(count);
+        ref_set(count, c + 1);
+        c
+    }
+}
+
+fn main() {
+    let counter = make_counter();
+    string_println(int32_to_string(counter()));
+    string_println(int32_to_string(counter()));
+    string_println(int32_to_string(counter()));
+}

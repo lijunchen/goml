@@ -1,0 +1,32 @@
+struct EventHandler {
+    on_start: () -> unit,
+    on_data: (int32) -> unit,
+    on_end: () -> unit,
+}
+
+fn run_pipeline(handler: EventHandler, data: [int32; 3]) {
+    handler.on_start();
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        handler.on_data(array_get(data, ref_get(i)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    handler.on_end();
+}
+
+fn make_handler() -> EventHandler {
+    let sum = ref(0);
+    EventHandler {
+        on_start: || println("Starting"),
+        on_data: |x| {
+            ref_set(sum, ref_get(sum) + x);
+            println("Got: " + x.to_string());
+        },
+        on_end: || println("Sum: " + ref_get(sum).to_string()),
+    }
+}
+
+fn main() {
+    let h = make_handler();
+    run_pipeline(h, [10, 20, 30]);
+}

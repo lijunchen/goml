@@ -1,0 +1,32 @@
+package main;
+
+trait Greet {
+    fn greet(Self) -> string;
+}
+
+struct English {}
+struct French {}
+
+impl Greet for English {
+    fn greet(self: English) -> string { "Hello" }
+}
+
+impl Greet for French {
+    fn greet(self: French) -> string { "Bonjour" }
+}
+
+fn greet_with[T: Greet](greeting: T, name: string) -> string {
+    Greet::greet(greeting) + ", " + name + "!"
+}
+
+fn main() {
+    string_println(greet_with(English {}, "World"));
+    string_println(greet_with(French {}, "Monde"));
+    
+    let greeters: [dyn Greet; 2] = [English {}, French {}];
+    let i = ref(0);
+    while ref_get(i) < 2 {
+        string_println(Greet::greet(array_get(greeters, ref_get(i))));
+        ref_set(i, ref_get(i) + 1);
+    };
+}

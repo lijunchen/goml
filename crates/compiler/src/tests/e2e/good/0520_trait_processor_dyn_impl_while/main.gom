@@ -1,0 +1,37 @@
+trait Processor {
+    fn process(Self, int32) -> int32;
+}
+
+struct Doubler {}
+struct Adder { amount: int32 }
+
+impl Processor for Doubler {
+    fn process(self: Doubler, x: int32) -> int32 { x * 2 }
+}
+
+impl Processor for Adder {
+    fn process(self: Adder, x: int32) -> int32 { x + self.amount }
+}
+
+struct Pipeline {
+    steps: [dyn Processor; 3],
+}
+
+fn run_pipeline(p: Pipeline, input: int32) -> int32 {
+    let val = ref(input);
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        let step = array_get(p.steps, ref_get(i));
+        ref_set(val, Processor::process(step, ref_get(val)));
+        ref_set(i, ref_get(i) + 1);
+    };
+    ref_get(val)
+}
+
+fn main() {
+    let p = Pipeline {
+        steps: [Doubler {}, Adder { amount: 5 }, Doubler {}],
+    };
+    let result = run_pipeline(p, 3);
+    println(result.to_string());
+}

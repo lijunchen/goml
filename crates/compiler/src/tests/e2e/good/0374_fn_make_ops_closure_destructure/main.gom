@@ -1,0 +1,9 @@
+fn make_ops(base: int32) -> ((int32) -> int32, (int32) -> int32) {
+    (|x| x + base, |x| x * base)
+}
+
+fn main() {
+    let (add, mul) = make_ops(5);
+    println(add(10).to_string());
+    println(mul(10).to_string());
+}

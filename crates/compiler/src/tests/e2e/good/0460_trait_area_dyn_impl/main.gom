@@ -1,0 +1,21 @@
+trait Area {
+    fn area(Self) -> float64;
+}
+
+struct Circle { r: float64 }
+struct Rect { w: float64, h: float64 }
+struct Triangle { base: float64, height: float64 }
+
+impl Area for Circle { fn area(self: Circle) -> float64 { 3.14159 * self.r * self.r } }
+impl Area for Rect { fn area(self: Rect) -> float64 { self.w * self.h } }
+impl Area for Triangle { fn area(self: Triangle) -> float64 { self.base * self.height / 2.0 } }
+
+fn format_area(name: string, a: dyn Area) -> string {
+    name + ": " + Area::area(a).to_string()
+}
+
+fn main() {
+    println(format_area("circle", Circle { r: 5.0 }));
+    println(format_area("rect", Rect { w: 3.0, h: 4.0 }));
+    println(format_area("triangle", Triangle { base: 6.0, height: 8.0 }));
+}

@@ -1,0 +1,16 @@
+fn make_state() -> ((int32) -> unit, () -> int32, () -> unit) {
+    let val = ref(0i32);
+    let set = |x| ref_set(val, x);
+    let get = || ref_get(val);
+    let inc = || ref_set(val, ref_get(val) + 1);
+    (set, get, inc)
+}
+
+fn main() {
+    let (set, get, inc) = make_state();
+    set(10);
+    println(get().to_string());
+    inc();
+    inc();
+    println(get().to_string());
+}

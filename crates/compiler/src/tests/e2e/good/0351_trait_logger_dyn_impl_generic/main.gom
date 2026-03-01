@@ -1,0 +1,30 @@
+trait Logger {
+    fn log(Self, string) -> unit;
+}
+
+struct ConsoleLogger {}
+struct PrefixLogger { prefix: string }
+
+impl Logger for ConsoleLogger {
+    fn log(self: ConsoleLogger, msg: string) -> unit { println(msg); }
+}
+
+impl Logger for PrefixLogger {
+    fn log(self: PrefixLogger, msg: string) -> unit { println(self.prefix + msg); }
+}
+
+struct App {
+    logger: dyn Logger,
+    name: string,
+}
+
+fn run(app: App) -> unit {
+    Logger::log(app.logger, "Starting " + app.name);
+}
+
+fn main() {
+    let app1 = App { logger: ConsoleLogger {}, name: "App1" };
+    run(app1);
+    let app2 = App { logger: PrefixLogger { prefix: "[INFO] " }, name: "App2" };
+    run(app2);
+}

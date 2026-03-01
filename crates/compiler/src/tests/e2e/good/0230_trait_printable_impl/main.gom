@@ -1,0 +1,18 @@
+package main;
+
+trait Printable {
+    fn print(Self);
+}
+
+struct Msg { text: string }
+
+impl Printable for Msg {
+    fn print(self: Msg) {
+        string_println(self.text);
+    }
+}
+
+fn main() {
+    let m = Msg { text: "hello" };
+    m.print();
+}

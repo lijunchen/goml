@@ -1,0 +1,14 @@
+fn make_counter() -> (() -> int32) {
+    let count = ref(0);
+    || {
+        ref_set(count, ref_get(count) + 1);
+        ref_get(count)
+    }
+}
+
+fn main() {
+    let counter = make_counter();
+    println(counter().to_string());
+    println(counter().to_string());
+    println(counter().to_string());
+}

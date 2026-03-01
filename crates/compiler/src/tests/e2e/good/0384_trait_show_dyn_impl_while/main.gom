@@ -1,0 +1,20 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { n: int32 }
+impl Show for Num { fn show(self: Num) -> string { self.n.to_string() } }
+
+struct Str { s: string }
+impl Show for Str { fn show(self: Str) -> string { self.s } }
+
+fn main() {
+    let display = |items: [dyn Show; 3]| {
+        let i = ref(0i32);
+        while ref_get(i) < 3 {
+            println(Show::show(array_get(items, ref_get(i))));
+            ref_set(i, ref_get(i) + 1);
+        };
+    };
+    display([Num { n: 42 }, Str { s: "hello" }, Num { n: 99 }]);
+}

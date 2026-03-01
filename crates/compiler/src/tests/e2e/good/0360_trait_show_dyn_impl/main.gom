@@ -1,0 +1,14 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Num { n: int32 }
+impl Show for Num { fn show(self: Num) -> string { self.n.to_string() } }
+
+fn printer(x: dyn Show) {
+    println(Show::show(x));
+}
+
+fn main() {
+    printer(Num { n: 42 });
+}

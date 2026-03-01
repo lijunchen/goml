@@ -1,0 +1,18 @@
+package main;
+
+fn main() {
+    let counter = ref(0);
+    let inc = || {
+        ref_set(counter, ref_get(counter) + 1);
+        ref_get(counter)
+    };
+    string_println(int32_to_string(inc()));
+    string_println(int32_to_string(inc()));
+    string_println(int32_to_string(inc()));
+    
+    let make_adder = |n: int32| {
+        |x: int32| x + n
+    };
+    let add5 = make_adder(5);
+    string_println(int32_to_string(add5(10)));
+}

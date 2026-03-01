@@ -1,0 +1,19 @@
+trait Show {
+    fn show(Self) -> string;
+}
+
+struct Point {
+    x: int32,
+    y: int32,
+}
+
+impl Show for Point {
+    fn show(self: Point) -> string {
+        "(" + self.x.to_string() + ", " + self.y.to_string() + ")"
+    }
+}
+
+fn main() {
+    let p = Point { x: 3, y: 4 };
+    println(p.show());
+}

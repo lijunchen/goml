@@ -1,0 +1,20 @@
+package main;
+
+struct A { x: int32 }
+struct B { y: int32 }
+
+trait Val {
+    fn val(Self) -> int32;
+}
+
+impl Val for A {
+    fn val(self: A) -> int32 { self.x }
+}
+impl Val for B {
+    fn val(self: B) -> int32 { self.y }
+}
+
+fn main() {
+    let v: dyn Val = if true { A { x: 10 } } else { B { y: 20 } };
+    string_println(int32_to_string(Val::val(v)));
+}

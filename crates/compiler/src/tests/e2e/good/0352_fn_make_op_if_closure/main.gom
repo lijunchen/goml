@@ -1,0 +1,14 @@
+fn make_op(add: bool, amount: int32) -> (int32) -> int32 {
+    if add {
+        |x| x + amount
+    } else {
+        |x| x - amount
+    }
+}
+
+fn main() {
+    let add5 = make_op(true, 5);
+    let sub3 = make_op(false, 3);
+    println(add5(10).to_string());
+    println(sub3(10).to_string());
+}
