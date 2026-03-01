@@ -498,7 +498,7 @@ impl Typer {
                     ty: tast::Ty::TTuple { typs: elem_tys },
                 }
             }
-            hir::Expr::EArray { items } if matches!(expected, tast::Ty::TArray { elem, .. } if matches!(**elem, tast::Ty::TDyn { .. })) =>
+            hir::Expr::EArray { items } if matches!(expected, tast::Ty::TArray { .. }) =>
             {
                 let expected_elem_ty = match expected {
                     tast::Ty::TArray { elem, .. } => (**elem).clone(),
