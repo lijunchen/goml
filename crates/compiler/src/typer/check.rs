@@ -559,9 +559,7 @@ impl Typer {
                             expected_ty: expected_norm,
                         },
                     );
-                    if !matches!(for_ty, tast::Ty::TVar(_)) {
-                        return (expr, true);
-                    }
+                    return (expr, true);
                 }
                 return (expr, false);
             }
@@ -2286,24 +2284,22 @@ impl Typer {
                     && let Some(name) = path.last_ident()
                     && let Some(func_scheme) = genv.get_function_scheme_unqualified(name.as_str())
                 {
+                    let inst_ty = self.inst_ty(&func_scheme.ty);
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
-                    for arg in args.iter() {
-                        let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
-                        arg_types.push(arg_tast.get_ty());
-                        args_tast.push(arg_tast);
-                    }
-
-                    let inst_ty = self.inst_ty(&func_scheme.ty);
                     if let tast::Ty::TFunc { params, .. } = &inst_ty
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        args_tast.clear();
-                        arg_types.clear();
                         for (arg, expected_ty) in args.iter().zip(params.iter()) {
                             let arg_tast =
                                 self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                            arg_types.push(arg_tast.get_ty());
+                            args_tast.push(arg_tast);
+                        }
+                    } else {
+                        for arg in args.iter() {
+                            let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
                             arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }

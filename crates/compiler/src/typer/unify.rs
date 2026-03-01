@@ -815,7 +815,7 @@ impl Typer {
                     }
                     tast::Ty::TDyn { trait_name } => {
                         let concrete_norm = self.norm(&coercion.concrete_ty);
-                        if matches!(concrete_norm, tast::Ty::TVar(_)) {
+                        if super::check::contains_tvar(&concrete_norm) {
                             still_deferred.push(coercion);
                         } else if matches!(concrete_norm, tast::Ty::TDyn { .. }) {
                             changed = true;
@@ -852,6 +852,24 @@ impl Typer {
 
             if !changed && !self.deferred_dyn_coercions.is_empty() {
                 let remaining = std::mem::take(&mut self.deferred_dyn_coercions);
+                let mut kept = Vec::new();
+                for coercion in &remaining {
+                    let expected_norm = self.norm(&coercion.expected_ty);
+                    if matches!(expected_norm, tast::Ty::TVar(_)) {
+                        constraints.push(Constraint::TypeEqual(
+                            coercion.concrete_ty.clone(),
+                            coercion.expected_ty.clone(),
+                            None,
+                        ));
+                        changed = true;
+                    } else {
+                        kept.push(coercion.clone());
+                    }
+                }
+                if changed {
+                    self.deferred_dyn_coercions = kept;
+                    continue;
+                }
                 for coercion in remaining {
                     constraints.push(Constraint::TypeEqual(
                         coercion.concrete_ty,
