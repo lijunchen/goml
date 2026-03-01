@@ -654,17 +654,22 @@ impl_display_via_syntax!(Block);
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Stmt {
     LetStmt(LetStmt),
+    AssignStmt(AssignStmt),
     ExprStmt(ExprStmt),
 }
 
 impl CstNode for Stmt {
     fn can_cast(kind: MySyntaxKind) -> bool {
-        matches!(kind, MySyntaxKind::STMT_LET | MySyntaxKind::STMT_EXPR)
+        matches!(
+            kind,
+            MySyntaxKind::STMT_LET | MySyntaxKind::STMT_ASSIGN | MySyntaxKind::STMT_EXPR
+        )
     }
 
     fn cast(syntax: MySyntaxNode) -> Option<Self> {
         let res = match syntax.kind() {
             MySyntaxKind::STMT_LET => Stmt::LetStmt(LetStmt { syntax }),
+            MySyntaxKind::STMT_ASSIGN => Stmt::AssignStmt(AssignStmt { syntax }),
             MySyntaxKind::STMT_EXPR => Stmt::ExprStmt(ExprStmt { syntax }),
             _ => return None,
         };
@@ -674,6 +679,7 @@ impl CstNode for Stmt {
     fn syntax(&self) -> &MySyntaxNode {
         match self {
             Stmt::LetStmt(it) => &it.syntax,
+            Stmt::AssignStmt(it) => &it.syntax,
             Stmt::ExprStmt(it) => &it.syntax,
         }
     }
@@ -689,6 +695,10 @@ pub struct LetStmt {
 }
 
 impl LetStmt {
+    pub fn mut_keyword(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::MutKeyword)
+    }
+
     pub fn pattern(&self) -> Option<Pattern> {
         support::child(&self.syntax)
     }
@@ -704,6 +714,26 @@ impl LetStmt {
 
 impl_cst_node_simple!(LetStmt, MySyntaxKind::STMT_LET);
 impl_display_via_syntax!(LetStmt);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct AssignStmt {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl AssignStmt {
+    pub fn lident(&self) -> Option<MySyntaxToken> {
+        support::token(&self.syntax, MySyntaxKind::Ident)
+    }
+
+    pub fn value(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(AssignStmt, MySyntaxKind::STMT_ASSIGN);
+impl_display_via_syntax!(AssignStmt);
 
 ////////////////////////////////////////////////////////////////////////////////
 

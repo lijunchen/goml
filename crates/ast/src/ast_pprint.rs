@@ -1,6 +1,6 @@
 use crate::ast::{
-    Arm, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin, ExternGo,
-    ExternType, File, Fn, ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef, TraitDef,
+    Arm, AssignStmt, AstIdent, Attribute, Block, ClosureParam, EnumDef, Expr, ExternBuiltin,
+    ExternGo, ExternType, File, Fn, ImplBlock, Item, LetStmt, Pat, Path, Stmt, StructDef, TraitDef,
     TraitMethodSignature, TypeExpr,
 };
 use pretty::RcDoc;
@@ -107,9 +107,23 @@ impl LetStmt {
             base_pat_doc
         };
 
-        RcDoc::text("let")
+        let mut doc = RcDoc::text("let").append(RcDoc::space());
+        if self.is_mut {
+            doc = doc.append(RcDoc::text("mut")).append(RcDoc::space());
+        }
+
+        doc.append(pat_doc)
             .append(RcDoc::space())
-            .append(pat_doc)
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc())
+            .group()
+    }
+}
+
+impl AssignStmt {
+    pub fn to_doc(&self) -> RcDoc<'_, ()> {
+        RcDoc::text(self.name.0.clone())
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -122,6 +136,7 @@ impl Stmt {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
         match self {
             Self::Let(stmt) => stmt.to_doc(),
+            Self::Assign(stmt) => stmt.to_doc(),
             Self::Expr(stmt) => stmt.expr.to_doc(),
         }
     }

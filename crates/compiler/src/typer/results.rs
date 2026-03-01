@@ -367,9 +367,12 @@ impl TypeckResultsBuilder {
                 ty,
                 astptr,
             } = elab
-            && let tast::Ty::TFunc { params, .. } = ty
-            && let Some(tast::Ty::TDyn { trait_name: recv_trait }) = params.first()
-            && *recv_trait == trait_name.0 {
+                && let tast::Ty::TFunc { params, .. } = ty
+                && let Some(tast::Ty::TDyn {
+                    trait_name: recv_trait,
+                }) = params.first()
+                && *recv_trait == trait_name.0
+            {
                 *elab = NameRefElab::DynTraitMethod {
                     trait_name: trait_name.clone(),
                     method_name: method_name.clone(),
@@ -398,9 +401,12 @@ impl TypeckResultsBuilder {
                 ty,
                 astptr,
             } = &mut elab.callee
-            && let tast::Ty::TFunc { params, .. } = ty
-            && let Some(tast::Ty::TDyn { trait_name: recv_trait }) = params.first()
-            && *recv_trait == trait_name.0 {
+                && let tast::Ty::TFunc { params, .. } = ty
+                && let Some(tast::Ty::TDyn {
+                    trait_name: recv_trait,
+                }) = params.first()
+                && *recv_trait == trait_name.0
+            {
                 elab.callee = CalleeElab::DynTraitMethod {
                     trait_name: trait_name.clone(),
                     method_name: method_name.clone(),

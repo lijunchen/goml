@@ -105,6 +105,12 @@ pub enum Expr {
         rhs: Box<Expr>,
         ty: Ty,
     },
+    EAssign {
+        name: String,
+        value: Box<Expr>,
+        target_ty: Ty,
+        ty: Ty,
+    },
     ECall {
         func: Box<Expr>,
         args: Vec<Expr>,
@@ -156,6 +162,7 @@ impl Expr {
             Expr::EConstrGet { ty, .. } => ty.clone(),
             Expr::EUnary { ty, .. } => ty.clone(),
             Expr::EBinary { ty, .. } => ty.clone(),
+            Expr::EAssign { ty, .. } => ty.clone(),
             Expr::ECall { ty, .. } => ty.clone(),
             Expr::EToDyn { ty, .. } => ty.clone(),
             Expr::EDynCall { ty, .. } => ty.clone(),

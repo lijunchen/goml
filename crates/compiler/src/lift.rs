@@ -178,6 +178,12 @@ pub enum LiftExpr {
         rhs: Box<LiftExpr>,
         ty: Ty,
     },
+    EAssign {
+        name: String,
+        value: Box<LiftExpr>,
+        target_ty: Ty,
+        ty: Ty,
+    },
     ECall {
         func: Box<LiftExpr>,
         args: Vec<LiftExpr>,
@@ -221,6 +227,7 @@ impl LiftExpr {
             LiftExpr::EConstrGet { ty, .. } => ty.clone(),
             LiftExpr::EUnary { ty, .. } => ty.clone(),
             LiftExpr::EBinary { ty, .. } => ty.clone(),
+            LiftExpr::EAssign { ty, .. } => ty.clone(),
             LiftExpr::ECall { ty, .. } => ty.clone(),
             LiftExpr::EToDyn { ty, .. } => ty.clone(),
             LiftExpr::EDynCall { ty, .. } => ty.clone(),
@@ -520,10 +527,7 @@ fn rewrite_lift_expr_with_final_types(
                 .into_iter()
                 .map(|item| rewrite_lift_expr_with_final_types(state, scope, item))
                 .collect::<Vec<_>>();
-            LiftExpr::ETuple {
-                items,
-                ty,
-            }
+            LiftExpr::ETuple { items, ty }
         }
         LiftExpr::EArray { items, ty } => LiftExpr::EArray {
             items: items
@@ -623,6 +627,17 @@ fn rewrite_lift_expr_with_final_types(
             op,
             lhs: Box::new(rewrite_lift_expr_with_final_types(state, scope, *lhs)),
             rhs: Box::new(rewrite_lift_expr_with_final_types(state, scope, *rhs)),
+            ty,
+        },
+        LiftExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => LiftExpr::EAssign {
+            name,
+            value: Box::new(rewrite_lift_expr_with_final_types(state, scope, *value)),
+            target_ty,
             ty,
         },
         LiftExpr::ECall { func, args, ty } => {
@@ -778,10 +793,7 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
                 .into_iter()
                 .map(|item| transform_expr(state, scope, item))
                 .collect::<Vec<_>>();
-            LiftExpr::ETuple {
-                items,
-                ty,
-            }
+            LiftExpr::ETuple { items, ty }
         }
         MonoExpr::EArray { items, ty } => {
             let items = items
@@ -871,6 +883,20 @@ fn transform_expr(state: &mut State<'_>, scope: &mut Scope, expr: MonoExpr) -> L
             let lhs = Box::new(transform_expr(state, scope, *lhs));
             let rhs = Box::new(transform_expr(state, scope, *rhs));
             LiftExpr::EBinary { op, lhs, rhs, ty }
+        }
+        MonoExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => {
+            let value = Box::new(transform_expr(state, scope, *value));
+            LiftExpr::EAssign {
+                name,
+                value,
+                target_ty,
+                ty,
+            }
         }
         MonoExpr::ECall { func, args, ty } => {
             let func_expr = transform_expr(state, scope, *func);
@@ -1243,6 +1269,9 @@ fn collect_captured(
         LiftExpr::EBinary { lhs, rhs, .. } => {
             collect_captured(lhs, bound, captured, scope);
             collect_captured(rhs, bound, captured, scope);
+        }
+        LiftExpr::EAssign { value, .. } => {
+            collect_captured(value, bound, captured, scope);
         }
         LiftExpr::ECall { func, args, .. } => {
             collect_captured(func, bound, captured, scope);

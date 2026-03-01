@@ -51,6 +51,7 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
                     tast::Stmt::Let(stmt) => {
                         pat_origin(&stmt.pat).or_else(|| expr_origin(stmt.value.as_ref()))
                     }
+                    tast::Stmt::Assign(stmt) => expr_origin(&stmt.value),
                     tast::Stmt::Expr(stmt) => expr_origin(&stmt.expr),
                 })
             }),
@@ -453,7 +454,10 @@ impl Typer {
                         let dyn_coercion_ok = match (&l_norm, &r_norm) {
                             (tast::Ty::TDyn { trait_name }, concrete)
                             | (concrete, tast::Ty::TDyn { trait_name })
-                                if !matches!(concrete, tast::Ty::TVar(_) | tast::Ty::TDyn { .. }) =>
+                                if !matches!(
+                                    concrete,
+                                    tast::Ty::TVar(_) | tast::Ty::TDyn { .. }
+                                ) =>
                             {
                                 genv.has_trait_impl_visible(trait_name, concrete)
                             }
@@ -478,17 +482,16 @@ impl Typer {
                             if let Some(self_ty) = norm_arg_types.first() {
                                 match self_ty {
                                     tast::Ty::TParam { name }
-                                        if self
-                                            .tparam_trait_bounds
-                                            .get(name)
-                                            .is_some_and(|bounds| {
+                                        if self.tparam_trait_bounds.get(name).is_some_and(
+                                            |bounds| {
                                                 let (resolved, _) =
                                                     super::util::normalize_trait_name(
                                                         genv,
                                                         &trait_name.0,
                                                     );
                                                 bounds.contains(&resolved)
-                                            }) =>
+                                            },
+                                        ) =>
                                     {
                                         let (resolved, env) =
                                             super::util::normalize_trait_name(genv, &trait_name.0);
@@ -498,8 +501,7 @@ impl Typer {
                                         {
                                             let method_ty = self.inst_ty(&method_scheme.ty);
                                             let method_ty = super::check::instantiate_self_ty(
-                                                &method_ty,
-                                                self_ty,
+                                                &method_ty, self_ty,
                                             );
                                             let call_fun_ty = tast::Ty::TFunc {
                                                 params: norm_arg_types.clone(),
@@ -541,8 +543,7 @@ impl Typer {
                                         {
                                             let method_ty = self.inst_ty(&method_scheme.ty);
                                             let method_ty = super::check::instantiate_self_ty(
-                                                &method_ty,
-                                                self_ty,
+                                                &method_ty, self_ty,
                                             );
                                             let call_fun_ty = tast::Ty::TFunc {
                                                 params: norm_arg_types.clone(),
@@ -781,21 +782,13 @@ impl Typer {
                             })
                         {
                             let inst_method_ty = self.inst_ty(&scheme.ty);
-                            let unified = self.unify(
-                                diagnostics,
-                                &call_site_type,
-                                &inst_method_ty,
-                                origin,
-                            );
+                            let unified =
+                                self.unify(diagnostics, &call_site_type, &inst_method_ty, origin);
                             if unified {
                                 changed = true;
                             }
                         } else if let Some(field_ty) =
-                            super::check::resolve_field_ty_eager(
-                                genv,
-                                &norm_receiver_ty,
-                                &method,
-                            )
+                            super::check::resolve_field_ty_eager(genv, &norm_receiver_ty, &method)
                         {
                             if let tast::Ty::TFunc { params, ret_ty } = &field_ty {
                                 let mut method_params = vec![norm_receiver_ty.clone()];
@@ -804,12 +797,8 @@ impl Typer {
                                     params: method_params,
                                     ret_ty: ret_ty.clone(),
                                 };
-                                let unified = self.unify(
-                                    diagnostics,
-                                    &call_site_type,
-                                    &method_ty,
-                                    origin,
-                                );
+                                let unified =
+                                    self.unify(diagnostics, &call_site_type, &method_ty, origin);
                                 if unified {
                                     changed = true;
                                 }
@@ -1625,7 +1614,12 @@ impl Typer {
             .into_iter()
             .map(|stmt| match stmt {
                 tast::Stmt::Let(stmt) => tast::Stmt::Let(tast::LetStmt {
+                    is_mut: stmt.is_mut,
                     pat: self.subst_pat(diagnostics, stmt.pat),
+                    value: Box::new(self.subst(diagnostics, *stmt.value)),
+                }),
+                tast::Stmt::Assign(stmt) => tast::Stmt::Assign(tast::AssignStmt {
+                    name: stmt.name,
                     value: Box::new(self.subst(diagnostics, *stmt.value)),
                 }),
                 tast::Stmt::Expr(stmt) => tast::Stmt::Expr(tast::ExprStmt {

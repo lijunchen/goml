@@ -227,6 +227,16 @@ impl ValueExpr {
                     .append(rhs_doc)
                     .append(RcDoc::text(")"))
             }
+            ValueExpr::Assign {
+                name,
+                value,
+                target_ty: _,
+                ty: _,
+            } => RcDoc::text(name.0.clone())
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc()),
             ValueExpr::Call { func, args, ty: _ } => {
                 let args_doc =
                     RcDoc::intersperse(args.iter().map(|arg| arg.to_doc()), RcDoc::text(", "));

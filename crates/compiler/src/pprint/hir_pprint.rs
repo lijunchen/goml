@@ -150,9 +150,23 @@ impl hir::LetStmt {
         } else {
             base_pat_doc
         };
-        RcDoc::text("let")
+        let mut doc = RcDoc::text("let").append(RcDoc::space());
+        if self.is_mut {
+            doc = doc.append(RcDoc::text("mut")).append(RcDoc::space());
+        }
+
+        doc.append(pat_doc)
             .append(RcDoc::space())
-            .append(pat_doc)
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(ctx.expr_to_doc(self.value))
+            .group()
+    }
+}
+
+impl hir::AssignStmt {
+    pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
+        RcDoc::text(self.target_name.clone())
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -171,6 +185,7 @@ impl hir::Stmt {
     pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
         match self {
             hir::Stmt::Let(stmt) => stmt.to_doc(ctx),
+            hir::Stmt::Assign(stmt) => stmt.to_doc(ctx),
             hir::Stmt::Expr(stmt) => stmt.to_doc(ctx),
         }
     }

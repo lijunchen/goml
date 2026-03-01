@@ -258,6 +258,16 @@ impl MonoExpr {
                     .append(rhs_doc)
                     .append(RcDoc::text(")"))
             }
+            MonoExpr::EAssign {
+                name,
+                value,
+                target_ty: _,
+                ty: _,
+            } => RcDoc::text(name.clone())
+                .append(RcDoc::space())
+                .append(RcDoc::text("="))
+                .append(RcDoc::space())
+                .append(value.to_doc(monoenv)),
             MonoExpr::ECall { func, args, ty: _ } => {
                 let args_doc = RcDoc::intersperse(
                     args.iter().map(|arg| arg.to_doc(monoenv)),

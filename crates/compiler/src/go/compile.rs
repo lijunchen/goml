@@ -212,6 +212,7 @@ fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
         | anf::ValueExpr::ConstrGet { ty, .. }
         | anf::ValueExpr::Unary { ty, .. }
         | anf::ValueExpr::Binary { ty, .. }
+        | anf::ValueExpr::Assign { ty, .. }
         | anf::ValueExpr::Call { ty, .. }
         | anf::ValueExpr::ToDyn { ty, .. }
         | anf::ValueExpr::DynCall { ty, .. }
@@ -510,6 +511,16 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
                     self.collect_imm(rhs);
                     self.collect_type(ty);
                 }
+                anf::ValueExpr::Assign {
+                    value,
+                    target_ty,
+                    ty,
+                    ..
+                } => {
+                    self.collect_imm(value);
+                    self.collect_type(target_ty);
+                    self.collect_type(ty);
+                }
                 anf::ValueExpr::Call { func, args, ty } => {
                     self.collect_imm(func);
                     for arg in args {
@@ -722,6 +733,16 @@ fn collect_dyn_requirements(file: &anf::File) -> DynRequirements {
                 collect_imm(req, rhs);
                 collect_ty(req, ty);
             }
+            anf::ValueExpr::Assign {
+                value,
+                target_ty,
+                ty,
+                ..
+            } => {
+                collect_imm(req, value);
+                collect_ty(req, target_ty);
+                collect_ty(req, ty);
+            }
             anf::ValueExpr::Call { func, args, ty } => {
                 collect_imm(req, func);
                 for a in args {
@@ -926,9 +947,7 @@ fn build_trait_impl_name_map(
 ) -> std::collections::HashMap<(String, String, String), String> {
     let mut map = std::collections::HashMap::new();
     for tl in toplevels {
-        if let Some((trait_name, for_ty_str, method_name)) =
-            parse_trait_impl_fn_name(&tl.name)
-        {
+        if let Some((trait_name, for_ty_str, method_name)) = parse_trait_impl_fn_name(&tl.name) {
             let base_method = method_name.split("__").next().unwrap_or(method_name);
             let go_name = go_ident(&tl.name);
             map.insert(
@@ -1059,9 +1078,7 @@ fn gen_dyn_wrap_fn(
             cases: vec![(
                 receiver_go_ty,
                 goast::Block {
-                    stmts: vec![goast::Stmt::Return {
-                        expr: Some(call),
-                    }],
+                    stmts: vec![goast::Stmt::Return { expr: Some(call) }],
                 },
             )],
             default: Some(goast::Block {
@@ -1070,7 +1087,10 @@ fn gen_dyn_wrap_fn(
                         name: "panic".to_string(),
                         ty: goty::GoType::TUnit,
                     }),
-                    args: vec![goast::Expr::String { value: "unexpected type".to_string(), ty: goty::GoType::TString }],
+                    args: vec![goast::Expr::String {
+                        value: "unexpected type".to_string(),
+                        ty: goty::GoType::TString,
+                    }],
                     ty: goty::GoType::TUnit,
                 })],
             }),
@@ -3237,6 +3257,29 @@ fn compile_value_expr(goenv: &GlobalGoEnv, expr: &anf::ValueExpr) -> CompiledVal
                 },
             }
         }
+        anf::ValueExpr::Assign {
+            name,
+            value,
+            target_ty,
+            ty,
+        } => {
+            let mut stmts = Vec::new();
+            let rhs = if needs_closure_to_func_wrap(&imm_ty(value), target_ty) {
+                closure_to_func_lit(goenv, value, target_ty)
+            } else {
+                compile_imm(goenv, value)
+            };
+            stmts.push(goast::Stmt::Assignment {
+                name: go_ident(&name.0),
+                value: rhs,
+            });
+            CompiledValue {
+                stmts,
+                expr: goast::Expr::Unit {
+                    ty: tast_ty_to_go_type(ty),
+                },
+            }
+        }
         anf::ValueExpr::Call { func, args, ty } => {
             if let anf::ImmExpr::Var { id, .. } = func
                 && (id.0 == "print" || id.0 == "println")
@@ -3411,10 +3454,7 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
     }
     let body = &join.body;
     let anf::Term::If {
-        cond,
-        then_,
-        else_,
-        ..
+        cond, then_, else_, ..
     } = &body.term
     else {
         return None;
@@ -3593,7 +3633,11 @@ fn closure_to_func_lit(
     let apply = find_closure_apply_fn(goenv, &closure_ty)
         .expect("closure struct must have an apply method");
 
-    let tast::Ty::TFunc { params: func_params, ret_ty: func_ret } = func_ty else {
+    let tast::Ty::TFunc {
+        params: func_params,
+        ret_ty: func_ret,
+    } = func_ty
+    else {
         unreachable!("closure_to_func_lit called with non-function target type");
     };
 
@@ -3674,9 +3718,7 @@ fn all_branches_jump_to(term: &anf::Term) -> Option<&anf::JoinId> {
             let e = block_tail_target(else_)?;
             if t == e { Some(t) } else { None }
         }
-        anf::Term::Match {
-            arms, default, ..
-        } => {
+        anf::Term::Match { arms, default, .. } => {
             let mut result: Option<&anf::JoinId> = None;
             for arm in arms {
                 let t = block_tail_target(&arm.body)?;
@@ -3787,10 +3829,7 @@ fn compile_term_jump_to(
     match term {
         anf::Term::Jump { args, .. } => compile_jump_args(goenv, &join_bind.params, args),
         anf::Term::If {
-            cond,
-            then_,
-            else_,
-            ..
+            cond, then_, else_, ..
         } => {
             let then_stmts = compile_branch_to_join(goenv, then_, target, join_bind, join_env);
             let else_stmts = compile_branch_to_join(goenv, else_, target, join_bind, join_env);
@@ -3805,7 +3844,15 @@ fn compile_term_jump_to(
             arms,
             default,
             ..
-        } => compile_match_to_join(goenv, scrut, arms, default.as_deref(), target, join_bind, join_env),
+        } => compile_match_to_join(
+            goenv,
+            scrut,
+            arms,
+            default.as_deref(),
+            target,
+            join_bind,
+            join_env,
+        ),
         _ => compile_term_leaf(goenv, term, join_env),
     }
 }
@@ -3844,7 +3891,13 @@ fn compile_branch_to_join(
 
     if let Some(inner_target) = all_branches_jump_to(&block.term) {
         if inner_target == target {
-            stmts.extend(compile_term_jump_to(goenv, &block.term, target, join_bind, join_env));
+            stmts.extend(compile_term_jump_to(
+                goenv,
+                &block.term,
+                target,
+                join_bind,
+                join_env,
+            ));
             return stmts;
         }
         if let Some(inner_join) = join_env.get(inner_target)
@@ -3867,7 +3920,12 @@ fn compile_branch_to_join(
             return stmts;
         }
     }
-    stmts.extend(compile_term_with_continuations(goenv, &block.term, join_env, &inner_pending));
+    stmts.extend(compile_term_with_continuations(
+        goenv,
+        &block.term,
+        join_env,
+        &inner_pending,
+    ));
     stmts
 }
 
@@ -3907,15 +3965,36 @@ fn compile_match_to_join(
 
     match &scrut_ty {
         tast::Ty::TEnum { .. } => compile_enum_match_to_join(
-            goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
+            goenv,
+            scrut,
+            &literal_arms,
+            var_arm,
+            default,
+            target,
+            join_bind,
+            join_env,
         ),
         tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
             compile_enum_match_to_join(
-                goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
+                goenv,
+                scrut,
+                &literal_arms,
+                var_arm,
+                default,
+                target,
+                join_bind,
+                join_env,
             )
         }
         _ => compile_switch_match_to_join(
-            goenv, scrut, &literal_arms, var_arm, default, target, join_bind, join_env,
+            goenv,
+            scrut,
+            &literal_arms,
+            var_arm,
+            default,
+            target,
+            join_bind,
+            join_env,
         ),
     }
 }
@@ -3950,7 +4029,9 @@ fn compile_enum_match_to_join(
                 value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.extend(compile_branch_to_join(goenv, body, target, join_bind, join_env));
+        stmts.extend(compile_branch_to_join(
+            goenv, body, target, join_bind, join_env,
+        ));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
@@ -3996,7 +4077,9 @@ fn compile_switch_match_to_join(
                 value: Some(compile_imm(goenv, scrut)),
             });
         }
-        stmts.extend(compile_branch_to_join(goenv, body, target, join_bind, join_env));
+        stmts.extend(compile_branch_to_join(
+            goenv, body, target, join_bind, join_env,
+        ));
         Some(goast::Block { stmts })
     } else if let Some(def_block) = default {
         Some(goast::Block {
@@ -4043,10 +4126,7 @@ fn compile_term_leaf(
             }
         }
         anf::Term::If {
-            cond,
-            then_,
-            else_,
-            ..
+            cond, then_, else_, ..
         } => {
             let then_stmts = compile_block_structured(goenv, then_, join_env);
             let else_stmts = compile_block_structured(goenv, else_, join_env);
@@ -4099,17 +4179,13 @@ fn compile_match_leaf(
     }
 
     match &scrut_ty {
-        tast::Ty::TEnum { .. } => compile_enum_match_leaf(
-            goenv, scrut, &literal_arms, var_arm, default, join_env,
-        ),
-        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
-            compile_enum_match_leaf(
-                goenv, scrut, &literal_arms, var_arm, default, join_env,
-            )
+        tast::Ty::TEnum { .. } => {
+            compile_enum_match_leaf(goenv, scrut, &literal_arms, var_arm, default, join_env)
         }
-        _ => compile_switch_match_leaf(
-            goenv, scrut, &literal_arms, var_arm, default, join_env,
-        ),
+        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
+            compile_enum_match_leaf(goenv, scrut, &literal_arms, var_arm, default, join_env)
+        }
+        _ => compile_switch_match_leaf(goenv, scrut, &literal_arms, var_arm, default, join_env),
     }
 }
 
@@ -4215,11 +4291,7 @@ fn compile_joinrec(
     Vec::new()
 }
 
-fn compile_while_loop(
-    goenv: &GlobalGoEnv,
-    wl: &WhileLoop,
-    join_env: &JoinEnv,
-) -> Vec<goast::Stmt> {
+fn compile_while_loop(goenv: &GlobalGoEnv, wl: &WhileLoop, join_env: &JoinEnv) -> Vec<goast::Stmt> {
     let mut loop_body_stmts = Vec::new();
     for bind in &wl.cond_binds {
         if let anf::Bind::Let(let_bind) = bind {
@@ -4262,7 +4334,11 @@ fn compile_while_loop(
         body: goast::Block {
             stmts: loop_body_stmts,
         },
-        label: if has_break_label { Some(loop_label) } else { None },
+        label: if has_break_label {
+            Some(loop_label)
+        } else {
+            None
+        },
     }];
 
     stmts.extend(compile_block_structured(goenv, &wl.after, join_env));
@@ -4282,9 +4358,7 @@ fn stmt_contains_break_label(stmt: &goast::Stmt, label: &str) -> bool {
                     .as_ref()
                     .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
         }
-        goast::Stmt::SwitchExpr {
-            cases, default, ..
-        } => {
+        goast::Stmt::SwitchExpr { cases, default, .. } => {
             cases
                 .iter()
                 .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))
@@ -4292,9 +4366,7 @@ fn stmt_contains_break_label(stmt: &goast::Stmt, label: &str) -> bool {
                     .as_ref()
                     .is_some_and(|b| stmts_contain_break_label(&b.stmts, label))
         }
-        goast::Stmt::SwitchType {
-            cases, default, ..
-        } => {
+        goast::Stmt::SwitchType { cases, default, .. } => {
             cases
                 .iter()
                 .any(|(_, b)| stmts_contain_break_label(&b.stmts, label))

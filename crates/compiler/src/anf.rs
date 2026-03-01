@@ -131,6 +131,12 @@ pub enum ValueExpr {
         rhs: ImmExpr,
         ty: Ty,
     },
+    Assign {
+        name: LocalId,
+        value: ImmExpr,
+        target_ty: Ty,
+        ty: Ty,
+    },
     Call {
         func: ImmExpr,
         args: Vec<ImmExpr>,
@@ -212,6 +218,7 @@ fn value_expr_tast_ty(e: &ValueExpr) -> Ty {
         | ValueExpr::ConstrGet { ty, .. }
         | ValueExpr::Unary { ty, .. }
         | ValueExpr::Binary { ty, .. }
+        | ValueExpr::Assign { ty, .. }
         | ValueExpr::Call { ty, .. }
         | ValueExpr::ToDyn { ty, .. }
         | ValueExpr::DynCall { ty, .. }
@@ -760,6 +767,24 @@ fn lower_value<'a>(
                 )
             }),
         ),
+        LiftExpr::EAssign {
+            name,
+            value,
+            target_ty,
+            ty: _,
+        } => lower(
+            anfenv,
+            gensym,
+            *value,
+            Box::new(move |value_imm| {
+                k(ValueExpr::Assign {
+                    name: local(name),
+                    value: value_imm,
+                    target_ty,
+                    ty: e_ty,
+                })
+            }),
+        ),
         LiftExpr::EConstr {
             constructor,
             args,
@@ -1076,6 +1101,17 @@ pub mod anf_renamer {
                 op,
                 lhs: rename_imm(lhs),
                 rhs: rename_imm(rhs),
+                ty,
+            },
+            anf::ValueExpr::Assign {
+                name,
+                value,
+                target_ty,
+                ty,
+            } => anf::ValueExpr::Assign {
+                name: rename_local_id(name),
+                value: rename_imm(value),
+                target_ty,
                 ty,
             },
             anf::ValueExpr::Call { func, args, ty } => anf::ValueExpr::Call {
@@ -1447,6 +1483,25 @@ pub mod anf_verify {
             anf::ValueExpr::Binary { lhs, rhs, ty, .. } => {
                 verify_imm(errors, locals, lhs);
                 verify_imm(errors, locals, rhs);
+                verify_ty_is_value(errors, ty);
+            }
+            anf::ValueExpr::Assign {
+                name,
+                value,
+                target_ty,
+                ty,
+            } => {
+                verify_imm(errors, locals, value);
+                if let Some(local_ty) = locals.get(name) {
+                    if !tys_compatible(local_ty, target_ty) {
+                        errors.push(format!(
+                            "assign target type mismatch for {}: local {:?} vs target {:?}",
+                            name.0, local_ty, target_ty
+                        ));
+                    }
+                } else {
+                    errors.push(format!("assign target {} is not in scope", name.0));
+                }
                 verify_ty_is_value(errors, ty);
             }
             anf::ValueExpr::Call { func, args, ty } => {

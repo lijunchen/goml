@@ -267,6 +267,9 @@ pub enum TokenKind {
     #[token("let")]
     LetKeyword,
 
+    #[token("mut")]
+    MutKeyword,
+
     #[token("in")]
     InKeyword,
 
@@ -454,6 +457,7 @@ impl std::fmt::Display for TokenKind {
             Self::MatchKeyword => "match",
             Self::ElseKeyword => "else",
             Self::LetKeyword => "let",
+            Self::MutKeyword => "mut",
             Self::InKeyword => "in",
             Self::ReturnKeyword => "return",
             Self::GoKeyword => "go",
@@ -549,6 +553,7 @@ macro_rules! T {
     [if] => { $crate::TokenKind::IfKeyword };
     [else] => { $crate::TokenKind::ElseKeyword };
     [let] => { $crate::TokenKind::LetKeyword };
+    [mut] => { $crate::TokenKind::MutKeyword };
     [in] => { $crate::TokenKind::InKeyword };
     [return] => { $crate::TokenKind::ReturnKeyword };
     [go] => { $crate::TokenKind::GoKeyword };

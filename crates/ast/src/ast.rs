@@ -260,13 +260,22 @@ pub struct Block {
 #[derive(Debug, Clone)]
 pub enum Stmt {
     Let(LetStmt),
+    Assign(AssignStmt),
     Expr(ExprStmt),
 }
 
 #[derive(Debug, Clone)]
 pub struct LetStmt {
+    pub is_mut: bool,
     pub pat: Pat,
     pub annotation: Option<TypeExpr>,
+    pub value: Box<Expr>,
+    pub astptr: MySyntaxNodePtr,
+}
+
+#[derive(Debug, Clone)]
+pub struct AssignStmt {
+    pub name: AstIdent,
     pub value: Box<Expr>,
     pub astptr: MySyntaxNodePtr,
 }

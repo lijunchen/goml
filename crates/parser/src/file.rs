@@ -787,6 +787,11 @@ pub fn block(p: &mut Parser) {
             continue;
         }
 
+        if p.at(T![ident]) && p.nth(1) == T![=] {
+            let _ = stmt::assign_stmt(p);
+            continue;
+        }
+
         if p.at_any(EXPR_FIRST) {
             if let Some(expr_marker) = expr(p) {
                 if p.eat(T![;]) {
