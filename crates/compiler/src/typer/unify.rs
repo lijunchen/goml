@@ -994,7 +994,7 @@ impl Typer {
         }
     }
 
-    fn unify(
+    pub(crate) fn unify(
         &mut self,
         diagnostics: &mut Diagnostics,
         l: &tast::Ty,

@@ -344,7 +344,7 @@ impl Typer {
                 }
             }
             hir::Expr::EConstr { constructor, args } => {
-                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args)
+                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, None)
             }
             hir::Expr::EStructLiteral { name, fields } => {
                 self.infer_struct_literal_expr(genv, local_env, diagnostics, e, &name, &fields)
@@ -560,6 +560,9 @@ impl Typer {
                     ty: expected.clone(),
                     astptr: self.hir_table.expr_ptr(e),
                 }
+            }
+            hir::Expr::EConstr { constructor, args } => {
+                self.infer_constructor_expr(genv, local_env, diagnostics, e, &constructor, &args, Some(expected))
             }
             _ => self.infer_expr(genv, local_env, diagnostics, e),
         };
@@ -1287,6 +1290,7 @@ impl Typer {
         expr_id: hir::ExprId,
         constructor_ref: &hir::ConstructorRef,
         args: &[hir::ExprId],
+        hint_ret_ty: Option<&tast::Ty>,
     ) -> tast::Expr {
         let constructor_path = match constructor_ref {
             hir::ConstructorRef::Resolved(ctor_id) => {
@@ -1401,6 +1405,12 @@ impl Typer {
             tast::Ty::TFunc { ret_ty, .. } => *ret_ty.clone(),
             _ => inst_constr_ty.clone(),
         };
+
+        if let Some(hint) = hint_ret_ty {
+            self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
+        }
+
+        let param_tys: Vec<tast::Ty> = param_tys.iter().map(|t| self.norm(t)).collect();
 
         let mut args_tast = Vec::new();
         if param_tys.is_empty() {
