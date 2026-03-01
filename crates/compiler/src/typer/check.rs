@@ -420,13 +420,31 @@ impl Typer {
             hir::Expr::EUnary {
                 op: common_defs::UnaryOp::Neg,
                 expr: inner,
-            } if is_numeric_ty(expected) => {
+            } if is_signed_numeric_ty(expected) => {
                 let operand = self.check_expr(genv, local_env, diagnostics, inner, expected);
                 tast::Expr::EUnary {
                     op: common_defs::UnaryOp::Neg,
                     expr: Box::new(operand),
                     ty: expected.clone(),
                     resolution: tast::UnaryResolution::Builtin,
+                }
+            }
+            hir::Expr::EInt { ref value } if is_integer_ty(expected) => {
+                let range = self.expr_range(e);
+                let prim = self
+                    .parse_integer_literal_with_ty(diagnostics, value, expected, range)
+                    .unwrap_or_else(|| Prim::zero_for_int_ty(expected));
+                tast::Expr::EPrim {
+                    value: prim,
+                    ty: expected.clone(),
+                }
+            }
+            hir::Expr::EFloat { value } if is_float_ty(expected) => {
+                let range = self.expr_range(e);
+                self.ensure_float_literal_fits(diagnostics, value, expected, range);
+                tast::Expr::EPrim {
+                    value: Prim::from_float_literal(value, expected),
+                    ty: expected.clone(),
                 }
             }
             hir::Expr::EBinary { op, lhs, rhs }
@@ -3842,6 +3860,18 @@ fn is_float_ty(ty: &tast::Ty) -> bool {
 
 fn is_numeric_ty(ty: &tast::Ty) -> bool {
     is_integer_ty(ty) || is_float_ty(ty)
+}
+
+fn is_signed_numeric_ty(ty: &tast::Ty) -> bool {
+    matches!(
+        ty,
+        tast::Ty::TInt8
+            | tast::Ty::TInt16
+            | tast::Ty::TInt32
+            | tast::Ty::TInt64
+            | tast::Ty::TFloat32
+            | tast::Ty::TFloat64
+    )
 }
 
 impl Typer {

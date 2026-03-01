@@ -237,12 +237,43 @@ fn build_expr(
             value: Prim::boolean(value),
             ty: tast::Ty::TBool,
         },
-        hir::Expr::EInt { value } => tast::Expr::EPrim {
-            value: Prim::Int32 {
-                value: parse_signed(&value).unwrap_or(0),
-            },
-            ty: tast::Ty::TInt32,
-        },
+        hir::Expr::EInt { value } => {
+            let resolved_ty = results.expr_ty(expr_id).cloned();
+            match resolved_ty {
+                Some(tast::Ty::TInt8) => tast::Expr::EPrim {
+                    value: Prim::Int8 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt8,
+                },
+                Some(tast::Ty::TInt16) => tast::Expr::EPrim {
+                    value: Prim::Int16 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt16,
+                },
+                Some(tast::Ty::TInt64) => tast::Expr::EPrim {
+                    value: Prim::Int64 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt64,
+                },
+                Some(tast::Ty::TUint8) => tast::Expr::EPrim {
+                    value: Prim::UInt8 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint8,
+                },
+                Some(tast::Ty::TUint16) => tast::Expr::EPrim {
+                    value: Prim::UInt16 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint16,
+                },
+                Some(tast::Ty::TUint32) => tast::Expr::EPrim {
+                    value: Prim::UInt32 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint32,
+                },
+                Some(tast::Ty::TUint64) => tast::Expr::EPrim {
+                    value: Prim::UInt64 { value: parse_unsigned(&value).unwrap_or(0) },
+                    ty: tast::Ty::TUint64,
+                },
+                _ => tast::Expr::EPrim {
+                    value: Prim::Int32 { value: parse_signed(&value).unwrap_or(0) },
+                    ty: tast::Ty::TInt32,
+                },
+            }
+        }
         hir::Expr::EInt8 { value } => tast::Expr::EPrim {
             value: Prim::Int8 {
                 value: parse_signed(&value).unwrap_or(0),
@@ -291,10 +322,19 @@ fn build_expr(
             },
             ty: tast::Ty::TUint64,
         },
-        hir::Expr::EFloat { value } => tast::Expr::EPrim {
-            value: Prim::Float64 { value },
-            ty: tast::Ty::TFloat64,
-        },
+        hir::Expr::EFloat { value } => {
+            let resolved_ty = results.expr_ty(expr_id).cloned();
+            match resolved_ty {
+                Some(tast::Ty::TFloat32) => tast::Expr::EPrim {
+                    value: Prim::Float32 { value: value as f32 },
+                    ty: tast::Ty::TFloat32,
+                },
+                _ => tast::Expr::EPrim {
+                    value: Prim::Float64 { value },
+                    ty: tast::Ty::TFloat64,
+                },
+            }
+        }
         hir::Expr::EFloat32 { value } => tast::Expr::EPrim {
             value: Prim::Float32 {
                 value: value.parse::<f32>().unwrap_or(0.0),
