@@ -335,6 +335,8 @@ fn closure_param(p: &mut Parser) {
     let m = p.open();
     if p.at(T![ident]) {
         p.expect(T![ident]);
+    } else if p.at(T![_]) {
+        p.expect(T![_]);
     } else {
         if !p.at(T![|]) && !p.eof() {
             p.advance_with_error("expected an identifier in closure parameter");

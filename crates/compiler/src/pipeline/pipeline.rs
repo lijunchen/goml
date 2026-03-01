@@ -383,7 +383,11 @@ pub fn compile(path: &Path, src: &str) -> Result<Compilation, CompilationError> 
     compile_inner(path, src, false)
 }
 
-fn compile_inner(path: &Path, src: &str, single_file: bool) -> Result<Compilation, CompilationError> {
+fn compile_inner(
+    path: &Path,
+    src: &str,
+    single_file: bool,
+) -> Result<Compilation, CompilationError> {
     let (green_node, cst, entry_ast) = parse_ast_from_source(path, src)?;
 
     let typecheck = typecheck_packages_inner(path, entry_ast.clone(), single_file)?;

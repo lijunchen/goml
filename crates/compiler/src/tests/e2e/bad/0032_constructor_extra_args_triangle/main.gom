@@ -10,24 +10,11 @@ fn area(s: Shape) -> float64 {
     match s {
         Shape::Circle(r) => 3.14159 * r * r,
         Shape::Rect(w, h) => w * h,
-        Shape::Triangle(a, b, _c) => 0.5 * a * b,
-    }
-}
-
-fn describe(s: Shape) -> string {
-    match s {
-        Shape::Circle(_) => "circle",
-        Shape::Rect(_, _) => "rectangle",
-        Shape::Triangle(_, _, _) => "triangle",
+        Shape::Triangle(a, b, _c, _d) => 0.5 * a * b,
     }
 }
 
 fn main() {
-    let shapes = [Shape::Circle(5.0), Shape::Rect(3.0, 4.0), Shape::Triangle(6.0, 8.0, 10.0)];
-    let i = ref(0);
-    while ref_get(i) < 3 {
-        let s = array_get(shapes, ref_get(i));
-        string_println(describe(s) + ": " + float64_to_string(area(s)));
-        ref_set(i, ref_get(i) + 1);
-    };
+    let s = Shape::Triangle(6.0, 8.0, 10.0);
+    println(float64_to_string(area(s)));
 }

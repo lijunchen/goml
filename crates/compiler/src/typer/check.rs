@@ -404,9 +404,14 @@ impl Typer {
             hir::Expr::EProj { tuple, index } => {
                 self.infer_proj_expr(genv, local_env, diagnostics, e, tuple, index)
             }
-            hir::Expr::EField { expr, field } => {
-                self.infer_field_expr(genv, local_env, diagnostics, expr, &field, None)
-            }
+            hir::Expr::EField { expr, field } => self.infer_field_expr(
+                genv,
+                local_env,
+                diagnostics,
+                expr,
+                &field,
+                self.hir_table.expr_ptr(e),
+            ),
         };
 
         self.record_expr_result(e, &out);
@@ -775,9 +780,10 @@ impl Typer {
                         astptr,
                     }
                 } else {
-                    super::util::push_ice(
+                    super::util::push_error_with_range(
                         diagnostics,
-                        format!("Variable {} not found in environment", name_str),
+                        format!("Unknown variable {}", name_str),
+                        astptr.map(|ptr| ptr.text_range()),
                     );
                     self.error_expr(astptr)
                 }
@@ -942,6 +948,34 @@ impl Typer {
                 astptr,
             }
         } else {
+            if let Some(enum_def) = type_env.enums().get(&type_ident) {
+                if let Some((_, fields)) = enum_def
+                    .variants
+                    .iter()
+                    .find(|(name, _)| name == &member_ident)
+                {
+                    super::util::push_error_with_range(
+                        diagnostics,
+                        format!(
+                            "Variant {} of enum {} expects {} arguments, but got 0",
+                            member,
+                            resolved_type_name,
+                            fields.len()
+                        ),
+                        astptr.map(|p| p.text_range()),
+                    );
+                    return self.error_expr(astptr);
+                }
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "Variant {} not found for enum {}",
+                        member, resolved_type_name
+                    ),
+                    astptr.map(|p| p.text_range()),
+                );
+                return self.error_expr(astptr);
+            }
             super::util::push_error_with_range(
                 diagnostics,
                 format!(
@@ -2316,6 +2350,20 @@ impl Typer {
                 let name_str = self.hir_table.local_ident_name(name);
                 if let Some(var_ty) = local_env.lookup_var(name) {
                     let norm_var_ty = self.norm(&var_ty);
+                    if !matches!(norm_var_ty, tast::Ty::TFunc { .. } | tast::Ty::TVar(_)) {
+                        for arg in args.iter() {
+                            let _ = self.infer_expr(genv, local_env, diagnostics, *arg);
+                        }
+                        super::util::push_error_with_range(
+                            diagnostics,
+                            format!(
+                                "Cannot call non-function type {}",
+                                super::util::format_ty_for_diag(&norm_var_ty)
+                            ),
+                            self.expr_range(call_expr_id),
+                        );
+                        return self.error_expr_with_ty(func_astptr, tast::Ty::TUnit);
+                    }
                     let mut args_tast = Vec::new();
                     let mut arg_types = Vec::new();
                     if let tast::Ty::TFunc { params, .. } = &norm_var_ty
@@ -2378,9 +2426,10 @@ impl Typer {
                         let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
                         args_tast.push(arg_tast);
                     }
-                    super::util::push_ice(
+                    super::util::push_error_with_range(
                         diagnostics,
-                        format!("Variable {} not found in environment", name_str),
+                        format!("Unknown variable {}", name_str),
+                        func_astptr.map(|ptr| ptr.text_range()),
                     );
                     self.error_expr(func_astptr)
                 }
@@ -3396,6 +3445,26 @@ impl Typer {
         let field_ident = tast::TastIdent(field.to_ident_name());
         let result_ty = if let Some(ty) = resolve_field_ty_eager(genv, &base_ty, &field_ident) {
             ty
+        } else if !contains_tvar(&base_ty) && decompose_struct_type(&base_ty).is_none() {
+            let message = if matches!(base_ty, tast::Ty::TTuple { .. }) {
+                format!(
+                    "Tuple type {} has no named field {}; use tuple indexing like .0",
+                    super::util::format_ty_for_diag(&base_ty),
+                    field_ident.0
+                )
+            } else {
+                format!(
+                    "Field {} not found on type {}",
+                    field_ident.0,
+                    super::util::format_ty_for_diag(&base_ty)
+                )
+            };
+            super::util::push_error_with_range(
+                diagnostics,
+                message,
+                astptr.map(|p| p.text_range()),
+            );
+            tast::Ty::TUnit
         } else {
             let result_ty = self.fresh_ty_var();
             self.push_constraint(Constraint::StructFieldAccess {

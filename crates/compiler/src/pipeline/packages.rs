@@ -288,7 +288,13 @@ fn discover_packages_inner(
     single_file: bool,
 ) -> Result<PackageGraph, CompilationError> {
     if let Some(config) = GomlConfig::find_package_config(root_dir) {
-        return discover_packages_from_config(root_dir, &config, entry_path, entry_ast, single_file);
+        return discover_packages_from_config(
+            root_dir,
+            &config,
+            entry_path,
+            entry_ast,
+            single_file,
+        );
     }
 
     let source_override = match (entry_path, entry_ast.as_ref()) {

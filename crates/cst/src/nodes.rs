@@ -1705,6 +1705,7 @@ pub struct ClosureParam {
 impl ClosureParam {
     pub fn lident(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Ident)
+            .or_else(|| support::token(&self.syntax, MySyntaxKind::WildcardKeyword))
     }
 
     pub fn ty(&self) -> Option<Type> {
