@@ -1,0 +1,27 @@
+trait Describable {
+    fn describe(Self) -> string;
+}
+
+struct Circle { radius: float64 }
+struct Square { side: float64 }
+
+impl Describable for Circle {
+    fn describe(self: Circle) -> string {
+        "Circle"
+    }
+}
+
+impl Describable for Square {
+    fn describe(self: Square) -> string {
+        "Square"
+    }
+}
+
+fn main() {
+    let items: [dyn Describable; 2] = [
+        Circle { radius: 1.0 },
+        Square { side: 2.0 },
+    ];
+    let x = array_get(items, 0);
+    println(Describable::describe(x));
+}

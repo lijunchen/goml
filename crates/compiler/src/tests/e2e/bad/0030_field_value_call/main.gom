@@ -1,0 +1,13 @@
+struct Callback {
+    action: (int32) -> int32,
+}
+
+fn double(x: int32) -> int32 {
+    x * 2
+}
+
+fn main() {
+    let cb = Callback { action: double };
+    let result = cb.action(5);
+    println(result);
+}
