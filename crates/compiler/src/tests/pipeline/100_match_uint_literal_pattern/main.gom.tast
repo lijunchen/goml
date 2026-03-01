@@ -1,0 +1,17 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let x/0: uint8 = 5;
+    let y/1: string = match (x/0 : uint8) {
+        0 => "zero",
+        1 => "one",
+        _ : uint8 => "other",
+    };
+    (string_println : (string) -> unit)((y/1 : string));
+}
