@@ -2528,61 +2528,100 @@ impl Typer {
                             result
                         }
                         [] if contains_tvar(&receiver_ty) => {
-                            let mut args_tast = Vec::with_capacity(args.len() + 1);
-                            let mut arg_types = Vec::with_capacity(args.len() + 1);
-                            arg_types.push(receiver_ty.clone());
-                            args_tast.push(receiver_tast);
-                            for arg in args.iter() {
-                                let arg_tast =
-                                    self.infer_expr(genv, local_env, diagnostics, *arg);
-                                arg_types.push(arg_tast.get_ty());
-                                args_tast.push(arg_tast);
-                            }
-                            let ret_ty = self.fresh_ty_var();
-                            let call_site_ty = tast::Ty::TFunc {
-                                params: arg_types,
-                                ret_ty: Box::new(ret_ty.clone()),
-                            };
-                            self.push_constraint(Constraint::InherentMethodCall {
-                                receiver_ty: receiver_ty.clone(),
-                                method: method_name.clone(),
-                                call_site_type: call_site_ty.clone(),
-                                origin: self.expr_range(call_expr_id),
-                            });
-
-                            self.results.record_expr_ty(func, call_site_ty.clone());
-                            self.results.record_name_ref_elab(
-                                func,
-                                NameRefElab::InherentMethod {
-                                    receiver_ty: receiver_ty.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: call_site_ty.clone(),
+                            let field_ty = resolve_field_ty_eager(genv, &receiver_ty, &method_name);
+                            if let Some(field_ty) = field_ty {
+                                let mut args_tast = Vec::new();
+                                let mut arg_types = Vec::new();
+                                for arg in args.iter() {
+                                    let arg_tast = self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_func_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::TypeEqual(
+                                    field_ty.clone(),
+                                    call_site_func_ty.clone(),
+                                    self.expr_range(call_expr_id),
+                                ));
+                                let field_tast = tast::Expr::EField {
+                                    expr: Box::new(receiver_tast),
+                                    field_name: method_name.0.clone(),
+                                    ty: field_ty,
                                     astptr: None,
-                                },
-                            );
-                            self.results.record_call_elab(
-                                call_expr_id,
-                                CallElab {
-                                    callee: CalleeElab::InherentMethod {
+                                };
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::Expr(func),
+                                        args: args.to_vec(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(field_tast),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
+                            } else {
+                                let mut args_tast = Vec::with_capacity(args.len() + 1);
+                                let mut arg_types = Vec::with_capacity(args.len() + 1);
+                                arg_types.push(receiver_ty.clone());
+                                args_tast.push(receiver_tast);
+                                for arg in args.iter() {
+                                    let arg_tast =
+                                        self.infer_expr(genv, local_env, diagnostics, *arg);
+                                    arg_types.push(arg_tast.get_ty());
+                                    args_tast.push(arg_tast);
+                                }
+                                let ret_ty = self.fresh_ty_var();
+                                let call_site_ty = tast::Ty::TFunc {
+                                    params: arg_types,
+                                    ret_ty: Box::new(ret_ty.clone()),
+                                };
+                                self.push_constraint(Constraint::InherentMethodCall {
+                                    receiver_ty: receiver_ty.clone(),
+                                    method: method_name.clone(),
+                                    call_site_type: call_site_ty.clone(),
+                                    origin: self.expr_range(call_expr_id),
+                                });
+
+                                self.results.record_expr_ty(func, call_site_ty.clone());
+                                self.results.record_name_ref_elab(
+                                    func,
+                                    NameRefElab::InherentMethod {
                                         receiver_ty: receiver_ty.clone(),
                                         method_name: method_name.clone(),
                                         ty: call_site_ty.clone(),
                                         astptr: None,
                                     },
-                                    args: std::iter::once(receiver_expr)
-                                        .chain(args.iter().copied())
-                                        .collect(),
-                                },
-                            );
-                            tast::Expr::ECall {
-                                func: Box::new(tast::Expr::EInherentMethod {
-                                    receiver_ty: receiver_ty.clone(),
-                                    method_name: method_name.clone(),
-                                    ty: call_site_ty,
-                                    astptr: None,
-                                }),
-                                args: args_tast,
-                                ty: ret_ty,
+                                );
+                                self.results.record_call_elab(
+                                    call_expr_id,
+                                    CallElab {
+                                        callee: CalleeElab::InherentMethod {
+                                            receiver_ty: receiver_ty.clone(),
+                                            method_name: method_name.clone(),
+                                            ty: call_site_ty.clone(),
+                                            astptr: None,
+                                        },
+                                        args: std::iter::once(receiver_expr)
+                                            .chain(args.iter().copied())
+                                            .collect(),
+                                    },
+                                );
+                                tast::Expr::ECall {
+                                    func: Box::new(tast::Expr::EInherentMethod {
+                                        receiver_ty: receiver_ty.clone(),
+                                        method_name: method_name.clone(),
+                                        ty: call_site_ty,
+                                        astptr: None,
+                                    }),
+                                    args: args_tast,
+                                    ty: ret_ty,
+                                }
                             }
                         }
                         [] => {
