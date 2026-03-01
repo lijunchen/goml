@@ -1,0 +1,18 @@
+package main;
+fn main() {
+    let arr: [uint8; 3] = [10, 20, 30];
+    let i = ref(0);
+    while ref_get(i) < 3 {
+        {
+            string_println(uint8_to_string(array_get(arr, ref_get(i))));
+            ref_set(i, ref_get(i) + 1);
+        }
+    };
+    let floats: [float32; 2] = [1.5, 2.5];
+    string_println(float32_to_string(array_get(floats, 0)));
+    string_println(float32_to_string(array_get(floats, 1)));
+    let longs: [int64; 2] = [100, 200];
+    string_println(int64_to_string(array_get(longs, 0)));
+    string_println(int64_to_string(array_get(longs, 1)));
+}
+
