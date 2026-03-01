@@ -1,0 +1,20 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn identity(x/0: T) -> T {
+  x/0
+}
+
+fn main() -> unit {
+  let a/1 = identity(42) in
+  let _wild0 = string_println(uint8_to_string(a/1)) in
+  let b/2 = identity(3.14) in
+  let _wild1 = string_println(float32_to_string(b/2)) in
+  let c/3 = identity(100) in
+  let _wild2 = string_println(int64_to_string(c/3)) in
+}
