@@ -1413,16 +1413,19 @@ impl Typer {
             self.unify(diagnostics, &ret_ty, hint, self.expr_range(expr_id));
         }
 
-        let param_tys: Vec<tast::Ty> = param_tys.iter().map(|t| self.norm(t)).collect();
-
         let mut args_tast = Vec::new();
         if param_tys.is_empty() {
             for arg in args.iter() {
                 args_tast.push(self.infer_expr(genv, local_env, diagnostics, *arg));
             }
         } else {
-            for (arg, expected_ty) in args.iter().zip(param_tys.iter()) {
-                args_tast.push(self.check_expr(genv, local_env, diagnostics, *arg, expected_ty));
+            for (arg, param_ty) in args.iter().zip(param_tys.iter()) {
+                let expected_ty = self.norm(param_ty);
+                let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                if contains_tvar(&expected_ty) {
+                    self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                }
+                args_tast.push(arg_tast);
             }
         }
 
@@ -2261,11 +2264,14 @@ impl Typer {
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        let params: Vec<tast::Ty> = params.iter().map(|t| self.norm(t)).collect();
-                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                        for (arg, param_ty) in args.iter().zip(params.iter()) {
+                            let expected_ty = self.norm(param_ty);
                             let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
-                            arg_types.push(expected_ty.clone());
+                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                            if contains_tvar(&expected_ty) {
+                                self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                            }
+                            arg_types.push(expected_ty);
                             args_tast.push(arg_tast);
                         }
                     } else {
@@ -2355,10 +2361,13 @@ impl Typer {
                         && params.len() == args.len()
                         && !params.is_empty()
                     {
-                        let params: Vec<tast::Ty> = params.iter().map(|t| self.norm(t)).collect();
-                        for (arg, expected_ty) in args.iter().zip(params.iter()) {
+                        for (arg, param_ty) in args.iter().zip(params.iter()) {
+                            let expected_ty = self.norm(param_ty);
                             let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, expected_ty);
+                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
+                            if contains_tvar(&expected_ty) {
+                                self.unify(diagnostics, &arg_tast.get_ty(), &expected_ty, self.expr_range(*arg));
+                            }
                             arg_types.push(arg_tast.get_ty());
                             args_tast.push(arg_tast);
                         }
