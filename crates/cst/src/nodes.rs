@@ -1881,6 +1881,9 @@ impl IntPat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(IntPat, MySyntaxKind::PATTERN_INT);
@@ -1896,6 +1899,9 @@ pub struct Int8Pat {
 impl Int8Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int8Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
     }
 }
 
@@ -1913,6 +1919,9 @@ impl Int16Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int16Lit)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(Int16Pat, MySyntaxKind::PATTERN_INT16);
@@ -1929,6 +1938,9 @@ impl Int32Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int32Lit)
     }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
+    }
 }
 
 impl_cst_node_simple!(Int32Pat, MySyntaxKind::PATTERN_INT32);
@@ -1944,6 +1956,9 @@ pub struct Int64Pat {
 impl Int64Pat {
     pub fn value(&self) -> Option<MySyntaxToken> {
         support::token(&self.syntax, MySyntaxKind::Int64Lit)
+    }
+    pub fn is_negative(&self) -> bool {
+        support::token(&self.syntax, MySyntaxKind::Minus).is_some()
     }
 }
 

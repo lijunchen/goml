@@ -13,6 +13,7 @@ pub const PATTERN_FIRST: &[TokenKind] = &[
     T![::],
     T!['('],
     T![_],
+    T![-],
     T![int],
     T![int8_lit],
     T![int16_lit],
@@ -42,6 +43,36 @@ fn simple_pattern(p: &mut Parser) -> Option<MarkerClosed> {
             let m = p.open();
             p.advance();
             p.close(m, MySyntaxKind::PATTERN_BOOL)
+        }
+        T![-] => {
+            let m = p.open();
+            p.advance();
+            match p.peek() {
+                T![int] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_INT)
+                }
+                T![int8_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_INT8)
+                }
+                T![int16_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_INT16)
+                }
+                T![int32_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_INT32)
+                }
+                T![int64_lit] => {
+                    p.advance();
+                    p.close(m, MySyntaxKind::PATTERN_INT64)
+                }
+                _ => {
+                    p.error("expected a numeric literal after '-' in pattern");
+                    p.close(m, MySyntaxKind::ErrorTree)
+                }
+            }
         }
         T![int] => {
             let m = p.open();

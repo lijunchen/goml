@@ -1,0 +1,23 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn classify(n/0: int32) -> string {
+    match (n/0 : int32) {
+        -1 => "minus one",
+        0 => "zero",
+        1 => "one",
+        _ : int32 => "other",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((classify : (int32) -> string)(-1));
+    (println : (string) -> unit)((classify : (int32) -> string)(0));
+    (println : (string) -> unit)((classify : (int32) -> string)(1));
+    (println : (string) -> unit)((classify : (int32) -> string)(42));
+}

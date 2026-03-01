@@ -1,0 +1,29 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn classify(n/0: int32) -> string {
+  match n/0 {
+    -1 => {
+      "minus one"
+    },
+    0 => {
+      "zero"
+    },
+    1 => {
+      "one"
+    },
+    _ => "other",
+  }
+}
+
+fn main() -> unit {
+  let _wild0 = println(classify((-1))) in
+  let _wild1 = println(classify(0)) in
+  let _wild2 = println(classify(1)) in
+  let _wild3 = println(classify(42)) in
+}

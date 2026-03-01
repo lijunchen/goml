@@ -2206,33 +2206,40 @@ fn lower_pat(ctx: &mut LowerCtx, node: cst::Pattern) -> Option<ast::Pat> {
                 }
             }
         }
-        cst::Pattern::IntPat(it) => Some(ast::Pat::PInt {
-            value: it.value()?.to_string(),
-            astptr: MySyntaxNodePtr::new(it.syntax()),
-        }),
+        cst::Pattern::IntPat(it) => {
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt {
+                value: format!("{}{}", neg, it.value()?.to_string()),
+                astptr: MySyntaxNodePtr::new(it.syntax()),
+            })
+        }
         cst::Pattern::Int8Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i8").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt8 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt8 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int16Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i16").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt16 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt16 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int32Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i32").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt32 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt32 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::Int64Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let text = it.value()?.to_string();
             let value = text.strip_suffix("i64").unwrap_or(&text).to_string();
-            Some(ast::Pat::PInt64 { value, astptr })
+            let neg = if it.is_negative() { "-" } else { "" };
+            Some(ast::Pat::PInt64 { value: format!("{}{}", neg, value), astptr })
         }
         cst::Pattern::UInt8Pat(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
