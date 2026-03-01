@@ -1,0 +1,13 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let p/0: Pair[uint8, float32] = Pair { first: 10, second: 3.14 };
+    (string_println : (string) -> unit)((uint8_to_string : (uint8) -> string)((p/0 : Pair[uint8, float32]).first));
+    (string_println : (string) -> unit)((float32_to_string : (float32) -> string)((p/0 : Pair[uint8, float32]).second));
+}

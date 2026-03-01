@@ -1,0 +1,13 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let p/0 = Pair { first: 10, second: 3.14 } in
+  let _wild0 = string_println(uint8_to_string(Pair.first(p/0))) in
+  let _wild1 = string_println(float32_to_string(Pair.second(p/0))) in
+}
