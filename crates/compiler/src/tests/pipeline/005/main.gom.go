@@ -34,6 +34,8 @@ type Blue struct {}
 
 func (_ Blue) isColor() {}
 
+type GoError = error
+
 func main0() struct{} {
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
         _0: Blue{},

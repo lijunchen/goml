@@ -27,6 +27,8 @@ type PairData struct {
     tail int64
 }
 
+type GoError = error
+
 func is_special8(value__0 int8) bool {
     var retv6 bool
     var jp8 bool

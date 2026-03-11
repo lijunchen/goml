@@ -28,6 +28,8 @@ type Point__string__int32 struct {
     y int32
 }
 
+type GoError = error
+
 func main0() struct{} {
     var p1__4 Point__int32__string = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_int32__V_string(10, "hello")
     var p2__5 Point__string__string = _goml_inherent_Point_Point_x5b_U_x2c_V_x5d__new__U_string__V_string("goml", "lang")

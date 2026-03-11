@@ -324,6 +324,8 @@ type List struct {
 
 func (_ List) isSExpr() {}
 
+type GoError = error
+
 func is_digit(ch__0 rune) bool {
     var retv149 bool
     var t150 bool = ch__0 >= 48

@@ -33,6 +33,8 @@ type closure_env_main_0 struct {
     counter_0 *ref_int32_x
 }
 
+type GoError = error
+
 type Duration = time.Duration
 
 func main0() struct{} {

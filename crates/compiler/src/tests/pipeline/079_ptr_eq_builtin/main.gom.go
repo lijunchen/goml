@@ -31,6 +31,8 @@ func ptr_eq__Ref_int32(a *ref_int32_x, b *ref_int32_x) bool {
     return a == b
 }
 
+type GoError = error
+
 func main0() struct{} {
     var a__0 *ref_int32_x = ref__Ref_int32(1)
     var b__1 *ref_int32_x = a__0

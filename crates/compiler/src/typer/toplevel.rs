@@ -6,7 +6,10 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     builtins,
-    env::{self, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
+    env::{
+        self, ExternErrorMode, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv,
+        PackageTypeEnv,
+    },
     hir::{self},
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
@@ -79,6 +82,118 @@ fn push_extern_type_binding_conflict(
             conflict.type_name, existing, new
         ),
     );
+}
+
+fn attribute_name(attr: &hir::Attribute) -> Option<&str> {
+    let trimmed = attr.text.trim();
+    let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
+    let name_part = match inner.find('(') {
+        Some(idx) => inner[..idx].trim(),
+        None => inner,
+    };
+    if name_part.is_empty() {
+        None
+    } else {
+        Some(name_part)
+    }
+}
+
+fn extern_error_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -> ExternErrorMode {
+    let mut error_only = false;
+    let mut error_last = false;
+    for attr in attrs {
+        match attribute_name(attr) {
+            Some("go_error") => error_only = true,
+            Some("go_error_last") => error_last = true,
+            _ => {}
+        }
+    }
+
+    if error_only && error_last {
+        super::util::push_error(
+            diagnostics,
+            "extern \"go\" function cannot use both #[go_error] and #[go_error_last]",
+        );
+        return ExternErrorMode::Plain;
+    }
+
+    if error_last {
+        ExternErrorMode::ErrorLast
+    } else if error_only {
+        ExternErrorMode::ErrorOnly
+    } else {
+        ExternErrorMode::Plain
+    }
+}
+
+fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Result" || args.len() != 2 {
+        return None;
+    }
+    Some((&args[0], &args[1]))
+}
+
+fn is_go_error_ty(ty: &tast::Ty) -> bool {
+    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+}
+
+fn validate_extern_error_mode(
+    diagnostics: &mut Diagnostics,
+    extern_name: &str,
+    error_mode: ExternErrorMode,
+    ret_ty: &tast::Ty,
+) {
+    match error_mode {
+        ExternErrorMode::Plain => {}
+        ExternErrorMode::ErrorOnly => {
+            let Some((ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error] must return Result[unit, GoError]",
+                        extern_name
+                    ),
+                );
+                return;
+            };
+            if !matches!(ok_ty, tast::Ty::TUnit) || !is_go_error_ty(err_ty) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error] must return Result[unit, GoError]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+        ExternErrorMode::ErrorLast => {
+            let Some((_ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error_last] must return Result[T, GoError]",
+                        extern_name
+                    ),
+                );
+                return;
+            };
+            if !is_go_error_ty(err_ty) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error_last] must return Result[T, GoError]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+    }
 }
 
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
@@ -826,12 +941,20 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         params: params.clone(),
         ret_ty: Box::new(ret.clone()),
     };
+    let error_mode = extern_error_mode(&ext.attrs, diagnostics);
+    validate_extern_error_mode(
+        diagnostics,
+        &ext.goml_name.to_ident_name(),
+        error_mode,
+        &ret,
+    );
     let go_name = go_symbol_name(&ext.go_symbol);
     env.current_mut().register_extern_function(
         ext.goml_name.to_ident_name(),
         ext.package_path.clone(),
         go_name,
         fn_ty,
+        error_mode,
     );
 }
 

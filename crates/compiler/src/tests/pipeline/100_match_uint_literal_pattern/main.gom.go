@@ -9,6 +9,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var x__0 uint8 = 5
     var jp3 string

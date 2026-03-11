@@ -17,6 +17,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func test_int_comparisons() struct{} {
     var a__0 int32 = 10
     var b__1 int32 = 20

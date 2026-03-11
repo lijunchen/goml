@@ -13,6 +13,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func match_string(s__0 string) int32 {
     var retv6 int32
     var jp8 int32

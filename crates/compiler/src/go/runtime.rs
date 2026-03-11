@@ -86,6 +86,7 @@ pub fn make_runtime() -> Vec<goast::Item> {
         Item::Fn(string_hash()),
         Item::Fn(string_print()),
         Item::Fn(string_println()),
+        Item::Fn(go_error_to_string()),
         Item::Fn(missing()),
     ];
     items.extend(make_builtin_eq_hash_trait_impls());
@@ -280,6 +281,36 @@ fn make_builtin_eq_hash_trait_impls() -> Vec<goast::Item> {
     ));
 
     items
+}
+
+fn go_error_to_string() -> goast::Fn {
+    let go_error_ty = goty::GoType::TName {
+        name: "GoError".to_string(),
+    };
+    goast::Fn {
+        name: "go_error_to_string".to_string(),
+        params: vec![("value".to_string(), go_error_ty.clone())],
+        ret_ty: Some(goty::GoType::TString),
+        body: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(goast::Expr::Call {
+                    func: Box::new(goast::Expr::FieldAccess {
+                        obj: Box::new(goast::Expr::Var {
+                            name: "value".to_string(),
+                            ty: go_error_ty,
+                        }),
+                        field: "Error".to_string(),
+                        ty: goty::GoType::TFunc {
+                            params: vec![],
+                            ret_ty: Box::new(goty::GoType::TString),
+                        },
+                    }),
+                    args: vec![],
+                    ty: goty::GoType::TString,
+                }),
+            }],
+        },
+    }
 }
 
 pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {

@@ -11,6 +11,8 @@ func string_println(s string) struct{} {
 
 type S struct {}
 
+type GoError = error
+
 func _goml_trait_impl_A_S_foo(self__0 S) string {
     var retv3 string
     retv3 = "A"

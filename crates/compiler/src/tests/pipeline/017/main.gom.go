@@ -26,6 +26,8 @@ type Tuple2_int32_int32 struct {
     _1 int32
 }
 
+type GoError = error
+
 func _goml_trait_impl_ToString__x28_int32_x2c_int32_x29__to_string(self__0 Tuple2_int32_int32) string {
     var retv4 string
     retv4 = "(?, ?)"

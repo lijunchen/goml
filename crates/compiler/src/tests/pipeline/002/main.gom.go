@@ -22,6 +22,8 @@ type Tuple2_bool_bool struct {
     _1 bool
 }
 
+type GoError = error
+
 func main0() struct{} {
     var a__0 Tuple2_bool_bool = Tuple2_bool_bool{
         _0: true,

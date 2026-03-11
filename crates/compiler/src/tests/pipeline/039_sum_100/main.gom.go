@@ -13,6 +13,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func my_int_equal(x__0 int32, y__1 int32) bool {
     var retv1 bool
     var t2 bool = x__0 < y__1

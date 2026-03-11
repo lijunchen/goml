@@ -17,6 +17,8 @@ type S struct {
     value int32
 }
 
+type GoError = error
+
 func _goml_trait_impl_ToString_S_to_string(self__0 S) string {
     var retv2 string
     var t3 int32 = self__0.value

@@ -25,6 +25,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func show32(label__0 string, value__1 float32) struct{} {
     var t11 string = float32_to_string(value__1)
     var message__2 string = label__0 + t11

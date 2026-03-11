@@ -17,6 +17,8 @@ type Boxed struct {
     value int32
 }
 
+type GoError = error
+
 func _goml_trait_impl_Display_int32_show(self__0 int32) string {
     var retv5 string
     var t6 string = int32_to_string(self__0)

@@ -56,6 +56,8 @@ type Cons struct {
 
 func (_ Cons) isLineList() {}
 
+type GoError = error
+
 func _goml_trait_impl_ToString_Color_to_string(self__0 Color) string {
     var retv12 string
     var jp14 string

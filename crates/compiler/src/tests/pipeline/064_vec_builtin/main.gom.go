@@ -13,6 +13,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var v__0 []int32 = nil
     var v__1 []int32 = append(v__0, 10)

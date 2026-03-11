@@ -17,6 +17,8 @@ type Boxed struct {
     value int32
 }
 
+type GoError = error
+
 func _goml_inherent_Boxed_Boxed_format(self__0 Boxed) string {
     var retv3 string
     retv3 = "inherent"

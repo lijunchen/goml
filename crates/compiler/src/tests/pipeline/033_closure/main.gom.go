@@ -55,6 +55,8 @@ type Cons struct {
 
 func (_ Cons) isIntList() {}
 
+type GoError = error
+
 func test() struct{} {
     var y__0 int32 = 3
     var z__1 int32 = 5

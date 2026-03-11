@@ -56,6 +56,8 @@ func ref_set__Ref_bool(reference *ref_bool_x, value bool) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func sum_to(limit__0 int32) int32 {
     var retv11 int32
     var acc__1 *ref_int32_x = ref__Ref_int32(0)

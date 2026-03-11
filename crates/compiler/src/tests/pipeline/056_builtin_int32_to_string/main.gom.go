@@ -13,6 +13,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var value__0 int32 = 42
     var text__1 string = int32_to_string(value__0)

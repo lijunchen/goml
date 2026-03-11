@@ -108,6 +108,11 @@ enum Result[T, E] {
     Err(E),
 }
 
+extern "go" "" "error" type GoError
+
+#[builtin]
+extern fn go_error_to_string(value: GoError) -> string
+
 #[builtin]
 extern fn vec_new[T]() -> Vec[T]
 #[builtin]
@@ -165,6 +170,12 @@ impl ToString for bool {
 impl ToString for string {
     fn to_string(self: string) -> string {
         self
+    }
+}
+
+impl ToString for GoError {
+    fn to_string(self: GoError) -> string {
+        go_error_to_string(self)
     }
 }
 

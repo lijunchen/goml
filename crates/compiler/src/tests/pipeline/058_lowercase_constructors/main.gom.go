@@ -19,6 +19,8 @@ type none struct {}
 
 func (_ none) isoption__int32() {}
 
+type GoError = error
+
 func make_some(value__0 int32) option__int32 {
     var retv8 option__int32
     var t9 option__int32 = some{

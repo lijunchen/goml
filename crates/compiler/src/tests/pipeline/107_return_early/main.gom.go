@@ -20,6 +20,8 @@ func string_println(s string) struct{} {
 
 type closure_env_f_0 struct {}
 
+type GoError = error
+
 func early(x__0 int32) int32 {
     var retv19 int32
     var t24 bool = x__0 < 0

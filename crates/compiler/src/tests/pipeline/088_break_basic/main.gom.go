@@ -32,6 +32,8 @@ func ref_set__Ref_int32(reference *ref_int32_x, value int32) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var i__0 *ref_int32_x = ref__Ref_int32(0)
     Loop_loop7:

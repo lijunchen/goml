@@ -10,6 +10,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 type Time = time.Time
 
 type Duration = time.Duration

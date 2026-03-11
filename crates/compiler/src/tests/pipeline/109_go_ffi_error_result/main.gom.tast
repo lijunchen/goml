@@ -1,0 +1,35 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "time" "Duration" type Duration
+
+extern "go" "time" parse_duration(s: string) -> Result[Duration, GoError]
+
+extern "go" "os" setenv(key: string, value: string) -> Result[unit, GoError]
+
+extern "go" "fmt" format_duration(format: string, value: Duration) -> string
+
+fn describe_duration(input/0: string) -> string {
+    match (parse_duration : (string) -> Result[Duration, GoError])((input/0 : string)) {
+        Result::Ok(value/1: Duration) => (format_duration : (string, Duration) -> string)("ok=%v", (value/1 : Duration)),
+        Result::Err(err/2: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/2 : GoError)),
+    }
+}
+
+fn describe_setenv() -> string {
+    match (setenv : (string, string) -> Result[unit, GoError])("GOML_FFI_TEST", "ok") {
+        Result::Ok(()) => "setenv=ok",
+        Result::Err(err/3: GoError) => "setenv_err=" + (ToString::to_string : (GoError) -> string)((err/3 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((describe_duration : (string) -> string)("1.5s"));
+    (println : (string) -> unit)((describe_duration : (string) -> string)("bad"));
+    (println : (string) -> unit)((describe_setenv : () -> string)());
+}

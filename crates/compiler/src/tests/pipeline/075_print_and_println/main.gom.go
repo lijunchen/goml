@@ -48,6 +48,8 @@ type S struct {
     value int32
 }
 
+type GoError = error
+
 type dyn__ToString_vtable struct {
     to_string func(any) string
 }

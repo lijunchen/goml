@@ -32,6 +32,8 @@ type Location struct {
 
 func (_ Location) isShape() {}
 
+type GoError = error
+
 func _goml_trait_impl_TypeName_Point_type_name(self__0 Point) string {
     var retv8 string
     var mtmp0 Point = self__0

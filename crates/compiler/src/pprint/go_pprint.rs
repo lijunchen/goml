@@ -473,6 +473,13 @@ impl Stmt {
                 .append(RcDoc::text("="))
                 .append(RcDoc::space())
                 .append(value.to_doc(goenv)),
+            Stmt::MultiAssignment { names, value } => {
+                RcDoc::intersperse(names.iter().map(RcDoc::text), RcDoc::text(", "))
+                    .append(RcDoc::space())
+                    .append(RcDoc::text("="))
+                    .append(RcDoc::space())
+                    .append(value.to_doc(goenv))
+            }
             Stmt::FieldAssign { target, value } => target
                 .to_doc(goenv)
                 .append(RcDoc::space())

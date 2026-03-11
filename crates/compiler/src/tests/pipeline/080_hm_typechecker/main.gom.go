@@ -244,6 +244,8 @@ type Result__Typ__string_Err struct {
 
 func (_ Result__Typ__string_Err) isResult__Typ__string() {}
 
+type GoError = error
+
 func state_new() CheckerState {
     var retv205 CheckerState
     var t206 *ref_int32_x = ref__Ref_int32(0)

@@ -21,6 +21,8 @@ type Wrap__string struct {
     value string
 }
 
+type GoError = error
+
 func main0() struct{} {
     var a__1 Wrap__int32 = Wrap__int32{
         value: 1,

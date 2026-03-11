@@ -1,7 +1,9 @@
 use crate::{
     anf::{self, GlobalAnfEnv},
     common::{Constructor, Prim},
-    env::{EnumDef, Gensym, GlobalTypeEnv, InherentImplKey, StructDef},
+    env::{
+        EnumDef, ExternErrorMode, ExternFunc, Gensym, GlobalTypeEnv, InherentImplKey, StructDef,
+    },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     go::mangle::{encode_ty, go_ident},
     lift::{GlobalLiftEnv, is_closure_env_struct},
@@ -244,10 +246,23 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
 }
 
 fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> String {
-    let name = ty.get_constr_name_unsafe();
-    if let Some(def) = goenv.get_enum(&TastIdent::new(&name)) {
+    let base_name = ty.get_constr_name_unsafe();
+    let specialized_name = match tast_ty_to_go_type(ty) {
+        goty::GoType::TName { name } => Some(name),
+        _ => None,
+    };
+
+    if let Some(name) = specialized_name.as_deref()
+        && let Some(def) = goenv.get_enum(&TastIdent::new(name))
+    {
         let (vname, _fields) = &def.variants[index];
-        return variant_struct_name(goenv, &name, &vname.0);
+        return variant_struct_name(goenv, name, &vname.0);
+    }
+
+    if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
+        let (vname, _fields) = &def.variants[index];
+        let enum_name = specialized_name.unwrap_or_else(|| go_ident(&base_name));
+        return variant_struct_name(goenv, &enum_name, &vname.0);
     }
     panic!(
         "Cannot resolve variant name for ty {:?} index {}",
@@ -278,6 +293,192 @@ fn go_package_alias(package_path: &str) -> String {
         alias.insert(0, '_');
     }
     alias
+}
+
+fn extern_wrapper_fn_name(goml_name: &str) -> String {
+    go_ident(&format!("{}_ffi_wrap", goml_name))
+}
+
+fn extern_target_name(extern_fn: &ExternFunc) -> String {
+    if extern_fn.package_path.is_empty() {
+        extern_fn.go_name.clone()
+    } else {
+        let alias = go_package_alias(&extern_fn.package_path);
+        format!("{}.{}", alias, extern_fn.go_name)
+    }
+}
+
+fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Result" || args.len() != 2 {
+        return None;
+    }
+    Some((&args[0], &args[1]))
+}
+
+fn result_variant_expr(
+    goenv: &GlobalGoEnv,
+    result_ty: &tast::Ty,
+    variant_index: usize,
+    payload: goast::Expr,
+) -> goast::Expr {
+    goast::Expr::StructLiteral {
+        fields: vec![("_0".to_string(), payload)],
+        ty: variant_ty_by_index(goenv, result_ty, variant_index),
+    }
+}
+
+fn gen_extern_wrapper_fn(
+    goenv: &GlobalGoEnv,
+    goml_name: &str,
+    extern_fn: &ExternFunc,
+) -> Option<goast::Fn> {
+    if extern_fn.error_mode == ExternErrorMode::Plain {
+        return None;
+    }
+
+    let tast::Ty::TFunc { params, ret_ty } = &extern_fn.ty else {
+        panic!(
+            "extern function {} does not have a function type",
+            goml_name
+        );
+    };
+    let result_ty = ret_ty.as_ref().clone();
+    let Some((ok_ty, err_ty)) = extract_result_tys(&result_ty) else {
+        panic!(
+            "extern function {} with error mode {:?} must return Result",
+            goml_name, extern_fn.error_mode
+        );
+    };
+
+    let go_params = params
+        .iter()
+        .enumerate()
+        .map(|(index, ty)| (format!("p{}", index), tast_ty_to_go_type(ty)))
+        .collect::<Vec<_>>();
+    let call_args = go_params
+        .iter()
+        .map(|(name, ty)| goast::Expr::Var {
+            name: name.clone(),
+            ty: ty.clone(),
+        })
+        .collect::<Vec<_>>();
+    let direct_call_expr = goast::Expr::Call {
+        func: Box::new(goast::Expr::Var {
+            name: extern_target_name(extern_fn),
+            ty: goty::GoType::TFunc {
+                params: go_params.iter().map(|(_, ty)| ty.clone()).collect(),
+                ret_ty: Box::new(match extern_fn.error_mode {
+                    ExternErrorMode::Plain => tast_ty_to_go_type(&result_ty),
+                    ExternErrorMode::ErrorOnly => tast_ty_to_go_type(err_ty),
+                    ExternErrorMode::ErrorLast => goty::GoType::TVoid,
+                }),
+            },
+        }),
+        args: call_args,
+        ty: match extern_fn.error_mode {
+            ExternErrorMode::ErrorOnly => tast_ty_to_go_type(err_ty),
+            ExternErrorMode::ErrorLast => goty::GoType::TVoid,
+            ExternErrorMode::Plain => tast_ty_to_go_type(&result_ty),
+        },
+    };
+
+    let err_name = "ffi_err".to_string();
+    let err_go_ty = tast_ty_to_go_type(err_ty);
+    let err_result_expr = result_variant_expr(
+        goenv,
+        &result_ty,
+        1,
+        goast::Expr::Var {
+            name: err_name.clone(),
+            ty: err_go_ty.clone(),
+        },
+    );
+    let ok_payload = if extern_fn.error_mode == ExternErrorMode::ErrorOnly {
+        goast::Expr::Unit {
+            ty: goty::GoType::TUnit,
+        }
+    } else {
+        let ok_name = "ffi_value".to_string();
+        goast::Expr::Var {
+            name: ok_name,
+            ty: tast_ty_to_go_type(ok_ty),
+        }
+    };
+    let ok_result_expr = result_variant_expr(goenv, &result_ty, 0, ok_payload);
+
+    let mut stmts = Vec::new();
+    match extern_fn.error_mode {
+        ExternErrorMode::ErrorOnly => {
+            stmts.push(goast::Stmt::VarDecl {
+                name: err_name.clone(),
+                ty: err_go_ty.clone(),
+                value: Some(direct_call_expr),
+            });
+        }
+        ExternErrorMode::ErrorLast => {
+            stmts.push(goast::Stmt::VarDecl {
+                name: "ffi_value".to_string(),
+                ty: tast_ty_to_go_type(ok_ty),
+                value: None,
+            });
+            stmts.push(goast::Stmt::VarDecl {
+                name: err_name.clone(),
+                ty: err_go_ty.clone(),
+                value: None,
+            });
+            stmts.push(goast::Stmt::MultiAssignment {
+                names: vec!["ffi_value".to_string(), err_name.clone()],
+                value: direct_call_expr,
+            });
+        }
+        ExternErrorMode::Plain => {}
+    }
+
+    stmts.push(goast::Stmt::If {
+        cond: goast::Expr::BinaryOp {
+            op: goast::GoBinaryOp::NotEq,
+            lhs: Box::new(goast::Expr::Var {
+                name: err_name.clone(),
+                ty: err_go_ty.clone(),
+            }),
+            rhs: Box::new(goast::Expr::Nil { ty: err_go_ty }),
+            ty: goty::GoType::TBool,
+        },
+        then: goast::Block {
+            stmts: vec![goast::Stmt::Return {
+                expr: Some(err_result_expr),
+            }],
+        },
+        else_: None,
+    });
+    stmts.push(goast::Stmt::Return {
+        expr: Some(ok_result_expr),
+    });
+
+    Some(goast::Fn {
+        name: extern_wrapper_fn_name(goml_name),
+        params: go_params,
+        ret_ty: Some(tast_ty_to_go_type(&result_ty)),
+        body: goast::Block { stmts },
+    })
+}
+
+fn gen_extern_wrapper_fns(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
+    goenv
+        .genv
+        .value_env
+        .extern_funcs
+        .iter()
+        .filter_map(|(goml_name, extern_fn)| {
+            gen_extern_wrapper_fn(goenv, goml_name, extern_fn).map(goast::Item::Fn)
+        })
+        .collect()
 }
 
 fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tast::Ty {
@@ -2993,10 +3194,14 @@ fn compile_call(
     if let anf::ImmExpr::Var { id, .. } = func
         && let Some(extern_fn) = goenv.genv.value_env.extern_funcs.get(&id.0)
     {
-        let alias = go_package_alias(&extern_fn.package_path);
+        let callee_name = if extern_fn.error_mode == ExternErrorMode::Plain {
+            extern_target_name(extern_fn)
+        } else {
+            extern_wrapper_fn_name(&id.0)
+        };
         return goast::Expr::Call {
             func: Box::new(goast::Expr::Var {
-                name: format!("{}.{}", alias, extern_fn.go_name),
+                name: callee_name,
                 ty: func_ty,
             }),
             args: compiled_args,
@@ -4495,7 +4700,9 @@ pub fn go_file(
 
         let mut extra_specs = Vec::new();
         for extern_fn in goenv.genv.value_env.extern_funcs.values() {
-            if existing_imports.insert(extern_fn.package_path.clone()) {
+            if !extern_fn.package_path.is_empty()
+                && existing_imports.insert(extern_fn.package_path.clone())
+            {
                 extra_specs.push(goast::ImportSpec {
                     alias: None,
                     path: extern_fn.package_path.clone(),
@@ -4504,6 +4711,7 @@ pub fn go_file(
         }
         for extern_ty in goenv.genv.type_env.extern_types.values() {
             if let Some(package_path) = &extern_ty.package_path
+                && !package_path.is_empty()
                 && existing_imports.insert(package_path.clone())
             {
                 extra_specs.push(goast::ImportSpec {
@@ -4563,6 +4771,7 @@ pub fn go_file(
     toplevels.extend(gen_dyn_type_definitions(&goenv, &dyn_req));
     let impl_name_map = build_trait_impl_name_map(&file.toplevels);
     toplevels.extend(gen_dyn_helper_fns(&goenv, &dyn_req, &impl_name_map));
+    toplevels.extend(gen_extern_wrapper_fns(&goenv));
     for item in file.toplevels {
         let gof = compile_fn(&goenv, gensym, item);
         toplevels.push(goast::Item::Fn(gof));
@@ -4671,9 +4880,15 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
 
     for (name, ext) in goenv.genv.type_env.extern_types.iter() {
         if let Some(package_path) = &ext.package_path {
-            let alias = go_package_alias(package_path);
-            let go_ty = goty::GoType::TName {
-                name: format!("{}.{}", alias, ext.go_name),
+            let go_ty = if package_path.is_empty() {
+                goty::GoType::TName {
+                    name: ext.go_name.clone(),
+                }
+            } else {
+                let alias = go_package_alias(package_path);
+                goty::GoType::TName {
+                    name: format!("{}.{}", alias, ext.go_name),
+                }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {
                 name: go_ident(name),

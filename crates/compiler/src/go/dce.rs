@@ -52,6 +52,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
         ast::Stmt::Go { call } => expr_has_label_or_goto(call),
         ast::Stmt::VarDecl { value, .. } => value.as_ref().is_some_and(expr_has_label_or_goto),
         ast::Stmt::Assignment { value, .. } => expr_has_label_or_goto(value),
+        ast::Stmt::MultiAssignment { value, .. } => expr_has_label_or_goto(value),
         ast::Stmt::IndexAssign {
             array,
             index,
@@ -222,6 +223,28 @@ fn dce_block_with_live(
                         }
                         out.push(emit_side_effect(value));
                     }
+                }
+            }
+            ast::Stmt::MultiAssignment { names, value } => {
+                let value = dce_expr(value);
+                let used_rhs = vars_used_in_expr(&value);
+                let keep_stmt = names.iter().any(|name| name == "_" || live.contains(name));
+                if keep_stmt {
+                    for u in &used_rhs {
+                        live.insert(u.clone());
+                    }
+                    for name in &names {
+                        if name != "_" {
+                            live.remove(name);
+                            needs_decl.insert(name.clone());
+                        }
+                    }
+                    out.push(ast::Stmt::MultiAssignment { names, value });
+                } else if expr_has_side_effects(&value) {
+                    for u in &used_rhs {
+                        live.insert(u.clone());
+                    }
+                    out.push(emit_side_effect(value));
                 }
             }
             ast::Stmt::IndexAssign {
@@ -472,6 +495,13 @@ fn assigned_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Assignment { name, .. } => {
                 s.insert(name.clone());
             }
+            ast::Stmt::MultiAssignment { names, .. } => {
+                for name in names {
+                    if name != "_" {
+                        s.insert(name.clone());
+                    }
+                }
+            }
             ast::Stmt::If { then, else_, .. } => {
                 s.extend(assigned_vars_in_block(then));
                 if let Some(b) = else_ {
@@ -563,6 +593,9 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                         }
                     }
                     ast::Stmt::Assignment { value, .. } => {
+                        used.extend(vars_used_in_expr(value));
+                    }
+                    ast::Stmt::MultiAssignment { value, .. } => {
                         used.extend(vars_used_in_expr(value));
                     }
                     ast::Stmt::IndexAssign {
@@ -673,6 +706,9 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
                 }
             }
             ast::Stmt::Assignment { value, .. } => {
+                used.extend(vars_used_in_expr(value));
+            }
+            ast::Stmt::MultiAssignment { value, .. } => {
                 used.extend(vars_used_in_expr(value));
             }
             ast::Stmt::IndexAssign {
@@ -809,6 +845,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
             value.as_ref().map(expr_has_side_effects).unwrap_or(false)
         }
         ast::Stmt::Assignment { value, .. } => expr_has_side_effects(value),
+        ast::Stmt::MultiAssignment { value, .. } => expr_has_side_effects(value),
         ast::Stmt::IndexAssign { .. } => true,
         ast::Stmt::PointerAssign { .. } => true,
         ast::Stmt::FieldAssign { .. } => true,
@@ -934,6 +971,7 @@ fn collect_called_in_stmt(
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_called_in_expr(value, calls, fn_names),
+        ast::Stmt::MultiAssignment { value, .. } => collect_called_in_expr(value, calls, fn_names),
         ast::Stmt::IndexAssign {
             array,
             index,
@@ -1156,6 +1194,7 @@ fn collect_packages_in_stmt(
             }
         }
         ast::Stmt::Assignment { value, .. } => collect_packages_in_expr(value, imports, used),
+        ast::Stmt::MultiAssignment { value, .. } => collect_packages_in_expr(value, imports, used),
         ast::Stmt::IndexAssign {
             array,
             index,
