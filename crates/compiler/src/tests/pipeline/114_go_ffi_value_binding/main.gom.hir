@@ -1,0 +1,16 @@
+package main
+file main.gom
+  extern "go" "io" "Reader" type Reader
+    
+    #[go_value]
+extern "go" "time" "RFC3339" rfc3339() -> string
+    
+    #[go_value]
+extern "go" "os" "Stdin" stdin() -> Reader
+    
+    extern "go" "fmt" "Sprintf" format_reader(format: string, value: Reader) -> string
+    
+    fn main() -> unit {
+        println(def/1/1());
+        println(def/1/3("stdin=%T", def/1/2()));
+    }

@@ -1,0 +1,20 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "io" "Reader" type Reader
+
+extern "go" "time" rfc3339() -> string
+
+extern "go" "os" stdin() -> Reader
+
+extern "go" "fmt" format_reader(format: string, value: Reader) -> string
+
+fn main() -> unit {
+    (println : (string) -> unit)((rfc3339 : () -> string)());
+    (println : (string) -> unit)((format_reader : (string, Reader) -> string)("stdin=%T", (stdin : () -> Reader)()));
+}
