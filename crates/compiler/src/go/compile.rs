@@ -2,7 +2,8 @@ use crate::{
     anf::{self, GlobalAnfEnv},
     common::{Constructor, Prim},
     env::{
-        EnumDef, ExternFunc, ExternReturnMode, Gensym, GlobalTypeEnv, InherentImplKey, StructDef,
+        EnumDef, ExternBindingMode, ExternFunc, ExternReturnMode, Gensym, GlobalTypeEnv,
+        InherentImplKey, StructDef,
     },
     go::goast::{self, go_type_name_for, tast_ty_to_go_type},
     go::mangle::{encode_ty, go_ident},
@@ -677,6 +678,13 @@ fn compile_extern_call(
     call_args: Vec<goast::Expr>,
     call_ret_ty: goty::GoType,
 ) -> goast::Expr {
+    if extern_fn.binding_mode == ExternBindingMode::Value {
+        panic!(
+            "extern value binding {} cannot be called directly without a wrapper",
+            extern_fn.go_name
+        );
+    }
+
     if let Some(method_name) = parse_go_method_symbol(&extern_fn.go_name) {
         let mut args_iter = call_args.into_iter();
         let receiver = args_iter.next().unwrap_or_else(|| {
@@ -711,6 +719,18 @@ fn compile_extern_call(
         args: call_args,
         ty: call_ret_ty,
     }
+}
+
+fn compile_extern_value(extern_fn: &ExternFunc, value_ty: goty::GoType) -> goast::Expr {
+    goast::Expr::Var {
+        name: extern_target_name(extern_fn),
+        ty: value_ty,
+    }
+}
+
+fn extern_requires_wrapper(extern_fn: &ExternFunc) -> bool {
+    extern_fn.binding_mode == ExternBindingMode::Value
+        || extern_fn.return_mode != ExternReturnMode::Plain
 }
 
 fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
@@ -759,7 +779,7 @@ fn gen_extern_wrapper_fn(
     goml_name: &str,
     extern_fn: &ExternFunc,
 ) -> Option<goast::Fn> {
-    if extern_fn.return_mode == ExternReturnMode::Plain {
+    if !extern_requires_wrapper(extern_fn) {
         return None;
     }
 
@@ -783,6 +803,22 @@ fn gen_extern_wrapper_fn(
             ty: ty.clone(),
         })
         .collect::<Vec<_>>();
+    if extern_fn.binding_mode == ExternBindingMode::Value {
+        return Some(goast::Fn {
+            name: extern_wrapper_fn_name(goml_name),
+            params: go_params,
+            ret_ty: Some(tast_ty_to_go_type(&wrapper_ret_ty)),
+            body: goast::Block {
+                stmts: vec![goast::Stmt::Return {
+                    expr: Some(compile_extern_value(
+                        extern_fn,
+                        tast_ty_to_go_type(&wrapper_ret_ty),
+                    )),
+                }],
+            },
+        });
+    }
+
     let wrapper = match extern_fn.return_mode {
         ExternReturnMode::Plain => return None,
         ExternReturnMode::ErrorOnly | ExternReturnMode::ErrorLast => {
@@ -2475,12 +2511,26 @@ mod legacy_anf_codegen {
                 } else if let anf::ImmExpr::ImmVar { name, .. } = &func
                     && let Some(extern_fn) = goenv.genv.value_env.extern_funcs.get(name)
                 {
-                    compile_extern_call(
-                        extern_fn,
-                        &param_types,
-                        compiled_args,
-                        tast_ty_to_go_type(ty),
-                    )
+                    if extern_requires_wrapper(extern_fn) {
+                        goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: extern_wrapper_fn_name(name),
+                                ty: goty::GoType::TFunc {
+                                    params: param_types.iter().map(tast_ty_to_go_type).collect(),
+                                    ret_ty: Box::new(tast_ty_to_go_type(ty)),
+                                },
+                            }),
+                            args: compiled_args,
+                            ty: tast_ty_to_go_type(ty),
+                        }
+                    } else {
+                        compile_extern_call(
+                            extern_fn,
+                            &param_types,
+                            compiled_args,
+                            tast_ty_to_go_type(ty),
+                        )
+                    }
                 } else {
                     goast::Expr::Call {
                         func: Box::new(compile_imm(goenv, func)),
@@ -3676,7 +3726,7 @@ fn compile_call(
     if let anf::ImmExpr::Var { id, .. } = func
         && let Some(extern_fn) = goenv.genv.value_env.extern_funcs.get(&id.0)
     {
-        if extern_fn.return_mode == ExternReturnMode::Plain {
+        if !extern_requires_wrapper(extern_fn) {
             return compile_extern_call(
                 extern_fn,
                 &param_types,

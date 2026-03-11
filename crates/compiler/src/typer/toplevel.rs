@@ -7,8 +7,8 @@ use parser::{Diagnostic, Diagnostics};
 use crate::{
     builtins,
     env::{
-        self, ExternReturnMode, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv,
-        PackageTypeEnv,
+        self, ExternBindingMode, ExternReturnMode, ExternTypeBindingConflict, FnOrigin, FnScheme,
+        GlobalTypeEnv, PackageTypeEnv,
     },
     hir::{self},
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
@@ -129,6 +129,33 @@ fn extern_return_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -
     } else {
         ExternReturnMode::Plain
     }
+}
+
+fn extern_binding_mode(
+    attrs: &[hir::Attribute],
+    return_mode: ExternReturnMode,
+    diagnostics: &mut Diagnostics,
+) -> ExternBindingMode {
+    let mut go_value = false;
+    for attr in attrs {
+        if matches!(attribute_name(attr), Some("go_value")) {
+            go_value = true;
+        }
+    }
+
+    if !go_value {
+        return ExternBindingMode::Call;
+    }
+
+    if return_mode != ExternReturnMode::Plain {
+        super::util::push_error(
+            diagnostics,
+            "extern \"go\" function #[go_value] cannot be combined with #[go_error], #[go_error_last], or #[go_option_last]",
+        );
+        return ExternBindingMode::Call;
+    }
+
+    ExternBindingMode::Value
 }
 
 fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
@@ -253,6 +280,26 @@ fn validate_extern_return_mode(
                 );
             }
         }
+    }
+}
+
+fn validate_extern_binding_mode(
+    diagnostics: &mut Diagnostics,
+    extern_name: &str,
+    binding_mode: ExternBindingMode,
+    params: &[tast::Ty],
+) -> ExternBindingMode {
+    if binding_mode == ExternBindingMode::Value && !params.is_empty() {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" function {} with #[go_value] must have no parameters",
+                extern_name
+            ),
+        );
+        ExternBindingMode::Call
+    } else {
+        binding_mode
     }
 }
 
@@ -1002,6 +1049,13 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         ret_ty: Box::new(ret.clone()),
     };
     let return_mode = extern_return_mode(&ext.attrs, diagnostics);
+    let binding_mode = extern_binding_mode(&ext.attrs, return_mode, diagnostics);
+    let binding_mode = validate_extern_binding_mode(
+        diagnostics,
+        &ext.goml_name.to_ident_name(),
+        binding_mode,
+        &params,
+    );
     validate_extern_return_mode(
         diagnostics,
         &ext.goml_name.to_ident_name(),
@@ -1027,6 +1081,7 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         ext.package_path.clone(),
         go_name,
         fn_ty,
+        binding_mode,
         return_mode,
     );
 }

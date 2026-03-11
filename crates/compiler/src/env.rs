@@ -30,6 +30,7 @@ pub struct ExternFunc {
     pub package_path: String,
     pub go_name: String,
     pub ty: tast::Ty,
+    pub binding_mode: ExternBindingMode,
     pub return_mode: ExternReturnMode,
 }
 
@@ -46,6 +47,12 @@ pub enum ExternReturnMode {
     ErrorOnly,
     ErrorLast,
     OptionLast,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum ExternBindingMode {
+    Call,
+    Value,
 }
 
 #[derive(Debug, Clone)]
@@ -1050,6 +1057,7 @@ impl GlobalTypeEnv {
         package_path: String,
         go_name: String,
         ty: tast::Ty,
+        binding_mode: ExternBindingMode,
         return_mode: ExternReturnMode,
     ) {
         self.value_env.funcs.insert(
@@ -1068,6 +1076,7 @@ impl GlobalTypeEnv {
                 package_path,
                 go_name,
                 ty,
+                binding_mode,
                 return_mode,
             },
         );

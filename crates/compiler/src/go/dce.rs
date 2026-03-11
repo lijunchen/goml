@@ -1343,11 +1343,13 @@ fn collect_packages_in_expr(
             collect_packages_in_expr(lhs, imports, used);
             collect_packages_in_expr(rhs, imports, used);
         }
+        ast::Expr::Var { name, .. } => {
+            collect_packages_in_raw_go_type_name(name, imports, used);
+        }
         ast::Expr::Nil { .. }
         | ast::Expr::Make { .. }
         | ast::Expr::Void { .. }
         | ast::Expr::Unit { .. }
-        | ast::Expr::Var { .. }
         | ast::Expr::Bool { .. }
         | ast::Expr::Int { .. }
         | ast::Expr::Float { .. }
