@@ -308,23 +308,311 @@ fn extern_target_name(extern_fn: &ExternFunc) -> String {
     }
 }
 
+fn qualify_go_type_expr(package_alias: &str, go_name: &str) -> String {
+    let mut parser = GoTypeExprQualifier::new(package_alias, go_name);
+    parser.parse().unwrap_or_else(|| go_name.trim().to_string())
+}
+
+#[derive(Clone)]
+struct GoTypeExprQualifier<'a> {
+    package_alias: &'a str,
+    input: &'a str,
+    pos: usize,
+}
+
+impl<'a> GoTypeExprQualifier<'a> {
+    fn new(package_alias: &'a str, input: &'a str) -> Self {
+        Self {
+            package_alias,
+            input,
+            pos: 0,
+        }
+    }
+
+    fn parse(&mut self) -> Option<String> {
+        let ty = self.parse_type()?;
+        self.skip_ws();
+        (self.pos == self.input.len()).then_some(ty)
+    }
+
+    fn parse_type(&mut self) -> Option<String> {
+        self.skip_ws();
+
+        if self.consume_str("<-chan") {
+            let elem = self.parse_type()?;
+            return Some(format!("<-chan {}", elem));
+        }
+
+        if self.consume_keyword("chan") {
+            self.skip_ws();
+            if self.consume_str("<-") {
+                let elem = self.parse_type()?;
+                return Some(format!("chan<- {}", elem));
+            }
+            let elem = self.parse_type()?;
+            return Some(format!("chan {}", elem));
+        }
+
+        if self.consume_char('*') {
+            let elem = self.parse_type()?;
+            return Some(format!("*{}", elem));
+        }
+
+        if self.consume_str("[]") {
+            let elem = self.parse_type()?;
+            return Some(format!("[]{}", elem));
+        }
+
+        if self.peek_char() == Some('[') {
+            self.pos += 1;
+            let start = self.pos;
+            while let Some(ch) = self.peek_char() {
+                if ch == ']' {
+                    let len = self.input[start..self.pos].trim();
+                    self.pos += 1;
+                    let elem = self.parse_type()?;
+                    return Some(format!("[{}]{}", len, elem));
+                }
+                self.pos += ch.len_utf8();
+            }
+            return None;
+        }
+
+        if self.consume_keyword("map") {
+            self.skip_ws();
+            if !self.consume_char('[') {
+                return None;
+            }
+            let key = self.parse_type()?;
+            self.skip_ws();
+            if !self.consume_char(']') {
+                return None;
+            }
+            let value = self.parse_type()?;
+            return Some(format!("map[{}]{}", key, value));
+        }
+
+        if self.consume_keyword("func") {
+            return self
+                .parse_func_signature()
+                .map(|sig| format!("func{}", sig));
+        }
+
+        if self.consume_char('(') {
+            let inner = self.parse_type()?;
+            self.skip_ws();
+            if !self.consume_char(')') {
+                return None;
+            }
+            return Some(format!("({})", inner));
+        }
+
+        if self.consume_keyword("struct") || self.consume_keyword("interface") {
+            return None;
+        }
+
+        self.parse_named_type()
+    }
+
+    fn parse_func_signature(&mut self) -> Option<String> {
+        self.skip_ws();
+        if !self.consume_char('(') {
+            return None;
+        }
+        let params = self.parse_type_list(')')?;
+        let mut sig = format!("({})", params.join(", "));
+        self.skip_ws();
+        if self.peek_char() == Some('(') {
+            self.pos += 1;
+            let results = self.parse_type_list(')')?;
+            sig.push(' ');
+            sig.push('(');
+            sig.push_str(&results.join(", "));
+            sig.push(')');
+            return Some(sig);
+        }
+        if self.can_start_type() {
+            let result = self.parse_type()?;
+            sig.push(' ');
+            sig.push_str(&result);
+        }
+        Some(sig)
+    }
+
+    fn parse_type_list(&mut self, end: char) -> Option<Vec<String>> {
+        self.skip_ws();
+        if self.consume_char(end) {
+            return Some(Vec::new());
+        }
+
+        let mut tys = Vec::new();
+        loop {
+            tys.push(self.parse_type()?);
+            self.skip_ws();
+            if self.consume_char(',') {
+                self.skip_ws();
+                if self.consume_char(end) {
+                    break;
+                }
+                continue;
+            }
+            if !self.consume_char(end) {
+                return None;
+            }
+            break;
+        }
+        Some(tys)
+    }
+
+    fn parse_named_type(&mut self) -> Option<String> {
+        let name = self.parse_ident()?;
+        self.skip_ws();
+        if self.consume_char('.') {
+            let selector = self.parse_ident()?;
+            return Some(format!("{}.{}", name, selector));
+        }
+        if is_go_predeclared_type(&name) {
+            return Some(name);
+        }
+        Some(format!("{}.{}", self.package_alias, name))
+    }
+
+    fn can_start_type(&self) -> bool {
+        let mut cursor = self.clone();
+        cursor.skip_ws();
+        match cursor.peek_char() {
+            Some('*' | '[' | '(') => true,
+            Some('<') => cursor.input[cursor.pos..].starts_with("<-chan"),
+            Some(ch) if is_go_ident_start(ch) => true,
+            _ => false,
+        }
+    }
+
+    fn parse_ident(&mut self) -> Option<String> {
+        self.skip_ws();
+        let start = self.pos;
+        let first = self.peek_char()?;
+        if !is_go_ident_start(first) {
+            return None;
+        }
+        self.pos += first.len_utf8();
+        while let Some(ch) = self.peek_char() {
+            if !is_go_ident_continue(ch) {
+                break;
+            }
+            self.pos += ch.len_utf8();
+        }
+        Some(self.input[start..self.pos].to_string())
+    }
+
+    fn skip_ws(&mut self) {
+        while let Some(ch) = self.peek_char() {
+            if !ch.is_whitespace() {
+                break;
+            }
+            self.pos += ch.len_utf8();
+        }
+    }
+
+    fn consume_keyword(&mut self, kw: &str) -> bool {
+        let mut cursor = self.clone();
+        cursor.skip_ws();
+        if !cursor.input[cursor.pos..].starts_with(kw) {
+            return false;
+        }
+        let end = cursor.pos + kw.len();
+        if cursor
+            .input
+            .get(end..)
+            .and_then(|rest| rest.chars().next())
+            .is_some_and(is_go_ident_continue)
+        {
+            return false;
+        }
+        self.pos = end;
+        true
+    }
+
+    fn consume_str(&mut self, text: &str) -> bool {
+        let mut cursor = self.clone();
+        cursor.skip_ws();
+        if !cursor.input[cursor.pos..].starts_with(text) {
+            return false;
+        }
+        self.pos = cursor.pos + text.len();
+        true
+    }
+
+    fn consume_char(&mut self, ch: char) -> bool {
+        let mut cursor = self.clone();
+        cursor.skip_ws();
+        if cursor.peek_char() != Some(ch) {
+            return false;
+        }
+        self.pos = cursor.pos + ch.len_utf8();
+        true
+    }
+
+    fn peek_char(&self) -> Option<char> {
+        self.input[self.pos..].chars().next()
+    }
+}
+
+fn is_go_ident_start(ch: char) -> bool {
+    ch == '_' || ch.is_ascii_alphabetic()
+}
+
+fn is_go_ident_continue(ch: char) -> bool {
+    ch == '_' || ch.is_ascii_alphanumeric()
+}
+
+fn is_go_predeclared_type(name: &str) -> bool {
+    matches!(
+        name,
+        "any"
+            | "bool"
+            | "byte"
+            | "comparable"
+            | "complex64"
+            | "complex128"
+            | "error"
+            | "float32"
+            | "float64"
+            | "int"
+            | "int8"
+            | "int16"
+            | "int32"
+            | "int64"
+            | "rune"
+            | "string"
+            | "uint"
+            | "uint8"
+            | "uint16"
+            | "uint32"
+            | "uint64"
+            | "uintptr"
+    )
+}
+
 fn qualify_go_symbol(package_alias: &str, go_name: &str) -> String {
     if let Some(rest) = go_name.strip_prefix("(*")
         && let Some((receiver_ty, suffix)) = rest.split_once(')')
     {
-        if receiver_ty.contains('.') {
-            return format!("(*{}){}", receiver_ty, suffix);
-        }
-        return format!("(*{}.{}){}", package_alias, receiver_ty, suffix);
+        return format!(
+            "(*{}){}",
+            qualify_go_type_expr(package_alias, receiver_ty),
+            suffix
+        );
     }
 
     if let Some(rest) = go_name.strip_prefix('(')
         && let Some((receiver_ty, suffix)) = rest.split_once(')')
     {
-        if receiver_ty.contains('.') {
-            return format!("({}){}", receiver_ty, suffix);
-        }
-        return format!("({}.{}){}", package_alias, receiver_ty, suffix);
+        return format!(
+            "({}){}",
+            qualify_go_type_expr(package_alias, receiver_ty),
+            suffix
+        );
     }
 
     if let Some((first_segment, rest)) = go_name.split_once('.') {
@@ -338,7 +626,11 @@ fn qualify_go_symbol(package_alias: &str, go_name: &str) -> String {
             }
             return go_name.to_string();
         }
-        return format!("({}.{}).{}", package_alias, first_segment, rest);
+        return format!(
+            "({}).{}",
+            qualify_go_type_expr(package_alias, first_segment),
+            rest
+        );
     }
 
     format!("{}.{}", package_alias, go_name)
@@ -5081,7 +5373,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             } else {
                 let alias = go_package_alias(package_path);
                 goty::GoType::TName {
-                    name: format!("{}.{}", alias, ext.go_name),
+                    name: qualify_go_type_expr(&alias, &ext.go_name),
                 }
             };
             defs.push(goast::Item::TypeAlias(goast::TypeAlias {

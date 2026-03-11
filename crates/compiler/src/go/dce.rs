@@ -1158,14 +1158,39 @@ fn collect_packages_in_item(
     used: &mut HashSet<String>,
 ) {
     match item {
-        ast::Item::Fn(f) => collect_packages_in_block(&f.body, imports, used),
+        ast::Item::Fn(f) => {
+            for (_, ty) in &f.params {
+                collect_packages_in_go_type(ty, imports, used);
+            }
+            if let Some(ret_ty) = &f.ret_ty {
+                collect_packages_in_go_type(ret_ty, imports, used);
+            }
+            collect_packages_in_block(&f.body, imports, used);
+        }
         ast::Item::Struct(s) => {
+            for field in &s.fields {
+                collect_packages_in_go_type(&field.ty, imports, used);
+            }
             for method in &s.methods {
+                collect_packages_in_go_type(&method.receiver.ty, imports, used);
+                for (_, ty) in &method.params {
+                    collect_packages_in_go_type(ty, imports, used);
+                }
                 collect_packages_in_block(&method.body, imports, used);
             }
         }
-        ast::Item::Package(_) | ast::Item::Import(_) | ast::Item::Interface(_) => {}
-        ast::Item::TypeAlias(_) => {}
+        ast::Item::Interface(i) => {
+            for method in &i.methods {
+                for (_, ty) in &method.params {
+                    collect_packages_in_go_type(ty, imports, used);
+                }
+                if let Some(ret_ty) = &method.ret {
+                    collect_packages_in_go_type(ret_ty, imports, used);
+                }
+            }
+        }
+        ast::Item::TypeAlias(alias) => collect_packages_in_go_type(&alias.ty, imports, used),
+        ast::Item::Package(_) | ast::Item::Import(_) => {}
     }
 }
 
@@ -1188,7 +1213,8 @@ fn collect_packages_in_stmt(
         ast::Stmt::Expr(e) => collect_packages_in_expr(e, imports, used),
         ast::Stmt::Go { call } => collect_packages_in_expr(call, imports, used),
         ast::Stmt::Label { .. } | ast::Stmt::Goto { .. } => {}
-        ast::Stmt::VarDecl { value, .. } => {
+        ast::Stmt::VarDecl { ty, value, .. } => {
+            collect_packages_in_go_type(ty, imports, used);
             if let Some(v) = value {
                 collect_packages_in_expr(v, imports, used);
             }
@@ -1245,7 +1271,8 @@ fn collect_packages_in_stmt(
             ..
         } => {
             collect_packages_in_expr(expr, imports, used);
-            for (_t, b) in cases {
+            for (ty, b) in cases {
+                collect_packages_in_go_type(ty, imports, used);
                 collect_packages_in_block(b, imports, used);
             }
             if let Some(b) = default {
@@ -1264,6 +1291,7 @@ fn collect_packages_in_expr(
     imports: &HashSet<String>,
     used: &mut HashSet<String>,
 ) {
+    collect_packages_in_go_type(expr.get_ty(), imports, used);
     match expr {
         ast::Expr::Call { func, args, .. } => {
             if let ast::Expr::Var { name, .. } = func.as_ref()
@@ -1330,6 +1358,92 @@ fn collect_packages_in_expr(
             }
         }
     }
+}
+
+fn collect_packages_in_go_type(
+    ty: &crate::go::goty::GoType,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    match ty {
+        crate::go::goty::GoType::TStruct { fields, .. } => {
+            for (_, field_ty) in fields {
+                collect_packages_in_go_type(field_ty, imports, used);
+            }
+        }
+        crate::go::goty::GoType::TPointer { elem }
+        | crate::go::goty::GoType::TArray { elem, .. }
+        | crate::go::goty::GoType::TSlice { elem } => {
+            collect_packages_in_go_type(elem, imports, used);
+        }
+        crate::go::goty::GoType::TFunc { params, ret_ty } => {
+            for param in params {
+                collect_packages_in_go_type(param, imports, used);
+            }
+            collect_packages_in_go_type(ret_ty, imports, used);
+        }
+        crate::go::goty::GoType::TName { name } => {
+            collect_packages_in_raw_go_type_name(name, imports, used);
+        }
+        crate::go::goty::GoType::TMap { key, value } => {
+            collect_packages_in_go_type(key, imports, used);
+            collect_packages_in_go_type(value, imports, used);
+        }
+        crate::go::goty::GoType::TVoid
+        | crate::go::goty::GoType::TUnit
+        | crate::go::goty::GoType::TBool
+        | crate::go::goty::GoType::TInt8
+        | crate::go::goty::GoType::TInt16
+        | crate::go::goty::GoType::TInt32
+        | crate::go::goty::GoType::TInt64
+        | crate::go::goty::GoType::TUint8
+        | crate::go::goty::GoType::TUint16
+        | crate::go::goty::GoType::TUint32
+        | crate::go::goty::GoType::TUint64
+        | crate::go::goty::GoType::TFloat32
+        | crate::go::goty::GoType::TFloat64
+        | crate::go::goty::GoType::TString
+        | crate::go::goty::GoType::TChar => {}
+    }
+}
+
+fn collect_packages_in_raw_go_type_name(
+    name: &str,
+    imports: &HashSet<String>,
+    used: &mut HashSet<String>,
+) {
+    let chars = name.char_indices().collect::<Vec<_>>();
+    let mut i = 0;
+    while i < chars.len() {
+        let (_, ch) = chars[i];
+        if !is_go_ident_start(ch) {
+            i += 1;
+            continue;
+        }
+        let start = chars[i].0;
+        i += 1;
+        while i < chars.len() && is_go_ident_continue(chars[i].1) {
+            i += 1;
+        }
+        let end = chars.get(i).map_or(name.len(), |(idx, _)| *idx);
+        let ident = &name[start..end];
+
+        let mut j = i;
+        while j < chars.len() && chars[j].1.is_whitespace() {
+            j += 1;
+        }
+        if j < chars.len() && chars[j].1 == '.' && imports.contains(ident) {
+            used.insert(ident.to_string());
+        }
+    }
+}
+
+fn is_go_ident_start(ch: char) -> bool {
+    ch == '_' || ch.is_ascii_alphabetic()
+}
+
+fn is_go_ident_continue(ch: char) -> bool {
+    ch == '_' || ch.is_ascii_alphanumeric()
 }
 
 fn import_spec_binding(spec: &ast::ImportSpec) -> String {
