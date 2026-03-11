@@ -58,7 +58,11 @@ fn build_extern_go(genv: &PackageTypeEnv, ext: &hir::ExternGo) -> tast::ExternGo
         .unwrap_or(tast::Ty::TUnit);
     tast::ExternGo {
         goml_name: ext.goml_name.to_ident_name(),
-        go_name: go_symbol_name(&ext.go_symbol),
+        go_name: if ext.explicit_go_symbol {
+            ext.go_symbol.clone()
+        } else {
+            go_symbol_name(&ext.go_symbol)
+        },
         package_path: ext.package_path.clone(),
         params,
         ret_ty,

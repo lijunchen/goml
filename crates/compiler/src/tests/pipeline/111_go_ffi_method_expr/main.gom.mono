@@ -1,0 +1,13 @@
+fn describe() -> string {
+  let base/0 = unix(1740823200, 0) in
+  let shifted/1 = add_moment(base/0, nanos((90 * 1000000000))) in
+  format_moment(shifted/1, "15:04:05")
+}
+
+fn main() -> unit {
+  println__T_string(describe())
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

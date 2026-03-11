@@ -7,7 +7,7 @@ use parser::{Diagnostic, Diagnostics};
 use crate::{
     builtins,
     env::{
-        self, ExternErrorMode, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv,
+        self, ExternReturnMode, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv,
         PackageTypeEnv,
     },
     hir::{self},
@@ -98,31 +98,36 @@ fn attribute_name(attr: &hir::Attribute) -> Option<&str> {
     }
 }
 
-fn extern_error_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -> ExternErrorMode {
+fn extern_return_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -> ExternReturnMode {
     let mut error_only = false;
     let mut error_last = false;
+    let mut option_last = false;
     for attr in attrs {
         match attribute_name(attr) {
             Some("go_error") => error_only = true,
             Some("go_error_last") => error_last = true,
+            Some("go_option_last") => option_last = true,
             _ => {}
         }
     }
 
-    if error_only && error_last {
+    let mode_count = error_only as u8 + error_last as u8 + option_last as u8;
+    if mode_count > 1 {
         super::util::push_error(
             diagnostics,
-            "extern \"go\" function cannot use both #[go_error] and #[go_error_last]",
+            "extern \"go\" function can use at most one of #[go_error], #[go_error_last], #[go_option_last]",
         );
-        return ExternErrorMode::Plain;
+        return ExternReturnMode::Plain;
     }
 
     if error_last {
-        ExternErrorMode::ErrorLast
+        ExternReturnMode::ErrorLast
     } else if error_only {
-        ExternErrorMode::ErrorOnly
+        ExternReturnMode::ErrorOnly
+    } else if option_last {
+        ExternReturnMode::OptionLast
     } else {
-        ExternErrorMode::Plain
+        ExternReturnMode::Plain
     }
 }
 
@@ -143,15 +148,59 @@ fn is_go_error_ty(ty: &tast::Ty) -> bool {
     matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
 }
 
-fn validate_extern_error_mode(
+fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Option" || args.len() != 1 {
+        return None;
+    }
+    Some(&args[0])
+}
+
+fn is_go_method_symbol(name: &str) -> bool {
+    if let Some(rest) = name.strip_prefix("(*") {
+        return rest.contains(").");
+    }
+
+    if let Some(rest) = name.strip_prefix('(') {
+        return rest.contains(").");
+    }
+
+    let parts = name.split('.').collect::<Vec<_>>();
+    matches!(
+        parts.as_slice(),
+        [receiver_ty, _method_name]
+            if receiver_ty
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_uppercase())
+    ) || matches!(
+        parts.as_slice(),
+        [package_name, receiver_ty, _method_name]
+            if package_name
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_lowercase())
+                && receiver_ty
+                    .chars()
+                    .next()
+                    .is_some_and(|ch| ch.is_ascii_uppercase())
+    )
+}
+
+fn validate_extern_return_mode(
     diagnostics: &mut Diagnostics,
     extern_name: &str,
-    error_mode: ExternErrorMode,
+    return_mode: ExternReturnMode,
     ret_ty: &tast::Ty,
 ) {
-    match error_mode {
-        ExternErrorMode::Plain => {}
-        ExternErrorMode::ErrorOnly => {
+    match return_mode {
+        ExternReturnMode::Plain => {}
+        ExternReturnMode::ErrorOnly => {
             let Some((ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
                 super::util::push_error(
                     diagnostics,
@@ -172,7 +221,7 @@ fn validate_extern_error_mode(
                 );
             }
         }
-        ExternErrorMode::ErrorLast => {
+        ExternReturnMode::ErrorLast => {
             let Some((_ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
                 super::util::push_error(
                     diagnostics,
@@ -188,6 +237,17 @@ fn validate_extern_error_mode(
                     diagnostics,
                     format!(
                         "extern \"go\" function {} with #[go_error_last] must return Result[T, GoError]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+        ExternReturnMode::OptionLast => {
+            if extract_option_ty(ret_ty).is_none() {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_option_last] must return Option[T]",
                         extern_name
                     ),
                 );
@@ -941,20 +1001,33 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         params: params.clone(),
         ret_ty: Box::new(ret.clone()),
     };
-    let error_mode = extern_error_mode(&ext.attrs, diagnostics);
-    validate_extern_error_mode(
+    let return_mode = extern_return_mode(&ext.attrs, diagnostics);
+    validate_extern_return_mode(
         diagnostics,
         &ext.goml_name.to_ident_name(),
-        error_mode,
+        return_mode,
         &ret,
     );
-    let go_name = go_symbol_name(&ext.go_symbol);
+    if ext.explicit_go_symbol && is_go_method_symbol(&ext.go_symbol) && params.is_empty() {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" method binding {} requires a receiver parameter",
+                ext.goml_name.to_ident_name()
+            ),
+        );
+    }
+    let go_name = if ext.explicit_go_symbol {
+        ext.go_symbol.clone()
+    } else {
+        go_symbol_name(&ext.go_symbol)
+    };
     env.current_mut().register_extern_function(
         ext.goml_name.to_ident_name(),
         ext.package_path.clone(),
         go_name,
         fn_ty,
-        error_mode,
+        return_mode,
     );
 }
 

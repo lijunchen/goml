@@ -1,0 +1,17 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn describe() -> string {
+  let base/0 = unix(1740823200, 0) in
+  let shifted/1 = add_moment(base/0, nanos((90 * 1000000000))) in
+  format_moment(shifted/1, "15:04:05")
+}
+
+fn main() -> unit {
+  println(describe())
+}

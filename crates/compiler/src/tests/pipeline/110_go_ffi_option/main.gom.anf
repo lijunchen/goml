@@ -1,0 +1,39 @@
+fn describe(input/0: string, prefix/1: string) -> string {
+  join ret4(retv5: string) -> string {
+    retv5
+  } in
+  let mtmp0 = cut_prefix(input/0, prefix/1) in
+  join k6(jp7: string) -> string {
+    jump ret4(jp7)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump k6("none")
+    },
+    Tag_1 => {
+      let x1 = Option__string::Some._0(mtmp0) in
+      let rest/2 = x1 in
+      let t8 = ("some=" + rest/2) in
+      jump k6(t8)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret9() -> unit {
+    ()
+  } in
+  let t10 = describe("goml", "go") in
+  let _wild2 = println__T_string(t10) in
+  let t11 = describe("goml", "ml") in
+  let _wild3 = println__T_string(t11) in
+  jump ret9()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret12() -> unit {
+    ()
+  } in
+  let t13 = string_println(value/1) in
+  jump ret12()
+}
