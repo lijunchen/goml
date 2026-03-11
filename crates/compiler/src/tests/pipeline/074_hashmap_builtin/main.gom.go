@@ -374,6 +374,8 @@ type Some struct {
 
 func (_ Some) isOption__int32() {}
 
+type GoError = error
+
 func _goml_trait_impl_Eq_Point_eq(self__0 Point, other__1 Point) bool {
     var retv27 bool
     var t28 int32 = self__0.x

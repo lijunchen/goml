@@ -1,0 +1,28 @@
+fn describe(input/0: string, prefix/1: string) -> string {
+  {
+    let mtmp0 = cut_prefix(input/0, prefix/1) in
+    match mtmp0 {
+      Option__string::None => {
+        "none"
+      },
+      Option__string::Some(x1) => {
+        {
+          let x1 = Option__string::Some._0(mtmp0) in
+          {
+            let rest/2 = x1 in
+            ("some=" + rest/2)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild2 = println__T_string(describe("goml", "go")) in
+  let _wild3 = println__T_string(describe("goml", "ml")) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

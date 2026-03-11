@@ -416,6 +416,7 @@ impl Expr {
             hir::Expr::EUnary { op, expr } => RcDoc::text(op.symbol())
                 .append(ctx.expr_to_doc(*expr))
                 .group(),
+            hir::Expr::ETry { expr } => ctx.expr_to_doc(*expr).append(RcDoc::text("?")),
             hir::Expr::EBinary { op, lhs, rhs } => ctx
                 .expr_to_doc(*lhs)
                 .append(RcDoc::space())
@@ -845,13 +846,30 @@ impl ExternGo {
 
 impl ExternType {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        attrs_doc(&self.attrs).append(
+        let doc = if let Some(package_path) = &self.package_path {
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("\"go\""))
+                .append(RcDoc::space())
+                .append(RcDoc::text(format!("\"{}\"", package_path)))
+                .append(if self.explicit_go_name {
+                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
+                } else {
+                    RcDoc::nil()
+                })
+                .append(RcDoc::space())
+                .append(RcDoc::text("type"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.goml_name.to_ident_name()))
+        } else {
             RcDoc::text("extern")
                 .append(RcDoc::space())
                 .append(RcDoc::text("type"))
                 .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.to_ident_name())),
-        )
+                .append(RcDoc::text(self.goml_name.to_ident_name()))
+        };
+
+        attrs_doc(&self.attrs).append(doc)
     }
 }
 

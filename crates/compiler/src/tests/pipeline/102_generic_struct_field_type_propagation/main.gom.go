@@ -22,6 +22,8 @@ type Pair__uint8__float32 struct {
     second float32
 }
 
+type GoError = error
+
 func main0() struct{} {
     var p__0 Pair__uint8__float32 = Pair__uint8__float32{
         first: 10,

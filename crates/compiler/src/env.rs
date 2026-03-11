@@ -30,12 +30,38 @@ pub struct ExternFunc {
     pub package_path: String,
     pub go_name: String,
     pub ty: tast::Ty,
+    pub binding_mode: ExternBindingMode,
+    pub return_mode: ExternReturnMode,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct ExternType {
     pub go_name: String,
     pub package_path: Option<String>,
+    pub explicit: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum ExternReturnMode {
+    Plain,
+    ErrorOnly,
+    ErrorLast,
+    OptionLast,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub enum ExternBindingMode {
+    Call,
+    Value,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExternTypeBindingConflict {
+    pub type_name: String,
+    pub existing_go_name: String,
+    pub existing_package_path: Option<String>,
+    pub new_go_name: String,
+    pub new_package_path: Option<String>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -181,26 +207,51 @@ impl TypeEnv {
         self.structs.insert(def.name.clone(), def);
     }
 
-    pub fn register_extern_type(&mut self, goml_name: String) {
-        self.extern_types
-            .entry(goml_name.clone())
-            .or_insert_with(|| ExternType {
-                go_name: goml_name.clone(),
-                package_path: None,
-            });
+    pub fn register_extern_type(
+        &mut self,
+        goml_name: String,
+        package_path: Option<String>,
+        go_name: String,
+        explicit: bool,
+    ) -> Option<ExternTypeBindingConflict> {
+        match self.extern_types.entry(goml_name.clone()) {
+            indexmap::map::Entry::Vacant(entry) => {
+                entry.insert(ExternType {
+                    go_name,
+                    package_path,
+                    explicit,
+                });
+                None
+            }
+            indexmap::map::Entry::Occupied(mut entry) => {
+                let existing = entry.get_mut();
+                if !existing.explicit && explicit {
+                    existing.package_path = package_path;
+                    existing.go_name = go_name;
+                    existing.explicit = true;
+                    return None;
+                }
+                if !explicit {
+                    return None;
+                }
+                if existing.package_path == package_path && existing.go_name == go_name {
+                    return None;
+                }
+                Some(ExternTypeBindingConflict {
+                    type_name: goml_name,
+                    existing_go_name: existing.go_name.clone(),
+                    existing_package_path: existing.package_path.clone(),
+                    new_go_name: go_name,
+                    new_package_path: package_path,
+                })
+            }
+        }
     }
 
     fn assign_package_to_extern_type(&mut self, type_name: &str, package_path: &str) {
         if let Some(ext_ty) = self.extern_types.get_mut(type_name) {
-            match &ext_ty.package_path {
-                Some(existing) => {
-                    if existing != package_path {
-                        // keep the first associated package to avoid conflicting bindings
-                    }
-                }
-                None => {
-                    ext_ty.package_path = Some(package_path.to_string());
-                }
+            if ext_ty.package_path.is_none() {
+                ext_ty.package_path = Some(package_path.to_string());
             }
         }
     }
@@ -887,8 +938,15 @@ impl GlobalTypeEnv {
         self.type_env.insert_struct(def)
     }
 
-    pub fn register_extern_type(&mut self, goml_name: String) {
-        self.type_env.register_extern_type(goml_name)
+    pub fn register_extern_type(
+        &mut self,
+        goml_name: String,
+        package_path: Option<String>,
+        go_name: String,
+        explicit: bool,
+    ) -> Option<ExternTypeBindingConflict> {
+        self.type_env
+            .register_extern_type(goml_name, package_path, go_name, explicit)
     }
 
     pub fn lookup_constructor(&self, constr: &TastIdent) -> Option<(Constructor, tast::Ty)> {
@@ -999,6 +1057,8 @@ impl GlobalTypeEnv {
         package_path: String,
         go_name: String,
         ty: tast::Ty,
+        binding_mode: ExternBindingMode,
+        return_mode: ExternReturnMode,
     ) {
         self.value_env.funcs.insert(
             goml_name.clone(),
@@ -1016,6 +1076,8 @@ impl GlobalTypeEnv {
                 package_path,
                 go_name,
                 ty,
+                binding_mode,
+                return_mode,
             },
         );
     }

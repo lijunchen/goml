@@ -9,6 +9,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     string_println("ok")
     return struct{}{}

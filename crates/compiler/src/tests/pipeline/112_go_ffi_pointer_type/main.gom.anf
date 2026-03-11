@@ -1,0 +1,67 @@
+fn describe(path/0: string) -> string {
+  join ret8(retv9: string) -> string {
+    retv9
+  } in
+  let mtmp0 = open_file(path/0) in
+  join k10(jp11: string) -> string {
+    jump ret8(jp11)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__File__GoError::Ok._0(mtmp0) in
+      let file/1 = x1 in
+      let name/2 = file_name(file/1) in
+      let mtmp3 = close_file(file/1) in
+      join k12(jp13: string) -> string {
+        jump k10(jp13)
+      } in
+      match mtmp3 {
+        Tag_0 => {
+          let x4 = Result__unit__GoError::Ok._0(mtmp3) in
+          join k14(jp15: string) -> string {
+            jump k12(jp15)
+          } in
+          match x4 {
+            () => {
+              let t16 = ("ok=" + name/2) in
+              jump k14(t16)
+            },
+          }
+        },
+        Tag_1 => {
+          let x5 = Result__unit__GoError::Err._0(mtmp3) in
+          let err/3 = x5 in
+          let t17 = go_error_to_string(err/3) in
+          let t18 = ("close_err=" + t17) in
+          jump k12(t18)
+        },
+      }
+    },
+    Tag_1 => {
+      let x2 = Result__File__GoError::Err._0(mtmp0) in
+      let err/4 = x2 in
+      let t19 = go_error_to_string(err/4) in
+      let t20 = ("open_err=" + t19) in
+      jump k10(t20)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret21() -> unit {
+    ()
+  } in
+  let t22 = describe("/etc/hosts") in
+  let _wild6 = println__T_string(t22) in
+  let t23 = describe("/definitely/missing") in
+  let _wild7 = println__T_string(t23) in
+  jump ret21()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret24() -> unit {
+    ()
+  } in
+  let t25 = string_println(value/1) in
+  jump ret24()
+}

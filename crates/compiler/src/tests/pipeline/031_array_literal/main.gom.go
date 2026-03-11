@@ -9,6 +9,8 @@ func string_print(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func make_array() [3]int32 {
     var retv4 [3]int32
     var t5 [3]int32 = [3]int32{1, 2, 3}

@@ -39,6 +39,8 @@ type Write struct {
 
 func (_ Write) isMessage() {}
 
+type GoError = error
+
 func _goml_trait_impl_ToString_Point_to_string(self__0 Point) string {
     var retv11 string
     var mtmp0 Point = self__0

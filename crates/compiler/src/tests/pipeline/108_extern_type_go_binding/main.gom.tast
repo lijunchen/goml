@@ -1,0 +1,22 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "time" "Duration" type Span
+
+extern "go" "time" nanos(nanos: int32) -> Span
+
+extern "go" "fmt" format_span(format: string, value: Span) -> string
+
+fn describe() -> string {
+    let value/0: Span = (nanos : (int32) -> Span)(1500000000);
+    (format_span : (string, Span) -> string)("span => %v", (value/0 : Span))
+}
+
+fn main() -> unit {
+    (string_println : (string) -> unit)((describe : () -> string)())
+}

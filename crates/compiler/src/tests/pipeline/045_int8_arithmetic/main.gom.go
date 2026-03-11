@@ -21,6 +21,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func a_value() int8 {
     var retv12 int8
     retv12 = 90

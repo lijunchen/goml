@@ -1,0 +1,48 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn parse(flag/0: bool) -> Result[int32, string] {
+    if (flag/0 : bool) {
+        {
+            Result::Ok(5)
+        }
+    } else {
+        {
+            Result::Err("bad-branch")
+        }
+    }
+}
+
+fn bump(flag/1: bool, fallback/2: bool) -> Result[int32, string] {
+    let value/3: int32 = if (flag/1 : bool) {
+        {
+            match (parse : (bool) -> Result[int32, string])((fallback/2 : bool)) {
+                Result::Ok(try_value/13: int32) => (try_value/13 : int32),
+                Result::Err(try_residual/13: string) => return Result::Err((try_residual/13 : string)),
+            }
+        }
+    } else {
+        {
+            10
+        }
+    };
+    Result::Ok((value/3 : int32) + 1)
+}
+
+fn show(res/4: Result[int32, string]) -> string {
+    match (res/4 : Result[int32, string]) {
+        Result::Ok(value/5: int32) => "ok=" + (ToString::to_string : (int32) -> string)((value/5 : int32)),
+        Result::Err(err/6: string) => "err=" + (err/6 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((bump : (bool, bool) -> Result[int32, string])(true, true)));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((bump : (bool, bool) -> Result[int32, string])(true, false)));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((bump : (bool, bool) -> Result[int32, string])(false, false)));
+}

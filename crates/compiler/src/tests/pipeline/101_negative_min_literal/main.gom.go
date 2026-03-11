@@ -17,6 +17,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var a__0 int8 = -128
     var t3 string = int8_to_string(a__0)

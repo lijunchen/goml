@@ -41,6 +41,8 @@ type closure_env_f1_3 struct {
     a_0 int32
 }
 
+type GoError = error
+
 func main0() struct{} {
     var a__0 int32 = 10
     var f1__11 closure_env_f1_3 = closure_env_f1_3{

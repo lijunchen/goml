@@ -45,6 +45,8 @@ type closure_env_reset_1 struct {
     cell_0 *ref_int32_x
 }
 
+type GoError = error
+
 func make_counter() Tuple2_TFunc_unit_int32_TFunc_unit_unit {
     var retv16 Tuple2_TFunc_unit_int32_TFunc_unit_unit
     var cell__0 *ref_int32_x = ref__Ref_int32(0)

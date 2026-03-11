@@ -1,0 +1,24 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "io" "Reader" type Reader
+
+extern "go" "os" open_reader(path: string) -> Result[Reader, GoError]
+
+extern "go" "fmt" format_reader(format: string, value: Reader) -> string
+
+fn describe(path/0: string) -> string {
+    match (open_reader : (string) -> Result[Reader, GoError])((path/0 : string)) {
+        Result::Ok(reader/1: Reader) => (format_reader : (string, Reader) -> string)("type=%T", (reader/1 : Reader)),
+        Result::Err(err/2: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/2 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((describe : (string) -> string)("/etc/hosts"));
+}

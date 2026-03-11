@@ -26,6 +26,8 @@ type Wrapper__Point struct {
     value Point
 }
 
+type GoError = error
+
 func make_point() Point {
     var retv29 Point
     var t30 Point = Point{

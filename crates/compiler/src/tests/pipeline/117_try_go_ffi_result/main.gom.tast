@@ -1,0 +1,39 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "time" "Duration" type Duration
+
+extern "go" "time" parse_duration(s: string) -> Result[Duration, GoError]
+
+extern "go" "os" setenv(key: string, value: string) -> Result[unit, GoError]
+
+extern "go" "fmt" format_duration(format: string, value: Duration) -> string
+
+fn configure_and_format(input/0: string) -> Result[string, GoError] {
+    match (setenv : (string, string) -> Result[unit, GoError])("GOML_TRY_FFI", "ok") {
+        Result::Ok(try_value/5: unit) => (try_value/5 : unit),
+        Result::Err(try_residual/5: GoError) => return Result::Err((try_residual/5 : GoError)),
+    };
+    let value/1: Duration = match (parse_duration : (string) -> Result[Duration, GoError])((input/0 : string)) {
+        Result::Ok(try_value/9: Duration) => (try_value/9 : Duration),
+        Result::Err(try_residual/9: GoError) => return Result::Err((try_residual/9 : GoError)),
+    };
+    Result::Ok((format_duration : (string, Duration) -> string)("dur=%v", (value/1 : Duration)))
+}
+
+fn show(res/2: Result[string, GoError]) -> string {
+    match (res/2 : Result[string, GoError]) {
+        Result::Ok(value/3: string) => (value/3 : string),
+        Result::Err(err/4: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/4 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, GoError]) -> string)((configure_and_format : (string) -> Result[string, GoError])("2s")));
+    (println : (string) -> unit)((show : (Result[string, GoError]) -> string)((configure_and_format : (string) -> Result[string, GoError])("bad")));
+}

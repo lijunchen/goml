@@ -17,6 +17,8 @@ type closure_env_mk_renderer_T_int32_0 struct {
     d_0 dyn__Display
 }
 
+type GoError = error
+
 type dyn__Display_vtable struct {
     show func(any) string
 }

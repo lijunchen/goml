@@ -1,0 +1,62 @@
+fn describe_duration(input/0: string) -> string {
+  {
+    let mtmp0 = parse_duration(input/0) in
+    match mtmp0 {
+      Result__Duration__GoError::Ok(x1) => {
+        {
+          let x1 = Result__Duration__GoError::Ok._0(mtmp0) in
+          {
+            let value/1 = x1 in
+            format_duration("ok=%v", value/1)
+          }
+        }
+      },
+      Result__Duration__GoError::Err(x2) => {
+        {
+          let x2 = Result__Duration__GoError::Err._0(mtmp0) in
+          {
+            let err/2 = x2 in
+            ("err=" + go_error_to_string(err/2))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn describe_setenv() -> string {
+  {
+    let mtmp3 = setenv("GOML_FFI_TEST", "ok") in
+    match mtmp3 {
+      Result__unit__GoError::Ok(x4) => {
+        {
+          let x4 = Result__unit__GoError::Ok._0(mtmp3) in
+          match x4 {
+            () => {
+              "setenv=ok"
+            },
+          }
+        }
+      },
+      Result__unit__GoError::Err(x5) => {
+        {
+          let x5 = Result__unit__GoError::Err._0(mtmp3) in
+          {
+            let err/3 = x5 in
+            ("setenv_err=" + go_error_to_string(err/3))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = println__T_string(describe_duration("1.5s")) in
+  let _wild7 = println__T_string(describe_duration("bad")) in
+  let _wild8 = println__T_string(describe_setenv()) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

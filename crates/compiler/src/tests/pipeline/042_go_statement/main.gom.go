@@ -32,6 +32,8 @@ type closure_env_main_0 struct {
     signal_0 *ref_int32_x
 }
 
+type GoError = error
+
 func child(signal__0 *ref_int32_x) struct{} {
     ref_set__Ref_int32(signal__0, 1)
     return struct{}{}

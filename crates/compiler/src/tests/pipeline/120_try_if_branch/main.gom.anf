@@ -1,0 +1,96 @@
+fn parse(flag/0: bool) -> Result__int32__string {
+  join ret8(retv9: Result__int32__string) -> Result__int32__string {
+    retv9
+  } in
+  join k10(jp11: Result__int32__string) -> Result__int32__string {
+    jump ret8(jp11)
+  } in
+  if flag/0 {
+    let t12 = Result__int32__string::Ok(5) in
+    jump k10(t12)
+  } else {
+    let t13 = Result__int32__string::Err("bad-branch") in
+    jump k10(t13)
+  }
+}
+
+fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
+  join ret14(retv15: Result__int32__string) -> Result__int32__string {
+    retv15
+  } in
+  join k16(jp17: int32) -> Result__int32__string {
+    let value/3 = jp17 in
+    let t18 = (value/3 + 1) in
+    let t19 = Result__int32__string::Ok(t18) in
+    jump ret14(t19)
+  } in
+  if flag/1 {
+    let mtmp0 = parse(fallback/2) in
+    join k20(jp21: int32) -> Result__int32__string {
+      jump k16(jp21)
+    } in
+    match mtmp0 {
+      Tag_0 => {
+        let x1 = Result__int32__string::Ok._0(mtmp0) in
+        let try_value/13 = x1 in
+        jump k20(try_value/13)
+      },
+      Tag_1 => {
+        let x2 = Result__int32__string::Err._0(mtmp0) in
+        let try_residual/13 = x2 in
+        let t22 = Result__int32__string::Err(try_residual/13) in
+        jump ret14(t22)
+      },
+    }
+  } else {
+    jump k16(10)
+  }
+}
+
+fn show(res/4: Result__int32__string) -> string {
+  join ret23(retv24: string) -> string {
+    retv24
+  } in
+  join k25(jp26: string) -> string {
+    jump ret23(jp26)
+  } in
+  match res/4 {
+    Tag_0 => {
+      let x3 = Result__int32__string::Ok._0(res/4) in
+      let value/5 = x3 in
+      let t27 = int32_to_string(value/5) in
+      let t28 = ("ok=" + t27) in
+      jump k25(t28)
+    },
+    Tag_1 => {
+      let x4 = Result__int32__string::Err._0(res/4) in
+      let err/6 = x4 in
+      let t29 = ("err=" + err/6) in
+      jump k25(t29)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let t31 = bump(true, true) in
+  let t32 = show(t31) in
+  let _wild5 = println__T_string(t32) in
+  let t33 = bump(true, false) in
+  let t34 = show(t33) in
+  let _wild6 = println__T_string(t34) in
+  let t35 = bump(false, false) in
+  let t36 = show(t35) in
+  let _wild7 = println__T_string(t36) in
+  jump ret30()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret37() -> unit {
+    ()
+  } in
+  let t38 = string_println(value/1) in
+  jump ret37()
+}

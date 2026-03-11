@@ -32,6 +32,8 @@ type Nothing struct {}
 
 func (_ Nothing) isMaybe__int32() {}
 
+type GoError = error
+
 func _goml_trait_impl_Display_Point_show(self__0 Point) string {
     var retv5 string
     retv5 = "Point"

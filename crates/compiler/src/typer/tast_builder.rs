@@ -3,7 +3,7 @@ use crate::env::PackageTypeEnv;
 use crate::hir;
 use crate::tast;
 use crate::typer::results::{
-    CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TypeckResults,
+    CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructPatArgElab, TryKind, TypeckResults,
 };
 use crate::typer::toplevel::go_symbol_name;
 
@@ -31,7 +31,10 @@ pub fn build_file(
                 toplevels.push(tast::Item::ExternGo(build_extern_go(genv, &ext)))
             }
             hir::Def::ExternType(ext) => toplevels.push(tast::Item::ExternType(tast::ExternType {
+                package_path: ext.package_path.clone(),
+                go_name: ext.go_name.clone(),
                 goml_name: ext.goml_name.to_ident_name(),
+                explicit_go_name: ext.explicit_go_name,
             })),
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)
@@ -55,7 +58,11 @@ fn build_extern_go(genv: &PackageTypeEnv, ext: &hir::ExternGo) -> tast::ExternGo
         .unwrap_or(tast::Ty::TUnit);
     tast::ExternGo {
         goml_name: ext.goml_name.to_ident_name(),
-        go_name: go_symbol_name(&ext.go_symbol),
+        go_name: if ext.explicit_go_symbol {
+            ext.go_symbol.clone()
+        } else {
+            go_symbol_name(&ext.go_symbol)
+        },
         package_path: ext.package_path.clone(),
         params,
         ret_ty,
@@ -578,6 +585,7 @@ fn build_expr(
                 }
             }
         }
+        hir::Expr::ETry { expr } => build_try_expr(hir_table, results, expr_id, expr),
         hir::Expr::EBinary { op, lhs, rhs } => {
             let lhs = Box::new(build_expr(hir_table, results, lhs));
             let rhs = Box::new(build_expr(hir_table, results, rhs));
@@ -630,6 +638,201 @@ fn build_let_stmt(
         pat,
         value,
     }
+}
+
+fn build_try_expr(
+    hir_table: &hir::HirTable,
+    results: &TypeckResults,
+    expr_id: hir::ExprId,
+    inner_expr_id: hir::ExprId,
+) -> tast::Expr {
+    let Some(try_elab) = results.try_elab(expr_id) else {
+        return tast::Expr::EVar {
+            name: "<error>".to_string(),
+            ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
+            astptr: None,
+        };
+    };
+
+    let inner_expr = Box::new(build_expr(hir_table, results, inner_expr_id));
+    let inner_ty = results
+        .expr_ty(inner_expr_id)
+        .cloned()
+        .unwrap_or(tast::Ty::TUnit);
+    let ok_ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+    let outer_ret_ty = try_elab.outer_ret_ty.clone();
+    let value_name = format!("try_value/{}", expr_id.idx);
+    let residual_name = format!("try_residual/{}", expr_id.idx);
+
+    let arms = match try_elab.kind {
+        TryKind::Result => {
+            let Some((inner_name, err_ty)) = build_result_parts(&inner_ty) else {
+                return tast::Expr::EVar {
+                    name: "<error>".to_string(),
+                    ty: ok_ty,
+                    astptr: None,
+                };
+            };
+            let Some(outer_name) = build_result_name(&outer_ret_ty) else {
+                return tast::Expr::EVar {
+                    name: "<error>".to_string(),
+                    ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
+                    astptr: None,
+                };
+            };
+            vec![
+                tast::Arm {
+                    pat: tast::Pat::PConstr {
+                        constructor: enum_constructor(&inner_name, "Ok", 0),
+                        args: vec![tast::Pat::PVar {
+                            name: value_name.clone(),
+                            ty: ok_ty.clone(),
+                            astptr: None,
+                        }],
+                        ty: inner_ty.clone(),
+                        astptr: None,
+                    },
+                    body: tast::Expr::EVar {
+                        name: value_name,
+                        ty: ok_ty.clone(),
+                        astptr: None,
+                    },
+                },
+                tast::Arm {
+                    pat: tast::Pat::PConstr {
+                        constructor: enum_constructor(&inner_name, "Err", 1),
+                        args: vec![tast::Pat::PVar {
+                            name: residual_name.clone(),
+                            ty: err_ty.clone(),
+                            astptr: None,
+                        }],
+                        ty: inner_ty,
+                        astptr: None,
+                    },
+                    body: tast::Expr::EReturn {
+                        expr: Some(Box::new(tast::Expr::EConstr {
+                            constructor: enum_constructor(&outer_name, "Err", 1),
+                            args: vec![tast::Expr::EVar {
+                                name: residual_name,
+                                ty: err_ty,
+                                astptr: None,
+                            }],
+                            ty: outer_ret_ty,
+                        })),
+                        ty: ok_ty.clone(),
+                    },
+                },
+            ]
+        }
+        TryKind::Option => {
+            let Some(inner_name) = build_option_name(&inner_ty) else {
+                return tast::Expr::EVar {
+                    name: "<error>".to_string(),
+                    ty: ok_ty,
+                    astptr: None,
+                };
+            };
+            let Some(outer_name) = build_option_name(&outer_ret_ty) else {
+                return tast::Expr::EVar {
+                    name: "<error>".to_string(),
+                    ty: results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit),
+                    astptr: None,
+                };
+            };
+            vec![
+                tast::Arm {
+                    pat: tast::Pat::PConstr {
+                        constructor: enum_constructor(&inner_name, "Some", 1),
+                        args: vec![tast::Pat::PVar {
+                            name: value_name.clone(),
+                            ty: ok_ty.clone(),
+                            astptr: None,
+                        }],
+                        ty: inner_ty.clone(),
+                        astptr: None,
+                    },
+                    body: tast::Expr::EVar {
+                        name: value_name,
+                        ty: ok_ty.clone(),
+                        astptr: None,
+                    },
+                },
+                tast::Arm {
+                    pat: tast::Pat::PConstr {
+                        constructor: enum_constructor(&inner_name, "None", 0),
+                        args: vec![],
+                        ty: inner_ty,
+                        astptr: None,
+                    },
+                    body: tast::Expr::EReturn {
+                        expr: Some(Box::new(tast::Expr::EConstr {
+                            constructor: enum_constructor(&outer_name, "None", 0),
+                            args: vec![],
+                            ty: outer_ret_ty,
+                        })),
+                        ty: ok_ty.clone(),
+                    },
+                },
+            ]
+        }
+    };
+
+    tast::Expr::EMatch {
+        expr: inner_expr,
+        arms,
+        ty: ok_ty,
+        astptr: hir_table.expr_ptr(expr_id),
+    }
+}
+
+fn build_result_parts(ty: &tast::Ty) -> Option<(String, tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+        Some((name.clone(), args[1].clone()))
+    } else {
+        None
+    }
+}
+
+fn build_result_name(ty: &tast::Ty) -> Option<String> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if (name == "Result" || name.ends_with("::Result")) && args.len() == 2 {
+        Some(name.clone())
+    } else {
+        None
+    }
+}
+
+fn build_option_name(ty: &tast::Ty) -> Option<String> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if (name == "Option" || name.ends_with("::Option")) && args.len() == 1 {
+        Some(name.clone())
+    } else {
+        None
+    }
+}
+
+fn enum_constructor(type_name: &str, variant: &str, index: usize) -> Constructor {
+    Constructor::Enum(crate::common::EnumConstructor {
+        type_name: tast::TastIdent::new(type_name),
+        variant: tast::TastIdent::new(variant),
+        index,
+    })
 }
 
 fn build_assign_stmt(

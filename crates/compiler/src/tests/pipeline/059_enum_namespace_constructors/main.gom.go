@@ -24,6 +24,8 @@ type Yellow struct {}
 
 func (_ Yellow) isSignal() {}
 
+type GoError = error
+
 func color_is_red(color__0 Color) bool {
     var retv2 bool
     var jp4 bool

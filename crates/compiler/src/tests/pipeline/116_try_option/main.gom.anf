@@ -1,0 +1,86 @@
+fn maybe_value(flag/0: bool) -> Option__int32 {
+  join ret5(retv6: Option__int32) -> Option__int32 {
+    retv6
+  } in
+  join k7(jp8: Option__int32) -> Option__int32 {
+    jump ret5(jp8)
+  } in
+  if flag/0 {
+    let t9 = Option__int32::Some(4) in
+    jump k7(t9)
+  } else {
+    jump k7(Tag_0)
+  }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+  join ret10(retv11: int32) -> int32 {
+    retv11
+  } in
+  let t12 = (a/1 + b/2) in
+  jump ret10(t12)
+}
+
+fn plus_two(flag/3: bool) -> Option__int32 {
+  join ret13(retv14: Option__int32) -> Option__int32 {
+    retv14
+  } in
+  let mtmp0 = maybe_value(flag/3) in
+  join k15(jp16: int32) -> Option__int32 {
+    let t17 = add(jp16, 2) in
+    let t18 = Option__int32::Some(t17) in
+    jump ret13(t18)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump ret13(Tag_0)
+    },
+    Tag_1 => {
+      let x1 = Option__int32::Some._0(mtmp0) in
+      let try_value/15 = x1 in
+      jump k15(try_value/15)
+    },
+  }
+}
+
+fn show(opt/4: Option__int32) -> string {
+  join ret19(retv20: string) -> string {
+    retv20
+  } in
+  join k21(jp22: string) -> string {
+    jump ret19(jp22)
+  } in
+  match opt/4 {
+    Tag_0 => {
+      jump k21("none")
+    },
+    Tag_1 => {
+      let x2 = Option__int32::Some._0(opt/4) in
+      let value/5 = x2 in
+      let t23 = int32_to_string(value/5) in
+      let t24 = ("some=" + t23) in
+      jump k21(t24)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret25() -> unit {
+    ()
+  } in
+  let t26 = plus_two(true) in
+  let t27 = show(t26) in
+  let _wild3 = println__T_string(t27) in
+  let t28 = plus_two(false) in
+  let t29 = show(t28) in
+  let _wild4 = println__T_string(t29) in
+  jump ret25()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret30() -> unit {
+    ()
+  } in
+  let t31 = string_println(value/1) in
+  jump ret30()
+}

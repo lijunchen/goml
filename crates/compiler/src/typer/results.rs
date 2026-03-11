@@ -16,6 +16,7 @@ pub struct TypeckResults {
     constr_pat: Vec<Option<common::Constructor>>,
     unary_res: Vec<Option<tast::UnaryResolution>>,
     binary_res: Vec<Option<tast::BinaryResolution>>,
+    try_elab: Vec<Option<TryElab>>,
     coercions: Vec<Vec<Coercion>>,
     closure_captures: Vec<Option<Vec<(String, tast::Ty)>>>,
 }
@@ -85,6 +86,12 @@ impl TypeckResults {
 
     pub fn binary_resolution(&self, expr: hir::ExprId) -> Option<&tast::BinaryResolution> {
         self.binary_res
+            .get(expr.idx as usize)
+            .and_then(|e| e.as_ref())
+    }
+
+    pub fn try_elab(&self, expr: hir::ExprId) -> Option<&TryElab> {
+        self.try_elab
             .get(expr.idx as usize)
             .and_then(|e| e.as_ref())
     }
@@ -199,6 +206,18 @@ pub enum Coercion {
     },
 }
 
+#[derive(Debug, Clone)]
+pub enum TryKind {
+    Result,
+    Option,
+}
+
+#[derive(Debug, Clone)]
+pub struct TryElab {
+    pub kind: TryKind,
+    pub outer_ret_ty: tast::Ty,
+}
+
 pub struct TypeckResultsBuilder {
     results: TypeckResults,
 }
@@ -222,6 +241,7 @@ impl TypeckResultsBuilder {
                 constr_pat: vec![None; pat_count],
                 unary_res: vec![None; expr_count],
                 binary_res: vec![None; expr_count],
+                try_elab: vec![None; expr_count],
                 coercions: vec![Vec::new(); expr_count],
                 closure_captures: vec![None; expr_count],
             },
@@ -299,6 +319,12 @@ impl TypeckResultsBuilder {
     pub fn record_binary_resolution(&mut self, expr: hir::ExprId, res: tast::BinaryResolution) {
         if let Some(slot) = self.results.binary_res.get_mut(expr.idx as usize) {
             *slot = Some(res);
+        }
+    }
+
+    pub fn record_try_elab(&mut self, expr: hir::ExprId, elab: TryElab) {
+        if let Some(slot) = self.results.try_elab.get_mut(expr.idx as usize) {
+            *slot = Some(elab);
         }
     }
 
@@ -448,6 +474,9 @@ impl TypeckResultsBuilder {
                     }
                 }
             }
+        }
+        for elab in self.results.try_elab.iter_mut().filter_map(Option::as_mut) {
+            elab.outer_ret_ty = typer.subst_ty_silent(&elab.outer_ret_ty);
         }
         for captures in self
             .results

@@ -6,7 +6,10 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     builtins,
-    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
+    env::{
+        self, ExternBindingMode, ExternReturnMode, ExternTypeBindingConflict, FnOrigin, FnScheme,
+        GlobalTypeEnv, PackageTypeEnv,
+    },
     hir::{self},
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
@@ -18,7 +21,12 @@ use crate::{
     },
 };
 
-fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
+fn predeclare_types(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => {
@@ -40,8 +48,258 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: 
                         .collect(),
                 );
             }
+            hir::Def::ExternType(ext) => {
+                if let Some(conflict) = genv.register_extern_type(
+                    ext.goml_name.to_ident_name(),
+                    ext.package_path.clone(),
+                    ext.go_name.clone(),
+                    ext.package_path.is_some(),
+                ) {
+                    push_extern_type_binding_conflict(diagnostics, conflict);
+                }
+            }
             _ => {}
         }
+    }
+}
+
+fn push_extern_type_binding_conflict(
+    diagnostics: &mut Diagnostics,
+    conflict: ExternTypeBindingConflict,
+) {
+    let existing = match conflict.existing_package_path {
+        Some(package_path) => format!("\"{}\" \"{}\"", package_path, conflict.existing_go_name),
+        None => format!("unbound Go type \"{}\"", conflict.existing_go_name),
+    };
+    let new = match conflict.new_package_path {
+        Some(package_path) => format!("\"{}\" \"{}\"", package_path, conflict.new_go_name),
+        None => format!("unbound Go type \"{}\"", conflict.new_go_name),
+    };
+    super::util::push_error(
+        diagnostics,
+        format!(
+            "Extern type {} has conflicting Go bindings: {} vs {}",
+            conflict.type_name, existing, new
+        ),
+    );
+}
+
+fn attribute_name(attr: &hir::Attribute) -> Option<&str> {
+    let trimmed = attr.text.trim();
+    let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
+    let name_part = match inner.find('(') {
+        Some(idx) => inner[..idx].trim(),
+        None => inner,
+    };
+    if name_part.is_empty() {
+        None
+    } else {
+        Some(name_part)
+    }
+}
+
+fn extern_return_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -> ExternReturnMode {
+    let mut error_only = false;
+    let mut error_last = false;
+    let mut option_last = false;
+    for attr in attrs {
+        match attribute_name(attr) {
+            Some("go_error") => error_only = true,
+            Some("go_error_last") => error_last = true,
+            Some("go_option_last") => option_last = true,
+            _ => {}
+        }
+    }
+
+    let mode_count = error_only as u8 + error_last as u8 + option_last as u8;
+    if mode_count > 1 {
+        super::util::push_error(
+            diagnostics,
+            "extern \"go\" function can use at most one of #[go_error], #[go_error_last], #[go_option_last]",
+        );
+        return ExternReturnMode::Plain;
+    }
+
+    if error_last {
+        ExternReturnMode::ErrorLast
+    } else if error_only {
+        ExternReturnMode::ErrorOnly
+    } else if option_last {
+        ExternReturnMode::OptionLast
+    } else {
+        ExternReturnMode::Plain
+    }
+}
+
+fn extern_binding_mode(
+    attrs: &[hir::Attribute],
+    return_mode: ExternReturnMode,
+    diagnostics: &mut Diagnostics,
+) -> ExternBindingMode {
+    let mut go_value = false;
+    for attr in attrs {
+        if matches!(attribute_name(attr), Some("go_value")) {
+            go_value = true;
+        }
+    }
+
+    if !go_value {
+        return ExternBindingMode::Call;
+    }
+
+    if return_mode != ExternReturnMode::Plain {
+        super::util::push_error(
+            diagnostics,
+            "extern \"go\" function #[go_value] cannot be combined with #[go_error], #[go_error_last], or #[go_option_last]",
+        );
+        return ExternBindingMode::Call;
+    }
+
+    ExternBindingMode::Value
+}
+
+fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Result" || args.len() != 2 {
+        return None;
+    }
+    Some((&args[0], &args[1]))
+}
+
+fn is_go_error_ty(ty: &tast::Ty) -> bool {
+    matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+}
+
+fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Option" || args.len() != 1 {
+        return None;
+    }
+    Some(&args[0])
+}
+
+fn is_go_method_symbol(name: &str) -> bool {
+    if let Some(rest) = name.strip_prefix("(*") {
+        return rest.contains(").");
+    }
+
+    if let Some(rest) = name.strip_prefix('(') {
+        return rest.contains(").");
+    }
+
+    let parts = name.split('.').collect::<Vec<_>>();
+    matches!(
+        parts.as_slice(),
+        [receiver_ty, _method_name]
+            if receiver_ty
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_uppercase())
+    ) || matches!(
+        parts.as_slice(),
+        [package_name, receiver_ty, _method_name]
+            if package_name
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_lowercase())
+                && receiver_ty
+                    .chars()
+                    .next()
+                    .is_some_and(|ch| ch.is_ascii_uppercase())
+    )
+}
+
+fn validate_extern_return_mode(
+    diagnostics: &mut Diagnostics,
+    extern_name: &str,
+    return_mode: ExternReturnMode,
+    ret_ty: &tast::Ty,
+) {
+    match return_mode {
+        ExternReturnMode::Plain => {}
+        ExternReturnMode::ErrorOnly => {
+            let Some((ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error] must return Result[unit, GoError]",
+                        extern_name
+                    ),
+                );
+                return;
+            };
+            if !matches!(ok_ty, tast::Ty::TUnit) || !is_go_error_ty(err_ty) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error] must return Result[unit, GoError]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+        ExternReturnMode::ErrorLast => {
+            let Some((_ok_ty, err_ty)) = extract_result_tys(ret_ty) else {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error_last] must return Result[T, GoError]",
+                        extern_name
+                    ),
+                );
+                return;
+            };
+            if !is_go_error_ty(err_ty) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_error_last] must return Result[T, GoError]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+        ExternReturnMode::OptionLast => {
+            if extract_option_ty(ret_ty).is_none() {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_option_last] must return Option[T]",
+                        extern_name
+                    ),
+                );
+            }
+        }
+    }
+}
+
+fn validate_extern_binding_mode(
+    diagnostics: &mut Diagnostics,
+    extern_name: &str,
+    binding_mode: ExternBindingMode,
+    params: &[tast::Ty],
+) -> ExternBindingMode {
+    if binding_mode == ExternBindingMode::Value && !params.is_empty() {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" function {} with #[go_value] must have no parameters",
+                extern_name
+            ),
+        );
+        ExternBindingMode::Call
+    } else {
+        binding_mode
     }
 }
 
@@ -790,22 +1048,49 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         params: params.clone(),
         ret_ty: Box::new(ret.clone()),
     };
-    let go_name = go_symbol_name(&ext.go_symbol);
+    let return_mode = extern_return_mode(&ext.attrs, diagnostics);
+    let binding_mode = extern_binding_mode(&ext.attrs, return_mode, diagnostics);
+    let binding_mode = validate_extern_binding_mode(
+        diagnostics,
+        &ext.goml_name.to_ident_name(),
+        binding_mode,
+        &params,
+    );
+    validate_extern_return_mode(
+        diagnostics,
+        &ext.goml_name.to_ident_name(),
+        return_mode,
+        &ret,
+    );
+    if ext.explicit_go_symbol && is_go_method_symbol(&ext.go_symbol) && params.is_empty() {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" method binding {} requires a receiver parameter",
+                ext.goml_name.to_ident_name()
+            ),
+        );
+    }
+    let go_name = if ext.explicit_go_symbol {
+        ext.go_symbol.clone()
+    } else {
+        go_symbol_name(&ext.go_symbol)
+    };
     env.current_mut().register_extern_function(
         ext.goml_name.to_ident_name(),
         ext.package_path.clone(),
         go_name,
         fn_ty,
+        binding_mode,
+        return_mode,
     );
 }
 
 fn define_extern_type(
-    env: &mut PackageTypeEnv,
+    _env: &mut PackageTypeEnv,
     _diagnostics: &mut Diagnostics,
-    ext: &hir::ExternType,
+    _ext: &hir::ExternType,
 ) {
-    env.current_mut()
-        .register_extern_type(ext.goml_name.to_ident_name());
 }
 
 fn define_extern_builtin(
@@ -943,7 +1228,7 @@ pub fn collect_typedefs(
     hir: &hir::PackageHir,
     hir_table: &hir::HirTable,
 ) {
-    predeclare_types(env.current_mut(), hir, hir_table);
+    predeclare_types(env.current_mut(), diagnostics, hir, hir_table);
 
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {

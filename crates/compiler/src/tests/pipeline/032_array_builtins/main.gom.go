@@ -22,6 +22,8 @@ func array_set__Array_3_int32(arr [3]int32, index int32, value int32) [3]int32 {
     return arr
 }
 
+type GoError = error
+
 func update_array(arr__0 [3]int32) [3]int32 {
     var retv2 [3]int32
     var t3 [3]int32 = array_set__Array_3_int32(arr__0, 1, 42)

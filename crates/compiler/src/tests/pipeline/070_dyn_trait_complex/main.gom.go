@@ -51,6 +51,8 @@ type closure_env_make_renderer_1 struct {
     tag_0 string
 }
 
+type GoError = error
+
 type dyn__Display_vtable struct {
     show func(any) string
     show_with func(any, string, string) string

@@ -1,0 +1,32 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn describe(input/0: string, prefix/1: string) -> string {
+  {
+    let mtmp0 = cut_prefix(input/0, prefix/1) in
+    match mtmp0 {
+      Option::None => {
+        "none"
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let rest/2 = x1 in
+            ("some=" + rest/2)
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild2 = println(describe("goml", "go")) in
+  let _wild3 = println(describe("goml", "ml")) in
+}

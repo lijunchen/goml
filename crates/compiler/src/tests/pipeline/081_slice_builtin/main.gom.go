@@ -13,6 +13,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var v__0 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__new__T_int32()
     var v__1 []int32 = _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(v__0, 10)
@@ -45,9 +47,9 @@ func _goml_inherent_Vec_Vec_x5b_T_x5d__new__T_int32() []int32 {
     return retv16
 }
 
-func _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(self__66 []int32, elem__67 int32) []int32 {
+func _goml_inherent_Vec_Vec_x5b_T_x5d__push__T_int32(self__67 []int32, elem__68 int32) []int32 {
     var retv19 []int32
-    var t20 []int32 = append(self__66, elem__67)
+    var t20 []int32 = append(self__67, elem__68)
     retv19 = t20
     return retv19
 }
@@ -58,23 +60,23 @@ func println__T_int32(value__1 int32) struct{} {
     return struct{}{}
 }
 
-func _goml_inherent_Slice_Slice_x5b_T_x5d__len__T_int32(self__73 []int32) int32 {
+func _goml_inherent_Slice_Slice_x5b_T_x5d__len__T_int32(self__74 []int32) int32 {
     var retv25 int32
-    var t26 int32 = int32(len(self__73))
+    var t26 int32 = int32(len(self__74))
     retv25 = t26
     return retv25
 }
 
-func _goml_inherent_Slice_Slice_x5b_T_x5d__get__T_int32(self__71 []int32, index__72 int32) int32 {
+func _goml_inherent_Slice_Slice_x5b_T_x5d__get__T_int32(self__72 []int32, index__73 int32) int32 {
     var retv28 int32
-    var t29 int32 = self__71[index__72]
+    var t29 int32 = self__72[index__73]
     retv28 = t29
     return retv28
 }
 
-func _goml_inherent_Slice_Slice_x5b_T_x5d__sub__T_int32(self__74 []int32, start__75 int32, end__76 int32) []int32 {
+func _goml_inherent_Slice_Slice_x5b_T_x5d__sub__T_int32(self__75 []int32, start__76 int32, end__77 int32) []int32 {
     var retv31 []int32
-    var t32 []int32 = self__74[start__75:end__76]
+    var t32 []int32 = self__75[start__76:end__77]
     retv31 = t32
     return retv31
 }

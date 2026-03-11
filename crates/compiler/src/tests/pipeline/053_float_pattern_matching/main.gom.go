@@ -48,6 +48,8 @@ type Sample64 struct {
 
 func (_ Sample64) isFloatEvent() {}
 
+type GoError = error
+
 func summarize(event__0 FloatEvent) string {
     var retv8 string
     var jp10 string

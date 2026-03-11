@@ -1,0 +1,16 @@
+package main
+file main.gom
+  extern "go" "time" "Duration" type Span
+    
+    extern "go" "time" "Duration" nanos(nanos: int32) -> Span
+    
+    extern "go" "fmt" "Sprintf" format_span(format: string, value: Span) -> string
+    
+    fn describe() -> string {
+        let local/1/0 = def/1/1(1500000000);
+        def/1/2("span => %v", value/0)
+    }
+    
+    fn main() -> unit {
+        string_println(def/1/3())
+    }

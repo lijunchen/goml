@@ -15,6 +15,8 @@ func string_println(s string) struct{} {
 
 type S struct {}
 
+type GoError = error
+
 func _goml_trait_impl_A_S_pick(self__0 S) int32 {
     var retv3 int32
     retv3 = 10

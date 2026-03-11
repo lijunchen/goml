@@ -14,6 +14,8 @@ type Tuple2_bool_bool struct {
     _1 bool
 }
 
+type GoError = error
+
 func test_nested_match(x__0 Tuple2_bool_bool, y__1 Tuple2_bool_bool) struct{} {
     var x0 bool = x__0._0
     var x1 bool = x__0._1

@@ -197,7 +197,10 @@ pub struct ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
+    pub package_path: Option<String>,
+    pub go_name: String,
     pub goml_name: AstIdent,
+    pub explicit_go_name: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -415,6 +418,10 @@ pub enum Expr {
     },
     EUnary {
         op: common_defs::UnaryOp,
+        expr: Box<Expr>,
+        astptr: MySyntaxNodePtr,
+    },
+    ETry {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },

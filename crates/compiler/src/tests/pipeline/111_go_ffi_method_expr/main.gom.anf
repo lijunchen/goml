@@ -1,0 +1,28 @@
+fn describe() -> string {
+  join ret0(retv1: string) -> string {
+    retv1
+  } in
+  let base/0 = unix(1740823200, 0) in
+  let t2 = (90 * 1000000000) in
+  let t3 = nanos(t2) in
+  let shifted/1 = add_moment(base/0, t3) in
+  let t4 = format_moment(shifted/1, "15:04:05") in
+  jump ret0(t4)
+}
+
+fn main() -> unit {
+  join ret5() -> unit {
+    ()
+  } in
+  let t6 = describe() in
+  let t7 = println__T_string(t6) in
+  jump ret5()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret8() -> unit {
+    ()
+  } in
+  let t9 = string_println(value/1) in
+  jump ret8()
+}

@@ -257,6 +257,10 @@ pub enum Stmt {
         name: String,
         value: Expr,
     },
+    MultiAssignment {
+        names: Vec<String>,
+        value: Expr,
+    },
     FieldAssign {
         target: Expr,
         value: Expr,

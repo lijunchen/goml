@@ -22,6 +22,8 @@ type Counter struct {
     end uint64
 }
 
+type GoError = error
+
 func is_flag8(value__0 uint8) bool {
     var retv4 bool
     var jp6 bool

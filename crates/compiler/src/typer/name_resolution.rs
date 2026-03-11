@@ -1252,6 +1252,10 @@ impl NameResolution {
                     },
                 )
             }
+            ast::Expr::ETry { expr, astptr } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::ETry { expr: new_expr })
+            }
             ast::Expr::EBinary {
                 op,
                 lhs,
@@ -1746,7 +1750,10 @@ impl NameResolution {
         let name = full_def_name(current_package, &def.goml_name.0);
         hir::ExternType {
             attrs: def.attrs.iter().map(|a| a.into()).collect(),
+            package_path: def.package_path.clone(),
+            go_name: def.go_name.clone(),
             goml_name: HirIdent::name(&name),
+            explicit_go_name: def.explicit_go_name,
         }
     }
 

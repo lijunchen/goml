@@ -22,6 +22,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func main0() struct{} {
     var x__0 int32 = 1
     var y__1 int8 = 1

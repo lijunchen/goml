@@ -786,6 +786,7 @@ pub enum Expr {
     ParenExpr(ParenExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
+    TryExpr(TryExpr),
     ClosureExpr(ClosureExpr),
     GoExpr(GoExpr),
 }
@@ -820,6 +821,7 @@ impl CstNode for Expr {
                 | EXPR_PAREN
                 | EXPR_BINARY
                 | EXPR_PREFIX
+                | EXPR_TRY
                 | EXPR_CLOSURE
                 | EXPR_WHILE
                 | EXPR_BREAK
@@ -860,6 +862,7 @@ impl CstNode for Expr {
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
+            EXPR_TRY => Expr::TryExpr(TryExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
             EXPR_GO => Expr::GoExpr(GoExpr { syntax }),
@@ -900,6 +903,7 @@ impl CstNode for Expr {
             Self::ParenExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
+            Self::TryExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
             Self::GoExpr(it) => &it.syntax,
         }
@@ -1662,6 +1666,22 @@ impl PrefixExpr {
 
 impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
 impl_display_via_syntax!(PrefixExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct TryExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl TryExpr {
+    pub fn expr(&self) -> Option<Expr> {
+        support::child(&self.syntax)
+    }
+}
+
+impl_cst_node_simple!(TryExpr, MySyntaxKind::EXPR_TRY);
+impl_display_via_syntax!(TryExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

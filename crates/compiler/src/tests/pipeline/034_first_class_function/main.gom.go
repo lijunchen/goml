@@ -19,6 +19,8 @@ type closure_env_global_invoker_1 struct {}
 
 type closure_env_composer_closure_2 struct {}
 
+type GoError = error
+
 func double(x__0 int32) int32 {
     var retv8 int32
     var t9 int32 = x__0 * 2

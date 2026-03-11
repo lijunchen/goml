@@ -9,6 +9,8 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
+type GoError = error
+
 func _goml_Lib_x3a__x3a_msg() string {
     var retv1 string
     retv1 = "hi"
