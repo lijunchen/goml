@@ -1,0 +1,60 @@
+fn describe(path/0: string) -> string {
+  {
+    let mtmp0 = open_file(path/0) in
+    match mtmp0 {
+      Result__File__GoError::Ok(x1) => {
+        {
+          let x1 = Result__File__GoError::Ok._0(mtmp0) in
+          {
+            let file/1 = x1 in
+            {
+              let name/2 = file_name(file/1) in
+              {
+                let mtmp3 = close_file(file/1) in
+                match mtmp3 {
+                  Result__unit__GoError::Ok(x4) => {
+                    {
+                      let x4 = Result__unit__GoError::Ok._0(mtmp3) in
+                      match x4 {
+                        () => {
+                          ("ok=" + name/2)
+                        },
+                      }
+                    }
+                  },
+                  Result__unit__GoError::Err(x5) => {
+                    {
+                      let x5 = Result__unit__GoError::Err._0(mtmp3) in
+                      {
+                        let err/3 = x5 in
+                        ("close_err=" + go_error_to_string(err/3))
+                      }
+                    }
+                  },
+                }
+              }
+            }
+          }
+        }
+      },
+      Result__File__GoError::Err(x2) => {
+        {
+          let x2 = Result__File__GoError::Err._0(mtmp0) in
+          {
+            let err/4 = x2 in
+            ("open_err=" + go_error_to_string(err/4))
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = println__T_string(describe("/etc/hosts")) in
+  let _wild7 = println__T_string(describe("/definitely/missing")) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

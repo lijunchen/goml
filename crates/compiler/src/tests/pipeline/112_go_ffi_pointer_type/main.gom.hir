@@ -1,0 +1,29 @@
+package main
+file main.gom
+  extern "go" "os" "*File" type File
+    
+    #[go_error_last]
+extern "go" "os" "Open" open_file(path: string) -> Result[File, GoError]
+    
+    extern "go" "os" "(*File).Name" file_name(file: File) -> string
+    
+    #[go_error]
+extern "go" "os" "(*File).Close" close_file(file: File) -> Result[unit, GoError]
+    
+    fn describe(local/1/0: string) -> string {
+        match def/1/1(path/0) {
+            Result::Ok(local/1/1) => {
+                  let local/1/2 = def/1/2(file/1);
+                  match def/1/3(file/1) {
+                      Result::Ok(()) => "ok=" + name/2,
+                      Result::Err(local/1/3) => "close_err=" + err/3.to_string(),
+                  }
+              },
+            Result::Err(local/1/4) => "open_err=" + err/4.to_string(),
+        }
+    }
+    
+    fn main() -> unit {
+        println(def/1/4("/etc/hosts"));
+        println(def/1/4("/definitely/missing"));
+    }
