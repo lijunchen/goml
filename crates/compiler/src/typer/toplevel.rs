@@ -6,7 +6,7 @@ use parser::{Diagnostic, Diagnostics};
 
 use crate::{
     builtins,
-    env::{self, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
+    env::{self, ExternTypeBindingConflict, FnOrigin, FnScheme, GlobalTypeEnv, PackageTypeEnv},
     hir::{self},
     package_names::{BUILTIN_PACKAGE, ROOT_PACKAGE, is_special_unqualified_package},
     tast::{self},
@@ -18,7 +18,12 @@ use crate::{
     },
 };
 
-fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: &hir::HirTable) {
+fn predeclare_types(
+    genv: &mut GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    hir: &hir::PackageHir,
+    hir_table: &hir::HirTable,
+) {
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {
             hir::Def::EnumDef(enum_def) => {
@@ -40,9 +45,40 @@ fn predeclare_types(genv: &mut GlobalTypeEnv, hir: &hir::PackageHir, hir_table: 
                         .collect(),
                 );
             }
+            hir::Def::ExternType(ext) => {
+                if let Some(conflict) = genv.register_extern_type(
+                    ext.goml_name.to_ident_name(),
+                    ext.package_path.clone(),
+                    ext.go_name.clone(),
+                    ext.package_path.is_some(),
+                ) {
+                    push_extern_type_binding_conflict(diagnostics, conflict);
+                }
+            }
             _ => {}
         }
     }
+}
+
+fn push_extern_type_binding_conflict(
+    diagnostics: &mut Diagnostics,
+    conflict: ExternTypeBindingConflict,
+) {
+    let existing = match conflict.existing_package_path {
+        Some(package_path) => format!("\"{}\" \"{}\"", package_path, conflict.existing_go_name),
+        None => format!("unbound Go type \"{}\"", conflict.existing_go_name),
+    };
+    let new = match conflict.new_package_path {
+        Some(package_path) => format!("\"{}\" \"{}\"", package_path, conflict.new_go_name),
+        None => format!("unbound Go type \"{}\"", conflict.new_go_name),
+    };
+    super::util::push_error(
+        diagnostics,
+        format!(
+            "Extern type {} has conflicting Go bindings: {} vs {}",
+            conflict.type_name, existing, new
+        ),
+    );
 }
 
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
@@ -800,12 +836,10 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
 }
 
 fn define_extern_type(
-    env: &mut PackageTypeEnv,
+    _env: &mut PackageTypeEnv,
     _diagnostics: &mut Diagnostics,
-    ext: &hir::ExternType,
+    _ext: &hir::ExternType,
 ) {
-    env.current_mut()
-        .register_extern_type(ext.goml_name.to_ident_name());
 }
 
 fn define_extern_builtin(
@@ -943,7 +977,7 @@ pub fn collect_typedefs(
     hir: &hir::PackageHir,
     hir_table: &hir::HirTable,
 ) {
-    predeclare_types(env.current_mut(), hir, hir_table);
+    predeclare_types(env.current_mut(), diagnostics, hir, hir_table);
 
     for item in hir.toplevels.iter() {
         match hir_table.def(*item) {

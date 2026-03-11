@@ -762,7 +762,10 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         let name = name_token.to_string();
         return Some(ast::Item::ExternType(ast::ExternType {
             attrs: attrs.clone(),
+            package_path: None,
+            go_name: name.clone(),
             goml_name: ast::AstIdent::new(&name),
+            explicit_go_name: false,
         }));
     }
 
@@ -810,6 +813,13 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
         return None;
     };
 
+    let go_symbol_override = node.symbol().and_then(|token| {
+        let raw = token.to_string();
+        raw.strip_prefix('\"')
+            .and_then(|s| s.strip_suffix('\"'))
+            .map(|s| s.to_string())
+    });
+
     if node.type_keyword().is_some() {
         let Some(name_token) = node.uident() else {
             ctx.push_error(
@@ -819,18 +829,16 @@ fn lower_extern(ctx: &mut LowerCtx, node: cst::Extern) -> Option<ast::Item> {
             return None;
         };
         let name = name_token.to_string();
+        let explicit_go_name = go_symbol_override.is_some();
+        let go_name = go_symbol_override.unwrap_or_else(|| name.clone());
         return Some(ast::Item::ExternType(ast::ExternType {
             attrs: attrs.clone(),
+            package_path: Some(package_path),
+            go_name,
             goml_name: ast::AstIdent::new(&name),
+            explicit_go_name,
         }));
     }
-
-    let go_symbol_override = node.symbol().and_then(|token| {
-        let raw = token.to_string();
-        raw.strip_prefix('\"')
-            .and_then(|s| s.strip_suffix('\"'))
-            .map(|s| s.to_string())
-    });
 
     let Some(name_token) = node.lident() else {
         ctx.push_error(

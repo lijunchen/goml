@@ -54,7 +54,10 @@ pub struct ExternGo {
 
 #[derive(Debug, Clone)]
 pub struct ExternType {
+    pub package_path: Option<String>,
+    pub go_name: String,
     pub goml_name: String,
+    pub explicit_go_name: bool,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]

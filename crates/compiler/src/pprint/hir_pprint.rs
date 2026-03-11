@@ -845,13 +845,30 @@ impl ExternGo {
 
 impl ExternType {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        attrs_doc(&self.attrs).append(
+        let doc = if let Some(package_path) = &self.package_path {
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("\"go\""))
+                .append(RcDoc::space())
+                .append(RcDoc::text(format!("\"{}\"", package_path)))
+                .append(if self.explicit_go_name {
+                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
+                } else {
+                    RcDoc::nil()
+                })
+                .append(RcDoc::space())
+                .append(RcDoc::text("type"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.goml_name.to_ident_name()))
+        } else {
             RcDoc::text("extern")
                 .append(RcDoc::space())
                 .append(RcDoc::text("type"))
                 .append(RcDoc::space())
-                .append(RcDoc::text(self.goml_name.to_ident_name())),
-        )
+                .append(RcDoc::text(self.goml_name.to_ident_name()))
+        };
+
+        attrs_doc(&self.attrs).append(doc)
     }
 }
 

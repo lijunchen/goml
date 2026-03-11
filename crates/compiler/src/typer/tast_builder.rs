@@ -31,7 +31,10 @@ pub fn build_file(
                 toplevels.push(tast::Item::ExternGo(build_extern_go(genv, &ext)))
             }
             hir::Def::ExternType(ext) => toplevels.push(tast::Item::ExternType(tast::ExternType {
+                package_path: ext.package_path.clone(),
+                go_name: ext.go_name.clone(),
                 goml_name: ext.goml_name.to_ident_name(),
+                explicit_go_name: ext.explicit_go_name,
             })),
             hir::Def::EnumDef(..)
             | hir::Def::StructDef(..)

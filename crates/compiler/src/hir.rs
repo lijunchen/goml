@@ -1179,14 +1179,20 @@ impl From<&ast::ExternGo> for ExternGo {
 #[derive(Debug, Clone)]
 pub struct ExternType {
     pub attrs: Vec<Attribute>,
+    pub package_path: Option<String>,
+    pub go_name: String,
     pub goml_name: HirIdent,
+    pub explicit_go_name: bool,
 }
 
 impl From<&ast::ExternType> for ExternType {
     fn from(ext: &ast::ExternType) -> Self {
         ExternType {
             attrs: ext.attrs.iter().map(|a| a.into()).collect(),
+            package_path: ext.package_path.clone(),
+            go_name: ext.go_name.clone(),
             goml_name: HirIdent::name(&ext.goml_name.0),
+            explicit_go_name: ext.explicit_go_name,
         }
     }
 }

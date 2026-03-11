@@ -1,0 +1,13 @@
+extern "go" "time" "Duration" type Span
+
+extern "go" "time" "Duration" nanos(nanos: int32) -> Span
+extern "go" "fmt" "Sprintf" format_span(format: string, value: Span) -> string
+
+fn describe() -> string {
+    let value = nanos(1500000000);
+    format_span("span => %v", value)
+}
+
+fn main() -> unit {
+    string_println(describe())
+}

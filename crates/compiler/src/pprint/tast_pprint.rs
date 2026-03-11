@@ -222,11 +222,28 @@ impl crate::tast::ExternGo {
 
 impl crate::tast::ExternType {
     pub fn to_doc(&self, _genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        RcDoc::text("extern")
-            .append(RcDoc::space())
-            .append(RcDoc::text("type"))
-            .append(RcDoc::space())
-            .append(RcDoc::text(self.goml_name.clone()))
+        if let Some(package_path) = &self.package_path {
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("\"go\""))
+                .append(RcDoc::space())
+                .append(RcDoc::text(format!("\"{}\"", package_path)))
+                .append(if self.explicit_go_name {
+                    RcDoc::space().append(RcDoc::text(format!("\"{}\"", self.go_name)))
+                } else {
+                    RcDoc::nil()
+                })
+                .append(RcDoc::space())
+                .append(RcDoc::text("type"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.goml_name.clone()))
+        } else {
+            RcDoc::text("extern")
+                .append(RcDoc::space())
+                .append(RcDoc::text("type"))
+                .append(RcDoc::space())
+                .append(RcDoc::text(self.goml_name.clone()))
+        }
     }
 }
 

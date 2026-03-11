@@ -1,0 +1,17 @@
+fn describe() -> string {
+  join ret0(retv1: string) -> string {
+    retv1
+  } in
+  let value/0 = nanos(1500000000) in
+  let t2 = format_span("span => %v", value/0) in
+  jump ret0(t2)
+}
+
+fn main() -> unit {
+  join ret3() -> unit {
+    ()
+  } in
+  let t4 = describe() in
+  let t5 = string_println(t4) in
+  jump ret3()
+}
