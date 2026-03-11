@@ -1,0 +1,27 @@
+extern "go" "os" "*File" type File
+
+#[go_error_last]
+extern "go" "os" "Open" open_file(path: string) -> Result[File, GoError]
+
+extern "go" "os" "(*File).Name" file_name(file: File) -> string
+
+#[go_error]
+extern "go" "os" "(*File).Close" close_file(file: File) -> Result[unit, GoError]
+
+fn describe(path: string) -> string {
+    match open_file(path) {
+        Result::Ok(file) => {
+            let name = file_name(file);
+            match close_file(file) {
+                Result::Ok(()) => "ok=" + name,
+                Result::Err(err) => "close_err=" + err.to_string(),
+            }
+        }
+        Result::Err(err) => "open_err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(describe("/etc/hosts"));
+    println(describe("/definitely/missing"));
+}
