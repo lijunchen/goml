@@ -198,6 +198,8 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
             return struct{}{}
         }
 
+        type GoError = error
+
         func main0() struct{} {
             string_println("hello")
             return struct{}{}

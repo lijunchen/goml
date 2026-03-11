@@ -1,0 +1,42 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn maybe_value(flag/0: bool) -> Option[int32] {
+    if (flag/0 : bool) {
+        {
+            Option::Some(4)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+    (a/1 : int32) + (b/2 : int32)
+}
+
+fn plus_two(flag/3: bool) -> Option[int32] {
+    Option::Some((add : (int32, int32) -> int32)(match (maybe_value : (bool) -> Option[int32])((flag/3 : bool)) {
+        Option::Some(try_value/15: int32) => (try_value/15 : int32),
+        Option::None => return Option::None,
+    }, 2))
+}
+
+fn show(opt/4: Option[int32]) -> string {
+    match (opt/4 : Option[int32]) {
+        Option::Some(value/5: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/5 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((plus_two : (bool) -> Option[int32])(true)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((plus_two : (bool) -> Option[int32])(false)));
+}

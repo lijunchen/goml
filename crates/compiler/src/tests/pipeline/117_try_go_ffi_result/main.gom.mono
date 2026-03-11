@@ -1,0 +1,81 @@
+fn configure_and_format(input/0: string) -> Result__string__GoError {
+  let _wild3 = {
+    let mtmp0 = setenv("GOML_TRY_FFI", "ok") in
+    match mtmp0 {
+      Result__unit__GoError::Ok(x1) => {
+        {
+          let x1 = Result__unit__GoError::Ok._0(mtmp0) in
+          {
+            let try_value/5 = x1 in
+            try_value/5
+          }
+        }
+      },
+      Result__unit__GoError::Err(x2) => {
+        {
+          let x2 = Result__unit__GoError::Err._0(mtmp0) in
+          {
+            let try_residual/5 = x2 in
+            return Result__string__GoError::Err(try_residual/5)
+          }
+        }
+      },
+    }
+  } in
+  let value/1 = {
+    let mtmp4 = parse_duration(input/0) in
+    match mtmp4 {
+      Result__Duration__GoError::Ok(x5) => {
+        {
+          let x5 = Result__Duration__GoError::Ok._0(mtmp4) in
+          {
+            let try_value/9 = x5 in
+            try_value/9
+          }
+        }
+      },
+      Result__Duration__GoError::Err(x6) => {
+        {
+          let x6 = Result__Duration__GoError::Err._0(mtmp4) in
+          {
+            let try_residual/9 = x6 in
+            return Result__string__GoError::Err(try_residual/9)
+          }
+        }
+      },
+    }
+  } in
+  Result__string__GoError::Ok(format_duration("dur=%v", value/1))
+}
+
+fn show(res/2: Result__string__GoError) -> string {
+  match res/2 {
+    Result__string__GoError::Ok(x7) => {
+      {
+        let x7 = Result__string__GoError::Ok._0(res/2) in
+        {
+          let value/3 = x7 in
+          value/3
+        }
+      }
+    },
+    Result__string__GoError::Err(x8) => {
+      {
+        let x8 = Result__string__GoError::Err._0(res/2) in
+        {
+          let err/4 = x8 in
+          ("err=" + go_error_to_string(err/4))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild9 = println__T_string(show(configure_and_format("2s"))) in
+  let _wild10 = println__T_string(show(configure_and_format("bad"))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

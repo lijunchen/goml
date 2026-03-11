@@ -1,0 +1,20 @@
+package main
+file main.gom
+  #[go_option_last]
+extern "go" "strings" "CutPrefix" cut_prefix(s: string, prefix: string) -> Option[string]
+    
+    fn trim_go(local/1/0: string) -> Option[string] {
+        Option::Some(def/1/0(input/0, "go")? + "!")
+    }
+    
+    fn show(local/1/1: Option[string]) -> string {
+        match opt/1 {
+            Option::Some(local/1/2) => "some=" + value/2,
+            Option::None => "none",
+        }
+    }
+    
+    fn main() -> unit {
+        println(def/1/2(def/1/1("goml")));
+        println(def/1/2(def/1/1("ml")));
+    }

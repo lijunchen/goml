@@ -1,0 +1,46 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn parse_flag(flag/0: bool) -> Result[int32, string] {
+    if (flag/0 : bool) {
+        {
+            Result::Ok(7)
+        }
+    } else {
+        {
+            Result::Err("nope")
+        }
+    }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+    (a/1 : int32) + (b/2 : int32)
+}
+
+fn plus_one(flag/3: bool) -> Result[int32, string] {
+    let run/5: () -> Result[int32, string] = || => {
+        let value/4: int32 = match (parse_flag : (bool) -> Result[int32, string])((flag/3 : bool)) {
+            Result::Ok(try_value/15: int32) => (try_value/15 : int32),
+            Result::Err(try_residual/15: string) => return Result::Err((try_residual/15 : string)),
+        };
+        Result::Ok((add : (int32, int32) -> int32)((value/4 : int32), 1))
+    };
+    (run/5 : () -> Result[int32, string])()
+}
+
+fn show(res/6: Result[int32, string]) -> string {
+    match (res/6 : Result[int32, string]) {
+        Result::Ok(value/7: int32) => "ok=" + (ToString::to_string : (int32) -> string)((value/7 : int32)),
+        Result::Err(err/8: string) => "err=" + (err/8 : string),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((plus_one : (bool) -> Result[int32, string])(true)));
+    (println : (string) -> unit)((show : (Result[int32, string]) -> string)((plus_one : (bool) -> Result[int32, string])(false)));
+}

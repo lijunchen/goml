@@ -1,0 +1,49 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trim_go(input/0: string) -> Option[string] {
+  Option::Some(({
+    let mtmp0 = cut_prefix(input/0, "go") in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/5 = x1 in
+            try_value/5
+          }
+        }
+      },
+    }
+  } + "!"))
+}
+
+fn show(opt/1: Option[string]) -> string {
+  match opt/1 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x2) => {
+      {
+        let x2 = Option::Some._0(opt/1) in
+        {
+          let value/2 = x2 in
+          ("some=" + value/2)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild3 = println(show(trim_go("goml"))) in
+  let _wild4 = println(show(trim_go("ml"))) in
+}

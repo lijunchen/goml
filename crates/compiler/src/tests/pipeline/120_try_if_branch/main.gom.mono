@@ -1,0 +1,79 @@
+fn parse(flag/0: bool) -> Result__int32__string {
+  if flag/0 {
+      {
+        Result__int32__string::Ok(5)
+      }
+  } else {
+      {
+        Result__int32__string::Err("bad-branch")
+      }
+  }
+}
+
+fn bump(flag/1: bool, fallback/2: bool) -> Result__int32__string {
+  let value/3 = if flag/1 {
+      {
+        {
+          let mtmp0 = parse(fallback/2) in
+          match mtmp0 {
+            Result__int32__string::Ok(x1) => {
+              {
+                let x1 = Result__int32__string::Ok._0(mtmp0) in
+                {
+                  let try_value/13 = x1 in
+                  try_value/13
+                }
+              }
+            },
+            Result__int32__string::Err(x2) => {
+              {
+                let x2 = Result__int32__string::Err._0(mtmp0) in
+                {
+                  let try_residual/13 = x2 in
+                  return Result__int32__string::Err(try_residual/13)
+                }
+              }
+            },
+          }
+        }
+      }
+  } else {
+      {
+        10
+      }
+  } in
+  Result__int32__string::Ok((value/3 + 1))
+}
+
+fn show(res/4: Result__int32__string) -> string {
+  match res/4 {
+    Result__int32__string::Ok(x3) => {
+      {
+        let x3 = Result__int32__string::Ok._0(res/4) in
+        {
+          let value/5 = x3 in
+          ("ok=" + int32_to_string(value/5))
+        }
+      }
+    },
+    Result__int32__string::Err(x4) => {
+      {
+        let x4 = Result__int32__string::Err._0(res/4) in
+        {
+          let err/6 = x4 in
+          ("err=" + err/6)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println__T_string(show(bump(true, true))) in
+  let _wild6 = println__T_string(show(bump(true, false))) in
+  let _wild7 = println__T_string(show(bump(false, false))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

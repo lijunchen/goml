@@ -1,0 +1,104 @@
+fn parse_flag(flag/0: bool) -> Result__int32__string {
+  join ret8(retv9: Result__int32__string) -> Result__int32__string {
+    retv9
+  } in
+  join k10(jp11: Result__int32__string) -> Result__int32__string {
+    jump ret8(jp11)
+  } in
+  if flag/0 {
+    let t12 = Result__int32__string::Ok(7) in
+    jump k10(t12)
+  } else {
+    let t13 = Result__int32__string::Err("nope") in
+    jump k10(t13)
+  }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+  join ret14(retv15: int32) -> int32 {
+    retv15
+  } in
+  let t16 = (a/1 + b/2) in
+  jump ret14(t16)
+}
+
+fn plus_one(flag/3: bool) -> Result__int32__string {
+  join ret17(retv18: Result__int32__string) -> Result__int32__string {
+    retv18
+  } in
+  let run/5 = closure_env_run_0 { flag_0: flag/3 } in
+  let t19 = inherent#closure_env_run_0#closure_env_run_0#apply(run/5) in
+  jump ret17(t19)
+}
+
+fn show(res/6: Result__int32__string) -> string {
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  join k22(jp23: string) -> string {
+    jump ret20(jp23)
+  } in
+  match res/6 {
+    Tag_0 => {
+      let x3 = Result__int32__string::Ok._0(res/6) in
+      let value/7 = x3 in
+      let t24 = int32_to_string(value/7) in
+      let t25 = ("ok=" + t24) in
+      jump k22(t25)
+    },
+    Tag_1 => {
+      let x4 = Result__int32__string::Err._0(res/6) in
+      let err/8 = x4 in
+      let t26 = ("err=" + err/8) in
+      jump k22(t26)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret27() -> unit {
+    ()
+  } in
+  let t28 = plus_one(true) in
+  let t29 = show(t28) in
+  let _wild5 = println__T_string(t29) in
+  let t30 = plus_one(false) in
+  let t31 = show(t30) in
+  let _wild6 = println__T_string(t31) in
+  jump ret27()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret32() -> unit {
+    ()
+  } in
+  let t33 = string_println(value/1) in
+  jump ret32()
+}
+
+fn inherent#closure_env_run_0#closure_env_run_0#apply(env7: closure_env_run_0) -> Result__int32__string {
+  join ret34(retv35: Result__int32__string) -> Result__int32__string {
+    retv35
+  } in
+  let flag/3 = closure_env_run_0.flag_0(env7) in
+  let mtmp0 = parse_flag(flag/3) in
+  join k36(jp37: int32) -> Result__int32__string {
+    let value/4 = jp37 in
+    let t38 = add(value/4, 1) in
+    let t39 = Result__int32__string::Ok(t38) in
+    jump ret34(t39)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__int32__string::Ok._0(mtmp0) in
+      let try_value/15 = x1 in
+      jump k36(try_value/15)
+    },
+    Tag_1 => {
+      let x2 = Result__int32__string::Err._0(mtmp0) in
+      let try_residual/15 = x2 in
+      let t40 = Result__int32__string::Err(try_residual/15) in
+      jump ret34(t40)
+    },
+  }
+}

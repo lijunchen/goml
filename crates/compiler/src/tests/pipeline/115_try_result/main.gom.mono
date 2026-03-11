@@ -1,0 +1,77 @@
+fn parse_flag(flag/0: bool) -> Result__int32__string {
+  if flag/0 {
+      {
+        Result__int32__string::Ok(7)
+      }
+  } else {
+      {
+        Result__int32__string::Err("nope")
+      }
+  }
+}
+
+fn add(a/1: int32, b/2: int32) -> int32 {
+  (a/1 + b/2)
+}
+
+fn plus_one(flag/3: bool) -> Result__int32__string {
+  let run/5 = || {
+    let value/4 = {
+      let mtmp0 = parse_flag(flag/3) in
+      match mtmp0 {
+        Result__int32__string::Ok(x1) => {
+          {
+            let x1 = Result__int32__string::Ok._0(mtmp0) in
+            {
+              let try_value/15 = x1 in
+              try_value/15
+            }
+          }
+        },
+        Result__int32__string::Err(x2) => {
+          {
+            let x2 = Result__int32__string::Err._0(mtmp0) in
+            {
+              let try_residual/15 = x2 in
+              return Result__int32__string::Err(try_residual/15)
+            }
+          }
+        },
+      }
+    } in
+    Result__int32__string::Ok(add(value/4, 1))
+  } in
+  run/5()
+}
+
+fn show(res/6: Result__int32__string) -> string {
+  match res/6 {
+    Result__int32__string::Ok(x3) => {
+      {
+        let x3 = Result__int32__string::Ok._0(res/6) in
+        {
+          let value/7 = x3 in
+          ("ok=" + int32_to_string(value/7))
+        }
+      }
+    },
+    Result__int32__string::Err(x4) => {
+      {
+        let x4 = Result__int32__string::Err._0(res/6) in
+        {
+          let err/8 = x4 in
+          ("err=" + err/8)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println__T_string(show(plus_one(true))) in
+  let _wild6 = println__T_string(show(plus_one(false))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
