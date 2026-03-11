@@ -1841,6 +1841,24 @@ fn lower_expr_with_args(
             };
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
         }
+        cst::Expr::TryExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let Some(expr) = it
+                .expr()
+                .and_then(|expr| lower_expr_with_args(ctx, expr, Vec::new()))
+            else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Try expression missing operand",
+                );
+                return None;
+            };
+            let expr = ast::Expr::ETry {
+                expr: Box::new(expr),
+                astptr,
+            };
+            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+        }
         cst::Expr::BinaryExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let mut exprs = it.exprs();

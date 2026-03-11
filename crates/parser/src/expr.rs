@@ -447,6 +447,7 @@ fn looks_like_struct_literal(p: &mut Parser) -> bool {
 fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     match op {
         T!['('] => Some((21, ())),
+        T![?] => Some((22, ())),
         _ => None,
     }
 }
@@ -500,6 +501,10 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
                 let m = lhs.precede(p);
                 arg_list(p);
                 lhs = m.completed(p, MySyntaxKind::EXPR_CALL)
+            } else if p.at(T![?]) {
+                let m = lhs.precede(p);
+                p.advance();
+                lhs = m.completed(p, MySyntaxKind::EXPR_TRY)
             } else {
                 let op = p.peek();
                 p.advance_with_error(&format!("unexpected postfix operator {:?}", op));

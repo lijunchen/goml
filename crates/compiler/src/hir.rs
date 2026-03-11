@@ -1458,6 +1458,9 @@ pub enum Expr {
         op: common_defs::UnaryOp,
         expr: ExprId,
     },
+    ETry {
+        expr: ExprId,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: ExprId,

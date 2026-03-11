@@ -1252,6 +1252,10 @@ impl NameResolution {
                     },
                 )
             }
+            ast::Expr::ETry { expr, astptr } => {
+                let new_expr = self.resolve_expr(expr, env, ctx, hir_table);
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::ETry { expr: new_expr })
+            }
             ast::Expr::EBinary {
                 op,
                 lhs,

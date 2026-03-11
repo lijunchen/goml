@@ -10,7 +10,7 @@ use crate::package_names::BUILTIN_PACKAGE;
 use crate::typer::localenv::LocalTypeEnv;
 use crate::typer::results::{
     CallElab, CalleeElab, Coercion, NameRefElab, StructLitArgElab, StructLitElab, StructPatArgElab,
-    StructPatElab,
+    StructPatElab, TryElab, TryKind,
 };
 use crate::{
     env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
@@ -394,6 +394,7 @@ impl Typer {
             hir::Expr::EReturn { expr } => {
                 self.infer_return_expr(genv, local_env, diagnostics, e, expr)
             }
+            hir::Expr::ETry { expr } => self.infer_try_expr(genv, local_env, diagnostics, e, expr),
             hir::Expr::EGo { expr } => self.infer_go_expr(genv, local_env, diagnostics, expr),
             hir::Expr::ECall { func, args } => {
                 self.infer_call_expr(genv, local_env, diagnostics, e, func, &args, None)
@@ -2403,6 +2404,194 @@ impl Typer {
             expr,
             ty: self.fresh_ty_var(),
         }
+    }
+
+    fn infer_try_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        e: hir::ExprId,
+        expr: hir::ExprId,
+    ) -> tast::Expr {
+        let inner_expr = self.infer_expr(genv, local_env, diagnostics, expr);
+        let inner_ty_raw = inner_expr.get_ty();
+        let inner_ty = self.recover_try_container_ty(&inner_expr, &inner_ty_raw);
+
+        let Some(outer_ret_ty_raw) = self.return_ty_stack.last().cloned() else {
+            super::util::push_error_with_range(
+                diagnostics,
+                "`?` outside of a function or closure",
+                self.expr_range(e),
+            );
+            return tast::Expr::EVar {
+                name: "<try>".to_string(),
+                ty: self.fresh_ty_var(),
+                astptr: self.hir_table.expr_ptr(e),
+            };
+        };
+        let outer_ret_ty = self.subst_ty_silent(&outer_ret_ty_raw);
+        let range = self.expr_range(e);
+
+        let (kind, ok_ty) = match (
+            try_result_parts(&inner_ty),
+            try_option_parts(&inner_ty),
+            try_result_parts(&outer_ret_ty),
+            try_option_parts(&outer_ret_ty),
+            matches!(inner_ty, tast::Ty::TVar(_)),
+            matches!(outer_ret_ty, tast::Ty::TVar(_)),
+        ) {
+            (
+                Some((inner_name, ok_ty, err_ty)),
+                _,
+                Some((outer_name, _, outer_err_ty)),
+                _,
+                _,
+                _,
+            ) if inner_name == outer_name => {
+                if !same_or_unresolved_ty(outer_err_ty, err_ty) {
+                    super::util::push_error_with_range(
+                        diagnostics,
+                        "`?` on Result[T, E] requires the enclosing function or closure to return Result[_, E]",
+                        range,
+                    );
+                    return tast::Expr::EVar {
+                        name: "<try>".to_string(),
+                        ty: ok_ty.clone(),
+                        astptr: self.hir_table.expr_ptr(e),
+                    };
+                }
+                let outer_ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    outer_ret_ty_raw.clone(),
+                    result_ty(inner_name, outer_ok_ty, err_ty.clone()),
+                    range,
+                ));
+                (TryKind::Result, ok_ty.clone())
+            }
+            (Some((inner_name, ok_ty, err_ty)), _, _, _, _, true) => {
+                let outer_ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    outer_ret_ty_raw.clone(),
+                    result_ty(inner_name, outer_ok_ty, err_ty.clone()),
+                    range,
+                ));
+                (TryKind::Result, ok_ty.clone())
+            }
+            (_, Some((inner_name, ok_ty)), _, Some((outer_name, _)), _, _)
+                if inner_name == outer_name =>
+            {
+                let outer_ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    outer_ret_ty_raw.clone(),
+                    option_ty(inner_name, outer_ok_ty),
+                    range,
+                ));
+                (TryKind::Option, ok_ty.clone())
+            }
+            (_, Some((inner_name, ok_ty)), _, _, _, true) => {
+                let outer_ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    outer_ret_ty_raw.clone(),
+                    option_ty(inner_name, outer_ok_ty),
+                    range,
+                ));
+                (TryKind::Option, ok_ty.clone())
+            }
+            (_, _, Some((outer_name, _, err_ty)), _, true, _) => {
+                let ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    inner_ty_raw.clone(),
+                    result_ty(outer_name, ok_ty.clone(), err_ty.clone()),
+                    range,
+                ));
+                (TryKind::Result, ok_ty)
+            }
+            (_, _, _, Some((outer_name, _)), true, _) => {
+                let ok_ty = self.fresh_ty_var();
+                self.push_constraint(Constraint::TypeEqual(
+                    inner_ty_raw.clone(),
+                    option_ty(outer_name, ok_ty.clone()),
+                    range,
+                ));
+                (TryKind::Option, ok_ty)
+            }
+            (Some((_, ok_ty, _)), _, _, _, _, _) => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`?` on Result[T, E] requires the enclosing function or closure to return Result[_, E]",
+                    range,
+                );
+                return tast::Expr::EVar {
+                    name: "<try>".to_string(),
+                    ty: ok_ty.clone(),
+                    astptr: self.hir_table.expr_ptr(e),
+                };
+            }
+            (_, Some((_, ok_ty)), _, _, _, _) => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`?` on Option[T] requires the enclosing function or closure to return Option[_]",
+                    range,
+                );
+                return tast::Expr::EVar {
+                    name: "<try>".to_string(),
+                    ty: ok_ty.clone(),
+                    astptr: self.hir_table.expr_ptr(e),
+                };
+            }
+            _ => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "`?` can only be used on values of type Option[T] or Result[T, E]",
+                    range,
+                );
+                return tast::Expr::EVar {
+                    name: "<try>".to_string(),
+                    ty: self.fresh_ty_var(),
+                    astptr: self.hir_table.expr_ptr(e),
+                };
+            }
+        };
+
+        self.results.record_try_elab(
+            e,
+            TryElab {
+                kind,
+                outer_ret_ty: outer_ret_ty_raw,
+            },
+        );
+
+        tast::Expr::EVar {
+            name: "<try>".to_string(),
+            ty: ok_ty,
+            astptr: self.hir_table.expr_ptr(e),
+        }
+    }
+
+    fn recover_try_container_ty(&mut self, expr: &tast::Expr, fallback: &tast::Ty) -> tast::Ty {
+        match expr {
+            tast::Expr::ECall { func, .. } => {
+                let func_ty = self.norm(&func.get_ty());
+                if let tast::Ty::TFunc { ret_ty, .. } = func_ty {
+                    let ret_ty = self.norm(ret_ty.as_ref());
+                    if try_result_parts(&ret_ty).is_some() || try_option_parts(&ret_ty).is_some() {
+                        return ret_ty;
+                    }
+                }
+            }
+            tast::Expr::EBlock { block, .. } => {
+                if let Some(tail) = block.tail.as_deref() {
+                    let tail_ty = self.recover_try_container_ty(tail, &tail.get_ty());
+                    if try_result_parts(&tail_ty).is_some() || try_option_parts(&tail_ty).is_some()
+                    {
+                        return tail_ty;
+                    }
+                }
+            }
+            _ => {}
+        }
+        self.subst_ty_silent(fallback)
     }
 
     fn infer_go_expr(
@@ -5059,6 +5248,60 @@ pub(crate) fn contains_tvar(ty: &tast::Ty) -> bool {
         }
         _ => false,
     }
+}
+
+fn try_result_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty, &tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Result" && !name.ends_with("::Result") {
+        return None;
+    }
+    if args.len() != 2 {
+        return None;
+    }
+    Some((name.as_str(), &args[0], &args[1]))
+}
+
+fn try_option_parts(ty: &tast::Ty) -> Option<(&str, &tast::Ty)> {
+    let tast::Ty::TApp { ty, args } = ty else {
+        return None;
+    };
+    let tast::Ty::TEnum { name } = ty.as_ref() else {
+        return None;
+    };
+    if name != "Option" && !name.ends_with("::Option") {
+        return None;
+    }
+    if args.len() != 1 {
+        return None;
+    }
+    Some((name.as_str(), &args[0]))
+}
+
+fn result_ty(name: &str, ok_ty: tast::Ty, err_ty: tast::Ty) -> tast::Ty {
+    tast::Ty::TApp {
+        ty: Box::new(tast::Ty::TEnum {
+            name: name.to_string(),
+        }),
+        args: vec![ok_ty, err_ty],
+    }
+}
+
+fn option_ty(name: &str, ok_ty: tast::Ty) -> tast::Ty {
+    tast::Ty::TApp {
+        ty: Box::new(tast::Ty::TEnum {
+            name: name.to_string(),
+        }),
+        args: vec![ok_ty],
+    }
+}
+
+fn same_or_unresolved_ty(lhs: &tast::Ty, rhs: &tast::Ty) -> bool {
+    lhs == rhs || contains_tvar(lhs) || contains_tvar(rhs)
 }
 
 pub(crate) fn contains_tparam(ty: &tast::Ty) -> bool {

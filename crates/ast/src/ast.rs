@@ -421,6 +421,10 @@ pub enum Expr {
         expr: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
+    ETry {
+        expr: Box<Expr>,
+        astptr: MySyntaxNodePtr,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<Expr>,

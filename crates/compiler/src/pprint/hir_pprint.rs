@@ -416,6 +416,7 @@ impl Expr {
             hir::Expr::EUnary { op, expr } => RcDoc::text(op.symbol())
                 .append(ctx.expr_to_doc(*expr))
                 .group(),
+            hir::Expr::ETry { expr } => ctx.expr_to_doc(*expr).append(RcDoc::text("?")),
             hir::Expr::EBinary { op, lhs, rhs } => ctx
                 .expr_to_doc(*lhs)
                 .append(RcDoc::space())

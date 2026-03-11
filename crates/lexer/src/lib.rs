@@ -219,6 +219,9 @@ pub enum TokenKind {
     #[token("!=")]
     NotEq,
 
+    #[token("?")]
+    Question,
+
     #[token("#")]
     Pound,
 
@@ -441,6 +444,7 @@ impl std::fmt::Display for TokenKind {
             Self::LessEq => "<=",
             Self::EqEq => "==",
             Self::NotEq => "!=",
+            Self::Question => "?",
             Self::Pound => "#",
             Self::ExternKeyword => "extern",
             Self::PackageKeyword => "package",
@@ -537,6 +541,7 @@ macro_rules! T {
     [<=] => { $crate::TokenKind::LessEq };
     [==] => { $crate::TokenKind::EqEq };
     [!=] => { $crate::TokenKind::NotEq };
+    [?] => { $crate::TokenKind::Question };
     [#] => { $crate::TokenKind::Pound };
     [extern] => { $crate::TokenKind::ExternKeyword };
     [package] => { $crate::TokenKind::PackageKeyword };
