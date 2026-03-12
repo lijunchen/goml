@@ -5143,6 +5143,76 @@ fn build_native_call_plan(
         };
     }
 
+    if let anf::ImmExpr::Var { id, .. } = func
+        && id.0 == "hashmap_get"
+    {
+        let map_ty = imm_ty(&args[0]);
+        let tast::Ty::THashMap { key, value } = &map_ty else {
+            return None;
+        };
+        let NativeReturnMode::Option { some_ty } = &callee_mode else {
+            return None;
+        };
+        let key_go_ty = tast_ty_to_go_type(key);
+        let value_go_ty = tast_ty_to_go_type(value);
+        let value_name = format!("{}_value", prefix);
+        let ok_name = format!("{}_ok", prefix);
+        let mut stmts = Vec::new();
+        if need_success_value {
+            stmts.push(goast::Stmt::VarDecl {
+                name: value_name.clone(),
+                ty: value_go_ty.clone(),
+                value: None,
+            });
+        }
+        stmts.push(goast::Stmt::VarDecl {
+            name: ok_name.clone(),
+            ty: goty::GoType::TBool,
+            value: None,
+        });
+        stmts.push(goast::Stmt::MultiAssignment {
+            names: vec![
+                if need_success_value {
+                    value_name.clone()
+                } else {
+                    "_".to_string()
+                },
+                ok_name.clone(),
+            ],
+            value: goast::Expr::Call {
+                func: Box::new(goast::Expr::Var {
+                    name: runtime::hashmap_get_native_helper_fn_name(&map_ty),
+                    ty: goty::GoType::TFunc {
+                        params: vec![tast_ty_to_go_type(&map_ty), key_go_ty],
+                        ret_ty: Box::new(goty::GoType::TMulti {
+                            elems: vec![value_go_ty.clone(), goty::GoType::TBool],
+                        }),
+                    },
+                }),
+                args: compiled_args,
+                ty: goty::GoType::TMulti {
+                    elems: vec![value_go_ty.clone(), goty::GoType::TBool],
+                },
+            },
+        });
+        return Some(NativeCallPlan {
+            stmts,
+            success_expr: need_success_value.then(|| goast::Expr::Var {
+                name: value_name,
+                ty: tast_ty_to_go_type(some_ty),
+            }),
+            failure_cond: goast::Expr::UnaryOp {
+                op: goast::GoUnaryOp::Not,
+                expr: Box::new(goast::Expr::Var {
+                    name: ok_name.clone(),
+                    ty: goty::GoType::TBool,
+                }),
+                ty: goty::GoType::TBool,
+            },
+            failure: NativeCallFailure::Option,
+        });
+    }
+
     if !native_modes_compatible(&native_ctx.mode, &callee_mode) {
         return None;
     }
