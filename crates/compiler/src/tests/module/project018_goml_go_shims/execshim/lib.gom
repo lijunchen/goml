@@ -1,0 +1,53 @@
+package execshim;
+use common;
+
+extern "go" "os/exec" "*Cmd" type RawCmd
+
+#[go_variadic_last]
+extern "go" "os/exec" "Command" raw_command(name: string, args: Slice[string]) -> RawCmd
+
+#[go_field_get("Dir")]
+extern "go" "os/exec" "Cmd.Dir" raw_cmd_dir(cmd: RawCmd) -> string
+
+#[go_field_set("Dir")]
+extern "go" "os/exec" "Cmd.Dir" raw_cmd_set_dir(cmd: RawCmd, dir: string) -> unit
+
+#[go_error_last]
+extern "go" "os/exec" "(*Cmd).CombinedOutput" raw_cmd_combined_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
+
+struct Cmd {
+    raw: RawCmd,
+}
+
+fn command(name: string, args: Vec[string]) -> Cmd {
+    Cmd {
+        raw: raw_command(name, slice(args, 0, vec_len(args))),
+    }
+}
+
+fn dir(cmd: Cmd) -> string {
+    raw_cmd_dir(cmd.raw)
+}
+
+fn set_dir(cmd: Cmd, dir: string) -> unit {
+    raw_cmd_set_dir(cmd.raw, dir)
+}
+
+fn combined_output_text(cmd: Cmd) -> Result[string, GoError] {
+    let bytes = raw_cmd_combined_output(cmd.raw)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+impl Cmd {
+    fn dir(self: Cmd) -> string {
+        dir(self)
+    }
+
+    fn set_dir(self: Cmd, dir: string) -> unit {
+        set_dir(self, dir)
+    }
+
+    fn combined_output_text(self: Cmd) -> Result[string, GoError] {
+        combined_output_text(self)
+    }
+}

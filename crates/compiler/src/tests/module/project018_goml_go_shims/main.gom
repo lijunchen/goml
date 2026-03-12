@@ -1,0 +1,67 @@
+package main;
+use bufioshim;
+use execshim;
+use fsshim;
+use ioshim;
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(text) => text,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn demo_io() -> Result[string, GoError] {
+    let (reader, writer) = ioshim::pipe();
+    go || {
+        match ioshim::write_text(writer, "pipe-ok") {
+            Result::Ok(_) => (),
+            Result::Err(_) => (),
+        };
+        match ioshim::close(writer) {
+            Result::Ok(_) => (),
+            Result::Err(_) => (),
+        };
+    };
+    match ioshim::read_all_text(reader) {
+        Result::Ok(text) => Result::Ok(text),
+        Result::Err(err) => Result::Err(err),
+    }
+}
+
+fn demo_exec() -> Result[string, GoError] {
+    let args: Vec[string] = vec_new();
+    let args = vec_push(args, "-c");
+    let args = vec_push(args, "printf exec-ok");
+    let cmd = execshim::command("sh", args);
+    execshim::set_dir(cmd, ".");
+    let dir = execshim::dir(cmd);
+    let out = execshim::combined_output_text(cmd)?;
+    Result::Ok(dir + "|" + out)
+}
+
+fn demo_fs() -> Result[string, GoError] {
+    fsshim::write_text_file("fs_data.txt", "fs-ok")?;
+    let fs = fsshim::dir_fs(".");
+    let text = fsshim::read_text(fs, "fs_data.txt")?;
+    let status = if fsshim::valid_path("fs_data.txt") {
+        "valid"
+    } else {
+        "invalid"
+    };
+    Result::Ok(status + "|" + text)
+}
+
+fn demo_bufio() -> Result[string, GoError] {
+    let reader = bufioshim::from_text("first\nsecond\n");
+    let (line, prefix) = bufioshim::read_line(reader)?;
+    let state = if prefix { "prefix" } else { "full" };
+    Result::Ok(state + "|" + line)
+}
+
+fn main() -> unit {
+    println(show(demo_io()));
+    println(show(demo_exec()));
+    println(show(demo_fs()));
+    println(show(demo_bufio()));
+}

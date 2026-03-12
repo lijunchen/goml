@@ -87,6 +87,11 @@ fn multi_package_compile_project_017() -> anyhow::Result<()> {
     run_project("project017_try_go_error_cross_package")
 }
 
+#[test]
+fn multi_package_compile_project_018() -> anyhow::Result<()> {
+    run_project("project018_goml_go_shims")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")

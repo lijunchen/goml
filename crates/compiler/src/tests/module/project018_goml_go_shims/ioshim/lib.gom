@@ -1,0 +1,65 @@
+package ioshim;
+use common;
+
+extern "go" "io" "*PipeReader" type RawPipeReader
+extern "go" "io" "*PipeWriter" type RawPipeWriter
+extern "go" "" "int" type GoInt
+
+extern "go" "io" "Pipe" raw_pipe() -> (RawPipeReader, RawPipeWriter)
+
+#[go_error_last]
+extern "go" "io" "ReadAll" raw_pipe_read_all(reader: RawPipeReader) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
+extern "go" "io" "WriteString" raw_pipe_write_string(writer: RawPipeWriter, text: string) -> Result[GoInt, GoError]
+
+#[go_error]
+extern "go" "io" "(*PipeWriter).Close" raw_pipe_writer_close(writer: RawPipeWriter) -> Result[unit, GoError]
+
+struct PipeReader {
+    raw: RawPipeReader,
+}
+
+struct PipeWriter {
+    raw: RawPipeWriter,
+}
+
+fn pipe() -> (PipeReader, PipeWriter) {
+    let (reader, writer) = raw_pipe();
+    (
+        PipeReader { raw: reader },
+        PipeWriter { raw: writer },
+    )
+}
+
+fn read_all_text(reader: PipeReader) -> Result[string, GoError] {
+    let bytes = raw_pipe_read_all(reader.raw)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn write_text(writer: PipeWriter, text: string) -> Result[unit, GoError] {
+    match raw_pipe_write_string(writer.raw, text) {
+        Result::Ok(_) => Result::Ok(()),
+        Result::Err(err) => Result::Err(err),
+    }
+}
+
+fn close(writer: PipeWriter) -> Result[unit, GoError] {
+    raw_pipe_writer_close(writer.raw)
+}
+
+impl PipeReader {
+    fn read_all_text(self: PipeReader) -> Result[string, GoError] {
+        read_all_text(self)
+    }
+}
+
+impl PipeWriter {
+    fn write_text(self: PipeWriter, text: string) -> Result[unit, GoError] {
+        write_text(self, text)
+    }
+
+    fn close(self: PipeWriter) -> Result[unit, GoError] {
+        close(self)
+    }
+}
