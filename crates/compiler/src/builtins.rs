@@ -107,6 +107,17 @@ pub(crate) fn builtin_env() -> GlobalTypeEnv {
         .clone()
 }
 
+pub fn merge_with_builtin_env(genv: &GlobalTypeEnv) -> GlobalTypeEnv {
+    let exports = PackageExports {
+        type_env: genv.type_env.clone(),
+        trait_env: genv.trait_env.clone(),
+        value_env: genv.value_env.clone(),
+    };
+    let mut full_env = builtin_env();
+    exports.apply_to(&mut full_env);
+    full_env
+}
+
 pub(crate) fn builtin_tast() -> tast::File {
     BUILTIN_ARTIFACTS
         .get_or_init(build_builtin_artifacts)

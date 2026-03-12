@@ -24,7 +24,11 @@ fn typecheck_ast(
     let (hir, hir_table, mut hir_diagnostics) = compiler::hir::lower_to_hir(ast);
     let (tast, genv, mut diagnostics) = compiler::typer::check_file(hir, hir_table);
     diagnostics.append(&mut hir_diagnostics);
-    Ok((tast, genv, diagnostics))
+    Ok((
+        tast,
+        compiler::builtins::merge_with_builtin_env(&genv),
+        diagnostics,
+    ))
 }
 
 #[wasm_bindgen]
@@ -506,4 +510,31 @@ fn format_derive_errors(diagnostics: Diagnostics) -> String {
         })
         .collect::<Vec<_>>()
         .join("\n")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::compile_to_core;
+
+    #[test]
+    fn compile_to_core_handles_builtin_result_match() {
+        let src = r#"
+package main;
+
+fn unwrap_or_zero(x: Result[int32, string]) -> int32 {
+    match x {
+        Result::Ok(v) => v,
+        Result::Err(_) => 0,
+    }
+}
+
+fn main() {
+    println(unwrap_or_zero(Result::Ok(1)));
+}
+"#;
+
+        let output = compile_to_core(src);
+        assert!(!output.contains("Internal compiler error"));
+        assert!(!output.contains("enum Result not found during match compilation"));
+    }
 }
