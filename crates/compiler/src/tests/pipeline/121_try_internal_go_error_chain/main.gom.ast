@@ -1,0 +1,34 @@
+package main;
+extern "go" "time" "Duration" type Duration
+
+#[go_error_last]
+extern "go" "time" "ParseDuration" parse_duration(s: string) -> Result[Duration, GoError]
+
+extern "go" "fmt" "Sprintf" format_duration(format: string, value: Duration) -> string
+
+fn parse_text(input: string) -> Result[Duration, GoError] {
+    parse_duration(input)
+}
+
+fn normalize(input: string) -> Result[Duration, GoError] {
+    let value = parse_text(input)?;
+    Result::Ok(value)
+}
+
+fn decorate(input: string) -> Result[string, GoError] {
+    let value = normalize(input)?;
+    Result::Ok("dur=" + format_duration("%v", value))
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(show(decorate("3s")));
+    println(show(decorate("oops")));
+}
+

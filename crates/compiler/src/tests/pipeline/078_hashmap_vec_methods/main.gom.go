@@ -58,9 +58,10 @@ func hashmap_len__HashMap_Key_int32(m *hashmap_key_int32_x) int32 {
     return m.len
 }
 
-func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int32 {
+func hashmap_get_native__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) (int32, bool) {
     if m == nil {
-        return None{}
+        var zero int32
+        return zero, false
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
     var bucket []hashmap_key_int32_x_entry = m.buckets[h]
@@ -71,11 +72,22 @@ func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int
         }
         var entry hashmap_key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
-            return Some{
-                _0: entry.value,
-            }
+            return entry.value, true
         }
         i = i + 1
+    }
+    var zero int32
+    return zero, false
+}
+
+func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_get_native__HashMap_Key_int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
     }
     return None{}
 }
@@ -368,11 +380,28 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__8
     return retv77
 }
 
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__78 *hashmap_key_int32_x, key__79 Key) (int32, bool) {
+    hashmap_get__HashMap_Key_int32(self__78, key__79)
+    var t81_value int32
+    var t81_ok bool
+    t81_value, t81_ok = hashmap_get_native__HashMap_Key_int32(self__78, key__79)
+    if !t81_ok {
+        var ret_zero int32
+        return ret_zero, false
+    }
+    return t81_value, true
+}
+
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__78 *hashmap_key_int32_x, key__79 Key) Option__int32 {
-    var retv80 Option__int32
-    var t81 Option__int32 = hashmap_get__HashMap_Key_int32(self__78, key__79)
-    retv80 = t81
-    return retv80
+    var native_value int32
+    var native_ok bool
+    native_value, native_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__78, key__79)
+    if native_ok {
+        return Some{
+            _0: native_value,
+        }
+    }
+    return None{}
 }
 
 func println__T_bool(value__1 bool) struct{} {

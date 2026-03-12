@@ -1,0 +1,73 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn fetch(flag/0: bool) -> Option[int32] {
+  let m/1 = inherent#HashMap#HashMap[string,int32]#new() in
+  let _wild1 = if flag/0 {
+      {
+        let _wild0 = inherent#HashMap#HashMap[string,int32]#set(m/1, "a", 7) in
+        ()
+      }
+  } else {
+      {
+        ()
+      }
+  } in
+  let value/2 = {
+    let mtmp2 = inherent#HashMap#HashMap[string,int32]#get(m/1, "a") in
+    match mtmp2 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x3) => {
+        {
+          let x3 = Option::Some._0(mtmp2) in
+          {
+            let try_value/18 = x3 in
+            try_value/18
+          }
+        }
+      },
+    }
+  } in
+  Option::Some((value/2 + 1))
+}
+
+fn show(opt/3: Option[int32]) -> string {
+  match opt/3 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x4) => {
+      {
+        let x4 = Option::Some._0(opt/3) in
+        {
+          let value/4 = x4 in
+          ("some=" + trait_call[ToString::to_string](value/4))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(fetch(true))) in
+  let _wild6 = println(show(fetch(false))) in
+}
+
+fn inherent#HashMap#HashMap[K,V]#new() -> HashMap[K, V] {
+  hashmap_new()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get(self/78: HashMap[K, V], key/79: K) -> Option[V] {
+  hashmap_get(self/78, key/79)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set(self/80: HashMap[K, V], key/81: K, value/82: V) -> unit {
+  hashmap_set(self/80, key/81, value/82)
+}

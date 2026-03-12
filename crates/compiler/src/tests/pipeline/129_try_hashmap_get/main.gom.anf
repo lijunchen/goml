@@ -1,0 +1,98 @@
+fn fetch(flag/0: bool) -> Option__int32 {
+  join ret7(retv8: Option__int32) -> Option__int32 {
+    retv8
+  } in
+  let m/1 = inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() in
+  join k9() -> Option__int32 {
+    let _wild1 = () in
+    let mtmp2 = inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(m/1, "a") in
+    join k10(jp11: int32) -> Option__int32 {
+      let value/2 = jp11 in
+      let t12 = (value/2 + 1) in
+      let t13 = Option__int32::Some(t12) in
+      jump ret7(t13)
+    } in
+    match mtmp2 {
+      Tag_0 => {
+        jump ret7(Tag_0)
+      },
+      Tag_1 => {
+        let x3 = Option__int32::Some._0(mtmp2) in
+        let try_value/18 = x3 in
+        jump k10(try_value/18)
+      },
+    }
+  } in
+  if flag/0 {
+    let _wild0 = inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(m/1, "a", 7) in
+    jump k9()
+  } else {
+    jump k9()
+  }
+}
+
+fn show(opt/3: Option__int32) -> string {
+  join ret14(retv15: string) -> string {
+    retv15
+  } in
+  join k16(jp17: string) -> string {
+    jump ret14(jp17)
+  } in
+  match opt/3 {
+    Tag_0 => {
+      jump k16("none")
+    },
+    Tag_1 => {
+      let x4 = Option__int32::Some._0(opt/3) in
+      let value/4 = x4 in
+      let t18 = int32_to_string(value/4) in
+      let t19 = ("some=" + t18) in
+      jump k16(t19)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = fetch(true) in
+  let t22 = show(t21) in
+  let _wild5 = println__T_string(t22) in
+  let t23 = fetch(false) in
+  let t24 = show(t23) in
+  let _wild6 = println__T_string(t24) in
+  jump ret20()
+}
+
+fn inherent#HashMap#HashMap[K,V]#new__K_string__V_int32() -> HashMap[string, int32] {
+  join ret25(retv26: HashMap[string, int32]) -> HashMap[string, int32] {
+    retv26
+  } in
+  let t27 = hashmap_new() in
+  jump ret25(t27)
+}
+
+fn inherent#HashMap#HashMap[K,V]#set__K_string__V_int32(self/80: HashMap[string, int32], key/81: string, value/82: int32) -> unit {
+  join ret28() -> unit {
+    ()
+  } in
+  let t29 = hashmap_set(self/80, key/81, value/82) in
+  jump ret28()
+}
+
+fn inherent#HashMap#HashMap[K,V]#get__K_string__V_int32(self/78: HashMap[string, int32], key/79: string) -> Option__int32 {
+  join ret30(retv31: Option__int32) -> Option__int32 {
+    retv31
+  } in
+  let t32 = hashmap_get(self/78, key/79) in
+  jump ret30(t32)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret33() -> unit {
+    ()
+  } in
+  let t34 = string_println(value/1) in
+  jump ret33()
+}

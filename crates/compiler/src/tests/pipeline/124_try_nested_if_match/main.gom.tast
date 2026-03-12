@@ -1,0 +1,58 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn maybe_num(flag/0: bool) -> Option[int32] {
+    if (flag/0 : bool) {
+        {
+            Option::Some(8)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option[int32] {
+    let value/6: int32 = if (top/1 : bool) {
+        {
+            match (mode/2 : Mode) {
+                Mode::Take => {
+                      let inner/4: int32 = match (maybe_num : (bool) -> Option[int32])((inner_flag/3 : bool)) {
+                          Option::Some(try_value/13: int32) => (try_value/13 : int32),
+                          Option::None => return Option::None,
+                      };
+                      (inner/4 : int32) + 1
+                  },
+                Mode::Skip => 20,
+            }
+        }
+    } else {
+        {
+            let inner/5: int32 = match (maybe_num : (bool) -> Option[int32])((inner_flag/3 : bool)) {
+                Option::Some(try_value/24: int32) => (try_value/24 : int32),
+                Option::None => return Option::None,
+            };
+            (inner/5 : int32) + 2
+        }
+    };
+    Option::Some((value/6 : int32))
+}
+
+fn show(opt/7: Option[int32]) -> string {
+    match (opt/7 : Option[int32]) {
+        Option::Some(value/8: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/8 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((nested : (bool, Mode, bool) -> Option[int32])(true, Mode::Take, true)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((nested : (bool, Mode, bool) -> Option[int32])(true, Mode::Skip, false)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((nested : (bool, Mode, bool) -> Option[int32])(false, Mode::Take, false)));
+}

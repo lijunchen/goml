@@ -277,6 +277,9 @@ pub enum Stmt {
     Return {
         expr: Option<Expr>,
     },
+    ReturnMulti {
+        exprs: Vec<Expr>,
+    },
     If {
         cond: Expr,
         then: Block,

@@ -1,0 +1,55 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn maybe_seed(flag/0: bool) -> Option[int32] {
+    if (flag/0 : bool) {
+        {
+            Option::Some(3)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn maybe_double(value/1: int32) -> Option[int32] {
+    if (value/1 : int32) > 0 {
+        {
+            Option::Some((value/1 : int32) * 2)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn maybe_total(flag/2: bool) -> Option[int32] {
+    let a/3: int32 = match (maybe_seed : (bool) -> Option[int32])((flag/2 : bool)) {
+        Option::Some(try_value/22: int32) => (try_value/22 : int32),
+        Option::None => return Option::None,
+    };
+    let b/4: int32 = match (maybe_double : (int32) -> Option[int32])((a/3 : int32)) {
+        Option::Some(try_value/26: int32) => (try_value/26 : int32),
+        Option::None => return Option::None,
+    };
+    Option::Some((a/3 : int32) + (b/4 : int32))
+}
+
+fn show(opt/5: Option[int32]) -> string {
+    match (opt/5 : Option[int32]) {
+        Option::Some(value/6: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/6 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((maybe_total : (bool) -> Option[int32])(true)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((maybe_total : (bool) -> Option[int32])(false)));
+}

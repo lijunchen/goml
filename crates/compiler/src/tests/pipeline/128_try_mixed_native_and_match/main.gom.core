@@ -1,0 +1,92 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn maybe_primary(flag/0: bool) -> Option[int32] {
+  if flag/0 {
+      {
+        Option::Some(4)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn maybe_secondary(flag/1: bool) -> Option[int32] {
+  if flag/1 {
+      {
+        Option::Some(9)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn mixed(primary/2: bool, secondary/3: bool) -> Option[string] {
+  let value/4 = {
+    let mtmp0 = maybe_primary(primary/2) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/18 = x1 in
+            try_value/18
+          }
+        }
+      },
+    }
+  } in
+  let label/6 = {
+    let mtmp2 = maybe_secondary(secondary/3) in
+    match mtmp2 {
+      Option::None => {
+        "extra=none"
+      },
+      Option::Some(x3) => {
+        {
+          let x3 = Option::Some._0(mtmp2) in
+          {
+            let extra/5 = x3 in
+            ("extra=" + trait_call[ToString::to_string](extra/5))
+          }
+        }
+      },
+    }
+  } in
+  Option::Some(((("value=" + int32_to_string(value/4)) + ",") + label/6))
+}
+
+fn show(opt/7: Option[string]) -> string {
+  match opt/7 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x4) => {
+      {
+        let x4 = Option::Some._0(opt/7) in
+        {
+          let value/8 = x4 in
+          ("some=" + value/8)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(mixed(true, true))) in
+  let _wild6 = println(show(mixed(true, false))) in
+  let _wild7 = println(show(mixed(false, true))) in
+}

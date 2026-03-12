@@ -325,6 +325,10 @@ pub fn hashmap_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
     format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
+pub fn hashmap_get_native_helper_fn_name(ty: &tast::Ty) -> String {
+    hashmap_helper_fn_name("hashmap_get_native", ty)
+}
+
 pub fn missing_helper_fn_name(ty: &tast::Ty) -> String {
     format!("missing__{}", go_ident(&encode_ty(ty)))
 }
@@ -1116,13 +1120,15 @@ pub fn make_hashmap_runtime(
             name: option_none_go_name.clone(),
         };
 
-        let get_fn = goast::Fn {
-            name: hashmap_helper_fn_name("hashmap_get", ty),
+        let get_native_fn = goast::Fn {
+            name: hashmap_get_native_helper_fn_name(ty),
             params: vec![
                 ("m".to_string(), map_ptr_go_ty.clone()),
                 ("key".to_string(), key_go_ty.clone()),
             ],
-            ret_ty: Some(option_go_ty.clone()),
+            ret_ty: Some(goty::GoType::TMulti {
+                elems: vec![value_go_ty.clone(), goty::GoType::TBool],
+            }),
             body: goast::Block {
                 stmts: {
                     let mut stmts = Vec::new();
@@ -1139,12 +1145,25 @@ pub fn make_hashmap_runtime(
                             ty: goty::GoType::TBool,
                         },
                         then: goast::Block {
-                            stmts: vec![goast::Stmt::Return {
-                                expr: Some(goast::Expr::StructLiteral {
-                                    fields: vec![],
-                                    ty: option_none_go_ty.clone(),
-                                }),
-                            }],
+                            stmts: vec![
+                                goast::Stmt::VarDecl {
+                                    name: "zero".to_string(),
+                                    ty: value_go_ty.clone(),
+                                    value: None,
+                                },
+                                goast::Stmt::ReturnMulti {
+                                    exprs: vec![
+                                        goast::Expr::Var {
+                                            name: "zero".to_string(),
+                                            ty: value_go_ty.clone(),
+                                        },
+                                        goast::Expr::Bool {
+                                            value: false,
+                                            ty: goty::GoType::TBool,
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                         else_: None,
                     });
@@ -1305,11 +1324,14 @@ pub fn make_hashmap_runtime(
                             goast::Stmt::If {
                                 cond,
                                 then: goast::Block {
-                                    stmts: vec![goast::Stmt::Return {
-                                        expr: Some(goast::Expr::StructLiteral {
-                                            fields: vec![("_0".to_string(), entry_value)],
-                                            ty: option_some_go_ty.clone(),
-                                        }),
+                                    stmts: vec![goast::Stmt::ReturnMulti {
+                                        exprs: vec![
+                                            entry_value,
+                                            goast::Expr::Bool {
+                                                value: true,
+                                                ty: goty::GoType::TBool,
+                                            },
+                                        ],
                                     }],
                                 },
                                 else_: None,
@@ -1333,14 +1355,102 @@ pub fn make_hashmap_runtime(
                     };
                     stmts.push(goast::Stmt::Loop { body, label: None });
 
-                    stmts.push(goast::Stmt::Return {
+                    stmts.push(goast::Stmt::VarDecl {
+                        name: "zero".to_string(),
+                        ty: value_go_ty.clone(),
+                        value: None,
+                    });
+                    stmts.push(goast::Stmt::ReturnMulti {
+                        exprs: vec![
+                            goast::Expr::Var {
+                                name: "zero".to_string(),
+                                ty: value_go_ty.clone(),
+                            },
+                            goast::Expr::Bool {
+                                value: false,
+                                ty: goty::GoType::TBool,
+                            },
+                        ],
+                    });
+                    stmts
+                },
+            },
+        };
+
+        let get_fn = goast::Fn {
+            name: hashmap_helper_fn_name("hashmap_get", ty),
+            params: vec![
+                ("m".to_string(), map_ptr_go_ty.clone()),
+                ("key".to_string(), key_go_ty.clone()),
+            ],
+            ret_ty: Some(option_go_ty.clone()),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::VarDecl {
+                        name: "value".to_string(),
+                        ty: value_go_ty.clone(),
+                        value: None,
+                    },
+                    goast::Stmt::VarDecl {
+                        name: "ok".to_string(),
+                        ty: goty::GoType::TBool,
+                        value: None,
+                    },
+                    goast::Stmt::MultiAssignment {
+                        names: vec!["value".to_string(), "ok".to_string()],
+                        value: goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: hashmap_get_native_helper_fn_name(ty),
+                                ty: goty::GoType::TFunc {
+                                    params: vec![map_ptr_go_ty.clone(), key_go_ty.clone()],
+                                    ret_ty: Box::new(goty::GoType::TMulti {
+                                        elems: vec![value_go_ty.clone(), goty::GoType::TBool],
+                                    }),
+                                },
+                            }),
+                            args: vec![
+                                goast::Expr::Var {
+                                    name: "m".to_string(),
+                                    ty: map_ptr_go_ty.clone(),
+                                },
+                                goast::Expr::Var {
+                                    name: "key".to_string(),
+                                    ty: key_go_ty.clone(),
+                                },
+                            ],
+                            ty: goty::GoType::TMulti {
+                                elems: vec![value_go_ty.clone(), goty::GoType::TBool],
+                            },
+                        },
+                    },
+                    goast::Stmt::If {
+                        cond: goast::Expr::Var {
+                            name: "ok".to_string(),
+                            ty: goty::GoType::TBool,
+                        },
+                        then: goast::Block {
+                            stmts: vec![goast::Stmt::Return {
+                                expr: Some(goast::Expr::StructLiteral {
+                                    fields: vec![(
+                                        "_0".to_string(),
+                                        goast::Expr::Var {
+                                            name: "value".to_string(),
+                                            ty: value_go_ty.clone(),
+                                        },
+                                    )],
+                                    ty: option_some_go_ty.clone(),
+                                }),
+                            }],
+                        },
+                        else_: None,
+                    },
+                    goast::Stmt::Return {
                         expr: Some(goast::Expr::StructLiteral {
                             fields: vec![],
                             ty: option_none_go_ty.clone(),
                         }),
-                    });
-                    stmts
-                },
+                    },
+                ],
             },
         };
 
@@ -1950,6 +2060,7 @@ pub fn make_hashmap_runtime(
 
         items.push(goast::Item::Fn(new_fn));
         items.push(goast::Item::Fn(len_fn));
+        items.push(goast::Item::Fn(get_native_fn));
         items.push(goast::Item::Fn(get_fn));
         items.push(goast::Item::Fn(set_fn));
         items.push(goast::Item::Fn(remove_fn));

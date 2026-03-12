@@ -1,0 +1,65 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn render_with_prefix(prefix/0: string, text/1: string) -> Result[string, GoError] {
+  let run/3 = || => {
+    let value/2 = {
+      let mtmp0 = parse_duration(text/1) in
+      match mtmp0 {
+        Result::Ok(x1) => {
+          {
+            let x1 = Result::Ok._0(mtmp0) in
+            {
+              let try_value/4 = x1 in
+              try_value/4
+            }
+          }
+        },
+        Result::Err(x2) => {
+          {
+            let x2 = Result::Err._0(mtmp0) in
+            {
+              let try_residual/4 = x2 in
+              return Result::Err(try_residual/4)
+            }
+          }
+        },
+      }
+    } in
+    Result::Ok((prefix/0 + format_duration("%v", value/2)))
+  } in
+  run/3()
+}
+
+fn show(res/4: Result[string, GoError]) -> string {
+  match res/4 {
+    Result::Ok(x3) => {
+      {
+        let x3 = Result::Ok._0(res/4) in
+        {
+          let value/5 = x3 in
+          value/5
+        }
+      }
+    },
+    Result::Err(x4) => {
+      {
+        let x4 = Result::Err._0(res/4) in
+        {
+          let err/6 = x4 in
+          ("err=" + trait_call[ToString::to_string](err/6))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(render_with_prefix("seen=", "5s"))) in
+  let _wild6 = println(show(render_with_prefix("seen=", "bad"))) in
+}

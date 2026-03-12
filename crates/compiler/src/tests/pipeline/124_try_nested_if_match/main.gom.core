@@ -1,0 +1,98 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn maybe_num(flag/0: bool) -> Option[int32] {
+  if flag/0 {
+      {
+        Option::Some(8)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option[int32] {
+  let value/6 = if top/1 {
+      {
+        match mode/2 {
+          Mode::Take => {
+            {
+              let inner/4 = {
+                let mtmp0 = maybe_num(inner_flag/3) in
+                match mtmp0 {
+                  Option::None => {
+                    return Option::None
+                  },
+                  Option::Some(x1) => {
+                    {
+                      let x1 = Option::Some._0(mtmp0) in
+                      {
+                        let try_value/13 = x1 in
+                        try_value/13
+                      }
+                    }
+                  },
+                }
+              } in
+              (inner/4 + 1)
+            }
+          },
+          Mode::Skip => {
+            20
+          },
+        }
+      }
+  } else {
+      {
+        let inner/5 = {
+          let mtmp2 = maybe_num(inner_flag/3) in
+          match mtmp2 {
+            Option::None => {
+              return Option::None
+            },
+            Option::Some(x3) => {
+              {
+                let x3 = Option::Some._0(mtmp2) in
+                {
+                  let try_value/24 = x3 in
+                  try_value/24
+                }
+              }
+            },
+          }
+        } in
+        (inner/5 + 2)
+      }
+  } in
+  Option::Some(value/6)
+}
+
+fn show(opt/7: Option[int32]) -> string {
+  match opt/7 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x4) => {
+      {
+        let x4 = Option::Some._0(opt/7) in
+        {
+          let value/8 = x4 in
+          ("some=" + trait_call[ToString::to_string](value/8))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(nested(true, Mode::Take, true))) in
+  let _wild6 = println(show(nested(true, Mode::Skip, false))) in
+  let _wild7 = println(show(nested(false, Mode::Take, false))) in
+}
