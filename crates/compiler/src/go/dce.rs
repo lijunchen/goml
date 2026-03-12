@@ -69,6 +69,7 @@ fn stmt_has_label_or_goto(stmt: &ast::Stmt) -> bool {
             expr_has_label_or_goto(target) || expr_has_label_or_goto(value)
         }
         ast::Stmt::Return { expr } => expr.as_ref().is_some_and(expr_has_label_or_goto),
+        ast::Stmt::ReturnMulti { exprs } => exprs.iter().any(expr_has_label_or_goto),
         ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => false,
     }
 }
@@ -284,6 +285,13 @@ fn dce_block_with_live(
                     add_uses_expr(&mut live, e);
                 }
                 out.push(ast::Stmt::Return { expr });
+            }
+            ast::Stmt::ReturnMulti { exprs } => {
+                let exprs = exprs.into_iter().map(dce_expr).collect::<Vec<_>>();
+                for expr in &exprs {
+                    add_uses_expr(&mut live, expr);
+                }
+                out.push(ast::Stmt::ReturnMulti { exprs });
             }
             ast::Stmt::Loop { body, label } => {
                 let mut loop_live_out = live.clone();
@@ -620,6 +628,11 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                             used.extend(vars_used_in_expr(e));
                         }
                     }
+                    ast::Stmt::ReturnMulti { exprs } => {
+                        for expr in exprs {
+                            used.extend(vars_used_in_expr(expr));
+                        }
+                    }
                     ast::Stmt::Expr(e) => used.extend(vars_used_in_expr(e)),
                     ast::Stmt::Go { call } => used.extend(vars_used_in_expr(call)),
                     ast::Stmt::If { cond, then, else_ } => {
@@ -683,6 +696,11 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
                     ast::Stmt::Return { expr: Some(e) } => {
                         s.extend(vars_used_in_expr(e));
                     }
+                    ast::Stmt::ReturnMulti { exprs } => {
+                        for expr in exprs {
+                            s.extend(vars_used_in_expr(expr));
+                        }
+                    }
                     ast::Stmt::Expr(e) => {
                         s.extend(vars_used_in_expr(e));
                     }
@@ -731,6 +749,11 @@ fn free_vars_in_block(b: &ast::Block) -> HashSet<String> {
             ast::Stmt::Return { expr } => {
                 if let Some(e) = expr {
                     used.extend(vars_used_in_expr(e));
+                }
+            }
+            ast::Stmt::ReturnMulti { exprs } => {
+                for expr in exprs {
+                    used.extend(vars_used_in_expr(expr));
                 }
             }
             ast::Stmt::Expr(e) => used.extend(vars_used_in_expr(e)),
@@ -850,6 +873,7 @@ fn stmt_has_side_effects(s: &ast::Stmt) -> bool {
         ast::Stmt::PointerAssign { .. } => true,
         ast::Stmt::FieldAssign { .. } => true,
         ast::Stmt::Return { expr } => expr.as_ref().map(expr_has_side_effects).unwrap_or(false),
+        ast::Stmt::ReturnMulti { exprs } => exprs.iter().any(expr_has_side_effects),
         ast::Stmt::Loop { body, .. } => body.stmts.iter().any(stmt_has_side_effects),
         ast::Stmt::Break | ast::Stmt::Continue | ast::Stmt::BreakLabel(_) => false,
         ast::Stmt::If { cond, then, else_ } => {
@@ -992,6 +1016,11 @@ fn collect_called_in_stmt(
         ast::Stmt::Return { expr } => {
             if let Some(e) = expr {
                 collect_called_in_expr(e, calls, fn_names);
+            }
+        }
+        ast::Stmt::ReturnMulti { exprs } => {
+            for expr in exprs {
+                collect_called_in_expr(expr, calls, fn_names);
             }
         }
         ast::Stmt::If { cond, then, else_ } => {
@@ -1243,6 +1272,11 @@ fn collect_packages_in_stmt(
                 collect_packages_in_expr(e, imports, used);
             }
         }
+        ast::Stmt::ReturnMulti { exprs } => {
+            for expr in exprs {
+                collect_packages_in_expr(expr, imports, used);
+            }
+        }
         ast::Stmt::If { cond, then, else_ } => {
             collect_packages_in_expr(cond, imports, used);
             collect_packages_in_block(then, imports, used);
@@ -1368,6 +1402,11 @@ fn collect_packages_in_go_type(
     used: &mut HashSet<String>,
 ) {
     match ty {
+        crate::go::goty::GoType::TMulti { elems } => {
+            for elem in elems {
+                collect_packages_in_go_type(elem, imports, used);
+            }
+        }
         crate::go::goty::GoType::TStruct { fields, .. } => {
             for (_, field_ty) in fields {
                 collect_packages_in_go_type(field_ty, imports, used);

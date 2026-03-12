@@ -27,6 +27,10 @@ fn escape_go_string(value: &str) -> String {
 fn go_type_name(ty: &GoType) -> String {
     match ty {
         GoType::TVoid => "void".to_string(),
+        GoType::TMulti { elems } => format!(
+            "({})",
+            elems.iter().map(go_type_name).collect::<Vec<_>>().join(", ")
+        ),
         GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
         GoType::TInt8 => "int8".to_string(),
@@ -53,6 +57,9 @@ fn go_type_name(ty: &GoType) -> String {
 
 fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
     match ty {
+        GoType::TMulti { elems } => RcDoc::text("(")
+            .append(RcDoc::intersperse(elems.iter().map(go_type_doc), RcDoc::text(", ")))
+            .append(RcDoc::text(")")),
         GoType::TFunc { params, ret_ty } => {
             let params_doc = if params.is_empty() {
                 RcDoc::nil()
@@ -513,6 +520,19 @@ impl Stmt {
                         .append(expr.to_doc(goenv))
                 } else {
                     return_stmt
+                }
+            }
+            Stmt::ReturnMulti { exprs } => {
+                let return_stmt = RcDoc::text("return");
+                if exprs.is_empty() {
+                    return_stmt
+                } else {
+                    return_stmt
+                        .append(RcDoc::space())
+                        .append(RcDoc::intersperse(
+                            exprs.iter().map(|expr| expr.to_doc(goenv)),
+                            RcDoc::text(", "),
+                        ))
                 }
             }
             Stmt::Loop { body, label } => {
