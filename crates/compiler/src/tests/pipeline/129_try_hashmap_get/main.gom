@@ -1,0 +1,23 @@
+fn fetch(flag: bool) -> Option[int32] {
+    let m = HashMap::new();
+    if flag {
+        m.set("a", 7);
+        ()
+    } else {
+        ()
+    };
+    let value = m.get("a")?;
+    Option::Some(value + 1)
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(fetch(true)));
+    println(show(fetch(false)));
+}
