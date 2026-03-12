@@ -774,13 +774,8 @@ impl Typer {
                                 call_site_type,
                                 origin,
                             });
-                        } else if let Some(scheme) = genv
-                            .builtins()
-                            .lookup_inherent_method_scheme(&norm_receiver_ty, &method)
-                            .or_else(|| {
-                                genv.current()
-                                    .lookup_inherent_method_scheme(&norm_receiver_ty, &method)
-                            })
+                        } else if let Some(scheme) =
+                            genv.lookup_visible_inherent_method_scheme(&norm_receiver_ty, &method)
                         {
                             let inst_method_ty = self.inst_ty(&scheme.ty);
                             let unified =

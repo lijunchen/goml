@@ -4925,6 +4925,13 @@ fn build_option_failure_stmts(some_ty: &tast::Ty) -> Vec<goast::Stmt> {
     ]
 }
 
+fn native_mode_needs_success_value(mode: &NativeReturnMode) -> bool {
+    match mode {
+        NativeReturnMode::Result { ok_ty, .. } => !matches!(ok_ty, tast::Ty::TUnit),
+        NativeReturnMode::Option { some_ty } => !matches!(some_ty, tast::Ty::TUnit),
+    }
+}
+
 fn compile_native_return_from_imm(
     goenv: &GlobalGoEnv,
     imm: &anf::ImmExpr,
@@ -4957,9 +4964,19 @@ fn compile_native_return_from_imm(
             anf::ImmExpr::Var { id, .. } => id.0.replace('/', "_"),
             _ => "native_return".to_string(),
         };
-        if let Some(plan) = build_native_call_plan(goenv, value, native_ctx, true, &prefix)
-            && let Some(success_expr) = plan.success_expr
+        let need_success_value = native_mode_needs_success_value(&native_ctx.mode);
+        if let Some(plan) =
+            build_native_call_plan(goenv, value, native_ctx, need_success_value, &prefix)
+            && (plan.success_expr.is_some() || !need_success_value)
         {
+            let success_expr = plan.success_expr.unwrap_or_else(|| match &native_ctx.mode {
+                NativeReturnMode::Result { ok_ty, .. } => goast::Expr::Unit {
+                    ty: tast_ty_to_go_type(ok_ty),
+                },
+                NativeReturnMode::Option { some_ty } => goast::Expr::Unit {
+                    ty: tast_ty_to_go_type(some_ty),
+                },
+            });
             let mut stmts = plan.stmts;
             stmts.push(goast::Stmt::If {
                 cond: plan.failure_cond,
@@ -5616,7 +5633,10 @@ fn can_inline_native_return_bound_value(
     native_ctx: &NativeFnCtx,
     prefix: &str,
 ) -> bool {
-    if build_native_call_plan(goenv, value, native_ctx, true, prefix).is_some() {
+    let need_success_value = native_mode_needs_success_value(&native_ctx.mode);
+    if let Some(plan) = build_native_call_plan(goenv, value, native_ctx, need_success_value, prefix)
+        && (plan.success_expr.is_some() || !need_success_value)
+    {
         return true;
     }
 
@@ -5648,10 +5668,15 @@ fn native_direct_return_bind_id(
 ) -> Option<anf::LocalId> {
     let native_ctx = native_ctx?;
     let target = all_branches_jump_to(term)?;
-    let join_bind = join_env.get(target)?;
-    if !pending_joins.iter().any(|j| j.id == *target)
-        || !join_forwards_to_native_return(join_bind, join_env, native_ctx)
-    {
+    let forwards_to_native_return = if *target == native_ctx.return_join {
+        true
+    } else if let Some(join_bind) = join_env.get(target) {
+        pending_joins.iter().any(|j| j.id == *target)
+            && join_forwards_to_native_return(join_bind, join_env, native_ctx)
+    } else {
+        false
+    };
+    if !forwards_to_native_return {
         return None;
     }
 

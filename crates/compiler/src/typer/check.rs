@@ -13,7 +13,7 @@ use crate::typer::results::{
     StructPatElab, TryElab, TryKind,
 };
 use crate::{
-    env::{Constraint, GlobalTypeEnv, PackageTypeEnv},
+    env::{Constraint, PackageTypeEnv},
     tast::{self},
     typer::Typer,
 };
@@ -4882,12 +4882,7 @@ fn lookup_inherent_method_for_ty(
     receiver_ty: &tast::Ty,
     method: &tast::TastIdent,
 ) -> Option<crate::env::FnScheme> {
-    let env = env_for_receiver_ty(genv, receiver_ty);
-    env.lookup_inherent_method_scheme(receiver_ty, method)
-        .or_else(|| {
-            genv.builtins()
-                .lookup_inherent_method_scheme(receiver_ty, method)
-        })
+    genv.lookup_visible_inherent_method_scheme(receiver_ty, method)
 }
 
 fn collect_type_param_substitution(
@@ -5080,21 +5075,6 @@ fn substitute_ty_params(ty: &tast::Ty, subst: &HashMap<String, tast::Ty>) -> tas
                 .collect(),
             ret_ty: Box::new(substitute_ty_params(ret_ty.as_ref(), subst)),
         },
-    }
-}
-
-fn env_for_receiver_ty<'a>(genv: &'a PackageTypeEnv, receiver_ty: &tast::Ty) -> &'a GlobalTypeEnv {
-    match receiver_ty {
-        tast::Ty::TEnum { name } | tast::Ty::TStruct { name } => {
-            let (_resolved, env) = super::util::resolve_type_name(genv, name);
-            env
-        }
-        tast::Ty::TApp { ty, .. } => env_for_receiver_ty(genv, ty),
-        tast::Ty::TSlice { .. }
-        | tast::Ty::TRef { .. }
-        | tast::Ty::TVec { .. }
-        | tast::Ty::THashMap { .. } => genv.current(),
-        _ => genv.current(),
     }
 }
 

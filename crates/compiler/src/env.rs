@@ -865,6 +865,33 @@ impl PackageTypeEnv {
         result
     }
 
+    pub fn lookup_visible_inherent_method(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &TastIdent,
+    ) -> Option<tast::Ty> {
+        self.lookup_visible_inherent_method_scheme(receiver_ty, method)
+            .map(|scheme| scheme.ty)
+    }
+
+    pub fn lookup_visible_inherent_method_scheme(
+        &self,
+        receiver_ty: &tast::Ty,
+        method: &TastIdent,
+    ) -> Option<FnScheme> {
+        self.builtins
+            .lookup_inherent_method_scheme(receiver_ty, method)
+            .or_else(|| {
+                self.current
+                    .lookup_inherent_method_scheme(receiver_ty, method)
+            })
+            .or_else(|| {
+                self.deps
+                    .values()
+                    .find_map(|env| env.lookup_inherent_method_scheme(receiver_ty, method))
+            })
+    }
+
     pub fn get_function_scheme_unqualified(&self, name: &str) -> Option<FnScheme> {
         self.current
             .get_function_scheme(name)
