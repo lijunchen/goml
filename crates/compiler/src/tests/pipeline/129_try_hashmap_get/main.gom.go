@@ -74,18 +74,6 @@ func hashmap_get_native__HashMap_string_int32(m *hashmap_string_int32_x, key str
     return zero, false
 }
 
-func hashmap_get__HashMap_string_int32(m *hashmap_string_int32_x, key string) Option__int32 {
-    var value int32
-    var ok bool
-    value, ok = hashmap_get_native__HashMap_string_int32(m, key)
-    if ok {
-        return Some{
-            _0: value,
-        }
-    }
-    return None{}
-}
-
 func hashmap_set__HashMap_string_int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
     if m == nil {
         return struct{}{}
@@ -203,7 +191,6 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__78 *hashmap_string_int32_x, key__79 string) (int32, bool) {
-    hashmap_get__HashMap_string_int32(self__78, key__79)
     var t32_value int32
     var t32_ok bool
     t32_value, t32_ok = hashmap_get_native__HashMap_string_int32(self__78, key__79)

@@ -60,7 +60,6 @@ func render_with_prefix__native(prefix__0 string, text__1 string) (string, GoErr
         text_0: text__1,
         prefix_1: prefix__0,
     }
-    _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__3)
     var t10_value_0 string
     var t10_err GoError
     t10_value_0, t10_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__3)
@@ -137,20 +136,6 @@ func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7 closu
     var t28 string = fmt.Sprintf("%v", value__2)
     var t29 string = prefix__0 + t28
     return t29, nil
-}
-
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply(env7 closure_env_run_0) Result__string__GoError {
-    var native_value_0 string
-    var native_err GoError
-    native_value_0, native_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7)
-    if native_err != nil {
-        return Result__string__GoError_Err{
-            _0: native_err,
-        }
-    }
-    return Result__string__GoError_Ok{
-        _0: native_value_0,
-    }
 }
 
 func main() {

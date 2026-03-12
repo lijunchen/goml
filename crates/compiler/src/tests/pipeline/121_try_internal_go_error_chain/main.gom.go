@@ -50,22 +50,7 @@ type GoError = error
 
 type Duration = time.Duration
 
-func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
-    var ffi_value_0 Duration
-    var ffi_err GoError
-    ffi_value_0, ffi_err = time.ParseDuration(p0)
-    if ffi_err != nil {
-        return Result__Duration__GoError_Err{
-            _0: ffi_err,
-        }
-    }
-    return Result__Duration__GoError_Ok{
-        _0: ffi_value_0,
-    }
-}
-
 func parse_text__native(input__0 string) (Duration, GoError) {
-    parse_duration_ffi_wrap(input__0)
     var t12_value_0 Duration
     var t12_err GoError
     t12_value_0, t12_err = time.ParseDuration(input__0)

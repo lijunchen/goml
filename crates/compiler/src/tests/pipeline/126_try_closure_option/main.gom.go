@@ -48,7 +48,6 @@ func with_base__native(base__1 int32, flag__2 bool) (int32, bool) {
         flag_0: flag__2,
         base_1: base__1,
     }
-    _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__4)
     var t13_value_0 int32
     var t13_ok bool
     t13_value_0, t13_ok = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__4)
@@ -120,18 +119,6 @@ func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env5 closu
     var value__3 int32 = jp30
     var t31 int32 = value__3 + base__1
     return t31, true
-}
-
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply(env5 closure_env_run_0) Option__int32 {
-    var native_value_0 int32
-    var native_ok bool
-    native_value_0, native_ok = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env5)
-    if native_ok {
-        return Some{
-            _0: native_value_0,
-        }
-    }
-    return None{}
 }
 
 func main() {

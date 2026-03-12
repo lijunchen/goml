@@ -62,22 +62,7 @@ func inner__native(counter__0 *ref_int32_x) (int32, GoError) {
     return t9, nil
 }
 
-func inner(counter__0 *ref_int32_x) Result__int32__GoError {
-    var native_value_0 int32
-    var native_err GoError
-    native_value_0, native_err = inner__native(counter__0)
-    if native_err != nil {
-        return Err{
-            _0: native_err,
-        }
-    }
-    return Ok{
-        _0: native_value_0,
-    }
-}
-
 func outer__native(counter__1 *ref_int32_x) (int32, GoError) {
-    inner(counter__1)
     var t13_value_0 int32
     var t13_err GoError
     t13_value_0, t13_err = inner__native(counter__1)

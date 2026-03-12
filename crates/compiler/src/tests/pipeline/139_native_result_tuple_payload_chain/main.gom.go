@@ -53,26 +53,7 @@ func (_ Result__string__GoError_Err) isResult__string__GoError() {}
 
 type GoError = error
 
-func split_host_port_ffi_wrap(p0 string) _goml_Result___x28_string_x2c_string_x29___GoError {
-    var ffi_value_0 string
-    var ffi_value_1 string
-    var ffi_err GoError
-    ffi_value_0, ffi_value_1, ffi_err = net.SplitHostPort(p0)
-    if ffi_err != nil {
-        return _goml_Result___x28_string_x2c_string_x29___GoError_Err{
-            _0: ffi_err,
-        }
-    }
-    return _goml_Result___x28_string_x2c_string_x29___GoError_Ok{
-        _0: Tuple2_string_string{
-            _0: ffi_value_0,
-            _1: ffi_value_1,
-        },
-    }
-}
-
 func pair__native(text__0 string) (string, string, GoError) {
-    split_host_port_ffi_wrap(text__0)
     var t11_value_0 string
     var t11_value_1 string
     var t11_err GoError
