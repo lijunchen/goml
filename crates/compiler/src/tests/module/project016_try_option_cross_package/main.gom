@@ -1,0 +1,19 @@
+package main;
+use util;
+
+fn compute(flag: bool) -> Option[int32] {
+    let value = util::maybe_num(flag)?;
+    Option::Some(value + 1)
+}
+
+fn show(opt: Option[int32]) -> string {
+    match opt {
+        Option::Some(value) => "some=" + value.to_string(),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    println(show(compute(true)));
+    println(show(compute(false)));
+}

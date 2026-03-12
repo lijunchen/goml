@@ -1,0 +1,19 @@
+package main;
+use util;
+
+fn decorate(input: string) -> Result[string, GoError] {
+    let value = util::parse_and_label(input)?;
+    Result::Ok("wrapped:" + value)
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(show(decorate("1s")));
+    println(show(decorate("bad")));
+}
