@@ -1,0 +1,30 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "" "int" type GoInt
+
+extern "go" "fmt" raw_print(text: string) -> Result[GoInt, GoError]
+
+fn touch(text/0: string) -> Result[unit, GoError] {
+    let _ : GoInt = match (raw_print : (string) -> Result[GoInt, GoError])((text/0 : string)) {
+        Result::Ok(try_value/4: GoInt) => (try_value/4 : GoInt),
+        Result::Err(try_residual/4: GoError) => return Result::Err((try_residual/4 : GoError)),
+    };
+    Result::Ok(())
+}
+
+fn show(res/1: Result[unit, GoError]) -> string {
+    match (res/1 : Result[unit, GoError]) {
+        Result::Ok(()) => "ok",
+        Result::Err(err/2: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/2 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[unit, GoError]) -> string)((touch : (string) -> Result[unit, GoError])("hello")));
+}

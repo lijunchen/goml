@@ -1,0 +1,21 @@
+package main
+file main.gom
+  #[go_option_last]
+extern "go" "strings" "Cut" cut_pair(text: string, sep: string) -> Option[(string, string)]
+    
+    fn touch(local/1/0: string) -> Option[string] {
+        let _ = def/1/0(text/0, ":")?;
+        Option::Some("ok")
+    }
+    
+    fn show(local/1/1: Option[string]) -> string {
+        match value/1 {
+            Option::Some(local/1/2) => text/2,
+            Option::None => "none",
+        }
+    }
+    
+    fn main() {
+        println(def/1/2(def/1/1("left:right")));
+        println(def/1/2(def/1/1("plain")));
+    }

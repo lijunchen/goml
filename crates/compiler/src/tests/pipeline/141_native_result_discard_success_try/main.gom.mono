@@ -1,0 +1,60 @@
+fn touch(text/0: string) -> Result__string__GoError {
+  let mtmp3 = {
+    let mtmp0 = parse_duration(text/0) in
+    match mtmp0 {
+      Result__Duration__GoError::Ok(x1) => {
+        {
+          let x1 = Result__Duration__GoError::Ok._0(mtmp0) in
+          {
+            let try_value/4 = x1 in
+            try_value/4
+          }
+        }
+      },
+      Result__Duration__GoError::Err(x2) => {
+        {
+          let x2 = Result__Duration__GoError::Err._0(mtmp0) in
+          {
+            let try_residual/4 = x2 in
+            return Result__string__GoError::Err(try_residual/4)
+          }
+        }
+      },
+    }
+  } in
+  {
+    Result__string__GoError::Ok("ok")
+  }
+}
+
+fn show(res/1: Result__string__GoError) -> string {
+  match res/1 {
+    Result__string__GoError::Ok(x4) => {
+      {
+        let x4 = Result__string__GoError::Ok._0(res/1) in
+        {
+          let value/2 = x4 in
+          value/2
+        }
+      }
+    },
+    Result__string__GoError::Err(x5) => {
+      {
+        let x5 = Result__string__GoError::Err._0(res/1) in
+        {
+          let err/3 = x5 in
+          ("err=" + go_error_to_string(err/3))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = println__T_string(show(touch("2s"))) in
+  let _wild7 = println__T_string(show(touch("bad"))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

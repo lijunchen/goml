@@ -1,0 +1,48 @@
+fn touch(text/0: string) -> Option__string {
+  let mtmp2 = {
+    let mtmp0 = cut_pair(text/0, ":") in
+    match mtmp0 {
+      Option__(string,string)::None => {
+        return Option__string::None
+      },
+      Option__(string,string)::Some(x1) => {
+        {
+          let x1 = Option__(string,string)::Some._0(mtmp0) in
+          {
+            let try_value/5 = x1 in
+            try_value/5
+          }
+        }
+      },
+    }
+  } in
+  {
+    Option__string::Some("ok")
+  }
+}
+
+fn show(value/1: Option__string) -> string {
+  match value/1 {
+    Option__string::None => {
+      "none"
+    },
+    Option__string::Some(x3) => {
+      {
+        let x3 = Option__string::Some._0(value/1) in
+        {
+          let text/2 = x3 in
+          text/2
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild4 = println__T_string(show(touch("left:right"))) in
+  let _wild5 = println__T_string(show(touch("plain"))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}
