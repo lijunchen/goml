@@ -129,6 +129,10 @@ pub enum Expr {
         value: String,
         ty: goty::GoType,
     },
+    Spread {
+        expr: Box<Expr>,
+        ty: goty::GoType,
+    },
     Call {
         func: Box<Expr>,
         args: Vec<Expr>,
@@ -197,6 +201,7 @@ impl Expr {
             | Expr::Int { ty, .. }
             | Expr::Float { ty, .. }
             | Expr::String { ty, .. }
+            | Expr::Spread { ty, .. }
             | Expr::Call { ty, .. }
             | Expr::UnaryOp { ty, .. }
             | Expr::BinaryOp { ty, .. }

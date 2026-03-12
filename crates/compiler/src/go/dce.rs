@@ -98,6 +98,7 @@ fn expr_has_label_or_goto(expr: &ast::Expr) -> bool {
                 || expr_has_label_or_goto(end)
         }
         ast::Expr::Cast { expr, .. } => expr_has_label_or_goto(expr),
+        ast::Expr::Spread { expr, .. } => expr_has_label_or_goto(expr),
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_n, e)| expr_has_label_or_goto(e))
         }
@@ -440,6 +441,10 @@ fn dce_expr(expr: ast::Expr) -> ast::Expr {
             expr: Box::new(dce_expr(*expr)),
             ty,
         },
+        ast::Expr::Spread { expr, ty } => ast::Expr::Spread {
+            expr: Box::new(dce_expr(*expr)),
+            ty,
+        },
         ast::Expr::StructLiteral { fields, ty } => ast::Expr::StructLiteral {
             fields: fields.into_iter().map(|(n, e)| (n, dce_expr(e))).collect(),
             ty,
@@ -570,6 +575,9 @@ fn vars_used_in_expr(e: &ast::Expr) -> HashSet<String> {
             s.extend(vars_used_in_expr(rhs));
         }
         ast::Expr::Cast { expr, .. } => {
+            s.extend(vars_used_in_expr(expr));
+        }
+        ast::Expr::Spread { expr, .. } => {
             s.extend(vars_used_in_expr(expr));
         }
         ast::Expr::StructLiteral { fields, .. } => {
@@ -841,6 +849,7 @@ fn expr_has_side_effects(e: &ast::Expr) -> bool {
             expr_has_side_effects(lhs) || expr_has_side_effects(rhs)
         }
         ast::Expr::Cast { expr, .. } => expr_has_side_effects(expr),
+        ast::Expr::Spread { expr, .. } => expr_has_side_effects(expr),
         ast::Expr::StructLiteral { fields, .. } => {
             fields.iter().any(|(_, e)| expr_has_side_effects(e))
         }
@@ -1090,6 +1099,7 @@ fn collect_called_in_expr(
             collect_called_in_expr(end, calls, fn_names);
         }
         ast::Expr::Cast { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
+        ast::Expr::Spread { expr, .. } => collect_called_in_expr(expr, calls, fn_names),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
                 collect_called_in_expr(e, calls, fn_names);
@@ -1354,6 +1364,7 @@ fn collect_packages_in_expr(
             collect_packages_in_expr(end, imports, used);
         }
         ast::Expr::Cast { expr, .. } => collect_packages_in_expr(expr, imports, used),
+        ast::Expr::Spread { expr, .. } => collect_packages_in_expr(expr, imports, used),
         ast::Expr::StructLiteral { fields, .. } => {
             for (_, e) in fields {
                 collect_packages_in_expr(e, imports, used);

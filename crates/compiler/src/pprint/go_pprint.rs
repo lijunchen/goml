@@ -29,7 +29,11 @@ fn go_type_name(ty: &GoType) -> String {
         GoType::TVoid => "void".to_string(),
         GoType::TMulti { elems } => format!(
             "({})",
-            elems.iter().map(go_type_name).collect::<Vec<_>>().join(", ")
+            elems
+                .iter()
+                .map(go_type_name)
+                .collect::<Vec<_>>()
+                .join(", ")
         ),
         GoType::TUnit => "struct{}".to_string(),
         GoType::TBool => "bool".to_string(),
@@ -58,7 +62,10 @@ fn go_type_name(ty: &GoType) -> String {
 fn go_type_doc(ty: &GoType) -> RcDoc<'_, ()> {
     match ty {
         GoType::TMulti { elems } => RcDoc::text("(")
-            .append(RcDoc::intersperse(elems.iter().map(go_type_doc), RcDoc::text(", ")))
+            .append(RcDoc::intersperse(
+                elems.iter().map(go_type_doc),
+                RcDoc::text(", "),
+            ))
             .append(RcDoc::text(")")),
         GoType::TFunc { params, ret_ty } => {
             let params_doc = if params.is_empty() {
@@ -728,6 +735,7 @@ impl Expr {
             Expr::String { value, ty: _ } => RcDoc::text("\"")
                 .append(RcDoc::text(escape_go_string(value)))
                 .append(RcDoc::text("\"")),
+            Expr::Spread { expr, ty: _ } => expr.to_doc(goenv).append(RcDoc::text("...")),
             Expr::Call { func, args, ty: _ } => {
                 let args_doc = if args.is_empty() {
                     RcDoc::nil()

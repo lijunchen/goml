@@ -32,6 +32,8 @@ pub struct ExternFunc {
     pub ty: tast::Ty,
     pub binding_mode: ExternBindingMode,
     pub return_mode: ExternReturnMode,
+    pub variadic_last: bool,
+    pub field_name: Option<String>,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -53,6 +55,8 @@ pub enum ExternReturnMode {
 pub enum ExternBindingMode {
     Call,
     Value,
+    FieldGetter,
+    FieldSetter,
 }
 
 #[derive(Debug, Clone)]
@@ -1059,6 +1063,8 @@ impl GlobalTypeEnv {
         ty: tast::Ty,
         binding_mode: ExternBindingMode,
         return_mode: ExternReturnMode,
+        variadic_last: bool,
+        field_name: Option<String>,
     ) {
         self.value_env.funcs.insert(
             goml_name.clone(),
@@ -1078,6 +1084,8 @@ impl GlobalTypeEnv {
                 ty,
                 binding_mode,
                 return_mode,
+                variadic_last,
+                field_name,
             },
         );
     }
