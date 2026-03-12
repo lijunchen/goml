@@ -1,0 +1,110 @@
+fn maybe_seed(flag/0: bool) -> Option__int32 {
+  join ret7(retv8: Option__int32) -> Option__int32 {
+    retv8
+  } in
+  join k9(jp10: Option__int32) -> Option__int32 {
+    jump ret7(jp10)
+  } in
+  if flag/0 {
+    let t11 = Option__int32::Some(3) in
+    jump k9(t11)
+  } else {
+    jump k9(Tag_0)
+  }
+}
+
+fn maybe_double(value/1: int32) -> Option__int32 {
+  join ret12(retv13: Option__int32) -> Option__int32 {
+    retv13
+  } in
+  let t16 = (value/1 > 0) in
+  join k14(jp15: Option__int32) -> Option__int32 {
+    jump ret12(jp15)
+  } in
+  if t16 {
+    let t17 = (value/1 * 2) in
+    let t18 = Option__int32::Some(t17) in
+    jump k14(t18)
+  } else {
+    jump k14(Tag_0)
+  }
+}
+
+fn maybe_total(flag/2: bool) -> Option__int32 {
+  join ret19(retv20: Option__int32) -> Option__int32 {
+    retv20
+  } in
+  let mtmp0 = maybe_seed(flag/2) in
+  join k21(jp22: int32) -> Option__int32 {
+    let a/3 = jp22 in
+    let mtmp2 = maybe_double(a/3) in
+    join k23(jp24: int32) -> Option__int32 {
+      let b/4 = jp24 in
+      let t25 = (a/3 + b/4) in
+      let t26 = Option__int32::Some(t25) in
+      jump ret19(t26)
+    } in
+    match mtmp2 {
+      Tag_0 => {
+        jump ret19(Tag_0)
+      },
+      Tag_1 => {
+        let x3 = Option__int32::Some._0(mtmp2) in
+        let try_value/26 = x3 in
+        jump k23(try_value/26)
+      },
+    }
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump ret19(Tag_0)
+    },
+    Tag_1 => {
+      let x1 = Option__int32::Some._0(mtmp0) in
+      let try_value/22 = x1 in
+      jump k21(try_value/22)
+    },
+  }
+}
+
+fn show(opt/5: Option__int32) -> string {
+  join ret27(retv28: string) -> string {
+    retv28
+  } in
+  join k29(jp30: string) -> string {
+    jump ret27(jp30)
+  } in
+  match opt/5 {
+    Tag_0 => {
+      jump k29("none")
+    },
+    Tag_1 => {
+      let x4 = Option__int32::Some._0(opt/5) in
+      let value/6 = x4 in
+      let t31 = int32_to_string(value/6) in
+      let t32 = ("some=" + t31) in
+      jump k29(t32)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret33() -> unit {
+    ()
+  } in
+  let t34 = maybe_total(true) in
+  let t35 = show(t34) in
+  let _wild5 = println__T_string(t35) in
+  let t36 = maybe_total(false) in
+  let t37 = show(t36) in
+  let _wild6 = println__T_string(t37) in
+  jump ret33()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret38() -> unit {
+    ()
+  } in
+  let t39 = string_println(value/1) in
+  jump ret38()
+}

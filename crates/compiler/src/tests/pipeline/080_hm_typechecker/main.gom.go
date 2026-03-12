@@ -513,8 +513,7 @@ func env_empty() []EnvEntry {
     return retv276
 }
 
-func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
-    var retv278 Option__Typ
+func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
     var t279 int32 = int32(len(env__28))
     var t280 int32 = t279 - 1
     var i__30 *ref_int32_x = ref__Ref_int32(t280)
@@ -548,12 +547,30 @@ func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
         continue
     }
     var t282 Option__Typ = ref_get__Ref_Option__Typ(found__31)
-    retv278 = t282
-    return retv278
+    switch ret_variant := t282.(type) {
+    case None:
+        var ret_zero Typ
+        return ret_zero, false
+    case Some:
+        return ret_variant._0, true
+    default:
+        panic("non-exhaustive match")
+    }
 }
 
-func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
-    var retv300 Option__Typ
+func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
+    var native_value Typ
+    var native_ok bool
+    native_value, native_ok = env_lookup__native(env__28, name__29)
+    if native_ok {
+        return Some{
+            _0: native_value,
+        }
+    }
+    return None{}
+}
+
+func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
     var t301 int32 = int32(len(subst__34))
     var t302 int32 = t301 - 1
     var i__36 *ref_int32_x = ref__Ref_int32(t302)
@@ -587,8 +604,27 @@ func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
         continue
     }
     var t304 Option__Typ = ref_get__Ref_Option__Typ(found__37)
-    retv300 = t304
-    return retv300
+    switch ret_variant := t304.(type) {
+    case None:
+        var ret_zero Typ
+        return ret_zero, false
+    case Some:
+        return ret_variant._0, true
+    default:
+        panic("non-exhaustive match")
+    }
+}
+
+func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
+    var native_value Typ
+    var native_ok bool
+    native_value, native_ok = subst_lookup__native(subst__34, name__35)
+    if native_ok {
+        return Some{
+            _0: native_value,
+        }
+    }
+    return None{}
 }
 
 func occurs(st__40 CheckerState, tvr__41 *ref_tv_x, ty__42 Typ) Result__unit__string {

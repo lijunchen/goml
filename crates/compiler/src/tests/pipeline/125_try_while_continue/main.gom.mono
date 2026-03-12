@@ -1,0 +1,76 @@
+fn step(i/0: int32) -> Option__int32 {
+  if (i/0 == 2) {
+      {
+        Option__int32::None
+      }
+  } else {
+      {
+        Option__int32::Some((i/0 + 10))
+      }
+  }
+}
+
+fn accumulate(limit/1: int32) -> Option__int32 {
+  let sum/2 = ref(0) in
+  let i/3 = ref(0) in
+  let _wild5 = while (ref_get(i/3) < limit/1) {
+      {
+        let cur/4 = ref_get(i/3) in
+        let _wild0 = ref_set(i/3, (cur/4 + 1)) in
+        let _wild1 = if (cur/4 == 1) {
+            {
+              continue
+            }
+        } else {
+            {
+              ()
+            }
+        } in
+        let value/5 = {
+          let mtmp2 = step(cur/4) in
+          match mtmp2 {
+            Option__int32::None => {
+              return Option__int32::None
+            },
+            Option__int32::Some(x3) => {
+              {
+                let x3 = Option__int32::Some._0(mtmp2) in
+                {
+                  let try_value/43 = x3 in
+                  try_value/43
+                }
+              }
+            },
+          }
+        } in
+        let _wild4 = ref_set(sum/2, (ref_get(sum/2) + value/5)) in
+      }
+  } in
+  Option__int32::Some(ref_get(sum/2))
+}
+
+fn show(opt/6: Option__int32) -> string {
+  match opt/6 {
+    Option__int32::None => {
+      "none"
+    },
+    Option__int32::Some(x6) => {
+      {
+        let x6 = Option__int32::Some._0(opt/6) in
+        {
+          let value/7 = x6 in
+          ("some=" + int32_to_string(value/7))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild7 = println__T_string(show(accumulate(2))) in
+  let _wild8 = println__T_string(show(accumulate(4))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

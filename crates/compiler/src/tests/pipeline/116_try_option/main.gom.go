@@ -29,8 +29,7 @@ func (_ Some) isOption__int32() {}
 
 type GoError = error
 
-func maybe_value(flag__0 bool) Option__int32 {
-    var retv6 Option__int32
+func maybe_value__native(flag__0 bool) (int32, bool) {
     var jp8 Option__int32
     if flag__0 {
         var t9 Option__int32 = Some{
@@ -40,8 +39,15 @@ func maybe_value(flag__0 bool) Option__int32 {
     } else {
         jp8 = None{}
     }
-    retv6 = jp8
-    return retv6
+    switch ret_variant := jp8.(type) {
+    case None:
+        var ret_zero int32
+        return ret_zero, false
+    case Some:
+        return ret_variant._0, true
+    default:
+        panic("non-exhaustive match")
+    }
 }
 
 func add(a__1 int32, b__2 int32) int32 {
@@ -51,27 +57,30 @@ func add(a__1 int32, b__2 int32) int32 {
     return retv11
 }
 
-func plus_two(flag__3 bool) Option__int32 {
-    var retv14 Option__int32
-    var mtmp0 Option__int32 = maybe_value(flag__3)
+func plus_two__native(flag__3 bool) (int32, bool) {
     var jp16 int32
-    switch mtmp0.(type) {
-    case None:
-        retv14 = None{}
-        return retv14
-    case Some:
-        var x1 int32 = mtmp0.(Some)._0
-        var try_value__15 int32 = x1
-        jp16 = try_value__15
-        var t17 int32 = add(jp16, 2)
-        var t18 Option__int32 = Some{
-            _0: t17,
-        }
-        retv14 = t18
-        return retv14
-    default:
-        panic("non-exhaustive match")
+    var mtmp0_value int32
+    var mtmp0_ok bool
+    mtmp0_value, mtmp0_ok = maybe_value__native(flag__3)
+    if !mtmp0_ok {
+        var ret_zero int32
+        return ret_zero, false
     }
+    jp16 = mtmp0_value
+    var t17 int32 = add(jp16, 2)
+    return t17, true
+}
+
+func plus_two(flag__3 bool) Option__int32 {
+    var native_value int32
+    var native_ok bool
+    native_value, native_ok = plus_two__native(flag__3)
+    if native_ok {
+        return Some{
+            _0: native_value,
+        }
+    }
+    return None{}
 }
 
 func show(opt__4 Option__int32) string {

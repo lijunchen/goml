@@ -1,0 +1,57 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn step(i/0: int32) -> Option[int32] {
+    if (i/0 : int32) == 2 {
+        {
+            Option::None
+        }
+    } else {
+        {
+            Option::Some((i/0 : int32) + 10)
+        }
+    }
+}
+
+fn accumulate(limit/1: int32) -> Option[int32] {
+    let sum/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let i/3: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while (ref_get : (Ref[int32]) -> int32)((i/3 : Ref[int32])) < (limit/1 : int32) {
+        {
+            let cur/4: int32 = (ref_get : (Ref[int32]) -> int32)((i/3 : Ref[int32]));
+            (ref_set : (Ref[int32], int32) -> unit)((i/3 : Ref[int32]), (cur/4 : int32) + 1);
+            if (cur/4 : int32) == 1 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    ()
+                }
+            };
+            let value/5: int32 = match (step : (int32) -> Option[int32])((cur/4 : int32)) {
+                Option::Some(try_value/43: int32) => (try_value/43 : int32),
+                Option::None => return Option::None,
+            };
+            (ref_set : (Ref[int32], int32) -> unit)((sum/2 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/2 : Ref[int32])) + (value/5 : int32));
+        }
+    };
+    Option::Some((ref_get : (Ref[int32]) -> int32)((sum/2 : Ref[int32])))
+}
+
+fn show(opt/6: Option[int32]) -> string {
+    match (opt/6 : Option[int32]) {
+        Option::Some(value/7: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/7 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((accumulate : (int32) -> Option[int32])(2)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((accumulate : (int32) -> Option[int32])(4)));
+}

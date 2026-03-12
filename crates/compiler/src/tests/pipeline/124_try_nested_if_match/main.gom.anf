@@ -1,0 +1,115 @@
+fn maybe_num(flag/0: bool) -> Option__int32 {
+  join ret8(retv9: Option__int32) -> Option__int32 {
+    retv9
+  } in
+  join k10(jp11: Option__int32) -> Option__int32 {
+    jump ret8(jp11)
+  } in
+  if flag/0 {
+    let t12 = Option__int32::Some(8) in
+    jump k10(t12)
+  } else {
+    jump k10(Tag_0)
+  }
+}
+
+fn nested(top/1: bool, mode/2: Mode, inner_flag/3: bool) -> Option__int32 {
+  join ret13(retv14: Option__int32) -> Option__int32 {
+    retv14
+  } in
+  join k15(jp16: int32) -> Option__int32 {
+    let value/6 = jp16 in
+    let t17 = Option__int32::Some(value/6) in
+    jump ret13(t17)
+  } in
+  if top/1 {
+    join k18(jp19: int32) -> Option__int32 {
+      jump k15(jp19)
+    } in
+    match mode/2 {
+      Tag_0 => {
+        let mtmp0 = maybe_num(inner_flag/3) in
+        join k20(jp21: int32) -> Option__int32 {
+          let inner/4 = jp21 in
+          let t22 = (inner/4 + 1) in
+          jump k18(t22)
+        } in
+        match mtmp0 {
+          Tag_0 => {
+            jump ret13(Tag_0)
+          },
+          Tag_1 => {
+            let x1 = Option__int32::Some._0(mtmp0) in
+            let try_value/13 = x1 in
+            jump k20(try_value/13)
+          },
+        }
+      },
+      Tag_1 => {
+        jump k18(20)
+      },
+    }
+  } else {
+    let mtmp2 = maybe_num(inner_flag/3) in
+    join k23(jp24: int32) -> Option__int32 {
+      let inner/5 = jp24 in
+      let t25 = (inner/5 + 2) in
+      jump k15(t25)
+    } in
+    match mtmp2 {
+      Tag_0 => {
+        jump ret13(Tag_0)
+      },
+      Tag_1 => {
+        let x3 = Option__int32::Some._0(mtmp2) in
+        let try_value/24 = x3 in
+        jump k23(try_value/24)
+      },
+    }
+  }
+}
+
+fn show(opt/7: Option__int32) -> string {
+  join ret26(retv27: string) -> string {
+    retv27
+  } in
+  join k28(jp29: string) -> string {
+    jump ret26(jp29)
+  } in
+  match opt/7 {
+    Tag_0 => {
+      jump k28("none")
+    },
+    Tag_1 => {
+      let x4 = Option__int32::Some._0(opt/7) in
+      let value/8 = x4 in
+      let t30 = int32_to_string(value/8) in
+      let t31 = ("some=" + t30) in
+      jump k28(t31)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret32() -> unit {
+    ()
+  } in
+  let t33 = nested(true, Tag_0, true) in
+  let t34 = show(t33) in
+  let _wild5 = println__T_string(t34) in
+  let t35 = nested(true, Tag_1, false) in
+  let t36 = show(t35) in
+  let _wild6 = println__T_string(t36) in
+  let t37 = nested(false, Tag_0, false) in
+  let t38 = show(t37) in
+  let _wild7 = println__T_string(t38) in
+  jump ret32()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret39() -> unit {
+    ()
+  } in
+  let t40 = string_println(value/1) in
+  jump ret39()
+}

@@ -66,73 +66,38 @@ type GoError = error
 
 type File = *os.File
 
-func open_file_ffi_wrap(p0 string) Result__File__GoError {
-    var ffi_value File
-    var ffi_err GoError
-    ffi_value, ffi_err = os.Open(p0)
-    if ffi_err != nil {
-        return Result__File__GoError_Err{
-            _0: ffi_err,
-        }
+func describe__native(path__0 string) (string, GoError) {
+    var jp14 File
+    var mtmp0_value File
+    var mtmp0_err GoError
+    mtmp0_value, mtmp0_err = os.Open(path__0)
+    if mtmp0_err != nil {
+        var ret_zero string
+        return ret_zero, mtmp0_err
     }
-    return Result__File__GoError_Ok{
-        _0: ffi_value,
+    jp14 = mtmp0_value
+    var file__1 File = jp14
+    var name__2 string = file__1.Name()
+    var mtmp3_err GoError = file__1.Close()
+    if mtmp3_err != nil {
+        var ret_zero string
+        return ret_zero, mtmp3_err
     }
-}
-
-func close_file_ffi_wrap(p0 File) Result__unit__GoError {
-    var ffi_err GoError = p0.Close()
-    if ffi_err != nil {
-        return Result__unit__GoError_Err{
-            _0: ffi_err,
-        }
-    }
-    return Result__unit__GoError_Ok{
-        _0: struct{}{},
-    }
+    var t16 string = "ok=" + name__2
+    return t16, nil
 }
 
 func describe(path__0 string) Result__string__GoError {
-    var retv12 Result__string__GoError
-    var mtmp0 Result__File__GoError = open_file_ffi_wrap(path__0)
-    var jp14 File
-    switch mtmp0.(type) {
-    case Result__File__GoError_Ok:
-        var x1 File = mtmp0.(Result__File__GoError_Ok)._0
-        var try_value__4 File = x1
-        jp14 = try_value__4
-        var file__1 File = jp14
-        var name__2 string = file__1.Name()
-        var mtmp3 Result__unit__GoError = close_file_ffi_wrap(file__1)
-        switch mtmp3.(type) {
-        case Result__unit__GoError_Ok:
-            var t16 string = "ok=" + name__2
-            var t17 Result__string__GoError = Result__string__GoError_Ok{
-                _0: t16,
-            }
-            retv12 = t17
-            return retv12
-        case Result__unit__GoError_Err:
-            var x5 GoError = mtmp3.(Result__unit__GoError_Err)._0
-            var try_residual__11 GoError = x5
-            var t18 Result__string__GoError = Result__string__GoError_Err{
-                _0: try_residual__11,
-            }
-            retv12 = t18
-            return retv12
-        default:
-            panic("non-exhaustive match")
+    var native_value string
+    var native_err GoError
+    native_value, native_err = describe__native(path__0)
+    if native_err != nil {
+        return Result__string__GoError_Err{
+            _0: native_err,
         }
-    case Result__File__GoError_Err:
-        var x2 GoError = mtmp0.(Result__File__GoError_Err)._0
-        var try_residual__4 GoError = x2
-        var t19 Result__string__GoError = Result__string__GoError_Err{
-            _0: try_residual__4,
-        }
-        retv12 = t19
-        return retv12
-    default:
-        panic("non-exhaustive match")
+    }
+    return Result__string__GoError_Ok{
+        _0: native_value,
     }
 }
 

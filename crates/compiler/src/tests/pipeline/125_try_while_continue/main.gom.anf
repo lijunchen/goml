@@ -1,0 +1,113 @@
+fn step(i/0: int32) -> Option__int32 {
+  join ret9(retv10: Option__int32) -> Option__int32 {
+    retv10
+  } in
+  let t13 = (i/0 == 2) in
+  join k11(jp12: Option__int32) -> Option__int32 {
+    jump ret9(jp12)
+  } in
+  if t13 {
+    jump k11(Tag_0)
+  } else {
+    let t14 = (i/0 + 10) in
+    let t15 = Option__int32::Some(t14) in
+    jump k11(t15)
+  }
+}
+
+fn accumulate(limit/1: int32) -> Option__int32 {
+  join ret16(retv17: Option__int32) -> Option__int32 {
+    retv17
+  } in
+  let sum/2 = ref(0) in
+  let i/3 = ref(0) in
+  join exit18() -> Option__int32 {
+    let _wild5 = () in
+    let t19 = ref_get(sum/2) in
+    let t20 = Option__int32::Some(t19) in
+    jump ret16(t20)
+  } in
+  joinrec {
+    join loop21() -> Option__int32 {
+      let t22 = ref_get(i/3) in
+      let t23 = (t22 < limit/1) in
+      if t23 {
+        let cur/4 = ref_get(i/3) in
+        let t24 = (cur/4 + 1) in
+        let _wild0 = ref_set(i/3, t24) in
+        let t30 = (cur/4 == 1) in
+        join k25() -> Option__int32 {
+          let _wild1 = () in
+          let mtmp2 = step(cur/4) in
+          join k26(jp27: int32) -> Option__int32 {
+            let value/5 = jp27 in
+            let t28 = ref_get(sum/2) in
+            let t29 = (t28 + value/5) in
+            let _wild4 = ref_set(sum/2, t29) in
+            jump loop21()
+          } in
+          match mtmp2 {
+            Tag_0 => {
+              jump ret16(Tag_0)
+            },
+            Tag_1 => {
+              let x3 = Option__int32::Some._0(mtmp2) in
+              let try_value/43 = x3 in
+              jump k26(try_value/43)
+            },
+          }
+        } in
+        if t30 {
+          jump loop21()
+        } else {
+          jump k25()
+        }
+      } else {
+        jump exit18()
+      }
+    } in
+  } in
+  jump loop21()
+}
+
+fn show(opt/6: Option__int32) -> string {
+  join ret31(retv32: string) -> string {
+    retv32
+  } in
+  join k33(jp34: string) -> string {
+    jump ret31(jp34)
+  } in
+  match opt/6 {
+    Tag_0 => {
+      jump k33("none")
+    },
+    Tag_1 => {
+      let x6 = Option__int32::Some._0(opt/6) in
+      let value/7 = x6 in
+      let t35 = int32_to_string(value/7) in
+      let t36 = ("some=" + t35) in
+      jump k33(t36)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret37() -> unit {
+    ()
+  } in
+  let t38 = accumulate(2) in
+  let t39 = show(t38) in
+  let _wild7 = println__T_string(t39) in
+  let t40 = accumulate(4) in
+  let t41 = show(t40) in
+  let _wild8 = println__T_string(t41) in
+  jump ret37()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret42() -> unit {
+    ()
+  } in
+  let t43 = string_println(value/1) in
+  jump ret42()
+}

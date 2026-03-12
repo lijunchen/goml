@@ -1,0 +1,56 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn maybe_primary(flag/0: bool) -> Option[int32] {
+    if (flag/0 : bool) {
+        {
+            Option::Some(4)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn maybe_secondary(flag/1: bool) -> Option[int32] {
+    if (flag/1 : bool) {
+        {
+            Option::Some(9)
+        }
+    } else {
+        {
+            Option::None
+        }
+    }
+}
+
+fn mixed(primary/2: bool, secondary/3: bool) -> Option[string] {
+    let value/4: int32 = match (maybe_primary : (bool) -> Option[int32])((primary/2 : bool)) {
+        Option::Some(try_value/18: int32) => (try_value/18 : int32),
+        Option::None => return Option::None,
+    };
+    let label/6: string = match (maybe_secondary : (bool) -> Option[int32])((secondary/3 : bool)) {
+        Option::Some(extra/5: int32) => "extra=" + (ToString::to_string : (int32) -> string)((extra/5 : int32)),
+        Option::None => "extra=none",
+    };
+    Option::Some("value=" + (int32::to_string : (int32) -> string)((value/4 : int32)) + "," + (label/6 : string))
+}
+
+fn show(opt/7: Option[string]) -> string {
+    match (opt/7 : Option[string]) {
+        Option::Some(value/8: string) => "some=" + (value/8 : string),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[string]) -> string)((mixed : (bool, bool) -> Option[string])(true, true)));
+    (println : (string) -> unit)((show : (Option[string]) -> string)((mixed : (bool, bool) -> Option[string])(true, false)));
+    (println : (string) -> unit)((show : (Option[string]) -> string)((mixed : (bool, bool) -> Option[string])(false, true)));
+}

@@ -1,0 +1,65 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn maybe_value(flag/0: bool) -> Option[int32] {
+  if flag/0 {
+      {
+        Option::Some(4)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn with_base(base/1: int32, flag/2: bool) -> Option[int32] {
+  let run/4 = || => {
+    let value/3 = {
+      let mtmp0 = maybe_value(flag/2) in
+      match mtmp0 {
+        Option::None => {
+          return Option::None
+        },
+        Option::Some(x1) => {
+          {
+            let x1 = Option::Some._0(mtmp0) in
+            {
+              let try_value/11 = x1 in
+              try_value/11
+            }
+          }
+        },
+      }
+    } in
+    Option::Some((value/3 + base/1))
+  } in
+  run/4()
+}
+
+fn show(opt/5: Option[int32]) -> string {
+  match opt/5 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x2) => {
+      {
+        let x2 = Option::Some._0(opt/5) in
+        {
+          let value/6 = x2 in
+          ("some=" + trait_call[ToString::to_string](value/6))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild3 = println(show(with_base(3, true))) in
+  let _wild4 = println(show(with_base(3, false))) in
+}

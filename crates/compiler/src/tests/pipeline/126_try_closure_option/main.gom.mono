@@ -1,0 +1,61 @@
+fn maybe_value(flag/0: bool) -> Option__int32 {
+  if flag/0 {
+      {
+        Option__int32::Some(4)
+      }
+  } else {
+      {
+        Option__int32::None
+      }
+  }
+}
+
+fn with_base(base/1: int32, flag/2: bool) -> Option__int32 {
+  let run/4 = || {
+    let value/3 = {
+      let mtmp0 = maybe_value(flag/2) in
+      match mtmp0 {
+        Option__int32::None => {
+          return Option__int32::None
+        },
+        Option__int32::Some(x1) => {
+          {
+            let x1 = Option__int32::Some._0(mtmp0) in
+            {
+              let try_value/11 = x1 in
+              try_value/11
+            }
+          }
+        },
+      }
+    } in
+    Option__int32::Some((value/3 + base/1))
+  } in
+  run/4()
+}
+
+fn show(opt/5: Option__int32) -> string {
+  match opt/5 {
+    Option__int32::None => {
+      "none"
+    },
+    Option__int32::Some(x2) => {
+      {
+        let x2 = Option__int32::Some._0(opt/5) in
+        {
+          let value/6 = x2 in
+          ("some=" + int32_to_string(value/6))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild3 = println__T_string(show(with_base(3, true))) in
+  let _wild4 = println__T_string(show(with_base(3, false))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

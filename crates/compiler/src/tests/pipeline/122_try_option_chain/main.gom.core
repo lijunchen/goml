@@ -1,0 +1,91 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn maybe_seed(flag/0: bool) -> Option[int32] {
+  if flag/0 {
+      {
+        Option::Some(3)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn maybe_double(value/1: int32) -> Option[int32] {
+  if (value/1 > 0) {
+      {
+        Option::Some((value/1 * 2))
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn maybe_total(flag/2: bool) -> Option[int32] {
+  let a/3 = {
+    let mtmp0 = maybe_seed(flag/2) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/22 = x1 in
+            try_value/22
+          }
+        }
+      },
+    }
+  } in
+  let b/4 = {
+    let mtmp2 = maybe_double(a/3) in
+    match mtmp2 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x3) => {
+        {
+          let x3 = Option::Some._0(mtmp2) in
+          {
+            let try_value/26 = x3 in
+            try_value/26
+          }
+        }
+      },
+    }
+  } in
+  Option::Some((a/3 + b/4))
+}
+
+fn show(opt/5: Option[int32]) -> string {
+  match opt/5 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x4) => {
+      {
+        let x4 = Option::Some._0(opt/5) in
+        {
+          let value/6 = x4 in
+          ("some=" + trait_call[ToString::to_string](value/6))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println(show(maybe_total(true))) in
+  let _wild6 = println(show(maybe_total(false))) in
+}

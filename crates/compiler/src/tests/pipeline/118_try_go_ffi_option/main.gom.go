@@ -26,39 +26,30 @@ func (_ Some) isOption__string() {}
 
 type GoError = error
 
-func cut_prefix_ffi_wrap(p0 string, p1 string) Option__string {
-    var ffi_value string
-    var ffi_ok bool
-    ffi_value, ffi_ok = strings.CutPrefix(p0, p1)
-    if ffi_ok {
-        return Some{
-            _0: ffi_value,
-        }
+func trim_go__native(input__0 string) (string, bool) {
+    var jp8 string
+    var mtmp0_value string
+    var mtmp0_ok bool
+    mtmp0_value, mtmp0_ok = strings.CutPrefix(input__0, "go")
+    if !mtmp0_ok {
+        var ret_zero string
+        return ret_zero, false
     }
-    return None{}
+    jp8 = mtmp0_value
+    var t9 string = jp8 + "!"
+    return t9, true
 }
 
 func trim_go(input__0 string) Option__string {
-    var retv6 Option__string
-    var mtmp0 Option__string = cut_prefix_ffi_wrap(input__0, "go")
-    var jp8 string
-    switch mtmp0.(type) {
-    case None:
-        retv6 = None{}
-        return retv6
-    case Some:
-        var x1 string = mtmp0.(Some)._0
-        var try_value__5 string = x1
-        jp8 = try_value__5
-        var t9 string = jp8 + "!"
-        var t10 Option__string = Some{
-            _0: t9,
+    var native_value string
+    var native_ok bool
+    native_value, native_ok = trim_go__native(input__0)
+    if native_ok {
+        return Some{
+            _0: native_value,
         }
-        retv6 = t10
-        return retv6
-    default:
-        panic("non-exhaustive match")
     }
+    return None{}
 }
 
 func show(opt__1 Option__string) string {

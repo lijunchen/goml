@@ -67,72 +67,37 @@ type GoError = error
 
 type Duration = time.Duration
 
-func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
-    var ffi_value Duration
-    var ffi_err GoError
-    ffi_value, ffi_err = time.ParseDuration(p0)
-    if ffi_err != nil {
-        return Result__Duration__GoError_Err{
-            _0: ffi_err,
-        }
+func configure_and_format__native(input__0 string) (string, GoError) {
+    var mtmp0_err GoError = os.Setenv("GOML_TRY_FFI", "ok")
+    if mtmp0_err != nil {
+        var ret_zero string
+        return ret_zero, mtmp0_err
     }
-    return Result__Duration__GoError_Ok{
-        _0: ffi_value,
+    var jp15 Duration
+    var mtmp4_value Duration
+    var mtmp4_err GoError
+    mtmp4_value, mtmp4_err = time.ParseDuration(input__0)
+    if mtmp4_err != nil {
+        var ret_zero string
+        return ret_zero, mtmp4_err
     }
-}
-
-func setenv_ffi_wrap(p0 string, p1 string) Result__unit__GoError {
-    var ffi_err GoError = os.Setenv(p0, p1)
-    if ffi_err != nil {
-        return Result__unit__GoError_Err{
-            _0: ffi_err,
-        }
-    }
-    return Result__unit__GoError_Ok{
-        _0: struct{}{},
-    }
+    jp15 = mtmp4_value
+    var value__1 Duration = jp15
+    var t16 string = fmt.Sprintf("dur=%v", value__1)
+    return t16, nil
 }
 
 func configure_and_format(input__0 string) Result__string__GoError {
-    var retv12 Result__string__GoError
-    var mtmp0 Result__unit__GoError = setenv_ffi_wrap("GOML_TRY_FFI", "ok")
-    switch mtmp0.(type) {
-    case Result__unit__GoError_Ok:
-        var mtmp4 Result__Duration__GoError = parse_duration_ffi_wrap(input__0)
-        var jp15 Duration
-        switch mtmp4.(type) {
-        case Result__Duration__GoError_Ok:
-            var x5 Duration = mtmp4.(Result__Duration__GoError_Ok)._0
-            var try_value__9 Duration = x5
-            jp15 = try_value__9
-            var value__1 Duration = jp15
-            var t16 string = fmt.Sprintf("dur=%v", value__1)
-            var t17 Result__string__GoError = Result__string__GoError_Ok{
-                _0: t16,
-            }
-            retv12 = t17
-            return retv12
-        case Result__Duration__GoError_Err:
-            var x6 GoError = mtmp4.(Result__Duration__GoError_Err)._0
-            var try_residual__9 GoError = x6
-            var t18 Result__string__GoError = Result__string__GoError_Err{
-                _0: try_residual__9,
-            }
-            retv12 = t18
-            return retv12
-        default:
-            panic("non-exhaustive match")
+    var native_value string
+    var native_err GoError
+    native_value, native_err = configure_and_format__native(input__0)
+    if native_err != nil {
+        return Result__string__GoError_Err{
+            _0: native_err,
         }
-    case Result__unit__GoError_Err:
-        var x2 GoError = mtmp0.(Result__unit__GoError_Err)._0
-        var try_residual__5 GoError = x2
-        var t19 Result__string__GoError = Result__string__GoError_Err{
-            _0: try_residual__5,
-        }
-        retv12 = t19
-        return retv12
-    default:
-        panic("non-exhaustive match")
+    }
+    return Result__string__GoError_Ok{
+        _0: native_value,
     }
 }
 
