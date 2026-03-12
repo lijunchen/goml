@@ -23,6 +23,7 @@ use super::runtime;
 pub struct GlobalGoEnv {
     pub genv: GlobalTypeEnv,
     pub liftenv: GlobalLiftEnv,
+    pub toplevel_funcs: HashSet<String>,
 }
 
 impl Default for GlobalGoEnv {
@@ -30,7 +31,11 @@ impl Default for GlobalGoEnv {
         let genv = crate::builtins::builtin_env();
         let monoenv = crate::mono::GlobalMonoEnv::from_genv(genv.clone());
         let liftenv = crate::lift::GlobalLiftEnv::from_monoenv(monoenv);
-        Self { genv, liftenv }
+        Self {
+            genv,
+            liftenv,
+            toplevel_funcs: HashSet::new(),
+        }
     }
 }
 
@@ -38,7 +43,11 @@ impl GlobalGoEnv {
     pub fn from_anf_env(anfenv: GlobalAnfEnv) -> Self {
         let liftenv = anfenv.liftenv.clone();
         let genv = liftenv.monoenv.genv.clone();
-        Self { genv, liftenv }
+        Self {
+            genv,
+            liftenv,
+            toplevel_funcs: HashSet::new(),
+        }
     }
 
     pub fn enums(&self) -> impl Iterator<Item = (&TastIdent, &EnumDef)> {
@@ -4626,6 +4635,38 @@ fn resolve_native_success_join<'a>(
     }
 }
 
+fn join_forwards_to_native_return(
+    join_bind: &anf::JoinBind,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+) -> bool {
+    let mut current = join_bind;
+    loop {
+        if !current.body.binds.is_empty() || current.params.len() != 1 {
+            return false;
+        }
+        let anf::Term::Jump { target, args, .. } = &current.body.term else {
+            return false;
+        };
+        if args.len() != 1 {
+            return false;
+        }
+        let anf::ImmExpr::Var { id, .. } = &args[0] else {
+            return false;
+        };
+        if id != &current.params[0].0 {
+            return false;
+        }
+        if *target == native_ctx.return_join {
+            return true;
+        }
+        let Some(next) = join_env.get(target) else {
+            return false;
+        };
+        current = next;
+    }
+}
+
 fn build_result_failure_stmts(ok_ty: &tast::Ty, err_expr: goast::Expr) -> Vec<goast::Stmt> {
     let ok_go_ty = tast_ty_to_go_type(ok_ty);
     vec![
@@ -4699,6 +4740,55 @@ fn compile_native_return_from_imm(
     }
 
     if let Some(value) = resolve_bound_value(imm, let_env) {
+        let prefix = match imm {
+            anf::ImmExpr::Var { id, .. } => id.0.replace('/', "_"),
+            _ => "native_return".to_string(),
+        };
+        if let Some(plan) = build_native_call_plan(goenv, value, native_ctx, true, &prefix)
+            && let Some(success_expr) = plan.success_expr
+        {
+            let mut stmts = plan.stmts;
+            stmts.push(goast::Stmt::If {
+                cond: plan.failure_cond,
+                then: goast::Block {
+                    stmts: match (&native_ctx.mode, plan.failure) {
+                        (
+                            NativeReturnMode::Result { ok_ty, .. },
+                            NativeCallFailure::Result { err_expr },
+                        ) => build_result_failure_stmts(ok_ty, err_expr),
+                        (NativeReturnMode::Option { some_ty }, NativeCallFailure::Option) => {
+                            build_option_failure_stmts(some_ty)
+                        }
+                        _ => return vec![panic_stmt("mismatched native return failure mode")],
+                    },
+                },
+                else_: None,
+            });
+            match &native_ctx.mode {
+                NativeReturnMode::Result { err_ty, .. } => {
+                    stmts.push(goast::Stmt::ReturnMulti {
+                        exprs: vec![
+                            success_expr,
+                            goast::Expr::Nil {
+                                ty: tast_ty_to_go_type(err_ty),
+                            },
+                        ],
+                    });
+                }
+                NativeReturnMode::Option { .. } => {
+                    stmts.push(goast::Stmt::ReturnMulti {
+                        exprs: vec![
+                            success_expr,
+                            goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            },
+                        ],
+                    });
+                }
+            }
+            return stmts;
+        }
         match value {
             anf::ValueExpr::Constr {
                 constructor: Constructor::Enum(enum_constructor),
@@ -5059,6 +5149,9 @@ fn build_native_call_plan(
     let anf::ImmExpr::Var { id, .. } = func else {
         return None;
     };
+    if !goenv.toplevel_funcs.contains(&id.0) {
+        return None;
+    }
 
     let helper_ret_ty = native_helper_ret_ty(&callee_mode);
     let call_expr = goast::Expr::Call {
@@ -5518,6 +5611,16 @@ fn compile_term_with_continuations_ctx(
     {
         return stmts;
     }
+    if let Some(native_ctx) = native_ctx
+        && let Some(target) = all_branches_jump_to(term)
+        && let Some(join_bind) = join_env.get(target)
+        && pending_joins.iter().any(|j| j.id == *target)
+        && join_forwards_to_native_return(join_bind, join_env, native_ctx)
+    {
+        return compile_term_direct_to_native_return_ctx(
+            goenv, term, target, join_env, native_ctx, let_env,
+        );
+    }
     if let Some(target) = all_branches_jump_to(term)
         && let Some(join_bind) = join_env.get(target)
         && pending_joins.iter().any(|j| j.id == *target)
@@ -5578,6 +5681,347 @@ fn compile_term_jump_to_ctx(
         ),
         _ => compile_term_leaf_ctx(goenv, term, join_env, native_ctx, let_env),
     }
+}
+
+fn compile_term_direct_to_native_return_ctx(
+    goenv: &GlobalGoEnv,
+    term: &anf::Term,
+    target: &anf::JoinId,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+    let_env: &LetEnv,
+) -> Vec<goast::Stmt> {
+    match term {
+        anf::Term::Jump { args, .. } => args
+            .first()
+            .map(|imm| compile_native_return_from_imm(goenv, imm, native_ctx, let_env))
+            .unwrap_or_else(|| vec![panic_stmt("missing native return value")]),
+        anf::Term::If {
+            cond, then_, else_, ..
+        } => {
+            let then_stmts = compile_branch_to_native_return_ctx(
+                goenv, then_, target, join_env, native_ctx, let_env,
+            );
+            let else_stmts = compile_branch_to_native_return_ctx(
+                goenv, else_, target, join_env, native_ctx, let_env,
+            );
+            vec![goast::Stmt::If {
+                cond: compile_imm(goenv, cond),
+                then: goast::Block { stmts: then_stmts },
+                else_: Some(goast::Block { stmts: else_stmts }),
+            }]
+        }
+        anf::Term::Match {
+            scrut,
+            arms,
+            default,
+            ..
+        } => compile_match_to_native_return_ctx(
+            goenv,
+            scrut,
+            arms,
+            default.as_deref(),
+            target,
+            join_env,
+            native_ctx,
+            let_env,
+        ),
+        _ => compile_term_leaf_ctx(goenv, term, join_env, Some(native_ctx), let_env),
+    }
+}
+
+fn compile_branch_to_native_return_ctx(
+    goenv: &GlobalGoEnv,
+    block: &anf::Block,
+    target: &anf::JoinId,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+    let_env: &LetEnv,
+) -> Vec<goast::Stmt> {
+    let mut inner_pending: Vec<&anf::JoinBind> = Vec::new();
+    let mut current_env = let_env.clone();
+    let mut compiled_binds: Vec<(Option<anf::LocalId>, Vec<goast::Stmt>)> = Vec::new();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Let(let_bind) => {
+                current_env.insert(let_bind.id.clone(), let_bind.value.clone());
+                compiled_binds.push((
+                    Some(let_bind.id.clone()),
+                    compile_let_bind(goenv, let_bind),
+                ));
+            }
+            anf::Bind::Join(jb) => {
+                if native_ctx.return_join == jb.id {
+                    continue;
+                }
+                let mut bind_stmts = Vec::new();
+                for (id, ty) in &jb.params {
+                    if id.0 != "_" {
+                        bind_stmts.push(goast::Stmt::VarDecl {
+                            name: go_ident(&id.0),
+                            ty: tast_ty_to_go_type(ty),
+                            value: None,
+                        });
+                    }
+                }
+                inner_pending.push(jb);
+                compiled_binds.push((None, bind_stmts));
+            }
+            anf::Bind::JoinRec(group) => {
+                compiled_binds.push((
+                    None,
+                    compile_joinrec_ctx(goenv, group, join_env, Some(native_ctx), &current_env),
+                ));
+            }
+        }
+    }
+    let skip_bind = native_try_scrutinee_id(
+        goenv,
+        &block.term,
+        join_env,
+        &inner_pending,
+        Some(native_ctx),
+        &current_env,
+    );
+    let mut stmts = Vec::new();
+    for (bind_id, bind_stmts) in compiled_binds {
+        if let (Some(bind_id), Some(skip_bind)) = (bind_id.as_ref(), skip_bind.as_ref())
+            && bind_id == skip_bind
+        {
+            continue;
+        }
+        stmts.extend(bind_stmts);
+    }
+
+    if let Some(inner_target) = all_branches_jump_to(&block.term) {
+        if inner_target == target {
+            stmts.extend(compile_term_direct_to_native_return_ctx(
+                goenv,
+                &block.term,
+                target,
+                join_env,
+                native_ctx,
+                &current_env,
+            ));
+            return stmts;
+        }
+        if let Some(inner_join) = join_env.get(inner_target)
+            && inner_pending.iter().any(|j| j.id == *inner_target)
+            && join_forwards_to_native_return(inner_join, join_env, native_ctx)
+        {
+            stmts.extend(compile_term_direct_to_native_return_ctx(
+                goenv,
+                &block.term,
+                inner_target,
+                join_env,
+                native_ctx,
+                &current_env,
+            ));
+            return stmts;
+        }
+    }
+    stmts.extend(compile_term_with_continuations_ctx(
+        goenv,
+        &block.term,
+        join_env,
+        &inner_pending,
+        Some(native_ctx),
+        &current_env,
+    ));
+    stmts
+}
+
+fn compile_match_to_native_return_ctx(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[anf::Arm],
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+    let_env: &LetEnv,
+) -> Vec<goast::Stmt> {
+    let scrut_ty = imm_ty(scrut);
+
+    let mut var_arm: Option<(&anf::LocalId, &anf::Block)> = None;
+    let mut literal_arms = Vec::new();
+    for arm in arms {
+        match &arm.lhs {
+            anf::ImmExpr::Var { id, .. } => {
+                var_arm = Some((id, &arm.body));
+            }
+            _ => literal_arms.push((&arm.lhs, &arm.body)),
+        }
+    }
+
+    if scrut_ty == tast::Ty::TUnit {
+        let block = literal_arms
+            .first()
+            .map(|(_, b)| *b)
+            .or(var_arm.map(|(_, b)| b))
+            .or(default);
+        if let Some(block) = block {
+            return compile_branch_to_native_return_ctx(
+                goenv, block, target, join_env, native_ctx, let_env,
+            );
+        }
+        return vec![panic_stmt("non-exhaustive match")];
+    }
+
+    match &scrut_ty {
+        tast::Ty::TEnum { .. } => compile_enum_match_to_native_return_ctx(
+            goenv,
+            scrut,
+            &literal_arms,
+            var_arm,
+            default,
+            target,
+            join_env,
+            native_ctx,
+            let_env,
+        ),
+        tast::Ty::TApp { ty, .. } if matches!(ty.as_ref(), tast::Ty::TEnum { .. }) => {
+            compile_enum_match_to_native_return_ctx(
+                goenv,
+                scrut,
+                &literal_arms,
+                var_arm,
+                default,
+                target,
+                join_env,
+                native_ctx,
+                let_env,
+            )
+        }
+        _ => compile_switch_match_to_native_return_ctx(
+            goenv,
+            scrut,
+            &literal_arms,
+            var_arm,
+            default,
+            target,
+            join_env,
+            native_ctx,
+            let_env,
+        ),
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_enum_match_to_native_return_ctx(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+    let_env: &LetEnv,
+) -> Vec<goast::Stmt> {
+    let mut cases = Vec::new();
+    for (pat, body) in arms {
+        let anf::ImmExpr::Tag { index, ty } = pat else {
+            panic!("expected tag pattern in enum match, got {:?}", pat);
+        };
+        let vty = variant_ty_by_index(goenv, ty, *index);
+        let stmts =
+            compile_branch_to_native_return_ctx(goenv, body, target, join_env, native_ctx, let_env);
+        cases.push((vty, goast::Block { stmts }));
+    }
+
+    let default_block = if let Some((id, body)) = var_default {
+        let mut stmts = Vec::new();
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
+                name: go_ident(&id.0),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
+            });
+        }
+        stmts.extend(compile_branch_to_native_return_ctx(
+            goenv, body, target, join_env, native_ctx, let_env,
+        ));
+        Some(goast::Block { stmts })
+    } else if let Some(def_block) = default {
+        Some(goast::Block {
+            stmts: compile_branch_to_native_return_ctx(
+                goenv,
+                def_block,
+                target,
+                join_env,
+                native_ctx,
+                let_env,
+            ),
+        })
+    } else {
+        Some(goast::Block {
+            stmts: vec![panic_stmt("non-exhaustive match")],
+        })
+    };
+
+    vec![goast::Stmt::SwitchType {
+        bind: None,
+        expr: compile_imm(goenv, scrut),
+        cases,
+        default: default_block,
+    }]
+}
+
+#[allow(clippy::too_many_arguments)]
+fn compile_switch_match_to_native_return_ctx(
+    goenv: &GlobalGoEnv,
+    scrut: &anf::ImmExpr,
+    arms: &[(&anf::ImmExpr, &anf::Block)],
+    var_default: Option<(&anf::LocalId, &anf::Block)>,
+    default: Option<&anf::Block>,
+    target: &anf::JoinId,
+    join_env: &JoinEnv,
+    native_ctx: &NativeFnCtx,
+    let_env: &LetEnv,
+) -> Vec<goast::Stmt> {
+    let mut cases = Vec::new();
+    for (pat, body) in arms {
+        let stmts =
+            compile_branch_to_native_return_ctx(goenv, body, target, join_env, native_ctx, let_env);
+        cases.push((compile_imm(goenv, pat), goast::Block { stmts }));
+    }
+
+    let default_block = if let Some((id, body)) = var_default {
+        let mut stmts = Vec::new();
+        if id.0 != "_" {
+            stmts.push(goast::Stmt::VarDecl {
+                name: go_ident(&id.0),
+                ty: tast_ty_to_go_type(&imm_ty(scrut)),
+                value: Some(compile_imm(goenv, scrut)),
+            });
+        }
+        stmts.extend(compile_branch_to_native_return_ctx(
+            goenv, body, target, join_env, native_ctx, let_env,
+        ));
+        Some(goast::Block { stmts })
+    } else if let Some(def_block) = default {
+        Some(goast::Block {
+            stmts: compile_branch_to_native_return_ctx(
+                goenv,
+                def_block,
+                target,
+                join_env,
+                native_ctx,
+                let_env,
+            ),
+        })
+    } else {
+        Some(goast::Block {
+            stmts: vec![panic_stmt("non-exhaustive match")],
+        })
+    };
+
+    vec![goast::Stmt::SwitchExpr {
+        expr: compile_imm(goenv, scrut),
+        cases,
+        default: default_block,
+    }]
 }
 
 fn compile_branch_to_join_ctx(
@@ -6498,7 +6942,8 @@ pub fn go_file(
     gensym: &Gensym,
     file: anf::File,
 ) -> (goast::File, GlobalGoEnv) {
-    let goenv = GlobalGoEnv::from_anf_env(anfenv);
+    let mut goenv = GlobalGoEnv::from_anf_env(anfenv);
+    goenv.toplevel_funcs = file.toplevels.iter().map(|f| f.name.clone()).collect();
     let mut all = Vec::new();
 
     let (tuple_types, array_types, ref_types, hashmap_types, missing_types) =
