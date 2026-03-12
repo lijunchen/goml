@@ -38,10 +38,8 @@ fn read_all_text(reader: PipeReader) -> Result[string, GoError] {
 }
 
 fn write_text(writer: PipeWriter, text: string) -> Result[unit, GoError] {
-    match raw_pipe_write_string(writer.raw, text) {
-        Result::Ok(_) => Result::Ok(()),
-        Result::Err(err) => Result::Err(err),
-    }
+    let _ = raw_pipe_write_string(writer.raw, text)?;
+    Result::Ok(())
 }
 
 fn close(writer: PipeWriter) -> Result[unit, GoError] {
