@@ -50,24 +50,12 @@ type GoError = error
 
 func step__native(i__0 int32) (int32, bool) {
     var t13 bool = i__0 == 2
-    var jp12 Option__int32
     if t13 {
-        jp12 = None{}
-    } else {
-        var t14 int32 = i__0 + 10
-        var t15 Option__int32 = Some{
-            _0: t14,
-        }
-        jp12 = t15
-    }
-    switch ret_variant := jp12.(type) {
-    case None:
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
+    } else {
+        var t14 int32 = i__0 + 10
+        return t14, true
     }
 }
 

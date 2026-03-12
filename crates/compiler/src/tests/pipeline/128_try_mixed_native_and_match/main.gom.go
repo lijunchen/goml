@@ -44,44 +44,20 @@ func (_ Option__string_Some) isOption__string() {}
 type GoError = error
 
 func maybe_primary__native(flag__0 bool) (int32, bool) {
-    var jp11 Option__int32
     if flag__0 {
-        var t12 Option__int32 = Option__int32_Some{
-            _0: 4,
-        }
-        jp11 = t12
+        return 4, true
     } else {
-        jp11 = Option__int32_None{}
-    }
-    switch ret_variant := jp11.(type) {
-    case Option__int32_None:
         var ret_zero int32
         return ret_zero, false
-    case Option__int32_Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 
 func maybe_secondary__native(flag__1 bool) (int32, bool) {
-    var jp16 Option__int32
     if flag__1 {
-        var t17 Option__int32 = Option__int32_Some{
-            _0: 9,
-        }
-        jp16 = t17
+        return 9, true
     } else {
-        jp16 = Option__int32_None{}
-    }
-    switch ret_variant := jp16.(type) {
-    case Option__int32_None:
         var ret_zero int32
         return ret_zero, false
-    case Option__int32_Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 

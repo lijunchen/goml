@@ -30,23 +30,11 @@ func (_ Some) isOption__int32() {}
 type GoError = error
 
 func maybe_value__native(flag__0 bool) (int32, bool) {
-    var jp8 Option__int32
     if flag__0 {
-        var t9 Option__int32 = Some{
-            _0: 4,
-        }
-        jp8 = t9
+        return 4, true
     } else {
-        jp8 = None{}
-    }
-    switch ret_variant := jp8.(type) {
-    case None:
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 

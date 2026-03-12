@@ -60,16 +60,15 @@ func render_with_prefix__native(prefix__0 string, text__1 string) (string, GoErr
         text_0: text__1,
         prefix_1: prefix__0,
     }
-    var t10 Result__string__GoError = _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__3)
-    switch ret_variant := t10.(type) {
-    case Result__string__GoError_Ok:
-        return ret_variant._0, nil
-    case Result__string__GoError_Err:
+    _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__3)
+    var t10_value string
+    var t10_err GoError
+    t10_value, t10_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__3)
+    if t10_err != nil {
         var ret_zero string
-        return ret_zero, ret_variant._0
-    default:
-        panic("non-exhaustive match")
+        return ret_zero, t10_err
     }
+    return t10_value, nil
 }
 
 func render_with_prefix(prefix__0 string, text__1 string) Result__string__GoError {

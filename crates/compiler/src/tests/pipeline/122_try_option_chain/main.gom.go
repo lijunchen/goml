@@ -30,46 +30,22 @@ func (_ Some) isOption__int32() {}
 type GoError = error
 
 func maybe_seed__native(flag__0 bool) (int32, bool) {
-    var jp10 Option__int32
     if flag__0 {
-        var t11 Option__int32 = Some{
-            _0: 3,
-        }
-        jp10 = t11
+        return 3, true
     } else {
-        jp10 = None{}
-    }
-    switch ret_variant := jp10.(type) {
-    case None:
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 
 func maybe_double__native(value__1 int32) (int32, bool) {
     var t16 bool = value__1 > 0
-    var jp15 Option__int32
     if t16 {
         var t17 int32 = value__1 * 2
-        var t18 Option__int32 = Some{
-            _0: t17,
-        }
-        jp15 = t18
+        return t17, true
     } else {
-        jp15 = None{}
-    }
-    switch ret_variant := jp15.(type) {
-    case None:
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 

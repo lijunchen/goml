@@ -65,16 +65,15 @@ func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
 }
 
 func parse_text__native(input__0 string) (Duration, GoError) {
-    var t12 Result__Duration__GoError = parse_duration_ffi_wrap(input__0)
-    switch ret_variant := t12.(type) {
-    case Result__Duration__GoError_Ok:
-        return ret_variant._0, nil
-    case Result__Duration__GoError_Err:
+    parse_duration_ffi_wrap(input__0)
+    var t12_value Duration
+    var t12_err GoError
+    t12_value, t12_err = time.ParseDuration(input__0)
+    if t12_err != nil {
         var ret_zero Duration
-        return ret_zero, ret_variant._0
-    default:
-        panic("non-exhaustive match")
+        return ret_zero, t12_err
     }
+    return t12_value, nil
 }
 
 func normalize__native(input__1 string) (Duration, GoError) {

@@ -35,23 +35,11 @@ func (_ Some) isOption__int32() {}
 type GoError = error
 
 func maybe_value__native(flag__0 bool) (int32, bool) {
-    var jp9 Option__int32
     if flag__0 {
-        var t10 Option__int32 = Some{
-            _0: 4,
-        }
-        jp9 = t10
+        return 4, true
     } else {
-        jp9 = None{}
-    }
-    switch ret_variant := jp9.(type) {
-    case None:
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
 }
 
@@ -60,16 +48,15 @@ func with_base__native(base__1 int32, flag__2 bool) (int32, bool) {
         flag_0: flag__2,
         base_1: base__1,
     }
-    var t13 Option__int32 = _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__4)
-    switch ret_variant := t13.(type) {
-    case None:
+    _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__4)
+    var t13_value int32
+    var t13_ok bool
+    t13_value, t13_ok = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__4)
+    if !t13_ok {
         var ret_zero int32
         return ret_zero, false
-    case Some:
-        return ret_variant._0, true
-    default:
-        panic("non-exhaustive match")
     }
+    return t13_value, true
 }
 
 func with_base(base__1 int32, flag__2 bool) Option__int32 {
