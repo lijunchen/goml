@@ -102,9 +102,10 @@ func hashmap_len__HashMap_Key_int32(m *hashmap_key_int32_x) int32 {
     return m.len
 }
 
-func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int32 {
+func hashmap_get_native__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) (int32, bool) {
     if m == nil {
-        return None{}
+        var zero int32
+        return zero, false
     }
     var h uint64 = _goml_trait_impl_Hash_Key_hash(key)
     var bucket []hashmap_key_int32_x_entry = m.buckets[h]
@@ -115,11 +116,22 @@ func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int
         }
         var entry hashmap_key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Key_eq(entry.key, key) {
-            return Some{
-                _0: entry.value,
-            }
+            return entry.value, true
         }
         i = i + 1
+    }
+    var zero int32
+    return zero, false
+}
+
+func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_get_native__HashMap_Key_int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
     }
     return None{}
 }
@@ -212,9 +224,10 @@ func hashmap_new__HashMap_Ref_Point_int32() *hashmap_ref_point_int32_x {
     }
 }
 
-func hashmap_get__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref_point_x) Option__int32 {
+func hashmap_get_native__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref_point_x) (int32, bool) {
     if m == nil {
-        return None{}
+        var zero int32
+        return zero, false
     }
     var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Point_x5d__hash(key)
     var bucket []hashmap_ref_point_int32_x_entry = m.buckets[h]
@@ -225,11 +238,22 @@ func hashmap_get__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref
         }
         var entry hashmap_ref_point_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Ref_x5b_Point_x5d__eq(entry.key, key) {
-            return Some{
-                _0: entry.value,
-            }
+            return entry.value, true
         }
         i = i + 1
+    }
+    var zero int32
+    return zero, false
+}
+
+func hashmap_get__HashMap_Ref_Point_int32(m *hashmap_ref_point_int32_x, key *ref_point_x) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_get_native__HashMap_Ref_Point_int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
     }
     return None{}
 }
@@ -280,9 +304,10 @@ func hashmap_new__HashMap_Ref_Key_int32() *hashmap_ref_key_int32_x {
     }
 }
 
-func hashmap_get__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key_x) Option__int32 {
+func hashmap_get_native__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key_x) (int32, bool) {
     if m == nil {
-        return None{}
+        var zero int32
+        return zero, false
     }
     var h uint64 = _goml_trait_impl_Hash_Ref_x5b_Key_x5d__hash(key)
     var bucket []hashmap_ref_key_int32_x_entry = m.buckets[h]
@@ -293,11 +318,22 @@ func hashmap_get__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key
         }
         var entry hashmap_ref_key_int32_x_entry = bucket[i]
         if entry.active && _goml_trait_impl_Eq_Ref_x5b_Key_x5d__eq(entry.key, key) {
-            return Some{
-                _0: entry.value,
-            }
+            return entry.value, true
         }
         i = i + 1
+    }
+    var zero int32
+    return zero, false
+}
+
+func hashmap_get__HashMap_Ref_Key_int32(m *hashmap_ref_key_int32_x, key *ref_key_x) Option__int32 {
+    var value int32
+    var ok bool
+    value, ok = hashmap_get_native__HashMap_Ref_Key_int32(m, key)
+    if ok {
+        return Some{
+            _0: value,
+        }
     }
     return None{}
 }

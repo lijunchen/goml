@@ -1,0 +1,38 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn fetch(flag/0: bool) -> Option[int32] {
+    let m/1: HashMap[string, int32] = (HashMap[string, int32]::new : () -> HashMap[string, int32])();
+    if (flag/0 : bool) {
+        {
+            (HashMap[string, int32]::set : (HashMap[string, int32], string, int32) -> unit)((m/1 : HashMap[string, int32]), "a", 7);
+            ()
+        }
+    } else {
+        {
+            ()
+        }
+    };
+    let value/2: int32 = match (HashMap[string, int32]::get : (HashMap[string, int32], string) -> Option[int32])((m/1 : HashMap[string, int32]), "a") {
+        Option::Some(try_value/18: int32) => (try_value/18 : int32),
+        Option::None => return Option::None,
+    };
+    Option::Some((value/2 : int32) + 1)
+}
+
+fn show(opt/3: Option[int32]) -> string {
+    match (opt/3 : Option[int32]) {
+        Option::Some(value/4: int32) => "some=" + (ToString::to_string : (int32) -> string)((value/4 : int32)),
+        Option::None => "none",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((fetch : (bool) -> Option[int32])(true)));
+    (println : (string) -> unit)((show : (Option[int32]) -> string)((fetch : (bool) -> Option[int32])(false)));
+}
