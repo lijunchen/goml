@@ -92,6 +92,11 @@ fn multi_package_compile_project_018() -> anyhow::Result<()> {
     run_project("project018_goml_go_shims")
 }
 
+#[test]
+fn multi_package_compile_project_019() -> anyhow::Result<()> {
+    run_project("project019_cross_package_inherent_method")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")

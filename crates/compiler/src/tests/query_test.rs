@@ -811,6 +811,80 @@ fn main() {
 
 #[test]
 #[rustfmt::skip]
+fn multi_package_inherent_method_completion() {
+    let dir = tempdir().unwrap();
+    let lib_dir = dir.path().join("Lib");
+    std::fs::create_dir_all(&lib_dir).unwrap();
+
+    let lib_src = r#"package Lib;
+
+struct Item {
+    value: int32,
+}
+
+fn make(value: int32) -> Item {
+    Item { value: value }
+}
+
+impl Item {
+    fn text(self: Item) -> string {
+        int32_to_string(self.value)
+    }
+
+    fn touch(self: Item) -> unit {
+        ()
+    }
+}
+"#;
+    let lib_path = lib_dir.join("main.gom");
+    std::fs::write(&lib_path, lib_src).unwrap();
+
+    let src = r#"package main;
+use Lib;
+
+fn main() {
+    let item = Lib::make(1);
+    item.
+}
+"#;
+    let main_path = dir.path().join("main.gom");
+    std::fs::write(&main_path, src).unwrap();
+
+    check_completions_with_path(
+        &main_path,
+        src,
+        5,
+        9,
+        expect![[r#"
+            [
+                DotCompletionItem {
+                    name: "value",
+                    kind: Field,
+                    detail: Some(
+                        "int32",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "text",
+                    kind: Method,
+                    detail: Some(
+                        "(Lib::Item) -> string",
+                    ),
+                },
+                DotCompletionItem {
+                    name: "touch",
+                    kind: Method,
+                    detail: Some(
+                        "(Lib::Item) -> unit",
+                    ),
+                },
+            ]
+        "#]],
+    );
+}
+
+#[test]
+#[rustfmt::skip]
 fn multi_package_colon_colon_completions() {
     let dir = tempdir().unwrap();
     let lib_dir = dir.path().join("Lib");
