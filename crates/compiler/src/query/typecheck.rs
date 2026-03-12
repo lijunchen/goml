@@ -3,10 +3,7 @@ use std::{collections::HashMap, path::Path};
 use cst::cst::CstNode;
 use parser::syntax::MySyntaxNode;
 
-use crate::{
-    artifact::PackageExports, builtins, env::GlobalTypeEnv, hir, pipeline,
-    typer::results::TypeckResults,
-};
+use crate::{builtins, env::GlobalTypeEnv, hir, pipeline, typer::results::TypeckResults};
 
 pub(crate) type QueryTypecheck = (
     hir::HirTable,
@@ -56,15 +53,12 @@ pub(crate) fn typecheck_single_file_for_query(
     type_diagnostics.append(&mut hir_diagnostics);
     parse_diagnostics.append(&mut type_diagnostics);
 
-    let exports = PackageExports {
-        type_env: genv.type_env.clone(),
-        trait_env: genv.trait_env.clone(),
-        value_env: genv.value_env.clone(),
-    };
-    let mut full_env = builtins::builtin_env();
-    exports.apply_to(&mut full_env);
-
-    Ok((hir_table, results, full_env, parse_diagnostics))
+    Ok((
+        hir_table,
+        results,
+        builtins::merge_with_builtin_env(&genv),
+        parse_diagnostics,
+    ))
 }
 
 pub(crate) fn typecheck_for_query(path: &Path, src: &str) -> Result<QueryTypecheck, String> {
