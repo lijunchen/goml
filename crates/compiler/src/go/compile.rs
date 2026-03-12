@@ -4862,6 +4862,128 @@ fn resolve_native_success_join<'a>(
     }
 }
 
+fn imm_live_ids(imm: &anf::ImmExpr) -> HashSet<anf::LocalId> {
+    match imm {
+        anf::ImmExpr::Var { id, .. } => HashSet::from([id.clone()]),
+        anf::ImmExpr::Prim { .. } | anf::ImmExpr::Tag { .. } => HashSet::new(),
+    }
+}
+
+fn value_expr_has_side_effects(value: &anf::ValueExpr) -> bool {
+    matches!(
+        value,
+        anf::ValueExpr::Assign { .. }
+            | anf::ValueExpr::Call { .. }
+            | anf::ValueExpr::DynCall { .. }
+            | anf::ValueExpr::Go { .. }
+    )
+}
+
+fn value_expr_live_ids(value: &anf::ValueExpr) -> HashSet<anf::LocalId> {
+    match value {
+        anf::ValueExpr::Imm(imm) => imm_live_ids(imm),
+        anf::ValueExpr::Constr { args, .. }
+        | anf::ValueExpr::Tuple { items: args, .. }
+        | anf::ValueExpr::Array { items: args, .. } => {
+            args.iter().flat_map(imm_live_ids).collect::<HashSet<_>>()
+        }
+        anf::ValueExpr::ConstrGet { expr, .. }
+        | anf::ValueExpr::Unary { expr, .. }
+        | anf::ValueExpr::ToDyn { expr, .. }
+        | anf::ValueExpr::Go { closure: expr, .. }
+        | anf::ValueExpr::Proj { tuple: expr, .. } => imm_live_ids(expr),
+        anf::ValueExpr::Binary { lhs, rhs, .. } => {
+            let mut live = imm_live_ids(lhs);
+            live.extend(imm_live_ids(rhs));
+            live
+        }
+        anf::ValueExpr::Assign { name, value, .. } => {
+            let mut live = imm_live_ids(value);
+            live.insert(name.clone());
+            live
+        }
+        anf::ValueExpr::Call { func, args, .. } => {
+            let mut live = imm_live_ids(func);
+            live.extend(args.iter().flat_map(imm_live_ids));
+            live
+        }
+        anf::ValueExpr::DynCall { receiver, args, .. } => {
+            let mut live = imm_live_ids(receiver);
+            live.extend(args.iter().flat_map(imm_live_ids));
+            live
+        }
+    }
+}
+
+fn term_live_ids(term: &anf::Term) -> HashSet<anf::LocalId> {
+    match term {
+        anf::Term::Return(imm) => imm_live_ids(imm),
+        anf::Term::Jump { args, .. } => args.iter().flat_map(imm_live_ids).collect::<HashSet<_>>(),
+        anf::Term::If {
+            cond, then_, else_, ..
+        } => {
+            let mut live = imm_live_ids(cond);
+            live.extend(block_live_in_ids(then_));
+            live.extend(block_live_in_ids(else_));
+            live
+        }
+        anf::Term::Match {
+            scrut,
+            arms,
+            default,
+            ..
+        } => {
+            let mut live = imm_live_ids(scrut);
+            for arm in arms {
+                live.extend(imm_live_ids(&arm.lhs));
+                live.extend(block_live_in_ids(&arm.body));
+            }
+            if let Some(default) = default {
+                live.extend(block_live_in_ids(default));
+            }
+            live
+        }
+        anf::Term::Unreachable { .. } => HashSet::new(),
+    }
+}
+
+fn join_live_in_ids(join_bind: &anf::JoinBind) -> HashSet<anf::LocalId> {
+    let mut live = block_live_in_ids(&join_bind.body);
+    for (param, _) in &join_bind.params {
+        live.remove(param);
+    }
+    live
+}
+
+fn block_live_in_ids(block: &anf::Block) -> HashSet<anf::LocalId> {
+    let mut live = term_live_ids(&block.term);
+    for bind in block.binds.iter().rev() {
+        match bind {
+            anf::Bind::Let(let_bind) => {
+                let value_live = value_expr_live_ids(&let_bind.value);
+                let result_live = live.remove(&let_bind.id);
+                if result_live || value_expr_has_side_effects(&let_bind.value) {
+                    live.extend(value_live);
+                }
+            }
+            anf::Bind::Join(join_bind) => {
+                live.extend(join_live_in_ids(join_bind));
+            }
+            anf::Bind::JoinRec(group) => {
+                for join_bind in group {
+                    live.extend(join_live_in_ids(join_bind));
+                }
+            }
+        }
+    }
+    live
+}
+
+fn join_params_need_success_value(join_bind: &anf::JoinBind) -> bool {
+    let live = block_live_in_ids(&join_bind.body);
+    join_bind.params.iter().any(|(id, _)| live.contains(id))
+}
+
 fn join_forwards_to_native_return(
     join_bind: &anf::JoinBind,
     join_env: &JoinEnv,
@@ -5779,7 +5901,7 @@ fn compile_native_try_match(
     }
 
     let success_join = resolve_native_success_join(&success_arm.body, pending_joins, join_env)?;
-    let need_success_value = !success_join.params.is_empty();
+    let need_success_value = join_params_need_success_value(success_join);
     let prefix = id.0.replace('/', "_");
     let plan = build_native_call_plan(goenv, value, native_ctx, need_success_value, &prefix)?;
 
