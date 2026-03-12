@@ -76,14 +76,14 @@ func accumulate__native(limit__1 int32) (int32, bool) {
             continue
         } else {
             var jp27 int32
-            var mtmp2_value int32
+            var mtmp2_value_0 int32
             var mtmp2_ok bool
-            mtmp2_value, mtmp2_ok = step__native(cur__4)
+            mtmp2_value_0, mtmp2_ok = step__native(cur__4)
             if !mtmp2_ok {
                 var ret_zero int32
                 return ret_zero, false
             }
-            jp27 = mtmp2_value
+            jp27 = mtmp2_value_0
             var value__5 int32 = jp27
             var t28 int32 = ref_get__Ref_int32(sum__2)
             var t29 int32 = t28 + value__5
@@ -96,12 +96,12 @@ func accumulate__native(limit__1 int32) (int32, bool) {
 }
 
 func accumulate(limit__1 int32) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = accumulate__native(limit__1)
+    native_value_0, native_ok = accumulate__native(limit__1)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}

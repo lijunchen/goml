@@ -1,0 +1,16 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "path" join(parts: Slice[string]) -> string
+
+extern "go" "strings" fields(text: string) -> Vec[string]
+
+fn main() -> unit {
+    let parts/0: Vec[string] = (fields : (string) -> Vec[string])("alpha beta gamma");
+    (string_println : (string) -> unit)((join : (Slice[string]) -> string)((slice : (Vec[string], int32, int32) -> Slice[string])((parts/0 : Vec[string]), 0, (vec_len : (Vec[string]) -> int32)((parts/0 : Vec[string])))));
+}

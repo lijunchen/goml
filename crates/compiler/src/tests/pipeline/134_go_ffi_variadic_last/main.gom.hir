@@ -1,0 +1,11 @@
+package main
+file main.gom
+  #[go_variadic_last]
+extern "go" "path" "Join" join(parts: Slice[string]) -> string
+    
+    extern "go" "strings" "Fields" fields(text: string) -> Vec[string]
+    
+    fn main() {
+        let local/1/0 = def/1/1("alpha beta gamma");
+        string_println(def/1/0(slice(parts/0, 0, vec_len(parts/0))));
+    }

@@ -1,0 +1,41 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn describe(input/0: string) -> string {
+  let mtmp0 = cut(input/0, ":") in
+  {
+    let x1 = mtmp0.0 in
+    let x2 = mtmp0.1 in
+    let x3 = mtmp0.2 in
+    {
+      let found/3 = x3 in
+      {
+        let after/2 = x2 in
+        {
+          let before/1 = x1 in
+          {
+            if found/3 {
+                {
+                  ((before/1 + "|") + after/2)
+                }
+            } else {
+                {
+                  "missing"
+                }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild4 = string_println(describe("left:right")) in
+  let _wild5 = string_println(describe("plain")) in
+}

@@ -52,16 +52,16 @@ type GoError = error
 type Duration = time.Duration
 
 func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
-    var ffi_value Duration
+    var ffi_value_0 Duration
     var ffi_err GoError
-    ffi_value, ffi_err = time.ParseDuration(p0)
+    ffi_value_0, ffi_err = time.ParseDuration(p0)
     if ffi_err != nil {
         return Result__Duration__GoError_Err{
             _0: ffi_err,
         }
     }
     return Result__Duration__GoError_Ok{
-        _0: ffi_value,
+        _0: ffi_value_0,
     }
 }
 

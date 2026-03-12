@@ -51,55 +51,55 @@ type GoError = error
 type Duration = time.Duration
 
 func parse_duration_ffi_wrap(p0 string) Result__Duration__GoError {
-    var ffi_value Duration
+    var ffi_value_0 Duration
     var ffi_err GoError
-    ffi_value, ffi_err = time.ParseDuration(p0)
+    ffi_value_0, ffi_err = time.ParseDuration(p0)
     if ffi_err != nil {
         return Result__Duration__GoError_Err{
             _0: ffi_err,
         }
     }
     return Result__Duration__GoError_Ok{
-        _0: ffi_value,
+        _0: ffi_value_0,
     }
 }
 
 func parse_text__native(input__0 string) (Duration, GoError) {
     parse_duration_ffi_wrap(input__0)
-    var t12_value Duration
+    var t12_value_0 Duration
     var t12_err GoError
-    t12_value, t12_err = time.ParseDuration(input__0)
+    t12_value_0, t12_err = time.ParseDuration(input__0)
     if t12_err != nil {
         var ret_zero Duration
         return ret_zero, t12_err
     }
-    return t12_value, nil
+    return t12_value_0, nil
 }
 
 func normalize__native(input__1 string) (Duration, GoError) {
     var jp16 Duration
-    var mtmp0_value Duration
+    var mtmp0_value_0 Duration
     var mtmp0_err GoError
-    mtmp0_value, mtmp0_err = parse_text__native(input__1)
+    mtmp0_value_0, mtmp0_err = parse_text__native(input__1)
     if mtmp0_err != nil {
         var ret_zero Duration
         return ret_zero, mtmp0_err
     }
-    jp16 = mtmp0_value
+    jp16 = mtmp0_value_0
     var value__2 Duration = jp16
     return value__2, nil
 }
 
 func decorate__native(input__3 string) (string, GoError) {
     var jp22 Duration
-    var mtmp3_value Duration
+    var mtmp3_value_0 Duration
     var mtmp3_err GoError
-    mtmp3_value, mtmp3_err = normalize__native(input__3)
+    mtmp3_value_0, mtmp3_err = normalize__native(input__3)
     if mtmp3_err != nil {
         var ret_zero string
         return ret_zero, mtmp3_err
     }
-    jp22 = mtmp3_value
+    jp22 = mtmp3_value_0
     var value__4 Duration = jp22
     var t23 string = fmt.Sprintf("%v", value__4)
     var t24 string = "dur=" + t23
@@ -107,16 +107,16 @@ func decorate__native(input__3 string) (string, GoError) {
 }
 
 func decorate(input__3 string) Result__string__GoError {
-    var native_value string
+    var native_value_0 string
     var native_err GoError
-    native_value, native_err = decorate__native(input__3)
+    native_value_0, native_err = decorate__native(input__3)
     if native_err != nil {
         return Result__string__GoError_Err{
             _0: native_err,
         }
     }
     return Result__string__GoError_Ok{
-        _0: native_value,
+        _0: native_value_0,
     }
 }
 

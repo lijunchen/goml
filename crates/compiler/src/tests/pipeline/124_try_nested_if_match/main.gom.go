@@ -57,14 +57,14 @@ func nested__native(top__1 bool, mode__2 Mode, inner_flag__3 bool) (int32, bool)
         switch mode__2.(type) {
         case Take:
             var jp21 int32
-            var mtmp0_value int32
+            var mtmp0_value_0 int32
             var mtmp0_ok bool
-            mtmp0_value, mtmp0_ok = maybe_num__native(inner_flag__3)
+            mtmp0_value_0, mtmp0_ok = maybe_num__native(inner_flag__3)
             if !mtmp0_ok {
                 var ret_zero int32
                 return ret_zero, false
             }
-            jp21 = mtmp0_value
+            jp21 = mtmp0_value_0
             var inner__4 int32 = jp21
             var t22 int32 = inner__4 + 1
             jp19 = t22
@@ -81,14 +81,14 @@ func nested__native(top__1 bool, mode__2 Mode, inner_flag__3 bool) (int32, bool)
         }
     } else {
         var jp24 int32
-        var mtmp2_value int32
+        var mtmp2_value_0 int32
         var mtmp2_ok bool
-        mtmp2_value, mtmp2_ok = maybe_num__native(inner_flag__3)
+        mtmp2_value_0, mtmp2_ok = maybe_num__native(inner_flag__3)
         if !mtmp2_ok {
             var ret_zero int32
             return ret_zero, false
         }
-        jp24 = mtmp2_value
+        jp24 = mtmp2_value_0
         var inner__5 int32 = jp24
         var t25 int32 = inner__5 + 2
         jp16 = t25
@@ -98,12 +98,12 @@ func nested__native(top__1 bool, mode__2 Mode, inner_flag__3 bool) (int32, bool)
 }
 
 func nested(top__1 bool, mode__2 Mode, inner_flag__3 bool) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = nested__native(top__1, mode__2, inner_flag__3)
+    native_value_0, native_ok = nested__native(top__1, mode__2, inner_flag__3)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}

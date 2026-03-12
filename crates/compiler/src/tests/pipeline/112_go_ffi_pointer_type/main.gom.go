@@ -51,16 +51,16 @@ type GoError = error
 type File = *os.File
 
 func open_file_ffi_wrap(p0 string) Result__File__GoError {
-    var ffi_value File
+    var ffi_value_0 File
     var ffi_err GoError
-    ffi_value, ffi_err = os.Open(p0)
+    ffi_value_0, ffi_err = os.Open(p0)
     if ffi_err != nil {
         return Result__File__GoError_Err{
             _0: ffi_err,
         }
     }
     return Result__File__GoError_Ok{
-        _0: ffi_value,
+        _0: ffi_value_0,
     }
 }
 

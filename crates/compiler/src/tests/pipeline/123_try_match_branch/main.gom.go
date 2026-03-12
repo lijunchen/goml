@@ -71,14 +71,14 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
     switch mode__0.(type) {
     case Left:
         var jp17 Duration
-        var mtmp0_value Duration
+        var mtmp0_value_0 Duration
         var mtmp0_err GoError
-        mtmp0_value, mtmp0_err = time.ParseDuration(input__1)
+        mtmp0_value_0, mtmp0_err = time.ParseDuration(input__1)
         if mtmp0_err != nil {
             var ret_zero string
             return ret_zero, mtmp0_err
         }
-        jp17 = mtmp0_value
+        jp17 = mtmp0_value_0
         var parsed__2 Duration = jp17
         var t18 string = fmt.Sprintf("%v", parsed__2)
         var t19 string = "left=" + t18
@@ -91,14 +91,14 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
         return value__4, nil
     case Right:
         var jp22 Duration
-        var mtmp3_value Duration
+        var mtmp3_value_0 Duration
         var mtmp3_err GoError
-        mtmp3_value, mtmp3_err = time.ParseDuration(input__1)
+        mtmp3_value_0, mtmp3_err = time.ParseDuration(input__1)
         if mtmp3_err != nil {
             var ret_zero string
             return ret_zero, mtmp3_err
         }
-        jp22 = mtmp3_value
+        jp22 = mtmp3_value_0
         var parsed__3 Duration = jp22
         var t23 string = fmt.Sprintf("%v", parsed__3)
         var t24 string = "right=" + t23
@@ -111,16 +111,16 @@ func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
 }
 
 func pick(mode__0 Mode, input__1 string) Result__string__GoError {
-    var native_value string
+    var native_value_0 string
     var native_err GoError
-    native_value, native_err = pick__native(mode__0, input__1)
+    native_value_0, native_err = pick__native(mode__0, input__1)
     if native_err != nil {
         return Result__string__GoError_Err{
             _0: native_err,
         }
     }
     return Result__string__GoError_Ok{
-        _0: native_value,
+        _0: native_value_0,
     }
 }
 

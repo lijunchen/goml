@@ -1,0 +1,38 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "net/url" "*URL" type URL
+
+extern "go" "net/url" parse_url(text: string) -> Result[URL, GoError]
+
+extern "go" "net/url" url_host(url: URL) -> string
+
+extern "go" "net/url" url_set_path(url: URL, path: string) -> unit
+
+extern "go" "net/url" url_string(url: URL) -> string
+
+fn update(text/0: string, path/1: string) -> Result[string, GoError] {
+    let url/2: URL = match (parse_url : (string) -> Result[URL, GoError])((text/0 : string)) {
+        Result::Ok(try_value/4: URL) => (try_value/4 : URL),
+        Result::Err(try_residual/4: GoError) => return Result::Err((try_residual/4 : GoError)),
+    };
+    let host/3: string = (url_host : (URL) -> string)((url/2 : URL));
+    (url_set_path : (URL, string) -> unit)((url/2 : URL), (path/1 : string));
+    Result::Ok((host/3 : string) + "|" + (url_string : (URL) -> string)((url/2 : URL)))
+}
+
+fn show(res/4: Result[string, GoError]) -> string {
+    match (res/4 : Result[string, GoError]) {
+        Result::Ok(text/5: string) => (text/5 : string),
+        Result::Err(err/6: GoError) => (ToString::to_string : (GoError) -> string)((err/6 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (string_println : (string) -> unit)((show : (Result[string, GoError]) -> string)((update : (string, string) -> Result[string, GoError])("https://example.com/old", "/new")));
+}

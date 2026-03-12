@@ -1,0 +1,43 @@
+fn inner(counter/0: Ref[int32]) -> Result__int32__GoError {
+  let mtmp0 = ref_set(counter/0, (ref_get(counter/0) + 1)) in
+  {
+    Result__int32__GoError::Ok(ref_get(counter/0))
+  }
+}
+
+fn outer(counter/1: Ref[int32]) -> Result__int32__GoError {
+  inner(counter/1)
+}
+
+fn show(res/2: Result__int32__GoError) -> string {
+  match res/2 {
+    Result__int32__GoError::Ok(x1) => {
+      {
+        let x1 = Result__int32__GoError::Ok._0(res/2) in
+        {
+          let value/3 = x1 in
+          int32_to_string(value/3)
+        }
+      }
+    },
+    Result__int32__GoError::Err(x2) => {
+      {
+        let x2 = Result__int32__GoError::Err._0(res/2) in
+        {
+          let err/4 = x2 in
+          ("err=" + go_error_to_string(err/4))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let counter/5 = ref(0) in
+  let _wild3 = println__T_string(show(outer(counter/5))) in
+  let _wild4 = println__T_string(int32_to_string(ref_get(counter/5))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

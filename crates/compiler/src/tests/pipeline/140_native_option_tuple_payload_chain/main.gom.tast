@@ -1,0 +1,25 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "strings" cut_pair(text: string, sep: string) -> Option[(string, string)]
+
+fn pair(text/0: string) -> Option[(string, string)] {
+    (cut_pair : (string, string) -> Option[(string, string)])((text/0 : string), ":")
+}
+
+fn describe(text/1: string) -> string {
+    match (pair : (string) -> Option[(string, string)])((text/1 : string)) {
+        Option::Some((before/2: string, after/3: string)) => (before/2 : string) + "|" + (after/3 : string),
+        Option::None => "missing",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((describe : (string) -> string)("alpha:beta"));
+    (println : (string) -> unit)((describe : (string) -> string)("plain"));
+}

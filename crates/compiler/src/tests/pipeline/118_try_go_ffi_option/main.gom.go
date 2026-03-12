@@ -28,25 +28,25 @@ type GoError = error
 
 func trim_go__native(input__0 string) (string, bool) {
     var jp8 string
-    var mtmp0_value string
+    var mtmp0_value_0 string
     var mtmp0_ok bool
-    mtmp0_value, mtmp0_ok = strings.CutPrefix(input__0, "go")
+    mtmp0_value_0, mtmp0_ok = strings.CutPrefix(input__0, "go")
     if !mtmp0_ok {
         var ret_zero string
         return ret_zero, false
     }
-    jp8 = mtmp0_value
+    jp8 = mtmp0_value_0
     var t9 string = jp8 + "!"
     return t9, true
 }
 
 func trim_go(input__0 string) Option__string {
-    var native_value string
+    var native_value_0 string
     var native_ok bool
-    native_value, native_ok = trim_go__native(input__0)
+    native_value_0, native_ok = trim_go__native(input__0)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}

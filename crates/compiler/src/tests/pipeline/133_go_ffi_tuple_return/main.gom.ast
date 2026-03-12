@@ -1,0 +1,21 @@
+package main;
+extern "go" "strings" "Cut" cut(s: string, sep: string) -> (string, string, bool)
+
+fn describe(input: string) -> string {
+    let (before, after, found) = cut(input, ":");
+    if found {
+        {
+            before + "|" + after
+        }
+    } else {
+        {
+            "missing"
+        }
+    }
+}
+
+fn main() {
+    string_println(describe("left:right"));
+    string_println(describe("plain"));
+}
+

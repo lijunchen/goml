@@ -559,12 +559,12 @@ func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
 }
 
 func env_lookup(env__28 []EnvEntry, name__29 string) Option__Typ {
-    var native_value Typ
+    var native_value_0 Typ
     var native_ok bool
-    native_value, native_ok = env_lookup__native(env__28, name__29)
+    native_value_0, native_ok = env_lookup__native(env__28, name__29)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}
@@ -616,12 +616,12 @@ func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
 }
 
 func subst_lookup(subst__34 []SubstEntry, name__35 string) Option__Typ {
-    var native_value Typ
+    var native_value_0 Typ
     var native_ok bool
-    native_value, native_ok = subst_lookup__native(subst__34, name__35)
+    native_value_0, native_ok = subst_lookup__native(subst__34, name__35)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}
