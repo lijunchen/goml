@@ -1,11 +1,26 @@
 package ioshim;
 use common;
 
+extern "go" "io" "Reader" type RawReader
+extern "go" "io" "Writer" type RawWriter
 extern "go" "io" "*PipeReader" type RawPipeReader
 extern "go" "io" "*PipeWriter" type RawPipeWriter
 extern "go" "" "int" type GoInt
 
+extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
+#[go_value]
+extern "go" "io" "Discard" raw_discard() -> RawWriter
 extern "go" "io" "Pipe" raw_pipe() -> (RawPipeReader, RawPipeWriter)
+extern "go" "io" "LimitReader" raw_limit_reader(reader: RawReader, n: int64) -> RawReader
+
+#[go_variadic_last]
+extern "go" "io" "MultiReader" raw_multi_reader(readers: Slice[RawReader]) -> RawReader
+
+#[go_error_last]
+extern "go" "io" "Copy" raw_copy(dst: RawWriter, src: RawReader) -> Result[int64, GoError]
+
+#[go_error_last]
+extern "go" "io" "ReadAll" raw_read_all(reader: RawReader) -> Result[Vec[uint8], GoError]
 
 #[go_error_last]
 extern "go" "io" "ReadAll" raw_pipe_read_all(reader: RawPipeReader) -> Result[Vec[uint8], GoError]
@@ -13,8 +28,22 @@ extern "go" "io" "ReadAll" raw_pipe_read_all(reader: RawPipeReader) -> Result[Ve
 #[go_error_last]
 extern "go" "io" "WriteString" raw_pipe_write_string(writer: RawPipeWriter, text: string) -> Result[GoInt, GoError]
 
+#[go_error_last]
+extern "go" "io" "WriteString" raw_write_string(writer: RawWriter, text: string) -> Result[GoInt, GoError]
+
 #[go_error]
 extern "go" "io" "(*PipeWriter).Close" raw_pipe_writer_close(writer: RawPipeWriter) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "io" "(*PipeReader).Close" raw_pipe_reader_close(reader: RawPipeReader) -> Result[unit, GoError]
+
+struct Reader {
+    raw: RawReader,
+}
+
+struct Writer {
+    raw: RawWriter,
+}
 
 struct PipeReader {
     raw: RawPipeReader,
@@ -22,6 +51,56 @@ struct PipeReader {
 
 struct PipeWriter {
     raw: RawPipeWriter,
+}
+
+fn from_text(text: string) -> Reader {
+    Reader {
+        raw: raw_string_reader(text),
+    }
+}
+
+fn discard() -> Writer {
+    Writer {
+        raw: raw_discard(),
+    }
+}
+
+fn limit(reader: Reader, n: int64) -> Reader {
+    Reader {
+        raw: raw_limit_reader(reader.raw, n),
+    }
+}
+
+fn multi_text(parts: Vec[string]) -> Reader {
+    let raws: Ref[Vec[RawReader]] = ref(vec_new());
+    let index = ref(0);
+    while ref_get(index) < vec_len(parts) {
+        let text = vec_get(parts, ref_get(index));
+        ref_set(raws, vec_push(ref_get(raws), raw_string_reader(text)));
+        ref_set(index, ref_get(index) + 1);
+    };
+    let raw_vec = ref_get(raws);
+    Reader {
+        raw: raw_multi_reader(slice(raw_vec, 0, vec_len(raw_vec))),
+    }
+}
+
+fn read_all_text(reader: Reader) -> Result[string, GoError] {
+    let bytes = raw_read_all(reader.raw)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn read_limited_text(text: string, n: int64) -> Result[string, GoError] {
+    read_all_text(limit(from_text(text), n))
+}
+
+fn copy_to_discard(text: string) -> Result[int64, GoError] {
+    raw_copy(discard().raw, from_text(text).raw)
+}
+
+fn write_text(writer: Writer, text: string) -> Result[unit, GoError] {
+    let _ = raw_write_string(writer.raw, text)?;
+    Result::Ok(())
 }
 
 fn pipe() -> (PipeReader, PipeWriter) {
@@ -32,32 +111,56 @@ fn pipe() -> (PipeReader, PipeWriter) {
     )
 }
 
-fn read_all_text(reader: PipeReader) -> Result[string, GoError] {
+fn pipe_read_all_text(reader: PipeReader) -> Result[string, GoError] {
     let bytes = raw_pipe_read_all(reader.raw)?;
     Result::Ok(common::string_of_bytes(bytes))
 }
 
-fn write_text(writer: PipeWriter, text: string) -> Result[unit, GoError] {
+fn pipe_write_text(writer: PipeWriter, text: string) -> Result[unit, GoError] {
     let _ = raw_pipe_write_string(writer.raw, text)?;
     Result::Ok(())
 }
 
-fn close(writer: PipeWriter) -> Result[unit, GoError] {
+fn close_pipe_writer(writer: PipeWriter) -> Result[unit, GoError] {
     raw_pipe_writer_close(writer.raw)
 }
 
-impl PipeReader {
-    fn read_all_text(self: PipeReader) -> Result[string, GoError] {
+fn close_pipe_reader(reader: PipeReader) -> Result[unit, GoError] {
+    raw_pipe_reader_close(reader.raw)
+}
+
+impl Reader {
+    fn limit(self: Reader, n: int64) -> Reader {
+        limit(self, n)
+    }
+
+    fn read_all_text(self: Reader) -> Result[string, GoError] {
         read_all_text(self)
+    }
+}
+
+impl Writer {
+    fn write_text(self: Writer, text: string) -> Result[unit, GoError] {
+        write_text(self, text)
     }
 }
 
 impl PipeWriter {
     fn write_text(self: PipeWriter, text: string) -> Result[unit, GoError] {
-        write_text(self, text)
+        pipe_write_text(self, text)
     }
 
     fn close(self: PipeWriter) -> Result[unit, GoError] {
-        close(self)
+        close_pipe_writer(self)
+    }
+}
+
+impl PipeReader {
+    fn read_all_text(self: PipeReader) -> Result[string, GoError] {
+        pipe_read_all_text(self)
+    }
+
+    fn close(self: PipeReader) -> Result[unit, GoError] {
+        close_pipe_reader(self)
     }
 }

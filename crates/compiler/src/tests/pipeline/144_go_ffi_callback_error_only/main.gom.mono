@@ -1,0 +1,40 @@
+fn stop(path/0: string, entry/1: DirEntry, err/2: GoError) -> Result__unit__GoError {
+  let mtmp0 = path/0 in
+  {
+    let mtmp1 = entry/1 in
+    {
+      let mtmp2 = err/2 in
+      {
+        Result__unit__GoError::Err(eof())
+      }
+    }
+  }
+}
+
+fn show(res/3: Result__unit__GoError) -> string {
+  match res/3 {
+    Result__unit__GoError::Ok(x3) => {
+      {
+        let x3 = Result__unit__GoError::Ok._0(res/3) in
+        "ok"
+      }
+    },
+    Result__unit__GoError::Err(x4) => {
+      {
+        let x4 = Result__unit__GoError::Err._0(res/3) in
+        {
+          let err/4 = x4 in
+          go_error_to_string(err/4)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild5 = println__T_string(show(walk_dir(dir_fs("."), ".", stop))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

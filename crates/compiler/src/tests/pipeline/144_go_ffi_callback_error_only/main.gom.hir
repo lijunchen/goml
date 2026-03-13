@@ -1,0 +1,31 @@
+package main
+file main.gom
+  extern "go" "io/fs" "FS" type FS
+    
+    extern "go" "io/fs" "DirEntry" type DirEntry
+    
+    extern "go" "os" "DirFS" dir_fs(path: string) -> FS
+    
+    #[go_value]
+extern "go" "io" "EOF" eof() -> GoError
+    
+    #[go_error]
+extern "go" "io/fs" "WalkDir" walk_dir(fs: FS, root: string, visit: (string, DirEntry, GoError) -> Result[unit, GoError]) -> Result[unit, GoError]
+    
+    fn stop(local/1/0: string, local/1/1: DirEntry, local/1/2: GoError) -> Result[unit, GoError] {
+        let _ = path/0;
+        let _ = entry/1;
+        let _ = err/2;
+        Result::Err(def/1/3())
+    }
+    
+    fn show(local/1/3: Result[unit, GoError]) -> string {
+        match res/3 {
+            Result::Ok(_) => "ok",
+            Result::Err(local/1/4) => err/4.to_string(),
+        }
+    }
+    
+    fn main() -> unit {
+        println(def/1/6(def/1/4(def/1/2("."), ".", def/1/5)));
+    }

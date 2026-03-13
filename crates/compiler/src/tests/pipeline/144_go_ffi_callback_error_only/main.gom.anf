@@ -1,0 +1,51 @@
+fn stop(path/0: string, entry/1: DirEntry, err/2: GoError) -> Result__unit__GoError {
+  join ret6(retv7: Result__unit__GoError) -> Result__unit__GoError {
+    retv7
+  } in
+  let mtmp0 = path/0 in
+  let mtmp1 = entry/1 in
+  let mtmp2 = err/2 in
+  let t8 = eof() in
+  let t9 = Result__unit__GoError::Err(t8) in
+  jump ret6(t9)
+}
+
+fn show(res/3: Result__unit__GoError) -> string {
+  join ret10(retv11: string) -> string {
+    retv11
+  } in
+  join k12(jp13: string) -> string {
+    jump ret10(jp13)
+  } in
+  match res/3 {
+    Tag_0 => {
+      let x3 = Result__unit__GoError::Ok._0(res/3) in
+      jump k12("ok")
+    },
+    Tag_1 => {
+      let x4 = Result__unit__GoError::Err._0(res/3) in
+      let err/4 = x4 in
+      let t14 = go_error_to_string(err/4) in
+      jump k12(t14)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = dir_fs(".") in
+  let t17 = walk_dir(t16, ".", stop) in
+  let t18 = show(t17) in
+  let _wild5 = println__T_string(t18) in
+  jump ret15()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret19() -> unit {
+    ()
+  } in
+  let t20 = string_println(value/1) in
+  jump ret19()
+}
