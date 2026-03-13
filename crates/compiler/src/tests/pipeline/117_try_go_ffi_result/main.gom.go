@@ -74,30 +74,30 @@ func configure_and_format__native(input__0 string) (string, GoError) {
         return ret_zero, mtmp0_err
     }
     var jp15 Duration
-    var mtmp4_value Duration
+    var mtmp4_value_0 Duration
     var mtmp4_err GoError
-    mtmp4_value, mtmp4_err = time.ParseDuration(input__0)
+    mtmp4_value_0, mtmp4_err = time.ParseDuration(input__0)
     if mtmp4_err != nil {
         var ret_zero string
         return ret_zero, mtmp4_err
     }
-    jp15 = mtmp4_value
+    jp15 = mtmp4_value_0
     var value__1 Duration = jp15
     var t16 string = fmt.Sprintf("dur=%v", value__1)
     return t16, nil
 }
 
 func configure_and_format(input__0 string) Result__string__GoError {
-    var native_value string
+    var native_value_0 string
     var native_err GoError
-    native_value, native_err = configure_and_format__native(input__0)
+    native_value_0, native_err = configure_and_format__native(input__0)
     if native_err != nil {
         return Result__string__GoError_Err{
             _0: native_err,
         }
     }
     return Result__string__GoError_Ok{
-        _0: native_value,
+        _0: native_value_0,
     }
 }
 

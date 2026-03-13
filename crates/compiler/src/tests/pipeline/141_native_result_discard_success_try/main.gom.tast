@@ -1,0 +1,31 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "time" "Duration" type Duration
+
+extern "go" "time" parse_duration(text: string) -> Result[Duration, GoError]
+
+fn touch(text/0: string) -> Result[string, GoError] {
+    let _ : Duration = match (parse_duration : (string) -> Result[Duration, GoError])((text/0 : string)) {
+        Result::Ok(try_value/4: Duration) => (try_value/4 : Duration),
+        Result::Err(try_residual/4: GoError) => return Result::Err((try_residual/4 : GoError)),
+    };
+    Result::Ok("ok")
+}
+
+fn show(res/1: Result[string, GoError]) -> string {
+    match (res/1 : Result[string, GoError]) {
+        Result::Ok(value/2: string) => (value/2 : string),
+        Result::Err(err/3: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/3 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[string, GoError]) -> string)((touch : (string) -> Result[string, GoError])("2s")));
+    (println : (string) -> unit)((show : (Result[string, GoError]) -> string)((touch : (string) -> Result[string, GoError])("bad")));
+}

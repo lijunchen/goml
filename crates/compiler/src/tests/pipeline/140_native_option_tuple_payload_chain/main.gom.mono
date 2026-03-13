@@ -1,0 +1,39 @@
+fn pair(text/0: string) -> Option__(string,string) {
+  cut_pair(text/0, ":")
+}
+
+fn describe(text/1: string) -> string {
+  {
+    let mtmp0 = pair(text/1) in
+    match mtmp0 {
+      Option__(string,string)::None => {
+        "missing"
+      },
+      Option__(string,string)::Some(x1) => {
+        {
+          let x1 = Option__(string,string)::Some._0(mtmp0) in
+          {
+            let x2 = x1.0 in
+            let x3 = x1.1 in
+            {
+              let after/3 = x3 in
+              {
+                let before/2 = x2 in
+                ((before/2 + "|") + after/3)
+              }
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild4 = println__T_string(describe("alpha:beta")) in
+  let _wild5 = println__T_string(describe("plain")) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

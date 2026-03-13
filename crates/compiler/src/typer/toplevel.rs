@@ -98,6 +98,56 @@ fn attribute_name(attr: &hir::Attribute) -> Option<&str> {
     }
 }
 
+fn attribute_string_arg(attr: &hir::Attribute) -> Option<String> {
+    let trimmed = attr.text.trim();
+    let inner = trimmed.strip_prefix("#[")?.strip_suffix(']')?.trim();
+    let start = inner.find('(')?;
+    let args = inner[start + 1..].strip_suffix(')')?.trim();
+    let value = args.strip_prefix('"')?.strip_suffix('"')?;
+    Some(value.to_string())
+}
+
+#[derive(Debug, Clone)]
+struct ExternBindingConfig {
+    binding_mode: ExternBindingMode,
+    variadic_last: bool,
+    field_name: Option<String>,
+}
+
+fn parse_named_string_attr(
+    attrs: &[hir::Attribute],
+    extern_name: &str,
+    target: &str,
+    diagnostics: &mut Diagnostics,
+) -> Option<String> {
+    let mut value = None;
+    for attr in attrs {
+        if !matches!(attribute_name(attr), Some(name) if name == target) {
+            continue;
+        }
+        let Some(parsed) = attribute_string_arg(attr) else {
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "extern \"go\" function {} attribute #[{}] must use exactly one string argument",
+                    extern_name, target
+                ),
+            );
+            continue;
+        };
+        if value.replace(parsed).is_some() {
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "extern \"go\" function {} can use #[{}] at most once",
+                    extern_name, target
+                ),
+            );
+        }
+    }
+    value
+}
+
 fn extern_return_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -> ExternReturnMode {
     let mut error_only = false;
     let mut error_last = false;
@@ -131,31 +181,87 @@ fn extern_return_mode(attrs: &[hir::Attribute], diagnostics: &mut Diagnostics) -
     }
 }
 
-fn extern_binding_mode(
+fn extern_binding_config(
     attrs: &[hir::Attribute],
+    extern_name: &str,
     return_mode: ExternReturnMode,
     diagnostics: &mut Diagnostics,
-) -> ExternBindingMode {
+) -> ExternBindingConfig {
     let mut go_value = false;
+    let mut variadic_last = false;
     for attr in attrs {
-        if matches!(attribute_name(attr), Some("go_value")) {
-            go_value = true;
+        match attribute_name(attr) {
+            Some("go_value") => go_value = true,
+            Some("go_variadic_last") => variadic_last = true,
+            _ => {}
         }
     }
+    let field_get = parse_named_string_attr(attrs, extern_name, "go_field_get", diagnostics);
+    let field_set = parse_named_string_attr(attrs, extern_name, "go_field_set", diagnostics);
 
-    if !go_value {
-        return ExternBindingMode::Call;
+    if field_get.is_some() && field_set.is_some() {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" function {} can use at most one of #[go_field_get] and #[go_field_set]",
+                extern_name
+            ),
+        );
     }
 
     if return_mode != ExternReturnMode::Plain {
-        super::util::push_error(
-            diagnostics,
-            "extern \"go\" function #[go_value] cannot be combined with #[go_error], #[go_error_last], or #[go_option_last]",
-        );
-        return ExternBindingMode::Call;
+        if go_value {
+            super::util::push_error(
+                diagnostics,
+                "extern \"go\" function #[go_value] cannot be combined with #[go_error], #[go_error_last], or #[go_option_last]",
+            );
+        }
+        if field_get.is_some() || field_set.is_some() {
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "extern \"go\" function {} field accessors cannot be combined with #[go_error], #[go_error_last], or #[go_option_last]",
+                    extern_name
+                ),
+            );
+        }
     }
 
-    ExternBindingMode::Value
+    if go_value && (field_get.is_some() || field_set.is_some()) {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" function {} cannot combine #[go_value] with #[go_field_get] or #[go_field_set]",
+                extern_name
+            ),
+        );
+    }
+
+    if variadic_last && (field_get.is_some() || field_set.is_some()) {
+        super::util::push_error(
+            diagnostics,
+            format!(
+                "extern \"go\" function {} cannot combine #[go_variadic_last] with #[go_field_get] or #[go_field_set]",
+                extern_name
+            ),
+        );
+    }
+
+    let (binding_mode, field_name) = if field_get.is_some() {
+        (ExternBindingMode::FieldGetter, field_get)
+    } else if field_set.is_some() {
+        (ExternBindingMode::FieldSetter, field_set)
+    } else if go_value {
+        (ExternBindingMode::Value, None)
+    } else {
+        (ExternBindingMode::Call, None)
+    };
+
+    ExternBindingConfig {
+        binding_mode,
+        variadic_last,
+        field_name,
+    }
 }
 
 fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
@@ -283,24 +389,97 @@ fn validate_extern_return_mode(
     }
 }
 
-fn validate_extern_binding_mode(
+fn validate_extern_binding_config(
     diagnostics: &mut Diagnostics,
     extern_name: &str,
-    binding_mode: ExternBindingMode,
+    mut config: ExternBindingConfig,
     params: &[tast::Ty],
-) -> ExternBindingMode {
-    if binding_mode == ExternBindingMode::Value && !params.is_empty() {
-        super::util::push_error(
-            diagnostics,
-            format!(
-                "extern \"go\" function {} with #[go_value] must have no parameters",
-                extern_name
-            ),
-        );
-        ExternBindingMode::Call
-    } else {
-        binding_mode
+    ret_ty: &tast::Ty,
+) -> ExternBindingConfig {
+    match config.binding_mode {
+        ExternBindingMode::Call => {}
+        ExternBindingMode::Value => {
+            if !params.is_empty() {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_value] must have no parameters",
+                        extern_name
+                    ),
+                );
+                config.binding_mode = ExternBindingMode::Call;
+            }
+        }
+        ExternBindingMode::FieldGetter => {
+            if params.len() != 1 {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_field_get] must have exactly one receiver parameter",
+                        extern_name
+                    ),
+                );
+                config.binding_mode = ExternBindingMode::Call;
+                config.field_name = None;
+            }
+            if matches!(ret_ty, tast::Ty::TUnit) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_field_get] must return a non-unit value",
+                        extern_name
+                    ),
+                );
+            }
+        }
+        ExternBindingMode::FieldSetter => {
+            if params.len() != 2 {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_field_set] must have exactly a receiver and value parameter",
+                        extern_name
+                    ),
+                );
+                config.binding_mode = ExternBindingMode::Call;
+                config.field_name = None;
+            }
+            if !matches!(ret_ty, tast::Ty::TUnit) {
+                super::util::push_error(
+                    diagnostics,
+                    format!(
+                        "extern \"go\" function {} with #[go_field_set] must return unit",
+                        extern_name
+                    ),
+                );
+            }
+        }
     }
+
+    if config.variadic_last {
+        let Some(last) = params.last() else {
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "extern \"go\" function {} with #[go_variadic_last] must have at least one parameter",
+                    extern_name
+                ),
+            );
+            config.variadic_last = false;
+            return config;
+        };
+        if !matches!(last, tast::Ty::TSlice { .. } | tast::Ty::TVec { .. }) {
+            super::util::push_error(
+                diagnostics,
+                format!(
+                    "extern \"go\" function {} with #[go_variadic_last] must use Slice[T] or Vec[T] as the last parameter",
+                    extern_name
+                ),
+            );
+            config.variadic_last = false;
+        }
+    }
+    config
 }
 
 fn define_enum(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, enum_def: &hir::EnumDef) {
@@ -1049,12 +1228,18 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         ret_ty: Box::new(ret.clone()),
     };
     let return_mode = extern_return_mode(&ext.attrs, diagnostics);
-    let binding_mode = extern_binding_mode(&ext.attrs, return_mode, diagnostics);
-    let binding_mode = validate_extern_binding_mode(
+    let binding = extern_binding_config(
+        &ext.attrs,
+        &ext.goml_name.to_ident_name(),
+        return_mode,
+        diagnostics,
+    );
+    let binding = validate_extern_binding_config(
         diagnostics,
         &ext.goml_name.to_ident_name(),
-        binding_mode,
+        binding,
         &params,
+        &ret,
     );
     validate_extern_return_mode(
         diagnostics,
@@ -1081,8 +1266,10 @@ fn define_extern_go(env: &mut PackageTypeEnv, diagnostics: &mut Diagnostics, ext
         ext.package_path.clone(),
         go_name,
         fn_ty,
-        binding_mode,
+        binding.binding_mode,
         return_mode,
+        binding.variadic_last,
+        binding.field_name,
     );
 }
 

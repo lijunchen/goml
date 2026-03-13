@@ -1,0 +1,29 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn inner(counter/0: Ref[int32]) -> Result[int32, GoError] {
+    let _ : unit = (ref_set : (Ref[int32], int32) -> unit)((counter/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])) + 1);
+    Result::Ok((ref_get : (Ref[int32]) -> int32)((counter/0 : Ref[int32])))
+}
+
+fn outer(counter/1: Ref[int32]) -> Result[int32, GoError] {
+    (inner : (Ref[int32]) -> Result[int32, GoError])((counter/1 : Ref[int32]))
+}
+
+fn show(res/2: Result[int32, GoError]) -> string {
+    match (res/2 : Result[int32, GoError]) {
+        Result::Ok(value/3: int32) => (ToString::to_string : (int32) -> string)((value/3 : int32)),
+        Result::Err(err/4: GoError) => "err=" + (ToString::to_string : (GoError) -> string)((err/4 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    let counter/5: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    (println : (string) -> unit)((show : (Result[int32, GoError]) -> string)((outer : (Ref[int32]) -> Result[int32, GoError])((counter/5 : Ref[int32]))));
+    (println : (string) -> unit)((ToString::to_string : (int32) -> string)((ref_get : (Ref[int32]) -> int32)((counter/5 : Ref[int32]))));
+}

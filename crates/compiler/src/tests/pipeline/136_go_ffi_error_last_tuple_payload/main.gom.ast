@@ -1,0 +1,20 @@
+package main;
+#[go_error_last]
+extern "go" "net" "SplitHostPort" split_host_port(text: string) -> Result[(string, string), GoError]
+
+fn render(text: string) -> Result[string, GoError] {
+    let (host, port) = split_host_port(text)?;
+    Result::Ok(host + "|" + port)
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(text) => text,
+        Result::Err(err) => err.to_string(),
+    }
+}
+
+fn main() {
+    string_println(show(render("example.com:443")));
+}
+

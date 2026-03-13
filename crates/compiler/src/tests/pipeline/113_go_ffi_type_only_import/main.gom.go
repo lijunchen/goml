@@ -36,16 +36,16 @@ type GoError = error
 type Reader = io.Reader
 
 func open_reader_ffi_wrap(p0 string) Result__Reader__GoError {
-    var ffi_value Reader
+    var ffi_value_0 Reader
     var ffi_err GoError
-    ffi_value, ffi_err = os.Open(p0)
+    ffi_value_0, ffi_err = os.Open(p0)
     if ffi_err != nil {
         return Err{
             _0: ffi_err,
         }
     }
     return Ok{
-        _0: ffi_value,
+        _0: ffi_value_0,
     }
 }
 

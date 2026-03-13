@@ -1,0 +1,63 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn update(text/0: string, path/1: string) -> Result[string, GoError] {
+  let url/2 = {
+    let mtmp0 = parse_url(text/0) in
+    match mtmp0 {
+      Result::Ok(x1) => {
+        {
+          let x1 = Result::Ok._0(mtmp0) in
+          {
+            let try_value/4 = x1 in
+            try_value/4
+          }
+        }
+      },
+      Result::Err(x2) => {
+        {
+          let x2 = Result::Err._0(mtmp0) in
+          {
+            let try_residual/4 = x2 in
+            return Result::Err(try_residual/4)
+          }
+        }
+      },
+    }
+  } in
+  let host/3 = url_host(url/2) in
+  let _wild3 = url_set_path(url/2, path/1) in
+  Result::Ok(((host/3 + "|") + url_string(url/2)))
+}
+
+fn show(res/4: Result[string, GoError]) -> string {
+  match res/4 {
+    Result::Ok(x4) => {
+      {
+        let x4 = Result::Ok._0(res/4) in
+        {
+          let text/5 = x4 in
+          text/5
+        }
+      }
+    },
+    Result::Err(x5) => {
+      {
+        let x5 = Result::Err._0(res/4) in
+        {
+          let err/6 = x5 in
+          trait_call[ToString::to_string](err/6)
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = string_println(show(update("https://example.com/old", "/new"))) in
+}

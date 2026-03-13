@@ -47,25 +47,25 @@ func add(a__1 int32, b__2 int32) int32 {
 
 func plus_two__native(flag__3 bool) (int32, bool) {
     var jp16 int32
-    var mtmp0_value int32
+    var mtmp0_value_0 int32
     var mtmp0_ok bool
-    mtmp0_value, mtmp0_ok = maybe_value__native(flag__3)
+    mtmp0_value_0, mtmp0_ok = maybe_value__native(flag__3)
     if !mtmp0_ok {
         var ret_zero int32
         return ret_zero, false
     }
-    jp16 = mtmp0_value
+    jp16 = mtmp0_value_0
     var t17 int32 = add(jp16, 2)
     return t17, true
 }
 
 func plus_two(flag__3 bool) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = plus_two__native(flag__3)
+    native_value_0, native_ok = plus_two__native(flag__3)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}

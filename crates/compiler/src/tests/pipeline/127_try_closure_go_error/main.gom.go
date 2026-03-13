@@ -60,28 +60,27 @@ func render_with_prefix__native(prefix__0 string, text__1 string) (string, GoErr
         text_0: text__1,
         prefix_1: prefix__0,
     }
-    _goml_inherent_closure_env_run_0_closure_env_run_0_apply(run__3)
-    var t10_value string
+    var t10_value_0 string
     var t10_err GoError
-    t10_value, t10_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__3)
+    t10_value_0, t10_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(run__3)
     if t10_err != nil {
         var ret_zero string
         return ret_zero, t10_err
     }
-    return t10_value, nil
+    return t10_value_0, nil
 }
 
 func render_with_prefix(prefix__0 string, text__1 string) Result__string__GoError {
-    var native_value string
+    var native_value_0 string
     var native_err GoError
-    native_value, native_err = render_with_prefix__native(prefix__0, text__1)
+    native_value_0, native_err = render_with_prefix__native(prefix__0, text__1)
     if native_err != nil {
         return Result__string__GoError_Err{
             _0: native_err,
         }
     }
     return Result__string__GoError_Ok{
-        _0: native_value,
+        _0: native_value_0,
     }
 }
 
@@ -125,32 +124,18 @@ func _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7 closu
     var text__1 string = env7.text_0
     var prefix__0 string = env7.prefix_1
     var jp27 Duration
-    var mtmp0_value Duration
+    var mtmp0_value_0 Duration
     var mtmp0_err GoError
-    mtmp0_value, mtmp0_err = time.ParseDuration(text__1)
+    mtmp0_value_0, mtmp0_err = time.ParseDuration(text__1)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err
     }
-    jp27 = mtmp0_value
+    jp27 = mtmp0_value_0
     var value__2 Duration = jp27
     var t28 string = fmt.Sprintf("%v", value__2)
     var t29 string = prefix__0 + t28
     return t29, nil
-}
-
-func _goml_inherent_closure_env_run_0_closure_env_run_0_apply(env7 closure_env_run_0) Result__string__GoError {
-    var native_value string
-    var native_err GoError
-    native_value, native_err = _goml_inherent_closure_env_run_0_closure_env_run_0_apply__native(env7)
-    if native_err != nil {
-        return Result__string__GoError_Err{
-            _0: native_err,
-        }
-    }
-    return Result__string__GoError_Ok{
-        _0: native_value,
-    }
 }
 
 func main() {

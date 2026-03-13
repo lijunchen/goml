@@ -1,0 +1,60 @@
+fn touch(text/0: string) -> Result__unit__GoError {
+  let mtmp3 = {
+    let mtmp0 = raw_print(text/0) in
+    match mtmp0 {
+      Result__GoInt__GoError::Ok(x1) => {
+        {
+          let x1 = Result__GoInt__GoError::Ok._0(mtmp0) in
+          {
+            let try_value/4 = x1 in
+            try_value/4
+          }
+        }
+      },
+      Result__GoInt__GoError::Err(x2) => {
+        {
+          let x2 = Result__GoInt__GoError::Err._0(mtmp0) in
+          {
+            let try_residual/4 = x2 in
+            return Result__unit__GoError::Err(try_residual/4)
+          }
+        }
+      },
+    }
+  } in
+  {
+    Result__unit__GoError::Ok(())
+  }
+}
+
+fn show(res/1: Result__unit__GoError) -> string {
+  match res/1 {
+    Result__unit__GoError::Ok(x4) => {
+      {
+        let x4 = Result__unit__GoError::Ok._0(res/1) in
+        match x4 {
+          () => {
+            "ok"
+          },
+        }
+      }
+    },
+    Result__unit__GoError::Err(x5) => {
+      {
+        let x5 = Result__unit__GoError::Err._0(res/1) in
+        {
+          let err/2 = x5 in
+          ("err=" + go_error_to_string(err/2))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild6 = println__T_string(show(touch("hello"))) in
+}
+
+fn println__T_string(value/1: string) -> unit {
+  string_println(value/1)
+}

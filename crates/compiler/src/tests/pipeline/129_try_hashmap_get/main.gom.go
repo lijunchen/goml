@@ -74,18 +74,6 @@ func hashmap_get_native__HashMap_string_int32(m *hashmap_string_int32_x, key str
     return zero, false
 }
 
-func hashmap_get__HashMap_string_int32(m *hashmap_string_int32_x, key string) Option__int32 {
-    var value int32
-    var ok bool
-    value, ok = hashmap_get_native__HashMap_string_int32(m, key)
-    if ok {
-        return Some{
-            _0: value,
-        }
-    }
-    return None{}
-}
-
 func hashmap_set__HashMap_string_int32(m *hashmap_string_int32_x, key string, value int32) struct{} {
     if m == nil {
         return struct{}{}
@@ -136,26 +124,26 @@ func fetch__native(flag__0 bool) (int32, bool) {
         _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(m__1, "a", 7)
     } else {}
     var jp11 int32
-    var mtmp2_value int32
+    var mtmp2_value_0 int32
     var mtmp2_ok bool
-    mtmp2_value, mtmp2_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(m__1, "a")
+    mtmp2_value_0, mtmp2_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(m__1, "a")
     if !mtmp2_ok {
         var ret_zero int32
         return ret_zero, false
     }
-    jp11 = mtmp2_value
+    jp11 = mtmp2_value_0
     var value__2 int32 = jp11
     var t12 int32 = value__2 + 1
     return t12, true
 }
 
 func fetch(flag__0 bool) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = fetch__native(flag__0)
+    native_value_0, native_ok = fetch__native(flag__0)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}
@@ -203,7 +191,6 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__78 *hashmap_string_int32_x, key__79 string) (int32, bool) {
-    hashmap_get__HashMap_string_int32(self__78, key__79)
     var t32_value int32
     var t32_ok bool
     t32_value, t32_ok = hashmap_get_native__HashMap_string_int32(self__78, key__79)

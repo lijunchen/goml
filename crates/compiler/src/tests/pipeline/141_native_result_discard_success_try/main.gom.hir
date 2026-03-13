@@ -1,0 +1,23 @@
+package main
+file main.gom
+  extern "go" "time" "Duration" type Duration
+    
+    #[go_error_last]
+extern "go" "time" "ParseDuration" parse_duration(text: string) -> Result[Duration, GoError]
+    
+    fn touch(local/1/0: string) -> Result[string, GoError] {
+        let _ = def/1/1(text/0)?;
+        Result::Ok("ok")
+    }
+    
+    fn show(local/1/1: Result[string, GoError]) -> string {
+        match res/1 {
+            Result::Ok(local/1/2) => value/2,
+            Result::Err(local/1/3) => "err=" + err/3.to_string(),
+        }
+    }
+    
+    fn main() {
+        println(def/1/3(def/1/2("2s")));
+        println(def/1/3(def/1/2("bad")));
+    }

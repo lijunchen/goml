@@ -68,14 +68,14 @@ type File = *os.File
 
 func describe__native(path__0 string) (string, GoError) {
     var jp14 File
-    var mtmp0_value File
+    var mtmp0_value_0 File
     var mtmp0_err GoError
-    mtmp0_value, mtmp0_err = os.Open(path__0)
+    mtmp0_value_0, mtmp0_err = os.Open(path__0)
     if mtmp0_err != nil {
         var ret_zero string
         return ret_zero, mtmp0_err
     }
-    jp14 = mtmp0_value
+    jp14 = mtmp0_value_0
     var file__1 File = jp14
     var name__2 string = file__1.Name()
     var mtmp3_err GoError = file__1.Close()
@@ -88,16 +88,16 @@ func describe__native(path__0 string) (string, GoError) {
 }
 
 func describe(path__0 string) Result__string__GoError {
-    var native_value string
+    var native_value_0 string
     var native_err GoError
-    native_value, native_err = describe__native(path__0)
+    native_value_0, native_err = describe__native(path__0)
     if native_err != nil {
         return Result__string__GoError_Err{
             _0: native_err,
         }
     }
     return Result__string__GoError_Ok{
-        _0: native_value,
+        _0: native_value_0,
     }
 }
 

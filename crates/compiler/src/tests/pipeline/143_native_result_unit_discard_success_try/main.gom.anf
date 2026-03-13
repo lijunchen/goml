@@ -1,0 +1,71 @@
+fn touch(text/0: string) -> Result__unit__GoError {
+  join ret7(retv8: Result__unit__GoError) -> Result__unit__GoError {
+    retv8
+  } in
+  let mtmp0 = raw_print(text/0) in
+  join k9(jp10: GoInt) -> Result__unit__GoError {
+    let mtmp3 = jp10 in
+    let t11 = Result__unit__GoError::Ok(()) in
+    jump ret7(t11)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      let x1 = Result__GoInt__GoError::Ok._0(mtmp0) in
+      let try_value/4 = x1 in
+      jump k9(try_value/4)
+    },
+    Tag_1 => {
+      let x2 = Result__GoInt__GoError::Err._0(mtmp0) in
+      let try_residual/4 = x2 in
+      let t12 = Result__unit__GoError::Err(try_residual/4) in
+      jump ret7(t12)
+    },
+  }
+}
+
+fn show(res/1: Result__unit__GoError) -> string {
+  join ret13(retv14: string) -> string {
+    retv14
+  } in
+  join k15(jp16: string) -> string {
+    jump ret13(jp16)
+  } in
+  match res/1 {
+    Tag_0 => {
+      let x4 = Result__unit__GoError::Ok._0(res/1) in
+      join k17(jp18: string) -> string {
+        jump k15(jp18)
+      } in
+      match x4 {
+        () => {
+          jump k17("ok")
+        },
+      }
+    },
+    Tag_1 => {
+      let x5 = Result__unit__GoError::Err._0(res/1) in
+      let err/2 = x5 in
+      let t19 = go_error_to_string(err/2) in
+      let t20 = ("err=" + t19) in
+      jump k15(t20)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret21() -> unit {
+    ()
+  } in
+  let t22 = touch("hello") in
+  let t23 = show(t22) in
+  let _wild6 = println__T_string(t23) in
+  jump ret21()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret24() -> unit {
+    ()
+  } in
+  let t25 = string_println(value/1) in
+  jump ret24()
+}

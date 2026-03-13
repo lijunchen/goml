@@ -1,0 +1,43 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn pair(text/0: string) -> Option[(string, string)] {
+  cut_pair(text/0, ":")
+}
+
+fn describe(text/1: string) -> string {
+  {
+    let mtmp0 = pair(text/1) in
+    match mtmp0 {
+      Option::None => {
+        "missing"
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let x2 = x1.0 in
+            let x3 = x1.1 in
+            {
+              let after/3 = x3 in
+              {
+                let before/2 = x2 in
+                ((before/2 + "|") + after/3)
+              }
+            }
+          }
+        }
+      },
+    }
+  }
+}
+
+fn main() -> unit {
+  let _wild4 = println(describe("alpha:beta")) in
+  let _wild5 = println(describe("plain")) in
+}

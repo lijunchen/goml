@@ -62,12 +62,12 @@ func maybe_secondary__native(flag__1 bool) (int32, bool) {
 }
 
 func maybe_secondary(flag__1 bool) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = maybe_secondary__native(flag__1)
+    native_value_0, native_ok = maybe_secondary__native(flag__1)
     if native_ok {
         return Option__int32_Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return Option__int32_None{}
@@ -75,14 +75,14 @@ func maybe_secondary(flag__1 bool) Option__int32 {
 
 func mixed__native(primary__2 bool, secondary__3 bool) (string, bool) {
     var jp21 int32
-    var mtmp0_value int32
+    var mtmp0_value_0 int32
     var mtmp0_ok bool
-    mtmp0_value, mtmp0_ok = maybe_primary__native(primary__2)
+    mtmp0_value_0, mtmp0_ok = maybe_primary__native(primary__2)
     if !mtmp0_ok {
         var ret_zero string
         return ret_zero, false
     }
-    jp21 = mtmp0_value
+    jp21 = mtmp0_value_0
     var value__4 int32 = jp21
     var mtmp2 Option__int32 = maybe_secondary(secondary__3)
     var jp23 string
@@ -107,12 +107,12 @@ func mixed__native(primary__2 bool, secondary__3 bool) (string, bool) {
 }
 
 func mixed(primary__2 bool, secondary__3 bool) Option__string {
-    var native_value string
+    var native_value_0 string
     var native_ok bool
-    native_value, native_ok = mixed__native(primary__2, secondary__3)
+    native_value_0, native_ok = mixed__native(primary__2, secondary__3)
     if native_ok {
         return Option__string_Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return Option__string_None{}

@@ -1,0 +1,23 @@
+package main
+file main.gom
+  fn inner(local/1/0: Ref[int32]) -> Result[int32, GoError] {
+        let _ = ref_set(counter/0, ref_get(counter/0) + 1);
+        Result::Ok(ref_get(counter/0))
+    }
+    
+    fn outer(local/1/1: Ref[int32]) -> Result[int32, GoError] {
+        def/1/0(counter/1)
+    }
+    
+    fn show(local/1/2: Result[int32, GoError]) -> string {
+        match res/2 {
+            Result::Ok(local/1/3) => value/3.to_string(),
+            Result::Err(local/1/4) => "err=" + err/4.to_string(),
+        }
+    }
+    
+    fn main() -> unit {
+        let local/1/5 = ref(0);
+        println(def/1/2(def/1/1(counter/5)));
+        println(ref_get(counter/5).to_string());
+    }

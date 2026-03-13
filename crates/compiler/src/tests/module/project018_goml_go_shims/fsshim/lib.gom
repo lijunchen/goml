@@ -1,0 +1,42 @@
+package fsshim;
+use common;
+
+extern "go" "io/fs" "FS" type RawFS
+extern "go" "io/fs" "FileMode" type RawFileMode
+
+extern "go" "os" "DirFS" raw_dir_fs(dir: string) -> RawFS
+extern "go" "io/fs" "ValidPath" raw_valid_path(name: string) -> bool
+extern "go" "io/fs" "FileMode" raw_file_mode(bits: uint32) -> RawFileMode
+
+#[go_error_last]
+extern "go" "io/fs" "ReadFile" raw_read_file(fsys: RawFS, name: string) -> Result[Vec[uint8], GoError]
+
+#[go_error]
+extern "go" "os" "WriteFile" raw_write_file(path: string, data: Vec[uint8], perm: RawFileMode) -> Result[unit, GoError]
+
+struct FS {
+    raw: RawFS,
+}
+
+fn dir_fs(dir: string) -> FS {
+    FS { raw: raw_dir_fs(dir) }
+}
+
+fn valid_path(name: string) -> bool {
+    raw_valid_path(name)
+}
+
+fn write_text_file(path: string, text: string) -> Result[unit, GoError] {
+    raw_write_file(path, common::bytes_of_string(text), raw_file_mode(420u32))
+}
+
+fn read_text(fs: FS, name: string) -> Result[string, GoError] {
+    let bytes = raw_read_file(fs.raw, name)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+impl FS {
+    fn read_text(self: FS, name: string) -> Result[string, GoError] {
+        read_text(self, name)
+    }
+}

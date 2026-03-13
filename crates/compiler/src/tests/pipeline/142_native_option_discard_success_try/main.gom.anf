@@ -1,0 +1,61 @@
+fn touch(text/0: string) -> Option__string {
+  join ret6(retv7: Option__string) -> Option__string {
+    retv7
+  } in
+  let mtmp0 = cut_pair(text/0, ":") in
+  join k8(jp9: (string, string)) -> Option__string {
+    let mtmp2 = jp9 in
+    let t10 = Option__string::Some("ok") in
+    jump ret6(t10)
+  } in
+  match mtmp0 {
+    Tag_0 => {
+      jump ret6(Tag_0)
+    },
+    Tag_1 => {
+      let x1 = Option__(string,string)::Some._0(mtmp0) in
+      let try_value/5 = x1 in
+      jump k8(try_value/5)
+    },
+  }
+}
+
+fn show(value/1: Option__string) -> string {
+  join ret11(retv12: string) -> string {
+    retv12
+  } in
+  join k13(jp14: string) -> string {
+    jump ret11(jp14)
+  } in
+  match value/1 {
+    Tag_0 => {
+      jump k13("none")
+    },
+    Tag_1 => {
+      let x3 = Option__string::Some._0(value/1) in
+      let text/2 = x3 in
+      jump k13(text/2)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = touch("left:right") in
+  let t17 = show(t16) in
+  let _wild4 = println__T_string(t17) in
+  let t18 = touch("plain") in
+  let t19 = show(t18) in
+  let _wild5 = println__T_string(t19) in
+  jump ret15()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret20() -> unit {
+    ()
+  } in
+  let t21 = string_println(value/1) in
+  jump ret20()
+}

@@ -1,0 +1,32 @@
+package bufioshim;
+use common;
+
+extern "go" "io" "Reader" type RawReader
+extern "go" "bufio" "*Reader" type RawBufReader
+
+extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
+extern "go" "bufio" "NewReader" raw_new_reader(reader: RawReader) -> RawBufReader
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).ReadLine" raw_read_line(reader: RawBufReader) -> Result[(Vec[uint8], bool), GoError]
+
+struct Reader {
+    raw: RawBufReader,
+}
+
+fn from_text(text: string) -> Reader {
+    Reader {
+        raw: raw_new_reader(raw_string_reader(text)),
+    }
+}
+
+fn read_line(reader: Reader) -> Result[(string, bool), GoError] {
+    let (line, prefix) = raw_read_line(reader.raw)?;
+    Result::Ok((common::string_of_bytes(line), prefix))
+}
+
+impl Reader {
+    fn read_line(self: Reader) -> Result[(string, bool), GoError] {
+        read_line(self)
+    }
+}

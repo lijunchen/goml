@@ -80,18 +80,6 @@ func hashmap_get_native__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) (int
     return zero, false
 }
 
-func hashmap_get__HashMap_Key_int32(m *hashmap_key_int32_x, key Key) Option__int32 {
-    var value int32
-    var ok bool
-    value, ok = hashmap_get_native__HashMap_Key_int32(m, key)
-    if ok {
-        return Some{
-            _0: value,
-        }
-    }
-    return None{}
-}
-
 func hashmap_set__HashMap_Key_int32(m *hashmap_key_int32_x, key Key, value int32) struct{} {
     if m == nil {
         return struct{}{}
@@ -381,7 +369,6 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__len__K_Key__V_int32(self__8
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__78 *hashmap_key_int32_x, key__79 Key) (int32, bool) {
-    hashmap_get__HashMap_Key_int32(self__78, key__79)
     var t81_value int32
     var t81_ok bool
     t81_value, t81_ok = hashmap_get_native__HashMap_Key_int32(self__78, key__79)
@@ -393,12 +380,12 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native
 }
 
 func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32(self__78 *hashmap_key_int32_x, key__79 Key) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__78, key__79)
+    native_value_0, native_ok = _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_Key__V_int32__native(self__78, key__79)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}

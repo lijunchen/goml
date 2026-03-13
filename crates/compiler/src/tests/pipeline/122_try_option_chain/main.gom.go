@@ -51,36 +51,36 @@ func maybe_double__native(value__1 int32) (int32, bool) {
 
 func maybe_total__native(flag__2 bool) (int32, bool) {
     var jp22 int32
-    var mtmp0_value int32
+    var mtmp0_value_0 int32
     var mtmp0_ok bool
-    mtmp0_value, mtmp0_ok = maybe_seed__native(flag__2)
+    mtmp0_value_0, mtmp0_ok = maybe_seed__native(flag__2)
     if !mtmp0_ok {
         var ret_zero int32
         return ret_zero, false
     }
-    jp22 = mtmp0_value
+    jp22 = mtmp0_value_0
     var a__3 int32 = jp22
     var jp24 int32
-    var mtmp2_value int32
+    var mtmp2_value_0 int32
     var mtmp2_ok bool
-    mtmp2_value, mtmp2_ok = maybe_double__native(a__3)
+    mtmp2_value_0, mtmp2_ok = maybe_double__native(a__3)
     if !mtmp2_ok {
         var ret_zero int32
         return ret_zero, false
     }
-    jp24 = mtmp2_value
+    jp24 = mtmp2_value_0
     var b__4 int32 = jp24
     var t25 int32 = a__3 + b__4
     return t25, true
 }
 
 func maybe_total(flag__2 bool) Option__int32 {
-    var native_value int32
+    var native_value_0 int32
     var native_ok bool
-    native_value, native_ok = maybe_total__native(flag__2)
+    native_value_0, native_ok = maybe_total__native(flag__2)
     if native_ok {
         return Some{
-            _0: native_value,
+            _0: native_value_0,
         }
     }
     return None{}
