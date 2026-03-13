@@ -3,15 +3,38 @@ use common;
 
 extern "go" "io" "Reader" type RawReader
 extern "go" "bufio" "*Reader" type RawBufReader
+extern "go" "bufio" "*Scanner" type RawScanner
+extern "go" "bufio" "SplitFunc" type RawSplitFunc
 
 extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
 extern "go" "bufio" "NewReader" raw_new_reader(reader: RawReader) -> RawBufReader
+extern "go" "bufio" "NewScanner" raw_new_scanner(reader: RawReader) -> RawScanner
+
+#[go_value]
+extern "go" "bufio" "ScanLines" raw_scan_lines() -> RawSplitFunc
+
+#[go_value]
+extern "go" "bufio" "ScanWords" raw_scan_words() -> RawSplitFunc
 
 #[go_error_last]
 extern "go" "bufio" "(*Reader).ReadLine" raw_read_line(reader: RawBufReader) -> Result[(Vec[uint8], bool), GoError]
 
+#[go_error_last]
+extern "go" "bufio" "(*Reader).ReadString" raw_read_string(reader: RawBufReader, delim: uint8) -> Result[string, GoError]
+
+extern "go" "bufio" "(*Scanner).Split" raw_scanner_split(scanner: RawScanner, split: RawSplitFunc) -> unit
+extern "go" "bufio" "(*Scanner).Scan" raw_scanner_scan(scanner: RawScanner) -> bool
+extern "go" "bufio" "(*Scanner).Text" raw_scanner_text(scanner: RawScanner) -> string
+
+#[go_error]
+extern "go" "bufio" "(*Scanner).Err" raw_scanner_err(scanner: RawScanner) -> Result[unit, GoError]
+
 struct Reader {
     raw: RawBufReader,
+}
+
+struct Scanner {
+    raw: RawScanner,
 }
 
 fn from_text(text: string) -> Reader {
@@ -20,13 +43,96 @@ fn from_text(text: string) -> Reader {
     }
 }
 
+fn scanner_from_text(text: string) -> Scanner {
+    Scanner {
+        raw: raw_new_scanner(raw_string_reader(text)),
+    }
+}
+
 fn read_line(reader: Reader) -> Result[(string, bool), GoError] {
     let (line, prefix) = raw_read_line(reader.raw)?;
     Result::Ok((common::string_of_bytes(line), prefix))
 }
 
+fn read_string(reader: Reader, delim: uint8) -> Result[string, GoError] {
+    raw_read_string(reader.raw, delim)
+}
+
+fn split_lines(scanner: Scanner) -> unit {
+    raw_scanner_split(scanner.raw, raw_scan_lines())
+}
+
+fn split_words(scanner: Scanner) -> unit {
+    raw_scanner_split(scanner.raw, raw_scan_words())
+}
+
+fn scan(scanner: Scanner) -> bool {
+    raw_scanner_scan(scanner.raw)
+}
+
+fn text(scanner: Scanner) -> string {
+    raw_scanner_text(scanner.raw)
+}
+
+fn err(scanner: Scanner) -> Result[unit, GoError] {
+    raw_scanner_err(scanner.raw)
+}
+
+fn scan_all_csv(scanner: Scanner) -> Result[string, GoError] {
+    let acc = ref("");
+    let first = ref(true);
+    while scan(scanner) {
+        let part = text(scanner);
+        let next = if ref_get(first) {
+            part
+        } else {
+            ref_get(acc) + "," + part
+        };
+        ref_set(acc, next);
+        ref_set(first, false);
+    };
+    err(scanner)?;
+    Result::Ok(ref_get(acc))
+}
+
+fn scan_words_csv(text: string) -> Result[string, GoError] {
+    let scanner = scanner_from_text(text);
+    split_words(scanner);
+    scan_all_csv(scanner)
+}
+
 impl Reader {
     fn read_line(self: Reader) -> Result[(string, bool), GoError] {
         read_line(self)
+    }
+
+    fn read_string(self: Reader, delim: uint8) -> Result[string, GoError] {
+        read_string(self, delim)
+    }
+}
+
+impl Scanner {
+    fn split_lines(self: Scanner) -> unit {
+        split_lines(self)
+    }
+
+    fn split_words(self: Scanner) -> unit {
+        split_words(self)
+    }
+
+    fn scan(self: Scanner) -> bool {
+        scan(self)
+    }
+
+    fn text(self: Scanner) -> string {
+        text(self)
+    }
+
+    fn err(self: Scanner) -> Result[unit, GoError] {
+        err(self)
+    }
+
+    fn scan_all_csv(self: Scanner) -> Result[string, GoError] {
+        scan_all_csv(self)
     }
 }

@@ -3,6 +3,9 @@ use common;
 
 extern "go" "os/exec" "*Cmd" type RawCmd
 
+#[go_error_last]
+extern "go" "os/exec" "LookPath" raw_look_path(file: string) -> Result[string, GoError]
+
 #[go_variadic_last]
 extern "go" "os/exec" "Command" raw_command(name: string, args: Slice[string]) -> RawCmd
 
@@ -12,11 +15,32 @@ extern "go" "os/exec" "Cmd.Dir" raw_cmd_dir(cmd: RawCmd) -> string
 #[go_field_set("Dir")]
 extern "go" "os/exec" "Cmd.Dir" raw_cmd_set_dir(cmd: RawCmd, dir: string) -> unit
 
+#[go_field_get("Env")]
+extern "go" "os/exec" "Cmd.Env" raw_cmd_env(cmd: RawCmd) -> Vec[string]
+
+#[go_field_set("Env")]
+extern "go" "os/exec" "Cmd.Env" raw_cmd_set_env(cmd: RawCmd, env: Vec[string]) -> unit
+
 #[go_error_last]
 extern "go" "os/exec" "(*Cmd).CombinedOutput" raw_cmd_combined_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
 
+#[go_error_last]
+extern "go" "os/exec" "(*Cmd).Output" raw_cmd_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
+
+#[go_error]
+extern "go" "os/exec" "(*Cmd).Run" raw_cmd_run(cmd: RawCmd) -> Result[unit, GoError]
+
 struct Cmd {
     raw: RawCmd,
+}
+
+fn look_path(file: string) -> Result[string, GoError] {
+    raw_look_path(file)
+}
+
+fn has_path(file: string) -> Result[bool, GoError] {
+    let path = look_path(file)?;
+    Result::Ok(path != "")
 }
 
 fn command(name: string, args: Vec[string]) -> Cmd {
@@ -33,9 +57,26 @@ fn set_dir(cmd: Cmd, dir: string) -> unit {
     raw_cmd_set_dir(cmd.raw, dir)
 }
 
+fn env(cmd: Cmd) -> Vec[string] {
+    raw_cmd_env(cmd.raw)
+}
+
+fn set_env(cmd: Cmd, env: Vec[string]) -> unit {
+    raw_cmd_set_env(cmd.raw, env)
+}
+
 fn combined_output_text(cmd: Cmd) -> Result[string, GoError] {
     let bytes = raw_cmd_combined_output(cmd.raw)?;
     Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn output_text(cmd: Cmd) -> Result[string, GoError] {
+    let bytes = raw_cmd_output(cmd.raw)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn run(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_run(cmd.raw)
 }
 
 impl Cmd {
@@ -47,7 +88,23 @@ impl Cmd {
         set_dir(self, dir)
     }
 
+    fn env(self: Cmd) -> Vec[string] {
+        env(self)
+    }
+
+    fn set_env(self: Cmd, env: Vec[string]) -> unit {
+        set_env(self, env)
+    }
+
     fn combined_output_text(self: Cmd) -> Result[string, GoError] {
         combined_output_text(self)
+    }
+
+    fn output_text(self: Cmd) -> Result[string, GoError] {
+        output_text(self)
+    }
+
+    fn run(self: Cmd) -> Result[unit, GoError] {
+        run(self)
     }
 }

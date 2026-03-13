@@ -3,10 +3,14 @@ use common;
 
 extern "go" "io/fs" "FS" type RawFS
 extern "go" "io/fs" "FileMode" type RawFileMode
+extern "go" "io/fs" "DirEntry" type RawDirEntry
 
 extern "go" "os" "DirFS" raw_dir_fs(dir: string) -> RawFS
 extern "go" "io/fs" "ValidPath" raw_valid_path(name: string) -> bool
 extern "go" "io/fs" "FileMode" raw_file_mode(bits: uint32) -> RawFileMode
+
+#[go_value]
+extern "go" "io" "EOF" raw_eof() -> GoError
 
 #[go_error_last]
 extern "go" "io/fs" "ReadFile" raw_read_file(fsys: RawFS, name: string) -> Result[Vec[uint8], GoError]
@@ -14,8 +18,34 @@ extern "go" "io/fs" "ReadFile" raw_read_file(fsys: RawFS, name: string) -> Resul
 #[go_error]
 extern "go" "os" "WriteFile" raw_write_file(path: string, data: Vec[uint8], perm: RawFileMode) -> Result[unit, GoError]
 
+#[go_error_last]
+extern "go" "io/fs" "ReadDir" raw_read_dir(fsys: RawFS, name: string) -> Result[Vec[RawDirEntry], GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "Sub" raw_sub(fsys: RawFS, dir: string) -> Result[RawFS, GoError]
+
+#[go_error]
+extern "go" "io/fs" "WalkDir" raw_walk_dir(
+    fsys: RawFS,
+    root: string,
+    visit: (string, RawDirEntry, GoError) -> Result[unit, GoError],
+) -> Result[unit, GoError]
+
+extern "go" "io/fs" "DirEntry.Name" raw_dir_entry_name(entry: RawDirEntry) -> string
+extern "go" "io/fs" "DirEntry.IsDir" raw_dir_entry_is_dir(entry: RawDirEntry) -> bool
+
 struct FS {
     raw: RawFS,
+}
+
+fn stop_at_fs_data(path: string, entry: RawDirEntry, err: GoError) -> Result[unit, GoError] {
+    let _ = entry;
+    let _ = err;
+    if path == "fs_data.txt" {
+        Result::Err(raw_eof())
+    } else {
+        Result::Ok(())
+    }
 }
 
 fn dir_fs(dir: string) -> FS {
@@ -24,6 +54,12 @@ fn dir_fs(dir: string) -> FS {
 
 fn valid_path(name: string) -> bool {
     raw_valid_path(name)
+}
+
+fn sub(fs: FS, dir: string) -> Result[FS, GoError] {
+    let raw = raw_sub(fs.raw, dir)?;
+    let next = FS { raw: raw };
+    Result::Ok(next)
 }
 
 fn write_text_file(path: string, text: string) -> Result[unit, GoError] {
@@ -35,8 +71,65 @@ fn read_text(fs: FS, name: string) -> Result[string, GoError] {
     Result::Ok(common::string_of_bytes(bytes))
 }
 
+fn read_dir_names(fs: FS, name: string) -> Result[Vec[string], GoError] {
+    let entries = raw_read_dir(fs.raw, name)?;
+    let names: Ref[Vec[string]] = ref(vec_new());
+    let index = ref(0);
+    while ref_get(index) < vec_len(entries) {
+        let entry = vec_get(entries, ref_get(index));
+        let _ = raw_dir_entry_is_dir(entry);
+        ref_set(names, vec_push(ref_get(names), raw_dir_entry_name(entry)));
+        ref_set(index, ref_get(index) + 1);
+    };
+    Result::Ok(ref_get(names))
+}
+
+fn has_name(fs: FS, name: string) -> Result[bool, GoError] {
+    let names: Vec[string] = read_dir_names(fs, ".")?;
+    let index = ref(0);
+    let found = ref(false);
+    while ref_get(index) < vec_len(names) {
+        if vec_get(names, ref_get(index)) == name {
+            ref_set(found, true);
+        } else {
+            ()
+        };
+        ref_set(index, ref_get(index) + 1);
+    };
+    Result::Ok(ref_get(found))
+}
+
+fn walk_has_fs_data(fs: FS) -> Result[bool, GoError] {
+    match raw_walk_dir(fs.raw, ".", stop_at_fs_data) {
+        Result::Ok(_) => Result::Ok(false),
+        Result::Err(err) => {
+            if err.to_string() == raw_eof().to_string() {
+                Result::Ok(true)
+            } else {
+                Result::Err(err)
+            }
+        }
+    }
+}
+
 impl FS {
     fn read_text(self: FS, name: string) -> Result[string, GoError] {
         read_text(self, name)
+    }
+
+    fn sub(self: FS, dir: string) -> Result[FS, GoError] {
+        sub(self, dir)
+    }
+
+    fn read_dir_names(self: FS, name: string) -> Result[Vec[string], GoError] {
+        read_dir_names(self, name)
+    }
+
+    fn has_name(self: FS, name: string) -> Result[bool, GoError] {
+        has_name(self, name)
+    }
+
+    fn walk_has_fs_data(self: FS) -> Result[bool, GoError] {
+        walk_has_fs_data(self)
     }
 }

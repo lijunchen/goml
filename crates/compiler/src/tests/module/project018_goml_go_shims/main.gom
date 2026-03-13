@@ -23,10 +23,10 @@ fn demo_io() -> Result[string, GoError] {
             Result::Err(_) => (),
         };
     };
-    match reader.read_all_text() {
-        Result::Ok(text) => Result::Ok(text),
-        Result::Err(err) => Result::Err(err),
-    }
+    let pipe_text = reader.read_all_text()?;
+    let limited = ioshim::read_limited_text("limit-ok", 5i64)?;
+    let copied = ioshim::copy_to_discard("copy-ok")?;
+    Result::Ok(pipe_text + "|" + limited + "|" + int64_to_string(copied))
 }
 
 fn demo_exec() -> Result[string, GoError] {
@@ -35,28 +35,47 @@ fn demo_exec() -> Result[string, GoError] {
     let args = vec_push(args, "printf exec-ok");
     let cmd = execshim::command("sh", args);
     cmd.set_dir(".");
+    let env = vec_push(cmd.env(), "GOML_SHIM=1");
+    cmd.set_env(env);
     let dir = cmd.dir();
-    let out = cmd.combined_output_text()?;
-    Result::Ok(dir + "|" + out)
+    let out = cmd.output_text()?;
+    let found = if execshim::has_path("sh")? {
+        "found"
+    } else {
+        "missing"
+    };
+    Result::Ok(dir + "|" + out + "|" + found)
 }
 
 fn demo_fs() -> Result[string, GoError] {
     fsshim::write_text_file("fs_data.txt", "fs-ok")?;
     let fs = fsshim::dir_fs(".");
     let text = fs.read_text("fs_data.txt")?;
+    let present = if fs.has_name("fs_data.txt")? {
+        "present"
+    } else {
+        "missing"
+    };
+    let walked = if fs.walk_has_fs_data()? {
+        "walk"
+    } else {
+        "nowalk"
+    };
     let status = if fsshim::valid_path("fs_data.txt") {
         "valid"
     } else {
         "invalid"
     };
-    Result::Ok(status + "|" + text)
+    Result::Ok(status + "|" + text + "|" + present + "|" + walked)
 }
 
 fn demo_bufio() -> Result[string, GoError] {
     let reader = bufioshim::from_text("first\nsecond\n");
     let (line, prefix) = reader.read_line()?;
     let state = if prefix { "prefix" } else { "full" };
-    Result::Ok(state + "|" + line)
+    let rest = bufioshim::from_text("secondd").read_string(100u8)?;
+    let words = bufioshim::scan_words_csv("alpha beta")?;
+    Result::Ok(state + "|" + line + "|" + rest + "|" + words)
 }
 
 fn main() -> unit {
