@@ -1,0 +1,25 @@
+const n = `fn inner(counter: Ref[int32]) -> Result[int32, GoError] {
+    let _ = ref_set(counter, ref_get(counter) + 1);
+    Result::Ok(ref_get(counter))
+}
+
+fn outer(counter: Ref[int32]) -> Result[int32, GoError] {
+    inner(counter)
+}
+
+fn show(res: Result[int32, GoError]) -> string {
+    match res {
+        Result::Ok(value) => value.to_string(),
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    let counter = ref(0);
+    println(show(outer(counter)));
+    println(ref_get(counter).to_string());
+}
+`;
+export {
+  n as default
+};

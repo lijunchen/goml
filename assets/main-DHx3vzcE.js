@@ -1,0 +1,12 @@
+const n = `package main;
+
+fn main() -> unit {
+    let mut x = 0;
+    let get = || x;
+    x = 41;
+    string_println(int32_to_string(get()));
+}
+`;
+export {
+  n as default
+};

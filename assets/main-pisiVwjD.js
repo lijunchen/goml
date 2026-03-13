@@ -1,0 +1,30 @@
+const n = `extern "go" "time" "Duration" type Duration
+
+#[go_error_last]
+extern "go" "time" "ParseDuration" parse_duration(s: string) -> Result[Duration, GoError]
+
+extern "go" "fmt" "Sprintf" format_duration(format: string, value: Duration) -> string
+
+fn render_with_prefix(prefix: string, text: string) -> Result[string, GoError] {
+    let run = || {
+        let value = parse_duration(text)?;
+        Result::Ok(prefix + format_duration("%v", value))
+    };
+    run()
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(show(render_with_prefix("seen=", "5s")));
+    println(show(render_with_prefix("seen=", "bad")));
+}
+`;
+export {
+  n as default
+};

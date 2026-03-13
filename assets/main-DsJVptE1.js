@@ -1,0 +1,94 @@
+const n = `// Test all comparison operators: <, >, <=, >=, ==, !=
+
+fn test_int_comparisons() {
+    let a: int32 = 10;
+    let b: int32 = 20;
+    let c: int32 = 10;
+
+    // Less than
+    let less = a < b;
+    let _ = string_println("10 < 20: " + bool_to_string(less));
+
+    // Greater than
+    let greater = b > a;
+    let _ = string_println("20 > 10: " + bool_to_string(greater));
+
+    // Less than or equal
+    let less_eq1 = a <= b;
+    let _ = string_println("10 <= 20: " + bool_to_string(less_eq1));
+    let less_eq2 = a <= c;
+    let _ = string_println("10 <= 10: " + bool_to_string(less_eq2));
+
+    // Greater than or equal
+    let greater_eq1 = b >= a;
+    let _ = string_println("20 >= 10: " + bool_to_string(greater_eq1));
+    let greater_eq2 = c >= a;
+    let _ = string_println("10 >= 10: " + bool_to_string(greater_eq2));
+
+    // Equal
+    let eq1 = a == c;
+    let _ = string_println("10 == 10: " + bool_to_string(eq1));
+    let eq2 = a == b;
+    let _ = string_println("10 == 20: " + bool_to_string(eq2));
+
+    // Not equal
+    let neq1 = a != b;
+    let _ = string_println("10 != 20: " + bool_to_string(neq1));
+    let neq2 = a != c;
+    let _ = string_println("10 != 10: " + bool_to_string(neq2));
+
+    ()
+}
+
+fn test_float_comparisons() {
+    let x: float64 = 3.14;
+    let y: float64 = 2.71;
+    let z: float64 = 3.14;
+
+    // Less than
+    let less = y < x;
+    let _ = string_println("2.71 < 3.14: " + bool_to_string(less));
+
+    // Greater than
+    let greater = x > y;
+    let _ = string_println("3.14 > 2.71: " + bool_to_string(greater));
+
+    // Less than or equal
+    let less_eq1 = y <= x;
+    let _ = string_println("2.71 <= 3.14: " + bool_to_string(less_eq1));
+    let less_eq2 = x <= z;
+    let _ = string_println("3.14 <= 3.14: " + bool_to_string(less_eq2));
+
+    // Greater than or equal
+    let greater_eq1 = x >= y;
+    let _ = string_println("3.14 >= 2.71: " + bool_to_string(greater_eq1));
+    let greater_eq2 = z >= x;
+    let _ = string_println("3.14 >= 3.14: " + bool_to_string(greater_eq2));
+
+    // Equal
+    let eq1 = x == z;
+    let _ = string_println("3.14 == 3.14: " + bool_to_string(eq1));
+    let eq2 = x == y;
+    let _ = string_println("3.14 == 2.71: " + bool_to_string(eq2));
+
+    // Not equal
+    let neq1 = x != y;
+    let _ = string_println("3.14 != 2.71: " + bool_to_string(neq1));
+    let neq2 = x != z;
+    let _ = string_println("3.14 != 3.14: " + bool_to_string(neq2));
+
+    ()
+}
+
+fn main() {
+    let _ = string_println("=== Integer Comparisons ===");
+    let _ = test_int_comparisons();
+    let _ = string_println("");
+    let _ = string_println("=== Float Comparisons ===");
+    let _ = test_float_comparisons();
+    ()
+}
+`;
+export {
+  n as default
+};

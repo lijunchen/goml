@@ -1,0 +1,19 @@
+const e = `enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+fn main() -> bool {
+    let a = (Blue, Blue);
+    match a {
+        (Red, Green) => true,
+        (Red, Red) => true,
+        (Blue, Blue) => { let _ = print(true); false },
+        _ => false,
+    }
+}
+`;
+export {
+  e as default
+};

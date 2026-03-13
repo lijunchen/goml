@@ -1,0 +1,25 @@
+const n = `extern "go" "time" "Duration" type Duration
+
+#[go_error_last]
+extern "go" "time" "ParseDuration" parse_duration(text: string) -> Result[Duration, GoError]
+
+fn touch(text: string) -> Result[string, GoError] {
+    let _ = parse_duration(text)?;
+    Result::Ok("ok")
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(value) => value,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() {
+    println(show(touch("2s")));
+    println(show(touch("bad")));
+}
+`;
+export {
+  n as default
+};

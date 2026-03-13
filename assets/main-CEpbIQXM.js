@@ -1,0 +1,12 @@
+const n = `package main;
+
+fn main() {
+    let a: int8 = -128;
+    string_println(int8_to_string(a));
+    let b: int16 = -32768;
+    string_println(int16_to_string(b));
+}
+`;
+export {
+  n as default
+};

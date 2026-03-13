@@ -1,0 +1,26 @@
+const t = `#[go_error_last]
+extern "go" "net" "SplitHostPort" split_host_port(text: string) -> Result[(string, string), GoError]
+
+fn pair(text: string) -> Result[(string, string), GoError] {
+    split_host_port(text)
+}
+
+fn render(text: string) -> Result[string, GoError] {
+    let (host, port) = pair(text)?;
+    Result::Ok(host + "|" + port)
+}
+
+fn show(res: Result[string, GoError]) -> string {
+    match res {
+        Result::Ok(text) => text,
+        Result::Err(err) => "err=" + err.to_string(),
+    }
+}
+
+fn main() -> unit {
+    println(show(render("example.com:443")));
+}
+`;
+export {
+  t as default
+};

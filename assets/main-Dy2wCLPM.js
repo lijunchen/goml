@@ -1,0 +1,13 @@
+const n = `#[go_variadic_last]
+extern "go" "path" "Join" join(parts: Slice[string]) -> string
+
+extern "go" "strings" "Fields" fields(text: string) -> Vec[string]
+
+fn main() {
+    let parts = fields("alpha beta gamma");
+    string_println(join(slice(parts, 0, vec_len(parts))));
+}
+`;
+export {
+  n as default
+};

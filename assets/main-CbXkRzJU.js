@@ -1,0 +1,18 @@
+const n = `extern "go" "io" "Reader" type Reader
+
+#[go_value]
+extern "go" "time" "RFC3339" rfc3339() -> string
+
+#[go_value]
+extern "go" "os" "Stdin" stdin() -> Reader
+
+extern "go" "fmt" "Sprintf" format_reader(format: string, value: Reader) -> string
+
+fn main() -> unit {
+    println(rfc3339());
+    println(format_reader("stdin=%T", stdin()));
+}
+`;
+export {
+  n as default
+};
