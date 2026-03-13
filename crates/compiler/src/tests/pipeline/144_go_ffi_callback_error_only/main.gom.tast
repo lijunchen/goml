@@ -1,0 +1,35 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+extern "go" "io/fs" "FS" type FS
+
+extern "go" "io/fs" "DirEntry" type DirEntry
+
+extern "go" "os" dir_fs(path: string) -> FS
+
+extern "go" "io" eof() -> GoError
+
+extern "go" "io/fs" walk_dir(fs: FS, root: string, visit: (string, DirEntry, GoError) -> Result[unit, GoError]) -> Result[unit, GoError]
+
+fn stop(path/0: string, entry/1: DirEntry, err/2: GoError) -> Result[unit, GoError] {
+    let _ : string = (path/0 : string);
+    let _ : DirEntry = (entry/1 : DirEntry);
+    let _ : GoError = (err/2 : GoError);
+    Result::Err((eof : () -> GoError)())
+}
+
+fn show(res/3: Result[unit, GoError]) -> string {
+    match (res/3 : Result[unit, GoError]) {
+        Result::Ok(_ : unit) => "ok",
+        Result::Err(err/4: GoError) => (ToString::to_string : (GoError) -> string)((err/4 : GoError)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show : (Result[unit, GoError]) -> string)((walk_dir : (FS, string, (string, DirEntry, GoError) -> Result[unit, GoError]) -> Result[unit, GoError])((dir_fs : (string) -> FS)("."), ".", (stop : (string, DirEntry, GoError) -> Result[unit, GoError]))));
+}
