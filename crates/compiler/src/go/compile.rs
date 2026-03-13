@@ -700,6 +700,7 @@ fn parse_go_method_symbol(go_name: &str) -> Option<&str> {
 }
 
 fn compile_extern_call(
+    goenv: &GlobalGoEnv,
     extern_fn: &ExternFunc,
     param_tys: &[tast::Ty],
     mut call_args: Vec<goast::Expr>,
@@ -720,6 +721,12 @@ fn compile_extern_call(
             );
         }
     }
+
+    call_args = param_tys
+        .iter()
+        .zip(call_args)
+        .map(|(param_ty, arg)| adapt_extern_func_arg(goenv, param_ty, arg))
+        .collect();
 
     if extern_fn.variadic_last {
         let last = call_args
@@ -745,7 +752,11 @@ fn compile_extern_call(
                 obj: Box::new(receiver),
                 field: method_name.to_string(),
                 ty: goty::GoType::TFunc {
-                    params: param_tys.iter().skip(1).map(tast_ty_to_go_type).collect(),
+                    params: param_tys
+                        .iter()
+                        .skip(1)
+                        .map(|ty| extern_func_ty_to_go_type(goenv, ty))
+                        .collect(),
                     ret_ty: Box::new(call_ret_ty.clone()),
                 },
             }),
@@ -758,7 +769,10 @@ fn compile_extern_call(
         func: Box::new(goast::Expr::Var {
             name: extern_target_name(extern_fn),
             ty: goty::GoType::TFunc {
-                params: param_tys.iter().map(tast_ty_to_go_type).collect(),
+                params: param_tys
+                    .iter()
+                    .map(|ty| extern_func_ty_to_go_type(goenv, ty))
+                    .collect(),
                 ret_ty: Box::new(call_ret_ty.clone()),
             },
         }),
@@ -906,7 +920,10 @@ fn extract_result_tys(ty: &tast::Ty) -> Option<(&tast::Ty, &tast::Ty)> {
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if !(name == "Result" || name.ends_with("::Result") || name.starts_with("Result__"))
+    if !(name == "Result"
+        || name.ends_with("::Result")
+        || name.starts_with("Result__")
+        || name.contains("_x3a__x3a_Result"))
         || args.len() != 2
     {
         return None;
@@ -921,7 +938,10 @@ fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
     let tast::Ty::TEnum { name } = ty.as_ref() else {
         return None;
     };
-    if !(name == "Option" || name.ends_with("::Option") || name.starts_with("Option__"))
+    if !(name == "Option"
+        || name.ends_with("::Option")
+        || name.starts_with("Option__")
+        || name.contains("_x3a__x3a_Option"))
         || args.len() != 1
     {
         return None;
@@ -931,6 +951,357 @@ fn extract_option_ty(ty: &tast::Ty) -> Option<&tast::Ty> {
 
 fn is_go_error_ty(ty: &tast::Ty) -> bool {
     matches!(ty, tast::Ty::TStruct { name } if name == "GoError")
+}
+
+enum ExternFuncReturnMode {
+    Plain,
+    Tuple(Vec<tast::Ty>),
+    ErrorOnly { err_ty: tast::Ty },
+    ErrorLast { ok_ty: tast::Ty, err_ty: tast::Ty },
+    OptionOnly,
+    OptionLast { some_ty: tast::Ty },
+}
+
+fn extern_func_return_mode(goenv: &GlobalGoEnv, ty: &tast::Ty) -> ExternFuncReturnMode {
+    if let Some(mode) = native_return_mode(goenv, ty) {
+        match mode {
+            NativeReturnMode::Result { ok_ty, err_ty } => {
+                if matches!(ok_ty, tast::Ty::TUnit) {
+                    return ExternFuncReturnMode::ErrorOnly { err_ty };
+                }
+                return ExternFuncReturnMode::ErrorLast { ok_ty, err_ty };
+            }
+            NativeReturnMode::Option { some_ty } => {
+                if matches!(some_ty, tast::Ty::TUnit) {
+                    return ExternFuncReturnMode::OptionOnly;
+                }
+                return ExternFuncReturnMode::OptionLast { some_ty };
+            }
+        }
+    }
+
+    if let Some(tys) = tuple_elem_tys(ty) {
+        return ExternFuncReturnMode::Tuple(tys.to_vec());
+    }
+
+    ExternFuncReturnMode::Plain
+}
+
+fn extern_func_ty_to_go_type(goenv: &GlobalGoEnv, ty: &tast::Ty) -> goty::GoType {
+    match ty {
+        tast::Ty::TFunc { params, ret_ty } => goty::GoType::TFunc {
+            params: params
+                .iter()
+                .map(|param| extern_func_ty_to_go_type(goenv, param))
+                .collect(),
+            ret_ty: Box::new(extern_func_ret_ty_to_go_type(goenv, ret_ty)),
+        },
+        _ => tast_ty_to_go_type(ty),
+    }
+}
+
+fn extern_func_ret_ty_to_go_type(goenv: &GlobalGoEnv, ty: &tast::Ty) -> goty::GoType {
+    match extern_func_return_mode(goenv, ty) {
+        ExternFuncReturnMode::Plain => extern_func_ty_to_go_type(goenv, ty),
+        ExternFuncReturnMode::Tuple(tys) => goty::GoType::TMulti {
+            elems: tys
+                .iter()
+                .map(|ty| extern_func_ty_to_go_type(goenv, ty))
+                .collect(),
+        },
+        ExternFuncReturnMode::ErrorOnly { err_ty } => extern_func_ty_to_go_type(goenv, &err_ty),
+        ExternFuncReturnMode::ErrorLast { ok_ty, err_ty } => {
+            let mut elems = unwrap_tuple_elems(&ok_ty)
+                .into_iter()
+                .map(|ty| extern_func_ty_to_go_type(goenv, ty))
+                .collect::<Vec<_>>();
+            elems.push(extern_func_ty_to_go_type(goenv, &err_ty));
+            goty::GoType::TMulti { elems }
+        }
+        ExternFuncReturnMode::OptionOnly => goty::GoType::TBool,
+        ExternFuncReturnMode::OptionLast { some_ty } => {
+            let mut elems = unwrap_tuple_elems(&some_ty)
+                .into_iter()
+                .map(|ty| extern_func_ty_to_go_type(goenv, ty))
+                .collect::<Vec<_>>();
+            elems.push(goty::GoType::TBool);
+            goty::GoType::TMulti { elems }
+        }
+    }
+}
+
+fn adapt_extern_func_arg(
+    goenv: &GlobalGoEnv,
+    param_ty: &tast::Ty,
+    arg: goast::Expr,
+) -> goast::Expr {
+    let tast::Ty::TFunc { params, ret_ty } = param_ty else {
+        return arg;
+    };
+
+    let param_names = params
+        .iter()
+        .enumerate()
+        .map(|(index, _)| format!("callback_arg_{}", index))
+        .collect::<Vec<_>>();
+    let go_params = param_names
+        .iter()
+        .zip(params.iter())
+        .map(|(name, ty)| (name.clone(), extern_func_ty_to_go_type(goenv, ty)))
+        .collect::<Vec<_>>();
+    let wrapper_ty = extern_func_ty_to_go_type(goenv, param_ty);
+    let call_expr = goast::Expr::Call {
+        func: Box::new(arg),
+        args: param_names
+            .iter()
+            .zip(params.iter())
+            .map(|(name, ty)| goast::Expr::Var {
+                name: name.clone(),
+                ty: tast_ty_to_go_type(ty),
+            })
+            .collect(),
+        ty: tast_ty_to_go_type(ret_ty),
+    };
+
+    let body = build_extern_func_arg_body(goenv, ret_ty, call_expr);
+
+    goast::Expr::FuncLit {
+        params: go_params,
+        body,
+        ty: wrapper_ty,
+    }
+}
+
+fn build_extern_func_arg_body(
+    goenv: &GlobalGoEnv,
+    ret_ty: &tast::Ty,
+    call_expr: goast::Expr,
+) -> Vec<goast::Stmt> {
+    match extern_func_return_mode(goenv, ret_ty) {
+        ExternFuncReturnMode::Plain => vec![goast::Stmt::Return {
+            expr: Some(call_expr),
+        }],
+        ExternFuncReturnMode::Tuple(_) => {
+            let value_name = "ret_value".to_string();
+            vec![
+                goast::Stmt::VarDecl {
+                    name: value_name.clone(),
+                    ty: tast_ty_to_go_type(ret_ty),
+                    value: Some(call_expr),
+                },
+                goast::Stmt::ReturnMulti {
+                    exprs: tuple_unpack_from_name(ret_ty, &value_name),
+                },
+            ]
+        }
+        ExternFuncReturnMode::ErrorOnly { err_ty } => {
+            let value_name = "ret_value".to_string();
+            let value_ty = tast_ty_to_go_type(ret_ty);
+            let ok_variant_ty = variant_ty_by_index(goenv, ret_ty, 0);
+            let err_variant_ty = variant_ty_by_index(goenv, ret_ty, 1);
+            vec![
+                goast::Stmt::VarDecl {
+                    name: value_name.clone(),
+                    ty: value_ty.clone(),
+                    value: Some(call_expr),
+                },
+                goast::Stmt::SwitchType {
+                    bind: Some("ret_variant".to_string()),
+                    expr: goast::Expr::Var {
+                        name: value_name,
+                        ty: value_ty,
+                    },
+                    cases: vec![
+                        (
+                            ok_variant_ty,
+                            goast::Block {
+                                stmts: vec![goast::Stmt::Return {
+                                    expr: Some(goast::Expr::Nil {
+                                        ty: tast_ty_to_go_type(&err_ty),
+                                    }),
+                                }],
+                            },
+                        ),
+                        (
+                            err_variant_ty.clone(),
+                            goast::Block {
+                                stmts: vec![goast::Stmt::Return {
+                                    expr: Some(goast::Expr::FieldAccess {
+                                        obj: Box::new(goast::Expr::Var {
+                                            name: "ret_variant".to_string(),
+                                            ty: err_variant_ty,
+                                        }),
+                                        field: "_0".to_string(),
+                                        ty: tast_ty_to_go_type(&err_ty),
+                                    }),
+                                }],
+                            },
+                        ),
+                    ],
+                    default: Some(goast::Block {
+                        stmts: vec![panic_stmt("non-exhaustive match")],
+                    }),
+                },
+            ]
+        }
+        ExternFuncReturnMode::ErrorLast { ok_ty, err_ty } => {
+            let value_name = "ret_value".to_string();
+            let value_ty = tast_ty_to_go_type(ret_ty);
+            let err_go_ty = tast_ty_to_go_type(&err_ty);
+            let ok_variant_ty = variant_ty_by_index(goenv, ret_ty, 0);
+            let err_variant_ty = variant_ty_by_index(goenv, ret_ty, 1);
+            vec![
+                goast::Stmt::VarDecl {
+                    name: value_name.clone(),
+                    ty: value_ty.clone(),
+                    value: Some(call_expr),
+                },
+                goast::Stmt::SwitchType {
+                    bind: Some("ret_variant".to_string()),
+                    expr: goast::Expr::Var {
+                        name: value_name,
+                        ty: value_ty,
+                    },
+                    cases: vec![
+                        (
+                            ok_variant_ty.clone(),
+                            goast::Block {
+                                stmts: build_payload_success_return_stmts(
+                                    &ok_ty,
+                                    goast::Expr::FieldAccess {
+                                        obj: Box::new(goast::Expr::Var {
+                                            name: "ret_variant".to_string(),
+                                            ty: ok_variant_ty,
+                                        }),
+                                        field: "_0".to_string(),
+                                        ty: tast_ty_to_go_type(&ok_ty),
+                                    },
+                                    vec![goast::Expr::Nil { ty: err_go_ty }],
+                                ),
+                            },
+                        ),
+                        (
+                            err_variant_ty.clone(),
+                            goast::Block {
+                                stmts: build_result_failure_stmts(
+                                    &ok_ty,
+                                    goast::Expr::FieldAccess {
+                                        obj: Box::new(goast::Expr::Var {
+                                            name: "ret_variant".to_string(),
+                                            ty: err_variant_ty,
+                                        }),
+                                        field: "_0".to_string(),
+                                        ty: tast_ty_to_go_type(&err_ty),
+                                    },
+                                ),
+                            },
+                        ),
+                    ],
+                    default: Some(goast::Block {
+                        stmts: vec![panic_stmt("non-exhaustive match")],
+                    }),
+                },
+            ]
+        }
+        ExternFuncReturnMode::OptionOnly => {
+            let value_name = "ret_value".to_string();
+            let value_ty = tast_ty_to_go_type(ret_ty);
+            let none_variant_ty = variant_ty_by_index(goenv, ret_ty, 0);
+            let some_variant_ty = variant_ty_by_index(goenv, ret_ty, 1);
+            vec![
+                goast::Stmt::VarDecl {
+                    name: value_name.clone(),
+                    ty: value_ty.clone(),
+                    value: Some(call_expr),
+                },
+                goast::Stmt::SwitchType {
+                    bind: Some("ret_variant".to_string()),
+                    expr: goast::Expr::Var {
+                        name: value_name,
+                        ty: value_ty,
+                    },
+                    cases: vec![
+                        (
+                            none_variant_ty,
+                            goast::Block {
+                                stmts: vec![goast::Stmt::Return {
+                                    expr: Some(goast::Expr::Bool {
+                                        value: false,
+                                        ty: goty::GoType::TBool,
+                                    }),
+                                }],
+                            },
+                        ),
+                        (
+                            some_variant_ty,
+                            goast::Block {
+                                stmts: vec![goast::Stmt::Return {
+                                    expr: Some(goast::Expr::Bool {
+                                        value: true,
+                                        ty: goty::GoType::TBool,
+                                    }),
+                                }],
+                            },
+                        ),
+                    ],
+                    default: Some(goast::Block {
+                        stmts: vec![panic_stmt("non-exhaustive match")],
+                    }),
+                },
+            ]
+        }
+        ExternFuncReturnMode::OptionLast { some_ty } => {
+            let value_name = "ret_value".to_string();
+            let value_ty = tast_ty_to_go_type(ret_ty);
+            let none_variant_ty = variant_ty_by_index(goenv, ret_ty, 0);
+            let some_variant_ty = variant_ty_by_index(goenv, ret_ty, 1);
+            vec![
+                goast::Stmt::VarDecl {
+                    name: value_name.clone(),
+                    ty: value_ty.clone(),
+                    value: Some(call_expr),
+                },
+                goast::Stmt::SwitchType {
+                    bind: Some("ret_variant".to_string()),
+                    expr: goast::Expr::Var {
+                        name: value_name,
+                        ty: value_ty,
+                    },
+                    cases: vec![
+                        (
+                            none_variant_ty,
+                            goast::Block {
+                                stmts: build_option_failure_stmts(&some_ty),
+                            },
+                        ),
+                        (
+                            some_variant_ty.clone(),
+                            goast::Block {
+                                stmts: build_payload_success_return_stmts(
+                                    &some_ty,
+                                    goast::Expr::FieldAccess {
+                                        obj: Box::new(goast::Expr::Var {
+                                            name: "ret_variant".to_string(),
+                                            ty: some_variant_ty,
+                                        }),
+                                        field: "_0".to_string(),
+                                        ty: tast_ty_to_go_type(&some_ty),
+                                    },
+                                    vec![goast::Expr::Bool {
+                                        value: true,
+                                        ty: goty::GoType::TBool,
+                                    }],
+                                ),
+                            },
+                        ),
+                    ],
+                    default: Some(goast::Block {
+                        stmts: vec![panic_stmt("non-exhaustive match")],
+                    }),
+                },
+            ]
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -1156,6 +1527,7 @@ fn gen_extern_wrapper_fn(
                 .map(|(index, _)| format!("ffi_value_{}", index))
                 .collect::<Vec<_>>();
             let direct_call_expr = compile_extern_call(
+                goenv,
                 extern_fn,
                 params,
                 call_args,
@@ -1198,7 +1570,7 @@ fn gen_extern_wrapper_fn(
                 ExternReturnMode::Plain | ExternReturnMode::OptionLast => unreachable!(),
             };
             let direct_call_expr =
-                compile_extern_call(extern_fn, params, call_args, direct_call_ret_ty);
+                compile_extern_call(goenv, extern_fn, params, call_args, direct_call_ret_ty);
 
             let err_name = "ffi_err".to_string();
             let err_go_ty = tast_ty_to_go_type(err_ty);
@@ -1285,6 +1657,7 @@ fn gen_extern_wrapper_fn(
             let mut direct_call_tys = some_go_tys.clone();
             direct_call_tys.push(goty::GoType::TBool);
             let direct_call_expr = compile_extern_call(
+                goenv,
                 extern_fn,
                 params,
                 call_args,
@@ -2868,6 +3241,7 @@ mod legacy_anf_codegen {
                         }
                     } else {
                         compile_extern_call(
+                            goenv,
                             extern_fn,
                             &param_types,
                             compiled_args,
@@ -4059,6 +4433,7 @@ fn compile_call(
     {
         if !extern_requires_wrapper(extern_fn) {
             return compile_extern_call(
+                goenv,
                 extern_fn,
                 &param_types,
                 compiled_args,
@@ -5331,6 +5706,7 @@ fn build_native_call_plan(
                         name: err_name.clone(),
                         ty: err_go_ty.clone(),
                         value: Some(compile_extern_call(
+                            goenv,
                             extern_fn,
                             &param_types,
                             compiled_args,
@@ -5398,6 +5774,7 @@ fn build_native_call_plan(
                 stmts.push(goast::Stmt::MultiAssignment {
                     names,
                     value: compile_extern_call(
+                        goenv,
                         extern_fn,
                         &param_types,
                         compiled_args,
@@ -5466,6 +5843,7 @@ fn build_native_call_plan(
                 stmts.push(goast::Stmt::MultiAssignment {
                     names,
                     value: compile_extern_call(
+                        goenv,
                         extern_fn,
                         &param_types,
                         compiled_args,
