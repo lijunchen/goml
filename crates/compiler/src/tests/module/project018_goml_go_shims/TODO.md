@@ -6,4 +6,3 @@ project018 goml go shims todo
 - Add named-type conversion helpers for common Go aliases such as `time.Duration` and similar values so raw fields can be surfaced as plain goml scalars when appropriate.
 - Add more end-to-end coverage for callback-heavy APIs that are now bindable, including custom `bufio.SplitFunc`, `strings.ContainsFunc`, `strings.FieldsFunc`, `strings.Map`, and `strings.TrimFunc`.
 - Keep `project018` smoke tests on package-level helpers by default; cross-package inherent method use on very large shim facades still puts more pressure on monolithic module compilation.
-- Add `stringsshim` and extend the module test to cover the `strings` package.
