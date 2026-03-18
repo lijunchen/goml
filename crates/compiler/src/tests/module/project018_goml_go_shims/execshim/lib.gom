@@ -3,10 +3,18 @@ use common;
 
 extern "go" "context" "Context" type RawContext
 extern "go" "os/exec" "*Cmd" type RawCmd
+extern "go" "os/exec" "*Error" type RawExecError
+extern "go" "os/exec" "*ExitError" type RawExitError
 extern "go" "io" "Reader" type RawReader
 extern "go" "io" "Writer" type RawWriter
 extern "go" "io" "ReadCloser" type RawReadCloser
 extern "go" "io" "WriteCloser" type RawWriteCloser
+extern "go" "os" "*File" type RawFile
+extern "go" "syscall" "*SysProcAttr" type RawSysProcAttr
+extern "go" "os" "*Process" type RawProcess
+extern "go" "os" "*ProcessState" type RawProcessState
+extern "go" "time" "Duration" type RawDuration
+extern "go" "" "func() error" type RawCancel
 extern "go" "" "int" type GoInt
 
 #[go_error_last]
@@ -49,6 +57,9 @@ extern "go" "os/exec" "Cmd.Args" raw_cmd_args(cmd: RawCmd) -> Vec[string]
 #[go_field_set("Args")]
 extern "go" "os/exec" "Cmd.Args" raw_cmd_set_args(cmd: RawCmd, args: Vec[string]) -> unit
 
+#[go_field_get("Stdin")]
+extern "go" "os/exec" "Cmd.Stdin" raw_cmd_stdin(cmd: RawCmd) -> RawReader
+
 #[go_field_get("Dir")]
 extern "go" "os/exec" "Cmd.Dir" raw_cmd_dir(cmd: RawCmd) -> string
 
@@ -70,8 +81,53 @@ extern "go" "os/exec" "Cmd.Stdout" raw_cmd_set_stdout(cmd: RawCmd, writer: RawWr
 #[go_field_set("Stderr")]
 extern "go" "os/exec" "Cmd.Stderr" raw_cmd_set_stderr(cmd: RawCmd, writer: RawWriter) -> unit
 
+#[go_field_get("Stdout")]
+extern "go" "os/exec" "Cmd.Stdout" raw_cmd_stdout(cmd: RawCmd) -> RawWriter
+
+#[go_field_get("Stderr")]
+extern "go" "os/exec" "Cmd.Stderr" raw_cmd_stderr(cmd: RawCmd) -> RawWriter
+
+#[go_field_get("ExtraFiles")]
+extern "go" "os/exec" "Cmd.ExtraFiles" raw_cmd_extra_files(cmd: RawCmd) -> Vec[RawFile]
+
+#[go_field_set("ExtraFiles")]
+extern "go" "os/exec" "Cmd.ExtraFiles" raw_cmd_set_extra_files(cmd: RawCmd, files: Vec[RawFile]) -> unit
+
+#[go_field_get("SysProcAttr")]
+extern "go" "os/exec" "Cmd.SysProcAttr" raw_cmd_sys_proc_attr(cmd: RawCmd) -> RawSysProcAttr
+
+#[go_field_set("SysProcAttr")]
+extern "go" "os/exec" "Cmd.SysProcAttr" raw_cmd_set_sys_proc_attr(cmd: RawCmd, attr: RawSysProcAttr) -> unit
+
+#[go_field_get("Process")]
+extern "go" "os/exec" "Cmd.Process" raw_cmd_process(cmd: RawCmd) -> RawProcess
+
+#[go_field_set("Process")]
+extern "go" "os/exec" "Cmd.Process" raw_cmd_set_process(cmd: RawCmd, process: RawProcess) -> unit
+
+#[go_field_get("ProcessState")]
+extern "go" "os/exec" "Cmd.ProcessState" raw_cmd_process_state(cmd: RawCmd) -> RawProcessState
+
+#[go_field_set("ProcessState")]
+extern "go" "os/exec" "Cmd.ProcessState" raw_cmd_set_process_state(cmd: RawCmd, state: RawProcessState) -> unit
+
 #[go_field_get("Err")]
 extern "go" "os/exec" "Cmd.Err" raw_cmd_err(cmd: RawCmd) -> GoError
+
+#[go_field_set("Err")]
+extern "go" "os/exec" "Cmd.Err" raw_cmd_set_err(cmd: RawCmd, err: GoError) -> unit
+
+#[go_field_get("Cancel")]
+extern "go" "os/exec" "Cmd.Cancel" raw_cmd_cancel(cmd: RawCmd) -> RawCancel
+
+#[go_field_set("Cancel")]
+extern "go" "os/exec" "Cmd.Cancel" raw_cmd_set_cancel(cmd: RawCmd, cancel: RawCancel) -> unit
+
+#[go_field_get("WaitDelay")]
+extern "go" "os/exec" "Cmd.WaitDelay" raw_cmd_wait_delay(cmd: RawCmd) -> RawDuration
+
+#[go_field_set("WaitDelay")]
+extern "go" "os/exec" "Cmd.WaitDelay" raw_cmd_set_wait_delay(cmd: RawCmd, delay: RawDuration) -> unit
 
 #[go_error_last]
 extern "go" "os/exec" "(*Cmd).CombinedOutput" raw_cmd_combined_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
@@ -111,6 +167,25 @@ extern "go" "io" "WriteCloser.Close" raw_write_closer_close(writer: RawWriteClos
 
 #[go_error_last]
 extern "go" "io" "WriteString" raw_write_closer_write_string(writer: RawWriteCloser, text: string) -> Result[GoInt, GoError]
+
+#[go_error]
+extern "go" "os/exec" "(*Error).Unwrap" raw_exec_error_unwrap(err: RawExecError) -> Result[unit, GoError]
+
+extern "go" "os/exec" "(*Error).Error" raw_exec_error_text(err: RawExecError) -> string
+
+#[go_field_get("Name")]
+extern "go" "os/exec" "Error.Name" raw_exec_error_name(err: RawExecError) -> string
+
+#[go_field_get("Err")]
+extern "go" "os/exec" "Error.Err" raw_exec_error_err(err: RawExecError) -> GoError
+
+extern "go" "os/exec" "(*ExitError).Error" raw_exit_error_text(err: RawExitError) -> string
+
+#[go_field_get("ProcessState")]
+extern "go" "os/exec" "ExitError.ProcessState" raw_exit_error_process_state(err: RawExitError) -> RawProcessState
+
+#[go_field_get("Stderr")]
+extern "go" "os/exec" "ExitError.Stderr" raw_exit_error_stderr(err: RawExitError) -> Vec[uint8]
 
 struct Cmd {
     raw: RawCmd,
@@ -175,6 +250,70 @@ fn environ(cmd: Cmd) -> Vec[string] {
 
 fn err(cmd: Cmd) -> GoError {
     raw_cmd_err(cmd.raw)
+}
+
+fn set_err(cmd: Cmd, err: GoError) -> unit {
+    raw_cmd_set_err(cmd.raw, err)
+}
+
+fn stdin(cmd: Cmd) -> RawReader {
+    raw_cmd_stdin(cmd.raw)
+}
+
+fn stdout(cmd: Cmd) -> RawWriter {
+    raw_cmd_stdout(cmd.raw)
+}
+
+fn stderr(cmd: Cmd) -> RawWriter {
+    raw_cmd_stderr(cmd.raw)
+}
+
+fn extra_files(cmd: Cmd) -> Vec[RawFile] {
+    raw_cmd_extra_files(cmd.raw)
+}
+
+fn set_extra_files(cmd: Cmd, files: Vec[RawFile]) -> unit {
+    raw_cmd_set_extra_files(cmd.raw, files)
+}
+
+fn sys_proc_attr(cmd: Cmd) -> RawSysProcAttr {
+    raw_cmd_sys_proc_attr(cmd.raw)
+}
+
+fn set_sys_proc_attr(cmd: Cmd, attr: RawSysProcAttr) -> unit {
+    raw_cmd_set_sys_proc_attr(cmd.raw, attr)
+}
+
+fn process(cmd: Cmd) -> RawProcess {
+    raw_cmd_process(cmd.raw)
+}
+
+fn set_process(cmd: Cmd, process: RawProcess) -> unit {
+    raw_cmd_set_process(cmd.raw, process)
+}
+
+fn process_state(cmd: Cmd) -> RawProcessState {
+    raw_cmd_process_state(cmd.raw)
+}
+
+fn set_process_state(cmd: Cmd, state: RawProcessState) -> unit {
+    raw_cmd_set_process_state(cmd.raw, state)
+}
+
+fn cancel(cmd: Cmd) -> RawCancel {
+    raw_cmd_cancel(cmd.raw)
+}
+
+fn set_cancel(cmd: Cmd, cancel: RawCancel) -> unit {
+    raw_cmd_set_cancel(cmd.raw, cancel)
+}
+
+fn wait_delay(cmd: Cmd) -> RawDuration {
+    raw_cmd_wait_delay(cmd.raw)
+}
+
+fn set_wait_delay(cmd: Cmd, delay: RawDuration) -> unit {
+    raw_cmd_set_wait_delay(cmd.raw, delay)
 }
 
 fn command_string(cmd: Cmd) -> string {
@@ -249,88 +388,30 @@ fn cat_stdin_text(text: string) -> Result[string, GoError] {
     Result::Ok(common::string_of_bytes(bytes))
 }
 
-impl Cmd {
-    fn path(self: Cmd) -> string {
-        path(self)
-    }
+fn exec_error_name(err: RawExecError) -> string {
+    raw_exec_error_name(err)
+}
 
-    fn set_path(self: Cmd, path: string) -> unit {
-        set_path(self, path)
-    }
+fn exec_error_err(err: RawExecError) -> GoError {
+    raw_exec_error_err(err)
+}
 
-    fn args(self: Cmd) -> Vec[string] {
-        args(self)
-    }
+fn exec_error_text(err: RawExecError) -> string {
+    raw_exec_error_text(err)
+}
 
-    fn set_args(self: Cmd, args: Vec[string]) -> unit {
-        set_args(self, args)
-    }
+fn exec_error_unwrap(err: RawExecError) -> Result[unit, GoError] {
+    raw_exec_error_unwrap(err)
+}
 
-    fn dir(self: Cmd) -> string {
-        dir(self)
-    }
+fn exit_error_text(err: RawExitError) -> string {
+    raw_exit_error_text(err)
+}
 
-    fn set_dir(self: Cmd, dir: string) -> unit {
-        set_dir(self, dir)
-    }
+fn exit_error_stderr(err: RawExitError) -> Vec[uint8] {
+    raw_exit_error_stderr(err)
+}
 
-    fn env(self: Cmd) -> Vec[string] {
-        env(self)
-    }
-
-    fn set_env(self: Cmd, env: Vec[string]) -> unit {
-        set_env(self, env)
-    }
-
-    fn environ(self: Cmd) -> Vec[string] {
-        environ(self)
-    }
-
-    fn err(self: Cmd) -> GoError {
-        err(self)
-    }
-
-    fn command_string(self: Cmd) -> string {
-        command_string(self)
-    }
-
-    fn set_stdin_text(self: Cmd, text: string) -> unit {
-        set_stdin_text(self, text)
-    }
-
-    fn set_stdout_discard(self: Cmd) -> unit {
-        set_stdout_discard(self)
-    }
-
-    fn set_stderr_discard(self: Cmd) -> unit {
-        set_stderr_discard(self)
-    }
-
-    fn combined_output_text(self: Cmd) -> Result[string, GoError] {
-        combined_output_text(self)
-    }
-
-    fn output_text(self: Cmd) -> Result[string, GoError] {
-        output_text(self)
-    }
-
-    fn run(self: Cmd) -> Result[unit, GoError] {
-        run(self)
-    }
-
-    fn start(self: Cmd) -> Result[unit, GoError] {
-        start(self)
-    }
-
-    fn wait(self: Cmd) -> Result[unit, GoError] {
-        wait(self)
-    }
-
-    fn stdout_pipe_text(self: Cmd) -> Result[string, GoError] {
-        stdout_pipe_text(self)
-    }
-
-    fn stderr_pipe_text(self: Cmd) -> Result[string, GoError] {
-        stderr_pipe_text(self)
-    }
+fn exit_error_process_state(err: RawExitError) -> RawProcessState {
+    raw_exit_error_process_state(err)
 }

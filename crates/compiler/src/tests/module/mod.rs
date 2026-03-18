@@ -98,6 +98,17 @@ fn multi_package_compile_project_019() -> anyhow::Result<()> {
 }
 
 fn run_project(name: &str) -> anyhow::Result<()> {
+    let name = name.to_string();
+    let handle = std::thread::Builder::new()
+        .stack_size(16 * 1024 * 1024)
+        .spawn(move || run_project_inner(&name))?;
+    match handle.join() {
+        Ok(result) => result,
+        Err(panic) => std::panic::resume_unwind(panic),
+    }
+}
+
+fn run_project_inner(name: &str) -> anyhow::Result<()> {
     let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("src/tests/module")
         .join(name);

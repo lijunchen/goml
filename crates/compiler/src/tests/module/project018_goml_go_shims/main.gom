@@ -4,6 +4,7 @@ use common;
 use execshim;
 use fsshim;
 use ioshim;
+use stringsshim;
 
 fn show(res: Result[string, GoError]) -> string {
     match res {
@@ -108,9 +109,92 @@ fn demo_bufio() -> Result[string, GoError] {
     Result::Ok(out)
 }
 
+fn demo_strings() -> Result[string, GoError] {
+    let cmp = int32_to_string(stringsshim::compare("a", "b"));
+    let contains_flag = if stringsshim::contains("goml", "ml") {
+        "contains"
+    } else {
+        "miss"
+    };
+    let digit_flag = if stringsshim::contains_func("go2", |r| r >= '0' && r <= '9') {
+        "digit"
+    } else {
+        "nodigit"
+    };
+    let cut_text = match stringsshim::cut("left=right", "=") {
+        Option::Some((left, right)) => left + ":" + right,
+        Option::None => "none",
+    };
+    let fields_text = stringsshim::join(stringsshim::fields_func("a1bb22c", |r| r >= '0' && r <= '9'), ",");
+    let seq_text = stringsshim::join(stringsshim::collect_seq(stringsshim::split_seq("u|v|w", "|")), ",");
+    let split_after_text = stringsshim::join(
+        stringsshim::collect_seq(stringsshim::split_after_seq("x/y/z", "/")),
+        ",",
+    );
+    let special_flag = if stringsshim::to_upper_special(stringsshim::turkish_case(), "i")
+        != stringsshim::to_upper("i")
+    {
+        "special"
+    } else {
+        "plain"
+    };
+    let builder = stringsshim::new_builder();
+    stringsshim::builder_grow(builder, 8);
+    let _ = stringsshim::builder_write_string(builder, "go")?;
+    let _ = stringsshim::builder_write_rune(builder, '好')?;
+    let _ = stringsshim::builder_write_byte(builder, 33u8)?;
+    let built = stringsshim::builder_string(builder);
+    let built_len = int32_to_string(stringsshim::builder_len(builder));
+    let reader = stringsshim::new_reader("ab好");
+    let (one, _) = stringsshim::reader_read(reader, common::bytes_of_string("."))?;
+    let next_byte = stringsshim::reader_read_byte(reader)?;
+    let (next_rune, rune_size) = stringsshim::reader_read_rune(reader)?;
+    stringsshim::reader_seek(reader, 0i64, 0)?;
+    let copy_builder = stringsshim::new_builder();
+    let copied = stringsshim::reader_write_to_builder(reader, copy_builder)?;
+    let copied_text = stringsshim::builder_string(copy_builder);
+    let pairs: Vec[string] = vec_new();
+    let pairs = vec_push(pairs, "go");
+    let pairs = vec_push(pairs, "GO");
+    let pairs = vec_push(pairs, "ml");
+    let pairs = vec_push(pairs, "ML");
+    let replacer = stringsshim::new_replacer(pairs);
+    let replaced = stringsshim::replacer_replace(replacer, "goml");
+    let mapped = stringsshim::map_text(
+        |r| {
+            if r == 'x' {
+                -1i32
+            } else {
+                111i32
+            }
+        },
+        "xay",
+    );
+    let out = cmp;
+    let out = out + "|" + contains_flag;
+    let out = out + "|" + digit_flag;
+    let out = out + "|" + cut_text;
+    let out = out + "|" + fields_text;
+    let out = out + "|" + seq_text;
+    let out = out + "|" + split_after_text;
+    let out = out + "|" + special_flag;
+    let out = out + "|" + built;
+    let out = out + "|" + built_len;
+    let out = out + "|" + common::string_of_bytes(one);
+    let out = out + "|" + uint8_to_string(next_byte);
+    let out = out + "|" + next_rune.to_string();
+    let out = out + "|" + int32_to_string(rune_size);
+    let out = out + "|" + copied_text;
+    let out = out + "|" + int64_to_string(copied);
+    let out = out + "|" + replaced;
+    let out = out + "|" + mapped;
+    Result::Ok(out)
+}
+
 fn main() -> unit {
     println(show(demo_io()));
     println(show(demo_exec()));
     println(show(demo_fs()));
     println(show(demo_bufio()));
+    println(show(demo_strings()));
 }
