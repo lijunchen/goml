@@ -6,6 +6,17 @@ extern "go" "io/fs" "File" type RawFile
 extern "go" "io/fs" "FileMode" type RawFileMode
 extern "go" "io/fs" "DirEntry" type RawDirEntry
 extern "go" "io/fs" "FileInfo" type RawFileInfo
+extern "go" "io/fs" "GlobFS" type RawGlobFS
+extern "go" "io/fs" "*PathError" type RawPathError
+extern "go" "io/fs" "ReadDirFS" type RawReadDirFS
+extern "go" "io/fs" "ReadDirFile" type RawReadDirFile
+extern "go" "io/fs" "ReadFileFS" type RawReadFileFS
+extern "go" "io/fs" "ReadLinkFS" type RawReadLinkFS
+extern "go" "io/fs" "StatFS" type RawStatFS
+extern "go" "io/fs" "SubFS" type RawSubFS
+extern "go" "io/fs" "WalkDirFunc" type RawWalkDirFunc
+extern "go" "time" "Time" type RawTime
+extern "go" "" "any" type RawAny
 extern "go" "" "int" type GoInt
 
 extern "go" "os" "DirFS" raw_dir_fs(dir: string) -> RawFS
@@ -31,6 +42,45 @@ extern "go" "io/fs" "ModeDir" raw_mode_dir() -> RawFileMode
 
 #[go_value]
 extern "go" "io/fs" "ModeSymlink" raw_mode_symlink() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeAppend" raw_mode_append() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeExclusive" raw_mode_exclusive() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeTemporary" raw_mode_temporary() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeDevice" raw_mode_device() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeNamedPipe" raw_mode_named_pipe() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeSocket" raw_mode_socket() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeSetuid" raw_mode_setuid() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeSetgid" raw_mode_setgid() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeCharDevice" raw_mode_char_device() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeSticky" raw_mode_sticky() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeIrregular" raw_mode_irregular() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModeType" raw_mode_type() -> RawFileMode
+
+#[go_value]
+extern "go" "io/fs" "ModePerm" raw_mode_perm() -> RawFileMode
 
 #[go_error_last]
 extern "go" "io/fs" "ReadFile" raw_read_file(fsys: RawFS, name: string) -> Result[Vec[uint8], GoError]
@@ -59,6 +109,39 @@ extern "go" "io/fs" "Lstat" raw_lstat(fsys: RawFS, name: string) -> Result[RawFi
 #[go_error_last]
 extern "go" "io/fs" "FS.Open" raw_open(fsys: RawFS, name: string) -> Result[RawFile, GoError]
 
+#[go_error_last]
+extern "go" "io/fs" "GlobFS.Glob" raw_glob_fs_glob(fsys: RawGlobFS, pattern: string) -> Result[Vec[string], GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "ReadDirFS.ReadDir" raw_read_dir_fs_read_dir(
+    fsys: RawReadDirFS,
+    name: string,
+) -> Result[Vec[RawDirEntry], GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "ReadFileFS.ReadFile" raw_read_file_fs_read_file(
+    fsys: RawReadFileFS,
+    name: string,
+) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "ReadLinkFS.ReadLink" raw_read_link_fs_read_link(
+    fsys: RawReadLinkFS,
+    name: string,
+) -> Result[string, GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "ReadLinkFS.Lstat" raw_read_link_fs_lstat(
+    fsys: RawReadLinkFS,
+    name: string,
+) -> Result[RawFileInfo, GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "StatFS.Stat" raw_stat_fs_stat(fsys: RawStatFS, name: string) -> Result[RawFileInfo, GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "SubFS.Sub" raw_sub_fs_sub(fsys: RawSubFS, dir: string) -> Result[RawFS, GoError]
+
 #[go_error]
 extern "go" "io/fs" "WalkDir" raw_walk_dir(
     fsys: RawFS,
@@ -80,11 +163,28 @@ extern "go" "io/fs" "FileInfo.Name" raw_file_info_name(info: RawFileInfo) -> str
 extern "go" "io/fs" "FileInfo.Size" raw_file_info_size(info: RawFileInfo) -> int64
 extern "go" "io/fs" "FileInfo.Mode" raw_file_info_mode(info: RawFileInfo) -> RawFileMode
 extern "go" "io/fs" "FileInfo.IsDir" raw_file_info_is_dir(info: RawFileInfo) -> bool
+extern "go" "io/fs" "FileInfo.ModTime" raw_file_info_mod_time(info: RawFileInfo) -> RawTime
+extern "go" "io/fs" "FileInfo.Sys" raw_file_info_sys(info: RawFileInfo) -> RawAny
 extern "go" "io/fs" "FileMode.IsDir" raw_file_mode_is_dir(mode: RawFileMode) -> bool
 extern "go" "io/fs" "FileMode.IsRegular" raw_file_mode_is_regular(mode: RawFileMode) -> bool
 extern "go" "io/fs" "FileMode.Perm" raw_file_mode_perm(mode: RawFileMode) -> RawFileMode
 extern "go" "io/fs" "FileMode.String" raw_file_mode_string(mode: RawFileMode) -> string
 extern "go" "io/fs" "FileMode.Type" raw_file_mode_type(mode: RawFileMode) -> RawFileMode
+extern "go" "time" "Time.String" raw_time_string(time: RawTime) -> string
+
+#[go_field_get("Op")]
+extern "go" "io/fs" "PathError.Op" raw_path_error_op(err: RawPathError) -> string
+
+#[go_field_get("Path")]
+extern "go" "io/fs" "PathError.Path" raw_path_error_path(err: RawPathError) -> string
+
+#[go_field_get("Err")]
+extern "go" "io/fs" "PathError.Err" raw_path_error_err(err: RawPathError) -> GoError
+
+extern "go" "io/fs" "(*PathError).Error" raw_path_error_text(err: RawPathError) -> string
+
+#[go_error]
+extern "go" "io/fs" "(*PathError).Unwrap" raw_path_error_unwrap(err: RawPathError) -> Result[unit, GoError]
 
 #[go_error_last]
 extern "go" "io/fs" "File.Stat" raw_file_stat(file: RawFile) -> Result[RawFileInfo, GoError]
@@ -94,6 +194,12 @@ extern "go" "io/fs" "File.Read" raw_file_read(file: RawFile, buf: Vec[uint8]) ->
 
 #[go_error]
 extern "go" "io/fs" "File.Close" raw_file_close(file: RawFile) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "io/fs" "ReadDirFile.ReadDir" raw_read_dir_file_read_dir(
+    file: RawReadDirFile,
+    n: GoInt,
+) -> Result[Vec[RawDirEntry], GoError]
 
 struct FS {
     raw: RawFS,
@@ -147,6 +253,58 @@ fn mode_dir() -> RawFileMode {
 
 fn mode_symlink() -> RawFileMode {
     raw_mode_symlink()
+}
+
+fn mode_append() -> RawFileMode {
+    raw_mode_append()
+}
+
+fn mode_exclusive() -> RawFileMode {
+    raw_mode_exclusive()
+}
+
+fn mode_temporary() -> RawFileMode {
+    raw_mode_temporary()
+}
+
+fn mode_device() -> RawFileMode {
+    raw_mode_device()
+}
+
+fn mode_named_pipe() -> RawFileMode {
+    raw_mode_named_pipe()
+}
+
+fn mode_socket() -> RawFileMode {
+    raw_mode_socket()
+}
+
+fn mode_setuid() -> RawFileMode {
+    raw_mode_setuid()
+}
+
+fn mode_setgid() -> RawFileMode {
+    raw_mode_setgid()
+}
+
+fn mode_char_device() -> RawFileMode {
+    raw_mode_char_device()
+}
+
+fn mode_sticky() -> RawFileMode {
+    raw_mode_sticky()
+}
+
+fn mode_irregular() -> RawFileMode {
+    raw_mode_irregular()
+}
+
+fn mode_type_bits() -> RawFileMode {
+    raw_mode_type()
+}
+
+fn mode_perm_bits() -> RawFileMode {
+    raw_mode_perm()
 }
 
 fn mode_bits(mode: RawFileMode) -> uint32 {
@@ -271,6 +429,18 @@ fn file_info_mode(info: FileInfo) -> RawFileMode {
 
 fn file_info_is_dir(info: FileInfo) -> bool {
     raw_file_info_is_dir(info.raw)
+}
+
+fn file_info_mod_time(info: FileInfo) -> RawTime {
+    raw_file_info_mod_time(info.raw)
+}
+
+fn file_info_mod_time_string(info: FileInfo) -> string {
+    raw_time_string(file_info_mod_time(info))
+}
+
+fn file_info_sys(info: FileInfo) -> RawAny {
+    raw_file_info_sys(info.raw)
 }
 
 fn mode_is_dir(mode: RawFileMode) -> bool {

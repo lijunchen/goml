@@ -3,13 +3,35 @@ use common;
 
 extern "go" "io" "Reader" type RawReader
 extern "go" "io" "Writer" type RawWriter
+extern "go" "io" "ByteReader" type RawByteReader
+extern "go" "io" "ByteScanner" type RawByteScanner
+extern "go" "io" "ByteWriter" type RawByteWriter
+extern "go" "io" "Closer" type RawCloser
+extern "go" "io" "*LimitedReader" type RawLimitedReader
+extern "go" "io" "*OffsetWriter" type RawOffsetWriter
 extern "go" "io" "ReadCloser" type RawReadCloser
+extern "go" "io" "ReadSeekCloser" type RawReadSeekCloser
+extern "go" "io" "ReadSeeker" type RawReadSeeker
+extern "go" "io" "ReadWriteCloser" type RawReadWriteCloser
+extern "go" "io" "ReadWriteSeeker" type RawReadWriteSeeker
+extern "go" "io" "ReadWriter" type RawReadWriter
+extern "go" "io" "ReaderAt" type RawReaderAt
+extern "go" "io" "ReaderFrom" type RawReaderFrom
+extern "go" "io" "RuneReader" type RawRuneReader
+extern "go" "io" "RuneScanner" type RawRuneScanner
+extern "go" "io" "*SectionReader" type RawSectionReader
+extern "go" "io" "Seeker" type RawSeeker
+extern "go" "io" "StringWriter" type RawStringWriter
 extern "go" "io" "WriteCloser" type RawWriteCloser
+extern "go" "io" "WriteSeeker" type RawWriteSeeker
+extern "go" "io" "WriterAt" type RawWriterAt
+extern "go" "io" "WriterTo" type RawWriterTo
 extern "go" "io" "*PipeReader" type RawPipeReader
 extern "go" "io" "*PipeWriter" type RawPipeWriter
 extern "go" "" "int" type GoInt
 
 extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
+extern "go" "strings" "NewReader" raw_string_reader_at(text: string) -> RawReaderAt
 extern "go" "" "int" raw_int32_to_go_int(value: int32) -> GoInt
 extern "go" "" "int32" raw_go_int_to_int32(value: GoInt) -> int32
 
@@ -68,6 +90,12 @@ extern "go" "io" "ReadAll" raw_pipe_read_all(reader: RawPipeReader) -> Result[Ve
 extern "go" "io" "ReadAll" raw_read_all_closer(reader: RawReadCloser) -> Result[Vec[uint8], GoError]
 
 #[go_error_last]
+extern "go" "io" "Reader.Read" raw_reader_read(reader: RawReader, buf: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "Writer.Write" raw_writer_write(writer: RawWriter, buf: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error_last]
 extern "go" "io" "ReadFull" raw_read_full(reader: RawReader, buf: Vec[uint8]) -> Result[GoInt, GoError]
 
 #[go_error_last]
@@ -85,6 +113,21 @@ extern "go" "io" "WriteString" raw_write_string(writer: RawWriter, text: string)
 
 #[go_error_last]
 extern "go" "io" "WriteString" raw_write_closer_write_string(writer: RawWriteCloser, text: string) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "ReadCloser.Read" raw_read_closer_read(reader: RawReadCloser, buf: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "WriteCloser.Write" raw_write_closer_write(writer: RawWriteCloser, buf: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "ByteReader.ReadByte" raw_byte_reader_read_byte(reader: RawByteReader) -> Result[uint8, GoError]
+
+#[go_error]
+extern "go" "io" "ByteScanner.UnreadByte" raw_byte_scanner_unread_byte(reader: RawByteScanner) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "io" "ByteWriter.WriteByte" raw_byte_writer_write_byte(writer: RawByteWriter, value: uint8) -> Result[unit, GoError]
 
 #[go_error]
 extern "go" "io" "(*PipeWriter).Close" raw_pipe_writer_close(writer: RawPipeWriter) -> Result[unit, GoError]
@@ -115,6 +158,128 @@ extern "go" "io" "(*PipeReader).CloseWithError" raw_pipe_reader_close_with_error
     reader: RawPipeReader,
     err: GoError,
 ) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "io" "(*LimitedReader).Read" raw_limited_reader_read(
+    reader: RawLimitedReader,
+    data: Vec[uint8],
+) -> Result[GoInt, GoError]
+
+#[go_field_get("R")]
+extern "go" "io" "LimitedReader.R" raw_limited_reader_r(reader: RawLimitedReader) -> RawReader
+
+#[go_field_set("R")]
+extern "go" "io" "LimitedReader.R" raw_limited_reader_set_r(reader: RawLimitedReader, source: RawReader) -> unit
+
+#[go_field_get("N")]
+extern "go" "io" "LimitedReader.N" raw_limited_reader_n(reader: RawLimitedReader) -> int64
+
+#[go_field_set("N")]
+extern "go" "io" "LimitedReader.N" raw_limited_reader_set_n(reader: RawLimitedReader, n: int64) -> unit
+
+extern "go" "io" "NewOffsetWriter" raw_new_offset_writer(writer: RawWriterAt, off: int64) -> RawOffsetWriter
+
+#[go_error_last]
+extern "go" "io" "(*OffsetWriter).Write" raw_offset_writer_write(
+    writer: RawOffsetWriter,
+    data: Vec[uint8],
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "(*OffsetWriter).WriteAt" raw_offset_writer_write_at(
+    writer: RawOffsetWriter,
+    data: Vec[uint8],
+    off: int64,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "(*OffsetWriter).Seek" raw_offset_writer_seek(
+    writer: RawOffsetWriter,
+    offset: int64,
+    whence: GoInt,
+) -> Result[int64, GoError]
+
+extern "go" "io" "NewSectionReader" raw_new_section_reader(
+    reader: RawReaderAt,
+    off: int64,
+    n: int64,
+) -> RawSectionReader
+
+#[go_error_last]
+extern "go" "io" "(*SectionReader).Read" raw_section_reader_read(
+    reader: RawSectionReader,
+    data: Vec[uint8],
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "(*SectionReader).ReadAt" raw_section_reader_read_at(
+    reader: RawSectionReader,
+    data: Vec[uint8],
+    off: int64,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "(*SectionReader).Seek" raw_section_reader_seek(
+    reader: RawSectionReader,
+    offset: int64,
+    whence: GoInt,
+) -> Result[int64, GoError]
+
+extern "go" "io" "(*SectionReader).Size" raw_section_reader_size(reader: RawSectionReader) -> int64
+
+extern "go" "io" "(*SectionReader).Outer" raw_section_reader_outer(reader: RawSectionReader) -> (RawReaderAt, int64, int64)
+
+#[go_error]
+extern "go" "io" "Closer.Close" raw_closer_close(closer: RawCloser) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "io" "ReaderAt.ReadAt" raw_reader_at_read_at(
+    reader: RawReaderAt,
+    buf: Vec[uint8],
+    off: int64,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "ReaderFrom.ReadFrom" raw_reader_from_read_from(
+    reader: RawReaderFrom,
+    src: RawReader,
+) -> Result[int64, GoError]
+
+#[go_error_last]
+extern "go" "io" "RuneReader.ReadRune" raw_rune_reader_read_rune(
+    reader: RawRuneReader,
+) -> Result[(char, GoInt), GoError]
+
+#[go_error]
+extern "go" "io" "RuneScanner.UnreadRune" raw_rune_scanner_unread_rune(
+    reader: RawRuneScanner,
+) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "io" "Seeker.Seek" raw_seeker_seek(
+    seeker: RawSeeker,
+    offset: int64,
+    whence: GoInt,
+) -> Result[int64, GoError]
+
+#[go_error_last]
+extern "go" "io" "StringWriter.WriteString" raw_string_writer_write_string(
+    writer: RawStringWriter,
+    text: string,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "WriterAt.WriteAt" raw_writer_at_write_at(
+    writer: RawWriterAt,
+    buf: Vec[uint8],
+    off: int64,
+) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "io" "WriterTo.WriteTo" raw_writer_to_write_to(
+    writer: RawWriterTo,
+    dst: RawWriter,
+) -> Result[int64, GoError]
 
 #[go_error]
 extern "go" "io" "ReadCloser.Close" raw_read_closer_close(reader: RawReadCloser) -> Result[unit, GoError]
@@ -154,12 +319,28 @@ fn from_text(text: string) -> Reader {
     }
 }
 
+fn eof() -> GoError {
+    raw_eof()
+}
+
+fn err_closed_pipe() -> GoError {
+    raw_err_closed_pipe()
+}
+
 fn err_no_progress() -> GoError {
     raw_err_no_progress()
 }
 
+fn err_short_buffer() -> GoError {
+    raw_err_short_buffer()
+}
+
 fn err_short_write() -> GoError {
     raw_err_short_write()
+}
+
+fn err_unexpected_eof() -> GoError {
+    raw_err_unexpected_eof()
 }
 
 fn seek_start() -> int32 {
@@ -205,6 +386,11 @@ fn read_all_text(reader: Reader) -> Result[string, GoError] {
     Result::Ok(common::string_of_bytes(bytes))
 }
 
+fn read(reader: Reader, buf: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+    let count = raw_reader_read(reader.raw, buf)?;
+    Result::Ok((buf, raw_go_int_to_int32(count)))
+}
+
 fn read_limited_text(text: string, n: int64) -> Result[string, GoError] {
     read_all_text(limit(from_text(text), n))
 }
@@ -224,6 +410,11 @@ fn copy_buffer_to_discard(text: string, buf: Vec[uint8]) -> Result[int64, GoErro
 fn write_text(writer: Writer, text: string) -> Result[unit, GoError] {
     let _ = raw_write_string(writer.raw, text)?;
     Result::Ok(())
+}
+
+fn write(writer: Writer, data: Vec[uint8]) -> Result[int32, GoError] {
+    let count = raw_writer_write(writer.raw, data)?;
+    Result::Ok(raw_go_int_to_int32(count))
 }
 
 fn write_to_multi_discard(text: string) -> Result[int32, GoError] {
@@ -302,8 +493,16 @@ fn close_pipe_writer_eof(writer: PipeWriter) -> Result[unit, GoError] {
     raw_pipe_writer_close_with_error(writer.raw, raw_eof())
 }
 
+fn close_pipe_writer_with_error(writer: PipeWriter, err: GoError) -> Result[unit, GoError] {
+    raw_pipe_writer_close_with_error(writer.raw, err)
+}
+
 fn close_pipe_reader_closed_pipe(reader: PipeReader) -> Result[unit, GoError] {
     raw_pipe_reader_close_with_error(reader.raw, raw_err_closed_pipe())
+}
+
+fn close_pipe_reader_with_error(reader: PipeReader, err: GoError) -> Result[unit, GoError] {
+    raw_pipe_reader_close_with_error(reader.raw, err)
 }
 
 impl Reader {
@@ -313,6 +512,10 @@ impl Reader {
 
     fn read_all_text(self: Reader) -> Result[string, GoError] {
         read_all_text(self)
+    }
+
+    fn read(self: Reader, buf: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+        read(self, buf)
     }
 
     fn tee_to_discard(self: Reader) -> Reader {
@@ -325,6 +528,10 @@ impl Reader {
 impl Writer {
     fn write_text(self: Writer, text: string) -> Result[unit, GoError] {
         write_text(self, text)
+    }
+
+    fn write(self: Writer, data: Vec[uint8]) -> Result[int32, GoError] {
+        write(self, data)
     }
 }
 
@@ -344,6 +551,10 @@ impl PipeWriter {
     fn close_with_eof(self: PipeWriter) -> Result[unit, GoError] {
         close_pipe_writer_eof(self)
     }
+
+    fn close_with_error(self: PipeWriter, err: GoError) -> Result[unit, GoError] {
+        close_pipe_writer_with_error(self, err)
+    }
 }
 
 impl PipeReader {
@@ -361,5 +572,9 @@ impl PipeReader {
 
     fn close_with_closed_pipe(self: PipeReader) -> Result[unit, GoError] {
         close_pipe_reader_closed_pipe(self)
+    }
+
+    fn close_with_error(self: PipeReader, err: GoError) -> Result[unit, GoError] {
+        close_pipe_reader_with_error(self, err)
     }
 }
