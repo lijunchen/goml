@@ -1,13 +1,53 @@
 package execshim;
 use common;
 
+extern "go" "context" "Context" type RawContext
 extern "go" "os/exec" "*Cmd" type RawCmd
+extern "go" "io" "Reader" type RawReader
+extern "go" "io" "Writer" type RawWriter
+extern "go" "io" "ReadCloser" type RawReadCloser
+extern "go" "io" "WriteCloser" type RawWriteCloser
+extern "go" "" "int" type GoInt
 
 #[go_error_last]
 extern "go" "os/exec" "LookPath" raw_look_path(file: string) -> Result[string, GoError]
 
+extern "go" "context" "Background" raw_background() -> RawContext
+extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
+
+#[go_value]
+extern "go" "io" "Discard" raw_discard() -> RawWriter
+
+#[go_value]
+extern "go" "os/exec" "ErrDot" raw_err_dot() -> GoError
+
+#[go_value]
+extern "go" "os/exec" "ErrNotFound" raw_err_not_found() -> GoError
+
+#[go_value]
+extern "go" "os/exec" "ErrWaitDelay" raw_err_wait_delay() -> GoError
+
 #[go_variadic_last]
 extern "go" "os/exec" "Command" raw_command(name: string, args: Slice[string]) -> RawCmd
+
+#[go_variadic_last]
+extern "go" "os/exec" "CommandContext" raw_command_context(
+    ctx: RawContext,
+    name: string,
+    args: Slice[string],
+) -> RawCmd
+
+#[go_field_get("Path")]
+extern "go" "os/exec" "Cmd.Path" raw_cmd_path(cmd: RawCmd) -> string
+
+#[go_field_set("Path")]
+extern "go" "os/exec" "Cmd.Path" raw_cmd_set_path(cmd: RawCmd, path: string) -> unit
+
+#[go_field_get("Args")]
+extern "go" "os/exec" "Cmd.Args" raw_cmd_args(cmd: RawCmd) -> Vec[string]
+
+#[go_field_set("Args")]
+extern "go" "os/exec" "Cmd.Args" raw_cmd_set_args(cmd: RawCmd, args: Vec[string]) -> unit
 
 #[go_field_get("Dir")]
 extern "go" "os/exec" "Cmd.Dir" raw_cmd_dir(cmd: RawCmd) -> string
@@ -21,14 +61,56 @@ extern "go" "os/exec" "Cmd.Env" raw_cmd_env(cmd: RawCmd) -> Vec[string]
 #[go_field_set("Env")]
 extern "go" "os/exec" "Cmd.Env" raw_cmd_set_env(cmd: RawCmd, env: Vec[string]) -> unit
 
+#[go_field_set("Stdin")]
+extern "go" "os/exec" "Cmd.Stdin" raw_cmd_set_stdin(cmd: RawCmd, reader: RawReader) -> unit
+
+#[go_field_set("Stdout")]
+extern "go" "os/exec" "Cmd.Stdout" raw_cmd_set_stdout(cmd: RawCmd, writer: RawWriter) -> unit
+
+#[go_field_set("Stderr")]
+extern "go" "os/exec" "Cmd.Stderr" raw_cmd_set_stderr(cmd: RawCmd, writer: RawWriter) -> unit
+
+#[go_field_get("Err")]
+extern "go" "os/exec" "Cmd.Err" raw_cmd_err(cmd: RawCmd) -> GoError
+
 #[go_error_last]
 extern "go" "os/exec" "(*Cmd).CombinedOutput" raw_cmd_combined_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
 
 #[go_error_last]
 extern "go" "os/exec" "(*Cmd).Output" raw_cmd_output(cmd: RawCmd) -> Result[Vec[uint8], GoError]
 
+extern "go" "os/exec" "(*Cmd).Environ" raw_cmd_environ(cmd: RawCmd) -> Vec[string]
+extern "go" "os/exec" "(*Cmd).String" raw_cmd_string(cmd: RawCmd) -> string
+
 #[go_error]
 extern "go" "os/exec" "(*Cmd).Run" raw_cmd_run(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "os/exec" "(*Cmd).Start" raw_cmd_start(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "os/exec" "(*Cmd).Wait" raw_cmd_wait(cmd: RawCmd) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "os/exec" "(*Cmd).StdoutPipe" raw_cmd_stdout_pipe(cmd: RawCmd) -> Result[RawReadCloser, GoError]
+
+#[go_error_last]
+extern "go" "os/exec" "(*Cmd).StderrPipe" raw_cmd_stderr_pipe(cmd: RawCmd) -> Result[RawReadCloser, GoError]
+
+#[go_error_last]
+extern "go" "os/exec" "(*Cmd).StdinPipe" raw_cmd_stdin_pipe(cmd: RawCmd) -> Result[RawWriteCloser, GoError]
+
+#[go_error_last]
+extern "go" "io" "ReadAll" raw_read_all_closer(reader: RawReadCloser) -> Result[Vec[uint8], GoError]
+
+#[go_error]
+extern "go" "io" "ReadCloser.Close" raw_read_closer_close(reader: RawReadCloser) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "io" "WriteCloser.Close" raw_write_closer_close(writer: RawWriteCloser) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "io" "WriteString" raw_write_closer_write_string(writer: RawWriteCloser, text: string) -> Result[GoInt, GoError]
 
 struct Cmd {
     raw: RawCmd,
@@ -49,6 +131,28 @@ fn command(name: string, args: Vec[string]) -> Cmd {
     }
 }
 
+fn command_context(name: string, args: Vec[string]) -> Cmd {
+    Cmd {
+        raw: raw_command_context(raw_background(), name, slice(args, 0, vec_len(args))),
+    }
+}
+
+fn path(cmd: Cmd) -> string {
+    raw_cmd_path(cmd.raw)
+}
+
+fn set_path(cmd: Cmd, path: string) -> unit {
+    raw_cmd_set_path(cmd.raw, path)
+}
+
+fn args(cmd: Cmd) -> Vec[string] {
+    raw_cmd_args(cmd.raw)
+}
+
+fn set_args(cmd: Cmd, args: Vec[string]) -> unit {
+    raw_cmd_set_args(cmd.raw, args)
+}
+
 fn dir(cmd: Cmd) -> string {
     raw_cmd_dir(cmd.raw)
 }
@@ -65,6 +169,30 @@ fn set_env(cmd: Cmd, env: Vec[string]) -> unit {
     raw_cmd_set_env(cmd.raw, env)
 }
 
+fn environ(cmd: Cmd) -> Vec[string] {
+    raw_cmd_environ(cmd.raw)
+}
+
+fn err(cmd: Cmd) -> GoError {
+    raw_cmd_err(cmd.raw)
+}
+
+fn command_string(cmd: Cmd) -> string {
+    raw_cmd_string(cmd.raw)
+}
+
+fn set_stdin_text(cmd: Cmd, text: string) -> unit {
+    raw_cmd_set_stdin(cmd.raw, raw_string_reader(text))
+}
+
+fn set_stdout_discard(cmd: Cmd) -> unit {
+    raw_cmd_set_stdout(cmd.raw, raw_discard())
+}
+
+fn set_stderr_discard(cmd: Cmd) -> unit {
+    raw_cmd_set_stderr(cmd.raw, raw_discard())
+}
+
 fn combined_output_text(cmd: Cmd) -> Result[string, GoError] {
     let bytes = raw_cmd_combined_output(cmd.raw)?;
     Result::Ok(common::string_of_bytes(bytes))
@@ -79,7 +207,65 @@ fn run(cmd: Cmd) -> Result[unit, GoError] {
     raw_cmd_run(cmd.raw)
 }
 
+fn start(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_start(cmd.raw)
+}
+
+fn wait(cmd: Cmd) -> Result[unit, GoError] {
+    raw_cmd_wait(cmd.raw)
+}
+
+fn stdout_pipe_text(cmd: Cmd) -> Result[string, GoError] {
+    let pipe = raw_cmd_stdout_pipe(cmd.raw)?;
+    start(cmd)?;
+    let bytes = raw_read_all_closer(pipe)?;
+    raw_read_closer_close(pipe)?;
+    wait(cmd)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn stderr_pipe_text(cmd: Cmd) -> Result[string, GoError] {
+    let pipe = raw_cmd_stderr_pipe(cmd.raw)?;
+    start(cmd)?;
+    let bytes = raw_read_all_closer(pipe)?;
+    raw_read_closer_close(pipe)?;
+    wait(cmd)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
+fn cat_stdin_text(text: string) -> Result[string, GoError] {
+    let args: Vec[string] = vec_new();
+    let args = vec_push(args, "-c");
+    let args = vec_push(args, "cat");
+    let cmd = command_context("sh", args);
+    let stdout = raw_cmd_stdout_pipe(cmd.raw)?;
+    let stdin = raw_cmd_stdin_pipe(cmd.raw)?;
+    start(cmd)?;
+    let _ = raw_write_closer_write_string(stdin, text)?;
+    raw_write_closer_close(stdin)?;
+    let bytes = raw_read_all_closer(stdout)?;
+    raw_read_closer_close(stdout)?;
+    wait(cmd)?;
+    Result::Ok(common::string_of_bytes(bytes))
+}
+
 impl Cmd {
+    fn path(self: Cmd) -> string {
+        path(self)
+    }
+
+    fn set_path(self: Cmd, path: string) -> unit {
+        set_path(self, path)
+    }
+
+    fn args(self: Cmd) -> Vec[string] {
+        args(self)
+    }
+
+    fn set_args(self: Cmd, args: Vec[string]) -> unit {
+        set_args(self, args)
+    }
+
     fn dir(self: Cmd) -> string {
         dir(self)
     }
@@ -96,6 +282,30 @@ impl Cmd {
         set_env(self, env)
     }
 
+    fn environ(self: Cmd) -> Vec[string] {
+        environ(self)
+    }
+
+    fn err(self: Cmd) -> GoError {
+        err(self)
+    }
+
+    fn command_string(self: Cmd) -> string {
+        command_string(self)
+    }
+
+    fn set_stdin_text(self: Cmd, text: string) -> unit {
+        set_stdin_text(self, text)
+    }
+
+    fn set_stdout_discard(self: Cmd) -> unit {
+        set_stdout_discard(self)
+    }
+
+    fn set_stderr_discard(self: Cmd) -> unit {
+        set_stderr_discard(self)
+    }
+
     fn combined_output_text(self: Cmd) -> Result[string, GoError] {
         combined_output_text(self)
     }
@@ -106,5 +316,21 @@ impl Cmd {
 
     fn run(self: Cmd) -> Result[unit, GoError] {
         run(self)
+    }
+
+    fn start(self: Cmd) -> Result[unit, GoError] {
+        start(self)
+    }
+
+    fn wait(self: Cmd) -> Result[unit, GoError] {
+        wait(self)
+    }
+
+    fn stdout_pipe_text(self: Cmd) -> Result[string, GoError] {
+        stdout_pipe_text(self)
+    }
+
+    fn stderr_pipe_text(self: Cmd) -> Result[string, GoError] {
+        stderr_pipe_text(self)
     }
 }

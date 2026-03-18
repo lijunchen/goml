@@ -1,5 +1,6 @@
 package main;
 use bufioshim;
+use common;
 use execshim;
 use fsshim;
 use ioshim;
@@ -12,21 +13,26 @@ fn show(res: Result[string, GoError]) -> string {
 }
 
 fn demo_io() -> Result[string, GoError] {
-    let (reader, writer) = ioshim::pipe();
+    let copied_buf = ioshim::copy_buffer_to_discard("copy-buffer", common::bytes_of_string("buf"))?;
+    let tee = ioshim::tee_read_all_text("tee-ok")?;
+    let limited = ioshim::read_limited_text("limit-ok", 5i64)?;
+    let (byte_reader, byte_writer) = ioshim::pipe();
     go || {
-        match writer.write_text("pipe-ok") {
+        match ioshim::pipe_write_bytes(byte_writer, common::bytes_of_string("xy")) {
             Result::Ok(_) => (),
             Result::Err(_) => (),
         };
-        match writer.close() {
+        match ioshim::close_pipe_writer_eof(byte_writer) {
             Result::Ok(_) => (),
             Result::Err(_) => (),
         };
     };
-    let pipe_text = reader.read_all_text()?;
-    let limited = ioshim::read_limited_text("limit-ok", 5i64)?;
-    let copied = ioshim::copy_to_discard("copy-ok")?;
-    Result::Ok(pipe_text + "|" + limited + "|" + int64_to_string(copied))
+    let byte_text = ioshim::pipe_read_text(byte_reader, 2)?;
+    let out = limited;
+    let out = out + "|" + int64_to_string(copied_buf);
+    let out = out + "|" + tee;
+    let out = out + "|" + byte_text;
+    Result::Ok(out)
 }
 
 fn demo_exec() -> Result[string, GoError] {
@@ -34,48 +40,72 @@ fn demo_exec() -> Result[string, GoError] {
     let args = vec_push(args, "-c");
     let args = vec_push(args, "printf exec-ok");
     let cmd = execshim::command("sh", args);
-    cmd.set_dir(".");
-    let env = vec_push(cmd.env(), "GOML_SHIM=1");
-    cmd.set_env(env);
-    let dir = cmd.dir();
-    let out = cmd.output_text()?;
-    let found = if execshim::has_path("sh")? {
-        "found"
-    } else {
-        "missing"
-    };
-    Result::Ok(dir + "|" + out + "|" + found)
+    execshim::set_path(cmd, execshim::path(cmd));
+    execshim::set_args(cmd, execshim::args(cmd));
+    execshim::set_dir(cmd, ".");
+    let dir = execshim::dir(cmd);
+    let arg_count = int32_to_string(vec_len(execshim::args(cmd)));
+    let env = vec_push(execshim::env(cmd), "GOML_SHIM=1");
+    execshim::set_env(cmd, env);
+    let env_flag = if vec_len(execshim::environ(cmd)) > 0 { "env" } else { "noenv" };
+    let desc_flag = if execshim::command_string(cmd) != "" { "desc" } else { "nodesc" };
+    let out = execshim::output_text(cmd)?;
+    let cat = execshim::cat_stdin_text("stdin-ok")?;
+    let result = dir;
+    let result = result + "|" + arg_count;
+    let result = result + "|" + env_flag;
+    let result = result + "|" + desc_flag;
+    let result = result + "|" + out;
+    let result = result + "|" + cat;
+    Result::Ok(result)
 }
 
 fn demo_fs() -> Result[string, GoError] {
     fsshim::write_text_file("fs_data.txt", "fs-ok")?;
     let fs = fsshim::dir_fs(".");
-    let text = fs.read_text("fs_data.txt")?;
-    let present = if fs.has_name("fs_data.txt")? {
-        "present"
+    let text = fsshim::read_text(fs, "fs_data.txt")?;
+    let file = fsshim::open(fs, "fs_data.txt")?;
+    let (buf, read_count) = fsshim::file_read(file, common::bytes_of_string("....."))?;
+    let info = fsshim::file_stat(file)?;
+    fsshim::file_close(file)?;
+    let mode = fsshim::file_info_mode(info);
+    let kind = if fsshim::mode_is_regular(mode) {
+        "regular"
     } else {
-        "missing"
+        "other"
     };
-    let walked = if fs.walk_has_fs_data()? {
-        "walk"
-    } else {
-        "nowalk"
-    };
-    let status = if fsshim::valid_path("fs_data.txt") {
-        "valid"
-    } else {
-        "invalid"
-    };
-    Result::Ok(status + "|" + text + "|" + present + "|" + walked)
+    let out = text;
+    let out = out + "|" + common::string_of_bytes(buf);
+    let out = out + "|" + int32_to_string(read_count);
+    let out = out + "|" + fsshim::file_info_name(info);
+    let out = out + "|" + kind;
+    let out = out + "|" + uint32_to_string(fsshim::mode_bits(fsshim::mode_perm(mode)));
+    let out = out + "|" + fsshim::mode_string(fsshim::mode_type(mode));
+    Result::Ok(out)
 }
 
 fn demo_bufio() -> Result[string, GoError] {
-    let reader = bufioshim::from_text("first\nsecond\n");
-    let (line, prefix) = reader.read_line()?;
+    let reader = bufioshim::from_text("abc");
+    let (buf, count) = bufioshim::read(reader, common::bytes_of_string("..."))?;
+    let text = common::string_of_bytes(buf);
+    let (line, prefix) = bufioshim::read_line(bufioshim::from_text("first\n"))?;
     let state = if prefix { "prefix" } else { "full" };
-    let rest = bufioshim::from_text("secondd").read_string(100u8)?;
+    let (rune, width) = bufioshim::read_rune(bufioshim::from_text("好呀"))?;
     let words = bufioshim::scan_words_csv("alpha beta")?;
-    Result::Ok(state + "|" + line + "|" + rest + "|" + words)
+    let read_writer = bufioshim::read_writer_from_text("left/right");
+    let prefix_text = bufioshim::read_writer_read_string(read_writer, 47u8)?;
+    let _ = bufioshim::read_writer_write_text(read_writer, "!")?;
+    bufioshim::read_writer_flush(read_writer)?;
+    let rw_text = bufioshim::read_writer_contents(read_writer);
+    let out = state + "|" + line;
+    let out = out + "|" + text;
+    let out = out + "|" + int32_to_string(count);
+    let out = out + "|" + rune.to_string();
+    let out = out + "|" + int32_to_string(width);
+    let out = out + "|" + words;
+    let out = out + "|" + prefix_text;
+    let out = out + "|" + rw_text;
+    Result::Ok(out)
 }
 
 fn main() -> unit {
