@@ -2,13 +2,25 @@ package bufioshim;
 use common;
 
 extern "go" "io" "Reader" type RawReader
+extern "go" "" "int" type GoInt
 extern "go" "bufio" "*Reader" type RawBufReader
+extern "go" "bufio" "*Writer" type RawBufWriter
+extern "go" "bufio" "*ReadWriter" type RawReadWriter
 extern "go" "bufio" "*Scanner" type RawScanner
 extern "go" "bufio" "SplitFunc" type RawSplitFunc
+extern "go" "bytes" "*Buffer" type RawBytesBuffer
 
+extern "go" "" "int" raw_go_int(value: int32) -> GoInt
+extern "go" "" "int32" raw_int32(value: GoInt) -> int32
 extern "go" "strings" "NewReader" raw_string_reader(text: string) -> RawReader
 extern "go" "bufio" "NewReader" raw_new_reader(reader: RawReader) -> RawBufReader
+extern "go" "bufio" "NewReaderSize" raw_new_reader_size(reader: RawReader, size: GoInt) -> RawBufReader
+extern "go" "bufio" "NewWriter" raw_new_writer(buffer: RawBytesBuffer) -> RawBufWriter
+extern "go" "bufio" "NewWriterSize" raw_new_writer_size(buffer: RawBytesBuffer, size: GoInt) -> RawBufWriter
+extern "go" "bufio" "NewReadWriter" raw_new_read_writer(reader: RawBufReader, writer: RawBufWriter) -> RawReadWriter
 extern "go" "bufio" "NewScanner" raw_new_scanner(reader: RawReader) -> RawScanner
+extern "go" "bytes" "NewBufferString" raw_new_buffer(text: string) -> RawBytesBuffer
+extern "go" "bytes" "(*Buffer).String" raw_buffer_string(buffer: RawBytesBuffer) -> string
 
 #[go_value]
 extern "go" "bufio" "ScanLines" raw_scan_lines() -> RawSplitFunc
@@ -16,21 +28,119 @@ extern "go" "bufio" "ScanLines" raw_scan_lines() -> RawSplitFunc
 #[go_value]
 extern "go" "bufio" "ScanWords" raw_scan_words() -> RawSplitFunc
 
+#[go_value]
+extern "go" "bufio" "ScanBytes" raw_scan_bytes() -> RawSplitFunc
+
+#[go_value]
+extern "go" "bufio" "ScanRunes" raw_scan_runes() -> RawSplitFunc
+
+#[go_value]
+extern "go" "bufio" "ErrInvalidUnreadByte" raw_err_invalid_unread_byte() -> GoError
+
+#[go_value]
+extern "go" "bufio" "ErrTooLong" raw_err_too_long() -> GoError
+
+#[go_value]
+extern "go" "bufio" "ErrFinalToken" raw_err_final_token() -> GoError
+
+#[go_value]
+extern "go" "bufio" "MaxScanTokenSize" raw_max_scan_token_size() -> GoInt
+
+extern "go" "bufio" "(*Reader).Buffered" raw_reader_buffered(reader: RawBufReader) -> GoInt
+extern "go" "bufio" "(*Reader).Size" raw_reader_size(reader: RawBufReader) -> GoInt
+extern "go" "bufio" "(*Reader).Reset" raw_reader_reset(reader: RawBufReader, next: RawReader) -> unit
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).Discard" raw_reader_discard(reader: RawBufReader, n: GoInt) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).Peek" raw_reader_peek(reader: RawBufReader, n: GoInt) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).Read" raw_reader_read(reader: RawBufReader, buf: Vec[uint8]) -> Result[GoInt, GoError]
+
 #[go_error_last]
 extern "go" "bufio" "(*Reader).ReadLine" raw_read_line(reader: RawBufReader) -> Result[(Vec[uint8], bool), GoError]
 
 #[go_error_last]
+extern "go" "bufio" "(*Reader).ReadByte" raw_read_byte(reader: RawBufReader) -> Result[uint8, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).ReadBytes" raw_read_bytes(reader: RawBufReader, delim: uint8) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).ReadRune" raw_read_rune(reader: RawBufReader) -> Result[(char, GoInt), GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).ReadSlice" raw_read_slice(reader: RawBufReader, delim: uint8) -> Result[Vec[uint8], GoError]
+
+#[go_error_last]
 extern "go" "bufio" "(*Reader).ReadString" raw_read_string(reader: RawBufReader, delim: uint8) -> Result[string, GoError]
 
+#[go_error]
+extern "go" "bufio" "(*Reader).UnreadByte" raw_reader_unread_byte(reader: RawBufReader) -> Result[unit, GoError]
+
+#[go_error]
+extern "go" "bufio" "(*Reader).UnreadRune" raw_reader_unread_rune(reader: RawBufReader) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Reader).WriteTo" raw_reader_write_to(reader: RawBufReader, buffer: RawBytesBuffer) -> Result[int64, GoError]
+
+extern "go" "bufio" "(*Scanner).Buffer" raw_scanner_buffer(scanner: RawScanner, buf: Vec[uint8], max: GoInt) -> unit
 extern "go" "bufio" "(*Scanner).Split" raw_scanner_split(scanner: RawScanner, split: RawSplitFunc) -> unit
 extern "go" "bufio" "(*Scanner).Scan" raw_scanner_scan(scanner: RawScanner) -> bool
+extern "go" "bufio" "(*Scanner).Bytes" raw_scanner_bytes(scanner: RawScanner) -> Vec[uint8]
 extern "go" "bufio" "(*Scanner).Text" raw_scanner_text(scanner: RawScanner) -> string
 
 #[go_error]
 extern "go" "bufio" "(*Scanner).Err" raw_scanner_err(scanner: RawScanner) -> Result[unit, GoError]
 
+extern "go" "bufio" "(*Writer).Available" raw_writer_available(writer: RawBufWriter) -> GoInt
+extern "go" "bufio" "(*Writer).AvailableBuffer" raw_writer_available_buffer(writer: RawBufWriter) -> Vec[uint8]
+extern "go" "bufio" "(*Writer).Buffered" raw_writer_buffered(writer: RawBufWriter) -> GoInt
+extern "go" "bufio" "(*Writer).Reset" raw_writer_reset(writer: RawBufWriter, buffer: RawBytesBuffer) -> unit
+extern "go" "bufio" "(*Writer).Size" raw_writer_size(writer: RawBufWriter) -> GoInt
+
+#[go_error]
+extern "go" "bufio" "(*Writer).Flush" raw_writer_flush(writer: RawBufWriter) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Writer).ReadFrom" raw_writer_read_from(writer: RawBufWriter, reader: RawReader) -> Result[int64, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Writer).Write" raw_writer_write(writer: RawBufWriter, data: Vec[uint8]) -> Result[GoInt, GoError]
+
+#[go_error]
+extern "go" "bufio" "(*Writer).WriteByte" raw_writer_write_byte(writer: RawBufWriter, value: uint8) -> Result[unit, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Writer).WriteRune" raw_writer_write_rune(writer: RawBufWriter, value: char) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*Writer).WriteString" raw_writer_write_string(writer: RawBufWriter, text: string) -> Result[GoInt, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*ReadWriter).ReadString" raw_read_writer_read_string(read_writer: RawReadWriter, delim: uint8) -> Result[string, GoError]
+
+#[go_error_last]
+extern "go" "bufio" "(*ReadWriter).WriteString" raw_read_writer_write_string(read_writer: RawReadWriter, text: string) -> Result[GoInt, GoError]
+
+#[go_error]
+extern "go" "bufio" "(*ReadWriter).Flush" raw_read_writer_flush(read_writer: RawReadWriter) -> Result[unit, GoError]
+
 struct Reader {
     raw: RawBufReader,
+}
+
+struct Writer {
+    raw: RawBufWriter,
+    buffer: RawBytesBuffer,
+}
+
+struct ReadWriter {
+    raw: RawReadWriter,
+    reader: Reader,
+    writer: Writer,
 }
 
 struct Scanner {
@@ -43,9 +153,59 @@ fn from_text(text: string) -> Reader {
     }
 }
 
+fn from_text_size(text: string, size: int32) -> Reader {
+    Reader {
+        raw: raw_new_reader_size(raw_string_reader(text), raw_go_int(size)),
+    }
+}
+
+fn reader_buffered(reader: Reader) -> int32 {
+    raw_int32(raw_reader_buffered(reader.raw))
+}
+
+fn reader_size(reader: Reader) -> int32 {
+    raw_int32(raw_reader_size(reader.raw))
+}
+
+fn reader_discard(reader: Reader, n: int32) -> Result[int32, GoError] {
+    let discarded = raw_reader_discard(reader.raw, raw_go_int(n))?;
+    Result::Ok(raw_int32(discarded))
+}
+
+fn peek_text(reader: Reader, n: int32) -> Result[string, GoError] {
+    let data = raw_reader_peek(reader.raw, raw_go_int(n))?;
+    Result::Ok(common::string_of_bytes(data))
+}
+
 fn scanner_from_text(text: string) -> Scanner {
     Scanner {
         raw: raw_new_scanner(raw_string_reader(text)),
+    }
+}
+
+fn writer() -> Writer {
+    let buffer = raw_new_buffer("");
+    Writer {
+        raw: raw_new_writer(buffer),
+        buffer: buffer,
+    }
+}
+
+fn writer_size(size: int32) -> Writer {
+    let buffer = raw_new_buffer("");
+    Writer {
+        raw: raw_new_writer_size(buffer, raw_go_int(size)),
+        buffer: buffer,
+    }
+}
+
+fn read_writer_from_text(text: string) -> ReadWriter {
+    let reader = from_text(text);
+    let writer = writer();
+    ReadWriter {
+        raw: raw_new_read_writer(reader.raw, writer.raw),
+        reader: reader,
+        writer: writer,
     }
 }
 
@@ -54,8 +214,50 @@ fn read_line(reader: Reader) -> Result[(string, bool), GoError] {
     Result::Ok((common::string_of_bytes(line), prefix))
 }
 
+fn read(reader: Reader, buf: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+    let count = raw_reader_read(reader.raw, buf)?;
+    Result::Ok((buf, raw_int32(count)))
+}
+
+fn read_byte(reader: Reader) -> Result[uint8, GoError] {
+    raw_read_byte(reader.raw)
+}
+
+fn read_bytes_text(reader: Reader, delim: uint8) -> Result[string, GoError] {
+    let data = raw_read_bytes(reader.raw, delim)?;
+    Result::Ok(common::string_of_bytes(data))
+}
+
+fn read_rune(reader: Reader) -> Result[(char, int32), GoError] {
+    let (value, size) = raw_read_rune(reader.raw)?;
+    Result::Ok((value, raw_int32(size)))
+}
+
+fn read_slice_text(reader: Reader, delim: uint8) -> Result[string, GoError] {
+    let data = raw_read_slice(reader.raw, delim)?;
+    Result::Ok(common::string_of_bytes(data))
+}
+
 fn read_string(reader: Reader, delim: uint8) -> Result[string, GoError] {
     raw_read_string(reader.raw, delim)
+}
+
+fn unread_byte(reader: Reader) -> Result[unit, GoError] {
+    raw_reader_unread_byte(reader.raw)
+}
+
+fn unread_rune(reader: Reader) -> Result[unit, GoError] {
+    raw_reader_unread_rune(reader.raw)
+}
+
+fn reset_text(reader: Reader, text: string) -> unit {
+    raw_reader_reset(reader.raw, raw_string_reader(text))
+}
+
+fn write_to_text(reader: Reader) -> Result[(int64, string), GoError] {
+    let buffer = raw_new_buffer("");
+    let count = raw_reader_write_to(reader.raw, buffer)?;
+    Result::Ok((count, raw_buffer_string(buffer)))
 }
 
 fn split_lines(scanner: Scanner) -> unit {
@@ -66,8 +268,24 @@ fn split_words(scanner: Scanner) -> unit {
     raw_scanner_split(scanner.raw, raw_scan_words())
 }
 
+fn split_bytes(scanner: Scanner) -> unit {
+    raw_scanner_split(scanner.raw, raw_scan_bytes())
+}
+
+fn split_runes(scanner: Scanner) -> unit {
+    raw_scanner_split(scanner.raw, raw_scan_runes())
+}
+
+fn buffer(scanner: Scanner, buf: Vec[uint8], max: int32) -> unit {
+    raw_scanner_buffer(scanner.raw, buf, raw_go_int(max))
+}
+
 fn scan(scanner: Scanner) -> bool {
     raw_scanner_scan(scanner.raw)
+}
+
+fn bytes_text(scanner: Scanner) -> string {
+    common::string_of_bytes(raw_scanner_bytes(scanner.raw))
 }
 
 fn text(scanner: Scanner) -> string {
@@ -101,17 +319,290 @@ fn scan_words_csv(text: string) -> Result[string, GoError] {
     scan_all_csv(scanner)
 }
 
+fn write_text(writer: Writer, text: string) -> Result[int32, GoError] {
+    let count = raw_writer_write_string(writer.raw, text)?;
+    Result::Ok(raw_int32(count))
+}
+
+fn write_bytes(writer: Writer, data: Vec[uint8]) -> Result[int32, GoError] {
+    let count = raw_writer_write(writer.raw, data)?;
+    Result::Ok(raw_int32(count))
+}
+
+fn write_byte(writer: Writer, value: uint8) -> Result[unit, GoError] {
+    raw_writer_write_byte(writer.raw, value)
+}
+
+fn write_rune(writer: Writer, value: char) -> Result[int32, GoError] {
+    let count = raw_writer_write_rune(writer.raw, value)?;
+    Result::Ok(raw_int32(count))
+}
+
+fn flush(writer: Writer) -> Result[unit, GoError] {
+    raw_writer_flush(writer.raw)
+}
+
+fn available(writer: Writer) -> int32 {
+    raw_int32(raw_writer_available(writer.raw))
+}
+
+fn available_buffer(writer: Writer) -> Vec[uint8] {
+    raw_writer_available_buffer(writer.raw)
+}
+
+fn buffered(writer: Writer) -> int32 {
+    raw_int32(raw_writer_buffered(writer.raw))
+}
+
+fn writer_size_value(writer: Writer) -> int32 {
+    raw_int32(raw_writer_size(writer.raw))
+}
+
+fn contents(writer: Writer) -> string {
+    raw_buffer_string(writer.buffer)
+}
+
+fn read_from_text(writer: Writer, text: string) -> Result[int64, GoError] {
+    raw_writer_read_from(writer.raw, raw_string_reader(text))
+}
+
+fn reset(writer: Writer) -> Writer {
+    let buffer = raw_new_buffer("");
+    raw_writer_reset(writer.raw, buffer);
+    Writer {
+        raw: writer.raw,
+        buffer: buffer,
+    }
+}
+
+fn read_writer_read_string(read_writer: ReadWriter, delim: uint8) -> Result[string, GoError] {
+    raw_read_writer_read_string(read_writer.raw, delim)
+}
+
+fn read_writer_write_text(read_writer: ReadWriter, text: string) -> Result[int32, GoError] {
+    let count = raw_read_writer_write_string(read_writer.raw, text)?;
+    Result::Ok(raw_int32(count))
+}
+
+fn read_writer_flush(read_writer: ReadWriter) -> Result[unit, GoError] {
+    raw_read_writer_flush(read_writer.raw)
+}
+
+fn read_writer_contents(read_writer: ReadWriter) -> string {
+    contents(read_writer.writer)
+}
+
+fn max_scan_token_size() -> int32 {
+    raw_int32(raw_max_scan_token_size())
+}
+
+fn err_invalid_unread_byte() -> GoError {
+    raw_err_invalid_unread_byte()
+}
+
+fn err_too_long() -> GoError {
+    raw_err_too_long()
+}
+
+fn err_final_token() -> GoError {
+    raw_err_final_token()
+}
+
 impl Reader {
+    fn buffered(self: Reader) -> int32 {
+        reader_buffered(self)
+    }
+
+    fn size(self: Reader) -> int32 {
+        reader_size(self)
+    }
+
+    fn discard(self: Reader, n: int32) -> Result[int32, GoError] {
+        reader_discard(self, n)
+    }
+
+    fn peek_text(self: Reader, n: int32) -> Result[string, GoError] {
+        peek_text(self, n)
+    }
+
     fn read_line(self: Reader) -> Result[(string, bool), GoError] {
         read_line(self)
+    }
+
+    fn read(self: Reader, buf: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+        read(self, buf)
+    }
+
+    fn read_byte(self: Reader) -> Result[uint8, GoError] {
+        read_byte(self)
+    }
+
+    fn read_bytes_text(self: Reader, delim: uint8) -> Result[string, GoError] {
+        read_bytes_text(self, delim)
+    }
+
+    fn read_rune(self: Reader) -> Result[(char, int32), GoError] {
+        read_rune(self)
+    }
+
+    fn read_slice_text(self: Reader, delim: uint8) -> Result[string, GoError] {
+        read_slice_text(self, delim)
     }
 
     fn read_string(self: Reader, delim: uint8) -> Result[string, GoError] {
         read_string(self, delim)
     }
+
+    fn unread_byte(self: Reader) -> Result[unit, GoError] {
+        unread_byte(self)
+    }
+
+    fn unread_rune(self: Reader) -> Result[unit, GoError] {
+        unread_rune(self)
+    }
+
+    fn reset_text(self: Reader, text: string) -> unit {
+        reset_text(self, text)
+    }
+
+    fn write_to_text(self: Reader) -> Result[(int64, string), GoError] {
+        write_to_text(self)
+    }
+}
+
+impl Writer {
+    fn write_text(self: Writer, text: string) -> Result[int32, GoError] {
+        write_text(self, text)
+    }
+
+    fn write_bytes(self: Writer, data: Vec[uint8]) -> Result[int32, GoError] {
+        write_bytes(self, data)
+    }
+
+    fn write_byte(self: Writer, value: uint8) -> Result[unit, GoError] {
+        write_byte(self, value)
+    }
+
+    fn write_rune(self: Writer, value: char) -> Result[int32, GoError] {
+        write_rune(self, value)
+    }
+
+    fn flush(self: Writer) -> Result[unit, GoError] {
+        flush(self)
+    }
+
+    fn available(self: Writer) -> int32 {
+        available(self)
+    }
+
+    fn available_buffer(self: Writer) -> Vec[uint8] {
+        available_buffer(self)
+    }
+
+    fn buffered(self: Writer) -> int32 {
+        buffered(self)
+    }
+
+    fn size(self: Writer) -> int32 {
+        writer_size_value(self)
+    }
+
+    fn contents(self: Writer) -> string {
+        contents(self)
+    }
+
+    fn read_from_text(self: Writer, text: string) -> Result[int64, GoError] {
+        read_from_text(self, text)
+    }
+
+    fn reset(self: Writer) -> Writer {
+        reset(self)
+    }
+}
+
+impl ReadWriter {
+    fn peek_text(self: ReadWriter, n: int32) -> Result[string, GoError] {
+        peek_text(self.reader, n)
+    }
+
+    fn discard(self: ReadWriter, n: int32) -> Result[int32, GoError] {
+        reader_discard(self.reader, n)
+    }
+
+    fn read(self: ReadWriter, buf: Vec[uint8]) -> Result[(Vec[uint8], int32), GoError] {
+        read(self.reader, buf)
+    }
+
+    fn read_string(self: ReadWriter, delim: uint8) -> Result[string, GoError] {
+        read_writer_read_string(self, delim)
+    }
+
+    fn read_byte(self: ReadWriter) -> Result[uint8, GoError] {
+        read_byte(self.reader)
+    }
+
+    fn read_bytes_text(self: ReadWriter, delim: uint8) -> Result[string, GoError] {
+        read_bytes_text(self.reader, delim)
+    }
+
+    fn read_rune(self: ReadWriter) -> Result[(char, int32), GoError] {
+        read_rune(self.reader)
+    }
+
+    fn read_slice_text(self: ReadWriter, delim: uint8) -> Result[string, GoError] {
+        read_slice_text(self.reader, delim)
+    }
+
+    fn unread_byte(self: ReadWriter) -> Result[unit, GoError] {
+        unread_byte(self.reader)
+    }
+
+    fn unread_rune(self: ReadWriter) -> Result[unit, GoError] {
+        unread_rune(self.reader)
+    }
+
+    fn write_text(self: ReadWriter, text: string) -> Result[int32, GoError] {
+        read_writer_write_text(self, text)
+    }
+
+    fn write_bytes(self: ReadWriter, data: Vec[uint8]) -> Result[int32, GoError] {
+        write_bytes(self.writer, data)
+    }
+
+    fn write_byte(self: ReadWriter, value: uint8) -> Result[unit, GoError] {
+        write_byte(self.writer, value)
+    }
+
+    fn write_rune(self: ReadWriter, value: char) -> Result[int32, GoError] {
+        write_rune(self.writer, value)
+    }
+
+    fn flush(self: ReadWriter) -> Result[unit, GoError] {
+        read_writer_flush(self)
+    }
+
+    fn available(self: ReadWriter) -> int32 {
+        available(self.writer)
+    }
+
+    fn available_buffer(self: ReadWriter) -> Vec[uint8] {
+        available_buffer(self.writer)
+    }
+
+    fn contents(self: ReadWriter) -> string {
+        read_writer_contents(self)
+    }
+
+    fn read_from_text(self: ReadWriter, text: string) -> Result[int64, GoError] {
+        read_from_text(self.writer, text)
+    }
 }
 
 impl Scanner {
+    fn buffer(self: Scanner, buf: Vec[uint8], max: int32) -> unit {
+        buffer(self, buf, max)
+    }
+
     fn split_lines(self: Scanner) -> unit {
         split_lines(self)
     }
@@ -120,8 +611,20 @@ impl Scanner {
         split_words(self)
     }
 
+    fn split_bytes(self: Scanner) -> unit {
+        split_bytes(self)
+    }
+
+    fn split_runes(self: Scanner) -> unit {
+        split_runes(self)
+    }
+
     fn scan(self: Scanner) -> bool {
         scan(self)
+    }
+
+    fn bytes_text(self: Scanner) -> string {
+        bytes_text(self)
     }
 
     fn text(self: Scanner) -> string {
