@@ -120,6 +120,8 @@ extern fn vec_push[T](vec: Vec[T], elem: T) -> Vec[T]
 #[builtin]
 extern fn vec_get[T](vec: Vec[T], index: int32) -> T
 #[builtin]
+extern fn vec_set[T](vec: Vec[T], index: int32, elem: T) -> unit
+#[builtin]
 extern fn vec_len[T](vec: Vec[T]) -> int32
 #[builtin]
 extern fn slice[T](vec: Vec[T], start: int32, end: int32) -> Slice[T]
@@ -446,6 +448,10 @@ impl [T] Vec[T] {
 
     fn get(self: Self, index: int32) -> T {
         vec_get(self, index)
+    }
+
+    fn set(self: Self, index: int32, elem: T) -> unit {
+        vec_set(self, index, elem)
     }
 
     fn len(self: Self) -> int32 {

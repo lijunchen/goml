@@ -317,6 +317,10 @@ pub fn array_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
     format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
 
+pub fn vec_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
+    format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
+}
+
 pub fn ref_helper_fn_name(prefix: &str, ty: &tast::Ty) -> String {
     format!("{}__{}", prefix, go_ident(&encode_ty(ty)))
 }
@@ -453,6 +457,57 @@ pub fn make_array_runtime(array_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> 
         items.push(goast::Item::Fn(set_fn));
     }
 
+    items
+}
+
+pub fn make_vec_runtime(vec_types: &IndexSet<tast::Ty>) -> Vec<goast::Item> {
+    let mut items = Vec::new();
+    for ty in vec_types {
+        let tast::Ty::TVec { elem } = ty else {
+            continue;
+        };
+        if ty_contains_type_param(elem) {
+            continue;
+        }
+
+        let vec_go_ty = goast::tast_ty_to_go_type(ty);
+        let elem_go_ty = goast::tast_ty_to_go_type(elem);
+
+        let set_fn = goast::Fn {
+            name: vec_helper_fn_name("vec_set", ty),
+            params: vec![
+                ("vec".to_string(), vec_go_ty.clone()),
+                ("index".to_string(), goty::GoType::TInt32),
+                ("value".to_string(), elem_go_ty.clone()),
+            ],
+            ret_ty: Some(goty::GoType::TUnit),
+            body: goast::Block {
+                stmts: vec![
+                    goast::Stmt::IndexAssign {
+                        array: goast::Expr::Var {
+                            name: "vec".to_string(),
+                            ty: vec_go_ty.clone(),
+                        },
+                        index: goast::Expr::Var {
+                            name: "index".to_string(),
+                            ty: goty::GoType::TInt32,
+                        },
+                        value: goast::Expr::Var {
+                            name: "value".to_string(),
+                            ty: elem_go_ty,
+                        },
+                    },
+                    goast::Stmt::Return {
+                        expr: Some(goast::Expr::Unit {
+                            ty: goty::GoType::TUnit,
+                        }),
+                    },
+                ],
+            },
+        };
+
+        items.push(goast::Item::Fn(set_fn));
+    }
     items
 }
 

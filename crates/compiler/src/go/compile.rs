@@ -1815,12 +1815,14 @@ type RuntimeTypeSets = (
     IndexSet<tast::Ty>,
     IndexSet<tast::Ty>,
     IndexSet<tast::Ty>,
+    IndexSet<tast::Ty>,
 );
 
 fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
     struct Collector {
         tuples: IndexSet<tast::Ty>,
         arrays: IndexSet<tast::Ty>,
+        vecs: IndexSet<tast::Ty>,
         refs: IndexSet<tast::Ty>,
         hashmaps: IndexSet<tast::Ty>,
         missings: IndexSet<tast::Ty>,
@@ -1834,6 +1836,7 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
             (
                 self.tuples,
                 self.arrays,
+                self.vecs,
                 self.refs,
                 self.hashmaps,
                 self.missings,
@@ -2020,6 +2023,11 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
                 tast::Ty::TSlice { elem } => {
                     self.collect_type(elem);
                 }
+                tast::Ty::TVec { elem } => {
+                    if self.vecs.insert(ty.clone()) {
+                        self.collect_type(elem);
+                    }
+                }
                 tast::Ty::TRef { elem } => {
                     if self.refs.insert(ty.clone()) {
                         self.collect_type(elem);
@@ -2031,11 +2039,8 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
                         self.collect_type(value);
                     }
                 }
-                tast::Ty::TStruct { name: _ } => {
-                    // Vec types are handled as slices, no special collection needed
-                }
+                tast::Ty::TStruct { name: _ } => {}
                 tast::Ty::TApp { ty, args } => {
-                    // Vec types are handled as slices, no special collection needed
                     self.collect_type(ty);
                     for arg in args {
                         self.collect_type(arg);
@@ -2055,6 +2060,7 @@ fn collect_runtime_types(file: &anf::File) -> RuntimeTypeSets {
     Collector {
         tuples: IndexSet::new(),
         arrays: IndexSet::new(),
+        vecs: IndexSet::new(),
         refs: IndexSet::new(),
         hashmaps: IndexSet::new(),
         missings: IndexSet::new(),
@@ -3164,29 +3170,22 @@ mod legacy_anf_codegen {
                     && (*name == "vec_new"
                         || *name == "vec_push"
                         || *name == "vec_get"
+                        || *name == "vec_set"
                         || *name == "vec_len")
                 {
-                    // Use Go's native slice operations directly
                     match name.as_str() {
-                        "vec_new" => {
-                            // vec_new() -> nil (empty slice)
-                            goast::Expr::Nil {
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
-                        "vec_push" => {
-                            // vec_push(v, elem) -> append(v, elem)
-                            goast::Expr::Call {
-                                func: Box::new(goast::Expr::Var {
-                                    name: "append".to_string(),
-                                    ty: func_ty,
-                                }),
-                                args: compiled_args,
-                                ty: tast_ty_to_go_type(ty),
-                            }
-                        }
+                        "vec_new" => goast::Expr::Nil {
+                            ty: tast_ty_to_go_type(ty),
+                        },
+                        "vec_push" => goast::Expr::Call {
+                            func: Box::new(goast::Expr::Var {
+                                name: "append".to_string(),
+                                ty: func_ty,
+                            }),
+                            args: compiled_args,
+                            ty: tast_ty_to_go_type(ty),
+                        },
                         "vec_get" => {
-                            // vec_get(v, index) -> v[index]
                             let mut args_iter = compiled_args.into_iter();
                             let v_arg = args_iter.next().unwrap();
                             let index_arg = args_iter.next().unwrap();
@@ -3196,8 +3195,18 @@ mod legacy_anf_codegen {
                                 ty: tast_ty_to_go_type(ty),
                             }
                         }
+                        "vec_set" => {
+                            let vec_ty = imm_ty(&args[0]);
+                            goast::Expr::Call {
+                                func: Box::new(goast::Expr::Var {
+                                    name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
+                                    ty: func_ty,
+                                }),
+                                args: compiled_args,
+                                ty: tast_ty_to_go_type(ty),
+                            }
+                        }
                         "vec_len" => {
-                            // vec_len(v) -> int32(len(v))
                             let mut args_iter = compiled_args.into_iter();
                             let v_arg = args_iter.next().unwrap();
                             goast::Expr::Call {
@@ -4374,7 +4383,11 @@ fn compile_call(
     }
 
     if let anf::ImmExpr::Var { id, .. } = func
-        && (id.0 == "vec_new" || id.0 == "vec_push" || id.0 == "vec_get" || id.0 == "vec_len")
+        && (id.0 == "vec_new"
+            || id.0 == "vec_push"
+            || id.0 == "vec_get"
+            || id.0 == "vec_set"
+            || id.0 == "vec_len")
     {
         return match id.0.as_str() {
             "vec_new" => goast::Expr::Nil {
@@ -4395,6 +4408,17 @@ fn compile_call(
                 goast::Expr::Index {
                     array: Box::new(v_arg),
                     index: Box::new(index_arg),
+                    ty: tast_ty_to_go_type(ty),
+                }
+            }
+            "vec_set" => {
+                let vec_ty = imm_ty(&args[0]);
+                goast::Expr::Call {
+                    func: Box::new(goast::Expr::Var {
+                        name: runtime::vec_helper_fn_name("vec_set", &vec_ty),
+                        ty: func_ty,
+                    }),
+                    args: compiled_args,
                     ty: tast_ty_to_go_type(ty),
                 }
             }
@@ -7823,11 +7847,12 @@ pub fn go_file(
     goenv.toplevel_funcs = file.toplevels.iter().map(|f| f.name.clone()).collect();
     let mut all = Vec::new();
 
-    let (tuple_types, array_types, ref_types, hashmap_types, missing_types) =
+    let (tuple_types, array_types, vec_types, ref_types, hashmap_types, missing_types) =
         collect_runtime_types(&file);
 
     all.extend(runtime::make_runtime());
     all.extend(runtime::make_array_runtime(&array_types));
+    all.extend(runtime::make_vec_runtime(&vec_types));
     all.extend(runtime::make_ref_runtime(&ref_types));
     all.extend(runtime::make_hashmap_runtime(&goenv, &hashmap_types));
     all.extend(runtime::make_missing_runtime(&missing_types));

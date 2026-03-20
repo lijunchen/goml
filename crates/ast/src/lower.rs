@@ -930,8 +930,8 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Stmt> {
         }
         cst::Stmt::AssignStmt(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
-            let name = match it.lident() {
-                Some(name) => ast::AstIdent(name.to_string()),
+            let target_node = match it.target() {
+                Some(target) => target,
                 None => {
                     ctx.push_error(
                         Some(it.syntax().text_range()),
@@ -940,6 +940,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Stmt> {
                     return None;
                 }
             };
+            let target = lower_expr(ctx, target_node)?;
             let value_node = match it.value() {
                 Some(value) => value,
                 None => {
@@ -952,7 +953,7 @@ fn lower_stmt(ctx: &mut LowerCtx, stmt: cst::Stmt) -> Option<ast::Stmt> {
             };
             let value = lower_expr(ctx, value_node)?;
             Some(ast::Stmt::Assign(ast::AssignStmt {
-                name,
+                target: Box::new(target),
                 value: Box::new(value),
                 astptr,
             }))
@@ -1841,6 +1842,31 @@ fn lower_expr_with_args(
             };
             apply_trailing_args(ctx, unary, trailing_args, Some(it.syntax().text_range()))
         }
+        cst::Expr::IndexExpr(it) => {
+            let astptr = MySyntaxNodePtr::new(it.syntax());
+            let Some(base_node) = it.base() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Index expression missing base",
+                );
+                return None;
+            };
+            let Some(index_node) = it.index() else {
+                ctx.push_error(
+                    Some(it.syntax().text_range()),
+                    "Index expression missing index",
+                );
+                return None;
+            };
+            let base = lower_expr_with_args(ctx, base_node, Vec::new())?;
+            let index = lower_expr(ctx, index_node)?;
+            let expr = ast::Expr::EIndex {
+                base: Box::new(base),
+                index: Box::new(index),
+                astptr,
+            };
+            apply_trailing_args(ctx, expr, trailing_args, Some(it.syntax().text_range()))
+        }
         cst::Expr::TryExpr(it) => {
             let astptr = MySyntaxNodePtr::new(it.syntax());
             let Some(expr) = it
@@ -2175,6 +2201,15 @@ fn apply_trailing_args(
                 astptr,
             }),
             args: trailing_args,
+            astptr,
+        }),
+        ast::Expr::EIndex {
+            base,
+            index,
+            astptr,
+        } => Some(ast::Expr::EIndex {
+            base,
+            index: Box::new(apply_trailing_args(ctx, *index, trailing_args, range)?),
             astptr,
         }),
         ast::Expr::EBinary {

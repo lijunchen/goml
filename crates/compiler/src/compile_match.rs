@@ -165,6 +165,7 @@ fn expr_range(expr: &Expr) -> Option<TextRange> {
         Expr::EVar { astptr, .. }
         | Expr::EMatch { astptr, .. }
         | Expr::EField { astptr, .. }
+        | Expr::EIndex { astptr, .. }
         | Expr::ETraitMethod { astptr, .. }
         | Expr::EDynTraitMethod { astptr, .. }
         | Expr::EInherentMethod { astptr, .. }
@@ -347,6 +348,408 @@ fn decompose_enum_type(ty: &Ty) -> Option<(TastIdent, Vec<Ty>)> {
             Some((type_name, collected))
         }
         _ => None,
+    }
+}
+
+#[derive(Debug, Clone)]
+enum PlaceRoot {
+    Local { name: String, ty: Ty },
+    Ref { expr: Expr, ty: Ty },
+    Value { expr: Expr, ty: Ty },
+}
+
+#[derive(Debug, Clone)]
+enum PlaceStep {
+    Proj {
+        parent_ty: Ty,
+        index: usize,
+        item_ty: Ty,
+    },
+    Field {
+        parent_ty: Ty,
+        field_name: String,
+        item_ty: Ty,
+        range: Option<TextRange>,
+    },
+    Index {
+        container_ty: Ty,
+        index: Expr,
+        item_ty: Ty,
+        range: Option<TextRange>,
+    },
+}
+
+#[derive(Debug, Clone)]
+enum EvaluatedPlaceStep {
+    Proj {
+        parent_var: String,
+        parent_ty: Ty,
+        index: usize,
+    },
+    Field {
+        parent_var: String,
+        parent_ty: Ty,
+        field_name: String,
+        range: Option<TextRange>,
+    },
+    Index {
+        parent_var: String,
+        parent_ty: Ty,
+        index_var: String,
+        index_ty: Ty,
+        range: Option<TextRange>,
+    },
+}
+
+#[derive(Debug, Clone)]
+enum CompiledPlaceRoot {
+    Local { name: String, ty: Ty },
+    Ref { ref_var: String, ref_ty: Ty },
+    Value,
+}
+
+fn is_ref_get_call(expr: &Expr) -> Option<&Expr> {
+    match expr {
+        Expr::ECall { func, args, .. } if args.len() == 1 => match func.as_ref() {
+            Expr::EVar { name, .. } if name == "ref_get" => Some(&args[0]),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+fn decompose_place(expr: &Expr) -> Option<(PlaceRoot, Vec<PlaceStep>)> {
+    fn go(expr: &Expr, steps: &mut Vec<PlaceStep>) -> Option<PlaceRoot> {
+        match expr {
+            Expr::EVar { name, ty, .. } => Some(PlaceRoot::Local {
+                name: name.clone(),
+                ty: ty.clone(),
+            }),
+            Expr::EProj { tuple, index, ty } => {
+                let root = go(tuple, steps)?;
+                steps.push(PlaceStep::Proj {
+                    parent_ty: tuple.get_ty(),
+                    index: *index,
+                    item_ty: ty.clone(),
+                });
+                Some(root)
+            }
+            Expr::EField {
+                expr,
+                field_name,
+                ty,
+                astptr,
+            } => {
+                let root = go(expr, steps)?;
+                steps.push(PlaceStep::Field {
+                    parent_ty: expr.get_ty(),
+                    field_name: field_name.clone(),
+                    item_ty: ty.clone(),
+                    range: astptr.as_ref().map(|ptr| ptr.text_range()),
+                });
+                Some(root)
+            }
+            Expr::EIndex {
+                base,
+                index,
+                ty,
+                astptr,
+            } => {
+                let root = go(base, steps)?;
+                steps.push(PlaceStep::Index {
+                    container_ty: base.get_ty(),
+                    index: index.as_ref().clone(),
+                    item_ty: ty.clone(),
+                    range: astptr.as_ref().map(|ptr| ptr.text_range()),
+                });
+                Some(root)
+            }
+            _ => {
+                if let Some(ref_expr) = is_ref_get_call(expr) {
+                    Some(PlaceRoot::Ref {
+                        expr: ref_expr.clone(),
+                        ty: expr.get_ty(),
+                    })
+                } else {
+                    Some(PlaceRoot::Value {
+                        expr: expr.clone(),
+                        ty: expr.get_ty(),
+                    })
+                }
+            }
+        }
+    }
+
+    let mut steps = Vec::new();
+    let root = go(expr, &mut steps)?;
+    Some((root, steps))
+}
+
+fn core_var(name: impl Into<String>, ty: &Ty) -> core::Expr {
+    core::Expr::EVar {
+        name: name.into(),
+        ty: ty.clone(),
+    }
+}
+
+fn builtin_func(name: &str, params: Vec<Ty>, ret_ty: Ty) -> core::Expr {
+    core::Expr::EVar {
+        name: name.to_string(),
+        ty: Ty::TFunc {
+            params,
+            ret_ty: Box::new(ret_ty),
+        },
+    }
+}
+
+fn builtin_call(name: &str, params: Vec<Ty>, ret_ty: Ty, args: Vec<core::Expr>) -> core::Expr {
+    core::Expr::ECall {
+        func: Box::new(builtin_func(name, params, ret_ty.clone())),
+        args,
+        ty: ret_ty,
+    }
+}
+
+fn compile_index_read_core(
+    diagnostics: &mut Diagnostics,
+    container: core::Expr,
+    container_ty: &Ty,
+    index: core::Expr,
+    item_ty: &Ty,
+    range: Option<TextRange>,
+) -> core::Expr {
+    match container_ty {
+        Ty::TArray { .. } => builtin_call(
+            "array_get",
+            vec![container_ty.clone(), Ty::TInt32],
+            item_ty.clone(),
+            vec![container, index],
+        ),
+        Ty::TVec { .. } => builtin_call(
+            "vec_get",
+            vec![container_ty.clone(), Ty::TInt32],
+            item_ty.clone(),
+            vec![container, index],
+        ),
+        Ty::TSlice { .. } => builtin_call(
+            "slice_get",
+            vec![container_ty.clone(), Ty::TInt32],
+            item_ty.clone(),
+            vec![container, index],
+        ),
+        Ty::THashMap { key, .. } => builtin_call(
+            "hashmap_get",
+            vec![container_ty.clone(), key.as_ref().clone()],
+            item_ty.clone(),
+            vec![container, index],
+        ),
+        _ => {
+            push_compile_error(
+                diagnostics,
+                format!("type {:?} does not support indexing", container_ty),
+                range,
+            );
+            emissing(item_ty)
+        }
+    }
+}
+
+fn compile_ref_get_core(reference: core::Expr, ref_ty: &Ty, value_ty: &Ty) -> core::Expr {
+    builtin_call(
+        "ref_get",
+        vec![ref_ty.clone()],
+        value_ty.clone(),
+        vec![reference],
+    )
+}
+
+fn compile_ref_set_core(reference: core::Expr, value: core::Expr, ref_ty: &Ty) -> core::Expr {
+    builtin_call(
+        "ref_set",
+        vec![ref_ty.clone(), value.get_ty()],
+        Ty::TUnit,
+        vec![reference, value],
+    )
+}
+
+fn compile_array_set_core(
+    container: core::Expr,
+    index: core::Expr,
+    value: core::Expr,
+) -> core::Expr {
+    let container_ty = container.get_ty();
+    builtin_call(
+        "array_set",
+        vec![container_ty.clone(), Ty::TInt32, value.get_ty()],
+        container_ty,
+        vec![container, index, value],
+    )
+}
+
+fn compile_vec_set_core(container: core::Expr, index: core::Expr, value: core::Expr) -> core::Expr {
+    let container_ty = container.get_ty();
+    builtin_call(
+        "vec_set",
+        vec![container_ty, Ty::TInt32, value.get_ty()],
+        Ty::TUnit,
+        vec![container, index, value],
+    )
+}
+
+fn compile_hashmap_set_core(
+    container: core::Expr,
+    index: core::Expr,
+    value: core::Expr,
+) -> core::Expr {
+    let container_ty = container.get_ty();
+    let key_ty = match &container_ty {
+        Ty::THashMap { key, .. } => key.as_ref().clone(),
+        _ => value.get_ty(),
+    };
+    builtin_call(
+        "hashmap_set",
+        vec![container_ty, key_ty, value.get_ty()],
+        Ty::TUnit,
+        vec![container, index, value],
+    )
+}
+
+type StructFieldInfo = (TastIdent, Vec<(String, Ty)>, usize);
+
+fn struct_field_info(
+    genv: &GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    parent_ty: &Ty,
+    field_name: &str,
+    range: Option<TextRange>,
+) -> Option<StructFieldInfo> {
+    let Some((type_name, type_args)) = decompose_struct_type(parent_ty) else {
+        push_compile_error(
+            diagnostics,
+            format!(
+                "field access is only valid on struct types, got {:?}",
+                parent_ty
+            ),
+            range,
+        );
+        return None;
+    };
+    let Some(struct_def) = genv.structs().get(&type_name) else {
+        push_compile_ice(
+            diagnostics,
+            format!(
+                "struct {} not found while compiling field access",
+                type_name.0
+            ),
+            range,
+        );
+        return None;
+    };
+    let inst_fields = instantiate_struct_fields(diagnostics, struct_def, &type_args, range)?;
+    let Some((field_index, _)) = inst_fields
+        .iter()
+        .enumerate()
+        .find(|(_, (name, _))| name == field_name)
+    else {
+        push_compile_error(
+            diagnostics,
+            format!("struct {} has no field {}", type_name.0, field_name),
+            range,
+        );
+        return None;
+    };
+    Some((type_name, inst_fields, field_index))
+}
+
+fn compile_field_get_core(
+    genv: &GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    expr: core::Expr,
+    parent_ty: &Ty,
+    field_name: &str,
+    field_ty: &Ty,
+    range: Option<TextRange>,
+) -> core::Expr {
+    let Some((type_name, _, field_index)) =
+        struct_field_info(genv, diagnostics, parent_ty, field_name, range)
+    else {
+        return emissing(field_ty);
+    };
+    core::Expr::EConstrGet {
+        expr: Box::new(expr),
+        constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
+        field_index,
+        ty: field_ty.clone(),
+    }
+}
+
+fn rebuild_tuple_with_proj(
+    parent: core::Expr,
+    parent_ty: &Ty,
+    index: usize,
+    value: core::Expr,
+) -> core::Expr {
+    let Ty::TTuple { typs } = parent_ty else {
+        return emissing(parent_ty);
+    };
+    let mut replacement = Some(value);
+    let items = typs
+        .iter()
+        .enumerate()
+        .map(|(item_index, item_ty)| {
+            if item_index == index {
+                replacement.take().unwrap_or_else(|| emissing(item_ty))
+            } else {
+                core::Expr::EProj {
+                    tuple: Box::new(parent.clone()),
+                    index: item_index,
+                    ty: item_ty.clone(),
+                }
+            }
+        })
+        .collect();
+    core::Expr::ETuple {
+        items,
+        ty: parent_ty.clone(),
+    }
+}
+
+fn rebuild_struct_with_field(
+    genv: &GlobalTypeEnv,
+    diagnostics: &mut Diagnostics,
+    parent: core::Expr,
+    parent_ty: &Ty,
+    field_name: &str,
+    value: core::Expr,
+    range: Option<TextRange>,
+) -> core::Expr {
+    let Some((type_name, fields, field_index)) =
+        struct_field_info(genv, diagnostics, parent_ty, field_name, range)
+    else {
+        return emissing(parent_ty);
+    };
+    let constructor = common::Constructor::Struct(common::StructConstructor { type_name });
+    let mut replacement = Some(value);
+    let args = fields
+        .iter()
+        .enumerate()
+        .map(|(index, (_, field_ty))| {
+            if index == field_index {
+                replacement.take().unwrap_or_else(|| emissing(field_ty))
+            } else {
+                core::Expr::EConstrGet {
+                    expr: Box::new(parent.clone()),
+                    constructor: constructor.clone(),
+                    field_index: index,
+                    ty: field_ty.clone(),
+                }
+            }
+        })
+        .collect();
+    core::Expr::EConstr {
+        constructor,
+        args,
+        ty: parent_ty.clone(),
     }
 }
 
@@ -1731,7 +2134,8 @@ fn collect_mutable_bindings_block(block: &tast::Block, mutable_bindings: &mut Hi
                 }
                 collect_mutable_bindings_expr(value, mutable_bindings);
             }
-            tast::Stmt::Assign(tast::AssignStmt { value, .. }) => {
+            tast::Stmt::Assign(tast::AssignStmt { target, value }) => {
+                collect_mutable_bindings_expr(target, mutable_bindings);
                 collect_mutable_bindings_expr(value, mutable_bindings);
             }
             tast::Stmt::Expr(tast::ExprStmt { expr }) => {
@@ -1809,6 +2213,10 @@ fn collect_mutable_bindings_expr(expr: &Expr, mutable_bindings: &mut HiddenMutCe
         | EToDyn { expr, .. } => {
             collect_mutable_bindings_expr(expr, mutable_bindings);
         }
+        EIndex { base, index, .. } => {
+            collect_mutable_bindings_expr(base, mutable_bindings);
+            collect_mutable_bindings_expr(index, mutable_bindings);
+        }
         EBinary { lhs, rhs, .. } => {
             collect_mutable_bindings_expr(lhs, mutable_bindings);
             collect_mutable_bindings_expr(rhs, mutable_bindings);
@@ -1822,7 +2230,8 @@ fn collect_captured_names_block(block: &tast::Block, captured: &mut HashSet<Stri
             tast::Stmt::Let(tast::LetStmt { value, .. }) => {
                 collect_captured_names_expr(value, captured)
             }
-            tast::Stmt::Assign(tast::AssignStmt { value, .. }) => {
+            tast::Stmt::Assign(tast::AssignStmt { target, value }) => {
+                collect_captured_names_expr(target, captured);
                 collect_captured_names_expr(value, captured);
             }
             tast::Stmt::Expr(tast::ExprStmt { expr }) => {
@@ -1902,6 +2311,10 @@ fn collect_captured_names_expr(expr: &Expr, captured: &mut HashSet<String>) {
         | EField { expr, .. }
         | EToDyn { expr, .. } => {
             collect_captured_names_expr(expr, captured);
+        }
+        EIndex { base, index, .. } => {
+            collect_captured_names_expr(base, captured);
+            collect_captured_names_expr(index, captured);
         }
         EBinary { lhs, rhs, .. } => {
             collect_captured_names_expr(lhs, captured);
@@ -2262,6 +2675,332 @@ fn block_expr_from_parts(stmts: &[tast::Stmt], tail: Option<&Expr>, ty: &Ty) -> 
     }
 }
 
+fn compile_assign_action(
+    target: &Expr,
+    value: &Expr,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+) -> core::Expr {
+    match target {
+        Expr::EVar { name, ty, .. } => core::Expr::EAssign {
+            name: name.clone(),
+            value: Box::new(compile_expr(value, genv, gensym, diagnostics)),
+            target_ty: ty.clone(),
+            ty: Ty::TUnit,
+        },
+        Expr::EIndex { .. } => {
+            compile_index_assign_action(target, value, genv, gensym, diagnostics)
+        }
+        _ => {
+            push_compile_error(
+                diagnostics,
+                "unsupported assignment target",
+                expr_range(target),
+            );
+            emissing(&Ty::TUnit)
+        }
+    }
+}
+
+fn compile_index_assign_action(
+    target: &Expr,
+    value: &Expr,
+    genv: &GlobalTypeEnv,
+    gensym: &Gensym,
+    diagnostics: &mut Diagnostics,
+) -> core::Expr {
+    let Some((root, steps)) = decompose_place(target) else {
+        push_compile_error(
+            diagnostics,
+            "unsupported indexed assignment target",
+            expr_range(target),
+        );
+        return emissing(&Ty::TUnit);
+    };
+
+    if steps.is_empty() {
+        push_compile_error(
+            diagnostics,
+            "unsupported indexed assignment target",
+            expr_range(target),
+        );
+        return emissing(&Ty::TUnit);
+    }
+
+    let mut stmts = Vec::new();
+    let (compiled_root, mut current_var, mut current_ty) = match root {
+        PlaceRoot::Local { name, ty } => {
+            let root_var = gensym.gensym("place_root");
+            stmts.push(core::LetStmt {
+                name: root_var.clone(),
+                value: core_var(name.clone(), &ty),
+                ty: ty.clone(),
+            });
+            (
+                CompiledPlaceRoot::Local {
+                    name,
+                    ty: ty.clone(),
+                },
+                root_var,
+                ty,
+            )
+        }
+        PlaceRoot::Ref { expr, ty } => {
+            let ref_ty = expr.get_ty();
+            let ref_var = gensym.gensym("place_ref");
+            stmts.push(core::LetStmt {
+                name: ref_var.clone(),
+                value: compile_expr(&expr, genv, gensym, diagnostics),
+                ty: ref_ty.clone(),
+            });
+            let root_var = gensym.gensym("place_root");
+            stmts.push(core::LetStmt {
+                name: root_var.clone(),
+                value: compile_ref_get_core(core_var(ref_var.clone(), &ref_ty), &ref_ty, &ty),
+                ty: ty.clone(),
+            });
+            (
+                CompiledPlaceRoot::Ref {
+                    ref_var,
+                    ref_ty: ref_ty.clone(),
+                },
+                root_var,
+                ty,
+            )
+        }
+        PlaceRoot::Value { expr, ty } => {
+            let root_var = gensym.gensym("place_root");
+            stmts.push(core::LetStmt {
+                name: root_var.clone(),
+                value: compile_expr(&expr, genv, gensym, diagnostics),
+                ty: ty.clone(),
+            });
+            (CompiledPlaceRoot::Value, root_var, ty)
+        }
+    };
+
+    let mut evaluated_steps = Vec::new();
+    for step in steps {
+        match step {
+            PlaceStep::Proj {
+                parent_ty,
+                index,
+                item_ty,
+            } => {
+                let parent_var = current_var.clone();
+                let next_var = gensym.gensym("place");
+                stmts.push(core::LetStmt {
+                    name: next_var.clone(),
+                    value: core::Expr::EProj {
+                        tuple: Box::new(core_var(parent_var.clone(), &current_ty)),
+                        index,
+                        ty: item_ty.clone(),
+                    },
+                    ty: item_ty.clone(),
+                });
+                evaluated_steps.push(EvaluatedPlaceStep::Proj {
+                    parent_var,
+                    parent_ty,
+                    index,
+                });
+                current_var = next_var;
+                current_ty = item_ty;
+            }
+            PlaceStep::Field {
+                parent_ty,
+                field_name,
+                item_ty,
+                range,
+            } => {
+                let parent_var = current_var.clone();
+                let next_var = gensym.gensym("place");
+                stmts.push(core::LetStmt {
+                    name: next_var.clone(),
+                    value: compile_field_get_core(
+                        genv,
+                        diagnostics,
+                        core_var(parent_var.clone(), &current_ty),
+                        &parent_ty,
+                        &field_name,
+                        &item_ty,
+                        range,
+                    ),
+                    ty: item_ty.clone(),
+                });
+                evaluated_steps.push(EvaluatedPlaceStep::Field {
+                    parent_var,
+                    parent_ty,
+                    field_name,
+                    range,
+                });
+                current_var = next_var;
+                current_ty = item_ty;
+            }
+            PlaceStep::Index {
+                container_ty,
+                index,
+                item_ty,
+                range,
+            } => {
+                let parent_var = current_var.clone();
+                let index_ty = index.get_ty();
+                let index_var = gensym.gensym("index");
+                stmts.push(core::LetStmt {
+                    name: index_var.clone(),
+                    value: compile_expr(&index, genv, gensym, diagnostics),
+                    ty: index_ty.clone(),
+                });
+                let next_var = gensym.gensym("place");
+                stmts.push(core::LetStmt {
+                    name: next_var.clone(),
+                    value: compile_index_read_core(
+                        diagnostics,
+                        core_var(parent_var.clone(), &current_ty),
+                        &container_ty,
+                        core_var(index_var.clone(), &index_ty),
+                        &item_ty,
+                        range,
+                    ),
+                    ty: item_ty.clone(),
+                });
+                evaluated_steps.push(EvaluatedPlaceStep::Index {
+                    parent_var,
+                    parent_ty: container_ty,
+                    index_var,
+                    index_ty,
+                    range,
+                });
+                current_var = next_var;
+                current_ty = item_ty;
+            }
+        }
+    }
+
+    let value_ty = value.get_ty();
+    let value_var = gensym.gensym("value");
+    stmts.push(core::LetStmt {
+        name: value_var.clone(),
+        value: compile_expr(value, genv, gensym, diagnostics),
+        ty: value_ty.clone(),
+    });
+
+    let mut updated = core_var(value_var, &value_ty);
+    let mut final_action = None;
+    for step in evaluated_steps.into_iter().rev() {
+        match step {
+            EvaluatedPlaceStep::Proj {
+                parent_var,
+                parent_ty,
+                index,
+            } => {
+                updated = rebuild_tuple_with_proj(
+                    core_var(parent_var, &parent_ty),
+                    &parent_ty,
+                    index,
+                    updated,
+                );
+            }
+            EvaluatedPlaceStep::Field {
+                parent_var,
+                parent_ty,
+                field_name,
+                range,
+            } => {
+                updated = rebuild_struct_with_field(
+                    genv,
+                    diagnostics,
+                    core_var(parent_var, &parent_ty),
+                    &parent_ty,
+                    &field_name,
+                    updated,
+                    range,
+                );
+            }
+            EvaluatedPlaceStep::Index {
+                parent_var,
+                parent_ty,
+                index_var,
+                index_ty,
+                range,
+            } => match &parent_ty {
+                Ty::TArray { .. } => {
+                    updated = compile_array_set_core(
+                        core_var(parent_var, &parent_ty),
+                        core_var(index_var, &index_ty),
+                        updated,
+                    );
+                }
+                Ty::TVec { .. } => {
+                    final_action = Some(compile_vec_set_core(
+                        core_var(parent_var, &parent_ty),
+                        core_var(index_var, &index_ty),
+                        updated.clone(),
+                    ));
+                    break;
+                }
+                Ty::THashMap { .. } => {
+                    final_action = Some(compile_hashmap_set_core(
+                        core_var(parent_var, &parent_ty),
+                        core_var(index_var, &index_ty),
+                        updated.clone(),
+                    ));
+                    break;
+                }
+                Ty::TSlice { .. } => {
+                    push_compile_error(
+                        diagnostics,
+                        "cannot assign through Slice indexing; Slice is read-only",
+                        range,
+                    );
+                    final_action = Some(emissing(&Ty::TUnit));
+                    break;
+                }
+                _ => {
+                    push_compile_ice(
+                        diagnostics,
+                        format!(
+                            "unexpected indexed assignment container type {:?}",
+                            parent_ty
+                        ),
+                        range,
+                    );
+                    final_action = Some(emissing(&Ty::TUnit));
+                    break;
+                }
+            },
+        }
+    }
+
+    let final_action = final_action.unwrap_or_else(|| match compiled_root {
+        CompiledPlaceRoot::Local { name, ty } => core::Expr::EAssign {
+            name,
+            value: Box::new(updated),
+            target_ty: ty,
+            ty: Ty::TUnit,
+        },
+        CompiledPlaceRoot::Ref { ref_var, ref_ty } => {
+            compile_ref_set_core(core_var(ref_var, &ref_ty), updated, &ref_ty)
+        }
+        CompiledPlaceRoot::Value => {
+            push_compile_error(
+                diagnostics,
+                "array indexed assignment requires a writable root such as a mutable local or `ref_get(...)`",
+                expr_range(target),
+            );
+            emissing(&Ty::TUnit)
+        }
+    });
+
+    core::Expr::EBlock {
+        block: Box::new(core::Block {
+            stmts,
+            tail: Some(Box::new(final_action)),
+        }),
+        ty: Ty::TUnit,
+    }
+}
+
 fn compile_block(
     block: &tast::Block,
     ty: &Ty,
@@ -2375,14 +3114,8 @@ fn compile_block_parts(
                 ))),
             }
         }
-        tast::Stmt::Assign(tast::AssignStmt { name, value }) => {
-            let rhs = compile_expr(value, genv, gensym, diagnostics);
-            let assign = core::Expr::EAssign {
-                name: name.clone(),
-                value: Box::new(rhs),
-                target_ty: value.get_ty(),
-                ty: Ty::TUnit,
-            };
+        tast::Stmt::Assign(tast::AssignStmt { target, value }) => {
+            let assign = compile_assign_action(target, value, genv, gensym, diagnostics);
             let x = gensym.gensym("_wild");
             let mut rest_block = compile_block_parts(genv, gensym, diagnostics, rest, tail, ty);
             let mut new_stmts = Vec::with_capacity(rest_block.stmts.len() + 1);
@@ -2802,60 +3535,39 @@ fn compile_expr(
                 ty: ty.clone(),
             }
         }
+        EIndex {
+            base,
+            index,
+            ty,
+            astptr,
+        } => {
+            let base_core = compile_expr(base, genv, gensym, diagnostics);
+            let index_core = compile_expr(index, genv, gensym, diagnostics);
+            compile_index_read_core(
+                diagnostics,
+                base_core,
+                &base.get_ty(),
+                index_core,
+                ty,
+                astptr.as_ref().map(|ptr| ptr.text_range()),
+            )
+        }
         EField {
             expr,
             field_name,
             ty,
             astptr,
         } => {
-            let base_ty = expr.get_ty();
-            let field_range = astptr.as_ref().map(|ptr| ptr.text_range());
             let expr_core = compile_expr(expr, genv, gensym, diagnostics);
-            let Some((type_name, type_args)) = decompose_struct_type(&base_ty) else {
-                push_compile_error(
-                    diagnostics,
-                    format!(
-                        "field access is only valid on struct types, got {:?}",
-                        base_ty
-                    ),
-                    field_range,
-                );
-                return emissing(ty);
-            };
-            let Some(struct_def) = genv.structs().get(&type_name) else {
-                push_compile_ice(
-                    diagnostics,
-                    format!(
-                        "struct {} not found while compiling field access",
-                        type_name.0
-                    ),
-                    field_range,
-                );
-                return emissing(ty);
-            };
-            let Some(inst_fields) =
-                instantiate_struct_fields(diagnostics, struct_def, &type_args, field_range)
-            else {
-                return emissing(ty);
-            };
-            let Some((field_index, _)) = inst_fields
-                .iter()
-                .enumerate()
-                .find(|(_, (name, _))| name == field_name)
-            else {
-                push_compile_error(
-                    diagnostics,
-                    format!("struct {} has no field {}", type_name.0, field_name),
-                    field_range,
-                );
-                return emissing(ty);
-            };
-            core::Expr::EConstrGet {
-                expr: Box::new(expr_core),
-                constructor: common::Constructor::Struct(common::StructConstructor { type_name }),
-                field_index,
-                ty: ty.clone(),
-            }
+            compile_field_get_core(
+                genv,
+                diagnostics,
+                expr_core,
+                &expr.get_ty(),
+                field_name,
+                ty,
+                astptr.as_ref().map(|ptr| ptr.text_range()),
+            )
         }
     }
 }

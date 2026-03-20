@@ -777,6 +777,7 @@ pub enum BuiltinId {
     VecNew,
     VecPush,
     VecGet,
+    VecSet,
     VecLen,
     Slice,
     SliceGet,
@@ -803,6 +804,7 @@ impl BuiltinId {
             "vec_new" => Some(BuiltinId::VecNew),
             "vec_push" => Some(BuiltinId::VecPush),
             "vec_get" => Some(BuiltinId::VecGet),
+            "vec_set" => Some(BuiltinId::VecSet),
             "vec_len" => Some(BuiltinId::VecLen),
             "slice" => Some(BuiltinId::Slice),
             "slice_get" => Some(BuiltinId::SliceGet),
@@ -829,6 +831,7 @@ impl BuiltinId {
             BuiltinId::VecNew => "vec_new".to_string(),
             BuiltinId::VecPush => "vec_push".to_string(),
             BuiltinId::VecGet => "vec_get".to_string(),
+            BuiltinId::VecSet => "vec_set".to_string(),
             BuiltinId::VecLen => "vec_len".to_string(),
             BuiltinId::Slice => "slice".to_string(),
             BuiltinId::SliceGet => "slice_get".to_string(),
@@ -1344,8 +1347,7 @@ pub struct LetStmt {
 
 #[derive(Debug, Clone)]
 pub struct AssignStmt {
-    pub target: Option<LocalId>,
-    pub target_name: String,
+    pub target: ExprId,
     pub value: ExprId,
 }
 
@@ -1473,6 +1475,10 @@ pub enum Expr {
     EField {
         expr: ExprId,
         field: HirIdent,
+    },
+    EIndex {
+        base: ExprId,
+        index: ExprId,
     },
     EBlock {
         block: Block,

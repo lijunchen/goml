@@ -755,19 +755,9 @@ impl NameResolution {
         ctx: &ResolutionContext,
         hir_table: &mut HirTable,
     ) -> hir::AssignStmt {
-        let target = env.rfind(&stmt.name);
-        if target.is_none() {
-            self.error(format!(
-                "assignment target `{}` is not a local variable in scope",
-                stmt.name.0
-            ));
-        }
+        let target = self.resolve_expr(&stmt.target, env, ctx, hir_table);
         let value = self.resolve_expr(&stmt.value, env, ctx, hir_table);
-        hir::AssignStmt {
-            target,
-            target_name: stmt.name.0.clone(),
-            value,
-        }
+        hir::AssignStmt { target, value }
     }
 
     fn resolve_block(
@@ -1303,6 +1293,15 @@ impl NameResolution {
                         field: HirIdent::name(&field.0),
                     },
                 )
+            }
+            ast::Expr::EIndex {
+                base,
+                index,
+                astptr,
+            } => {
+                let base = self.resolve_expr(base, env, ctx, hir_table);
+                let index = self.resolve_expr(index, env, ctx, hir_table);
+                self.alloc_expr_with_ptr(hir_table, *astptr, hir::Expr::EIndex { base, index })
             }
             ast::Expr::EBlock { block, astptr } => {
                 let block = self.resolve_block(block, env, ctx, hir_table);

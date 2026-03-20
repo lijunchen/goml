@@ -559,6 +559,7 @@ fn main() {
                 "len",
                 "new",
                 "push",
+                "set",
             ]
         "#]],
     );
@@ -672,6 +673,7 @@ fn main() {
                 "len",
                 "new",
                 "push",
+                "set",
             ]
         "#]],
     );

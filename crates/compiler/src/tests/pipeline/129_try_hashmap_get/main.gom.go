@@ -185,15 +185,15 @@ func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__new__K_string__V_int32() *h
     return retv26
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self__80 *hashmap_string_int32_x, key__81 string, value__82 int32) struct{} {
-    hashmap_set__HashMap_string_int32(self__80, key__81, value__82)
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__set__K_string__V_int32(self__83 *hashmap_string_int32_x, key__84 string, value__85 int32) struct{} {
+    hashmap_set__HashMap_string_int32(self__83, key__84, value__85)
     return struct{}{}
 }
 
-func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__78 *hashmap_string_int32_x, key__79 string) (int32, bool) {
+func _goml_inherent_HashMap_HashMap_x5b_K_x2c_V_x5d__get__K_string__V_int32__native(self__81 *hashmap_string_int32_x, key__82 string) (int32, bool) {
     var t32_value int32
     var t32_ok bool
-    t32_value, t32_ok = hashmap_get_native__HashMap_string_int32(self__78, key__79)
+    t32_value, t32_ok = hashmap_get_native__HashMap_string_int32(self__81, key__82)
     if !t32_ok {
         var ret_zero int32
         return ret_zero, false

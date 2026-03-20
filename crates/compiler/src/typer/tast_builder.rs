@@ -617,6 +617,17 @@ fn build_expr(
                 astptr: None,
             }
         }
+        hir::Expr::EIndex { base, index } => {
+            let base = Box::new(build_expr(hir_table, results, base));
+            let index = Box::new(build_expr(hir_table, results, index));
+            let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
+            tast::Expr::EIndex {
+                base,
+                index,
+                ty,
+                astptr: hir_table.expr_ptr(expr_id),
+            }
+        }
         hir::Expr::EBlock { block } => {
             let block = Box::new(build_block(hir_table, results, &block));
             let ty = results.expr_ty(expr_id).cloned().unwrap_or(tast::Ty::TUnit);
@@ -840,12 +851,9 @@ fn build_assign_stmt(
     results: &TypeckResults,
     stmt: &hir::AssignStmt,
 ) -> tast::AssignStmt {
+    let target = Box::new(build_expr(hir_table, results, stmt.target));
     let value = Box::new(build_expr(hir_table, results, stmt.value));
-    let name = stmt
-        .target
-        .map(|target| hir_table.local_ident_name(target))
-        .unwrap_or_else(|| stmt.target_name.clone());
-    tast::AssignStmt { name, value }
+    tast::AssignStmt { target, value }
 }
 
 fn build_stmt(hir_table: &hir::HirTable, results: &TypeckResults, stmt: &hir::Stmt) -> tast::Stmt {

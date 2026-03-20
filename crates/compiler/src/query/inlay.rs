@@ -142,6 +142,10 @@ fn collect_hints_from_expr(
         hir::Expr::EProj { tuple, .. } | hir::Expr::EField { expr: tuple, .. } => {
             collect_hints_from_expr(hir_table, results, *tuple, hints);
         }
+        hir::Expr::EIndex { base, index } => {
+            collect_hints_from_expr(hir_table, results, *base, hints);
+            collect_hints_from_expr(hir_table, results, *index, hints);
+        }
         hir::Expr::EConstr { args, .. }
         | hir::Expr::ETuple { items: args }
         | hir::Expr::EArray { items: args } => {

@@ -30,19 +30,14 @@ pub fn let_stmt(p: &mut Parser) -> Option<MarkerClosed> {
     Some(p.close(m, MySyntaxKind::STMT_LET))
 }
 
-pub fn assign_stmt(p: &mut Parser) -> Option<MarkerClosed> {
-    if !p.at(T![ident]) || p.nth(1) != T![=] {
-        return None;
-    }
-
-    let m = p.open();
-    p.expect(T![ident]);
+pub fn finish_assign_stmt(p: &mut Parser, target: MarkerClosed) -> MarkerClosed {
+    let m = target.precede(p);
     p.expect(T![=]);
     if expr(p).is_none() {
         p.advance_with_error("assignment statement expected an expression");
     }
     p.expect(T![;]);
-    Some(p.close(m, MySyntaxKind::STMT_ASSIGN))
+    p.close(m, MySyntaxKind::STMT_ASSIGN)
 }
 
 pub fn wrap_expr_stmt(p: &mut Parser, expr_marker: MarkerClosed) -> MarkerClosed {

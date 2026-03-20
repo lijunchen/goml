@@ -166,7 +166,7 @@ impl hir::LetStmt {
 
 impl hir::AssignStmt {
     pub fn to_doc<'a>(&'a self, ctx: &'a HirPrintCtx<'a>) -> RcDoc<'a, ()> {
-        RcDoc::text(self.target_name.clone())
+        ctx.expr_to_doc(self.target)
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -431,6 +431,11 @@ impl Expr {
                 .expr_to_doc(*expr)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.to_ident_name())),
+            hir::Expr::EIndex { base, index } => ctx
+                .expr_to_doc(*base)
+                .append(RcDoc::text("["))
+                .append(ctx.expr_to_doc(*index))
+                .append(RcDoc::text("]")),
             hir::Expr::EBlock { block } => block.to_doc(ctx),
         }
     }
