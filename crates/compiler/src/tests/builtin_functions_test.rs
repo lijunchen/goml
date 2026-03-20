@@ -28,6 +28,7 @@ fn env_registers_builtin_function_signatures() {
             "slice_get",
             "slice_len",
             "slice_sub",
+            "vec_set",
         ],
         expect![[r#"
             string_print: Some(TFunc([TString], TUnit))
@@ -40,7 +41,8 @@ fn env_registers_builtin_function_signatures() {
             slice: Some(TFunc([TVec(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
             slice_get: Some(TFunc([TSlice(TParam(T)), TInt32], TParam(T)))
             slice_len: Some(TFunc([TSlice(TParam(T))], TInt32))
-            slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))"#]],
+            slice_sub: Some(TFunc([TSlice(TParam(T)), TInt32, TInt32], TSlice(TParam(T))))
+            vec_set: Some(TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit))"#]],
     );
 }
 
@@ -116,6 +118,14 @@ fn env_registers_builtin_vec_inherent_methods() {
     "#]]
     .assert_debug_eq(&get);
 
+    let set = env.lookup_inherent_method(&receiver, &tast::TastIdent("set".to_string()));
+    expect![[r#"
+        Some(
+            TFunc([TVec(TParam(T)), TInt32, TParam(T)], TUnit),
+        )
+    "#]]
+    .assert_debug_eq(&set);
+
     let len = env.lookup_inherent_method(&receiver, &tast::TastIdent("len".to_string()));
     expect![[r#"
         Some(
@@ -168,6 +178,7 @@ fn builtin_function_names_include_ref_builtins() {
     assert!(names.iter().any(|n| n == "slice_get"));
     assert!(names.iter().any(|n| n == "slice_len"));
     assert!(names.iter().any(|n| n == "slice_sub"));
+    assert!(names.iter().any(|n| n == "vec_set"));
     assert!(names.iter().any(|n| n == "array_get"));
     assert!(names.iter().any(|n| n == "array_set"));
 }

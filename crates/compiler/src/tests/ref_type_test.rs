@@ -80,7 +80,11 @@ fn describe_stmt(stmt: &ast::ast::Stmt) -> String {
             )
         }
         ast::ast::Stmt::Assign(stmt) => {
-            format!("{} = {}", stmt.name.0, describe_expr(&stmt.value))
+            format!(
+                "{} = {}",
+                describe_expr(&stmt.target),
+                describe_expr(&stmt.value)
+            )
         }
         ast::ast::Stmt::Expr(stmt) => describe_expr(&stmt.expr),
     }
