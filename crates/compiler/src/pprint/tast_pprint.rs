@@ -136,7 +136,8 @@ impl LetStmt {
 
 impl AssignStmt {
     pub fn to_doc(&self, genv: &GlobalTypeEnv) -> RcDoc<'_, ()> {
-        RcDoc::text(self.name.clone())
+        self.target
+            .to_doc(genv)
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -562,6 +563,13 @@ impl Expr {
                 .to_doc(genv)
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field_name.clone())),
+            Self::EIndex {
+                base, index, ty: _, ..
+            } => base
+                .to_doc(genv)
+                .append(RcDoc::text("["))
+                .append(index.to_doc(genv))
+                .append(RcDoc::text("]")),
             Self::ETraitMethod {
                 trait_name,
                 method_name,

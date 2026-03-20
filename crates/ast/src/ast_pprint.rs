@@ -123,7 +123,8 @@ impl LetStmt {
 
 impl AssignStmt {
     pub fn to_doc(&self) -> RcDoc<'_, ()> {
-        RcDoc::text(self.name.0.clone())
+        self.target
+            .to_doc()
             .append(RcDoc::space())
             .append(RcDoc::text("="))
             .append(RcDoc::space())
@@ -429,6 +430,15 @@ impl Expr {
                 .to_doc()
                 .append(RcDoc::text("."))
                 .append(RcDoc::text(field.0.clone())),
+            Self::EIndex {
+                base,
+                index,
+                astptr: _,
+            } => base
+                .to_doc()
+                .append(RcDoc::text("["))
+                .append(index.to_doc())
+                .append(RcDoc::text("]")),
             Self::EBlock { block, astptr: _ } => block.to_doc(),
         }
     }

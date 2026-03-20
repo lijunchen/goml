@@ -18,6 +18,12 @@ use crate::{
     typer::Typer,
 };
 
+#[derive(Clone, Copy)]
+enum ArrayAssignRoot {
+    Local(hir::LocalId),
+    Ref,
+}
+
 impl Typer {
     fn expr_range(&self, expr_id: hir::ExprId) -> Option<TextRange> {
         self.hir_table.expr_ptr(expr_id).map(|ptr| ptr.text_range())
@@ -407,6 +413,9 @@ impl Typer {
             }
             hir::Expr::EProj { tuple, index } => {
                 self.infer_proj_expr(genv, local_env, diagnostics, e, tuple, index)
+            }
+            hir::Expr::EIndex { base, index } => {
+                self.infer_index_expr(genv, local_env, diagnostics, e, base, index)
             }
             hir::Expr::EField { expr, field } => self.infer_field_expr(
                 genv,
@@ -1997,54 +2006,11 @@ impl Typer {
         diagnostics: &mut Diagnostics,
         stmt: &hir::AssignStmt,
     ) -> tast::AssignStmt {
-        let value = self.infer_expr(genv, local_env, diagnostics, stmt.value);
-        let mut lowered_name = stmt.target_name.clone();
-
-        if let Some(target) = stmt.target {
-            lowered_name = self.hir_table.local_ident_name(target);
-            if !self.hir_table.local_is_mutable(target) {
-                diagnostics.push(
-                    Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("cannot assign to immutable binding `{}`", stmt.target_name),
-                    )
-                    .with_range(self.expr_range(stmt.value)),
-                );
-            }
-
-            if let Some(target_ty) = local_env.lookup_var(target) {
-                self.push_constraint(Constraint::TypeEqual(
-                    value.get_ty(),
-                    target_ty,
-                    self.expr_range(stmt.value),
-                ));
-            } else {
-                diagnostics.push(
-                    Diagnostic::new(
-                        Stage::Typer,
-                        Severity::Error,
-                        format!("unknown assignment target `{}`", stmt.target_name),
-                    )
-                    .with_range(self.expr_range(stmt.value)),
-                );
-            }
-        } else {
-            diagnostics.push(
-                Diagnostic::new(
-                    Stage::Typer,
-                    Severity::Error,
-                    format!(
-                        "assignment target `{}` is not a local variable in scope",
-                        stmt.target_name
-                    ),
-                )
-                .with_range(self.expr_range(stmt.value)),
-            );
-        }
-
+        let (target, value_ty) =
+            self.infer_assign_target(genv, local_env, diagnostics, stmt.target);
+        let value = self.check_expr(genv, local_env, diagnostics, stmt.value, &value_ty);
         tast::AssignStmt {
-            name: lowered_name,
+            target: Box::new(target),
             value: Box::new(value),
         }
     }
@@ -3717,6 +3683,313 @@ impl Typer {
                     ty: ret_ty,
                 }
             }
+        }
+    }
+
+    fn infer_index_expr(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        index_expr_id: hir::ExprId,
+        base: hir::ExprId,
+        index: hir::ExprId,
+    ) -> tast::Expr {
+        let base_tast = self.infer_expr(genv, local_env, diagnostics, base);
+        let base_ty = self.resolve_index_base_ty(diagnostics, base, &base_tast);
+        let range = self.expr_range(index_expr_id);
+        let (index_tast, result_ty) = match &base_ty {
+            tast::Ty::TArray { elem, .. } | tast::Ty::TVec { elem } | tast::Ty::TSlice { elem } => {
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    elem.as_ref().clone(),
+                )
+            }
+            tast::Ty::THashMap { key, value } => (
+                self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
+                option_ty("Option", value.as_ref().clone()),
+            ),
+            tast::Ty::TVar(_) => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "cannot infer indexed container type; add a type annotation",
+                    range,
+                );
+                (
+                    self.infer_expr(genv, local_env, diagnostics, index),
+                    self.fresh_ty_var(),
+                )
+            }
+            _ => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "type {} does not support indexing",
+                        super::util::format_ty_for_diag(&base_ty)
+                    ),
+                    range,
+                );
+                (
+                    self.infer_expr(genv, local_env, diagnostics, index),
+                    self.fresh_ty_var(),
+                )
+            }
+        };
+
+        tast::Expr::EIndex {
+            base: Box::new(base_tast),
+            index: Box::new(index_tast),
+            ty: result_ty,
+            astptr: self.hir_table.expr_ptr(index_expr_id),
+        }
+    }
+
+    fn infer_assign_target(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        target: hir::ExprId,
+    ) -> (tast::Expr, tast::Ty) {
+        match self.hir_table.expr(target).clone() {
+            hir::Expr::ENameRef { res, hint, astptr } => match res {
+                hir::NameRef::Local(local_id) => {
+                    let target_ty = local_env
+                        .lookup_var(local_id)
+                        .unwrap_or_else(|| self.fresh_ty_var());
+                    if !self.hir_table.local_is_mutable(local_id) {
+                        diagnostics.push(
+                            Diagnostic::new(
+                                Stage::Typer,
+                                Severity::Error,
+                                format!("cannot assign to immutable binding `{}`", hint),
+                            )
+                            .with_range(astptr.map(|ptr| ptr.text_range())),
+                        );
+                    }
+                    let target_expr = tast::Expr::EVar {
+                        name: self.hir_table.local_ident_name(local_id),
+                        ty: target_ty.clone(),
+                        astptr,
+                    };
+                    self.record_expr_result(target, &target_expr);
+                    self.record_name_ref_elab(target, &target_expr);
+                    (target_expr, target_ty)
+                }
+                _ => {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "assignment target `{}` is not a mutable local binding",
+                                hint
+                            ),
+                        )
+                        .with_range(astptr.map(|ptr| ptr.text_range())),
+                    );
+                    (
+                        self.infer_expr(genv, local_env, diagnostics, target),
+                        self.fresh_ty_var(),
+                    )
+                }
+            },
+            hir::Expr::EIndex { base, index } => {
+                self.infer_assign_index_target(genv, local_env, diagnostics, target, base, index)
+            }
+            _ => {
+                let target_tast = self.infer_expr(genv, local_env, diagnostics, target);
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        "unsupported assignment target",
+                    )
+                    .with_range(self.expr_range(target)),
+                );
+                let value_ty = target_tast.get_ty();
+                (target_tast, value_ty)
+            }
+        }
+    }
+
+    fn infer_assign_index_target(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        target_expr_id: hir::ExprId,
+        base: hir::ExprId,
+        index: hir::ExprId,
+    ) -> (tast::Expr, tast::Ty) {
+        let base_tast = self.infer_expr(genv, local_env, diagnostics, base);
+        let base_ty = self.resolve_index_base_ty(diagnostics, base, &base_tast);
+        let range = self.expr_range(target_expr_id);
+        let (index_tast, read_ty, value_ty) = match &base_ty {
+            tast::Ty::TArray { elem, .. } => {
+                self.validate_array_assignment_target(local_env, diagnostics, target_expr_id);
+                let elem_ty = elem.as_ref().clone();
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    elem_ty.clone(),
+                    elem_ty,
+                )
+            }
+            tast::Ty::TVec { elem } => {
+                let elem_ty = elem.as_ref().clone();
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    elem_ty.clone(),
+                    elem_ty,
+                )
+            }
+            tast::Ty::TSlice { elem } => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "cannot assign through Slice indexing; Slice is read-only",
+                    range,
+                );
+                let elem_ty = elem.as_ref().clone();
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, &tast::Ty::TInt32),
+                    elem_ty.clone(),
+                    elem_ty,
+                )
+            }
+            tast::Ty::THashMap { key, value } => {
+                let value_ty = value.as_ref().clone();
+                (
+                    self.check_expr(genv, local_env, diagnostics, index, key.as_ref()),
+                    option_ty("Option", value_ty.clone()),
+                    value_ty,
+                )
+            }
+            tast::Ty::TVar(_) => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    "cannot infer indexed container type for assignment; add a type annotation",
+                    range,
+                );
+                let index_tast = self.infer_expr(genv, local_env, diagnostics, index);
+                let value_ty = self.fresh_ty_var();
+                (index_tast, value_ty.clone(), value_ty)
+            }
+            _ => {
+                super::util::push_error_with_range(
+                    diagnostics,
+                    format!(
+                        "type {} does not support indexed assignment",
+                        super::util::format_ty_for_diag(&base_ty)
+                    ),
+                    range,
+                );
+                let index_tast = self.infer_expr(genv, local_env, diagnostics, index);
+                let value_ty = self.fresh_ty_var();
+                (index_tast, value_ty.clone(), value_ty)
+            }
+        };
+
+        (
+            tast::Expr::EIndex {
+                base: Box::new(base_tast),
+                index: Box::new(index_tast),
+                ty: read_ty,
+                astptr: self.hir_table.expr_ptr(target_expr_id),
+            },
+            value_ty,
+        )
+    }
+
+    fn validate_array_assignment_target(
+        &mut self,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
+    ) {
+        match self.classify_array_assign_root(expr_id) {
+            Some(ArrayAssignRoot::Local(local_id)) => {
+                if !self.hir_table.local_is_mutable(local_id) {
+                    diagnostics.push(
+                        Diagnostic::new(
+                            Stage::Typer,
+                            Severity::Error,
+                            format!(
+                                "cannot assign through array indexing on immutable binding `{}`",
+                                self.hir_table.local_ident_name(local_id)
+                            ),
+                        )
+                        .with_range(self.expr_range(expr_id)),
+                    );
+                }
+                let _ = local_env.lookup_var(local_id);
+            }
+            Some(ArrayAssignRoot::Ref) => {}
+            None => {
+                diagnostics.push(
+                    Diagnostic::new(
+                        Stage::Typer,
+                        Severity::Error,
+                        "array indexed assignment requires a writable root such as a mutable local or `ref_get(...)`",
+                    )
+                    .with_range(self.expr_range(expr_id)),
+                );
+            }
+        }
+    }
+
+    fn resolve_index_base_ty(
+        &mut self,
+        diagnostics: &mut Diagnostics,
+        base_expr_id: hir::ExprId,
+        base_tast: &tast::Expr,
+    ) -> tast::Ty {
+        let base_ty = self.norm(&base_tast.get_ty());
+        if !matches!(base_ty, tast::Ty::TVar(_)) {
+            return base_ty;
+        }
+
+        if let tast::Expr::ECall { func, .. } = base_tast {
+            let func_ty = self.norm(&func.get_ty());
+            if let tast::Ty::TFunc { ret_ty, .. } = func_ty
+                && !matches!(ret_ty.as_ref(), tast::Ty::TVar(_))
+            {
+                let inferred = ret_ty.as_ref().clone();
+                let _ = self.unify(
+                    diagnostics,
+                    &base_tast.get_ty(),
+                    &inferred,
+                    self.expr_range(base_expr_id),
+                );
+                return self.norm(&inferred);
+            }
+        }
+
+        base_ty
+    }
+
+    fn classify_array_assign_root(&self, expr_id: hir::ExprId) -> Option<ArrayAssignRoot> {
+        match self.hir_table.expr(expr_id) {
+            hir::Expr::ENameRef {
+                res: hir::NameRef::Local(local_id),
+                ..
+            } => Some(ArrayAssignRoot::Local(*local_id)),
+            hir::Expr::EProj { tuple, .. } | hir::Expr::EField { expr: tuple, .. } => {
+                self.classify_array_assign_root(*tuple)
+            }
+            hir::Expr::EIndex { base, .. } => self.classify_array_assign_root(*base),
+            hir::Expr::ECall { func, args } => {
+                if args.len() == 1
+                    && let hir::Expr::ENameRef {
+                        res: hir::NameRef::Builtin(hir::BuiltinId::RefGet),
+                        ..
+                    } = self.hir_table.expr(*func)
+                {
+                    Some(ArrayAssignRoot::Ref)
+                } else {
+                    None
+                }
+            }
+            _ => None,
         }
     }
 

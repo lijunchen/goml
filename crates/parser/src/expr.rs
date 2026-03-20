@@ -447,6 +447,7 @@ fn looks_like_struct_literal(p: &mut Parser) -> bool {
 fn postfix_binding_power(op: TokenKind) -> Option<(u8, ())> {
     match op {
         T!['('] => Some((21, ())),
+        T!['['] => Some((21, ())),
         T![?] => Some((22, ())),
         _ => None,
     }
@@ -501,6 +502,16 @@ fn expr_bp(p: &mut Parser, min_bp: u8) -> Option<MarkerClosed> {
                 let m = lhs.precede(p);
                 arg_list(p);
                 lhs = m.completed(p, MySyntaxKind::EXPR_CALL)
+            } else if p.at(T!['[']) {
+                let m = lhs.precede(p);
+                p.expect(T!['[']);
+                if p.at_any(EXPR_FIRST) {
+                    expect_expr_with_message(p, "expected an index expression");
+                } else if !p.at(T![']']) {
+                    p.advance_with_error("expected an index expression");
+                }
+                p.expect(T![']']);
+                lhs = m.completed(p, MySyntaxKind::EXPR_INDEX)
             } else if p.at(T![?]) {
                 let m = lhs.precede(p);
                 p.advance();

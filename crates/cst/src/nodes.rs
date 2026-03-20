@@ -723,12 +723,12 @@ pub struct AssignStmt {
 }
 
 impl AssignStmt {
-    pub fn lident(&self) -> Option<MySyntaxToken> {
-        support::token(&self.syntax, MySyntaxKind::Ident)
+    pub fn target(&self) -> Option<Expr> {
+        support::children(&self.syntax).next()
     }
 
     pub fn value(&self) -> Option<Expr> {
-        support::child(&self.syntax)
+        support::children(&self.syntax).nth(1)
     }
 }
 
@@ -786,6 +786,7 @@ pub enum Expr {
     ParenExpr(ParenExpr),
     BinaryExpr(BinaryExpr),
     PrefixExpr(PrefixExpr),
+    IndexExpr(IndexExpr),
     TryExpr(TryExpr),
     ClosureExpr(ClosureExpr),
     GoExpr(GoExpr),
@@ -821,6 +822,7 @@ impl CstNode for Expr {
                 | EXPR_PAREN
                 | EXPR_BINARY
                 | EXPR_PREFIX
+                | EXPR_INDEX
                 | EXPR_TRY
                 | EXPR_CLOSURE
                 | EXPR_WHILE
@@ -862,6 +864,7 @@ impl CstNode for Expr {
             EXPR_PAREN => Expr::ParenExpr(ParenExpr { syntax }),
             EXPR_BINARY => Expr::BinaryExpr(BinaryExpr { syntax }),
             EXPR_PREFIX => Expr::PrefixExpr(PrefixExpr { syntax }),
+            EXPR_INDEX => Expr::IndexExpr(IndexExpr { syntax }),
             EXPR_TRY => Expr::TryExpr(TryExpr { syntax }),
             EXPR_ARRAY_LITERAL => Expr::ArrayLiteralExpr(ArrayLiteralExpr { syntax }),
             EXPR_CLOSURE => Expr::ClosureExpr(ClosureExpr { syntax }),
@@ -903,6 +906,7 @@ impl CstNode for Expr {
             Self::ParenExpr(it) => &it.syntax,
             Self::BinaryExpr(it) => &it.syntax,
             Self::PrefixExpr(it) => &it.syntax,
+            Self::IndexExpr(it) => &it.syntax,
             Self::TryExpr(it) => &it.syntax,
             Self::ClosureExpr(it) => &it.syntax,
             Self::GoExpr(it) => &it.syntax,
@@ -1666,6 +1670,26 @@ impl PrefixExpr {
 
 impl_cst_node_simple!(PrefixExpr, MySyntaxKind::EXPR_PREFIX);
 impl_display_via_syntax!(PrefixExpr);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IndexExpr {
+    pub(crate) syntax: MySyntaxNode,
+}
+
+impl IndexExpr {
+    pub fn base(&self) -> Option<Expr> {
+        support::children(&self.syntax).next()
+    }
+
+    pub fn index(&self) -> Option<Expr> {
+        support::children(&self.syntax).nth(1)
+    }
+}
+
+impl_cst_node_simple!(IndexExpr, MySyntaxKind::EXPR_INDEX);
+impl_display_via_syntax!(IndexExpr);
 
 ////////////////////////////////////////////////////////////////////////////////
 

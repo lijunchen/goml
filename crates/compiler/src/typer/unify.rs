@@ -30,6 +30,16 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
             .as_ref()
             .map(|ptr| ptr.text_range())
             .or_else(|| expr_origin(expr.as_ref())),
+        tast::Expr::EIndex {
+            astptr,
+            base,
+            index,
+            ..
+        } => astptr
+            .as_ref()
+            .map(|ptr| ptr.text_range())
+            .or_else(|| expr_origin(base.as_ref()))
+            .or_else(|| expr_origin(index.as_ref())),
         tast::Expr::ETraitMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
         tast::Expr::EDynTraitMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
         tast::Expr::EInherentMethod { astptr, .. } => astptr.as_ref().map(|ptr| ptr.text_range()),
@@ -51,7 +61,9 @@ fn expr_origin(expr: &tast::Expr) -> Option<TextRange> {
                     tast::Stmt::Let(stmt) => {
                         pat_origin(&stmt.pat).or_else(|| expr_origin(stmt.value.as_ref()))
                     }
-                    tast::Stmt::Assign(stmt) => expr_origin(&stmt.value),
+                    tast::Stmt::Assign(stmt) => {
+                        expr_origin(&stmt.target).or_else(|| expr_origin(&stmt.value))
+                    }
                     tast::Stmt::Expr(stmt) => expr_origin(&stmt.expr),
                 })
             }),
@@ -1615,7 +1627,7 @@ impl Typer {
                     value: Box::new(self.subst(diagnostics, *stmt.value)),
                 }),
                 tast::Stmt::Assign(stmt) => tast::Stmt::Assign(tast::AssignStmt {
-                    name: stmt.name,
+                    target: Box::new(self.subst(diagnostics, *stmt.target)),
                     value: Box::new(self.subst(diagnostics, *stmt.value)),
                 }),
                 tast::Stmt::Expr(stmt) => tast::Stmt::Expr(tast::ExprStmt {
@@ -1889,6 +1901,27 @@ impl Typer {
                 tast::Expr::EField {
                     expr,
                     field_name,
+                    ty: ty.clone(),
+                    astptr,
+                }
+            }
+            tast::Expr::EIndex {
+                base,
+                index,
+                ty,
+                astptr,
+            } => {
+                let origin = astptr
+                    .as_ref()
+                    .map(|ptr| ptr.text_range())
+                    .or_else(|| expr_origin(base.as_ref()))
+                    .or_else(|| expr_origin(index.as_ref()));
+                let ty = self.subst_ty(diagnostics, &ty, origin);
+                let base = Box::new(self.subst(diagnostics, *base));
+                let index = Box::new(self.subst(diagnostics, *index));
+                tast::Expr::EIndex {
+                    base,
+                    index,
                     ty: ty.clone(),
                     astptr,
                 }

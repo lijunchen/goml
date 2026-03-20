@@ -278,7 +278,7 @@ pub struct LetStmt {
 
 #[derive(Debug, Clone)]
 pub struct AssignStmt {
-    pub name: AstIdent,
+    pub target: Box<Expr>,
     pub value: Box<Expr>,
     pub astptr: MySyntaxNodePtr,
 }
@@ -439,6 +439,11 @@ pub enum Expr {
     EField {
         expr: Box<Expr>,
         field: AstIdent,
+        astptr: MySyntaxNodePtr,
+    },
+    EIndex {
+        base: Box<Expr>,
+        index: Box<Expr>,
         astptr: MySyntaxNodePtr,
     },
     EBlock {

@@ -420,6 +420,12 @@ pub enum Expr {
         ty: Ty,
         astptr: Option<MySyntaxNodePtr>,
     },
+    EIndex {
+        base: Box<Expr>,
+        index: Box<Expr>,
+        ty: Ty,
+        astptr: Option<MySyntaxNodePtr>,
+    },
     EBinary {
         op: common_defs::BinaryOp,
         lhs: Box<Expr>,
@@ -475,6 +481,7 @@ impl Expr {
             Self::EUnary { ty, .. } => ty.clone(),
             Self::EProj { ty, .. } => ty.clone(),
             Self::EField { ty, .. } => ty.clone(),
+            Self::EIndex { ty, .. } => ty.clone(),
             Self::EBinary { ty, .. } => ty.clone(),
             Self::ETraitMethod { ty, .. } => ty.clone(),
             Self::EDynTraitMethod { ty, .. } => ty.clone(),
@@ -506,7 +513,7 @@ pub struct LetStmt {
 
 #[derive(Debug, Clone)]
 pub struct AssignStmt {
-    pub name: String,
+    pub target: Box<Expr>,
     pub value: Box<Expr>,
 }
 

@@ -168,6 +168,7 @@ pub enum MySyntaxKind {
     EXPR_ARRAY_LITERAL,
     EXPR_TUPLE,
     EXPR_CALL,
+    EXPR_INDEX,
     EXPR_TRY,
     EXPR_STRUCT_LITERAL,
     ARG_LIST,
