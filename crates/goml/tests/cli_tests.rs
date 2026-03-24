@@ -53,6 +53,16 @@ fn normalize_temp_prefix(text: &str, root: &Path) -> String {
     text.replace(root.to_string_lossy().as_ref(), "<TMP>")
 }
 
+fn current_version_output() -> String {
+    match (
+        option_env!("GOML_GIT_HASH"),
+        option_env!("GOML_GIT_DATE"),
+    ) {
+        (Some(hash), Some(date)) => format!("goml {} ({hash} {date})\n", env!("CARGO_PKG_VERSION")),
+        _ => format!("goml {}\n", env!("CARGO_PKG_VERSION")),
+    }
+}
+
 fn module_fixtures_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../compiler/src/tests/module")
 }
@@ -229,7 +239,7 @@ fn version_prints_crate_version() -> anyhow::Result<()> {
     let stderr = String::from_utf8_lossy(&output.stderr);
 
     assert!(output.status.success(), "stderr: {stderr}");
-    expect![["0.0.0\n"]].assert_eq(&stdout);
+    assert_eq!(stdout, current_version_output());
     expect![""].assert_eq(&stderr);
 
     Ok(())

@@ -258,7 +258,10 @@ fn run_cli() -> anyhow::Result<()> {
 }
 
 fn execute_version() -> anyhow::Result<()> {
-    println!("{}", env!("CARGO_PKG_VERSION"));
+    match (option_env!("GOML_GIT_HASH"), option_env!("GOML_GIT_DATE")) {
+        (Some(hash), Some(date)) => println!("goml {} ({hash} {date})", env!("CARGO_PKG_VERSION")),
+        _ => println!("goml {}", env!("CARGO_PKG_VERSION")),
+    }
     Ok(())
 }
 
