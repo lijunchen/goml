@@ -218,6 +218,24 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
 }
 
 #[test]
+fn version_prints_crate_version() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let output = Command::new(goml_bin())
+        .arg("version")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    expect![["0.0.0\n"]].assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
 fn project_check_checks_module_from_cwd() -> anyhow::Result<()> {
     let dir = tempfile::tempdir()?;
     write_project(dir.path())?;

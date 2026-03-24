@@ -34,6 +34,7 @@ enum Commands {
     New(NewArgs),
     Check(ProjectCommandArgs),
     Build(ProjectCommandArgs),
+    Version,
     Compiler(CompilerArgs),
 }
 
@@ -251,8 +252,14 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::New(args) => execute_new(args),
         Commands::Check(args) => execute_project_check(args),
         Commands::Build(args) => execute_project_build(args),
+        Commands::Version => execute_version(),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
+}
+
+fn execute_version() -> anyhow::Result<()> {
+    println!("{}", env!("CARGO_PKG_VERSION"));
+    Ok(())
 }
 
 fn execute_new(args: NewArgs) -> anyhow::Result<()> {
