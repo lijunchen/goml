@@ -34,6 +34,7 @@ enum Commands {
     New(NewArgs),
     Check(ProjectCommandArgs),
     Build(ProjectCommandArgs),
+    Version,
     Compiler(CompilerArgs),
 }
 
@@ -251,8 +252,17 @@ fn run_cli() -> anyhow::Result<()> {
         Commands::New(args) => execute_new(args),
         Commands::Check(args) => execute_project_check(args),
         Commands::Build(args) => execute_project_build(args),
+        Commands::Version => execute_version(),
         Commands::Compiler(args) => execute_compiler_command(args.command),
     }
+}
+
+fn execute_version() -> anyhow::Result<()> {
+    match (option_env!("GOML_GIT_HASH"), option_env!("GOML_GIT_DATE")) {
+        (Some(hash), Some(date)) => println!("goml {} ({hash} {date})", env!("CARGO_PKG_VERSION")),
+        _ => println!("goml {}", env!("CARGO_PKG_VERSION")),
+    }
+    Ok(())
 }
 
 fn execute_new(args: NewArgs) -> anyhow::Result<()> {

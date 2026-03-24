@@ -53,6 +53,16 @@ fn normalize_temp_prefix(text: &str, root: &Path) -> String {
     text.replace(root.to_string_lossy().as_ref(), "<TMP>")
 }
 
+fn current_version_output() -> String {
+    match (
+        option_env!("GOML_GIT_HASH"),
+        option_env!("GOML_GIT_DATE"),
+    ) {
+        (Some(hash), Some(date)) => format!("goml {} ({hash} {date})\n", env!("CARGO_PKG_VERSION")),
+        _ => format!("goml {}\n", env!("CARGO_PKG_VERSION")),
+    }
+}
+
 fn module_fixtures_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../compiler/src/tests/module")
 }
@@ -212,6 +222,24 @@ fn compiler_run_single_dumps_requested_stages() -> anyhow::Result<()> {
         hello
     "#]]
     .assert_eq(&stdout);
+    expect![""].assert_eq(&stderr);
+
+    Ok(())
+}
+
+#[test]
+fn version_prints_crate_version() -> anyhow::Result<()> {
+    let dir = tempfile::tempdir()?;
+    let output = Command::new(goml_bin())
+        .arg("version")
+        .current_dir(dir.path())
+        .output()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    let stderr = String::from_utf8_lossy(&output.stderr);
+
+    assert!(output.status.success(), "stderr: {stderr}");
+    assert_eq!(stdout, current_version_output());
     expect![""].assert_eq(&stderr);
 
     Ok(())
