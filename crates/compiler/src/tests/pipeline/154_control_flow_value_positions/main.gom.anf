@@ -1,0 +1,87 @@
+fn main() -> unit {
+  join ret9() -> unit {
+    ()
+  } in
+  let i/0 = ref(0) in
+  let sum/1 = ref(0) in
+  join exit10() -> unit {
+    let _wild2 = () in
+    let t11 = ref_get(sum/1) in
+    let _wild3 = println__T_int32(t11) in
+    let j/3 = ref(0) in
+    let total/4 = ref(0) in
+    join exit12() -> unit {
+      let _wild7 = () in
+      let t13 = ref_get(total/4) in
+      let _wild8 = println__T_int32(t13) in
+      jump ret9()
+    } in
+    joinrec {
+      join loop14() -> unit {
+        if true {
+          let t15 = ref_get(j/3) in
+          let t16 = (t15 + 1) in
+          let _wild4 = ref_set(j/3, t16) in
+          let mtmp5 = ref_get(j/3) in
+          join k17(jp18: int32) -> unit {
+            let cur/5 = jp18 in
+            let t19 = ref_get(total/4) in
+            let t20 = (t19 + cur/5) in
+            let _wild6 = ref_set(total/4, t20) in
+            jump loop14()
+          } in
+          match mtmp5 {
+            5 => {
+              jump exit12()
+            },
+            _ => {
+              let t21 = ref_get(j/3) in
+              jump k17(t21)
+            },
+          }
+        } else {
+          jump exit12()
+        }
+      } in
+    } in
+    jump loop14()
+  } in
+  joinrec {
+    join loop22() -> unit {
+      let t23 = ref_get(i/0) in
+      let t24 = (t23 < 5) in
+      if t24 {
+        let t25 = ref_get(i/0) in
+        let t26 = (t25 + 1) in
+        let _wild0 = ref_set(i/0, t26) in
+        let t31 = ref_get(i/0) in
+        let t32 = (t31 == 3) in
+        join k27(jp28: int32) -> unit {
+          let cur/2 = jp28 in
+          let t29 = ref_get(sum/1) in
+          let t30 = (t29 + cur/2) in
+          let _wild1 = ref_set(sum/1, t30) in
+          jump loop22()
+        } in
+        if t32 {
+          jump loop22()
+        } else {
+          let t33 = ref_get(i/0) in
+          jump k27(t33)
+        }
+      } else {
+        jump exit10()
+      }
+    } in
+  } in
+  jump loop22()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret34() -> unit {
+    ()
+  } in
+  let t35 = int32_to_string(value/1) in
+  let t36 = string_println(t35) in
+  jump ret34()
+}
