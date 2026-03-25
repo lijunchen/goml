@@ -1,0 +1,25 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+impl Display for int32{
+  fn show(self/0: int32) -> string {
+      (int32::to_string : (int32) -> string)((self/0 : int32))
+  }
+}
+
+fn render(value/1: Boxed) -> string {
+    match (value/1 : Boxed) {
+        Boxed::One(inner/2: dyn Display) => (dyn Display::show : (dyn Display) -> string)((inner/2 : dyn Display)),
+        Boxed::Pair(left/3: dyn Display, right/4: dyn Display) => (dyn Display::show : (dyn Display) -> string)((left/3 : dyn Display)) + "-" + (dyn Display::show : (dyn Display) -> string)((right/4 : dyn Display)),
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::One(to_dyn[Display]{int32}(42))));
+    (println : (string) -> unit)((render : (Boxed) -> string)(Boxed::Pair(to_dyn[Display]{int32}(7), to_dyn[Display]{int32}(9))));
+}

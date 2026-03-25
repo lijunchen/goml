@@ -1,0 +1,44 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn main() -> unit {
+  let i/0 = ref(0) in
+  let sum/1 = ref(0) in
+  let _wild3 = while (ref_get(i/0) < 7) {
+      {
+        let cur/2 = ref_get(i/0) in
+        let _wild0 = ref_set(i/0, (cur/2 + 1)) in
+        let mtmp1 = if (cur/2 < 5) {
+            {
+              match cur/2 {
+                1 => {
+                  continue
+                },
+                3 => {
+                  continue
+                },
+                _ => (),
+              }
+            }
+        } else {
+            {
+              match cur/2 {
+                5 => {
+                  break
+                },
+                _ => (),
+              }
+            }
+        } in
+        {
+          let _wild2 = ref_set(sum/1, (ref_get(sum/1) + cur/2)) in
+        }
+      }
+  } in
+  let _wild4 = println(ref_get(sum/1)) in
+}
