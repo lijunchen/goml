@@ -1,0 +1,69 @@
+fn child_a() -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = println__T_string("child-a") in
+  jump ret7()
+}
+
+fn child_b() -> unit {
+  join ret9() -> unit {
+    ()
+  } in
+  let t10 = println__T_string("child-b") in
+  jump ret9()
+}
+
+fn spawn(job/0: () -> unit) -> unit {
+  join ret11() -> unit {
+    ()
+  } in
+  let _wild0 = go job/0 in
+  jump ret11()
+}
+
+fn pick(flag/1: bool) -> () -> unit {
+  join ret12(retv13: () -> unit) -> () -> unit {
+    retv13
+  } in
+  join k14(jp15: () -> unit) -> () -> unit {
+    jump ret12(jp15)
+  } in
+  if flag/1 {
+    jump k14(child_a)
+  } else {
+    jump k14(child_b)
+  }
+}
+
+fn wait() -> unit {
+  join ret16() -> unit {
+    ()
+  } in
+  let t17 = duration(5000000) in
+  let t18 = sleep(t17) in
+  jump ret16()
+}
+
+fn main() -> unit {
+  join ret19() -> unit {
+    ()
+  } in
+  let _wild1 = go child_a in
+  let _wild2 = wait() in
+  let _wild3 = spawn(child_b) in
+  let _wild4 = wait() in
+  let job/2 = pick(true) in
+  let _wild5 = go job/2 in
+  let _wild6 = wait() in
+  let t20 = println__T_string("main") in
+  jump ret19()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret21() -> unit {
+    ()
+  } in
+  let t22 = string_println(value/1) in
+  jump ret21()
+}
