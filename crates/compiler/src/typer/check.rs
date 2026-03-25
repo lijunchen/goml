@@ -1,7 +1,7 @@
 use std::{collections::HashMap, num::IntErrorKind};
 
 use diagnostics::{Severity, Stage};
-use parser::{syntax::MySyntaxNodePtr, Diagnostic, Diagnostics};
+use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
 use text_size::TextRange;
 
 use crate::common::{self, Prim};
@@ -2369,16 +2369,18 @@ impl Typer {
         cond: hir::ExprId,
         body: hir::ExprId,
     ) -> tast::Expr {
-        let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
-        self.push_constraint(Constraint::TypeEqual(
-            cond_tast.get_ty(),
-            tast::Ty::TBool,
-            self.expr_range(cond),
-        ));
-
         self.while_depth += 1;
+        let cond_tast = self.infer_expr(genv, local_env, diagnostics, cond);
         let body_tast = self.infer_expr(genv, local_env, diagnostics, body);
         self.while_depth -= 1;
+
+        if !self.expr_always_exits_loop_control(cond) {
+            self.push_constraint(Constraint::TypeEqual(
+                cond_tast.get_ty(),
+                tast::Ty::TBool,
+                self.expr_range(cond),
+            ));
+        }
         self.push_constraint(Constraint::TypeEqual(
             body_tast.get_ty(),
             tast::Ty::TUnit,

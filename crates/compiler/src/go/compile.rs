@@ -5025,7 +5025,7 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
     let exit_id = loop_exit_target(&join.body, &join.id).or_else(|| {
         join.body.binds.iter().find_map(|bind| match bind {
             anf::Bind::Join(dispatch)
-                if all_paths_eventually_jump_to(&join.body, &dispatch.id)
+                if all_paths_reach_or_terminate(&join.body, &dispatch.id)
                     && loop_exit_target(&dispatch.body, &join.id).is_some() =>
             {
                 loop_exit_target(&dispatch.body, &join.id)
@@ -5139,11 +5139,11 @@ fn any_path_reaches_term(
     }
 }
 
-fn all_paths_eventually_jump_to(block: &anf::Block, target: &anf::JoinId) -> bool {
-    all_paths_eventually_jump_to_with_joins(block, target, &HashMap::new(), &mut HashSet::new())
+fn all_paths_reach_or_terminate(block: &anf::Block, target: &anf::JoinId) -> bool {
+    all_paths_reach_or_terminate_with_joins(block, target, &HashMap::new(), &mut HashSet::new())
 }
 
-fn all_paths_eventually_jump_to_with_joins(
+fn all_paths_reach_or_terminate_with_joins(
     block: &anf::Block,
     target: &anf::JoinId,
     parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
@@ -5163,10 +5163,10 @@ fn all_paths_eventually_jump_to_with_joins(
             anf::Bind::Let(_) => {}
         }
     }
-    all_paths_eventually_jump_to_term(&block.term, target, &local_joins, visited)
+    all_paths_reach_or_terminate_term(&block.term, target, &local_joins, visited)
 }
 
-fn all_paths_eventually_jump_to_term(
+fn all_paths_reach_or_terminate_term(
     term: &anf::Term,
     target: &anf::JoinId,
     joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
@@ -5183,25 +5183,25 @@ fn all_paths_eventually_jump_to_term(
             if let Some(jb) = joins.get(t) {
                 visited.insert(t.clone());
                 let result =
-                    all_paths_eventually_jump_to_with_joins(&jb.body, target, joins, visited);
+                    all_paths_reach_or_terminate_with_joins(&jb.body, target, joins, visited);
                 visited.remove(t);
                 result
             } else {
-                false
+                true
             }
         }
         anf::Term::If { then_, else_, .. } => {
-            all_paths_eventually_jump_to_with_joins(then_, target, joins, visited)
-                && all_paths_eventually_jump_to_with_joins(else_, target, joins, visited)
+            all_paths_reach_or_terminate_with_joins(then_, target, joins, visited)
+                && all_paths_reach_or_terminate_with_joins(else_, target, joins, visited)
         }
         anf::Term::Match { arms, default, .. } => {
             arms.iter().all(|arm| {
-                all_paths_eventually_jump_to_with_joins(&arm.body, target, joins, visited)
+                all_paths_reach_or_terminate_with_joins(&arm.body, target, joins, visited)
             }) && default
                 .as_deref()
-                .is_none_or(|d| all_paths_eventually_jump_to_with_joins(d, target, joins, visited))
+                .is_none_or(|d| all_paths_reach_or_terminate_with_joins(d, target, joins, visited))
         }
-        anf::Term::Return(_) | anf::Term::Unreachable { .. } => false,
+        anf::Term::Return(_) | anf::Term::Unreachable { .. } => true,
     }
 }
 
