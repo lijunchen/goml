@@ -62,33 +62,35 @@ func step__native(i__0 int32) (int32, bool) {
 func accumulate__native(limit__1 int32) (int32, bool) {
     var sum__2 *ref_int32_x = ref__Ref_int32(0)
     var i__3 *ref_int32_x = ref__Ref_int32(0)
+    Loop_loop21:
     for {
         var t22 int32 = ref_get__Ref_int32(i__3)
         var t23 bool = t22 < limit__1
-        if !t23 {
-            break
-        }
-        var cur__4 int32 = ref_get__Ref_int32(i__3)
-        var t24 int32 = cur__4 + 1
-        ref_set__Ref_int32(i__3, t24)
-        var t30 bool = cur__4 == 1
-        if t30 {
-            continue
-        } else {
-            var jp27 int32
-            var mtmp2_value_0 int32
-            var mtmp2_ok bool
-            mtmp2_value_0, mtmp2_ok = step__native(cur__4)
-            if !mtmp2_ok {
-                var ret_zero int32
-                return ret_zero, false
+        if t23 {
+            var cur__4 int32 = ref_get__Ref_int32(i__3)
+            var t24 int32 = cur__4 + 1
+            ref_set__Ref_int32(i__3, t24)
+            var t30 bool = cur__4 == 1
+            if t30 {
+                continue
+            } else {
+                var jp27 int32
+                var mtmp2_value_0 int32
+                var mtmp2_ok bool
+                mtmp2_value_0, mtmp2_ok = step__native(cur__4)
+                if !mtmp2_ok {
+                    var ret_zero int32
+                    return ret_zero, false
+                }
+                jp27 = mtmp2_value_0
+                var value__5 int32 = jp27
+                var t28 int32 = ref_get__Ref_int32(sum__2)
+                var t29 int32 = t28 + value__5
+                ref_set__Ref_int32(sum__2, t29)
+                continue
             }
-            jp27 = mtmp2_value_0
-            var value__5 int32 = jp27
-            var t28 int32 = ref_get__Ref_int32(sum__2)
-            var t29 int32 = t28 + value__5
-            ref_set__Ref_int32(sum__2, t29)
-            continue
+        } else {
+            break Loop_loop21
         }
     }
     var t19 int32 = ref_get__Ref_int32(sum__2)

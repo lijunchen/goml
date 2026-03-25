@@ -57,20 +57,22 @@ type GoError = error
 func main0() struct{} {
     var arr__0 [3]uint8 = [3]uint8{10, 20, 30}
     var i__1 *ref_int32_x = ref__Ref_int32(0)
+    Loop_loop17:
     for {
         var t18 int32 = ref_get__Ref_int32(i__1)
         var t19 bool = t18 < 3
-        if !t19 {
-            break
+        if t19 {
+            var t20 int32 = ref_get__Ref_int32(i__1)
+            var t21 uint8 = array_get__Array_3_uint8(arr__0, t20)
+            var t22 string = uint8_to_string(t21)
+            string_println(t22)
+            var t23 int32 = ref_get__Ref_int32(i__1)
+            var t24 int32 = t23 + 1
+            ref_set__Ref_int32(i__1, t24)
+            continue
+        } else {
+            break Loop_loop17
         }
-        var t20 int32 = ref_get__Ref_int32(i__1)
-        var t21 uint8 = array_get__Array_3_uint8(arr__0, t20)
-        var t22 string = uint8_to_string(t21)
-        string_println(t22)
-        var t23 int32 = ref_get__Ref_int32(i__1)
-        var t24 int32 = t23 + 1
-        ref_set__Ref_int32(i__1, t24)
-        continue
     }
     var floats__2 [2]float32 = [2]float32{1.5, 2.5}
     var t9 float32 = array_get__Array_2_float32(floats__2, 0)

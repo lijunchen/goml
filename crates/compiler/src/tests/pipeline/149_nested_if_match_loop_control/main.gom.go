@@ -41,35 +41,36 @@ func main0() struct{} {
     for {
         var t9 int32 = ref_get__Ref_int32(i__0)
         var t10 bool = t9 < 7
-        if !t10 {
-            break
-        }
-        var cur__2 int32 = ref_get__Ref_int32(i__0)
-        var t11 int32 = cur__2 + 1
-        ref_set__Ref_int32(i__0, t11)
-        var t15 bool = cur__2 < 5
-        if t15 {
-            switch cur__2 {
-            case 1:
-                continue
-            case 3:
-                continue
-            default:
-                var t13 int32 = ref_get__Ref_int32(sum__1)
-                var t14 int32 = t13 + cur__2
-                ref_set__Ref_int32(sum__1, t14)
-                continue
+        if t10 {
+            var cur__2 int32 = ref_get__Ref_int32(i__0)
+            var t11 int32 = cur__2 + 1
+            ref_set__Ref_int32(i__0, t11)
+            var t15 bool = cur__2 < 5
+            if t15 {
+                switch cur__2 {
+                case 1:
+                    continue
+                case 3:
+                    continue
+                default:
+                    var t13 int32 = ref_get__Ref_int32(sum__1)
+                    var t14 int32 = t13 + cur__2
+                    ref_set__Ref_int32(sum__1, t14)
+                    continue
+                }
+            } else {
+                switch cur__2 {
+                case 5:
+                    break Loop_loop8
+                default:
+                    var t13 int32 = ref_get__Ref_int32(sum__1)
+                    var t14 int32 = t13 + cur__2
+                    ref_set__Ref_int32(sum__1, t14)
+                    continue
+                }
             }
         } else {
-            switch cur__2 {
-            case 5:
-                break Loop_loop8
-            default:
-                var t13 int32 = ref_get__Ref_int32(sum__1)
-                var t14 int32 = t13 + cur__2
-                ref_set__Ref_int32(sum__1, t14)
-                continue
-            }
+            break Loop_loop8
         }
     }
     var t7 int32 = ref_get__Ref_int32(sum__1)

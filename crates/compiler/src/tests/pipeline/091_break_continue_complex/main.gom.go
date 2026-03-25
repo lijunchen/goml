@@ -46,22 +46,23 @@ func main0() struct{} {
     for {
         var t28 int32 = ref_get__Ref_int32(i__1)
         var t29 bool = t28 <= 100
-        if !t29 {
-            break
-        }
-        var t36 int32 = ref_get__Ref_int32(i__1)
-        var t37 bool = t36 == 50
-        if t37 {
-            break Loop_loop27
+        if t29 {
+            var t36 int32 = ref_get__Ref_int32(i__1)
+            var t37 bool = t36 == 50
+            if t37 {
+                break Loop_loop27
+            } else {
+                var t31 int32 = ref_get__Ref_int32(sum__0)
+                var t32 int32 = ref_get__Ref_int32(i__1)
+                var t33 int32 = t31 + t32
+                ref_set__Ref_int32(sum__0, t33)
+                var t34 int32 = ref_get__Ref_int32(i__1)
+                var t35 int32 = t34 + 1
+                ref_set__Ref_int32(i__1, t35)
+                continue
+            }
         } else {
-            var t31 int32 = ref_get__Ref_int32(sum__0)
-            var t32 int32 = ref_get__Ref_int32(i__1)
-            var t33 int32 = t31 + t32
-            ref_set__Ref_int32(sum__0, t33)
-            var t34 int32 = ref_get__Ref_int32(i__1)
-            var t35 int32 = t34 + 1
-            ref_set__Ref_int32(i__1, t35)
-            continue
+            break Loop_loop27
         }
     }
     print__T_string("sum up to break: ")
@@ -69,25 +70,27 @@ func main0() struct{} {
     println__T_int32(t14)
     var even_sum__2 *ref_int32_x = ref__Ref_int32(0)
     var j__3 *ref_int32_x = ref__Ref_int32(1)
+    Loop_loop17:
     for {
         var t18 int32 = ref_get__Ref_int32(j__3)
         var t19 bool = t18 <= 10
-        if !t19 {
-            break
-        }
-        var cur__4 int32 = ref_get__Ref_int32(j__3)
-        var t20 int32 = cur__4 + 1
-        ref_set__Ref_int32(j__3, t20)
-        var t22 int32 = cur__4 / 2
-        var t23 int32 = t22 * 2
-        var t24 bool = cur__4 == t23
-        if t24 {
-            var t25 int32 = ref_get__Ref_int32(even_sum__2)
-            var t26 int32 = t25 + cur__4
-            ref_set__Ref_int32(even_sum__2, t26)
-            continue
+        if t19 {
+            var cur__4 int32 = ref_get__Ref_int32(j__3)
+            var t20 int32 = cur__4 + 1
+            ref_set__Ref_int32(j__3, t20)
+            var t22 int32 = cur__4 / 2
+            var t23 int32 = t22 * 2
+            var t24 bool = cur__4 == t23
+            if t24 {
+                var t25 int32 = ref_get__Ref_int32(even_sum__2)
+                var t26 int32 = t25 + cur__4
+                ref_set__Ref_int32(even_sum__2, t26)
+                continue
+            } else {
+                continue
+            }
         } else {
-            continue
+            break Loop_loop17
         }
     }
     print__T_string("even sum: ")

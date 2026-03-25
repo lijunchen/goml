@@ -376,18 +376,20 @@ func main0() struct{} {
     string_println(s1__46)
     string_println(s2__47)
     var i__54 *ref_int32_x = ref__Ref_int32(0)
+    Loop_loop116:
     for {
         var t117 int32 = ref_get__Ref_int32(i__54)
         var t118 bool = t117 < 3
-        if !t118 {
-            break
+        if t118 {
+            var line__55 string = bump_and_show(dc__42, delta__53)
+            string_println(line__55)
+            var t119 int32 = ref_get__Ref_int32(i__54)
+            var t120 int32 = t119 + 1
+            ref_set__Ref_int32(i__54, t120)
+            continue
+        } else {
+            break Loop_loop116
         }
-        var line__55 string = bump_and_show(dc__42, delta__53)
-        string_println(line__55)
-        var t119 int32 = ref_get__Ref_int32(i__54)
-        var t120 int32 = t119 + 1
-        ref_set__Ref_int32(i__54, t120)
-        continue
     }
     var t112 string = int32_to_string(vlen__52)
     var t113 string = "len:" + t112

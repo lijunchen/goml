@@ -519,32 +519,34 @@ func env_lookup__native(env__28 []EnvEntry, name__29 string) (Typ, bool) {
     var i__30 *ref_int32_x = ref__Ref_int32(t280)
     var found__31 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
     var done__32 *ref_bool_x = ref__Ref_bool(false)
+    Loop_loop283:
     for {
         var t284 bool = ref_get__Ref_bool(done__32)
         var t285 bool = !t284
         var t286 int32 = ref_get__Ref_int32(i__30)
         var t287 bool = t286 >= 0
         var t288 bool = t285 && t287
-        if !t288 {
-            break
-        }
-        var t289 int32 = ref_get__Ref_int32(i__30)
-        var entry__33 EnvEntry = env__28[t289]
-        var t291 string = entry__33.name
-        var t292 bool = t291 == name__29
-        if t292 {
-            var t293 Typ = entry__33.ty
-            var t294 Option__Typ = Some{
-                _0: t293,
+        if t288 {
+            var t289 int32 = ref_get__Ref_int32(i__30)
+            var entry__33 EnvEntry = env__28[t289]
+            var t291 string = entry__33.name
+            var t292 bool = t291 == name__29
+            if t292 {
+                var t293 Typ = entry__33.ty
+                var t294 Option__Typ = Some{
+                    _0: t293,
+                }
+                ref_set__Ref_Option__Typ(found__31, t294)
+                ref_set__Ref_bool(done__32, true)
+            } else {
+                var t296 int32 = ref_get__Ref_int32(i__30)
+                var t297 int32 = t296 - 1
+                ref_set__Ref_int32(i__30, t297)
             }
-            ref_set__Ref_Option__Typ(found__31, t294)
-            ref_set__Ref_bool(done__32, true)
+            continue
         } else {
-            var t296 int32 = ref_get__Ref_int32(i__30)
-            var t297 int32 = t296 - 1
-            ref_set__Ref_int32(i__30, t297)
+            break Loop_loop283
         }
-        continue
     }
     var t282 Option__Typ = ref_get__Ref_Option__Typ(found__31)
     switch ret_variant := t282.(type) {
@@ -576,32 +578,34 @@ func subst_lookup__native(subst__34 []SubstEntry, name__35 string) (Typ, bool) {
     var i__36 *ref_int32_x = ref__Ref_int32(t302)
     var found__37 *ref_option__typ_x = ref__Ref_Option__Typ(None{})
     var done__38 *ref_bool_x = ref__Ref_bool(false)
+    Loop_loop305:
     for {
         var t306 bool = ref_get__Ref_bool(done__38)
         var t307 bool = !t306
         var t308 int32 = ref_get__Ref_int32(i__36)
         var t309 bool = t308 >= 0
         var t310 bool = t307 && t309
-        if !t310 {
-            break
-        }
-        var t311 int32 = ref_get__Ref_int32(i__36)
-        var entry__39 SubstEntry = subst__34[t311]
-        var t313 string = entry__39.name
-        var t314 bool = t313 == name__35
-        if t314 {
-            var t315 Typ = entry__39.ty
-            var t316 Option__Typ = Some{
-                _0: t315,
+        if t310 {
+            var t311 int32 = ref_get__Ref_int32(i__36)
+            var entry__39 SubstEntry = subst__34[t311]
+            var t313 string = entry__39.name
+            var t314 bool = t313 == name__35
+            if t314 {
+                var t315 Typ = entry__39.ty
+                var t316 Option__Typ = Some{
+                    _0: t315,
+                }
+                ref_set__Ref_Option__Typ(found__37, t316)
+                ref_set__Ref_bool(done__38, true)
+            } else {
+                var t318 int32 = ref_get__Ref_int32(i__36)
+                var t319 int32 = t318 - 1
+                ref_set__Ref_int32(i__36, t319)
             }
-            ref_set__Ref_Option__Typ(found__37, t316)
-            ref_set__Ref_bool(done__38, true)
+            continue
         } else {
-            var t318 int32 = ref_get__Ref_int32(i__36)
-            var t319 int32 = t318 - 1
-            ref_set__Ref_int32(i__36, t319)
+            break Loop_loop305
         }
-        continue
     }
     var t304 Option__Typ = ref_get__Ref_Option__Typ(found__37)
     switch ret_variant := t304.(type) {
