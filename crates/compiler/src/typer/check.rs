@@ -1,7 +1,7 @@
 use std::{collections::HashMap, num::IntErrorKind};
 
 use diagnostics::{Severity, Stage};
-use parser::{Diagnostic, Diagnostics, syntax::MySyntaxNodePtr};
+use parser::{syntax::MySyntaxNodePtr, Diagnostic, Diagnostics};
 use text_size::TextRange;
 
 use crate::common::{self, Prim};
@@ -658,6 +658,22 @@ impl Typer {
         expr_tast
     }
 
+    fn check_expr_with_deferred_dyn(
+        &mut self,
+        genv: &PackageTypeEnv,
+        local_env: &mut LocalTypeEnv,
+        diagnostics: &mut Diagnostics,
+        expr_id: hir::ExprId,
+        expected: &tast::Ty,
+    ) -> (tast::Expr, bool) {
+        let deferred_start = self.deferred_dyn_coercions.len();
+        let expr = self.check_expr(genv, local_env, diagnostics, expr_id, expected);
+        let deferred_dyn = self.deferred_dyn_coercions[deferred_start..]
+            .iter()
+            .any(|coercion| coercion.expr_id == expr_id);
+        (expr, deferred_dyn)
+    }
+
     fn coerce_to_expected_dyn(
         &mut self,
         genv: &PackageTypeEnv,
@@ -677,6 +693,7 @@ impl Typer {
                             expr_id,
                             concrete_ty: for_ty.clone(),
                             expected_ty: expected_norm,
+                            origin: self.expr_range(expr_id),
                         });
                     return (expr, true);
                 }
@@ -1526,8 +1543,14 @@ impl Typer {
         } else {
             for (arg, param_ty) in args.iter().zip(param_tys.iter()) {
                 let expected_ty = self.norm(param_ty);
-                let arg_tast = self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
-                if contains_tvar(&expected_ty) {
+                let (arg_tast, deferred_dyn) = self.check_expr_with_deferred_dyn(
+                    genv,
+                    local_env,
+                    diagnostics,
+                    *arg,
+                    &expected_ty,
+                );
+                if contains_tvar(&expected_ty) && !deferred_dyn {
                     self.unify(
                         diagnostics,
                         &arg_tast.get_ty(),
@@ -2711,9 +2734,14 @@ impl Typer {
                     {
                         for (arg, param_ty) in args.iter().zip(params.iter()) {
                             let expected_ty = self.norm(param_ty);
-                            let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
-                            if contains_tvar(&expected_ty) {
+                            let (arg_tast, deferred_dyn) = self.check_expr_with_deferred_dyn(
+                                genv,
+                                local_env,
+                                diagnostics,
+                                *arg,
+                                &expected_ty,
+                            );
+                            if contains_tvar(&expected_ty) && !deferred_dyn {
                                 self.unify(
                                     diagnostics,
                                     &arg_tast.get_ty(),
@@ -2815,9 +2843,14 @@ impl Typer {
                     {
                         for (arg, param_ty) in args.iter().zip(params.iter()) {
                             let expected_ty = self.norm(param_ty);
-                            let arg_tast =
-                                self.check_expr(genv, local_env, diagnostics, *arg, &expected_ty);
-                            if contains_tvar(&expected_ty) {
+                            let (arg_tast, deferred_dyn) = self.check_expr_with_deferred_dyn(
+                                genv,
+                                local_env,
+                                diagnostics,
+                                *arg,
+                                &expected_ty,
+                            );
+                            if contains_tvar(&expected_ty) && !deferred_dyn {
                                 self.unify(
                                     diagnostics,
                                     &arg_tast.get_ty(),
