@@ -1,0 +1,35 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  join ret1(retv2: string) -> string {
+    retv2
+  } in
+  let t3 = int32_to_string(self/0) in
+  jump ret1(t3)
+}
+
+fn render(x/1: dyn Display) -> string {
+  join ret4(retv5: string) -> string {
+    retv5
+  } in
+  let t6 = dyn_call[Display::show](x/1) in
+  jump ret4(t6)
+}
+
+fn main() -> unit {
+  join ret7() -> unit {
+    ()
+  } in
+  let t8 = to_dyn[Display]{int32}(42) in
+  let holder/2 = Holder__dynDisplay { value: t8 } in
+  let t9 = Holder__dynDisplay.value(holder/2) in
+  let t10 = render(t9) in
+  let _wild0 = println__T_string(t10) in
+  jump ret7()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret11() -> unit {
+    ()
+  } in
+  let t12 = string_println(value/1) in
+  jump ret11()
+}

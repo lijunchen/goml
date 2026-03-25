@@ -1,0 +1,26 @@
+package main
+file main.gom
+  trait Display {
+      fn show(Self) -> string;
+    }
+    
+    impl Display for int32 {
+      fn show(local/1/0: int32) -> string {
+          self/0.to_string()
+      }
+    }
+    
+    struct Holder[T] {
+        value: T,
+    }
+    
+    fn render(local/1/1: dyn Display) -> string {
+        Display::show(x/1)
+    }
+    
+    fn main() -> unit {
+        let local/1/2: Holder[dyn Display] = Holder {
+            value: 42i32
+        };
+        println(def/1/3(holder/2.value));
+    }

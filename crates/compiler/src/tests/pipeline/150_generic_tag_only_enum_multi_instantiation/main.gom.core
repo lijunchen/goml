@@ -1,0 +1,45 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn flip(x/0: Light[T]) -> Light[T] {
+  match x/0 {
+    Light::Red => {
+      Light::Green
+    },
+    Light::Green => {
+      Light::Red
+    },
+  }
+}
+
+fn show_int(x/1: Light[int32]) -> string {
+  match x/1 {
+    Light::Red => {
+      "ri"
+    },
+    Light::Green => {
+      "gi"
+    },
+  }
+}
+
+fn show_string(x/2: Light[string]) -> string {
+  match x/2 {
+    Light::Red => {
+      "rs"
+    },
+    Light::Green => {
+      "gs"
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild0 = println(show_int(flip(Light::Red))) in
+  let _wild1 = println(show_string(flip(Light::Green))) in
+}

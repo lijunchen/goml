@@ -1,0 +1,18 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn make_pairer(x/0: T) -> (string) -> string {
+  |tag/1: string| => ((tag/1 + ":") + trait_call[ToString::to_string](x/0))
+}
+
+fn main() -> unit {
+  let int_pairer/2 = make_pairer(7) in
+  let string_pairer/3 = make_pairer("ok") in
+  let _wild0 = println(int_pairer/2("a")) in
+  let _wild1 = println(string_pairer/3("b")) in
+}

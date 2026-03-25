@@ -1,0 +1,33 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn flip(x/0: Light[T]) -> Light[T] {
+    match (x/0 : Light[T]) {
+        Light::Red => Light::Green,
+        Light::Green => Light::Red,
+    }
+}
+
+fn show_int(x/1: Light[int32]) -> string {
+    match (x/1 : Light[int32]) {
+        Light::Red => "ri",
+        Light::Green => "gi",
+    }
+}
+
+fn show_string(x/2: Light[string]) -> string {
+    match (x/2 : Light[string]) {
+        Light::Red => "rs",
+        Light::Green => "gs",
+    }
+}
+
+fn main() -> unit {
+    (println : (string) -> unit)((show_int : (Light[int32]) -> string)((flip : (Light[int32]) -> Light[int32])(Light::Red)));
+    (println : (string) -> unit)((show_string : (Light[string]) -> string)((flip : (Light[string]) -> Light[string])(Light::Green)));
+}
