@@ -5022,45 +5022,56 @@ fn is_while_loop(join: &anf::JoinBind) -> Option<WhileLoop> {
     if !join.params.is_empty() {
         return None;
     }
-    let body = &join.body;
-    let anf::Term::If {
-        cond, then_, else_, ..
-    } = &body.term
-    else {
-        return None;
-    };
-    let then_reaches = any_path_reaches(then_, &join.id);
-    let else_reaches = any_path_reaches(else_, &join.id);
-    let (continue_block, break_block, negate) = if then_reaches && !else_reaches {
-        (then_.as_ref(), else_.as_ref(), false)
-    } else if else_reaches && !then_reaches {
-        (else_.as_ref(), then_.as_ref(), true)
-    } else {
-        return None;
-    };
-    let exit_id = match &break_block.term {
-        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target.clone()),
-        _ => None,
-    };
+    let exit_id = loop_exit_target(&join.body, &join.id).or_else(|| {
+        join.body.binds.iter().find_map(|bind| match bind {
+            anf::Bind::Join(dispatch)
+                if all_paths_eventually_jump_to(&join.body, &dispatch.id)
+                    && loop_exit_target(&dispatch.body, &join.id).is_some() =>
+            {
+                loop_exit_target(&dispatch.body, &join.id)
+            }
+            _ => None,
+        })
+    })?;
     Some(WhileLoop {
-        cond_binds: body.binds.clone(),
-        cond: cond.clone(),
-        negate,
-        loop_body: continue_block.clone(),
-        after: break_block.clone(),
+        body: join.body.clone(),
+        after: anf::Block {
+            binds: Vec::new(),
+            term: anf::Term::Jump {
+                target: exit_id.clone(),
+                args: Vec::new(),
+                ret_ty: join.ret_ty.clone(),
+            },
+        },
         loop_id: join.id.clone(),
         exit_id,
     })
 }
 
 struct WhileLoop {
-    cond_binds: Vec<anf::Bind>,
-    cond: anf::ImmExpr,
-    negate: bool,
-    loop_body: anf::Block,
+    body: anf::Block,
     after: anf::Block,
     loop_id: anf::JoinId,
-    exit_id: Option<anf::JoinId>,
+    exit_id: anf::JoinId,
+}
+
+fn loop_exit_target(block: &anf::Block, loop_id: &anf::JoinId) -> Option<anf::JoinId> {
+    let anf::Term::If { then_, else_, .. } = &block.term else {
+        return None;
+    };
+    let then_reaches = any_path_reaches(then_, loop_id);
+    let else_reaches = any_path_reaches(else_, loop_id);
+    let break_block = if then_reaches && !else_reaches {
+        else_.as_ref()
+    } else if else_reaches && !then_reaches {
+        then_.as_ref()
+    } else {
+        return None;
+    };
+    match &break_block.term {
+        anf::Term::Jump { target, args, .. } if args.is_empty() => Some(target.clone()),
+        _ => None,
+    }
 }
 
 fn any_path_reaches(block: &anf::Block, target: &anf::JoinId) -> bool {
@@ -5125,6 +5136,72 @@ fn any_path_reaches_term(
                     .is_some_and(|d| any_path_reaches_with_joins(d, target, joins, visited))
         }
         _ => false,
+    }
+}
+
+fn all_paths_eventually_jump_to(block: &anf::Block, target: &anf::JoinId) -> bool {
+    all_paths_eventually_jump_to_with_joins(block, target, &HashMap::new(), &mut HashSet::new())
+}
+
+fn all_paths_eventually_jump_to_with_joins(
+    block: &anf::Block,
+    target: &anf::JoinId,
+    parent_joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> bool {
+    let mut local_joins = parent_joins.clone();
+    for bind in &block.binds {
+        match bind {
+            anf::Bind::Join(jb) => {
+                local_joins.insert(&jb.id, jb);
+            }
+            anf::Bind::JoinRec(group) => {
+                for jb in group {
+                    local_joins.insert(&jb.id, jb);
+                }
+            }
+            anf::Bind::Let(_) => {}
+        }
+    }
+    all_paths_eventually_jump_to_term(&block.term, target, &local_joins, visited)
+}
+
+fn all_paths_eventually_jump_to_term(
+    term: &anf::Term,
+    target: &anf::JoinId,
+    joins: &HashMap<&anf::JoinId, &anf::JoinBind>,
+    visited: &mut HashSet<anf::JoinId>,
+) -> bool {
+    match term {
+        anf::Term::Jump { target: t, .. } => {
+            if t == target {
+                return true;
+            }
+            if visited.contains(t) {
+                return false;
+            }
+            if let Some(jb) = joins.get(t) {
+                visited.insert(t.clone());
+                let result =
+                    all_paths_eventually_jump_to_with_joins(&jb.body, target, joins, visited);
+                visited.remove(t);
+                result
+            } else {
+                false
+            }
+        }
+        anf::Term::If { then_, else_, .. } => {
+            all_paths_eventually_jump_to_with_joins(then_, target, joins, visited)
+                && all_paths_eventually_jump_to_with_joins(else_, target, joins, visited)
+        }
+        anf::Term::Match { arms, default, .. } => {
+            arms.iter().all(|arm| {
+                all_paths_eventually_jump_to_with_joins(&arm.body, target, joins, visited)
+            }) && default
+                .as_deref()
+                .is_none_or(|d| all_paths_eventually_jump_to_with_joins(d, target, joins, visited))
+        }
+        anf::Term::Return(_) | anf::Term::Unreachable { .. } => false,
     }
 }
 
@@ -7610,48 +7687,16 @@ fn compile_while_loop_ctx(
     native_ctx: Option<&NativeFnCtx>,
     let_env: &LetEnv,
 ) -> Vec<goast::Stmt> {
-    let mut loop_body_stmts = Vec::new();
-    for bind in &wl.cond_binds {
-        if let anf::Bind::Let(let_bind) = bind {
-            loop_body_stmts.extend(compile_let_bind(goenv, let_bind));
-        }
-    }
-
-    let cond_expr = compile_imm(goenv, &wl.cond);
-    let break_cond = if wl.negate {
-        cond_expr
-    } else {
-        goast::Expr::UnaryOp {
-            op: goast::GoUnaryOp::Not,
-            expr: Box::new(cond_expr),
-            ty: goty::GoType::TBool,
-        }
-    };
-    loop_body_stmts.push(goast::Stmt::If {
-        cond: break_cond,
-        then: goast::Block {
-            stmts: vec![goast::Stmt::Break],
-        },
-        else_: None,
-    });
-
     let loop_label = format!("Loop_{}", go_ident(&wl.loop_id.0));
 
     let mut inner_env = join_env.clone();
     inner_env.continue_targets.insert(wl.loop_id.clone());
-    if let Some(exit_id) = &wl.exit_id {
-        inner_env.break_targets.insert(exit_id.clone());
-        inner_env
-            .break_labels
-            .insert(exit_id.clone(), loop_label.clone());
-    }
-    loop_body_stmts.extend(compile_block_structured_ctx(
-        goenv,
-        &wl.loop_body,
-        &inner_env,
-        native_ctx,
-        let_env,
-    ));
+    inner_env.break_targets.insert(wl.exit_id.clone());
+    inner_env
+        .break_labels
+        .insert(wl.exit_id.clone(), loop_label.clone());
+    let loop_body_stmts =
+        compile_block_structured_ctx(goenv, &wl.body, &inner_env, native_ctx, let_env);
 
     let has_break_label = stmts_contain_break_label(&loop_body_stmts, &loop_label);
     let mut stmts = vec![goast::Stmt::Loop {
