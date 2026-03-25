@@ -646,6 +646,9 @@ impl Typer {
         };
 
         self.record_expr_result(e, &expr_tast);
+        if self.expr_always_exits_loop_control(e) {
+            return expr_tast;
+        }
         let (expr_tast, deferred_dyn) =
             self.coerce_to_expected_dyn(genv, local_env, diagnostics, e, expr_tast, expected);
         if !deferred_dyn {
@@ -2216,6 +2219,53 @@ impl Typer {
         }
     }
 
+    fn block_always_exits_loop_control(&self, block: &hir::Block) -> bool {
+        for stmt in &block.stmts {
+            if self.stmt_always_exits_loop_control(stmt) {
+                return true;
+            }
+        }
+        if let Some(tail) = block.tail {
+            return self.expr_always_exits_loop_control(tail);
+        }
+        false
+    }
+
+    fn stmt_always_exits_loop_control(&self, stmt: &hir::Stmt) -> bool {
+        match stmt {
+            hir::Stmt::Expr(stmt) => self.expr_always_exits_loop_control(stmt.expr),
+            hir::Stmt::Let(_) | hir::Stmt::Assign(_) => false,
+        }
+    }
+
+    fn expr_always_exits_loop_control(&self, expr_id: hir::ExprId) -> bool {
+        match self.hir_table.expr(expr_id) {
+            hir::Expr::EBreak | hir::Expr::EContinue => true,
+            hir::Expr::EBlock { block } => self.block_always_exits_loop_control(block),
+            hir::Expr::EIf {
+                then_branch,
+                else_branch,
+                ..
+            } => {
+                self.expr_always_exits_loop_control(*then_branch)
+                    && self.expr_always_exits_loop_control(*else_branch)
+            }
+            hir::Expr::EMatch { arms, .. } => {
+                let has_catch_all = arms.iter().any(|arm| {
+                    matches!(
+                        self.hir_table.pat(arm.pat),
+                        hir::Pat::PWild | hir::Pat::PVar { .. }
+                    )
+                });
+                has_catch_all
+                    && arms
+                        .iter()
+                        .all(|arm| self.expr_always_exits_loop_control(arm.body))
+            }
+            _ => false,
+        }
+    }
+
     fn infer_match_expr(
         &mut self,
         genv: &PackageTypeEnv,
@@ -2230,16 +2280,20 @@ impl Typer {
 
         let mut arms_tast = Vec::new();
         let arm_ty = self.fresh_ty_var();
+        let mut has_value_arm = false;
         for arm in arms.iter() {
             local_env.push_scope();
             let arm_tast = self.check_pat(genv, local_env, diagnostics, arm.pat, &expr_ty);
             let arm_body_tast = self.infer_expr(genv, local_env, diagnostics, arm.body);
             local_env.pop_scope(diagnostics);
-            self.push_constraint(Constraint::TypeEqual(
-                arm_body_tast.get_ty(),
-                arm_ty.clone(),
-                self.expr_range(arm.body),
-            ));
+            if !self.expr_always_exits_loop_control(arm.body) {
+                has_value_arm = true;
+                self.push_constraint(Constraint::TypeEqual(
+                    arm_body_tast.get_ty(),
+                    arm_ty.clone(),
+                    self.expr_range(arm.body),
+                ));
+            }
 
             arms_tast.push(tast::Arm {
                 pat: arm_tast,
@@ -2249,7 +2303,11 @@ impl Typer {
         tast::Expr::EMatch {
             expr: Box::new(expr_tast),
             arms: arms_tast,
-            ty: arm_ty,
+            ty: if has_value_arm {
+                arm_ty
+            } else {
+                tast::Ty::TUnit
+            },
             astptr,
         }
     }
@@ -2273,23 +2331,33 @@ impl Typer {
         let then_tast = self.infer_expr(genv, local_env, diagnostics, then_branch);
         let else_tast = self.infer_expr(genv, local_env, diagnostics, else_branch);
         let result_ty = self.fresh_ty_var();
+        let then_exits = self.expr_always_exits_loop_control(then_branch);
+        let else_exits = self.expr_always_exits_loop_control(else_branch);
 
-        self.push_constraint(Constraint::TypeEqual(
-            then_tast.get_ty(),
-            result_ty.clone(),
-            self.expr_range(then_branch),
-        ));
-        self.push_constraint(Constraint::TypeEqual(
-            else_tast.get_ty(),
-            result_ty.clone(),
-            self.expr_range(else_branch),
-        ));
+        if !then_exits {
+            self.push_constraint(Constraint::TypeEqual(
+                then_tast.get_ty(),
+                result_ty.clone(),
+                self.expr_range(then_branch),
+            ));
+        }
+        if !else_exits {
+            self.push_constraint(Constraint::TypeEqual(
+                else_tast.get_ty(),
+                result_ty.clone(),
+                self.expr_range(else_branch),
+            ));
+        }
 
         tast::Expr::EIf {
             cond: Box::new(cond_tast),
             then_branch: Box::new(then_tast),
             else_branch: Box::new(else_tast),
-            ty: result_ty,
+            ty: if then_exits && else_exits {
+                tast::Ty::TUnit
+            } else {
+                result_ty
+            },
         }
     }
 
