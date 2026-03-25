@@ -14,21 +14,13 @@ func go_error_to_string(value GoError) string {
     return value.Error()
 }
 
-type Mode interface {
-    isMode()
-}
+type Mode int32
 
-type Left struct {}
-
-func (_ Left) isMode() {}
-
-type Keep struct {}
-
-func (_ Keep) isMode() {}
-
-type Right struct {}
-
-func (_ Right) isMode() {}
+const (
+    Left Mode = 0
+    Keep Mode = 1
+    Right Mode = 2
+)
 
 type Result__string__GoError interface {
     isResult__string__GoError()
@@ -68,7 +60,7 @@ type Duration = time.Duration
 
 func pick__native(mode__0 Mode, input__1 string) (string, GoError) {
     var jp14 string
-    switch mode__0.(type) {
+    switch mode__0 {
     case Left:
         var jp17 Duration
         var mtmp0_value_0 Duration
@@ -146,13 +138,13 @@ func show(res__5 Result__string__GoError) string {
 }
 
 func main0() struct{} {
-    var t33 Result__string__GoError = pick(Left{}, "4s")
+    var t33 Result__string__GoError = pick(Left, "4s")
     var t34 string = show(t33)
     println__T_string(t34)
-    var t35 Result__string__GoError = pick(Right{}, "bad")
+    var t35 Result__string__GoError = pick(Right, "bad")
     var t36 string = show(t35)
     println__T_string(t36)
-    var t37 Result__string__GoError = pick(Keep{}, "ignored")
+    var t37 Result__string__GoError = pick(Keep, "ignored")
     var t38 string = show(t37)
     println__T_string(t38)
     return struct{}{}

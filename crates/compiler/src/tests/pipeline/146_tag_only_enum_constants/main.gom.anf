@@ -1,0 +1,57 @@
+fn light_code(light/0: Light) -> int32 {
+  join ret3(retv4: int32) -> int32 {
+    retv4
+  } in
+  join k5(jp6: int32) -> int32 {
+    jump ret3(jp6)
+  } in
+  match light/0 {
+    Tag_0 => {
+      jump k5(10)
+    },
+    Tag_1 => {
+      jump k5(20)
+    },
+    Tag_2 => {
+      jump k5(30)
+    },
+  }
+}
+
+fn paint_code(paint/1: Paint) -> int32 {
+  join ret7(retv8: int32) -> int32 {
+    retv8
+  } in
+  join k9(jp10: int32) -> int32 {
+    jump ret7(jp10)
+  } in
+  match paint/1 {
+    Tag_0 => {
+      jump k9(1)
+    },
+    Tag_1 => {
+      jump k9(2)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret11() -> unit {
+    ()
+  } in
+  let light/2 = Tag_0 in
+  let paint/3 = Tag_0 in
+  let t12 = light_code(light/2) in
+  let t13 = int32_to_string(t12) in
+  let mtmp0 = string_println(t13) in
+  let t14 = paint_code(paint/3) in
+  let t15 = int32_to_string(t14) in
+  let mtmp1 = string_println(t15) in
+  let t16 = light_code(Tag_2) in
+  let t17 = int32_to_string(t16) in
+  let mtmp2 = string_println(t17) in
+  let t18 = paint_code(Tag_1) in
+  let t19 = int32_to_string(t18) in
+  let t20 = string_println(t19) in
+  jump ret11()
+}

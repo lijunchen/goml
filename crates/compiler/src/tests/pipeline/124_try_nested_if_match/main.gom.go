@@ -13,17 +13,12 @@ func string_println(s string) struct{} {
     return struct{}{}
 }
 
-type Mode interface {
-    isMode()
-}
+type Mode int32
 
-type Take struct {}
-
-func (_ Take) isMode() {}
-
-type Skip struct {}
-
-func (_ Skip) isMode() {}
+const (
+    Take Mode = 0
+    Skip Mode = 1
+)
 
 type Option__int32 interface {
     isOption__int32()
@@ -54,7 +49,7 @@ func nested__native(top__1 bool, mode__2 Mode, inner_flag__3 bool) (int32, bool)
     var jp16 int32
     if top__1 {
         var jp19 int32
-        switch mode__2.(type) {
+        switch mode__2 {
         case Take:
             var jp21 int32
             var mtmp0_value_0 int32
@@ -129,13 +124,13 @@ func show(opt__7 Option__int32) string {
 }
 
 func main0() struct{} {
-    var t33 Option__int32 = nested(true, Take{}, true)
+    var t33 Option__int32 = nested(true, Take, true)
     var t34 string = show(t33)
     println__T_string(t34)
-    var t35 Option__int32 = nested(true, Skip{}, false)
+    var t35 Option__int32 = nested(true, Skip, false)
     var t36 string = show(t35)
     println__T_string(t36)
-    var t37 Option__int32 = nested(false, Take{}, false)
+    var t37 Option__int32 = nested(false, Take, false)
     var t38 string = show(t37)
     println__T_string(t38)
     return struct{}{}

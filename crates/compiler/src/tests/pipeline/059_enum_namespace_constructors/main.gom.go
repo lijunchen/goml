@@ -1,35 +1,25 @@
 package main
 
-type Color interface {
-    isColor()
-}
+type Color int32
 
-type Color_Red struct {}
+const (
+    Color_Red Color = 0
+    Green Color = 1
+)
 
-func (_ Color_Red) isColor() {}
+type Signal int32
 
-type Green struct {}
-
-func (_ Green) isColor() {}
-
-type Signal interface {
-    isSignal()
-}
-
-type Signal_Red struct {}
-
-func (_ Signal_Red) isSignal() {}
-
-type Yellow struct {}
-
-func (_ Yellow) isSignal() {}
+const (
+    Signal_Red Signal = 0
+    Yellow Signal = 1
+)
 
 type GoError = error
 
 func color_is_red(color__0 Color) bool {
     var retv2 bool
     var jp4 bool
-    switch color__0.(type) {
+    switch color__0 {
     case Color_Red:
         jp4 = true
     case Green:
@@ -44,11 +34,11 @@ func color_is_red(color__0 Color) bool {
 func toggle_signal(signal__1 Signal) Signal {
     var retv6 Signal
     var jp8 Signal
-    switch signal__1.(type) {
+    switch signal__1 {
     case Signal_Red:
-        jp8 = Yellow{}
+        jp8 = Yellow
     case Yellow:
-        jp8 = Signal_Red{}
+        jp8 = Signal_Red
     default:
         panic("non-exhaustive match")
     }
@@ -58,9 +48,9 @@ func toggle_signal(signal__1 Signal) Signal {
 
 func main0() Signal {
     var retv10 Signal
-    var current__2 Color = Color_Red{}
+    var current__2 Color = Color_Red
     color_is_red(current__2)
-    var t11 Signal = toggle_signal(Signal_Red{})
+    var t11 Signal = toggle_signal(Signal_Red)
     retv10 = t11
     return retv10
 }
