@@ -3655,19 +3655,35 @@ mod legacy_anf_codegen {
 
     fn compile_go(goenv: &GlobalGoEnv, closure: &anf::ImmExpr) -> goast::Stmt {
         let closure_ty = imm_ty(closure);
-        let apply = find_closure_apply_fn(goenv, &closure_ty)
-            .expect("go statement closure must have an apply method");
-
-        let apply_call = anf::CExpr::ECall {
-            func: anf::ImmExpr::ImmVar {
-                name: apply.name.clone(),
-                ty: apply.ty.clone(),
-            },
-            args: vec![closure.clone()],
-            ty: apply.ret_ty.clone(),
+        let call_expr = if let Some(apply) = find_closure_apply_fn(goenv, &closure_ty) {
+            let apply_call = anf::CExpr::ECall {
+                func: anf::ImmExpr::ImmVar {
+                    name: apply.name.clone(),
+                    ty: apply.ty.clone(),
+                },
+                args: vec![closure.clone()],
+                ty: apply.ret_ty.clone(),
+            };
+            compile_cexpr(goenv, &apply_call)
+        } else {
+            let tast::Ty::TFunc { params, ret_ty } = &closure_ty else {
+                panic!(
+                    "go statement expects a zero-arg function value or closure, got {:?}",
+                    closure_ty
+                );
+            };
+            if !params.is_empty() {
+                panic!(
+                    "go statement expects a zero-arg function value, got {:?}",
+                    closure_ty
+                );
+            }
+            goast::Expr::Call {
+                func: Box::new(compile_imm(goenv, closure)),
+                args: vec![],
+                ty: tast_ty_to_go_type(ret_ty),
+            }
         };
-
-        let call_expr = compile_cexpr(goenv, &apply_call);
         goast::Stmt::Go { call: call_expr }
     }
 
@@ -4181,18 +4197,34 @@ fn find_closure_apply_fn(goenv: &GlobalGoEnv, closure_ty: &tast::Ty) -> Option<C
 
 fn compile_go(goenv: &GlobalGoEnv, closure: &anf::ImmExpr) -> goast::Stmt {
     let closure_ty = imm_ty(closure);
-    let apply = find_closure_apply_fn(goenv, &closure_ty)
-        .expect("go statement closure must have an apply method");
-
-    let apply_expr = goast::Expr::Var {
-        name: go_ident(&apply.name),
-        ty: tast_ty_to_go_type(&apply.ty),
-    };
-
-    let call_expr = goast::Expr::Call {
-        func: Box::new(apply_expr),
-        args: vec![compile_imm(goenv, closure)],
-        ty: tast_ty_to_go_type(&apply.ret_ty),
+    let call_expr = if let Some(apply) = find_closure_apply_fn(goenv, &closure_ty) {
+        let apply_expr = goast::Expr::Var {
+            name: go_ident(&apply.name),
+            ty: tast_ty_to_go_type(&apply.ty),
+        };
+        goast::Expr::Call {
+            func: Box::new(apply_expr),
+            args: vec![compile_imm(goenv, closure)],
+            ty: tast_ty_to_go_type(&apply.ret_ty),
+        }
+    } else {
+        let tast::Ty::TFunc { params, ret_ty } = &closure_ty else {
+            panic!(
+                "go statement expects a zero-arg function value or closure, got {:?}",
+                closure_ty
+            );
+        };
+        if !params.is_empty() {
+            panic!(
+                "go statement expects a zero-arg function value, got {:?}",
+                closure_ty
+            );
+        }
+        goast::Expr::Call {
+            func: Box::new(compile_imm(goenv, closure)),
+            args: vec![],
+            ty: tast_ty_to_go_type(ret_ty),
+        }
     };
 
     goast::Stmt::Go { call: call_expr }
