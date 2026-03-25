@@ -199,10 +199,15 @@ fn compile_imm(goenv: &GlobalGoEnv, imm: &anf::ImmExpr) -> goast::Expr {
             let ty = imm_ty(imm);
             go_literal_from_primitive(value, &ty)
         }
-        anf::ImmExpr::Tag { index, ty } => goast::Expr::StructLiteral {
-            fields: vec![],
-            ty: variant_ty_by_index(goenv, ty, *index),
-        },
+        anf::ImmExpr::Tag { index, ty } => {
+            if enum_is_tag_only(goenv, ty) {
+                return variant_const_expr_by_index(goenv, ty, *index);
+            }
+            goast::Expr::StructLiteral {
+                fields: vec![],
+                ty: variant_ty_by_index(goenv, ty, *index),
+            }
+        }
     }
 }
 
@@ -233,7 +238,7 @@ fn value_expr_ty(expr: &anf::ValueExpr) -> tast::Ty {
     }
 }
 
-fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
+fn variant_symbol_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str) -> String {
     // Count how many enums define a variant with this name.
     let mut count = 0;
     for (_ename, edef) in goenv.enums() {
@@ -255,7 +260,30 @@ fn variant_struct_name(goenv: &GlobalGoEnv, enum_name: &str, variant_name: &str)
     }
 }
 
-fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> String {
+fn enum_def_for_ty<'a>(goenv: &'a GlobalGoEnv, ty: &tast::Ty) -> Option<&'a EnumDef> {
+    let specialized_name = match tast_ty_to_go_type(ty) {
+        goty::GoType::TName { name } => Some(name),
+        _ => None,
+    };
+
+    if let Some(name) = specialized_name.as_deref()
+        && let Some(def) = goenv.get_enum(&TastIdent::new(name))
+    {
+        return Some(def);
+    }
+
+    goenv.get_enum(&TastIdent::new(&ty.get_constr_name_unsafe()))
+}
+
+fn is_tag_only_enum_def(def: &EnumDef) -> bool {
+    def.variants.iter().all(|(_, fields)| fields.is_empty())
+}
+
+fn enum_is_tag_only(goenv: &GlobalGoEnv, ty: &tast::Ty) -> bool {
+    enum_def_for_ty(goenv, ty).is_some_and(is_tag_only_enum_def)
+}
+
+fn lookup_variant_symbol_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> String {
     let base_name = ty.get_constr_name_unsafe();
     let specialized_name = match tast_ty_to_go_type(ty) {
         goty::GoType::TName { name } => Some(name),
@@ -266,13 +294,13 @@ fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> Stri
         && let Some(def) = goenv.get_enum(&TastIdent::new(name))
     {
         let (vname, _fields) = &def.variants[index];
-        return variant_struct_name(goenv, name, &vname.0);
+        return variant_symbol_name(goenv, name, &vname.0);
     }
 
     if let Some(def) = goenv.get_enum(&TastIdent::new(&base_name)) {
         let (vname, _fields) = &def.variants[index];
         let enum_name = specialized_name.unwrap_or_else(|| go_ident(&base_name));
-        return variant_struct_name(goenv, &enum_name, &vname.0);
+        return variant_symbol_name(goenv, &enum_name, &vname.0);
     }
     if let Some(enum_name) = specialized_name.as_deref() {
         if extract_result_tys(ty).is_some() {
@@ -281,7 +309,7 @@ fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> Stri
                 1 => "Err",
                 _ => panic!("invalid Result variant index {}", index),
             };
-            return variant_struct_name(goenv, enum_name, variant_name);
+            return variant_symbol_name(goenv, enum_name, variant_name);
         }
         if extract_option_ty(ty).is_some() {
             let variant_name = match index {
@@ -289,7 +317,7 @@ fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> Stri
                 1 => "Some",
                 _ => panic!("invalid Option variant index {}", index),
             };
-            return variant_struct_name(goenv, enum_name, variant_name);
+            return variant_symbol_name(goenv, enum_name, variant_name);
         }
     }
     panic!(
@@ -299,9 +327,21 @@ fn lookup_variant_name(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> Stri
 }
 
 fn variant_ty_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goty::GoType {
-    let vname = lookup_variant_name(goenv, ty, index);
+    assert!(
+        !enum_is_tag_only(goenv, ty),
+        "tag-only enum does not have variant struct types: {:?}",
+        ty
+    );
+    let vname = lookup_variant_symbol_name(goenv, ty, index);
     let ty = tast::Ty::TStruct { name: vname };
     tast_ty_to_go_type(&ty)
+}
+
+fn variant_const_expr_by_index(goenv: &GlobalGoEnv, ty: &tast::Ty, index: usize) -> goast::Expr {
+    goast::Expr::Var {
+        name: lookup_variant_symbol_name(goenv, ty, index),
+        ty: tast_ty_to_go_type(ty),
+    }
 }
 
 fn go_package_alias(package_path: &str) -> String {
@@ -1401,6 +1441,14 @@ fn enum_variant_expr(
     variant_index: usize,
     payload: Option<goast::Expr>,
 ) -> goast::Expr {
+    if enum_is_tag_only(goenv, enum_ty) {
+        assert!(
+            payload.is_none(),
+            "tag-only enum variant cannot carry payload: {:?}",
+            enum_ty
+        );
+        return variant_const_expr_by_index(goenv, enum_ty, variant_index);
+    }
     goast::Expr::StructLiteral {
         fields: payload
             .into_iter()
@@ -6830,6 +6878,19 @@ fn compile_enum_match_to_native_return_ctx(
     native_ctx: &NativeFnCtx,
     let_env: &LetEnv,
 ) -> Vec<goast::Stmt> {
+    if enum_is_tag_only(goenv, &imm_ty(scrut)) {
+        return compile_switch_match_to_native_return_ctx(
+            goenv,
+            scrut,
+            arms,
+            var_default,
+            default,
+            target,
+            join_env,
+            native_ctx,
+            let_env,
+        );
+    }
     let mut cases = Vec::new();
     for (pat, body) in arms {
         let anf::ImmExpr::Tag { index, ty } = pat else {
@@ -7127,6 +7188,20 @@ fn compile_enum_match_to_join_ctx(
     native_ctx: Option<&NativeFnCtx>,
     let_env: &LetEnv,
 ) -> Vec<goast::Stmt> {
+    if enum_is_tag_only(goenv, &imm_ty(scrut)) {
+        return compile_switch_match_to_join_ctx(
+            goenv,
+            scrut,
+            arms,
+            var_default,
+            default,
+            target,
+            join_bind,
+            join_env,
+            native_ctx,
+            let_env,
+        );
+    }
     let mut cases = Vec::new();
     for (pat, body) in arms {
         let anf::ImmExpr::Tag { index, ty } = pat else {
@@ -7382,6 +7457,18 @@ fn compile_enum_match_leaf_ctx(
     native_ctx: Option<&NativeFnCtx>,
     let_env: &LetEnv,
 ) -> Vec<goast::Stmt> {
+    if enum_is_tag_only(goenv, &imm_ty(scrut)) {
+        return compile_switch_match_leaf_ctx(
+            goenv,
+            scrut,
+            arms,
+            var_default,
+            default,
+            join_env,
+            native_ctx,
+            let_env,
+        );
+    }
     let mut cases = Vec::new();
     for (pat, body) in arms {
         let anf::ImmExpr::Tag { index, ty } = pat else {
@@ -8020,6 +8107,35 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
         if has_type_param {
             continue;
         }
+
+        if is_tag_only_enum_def(def) {
+            let enum_go_name = go_ident(&name.0);
+            defs.push(goast::Item::TypeDef(goast::TypeDef {
+                name: enum_go_name.clone(),
+                ty: goty::GoType::TInt32,
+            }));
+            defs.push(goast::Item::ConstGroup(goast::ConstGroup {
+                specs: def
+                    .variants
+                    .iter()
+                    .enumerate()
+                    .map(|(index, (variant_name, _))| goast::ConstSpec {
+                        name: variant_symbol_name(goenv, &name.0, &variant_name.0),
+                        ty: goty::GoType::TName {
+                            name: enum_go_name.clone(),
+                        },
+                        value: goast::Expr::Int {
+                            value: index.to_string(),
+                            ty: goty::GoType::TName {
+                                name: enum_go_name.clone(),
+                            },
+                        },
+                    })
+                    .collect(),
+            }));
+            continue;
+        }
+
         let type_identifier_method = format!("is{}", go_ident(&name.0));
 
         defs.push(goast::Item::Interface(goast::Interface {
@@ -8031,7 +8147,7 @@ fn gen_type_definition(goenv: &GlobalGoEnv) -> Vec<goast::Item> {
             }],
         }));
         for (variant_name, variant_fields) in def.variants.iter() {
-            let variant_name = variant_struct_name(goenv, &name.0, &variant_name.0);
+            let variant_name = variant_symbol_name(goenv, &name.0, &variant_name.0);
             let mut fields = Vec::new();
             for (i, field) in variant_fields.iter().enumerate() {
                 fields.push(goast::Field {

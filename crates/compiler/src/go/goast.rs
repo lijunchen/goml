@@ -16,7 +16,9 @@ pub enum Item {
     Import(ImportDecl),
     Interface(Interface),
     Struct(Struct),
+    TypeDef(TypeDef),
     TypeAlias(TypeAlias),
+    ConstGroup(ConstGroup),
     Fn(Fn),
 }
 
@@ -50,9 +52,27 @@ pub struct TypeAlias {
 }
 
 #[derive(Debug)]
+pub struct TypeDef {
+    pub name: String,
+    pub ty: goty::GoType,
+}
+
+#[derive(Debug)]
 pub struct Interface {
     pub name: String,
     pub methods: Vec<MethodElem>,
+}
+
+#[derive(Debug)]
+pub struct ConstGroup {
+    pub specs: Vec<ConstSpec>,
+}
+
+#[derive(Debug)]
+pub struct ConstSpec {
+    pub name: String,
+    pub ty: goty::GoType,
+    pub value: Expr,
 }
 
 #[derive(Debug)]

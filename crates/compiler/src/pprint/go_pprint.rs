@@ -3,8 +3,9 @@ use pretty::RcDoc;
 use crate::go::{
     compile::GlobalGoEnv,
     goast::{
-        Block, Expr, Field, File, Fn, GoBinaryOp, GoUnaryOp, ImportDecl, ImportSpec, Interface,
-        Item, Method, MethodElem, Package, Receiver, Stmt, Struct, TypeAlias,
+        Block, ConstGroup, ConstSpec, Expr, Field, File, Fn, GoBinaryOp, GoUnaryOp, ImportDecl,
+        ImportSpec, Interface, Item, Method, MethodElem, Package, Receiver, Stmt, Struct,
+        TypeAlias, TypeDef,
     },
     goty::GoType,
 };
@@ -116,7 +117,9 @@ impl Item {
             Item::Import(import_decl) => import_decl.to_doc(goenv),
             Item::Interface(interface) => interface.to_doc(goenv),
             Item::Struct(struct_def) => struct_def.to_doc(goenv),
+            Item::TypeDef(type_def) => type_def.to_doc(goenv),
             Item::TypeAlias(alias) => alias.to_doc(goenv),
+            Item::ConstGroup(const_group) => const_group.to_doc(goenv),
             Item::Fn(func) => func.to_doc(goenv),
         }
     }
@@ -313,6 +316,64 @@ impl TypeAlias {
             .append(RcDoc::text("="))
             .append(RcDoc::space())
             .append(go_type_doc(&self.ty))
+    }
+
+    pub fn to_pretty(&self, goenv: &GlobalGoEnv, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(goenv).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl TypeDef {
+    pub fn to_doc(&self, _goenv: &GlobalGoEnv) -> RcDoc<'_, ()> {
+        RcDoc::text("type")
+            .append(RcDoc::space())
+            .append(RcDoc::text(&self.name))
+            .append(RcDoc::space())
+            .append(go_type_doc(&self.ty))
+    }
+
+    pub fn to_pretty(&self, goenv: &GlobalGoEnv, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(goenv).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl ConstGroup {
+    pub fn to_doc(&self, goenv: &GlobalGoEnv) -> RcDoc<'_, ()> {
+        RcDoc::text("const")
+            .append(RcDoc::space())
+            .append(RcDoc::text("("))
+            .append(
+                RcDoc::hardline()
+                    .append(RcDoc::intersperse(
+                        self.specs.iter().map(|spec| spec.to_doc(goenv)),
+                        RcDoc::hardline(),
+                    ))
+                    .nest(4),
+            )
+            .append(RcDoc::hardline())
+            .append(RcDoc::text(")"))
+    }
+
+    pub fn to_pretty(&self, goenv: &GlobalGoEnv, width: usize) -> String {
+        let mut w = Vec::new();
+        self.to_doc(goenv).render(width, &mut w).unwrap();
+        String::from_utf8(w).unwrap()
+    }
+}
+
+impl ConstSpec {
+    pub fn to_doc(&self, goenv: &GlobalGoEnv) -> RcDoc<'_, ()> {
+        RcDoc::text(&self.name)
+            .append(RcDoc::space())
+            .append(go_type_doc(&self.ty))
+            .append(RcDoc::space())
+            .append(RcDoc::text("="))
+            .append(RcDoc::space())
+            .append(self.value.to_doc(goenv))
     }
 
     pub fn to_pretty(&self, goenv: &GlobalGoEnv, width: usize) -> String {
