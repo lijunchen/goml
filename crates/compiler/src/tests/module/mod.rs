@@ -98,6 +98,11 @@ fn multi_package_compile_project_019() -> anyhow::Result<()> {
     run_project("project019_cross_package_inherent_method")
 }
 
+#[test]
+fn multi_package_compile_project_020() -> anyhow::Result<()> {
+    run_project("project020_pascal_package_custom_entry")
+}
+
 fn run_project(name: &str) -> anyhow::Result<()> {
     let name = name.to_string();
     let handle = std::thread::Builder::new()
