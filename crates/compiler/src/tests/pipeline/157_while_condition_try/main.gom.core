@@ -1,0 +1,109 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn step_some(i/0: int32) -> Option[bool] {
+  if (i/0 < 3) {
+      {
+        Option::Some(true)
+      }
+  } else {
+      {
+        Option::Some(false)
+      }
+  }
+}
+
+fn step_none(i/1: int32) -> Option[bool] {
+  if (i/1 < 2) {
+      {
+        Option::Some(true)
+      }
+  } else {
+      {
+        Option::None
+      }
+  }
+}
+
+fn run_some() -> Option[int32] {
+  let i/2 = ref(0) in
+  let total/3 = ref(0) in
+  let _wild4 = while {
+    let mtmp0 = step_some(ref_get(i/2)) in
+    match mtmp0 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x1) => {
+        {
+          let x1 = Option::Some._0(mtmp0) in
+          {
+            let try_value/31 = x1 in
+            try_value/31
+          }
+        }
+      },
+    }
+  } {
+      {
+        let _wild2 = ref_set(total/3, (ref_get(total/3) + ref_get(i/2))) in
+        let _wild3 = ref_set(i/2, (ref_get(i/2) + 1)) in
+      }
+  } in
+  Option::Some(ref_get(total/3))
+}
+
+fn run_none() -> Option[int32] {
+  let i/4 = ref(0) in
+  let total/5 = ref(0) in
+  let _wild9 = while {
+    let mtmp5 = step_none(ref_get(i/4)) in
+    match mtmp5 {
+      Option::None => {
+        return Option::None
+      },
+      Option::Some(x6) => {
+        {
+          let x6 = Option::Some._0(mtmp5) in
+          {
+            let try_value/67 = x6 in
+            try_value/67
+          }
+        }
+      },
+    }
+  } {
+      {
+        let _wild7 = ref_set(total/5, (ref_get(total/5) + ref_get(i/4))) in
+        let _wild8 = ref_set(i/4, (ref_get(i/4) + 1)) in
+      }
+  } in
+  Option::Some(ref_get(total/5))
+}
+
+fn show(x/6: Option[int32]) -> string {
+  match x/6 {
+    Option::None => {
+      "none"
+    },
+    Option::Some(x10) => {
+      {
+        let x10 = Option::Some._0(x/6) in
+        {
+          let v/7 = x10 in
+          ("some=" + trait_call[ToString::to_string](v/7))
+        }
+      }
+    },
+  }
+}
+
+fn main() -> unit {
+  let _wild11 = println(show(run_some())) in
+  let _wild12 = println(show(run_none())) in
+}

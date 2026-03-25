@@ -1,0 +1,53 @@
+package main
+file main.gom
+  fn step_some(local/1/0: int32) -> Option[bool] {
+        if i/0 < 3i32 {
+            Option::Some(true)
+        } else {
+            Option::Some(false)
+        }
+    }
+    
+    fn step_none(local/1/1: int32) -> Option[bool] {
+        if i/1 < 2i32 {
+            Option::Some(true)
+        } else {
+            Option::None
+        }
+    }
+    
+    fn run_some() -> Option[int32] {
+        let local/1/2 = ref(0i32);
+        let local/1/3 = ref(0i32);
+        while def/1/0(ref_get(i/2))? {
+            {
+                ref_set(total/3, ref_get(total/3) + ref_get(i/2));
+                ref_set(i/2, ref_get(i/2) + 1i32);
+            }
+        };
+        Option::Some(ref_get(total/3))
+    }
+    
+    fn run_none() -> Option[int32] {
+        let local/1/4 = ref(0i32);
+        let local/1/5 = ref(0i32);
+        while def/1/1(ref_get(i/4))? {
+            {
+                ref_set(total/5, ref_get(total/5) + ref_get(i/4));
+                ref_set(i/4, ref_get(i/4) + 1i32);
+            }
+        };
+        Option::Some(ref_get(total/5))
+    }
+    
+    fn show(local/1/6: Option[int32]) -> string {
+        match x/6 {
+            Option::Some(local/1/7) => "some=" + v/7.to_string(),
+            Option::None => "none",
+        }
+    }
+    
+    fn main() -> unit {
+        println(def/1/4(def/1/2()));
+        println(def/1/4(def/1/3()));
+    }
