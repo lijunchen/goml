@@ -18,34 +18,26 @@ type Tuple2_Color_Color struct {
     _1 Color
 }
 
-type Color interface {
-    isColor()
-}
+type Color int32
 
-type Red struct {}
-
-func (_ Red) isColor() {}
-
-type Green struct {}
-
-func (_ Green) isColor() {}
-
-type Blue struct {}
-
-func (_ Blue) isColor() {}
+const (
+    Red Color = 0
+    Green Color = 1
+    Blue Color = 2
+)
 
 type GoError = error
 
 func main0() struct{} {
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
-        _0: Blue{},
-        _1: Red{},
+        _0: Blue,
+        _1: Red,
     }
     var x0 Color = a__0._0
     var x1 Color = a__0._1
-    switch x1.(type) {
+    switch x1 {
     case Red:
-        switch x0.(type) {
+        switch x0 {
         case Red:
             print__T_int32(1)
         case Green:
@@ -57,7 +49,7 @@ func main0() struct{} {
         }
         return struct{}{}
     case Green:
-        switch x0.(type) {
+        switch x0 {
         case Red:
             print__T_int32(0)
         case Green:
@@ -69,7 +61,7 @@ func main0() struct{} {
         }
         return struct{}{}
     case Blue:
-        switch x0.(type) {
+        switch x0 {
         case Red:
             print__T_int32(3)
         case Green:

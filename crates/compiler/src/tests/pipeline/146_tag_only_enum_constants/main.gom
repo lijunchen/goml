@@ -1,0 +1,34 @@
+enum Light {
+    Red,
+    Yellow,
+    Green,
+}
+
+enum Paint {
+    Red,
+    Blue,
+}
+
+fn light_code(light: Light) -> int32 {
+    match light {
+        Light::Red => 10,
+        Light::Yellow => 20,
+        Light::Green => 30,
+    }
+}
+
+fn paint_code(paint: Paint) -> int32 {
+    match paint {
+        Paint::Red => 1,
+        Paint::Blue => 2,
+    }
+}
+
+fn main() {
+    let light = Light::Red;
+    let paint = Paint::Red;
+    let _ = string_println(int32_to_string(light_code(light)));
+    let _ = string_println(int32_to_string(paint_code(paint)));
+    let _ = string_println(int32_to_string(light_code(Light::Green)));
+    string_println(int32_to_string(paint_code(Paint::Blue)))
+}

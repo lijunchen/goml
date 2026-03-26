@@ -24,21 +24,13 @@ type Line struct {
     color Color
 }
 
-type Color interface {
-    isColor()
-}
+type Color int32
 
-type Red struct {}
-
-func (_ Red) isColor() {}
-
-type Green struct {}
-
-func (_ Green) isColor() {}
-
-type Blue struct {}
-
-func (_ Blue) isColor() {}
+const (
+    Red Color = 0
+    Green Color = 1
+    Blue Color = 2
+)
 
 type GoError = error
 
@@ -62,7 +54,7 @@ func point32_to_string(p__0 Point) string {
 func color_to_string(c__3 Color) string {
     var retv20 string
     var jp22 string
-    switch c__3.(type) {
+    switch c__3 {
     case Red:
         jp22 = "Red"
     case Green:
@@ -166,7 +158,7 @@ func main0() struct{} {
     var line__12 Line = Line{
         from: p0__10,
         to: p1__11,
-        color: Red{},
+        color: Red,
     }
     var t46 string = line_to_string(line__12)
     println__T_string(t46)

@@ -22,37 +22,29 @@ type Tuple2_Color_Color struct {
     _1 Color
 }
 
-type Color interface {
-    isColor()
-}
+type Color int32
 
-type Red struct {}
-
-func (_ Red) isColor() {}
-
-type Green struct {}
-
-func (_ Green) isColor() {}
-
-type Blue struct {}
-
-func (_ Blue) isColor() {}
+const (
+    Red Color = 0
+    Green Color = 1
+    Blue Color = 2
+)
 
 type GoError = error
 
 func main0() bool {
     var retv4 bool
     var a__0 Tuple2_Color_Color = Tuple2_Color_Color{
-        _0: Blue{},
-        _1: Blue{},
+        _0: Blue,
+        _1: Blue,
     }
     var x0 Color = a__0._0
     var x1 Color = a__0._1
     var jp6 bool
-    switch x1.(type) {
+    switch x1 {
     case Red:
         var jp8 bool
-        switch x0.(type) {
+        switch x0 {
         case Red:
             jp8 = true
         case Green:
@@ -67,7 +59,7 @@ func main0() bool {
         return retv4
     case Green:
         var jp10 bool
-        switch x0.(type) {
+        switch x0 {
         case Red:
             jp10 = true
         case Green:
@@ -82,7 +74,7 @@ func main0() bool {
         return retv4
     case Blue:
         var jp12 bool
-        switch x0.(type) {
+        switch x0 {
         case Red:
             jp12 = false
         case Green:

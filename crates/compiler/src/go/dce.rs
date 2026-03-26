@@ -24,7 +24,9 @@ fn dce_item(item: ast::Item) -> ast::Item {
             ast::Item::Fn(f)
         }
         ast::Item::Struct(s) => ast::Item::Struct(s),
+        ast::Item::TypeDef(t) => ast::Item::TypeDef(t),
         ast::Item::TypeAlias(a) => ast::Item::TypeAlias(a),
+        ast::Item::ConstGroup(g) => ast::Item::ConstGroup(g),
         ast::Item::Interface(i) => ast::Item::Interface(i),
     }
 }
@@ -1228,7 +1230,14 @@ fn collect_packages_in_item(
                 }
             }
         }
+        ast::Item::TypeDef(type_def) => collect_packages_in_go_type(&type_def.ty, imports, used),
         ast::Item::TypeAlias(alias) => collect_packages_in_go_type(&alias.ty, imports, used),
+        ast::Item::ConstGroup(group) => {
+            for spec in &group.specs {
+                collect_packages_in_go_type(&spec.ty, imports, used);
+                collect_packages_in_expr(&spec.value, imports, used);
+            }
+        }
         ast::Item::Package(_) | ast::Item::Import(_) => {}
     }
 }

@@ -25,21 +25,13 @@ type Line struct {
     color Color
 }
 
-type Color interface {
-    isColor()
-}
+type Color int32
 
-type Red struct {}
-
-func (_ Red) isColor() {}
-
-type Green struct {}
-
-func (_ Green) isColor() {}
-
-type Blue struct {}
-
-func (_ Blue) isColor() {}
+const (
+    Red Color = 0
+    Green Color = 1
+    Blue Color = 2
+)
 
 type LineList interface {
     isLineList()
@@ -61,7 +53,7 @@ type GoError = error
 func _goml_trait_impl_ToString_Color_to_string(self__0 Color) string {
     var retv12 string
     var jp14 string
-    switch self__0.(type) {
+    switch self__0 {
     case Red:
         jp14 = "Color::Red"
     case Green:
@@ -173,9 +165,9 @@ func _goml_trait_impl_ToString_LineList_to_string(self__15 LineList) string {
 }
 
 func main0() struct{} {
-    var from__18 Point = _goml_inherent_Point_Point_new(10, 20, Red{})
-    var to__19 Point = _goml_inherent_Point_Point_new(30, 40, Green{})
-    var line__20 Line = _goml_inherent_Line_Line_new(from__18, to__19, Blue{})
+    var from__18 Point = _goml_inherent_Point_Point_new(10, 20, Red)
+    var to__19 Point = _goml_inherent_Point_Point_new(30, 40, Green)
+    var line__20 Line = _goml_inherent_Line_Line_new(from__18, to__19, Blue)
     var lines__21 LineList = Cons{
         _0: line__20,
         _1: Nil{},
