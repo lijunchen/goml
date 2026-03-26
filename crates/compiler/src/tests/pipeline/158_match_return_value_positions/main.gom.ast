@@ -1,0 +1,36 @@
+package main;
+fn add_after_match(flag: bool) -> int32 {
+    let value = match flag {
+        true => return 5i32,
+        false => 7i32,
+    };
+    value + 1i32
+}
+
+fn receiver_after_match(flag: bool) -> string {
+    match flag {
+        true => return "early",
+        false => 7i32,
+    }.to_string()
+}
+
+fn closure_after_match(flag: bool) -> int32 {
+    let f = |inner: bool| {
+        let value = match inner {
+            true => return 2i32,
+            false => 4i32,
+        };
+        value + 3i32
+    };
+    f(flag)
+}
+
+fn main() -> unit {
+    println(add_after_match(false));
+    println(add_after_match(true));
+    println(receiver_after_match(false));
+    println(receiver_after_match(true));
+    println(closure_after_match(false));
+    println(closure_after_match(true));
+}
+

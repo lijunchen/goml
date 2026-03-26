@@ -9,7 +9,10 @@ fn main() {
         .unwrap()
         .to_path_buf();
 
-    println!("cargo:rerun-if-changed={}", repo_root.join(".git/HEAD").display());
+    println!(
+        "cargo:rerun-if-changed={}",
+        repo_root.join(".git/HEAD").display()
+    );
 
     if let Some(head_ref) = git_stdout(&repo_root, &["symbolic-ref", "--quiet", "HEAD"]) {
         let ref_path = repo_root.join(".git").join(head_ref);
@@ -24,7 +27,13 @@ fn main() {
 
     if let Some(date) = git_stdout(
         &repo_root,
-        &["show", "-s", "--date=format:%Y-%m-%d", "--format=%cd", "HEAD"],
+        &[
+            "show",
+            "-s",
+            "--date=format:%Y-%m-%d",
+            "--format=%cd",
+            "HEAD",
+        ],
     ) {
         println!("cargo:rustc-env=GOML_GIT_DATE={date}");
     }

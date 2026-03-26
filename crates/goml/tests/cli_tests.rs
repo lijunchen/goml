@@ -54,10 +54,7 @@ fn normalize_temp_prefix(text: &str, root: &Path) -> String {
 }
 
 fn current_version_output() -> String {
-    match (
-        option_env!("GOML_GIT_HASH"),
-        option_env!("GOML_GIT_DATE"),
-    ) {
+    match (option_env!("GOML_GIT_HASH"), option_env!("GOML_GIT_DATE")) {
         (Some(hash), Some(date)) => format!("goml {} ({hash} {date})\n", env!("CARGO_PKG_VERSION")),
         _ => format!("goml {}\n", env!("CARGO_PKG_VERSION")),
     }
