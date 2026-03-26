@@ -1,0 +1,137 @@
+fn main() -> unit {
+  join ret12() -> unit {
+    ()
+  } in
+  let i/0 = ref(0) in
+  join exit13() -> unit {
+    let _wild2 = () in
+    let j/1 = ref(0) in
+    let total/2 = ref(0) in
+    join exit14() -> unit {
+      let _wild5 = () in
+      let t15 = ref_get(total/2) in
+      let _wild6 = println__T_int32(t15) in
+      let k/3 = ref(0) in
+      let sum/4 = ref(0) in
+      join exit16() -> unit {
+        let _wild10 = () in
+        let t17 = ref_get(sum/4) in
+        let _wild11 = println__T_int32(t17) in
+        jump ret12()
+      } in
+      joinrec {
+        join loop18() -> unit {
+          let mtmp7 = ref_get(k/3) in
+          join k19(jp20: bool) -> unit {
+            if jp20 {
+              let t21 = ref_get(sum/4) in
+              let t22 = ref_get(k/3) in
+              let t23 = (t21 + t22) in
+              let _wild8 = ref_set(sum/4, t23) in
+              let t24 = ref_get(k/3) in
+              let t25 = (t24 + 1) in
+              let _wild9 = ref_set(k/3, t25) in
+              jump loop18()
+            } else {
+              jump exit16()
+            }
+          } in
+          match mtmp7 {
+            0 => {
+              jump k19(true)
+            },
+            1 => {
+              let t28 = ref_get(sum/4) in
+              let t29 = (t28 == 0) in
+              join k26(jp27: bool) -> unit {
+                jump k19(jp27)
+              } in
+              if t29 {
+                jump k26(true)
+              } else {
+                jump k26(false)
+              }
+            },
+            2 => {
+              jump k19(true)
+            },
+            _ => {
+              jump k19(false)
+            },
+          }
+        } in
+      } in
+      jump loop18()
+    } in
+    joinrec {
+      join loop30() -> unit {
+        let t38 = ref_get(j/1) in
+        let t39 = (t38 < 4) in
+        join k31(jp32: bool) -> unit {
+          if jp32 {
+            let t33 = ref_get(total/2) in
+            let t34 = ref_get(j/1) in
+            let t35 = (t33 + t34) in
+            let _wild3 = ref_set(total/2, t35) in
+            let t36 = ref_get(j/1) in
+            let t37 = (t36 + 1) in
+            let _wild4 = ref_set(j/1, t37) in
+            jump loop30()
+          } else {
+            jump exit14()
+          }
+        } in
+        if t39 {
+          let t42 = ref_get(j/1) in
+          let t43 = (t42 == 1) in
+          join k40(jp41: bool) -> unit {
+            jump k31(jp41)
+          } in
+          if t43 {
+            jump k40(true)
+          } else {
+            let t44 = ref_get(j/1) in
+            let t45 = (t44 != 3) in
+            jump k40(t45)
+          }
+        } else {
+          jump k31(false)
+        }
+      } in
+    } in
+    jump loop30()
+  } in
+  joinrec {
+    join loop46() -> unit {
+      let t52 = ref_get(i/0) in
+      let t53 = (t52 < 3) in
+      join k47(jp48: bool) -> unit {
+        if jp48 {
+          let t49 = ref_get(i/0) in
+          let _wild0 = println__T_int32(t49) in
+          let t50 = ref_get(i/0) in
+          let t51 = (t50 + 1) in
+          let _wild1 = ref_set(i/0, t51) in
+          jump loop46()
+        } else {
+          jump exit13()
+        }
+      } in
+      if t53 {
+        jump k47(true)
+      } else {
+        jump k47(false)
+      }
+    } in
+  } in
+  jump loop46()
+}
+
+fn println__T_int32(value/1: int32) -> unit {
+  join ret54() -> unit {
+    ()
+  } in
+  let t55 = int32_to_string(value/1) in
+  let t56 = string_println(t55) in
+  jump ret54()
+}

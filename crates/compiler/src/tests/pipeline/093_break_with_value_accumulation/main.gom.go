@@ -46,22 +46,23 @@ func main0() struct{} {
     for {
         var t13 int32 = ref_get__Ref_int32(i__1)
         var t14 bool = t13 < 20
-        if !t14 {
-            break
-        }
-        var t15 int32 = ref_get__Ref_int32(i__1)
-        var t16 int32 = t15 + 1
-        ref_set__Ref_int32(i__1, t16)
-        var t21 int32 = ref_get__Ref_int32(i__1)
-        var t22 bool = t21 > 5
-        if t22 {
-            break Loop_loop12
+        if t14 {
+            var t15 int32 = ref_get__Ref_int32(i__1)
+            var t16 int32 = t15 + 1
+            ref_set__Ref_int32(i__1, t16)
+            var t21 int32 = ref_get__Ref_int32(i__1)
+            var t22 bool = t21 > 5
+            if t22 {
+                break Loop_loop12
+            } else {
+                var t18 int32 = ref_get__Ref_int32(sum__0)
+                var t19 int32 = ref_get__Ref_int32(i__1)
+                var t20 int32 = t18 + t19
+                ref_set__Ref_int32(sum__0, t20)
+                continue
+            }
         } else {
-            var t18 int32 = ref_get__Ref_int32(sum__0)
-            var t19 int32 = ref_get__Ref_int32(i__1)
-            var t20 int32 = t18 + t19
-            ref_set__Ref_int32(sum__0, t20)
-            continue
+            break Loop_loop12
         }
     }
     print__T_string("sum: ")

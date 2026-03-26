@@ -1,0 +1,41 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let i/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let sum/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 5 {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
+            let cur/2: int32 = if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 3 {
+                {
+                    continue
+                }
+            } else {
+                {
+                    (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32]))
+                }
+            };
+            (ref_set : (Ref[int32], int32) -> unit)((sum/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])) + (cur/2 : int32));
+        }
+    };
+    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((sum/1 : Ref[int32])));
+    let j/3: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let total/4: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while true {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((j/3 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((j/3 : Ref[int32])) + 1);
+            let cur/5: int32 = match (ref_get : (Ref[int32]) -> int32)((j/3 : Ref[int32])) {
+                5 => break,
+                _ : int32 => (ref_get : (Ref[int32]) -> int32)((j/3 : Ref[int32])),
+            };
+            (ref_set : (Ref[int32], int32) -> unit)((total/4 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total/4 : Ref[int32])) + (cur/5 : int32));
+        }
+    };
+    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((total/4 : Ref[int32])));
+}

@@ -45,13 +45,15 @@ func main0() struct{} {
         signal_0: signal__1,
     }
     go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t7)
+    Loop_loop9:
     for {
         var t10 int32 = ref_get__Ref_int32(signal__1)
         var t11 bool = t10 < 1
-        if !t11 {
-            break
+        if t11 {
+            continue
+        } else {
+            break Loop_loop9
         }
-        continue
     }
     string_println("main")
     return struct{}{}

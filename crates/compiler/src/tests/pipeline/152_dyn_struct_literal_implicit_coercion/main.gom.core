@@ -1,0 +1,20 @@
+fn print(value/0: T) -> unit {
+  string_print(trait_call[ToString::to_string](value/0))
+}
+
+fn println(value/1: T) -> unit {
+  string_println(trait_call[ToString::to_string](value/1))
+}
+
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  int32_to_string(self/0)
+}
+
+fn render(x/1: dyn Display) -> string {
+  dyn_call[Display::show](x/1)
+}
+
+fn main() -> unit {
+  let holder/2 = Holder { value: to_dyn[Display]{int32}(42) } in
+  let _wild0 = println(render(Holder.value(holder/2))) in
+}

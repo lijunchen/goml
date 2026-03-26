@@ -676,14 +676,17 @@ impl Typer {
                                 );
                             }
                         } else {
-                            diagnostics.push(Diagnostic::new(
-                                Stage::Typer,
-                                Severity::Error,
-                                format!(
+                            diagnostics.push(
+                                Diagnostic::new(
+                                    Stage::Typer,
+                                    Severity::Error,
+                                    format!(
                                     "Overloaded constraint does not involve a function type: {}",
                                     super::util::format_ty_for_diag(&norm_call_site_type)
                                 ),
-                            ).with_range(origin));
+                                )
+                                .with_range(origin),
+                            );
                         }
                     }
                     Constraint::Implements {
@@ -857,7 +860,7 @@ impl Typer {
                             constraints.push(Constraint::TypeEqual(
                                 coercion.concrete_ty,
                                 coercion.expected_ty,
-                                None,
+                                coercion.origin,
                             ));
                         }
                     }
@@ -865,7 +868,7 @@ impl Typer {
                         constraints.push(Constraint::TypeEqual(
                             coercion.concrete_ty,
                             coercion.expected_ty,
-                            None,
+                            coercion.origin,
                         ));
                         changed = true;
                     }
@@ -882,7 +885,7 @@ impl Typer {
                         constraints.push(Constraint::TypeEqual(
                             coercion.concrete_ty.clone(),
                             coercion.expected_ty.clone(),
-                            None,
+                            coercion.origin,
                         ));
                         changed = true;
                     } else {
@@ -897,7 +900,7 @@ impl Typer {
                     constraints.push(Constraint::TypeEqual(
                         coercion.concrete_ty,
                         coercion.expected_ty,
-                        None,
+                        coercion.origin,
                     ));
                 }
                 changed = true;

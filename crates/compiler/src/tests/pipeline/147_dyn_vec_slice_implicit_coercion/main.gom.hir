@@ -1,0 +1,25 @@
+package main
+file main.gom
+  trait Display {
+      fn show(Self) -> string;
+    }
+    
+    impl Display for int32 {
+      fn show(local/1/0: int32) -> string {
+          self/0.to_string()
+      }
+    }
+    
+    fn render(local/1/1: dyn Display) -> string {
+        Display::show(x/1)
+    }
+    
+    fn main() -> unit {
+        let local/1/2: Vec[dyn Display] = vec_new();
+        let local/1/3 = vec_push(v/2, 10i32);
+        let local/1/4 = vec_push(v/3, 20i32);
+        let local/1/5: Slice[dyn Display] = slice(v/4, 0i32, 2i32);
+        println(def/1/2(slice_get(s/5, 0i32)));
+        let local/1/6 = slice_sub(s/5, 1i32, 2i32);
+        println(def/1/2(slice_get(t/6, 0i32)));
+    }

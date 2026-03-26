@@ -1,0 +1,30 @@
+package main;
+fn main() -> unit {
+    let i = ref(0i32);
+    let sum = ref(0i32);
+    while ref_get(i) < 7i32 {
+        {
+            let cur = ref_get(i);
+            ref_set(i, cur + 1i32);
+            let _ = if cur < 5i32 {
+                {
+                    match cur {
+                        1 => continue,
+                        3 => continue,
+                        _ => (),
+                    }
+                }
+            } else {
+                {
+                    match cur {
+                        5 => break,
+                        _ => (),
+                    }
+                }
+            };
+            ref_set(sum, ref_get(sum) + cur);
+        }
+    };
+    println(ref_get(sum));
+}
+

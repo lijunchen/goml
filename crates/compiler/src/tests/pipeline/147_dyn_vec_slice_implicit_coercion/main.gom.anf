@@ -1,0 +1,43 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  join ret2(retv3: string) -> string {
+    retv3
+  } in
+  let t4 = int32_to_string(self/0) in
+  jump ret2(t4)
+}
+
+fn render(x/1: dyn Display) -> string {
+  join ret5(retv6: string) -> string {
+    retv6
+  } in
+  let t7 = dyn_call[Display::show](x/1) in
+  jump ret5(t7)
+}
+
+fn main() -> unit {
+  join ret8() -> unit {
+    ()
+  } in
+  let v/2 = vec_new() in
+  let t9 = to_dyn[Display]{int32}(10) in
+  let v/3 = vec_push(v/2, t9) in
+  let t10 = to_dyn[Display]{int32}(20) in
+  let v/4 = vec_push(v/3, t10) in
+  let s/5 = slice(v/4, 0, 2) in
+  let t11 = slice_get(s/5, 0) in
+  let t12 = render(t11) in
+  let _wild0 = println__T_string(t12) in
+  let t/6 = slice_sub(s/5, 1, 2) in
+  let t13 = slice_get(t/6, 0) in
+  let t14 = render(t13) in
+  let _wild1 = println__T_string(t14) in
+  jump ret8()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret15() -> unit {
+    ()
+  } in
+  let t16 = string_println(value/1) in
+  jump ret15()
+}

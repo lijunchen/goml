@@ -1,0 +1,22 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+impl Display for int32{
+  fn show(self/0: int32) -> string {
+      (int32::to_string : (int32) -> string)((self/0 : int32))
+  }
+}
+
+fn render(x/1: dyn Display) -> string {
+    (dyn Display::show : (dyn Display) -> string)((x/1 : dyn Display))
+}
+
+fn main() -> unit {
+    let holder/2: Holder[dyn Display] = Holder { value: to_dyn[Display]{int32}(42) };
+    (println : (string) -> unit)((render : (dyn Display) -> string)((holder/2 : Holder[dyn Display]).value));
+}

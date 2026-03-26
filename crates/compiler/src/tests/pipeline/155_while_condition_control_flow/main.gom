@@ -1,0 +1,36 @@
+fn main() -> unit {
+    let i = ref(0i32);
+    while if ref_get(i) < 3i32 { true } else { false } {
+        println(ref_get(i));
+        ref_set(i, ref_get(i) + 1i32);
+    };
+
+    let j = ref(0i32);
+    let total = ref(0i32);
+    while if ref_get(j) < 4i32 {
+        if ref_get(j) == 1i32 {
+            true
+        } else {
+            ref_get(j) != 3i32
+        }
+    } else {
+        false
+    } {
+        ref_set(total, ref_get(total) + ref_get(j));
+        ref_set(j, ref_get(j) + 1i32);
+    };
+    println(ref_get(total));
+
+    let k = ref(0i32);
+    let sum = ref(0i32);
+    while match ref_get(k) {
+        0i32 => true,
+        1i32 => if ref_get(sum) == 0i32 { true } else { false },
+        2i32 => true,
+        _ => false,
+    } {
+        ref_set(sum, ref_get(sum) + ref_get(k));
+        ref_set(k, ref_get(k) + 1i32);
+    };
+    println(ref_get(sum));
+}

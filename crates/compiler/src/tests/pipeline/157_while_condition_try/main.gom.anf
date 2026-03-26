@@ -1,0 +1,164 @@
+fn step_some(i/0: int32) -> Option__bool {
+  join ret13(retv14: Option__bool) -> Option__bool {
+    retv14
+  } in
+  let t17 = (i/0 < 3) in
+  join k15(jp16: Option__bool) -> Option__bool {
+    jump ret13(jp16)
+  } in
+  if t17 {
+    let t18 = Option__bool::Some(true) in
+    jump k15(t18)
+  } else {
+    let t19 = Option__bool::Some(false) in
+    jump k15(t19)
+  }
+}
+
+fn step_none(i/1: int32) -> Option__bool {
+  join ret20(retv21: Option__bool) -> Option__bool {
+    retv21
+  } in
+  let t24 = (i/1 < 2) in
+  join k22(jp23: Option__bool) -> Option__bool {
+    jump ret20(jp23)
+  } in
+  if t24 {
+    let t25 = Option__bool::Some(true) in
+    jump k22(t25)
+  } else {
+    jump k22(Tag_0)
+  }
+}
+
+fn run_some() -> Option__int32 {
+  join ret26(retv27: Option__int32) -> Option__int32 {
+    retv27
+  } in
+  let i/2 = ref(0) in
+  let total/3 = ref(0) in
+  join exit28() -> Option__int32 {
+    let _wild4 = () in
+    let t29 = ref_get(total/3) in
+    let t30 = Option__int32::Some(t29) in
+    jump ret26(t30)
+  } in
+  joinrec {
+    join loop31() -> Option__int32 {
+      let t32 = ref_get(i/2) in
+      let mtmp0 = step_some(t32) in
+      join k33(jp34: bool) -> Option__int32 {
+        if jp34 {
+          let t35 = ref_get(total/3) in
+          let t36 = ref_get(i/2) in
+          let t37 = (t35 + t36) in
+          let _wild2 = ref_set(total/3, t37) in
+          let t38 = ref_get(i/2) in
+          let t39 = (t38 + 1) in
+          let _wild3 = ref_set(i/2, t39) in
+          jump loop31()
+        } else {
+          jump exit28()
+        }
+      } in
+      match mtmp0 {
+        Tag_0 => {
+          jump ret26(Tag_0)
+        },
+        Tag_1 => {
+          let x1 = Option__bool::Some._0(mtmp0) in
+          let try_value/31 = x1 in
+          jump k33(try_value/31)
+        },
+      }
+    } in
+  } in
+  jump loop31()
+}
+
+fn run_none() -> Option__int32 {
+  join ret40(retv41: Option__int32) -> Option__int32 {
+    retv41
+  } in
+  let i/4 = ref(0) in
+  let total/5 = ref(0) in
+  join exit42() -> Option__int32 {
+    let _wild9 = () in
+    let t43 = ref_get(total/5) in
+    let t44 = Option__int32::Some(t43) in
+    jump ret40(t44)
+  } in
+  joinrec {
+    join loop45() -> Option__int32 {
+      let t46 = ref_get(i/4) in
+      let mtmp5 = step_none(t46) in
+      join k47(jp48: bool) -> Option__int32 {
+        if jp48 {
+          let t49 = ref_get(total/5) in
+          let t50 = ref_get(i/4) in
+          let t51 = (t49 + t50) in
+          let _wild7 = ref_set(total/5, t51) in
+          let t52 = ref_get(i/4) in
+          let t53 = (t52 + 1) in
+          let _wild8 = ref_set(i/4, t53) in
+          jump loop45()
+        } else {
+          jump exit42()
+        }
+      } in
+      match mtmp5 {
+        Tag_0 => {
+          jump ret40(Tag_0)
+        },
+        Tag_1 => {
+          let x6 = Option__bool::Some._0(mtmp5) in
+          let try_value/67 = x6 in
+          jump k47(try_value/67)
+        },
+      }
+    } in
+  } in
+  jump loop45()
+}
+
+fn show(x/6: Option__int32) -> string {
+  join ret54(retv55: string) -> string {
+    retv55
+  } in
+  join k56(jp57: string) -> string {
+    jump ret54(jp57)
+  } in
+  match x/6 {
+    Tag_0 => {
+      jump k56("none")
+    },
+    Tag_1 => {
+      let x10 = Option__int32::Some._0(x/6) in
+      let v/7 = x10 in
+      let t58 = int32_to_string(v/7) in
+      let t59 = ("some=" + t58) in
+      jump k56(t59)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret60() -> unit {
+    ()
+  } in
+  let t61 = run_some() in
+  let t62 = show(t61) in
+  let _wild11 = println__T_string(t62) in
+  let t63 = run_none() in
+  let t64 = show(t63) in
+  let _wild12 = println__T_string(t64) in
+  jump ret60()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret65() -> unit {
+    ()
+  } in
+  let t66 = string_println(value/1) in
+  jump ret65()
+}

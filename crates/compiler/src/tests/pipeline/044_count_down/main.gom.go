@@ -43,32 +43,36 @@ func main0() struct{} {
         counter_0: counter__0,
     }
     go _goml_inherent_closure_env_main_0_closure_env_main_0_apply(t6)
+    Loop_loop8:
     for {
         var t9 int32 = ref_get__Ref_int32(counter__0)
         var t10 bool = t9 < 10
-        if !t10 {
-            break
+        if t10 {
+            continue
+        } else {
+            break Loop_loop8
         }
-        continue
     }
     return struct{}{}
 }
 
 func _goml_inherent_closure_env_main_0_closure_env_main_0_apply(env4 closure_env_main_0) struct{} {
     var counter__0 *ref_int32_x = env4.counter_0
+    Loop_loop13:
     for {
         var t14 int32 = ref_get__Ref_int32(counter__0)
         var t15 bool = t14 < 10
-        if !t15 {
-            break
+        if t15 {
+            string_println("hello")
+            var t16 Duration = time.Duration(1000)
+            time.Sleep(t16)
+            var t17 int32 = ref_get__Ref_int32(counter__0)
+            var t18 int32 = t17 + 1
+            ref_set__Ref_int32(counter__0, t18)
+            continue
+        } else {
+            break Loop_loop13
         }
-        string_println("hello")
-        var t16 Duration = time.Duration(1000)
-        time.Sleep(t16)
-        var t17 int32 = ref_get__Ref_int32(counter__0)
-        var t18 int32 = t17 + 1
-        ref_set__Ref_int32(counter__0, t18)
-        continue
     }
     return struct{}{}
 }

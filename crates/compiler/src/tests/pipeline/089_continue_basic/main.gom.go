@@ -36,23 +36,25 @@ type GoError = error
 
 func main0() struct{} {
     var i__0 *ref_int32_x = ref__Ref_int32(0)
+    Loop_loop7:
     for {
         var t8 int32 = ref_get__Ref_int32(i__0)
         var t9 bool = t8 < 10
-        if !t9 {
-            break
-        }
-        var t10 int32 = ref_get__Ref_int32(i__0)
-        var t11 int32 = t10 + 1
-        ref_set__Ref_int32(i__0, t11)
-        var t14 int32 = ref_get__Ref_int32(i__0)
-        var t15 bool = t14 == 5
-        if t15 {
-            continue
+        if t9 {
+            var t10 int32 = ref_get__Ref_int32(i__0)
+            var t11 int32 = t10 + 1
+            ref_set__Ref_int32(i__0, t11)
+            var t14 int32 = ref_get__Ref_int32(i__0)
+            var t15 bool = t14 == 5
+            if t15 {
+                continue
+            } else {
+                var t13 int32 = ref_get__Ref_int32(i__0)
+                println__T_int32(t13)
+                continue
+            }
         } else {
-            var t13 int32 = ref_get__Ref_int32(i__0)
-            println__T_int32(t13)
-            continue
+            break Loop_loop7
         }
     }
     println__T_string("done")

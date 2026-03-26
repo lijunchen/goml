@@ -1,0 +1,59 @@
+fn trait_impl#Display#int32#show(self/0: int32) -> string {
+  join ret5(retv6: string) -> string {
+    retv6
+  } in
+  let t7 = int32_to_string(self/0) in
+  jump ret5(t7)
+}
+
+fn render(value/1: Boxed) -> string {
+  join ret8(retv9: string) -> string {
+    retv9
+  } in
+  join k10(jp11: string) -> string {
+    jump ret8(jp11)
+  } in
+  match value/1 {
+    Tag_0 => {
+      let x0 = Boxed::One._0(value/1) in
+      let inner/2 = x0 in
+      let t12 = dyn_call[Display::show](inner/2) in
+      jump k10(t12)
+    },
+    Tag_1 => {
+      let x1 = Boxed::Pair._0(value/1) in
+      let x2 = Boxed::Pair._1(value/1) in
+      let right/4 = x2 in
+      let left/3 = x1 in
+      let t13 = dyn_call[Display::show](left/3) in
+      let t14 = (t13 + "-") in
+      let t15 = dyn_call[Display::show](right/4) in
+      let t16 = (t14 + t15) in
+      jump k10(t16)
+    },
+  }
+}
+
+fn main() -> unit {
+  join ret17() -> unit {
+    ()
+  } in
+  let t18 = to_dyn[Display]{int32}(42) in
+  let t19 = Boxed::One(t18) in
+  let t20 = render(t19) in
+  let _wild3 = println__T_string(t20) in
+  let t21 = to_dyn[Display]{int32}(7) in
+  let t22 = to_dyn[Display]{int32}(9) in
+  let t23 = Boxed::Pair(t21, t22) in
+  let t24 = render(t23) in
+  let _wild4 = println__T_string(t24) in
+  jump ret17()
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret25() -> unit {
+    ()
+  } in
+  let t26 = string_println(value/1) in
+  jump ret25()
+}

@@ -1,0 +1,57 @@
+fn main() -> unit {
+  join ret4() -> unit {
+    ()
+  } in
+  let int_pairer/2 = make_pairer__T_int32(7) in
+  let string_pairer/3 = make_pairer__T_string("ok") in
+  let t5 = inherent#closure_env_make_pairer_T_int32_0#closure_env_make_pairer_T_int32_0#apply(int_pairer/2, "a") in
+  let _wild0 = println__T_string(t5) in
+  let t6 = inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(string_pairer/3, "b") in
+  let _wild1 = println__T_string(t6) in
+  jump ret4()
+}
+
+fn make_pairer__T_int32(x/0: int32) -> closure_env_make_pairer_T_int32_0 {
+  join ret7(retv8: closure_env_make_pairer_T_int32_0) -> closure_env_make_pairer_T_int32_0 {
+    retv8
+  } in
+  let t9 = closure_env_make_pairer_T_int32_0 { x_0: x/0 } in
+  jump ret7(t9)
+}
+
+fn make_pairer__T_string(x/0: string) -> closure_env_make_pairer_T_string_1 {
+  join ret10(retv11: closure_env_make_pairer_T_string_1) -> closure_env_make_pairer_T_string_1 {
+    retv11
+  } in
+  let t12 = closure_env_make_pairer_T_string_1 { x_0: x/0 } in
+  jump ret10(t12)
+}
+
+fn println__T_string(value/1: string) -> unit {
+  join ret13() -> unit {
+    ()
+  } in
+  let t14 = string_println(value/1) in
+  jump ret13()
+}
+
+fn inherent#closure_env_make_pairer_T_int32_0#closure_env_make_pairer_T_int32_0#apply(env2: closure_env_make_pairer_T_int32_0, tag/1: string) -> string {
+  join ret15(retv16: string) -> string {
+    retv16
+  } in
+  let x/0 = closure_env_make_pairer_T_int32_0.x_0(env2) in
+  let t17 = (tag/1 + ":") in
+  let t18 = int32_to_string(x/0) in
+  let t19 = (t17 + t18) in
+  jump ret15(t19)
+}
+
+fn inherent#closure_env_make_pairer_T_string_1#closure_env_make_pairer_T_string_1#apply(env3: closure_env_make_pairer_T_string_1, tag/1: string) -> string {
+  join ret20(retv21: string) -> string {
+    retv21
+  } in
+  let x/0 = closure_env_make_pairer_T_string_1.x_0(env3) in
+  let t22 = (tag/1 + ":") in
+  let t23 = (t22 + x/0) in
+  jump ret20(t23)
+}

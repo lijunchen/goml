@@ -62,19 +62,21 @@ func sum_to(limit__0 int32) int32 {
     var retv11 int32
     var acc__1 *ref_int32_x = ref__Ref_int32(0)
     var i__2 *ref_int32_x = ref__Ref_int32(0)
+    Loop_loop14:
     for {
         var t15 int32 = ref_get__Ref_int32(i__2)
         var t16 bool = t15 < limit__0
-        if !t16 {
-            break
+        if t16 {
+            var current__3 int32 = ref_get__Ref_int32(i__2)
+            var t17 int32 = ref_get__Ref_int32(acc__1)
+            var t18 int32 = t17 + current__3
+            ref_set__Ref_int32(acc__1, t18)
+            var t19 int32 = current__3 + 1
+            ref_set__Ref_int32(i__2, t19)
+            continue
+        } else {
+            break Loop_loop14
         }
-        var current__3 int32 = ref_get__Ref_int32(i__2)
-        var t17 int32 = ref_get__Ref_int32(acc__1)
-        var t18 int32 = t17 + current__3
-        ref_set__Ref_int32(acc__1, t18)
-        var t19 int32 = current__3 + 1
-        ref_set__Ref_int32(i__2, t19)
-        continue
     }
     var t13 int32 = ref_get__Ref_int32(acc__1)
     retv11 = t13
@@ -86,24 +88,26 @@ func sum_even(limit__4 int32) int32 {
     var acc__5 *ref_int32_x = ref__Ref_int32(0)
     var i__6 *ref_int32_x = ref__Ref_int32(0)
     var is_even__7 *ref_bool_x = ref__Ref_bool(true)
+    Loop_loop24:
     for {
         var t25 int32 = ref_get__Ref_int32(i__6)
         var t26 bool = t25 < limit__4
-        if !t26 {
-            break
+        if t26 {
+            var current__8 int32 = ref_get__Ref_int32(i__6)
+            var t27 int32 = current__8 + 1
+            ref_set__Ref_int32(i__6, t27)
+            var add_now__9 bool = ref_get__Ref_bool(is_even__7)
+            var t28 bool = !add_now__9
+            ref_set__Ref_bool(is_even__7, t28)
+            if add_now__9 {
+                var t30 int32 = ref_get__Ref_int32(acc__5)
+                var t31 int32 = t30 + current__8
+                ref_set__Ref_int32(acc__5, t31)
+            } else {}
+            continue
+        } else {
+            break Loop_loop24
         }
-        var current__8 int32 = ref_get__Ref_int32(i__6)
-        var t27 int32 = current__8 + 1
-        ref_set__Ref_int32(i__6, t27)
-        var add_now__9 bool = ref_get__Ref_bool(is_even__7)
-        var t28 bool = !add_now__9
-        ref_set__Ref_bool(is_even__7, t28)
-        if add_now__9 {
-            var t30 int32 = ref_get__Ref_int32(acc__5)
-            var t31 int32 = t30 + current__8
-            ref_set__Ref_int32(acc__5, t31)
-        } else {}
-        continue
     }
     var t23 int32 = ref_get__Ref_int32(acc__5)
     retv21 = t23

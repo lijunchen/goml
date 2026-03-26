@@ -1,0 +1,52 @@
+fn print(value/0: T) -> unit {
+    (string_print : (string) -> unit)((ToString::to_string : (T) -> string)((value/0 : T)))
+}
+
+fn println(value/1: T) -> unit {
+    (string_println : (string) -> unit)((ToString::to_string : (T) -> string)((value/1 : T)))
+}
+
+fn main() -> unit {
+    let i/0: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let total/1: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) == 0 {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), 1);
+            continue
+        }
+    } else {
+        if (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) < 4 {
+            {
+                true
+            }
+        } else {
+            {
+                false
+            }
+        }
+    } {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((total/1 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total/1 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])));
+            (ref_set : (Ref[int32], int32) -> unit)((i/0 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((i/0 : Ref[int32])) + 1);
+        }
+    };
+    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((total/1 : Ref[int32])));
+    let j/2: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    let total2/3: Ref[int32] = (ref : (int32) -> Ref[int32])(0);
+    while match (ref_get : (Ref[int32]) -> int32)((j/2 : Ref[int32])) {
+        0 => {
+              (ref_set : (Ref[int32], int32) -> unit)((j/2 : Ref[int32]), 1);
+              true
+          },
+        1 => {
+              (ref_set : (Ref[int32], int32) -> unit)((j/2 : Ref[int32]), 2);
+              true
+          },
+        _ : int32 => break,
+    } {
+        {
+            (ref_set : (Ref[int32], int32) -> unit)((total2/3 : Ref[int32]), (ref_get : (Ref[int32]) -> int32)((total2/3 : Ref[int32])) + (ref_get : (Ref[int32]) -> int32)((j/2 : Ref[int32])));
+        }
+    };
+    (println : (int32) -> unit)((ref_get : (Ref[int32]) -> int32)((total2/3 : Ref[int32])));
+}

@@ -36,6 +36,7 @@ pub(crate) struct DeferredDynCoercion {
     pub expr_id: hir::ExprId,
     pub concrete_ty: tast::Ty,
     pub expected_ty: tast::Ty,
+    pub origin: Option<text_size::TextRange>,
 }
 
 pub struct Typer {
