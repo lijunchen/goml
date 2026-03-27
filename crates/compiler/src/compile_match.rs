@@ -69,7 +69,7 @@ fn block_always_exits_control_flow(block: &tast::Block) -> bool {
 
 fn expr_always_exits_control_flow(expr: &Expr) -> bool {
     match expr {
-        EBreak { .. } | EContinue { .. } => true,
+        EBreak { .. } | EContinue { .. } | EReturn { .. } => true,
         EBlock { block, .. } => block_always_exits_control_flow(block),
         EIf {
             then_branch,
@@ -154,6 +154,44 @@ impl Variable {
             name: self.name.clone(),
             ty: self.ty.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn row(body: Expr) -> Row {
+        Row {
+            columns: vec![],
+            body,
+        }
+    }
+
+    #[test]
+    fn return_always_exits_control_flow() {
+        let expr = Expr::EReturn {
+            expr: None,
+            ty: Ty::TUnit,
+        };
+
+        assert!(expr_always_exits_control_flow(&expr));
+    }
+
+    #[test]
+    fn rows_body_ty_ignores_return_only_arms() {
+        let rows = vec![
+            row(Expr::EReturn {
+                expr: None,
+                ty: Ty::TUnit,
+            }),
+            row(Expr::EPrim {
+                value: Prim::Int32 { value: 7 },
+                ty: Ty::TInt32,
+            }),
+        ];
+
+        assert_eq!(rows_body_ty(&rows), Ty::TInt32);
     }
 }
 
