@@ -221,7 +221,7 @@ fn main() -> unit {
             expect![[r#"
                 [
                     ValueCompletionItem {
-                        name: "http",
+                        name: "alice::http",
                         kind: Package,
                         detail: Some(
                             "package",
@@ -1161,8 +1161,8 @@ fn registry_dependency_hover_and_completion() {
     let main_path = dir.path().join("main.gom");
     let valid_src = r#"package main;
 
-use http;
-use http::client;
+use alice::http;
+use alice::http::client;
 
 fn main() -> unit {
     let client = http::make_client();
@@ -1171,8 +1171,8 @@ fn main() -> unit {
 "#;
     let namespace_src = r#"package main;
 
-use http;
-use http::client;
+use alice::http;
+use alice::http::client;
 
 fn main() -> unit {
     let _ = http::;
@@ -1180,11 +1180,19 @@ fn main() -> unit {
 "#;
     let nested_namespace_src = r#"package main;
 
-use http;
-use http::client;
+use alice::http;
+use alice::http::client;
 
 fn main() -> unit {
-    let _ = http::client::;
+    let _ = client::;
+}
+"#;
+    let use_namespace_src = r#"package main;
+
+use alice::http::
+
+fn main() -> unit {
+    ()
 }
 "#;
     std::fs::write(
@@ -1209,7 +1217,7 @@ entry = "main.gom"
                 .unwrap();
         assert!(
             genv.structs()
-                .contains_key(&crate::tast::TastIdent("http::client::Client".to_string()))
+                .contains_key(&crate::tast::TastIdent("client::Client".to_string()))
         );
 
         check_colon_colon_completions_with_path(
@@ -1219,13 +1227,6 @@ entry = "main.gom"
             18,
             expect![[r#"
                 [
-                    ColonColonCompletionItem {
-                        name: "client",
-                        kind: Package,
-                        detail: Some(
-                            "package",
-                        ),
-                    },
                     ColonColonCompletionItem {
                         name: "make_client",
                         kind: Value,
@@ -1241,7 +1242,7 @@ entry = "main.gom"
             &main_path,
             nested_namespace_src,
             6,
-            26,
+            20,
             expect![[r#"
                 [
                     ColonColonCompletionItem {
@@ -1253,6 +1254,31 @@ entry = "main.gom"
                     },
                     ColonColonCompletionItem {
                         name: "tag",
+                        kind: Value,
+                        detail: Some(
+                            "fn",
+                        ),
+                    },
+                ]
+            "#]],
+        );
+
+        check_colon_colon_completions_with_path(
+            &main_path,
+            use_namespace_src,
+            2,
+            17,
+            expect![[r#"
+                [
+                    ColonColonCompletionItem {
+                        name: "client",
+                        kind: Package,
+                        detail: Some(
+                            "package",
+                        ),
+                    },
+                    ColonColonCompletionItem {
+                        name: "make_client",
                         kind: Value,
                         detail: Some(
                             "fn",

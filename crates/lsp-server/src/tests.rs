@@ -2035,8 +2035,8 @@ fn a() -> int32 { 0 }
             "registry_packages",
             r#"
 package main;
-use http;
-use http::client;
+use alice::http;
+use alice::http::client;
 
 fn main() -> unit {
     ()
@@ -2048,17 +2048,47 @@ fn main() -> unit {
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
-                "use http;",
+                "use alice::http;",
                 "http",
                 expect!["1.2.0/goml.toml:0:0"],
             );
             check_temp_module_goto_token(
                 "registry_packages",
                 "main.gom",
-                "use http::client;",
+                "use alice::http::client;",
                 "client",
                 expect!["client/goml.toml:0:0"],
             );
+        });
+    }
+
+    #[test]
+    fn registry_packages_require_owner_qualified_use_paths() {
+        let dir = tempdir().unwrap();
+        let home = dir.path().join(".goml");
+        write_cached_registry(&home);
+        let root = write_registry_project(
+            "registry_packages_require_owner",
+            r#"
+package main;
+use http;
+use http::client;
+
+fn main() -> unit {
+    ()
+}
+"#,
+        );
+
+        with_goml_home(&home, || {
+            let path = root.join("main.gom");
+            let src = std::fs::read_to_string(&path).unwrap();
+            let doc = Document::new(src.clone());
+            let diags = handlers::get_diagnostics(&path, &src, &doc);
+            expect![
+                "[0:0] error: external dependency http must be imported as alice::http\n[0:0] error: external dependency http::client must be imported as alice::http::client"
+            ]
+            .assert_eq(&format_diagnostics(&diags));
         });
     }
 
@@ -2071,8 +2101,8 @@ fn main() -> unit {
             "registry_members",
             r#"
 package main;
-use http;
-use http::client;
+use alice::http;
+use alice::http::client;
 
 fn main() -> unit {
     let _ = http::make_client();
