@@ -150,6 +150,9 @@ name = "myapp"
 [package]
 name = "main"
 entry = "main.gom"
+
+[dependencies]
+"alice/http" = "1.2.0"
 ```
 
 ### Sub-Package Example
@@ -170,13 +173,64 @@ name = "main"
 | `module.name`   | No       | -           | Module name (presence indicates module root) |
 | `package.name`  | Yes      | -           | Package name (any valid identifier)          |
 | `package.entry` | No       | `"lib.gom"` | Path to entry file relative to goml.toml     |
+| `dependencies`  | No       | `{}`        | Module-root third-party dependencies keyed by `"owner/module"` with minimum version `X.Y.Z` |
 
 ### Project Discovery
 - The LSP and CLI search upward from the current file to find `goml.toml` with a `[module]` section
 - If found, uses `package.entry` as the compilation entry point
 - For module roots, `package.name` must be `main`
+- Third-party dependencies are declared in the module root `goml.toml`; sub-packages do not declare registry dependencies
 - Sub-packages are discovered from subdirectories when imported, using their own `goml.toml` if present
 - Package names can be any valid identifier (lowercase or PascalCase)
+
+## Package Management
+
+GoML currently uses a mono-repo registry model for third-party dependencies.
+
+### Registry Layout
+- The registry is a git repository with an `index.toml` at the repo root
+- Each published module version lives at `/<owner>/<module>/<version>/`
+- Each published module version must include its own `goml.toml`
+- The module root inside the registry must declare `package.name = "<module>"`; if it has a `[module]` section, `module.name` must also equal `<module>`
+- `index.toml` is the authoritative package index; package management reads the index instead of scanning the full registry tree
+
+### Dependency Semantics
+- Dependencies are declared in `[dependencies]` using `"owner/module" = "X.Y.Z"`
+- Versions use strict semver `X.Y.Z` only; prerelease and build metadata are not supported
+- Version values are minimum version requirements, not exact pins
+- Resolution uses Go-style MVS: the selected version for each module is the minimum available version satisfying the highest required minimum in the graph
+- Registry entries are treated as immutable after publication
+- There is currently no `goml.lock`
+
+### User Config And Cache
+- Global GoML state lives under `~/.goml`
+- `GOML_HOME` overrides the default `~/.goml` location
+- `~/.goml/config.toml` stores the default registry URL under `[registry].default`
+- `~/.goml/cache/registry` stores the cloned mono-repo registry cache
+- `goml update` creates `~/.goml/config.toml` if it does not exist yet
+
+### CLI Commands
+- `goml update` clones or fast-forwards the registry cache into `~/.goml/cache/registry`
+- `goml add owner/module` adds the latest indexed version requirement to the current module root `goml.toml`
+- `goml add owner/module@X.Y.Z` adds or updates an explicit minimum version requirement
+- `goml remove owner/module` removes that dependency from the current module root `goml.toml`
+- `goml update`, `goml add`, and `goml remove` all support `--local-registry <path>` to use a local git repo or registry checkout instead of the default configured registry
+- `goml add` and `goml remove` locate the module root by searching upward for `goml.toml` with a `[module]` section
+
+### External Module Namespaces
+- Registry module source layout reuses normal module layout: the root package lives at the module version root and sub-packages live in subdirectories with their own `goml.toml`
+- External module root packages are imported by module name, for example `use http;`
+- External sub-packages use the module namespace, for example `use http::client;`
+- Trait imports follow the same rule, for example `use http::Show;` and `use http::client::Show;`
+- Internally, external packages are given logical names under the module namespace, such as `http` and `http::client`
+- Different owners cannot appear in the same resolved graph with the same module name; `alice/http` and `dave/http` are rejected together because source imports only name the module namespace, not the owner
+
+### Build, Check, And LSP Behavior
+- `goml check`, `goml build`, compiler queries, and LSP requests all resolve and typecheck third-party dependencies
+- Third-party source files remain in the registry cache under `~/.goml/cache/registry`
+- Project outputs continue to be written under the current project's `target/goml`
+- External dependency artifacts are materialized under `target/goml/check/deps/<owner>/<module>/<version>/` and `target/goml/build/deps/<owner>/<module>/<version>/`
+- Go-to-definition, hover, completion, and other query features can resolve into cached third-party source files
 
 ## VS Code LSP Extension
 
