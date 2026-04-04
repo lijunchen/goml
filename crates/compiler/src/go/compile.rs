@@ -4557,19 +4557,20 @@ fn compile_call(
 
     if let tast::Ty::TStruct { name } = &func_tast_ty
         && is_closure_env_struct(name)
-        && let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty) {
-            let apply_expr = goast::Expr::Var {
-                name: go_ident(&apply.name),
-                ty: tast_ty_to_go_type(&apply.ty),
-            };
-            let mut call_args = vec![compile_imm(goenv, func)];
-            call_args.extend(compiled_args);
-            return goast::Expr::Call {
-                func: Box::new(apply_expr),
-                args: call_args,
-                ty: tast_ty_to_go_type(&apply.ret_ty),
-            };
-        }
+        && let Some(apply) = find_closure_apply_fn(goenv, &func_tast_ty)
+    {
+        let apply_expr = goast::Expr::Var {
+            name: go_ident(&apply.name),
+            ty: tast_ty_to_go_type(&apply.ty),
+        };
+        let mut call_args = vec![compile_imm(goenv, func)];
+        call_args.extend(compiled_args);
+        return goast::Expr::Call {
+            func: Box::new(apply_expr),
+            args: call_args,
+            ty: tast_ty_to_go_type(&apply.ret_ty),
+        };
+    }
 
     goast::Expr::Call {
         func: Box::new(compile_imm(goenv, func)),
@@ -5694,40 +5695,43 @@ fn compile_native_return_from_imm(
             return stmts;
         }
         if let anf::ValueExpr::Constr {
-                constructor: Constructor::Enum(enum_constructor),
-                args,
-                ..
-            } = value { match &native_ctx.mode {
-            NativeReturnMode::Result { ok_ty, err_ty } => {
-                if enum_constructor.index == 0 && args.len() == 1 {
-                    return build_payload_success_return_stmts(
-                        ok_ty,
-                        compile_imm(goenv, &args[0]),
-                        vec![goast::Expr::Nil {
-                            ty: tast_ty_to_go_type(err_ty),
-                        }],
-                    );
+            constructor: Constructor::Enum(enum_constructor),
+            args,
+            ..
+        } = value
+        {
+            match &native_ctx.mode {
+                NativeReturnMode::Result { ok_ty, err_ty } => {
+                    if enum_constructor.index == 0 && args.len() == 1 {
+                        return build_payload_success_return_stmts(
+                            ok_ty,
+                            compile_imm(goenv, &args[0]),
+                            vec![goast::Expr::Nil {
+                                ty: tast_ty_to_go_type(err_ty),
+                            }],
+                        );
+                    }
+                    if enum_constructor.index == 1 && args.len() == 1 {
+                        return build_result_failure_stmts(ok_ty, compile_imm(goenv, &args[0]));
+                    }
                 }
-                if enum_constructor.index == 1 && args.len() == 1 {
-                    return build_result_failure_stmts(ok_ty, compile_imm(goenv, &args[0]));
+                NativeReturnMode::Option { some_ty } => {
+                    if enum_constructor.index == 1 && args.len() == 1 {
+                        return build_payload_success_return_stmts(
+                            some_ty,
+                            compile_imm(goenv, &args[0]),
+                            vec![goast::Expr::Bool {
+                                value: true,
+                                ty: goty::GoType::TBool,
+                            }],
+                        );
+                    }
+                    if enum_constructor.index == 0 && args.is_empty() {
+                        return build_option_failure_stmts(some_ty);
+                    }
                 }
             }
-            NativeReturnMode::Option { some_ty } => {
-                if enum_constructor.index == 1 && args.len() == 1 {
-                    return build_payload_success_return_stmts(
-                        some_ty,
-                        compile_imm(goenv, &args[0]),
-                        vec![goast::Expr::Bool {
-                            value: true,
-                            ty: goty::GoType::TBool,
-                        }],
-                    );
-                }
-                if enum_constructor.index == 0 && args.is_empty() {
-                    return build_option_failure_stmts(some_ty);
-                }
-            }
-        } }
+        }
     }
 
     let boxed_ty = imm_ty(imm);
@@ -6894,6 +6898,7 @@ fn compile_branch_to_native_return_ctx(
     stmts
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_match_to_native_return_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7199,6 +7204,7 @@ fn compile_branch_to_join_ctx(
     stmts
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_match_to_join_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7551,6 +7557,7 @@ fn compile_match_leaf_ctx(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_enum_match_leaf_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,
@@ -7614,6 +7621,7 @@ fn compile_enum_match_leaf_ctx(
     }]
 }
 
+#[allow(clippy::too_many_arguments)]
 fn compile_switch_match_leaf_ctx(
     goenv: &GlobalGoEnv,
     scrut: &anf::ImmExpr,

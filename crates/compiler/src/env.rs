@@ -254,9 +254,10 @@ impl TypeEnv {
 
     fn assign_package_to_extern_type(&mut self, type_name: &str, package_path: &str) {
         if let Some(ext_ty) = self.extern_types.get_mut(type_name)
-            && ext_ty.package_path.is_none() {
-                ext_ty.package_path = Some(package_path.to_string());
-            }
+            && ext_ty.package_path.is_none()
+        {
+            ext_ty.package_path = Some(package_path.to_string());
+        }
     }
 
     fn record_extern_type_usage(&mut self, ty: &tast::Ty, package_path: &str) {
@@ -1081,6 +1082,7 @@ impl GlobalTypeEnv {
         self.value_env.get_function_scheme(func)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn register_extern_function(
         &mut self,
         goml_name: String,
